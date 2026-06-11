@@ -68,7 +68,7 @@ const bestForLink = (usecase?: string): LocalizedLinkHref =>
         pathname: '/ai-video-engines/best-for',
       };
 
-const toolLink = (slug: 'character-builder' | 'angle' | 'upscale'): LocalizedLinkHref => ({
+const toolLink = (slug: 'character-builder' | 'angle' | 'upscale' | 'background-removal'): LocalizedLinkHref => ({
   pathname: `/tools/${slug}`,
 });
 
@@ -190,6 +190,7 @@ export const MARKETING_NAV_TOOLS: MarketingNavItem[] = [
   { key: 'character-builder', label: 'Consistent Character AI', href: toolLink('character-builder') },
   { key: 'angle', label: 'Change Camera Angle', href: toolLink('angle') },
   { key: 'upscale', label: 'AI Upscale', href: toolLink('upscale') },
+  { key: 'background-removal', label: 'Video Background Remover', href: toolLink('background-removal') },
   { key: 'image', label: 'Generate image', href: '/app/image' },
 ];
 

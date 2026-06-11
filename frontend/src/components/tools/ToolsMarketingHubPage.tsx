@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { ArrowRight, Camera, ImagePlus, Maximize2, Sparkles } from 'lucide-react';
+import { ArrowRight, Camera, Eraser, ImagePlus, Maximize2, Sparkles } from 'lucide-react';
 import type { Dictionary } from '@/lib/i18n/types';
 import { Link } from '@/i18n/navigation';
 import { ButtonLink } from '@/components/ui/Button';
@@ -10,6 +10,7 @@ const IMAGE_CARD_BACKGROUND_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp';
 const CHARACTER_CARD_BACKGROUND_URL = '/assets/tools/character-builder-workspace.png';
 const ANGLE_CARD_BACKGROUND_URL = '/assets/tools/angle-workspace.png';
+const BACKGROUND_REMOVAL_CARD_BACKGROUND_URL = '/assets/tools/background-removal-hero-app-light.webp';
 
 type ToolsMarketingHubContent = Dictionary['toolMarketing']['hub'];
 
@@ -129,7 +130,7 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
 
       <section className="relative overflow-hidden border-b border-hairline bg-bg py-12 sm:py-14">
         <div className="container-page relative max-w-[1220px]">
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
             <ToolCard
               icon={<ImagePlus className="h-5 w-5" />}
               eyebrow={content.cards.image.eyebrow}
@@ -229,6 +230,28 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
                 </div>
               }
             />
+            <ToolCard
+              icon={<Eraser className="h-5 w-5" />}
+              eyebrow={content.cards.backgroundRemoval.eyebrow}
+              title={content.cards.backgroundRemoval.title}
+              body={content.cards.backgroundRemoval.body}
+              href="/tools/background-removal"
+              cta={content.cards.backgroundRemoval.cta}
+              toolName="background_removal"
+              targetFamily="public_tools"
+              ctaLocation="tools_hub_card_background_removal"
+              visual={
+                <div className="relative aspect-[16/9] overflow-hidden rounded-[8px] bg-[#eef3fa]">
+                  <Image
+                    src={BACKGROUND_REMOVAL_CARD_BACKGROUND_URL}
+                    alt={content.cards.backgroundRemoval.imageAlt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 520px"
+                    className="pointer-events-none object-cover object-top"
+                  />
+                </div>
+              }
+            />
           </div>
         </div>
       </section>
@@ -242,7 +265,7 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
             <h2 className="text-3xl font-semibold leading-tight text-text-primary">{content.bestStartingPoints.title}</h2>
             <p className="text-sm leading-7 text-text-secondary">{content.bestStartingPoints.body}</p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
             {Object.entries(content.bestStartingPoints.cards).map(([key, card]) => (
               <div key={key} className="rounded-[8px] border border-hairline bg-white p-5 shadow-card dark:bg-white/[0.055] dark:shadow-[0_18px_54px_rgba(0,0,0,0.22)]">
                 <span className={`inline-flex h-8 w-8 items-center justify-center ${iconTone}`}>
@@ -252,6 +275,8 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
                     <Sparkles className="h-5 w-5" />
                   ) : key === 'upscale' ? (
                     <Maximize2 className="h-5 w-5" />
+                  ) : key === 'backgroundRemoval' ? (
+                    <Eraser className="h-5 w-5" />
                   ) : (
                     <Camera className="h-5 w-5" />
                   )}
@@ -267,7 +292,9 @@ export function ToolsMarketingHubPage({ content }: { content: ToolsMarketingHubC
                         ? '/tools/character-builder'
                         : key === 'upscale'
                           ? '/tools/upscale'
-                          : '/tools/angle'
+                          : key === 'backgroundRemoval'
+                            ? '/tools/background-removal'
+                            : '/tools/angle'
                   }
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#356BE8] hover:text-[#214fb8]"
                 >

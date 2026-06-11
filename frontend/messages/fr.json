@@ -4045,7 +4045,15 @@
       "angleTitle": "Angle / Perspective",
       "angleBody": "Importe une image, ajuste l’angle caméra, puis génère une première image prête pour les workflows image-to-video.",
       "angleBadge": "Nouvelle vue",
-      "open": "Ouvrir l’outil"
+      "open": "Ouvrir l’outil",
+      "backgroundRemovalEyebrow": "Nettoyage vidéo",
+      "backgroundRemovalTitle": "Video Background Remover",
+      "backgroundRemovalBody": "Supprimez les arrière-plans vidéo avec Bria VRMBG 3.0, exportez des WebM transparents et testez des aperçus webcam payants en temps réel.",
+      "backgroundRemovalBadge": "Studio + live",
+      "upscaleEyebrow": "Gain de résolution",
+      "upscaleTitle": "AI Upscale",
+      "upscaleBody": "Upscalez images ou courtes vidéos avec SeedVR2, Topaz, FlashVSR et Recraft avant de les réutiliser dans vos workflows.",
+      "upscaleBadge": "Image + vidéo"
     },
     "storyboard": {
       "disabledTitle": "Les outils sont désactivés",
@@ -4799,6 +4807,66 @@
           }
         }
       }
+    },
+    "backgroundRemoval": {
+      "disabledTitle": "Tools are disabled",
+      "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+      "back": "Retour aux outils",
+      "eyebrow": "Nettoyage vidéo",
+      "title": "Video Background Remover",
+      "subtitle": "Supprimez l’arrière-plan de courtes vidéos, exportez en WebM transparent ou en couleur unie, puis réutilisez les résultats depuis la médiathèque.",
+      "sourceTitle": "Vidéo source",
+      "sourceBody": "Importez un clip court, collez une URL HTTPS ou réutilisez une vidéo de votre médiathèque.",
+      "upload": "Importer une vidéo",
+      "urlLabel": "URL vidéo",
+      "urlPlaceholder": "https://example.com/source.mp4",
+      "library": "Médiathèque",
+      "libraryAll": "Toutes les vidéos",
+      "libraryUploaded": "Importées",
+      "libraryGenerated": "Générées",
+      "libraryBackgroundRemoval": "Background removal",
+      "metadataLoading": "Lecture des métadonnées vidéo...",
+      "metadataRequired": "Ajoutez une vidéo lisible pour estimer le prix.",
+      "durationTooLong": "Le mode Studio accepte les clips jusqu’à 60 secondes.",
+      "settingsTitle": "Réglages Studio",
+      "backgroundColor": "Arrière-plan",
+      "outputCodec": "Sortie",
+      "preserveAudio": "Conserver l’audio",
+      "priceLoading": "Chargement du prix...",
+      "priceUnavailable": "Prix indisponible",
+      "priceReady": "Estimation pour ce clip",
+      "run": "Supprimer l’arrière-plan",
+      "running": "Traitement...",
+      "previewTitle": "Aperçu",
+      "sourcePreview": "Source",
+      "resultPreview": "Résultat",
+      "compareSource": "Show source",
+      "compareResult": "Show result",
+      "noPreview": "Ajoutez une vidéo pour prévisualiser la source.",
+      "checkerboard": "Aperçu transparent",
+      "save": "Enregistrer",
+      "saved": "Enregistré dans la médiathèque.",
+      "saveFailed": "Impossible d’enregistrer ce résultat.",
+      "download": "Télécharger",
+      "copyLink": "Copier le lien",
+      "copied": "Lien copié.",
+      "recentTitle": "Suppressions récentes",
+      "recentEmpty": "Les résultats terminés apparaîtront ici.",
+      "recentFailed": "Failed",
+      "authTitle": "Connectez-vous pour utiliser l’outil",
+      "authBody": "La suppression d’arrière-plan utilise la facturation wallet et le stockage privé.",
+      "liveTitle": "Aperçu live",
+      "liveBody": "Prépayez une courte session temps réel, autorisez la caméra et testez couleur, flou ou image.",
+      "liveStart": "Démarrer 60 s",
+      "liveStop": "Arrêter",
+      "liveEnded": "Session terminée",
+      "liveCameraRequired": "Autorisation caméra requise.",
+      "liveConnecting": "Connexion de l’aperçu live...",
+      "liveReady": "Aperçu live actif",
+      "liveModeColor": "Couleur",
+      "liveModeBlur": "Flou",
+      "liveModeImage": "Image",
+      "backgroundImageUrl": "URL de l’image de fond"
     }
   },
   "cookieBanner": {
@@ -5246,6 +5314,13 @@
           "body": "Upscalez images ou courtes vidéos avec SeedVR2, Topaz, FlashVSR et Recraft, puis réutilisez l'asset plus net dans Image, Vidéo ou la Bibliothèque.",
           "cta": "Explorer l'outil",
           "imageAlt": "Interface d'upscale IA avec aperçu avant et après."
+        },
+        "backgroundRemoval": {
+          "eyebrow": "Nettoyage video",
+          "title": "Supprimer l’arrière-plan vidéo",
+          "body": "Détourez des personnes ou des produits dans des clips courts, exportez une vidéo transparente et testez des fonds webcam en direct.",
+          "cta": "Explorer l’outil",
+          "imageAlt": "Workspace de suppression d’arrière-plan vidéo avec aperçu transparent."
         }
       },
       "bestStartingPoints": {
@@ -5277,6 +5352,12 @@
             "title": "Augmentez la résolution avant réutilisation",
             "body": "Nettoyez une image ou un court clip avant d'en faire une référence, un asset de prompt ou un livrable.",
             "cta": "Ouvrir Upscale"
+          },
+          "backgroundRemoval": {
+            "eyebrow": "Background Remover",
+            "title": "Détourer le sujet avant livraison",
+            "body": "Supprimez l’arrière-plan d’une courte vidéo, enregistrez le résultat transparent et réutilisez-le dans vos publicités, clips produit et contenus pédagogiques.",
+            "cta": "Ouvrir Background Remover"
           }
         }
       }
@@ -6185,6 +6266,178 @@
         "panelLeft": "Personnage verrouillé",
         "panelRight": "Prêt à réutiliser",
         "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
+      }
+    },
+    "backgroundRemoval": {
+      "meta": {
+        "title": "Supprimer l’arrière-plan vidéo | Détourage vidéo transparent",
+        "description": "Supprimez l’arrière-plan vidéo avec Bria VRMBG 3.0 dans MaxVideoAI. Exportez en WebM transparent ou couleur unie, sauvegardez dans la médiathèque et testez des fonds webcam live.",
+        "keywords": [
+          "supprimer arrière-plan vidéo",
+          "détourage vidéo IA",
+          "video background remover",
+          "Bria VRMBG 3.0"
+        ],
+        "imageAlt": "Workspace MaxVideoAI de suppression d’arrière-plan vidéo avec aperçu transparent.",
+        "schemaName": "Video Background Remover",
+        "schemaDescription": "Outil MaxVideoAI pour supprimer l’arrière-plan de courtes vidéos et tester des fonds webcam live.",
+        "howToTitle": "Comment supprimer l’arrière-plan vidéo dans MaxVideoAI",
+        "howToDescription": "Importez ou sélectionnez une vidéo, choisissez une sortie transparente ou colorée, lancez Bria VRMBG 3.0, puis enregistrez ou téléchargez le résultat."
+      },
+      "breadcrumb": {
+        "home": "Accueil",
+        "tools": "Outils",
+        "current": "Video Background Remover"
+      },
+      "hero": {
+        "badge": "Studio + suppression live",
+        "title": "Supprimer l’arrière-plan vidéo sans quitter votre workflow",
+        "body": "Importez un clip court ou choisissez une vidéo de la médiathèque, prévisualisez le prix exact, lancez Bria VRMBG 3.0 et sauvegardez une sortie transparente ou en couleur unie.",
+        "primaryCta": "Ouvrir Background Remover",
+        "secondaryCta": "Voir tous les outils",
+        "stats": [
+          {
+            "value": "60 s",
+            "label": "clips studio"
+          },
+          {
+            "value": "WebM",
+            "label": "sortie transparente"
+          },
+          {
+            "value": "Live",
+            "label": "aperçu webcam"
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Cas d’usage",
+        "title": "Un sujet propre, plusieurs chemins de production",
+        "body": "Utilisez la suppression d’arrière-plan avant les montages sociaux, contenus pédagogiques, overlays e-commerce et variantes publicitaires.",
+        "cards": [
+          {
+            "title": "Talking heads",
+            "body": "Détourez un présentateur depuis une pièce chargée et placez-le sur des scènes cohérentes avec votre marque."
+          },
+          {
+            "title": "Clips produit",
+            "body": "Séparez les vidéos produit filmées à la main pour les réutiliser dans ads, pages et explicatifs."
+          },
+          {
+            "title": "Publicités",
+            "body": "Créez des assets vidéo de premier plan combinables avec de nouveaux hooks et fonds de campagne."
+          },
+          {
+            "title": "Formation",
+            "body": "Gardez l’instructeur visible tout en remplaçant un bureau, une classe ou un fond webcam."
+          },
+          {
+            "title": "Assets sociaux",
+            "body": "Exportez des clips transparents réutilisables pour posts verticaux, stories et démos."
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Guide modèle",
+        "title": "Le traitement Studio et le live utilisent Bria VRMBG 3.0",
+        "body": "Le mode Studio sert aux sorties sauvegardées. Le live sert aux tests webcam courts et payants avant enregistrement.",
+        "columns": {
+          "model": "Modèle",
+          "bestFor": "Idéal pour",
+          "price": "Contexte prix",
+          "useWhen": "À utiliser quand"
+        },
+        "rows": [
+          {
+            "model": "Bria VRMBG 3.0 Studio",
+            "bestFor": "Courtes vidéos importées ou issues de la médiathèque nécessitant une sortie transparente ou colorée.",
+            "price": "Estimé depuis la durée du clip avant lancement, via le produit wallet MaxVideoAI actuel.",
+            "useWhen": "Pour des assets finaux à prévisualiser, télécharger et sauvegarder."
+          },
+          {
+            "model": "Bria VRMBG 3.0 Realtime",
+            "bestFor": "Sessions webcam payantes avec fonds couleur, flou ou image.",
+            "price": "Prépayé par durée de session et arrêté côté client à expiration.",
+            "useWhen": "Pour tester cadrage et fond live avant enregistrement."
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "Du clip source à l’asset transparent réutilisable",
+        "body": "Choisissez une source, configurez la sortie, lancez, inspectez, puis sauvegardez ou téléchargez.",
+        "steps": [
+          {
+            "title": "Importer ou sélectionner une vidéo",
+            "body": "Utilisez une URL MP4/WebM courte, importez un fichier ou choisissez une vidéo sauvegardée."
+          },
+          {
+            "title": "Choisir une sortie transparente ou colorée",
+            "body": "Exportez en WebM transparent ou en couleur unie si la destination ne supporte pas l’alpha."
+          },
+          {
+            "title": "Prévisualiser, sauvegarder et réutiliser",
+            "body": "Comparez source et résultat, téléchargez le fichier ou sauvegardez-le dans la médiathèque."
+          }
+        ]
+      },
+      "realtime": {
+        "eyebrow": "Aperçu live",
+        "title": "Tester des fonds webcam avec des sessions prépayées",
+        "body": "La caméra ne s’active qu’après clic, puis vous testez couleur, flou ou image de fond avec arrêt au timer.",
+        "panelCaption": "L’aperçu temps réel est prévu pour des sessions de test courtes, pas pour du streaming anonyme ou illimité.",
+        "items": [
+          {
+            "title": "Caméra à la demande",
+            "body": "Le navigateur demande l’autorisation seulement au démarrage."
+          },
+          {
+            "title": "Secondes payées",
+            "body": "Chaque session est prépayée et limitée pour garder le wallet prévisible."
+          },
+          {
+            "title": "Choix rapides",
+            "body": "Basculez entre couleur, flou et image pendant les tests."
+          }
+        ]
+      },
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Questions sur la suppression d’arrière-plan vidéo",
+        "body": "Détails pratiques sur transparence, audio, prix et réutilisation."
+      },
+      "faq": [
+        {
+          "q": "Puis-je exporter une vidéo transparente ?",
+          "a": "Oui. Utilisez un arrière-plan transparent avec WebM VP9 ou une autre sortie compatible alpha."
+        },
+        {
+          "q": "L’audio peut-il être conservé ?",
+          "a": "Oui. Le mode Studio propose un réglage pour conserver l’audio source quand le format le permet."
+        },
+        {
+          "q": "Comment le prix est-il estimé ?",
+          "a": "MaxVideoAI lit la durée du clip et affiche une estimation wallet avant le lancement. Le live est prépayé par durée."
+        },
+        {
+          "q": "Quelle est la limite de durée ?",
+          "a": "Cette version cible les clips courts jusqu’à 60 secondes pour garder traitement, aperçu et facturation prévisibles."
+        },
+        {
+          "q": "Puis-je réutiliser les sorties ?",
+          "a": "Oui. Enregistrez les vidéos terminées dans la médiathèque et reprenez-les plus tard."
+        },
+        {
+          "q": "Le live expose-t-il mes identifiants ?",
+          "a": "Non. L’aperçu live utilise des tokens courts générés par la route serveur authentifiée."
+        }
+      ],
+      "finalCta": {
+        "eyebrow": "Prêt à nettoyer le clip ?",
+        "title": "Supprimez un arrière-plan et gardez le résultat dans votre médiathèque MaxVideoAI",
+        "body": "Ouvrez le workspace, estimez le run et transformez de courtes vidéos en assets transparents ou colorés réutilisables.",
+        "primaryCta": "Ouvrir Background Remover",
+        "secondaryCta": "Voir les outils"
       }
     }
   },

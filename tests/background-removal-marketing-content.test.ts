@@ -1,0 +1,59 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+
+function readLocale(locale: 'en' | 'fr' | 'es') {
+  return JSON.parse(fs.readFileSync(path.join(process.cwd(), `frontend/messages/${locale}.json`), 'utf8')) as {
+    toolMarketing: {
+      backgroundRemoval?: {
+        meta?: { title?: string; description?: string; keywords?: string[]; imageAlt?: string };
+        hero?: { title?: string; body?: string; primaryCta?: string; secondaryCta?: string };
+        modelGuide?: { rows?: Array<{ model?: string; bestFor?: string; price?: string; useWhen?: string }> };
+        faq?: Array<{ q?: string; a?: string }>;
+      };
+      hub?: unknown;
+    };
+  };
+}
+
+test('background removal marketing copy is complete in every locale', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = readLocale(locale).toolMarketing.backgroundRemoval;
+    assert.ok(copy?.meta?.title, `${locale} title`);
+    assert.ok(copy?.meta?.description, `${locale} description`);
+    assert.ok(copy?.meta?.keywords?.length, `${locale} keywords`);
+    assert.ok(copy?.meta?.imageAlt, `${locale} image alt`);
+    assert.ok(copy?.hero?.title, `${locale} hero title`);
+    assert.ok(copy?.hero?.body, `${locale} hero body`);
+    assert.ok(copy?.modelGuide?.rows?.some((row) => row.model?.includes('VRMBG 3.0')), `${locale} mentions VRMBG 3.0`);
+    assert.ok((copy?.faq?.length ?? 0) >= 4, `${locale} FAQ`);
+  }
+});
+
+test('background removal marketing copy does not expose fal branding', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = readLocale(locale).toolMarketing.backgroundRemoval;
+    assert.doesNotMatch(JSON.stringify(copy).toLowerCase(), /fal(?:\.ai|-ai|\s+ai)?/);
+  }
+});
+
+test('background removal landing uses shared JSON-LD helpers and app screenshots', () => {
+  const wrapper = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/components/tools/BackgroundRemovalLandingPage.tsx'),
+    'utf8'
+  );
+  const view = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/components/tools/background-removal/landing/BackgroundRemovalLandingView.tsx'),
+    'utf8'
+  );
+  const route = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/(localized)/[locale]/(marketing)/tools/background-removal/page.tsx'),
+    'utf8'
+  );
+
+  assert.match(wrapper, /BackgroundRemovalLandingView/);
+  assert.match(view, /buildToolBreadcrumbJsonLd/);
+  assert.match(view, /buildToolHowToJsonLd/);
+  assert.match(route, /image: '\/assets\/tools\/background-removal-hero-app-light\.webp'/);
+});

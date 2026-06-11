@@ -47,6 +47,11 @@ export const routing = defineRouting({
       fr: '/outils/upscale',
       es: '/herramientas/upscale',
     },
+    '/tools/background-removal': {
+      en: '/tools/background-removal',
+      fr: '/outils/background-removal',
+      es: '/herramientas/background-removal',
+    },
     '/tools/character-builder': {
       en: '/tools/character-builder',
       fr: '/outils/character-builder',
