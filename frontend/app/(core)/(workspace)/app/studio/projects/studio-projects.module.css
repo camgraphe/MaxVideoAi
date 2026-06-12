@@ -10,8 +10,12 @@
   --studio-project-card-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
   --studio-project-selected-shadow: 0 0 0 1px #7c3aed, 0 18px 45px rgba(124, 58, 237, 0.14);
   --studio-project-accent: #7c3aed;
+  --studio-project-accent-2: #2563eb;
   --studio-project-accent-hover: #5b21b6;
   --studio-project-accent-soft: #ede9fe;
+  --studio-project-accent-border: rgba(124, 58, 237, 0.42);
+  --studio-project-accent-focus: rgba(139, 92, 246, 0.13);
+  --studio-project-on-accent: #ffffff;
   --studio-project-thumb-bg:
     radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.14), transparent 30%),
     linear-gradient(135deg, #f7f5ff, #eef7ff);
@@ -39,8 +43,12 @@
   --studio-project-card-shadow: 0 16px 42px rgba(0, 0, 0, 0.24);
   --studio-project-selected-shadow: 0 0 0 1px #8b5cf6, 0 18px 45px rgba(124, 58, 237, 0.22);
   --studio-project-accent: #a78bfa;
+  --studio-project-accent-2: #60a5fa;
   --studio-project-accent-hover: #c4b5fd;
   --studio-project-accent-soft: rgba(124, 58, 237, 0.18);
+  --studio-project-accent-border: rgba(167, 139, 250, 0.46);
+  --studio-project-accent-focus: rgba(167, 139, 250, 0.18);
+  --studio-project-on-accent: #050911;
   --studio-project-thumb-bg:
     radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.22), transparent 30%),
     linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
@@ -69,10 +77,10 @@
   align-items: center;
   gap: 9px;
   padding: 11px 15px;
-  border: 1px solid rgba(124, 58, 237, 0.18);
+  border: 1px solid var(--studio-project-accent-border);
   border-radius: 7px;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
-  color: #fff;
+  background: linear-gradient(135deg, var(--studio-project-accent), var(--studio-project-accent-2));
+  color: var(--studio-project-on-accent);
   box-shadow: 0 12px 24px rgba(124, 58, 237, 0.18);
   font-size: 12px;
   font-weight: 800;
@@ -199,8 +207,8 @@
 }
 
 .projectField input:focus {
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.13);
+  border-color: var(--studio-project-accent);
+  box-shadow: 0 0 0 4px var(--studio-project-accent-focus);
 }
 
 .projectField input:disabled {
@@ -248,7 +256,7 @@
 
 .templateCard:hover,
 .templateCard:focus-visible {
-  border-color: rgba(124, 58, 237, 0.55);
+  border-color: var(--studio-project-accent-border);
   box-shadow: var(--studio-project-card-shadow);
   outline: none;
   transform: translateY(-1px);
@@ -291,7 +299,7 @@
   justify-content: center;
   border-radius: 999px;
   background: var(--studio-project-accent);
-  color: #fff;
+  color: var(--studio-project-on-accent);
   box-shadow: 0 10px 18px rgba(124, 58, 237, 0.22);
 }
 
@@ -354,15 +362,15 @@
 
 .secondaryAction:hover,
 .secondaryAction:focus-visible {
-  border-color: rgba(124, 58, 237, 0.42);
+  border-color: var(--studio-project-accent-border);
   background: var(--studio-project-surface-hover);
   outline: none;
 }
 
 .primaryAction {
   border: 0;
-  background: linear-gradient(135deg, #7c3aed, #1463ff);
-  color: #fff;
+  background: linear-gradient(135deg, var(--studio-project-accent), var(--studio-project-accent-2));
+  color: var(--studio-project-on-accent);
   box-shadow: 0 18px 35px rgba(37, 99, 235, 0.2);
 }
 
@@ -425,7 +433,7 @@
 }
 
 .projectCardMain:focus-visible {
-  outline: 2px solid rgba(124, 58, 237, 0.4);
+  outline: 2px solid var(--studio-project-accent-border);
   outline-offset: 4px;
 }
 
@@ -510,7 +518,7 @@
   border: 1px solid var(--studio-project-border);
   border-radius: 10px;
   background: var(--studio-project-surface);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+  box-shadow: var(--studio-project-card-shadow);
   padding: 5px;
 }
 
@@ -605,7 +613,7 @@
   border: 1px solid var(--studio-project-border);
   border-radius: 14px;
   background: var(--studio-project-surface);
-  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
+  box-shadow: var(--studio-project-panel-shadow);
   color: var(--studio-project-text);
   padding: 22px;
 }
@@ -692,19 +700,19 @@
 
 .dialogPrimaryButton {
   border: 0;
-  background: #7c3aed;
-  color: #fff;
+  background: var(--studio-project-accent);
+  color: var(--studio-project-on-accent);
 }
 
 .dialogDangerButton {
   border: 0;
-  background: #dc2626;
-  color: #fff;
+  background: var(--studio-project-danger-strong);
+  color: var(--studio-project-on-accent);
 }
 
 .dialogSecondaryButton:hover,
 .dialogSecondaryButton:focus-visible {
-  border-color: rgba(124, 58, 237, 0.42);
+  border-color: var(--studio-project-accent-border);
   background: var(--studio-project-surface-hover);
   outline: none;
 }

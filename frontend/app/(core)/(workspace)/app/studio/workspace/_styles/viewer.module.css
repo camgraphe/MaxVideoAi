@@ -65,7 +65,7 @@
   border: 1px solid rgba(129, 140, 248, 0.26);
   border-radius: 7px;
   background: rgba(88, 28, 135, 0.32);
-  color: #c4b5fd;
+  color: var(--studio-accent-text);
   font-style: normal;
   font-size: 11px;
   font-weight: 760;
@@ -235,7 +235,7 @@
 .viewerPlaybackControls .viewerMarkButton {
   width: 30px;
   height: 30px;
-  color: #c4b5fd;
+  color: var(--studio-accent-text);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
   font-weight: 800;

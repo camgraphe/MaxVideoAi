@@ -52,7 +52,7 @@
   padding: 2px 7px;
   border-radius: 999px;
   background: var(--studio-bg-soft);
-  color: #93c5fd;
+  color: var(--studio-info-text);
   font-size: 10px;
   font-weight: 700;
 }
@@ -83,7 +83,7 @@
   flex: 1;
   border: 0;
   background: transparent;
-  color: #e5e7eb;
+  color: var(--studio-select-text);
   font: inherit;
   font-size: 12px;
   outline: none;
@@ -168,7 +168,7 @@
   min-width: 0;
   border: 1px solid var(--studio-border);
   background: var(--studio-surface);
-  color: #e5e7eb;
+  color: var(--studio-text);
   text-align: left;
 }
 

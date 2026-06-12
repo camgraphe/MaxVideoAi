@@ -64,7 +64,7 @@
 
 .exportCloseButton:hover {
   border-color: var(--studio-border);
-  color: #ffffff;
+  color: var(--studio-text-strong);
 }
 
 .exportDialogBody {
@@ -95,7 +95,7 @@
 }
 
 .exportSectionHeader span {
-  color: #8b5cf6;
+  color: var(--studio-primary);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -118,7 +118,7 @@
 }
 
 .exportRangeOptions input {
-  accent-color: #8b5cf6;
+  accent-color: var(--studio-primary);
 }
 
 .exportRangeOptions span {
@@ -181,7 +181,7 @@
 
 .exportPresetCardActive {
   border-color: rgba(139, 92, 246, 0.68);
-  background: rgba(88, 28, 135, 0.22);
+  background: color-mix(in srgb, var(--studio-primary) 16%, var(--studio-surface));
   box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.16);
 }
 
@@ -189,7 +189,7 @@
   width: 14px;
   height: 14px;
   margin: 0;
-  accent-color: #8b5cf6;
+  accent-color: var(--studio-primary);
 }
 
 .exportPresetCard span {
@@ -295,11 +295,11 @@
 }
 
 .exportServerCard[data-status="failed"] small {
-  color: #fecaca;
+  color: var(--studio-danger-text);
 }
 
 .exportServerCard[data-status="completed"] small {
-  color: #bbf7d0;
+  color: var(--studio-success-text);
 }
 
 .exportJobStatus {
@@ -314,23 +314,23 @@
 }
 
 .exportJobStatus span {
-  color: #a78bfa;
+  color: var(--studio-accent-text);
   font-size: 9px;
   font-weight: 840;
   text-transform: uppercase;
 }
 
 .exportJobStatus[data-status="rendering"] span {
-  color: #67e8f9;
+  color: var(--studio-info-text);
 }
 
 .exportJobStatus[data-status="completed"] span {
-  color: #86efac;
+  color: var(--studio-success-text);
 }
 
 .exportJobStatus[data-status="failed"] span,
 .exportJobStatus[data-status="canceled"] span {
-  color: #fca5a5;
+  color: var(--studio-danger-text);
 }
 
 .exportJobStatus strong {
@@ -372,14 +372,14 @@
   border: 1px solid rgba(45, 212, 191, 0.26);
   border-radius: 8px;
   background: rgba(20, 184, 166, 0.1);
-  color: #ccfbf1;
+  color: var(--studio-success-text);
   font-size: 11px;
   font-weight: 780;
   text-decoration: none;
 }
 
 .exportDownloadLink:hover {
-  color: #ffffff;
+  color: var(--studio-text-strong);
   text-decoration: underline;
 }
 
@@ -389,7 +389,7 @@
   border: 1px solid rgba(45, 212, 191, 0.2);
   border-radius: 8px;
   background: rgba(13, 148, 136, 0.12);
-  color: #ccfbf1;
+  color: var(--studio-success-text);
   font-size: 11px;
   line-height: 1.35;
 }

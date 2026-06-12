@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import {
   assertNoEditorClientErrors,
   canvasNodeCount,
@@ -22,6 +22,280 @@ type CanvasMarqueeBounds = {
   right: number;
   top: number;
 };
+
+type RgbaColor = [number, number, number, number];
+
+type ReadabilityMetrics = {
+  background: string;
+  backgroundLuminance: number;
+  color: string;
+  contrast: number;
+  textLuminance: number;
+};
+
+type CssVariableColorMetrics = {
+  backgroundColors: Array<{
+    color: RgbaColor;
+    name: string;
+    value: string;
+  }>;
+  foregroundColor: {
+    color: RgbaColor;
+    value: string;
+  };
+};
+
+function relativeLuminance(color: RgbaColor): number {
+  const [red, green, blue] = color.slice(0, 3).map((channel) => {
+    const value = channel / 255;
+    return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+function contrastRatio(color: RgbaColor, background: RgbaColor): number {
+  const foregroundLuminance = relativeLuminance(color);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+async function readabilityMetrics(locator: Locator): Promise<ReadabilityMetrics> {
+  const metrics = await locator.first().evaluate((element) => {
+    type BrowserRgbaColor = [number, number, number, number];
+
+    const parseCssColor = (value: string): BrowserRgbaColor => {
+      if (!value || value === 'transparent') return [0, 0, 0, 0];
+      const matches = value.match(/[\d.]+/g)?.map(Number) ?? [];
+      return [
+        matches[0] ?? 0,
+        matches[1] ?? matches[0] ?? 0,
+        matches[2] ?? matches[1] ?? matches[0] ?? 0,
+        matches[3] ?? 1,
+      ];
+    };
+
+    const composite = (foreground: BrowserRgbaColor, background: BrowserRgbaColor): BrowserRgbaColor => {
+      const alpha = foreground[3] + background[3] * (1 - foreground[3]);
+      if (alpha <= 0) return [0, 0, 0, 0];
+      return [
+        (foreground[0] * foreground[3] + background[0] * background[3] * (1 - foreground[3])) / alpha,
+        (foreground[1] * foreground[3] + background[1] * background[3] * (1 - foreground[3])) / alpha,
+        (foreground[2] * foreground[3] + background[2] * background[3] * (1 - foreground[3])) / alpha,
+        alpha,
+      ];
+    };
+
+    const elements: Element[] = [];
+    let current: Element | null = element;
+    while (current) {
+      elements.unshift(current);
+      current = current.parentElement;
+    }
+
+    let backgroundColor: BrowserRgbaColor = [255, 255, 255, 1];
+    for (const candidate of elements) {
+      backgroundColor = composite(parseCssColor(getComputedStyle(candidate).backgroundColor), backgroundColor);
+    }
+
+    const styles = getComputedStyle(element);
+    return {
+      background: `rgba(${backgroundColor.map((channel, index) => (index < 3 ? Math.round(channel) : Number(channel.toFixed(3)))).join(', ')})`,
+      backgroundColor,
+      color: styles.color,
+      colorValue: parseCssColor(styles.color),
+    };
+  });
+
+  return {
+    background: metrics.background,
+    backgroundLuminance: relativeLuminance(metrics.backgroundColor as RgbaColor),
+    color: metrics.color,
+    contrast: contrastRatio(metrics.colorValue as RgbaColor, metrics.backgroundColor as RgbaColor),
+    textLuminance: relativeLuminance(metrics.colorValue as RgbaColor),
+  };
+}
+
+async function expectReadable(locator: Locator, label: string, minimumContrast = 4.5): Promise<ReadabilityMetrics> {
+  await expect(locator.first(), `${label} should be visible before checking colors`).toBeVisible();
+  const metrics = await readabilityMetrics(locator);
+  expect(metrics.contrast, `${label} contrast: ${metrics.color} on ${metrics.background}`).toBeGreaterThanOrEqual(minimumContrast);
+  return metrics;
+}
+
+async function expectLightReadableSurface(locator: Locator, label: string): Promise<void> {
+  const metrics = await expectReadable(locator, label);
+  expect(metrics.backgroundLuminance, `${label} should not render as a dark zone in light mode`).toBeGreaterThan(0.58);
+  expect(metrics.textLuminance, `${label} should use dark text in light mode`).toBeLessThan(0.42);
+}
+
+async function expectDarkReadableSurface(locator: Locator, label: string): Promise<void> {
+  const metrics = await expectReadable(locator, label);
+  expect(metrics.backgroundLuminance, `${label} should use a dark theme background`).toBeLessThan(0.24);
+}
+
+async function cssVariableColorMetrics(
+  locator: Locator,
+  foregroundVariable: string,
+  backgroundVariables: string[]
+): Promise<CssVariableColorMetrics> {
+  return locator.first().evaluate(
+    (element, { backgroundVariables: evaluatedBackgroundVariables, foregroundVariable: evaluatedForegroundVariable }) => {
+      type BrowserRgbaColor = [number, number, number, number];
+
+      const parseCssColor = (value: string): BrowserRgbaColor => {
+        if (!value || value === 'transparent') return [0, 0, 0, 0];
+        const matches = value.match(/[\d.]+/g)?.map(Number) ?? [];
+        return [
+          matches[0] ?? 0,
+          matches[1] ?? matches[0] ?? 0,
+          matches[2] ?? matches[1] ?? matches[0] ?? 0,
+          matches[3] ?? 1,
+        ];
+      };
+
+      const resolveColor = (value: string) => {
+        const probe = document.createElement('span');
+        probe.style.color = value;
+        document.body.append(probe);
+        const resolvedValue = getComputedStyle(probe).color;
+        probe.remove();
+        return {
+          color: parseCssColor(resolvedValue),
+          value: resolvedValue,
+        };
+      };
+
+      const styles = getComputedStyle(element);
+
+      return {
+        backgroundColors: evaluatedBackgroundVariables.map((name) => ({
+          ...resolveColor(styles.getPropertyValue(name).trim()),
+          name,
+        })),
+        foregroundColor: resolveColor(styles.getPropertyValue(evaluatedForegroundVariable).trim()),
+      };
+    },
+    { backgroundVariables, foregroundVariable }
+  );
+}
+
+async function expectCssVariableContrast(
+  locator: Locator,
+  label: string,
+  foregroundVariable: string,
+  backgroundVariables: string[],
+  minimumContrast = 4.5
+): Promise<void> {
+  await expect(locator.first(), `${label} should be visible before checking theme colors`).toBeVisible();
+  const metrics = await cssVariableColorMetrics(locator, foregroundVariable, backgroundVariables);
+
+  for (const backgroundColor of metrics.backgroundColors) {
+    const contrast = contrastRatio(metrics.foregroundColor.color, backgroundColor.color);
+    expect(
+      contrast,
+      `${label} contrast: ${foregroundVariable} ${metrics.foregroundColor.value} on ${backgroundColor.name} ${backgroundColor.value}`
+    ).toBeGreaterThanOrEqual(minimumContrast);
+  }
+}
+
+async function expectActiveControlFillReadable(locator: Locator, label: string, minimumContrast = 4.5): Promise<void> {
+  await expect(locator.first(), `${label} should be visible before checking active colors`).toBeVisible();
+  const metrics = await locator.first().evaluate((element) => {
+    type BrowserRgbaColor = [number, number, number, number];
+
+    const parseCssColor = (value: string): BrowserRgbaColor => {
+      if (!value || value === 'transparent') return [0, 0, 0, 0];
+      const matches = value.match(/[\d.]+/g)?.map(Number) ?? [];
+      return [
+        matches[0] ?? 0,
+        matches[1] ?? matches[0] ?? 0,
+        matches[2] ?? matches[1] ?? matches[0] ?? 0,
+        matches[3] ?? 1,
+      ];
+    };
+
+    const composite = (foreground: BrowserRgbaColor, background: BrowserRgbaColor): BrowserRgbaColor => {
+      const alpha = foreground[3] + background[3] * (1 - foreground[3]);
+      if (alpha <= 0) return [0, 0, 0, 0];
+      return [
+        (foreground[0] * foreground[3] + background[0] * background[3] * (1 - foreground[3])) / alpha,
+        (foreground[1] * foreground[3] + background[1] * background[3] * (1 - foreground[3])) / alpha,
+        (foreground[2] * foreground[3] + background[2] * background[3] * (1 - foreground[3])) / alpha,
+        alpha,
+      ];
+    };
+
+    const colorValue = (color: BrowserRgbaColor) => {
+      const [red, green, blue, alpha] = color;
+      return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${Number(alpha.toFixed(3))})`;
+    };
+
+    const styles = getComputedStyle(element);
+    const ancestors: Element[] = [];
+    let current = element.parentElement;
+    while (current) {
+      ancestors.unshift(current);
+      current = current.parentElement;
+    }
+
+    let backgroundBehindElement: BrowserRgbaColor = [255, 255, 255, 1];
+    for (const candidate of ancestors) {
+      backgroundBehindElement = composite(parseCssColor(getComputedStyle(candidate).backgroundColor), backgroundBehindElement);
+    }
+
+    const backgroundUnderFill = composite(parseCssColor(styles.backgroundColor), backgroundBehindElement);
+    const gradientStopValues = styles.backgroundImage.match(/rgba?\([^)]+\)/g) ?? [];
+    const sampledFillColors = gradientStopValues.length
+      ? gradientStopValues.map((value, index) => {
+        const color = composite(parseCssColor(value), backgroundUnderFill);
+        return {
+          color,
+          source: `gradient stop ${index + 1}`,
+          value: colorValue(color),
+        };
+      })
+      : [{
+        color: backgroundUnderFill,
+        source: 'background color',
+        value: colorValue(backgroundUnderFill),
+      }];
+
+    const midpointFillColors = sampledFillColors.slice(0, -1).map((fillColor, index) => {
+      const nextFillColor = sampledFillColors[index + 1];
+      const color: BrowserRgbaColor = [
+        (fillColor.color[0] + nextFillColor.color[0]) / 2,
+        (fillColor.color[1] + nextFillColor.color[1]) / 2,
+        (fillColor.color[2] + nextFillColor.color[2]) / 2,
+        1,
+      ];
+
+      return {
+        color,
+        source: `${fillColor.source}/${nextFillColor.source} midpoint`,
+        value: colorValue(color),
+      };
+    });
+
+    return {
+      backgroundImage: styles.backgroundImage,
+      color: styles.color,
+      fillColors: [...sampledFillColors, ...midpointFillColors],
+      foregroundColor: parseCssColor(styles.color),
+    };
+  });
+
+  expect(metrics.fillColors.length, `${label} should expose an active fill color`).toBeGreaterThan(0);
+  for (const fillColor of metrics.fillColors) {
+    const contrast = contrastRatio(metrics.foregroundColor as RgbaColor, fillColor.color as RgbaColor);
+    expect(
+      contrast,
+      `${label} contrast: ${metrics.color} on ${fillColor.source} ${fillColor.value} from ${metrics.backgroundImage}`
+    ).toBeGreaterThanOrEqual(minimumContrast);
+  }
+}
 
 async function dropLocalFileOnCanvas(
   page: Page,
@@ -205,6 +479,70 @@ test('Studio projects uses localized copy', async ({ page, context }) => {
   await expect(page.getByRole('button', { name: 'Creer le projet' })).toBeVisible();
 });
 
+test('Studio projects dark theme keeps core surfaces readable', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const darkProject = {
+    id: 'project-theme-dark',
+    name: 'Dark Theme Cut',
+    createdAt: '2026-06-11T19:00:00.000Z',
+    updatedAt: '2026-06-11T19:19:00.000Z',
+    settings: {
+      aspectRatio: '16:9',
+      resolution: '1920x1080',
+      fps: 24,
+    },
+    canvasTemplateId: 'cinematic-scene',
+  };
+
+  await page.route('**/api/studio/projects', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, projects: [darkProject] }),
+    });
+  });
+  await page.addInitScript(() => {
+    window.localStorage.removeItem('maxvideoai.editor.projects.v1');
+    window.localStorage.setItem('maxvideoai.studio.theme.v1', 'dark');
+  });
+
+  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await dismissCookieBanner(page);
+
+  const shell = page.locator('[data-studio-theme="dark"]');
+  await expectDarkReadableSurface(shell, 'dark Studio projects shell');
+  await expectCssVariableContrast(
+    shell,
+    'dark Studio projects filled actions',
+    '--studio-project-on-accent',
+    ['--studio-project-accent', '--studio-project-accent-2', '--studio-project-danger-strong']
+  );
+  await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
+  await expect(page.locator('[class*="brandPill"]')).toBeVisible();
+  await expect(page.getByLabel('Project name')).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Canvas template' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Create project' })).toBeEnabled();
+  await expectDarkReadableSurface(page.locator('[aria-label="Create a new project"]').first(), 'dark create project panel');
+  await expectDarkReadableSurface(page.locator('[aria-label="Recent projects"]').first(), 'dark recent projects panel');
+  await expectReadable(page.getByRole('group', { name: 'Canvas template' }).getByRole('button').first(), 'dark project template card');
+
+  await page.getByRole('button', { name: 'Project actions for Dark Theme Cut' }).click();
+  await expectDarkReadableSurface(page.getByRole('menu', { name: 'Project actions for Dark Theme Cut' }), 'dark recent project action menu');
+  await page.getByRole('menuitem', { name: 'Rename' }).click();
+  const renameDialog = page.getByRole('dialog', { name: 'Rename project' });
+  await expectDarkReadableSurface(renameDialog, 'dark rename project dialog');
+  await expectReadable(renameDialog.getByRole('button', { name: 'Save name' }), 'dark rename project filled action');
+  await renameDialog.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.getByRole('button', { name: 'Project actions for Dark Theme Cut' }).click();
+  await page.getByRole('menuitem', { name: 'Delete' }).click();
+  const deleteDialog = page.getByRole('dialog', { name: 'Delete project' });
+  await expectDarkReadableSurface(deleteDialog, 'dark delete project dialog');
+  await expectReadable(deleteDialog.getByRole('button', { name: 'Delete project' }), 'dark delete project filled action');
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -267,7 +605,42 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   assertNoEditorClientErrors(errors);
 });
 
+test('Studio workspace dark theme keeps key editor surfaces readable', async ({ page }) => {
+  test.setTimeout(60_000);
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  const shell = page.locator('[data-studio-theme="dark"]');
+  await expectDarkReadableSurface(shell, 'dark Studio workspace shell');
+  await expectDarkReadableSurface(page.locator('[class*="editorTopbar"]').first(), 'dark Studio workspace topbar');
+  await expect(page.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toBeVisible();
+
+  await expectDarkReadableSurface(page.locator('[class*="canvasNavigator"]').first(), 'dark canvas map');
+  await expectDarkReadableSurface(page.locator('[class*="graphNode"]').first(), 'dark canvas node card');
+  await expectDarkReadableSurface(page.locator('[class*="nodeActionButton"]').first(), 'dark canvas node action button');
+
+  await switchEditorFocus(page, 'Viewer');
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  await expectDarkReadableSurface(projectMediaSidebar, 'dark project media sidebar');
+  await expectDarkReadableSurface(projectMediaSidebar.getByRole('searchbox', { name: 'Search media' }), 'dark project media search');
+  await expectDarkReadableSurface(projectMediaSidebar.locator('[data-project-media-card]').first(), 'dark project media card');
+  await expectDarkReadableSurface(page.getByTestId('editor-program-monitor'), 'dark viewer program monitor');
+  await expectDarkReadableSurface(page.locator('[class*="viewerProgramControlsPanel"]').first(), 'dark viewer controls');
+
+  await projectMediaSidebar.getByRole('button', { name: 'New sequence' }).click();
+  await expectDarkReadableSurface(page.getByRole('complementary', { name: 'Sequence settings' }), 'dark sequence inspector');
+  await expectActiveControlFillReadable(page.locator('[data-timeline-tool="select"]'), 'dark active timeline selection tool');
+  await expectActiveControlFillReadable(page.getByRole('button', { name: 'Toggle snapping' }), 'dark active snapping timeline control');
+  await page.getByRole('button', { name: 'Blade / Cut tool' }).click();
+  await expectActiveControlFillReadable(page.getByRole('button', { name: 'Blade / Cut tool' }), 'dark active timeline blade tool');
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('Studio workspace can switch to light appearance', async ({ page }) => {
+  test.setTimeout(60_000);
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -286,6 +659,53 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   });
   expect(shellColors.background).not.toBe('rgb(5, 9, 17)');
   expect(shellColors.text).not.toBe('rgb(238, 242, 255)');
+
+  await expectLightReadableSurface(page.locator('[data-studio-theme="light"]'), 'light Studio workspace shell');
+  await expectLightReadableSurface(page.getByRole('button', { name: 'Switch Studio to dark mode' }), 'light Studio theme toggle');
+  await expect(page.getByRole('button', { name: 'Open export dialog' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Canvas templates' }).click();
+  await expectLightReadableSurface(page.getByRole('dialog', { name: 'Canvas templates' }), 'light canvas templates popover');
+  await expectLightReadableSurface(page.getByLabel('Canvas template name'), 'light canvas template save input');
+  await page.getByRole('button', { name: 'Canvas templates' }).click();
+
+  await expectLightReadableSurface(page.locator('[class*="canvasNavigator"]').first(), 'light canvas map');
+  await expectLightReadableSurface(page.locator('[class*="graphNode"]').first(), 'light canvas node card');
+  await expectLightReadableSurface(page.locator('[class*="nodeActionButton"]').first(), 'light canvas node action button');
+
+  await switchEditorFocus(page, 'Viewer');
+  await expect(page.getByRole('complementary', { name: 'Project media library' })).toBeVisible();
+  await expectLightReadableSurface(page.getByRole('complementary', { name: 'Project media library' }), 'light project media sidebar');
+  await expectLightReadableSurface(page.getByRole('searchbox', { name: 'Search media' }), 'light project media search');
+  await expectLightReadableSurface(page.locator('[data-project-media-card]').first(), 'light project media card');
+  await expectLightReadableSurface(page.getByTestId('editor-program-monitor'), 'light viewer program monitor');
+  await expectLightReadableSurface(page.locator('[class*="viewerProgramControlsPanel"]').first(), 'light viewer controls');
+
+  await page.getByRole('button', { name: 'New folder' }).click();
+  const folderDialog = page.getByRole('dialog', { name: 'New folder' });
+  await expectLightReadableSurface(folderDialog, 'light project media folder dialog');
+  await expectLightReadableSurface(folderDialog.getByRole('textbox'), 'light project media folder input');
+  await folderDialog.getByRole('button', { name: 'Cancel' }).click();
+
+  await page.getByRole('button', { name: 'New sequence' }).click();
+  await expectLightReadableSurface(page.getByRole('complementary', { name: 'Sequence settings' }), 'light sequence inspector');
+
+  await page.getByRole('button', { name: 'Lock V1 track' }).click();
+  await expectLightReadableSurface(page.locator('[data-timeline-track-label="video"]'), 'light locked timeline track controls');
+  await expectLightReadableSurface(page.getByRole('button', { name: 'Blade / Cut tool' }), 'light timeline blade control');
+  await expectActiveControlFillReadable(page.locator('[data-timeline-tool="select"]'), 'light active timeline selection tool');
+  await expectActiveControlFillReadable(page.getByRole('button', { name: 'Toggle snapping' }), 'light active snapping timeline control');
+  await page.getByRole('button', { name: 'Blade / Cut tool' }).click();
+  await expectActiveControlFillReadable(page.getByRole('button', { name: 'Blade / Cut tool' }), 'light active timeline blade tool');
+
+  await page.getByRole('button', { name: 'Open export dialog' }).click();
+  const exportDialog = page.getByRole('dialog', { name: 'Export sequence' });
+  await expectLightReadableSurface(exportDialog, 'light export dialog');
+  await expectLightReadableSurface(page.locator('[class*="exportReadinessItem"]').first(), 'light export readiness item');
+  await expect(page.getByRole('button', { name: 'Export video' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close export dialog' }).click();
 
   assertNoEditorClientErrors(errors);
 });

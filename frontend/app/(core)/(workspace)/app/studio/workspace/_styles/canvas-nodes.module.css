@@ -22,7 +22,7 @@
     linear-gradient(180deg, var(--studio-bg-soft), var(--studio-surface)),
     var(--studio-bg-soft);
   box-shadow: 0 22px 70px var(--studio-node-shadow);
-  color: #e5e7eb;
+  color: var(--studio-text);
 }
 
 .sourceResizableNode {
@@ -200,7 +200,7 @@
 }
 
 .processingPreview {
-  color: #93c5fd;
+  color: var(--studio-info-text);
   border-color: rgba(59, 130, 246, 0.34);
   background:
     linear-gradient(135deg, rgba(37, 99, 235, 0.16), var(--studio-surface)),
@@ -330,7 +330,7 @@
 
 .noteNode {
   background:
-    linear-gradient(180deg, rgba(66, 56, 22, 0.9), var(--studio-surface)),
+    linear-gradient(180deg, color-mix(in srgb, #facc15 16%, var(--studio-surface)), var(--studio-surface)),
     var(--studio-bg-soft);
 }
 
@@ -339,7 +339,7 @@
   background:
     linear-gradient(135deg, rgba(250, 204, 21, 0.1), transparent 56%),
     var(--studio-bg);
-  color: #fef3c7;
+  color: var(--studio-text);
 }
 
 .sourceResizableNode .promptTextarea {
@@ -397,7 +397,7 @@
 
 .shotInputCapacity {
   flex: 0 0 auto;
-  color: #93c5fd;
+  color: var(--studio-info-text);
   font-size: 9px;
   font-weight: 800;
 }
@@ -412,7 +412,7 @@
 
 .shotCostLine {
   margin: -5px 12px 10px;
-  color: #a7f3d0;
+  color: var(--studio-success-text);
   font-size: 10px;
   font-weight: 700;
   text-align: right;
@@ -428,14 +428,14 @@
   margin: 0 12px 10px;
   border-radius: 8px;
   background: var(--studio-bg-soft);
-  color: #e5e7eb;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
 }
 
 .nodeActionButton:hover {
-  background: rgba(51, 65, 85, 0.92);
+  background: var(--studio-control-bg-hover);
 }
 
 .nodeActionButton:disabled {
@@ -459,16 +459,16 @@
 
 .status-ready,
 .status-completed {
-  color: #86efac;
+  color: var(--studio-success-text);
 }
 
 .status-incompatible,
 .status-failed {
-  color: #fda4af;
+  color: var(--studio-danger-text);
 }
 
 .status-generating {
-  color: #93c5fd;
+  color: var(--studio-info-text);
 }
 
 @keyframes processingPulse {

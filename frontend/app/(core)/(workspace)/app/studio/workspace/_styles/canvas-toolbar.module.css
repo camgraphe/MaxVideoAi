@@ -265,7 +265,7 @@
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-surface);
-  color: #e5e7eb;
+  color: var(--studio-select-text);
   padding: 0 10px;
   outline: none;
 }
@@ -284,7 +284,7 @@
 }
 
 .templateSaveForm button:hover {
-  background: rgba(51, 65, 85, 0.9);
+  background: var(--studio-control-bg-hover);
 }
 
 .userTemplateList {

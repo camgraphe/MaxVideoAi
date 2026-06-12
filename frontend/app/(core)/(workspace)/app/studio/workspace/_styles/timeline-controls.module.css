@@ -11,7 +11,7 @@
   border-radius: 7px;
   background: var(--studio-bg);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
-  color: #e5e7eb;
+  color: var(--studio-text);
   content: attr(data-tooltip);
   font-size: 10px;
   line-height: 1.2;
@@ -121,8 +121,9 @@
 
 .timelineToolButton.timelineToolButtonActive {
   border: 1px solid rgba(129, 140, 248, 0.82);
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.92), rgba(37, 99, 235, 0.78));
+  background: var(--studio-active-control-bg);
   box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+  color: var(--studio-on-primary);
 }
 
 .timelineZoomControl {
