@@ -4,6 +4,7 @@ import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
 import Image from 'next/image';
 import { StudioHeaderSession } from './StudioHeaderSession';
 import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
 
@@ -18,6 +19,7 @@ type WorkspaceEditorTopbarProps = {
   onFocusModeChange: (focusMode: WorkspaceFocusMode) => void;
   onOpenExportDialog: () => void;
   onToggleMockMode: () => void;
+  studioCopy: StudioCopy;
 };
 
 export function WorkspaceEditorTopbar({
@@ -29,6 +31,7 @@ export function WorkspaceEditorTopbar({
   onFocusModeChange,
   onOpenExportDialog,
   onToggleMockMode,
+  studioCopy,
 }: WorkspaceEditorTopbarProps) {
   return (
     <header className={styles.editorTopbar}>
@@ -43,11 +46,11 @@ export function WorkspaceEditorTopbar({
           priority
         />
         <div>
-          <p>MaxVideoAI Editor</p>
-          <span>Projects / {activeTemplateName} / Workspace</span>
+          <p>{studioCopy.topbar.productName}</p>
+          <span>{studioCopy.topbar.breadcrumbProjects} / {activeTemplateName} / {studioCopy.topbar.breadcrumbWorkspace}</span>
         </div>
       </div>
-      <div className={styles.modeSwitch} aria-label="Workspace view">
+      <div className={styles.modeSwitch} aria-label={studioCopy.topbar.workspaceViewLabel}>
         <button
           type="button"
           className={focusMode === 'canvas' ? styles.modeActive : ''}
@@ -58,7 +61,7 @@ export function WorkspaceEditorTopbar({
           }}
         >
           <GitBranch size={14} />
-          Canvas
+          {studioCopy.topbar.canvas}
         </button>
         <button
           type="button"
@@ -70,19 +73,19 @@ export function WorkspaceEditorTopbar({
           }}
         >
           <PanelRight size={14} />
-          Viewer
+          {studioCopy.topbar.viewer}
         </button>
       </div>
       <div className={styles.topbarRight}>
         <StudioHeaderSession onExitToProjects={onExitToProjects} />
         <div className={styles.topbarActions}>
-          <button type="button" className={styles.exportButton} onClick={onOpenExportDialog} aria-label="Open export dialog">
+          <button type="button" className={styles.exportButton} onClick={onOpenExportDialog} aria-label={studioCopy.topbar.exportAria}>
             <Download size={15} />
-            Export
+            {studioCopy.topbar.export}
           </button>
-          <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label="Toggle mock generation">
+          <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label={studioCopy.topbar.mockAria}>
             <Settings size={15} />
-            <span>{mockMode ? 'Mock' : 'Live'}</span>
+            <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
           </button>
         </div>
       </div>

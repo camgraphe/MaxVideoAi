@@ -15,6 +15,7 @@ import {
   describeCanvasTemplate,
   saveUserCanvasTemplateToApi,
 } from '../_state/workspace-api-persistence';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 function cloneWorkspaceJson<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -38,6 +39,7 @@ type UseWorkspaceCanvasTemplateActionsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
+  studioNotices: StudioCopy['notices'];
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
 };
 
@@ -54,6 +56,7 @@ export function useWorkspaceCanvasTemplateActions({
   setNotice,
   setSelectedNodeId,
   setUserCanvasTemplates,
+  studioNotices,
   userCanvasTemplates,
 }: UseWorkspaceCanvasTemplateActionsParams): {
   handleApplyCanvasTemplate: (templateId: WorkspaceTemplateId) => void;
@@ -114,7 +117,7 @@ export function useWorkspaceCanvasTemplateActions({
     (templateId: string) => {
       const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
       if (!template) {
-        setNotice('Canvas template not found.');
+        setNotice(studioNotices.canvasTemplateNotFound);
         return;
       }
       const nextNodes = cloneWorkspaceJson(template.nodes);
@@ -127,7 +130,7 @@ export function useWorkspaceCanvasTemplateActions({
       setCanvasRevision((value) => value + 1);
       setNotice(`${template.name} canvas template applied.`);
     },
-    [setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, userCanvasTemplates]
+    [setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, studioNotices.canvasTemplateNotFound, userCanvasTemplates]
   );
 
   const handleDuplicateUserCanvasTemplate = useCallback(

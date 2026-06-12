@@ -15,6 +15,7 @@ import type { useWorkspaceTimelinePlayback } from '../_hooks/useWorkspaceTimelin
 import type { useWorkspaceTimelineTrackActions } from '../_hooks/useWorkspaceTimelineTrackActions';
 import type { WorkspaceTimelineExportQualityPreset } from '../_lib/workspace-timeline-export';
 import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timeline-render';
+import type { StudioCopy } from '../../_lib/studio-copy';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
@@ -101,6 +102,7 @@ type WorkspaceEditorLayoutProps = {
   setIsProjectMediaPickerOpen: Dispatch<SetStateAction<boolean>>;
   setMockMode: Dispatch<SetStateAction<boolean>>;
   setTimelineInsertIntoClipEnabled: Dispatch<SetStateAction<boolean>>;
+  studioCopy: StudioCopy;
   timelineDurationSec: number;
   timelineInsertIntoClipEnabled: boolean;
   timelineItems: WorkspaceTimelineItem[];
@@ -146,6 +148,7 @@ export function WorkspaceEditorLayout({
   setIsProjectMediaPickerOpen,
   setMockMode,
   setTimelineInsertIntoClipEnabled,
+  studioCopy,
   timelineDurationSec,
   timelineInsertIntoClipEnabled,
   timelineItems,
@@ -186,6 +189,7 @@ export function WorkspaceEditorLayout({
         onFocusModeChange={setFocusMode}
         onOpenExportDialog={shell.handleOpenExportDialog}
         onToggleMockMode={() => setMockMode((value) => !value)}
+        studioCopy={studioCopy}
       />
 
       {notice ? (

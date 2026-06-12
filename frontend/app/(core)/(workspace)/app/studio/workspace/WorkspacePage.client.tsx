@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
+import { resolveStudioCopy } from '../_lib/studio-copy';
 import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
@@ -74,6 +76,8 @@ type WorkspacePageProps = {
 };
 
 export default function WorkspacePage({ projectId }: WorkspacePageProps) {
+  const { dictionary } = useI18n();
+  const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
   const defaultTemplate = useMemo(() => createStarterWorkspaceTemplate('product-ad'), []);
   const defaultSequence = useMemo(
     () => createWorkspaceSequenceRecord({
@@ -335,6 +339,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     setUserCanvasTemplates,
+    studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
     userCanvasTemplates,
@@ -357,6 +362,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setProjectMediaFolders,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
+    studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
   });
@@ -375,6 +381,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     setTimelinePreview,
+    studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
   });
@@ -460,6 +467,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       setIsProjectMediaPickerOpen={setIsProjectMediaPickerOpen}
       setMockMode={setMockMode}
       setTimelineInsertIntoClipEnabled={setTimelineInsertIntoClipEnabled}
+      studioCopy={studioCopy}
       timelineDurationSec={timelineDurationSec}
       timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
       timelineItems={timelineItems}

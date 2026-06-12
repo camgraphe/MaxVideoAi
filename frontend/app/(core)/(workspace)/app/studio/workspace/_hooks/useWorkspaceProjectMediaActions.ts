@@ -12,6 +12,7 @@ import type {
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 function createProjectMediaFolderId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -37,6 +38,7 @@ type UseWorkspaceProjectMediaActionsParams = {
   setProjectMediaFolders: Dispatch<SetStateAction<WorkspaceProjectMediaFolder[]>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
+  studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
 };
@@ -58,6 +60,7 @@ export function useWorkspaceProjectMediaActions({
   setProjectMediaFolders,
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
+  studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceProjectMediaActionsParams): {
@@ -146,21 +149,21 @@ export function useWorkspaceProjectMediaActions({
     (assetId: string) => {
       const asset = projectAssets.find((candidate) => candidate.id === assetId);
       if (!asset) {
-        setNotice('Project media asset not found.');
+        setNotice(studioNotices.projectMediaAssetNotFound);
         return;
       }
       if (typeof window !== 'undefined' && !window.confirm(`Delete "${asset.filename}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
       setProjectAssets((current) => current.filter((candidate) => candidate.id !== assetId));
       setNotice(`${asset.filename} removed from Project media.`);
     },
-    [projectAssets, setNotice, setProjectAssets]
+    [projectAssets, setNotice, setProjectAssets, studioNotices.projectMediaAssetNotFound]
   );
 
   const handleDeleteGeneratedClip = useCallback(
     (nodeId: string) => {
       const node = nodes.find((candidate) => candidate.id === nodeId);
       if (!node?.data.output) {
-        setNotice('Generated clip not found.');
+        setNotice(studioNotices.generatedClipNotFound);
         return;
       }
       if (typeof window !== 'undefined' && !window.confirm(`Delete "${node.data.title}" from Project media? Timeline clips already placed will stay in the edit.`)) return;
@@ -179,7 +182,7 @@ export function useWorkspaceProjectMediaActions({
       );
       setNotice(`${node.data.title} removed from Project media.`);
     },
-    [nodes, setNodes, setNotice]
+    [nodes, setNodes, setNotice, studioNotices.generatedClipNotFound]
   );
 
   const handleCreateProjectMediaFolder = useCallback((requestedName?: string) => {
@@ -200,7 +203,7 @@ export function useWorkspaceProjectMediaActions({
     (folderId: string) => {
       const folder = projectMediaFolders.find((candidate) => candidate.id === folderId);
       if (!folder) {
-        setNotice('Project media folder not found.');
+        setNotice(studioNotices.projectMediaFolderNotFound);
         return;
       }
       if (typeof window !== 'undefined' && !window.confirm(`Delete "${folder.name}" from Project media?`)) return;
@@ -221,14 +224,14 @@ export function useWorkspaceProjectMediaActions({
       }));
       setNotice(`${folder.name} folder deleted from Project media.`);
     },
-    [projectMediaFolders, setNodes, setNotice, setProjectAssets, setProjectMediaFolders]
+    [projectMediaFolders, setNodes, setNotice, setProjectAssets, setProjectMediaFolders, studioNotices.projectMediaFolderNotFound]
   );
 
   const handleRenameProjectMediaFolder = useCallback(
     (folderId: string, requestedName: string) => {
       const folder = projectMediaFolders.find((candidate) => candidate.id === folderId);
       if (!folder) {
-        setNotice('Project media folder not found.');
+        setNotice(studioNotices.projectMediaFolderNotFound);
         return;
       }
       const name = requestedName.trim();
@@ -240,14 +243,14 @@ export function useWorkspaceProjectMediaActions({
       )));
       setNotice(`${folder.name} renamed to ${name}.`);
     },
-    [projectMediaFolders, setNotice, setProjectMediaFolders]
+    [projectMediaFolders, setNotice, setProjectMediaFolders, studioNotices.projectMediaFolderNotFound]
   );
 
   const handleMoveProjectAssetToFolder = useCallback(
     (assetId: string, folderId: string | null) => {
       const asset = projectAssets.find((candidate) => candidate.id === assetId);
       if (!asset) {
-        setNotice('Project media asset not found.');
+        setNotice(studioNotices.projectMediaAssetNotFound);
         return;
       }
       const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
@@ -256,14 +259,14 @@ export function useWorkspaceProjectMediaActions({
       )));
       setNotice(`${asset.filename} moved to ${folderName}.`);
     },
-    [projectAssets, projectMediaFolders, setNotice, setProjectAssets]
+    [projectAssets, projectMediaFolders, setNotice, setProjectAssets, studioNotices.projectMediaAssetNotFound]
   );
 
   const handleMoveGeneratedClipToFolder = useCallback(
     (nodeId: string, folderId: string | null) => {
       const node = nodes.find((candidate) => candidate.id === nodeId);
       if (!node?.data.output) {
-        setNotice('Generated clip not found.');
+        setNotice(studioNotices.generatedClipNotFound);
         return;
       }
       const folderName = folderId ? projectMediaFolders.find((folder) => folder.id === folderId)?.name ?? 'folder' : 'Project media';
@@ -282,7 +285,7 @@ export function useWorkspaceProjectMediaActions({
       }));
       setNotice(`${node.data.title} moved to ${folderName}.`);
     },
-    [nodes, projectMediaFolders, setNodes, setNotice]
+    [nodes, projectMediaFolders, setNodes, setNotice, studioNotices.generatedClipNotFound]
   );
 
   const handleDropProjectAssetToTimeline = useCallback(

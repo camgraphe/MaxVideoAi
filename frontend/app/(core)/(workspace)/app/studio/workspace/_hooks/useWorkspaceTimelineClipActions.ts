@@ -21,6 +21,7 @@ import type {
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type UseWorkspaceTimelineClipActionsParams = {
   applyTimelineSelection: (itemIds: string[]) => void;
@@ -36,6 +37,7 @@ type UseWorkspaceTimelineClipActionsParams = {
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
   setTimelinePreview: Dispatch<SetStateAction<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>>;
+  studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
 };
@@ -54,6 +56,7 @@ export function useWorkspaceTimelineClipActions({
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
   setTimelinePreview,
+  studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceTimelineClipActionsParams): {
@@ -71,20 +74,20 @@ export function useWorkspaceTimelineClipActions({
     (itemId: string, direction: -1 | 1) => {
       setActiveEditorSurface('timeline');
       if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-        setNotice('Unlock the track before moving clips.');
+        setNotice(studioNotices.unlockBeforeMoving);
         return;
       }
       handleSelectTimelineItem(itemId, 'focus');
       commitTimelineItems((current) => moveWorkspaceTimelineItem(current, itemId, direction));
     },
-    [commitTimelineItems, handleSelectTimelineItem, lockedTimelineTracks, setActiveEditorSurface, setNotice, timelineItemsRef]
+    [commitTimelineItems, handleSelectTimelineItem, lockedTimelineTracks, setActiveEditorSurface, setNotice, studioNotices.unlockBeforeMoving, timelineItemsRef]
   );
 
   const handleCutTimelineItem = useCallback(
     (itemId: string, splitOffsetSec?: number) => {
       setActiveEditorSurface('timeline');
       if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-        setNotice('Unlock the track before cutting clips.');
+        setNotice(studioNotices.unlockBeforeCutting);
         return;
       }
       const currentItems = timelineItemsRef.current;
@@ -103,6 +106,7 @@ export function useWorkspaceTimelineClipActions({
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
+      studioNotices.unlockBeforeCutting,
       timelineItemsRef,
     ]
   );
@@ -113,7 +117,7 @@ export function useWorkspaceTimelineClipActions({
       const nextSelectedItemIds = itemIds?.length ? uniqueTimelineSelectionIds(itemIds) : [itemId];
       const currentItems = timelineItemsRef.current;
       if ((nextTrack && lockedTimelineTracks.includes(nextTrack)) || timelineSelectionTouchesLockedTrack(currentItems, nextSelectedItemIds, lockedTimelineTracks)) {
-        setNotice('Unlock the track before moving clips.');
+        setNotice(studioNotices.unlockBeforeMoving);
         setIsTimelinePlaying(false);
         return;
       }
@@ -143,6 +147,7 @@ export function useWorkspaceTimelineClipActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioNotices.unlockBeforeMoving,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
     ]
@@ -152,7 +157,7 @@ export function useWorkspaceTimelineClipActions({
     (itemId: string, edge: WorkspaceTimelineTrimEdge, nextStartSec: number, nextDurationSec: number, mode: WorkspaceTimelineTrimMode) => {
       setActiveEditorSurface('timeline');
       if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, [itemId], lockedTimelineTracks)) {
-        setNotice('Unlock the track before trimming clips.');
+        setNotice(studioNotices.unlockBeforeTrimming);
         return;
       }
       applyTimelineSelection([itemId]);
@@ -177,6 +182,7 @@ export function useWorkspaceTimelineClipActions({
       setIsTimelinePlaying,
       setNotice,
       setPlayheadSec,
+      studioNotices.unlockBeforeTrimming,
       timelineItemsRef,
     ]
   );
@@ -199,7 +205,7 @@ export function useWorkspaceTimelineClipActions({
       setIsTimelinePlaying(false);
       commitTimelineItems((current) => unlinkWorkspaceTimelineSelection(current, itemIds));
       applyTimelineSelection(itemIds);
-      setNotice('Selected timeline clips unlinked.');
+      setNotice(studioNotices.selectedClipsUnlinked);
     },
     [
       applyTimelineSelection,
@@ -208,6 +214,7 @@ export function useWorkspaceTimelineClipActions({
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
+      studioNotices.selectedClipsUnlinked,
       timelineItemsRef,
     ]
   );
@@ -223,7 +230,7 @@ export function useWorkspaceTimelineClipActions({
       setIsTimelinePlaying(false);
       commitTimelineItems((current) => linkWorkspaceTimelineSelection(current, itemIds, `manual-link-${Date.now().toString(36)}`));
       applyTimelineSelection(itemIds);
-      setNotice('Selected timeline clips linked.');
+      setNotice(studioNotices.selectedClipsLinked);
     },
     [
       applyTimelineSelection,
@@ -232,6 +239,7 @@ export function useWorkspaceTimelineClipActions({
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
+      studioNotices.selectedClipsLinked,
       timelineItemsRef,
     ]
   );
@@ -255,7 +263,7 @@ export function useWorkspaceTimelineClipActions({
           : [];
       if (!selectedItemIds.length) return;
       if (timelineSelectionTouchesLockedTrack(currentItems, selectedItemIds, lockedTimelineTracks)) {
-        setNotice('Unlock the track before deleting clips.');
+        setNotice(studioNotices.unlockBeforeDeleting);
         return;
       }
       const selectedItem = currentItems.find((item) => item.id === selectedItemIds[0]);
@@ -278,6 +286,7 @@ export function useWorkspaceTimelineClipActions({
       setIsTimelinePlaying,
       setNotice,
       setPlayheadSec,
+      studioNotices.unlockBeforeDeleting,
       timelineItemsRef,
     ]
   );

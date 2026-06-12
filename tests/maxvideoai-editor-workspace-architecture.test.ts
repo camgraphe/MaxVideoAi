@@ -550,7 +550,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceEditorTopbarSource, /brandMark[\s\S]*>\s*M\s*</, 'editor header should not render a placeholder M logo');
   assert.match(shellStyleSource, /\.brandLogo/, 'editor logo should be styled by isolated editor shell CSS');
   assert.match(workspaceEditorTopbarSource, /focusMode === 'viewer'/, 'top switch should expose a Viewer mode instead of a second Timeline mode');
-  assert.match(workspaceEditorTopbarSource, />\s*Viewer\s*</, 'top switch should label the montage surface Viewer');
+  assert.match(workspaceEditorTopbarSource, /studioCopy\.topbar\.viewer/, 'top switch should label the montage surface from localized Studio copy');
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
   assert.doesNotMatch(workspaceSource, /HeaderBar|AppSidebar|WorkspaceChrome/, 'editor chrome should not inherit app shell chrome');
   assert.doesNotMatch(workspaceSource, /selected:\s*node\.id === selectedNodeId/, 'orchestrator should not manually control React Flow selected flags');

@@ -18,6 +18,7 @@ import type {
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
 import { filterRenderableWorkspaceEdges } from '../_lib/workspace-render-edges';
+import type { StudioCopy } from '../../_lib/studio-copy';
 import type {
   WorkspaceEditorSurface,
   WorkspaceFocusMode,
@@ -53,6 +54,7 @@ type UseWorkspaceCanvasControllerParams = {
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
+  studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
@@ -87,6 +89,7 @@ export function useWorkspaceCanvasController({
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
   setUserCanvasTemplates,
+  studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
   userCanvasTemplates,
@@ -198,6 +201,7 @@ export function useWorkspaceCanvasController({
     setNotice,
     setSelectedNodeId,
     setUserCanvasTemplates,
+    studioNotices,
     userCanvasTemplates,
   });
 
