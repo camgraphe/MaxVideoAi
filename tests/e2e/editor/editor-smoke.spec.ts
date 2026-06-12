@@ -173,6 +173,13 @@ test.beforeEach(async ({ page }) => {
   await mockStudioPersistenceApi(page);
 });
 
+test('Studio projects uses localized copy', async ({ page, context }) => {
+  await context.addCookies([{ name: 'NEXT_LOCALE', value: 'fr', domain: 'localhost', path: '/' }]);
+  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('heading', { name: 'Projets Studio' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Creer le projet' })).toBeVisible();
+});
+
 test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
