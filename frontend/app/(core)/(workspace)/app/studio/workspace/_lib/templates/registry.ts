@@ -1,4 +1,5 @@
 import type { WorkspaceTemplate, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../workspace-types';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 import { createCharacterDialogueWorkspaceTemplate } from './character-dialogue';
 import { createCinematicSceneWorkspaceTemplate } from './cinematic-scene';
 import { createDevBlocksWorkspaceTemplate } from './dev-blocks';
@@ -64,7 +65,8 @@ export const WORKSPACE_TEMPLATE_SUMMARIES: WorkspaceTemplateSummary[] = [
 ];
 
 
-type WorkspaceTemplateBuilder = (summary: WorkspaceTemplateSummary) => WorkspaceTemplate;
+export type WorkspaceTemplateBuildCopy = StudioCopy['canvas']['nodes'];
+type WorkspaceTemplateBuilder = (summary: WorkspaceTemplateSummary, copy?: WorkspaceTemplateBuildCopy) => WorkspaceTemplate;
 
 function requireWorkspaceTemplateSummary(templateId: WorkspaceTemplateId): WorkspaceTemplateSummary {
   const summary = WORKSPACE_TEMPLATE_SUMMARIES.find((entry) => entry.id === templateId);
@@ -73,16 +75,16 @@ function requireWorkspaceTemplateSummary(templateId: WorkspaceTemplateId): Works
 }
 
 export const WORKSPACE_TEMPLATE_REGISTRY: Record<WorkspaceTemplateId, WorkspaceTemplateBuilder> = {
-  'product-ad': () => createProductAdWorkspaceTemplate(),
-  'dev-blocks': () => createDevBlocksWorkspaceTemplate(),
+  'product-ad': (_summary, copy) => createProductAdWorkspaceTemplate(copy),
+  'dev-blocks': (_summary, copy) => createDevBlocksWorkspaceTemplate(copy),
   'character-dialogue': createCharacterDialogueWorkspaceTemplate,
   'storyboard-to-video': createStoryboardToVideoWorkspaceTemplate,
   'ugc-ad': createUgcAdWorkspaceTemplate,
   'cinematic-scene': createCinematicSceneWorkspaceTemplate,
 };
 
-export function createStarterWorkspaceTemplate(templateId: WorkspaceTemplateId): WorkspaceTemplate {
+export function createStarterWorkspaceTemplate(templateId: WorkspaceTemplateId, copy?: WorkspaceTemplateBuildCopy): WorkspaceTemplate {
   const summary = requireWorkspaceTemplateSummary(templateId);
   const builder = WORKSPACE_TEMPLATE_REGISTRY[summary.id] ?? WORKSPACE_TEMPLATE_REGISTRY['product-ad'];
-  return builder(summary);
+  return builder(summary, copy);
 }

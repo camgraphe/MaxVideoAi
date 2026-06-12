@@ -10,8 +10,10 @@ import {
   type TimelineExternalDropPreview,
 } from '../../_lib/timeline/timeline-external-drop';
 import type { WorkspaceTimelineItem, WorkspaceTimelineTrack } from '../../_lib/workspace-types';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type UseTimelineExternalDropOptions = {
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
   isInsertIntoClipEnabled: boolean;
   items: WorkspaceTimelineItem[];
   lockedTrackSet: ReadonlySet<WorkspaceTimelineTrack>;
@@ -23,6 +25,7 @@ type UseTimelineExternalDropOptions = {
 };
 
 export function useTimelineExternalDrop({
+  canvasNodeCopy,
   isInsertIntoClipEnabled,
   items,
   lockedTrackSet,
@@ -39,6 +42,7 @@ export function useTimelineExternalDrop({
     if ((!payload?.nodeId && !payload?.assetId) || !payload.mediaKind) return null;
     const rawStartSec = secondsFromTimelineElement(event.clientX, event.currentTarget);
     const preview = resolveTimelineExternalDropPreview({
+      canvasNodeCopy,
       isInsertIntoClipEnabled,
       items,
       lockedTracks: lockedTrackSet,
@@ -51,7 +55,7 @@ export function useTimelineExternalDrop({
     event.dataTransfer.dropEffect = preview.isValid ? 'copy' : 'none';
     setExternalDropPreview(preview);
     return { payload, preview };
-  }, [isInsertIntoClipEnabled, items, lockedTrackSet, secondsFromTimelineElement]);
+  }, [canvasNodeCopy, isInsertIntoClipEnabled, items, lockedTrackSet, secondsFromTimelineElement]);
 
   const handleExternalDropOver = useCallback((event: ReactDragEvent<HTMLDivElement>, track: WorkspaceTimelineTrack) => {
     updateExternalDropPreview(event, track);

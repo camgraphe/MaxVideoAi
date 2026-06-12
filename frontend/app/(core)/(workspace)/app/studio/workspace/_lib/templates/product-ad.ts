@@ -1,6 +1,12 @@
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceTemplate, WorkspaceTimelineItem } from '../workspace-types';
 import { WORKSPACE_DEMO_AUDIO_URL } from '../workspace-library-assets';
+import {
+  generatedCopyReference,
+  generatedTextReference,
+  localizeWorkspaceTemplateGeneratedState,
+} from '../workspace-generated-copy';
 import { createWorkspaceEdge, shotSettings } from './template-core';
+import type { WorkspaceTemplateBuildCopy } from './registry';
 
 const PRODUCT_AD_SHOT_01_DURATION_SEC = 5;
 const PRODUCT_AD_SHOT_02_DURATION_SEC = 8;
@@ -12,6 +18,9 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'output-01',
       track: 'video',
       title: 'Shot 01 - Hero Reveal',
+      generatedCopy: {
+        title: generatedTextReference('Shot 01 - Hero Reveal'),
+      },
       durationSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       startSec: 0,
       sourceStartSec: 0,
@@ -28,6 +37,9 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'output-02',
       track: 'video',
       title: 'Shot 02 - Macro Details',
+      generatedCopy: {
+        title: generatedTextReference('Shot 02 - Macro Details'),
+      },
       durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
       startSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       sourceStartSec: 0,
@@ -45,6 +57,9 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'output-02',
       track: 'audio',
       title: 'Shot 02 - Macro Details Audio',
+      generatedCopy: {
+        title: generatedTextReference('Shot 02 - Macro Details Audio'),
+      },
       durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC,
       startSec: PRODUCT_AD_SHOT_01_DURATION_SEC,
       sourceStartSec: 0,
@@ -70,8 +85,7 @@ function productAdTimeline(): WorkspaceTimelineItem[] {
   ];
 }
 
-
-export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
+export function createProductAdWorkspaceTemplate(copy?: WorkspaceTemplateBuildCopy): WorkspaceTemplate {
   const nodes: WorkspaceGraphNode[] = [
     {
       id: 'asset-product-image',
@@ -82,6 +96,9 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Product Image',
         subtitle: 'chrono_watch.png',
         accent: '#8b5cf6',
+        generatedCopy: {
+          title: generatedCopyReference('templateProductImage'),
+        },
         asset: {
           id: 'product-image',
           kind: 'image',
@@ -103,6 +120,9 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Style Reference',
         subtitle: 'product_turntable.mp4',
         accent: '#d946ef',
+        generatedCopy: {
+          title: generatedCopyReference('templateStyleReference'),
+        },
         asset: {
           id: 'style-video',
           kind: 'video',
@@ -124,6 +144,10 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Camera Movement',
         subtitle: 'camera_move.txt',
         accent: '#38bdf8',
+        generatedCopy: {
+          title: generatedCopyReference('templateCameraMovement'),
+          promptText: generatedCopyReference('templateProductAdCameraPromptText'),
+        },
         promptRole: 'camera',
         promptText: 'Smooth cinematic orbit around product, slow push in, premium macro lighting.',
         sourceHandles: ['prompt'],
@@ -138,6 +162,9 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Audio Reference',
         subtitle: 'ambient_moody.mp3',
         accent: '#22c55e',
+        generatedCopy: {
+          title: generatedCopyReference('templateAudioReference'),
+        },
         asset: {
           id: 'ambient-music',
           kind: 'audio',
@@ -158,6 +185,11 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 01',
         subtitle: 'Hero Reveal',
         accent: '#8b5cf6',
+        generatedCopy: {
+          title: generatedCopyReference('templateShotName', { index: '01' }),
+          subtitle: generatedCopyReference('templateHeroReveal'),
+          shotOutputName: generatedCopyReference('templateHeroReveal'),
+        },
         shot: shotSettings({ outputName: 'Hero Reveal', modelId: 'kling-3-pro', durationSec: PRODUCT_AD_SHOT_01_DURATION_SEC }),
         targetHandles: ['prompt', 'start_image', 'reference', 'camera', 'previous_shot'],
         sourceHandles: ['generated_output'],
@@ -172,6 +204,9 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Output 01',
         subtitle: '5s · 16:9',
         accent: '#f97316',
+        generatedCopy: {
+          title: generatedCopyReference('templateOutputName', { index: '01' }),
+        },
         output: {
           kind: 'video',
           modelId: 'kling-3-pro',
@@ -199,6 +234,11 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 02',
         subtitle: 'Macro Details',
         accent: '#3b82f6',
+        generatedCopy: {
+          title: generatedCopyReference('templateShotName', { index: '02' }),
+          subtitle: generatedCopyReference('templateMacroDetails'),
+          shotOutputName: generatedCopyReference('templateMacroDetails'),
+        },
         shot: shotSettings({ outputName: 'Macro Details', modelId: 'veo-3-1', durationSec: PRODUCT_AD_SHOT_02_DURATION_SEC }),
         targetHandles: ['prompt', 'start_image', 'reference', 'camera', 'previous_shot'],
         sourceHandles: ['generated_output'],
@@ -213,6 +253,9 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Output 02',
         subtitle: '8s · 16:9',
         accent: '#3b82f6',
+        generatedCopy: {
+          title: generatedCopyReference('templateOutputName', { index: '02' }),
+        },
         output: {
           kind: 'video',
           modelId: 'veo-3-1',
@@ -241,6 +284,11 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 03',
         subtitle: 'Exploded View',
         accent: '#22c55e',
+        generatedCopy: {
+          title: generatedCopyReference('templateShotName', { index: '03' }),
+          subtitle: generatedCopyReference('templateExplodedView'),
+          shotOutputName: generatedCopyReference('templateExplodedView'),
+        },
         shot: shotSettings({ outputName: 'Exploded View', modelId: 'veo-3-1', durationSec: 7 }),
         targetHandles: ['prompt', 'start_image', 'reference', 'camera', 'previous_shot'],
         sourceHandles: ['generated_output'],
@@ -255,6 +303,11 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Shot 04',
         subtitle: 'Final Packshot',
         accent: '#f97316',
+        generatedCopy: {
+          title: generatedCopyReference('templateShotName', { index: '04' }),
+          subtitle: generatedCopyReference('templateFinalPackshot'),
+          shotOutputName: generatedCopyReference('templateFinalPackshot'),
+        },
         shot: shotSettings({ outputName: 'Final Packshot', modelId: 'kling-3-pro', durationSec: 7 }),
         targetHandles: ['prompt', 'start_image', 'reference', 'logo', 'camera', 'previous_shot', 'narration'],
         sourceHandles: ['generated_output'],
@@ -289,6 +342,10 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Voice Over',
         subtitle: 'vo_final.txt',
         accent: '#14b8a6',
+        generatedCopy: {
+          title: generatedCopyReference('templateVoiceOver'),
+          promptText: generatedCopyReference('templateProductAdVoiceoverPromptText'),
+        },
         promptRole: 'narration',
         promptText: 'Precision in motion. A modern chronograph built for every second that matters.',
         sourceHandles: ['prompt'],
@@ -316,12 +373,11 @@ export function createProductAdWorkspaceTemplate(): WorkspaceTemplate {
     createWorkspaceEdge({ source: 'prompt-voiceover', target: 'shot-04', sourceHandle: 'prompt', targetHandle: 'narration', kind: 'narration' }),
   ];
 
-  return {
+  return localizeWorkspaceTemplateGeneratedState({
     id: 'product-ad',
     name: 'Product Ad',
     nodes,
     edges,
     timelineItems: productAdTimeline(),
-  };
+  }, copy);
 }
-

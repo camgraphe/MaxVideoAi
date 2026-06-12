@@ -304,6 +304,7 @@ export function WorkspaceTimeline({
     handleExternalDrop,
     handleExternalDropOver,
   } = useTimelineExternalDrop({
+    canvasNodeCopy,
     isInsertIntoClipEnabled,
     items,
     lockedTrackSet,
@@ -474,6 +475,7 @@ export function WorkspaceTimeline({
       </div>
       <TimelineContextMenus
         copy={copy}
+        canvasNodeCopy={canvasNodeCopy}
         clipMenu={clipMenu}
         onClipMenuAction={handleClipContextMenuAction}
         onTrackMenuAction={handleTrackContextMenuAction}

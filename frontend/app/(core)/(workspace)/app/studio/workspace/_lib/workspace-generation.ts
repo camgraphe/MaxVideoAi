@@ -13,7 +13,15 @@ import {
   workspaceAudioEnabledForRequest,
 } from './workspace-capabilities';
 import { WORKSPACE_EDGE_COLORS, createWorkspaceEdge } from './workspace-templates';
-import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
+import {
+  DEFAULT_STUDIO_COPY,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
+import {
+  localizeWorkspacePromptText,
+  localizeWorkspaceShotOutputName,
+  workspaceOutputNodeTitleDataForShot,
+} from './workspace-generated-copy';
 
 type WorkspaceGenerationMode = 'real' | 'mock';
 type WorkspaceShotGenerateRequest = Parameters<typeof runGenerate>[0] & {
@@ -52,10 +60,22 @@ function findSourceNodes(params: {
     .filter((node): node is WorkspaceGraphNode => Boolean(node));
 }
 
-function textFromKinds(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[], shotNodeId: string, kinds: WorkspaceEdgeKind[]): string[] {
+function textFromKinds(
+  nodes: WorkspaceGraphNode[],
+  edges: WorkspaceGraphEdge[],
+  shotNodeId: string,
+  kinds: WorkspaceEdgeKind[],
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): string[] {
   return kinds.flatMap((kind) =>
     findSourceNodes({ nodes, edges, shotNodeId, kind })
-      .map((node) => (typeof node.data.promptText === 'string' ? node.data.promptText.trim() : ''))
+      .map((node) => {
+        if (typeof node.data.promptText !== 'string') return '';
+        const promptText = canvasNodeCopy
+          ? localizeWorkspacePromptText(node, canvasNodeCopy) ?? node.data.promptText
+          : node.data.promptText;
+        return promptText.trim();
+      })
       .filter(Boolean)
   );
 }
@@ -108,11 +128,40 @@ function connectedInputKinds(edges: WorkspaceGraphEdge[], shotNodeId: string): W
     .filter((kind): kind is WorkspaceEdgeKind => typeof kind === 'string');
 }
 
-function buildPrompt(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[], shotNode: WorkspaceGraphNode): string {
-  const shot = shotNode.data.shot as WorkspaceShotSettings;
-  const promptParts = textFromKinds(nodes, edges, shotNode.id, ['prompt', 'style', 'camera', 'dialogue', 'narration']);
+function buildPrompt(
+  nodes: WorkspaceGraphNode[],
+  edges: WorkspaceGraphEdge[],
+  shotNode: WorkspaceGraphNode,
+  settings: WorkspaceShotSettings,
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): string {
+  const promptParts = textFromKinds(nodes, edges, shotNode.id, ['prompt', 'style', 'camera', 'dialogue', 'narration'], canvasNodeCopy);
   if (promptParts.length) return promptParts.join('\n\n');
-  return `${shot.outputName}. Premium AI video shot for a polished MaxVideoAI project.`;
+  const outputName = canvasNodeCopy ? localizeWorkspaceShotOutputName(shotNode, canvasNodeCopy) : settings.outputName;
+  return `${outputName}. Premium AI video shot for a polished MaxVideoAI project.`;
+}
+
+export function prepareWorkspaceShotGenerationInputs(params: {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+  shotNode: WorkspaceGraphNode;
+  settings: WorkspaceShotSettings;
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
+}): {
+  outputName: string;
+  prompt: string;
+  settings: WorkspaceShotSettings;
+} {
+  const outputName = params.canvasNodeCopy
+    ? localizeWorkspaceShotOutputName(params.shotNode, params.canvasNodeCopy)
+    : params.settings.outputName;
+  return {
+    outputName,
+    prompt: buildPrompt(params.nodes, params.edges, params.shotNode, params.settings, params.canvasNodeCopy),
+    settings: outputName === params.settings.outputName
+      ? params.settings
+      : { ...params.settings, outputName },
+  };
 }
 
 function createOutputPosition(shotNode: WorkspaceGraphNode, siblingCount: number) {
@@ -146,15 +195,17 @@ function buildOutputNode(params: {
   notices?: StudioCopy['notices'];
 }): WorkspaceGraphNode {
   const notices = params.notices ?? DEFAULT_STUDIO_COPY.notices;
+  const titleData = workspaceOutputNodeTitleDataForShot(params.shotNode);
   return {
     id: params.id ?? `output-${params.shotNode.id}-${Date.now().toString(36)}`,
     type: 'output',
     position: createOutputPosition(params.shotNode, params.siblingCount),
     data: {
       kind: 'output',
-      title: params.settings.outputName || notices.generatedOutputTitle,
+      title: titleData.title || params.settings.outputName || notices.generatedOutputTitle,
       subtitle: outputSubtitle(params.output, params.settings, notices),
       accent: WORKSPACE_EDGE_COLORS.generated_output,
+      generatedCopy: titleData.generatedCopy,
       output: params.output,
       targetHandles: ['generated_output'],
       sourceHandles: ['video_reference'],
@@ -347,6 +398,7 @@ export async function submitWorkspaceShotGeneration(params: {
   shotNodeId: string;
   capability: WorkspaceModelCapability | null;
   generationMode: WorkspaceGenerationMode;
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
 }): Promise<WorkspaceGenerationResult> {
   const shotNode = params.nodes.find((node) => node.id === params.shotNodeId);
   if (!shotNode || !isShotNode(shotNode)) {
@@ -355,10 +407,18 @@ export async function submitWorkspaceShotGeneration(params: {
   const settings = shotNode.data.shot as WorkspaceShotSettings;
   const siblingCount = params.nodes.filter((node) => node.data.output?.sourceShotId === shotNode.id).length;
 
+  const generationInputs = prepareWorkspaceShotGenerationInputs({
+    nodes: params.nodes,
+    edges: params.edges,
+    shotNode,
+    settings,
+    canvasNodeCopy: params.canvasNodeCopy,
+  });
+
   if (params.generationMode === 'mock') {
     return createMockWorkspaceOutput({
       shotNode,
-      settings,
+      settings: generationInputs.settings,
       capability: params.capability,
       nodes: params.nodes,
       edges: params.edges,
@@ -366,12 +426,11 @@ export async function submitWorkspaceShotGeneration(params: {
     });
   }
 
-  const prompt = buildPrompt(params.nodes, params.edges, shotNode);
   const connectedInputs = connectedInputKinds(params.edges, shotNode.id);
   const resolvedWorkflowType = resolveWorkspaceWorkflowType({
     capability: params.capability,
     connectedInputs,
-    fallbackWorkflowType: settings.workflowType,
+    fallbackWorkflowType: generationInputs.settings.workflowType,
   });
   const referenceImages = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, [
     'start_image',
@@ -388,25 +447,25 @@ export async function submitWorkspaceShotGeneration(params: {
 
   try {
     const result = await runGenerate(buildWorkspaceShotGenerateRequest({
-      settings,
+      settings: generationInputs.settings,
       capability: params.capability,
-      prompt,
+      prompt: generationInputs.prompt,
       connectedInputs,
       referenceImages,
       videoReferences,
       audioReferences,
       shotNodeId: shotNode.id,
-      outputName: settings.outputName,
+      outputName: generationInputs.outputName,
     })) as WorkspaceGenerationMediaResult;
 
     const output: WorkspaceOutputMetadata = {
       kind: 'video',
-      modelId: settings.modelId,
-      modelLabel: params.capability?.label ?? settings.modelId,
+      modelId: generationInputs.settings.modelId,
+      modelLabel: params.capability?.label ?? generationInputs.settings.modelId,
       workflowType: resolvedWorkflowType,
-      durationSec: settings.durationSec,
-      aspectRatio: settings.aspectRatio,
-      resolution: settings.resolution,
+      durationSec: generationInputs.settings.durationSec,
+      aspectRatio: generationInputs.settings.aspectRatio,
+      resolution: generationInputs.settings.resolution,
       pricing: result.pricing ?? null,
       status: outputStatusFromGenerationResult(result),
       createdAt: new Date().toISOString(),
@@ -414,12 +473,12 @@ export async function submitWorkspaceShotGeneration(params: {
       url: result.videoUrl ?? result.video?.url ?? null,
       audioUrl: result.audioUrl ?? result.audio?.url ?? null,
       thumbUrl: result.thumbUrl ?? result.video?.thumbnailUrl ?? primaryImageUrl ?? null,
-      hasAudio: outputIncludesAudio(settings, params.capability),
+      hasAudio: outputIncludesAudio(generationInputs.settings, params.capability),
       jobId: result.jobId,
     };
     const outputNode = buildOutputNode({
       shotNode,
-      settings,
+      settings: generationInputs.settings,
       capability: params.capability,
       output,
       siblingCount,
@@ -440,7 +499,7 @@ export async function submitWorkspaceShotGeneration(params: {
     if (process.env.NODE_ENV !== 'production') {
       return createMockWorkspaceOutput({
         shotNode,
-        settings,
+        settings: generationInputs.settings,
         capability: params.capability,
         nodes: params.nodes,
         edges: params.edges,

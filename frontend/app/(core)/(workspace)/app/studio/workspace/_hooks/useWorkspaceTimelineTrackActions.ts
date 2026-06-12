@@ -3,7 +3,7 @@ import { defaultTimelineSelectionIds } from '../_lib/workspace-timeline-selectio
 import {
   isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
-  workspaceTimelineTrackLabel,
+  localizeWorkspaceTimelineTrackLabel,
 } from '../_lib/workspace-timeline-tracks';
 import type {
   WorkspaceTimelineAudioTrack,
@@ -40,6 +40,7 @@ type UseWorkspaceTimelineTrackActionsParams = {
   setMutedAudioTracks: Dispatch<SetStateAction<WorkspaceTimelineAudioTrack[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
   videoTrackCount: number;
@@ -57,6 +58,7 @@ export function useWorkspaceTimelineTrackActions({
   setMutedAudioTracks,
   setNotice,
   setVideoTrackCount,
+  studioCanvasNodeCopy,
   studioNotices,
   timelineItemsRef,
   videoTrackCount,
@@ -118,7 +120,7 @@ export function useWorkspaceTimelineTrackActions({
       if (isVideoTrack && videoTrackCount <= 1) return;
       if (!isVideoTrack && audioTrackCount <= MIN_TIMELINE_AUDIO_TRACKS) return;
 
-      const trackLabel = workspaceTimelineTrackLabel(track);
+      const trackLabel = localizeWorkspaceTimelineTrackLabel(track, studioCanvasNodeCopy);
       const hasClips = timelineItemsRef.current.some((item) => item.track === track);
       const confirmed = typeof window === 'undefined' || window.confirm(
         hasClips
@@ -160,6 +162,7 @@ export function useWorkspaceTimelineTrackActions({
       setMutedAudioTracks,
       setNotice,
       setVideoTrackCount,
+      studioCanvasNodeCopy,
       studioNotices.deleteTrackConfirm,
       studioNotices.deleteTrackWithClipsConfirm,
       studioNotices.timelineTrackDeleted,

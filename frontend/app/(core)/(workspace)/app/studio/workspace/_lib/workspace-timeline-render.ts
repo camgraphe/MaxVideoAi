@@ -7,9 +7,15 @@ import type {
 import {
   isWorkspaceTimelineAudioTrack,
   isWorkspaceTimelineVideoTrack,
+  localizeWorkspaceTimelineTrackLabel,
   workspaceTimelineAudioTrackIndex,
   workspaceTimelineVideoTrackIndex,
 } from './workspace-timeline-tracks';
+import { localizeWorkspaceTimelineItemTitle } from './workspace-generated-copy';
+import {
+  localizeStudioGeneratedSequenceDisplayName,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 const WORKSPACE_TIMELINE_RENDER_VERSION = 1;
 
@@ -189,14 +195,45 @@ function itemsForExportRange(items: WorkspaceTimelineItem[], exportRange: Worksp
   });
 }
 
-function issueForUnavailableItem(nodes: WorkspaceGraphNode[], item: WorkspaceTimelineItem): WorkspaceTimelineRenderIssue | null {
+function issueTitle(item: WorkspaceTimelineItem, canvasNodeCopy?: StudioCopy['canvas']['nodes']): string {
+  return canvasNodeCopy ? localizeWorkspaceTimelineItemTitle(item, canvasNodeCopy) : item.title;
+}
+
+function formatRenderCopy(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function localizedSequenceName(
+  sequenceName: string | undefined,
+  projectMediaCopy?: StudioCopy['viewer']['projectMedia']
+): string {
+  const rawName = sequenceName?.trim() || 'Main sequence';
+  return projectMediaCopy ? localizeStudioGeneratedSequenceDisplayName(rawName, projectMediaCopy) : rawName;
+}
+
+function localizedTrackLabel(
+  track: WorkspaceTimelineTrack,
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): string {
+  return canvasNodeCopy ? localizeWorkspaceTimelineTrackLabel(track, canvasNodeCopy) : track;
+}
+
+function issueForUnavailableItem(
+  nodes: WorkspaceGraphNode[],
+  item: WorkspaceTimelineItem,
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): WorkspaceTimelineRenderIssue | null {
   const output = outputForItem(nodes, item);
+  const title = issueTitle(item, canvasNodeCopy);
   if (output?.status === 'processing' || output?.status === 'placeholder') {
     return {
       code: 'processing_media',
       severity: 'blocking',
       itemId: item.id,
-      message: `${item.title} is still processing and cannot be rendered yet.`,
+      message: `${title} is still processing and cannot be rendered yet.`,
     };
   }
   if (output?.status === 'failed') {
@@ -204,7 +241,7 @@ function issueForUnavailableItem(nodes: WorkspaceGraphNode[], item: WorkspaceTim
       code: 'missing_media',
       severity: 'blocking',
       itemId: item.id,
-      message: `${item.title} failed and has no renderable media.`,
+      message: `${title} failed and has no renderable media.`,
     };
   }
   if (!mediaUrlForItem(nodes, item)) {
@@ -212,7 +249,7 @@ function issueForUnavailableItem(nodes: WorkspaceGraphNode[], item: WorkspaceTim
       code: 'missing_media',
       severity: 'blocking',
       itemId: item.id,
-      message: `${item.title} has no media URL for final render.`,
+      message: `${title} has no media URL for final render.`,
     };
   }
   return null;
@@ -238,7 +275,12 @@ function transitionForItem(items: WorkspaceTimelineItem[], item: WorkspaceTimeli
   };
 }
 
-function renderClipForItem(nodes: WorkspaceGraphNode[], items: WorkspaceTimelineItem[], item: WorkspaceTimelineItem): WorkspaceTimelineRenderClip | null {
+function renderClipForItem(
+  nodes: WorkspaceGraphNode[],
+  items: WorkspaceTimelineItem[],
+  item: WorkspaceTimelineItem,
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): WorkspaceTimelineRenderClip | null {
   const mediaUrl = mediaUrlForItem(nodes, item);
   if (!mediaUrl) return null;
   const sourceStartSec = roundTimelineSeconds(item.sourceStartSec ?? 0);
@@ -247,7 +289,7 @@ function renderClipForItem(nodes: WorkspaceGraphNode[], items: WorkspaceTimeline
   return {
     id: item.id,
     outputNodeId: item.outputNodeId,
-    title: item.title,
+    title: issueTitle(item, canvasNodeCopy),
     track: item.track,
     mediaKind: mediaKindForItem(item),
     mediaUrl,
@@ -267,7 +309,11 @@ function renderClipForItem(nodes: WorkspaceGraphNode[], items: WorkspaceTimeline
   };
 }
 
-function overlapIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderIssue[] {
+function overlapIssues(
+  items: WorkspaceTimelineItem[],
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'],
+  exportDialogCopy?: StudioCopy['exportDialog']
+): WorkspaceTimelineRenderIssue[] {
   return timelineTrackOrderForItems(items).flatMap((track) => {
     const clips = items
       .filter((item) => item.track === track)
@@ -279,13 +325,23 @@ function overlapIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderI
         code: 'overlapping_clips' as const,
         severity: 'blocking' as const,
         itemId: item.id,
-        message: `${item.title} overlaps ${previous.title} on the ${track} track.`,
+        message: formatRenderCopy(
+          exportDialogCopy?.timelineOverlapIssue ?? '{item} overlaps {previous} on the {track} track.',
+          {
+            item: issueTitle(item, canvasNodeCopy),
+            previous: issueTitle(previous, canvasNodeCopy),
+            track: localizedTrackLabel(track, canvasNodeCopy),
+          }
+        ),
       }];
     });
   });
 }
 
-function linkedAudioIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderIssue[] {
+function linkedAudioIssues(
+  items: WorkspaceTimelineItem[],
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): WorkspaceTimelineRenderIssue[] {
   return items.flatMap((item) => {
     if (!isWorkspaceTimelineAudioTrack(item.track) || !item.linkedGroupId) return [];
     const linkedVideo = items.some((candidate) => isVideoTimelineTrack(candidate.track) && candidate.linkedGroupId === item.linkedGroupId);
@@ -294,12 +350,15 @@ function linkedAudioIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRen
       code: 'orphan_linked_audio' as const,
       severity: 'warning' as const,
       itemId: item.id,
-      message: `${item.title} is linked audio without a matching video clip.`,
+      message: `${issueTitle(item, canvasNodeCopy)} is linked audio without a matching video clip.`,
     }];
   });
 }
 
-function transitionIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRenderIssue[] {
+function transitionIssues(
+  items: WorkspaceTimelineItem[],
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): WorkspaceTimelineRenderIssue[] {
   return items.flatMap((item) => {
     if (!isVideoTimelineTrack(item.track) || item.transitionOut?.type !== 'crossfade') return [];
     const transition = transitionForItem(items, item);
@@ -308,7 +367,7 @@ function transitionIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRend
         code: 'invalid_transition' as const,
         severity: 'warning' as const,
         itemId: item.id,
-        message: `${item.title} has a transition but no next video clip.`,
+        message: `${issueTitle(item, canvasNodeCopy)} has a transition but no next video clip.`,
       }];
     }
     const nextClip = items.find((candidate) => candidate.id === transition.nextClipId);
@@ -317,7 +376,7 @@ function transitionIssues(items: WorkspaceTimelineItem[]): WorkspaceTimelineRend
       code: 'invalid_transition' as const,
       severity: 'warning' as const,
       itemId: item.id,
-      message: `${item.title} has a crossfade across a gap.`,
+      message: `${issueTitle(item, canvasNodeCopy)} has a crossfade across a gap.`,
     }];
   });
 }
@@ -329,6 +388,9 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   sequenceId?: string;
   sequenceName?: string;
   projectSettings?: WorkspaceProjectSettings;
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
+  exportDialogCopy?: StudioCopy['exportDialog'];
+  projectMediaCopy?: StudioCopy['viewer']['projectMedia'];
   createdAt?: string;
   exportRange?: {
     mode: WorkspaceTimelineExportRangeMode;
@@ -348,16 +410,20 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   }
 
   exportItems.forEach((item) => {
-    const issue = issueForUnavailableItem(params.nodes, item);
+    const issue = issueForUnavailableItem(params.nodes, item, params.canvasNodeCopy);
     if (issue) issues.push(issue);
   });
-  issues.push(...overlapIssues(exportItems), ...linkedAudioIssues(exportItems), ...transitionIssues(exportItems));
+  issues.push(
+    ...overlapIssues(exportItems, params.canvasNodeCopy, params.exportDialogCopy),
+    ...linkedAudioIssues(exportItems, params.canvasNodeCopy),
+    ...transitionIssues(exportItems, params.canvasNodeCopy)
+  );
 
   const tracks = timelineTrackOrderForItems(exportItems).map((track): WorkspaceTimelineRenderTrack => {
     const clips = exportItems
       .filter((item) => item.track === track)
       .sort((left, right) => left.startSec - right.startSec)
-      .map((item) => renderClipForItem(params.nodes, exportItems, item))
+      .map((item) => renderClipForItem(params.nodes, exportItems, item, params.canvasNodeCopy))
       .filter((clip): clip is WorkspaceTimelineRenderClip => Boolean(clip));
     return {
       id: track,
@@ -373,7 +439,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
     source: 'maxvideoai-editor',
     projectName: params.projectName,
     sequenceId: params.sequenceId ?? 'sequence-main',
-    sequenceName: params.sequenceName?.trim() || 'Main sequence',
+    sequenceName: localizedSequenceName(params.sequenceName, params.projectMediaCopy),
     projectSettings: params.projectSettings,
     createdAt: params.createdAt ?? new Date().toISOString(),
     status,

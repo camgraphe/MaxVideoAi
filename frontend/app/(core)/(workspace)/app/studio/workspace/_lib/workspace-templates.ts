@@ -12,3 +12,4 @@ export {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createStarterWorkspaceTemplate,
 } from './templates/registry';
+export type { WorkspaceTemplateBuildCopy } from './templates/registry';

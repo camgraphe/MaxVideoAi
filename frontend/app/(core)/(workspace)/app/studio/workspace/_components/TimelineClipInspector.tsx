@@ -17,14 +17,17 @@ import {
 } from '../_lib/workspace-project-settings';
 import {
   isWorkspaceTimelineVideoTrack,
-  workspaceTimelineTrackLabel,
+  localizeWorkspaceTimelineTrackLabel,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import {
-  localizeStudioGeneratedCanvasText,
   localizeStudioGeneratedSequenceDisplayName,
   type StudioCopy,
 } from '../../_lib/studio-copy';
+import {
+  clearWorkspaceTimelineItemGeneratedCopyReferences,
+  localizeWorkspaceTimelineItemTitle,
+} from '../_lib/workspace-generated-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -255,7 +258,7 @@ export function TimelineClipInspector({
 
   if (!selectedItem) return <InspectorEmptyState copy={copy} />;
 
-  const selectedItemTitle = localizeStudioGeneratedCanvasText(selectedItem.title, canvasNodeCopy);
+  const selectedItemTitle = localizeWorkspaceTimelineItemTitle(selectedItem, canvasNodeCopy);
   const isVideoTrack = isWorkspaceTimelineVideoTrack(selectedItem.track);
   const isAudioClip = selectedItem.mediaKind === 'audio' || !isVideoTrack;
   const canEditTransform = !isAudioClip;
@@ -276,7 +279,7 @@ export function TimelineClipInspector({
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.panelTitle}>{selectedItemTitle}</p>
-          <span className={styles.panelSubtitle}>{workspaceTimelineTrackLabel(selectedItem.track)} {copy.clip}</span>
+          <span className={styles.panelSubtitle}>{localizeWorkspaceTimelineTrackLabel(selectedItem.track, canvasNodeCopy)} {copy.clip}</span>
         </div>
       </div>
       <div className={styles.settingsBody}>
@@ -285,7 +288,10 @@ export function TimelineClipInspector({
           <input
             className={styles.settingsInput}
             value={selectedItemTitle}
-            onChange={(event) => onPatchItem(selectedItem.id, { title: event.currentTarget.value })}
+            onChange={(event) => onPatchItem(selectedItem.id, {
+              title: event.currentTarget.value,
+              generatedCopy: clearWorkspaceTimelineItemGeneratedCopyReferences(selectedItem.generatedCopy, ['title']),
+            })}
           />
         </label>
 

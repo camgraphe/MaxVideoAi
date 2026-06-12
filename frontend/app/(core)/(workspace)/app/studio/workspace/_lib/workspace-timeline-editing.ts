@@ -274,6 +274,7 @@ export function splitWorkspaceTimelineItem(
       ...candidate,
       id: uniqueTimelineIdentifier(`${candidate.id}-split`, usedItemIds),
       title: `${candidate.title} B`,
+      generatedCopy: undefined,
       durationSec: candidate.durationSec - splitAt,
       startSec: candidate.startSec + splitAt,
       sourceStartSec: sourceStartSec + splitAt,

@@ -23,6 +23,12 @@ type WorkspaceConnectionLike = {
   targetHandle?: string | null;
 };
 
+export type WorkspaceConnectionRejection =
+  | { code: 'missing_endpoint' }
+  | { code: 'self_link' }
+  | { code: 'incompatible_connectors' }
+  | { code: 'connector_full'; connectorKind: WorkspaceEdgeKind; connectorLabel: string };
+
 export function connectedInputKinds(nodeId: string, edges: WorkspaceGraphEdge[]): WorkspaceEdgeKind[] {
   return edges
     .filter((edge) => edge.target === nodeId)
@@ -101,15 +107,15 @@ export function workspaceConnectionRejectionReason({
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   capabilities: ReturnType<typeof getWorkspaceModelCapabilities>;
-}): string | null {
+}): WorkspaceConnectionRejection | null {
   if (!connection.source || !connection.target || !connection.sourceHandle || !connection.targetHandle) {
-    return 'This link needs a source and a target connector.';
+    return { code: 'missing_endpoint' };
   }
   if (connection.source === connection.target) {
-    return 'A block cannot link to itself.';
+    return { code: 'self_link' };
   }
   if (!isWorkspaceConnectionCompatible({ sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle })) {
-    return 'These block connectors are not compatible.';
+    return { code: 'incompatible_connectors' };
   }
   const targetHandle = inferWorkspaceEdgeKind(connection.sourceHandle, connection.targetHandle);
   const targetNode = nodes.find((node) => node.id === connection.target) ?? null;
@@ -120,7 +126,11 @@ export function workspaceConnectionRejectionReason({
     connectedCount: connectedInputCounts(connection.target, edges).get(targetHandle) ?? 0,
   });
   if (capacity.isFull) {
-    return `${connector.label} is full.`;
+    return {
+      code: 'connector_full',
+      connectorKind: connector.kind,
+      connectorLabel: connector.label,
+    };
   }
   return null;
 }

@@ -11,6 +11,7 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
 } from './workspace-types';
+import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
 
 export type ProjectMediaTimelineDragPayload = TimelineNodeDragPayload & {
   durationSec: number;
@@ -149,10 +150,13 @@ function formatProjectMediaDragDuration(seconds: number): string {
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
-function projectMediaDragKindLabel(kind: ProjectMediaTimelineDragPayload['mediaKind']): string {
-  if (kind === 'audio') return 'Audio';
-  if (kind === 'image') return 'Image';
-  return 'Video';
+export function projectMediaDragKindLabel(
+  kind: ProjectMediaTimelineDragPayload['mediaKind'],
+  copy: StudioCopy['canvas']['nodes'] = DEFAULT_STUDIO_COPY.canvas.nodes
+): string {
+  if (kind === 'audio') return copy.audio ?? 'Audio';
+  if (kind === 'image') return copy.image ?? 'Image';
+  return copy.video ?? 'Video';
 }
 
 function projectMediaDragPosterBackground(payload: ProjectMediaTimelineDragPayload): string {
@@ -165,7 +169,10 @@ function projectMediaDragPosterBackground(payload: ProjectMediaTimelineDragPaylo
   return 'linear-gradient(135deg, rgba(37, 99, 235, 0.72), rgba(124, 58, 237, 0.78))';
 }
 
-function createProjectMediaDragImage(payload: ProjectMediaTimelineDragPayload): HTMLDivElement | null {
+function createProjectMediaDragImage(
+  payload: ProjectMediaTimelineDragPayload,
+  canvasNodeCopy: StudioCopy['canvas']['nodes']
+): HTMLDivElement | null {
   if (typeof document === 'undefined') return null;
 
   const dragImage = document.createElement('div');
@@ -208,7 +215,7 @@ function createProjectMediaDragImage(payload: ProjectMediaTimelineDragPayload): 
   title.style.fontSize = '12px';
 
   const meta = document.createElement('span');
-  meta.textContent = `${projectMediaDragKindLabel(payload.mediaKind)} - ${formatProjectMediaDragDuration(payload.durationSec)}`;
+  meta.textContent = `${projectMediaDragKindLabel(payload.mediaKind, canvasNodeCopy)} - ${formatProjectMediaDragDuration(payload.durationSec)}`;
   meta.style.color = '#a3adc2';
   meta.style.fontSize = '10px';
   meta.style.fontWeight = '700';
@@ -221,7 +228,8 @@ function createProjectMediaDragImage(payload: ProjectMediaTimelineDragPayload): 
 
 export function applyProjectMediaTimelineDragPayload(
   dataTransfer: ProjectMediaTimelineDragDataTransfer,
-  payload: ProjectMediaTimelineDragPayload
+  payload: ProjectMediaTimelineDragPayload,
+  canvasNodeCopy: StudioCopy['canvas']['nodes'] = DEFAULT_STUDIO_COPY.canvas.nodes
 ): void {
   rememberTimelineNodeDragPayload(payload);
   dataTransfer.effectAllowed = 'copyMove';
@@ -230,7 +238,7 @@ export function applyProjectMediaTimelineDragPayload(
 
   if (typeof dataTransfer.setDragImage !== 'function') return;
 
-  const dragImage = createProjectMediaDragImage(payload);
+  const dragImage = createProjectMediaDragImage(payload, canvasNodeCopy);
   if (!dragImage) return;
 
   dataTransfer.setDragImage(dragImage, 18, 18);

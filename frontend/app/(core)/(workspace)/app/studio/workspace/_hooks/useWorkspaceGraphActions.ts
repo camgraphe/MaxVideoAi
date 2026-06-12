@@ -16,12 +16,15 @@ import type {
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceModelCapability,
+  WorkspaceNodeGeneratedCopy,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
+import { clearWorkspaceGeneratedCopyReferences } from '../_lib/workspace-generated-copy';
 import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from '../_lib/workspace-handle-drop';
 import {
   appendSelectedWorkspaceGraphNode,
   workspaceConnectionRejectionReason,
+  type WorkspaceConnectionRejection,
 } from '../_lib/workspace-graph-helpers';
 import {
   createWorkspaceEdge,
@@ -32,7 +35,7 @@ import {
   type WorkspaceLibraryAsset,
 } from '../_lib/workspace-library-assets';
 import type { CanvasGraphHistorySnapshot, WorkspaceEditorSurface } from '../_state/workspace-state';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeStudioEdgeKindLabel, type StudioCopy } from '../../_lib/studio-copy';
 
 function formatNotice(value: string, replacements: Record<string, string | number>): string {
   return Object.entries(replacements).reduce(
@@ -41,15 +44,34 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
   );
 }
 
-function localizedConnectionRejectionReason(reason: string, notices: StudioCopy['notices']): string {
-  if (reason === 'This link needs a source and a target connector.') return notices.linkNeedsSourceAndTarget;
-  if (reason === 'A block cannot link to itself.') return notices.blockCannotLinkToItself;
-  if (reason === 'These block connectors are not compatible.') return notices.connectorsNotCompatible;
-  const fullConnectorMatch = reason.match(/^(.+) is full\.$/);
-  if (fullConnectorMatch) {
-    return formatNotice(notices.connectorFull, { connector: fullConnectorMatch[1] });
+function localizedConnectionRejectionReason(
+  reason: WorkspaceConnectionRejection,
+  notices: StudioCopy['notices'],
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes']
+): string {
+  if (reason.code === 'missing_endpoint') return notices.linkNeedsSourceAndTarget;
+  if (reason.code === 'self_link') return notices.blockCannotLinkToItself;
+  if (reason.code === 'incompatible_connectors') return notices.connectorsNotCompatible;
+  if (reason.code === 'connector_full') {
+    return formatNotice(notices.connectorFull, {
+      connector: localizeStudioEdgeKindLabel(reason.connectorKind, studioCanvasNodeCopy),
+    });
   }
-  return reason;
+  return notices.connectorsNotCompatible;
+}
+
+function generatedCopyAfterNodeDataPatch(
+  node: WorkspaceGraphNode,
+  patch: Partial<WorkspaceGraphNode['data']>
+): WorkspaceNodeGeneratedCopy | undefined {
+  if (patch.generatedCopy) return patch.generatedCopy;
+  const clearedFields: Array<keyof WorkspaceNodeGeneratedCopy> = [];
+  if ('title' in patch) clearedFields.push('title');
+  if ('subtitle' in patch) clearedFields.push('subtitle');
+  if ('promptText' in patch) clearedFields.push('promptText');
+  return clearedFields.length
+    ? clearWorkspaceGeneratedCopyReferences(node.data.generatedCopy, clearedFields)
+    : node.data.generatedCopy;
 }
 
 type UseWorkspaceGraphActionsParams = {
@@ -65,6 +87,7 @@ type UseWorkspaceGraphActionsParams = {
   setAssetPickerNodeId: Dispatch<SetStateAction<string | null>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
 };
 
@@ -86,6 +109,7 @@ export function useWorkspaceGraphActions({
   setAssetPickerNodeId,
   setNotice,
   setSelectedNodeId,
+  studioCanvasNodeCopy,
   studioNotices,
 }: UseWorkspaceGraphActionsParams): {
   handleCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
@@ -103,7 +127,17 @@ export function useWorkspaceGraphActions({
     (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => {
       commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
         edges: currentEdges,
-        nodes: currentNodes.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } } : node)),
+        nodes: currentNodes.map((node) => {
+          if (node.id !== nodeId) return node;
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              ...patch,
+              generatedCopy: generatedCopyAfterNodeDataPatch(node, patch),
+            },
+          };
+        }),
       }), { history: false });
     },
     [commitCanvasGraph]
@@ -120,10 +154,14 @@ export function useWorkspaceGraphActions({
             ...patch,
             status: patch.status ?? (node.data.shot.status === 'incompatible' ? 'draft' : node.data.shot.status),
           };
+          const generatedCopy = 'outputName' in patch
+            ? clearWorkspaceGeneratedCopyReferences(node.data.generatedCopy, ['subtitle', 'shotOutputName'])
+            : node.data.generatedCopy;
           return {
             ...node,
             data: {
               ...node.data,
+              generatedCopy,
               subtitle: patch.outputName ?? node.data.subtitle,
               shot: nextShot,
             },
@@ -154,6 +192,7 @@ export function useWorkspaceGraphActions({
                 ...node,
                 data: {
                   ...node.data,
+                  generatedCopy: clearWorkspaceGeneratedCopyReferences(node.data.generatedCopy, ['subtitle']),
                   subtitle: asset.name,
                   asset: assetRecord,
                 },
@@ -200,7 +239,7 @@ export function useWorkspaceGraphActions({
     (connection: Connection) => {
       const rejectionReason = workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities });
       if (rejectionReason) {
-        setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices));
+        setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices, studioCanvasNodeCopy));
         return;
       }
       if (!connection.source || !connection.target) return;
@@ -216,7 +255,9 @@ export function useWorkspaceGraphActions({
         edges: addEdge(edge, currentEdges),
         nodes: currentNodes,
       }));
-      setNotice(formatNotice(studioNotices.graphLinkConnected, { label: edge.data?.label ?? studioNotices.graphFallbackLabel }));
+      setNotice(formatNotice(studioNotices.graphLinkConnected, {
+        label: localizeStudioEdgeKindLabel(edge.data?.kind ?? kind, studioCanvasNodeCopy),
+      }));
     },
     [
       capabilities,
@@ -224,13 +265,14 @@ export function useWorkspaceGraphActions({
       edges,
       nodes,
       setNotice,
+      studioCanvasNodeCopy,
       studioNotices,
     ]
   );
 
   const handleCreateNodeFromHandleDrop = useCallback(
     (request: WorkspaceHandleDropRequest) => {
-      const draft = resolveWorkspaceHandleDropDraft(request.handleId, studioNotices, request.handleType);
+      const draft = resolveWorkspaceHandleDropDraft(request.handleId, studioNotices, request.handleType, studioCanvasNodeCopy);
       if (!draft) {
         setNotice(studioNotices.noMatchingBlockForConnector);
         return;
@@ -248,7 +290,7 @@ export function useWorkspaceGraphActions({
           capabilities,
         });
         if (rejectionReason) {
-          setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices));
+          setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices, studioCanvasNodeCopy));
           return;
         }
       }
@@ -288,7 +330,7 @@ export function useWorkspaceGraphActions({
       setSelectedNodeId(node.id);
       setNotice(formatNotice(studioNotices.nodeCreatedFromConnector, {
         title: node.data.title,
-        connector: edge.data?.label ?? studioNotices.connectorFallbackLabel,
+        connector: localizeStudioEdgeKindLabel(edge.data?.kind ?? request.handleId, studioCanvasNodeCopy),
       }));
     },
     [
@@ -300,6 +342,7 @@ export function useWorkspaceGraphActions({
       setActiveEditorSurface,
       setNotice,
       setSelectedNodeId,
+      studioCanvasNodeCopy,
       studioNotices,
     ]
   );

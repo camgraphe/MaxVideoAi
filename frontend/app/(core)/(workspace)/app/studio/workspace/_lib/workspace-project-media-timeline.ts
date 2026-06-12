@@ -2,7 +2,7 @@ import { isPlayableAudioUrl, isPlayableImageUrl, isPlayableVideoUrl } from '../_
 import { buildWorkspaceTimelineItemsForAsset, insertWorkspaceTimelineItems } from './workspace-timeline-editing';
 import {
   isWorkspaceTimelineVideoTrack,
-  workspaceTimelineTrackLabel,
+  localizeWorkspaceTimelineTrackNoticeLabel,
 } from './workspace-timeline-tracks';
 import {
   projectAssetTimelineNodeId,
@@ -43,12 +43,14 @@ export function resolveProjectAssetTimelineInsert(params: {
   currentItems: WorkspaceTimelineItem[];
   idSeed: string;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
   notices?: StudioCopy['notices'];
   projectAssets: WorkspaceAssetRecord[];
   startSec: number;
   targetTrack?: WorkspaceTimelineTrack;
 }): ResolveProjectAssetTimelineInsertResult {
   const notices = params.notices ?? DEFAULT_STUDIO_COPY.notices;
+  const canvasNodeCopy = params.canvasNodeCopy ?? DEFAULT_STUDIO_COPY.canvas.nodes;
   const asset = params.projectAssets.find((candidate) => candidate.id === params.assetId);
   if (!asset) {
     return { ok: false, notice: notices.projectMediaAssetNotFound };
@@ -69,7 +71,7 @@ export function resolveProjectAssetTimelineInsert(params: {
     return {
       ok: false,
       notice: formatNotice(notices.unlockTrackBeforeProjectMediaDrop, {
-        track: workspaceTimelineTrackLabel(params.targetTrack),
+        track: localizeWorkspaceTimelineTrackNoticeLabel(params.targetTrack, canvasNodeCopy),
       }),
     };
   }
@@ -92,7 +94,7 @@ export function resolveProjectAssetTimelineInsert(params: {
       ok: false,
       notice: formatNotice(notices.projectMediaNotCompatibleWithTrack, {
         filename: asset.filename,
-        track: params.targetTrack,
+        track: localizeWorkspaceTimelineTrackNoticeLabel(params.targetTrack, canvasNodeCopy),
       }),
     };
   }
@@ -139,12 +141,12 @@ export function resolveProjectAssetTimelineInsert(params: {
     notice: params.targetTrack
       ? formatNotice(notices.projectMediaDroppedOnTimeline, {
         filename: asset.filename,
-        track: resolvedTargetTrack,
+        track: localizeWorkspaceTimelineTrackNoticeLabel(resolvedTargetTrack, canvasNodeCopy),
         time: insertedItem.startSec.toFixed(2),
       })
       : formatNotice(notices.projectMediaInsertedAtPlayhead, {
         filename: asset.filename,
-        track: resolvedTargetTrack,
+        track: localizeWorkspaceTimelineTrackNoticeLabel(resolvedTargetTrack, canvasNodeCopy),
       }),
   };
 }

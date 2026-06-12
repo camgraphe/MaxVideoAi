@@ -21,8 +21,11 @@ import type {
   WorkspacePromptRole,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
-import { edgeLabel } from '../_lib/workspace-templates';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeWorkspaceNodeGeneratedText } from '../_lib/workspace-generated-copy';
+import {
+  localizeStudioEdgeKindLabel,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -58,7 +61,7 @@ function EmptyInspector({ copy }: { copy: StudioCopy['canvas']['nodes'] }) {
 
 function promptRoleLabel(role: WorkspacePromptRole, copy: StudioCopy['canvas']['nodes']): string {
   if (role === 'scene_description') return copy.promptRoleSceneDescription;
-  return edgeLabel(role);
+  return localizeStudioEdgeKindLabel(role, copy);
 }
 
 function AssetInspector({
@@ -134,6 +137,9 @@ function PromptInspector({
 }) {
   const inputCount = Array.isArray(node.data.targetHandles) ? node.data.targetHandles.length : 0;
   const outputCount = Array.isArray(node.data.sourceHandles) ? node.data.sourceHandles.length : 0;
+  const promptText = typeof node.data.promptText === 'string'
+    ? localizeWorkspaceNodeGeneratedText(node.data.promptText, node.data.generatedCopy?.promptText, copy)
+    : '';
   return (
     <>
       <div className={styles.infoGrid}>
@@ -161,7 +167,7 @@ function PromptInspector({
         {copy.text}
         <textarea
           className={styles.settingsTextarea}
-          value={String(node.data.promptText ?? '')}
+          value={promptText}
           rows={8}
           onChange={(event) => onPatchNodeData(node.id, { promptText: event.currentTarget.value })}
         />

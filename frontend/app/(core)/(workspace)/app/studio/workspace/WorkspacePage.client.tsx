@@ -34,10 +34,7 @@ import type {
   WorkspaceTimelineTrack,
   WorkspaceTimelineVideoTrack,
 } from './_lib/workspace-types';
-import {
-  WORKSPACE_TEMPLATE_SUMMARIES,
-  createStarterWorkspaceTemplate,
-} from './_lib/workspace-templates';
+import { WORKSPACE_TEMPLATE_SUMMARIES, createStarterWorkspaceTemplate } from './_lib/workspace-templates';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from './_lib/workspace-project-settings';
 import { type WorkspaceTimelineExportRangeMode } from './_lib/workspace-timeline-render';
 import type { WorkspaceTimelineExportQualityPreset } from './_lib/workspace-timeline-export';
@@ -61,9 +58,7 @@ import {
   sequenceNameForIndex,
   workspaceTimelineDurationSec,
 } from './_state/workspace-selectors';
-import {
-  workspaceStorageKeyForProject,
-} from './_state/workspace-persistence';
+import { workspaceStorageKeyForProject } from './_state/workspace-persistence';
 
 type WorkspacePageProps = {
   projectId?: string;
@@ -196,6 +191,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     projectSettings,
     selectedTimelineItemId,
     sequenceSummaries: sequenceSnapshots.sequenceSummaries,
+    studioCanvasNodeCopy: studioCopy.canvas.nodes,
+    studioExportDialogCopy: studioCopy.exportDialog,
+    studioProjectMediaCopy: studioCopy.viewer.projectMedia,
     timelineInPointSec: timelinePlayback.timelineInPointSec,
     timelineItems,
     timelineOutPointSec: timelinePlayback.timelineOutPointSec,
@@ -377,6 +375,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     studioCommonCopy: studioCopy.common,
+    studioCanvasNodeCopy: studioCopy.canvas.nodes,
     studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
@@ -413,6 +412,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setMutedAudioTracks,
     setNotice,
     setVideoTrackCount,
+    studioCanvasNodeCopy: studioCopy.canvas.nodes,
     studioNotices: studioCopy.notices,
     timelineItemsRef,
     videoTrackCount,

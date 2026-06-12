@@ -314,7 +314,7 @@ function WorkspaceCanvasInner({
       }
 
       const handleId = inferWorkspaceEdgeKind(params.handleId, params.handleId);
-      const draft = resolveWorkspaceHandleDropDraft(handleId, notices, handleType);
+      const draft = resolveWorkspaceHandleDropDraft(handleId, notices, handleType, copy.nodes);
       const pointer = pointerFromConnectionEvent(event);
       if (!draft || !pointer) {
         updateHandleDropPreview(null);
@@ -331,7 +331,7 @@ function WorkspaceCanvasInner({
         position: flowPosition,
       });
     },
-    [notices, onCanvasInteraction, reactFlow, updateHandleDropPreview]
+    [copy.nodes, notices, onCanvasInteraction, reactFlow, updateHandleDropPreview]
   );
 
   const handlePaneMouseMove = useCallback(

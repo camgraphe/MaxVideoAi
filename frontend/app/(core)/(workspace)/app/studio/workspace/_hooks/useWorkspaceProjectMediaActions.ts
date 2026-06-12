@@ -11,6 +11,7 @@ import type {
   WorkspaceTimelineItem,
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
+import { localizeWorkspaceNodeTitle } from '../_lib/workspace-generated-copy';
 import {
   WORKSPACE_PROJECT_MEDIA_FOLDER_ID_PREFIX,
   type WorkspaceEditorSurface,
@@ -35,6 +36,13 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
   );
 }
 
+export function generatedClipProjectMediaTitle(
+  node: WorkspaceGraphNode,
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes']
+): string {
+  return localizeWorkspaceNodeTitle(node, studioCanvasNodeCopy);
+}
+
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
@@ -53,6 +61,7 @@ type UseWorkspaceProjectMediaActionsParams = {
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
   studioCommonCopy: StudioCopy['common'];
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
@@ -76,6 +85,7 @@ export function useWorkspaceProjectMediaActions({
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
   studioCommonCopy,
+  studioCanvasNodeCopy,
   studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
@@ -109,6 +119,7 @@ export function useWorkspaceProjectMediaActions({
         lockedTimelineTracks,
         allowInsertIntoClip: timelineInsertIntoClipEnabled,
         idSeed: timelineSeed,
+        canvasNodeCopy: studioCanvasNodeCopy,
         notices: studioNotices,
       });
       if (!result.ok) {
@@ -134,6 +145,7 @@ export function useWorkspaceProjectMediaActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioCanvasNodeCopy,
       studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
@@ -222,7 +234,7 @@ export function useWorkspaceProjectMediaActions({
       }
       if (
         typeof window !== 'undefined' &&
-        !window.confirm(formatNotice(studioNotices.deleteGeneratedClipConfirm, { title: node.data.title }))
+        !window.confirm(formatNotice(studioNotices.deleteGeneratedClipConfirm, { title: generatedClipProjectMediaTitle(node, studioCanvasNodeCopy) }))
       ) return;
       setNodes((current) =>
         current.map((candidate) => {
@@ -237,9 +249,9 @@ export function useWorkspaceProjectMediaActions({
           };
         })
       );
-      setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: node.data.title }));
+      setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: generatedClipProjectMediaTitle(node, studioCanvasNodeCopy) }));
     },
-    [nodes, setNodes, setNotice, studioNotices]
+    [nodes, setNodes, setNotice, studioCanvasNodeCopy, studioNotices]
   );
 
   const handleDeleteGeneratedClips = useCallback(
@@ -251,7 +263,7 @@ export function useWorkspaceProjectMediaActions({
         return;
       }
       const label = nodesToDelete.length === 1
-        ? nodesToDelete[0].data.title
+        ? generatedClipProjectMediaTitle(nodesToDelete[0], studioCanvasNodeCopy)
         : formatStudioCountLabel(
             nodesToDelete.length,
             studioCommonCopy.generatedClipSingular,
@@ -276,7 +288,7 @@ export function useWorkspaceProjectMediaActions({
       );
       setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: label }));
     },
-    [nodes, setNodes, setNotice, studioCommonCopy, studioNotices]
+    [nodes, setNodes, setNotice, studioCanvasNodeCopy, studioCommonCopy, studioNotices]
   );
 
   const handleCreateProjectMediaFolder = useCallback((requestedName?: string) => {
@@ -420,6 +432,7 @@ export function useWorkspaceProjectMediaActions({
       const folderName = folderId
         ? projectMediaFolders.find((candidateFolder) => candidateFolder.id === folderId)?.name ?? studioNotices.projectMediaFallbackFolder
         : studioNotices.projectMediaRoot;
+      const title = generatedClipProjectMediaTitle(node, studioCanvasNodeCopy);
       setNodes((current) => current.map((candidate) => {
         if (candidate.id !== nodeId || !candidate.data.output) return candidate;
         return {
@@ -434,11 +447,11 @@ export function useWorkspaceProjectMediaActions({
         };
       }));
       setNotice(formatNotice(studioNotices.generatedClipMovedToFolder, {
-        title: node.data.title,
+        title,
         [STUDIO_PROJECT_MEDIA_FOLDER_TOKEN]: folderName,
       }));
     },
-    [nodes, projectMediaFolders, setNodes, setNotice, studioNotices]
+    [nodes, projectMediaFolders, setNodes, setNotice, studioCanvasNodeCopy, studioNotices]
   );
 
   const handleDropProjectAssetToTimeline = useCallback(

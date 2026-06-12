@@ -17,7 +17,11 @@ import {
   outputStatus,
 } from '../../_lib/workspace-media-availability';
 import { workspaceAssetTimelineDuration, workspaceOutputTimelineDuration } from '../../_lib/workspace-timeline-editing';
-import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
+import { WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
+import {
+  DEFAULT_STUDIO_COPY,
+  localizeStudioEdgeKindLabel,
+} from '../../../_lib/studio-copy';
 
 const SOURCE_NODE_MIN_WIDTH = 190;
 const SOURCE_NODE_MIN_HEIGHT = 132;
@@ -90,9 +94,11 @@ function blocksTimelineNodeDrag(target: EventTarget | null): boolean {
 }
 
 function HandleStack({
+  copy,
   handles,
   type,
 }: {
+  copy?: NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'];
   handles: WorkspaceEdgeKind[];
   type: 'source' | 'target';
 }) {
@@ -102,6 +108,7 @@ function HandleStack({
       {handles.map((handle, index) => {
         const offset = 34 + index * spacing;
         const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
+        const labelCopy = copy ?? DEFAULT_STUDIO_COPY.canvas.nodes;
         return (
           <Handle
             key={`${type}-${handle}`}
@@ -114,7 +121,7 @@ function HandleStack({
               borderColor: color,
               background: color,
             }}
-            title={edgeLabel(handle)}
+            title={localizeStudioEdgeKindLabel(handle, labelCopy)}
           />
         );
       })}
@@ -193,7 +200,7 @@ export function NodeFrame({
           <span className={styles.nodeResizeGrip} aria-hidden="true" />
         </NodeResizeControl>
       ) : null}
-      <HandleStack handles={targetHandles} type="target" />
+      <HandleStack copy={copy} handles={targetHandles} type="target" />
       <div className={styles.nodeHeader}>
         <span className={styles.nodeIcon}>{icon}</span>
         <div>
@@ -213,7 +220,7 @@ export function NodeFrame({
         ) : null}
       </div>
       {children}
-      <HandleStack handles={outputHandles(data)} type="source" />
+      <HandleStack copy={copy} handles={outputHandles(data)} type="source" />
     </article>
   );
 }

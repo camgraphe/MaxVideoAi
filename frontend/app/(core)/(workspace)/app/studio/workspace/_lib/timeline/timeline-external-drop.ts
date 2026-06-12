@@ -7,6 +7,8 @@ import {
 import {
   shouldEditTrackItem,
 } from './timeline-insert';
+import { localizeWorkspaceTimelineItemTitle } from '../workspace-generated-copy';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 
@@ -47,6 +49,32 @@ export type TimelineNodeDragPayload = {
   previewUrl?: string | null;
   title?: string | null;
 };
+
+function localizeTimelinePreviewTitle(
+  item: WorkspaceTimelineItem,
+  copy?: StudioCopy['canvas']['nodes']
+): string {
+  return copy ? localizeWorkspaceTimelineItemTitle(item, copy) : item.title;
+}
+
+function formatTimelinePreviewCopy(
+  value: string,
+  replacements: Record<string, string | number>
+): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function localizeTimelineTailPreviewTitle(
+  item: WorkspaceTimelineItem,
+  copy?: StudioCopy['canvas']['nodes']
+): string {
+  if (!copy || !item.generatedCopy?.title) return `${item.title} tail`;
+  const localizedTitle = localizeWorkspaceTimelineItemTitle(item, copy);
+  return formatTimelinePreviewCopy(copy.templateTimelineTailPreviewName ?? '{name} tail', { name: localizedTitle });
+}
 
 function isValidTimelineNodeDragPayload(payload: TimelineNodeDragPayload | null | undefined): payload is TimelineNodeDragPayload {
   return Boolean(payload?.mediaKind && (payload.nodeId || payload.assetId));
@@ -113,11 +141,13 @@ export function insertionBoundaryForTimelineTrack(
 }
 
 export function resolveTimelineExternalDropDisplacements({
+  canvasNodeCopy,
   insertDurationSec,
   insertStartSec,
   items,
   track,
 }: {
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
   insertDurationSec: number;
   insertStartSec: number;
   items: WorkspaceTimelineItem[];
@@ -138,7 +168,7 @@ export function resolveTimelineExternalDropDisplacements({
         fromStartSec: itemStartSec,
         itemId: item.id,
         mediaKind: item.mediaKind,
-        title: item.title,
+        title: localizeTimelinePreviewTitle(item, canvasNodeCopy),
         toStartSec: snapTimelineSeconds(itemStartSec + insertDurationSec),
         trackId: item.track,
       }];
@@ -152,7 +182,7 @@ export function resolveTimelineExternalDropDisplacements({
       fromStartSec: snapTimelineSeconds(insertStartSec),
       itemId: `${item.id}:tail-preview`,
       mediaKind: item.mediaKind,
-      title: `${item.title} tail`,
+      title: localizeTimelineTailPreviewTitle(item, canvasNodeCopy),
       toStartSec: snapTimelineSeconds(insertStartSec + insertDurationSec),
       trackId: item.track,
     }];
@@ -160,6 +190,7 @@ export function resolveTimelineExternalDropDisplacements({
 }
 
 export function resolveTimelineExternalDropPreview({
+  canvasNodeCopy,
   isInsertIntoClipEnabled,
   items,
   lockedTracks,
@@ -167,6 +198,7 @@ export function resolveTimelineExternalDropPreview({
   rawStartSec,
   track,
 }: {
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
   isInsertIntoClipEnabled: boolean;
   items: WorkspaceTimelineItem[];
   lockedTracks: ReadonlySet<WorkspaceTimelineTrack>;
@@ -185,6 +217,7 @@ export function resolveTimelineExternalDropPreview({
       ? resolveTimelineExternalDropDisplacements({
           insertDurationSec: durationSec,
           insertStartSec: startSec,
+          canvasNodeCopy,
           items,
           track,
         })

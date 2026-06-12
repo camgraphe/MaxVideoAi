@@ -17,6 +17,7 @@ import type {
   WorkspaceTimelineItem,
   WorkspaceTimelineVideoTrack,
 } from '../_lib/workspace-types';
+import type { StudioCopy } from '../../_lib/studio-copy';
 import {
   selectedWorkspaceSequenceInspectorSummary,
   selectedWorkspaceTimelineItem,
@@ -40,6 +41,9 @@ type UseWorkspaceExportStateOptions = {
   projectSettings: WorkspaceProjectSettings;
   selectedTimelineItemId: string | null;
   sequenceSummaries: WorkspaceSequenceSidebarSummary[];
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
+  studioExportDialogCopy: StudioCopy['exportDialog'];
+  studioProjectMediaCopy: StudioCopy['viewer']['projectMedia'];
   timelineInPointSec: number | null;
   timelineItems: WorkspaceTimelineItem[];
   timelineOutPointSec: number | null;
@@ -67,6 +71,9 @@ export function useWorkspaceExportState({
   projectSettings,
   selectedTimelineItemId,
   sequenceSummaries,
+  studioCanvasNodeCopy,
+  studioExportDialogCopy,
+  studioProjectMediaCopy,
   timelineInPointSec,
   timelineItems,
   timelineOutPointSec,
@@ -120,9 +127,23 @@ export function useWorkspaceExportState({
       sequenceId: activeSequenceId,
       sequenceName: activeSequenceSummary?.name,
       projectSettings,
+      canvasNodeCopy: studioCanvasNodeCopy,
+      exportDialogCopy: studioExportDialogCopy,
+      projectMediaCopy: studioProjectMediaCopy,
       exportRange: activeExportRange,
     }),
-    [activeExportRange, activeSequenceId, activeSequenceSummary?.name, activeTemplateName, exportTimelineItems, nodes, projectSettings]
+    [
+      activeExportRange,
+      activeSequenceId,
+      activeSequenceSummary?.name,
+      activeTemplateName,
+      exportTimelineItems,
+      nodes,
+      projectSettings,
+      studioCanvasNodeCopy,
+      studioExportDialogCopy,
+      studioProjectMediaCopy,
+    ]
   );
 
   return {

@@ -152,7 +152,7 @@ test('project media timeline resolver places compatible media on the requested t
   assert.equal(insertedItem.startSec, 5);
   assert.equal(insertedItem.durationSec, 5);
   assert.equal(result.playheadSec, 5);
-  assert.match(result.notice, /dropped on video-2/);
+  assert.match(result.notice, /dropped on Video 2/);
 
   const v2Items = result.items
     .filter((item) => item.track === 'video-2')
@@ -188,5 +188,5 @@ test('project media timeline resolver rejects incompatible target tracks', () =>
   });
 
   assert.equal(result.ok, false);
-  assert.match(result.notice, /not compatible with the audio-2 track/);
+  assert.match(result.notice, /not compatible with the Audio 2 track/);
 });

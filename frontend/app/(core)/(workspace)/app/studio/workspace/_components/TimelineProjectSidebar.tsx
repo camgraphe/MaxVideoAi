@@ -29,6 +29,7 @@ export type { WorkspaceProjectSequenceSummary };
 const styles = { ...baseStyles, ...mediaStyles };
 
 type TimelineProjectSidebarProps = {
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   copy: StudioCopy['viewer']['projectMedia'];
   nodes: WorkspaceGraphNode[];
   projectAssets: WorkspaceAssetRecord[];
@@ -438,6 +439,7 @@ function ProjectMediaFooterAction({
 }
 
 export function TimelineProjectSidebar({
+  studioCanvasNodeCopy,
   copy,
   nodes,
   projectAssets,
@@ -471,6 +473,7 @@ export function TimelineProjectSidebar({
     projectAssets,
     projectMediaFolders,
     sequences,
+    studioCanvasNodeCopy,
     onClearSequenceInspector,
     onDeleteGeneratedClip,
     onDeleteGeneratedClips,

@@ -259,6 +259,8 @@ export type StudioCopy = {
   };
 };
 
+export type StudioCanvasNodeCopyKey = keyof StudioCopy['canvas']['nodes'] & string;
+
 export const DEFAULT_STUDIO_COPY: StudioCopy = {
   projects: {
     metaTitle: 'Studio Projects | MaxVideoAI',
@@ -559,9 +561,16 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       connectorLastFrame: 'Last frame',
       connectorReferenceImages: 'Reference images',
       connectorSourceVideo: 'Source video',
+      handleGeneratedOutputTitle: 'Generated Output',
+      handlePromptNodeTitle: '{label} Prompt',
+      handleImageNodeTitle: '{label} Image',
+      handleVideoNodeTitle: '{label} Video',
+      handleAudioNodeTitle: '{label} Audio',
+      handleDraftPromptText: 'Draft {label} input...',
       templateProductImage: 'Product Image',
       templateStyleReference: 'Style Reference',
       templateCameraMovement: 'Camera Movement',
+      templateCameraLanguage: 'Camera Language',
       templateAudioReference: 'Audio Reference',
       templateVoiceOver: 'Voice Over',
       templateShotName: 'Shot {index}',
@@ -569,8 +578,74 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       templateOutputName: 'Output {index}',
       templateHeroReveal: 'Hero Reveal',
       templateMacroDetails: 'Macro Details',
+      templateWideEstablishing: 'Wide Establishing',
+      templateCharacterReveal: 'Character Reveal',
+      templateActionInsert: 'Action Insert',
+      templateFinalFrame: 'Final Frame',
+      templateTrailerEstablish: 'Trailer Establish',
+      templateTrailerReveal: 'Trailer Reveal',
       templateExplodedView: 'Exploded View',
       templateFinalPackshot: 'Final Packshot',
+      templateDevImageBlock: 'Dev Image Block',
+      templateDevVideoBlock: 'Dev Video Block',
+      templateDevAudioBlock: 'Dev Audio Block',
+      templateDevPromptBlock: 'Dev Prompt Block',
+      templateDevShotBlock: 'Dev Shot Block',
+      templateDevOutputBlock: 'Dev Output Block',
+      templateAssetImageNode: 'asset-image node',
+      templateAssetVideoNode: 'asset-video node',
+      templateAssetAudioNode: 'asset-audio node',
+      templateTextPromptNode: 'text-prompt node',
+      templateShotNode: 'shot node',
+      templateOutputNode: 'output node',
+      templateCharacterAnchor: 'Character Anchor',
+      templatePerformanceReference: 'Performance Reference',
+      templateDialogueDirection: 'Dialogue Direction',
+      templateVoiceCue: 'Voice Cue',
+      templateRoomTone: 'Room Tone',
+      templateCharacterCloseUp: 'Character Close-up',
+      templateReverseAngle: 'Reverse Angle',
+      templateReactionBeat: 'Reaction Beat',
+      templateFinalLine: 'Final Line',
+      templateDialogueCloseUp: 'Dialogue Close-up',
+      templateStoryboardFrames: 'Storyboard Frames',
+      templateMotionBoard: 'Motion Board',
+      templatePanelContinuity: 'Panel Continuity',
+      templateSceneNotes: 'Scene Notes',
+      templateTempScore: 'Temp Score',
+      templatePanel01Establish: 'Panel 01 Establish',
+      templatePanel02Action: 'Panel 02 Action',
+      templatePanel03Insert: 'Panel 03 Insert',
+      templatePanel04EndFrame: 'Panel 04 End Frame',
+      templateStoryboardBeat01: 'Storyboard Beat 01',
+      templateStoryboardBeat02: 'Storyboard Beat 02',
+      templateCreatorReference: 'Creator Reference',
+      templateBrollReference: 'B-roll Reference',
+      templateHookScript: 'Hook Script',
+      templateCreatorVo: 'Creator VO',
+      templateSocialBed: 'Social Bed',
+      templateHookOpener: 'Hook Opener',
+      templateProductProof: 'Product Proof',
+      templateBrollDetail: 'B-roll Detail',
+      templateCtaMoment: 'CTA Moment',
+      templateUgcHook: 'UGC Hook',
+      templateProofBroll: 'Proof B-roll',
+      templateMoodPlate: 'Mood Plate',
+      templateScenePrompt: 'Scene Prompt',
+      templateTrailerVo: 'Trailer VO',
+      templateTrailerPulse: 'Trailer Pulse',
+      templateProductAdCameraPromptText: 'Smooth cinematic orbit around product, slow push in, premium macro lighting.',
+      templateProductAdVoiceoverPromptText: 'Precision in motion. A modern chronograph built for every second that matters.',
+      templateDevPromptText: 'Use this dev template to tune the prompt block, textarea, handles, spacing, and inspector states.',
+      templateCharacterDialoguePromptText: 'A close, emotional two-line exchange. Keep the same character identity, soft eye movement, natural pauses, and grounded delivery.',
+      templateCharacterVoicePromptText: 'A quiet but decisive voiceover that bridges both shots without breaking character continuity.',
+      templateStoryboardPromptText: 'Follow the storyboard order exactly. Use each panel as a beat, preserve screen direction, and make transitions feel like a planned animatic.',
+      templateStoryboardVoicePromptText: 'Use the storyboard as timing authority: establish, push in, action beat, detail, transition, end frame.',
+      templateUgcPromptText: 'Open with a direct hook, show the product in use, cut to one proof point, then close with a clean visual payoff.',
+      templateUgcVoicePromptText: 'Conversational voiceover: fast hook, believable benefit, no over-polished ad language.',
+      templateCinematicScenePromptText: 'Build a cinematic trailer beat: wide establishing image, controlled camera push, character reveal, atmosphere, and dramatic final frame.',
+      templateCinematicVoicePromptText: 'Sparse narration with tension: one line before the reveal, one line on the final frame.',
+      templateTimelineTailPreviewName: '{name} tail',
     },
     map: {
       navigationLabel: 'Canvas navigation',
@@ -832,6 +907,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     readinessTimelineBlocked: 'Fix overlapping clips before export.',
     readinessTimelineWarnings: 'Timeline has warnings, but export can be prepared.',
     readinessTimelineReady: 'No blocking timeline conflicts.',
+    timelineOverlapIssue: '{item} overlaps {previous} on the {track} track.',
     readinessRange: 'Range',
     readinessRangeInOut: 'In/Out range is exportable.',
     readinessRangeFullSequence: 'Full sequence range is exportable.',
@@ -1216,6 +1292,32 @@ const STUDIO_EDGE_COPY_KEYS: Record<string, string> = {
   video_reference: 'edgeVideoReference',
 };
 
+const STUDIO_EDGE_FALLBACK_LABELS: Record<string, string[]> = {
+  reference: ['reference'],
+  start_image: ['start image'],
+  end_image: ['end image'],
+  product: ['product'],
+  character: ['character'],
+  style: ['style'],
+  composition: ['composition'],
+  logo: ['logo'],
+  prompt: ['prompt'],
+  negative_prompt: ['negative'],
+  camera: ['camera'],
+  dialogue: ['dialogue'],
+  narration: ['narration'],
+  audio: ['audio'],
+  voiceover: ['voice'],
+  music: ['music'],
+  sfx: ['sfx'],
+  motion_reference: ['motion'],
+  previous_shot: ['previous shot'],
+  continuity: ['continuity'],
+  generated_output: ['output', 'generated output'],
+  output_to_timeline: ['timeline'],
+  video_reference: ['video ref'],
+};
+
 const STUDIO_CANVAS_TEXT_COPY_KEYS: Record<string, string> = {
   'product image': 'templateProductImage',
   'image produit': 'templateProductImage',
@@ -1226,6 +1328,9 @@ const STUDIO_CANVAS_TEXT_COPY_KEYS: Record<string, string> = {
   'camera movement': 'templateCameraMovement',
   'mouvement camera': 'templateCameraMovement',
   'movimiento de camara': 'templateCameraMovement',
+  'camera language': 'templateCameraLanguage',
+  'langage camera': 'templateCameraLanguage',
+  'lenguaje de camara': 'templateCameraLanguage',
   'audio reference': 'templateAudioReference',
   'reference audio': 'templateAudioReference',
   'referencia de audio': 'templateAudioReference',
@@ -1238,11 +1343,204 @@ const STUDIO_CANVAS_TEXT_COPY_KEYS: Record<string, string> = {
   'macro details': 'templateMacroDetails',
   'details macro': 'templateMacroDetails',
   'detalles macro': 'templateMacroDetails',
+  'wide establishing': 'templateWideEstablishing',
+  'plan large d\'ouverture': 'templateWideEstablishing',
+  'plano general inicial': 'templateWideEstablishing',
+  'character reveal': 'templateCharacterReveal',
+  'revelation personnage': 'templateCharacterReveal',
+  'revelacion de personaje': 'templateCharacterReveal',
+  'action insert': 'templateActionInsert',
+  'insert d\'action': 'templateActionInsert',
+  'inserto de accion': 'templateActionInsert',
+  'final frame': 'templateFinalFrame',
+  'image finale': 'templateFinalFrame',
+  'fotograma final': 'templateFinalFrame',
+  'trailer establish': 'templateTrailerEstablish',
+  'ouverture bande-annonce': 'templateTrailerEstablish',
+  'apertura de trailer': 'templateTrailerEstablish',
+  'trailer reveal': 'templateTrailerReveal',
+  'revelation bande-annonce': 'templateTrailerReveal',
+  'revelacion de trailer': 'templateTrailerReveal',
   'exploded view': 'templateExplodedView',
   'vue eclatee': 'templateExplodedView',
   'vista explosionada': 'templateExplodedView',
   'final packshot': 'templateFinalPackshot',
   'packshot final': 'templateFinalPackshot',
+  'dev image block': 'templateDevImageBlock',
+  'bloc image dev': 'templateDevImageBlock',
+  'bloque de imagen dev': 'templateDevImageBlock',
+  'dev video block': 'templateDevVideoBlock',
+  'bloc video dev': 'templateDevVideoBlock',
+  'bloque de video dev': 'templateDevVideoBlock',
+  'dev audio block': 'templateDevAudioBlock',
+  'bloc audio dev': 'templateDevAudioBlock',
+  'bloque de audio dev': 'templateDevAudioBlock',
+  'dev prompt block': 'templateDevPromptBlock',
+  'bloc prompt dev': 'templateDevPromptBlock',
+  'bloque de prompt dev': 'templateDevPromptBlock',
+  'dev shot block': 'templateDevShotBlock',
+  'bloc plan dev': 'templateDevShotBlock',
+  'bloque de plano dev': 'templateDevShotBlock',
+  'dev output block': 'templateDevOutputBlock',
+  'bloc sortie dev': 'templateDevOutputBlock',
+  'bloque de salida dev': 'templateDevOutputBlock',
+  'asset-image node': 'templateAssetImageNode',
+  'nœud asset-image': 'templateAssetImageNode',
+  'nodo asset-image': 'templateAssetImageNode',
+  'asset-video node': 'templateAssetVideoNode',
+  'nœud asset-video': 'templateAssetVideoNode',
+  'nodo asset-video': 'templateAssetVideoNode',
+  'asset-audio node': 'templateAssetAudioNode',
+  'nœud asset-audio': 'templateAssetAudioNode',
+  'nodo asset-audio': 'templateAssetAudioNode',
+  'text-prompt node': 'templateTextPromptNode',
+  'nœud text-prompt': 'templateTextPromptNode',
+  'nodo text-prompt': 'templateTextPromptNode',
+  'shot node': 'templateShotNode',
+  'nœud plan': 'templateShotNode',
+  'nodo de plano': 'templateShotNode',
+  'output node': 'templateOutputNode',
+  'nœud sortie': 'templateOutputNode',
+  'nodo de salida': 'templateOutputNode',
+  'character anchor': 'templateCharacterAnchor',
+  'ancre personnage': 'templateCharacterAnchor',
+  'ancla de personaje': 'templateCharacterAnchor',
+  'performance reference': 'templatePerformanceReference',
+  'reference performance': 'templatePerformanceReference',
+  'referencia de actuacion': 'templatePerformanceReference',
+  'dialogue direction': 'templateDialogueDirection',
+  'direction dialogue': 'templateDialogueDirection',
+  'direccion de dialogo': 'templateDialogueDirection',
+  'voice cue': 'templateVoiceCue',
+  'repere voix': 'templateVoiceCue',
+  'guia de voz': 'templateVoiceCue',
+  'room tone': 'templateRoomTone',
+  'ambiance piece': 'templateRoomTone',
+  'ambiente de sala': 'templateRoomTone',
+  'character close-up': 'templateCharacterCloseUp',
+  'gros plan personnage': 'templateCharacterCloseUp',
+  'primer plano de personaje': 'templateCharacterCloseUp',
+  'reverse angle': 'templateReverseAngle',
+  'contrechamp': 'templateReverseAngle',
+  'contraplano': 'templateReverseAngle',
+  'reaction beat': 'templateReactionBeat',
+  'temps de reaction': 'templateReactionBeat',
+  'momento de reaccion': 'templateReactionBeat',
+  'final line': 'templateFinalLine',
+  'replique finale': 'templateFinalLine',
+  'linea final': 'templateFinalLine',
+  'dialogue close-up': 'templateDialogueCloseUp',
+  'gros plan dialogue': 'templateDialogueCloseUp',
+  'primer plano de dialogo': 'templateDialogueCloseUp',
+  'storyboard frames': 'templateStoryboardFrames',
+  'images storyboard': 'templateStoryboardFrames',
+  'fotogramas storyboard': 'templateStoryboardFrames',
+  'motion board': 'templateMotionBoard',
+  'board mouvement': 'templateMotionBoard',
+  'board de movimiento': 'templateMotionBoard',
+  'panel continuity': 'templatePanelContinuity',
+  'continuite panneaux': 'templatePanelContinuity',
+  'continuidad de paneles': 'templatePanelContinuity',
+  'scene notes': 'templateSceneNotes',
+  'notes de scene': 'templateSceneNotes',
+  'notas de escena': 'templateSceneNotes',
+  'temp score': 'templateTempScore',
+  'musique temporaire': 'templateTempScore',
+  'musica temporal': 'templateTempScore',
+  'panel 01 establish': 'templatePanel01Establish',
+  'panneau 01 ouverture': 'templatePanel01Establish',
+  'panel 01 apertura': 'templatePanel01Establish',
+  'panel 02 action': 'templatePanel02Action',
+  'panneau 02 action': 'templatePanel02Action',
+  'panel 02 accion': 'templatePanel02Action',
+  'panel 03 insert': 'templatePanel03Insert',
+  'panneau 03 insert': 'templatePanel03Insert',
+  'panel 03 inserto': 'templatePanel03Insert',
+  'panel 04 end frame': 'templatePanel04EndFrame',
+  'panneau 04 image finale': 'templatePanel04EndFrame',
+  'panel 04 fotograma final': 'templatePanel04EndFrame',
+  'storyboard beat 01': 'templateStoryboardBeat01',
+  'beat storyboard 01': 'templateStoryboardBeat01',
+  'storyboard beat 02': 'templateStoryboardBeat02',
+  'beat storyboard 02': 'templateStoryboardBeat02',
+  'creator reference': 'templateCreatorReference',
+  'reference createur': 'templateCreatorReference',
+  'referencia de creador': 'templateCreatorReference',
+  'b-roll reference': 'templateBrollReference',
+  'reference b-roll': 'templateBrollReference',
+  'referencia b-roll': 'templateBrollReference',
+  'hook script': 'templateHookScript',
+  'script d\'accroche': 'templateHookScript',
+  'guion de gancho': 'templateHookScript',
+  'creator vo': 'templateCreatorVo',
+  'vo createur': 'templateCreatorVo',
+  'vo de creador': 'templateCreatorVo',
+  'social bed': 'templateSocialBed',
+  'lit social': 'templateSocialBed',
+  'base social': 'templateSocialBed',
+  'hook opener': 'templateHookOpener',
+  'ouverture accroche': 'templateHookOpener',
+  'apertura de gancho': 'templateHookOpener',
+  'product proof': 'templateProductProof',
+  'preuve produit': 'templateProductProof',
+  'prueba de producto': 'templateProductProof',
+  'b-roll detail': 'templateBrollDetail',
+  'detail b-roll': 'templateBrollDetail',
+  'detalle b-roll': 'templateBrollDetail',
+  'cta moment': 'templateCtaMoment',
+  'moment cta': 'templateCtaMoment',
+  'momento cta': 'templateCtaMoment',
+  'ugc hook': 'templateUgcHook',
+  'accroche ugc': 'templateUgcHook',
+  'gancho ugc': 'templateUgcHook',
+  'proof b-roll': 'templateProofBroll',
+  'b-roll preuve': 'templateProofBroll',
+  'b-roll de prueba': 'templateProofBroll',
+  'mood plate': 'templateMoodPlate',
+  'planche d\'ambiance': 'templateMoodPlate',
+  'placa de ambiente': 'templateMoodPlate',
+  'scene prompt': 'templateScenePrompt',
+  'prompt scene': 'templateScenePrompt',
+  'prompt de escena': 'templateScenePrompt',
+  'trailer vo': 'templateTrailerVo',
+  'vo bande-annonce': 'templateTrailerVo',
+  'vo de trailer': 'templateTrailerVo',
+  'trailer pulse': 'templateTrailerPulse',
+  'pulse bande-annonce': 'templateTrailerPulse',
+  'pulso de trailer': 'templateTrailerPulse',
+  'smooth cinematic orbit around product, slow push in, premium macro lighting.': 'templateProductAdCameraPromptText',
+  'orbite cinematique fluide autour du produit, lent rapprochement, eclairage macro premium.': 'templateProductAdCameraPromptText',
+  'orbita cinematografica suave alrededor del producto, acercamiento lento, iluminacion macro premium.': 'templateProductAdCameraPromptText',
+  'precision in motion. a modern chronograph built for every second that matters.': 'templateProductAdVoiceoverPromptText',
+  'la precision en mouvement. un chronographe moderne concu pour chaque seconde qui compte.': 'templateProductAdVoiceoverPromptText',
+  'precision en movimiento. un cronografo moderno creado para cada segundo que importa.': 'templateProductAdVoiceoverPromptText',
+  'use this dev template to tune the prompt block, textarea, handles, spacing, and inspector states.': 'templateDevPromptText',
+  'utilisez ce modele dev pour regler le bloc prompt, la zone de texte, les poignees, l\'espacement et les etats d\'inspecteur.': 'templateDevPromptText',
+  'usa esta plantilla dev para ajustar el bloque de prompt, el area de texto, los conectores, el espaciado y los estados del inspector.': 'templateDevPromptText',
+  'a close, emotional two-line exchange. keep the same character identity, soft eye movement, natural pauses, and grounded delivery.': 'templateCharacterDialoguePromptText',
+  'un echange serre et emotionnel en deux repliques. gardez la meme identite de personnage, un leger mouvement des yeux, des pauses naturelles et une interpretation ancree.': 'templateCharacterDialoguePromptText',
+  'un intercambio cercano y emocional de dos lineas. manten la misma identidad de personaje, movimiento ocular suave, pausas naturales y una interpretacion contenida.': 'templateCharacterDialoguePromptText',
+  'a quiet but decisive voiceover that bridges both shots without breaking character continuity.': 'templateCharacterVoicePromptText',
+  'une voix off calme mais decisive qui relie les deux plans sans rompre la continuite du personnage.': 'templateCharacterVoicePromptText',
+  'una voz en off tranquila pero decidida que une ambos planos sin romper la continuidad del personaje.': 'templateCharacterVoicePromptText',
+  'follow the storyboard order exactly. use each panel as a beat, preserve screen direction, and make transitions feel like a planned animatic.': 'templateStoryboardPromptText',
+  'suivez exactement l\'ordre du storyboard. utilisez chaque panneau comme un beat, preservez la direction d\'ecran et rendez les transitions comme un animatique planifie.': 'templateStoryboardPromptText',
+  'sigue exactamente el orden del storyboard. usa cada panel como un beat, conserva la direccion de pantalla y haz que las transiciones parezcan un animatic planificado.': 'templateStoryboardPromptText',
+  'use the storyboard as timing authority: establish, push in, action beat, detail, transition, end frame.': 'templateStoryboardVoicePromptText',
+  'utilisez le storyboard comme reference de timing : etablir, avancer, beat d\'action, detail, transition, image finale.': 'templateStoryboardVoicePromptText',
+  'usa el storyboard como autoridad de timing: establecer, acercar, beat de accion, detalle, transicion, fotograma final.': 'templateStoryboardVoicePromptText',
+  'open with a direct hook, show the product in use, cut to one proof point, then close with a clean visual payoff.': 'templateUgcPromptText',
+  'ouvrez avec une accroche directe, montrez le produit en usage, coupez vers une preuve, puis terminez par un payoff visuel propre.': 'templateUgcPromptText',
+  'abre con un gancho directo, muestra el producto en uso, corta a una prueba y cierra con un payoff visual limpio.': 'templateUgcPromptText',
+  'conversational voiceover: fast hook, believable benefit, no over-polished ad language.': 'templateUgcVoicePromptText',
+  'voix off conversationnelle : accroche rapide, benefice credible, pas de langage publicitaire trop poli.': 'templateUgcVoicePromptText',
+  'voz en off conversacional: gancho rapido, beneficio creible, sin lenguaje publicitario demasiado pulido.': 'templateUgcVoicePromptText',
+  'build a cinematic trailer beat: wide establishing image, controlled camera push, character reveal, atmosphere, and dramatic final frame.': 'templateCinematicScenePromptText',
+  'construisez un beat de bande-annonce cinematique : plan large d\'ouverture, push camera controle, revelation personnage, atmosphere et image finale dramatique.': 'templateCinematicScenePromptText',
+  'construye un beat de trailer cinematografico: plano general inicial, push de camara controlado, revelacion de personaje, atmosfera y fotograma final dramatico.': 'templateCinematicScenePromptText',
+  'sparse narration with tension: one line before the reveal, one line on the final frame.': 'templateCinematicVoicePromptText',
+  'narration rare avec tension : une ligne avant la revelation, une ligne sur l\'image finale.': 'templateCinematicVoicePromptText',
+  'narracion escasa con tension: una linea antes de la revelacion, una linea en el fotograma final.': 'templateCinematicVoicePromptText',
 };
 
 export function localizeStudioEdgeKindLabel(kind: string, copy: StudioCopy['canvas']['nodes']): string {
@@ -1250,7 +1548,11 @@ export function localizeStudioEdgeKindLabel(kind: string, copy: StudioCopy['canv
   return key ? copy[key] ?? kind : kind;
 }
 
-export function localizeStudioConnectorDisplayLabel(label: string, copy: StudioCopy['canvas']['nodes']): string {
+export function localizeStudioConnectorDisplayLabel(
+  label: string,
+  copy: StudioCopy['canvas']['nodes'],
+  kind?: string
+): string {
   const normalizedLabel = normalizedGeneratedName(label);
   if (['negative prompt', 'prompt negatif', 'prompt negativo'].includes(normalizedLabel)) {
     return copy.connectorNegativePrompt;
@@ -1270,33 +1572,118 @@ export function localizeStudioConnectorDisplayLabel(label: string, copy: StudioC
   if (['source video', 'video source', 'video de origen'].includes(normalizedLabel)) {
     return copy.connectorSourceVideo;
   }
+  if (kind && STUDIO_EDGE_FALLBACK_LABELS[kind]?.includes(normalizedLabel)) {
+    return localizeStudioEdgeKindLabel(kind, copy);
+  }
   return label;
 }
 
-export function localizeStudioGeneratedCanvasText(value: string, copy: StudioCopy['canvas']['nodes']): string {
-  const normalizedValue = normalizedGeneratedName(value);
-  const shotAudioMatch = normalizedValue.match(/^shot\s+(\d+)\s+-\s+(.+)\s+audio$/);
+export type StudioGeneratedCanvasTextLocalization = {
+  knownGenerated: boolean;
+  matched: boolean;
+  value: string;
+};
+
+function timelineTailTemplate(copy: StudioCopy['canvas']['nodes']): string {
+  return copy.templateTimelineTailPreviewName ?? '{name} tail';
+}
+
+function timelineTailSourceName(value: string): string | null {
+  const suffixMatch = value.match(/^(.+)\s+tail$/i);
+  if (suffixMatch) return suffixMatch[1];
+  const frPrefixMatch = value.match(/^fin de\s+(.+)$/i);
+  if (frPrefixMatch) return frPrefixMatch[1];
+  const esPrefixMatch = value.match(/^cola de\s+(.+)$/i);
+  if (esPrefixMatch) return esPrefixMatch[1];
+  return null;
+}
+
+export function resolveStudioGeneratedCanvasTextLocalization(
+  value: string,
+  copy: StudioCopy['canvas']['nodes']
+): StudioGeneratedCanvasTextLocalization {
+  const trimmedValue = value.trim();
+  const normalizedValue = normalizedGeneratedName(trimmedValue);
+
+  const tailSourceName = timelineTailSourceName(trimmedValue);
+  if (tailSourceName) {
+    const localizedName = resolveStudioGeneratedCanvasTextLocalization(tailSourceName, copy);
+    if (localizedName.knownGenerated) {
+      return {
+        knownGenerated: true,
+        matched: true,
+        value: formatStudioCopyValue(timelineTailTemplate(copy), { name: localizedName.value }),
+      };
+    }
+    return { knownGenerated: false, matched: false, value };
+  }
+
+  const shotAudioMatch = trimmedValue.match(/^(?:shot|plan|plano)\s+(\d+)\s+-\s+(.+)\s+audio$/i);
   if (shotAudioMatch) {
     const shotName = formatStudioCopyValue(copy.templateShotName, { index: shotAudioMatch[1] });
-    const shotDescription = localizeStudioGeneratedCanvasText(shotAudioMatch[2], copy);
-    return formatStudioCopyValue(copy.templateShotAudioName, { name: `${shotName} - ${shotDescription}` });
+    const shotDescription = resolveStudioGeneratedCanvasTextLocalization(shotAudioMatch[2], copy);
+    return {
+      knownGenerated: shotDescription.knownGenerated,
+      matched: true,
+      value: formatStudioCopyValue(copy.templateShotAudioName, { name: `${shotName} - ${shotDescription.value}` }),
+    };
   }
 
-  const shotWithDescriptionMatch = normalizedValue.match(/^shot\s+(\d+)\s+-\s+(.+)$/);
+  const shotWithDescriptionMatch = trimmedValue.match(/^(?:shot|plan|plano)\s+(\d+)\s+-\s+(.+)$/i);
   if (shotWithDescriptionMatch) {
     const shotName = formatStudioCopyValue(copy.templateShotName, { index: shotWithDescriptionMatch[1] });
-    const shotDescription = localizeStudioGeneratedCanvasText(shotWithDescriptionMatch[2], copy);
-    return `${shotName} - ${shotDescription}`;
+    const shotDescription = resolveStudioGeneratedCanvasTextLocalization(shotWithDescriptionMatch[2], copy);
+    return {
+      knownGenerated: shotDescription.knownGenerated,
+      matched: true,
+      value: `${shotName} - ${shotDescription.value}`,
+    };
   }
 
-  const shotMatch = normalizedValue.match(/^shot\s+(\d+)$/);
-  if (shotMatch) return formatStudioCopyValue(copy.templateShotName, { index: shotMatch[1] });
+  const shotMatch = trimmedValue.match(/^(?:shot|plan|plano)\s+(\d+)$/i);
+  if (shotMatch) {
+    return {
+      knownGenerated: true,
+      matched: true,
+      value: formatStudioCopyValue(copy.templateShotName, { index: shotMatch[1] }),
+    };
+  }
 
-  const outputMatch = normalizedValue.match(/^output\s+(\d+)$/);
-  if (outputMatch) return formatStudioCopyValue(copy.templateOutputName, { index: outputMatch[1] });
+  const outputMatch = trimmedValue.match(/^(?:output|sortie|salida)\s+(\d+)$/i);
+  if (outputMatch) {
+    return {
+      knownGenerated: true,
+      matched: true,
+      value: formatStudioCopyValue(copy.templateOutputName, { index: outputMatch[1] }),
+    };
+  }
 
   const key = STUDIO_CANVAS_TEXT_COPY_KEYS[normalizedValue];
-  return key ? copy[key] ?? value : value;
+  if (key) {
+    return {
+      knownGenerated: true,
+      matched: true,
+      value: copy[key] ?? value,
+    };
+  }
+
+  const audioLabelMatch = trimmedValue.match(/^(.+)\s+audio$/i);
+  if (audioLabelMatch) {
+    const localizedName = resolveStudioGeneratedCanvasTextLocalization(audioLabelMatch[1], copy);
+    if (localizedName.knownGenerated) {
+      return {
+        knownGenerated: true,
+        matched: true,
+        value: formatStudioCopyValue(copy.templateShotAudioName, { name: localizedName.value }),
+      };
+    }
+  }
+
+  return { knownGenerated: false, matched: false, value };
+}
+
+export function localizeStudioGeneratedCanvasText(value: string, copy: StudioCopy['canvas']['nodes']): string {
+  return resolveStudioGeneratedCanvasTextLocalization(value, copy).value;
 }
 
 export function formatStudioProjectDate(locale: AppLocale, value: string, copy: StudioCopy): string {

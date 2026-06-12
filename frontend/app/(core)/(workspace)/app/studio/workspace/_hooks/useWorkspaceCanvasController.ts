@@ -132,6 +132,7 @@ export function useWorkspaceCanvasController({
     setAssetPickerNodeId,
     setNotice,
     setSelectedNodeId,
+    studioCanvasNodeCopy: studioCanvasCopy.nodes,
     studioNotices,
   });
 
@@ -161,6 +162,7 @@ export function useWorkspaceCanvasController({
     setNodes,
     setNotice,
     setSelectedNodeId,
+    studioCanvasNodeCopy: studioCanvasCopy.nodes,
     studioNotices,
   });
 
@@ -179,6 +181,7 @@ export function useWorkspaceCanvasController({
     setPlayheadSec,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
+    studioCanvasNodeCopy: studioCanvasCopy.nodes,
     studioNotices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
@@ -234,6 +237,7 @@ export function useWorkspaceCanvasController({
     setNotice,
     setSelectedNodeId,
     setUserCanvasTemplates,
+    studioCanvasCopy,
     studioNotices,
     userCanvasTemplates,
   });

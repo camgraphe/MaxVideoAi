@@ -1,5 +1,5 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
-import { createStarterWorkspaceTemplate } from '../_lib/workspace-templates';
+import { createStarterWorkspaceTemplate, WORKSPACE_TEMPLATE_SUMMARIES } from '../_lib/workspace-templates';
 import type {
   CanvasGraphHistorySnapshot,
   WorkspaceEditorSurface,
@@ -34,6 +34,16 @@ function createLocalCanvasTemplateId(): string {
   return `canvas_template_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+function starterTemplateNoticeName(
+  templateId: WorkspaceTemplateId,
+  fallbackName: string,
+  templateSummariesCopy: StudioCopy['canvas']['templateSummaries']
+): string {
+  const summary = WORKSPACE_TEMPLATE_SUMMARIES.find((candidate) => candidate.id === templateId);
+  const localized = templateSummariesCopy[templateId];
+  return localized?.name || summary?.name || fallbackName;
+}
+
 type UseWorkspaceCanvasTemplateActionsParams = {
   activeUserCanvasTemplateId: string | null;
   commitCanvasGraph: (
@@ -49,6 +59,7 @@ type UseWorkspaceCanvasTemplateActionsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
+  studioCanvasCopy: StudioCopy['canvas'];
   studioNotices: StudioCopy['notices'];
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
 };
@@ -65,6 +76,7 @@ export function useWorkspaceCanvasTemplateActions({
   setNotice,
   setSelectedNodeId,
   setUserCanvasTemplates,
+  studioCanvasCopy,
   studioNotices,
   userCanvasTemplates,
 }: UseWorkspaceCanvasTemplateActionsParams): {
@@ -97,9 +109,11 @@ export function useWorkspaceCanvasTemplateActions({
       setActiveTemplateId(template.id);
       setActiveUserCanvasTemplateId(null);
       setCanvasRevision((value) => value + 1);
-      setNotice(formatCopyValue(studioNotices.canvasTemplateApplied, { name: template.name }));
+      setNotice(formatCopyValue(studioNotices.canvasTemplateApplied, {
+        name: starterTemplateNoticeName(template.id, template.name, studioCanvasCopy.templateSummaries),
+      }));
     },
-    [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied]
+    [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioCanvasCopy.templateSummaries, studioNotices.canvasTemplateApplied]
   );
 
   const handleSaveCanvasTemplate = useCallback(

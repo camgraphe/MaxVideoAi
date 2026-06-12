@@ -1,29 +1,49 @@
 import type { WorkspacePromptRole, WorkspaceShotSettings, WorkspaceTemplate, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../workspace-types';
+import {
+  generatedCopyReference,
+  generatedTextReference,
+  localizeWorkspaceTemplateGeneratedState,
+} from '../workspace-generated-copy';
 import { createProductAdWorkspaceTemplate } from './product-ad';
+import type { WorkspaceTemplateBuildCopy } from './registry';
+import type { StudioCanvasNodeCopyKey } from '../../../_lib/studio-copy';
 
 export type WorkspaceTemplateVariantConfig = {
   productTitle: string;
+  productTitleCopyKey: StudioCanvasNodeCopyKey;
   productFilename: string;
   productUrl: string;
   productDimensions: string;
   styleTitle: string;
+  styleTitleCopyKey: StudioCanvasNodeCopyKey;
   styleFilename: string;
   styleThumbUrl: string;
   promptTitle: string;
+  promptTitleCopyKey: StudioCanvasNodeCopyKey;
   promptSubtitle: string;
   promptRole: WorkspacePromptRole;
   promptText: string;
+  promptTextCopyKey: StudioCanvasNodeCopyKey;
   voiceTitle: string;
+  voiceTitleCopyKey: StudioCanvasNodeCopyKey;
   voiceText: string;
+  voiceTextCopyKey: StudioCanvasNodeCopyKey;
   audioTitle: string;
+  audioTitleCopyKey: StudioCanvasNodeCopyKey;
   audioFilename: string;
   shotSubtitles: [string, string, string, string];
+  shotSubtitleCopyKeys: [StudioCanvasNodeCopyKey, StudioCanvasNodeCopyKey, StudioCanvasNodeCopyKey, StudioCanvasNodeCopyKey];
   outputThumbs: [string, string];
   timelineTitles: [string, string];
+  timelineTitleCopyKeys: [StudioCanvasNodeCopyKey, StudioCanvasNodeCopyKey];
 };
 
-
-export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, summary: WorkspaceTemplateSummary, config: WorkspaceTemplateVariantConfig): WorkspaceTemplate {
+export function createVariantWorkspaceTemplate(
+  templateId: WorkspaceTemplateId,
+  summary: WorkspaceTemplateSummary,
+  config: WorkspaceTemplateVariantConfig,
+  copy?: WorkspaceTemplateBuildCopy
+): WorkspaceTemplate {
   const base = createProductAdWorkspaceTemplate();
 
   const nodes = base.nodes.map((node) => {
@@ -35,6 +55,10 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
           title: config.productTitle,
           subtitle: config.productFilename,
           accent: summary.accent ?? node.data.accent,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            title: generatedCopyReference(config.productTitleCopyKey),
+          },
           asset: {
             ...node.data.asset,
             id: `${templateId}-primary-reference`,
@@ -55,6 +79,10 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
           ...node.data,
           title: config.styleTitle,
           subtitle: config.styleFilename,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            title: generatedCopyReference(config.styleTitleCopyKey),
+          },
           asset: {
             ...node.data.asset,
             id: `${templateId}-style-reference`,
@@ -73,6 +101,11 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
           ...node.data,
           title: config.promptTitle,
           subtitle: config.promptSubtitle,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            title: generatedCopyReference(config.promptTitleCopyKey),
+            promptText: generatedCopyReference(config.promptTextCopyKey),
+          },
           promptRole: config.promptRole,
           promptText: config.promptText,
         },
@@ -85,6 +118,10 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
           ...node.data,
           title: config.audioTitle,
           subtitle: config.audioFilename,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            title: generatedCopyReference(config.audioTitleCopyKey),
+          },
           asset: {
             ...node.data.asset,
             id: `${templateId}-audio-reference`,
@@ -101,6 +138,11 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
         data: {
           ...node.data,
           title: config.voiceTitle,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            title: generatedCopyReference(config.voiceTitleCopyKey),
+            promptText: generatedCopyReference(config.voiceTextCopyKey),
+          },
           promptText: config.voiceText,
         },
       };
@@ -113,6 +155,11 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
         data: {
           ...node.data,
           subtitle,
+          generatedCopy: {
+            ...node.data.generatedCopy,
+            subtitle: generatedCopyReference(config.shotSubtitleCopyKeys[shotIndex]),
+            shotOutputName: generatedCopyReference(config.shotSubtitleCopyKeys[shotIndex]),
+          },
           shot: {
             ...(node.data.shot as WorkspaceShotSettings),
             outputName: subtitle,
@@ -139,23 +186,39 @@ export function createVariantWorkspaceTemplate(templateId: WorkspaceTemplateId, 
     return node;
   });
 
-  return {
+  return localizeWorkspaceTemplateGeneratedState({
     ...base,
     id: summary.id,
     name: summary.name,
     nodes,
     timelineItems: base.timelineItems.map((item) => {
       if (item.id === 'timeline-output-01') {
-        return { ...item, title: config.timelineTitles[0], thumbnailUrl: config.outputThumbs[0] };
+        return {
+          ...item,
+          title: config.timelineTitles[0],
+          generatedCopy: {
+            title: generatedCopyReference(config.timelineTitleCopyKeys[0]),
+          },
+          thumbnailUrl: config.outputThumbs[0],
+        };
       }
       if (item.id === 'timeline-output-02' || item.id === 'timeline-output-02-audio') {
-        return { ...item, title: item.mediaKind === 'audio' ? `${config.timelineTitles[1]} Audio` : config.timelineTitles[1], thumbnailUrl: config.outputThumbs[1] };
+        const title = item.mediaKind === 'audio' ? `${config.timelineTitles[1]} Audio` : config.timelineTitles[1];
+        return {
+          ...item,
+          title,
+          generatedCopy: {
+            title: item.mediaKind === 'audio'
+              ? generatedTextReference(title)
+              : generatedCopyReference(config.timelineTitleCopyKeys[1]),
+          },
+          thumbnailUrl: config.outputThumbs[1],
+        };
       }
       if (item.id === 'timeline-music-01') {
         return { ...item, title: config.audioFilename };
       }
       return item;
     }),
-  };
+  }, copy);
 }
-

@@ -1,5 +1,6 @@
 import { isWorkspaceTimelineAudioTrack, isWorkspaceTimelineVideoTrack } from '../workspace-timeline-tracks';
 import type { WorkspaceTimelineItem, WorkspaceTimelineTrack } from '../workspace-types';
+import { generatedTextReference } from '../workspace-generated-copy';
 import { hasLinkedVideoPeer } from './timeline-linked-audio';
 import {
   MIN_CLIP_DURATION_SEC,
@@ -46,6 +47,12 @@ export function shouldEditTrackItem(params: {
   ));
 }
 
+function generatedTailCopyForItem(item: WorkspaceTimelineItem): WorkspaceTimelineItem['generatedCopy'] {
+  return item.generatedCopy?.title
+    ? { title: generatedTextReference(`${item.title} Tail`) }
+    : undefined;
+}
+
 export function rewriteOverlappedTrackItems(params: {
   items: WorkspaceTimelineItem[];
   track: WorkspaceTimelineTrack;
@@ -75,6 +82,7 @@ export function rewriteOverlappedTrackItems(params: {
         ...item,
         id: `${item.id}-tail-${params.idSeed}`,
         title: `${item.title} Tail`,
+        generatedCopy: generatedTailCopyForItem(item),
         startSec: snapTimelineValue(params.rangeEndSec),
         durationSec: snapTimelineValue(rightDurationSec),
         sourceStartSec: snapTimelineValue((item.sourceStartSec ?? 0) + (params.rangeEndSec - itemStartSec)),
@@ -119,6 +127,7 @@ export function insertIntoTrackItems(params: {
         ...item,
         id: `${item.id}-tail-${params.idSeed}`,
         title: `${item.title} Tail`,
+        generatedCopy: generatedTailCopyForItem(item),
         startSec: snapTimelineValue(params.insertStartSec + params.insertDurationSec),
         durationSec: snapTimelineValue(rightDurationSec),
         sourceStartSec: snapTimelineValue((item.sourceStartSec ?? 0) + leftDurationSec),
@@ -151,4 +160,3 @@ export function insertionBoundaryForWholeClipInsert(params: {
   const midpointSec = targetItem.startSec + targetItem.durationSec / 2;
   return snapTimelineValue(params.requestedStartSec < midpointSec ? targetItem.startSec : itemEndSec(targetItem));
 }
-

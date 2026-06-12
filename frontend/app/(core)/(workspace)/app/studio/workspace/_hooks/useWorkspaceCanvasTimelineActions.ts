@@ -11,7 +11,7 @@ import {
 } from '../_lib/workspace-timeline-drops';
 import {
   isWorkspaceTimelineVideoTrack,
-  workspaceTimelineTrackLabel,
+  localizeWorkspaceTimelineTrackNoticeLabel,
 } from '../_lib/workspace-timeline-tracks';
 import type {
   WorkspaceGraphNode,
@@ -26,6 +26,7 @@ import {
 } from '../_state/workspace-normalizers';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
 import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeWorkspaceNodeTitle } from '../_lib/workspace-generated-copy';
 
 function formatNotice(value: string, replacements: Record<string, string | number>): string {
   return Object.entries(replacements).reduce(
@@ -47,6 +48,7 @@ type UseWorkspaceCanvasTimelineActionsParams = {
   setPlayheadSec: Dispatch<SetStateAction<number>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
@@ -63,6 +65,7 @@ export function useWorkspaceCanvasTimelineActions({
   setPlayheadSec,
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
+  studioCanvasNodeCopy,
   studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
@@ -106,10 +109,14 @@ export function useWorkspaceCanvasTimelineActions({
       }
 
       const timelineSeed = Date.now().toString(36);
+      const timelineGeneratedCopy = mediaNode.data.generatedCopy?.title
+        ? { title: mediaNode.data.generatedCopy.title }
+        : undefined;
       const nextItems = output
         ? buildWorkspaceTimelineItemsForOutput({
             outputNodeId: nodeId,
             title: mediaNode.data.title,
+            generatedCopy: timelineGeneratedCopy,
             output,
             startSec: playheadSec,
             idSeed: timelineSeed,
@@ -118,6 +125,7 @@ export function useWorkspaceCanvasTimelineActions({
           ? buildWorkspaceTimelineItemsForAsset({
               assetNodeId: nodeId,
               title: mediaNode.data.title,
+              generatedCopy: timelineGeneratedCopy,
               asset,
               startSec: playheadSec,
               idSeed: timelineSeed,
@@ -150,8 +158,8 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec(insertedItem.startSec);
       setIsTimelinePlaying(false);
       setNotice(formatNotice(studioNotices.nodeDroppedOnTimeline, {
-        title: mediaNode.data.title,
-        track: targetTrack,
+        title: localizeWorkspaceNodeTitle(mediaNode, studioCanvasNodeCopy),
+        track: localizeWorkspaceTimelineTrackNoticeLabel(targetTrack, studioCanvasNodeCopy),
         time: insertedItem.startSec.toFixed(2),
       }));
     },
@@ -164,6 +172,7 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioCanvasNodeCopy,
       studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
@@ -175,7 +184,7 @@ export function useWorkspaceCanvasTimelineActions({
       setActiveEditorSurface('timeline');
       if (lockedTimelineTracks.includes(targetTrack)) {
         setNotice(formatNotice(studioNotices.unlockTrackBeforeDroppingMedia, {
-          track: workspaceTimelineTrackLabel(targetTrack),
+          track: localizeWorkspaceTimelineTrackNoticeLabel(targetTrack, studioCanvasNodeCopy),
         }));
         return;
       }
@@ -193,10 +202,14 @@ export function useWorkspaceCanvasTimelineActions({
       }
 
       const timelineSeed = Date.now().toString(36);
+      const timelineGeneratedCopy = mediaNode.data.generatedCopy?.title
+        ? { title: mediaNode.data.generatedCopy.title }
+        : undefined;
       const draftItems = output
         ? buildWorkspaceTimelineItemsForOutput({
             outputNodeId: nodeId,
             title: mediaNode.data.title,
+            generatedCopy: timelineGeneratedCopy,
             output,
             startSec,
             idSeed: timelineSeed,
@@ -205,6 +218,7 @@ export function useWorkspaceCanvasTimelineActions({
           ? buildWorkspaceTimelineItemsForAsset({
               assetNodeId: nodeId,
               title: mediaNode.data.title,
+              generatedCopy: timelineGeneratedCopy,
               asset,
               startSec,
               idSeed: timelineSeed,
@@ -244,8 +258,8 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec(insertedItem.startSec);
       setIsTimelinePlaying(false);
       setNotice(formatNotice(studioNotices.nodeDroppedOnTimeline, {
-        title: mediaNode.data.title,
-        track: targetTrack,
+        title: localizeWorkspaceNodeTitle(mediaNode, studioCanvasNodeCopy),
+        track: localizeWorkspaceTimelineTrackNoticeLabel(targetTrack, studioCanvasNodeCopy),
         time: insertedItem.startSec.toFixed(2),
       }));
     },
@@ -259,6 +273,7 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioCanvasNodeCopy,
       studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,

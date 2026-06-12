@@ -14,10 +14,15 @@ import type {
   WorkspaceModelCapability,
   WorkspacePricingEstimate,
 } from '../_lib/workspace-types';
+import {
+  localizeWorkspaceNodeSubtitle,
+  localizeWorkspaceNodeTitle,
+  localizeWorkspacePromptText,
+  localizeWorkspaceShotOutputName,
+} from '../_lib/workspace-generated-copy';
 import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
 import {
   localizeStudioConnectorDisplayLabel,
-  localizeStudioGeneratedCanvasText,
   type StudioCopy,
 } from '../../_lib/studio-copy';
 
@@ -46,10 +51,6 @@ function localizedOutputSubtitle(
   return copy.generatedMedia;
 }
 
-function localizedNodeText(value: string | undefined, copy: StudioCopy['canvas']['nodes']): string | undefined {
-  return value ? localizeStudioGeneratedCanvasText(value, copy) : value;
-}
-
 export function useWorkspaceRenderNodes({
   capabilities,
   edges,
@@ -64,12 +65,18 @@ export function useWorkspaceRenderNodes({
   return useMemo(() => {
     return nodes.map((node) => {
       if (node.data.kind !== 'shot' || !node.data.shot) {
+        const subtitle = node.data.kind === 'output' && node.data.output
+          ? localizedOutputSubtitle(node, studioCanvasCopy.nodes)
+          : localizeWorkspaceNodeSubtitle(node, studioCanvasCopy.nodes);
         return {
           ...node,
           data: {
             ...node.data,
-            title: localizedNodeText(node.data.title, studioCanvasCopy.nodes) ?? node.data.title,
-            subtitle: localizedNodeText(localizedOutputSubtitle(node, studioCanvasCopy.nodes), studioCanvasCopy.nodes),
+            title: localizeWorkspaceNodeTitle(node, studioCanvasCopy.nodes),
+            subtitle,
+            ...(typeof node.data.promptText === 'string'
+              ? { promptText: localizeWorkspacePromptText(node, studioCanvasCopy.nodes) ?? node.data.promptText }
+              : {}),
             onPromptChange: (nodeId: string, value: string) => onPatchNodeData(nodeId, { promptText: value }),
             onOpenAssetLibrary,
             onSendOutputToTimeline,
@@ -88,7 +95,7 @@ export function useWorkspaceRenderNodes({
         const capacity = workspaceConnectionCapacity({ connector, connectedCount });
         return {
           ...connector,
-          label: localizeStudioConnectorDisplayLabel(connector.label, studioCanvasCopy.nodes),
+          label: localizeStudioConnectorDisplayLabel(connector.label, studioCanvasCopy.nodes, connector.kind),
           connectedCount,
           remainingCount: capacity.remainingCount,
           capacityLabel: capacity.capacityLabel,
@@ -98,8 +105,12 @@ export function useWorkspaceRenderNodes({
         ...node,
         data: {
           ...node.data,
-          title: localizedNodeText(node.data.title, studioCanvasCopy.nodes) ?? node.data.title,
-          subtitle: localizedNodeText(node.data.subtitle, studioCanvasCopy.nodes),
+          title: localizeWorkspaceNodeTitle(node, studioCanvasCopy.nodes),
+          subtitle: localizeWorkspaceNodeSubtitle(node, studioCanvasCopy.nodes),
+          shot: {
+            ...node.data.shot,
+            outputName: localizeWorkspaceShotOutputName(node, studioCanvasCopy.nodes),
+          },
           sourceHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
           targetHandles: getWorkspaceShotTargetHandles(validation.capability),
           inputConnectors,

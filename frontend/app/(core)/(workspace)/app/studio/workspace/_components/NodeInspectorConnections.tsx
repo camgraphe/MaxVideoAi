@@ -6,8 +6,10 @@ import type {
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
 } from '../_lib/workspace-types';
-import { edgeLabel } from '../_lib/workspace-templates';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import {
+  localizeStudioEdgeKindLabel,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -45,7 +47,7 @@ export function NodeInspectorConnections({
         connections.map((edge) => (
           <div key={edge.id} className={styles.connectedRow}>
             <span style={{ background: edge.data?.color ?? '#8b5cf6' }} />
-            <p>{edgeLabel(edge.data?.kind ?? 'reference')}</p>
+            <p>{localizeStudioEdgeKindLabel(edge.data?.kind ?? 'reference', copy)}</p>
             <small>
               {edge.source === node.id
                 ? formatCopyValue(copy.toNode, { node: edge.target })

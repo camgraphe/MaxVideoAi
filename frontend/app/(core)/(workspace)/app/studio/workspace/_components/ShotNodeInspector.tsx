@@ -11,7 +11,11 @@ import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
-import { localizeStudioEdgeKindLabel, type StudioCopy } from '../../_lib/studio-copy';
+import { localizeWorkspaceShotOutputName } from '../_lib/workspace-generated-copy';
+import {
+  localizeStudioEdgeKindLabel,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -60,12 +64,13 @@ export function ShotNodeInspector({
   const recommendedModelIds = new Set(recommendedModels.map((model) => model.id));
   const remainingCapabilities = capabilities.filter((capability) => !recommendedModelIds.has(capability.id));
   const edgeLabel = (kind: string) => localizeStudioEdgeKindLabel(kind, copy);
+  const outputName = localizeWorkspaceShotOutputName(node, copy);
 
   return (
     <>
       <FieldLabel>
         {copy.outputName}
-        <input className={styles.settingsInput} value={shot.outputName} onChange={(event) => onPatchShot(node.id, { outputName: event.currentTarget.value })} />
+        <input className={styles.settingsInput} value={outputName} onChange={(event) => onPatchShot(node.id, { outputName: event.currentTarget.value })} />
       </FieldLabel>
       <FieldLabel>
         {copy.model}

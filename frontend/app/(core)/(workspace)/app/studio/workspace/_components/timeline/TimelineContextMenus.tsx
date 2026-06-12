@@ -4,6 +4,10 @@ import type { MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from '../../_styles/timeline-context-menu.module.css';
 import type { WorkspaceTimelineTrack } from '../../_lib/workspace-types';
+import {
+  localizeWorkspaceTimelineTrackKindLabel,
+  localizeWorkspaceTimelineTrackLabel,
+} from '../../_lib/workspace-timeline-tracks';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export type TimelineContextMenuState = {
@@ -27,6 +31,7 @@ export type TimelineTrackContextMenuState = {
 
 type TimelineContextMenusProps = {
   copy: StudioCopy['timeline'];
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
   clipMenu: TimelineContextMenuState | null;
   onClipMenuAction: (action: 'link' | 'unlink') => void;
   onTrackMenuAction: (action: 'add' | 'delete') => void;
@@ -39,11 +44,17 @@ function stopMenuPointer(event: MouseEvent<HTMLDivElement> | ReactPointerEvent<H
 
 export const TimelineContextMenus = memo(function TimelineContextMenus({
   copy,
+  canvasNodeCopy,
   clipMenu,
   onClipMenuAction,
   onTrackMenuAction,
   trackMenu,
 }: TimelineContextMenusProps) {
+  const trackLabel = trackMenu ? localizeWorkspaceTimelineTrackLabel(trackMenu.trackId, canvasNodeCopy) : '';
+  const trackKindLabel = trackMenu
+    ? localizeWorkspaceTimelineTrackKindLabel(trackMenu.kind, canvasNodeCopy).toLocaleLowerCase()
+    : '';
+
   return (
     <>
       {clipMenu ? (
@@ -90,7 +101,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
           onMouseDown={stopMenuPointer}
           onPointerDown={stopMenuPointer}
         >
-          <span>{copy.tracks.trackContextLabel.replace('{track}', trackMenu.label)}</span>
+          <span>{copy.tracks.trackContextLabel.replace('{track}', trackLabel)}</span>
           <button
             type="button"
             role="menuitem"
@@ -98,7 +109,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onTrackMenuAction('add')}
           >
             <Plus size={14} />
-            {copy.tracks.addTrack.replace('{kind}', trackMenu.kind)}
+            {copy.tracks.addTrack.replace('{kind}', trackKindLabel)}
           </button>
           <button
             type="button"
@@ -107,7 +118,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onTrackMenuAction('delete')}
           >
             <Trash2 size={14} />
-            {copy.tracks.deleteTrack.replace('{kind}', trackMenu.kind)}
+            {copy.tracks.deleteTrack.replace('{kind}', trackKindLabel)}
           </button>
         </div>
       ) : null}

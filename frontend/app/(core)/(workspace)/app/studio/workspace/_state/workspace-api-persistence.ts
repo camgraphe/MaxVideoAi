@@ -1,5 +1,6 @@
 import { authFetch } from '@/lib/authFetch';
 import {
+  createStarterWorkspaceTemplate,
   WORKSPACE_TEMPLATE_SUMMARIES,
 } from '../_lib/workspace-templates';
 import {
@@ -12,8 +13,11 @@ import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceNodeGeneratedCopy,
   WorkspaceProjectMediaFolder,
   WorkspaceTemplateId,
+  WorkspaceTimelineItem,
+  WorkspaceTimelineItemGeneratedCopy,
 } from '../_lib/workspace-types';
 import {
   normalizeGeneratedOutputEdges,
@@ -56,6 +60,129 @@ export function normalizeStudioProjectTemplateId(value: unknown): WorkspaceTempl
     return value as WorkspaceTemplateId;
   }
   return 'product-ad';
+}
+
+type NormalizePersistedWorkspaceStateOptions = {
+  canvasTemplateId?: WorkspaceTemplateId;
+};
+
+function starterTemplateIdForPersistedWorkspace(
+  parsed: Partial<PersistedWorkspaceState>,
+  options?: NormalizePersistedWorkspaceStateOptions
+): WorkspaceTemplateId {
+  return normalizeStudioProjectTemplateId(parsed.activeTemplateId ?? options?.canvasTemplateId);
+}
+
+function mergeNodeGeneratedCopyField(
+  generatedCopy: WorkspaceNodeGeneratedCopy | undefined,
+  field: keyof WorkspaceNodeGeneratedCopy,
+  currentValue: unknown,
+  starterValue: unknown,
+  starterGeneratedCopy: WorkspaceNodeGeneratedCopy | undefined
+): WorkspaceNodeGeneratedCopy | undefined {
+  const reference = starterGeneratedCopy?.[field];
+  // A present field, including null, is a modern marker: do not infer legacy
+  // starter provenance after a user has cleared generated copy on that field.
+  const hasModernFieldMarker = generatedCopy ? Object.prototype.hasOwnProperty.call(generatedCopy, field) : false;
+  if (!reference || hasModernFieldMarker || currentValue !== starterValue) return generatedCopy;
+  return { ...generatedCopy, [field]: reference };
+}
+
+function nodeMatchesStarterGeneratedCopyContext(
+  node: WorkspaceGraphNode,
+  starterNode: WorkspaceGraphNode
+): boolean {
+  if (node.id !== starterNode.id || node.type !== starterNode.type || node.data.kind !== starterNode.data.kind) return false;
+  if (starterNode.data.promptRole && node.data.promptRole !== starterNode.data.promptRole) return false;
+  if (starterNode.data.asset?.id && node.data.asset?.id !== starterNode.data.asset.id) return false;
+  if (starterNode.data.asset?.filename && node.data.asset?.filename !== starterNode.data.asset.filename) return false;
+  if (starterNode.data.shot) {
+    if (!node.data.shot) return false;
+    if (node.data.shot.modelId !== starterNode.data.shot.modelId) return false;
+    if (node.data.shot.durationSec !== starterNode.data.shot.durationSec) return false;
+  }
+  if (starterNode.data.output?.sourceShotId && node.data.output?.sourceShotId !== starterNode.data.output.sourceShotId) {
+    return false;
+  }
+  return true;
+}
+
+function migrateStarterGeneratedCopyForNodes(
+  templateId: WorkspaceTemplateId,
+  nodes: WorkspaceGraphNode[]
+): WorkspaceGraphNode[] {
+  const starterNodesById = new Map(createStarterWorkspaceTemplate(templateId).nodes.map((node) => [node.id, node]));
+  return nodes.map((node) => {
+    const starterNode = starterNodesById.get(node.id);
+    if (!starterNode || !nodeMatchesStarterGeneratedCopyContext(node, starterNode)) return node;
+
+    let generatedCopy = node.data.generatedCopy;
+    generatedCopy = mergeNodeGeneratedCopyField(generatedCopy, 'title', node.data.title, starterNode.data.title, starterNode.data.generatedCopy);
+    generatedCopy = mergeNodeGeneratedCopyField(generatedCopy, 'subtitle', node.data.subtitle, starterNode.data.subtitle, starterNode.data.generatedCopy);
+    generatedCopy = mergeNodeGeneratedCopyField(
+      generatedCopy,
+      'promptText',
+      node.data.promptText,
+      starterNode.data.promptText,
+      starterNode.data.generatedCopy
+    );
+    generatedCopy = mergeNodeGeneratedCopyField(
+      generatedCopy,
+      'shotOutputName',
+      node.data.shot?.outputName,
+      starterNode.data.shot?.outputName,
+      starterNode.data.generatedCopy
+    );
+
+    return generatedCopy === node.data.generatedCopy
+      ? node
+      : {
+          ...node,
+          data: {
+            ...node.data,
+            generatedCopy,
+          },
+        };
+  });
+}
+
+function mergeTimelineGeneratedCopyField(
+  generatedCopy: WorkspaceTimelineItemGeneratedCopy | undefined,
+  currentTitle: string,
+  starterItem: WorkspaceTimelineItem
+): WorkspaceTimelineItemGeneratedCopy | undefined {
+  const reference = starterItem.generatedCopy?.title;
+  // See node migration above: null means "custom text, do not re-infer".
+  const hasModernFieldMarker = generatedCopy ? Object.prototype.hasOwnProperty.call(generatedCopy, 'title') : false;
+  if (!reference || hasModernFieldMarker || currentTitle !== starterItem.title) return generatedCopy;
+  return { ...generatedCopy, title: reference };
+}
+
+function timelineItemMatchesStarterGeneratedCopyContext(
+  item: WorkspaceTimelineItem,
+  starterItem: WorkspaceTimelineItem
+): boolean {
+  return (
+    item.id === starterItem.id &&
+    item.outputNodeId === starterItem.outputNodeId &&
+    item.track === starterItem.track &&
+    item.mediaKind === starterItem.mediaKind &&
+    item.startSec === starterItem.startSec &&
+    item.durationSec === starterItem.durationSec
+  );
+}
+
+function migrateStarterGeneratedCopyForTimelineItems(
+  templateId: WorkspaceTemplateId,
+  items: WorkspaceTimelineItem[]
+): WorkspaceTimelineItem[] {
+  const starterItemsById = new Map(createStarterWorkspaceTemplate(templateId).timelineItems.map((item) => [item.id, item]));
+  return items.map((item) => {
+    const starterItem = starterItemsById.get(item.id);
+    if (!starterItem || !timelineItemMatchesStarterGeneratedCopyContext(item, starterItem)) return item;
+    const generatedCopy = mergeTimelineGeneratedCopyField(item.generatedCopy, item.title, starterItem);
+    return generatedCopy === item.generatedCopy ? item : { ...item, generatedCopy };
+  });
 }
 
 export function normalizeStudioProjectApiRecord(value: unknown): StudioProjectStorageRecord | null {
@@ -144,16 +271,20 @@ export function mergePersistedWorkspaceWithServerSequences(
   serverSequences: WorkspaceSequenceRecord[] | null
 ): PersistedWorkspaceState {
   if (!serverSequences?.length) return persisted;
+  const migratedServerSequences = serverSequences.map((sequence) => ({
+    ...sequence,
+    timelineItems: migrateStarterGeneratedCopyForTimelineItems(persisted.activeTemplateId, sequence.timelineItems),
+  }));
 
-  const activeSequenceId = serverSequences.some((sequence) => sequence.id === persisted.activeSequenceId)
+  const activeSequenceId = migratedServerSequences.some((sequence) => sequence.id === persisted.activeSequenceId)
     ? persisted.activeSequenceId
-    : serverSequences[0].id;
-  const activeSequence = serverSequences.find((sequence) => sequence.id === activeSequenceId) ?? serverSequences[0];
+    : migratedServerSequences[0].id;
+  const activeSequence = migratedServerSequences.find((sequence) => sequence.id === activeSequenceId) ?? migratedServerSequences[0];
 
   return {
     ...persisted,
     activeSequenceId,
-    sequences: serverSequences,
+    sequences: migratedServerSequences,
     timelineItems: activeSequence.timelineItems,
     projectSettings: activeSequence.projectSettings,
     audioTrackCount: activeSequence.audioTrackCount,
@@ -328,16 +459,24 @@ function normalizeProjectMediaAssetFolders(
   }));
 }
 
-export function normalizePersistedWorkspaceState(value: unknown): PersistedWorkspaceState | null {
+export function normalizePersistedWorkspaceState(
+  value: unknown,
+  options?: NormalizePersistedWorkspaceStateOptions
+): PersistedWorkspaceState | null {
   const parsed = value as Partial<PersistedWorkspaceState> | null;
   if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
-  const nodes = normalizePlaceholderOutputNodes(
+  const activeTemplateId = starterTemplateIdForPersistedWorkspace(parsed, options);
+  const normalizedNodes = normalizePlaceholderOutputNodes(
     normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(parsed.nodes)))
   );
+  const nodes = migrateStarterGeneratedCopyForNodes(activeTemplateId, normalizedNodes);
   const edges = normalizeWorkspaceEdgeTypes(
     normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))
   );
-  const timelineItems = normalizeWorkspaceTimelineIdentities(normalizeTimelineMediaUrls(nodes, parsed.timelineItems));
+  const timelineItems = migrateStarterGeneratedCopyForTimelineItems(
+    activeTemplateId,
+    normalizeWorkspaceTimelineIdentities(normalizeTimelineMediaUrls(nodes, parsed.timelineItems))
+  );
   const audioTrackCount = coerceAudioTrackCount(parsed.audioTrackCount, timelineItems);
   const videoTrackCount = coerceVideoTrackCount(parsed.videoTrackCount, timelineItems);
   const activeSequenceId = typeof parsed.activeSequenceId === 'string' && parsed.activeSequenceId.trim()
@@ -369,6 +508,10 @@ export function normalizePersistedWorkspaceState(value: unknown): PersistedWorks
       ? parsed.sequences
           .map(normalizeWorkspaceSequenceRecord)
           .filter((sequence): sequence is WorkspaceSequenceRecord => Boolean(sequence))
+          .map((sequence) => ({
+            ...sequence,
+            timelineItems: migrateStarterGeneratedCopyForTimelineItems(activeTemplateId, sequence.timelineItems),
+          }))
       : [],
     activeSequence
   );
@@ -381,7 +524,7 @@ export function normalizePersistedWorkspaceState(value: unknown): PersistedWorks
     timelineItems,
     activeSequenceId,
     sequences,
-    activeTemplateId: normalizeStudioProjectTemplateId(parsed.activeTemplateId),
+    activeTemplateId,
     projectSettings: coerceWorkspaceProjectSettings(parsed.projectSettings),
     focusMode: parsed.focusMode === 'viewer' ? 'viewer' : 'canvas',
     audioTrackCount,

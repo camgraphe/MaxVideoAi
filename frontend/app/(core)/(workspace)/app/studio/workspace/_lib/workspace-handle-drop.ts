@@ -2,11 +2,14 @@ import type { XYPosition } from '@xyflow/react';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphNode,
+  WorkspaceGeneratedCopyReference,
+  WorkspaceNodeGeneratedCopy,
   WorkspaceNodeKind,
   WorkspacePromptRole,
 } from './workspace-types';
-import { edgeLabel, WORKSPACE_EDGE_COLORS } from './workspace-templates';
-import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
+import { generatedCopyReference } from './workspace-generated-copy';
+import { WORKSPACE_EDGE_COLORS } from './workspace-templates';
+import { DEFAULT_STUDIO_COPY, localizeStudioEdgeKindLabel, type StudioCopy } from '../../_lib/studio-copy';
 
 export type WorkspaceHandleDropDirection = 'source' | 'target';
 
@@ -15,7 +18,10 @@ export type WorkspaceHandleDropDraft = {
   nodeKind: WorkspaceNodeKind;
   sourceHandle: WorkspaceEdgeKind;
   targetHandle: WorkspaceEdgeKind;
+  label: string;
   title: string;
+  titleGeneratedCopy?: WorkspaceGeneratedCopyReference;
+  promptTextGeneratedCopy?: WorkspaceGeneratedCopyReference;
   subtitle: string;
   accent: string;
   promptRole?: WorkspacePromptRole;
@@ -74,14 +80,29 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
   );
 }
 
+function canvasNodeCopyValue(
+  copy: StudioCopy['canvas']['nodes'],
+  key: string,
+  fallback: string,
+  replacements?: Record<string, string | number>
+): string {
+  const value = copy[key] ?? fallback;
+  return replacements ? formatCopyValue(value, replacements) : value;
+}
+
+function generatedTitleCopy(draft: WorkspaceHandleDropDraft): WorkspaceNodeGeneratedCopy | undefined {
+  return draft.titleGeneratedCopy ? { title: draft.titleGeneratedCopy } : undefined;
+}
+
 export function resolveWorkspaceHandleDropDraft(
   kind: WorkspaceEdgeKind,
   noticesOrDirection: StudioCopy['notices'] | WorkspaceHandleDropDirection = DEFAULT_STUDIO_COPY.notices,
-  nextDirection: WorkspaceHandleDropDirection = 'target'
+  nextDirection: WorkspaceHandleDropDirection = 'target',
+  canvasNodeCopy: StudioCopy['canvas']['nodes'] = DEFAULT_STUDIO_COPY.canvas.nodes
 ): WorkspaceHandleDropDraft | null {
   const notices = typeof noticesOrDirection === 'string' ? DEFAULT_STUDIO_COPY.notices : noticesOrDirection;
   const direction = typeof noticesOrDirection === 'string' ? noticesOrDirection : nextDirection;
-  const label = edgeLabel(kind);
+  const label = localizeStudioEdgeKindLabel(kind, canvasNodeCopy);
   const accent = handleAccent(kind);
 
   if (direction === 'source') {
@@ -91,7 +112,9 @@ export function resolveWorkspaceHandleDropDraft(
       nodeKind: 'output',
       sourceHandle: 'video_reference',
       targetHandle: 'generated_output',
-      title: notices.generatedOutputTitle,
+      label,
+      title: canvasNodeCopyValue(canvasNodeCopy, 'handleGeneratedOutputTitle', notices.generatedOutputTitle),
+      titleGeneratedCopy: generatedCopyReference('handleGeneratedOutputTitle'),
       subtitle: notices.generatedOutputBlockSubtitle,
       accent,
     };
@@ -103,7 +126,10 @@ export function resolveWorkspaceHandleDropDraft(
       nodeKind: 'text-prompt',
       sourceHandle: 'prompt',
       targetHandle: kind,
-      title: formatCopyValue(notices.promptNodeTitle, { label }),
+      label,
+      title: canvasNodeCopyValue(canvasNodeCopy, 'handlePromptNodeTitle', notices.promptNodeTitle, { label }),
+      titleGeneratedCopy: generatedCopyReference('handlePromptNodeTitle', undefined, { label: kind }),
+      promptTextGeneratedCopy: generatedCopyReference('handleDraftPromptText', undefined, undefined, { label: kind }),
       subtitle: notices.textPromptSourceSubtitle,
       accent,
       promptRole: TEXT_PROMPT_ROLE_BY_KIND[kind] ?? 'prompt',
@@ -116,7 +142,9 @@ export function resolveWorkspaceHandleDropDraft(
       nodeKind: 'asset-image',
       sourceHandle: 'reference',
       targetHandle: kind,
-      title: formatCopyValue(notices.imageNodeTitle, { label }),
+      label,
+      title: canvasNodeCopyValue(canvasNodeCopy, 'handleImageNodeTitle', notices.imageNodeTitle, { label }),
+      titleGeneratedCopy: generatedCopyReference('handleImageNodeTitle', undefined, { label: kind }),
       subtitle: notices.imageSourceBlockSubtitle,
       accent,
     };
@@ -128,7 +156,9 @@ export function resolveWorkspaceHandleDropDraft(
       nodeKind: 'asset-video',
       sourceHandle: 'video_reference',
       targetHandle: kind,
-      title: formatCopyValue(notices.videoNodeTitle, { label }),
+      label,
+      title: canvasNodeCopyValue(canvasNodeCopy, 'handleVideoNodeTitle', notices.videoNodeTitle, { label }),
+      titleGeneratedCopy: generatedCopyReference('handleVideoNodeTitle', undefined, { label: kind }),
       subtitle: notices.videoSourceBlockSubtitle,
       accent,
     };
@@ -140,7 +170,9 @@ export function resolveWorkspaceHandleDropDraft(
       nodeKind: 'asset-audio',
       sourceHandle: 'audio',
       targetHandle: kind,
-      title: formatCopyValue(notices.audioNodeTitle, { label }),
+      label,
+      title: canvasNodeCopyValue(canvasNodeCopy, 'handleAudioNodeTitle', notices.audioNodeTitle, { label }),
+      titleGeneratedCopy: generatedCopyReference('handleAudioNodeTitle', undefined, { label: kind }),
       subtitle: notices.audioSourceBlockSubtitle,
       accent,
     };
@@ -174,6 +206,7 @@ export function createWorkspaceHandleDropNode({
         title: draft.title,
         subtitle: notices.noImageSelected,
         accent: draft.accent,
+        generatedCopy: generatedTitleCopy(draft),
         targetHandles: [],
         sourceHandles: [draft.sourceHandle],
       },
@@ -190,6 +223,7 @@ export function createWorkspaceHandleDropNode({
         title: draft.title,
         subtitle: notices.noVideoSelected,
         accent: draft.accent,
+        generatedCopy: generatedTitleCopy(draft),
         targetHandles: [],
         sourceHandles: [draft.sourceHandle],
       },
@@ -206,6 +240,7 @@ export function createWorkspaceHandleDropNode({
         title: draft.title,
         subtitle: notices.noAudioSelected,
         accent: draft.accent,
+        generatedCopy: generatedTitleCopy(draft),
         targetHandles: [],
         sourceHandles: [draft.sourceHandle],
       },
@@ -223,7 +258,11 @@ export function createWorkspaceHandleDropNode({
         subtitle: notices.dragCreatedPromptSubtitle,
         accent: draft.accent,
         promptRole: draft.promptRole ?? 'prompt',
-        promptText: formatCopyValue(notices.draftHandlePromptText, { label: edgeLabel(draft.kind).toLowerCase() }),
+        promptText: formatCopyValue(notices.draftHandlePromptText, { label: draft.label.toLocaleLowerCase() }),
+        generatedCopy: {
+          ...(draft.titleGeneratedCopy ? { title: draft.titleGeneratedCopy } : {}),
+          ...(draft.promptTextGeneratedCopy ? { promptText: draft.promptTextGeneratedCopy } : {}),
+        },
         targetHandles: [],
         sourceHandles: [draft.sourceHandle],
       },
@@ -239,6 +278,7 @@ export function createWorkspaceHandleDropNode({
       title: draft.title,
       subtitle: notices.readyForGeneratedMedia,
       accent: draft.accent,
+      generatedCopy: generatedTitleCopy(draft),
       output: {
         kind: 'video',
         modelId: defaultModelId,

@@ -22,6 +22,7 @@ import {
   projectMediaTimelineKindForGeneratedNode,
 } from '../_lib/workspace-project-media-drag';
 import { clearTimelineNodeDragPayload } from '../_lib/timeline/timeline-external-drop';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 const MEDIA_DETAIL_SEPARATOR = ' • ';
 
@@ -84,6 +85,7 @@ type UseProjectMediaControllerArgs = {
   projectAssets: WorkspaceAssetRecord[];
   projectMediaFolders: WorkspaceProjectMediaFolder[];
   sequences: WorkspaceProjectSequenceSummary[];
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   onClearSequenceInspector: () => void;
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteGeneratedClips: (nodeIds: string[]) => void;
@@ -155,19 +157,27 @@ function generatedNodeFolderId(node: WorkspaceGraphNode, folderIds: Set<string>)
   return folderId && folderIds.has(folderId) ? folderId : null;
 }
 
-function beginProjectAssetTimelineDrag(event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord): void {
+function beginProjectAssetTimelineDrag(
+  event: ReactDragEvent<HTMLElement>,
+  asset: WorkspaceAssetRecord,
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes']
+): void {
   const payload = projectMediaTimelineDragPayloadForAsset(asset);
   if (!payload) return;
   applyProjectMediaItemDragPayload(event.dataTransfer, projectMediaItemDragPayloadForAsset(asset));
-  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
+  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload, studioCanvasNodeCopy);
 }
 
-function beginGeneratedNodeTimelineDrag(event: ReactDragEvent<HTMLElement>, node: WorkspaceGraphNode): void {
+function beginGeneratedNodeTimelineDrag(
+  event: ReactDragEvent<HTMLElement>,
+  node: WorkspaceGraphNode,
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes']
+): void {
   const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
   if (!payload) return;
   const itemPayload = projectMediaItemDragPayloadForGeneratedNode(node);
   if (itemPayload) applyProjectMediaItemDragPayload(event.dataTransfer, itemPayload);
-  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload);
+  applyProjectMediaTimelineDragPayload(event.dataTransfer, payload, studioCanvasNodeCopy);
 }
 
 function endProjectMediaTimelineDrag(): void {
@@ -180,6 +190,7 @@ export function useProjectMediaController({
   projectAssets,
   projectMediaFolders,
   sequences,
+  studioCanvasNodeCopy,
   onClearSequenceInspector,
   onDeleteGeneratedClip,
   onDeleteGeneratedClips,
@@ -547,8 +558,10 @@ export function useProjectMediaController({
 
   return {
     activeFolder,
-    beginGeneratedNodeTimelineDrag,
-    beginProjectAssetTimelineDrag,
+    beginGeneratedNodeTimelineDrag: (event: ReactDragEvent<HTMLElement>, node: WorkspaceGraphNode) =>
+      beginGeneratedNodeTimelineDrag(event, node, studioCanvasNodeCopy),
+    beginProjectAssetTimelineDrag: (event: ReactDragEvent<HTMLElement>, asset: WorkspaceAssetRecord) =>
+      beginProjectAssetTimelineDrag(event, asset, studioCanvasNodeCopy),
     endProjectMediaTimelineDrag,
     contextMenu,
     deleteMenuItem,

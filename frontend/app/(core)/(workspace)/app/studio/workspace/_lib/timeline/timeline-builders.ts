@@ -3,6 +3,7 @@ import type {
   WorkspaceOutputMetadata,
   WorkspaceTimelineItem,
 } from '../workspace-types';
+import { generatedTextReference } from '../workspace-generated-copy';
 import { MIN_CLIP_DURATION_SEC } from './timeline-frames';
 
 export function workspaceOutputHasTimelineAudio(output: WorkspaceOutputMetadata): boolean {
@@ -27,6 +28,7 @@ export function workspaceAssetHasTimelineAudio(asset: WorkspaceAssetRecord): boo
 export function buildWorkspaceTimelineItemsForAsset(params: {
   assetNodeId: string;
   title: string;
+  generatedCopy?: WorkspaceTimelineItem['generatedCopy'];
   asset: WorkspaceAssetRecord;
   startSec: number;
   idSeed?: string;
@@ -55,6 +57,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
         id: baseId,
         track: 'audio',
         mediaKind: 'audio',
+        generatedCopy: params.generatedCopy,
         mediaUrl,
       },
     ];
@@ -68,6 +71,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
     linkedGroupKind: workspaceAssetHasTimelineAudio(params.asset) ? 'video-audio' : null,
     mediaKind: params.asset.kind === 'video' ? 'video' : 'image',
     hasEmbeddedAudio: workspaceAssetHasTimelineAudio(params.asset),
+    generatedCopy: params.generatedCopy,
     mediaUrl,
     thumbnailUrl: params.asset.thumbUrl ?? mediaUrl,
   };
@@ -80,6 +84,9 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
       ...common,
       id: `${baseId}-audio`,
       title: `${params.title} Audio`,
+      generatedCopy: params.generatedCopy?.title
+        ? { title: generatedTextReference(`${params.title} Audio`) }
+        : undefined,
       track: 'audio',
       linkedGroupId: baseId,
       linkedGroupKind: 'video-audio',
@@ -93,6 +100,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
 export function buildWorkspaceTimelineItemsForOutput(params: {
   outputNodeId: string;
   title: string;
+  generatedCopy?: WorkspaceTimelineItem['generatedCopy'];
   output: WorkspaceOutputMetadata;
   startSec: number;
   idSeed?: string;
@@ -119,6 +127,7 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
         id: baseId,
         track: 'audio',
         mediaKind: 'audio',
+        generatedCopy: params.generatedCopy,
         mediaUrl: params.output.url ?? null,
       },
     ];
@@ -132,6 +141,7 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
     linkedGroupKind: workspaceOutputHasTimelineAudio(params.output) ? 'video-audio' : null,
     mediaKind: params.output.kind === 'image' ? 'image' : 'video',
     hasEmbeddedAudio: workspaceOutputHasTimelineAudio(params.output),
+    generatedCopy: params.generatedCopy,
     mediaUrl: params.output.url ?? null,
     thumbnailUrl: params.output.thumbUrl ?? params.output.url ?? null,
   };
@@ -144,6 +154,9 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
       ...common,
       id: `${baseId}-audio`,
       title: `${params.title} Audio`,
+      generatedCopy: params.generatedCopy?.title
+        ? { title: generatedTextReference(`${params.title} Audio`) }
+        : undefined,
       track: 'audio',
       linkedGroupId: baseId,
       linkedGroupKind: 'video-audio',

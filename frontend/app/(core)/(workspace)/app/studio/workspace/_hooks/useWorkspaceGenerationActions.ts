@@ -13,6 +13,10 @@ import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
+import {
+  localizeWorkspaceNodeTitle,
+  workspaceOutputNodeTitleDataForShot,
+} from '../_lib/workspace-generated-copy';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
@@ -34,6 +38,7 @@ type UseWorkspaceGenerationActionsParams = {
   setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
 };
 
@@ -48,6 +53,7 @@ export function useWorkspaceGenerationActions({
   setNodes,
   setNotice,
   setSelectedNodeId,
+  studioCanvasNodeCopy,
   studioNotices,
 }: UseWorkspaceGenerationActionsParams): {
   handleGenerateShot: (nodeId: string) => Promise<void>;
@@ -79,13 +85,21 @@ export function useWorkspaceGenerationActions({
         outputNodeId: existingOutputNode?.id,
         notices: studioNotices,
       });
-      const pendingOutputTitle = shotNode.data.shot.outputName || existingOutputNode?.data.title || studioNotices.generatedOutputTitle;
+      const outputTitleData = workspaceOutputNodeTitleDataForShot(shotNode);
+      const pendingOutputTitleData = outputTitleData.title
+        ? outputTitleData
+        : {
+            title: existingOutputNode
+              ? existingOutputNode.data.title
+              : studioNotices.generatedOutputTitle,
+            generatedCopy: existingOutputNode?.data.generatedCopy,
+          };
       const pendingOutputNode = existingOutputNode
         ? {
             ...existingOutputNode,
             data: {
               ...existingOutputNode.data,
-              title: pendingOutputTitle,
+              ...pendingOutputTitleData,
               subtitle: outputNodeSubtitle(pendingOutput.output, studioNotices),
               output: pendingOutput.output,
             },
@@ -94,7 +108,7 @@ export function useWorkspaceGenerationActions({
             ...pendingOutput.outputNode,
             data: {
               ...pendingOutput.outputNode.data,
-              title: pendingOutputTitle,
+              ...pendingOutputTitleData,
             },
           };
 
@@ -124,7 +138,7 @@ export function useWorkspaceGenerationActions({
       setActiveEditorSurface('canvas');
       setSelectedNodeId(pendingOutputNode.id);
       setNotice(formatNotice(mockMode ? studioNotices.generationStartedMock : studioNotices.generationStarted, {
-        title: shotNode.data.title,
+        title: localizeWorkspaceNodeTitle(shotNode, studioCanvasNodeCopy),
       }));
       try {
         const result = await submitWorkspaceShotGeneration({
@@ -133,6 +147,7 @@ export function useWorkspaceGenerationActions({
           shotNodeId: nodeId,
           capability,
           generationMode: mockMode ? 'mock' : 'real',
+          canvasNodeCopy: studioCanvasNodeCopy,
         });
         setNodes((current) =>
           current.map((node) => {
@@ -155,11 +170,17 @@ export function useWorkspaceGenerationActions({
               };
             }
             if (node.id === pendingOutputNode.id) {
+              const finalOutputTitleData = shotNode.data.shot
+                ? workspaceOutputNodeTitleDataForShot(shotNode)
+                : {
+                    title: node.data.title,
+                    generatedCopy: node.data.generatedCopy,
+                  };
               return {
                 ...node,
                 data: {
                   ...node.data,
-                  title: shotNode.data.shot?.outputName || node.data.title,
+                  ...finalOutputTitleData,
                   subtitle: outputNodeSubtitle(result.output, studioNotices),
                   output: result.output,
                 },
@@ -225,6 +246,7 @@ export function useWorkspaceGenerationActions({
       setNodes,
       setNotice,
       setSelectedNodeId,
+      studioCanvasNodeCopy,
       studioNotices,
     ]
   );

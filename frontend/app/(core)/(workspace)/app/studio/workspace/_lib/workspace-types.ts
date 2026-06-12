@@ -189,6 +189,35 @@ export type WorkspacePricingEstimate = {
   error?: string;
 };
 
+export type WorkspaceGeneratedCopyReference =
+  | {
+      key: keyof StudioCopy['canvas']['nodes'] & string;
+      replacements?: Record<string, string | number>;
+      edgeKindReplacements?: Record<string, WorkspaceEdgeKind>;
+      lowercaseEdgeKindReplacements?: Record<string, WorkspaceEdgeKind>;
+      value?: never;
+    }
+  | {
+      key?: never;
+      replacements?: never;
+      edgeKindReplacements?: never;
+      lowercaseEdgeKindReplacements?: never;
+      value: string;
+    };
+
+export type WorkspaceGeneratedCopyField = WorkspaceGeneratedCopyReference | null;
+
+export type WorkspaceNodeGeneratedCopy = {
+  title?: WorkspaceGeneratedCopyField;
+  subtitle?: WorkspaceGeneratedCopyField;
+  promptText?: WorkspaceGeneratedCopyField;
+  shotOutputName?: WorkspaceGeneratedCopyField;
+};
+
+export type WorkspaceTimelineItemGeneratedCopy = {
+  title?: WorkspaceGeneratedCopyField;
+};
+
 export type WorkspaceGraphEdgeData = Record<string, unknown> & {
   kind: WorkspaceEdgeKind;
   label: string;
@@ -205,6 +234,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   promptRole?: WorkspacePromptRole;
   shot?: WorkspaceShotSettings;
   output?: WorkspaceOutputMetadata;
+  generatedCopy?: WorkspaceNodeGeneratedCopy;
   sourceHandles?: WorkspaceEdgeKind[];
   targetHandles?: WorkspaceEdgeKind[];
   inputConnectors?: WorkspaceInputConnector[];
@@ -250,6 +280,7 @@ export type WorkspaceTimelineItem = {
   thumbnailUrl?: string | null;
   modelId?: string;
   status?: WorkspaceShotStatus;
+  generatedCopy?: WorkspaceTimelineItemGeneratedCopy;
   transform?: WorkspaceTimelineClipTransform;
   audioMix?: WorkspaceTimelineAudioMix;
   transitionOut?: {

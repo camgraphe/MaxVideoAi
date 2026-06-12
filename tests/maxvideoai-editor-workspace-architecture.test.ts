@@ -349,6 +349,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const workspaceEditorLayoutSource = source(workspaceEditorLayoutPath);
   const workspaceEditorTopbarSource = source(workspaceEditorTopbarPath);
   const nodeFrameSource = source(nodeFramePath);
+  const templateRegistrySource = source(templateRegistryPath);
+  const templateProductAdSource = source(templateProductAdPath);
   const styleSource = source(stylesPath);
   const shellStyleSource = source(shellStylesPath);
   const studioSessionStyleSource = source(studioSessionStylesPath);
@@ -482,6 +484,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(canvasTemplateActionsHookSource, /saveUserCanvasTemplateToApi/, 'canvas template action hook should save user canvas templates to the Studio API when available');
   assert.match(canvasTemplateActionsHookSource, /deleteUserCanvasTemplateFromApi/, 'canvas template action hook should delete user canvas templates through the Studio API when available');
   assert.match(canvasTemplateActionsHookSource, /writeUserCanvasTemplates/, 'canvas template action hook should keep local personal template fallback storage in sync');
+  assert.match(templateRegistrySource, /WorkspaceTemplateBuildCopy/, 'starter template registry should keep optional copy context backward-compatible');
+  assert.match(templateProductAdSource, /copy\?: WorkspaceTemplateBuildCopy/, 'Product Ad starter template should keep optional copy compatibility');
+  assert.match(templateProductAdSource, /localizeWorkspaceTemplateGeneratedState/, 'Product Ad optional copy should localize generated display fields through provenance');
+  assert.match(workspaceSource, /createStarterWorkspaceTemplate\('product-ad'\)/, 'workspace defaults should create canonical starter template state');
+  assert.doesNotMatch(canvasTemplateActionsHookSource, /studioCanvasNodeCopy/, 'canvas template actions should not persist locale-formatted starter state');
+  assert.match(canvasTemplateActionsHookSource, /createStarterWorkspaceTemplate\(templateId\)/, 'canvas template actions should apply canonical starter templates');
+  assert.match(persistenceEffectsHookSource, /createStarterWorkspaceTemplate\(project\.canvasTemplateId \?\? 'product-ad'\)/, 'project hydration should seed canonical starter templates');
   assert.doesNotMatch(workspaceSource, /saveUserCanvasTemplateToApi/, 'workspace orchestrator should not own user canvas template API mutations');
   assert.match(workspaceSource, /from '\.\/_state\/workspace-state'/, 'workspace should import persisted state contracts from the route-local state module');
   assert.match(workspaceSource, /from '\.\/_state\/workspace-selectors'/, 'workspace should import derived sequence selectors from the route-local state module');
@@ -1397,7 +1406,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(settingsSource, /NodeInspectorConnections/, 'node settings panel should delegate connection rows to a focused component');
   assert.doesNotMatch(settingsSource, /connections\.map/, 'node settings panel should not render graph connection rows inline');
   assert.match(nodeInspectorConnectionsSource, /connectedEdges/, 'node inspector connection component should own graph connection row derivation');
-  assert.match(nodeInspectorConnectionsSource, /edgeLabel/, 'node inspector connection component should render connector labels');
+  assert.match(nodeInspectorConnectionsSource, /localizeStudioEdgeKindLabel/, 'node inspector connection component should render localized connector labels');
   assert.doesNotMatch(settingsSource, /<video[\s\S]*controls/, 'node settings panel should not own playable media preview markup inline');
   assert.match(nodeInspectorMediaPreviewSource, /<video[\s\S]*controls/, 'output and video inspectors should render playable media when a video URL exists');
   assert.match(nodeInspectorMediaPreviewSource, /workspace-media-availability/, 'node inspector media preview should consume shared playable media helpers');
@@ -1666,6 +1675,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineExternalDropSource, /application\/x-maxvideoai-timeline-node/, 'timeline should accept ready canvas media node drops');
   assert.match(timelineTrackRowSource, /timelineExternalDropGhost/, 'timeline track rows should preview external block insertions before drop');
   assert.match(timelineTrackRowSource, /data-timeline-external-drop-duration/, 'timeline external drop preview should expose the incoming clip duration for browser tests');
+  assert.match(timelineExternalDropSource, /localizeWorkspaceTimelineItemTitle\(item,\s*copy\)/, 'timeline displacement previews should localize generated titles through timeline provenance');
+  assert.match(timelineTrackRowSource, /\{item\.title\}/, 'timeline displacement ghost titles should render the preview label resolved by the external-drop helper');
+  assert.doesNotMatch(timelineTrackRowSource, /localizeStudioGeneratedCanvasText/, 'timeline track rows should not relocalize raw clip titles by text pattern');
   assert.match(timelineProjectSidebarSource, /data-project-media-duration-sec/, 'viewer media cards should include clip duration in their timeline drag payload');
   assert.match(timelineClipInteractionHookSource, /setPointerCapture/, 'timeline clip interaction hook should capture pointer drags instead of relying on HTML drag/drop');
   assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');

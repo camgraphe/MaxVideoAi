@@ -1,6 +1,12 @@
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceTemplate, WorkspaceTimelineItem } from '../workspace-types';
 import { WORKSPACE_DEMO_AUDIO_URL } from '../workspace-library-assets';
+import {
+  generatedCopyReference,
+  generatedTextReference,
+  localizeWorkspaceTemplateGeneratedState,
+} from '../workspace-generated-copy';
 import { createWorkspaceEdge, shotSettings } from './template-core';
+import type { WorkspaceTemplateBuildCopy } from './registry';
 
 function devBlocksTimeline(): WorkspaceTimelineItem[] {
   return [
@@ -9,6 +15,9 @@ function devBlocksTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'dev-output',
       track: 'video',
       title: 'Dev Output Block',
+      generatedCopy: {
+        title: generatedCopyReference('templateDevOutputBlock'),
+      },
       durationSec: 6,
       startSec: 0,
       sourceStartSec: 0,
@@ -26,6 +35,9 @@ function devBlocksTimeline(): WorkspaceTimelineItem[] {
       outputNodeId: 'dev-output',
       track: 'audio',
       title: 'Dev Output Block Audio',
+      generatedCopy: {
+        title: generatedTextReference('Dev Output Block Audio'),
+      },
       durationSec: 6,
       startSec: 0,
       sourceStartSec: 0,
@@ -39,8 +51,7 @@ function devBlocksTimeline(): WorkspaceTimelineItem[] {
   ];
 }
 
-
-export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
+export function createDevBlocksWorkspaceTemplate(copy?: WorkspaceTemplateBuildCopy): WorkspaceTemplate {
   const nodes: WorkspaceGraphNode[] = [
     {
       id: 'dev-asset-image',
@@ -51,6 +62,10 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Image Block',
         subtitle: 'asset-image node',
         accent: '#8b5cf6',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevImageBlock'),
+          subtitle: generatedCopyReference('templateAssetImageNode'),
+        },
         asset: {
           id: 'dev-image',
           kind: 'image',
@@ -72,6 +87,10 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Video Block',
         subtitle: 'asset-video node',
         accent: '#2563eb',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevVideoBlock'),
+          subtitle: generatedCopyReference('templateAssetVideoNode'),
+        },
         asset: {
           id: 'dev-video',
           kind: 'video',
@@ -93,6 +112,10 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Audio Block',
         subtitle: 'asset-audio node',
         accent: '#22c55e',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevAudioBlock'),
+          subtitle: generatedCopyReference('templateAssetAudioNode'),
+        },
         asset: {
           id: 'dev-audio',
           kind: 'audio',
@@ -113,6 +136,11 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Prompt Block',
         subtitle: 'text-prompt node',
         accent: '#60a5fa',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevPromptBlock'),
+          subtitle: generatedCopyReference('templateTextPromptNode'),
+          promptText: generatedCopyReference('templateDevPromptText'),
+        },
         promptRole: 'prompt',
         promptText: 'Use this dev template to tune the prompt block, textarea, handles, spacing, and inspector states.',
         sourceHandles: ['prompt'],
@@ -127,6 +155,11 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Shot Block',
         subtitle: 'shot node',
         accent: '#f97316',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevShotBlock'),
+          subtitle: generatedCopyReference('templateShotNode'),
+          shotOutputName: generatedCopyReference('templateDevShotBlock'),
+        },
         shot: shotSettings({
           outputName: 'Dev Shot Block',
           modelId: 'veo-3-1',
@@ -161,6 +194,10 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
         title: 'Dev Output Block',
         subtitle: 'output node',
         accent: '#14b8a6',
+        generatedCopy: {
+          title: generatedCopyReference('templateDevOutputBlock'),
+          subtitle: generatedCopyReference('templateOutputNode'),
+        },
         output: {
           kind: 'video',
           modelId: 'veo-3-1',
@@ -189,12 +226,11 @@ export function createDevBlocksWorkspaceTemplate(): WorkspaceTemplate {
     createWorkspaceEdge({ source: 'dev-shot', target: 'dev-output', kind: 'generated_output' }),
   ];
 
-  return {
+  return localizeWorkspaceTemplateGeneratedState({
     id: 'dev-blocks',
     name: 'Dev Blocks',
     nodes,
     edges,
     timelineItems: devBlocksTimeline(),
-  };
+  }, copy);
 }
-

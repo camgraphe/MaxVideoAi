@@ -222,6 +222,7 @@ export function WorkspaceEditorLayout({
       >
         {focusMode === 'viewer' ? (
           <TimelineProjectSidebar
+            studioCanvasNodeCopy={studioCopy.canvas.nodes}
             copy={studioCopy.viewer.projectMedia}
             nodes={canvas.renderNodes}
             projectAssets={projectAssets}

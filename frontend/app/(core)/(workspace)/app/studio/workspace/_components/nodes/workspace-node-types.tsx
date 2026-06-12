@@ -10,6 +10,10 @@ import { inputHandles, NodeFrame } from './workspace-node-frame';
 import { AudioPreview, VideoPreview } from './workspace-node-media-preview';
 import styles from '../../_styles/canvas-nodes.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector, WorkspaceShotStatus } from '../../_lib/workspace-types';
+import {
+  localizeWorkspaceAssetSubtitle,
+  localizeWorkspaceNodeGeneratedText,
+} from '../../_lib/workspace-generated-copy';
 import { isPlayableAudioUrl, isPlayableVideoUrl, outputStatus } from '../../_lib/workspace-media-availability';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 import { localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
@@ -131,9 +135,7 @@ function AssetMeta({ data }: { data: WorkspaceGraphNode['data'] }) {
   const asset = data.asset;
   if (!asset || typeof asset !== 'object') return null;
   const copy = nodeCopy(data);
-  const assetSubtitle = String(asset.subtitle ?? '')
-    .replace(/^Video\b/, copy?.video ?? 'Video')
-    .replace(/^Image\b/, copy?.image ?? 'Image');
+  const assetSubtitle = localizeWorkspaceAssetSubtitle(String(asset.subtitle ?? ''), copy);
   return (
     <div className={styles.nodeMetaRow}>
       <span>{String(asset.filename ?? data.subtitle ?? copy?.assetFallback ?? 'Asset')}</span>
@@ -200,8 +202,12 @@ export function AssetAudioNode(props: NodeProps<WorkspaceGraphNode>) {
 }
 
 export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
-  const value = typeof props.data.promptText === 'string' ? props.data.promptText : '';
   const copy = nodeCopy(props.data);
+  const value = typeof props.data.promptText === 'string'
+    ? copy
+      ? localizeWorkspaceNodeGeneratedText(props.data.promptText, props.data.generatedCopy?.promptText, copy) ?? props.data.promptText
+      : props.data.promptText
+    : '';
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<FileText size={14} />} className={styles.promptNode}>
       <textarea

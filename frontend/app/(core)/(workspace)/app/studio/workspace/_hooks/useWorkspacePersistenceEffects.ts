@@ -261,7 +261,7 @@ export function useWorkspacePersistenceEffects({
         if (cancelled || !serverProject) return;
         setStoredProjectName(serverProject.name);
         const serverPersistedBase = shouldApplyStudioProjectWorkspaceState(serverProject.workspaceState, serverSequences)
-          ? normalizePersistedWorkspaceState(serverProject.workspaceState)
+          ? normalizePersistedWorkspaceState(serverProject.workspaceState, { canvasTemplateId: serverProject.canvasTemplateId })
           : null;
         const serverPersisted = serverPersistedBase
           ? mergePersistedWorkspaceWithServerSequences(serverPersistedBase, serverSequences)
