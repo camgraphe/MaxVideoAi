@@ -69,6 +69,7 @@ type WorkspaceCanvasProps = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   isKeyboardDeleteEnabled: boolean;
+  isShortcutActive: boolean;
   onNodesChange: (changes: NodeChange<WorkspaceGraphNode>[]) => void;
   onEdgesChange: (changes: EdgeChange<WorkspaceGraphEdge>[]) => void;
   onConnect: (connection: Connection) => void;
@@ -93,6 +94,7 @@ export function WorkspaceCanvas({
   nodes,
   edges,
   isKeyboardDeleteEnabled,
+  isShortcutActive,
   onNodesChange,
   onEdgesChange,
   onConnect,
@@ -115,6 +117,7 @@ export function WorkspaceCanvas({
         notices={notices}
         edges={edges}
         isKeyboardDeleteEnabled={isKeyboardDeleteEnabled}
+        isShortcutActive={isShortcutActive}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
@@ -167,6 +170,7 @@ function WorkspaceCanvasInner({
   nodes,
   edges,
   isKeyboardDeleteEnabled,
+  isShortcutActive,
   onNodesChange,
   onEdgesChange,
   onConnect,
@@ -188,6 +192,12 @@ function WorkspaceCanvasInner({
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([]);
   const [handleDropPreview, setHandleDropPreview] = useState<HandleDropPreview | null>(null);
   const handleDropPreviewRef = useRef<HandleDropPreview | null>(null);
+  const {
+    canRedo: canRedoCanvas,
+    canUndo: canUndoCanvas,
+    onRedo: onRedoCanvas,
+    onUndo: onUndoCanvas,
+  } = toolbar;
   const nodeTypes = useMemo(() => workspaceNodeTypes, []);
   const edgeTypes = useMemo(() => workspaceEdgeTypes, []);
   const isMarqueeSelectionTool = selectionTool === 'marquee';
@@ -239,6 +249,26 @@ function WorkspaceCanvasInner({
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [onInspectNode]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isShortcutActive || event.defaultPrevented) return;
+      if (!((event.metaKey || event.ctrlKey) && event.code === 'KeyZ')) return;
+      if (isEditableCanvasShortcutTarget(event.target)) return;
+
+      event.preventDefault();
+      if (event.shiftKey) {
+        if (canRedoCanvas) onRedoCanvas();
+        return;
+      }
+      if (canUndoCanvas) onUndoCanvas();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [canRedoCanvas, canUndoCanvas, isShortcutActive, onRedoCanvas, onUndoCanvas]);
 
   const handleCanvasClickCapture = useCallback(
     (event: ReactMouseEvent<HTMLElement>) => {

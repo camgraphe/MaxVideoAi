@@ -55,6 +55,7 @@ function formatDuration(seconds: number): string {
 
 type WorkspaceTimelineProps = {
   copy: StudioCopy['timeline'];
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
   canRedo: boolean;
   canUndo: boolean;
   isShortcutActive: boolean;
@@ -110,6 +111,7 @@ type WorkspaceTimelineProps = {
 
 export function WorkspaceTimeline({
   copy,
+  canvasNodeCopy,
   canRedo,
   canUndo,
   isShortcutActive,
@@ -422,9 +424,10 @@ export function WorkspaceTimeline({
           totalDuration={totalDuration}
           copy={copy.tools}
         />
-        <TimelineTrackList
-          copy={copy}
-          activeTool={activeTimelineTool}
+          <TimelineTrackList
+            copy={copy}
+            canvasNodeCopy={canvasNodeCopy}
+            activeTool={activeTimelineTool}
           audioTrackCount={audioTrackCount}
           clampedPlayheadSec={clampedPlayheadSec}
           externalDropPreview={externalDropPreview}

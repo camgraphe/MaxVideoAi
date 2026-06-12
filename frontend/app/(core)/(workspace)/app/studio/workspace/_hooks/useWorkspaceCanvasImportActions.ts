@@ -11,7 +11,7 @@ import type {
   WorkspaceGraphNode,
   WorkspaceNodeKind,
 } from '../_lib/workspace-types';
-import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
+import type { CanvasGraphHistorySnapshot, WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
 import type {
   WorkspaceCanvasFileDropRequest,
   WorkspaceCanvasTextPasteRequest,
@@ -32,24 +32,25 @@ function createLocalCanvasImportId(prefix: string): string {
 }
 
 type UseWorkspaceCanvasImportActionsParams = {
+  commitCanvasGraph: (
+    updater: (current: CanvasGraphHistorySnapshot) => CanvasGraphHistorySnapshot,
+    options?: { gesture?: boolean; history?: boolean }
+  ) => void;
   defaultModelId: string;
   nodes: WorkspaceGraphNode[];
-  patchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setFocusMode: Dispatch<SetStateAction<WorkspaceFocusMode>>;
-  setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   studioNotices: StudioCopy['notices'];
 };
 
 export function useWorkspaceCanvasImportActions({
+  commitCanvasGraph,
   defaultModelId,
   nodes,
-  patchNodeData,
   setActiveEditorSurface,
   setFocusMode,
-  setNodes,
   setNotice,
   setSelectedNodeId,
   studioNotices,
@@ -80,7 +81,20 @@ export function useWorkspaceCanvasImportActions({
         ? nodes.find((node) => node.id === params.targetNodeId && node.data.kind === params.kind)
         : null;
       if (targetNode) {
-        patchNodeData(targetNode.id, params.nodeData);
+        commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+          edges: currentEdges,
+          nodes: currentNodes.map((node) =>
+            node.id === targetNode.id
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    ...params.nodeData,
+                  },
+                }
+              : node
+          ),
+        }));
         setActiveEditorSurface('canvas');
         setSelectedNodeId(targetNode.id);
         setNotice(params.notice);
@@ -100,12 +114,15 @@ export function useWorkspaceCanvasImportActions({
           ...params.nodeData,
         },
       };
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, importedNode));
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: appendSelectedWorkspaceGraphNode(currentNodes, importedNode),
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(importedNode.id);
       setNotice(params.notice);
     },
-    [defaultModelId, nodes, patchNodeData, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId, studioNotices]
+    [commitCanvasGraph, defaultModelId, nodes, setActiveEditorSurface, setNotice, setSelectedNodeId, studioNotices]
   );
 
   const handleCanvasTextPaste = useCallback(
@@ -236,7 +253,10 @@ export function useWorkspaceCanvasImportActions({
         },
       };
 
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, snapshotNode));
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: appendSelectedWorkspaceGraphNode(currentNodes, snapshotNode),
+      }));
       setFocusMode('canvas');
       setActiveEditorSurface('canvas');
       setSelectedNodeId(snapshotNode.id);
@@ -244,10 +264,10 @@ export function useWorkspaceCanvasImportActions({
     },
     [
       defaultModelId,
+      commitCanvasGraph,
       nodes.length,
       setActiveEditorSurface,
       setFocusMode,
-      setNodes,
       setNotice,
       setSelectedNodeId,
       studioNotices,

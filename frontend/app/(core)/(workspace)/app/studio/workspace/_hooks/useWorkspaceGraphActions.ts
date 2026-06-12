@@ -31,7 +31,7 @@ import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
 } from '../_lib/workspace-library-assets';
-import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { CanvasGraphHistorySnapshot, WorkspaceEditorSurface } from '../_state/workspace-state';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 function formatNotice(value: string, replacements: Record<string, string | number>): string {
@@ -54,27 +54,36 @@ function localizedConnectionRejectionReason(reason: string, notices: StudioCopy[
 
 type UseWorkspaceGraphActionsParams = {
   capabilities: WorkspaceModelCapability[];
+  commitCanvasGraph: (
+    updater: (current: CanvasGraphHistorySnapshot) => CanvasGraphHistorySnapshot,
+    options?: { gesture?: boolean; history?: boolean }
+  ) => void;
   defaultModelId: string;
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setAssetPickerNodeId: Dispatch<SetStateAction<string | null>>;
-  setEdges: Dispatch<SetStateAction<WorkspaceGraphEdge[]>>;
-  setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   studioNotices: StudioCopy['notices'];
 };
 
+function nodeChangesAffectGraphHistory(changes: NodeChange<WorkspaceGraphNode>[]): boolean {
+  return changes.some((change) => change.type !== 'select');
+}
+
+function edgeChangesAffectGraphHistory(changes: EdgeChange<WorkspaceGraphEdge>[]): boolean {
+  return changes.some((change) => change.type !== 'select');
+}
+
 export function useWorkspaceGraphActions({
   capabilities,
+  commitCanvasGraph,
   defaultModelId,
   edges,
   nodes,
   setActiveEditorSurface,
   setAssetPickerNodeId,
-  setEdges,
-  setNodes,
   setNotice,
   setSelectedNodeId,
   studioNotices,
@@ -92,17 +101,19 @@ export function useWorkspaceGraphActions({
 } {
   const patchNodeData = useCallback(
     (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => {
-      setNodes((current) =>
-        current.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } } : node))
-      );
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: currentNodes.map((node) => (node.id === nodeId ? { ...node, data: { ...node.data, ...patch } } : node)),
+      }), { history: false });
     },
-    [setNodes]
+    [commitCanvasGraph]
   );
 
   const patchShot = useCallback(
     (nodeId: string, patch: Partial<WorkspaceShotSettings>) => {
-      setNodes((current) =>
-        current.map((node) => {
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: currentNodes.map((node) => {
           if (node.id !== nodeId || !node.data.shot) return node;
           const nextShot = {
             ...node.data.shot,
@@ -117,10 +128,10 @@ export function useWorkspaceGraphActions({
               shot: nextShot,
             },
           };
-        })
-      );
+        }),
+      }), { history: false });
     },
-    [setNodes]
+    [commitCanvasGraph]
   );
 
   const handleOpenAssetLibrary = useCallback(
@@ -135,8 +146,9 @@ export function useWorkspaceGraphActions({
   const handleSelectLibraryAsset = useCallback(
     (nodeId: string, asset: WorkspaceLibraryAsset) => {
       const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
-      setNodes((current) =>
-        current.map((node) =>
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: currentNodes.map((node) =>
           node.id === nodeId
             ? {
                 ...node,
@@ -147,28 +159,36 @@ export function useWorkspaceGraphActions({
                 },
               }
             : node
-        )
-      );
+        ),
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(nodeId);
       setAssetPickerNodeId(null);
       setNotice(formatNotice(studioNotices.assetAttachedToMediaBlock, { name: asset.name }));
     },
-    [setActiveEditorSurface, setAssetPickerNodeId, setNodes, setNotice, setSelectedNodeId, studioNotices.assetAttachedToMediaBlock]
+    [commitCanvasGraph, setActiveEditorSurface, setAssetPickerNodeId, setNotice, setSelectedNodeId, studioNotices.assetAttachedToMediaBlock]
   );
 
   const onNodesChange = useCallback(
     (changes: NodeChange<WorkspaceGraphNode>[]) => {
-      setNodes((current) => applyNodeChanges(changes, current));
+      const shouldTrackHistory = nodeChangesAffectGraphHistory(changes);
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: applyNodeChanges(changes, currentNodes),
+      }), { gesture: shouldTrackHistory, history: shouldTrackHistory });
     },
-    [setNodes]
+    [commitCanvasGraph]
   );
 
   const onEdgesChange = useCallback(
     (changes: EdgeChange<WorkspaceGraphEdge>[]) => {
-      setEdges((current) => applyEdgeChanges(changes, current));
+      const shouldTrackHistory = edgeChangesAffectGraphHistory(changes);
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: applyEdgeChanges(changes, currentEdges),
+        nodes: currentNodes,
+      }), { gesture: shouldTrackHistory, history: shouldTrackHistory });
     },
-    [setEdges]
+    [commitCanvasGraph]
   );
 
   const isValidConnection = useCallback(
@@ -192,14 +212,17 @@ export function useWorkspaceGraphActions({
         targetHandle: connection.targetHandle ?? kind,
         kind,
       });
-      setEdges((current) => addEdge(edge, current));
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: addEdge(edge, currentEdges),
+        nodes: currentNodes,
+      }));
       setNotice(formatNotice(studioNotices.graphLinkConnected, { label: edge.data?.label ?? studioNotices.graphFallbackLabel }));
     },
     [
       capabilities,
+      commitCanvasGraph,
       edges,
       nodes,
-      setEdges,
       setNotice,
       studioNotices,
     ]
@@ -257,8 +280,10 @@ export function useWorkspaceGraphActions({
               kind: request.handleId,
             });
 
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
-      setEdges((current) => addEdge(edge, current));
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: addEdge(edge, currentEdges),
+        nodes: appendSelectedWorkspaceGraphNode(currentNodes, node),
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
       setNotice(formatNotice(studioNotices.nodeCreatedFromConnector, {
@@ -268,12 +293,11 @@ export function useWorkspaceGraphActions({
     },
     [
       capabilities,
+      commitCanvasGraph,
       defaultModelId,
       edges,
       nodes,
       setActiveEditorSurface,
-      setEdges,
-      setNodes,
       setNotice,
       setSelectedNodeId,
       studioNotices,
@@ -286,12 +310,15 @@ export function useWorkspaceGraphActions({
         x: request.position.x - 105,
         y: request.position.y - 48,
       });
-      setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
+      commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
+        edges: currentEdges,
+        nodes: appendSelectedWorkspaceGraphNode(currentNodes, node),
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
       setNotice(formatNotice(studioNotices.nodeDroppedOntoCanvas, { title: node.data.title }));
     },
-    [defaultModelId, nodes.length, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId, studioNotices]
+    [commitCanvasGraph, defaultModelId, nodes.length, setActiveEditorSurface, setNotice, setSelectedNodeId, studioNotices]
   );
 
   return {

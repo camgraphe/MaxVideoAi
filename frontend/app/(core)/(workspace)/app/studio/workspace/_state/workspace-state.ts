@@ -100,6 +100,16 @@ export type TimelineHistoryState = {
   future: WorkspaceTimelineItem[][];
 };
 
+export type CanvasGraphHistorySnapshot = {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+};
+
+export type CanvasGraphHistoryState = {
+  past: CanvasGraphHistorySnapshot[];
+  future: CanvasGraphHistorySnapshot[];
+};
+
 export type TimelineExportClientJobStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
 
 export type TimelineExportClientEstimate = {

@@ -7,6 +7,8 @@ import { localizeStudioTemplateSummary, resolveStudioCopy } from '../_lib/studio
 import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
+import { useWorkspaceCanvasGraphState } from './_hooks/useWorkspaceCanvasGraphState';
+import { useWorkspaceCompletedExportAssets } from './_hooks/useWorkspaceCompletedExportAssets';
 import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
 import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
 import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
@@ -24,8 +26,6 @@ import { useWorkspaceTimelineSelectionSync } from './_hooks/useWorkspaceTimeline
 import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
 import type {
   WorkspaceAssetRecord,
-  WorkspaceGraphEdge,
-  WorkspaceGraphNode,
   WorkspaceProjectMediaFolder,
   WorkspaceProjectSettings,
   WorkspaceTemplateId,
@@ -38,16 +38,9 @@ import {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createStarterWorkspaceTemplate,
 } from './_lib/workspace-templates';
-import {
-  DEFAULT_WORKSPACE_PROJECT_SETTINGS,
-} from './_lib/workspace-project-settings';
-import {
-  type WorkspaceTimelineExportRangeMode,
-} from './_lib/workspace-timeline-render';
-import {
-  workspaceProjectAssetFromCompletedTimelineExport,
-  type WorkspaceTimelineExportQualityPreset,
-} from './_lib/workspace-timeline-export';
+import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from './_lib/workspace-project-settings';
+import { type WorkspaceTimelineExportRangeMode } from './_lib/workspace-timeline-render';
+import type { WorkspaceTimelineExportQualityPreset } from './_lib/workspace-timeline-export';
 import {
   defaultTimelineSelection,
   defaultTimelineSelectionIds,
@@ -96,8 +89,19 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     capabilities[0]?.id ??
     DEFAULT_WORKSPACE_SHOT_MODEL_ID;
   const timelineItemsRef = useRef<WorkspaceTimelineItem[]>(defaultTemplate.timelineItems);
-  const [nodes, setNodes] = useState<WorkspaceGraphNode[]>(defaultTemplate.nodes);
-  const [edges, setEdges] = useState<WorkspaceGraphEdge[]>(defaultTemplate.edges);
+  const canvasGraph = useWorkspaceCanvasGraphState({
+    defaultEdges: defaultTemplate.edges,
+    defaultNodes: defaultTemplate.nodes,
+  });
+  const {
+    canvasHistoryController,
+    edges,
+    nodes,
+    selectedNodeId,
+    setEdges,
+    setNodes,
+    setSelectedNodeId,
+  } = canvasGraph;
   const [projectAssets, setProjectAssets] = useState<WorkspaceAssetRecord[]>([]);
   const [projectMediaFolders, setProjectMediaFolders] = useState<WorkspaceProjectMediaFolder[]>([]);
   const [sequences, setSequences] = useState<WorkspaceSequenceRecord[]>([defaultSequence]);
@@ -114,7 +118,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [videoTrackCount, setVideoTrackCount] = useState(videoTrackCountForTimelineItems(defaultTemplate.timelineItems));
   const [timelinePanelHeight, setTimelinePanelHeight] = useState<number | null>(null);
   const [projectSettings, setProjectSettings] = useState<WorkspaceProjectSettings>(DEFAULT_WORKSPACE_PROJECT_SETTINGS);
-  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isCanvasInspectorOpen, setIsCanvasInspectorOpen] = useState(false);
   const [activeEditorSurface, setActiveEditorSurface] = useState<WorkspaceEditorSurface>('canvas');
   const [activeTemplateId, setActiveTemplateId] = useState<WorkspaceTemplateId>('product-ad');
@@ -132,7 +135,6 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [assetPickerNodeId, setAssetPickerNodeId] = useState<string | null>(null);
   const [isProjectMediaPickerOpen, setIsProjectMediaPickerOpen] = useState(false);
   const workspaceStorageKey = useMemo(() => workspaceStorageKeyForProject(projectId), [projectId]);
-  const registeredExportAssetJobIdRef = useRef<string | null>(null);
   const activeUserCanvasTemplate = userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId) ?? null;
   const activeRegistryTemplate = WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId) ?? null;
   const activeTemplateName =
@@ -209,23 +211,14 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     onNotice: setNotice,
   });
 
-  useEffect(() => {
-    const job = exportController.activeExportJob;
-    if (!job || registeredExportAssetJobIdRef.current === job.id) return;
-    const exportAsset = workspaceProjectAssetFromCompletedTimelineExport(
-      job,
-      exportState.exportManifest,
-      studioCopy.notices.completedServerExportSubtitle
-    );
-    if (!exportAsset) return;
-
-    registeredExportAssetJobIdRef.current = job.id;
-    setProjectAssets((current) => [
-      exportAsset,
-      ...current.filter((asset) => asset.id !== exportAsset.id),
-    ].slice(0, 120));
-    setNotice(studioCopy.notices.projectMediaAdded.replace('{filename}', exportAsset.filename));
-  }, [exportController.activeExportJob, exportState.exportManifest, setNotice, studioCopy.notices]);
+  useWorkspaceCompletedExportAssets({
+    activeExportJob: exportController.activeExportJob,
+    exportManifest: exportState.exportManifest,
+    onNotice: setNotice,
+    projectMediaAddedNotice: studioCopy.notices.projectMediaAdded,
+    setProjectAssets,
+    subtitleCopy: studioCopy.notices.completedServerExportSubtitle,
+  });
 
   const timelineHistoryController = useWorkspaceTimelineHistory({
     timelineItemsRef,
@@ -262,6 +255,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setVideoTrackCount,
     snapshotActiveSequence: sequenceSnapshots.snapshotActiveSequence,
     studioNotices: studioCopy.notices,
+    studioProjectMediaCopy: studioCopy.viewer.projectMedia,
     timelineItemsRef,
   });
 
@@ -272,6 +266,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     buildPersistedWorkspaceState: sequenceSnapshots.buildPersistedWorkspaceState,
     hydrated,
     projectId,
+    resetCanvasHistory: canvasHistoryController.resetCanvasHistory,
     resetTimelineHistory: timelineHistoryController.resetTimelineHistory,
     setActiveEditorSurface,
     setActiveSequenceId,
@@ -325,7 +320,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const canvasController = useWorkspaceCanvasController({
     activeUserCanvasTemplateId,
     assetPickerNodeId,
+    canvasHistory: canvasHistoryController.canvasHistory,
     capabilities,
+    commitCanvasGraph: canvasHistoryController.commitCanvasGraph,
     commitTimelineItems: timelineHistoryController.commitTimelineItems,
     defaultModelId,
     edges,
@@ -335,6 +332,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     nodes,
     playheadSec: timelinePlayback.playheadSec,
     pricingEstimates,
+    redoCanvas: canvasHistoryController.redoCanvas,
     selectedNodeId,
     setActiveEditorSurface,
     setActiveTemplateId,
@@ -356,6 +354,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
+    undoCanvas: canvasHistoryController.undoCanvas,
     userCanvasTemplates,
   });
 

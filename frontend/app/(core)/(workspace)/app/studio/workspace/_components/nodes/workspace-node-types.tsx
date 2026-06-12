@@ -12,13 +12,19 @@ import styles from '../../_styles/canvas-nodes.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector, WorkspaceShotStatus } from '../../_lib/workspace-types';
 import { isPlayableAudioUrl, isPlayableVideoUrl, outputStatus } from '../../_lib/workspace-media-availability';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
+import { localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
 
 function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] | null {
   return data.studioCanvasCopy?.nodes ?? null;
 }
 
-function connectorLabel(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): string {
-  return connectors.find((connector) => connector.kind === handle)?.label ?? edgeLabel(handle);
+function connectorLabel(
+  handle: WorkspaceEdgeKind,
+  connectors: WorkspaceInputConnector[],
+  copy: ReturnType<typeof nodeCopy>
+): string {
+  return connectors.find((connector) => connector.kind === handle)?.label ??
+    (copy ? localizeStudioEdgeKindLabel(handle, copy) : edgeLabel(handle));
 }
 
 function connectorRequired(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): boolean {
@@ -36,12 +42,13 @@ function connectorCapacity(handle: WorkspaceEdgeKind, connectors: WorkspaceInput
 function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
   const handles = inputHandles(data);
   const connectors = Array.isArray(data.inputConnectors) ? data.inputConnectors : [];
+  const copy = nodeCopy(data);
   if (!handles.length) return null;
   return (
     <div className={styles.shotInputDock}>
       {handles.map((handle) => {
         const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
-        const label = connectorLabel(handle, connectors);
+        const label = connectorLabel(handle, connectors, copy);
         const { capacityLabel, remainingCount } = connectorCapacity(handle, connectors);
         const isFull = remainingCount === 0;
         return (
@@ -124,10 +131,13 @@ function AssetMeta({ data }: { data: WorkspaceGraphNode['data'] }) {
   const asset = data.asset;
   if (!asset || typeof asset !== 'object') return null;
   const copy = nodeCopy(data);
+  const assetSubtitle = String(asset.subtitle ?? '')
+    .replace(/^Video\b/, copy?.video ?? 'Video')
+    .replace(/^Image\b/, copy?.image ?? 'Image');
   return (
     <div className={styles.nodeMetaRow}>
       <span>{String(asset.filename ?? data.subtitle ?? copy?.assetFallback ?? 'Asset')}</span>
-      <span>{String(asset.subtitle ?? '')}</span>
+      <span>{assetSubtitle}</span>
     </div>
   );
 }
@@ -202,7 +212,9 @@ export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
         spellCheck={false}
       />
       <div className={styles.nodeMetaRow}>
-        <span>{typeof props.data.promptRole === 'string' ? edgeLabel(props.data.promptRole as WorkspaceEdgeKind) : copy?.promptFallback ?? 'Prompt'}</span>
+        <span>{typeof props.data.promptRole === 'string' ? (
+          copy ? localizeStudioEdgeKindLabel(props.data.promptRole as WorkspaceEdgeKind, copy) : edgeLabel(props.data.promptRole as WorkspaceEdgeKind)
+        ) : copy?.promptFallback ?? 'Prompt'}</span>
         <span>{value.length} {copy?.chars ?? 'chars'}</span>
       </div>
     </NodeFrame>

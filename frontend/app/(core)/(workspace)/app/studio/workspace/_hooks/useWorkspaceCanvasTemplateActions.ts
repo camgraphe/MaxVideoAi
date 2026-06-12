@@ -1,6 +1,7 @@
 import { useCallback, type Dispatch, type SetStateAction } from 'react';
 import { createStarterWorkspaceTemplate } from '../_lib/workspace-templates';
 import type {
+  CanvasGraphHistorySnapshot,
   WorkspaceEditorSurface,
   WorkspaceUserCanvasTemplate,
 } from '../_state/workspace-state';
@@ -35,14 +36,16 @@ function createLocalCanvasTemplateId(): string {
 
 type UseWorkspaceCanvasTemplateActionsParams = {
   activeUserCanvasTemplateId: string | null;
+  commitCanvasGraph: (
+    updater: (current: CanvasGraphHistorySnapshot) => CanvasGraphHistorySnapshot,
+    options?: { gesture?: boolean; history?: boolean }
+  ) => void;
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setActiveTemplateId: Dispatch<SetStateAction<WorkspaceTemplateId>>;
   setActiveUserCanvasTemplateId: Dispatch<SetStateAction<string | null>>;
   setCanvasRevision: Dispatch<SetStateAction<number>>;
-  setEdges: Dispatch<SetStateAction<WorkspaceGraphEdge[]>>;
-  setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
@@ -52,14 +55,13 @@ type UseWorkspaceCanvasTemplateActionsParams = {
 
 export function useWorkspaceCanvasTemplateActions({
   activeUserCanvasTemplateId,
+  commitCanvasGraph,
   edges,
   nodes,
   setActiveEditorSurface,
   setActiveTemplateId,
   setActiveUserCanvasTemplateId,
   setCanvasRevision,
-  setEdges,
-  setNodes,
   setNotice,
   setSelectedNodeId,
   setUserCanvasTemplates,
@@ -86,8 +88,10 @@ export function useWorkspaceCanvasTemplateActions({
   const handleApplyCanvasTemplate = useCallback(
     (templateId: WorkspaceTemplateId) => {
       const template = createStarterWorkspaceTemplate(templateId);
-      setNodes(template.nodes);
-      setEdges(template.edges);
+      commitCanvasGraph(() => ({
+        edges: template.edges,
+        nodes: template.nodes,
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(null);
       setActiveTemplateId(template.id);
@@ -95,7 +99,7 @@ export function useWorkspaceCanvasTemplateActions({
       setCanvasRevision((value) => value + 1);
       setNotice(formatCopyValue(studioNotices.canvasTemplateApplied, { name: template.name }));
     },
-    [setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied]
+    [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied]
   );
 
   const handleSaveCanvasTemplate = useCallback(
@@ -129,15 +133,17 @@ export function useWorkspaceCanvasTemplateActions({
       }
       const nextNodes = cloneWorkspaceJson(template.nodes);
       const nextEdges = cloneWorkspaceJson(template.edges);
-      setNodes(nextNodes);
-      setEdges(nextEdges);
+      commitCanvasGraph(() => ({
+        edges: nextEdges,
+        nodes: nextNodes,
+      }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(null);
       setActiveUserCanvasTemplateId(template.id);
       setCanvasRevision((value) => value + 1);
       setNotice(formatCopyValue(studioNotices.canvasTemplateApplied, { name: template.name }));
     },
-    [setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setEdges, setNodes, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied, studioNotices.canvasTemplateNotFound, userCanvasTemplates]
+    [commitCanvasGraph, setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied, studioNotices.canvasTemplateNotFound, userCanvasTemplates]
   );
 
   const handleDuplicateUserCanvasTemplate = useCallback(

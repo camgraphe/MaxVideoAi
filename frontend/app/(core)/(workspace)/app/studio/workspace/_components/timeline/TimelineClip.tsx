@@ -21,12 +21,13 @@ import {
 import type { WorkspaceTimelineItem } from '../../_lib/workspace-types';
 import { isWorkspaceTimelineVideoTrack } from '../../_lib/workspace-timeline-tracks';
 import type { TimelineTool } from './TimelineToolbar';
-import type { StudioCopy } from '../../../_lib/studio-copy';
+import { localizeStudioGeneratedCanvasText, type StudioCopy } from '../../../_lib/studio-copy';
 
 export type TimelineSelectionMode = 'replace' | 'toggle' | 'focus';
 
 type TimelineClipProps = {
   activeTool: TimelineTool;
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
   copy: StudioCopy['timeline']['clips'];
   index: number;
   isInteracting: boolean;
@@ -63,6 +64,7 @@ function waveformBarsForItem(item: WorkspaceTimelineItem): number[] {
 
 export const TimelineClip = memo(function TimelineClip({
   item,
+  canvasNodeCopy,
   copy,
   layout,
   index,
@@ -93,6 +95,7 @@ export const TimelineClip = memo(function TimelineClip({
   const showClipThumbnail = Boolean(item.thumbnailUrl && !isCompactClip);
   const showClipActions = !isCompactClip;
   const waveformBars = isAudio ? waveformBarsForItem(item) : [];
+  const itemTitle = localizeStudioGeneratedCanvasText(item.title, canvasNodeCopy);
   const handleActionClick = (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
   };
@@ -196,7 +199,7 @@ export const TimelineClip = memo(function TimelineClip({
       onMouseDown={handleClipMouseDown}
       onPointerDown={handleClipPointerDown}
       title={isLocked ? copy.trackLocked : activeTool === 'blade' ? copy.clickToCut : activeTool === 'select' ? copy.dragToMove : copy.useTrimHandles}
-      aria-label={copy.timelineClip.replace('{title}', item.title)}
+      aria-label={copy.timelineClip.replace('{title}', itemTitle)}
     >
       <div
         role="button"
@@ -217,7 +220,7 @@ export const TimelineClip = memo(function TimelineClip({
         </div>
       ) : null}
       <div className={styles.timelineClipText}>
-        <strong>{item.title}</strong>
+        <strong>{itemTitle}</strong>
         <span>
           {formatDuration(layout.durationSec)}
           {item.sourceStartSec ? ` · ${copy.sourceIn.replace('{time}', formatDuration(item.sourceStartSec))}` : ''}

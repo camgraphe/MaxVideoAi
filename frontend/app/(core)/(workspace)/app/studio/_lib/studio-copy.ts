@@ -334,6 +334,12 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     ariaLabel: 'MaxVideoAI editor canvas',
     toolbar: {
       ariaLabel: 'Canvas creation toolbar',
+      undoTooltip: 'Undo (Cmd/Ctrl + Z)',
+      undoTitle: 'Undo canvas edit (Cmd/Ctrl + Z)',
+      undo: 'Undo canvas edit',
+      redoTooltip: 'Redo (Cmd/Ctrl + Shift + Z)',
+      redoTitle: 'Redo canvas edit (Cmd/Ctrl + Shift + Z)',
+      redo: 'Redo canvas edit',
       selectNodes: 'Select canvas nodes',
       marqueeSelectNodes: 'Marquee select canvas nodes',
       deleteSelectedNodes: 'Delete selected canvas nodes',
@@ -506,6 +512,47 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       fromNode: 'From {node}',
       noGraphConnections: 'No graph connections yet.',
       promptRoleSceneDescription: 'Scene description',
+      edgeReference: 'Reference',
+      edgeStartImage: 'Start image',
+      edgeEndImage: 'End image',
+      edgeProduct: 'Product',
+      edgeCharacter: 'Character',
+      edgeStyle: 'Style',
+      edgeComposition: 'Composition',
+      edgeLogo: 'Logo',
+      edgePrompt: 'Prompt',
+      edgeNegativePrompt: 'Negative',
+      edgeCamera: 'Camera',
+      edgeDialogue: 'Dialogue',
+      edgeNarration: 'Narration',
+      edgeAudio: 'Audio',
+      edgeVoiceover: 'Voice',
+      edgeMusic: 'Music',
+      edgeSfx: 'SFX',
+      edgeMotionReference: 'Motion',
+      edgePreviousShot: 'Previous shot',
+      edgeContinuity: 'Continuity',
+      edgeGeneratedOutput: 'Output',
+      edgeOutputToTimeline: 'Timeline',
+      edgeVideoReference: 'Video ref',
+      connectorNegativePrompt: 'Negative prompt',
+      connectorStartFrame: 'Start frame',
+      connectorEndFrameOptional: 'End frame (optional)',
+      connectorLastFrame: 'Last frame',
+      connectorReferenceImages: 'Reference images',
+      connectorSourceVideo: 'Source video',
+      templateProductImage: 'Product Image',
+      templateStyleReference: 'Style Reference',
+      templateCameraMovement: 'Camera Movement',
+      templateAudioReference: 'Audio Reference',
+      templateVoiceOver: 'Voice Over',
+      templateShotName: 'Shot {index}',
+      templateShotAudioName: '{name} Audio',
+      templateOutputName: 'Output {index}',
+      templateHeroReveal: 'Hero Reveal',
+      templateMacroDetails: 'Macro Details',
+      templateExplodedView: 'Exploded View',
+      templateFinalPackshot: 'Final Packshot',
     },
     map: {
       navigationLabel: 'Canvas navigation',
@@ -685,6 +732,11 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       delete: 'Delete',
       newFolder: 'New folder',
       newFolderDefaultName: 'New folder {index}',
+      mainSequenceName: 'Main sequence',
+      sequenceName: 'Sequence {index}',
+      sequenceCopyName: '{name} copy',
+      untitledSequenceName: 'Untitled sequence',
+      untitledFolderName: 'Untitled folder',
       moveDialogTitle: 'Move to folder',
       moveDialogDescription: 'Choose a destination for {title}.',
       folderDialogDescription: 'Name this Project media folder.',
@@ -1029,6 +1081,196 @@ export function localizeStudioTemplateSummaries<T extends StudioTemplateSummaryL
   copy: StudioCopy
 ): T[] {
   return summaries.map((summary) => localizeStudioTemplateSummary(summary, copy));
+}
+
+function formatStudioCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function normalizedGeneratedName(value: string): string {
+  return value
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+function localizeSequenceDefaultName(
+  name: string,
+  copy: StudioCopy['viewer']['projectMedia']
+): { matched: boolean; value: string } {
+  const trimmedName = name.trim();
+  const normalizedName = normalizedGeneratedName(trimmedName);
+
+  if (['main sequence', 'sequence principale', 'secuencia principal'].includes(normalizedName)) {
+    return { matched: true, value: copy.mainSequenceName };
+  }
+
+  if (['untitled sequence', 'sequence sans titre', 'secuencia sin titulo'].includes(normalizedName)) {
+    return { matched: true, value: copy.untitledSequenceName };
+  }
+
+  const indexedSequenceMatch = normalizedName.match(/^(?:sequence|secuencia)\s+(\d+)$/);
+  if (indexedSequenceMatch) {
+    return {
+      matched: true,
+      value: formatStudioCopyValue(copy.sequenceName, { index: indexedSequenceMatch[1] }),
+    };
+  }
+
+  return { matched: false, value: name };
+}
+
+export function localizeStudioGeneratedSequenceDisplayName(
+  name: string,
+  copy: StudioCopy['viewer']['projectMedia']
+): string {
+  const trimmedName = name.trim();
+  const defaultName = localizeSequenceDefaultName(trimmedName, copy);
+  if (defaultName.matched) return defaultName.value;
+
+  const copyMatch = trimmedName.match(/^(.*)\s+(copy|copie|copia)$/i);
+  if (!copyMatch) return name;
+
+  const baseName = localizeSequenceDefaultName(copyMatch[1], copy);
+  return baseName.matched
+    ? formatStudioCopyValue(copy.sequenceCopyName, { name: baseName.value })
+    : name;
+}
+
+export function localizeStudioGeneratedFolderDisplayName(
+  name: string,
+  copy: StudioCopy['viewer']['projectMedia']
+): string {
+  const trimmedName = name.trim();
+  const normalizedName = normalizedGeneratedName(trimmedName);
+
+  if (['untitled folder', 'dossier sans titre', 'carpeta sin titulo'].includes(normalizedName)) {
+    return copy.untitledFolderName;
+  }
+
+  const indexedFolderMatch = normalizedName.match(/^(?:new folder|nouveau dossier|nueva carpeta)\s+(\d+)$/);
+  if (!indexedFolderMatch) return name;
+
+  return formatStudioCopyValue(copy.newFolderDefaultName, { index: indexedFolderMatch[1] });
+}
+
+export function localizeStudioGeneratedProjectDisplayName(name: string, copy: StudioCopy): string {
+  const normalizedName = normalizedGeneratedName(name);
+  if (!['untitled edit', 'montage sans titre', 'edicion sin titulo'].includes(normalizedName)) return name;
+  return copy.projects.untitledProject;
+}
+
+const STUDIO_EDGE_COPY_KEYS: Record<string, string> = {
+  reference: 'edgeReference',
+  start_image: 'edgeStartImage',
+  end_image: 'edgeEndImage',
+  product: 'edgeProduct',
+  character: 'edgeCharacter',
+  style: 'edgeStyle',
+  composition: 'edgeComposition',
+  logo: 'edgeLogo',
+  prompt: 'edgePrompt',
+  negative_prompt: 'edgeNegativePrompt',
+  camera: 'edgeCamera',
+  dialogue: 'edgeDialogue',
+  narration: 'edgeNarration',
+  audio: 'edgeAudio',
+  voiceover: 'edgeVoiceover',
+  music: 'edgeMusic',
+  sfx: 'edgeSfx',
+  motion_reference: 'edgeMotionReference',
+  previous_shot: 'edgePreviousShot',
+  continuity: 'edgeContinuity',
+  generated_output: 'edgeGeneratedOutput',
+  output_to_timeline: 'edgeOutputToTimeline',
+  video_reference: 'edgeVideoReference',
+};
+
+const STUDIO_CANVAS_TEXT_COPY_KEYS: Record<string, string> = {
+  'product image': 'templateProductImage',
+  'image produit': 'templateProductImage',
+  'imagen de producto': 'templateProductImage',
+  'style reference': 'templateStyleReference',
+  'reference de style': 'templateStyleReference',
+  'referencia de estilo': 'templateStyleReference',
+  'camera movement': 'templateCameraMovement',
+  'mouvement camera': 'templateCameraMovement',
+  'movimiento de camara': 'templateCameraMovement',
+  'audio reference': 'templateAudioReference',
+  'reference audio': 'templateAudioReference',
+  'referencia de audio': 'templateAudioReference',
+  'voice over': 'templateVoiceOver',
+  'voix off': 'templateVoiceOver',
+  'voz en off': 'templateVoiceOver',
+  'hero reveal': 'templateHeroReveal',
+  'revelation hero': 'templateHeroReveal',
+  'revelacion heroe': 'templateHeroReveal',
+  'macro details': 'templateMacroDetails',
+  'details macro': 'templateMacroDetails',
+  'detalles macro': 'templateMacroDetails',
+  'exploded view': 'templateExplodedView',
+  'vue eclatee': 'templateExplodedView',
+  'vista explosionada': 'templateExplodedView',
+  'final packshot': 'templateFinalPackshot',
+  'packshot final': 'templateFinalPackshot',
+};
+
+export function localizeStudioEdgeKindLabel(kind: string, copy: StudioCopy['canvas']['nodes']): string {
+  const key = STUDIO_EDGE_COPY_KEYS[kind];
+  return key ? copy[key] ?? kind : kind;
+}
+
+export function localizeStudioConnectorDisplayLabel(label: string, copy: StudioCopy['canvas']['nodes']): string {
+  const normalizedLabel = normalizedGeneratedName(label);
+  if (['negative prompt', 'prompt negatif', 'prompt negativo'].includes(normalizedLabel)) {
+    return copy.connectorNegativePrompt;
+  }
+  if (['start image', 'start frame', 'first frame', 'image de depart', 'primera imagen'].includes(normalizedLabel)) {
+    return copy.connectorStartFrame;
+  }
+  if (['end frame (optional)', 'end frame', 'image finale (optionnel)', 'imagen final (opcional)'].includes(normalizedLabel)) {
+    return copy.connectorEndFrameOptional;
+  }
+  if (['last frame', 'derniere image', 'ultimo fotograma'].includes(normalizedLabel)) {
+    return copy.connectorLastFrame;
+  }
+  if (['reference images', 'images de reference', 'imagenes de referencia'].includes(normalizedLabel)) {
+    return copy.connectorReferenceImages;
+  }
+  if (['source video', 'video source', 'video de origen'].includes(normalizedLabel)) {
+    return copy.connectorSourceVideo;
+  }
+  return label;
+}
+
+export function localizeStudioGeneratedCanvasText(value: string, copy: StudioCopy['canvas']['nodes']): string {
+  const normalizedValue = normalizedGeneratedName(value);
+  const shotAudioMatch = normalizedValue.match(/^shot\s+(\d+)\s+-\s+(.+)\s+audio$/);
+  if (shotAudioMatch) {
+    const shotName = formatStudioCopyValue(copy.templateShotName, { index: shotAudioMatch[1] });
+    const shotDescription = localizeStudioGeneratedCanvasText(shotAudioMatch[2], copy);
+    return formatStudioCopyValue(copy.templateShotAudioName, { name: `${shotName} - ${shotDescription}` });
+  }
+
+  const shotWithDescriptionMatch = normalizedValue.match(/^shot\s+(\d+)\s+-\s+(.+)$/);
+  if (shotWithDescriptionMatch) {
+    const shotName = formatStudioCopyValue(copy.templateShotName, { index: shotWithDescriptionMatch[1] });
+    const shotDescription = localizeStudioGeneratedCanvasText(shotWithDescriptionMatch[2], copy);
+    return `${shotName} - ${shotDescription}`;
+  }
+
+  const shotMatch = normalizedValue.match(/^shot\s+(\d+)$/);
+  if (shotMatch) return formatStudioCopyValue(copy.templateShotName, { index: shotMatch[1] });
+
+  const outputMatch = normalizedValue.match(/^output\s+(\d+)$/);
+  if (outputMatch) return formatStudioCopyValue(copy.templateOutputName, { index: outputMatch[1] });
+
+  const key = STUDIO_CANVAS_TEXT_COPY_KEYS[normalizedValue];
+  return key ? copy[key] ?? value : value;
 }
 
 export function formatStudioProjectDate(locale: AppLocale, value: string, copy: StudioCopy): string {

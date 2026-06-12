@@ -9,6 +9,49 @@
   --studio-text-muted: #94a3b8;
   --studio-primary: #7c3aed;
   --studio-primary-2: #4f46e5;
+  --studio-control-bg: rgba(15, 23, 42, 0.76);
+  --studio-control-bg-hover: rgba(30, 41, 59, 0.84);
+  --studio-control-text: #dbeafe;
+  --studio-control-strong: #f8fafc;
+  --studio-popover-bg:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(8, 13, 26, 0.98)),
+    #0b1020;
+  --studio-popover-accent-bg:
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.2), transparent 48%),
+    var(--studio-popover-bg);
+  --studio-popover-header-bg: rgba(2, 6, 23, 0.62);
+  --studio-media-sidebar-bg:
+    radial-gradient(circle at 62% 0%, rgba(37, 99, 235, 0.16), transparent 32%),
+    linear-gradient(180deg, rgba(8, 14, 25, 0.98), rgba(5, 9, 17, 0.99));
+  --studio-media-input-bg: rgba(6, 11, 22, 0.74);
+  --studio-media-tool-bg: rgba(9, 15, 29, 0.82);
+  --studio-media-tile-bg: linear-gradient(180deg, rgba(12, 21, 36, 0.82), rgba(7, 12, 23, 0.96));
+  --studio-media-tile-hover-bg: linear-gradient(180deg, rgba(19, 31, 55, 0.88), rgba(10, 18, 34, 0.96));
+  --studio-media-artwork-bg: #050a14;
+  --studio-media-detail: #a3adc2;
+  --studio-media-sequence-artwork-bg:
+    radial-gradient(circle at 28% 34%, rgba(167, 139, 250, 0.32), transparent 38%),
+    linear-gradient(135deg, rgba(88, 28, 135, 0.66), rgba(49, 46, 129, 0.36)),
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
+  --studio-media-folder-artwork-bg:
+    radial-gradient(circle at 50% 42%, rgba(245, 158, 11, 0.22), transparent 42%),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0 1px, transparent 1px 38px),
+    linear-gradient(135deg, rgba(45, 33, 14, 0.94), var(--studio-surface));
+  --studio-media-audio-artwork-bg:
+    radial-gradient(circle at 15% 60%, rgba(16, 185, 129, 0.34), transparent 42%),
+    linear-gradient(135deg, rgba(5, 46, 22, 0.92), rgba(2, 44, 34, 0.76));
+  --studio-media-generated-artwork-bg:
+    radial-gradient(circle at 72% 34%, rgba(236, 72, 153, 0.38), transparent 34%),
+    radial-gradient(circle at 30% 64%, rgba(168, 85, 247, 0.48), transparent 44%),
+    #061126;
+  --studio-media-poster-fallback-bg:
+    linear-gradient(90deg, transparent 0 12%, rgba(255, 255, 255, 0.08) 12% 13%, transparent 13% 25%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(124, 58, 237, 0.18));
+  --studio-media-dialog-bg:
+    radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.18), transparent 34%),
+    linear-gradient(180deg, rgba(13, 21, 37, 0.98), rgba(6, 10, 20, 0.98));
+  --studio-media-footer-bg: rgba(5, 9, 17, 0.82);
+  --studio-select-text: #e5e7eb;
   --studio-canvas-grid: rgba(148, 163, 184, 0.05);
   --studio-canvas-grid-strong: rgba(148, 163, 184, 0.09);
   --studio-timeline-grid: rgba(148, 163, 184, 0.1);
@@ -44,6 +87,49 @@
   --studio-text-muted: #64748b;
   --studio-primary: #6d28d9;
   --studio-primary-2: #2563eb;
+  --studio-control-bg: rgba(255, 255, 255, 0.86);
+  --studio-control-bg-hover: #eef2ff;
+  --studio-control-text: #1f2937;
+  --studio-control-strong: #0f172a;
+  --studio-popover-bg:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98)),
+    #ffffff;
+  --studio-popover-accent-bg:
+    radial-gradient(circle at top right, rgba(124, 58, 237, 0.12), transparent 48%),
+    var(--studio-popover-bg);
+  --studio-popover-header-bg: rgba(241, 245, 249, 0.88);
+  --studio-media-sidebar-bg:
+    radial-gradient(circle at 62% 0%, rgba(37, 99, 235, 0.1), transparent 34%),
+    linear-gradient(180deg, #ffffff, #f8fafc);
+  --studio-media-input-bg: rgba(255, 255, 255, 0.88);
+  --studio-media-tool-bg: rgba(255, 255, 255, 0.9);
+  --studio-media-tile-bg: linear-gradient(180deg, #ffffff, #f8fafc);
+  --studio-media-tile-hover-bg: linear-gradient(180deg, #ffffff, #eef4ff);
+  --studio-media-artwork-bg: #eef2f8;
+  --studio-media-detail: #64748b;
+  --studio-media-sequence-artwork-bg:
+    radial-gradient(circle at 28% 34%, rgba(124, 58, 237, 0.16), transparent 38%),
+    linear-gradient(135deg, rgba(237, 233, 254, 0.9), rgba(219, 234, 254, 0.72)),
+    linear-gradient(180deg, #ffffff, #f8fafc);
+  --studio-media-folder-artwork-bg:
+    radial-gradient(circle at 50% 42%, rgba(245, 158, 11, 0.16), transparent 42%),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0 1px, transparent 1px 38px),
+    linear-gradient(135deg, #fff7ed, #ffffff);
+  --studio-media-audio-artwork-bg:
+    radial-gradient(circle at 15% 60%, rgba(16, 185, 129, 0.18), transparent 42%),
+    linear-gradient(135deg, #ecfdf5, #eff6ff);
+  --studio-media-generated-artwork-bg:
+    radial-gradient(circle at 72% 34%, rgba(236, 72, 153, 0.18), transparent 34%),
+    radial-gradient(circle at 30% 64%, rgba(168, 85, 247, 0.2), transparent 44%),
+    #f8fafc;
+  --studio-media-poster-fallback-bg:
+    linear-gradient(90deg, transparent 0 12%, rgba(100, 116, 139, 0.12) 12% 13%, transparent 13% 25%),
+    linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(124, 58, 237, 0.1));
+  --studio-media-dialog-bg:
+    radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  --studio-media-footer-bg: rgba(248, 250, 252, 0.94);
+  --studio-select-text: var(--studio-text);
   --studio-canvas-grid: rgba(100, 116, 139, 0.12);
   --studio-canvas-grid-strong: rgba(100, 116, 139, 0.18);
   --studio-timeline-grid: rgba(100, 116, 139, 0.18);
@@ -169,6 +255,85 @@
 
 .iconButton:hover {
   background: var(--studio-bg-soft);
+}
+
+.studioLanguageShell {
+  position: relative;
+  min-width: 0;
+}
+
+.studioLanguageButton {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-control-bg);
+  color: var(--studio-control-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.studioLanguageButton:hover,
+.studioLanguageButton:focus-visible {
+  border-color: rgba(147, 197, 253, 0.32);
+  background: var(--studio-control-bg-hover);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.studioLanguageMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 160;
+  width: 176px;
+  padding: 8px;
+  border: 1px solid var(--studio-border);
+  border-radius: 12px;
+  background: var(--studio-popover-bg);
+  box-shadow: 0 22px 56px var(--studio-node-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.studioLanguageOption {
+  display: flex;
+  width: 100%;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 740;
+  padding: 0 9px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.studioLanguageOption:hover,
+.studioLanguageOption:focus-visible,
+.studioLanguageOptionActive {
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  outline: none;
+}
+
+.studioLanguageOptionLabel {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.studioLanguageOptionLabel span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .exportButton {

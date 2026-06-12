@@ -6,20 +6,49 @@
   --studio-project-border: rgba(148, 163, 184, 0.26);
   --studio-project-text: #111827;
   --studio-project-muted: #64748b;
+  --studio-project-panel-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  --studio-project-card-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+  --studio-project-selected-shadow: 0 0 0 1px #7c3aed, 0 18px 45px rgba(124, 58, 237, 0.14);
+  --studio-project-accent: #7c3aed;
+  --studio-project-accent-hover: #5b21b6;
+  --studio-project-accent-soft: #ede9fe;
+  --studio-project-thumb-bg:
+    radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.14), transparent 30%),
+    linear-gradient(135deg, #f7f5ff, #eef7ff);
+  --studio-project-dialog-backdrop: rgba(15, 23, 42, 0.42);
+  --studio-project-danger-bg: #fef2f2;
+  --studio-project-danger-border: #fecaca;
+  --studio-project-danger-text: #991b1b;
+  --studio-project-danger-strong: #b91c1c;
   display: grid;
   gap: 26px;
   background: var(--studio-project-bg);
   color: var(--studio-project-text);
 }
 
-.projectsShell[data-studio-theme="dark"] {
+.projectsShell[data-studio-theme="dark"],
+:global([data-theme="dark"]) .projectsShell {
   --studio-project-bg: #050911;
-  --studio-project-surface: rgba(15, 23, 42, 0.9);
-  --studio-project-surface-soft: rgba(15, 23, 42, 0.72);
-  --studio-project-surface-hover: rgba(30, 41, 59, 0.86);
-  --studio-project-border: rgba(148, 163, 184, 0.16);
+  --studio-project-surface: rgba(13, 20, 34, 0.94);
+  --studio-project-surface-soft: rgba(20, 30, 50, 0.8);
+  --studio-project-surface-hover: rgba(30, 41, 59, 0.92);
+  --studio-project-border: rgba(148, 163, 184, 0.18);
   --studio-project-text: #f8fafc;
   --studio-project-muted: #94a3b8;
+  --studio-project-panel-shadow: 0 22px 72px rgba(0, 0, 0, 0.28);
+  --studio-project-card-shadow: 0 16px 42px rgba(0, 0, 0, 0.24);
+  --studio-project-selected-shadow: 0 0 0 1px #8b5cf6, 0 18px 45px rgba(124, 58, 237, 0.22);
+  --studio-project-accent: #a78bfa;
+  --studio-project-accent-hover: #c4b5fd;
+  --studio-project-accent-soft: rgba(124, 58, 237, 0.18);
+  --studio-project-thumb-bg:
+    radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.22), transparent 30%),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  --studio-project-dialog-backdrop: rgba(2, 6, 23, 0.72);
+  --studio-project-danger-bg: rgba(127, 29, 29, 0.18);
+  --studio-project-danger-border: rgba(248, 113, 113, 0.28);
+  --studio-project-danger-text: #fecaca;
+  --studio-project-danger-strong: #fca5a5;
 }
 
 .projectsHero,
@@ -78,7 +107,7 @@
   border: 1px solid var(--studio-project-border);
   border-radius: 14px;
   background: var(--studio-project-surface);
-  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--studio-project-panel-shadow);
 }
 
 .newProjectPanel {
@@ -101,7 +130,7 @@
 }
 
 .panelTitleRow > svg {
-  color: #7c3aed;
+  color: var(--studio-project-accent);
 }
 
 .titleIcon {
@@ -112,8 +141,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--studio-project-accent-soft);
+  color: var(--studio-project-accent);
 }
 
 .panelTitleRow h2 {
@@ -220,14 +249,14 @@
 .templateCard:hover,
 .templateCard:focus-visible {
   border-color: rgba(124, 58, 237, 0.55);
-  box-shadow: 0 14px 35px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--studio-project-card-shadow);
   outline: none;
   transform: translateY(-1px);
 }
 
 .templateCard[aria-pressed="true"] {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 1px #7c3aed, 0 18px 45px rgba(124, 58, 237, 0.14);
+  border-color: var(--studio-project-accent);
+  box-shadow: var(--studio-project-selected-shadow);
 }
 
 .templateCard:disabled {
@@ -242,9 +271,7 @@
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: 9px;
-  background:
-    radial-gradient(circle at 15% 10%, rgba(124, 58, 237, 0.14), transparent 30%),
-    linear-gradient(135deg, #f7f5ff, #eef7ff);
+  background: var(--studio-project-thumb-bg);
 }
 
 .templateThumb img {
@@ -263,7 +290,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  background: #7c3aed;
+  background: var(--studio-project-accent);
   color: #fff;
   box-shadow: 0 10px 18px rgba(124, 58, 237, 0.22);
 }
@@ -288,8 +315,8 @@
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  background: #ede9fe;
-  color: #7c3aed;
+  background: var(--studio-project-accent-soft);
+  color: var(--studio-project-accent);
   font-size: 10px;
   font-style: normal;
   font-weight: 800;
@@ -394,7 +421,7 @@
 
 .projectCardMain:hover .projectCardCopy strong,
 .projectCardMain:focus-visible .projectCardCopy strong {
-  color: #7c3aed;
+  color: var(--studio-project-accent);
 }
 
 .projectCardMain:focus-visible {
@@ -468,7 +495,7 @@
 .projectActionButton:focus-visible,
 .projectActionButton[aria-expanded="true"] {
   background: var(--studio-project-surface-hover);
-  color: #6d28d9;
+  color: var(--studio-project-accent);
   outline: none;
 }
 
@@ -506,18 +533,18 @@
 .projectActionMenu button:hover,
 .projectActionMenu button:focus-visible {
   background: var(--studio-project-surface-soft);
-  color: #6d28d9;
+  color: var(--studio-project-accent);
   outline: none;
 }
 
 .projectActionMenu .projectActionDanger {
-  color: #b91c1c;
+  color: var(--studio-project-danger-strong);
 }
 
 .projectActionMenu .projectActionDanger:hover,
 .projectActionMenu .projectActionDanger:focus-visible {
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--studio-project-danger-bg);
+  color: var(--studio-project-danger-text);
 }
 
 .emptyProjects {
@@ -548,7 +575,7 @@
   gap: 8px;
   border: 0;
   background: transparent;
-  color: #7c3aed;
+  color: var(--studio-project-accent);
   font-size: 13px;
   font-weight: 820;
   cursor: pointer;
@@ -557,7 +584,7 @@
 
 .viewAllProjects:hover,
 .viewAllProjects:focus-visible {
-  color: #5b21b6;
+  color: var(--studio-project-accent-hover);
   outline: none;
 }
 
@@ -567,7 +594,7 @@
   z-index: 1000;
   display: grid;
   place-items: center;
-  background: rgba(15, 23, 42, 0.42);
+  background: var(--studio-project-dialog-backdrop);
   padding: 24px;
 }
 
@@ -628,10 +655,10 @@
 
 .deleteWarning {
   margin: 0;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--studio-project-danger-border);
   border-radius: 10px;
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--studio-project-danger-bg);
+  color: var(--studio-project-danger-text);
   font-size: 13px;
   font-weight: 760;
   padding: 12px 14px;

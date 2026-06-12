@@ -4,9 +4,10 @@ import { Download, GitBranch, Moon, PanelRight, Settings, Sun } from 'lucide-rea
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { StudioHeaderSession } from './StudioHeaderSession';
+import { StudioLanguageToggle } from './StudioLanguageToggle';
 import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
 import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeStudioGeneratedProjectDisplayName, type StudioCopy } from '../../_lib/studio-copy';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
 
@@ -38,6 +39,7 @@ export function WorkspaceEditorTopbar({
   studioTheme,
 }: WorkspaceEditorTopbarProps) {
   const [isHydrated, setIsHydrated] = useState(false);
+  const displayTemplateName = localizeStudioGeneratedProjectDisplayName(activeTemplateName, studioCopy);
 
   useEffect(() => {
     setIsHydrated(true);
@@ -57,7 +59,7 @@ export function WorkspaceEditorTopbar({
         />
         <div>
           <p>{studioCopy.topbar.productName}</p>
-          <span>{studioCopy.topbar.breadcrumbProjects} / {activeTemplateName} / {studioCopy.topbar.breadcrumbWorkspace}</span>
+          <span>{studioCopy.topbar.breadcrumbProjects} / {displayTemplateName} / {studioCopy.topbar.breadcrumbWorkspace}</span>
         </div>
       </div>
       <div className={styles.modeSwitch} aria-label={studioCopy.topbar.workspaceViewLabel}>
@@ -97,6 +99,7 @@ export function WorkspaceEditorTopbar({
             <Settings size={15} />
             <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
           </button>
+          <StudioLanguageToggle />
           {isHydrated ? (
             <button
               type="button"

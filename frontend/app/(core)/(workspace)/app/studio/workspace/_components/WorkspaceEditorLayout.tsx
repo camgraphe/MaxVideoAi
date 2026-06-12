@@ -16,7 +16,11 @@ import type { useWorkspaceTimelineTrackActions } from '../_hooks/useWorkspaceTim
 import type { WorkspaceTimelineExportQualityPreset } from '../_lib/workspace-timeline-export';
 import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timeline-render';
 import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
-import { localizeStudioTemplateSummaries, type StudioCopy } from '../../_lib/studio-copy';
+import {
+  localizeStudioGeneratedSequenceDisplayName,
+  localizeStudioTemplateSummaries,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphEdge,
@@ -176,6 +180,13 @@ export function WorkspaceEditorLayout({
     timelineTrack,
   } = controllers;
   const localizedTemplateSummaries = localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy);
+  const exportManifest = {
+    ...exportState.exportManifest,
+    sequenceName: localizeStudioGeneratedSequenceDisplayName(
+      exportState.exportManifest.sequenceName,
+      studioCopy.viewer.projectMedia
+    ),
+  };
   const shouldShowCanvasInspector = focusMode === 'canvas' && isCanvasInspectorOpen && Boolean(canvas.selectedNode);
 
   return (
@@ -244,6 +255,7 @@ export function WorkspaceEditorLayout({
             nodes={canvas.renderNodes}
             edges={canvas.renderEdges}
             isKeyboardDeleteEnabled={activeEditorSurface === 'canvas'}
+            isShortcutActive={activeEditorSurface === 'canvas'}
             onNodesChange={canvas.onNodesChange}
             onEdgesChange={canvas.onEdgesChange}
             onConnect={canvas.onConnect}
@@ -261,11 +273,15 @@ export function WorkspaceEditorLayout({
               activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
               userTemplates: userCanvasTemplates,
               activeUserTemplateId: activeUserCanvasTemplateId,
+              canRedo: canvas.canvasHistory.future.length > 0,
+              canUndo: canvas.canvasHistory.past.length > 0,
               onApplyTemplate: canvas.handleApplyCanvasTemplate,
               onApplyUserTemplate: canvas.handleApplyUserCanvasTemplate,
               onDeleteUserTemplate: canvas.handleDeleteUserCanvasTemplate,
               onDuplicateUserTemplate: canvas.handleDuplicateUserCanvasTemplate,
+              onRedo: canvas.redoCanvas,
               onSaveCanvasTemplate: canvas.handleSaveCanvasTemplate,
+              onUndo: canvas.undoCanvas,
             }}
           />
         ) : (
@@ -309,6 +325,8 @@ export function WorkspaceEditorLayout({
         ) : (
           <TimelineClipInspector
             copy={studioCopy.timeline.inspector}
+            canvasNodeCopy={studioCopy.canvas.nodes}
+            projectMediaCopy={studioCopy.viewer.projectMedia}
             selectedItem={exportState.selectedTimelineItem}
             selectedSequence={exportState.selectedSequenceForInspector}
             projectFps={projectSettings.fps}
@@ -321,6 +339,7 @@ export function WorkspaceEditorLayout({
 
       <WorkspaceTimeline
         copy={studioCopy.timeline}
+        canvasNodeCopy={studioCopy.canvas.nodes}
         canRedo={timelineHistory.timelineHistory.future.length > 0}
         canUndo={timelineHistory.timelineHistory.past.length > 0}
         isShortcutActive={activeEditorSurface === 'timeline'}
@@ -389,7 +408,7 @@ export function WorkspaceEditorLayout({
         isExportEstimateLoading={exportController.isExportEstimateLoading}
         isExportVideoStarting={exportController.isExportVideoStarting}
         isProjectMediaPickerOpen={isProjectMediaPickerOpen}
-        manifest={exportState.exportManifest}
+        manifest={exportManifest}
         outPointSec={timelinePlayback.timelineOutPointSec}
         projectMediaLibrary={canvas.projectMediaLibrary}
         readinessLabel={exportController.exportReadinessLabel}

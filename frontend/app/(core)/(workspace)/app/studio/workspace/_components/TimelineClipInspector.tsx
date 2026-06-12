@@ -20,7 +20,11 @@ import {
   workspaceTimelineTrackLabel,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import {
+  localizeStudioGeneratedCanvasText,
+  localizeStudioGeneratedSequenceDisplayName,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -39,6 +43,8 @@ const DEFAULT_AUDIO_MIX: WorkspaceTimelineAudioMix = {
 
 type TimelineClipInspectorProps = {
   copy: StudioCopy['timeline']['inspector'];
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
+  projectMediaCopy: StudioCopy['viewer']['projectMedia'];
   selectedItem: WorkspaceTimelineItem | null;
   selectedSequence: {
     clipCount: number;
@@ -132,22 +138,25 @@ function InspectorSlider({
 
 function SequenceInspector({
   copy,
+  projectMediaCopy,
   sequence,
   onRenameSequence,
   onSequenceSettingsChange,
 }: {
   copy: StudioCopy['timeline']['inspector'];
+  projectMediaCopy: StudioCopy['viewer']['projectMedia'];
   sequence: NonNullable<TimelineClipInspectorProps['selectedSequence']>;
   onRenameSequence: (name: string) => void;
   onSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
 }) {
   const dimensionsLabel = workspaceProjectDimensionsLabel(sequence.settings);
+  const sequenceDisplayName = localizeStudioGeneratedSequenceDisplayName(sequence.name, projectMediaCopy);
 
   return (
     <aside className={styles.settingsPanel} aria-label={copy.sequenceSettings}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.panelTitle}>{sequence.name}</p>
+          <p className={styles.panelTitle}>{sequenceDisplayName}</p>
           <span className={styles.panelSubtitle}>{copy.sequenceSettings}</span>
         </div>
       </div>
@@ -156,7 +165,7 @@ function SequenceInspector({
           {copy.sequenceName}
           <input
             className={styles.settingsInput}
-            value={sequence.name}
+            value={sequenceDisplayName}
             onChange={(event) => onRenameSequence(event.currentTarget.value)}
           />
         </label>
@@ -223,6 +232,8 @@ function SequenceInspector({
 
 export function TimelineClipInspector({
   copy,
+  canvasNodeCopy,
+  projectMediaCopy,
   selectedItem,
   selectedSequence,
   projectFps,
@@ -234,6 +245,7 @@ export function TimelineClipInspector({
     return (
         <SequenceInspector
         copy={copy}
+        projectMediaCopy={projectMediaCopy}
         sequence={selectedSequence}
         onRenameSequence={onRenameSequence}
         onSequenceSettingsChange={onSequenceSettingsChange}
@@ -243,6 +255,7 @@ export function TimelineClipInspector({
 
   if (!selectedItem) return <InspectorEmptyState copy={copy} />;
 
+  const selectedItemTitle = localizeStudioGeneratedCanvasText(selectedItem.title, canvasNodeCopy);
   const isVideoTrack = isWorkspaceTimelineVideoTrack(selectedItem.track);
   const isAudioClip = selectedItem.mediaKind === 'audio' || !isVideoTrack;
   const canEditTransform = !isAudioClip;
@@ -262,7 +275,7 @@ export function TimelineClipInspector({
     <aside className={styles.settingsPanel} aria-label={copy.clipSettings}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.panelTitle}>{selectedItem.title}</p>
+          <p className={styles.panelTitle}>{selectedItemTitle}</p>
           <span className={styles.panelSubtitle}>{workspaceTimelineTrackLabel(selectedItem.track)} {copy.clip}</span>
         </div>
       </div>
@@ -271,7 +284,7 @@ export function TimelineClipInspector({
           {copy.clipName}
           <input
             className={styles.settingsInput}
-            value={selectedItem.title}
+            value={selectedItemTitle}
             onChange={(event) => onPatchItem(selectedItem.id, { title: event.currentTarget.value })}
           />
         </label>

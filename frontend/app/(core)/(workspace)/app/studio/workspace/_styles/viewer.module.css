@@ -97,7 +97,7 @@
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-surface);
-  color: #e5e7eb;
+  color: var(--studio-select-text);
   font: inherit;
   font-size: 11px;
   text-transform: none;
@@ -119,7 +119,7 @@
 .programFullscreenButton:focus-visible {
   border-color: rgba(129, 140, 248, 0.42);
   background: var(--studio-bg-soft);
-  color: #ffffff;
+  color: var(--studio-text-strong);
   outline: none;
 }
 

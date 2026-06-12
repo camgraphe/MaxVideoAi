@@ -19,11 +19,13 @@ import {
   Mic2,
   Music2,
   MousePointer2,
+  Redo2,
   Save,
   SlidersHorizontal,
   Sparkles,
   Trash2,
   Type,
+  Undo2,
   Video,
   WandSparkles,
 } from 'lucide-react';
@@ -60,6 +62,8 @@ export type CanvasFloatingToolbarProps = {
   copy: StudioCopy['canvas'];
   activeTemplateId: WorkspaceTemplateId | null;
   activeUserTemplateId: string | null;
+  canRedo: boolean;
+  canUndo: boolean;
   selectionTool: CanvasSelectionTool;
   selectedNodeCount: number;
   templates: WorkspaceTemplateSummary[];
@@ -69,8 +73,10 @@ export type CanvasFloatingToolbarProps = {
   onDeleteUserTemplate: (templateId: string) => void;
   onDeleteSelectedNodes: () => void;
   onDuplicateUserTemplate: (templateId: string) => void;
+  onRedo: () => void;
   onSaveCanvasTemplate: (name: string) => void;
   onSelectionToolChange: (tool: CanvasSelectionTool) => void;
+  onUndo: () => void;
 };
 
 function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'image' | 'text' | 'video', ToolbarBlockDefinition[]> {
@@ -196,6 +202,8 @@ export function CanvasFloatingToolbar({
   copy,
   activeTemplateId,
   activeUserTemplateId,
+  canRedo,
+  canUndo,
   selectionTool,
   selectedNodeCount,
   templates,
@@ -205,8 +213,10 @@ export function CanvasFloatingToolbar({
   onDeleteUserTemplate,
   onDeleteSelectedNodes,
   onDuplicateUserTemplate,
+  onRedo,
   onSaveCanvasTemplate,
   onSelectionToolChange,
+  onUndo,
 }: CanvasFloatingToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
@@ -277,6 +287,29 @@ export function CanvasFloatingToolbar({
 
   return (
     <div ref={toolbarRef} className={styles.canvasToolbar} data-canvas-toolbar="true" aria-label={copy.toolbar.ariaLabel}>
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        aria-label={copy.toolbar.undo}
+        data-tooltip={copy.toolbar.undoTooltip}
+        title={copy.toolbar.undoTitle}
+        disabled={!canUndo}
+        onClick={onUndo}
+      >
+        <Undo2 size={18} />
+      </button>
+      <button
+        type="button"
+        className={styles.toolbarButton}
+        aria-label={copy.toolbar.redo}
+        data-tooltip={copy.toolbar.redoTooltip}
+        title={copy.toolbar.redoTitle}
+        disabled={!canRedo}
+        onClick={onRedo}
+      >
+        <Redo2 size={18} />
+      </button>
+      <span className={styles.toolbarSeparator} />
       <button
         type="button"
         className={`${styles.toolbarButton} ${selectionTool === 'pointer' ? styles.toolbarButtonActive : ''}`}

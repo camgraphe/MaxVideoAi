@@ -4,9 +4,7 @@
   gap: 0;
   padding: 0;
   border-right-color: var(--studio-border);
-  background:
-    radial-gradient(circle at 62% 0%, rgba(37, 99, 235, 0.16), transparent 32%),
-    linear-gradient(180deg, rgba(8, 14, 25, 0.98), rgba(5, 9, 17, 0.99));
+  background: var(--studio-media-sidebar-bg);
 }
 
 .projectMediaHeader {
@@ -32,7 +30,7 @@
 .projectMediaSubtitle {
   display: block;
   margin-top: 5px;
-  color: #a3adc2;
+  color: var(--studio-media-detail);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -75,7 +73,7 @@
   gap: 8px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(6, 11, 22, 0.74);
+  background: var(--studio-media-input-bg);
   color: var(--studio-text-muted);
   padding: 0 10px;
 }
@@ -116,8 +114,8 @@
   place-items: center;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(9, 15, 29, 0.82);
-  color: #a7b4cc;
+  background: var(--studio-media-tool-bg);
+  color: var(--studio-text-muted);
   cursor: pointer;
 }
 
@@ -125,8 +123,8 @@
 .projectMediaViewTools button:focus-visible,
 .projectMediaViewTools button[aria-pressed="true"] {
   border-color: rgba(129, 140, 248, 0.42);
-  background: rgba(59, 46, 132, 0.62);
-  color: #ffffff;
+  background: var(--studio-control-bg-hover);
+  color: var(--studio-text-strong);
   outline: none;
 }
 
@@ -158,7 +156,7 @@
 .projectMediaBackButton:focus-visible {
   border-color: rgba(96, 165, 250, 0.34);
   background: var(--studio-bg-soft);
-  color: #ffffff;
+  color: var(--studio-text-strong);
   outline: none;
 }
 
@@ -201,7 +199,7 @@
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(12, 21, 36, 0.82), rgba(7, 12, 23, 0.96));
+  background: var(--studio-media-tile-bg);
   color: var(--studio-text-strong);
   text-align: left;
   cursor: pointer;
@@ -212,7 +210,7 @@
 .projectMediaTile:focus-visible {
   border-color: rgba(96, 165, 250, 0.44);
   outline: none;
-  background: linear-gradient(180deg, rgba(19, 31, 55, 0.88), rgba(10, 18, 34, 0.96));
+  background: var(--studio-media-tile-hover-bg);
 }
 
 .projectMediaTile[data-project-media-drag-kind] {
@@ -244,7 +242,7 @@
   aspect-ratio: 16 / 9;
   height: auto;
   overflow: hidden;
-  background: #050a14;
+  background: var(--studio-media-artwork-bg);
 }
 
 .projectMediaArtwork img {
@@ -255,17 +253,11 @@
 }
 
 .projectMediaArtworkSequence {
-  background:
-    radial-gradient(circle at 28% 34%, rgba(167, 139, 250, 0.32), transparent 38%),
-    linear-gradient(135deg, rgba(88, 28, 135, 0.66), rgba(49, 46, 129, 0.36)),
-    linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
+  background: var(--studio-media-sequence-artwork-bg);
 }
 
 .projectMediaArtworkFolder {
-  background:
-    radial-gradient(circle at 50% 42%, rgba(245, 158, 11, 0.22), transparent 42%),
-    linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0 1px, transparent 1px 38px),
-    linear-gradient(135deg, rgba(45, 33, 14, 0.94), var(--studio-surface));
+  background: var(--studio-media-folder-artwork-bg);
 }
 
 .projectMediaFolderGlyph {
@@ -292,24 +284,17 @@
 }
 
 .projectMediaArtworkAudio {
-  background:
-    radial-gradient(circle at 15% 60%, rgba(16, 185, 129, 0.34), transparent 42%),
-    linear-gradient(135deg, rgba(5, 46, 22, 0.92), rgba(2, 44, 34, 0.76));
+  background: var(--studio-media-audio-artwork-bg);
 }
 
 .projectMediaArtworkGenerated {
-  background:
-    radial-gradient(circle at 72% 34%, rgba(236, 72, 153, 0.38), transparent 34%),
-    radial-gradient(circle at 30% 64%, rgba(168, 85, 247, 0.48), transparent 44%),
-    #061126;
+  background: var(--studio-media-generated-artwork-bg);
 }
 
 .projectMediaPosterFallback {
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(90deg, transparent 0 12%, rgba(255, 255, 255, 0.08) 12% 13%, transparent 13% 25%),
-    linear-gradient(135deg, rgba(37, 99, 235, 0.18), rgba(124, 58, 237, 0.18));
+  background: var(--studio-media-poster-fallback-bg);
 }
 
 .projectMediaWaveform {
@@ -422,7 +407,7 @@
 
 .projectMediaTileBody span {
   margin-top: 3px;
-  color: #a3adc2;
+  color: var(--studio-media-detail);
   font-size: 9.5px;
 }
 
@@ -459,7 +444,7 @@
   padding: 7px;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(9, 14, 26, 0.98);
+  background: var(--studio-popover-bg);
   box-shadow: 0 18px 48px var(--studio-node-shadow);
 }
 
@@ -519,9 +504,7 @@
   width: min(360px, 100%);
   border: 1px solid var(--studio-border);
   border-radius: 14px;
-  background:
-    radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.18), transparent 34%),
-    linear-gradient(180deg, rgba(13, 21, 37, 0.98), rgba(6, 10, 20, 0.98));
+  background: var(--studio-media-dialog-bg);
   box-shadow: 0 28px 80px var(--studio-node-shadow);
   color: var(--studio-text-strong);
   padding: 14px;
@@ -544,7 +527,7 @@
 .projectMediaDialogHeader span {
   display: block;
   margin-top: 4px;
-  color: #9ca8bd;
+  color: var(--studio-text-muted);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -565,7 +548,7 @@
 .projectMediaDialogHeader button:hover,
 .projectMediaDialogHeader button:focus-visible {
   border-color: rgba(96, 165, 250, 0.34);
-  color: #ffffff;
+  color: var(--studio-text-strong);
   outline: none;
 }
 
@@ -586,7 +569,7 @@
   min-height: 38px;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(8, 13, 26, 0.88);
+  background: var(--studio-media-input-bg);
   color: var(--studio-text-strong);
   font: inherit;
   font-size: 13px;
@@ -615,7 +598,7 @@
   gap: 9px;
   border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(8, 13, 26, 0.76);
+  background: var(--studio-media-input-bg);
   color: var(--studio-text);
   font: inherit;
   font-size: 12px;
@@ -635,7 +618,7 @@
 .projectMediaFolderList button:focus-visible,
 .projectMediaFolderOptionSelected {
   border-color: rgba(129, 140, 248, 0.52) !important;
-  background: rgba(59, 46, 132, 0.46) !important;
+  background: var(--studio-control-bg-hover) !important;
   outline: none;
 }
 
@@ -686,7 +669,7 @@
   justify-content: space-between;
   padding: 13px 16px 15px;
   border-top: 1px solid var(--studio-border);
-  background: rgba(5, 9, 17, 0.82);
+  background: var(--studio-media-footer-bg);
 }
 
 .projectMediaItemCount {

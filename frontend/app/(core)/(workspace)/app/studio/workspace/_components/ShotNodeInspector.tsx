@@ -11,8 +11,7 @@ import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
-import { edgeLabel } from '../_lib/workspace-templates';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeStudioEdgeKindLabel, type StudioCopy } from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -60,6 +59,7 @@ export function ShotNodeInspector({
   const recommendedModels = (validation?.recommendedModels ?? []).slice(0, 4);
   const recommendedModelIds = new Set(recommendedModels.map((model) => model.id));
   const remainingCapabilities = capabilities.filter((capability) => !recommendedModelIds.has(capability.id));
+  const edgeLabel = (kind: string) => localizeStudioEdgeKindLabel(kind, copy);
 
   return (
     <>

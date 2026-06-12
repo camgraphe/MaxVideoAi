@@ -18,8 +18,10 @@ import type {
   WorkspaceTimelineTrack,
 } from '../_lib/workspace-types';
 import { filterRenderableWorkspaceEdges } from '../_lib/workspace-render-edges';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { localizeStudioEdgeKindLabel, type StudioCopy } from '../../_lib/studio-copy';
 import type {
+  CanvasGraphHistorySnapshot,
+  CanvasGraphHistoryState,
   WorkspaceEditorSurface,
   WorkspaceFocusMode,
   WorkspaceUserCanvasTemplate,
@@ -28,7 +30,12 @@ import type {
 type UseWorkspaceCanvasControllerParams = {
   activeUserCanvasTemplateId: string | null;
   assetPickerNodeId: string | null;
+  canvasHistory: CanvasGraphHistoryState;
   capabilities: WorkspaceModelCapability[];
+  commitCanvasGraph: (
+    updater: (current: CanvasGraphHistorySnapshot) => CanvasGraphHistorySnapshot,
+    options?: { gesture?: boolean; history?: boolean }
+  ) => void;
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   defaultModelId: string;
   edges: WorkspaceGraphEdge[];
@@ -38,6 +45,7 @@ type UseWorkspaceCanvasControllerParams = {
   nodes: WorkspaceGraphNode[];
   playheadSec: number;
   pricingEstimates: Record<string, WorkspacePricingEstimate>;
+  redoCanvas: () => void;
   selectedNodeId: string | null;
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setActiveTemplateId: Dispatch<SetStateAction<WorkspaceTemplateId>>;
@@ -59,13 +67,16 @@ type UseWorkspaceCanvasControllerParams = {
   studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
+  undoCanvas: () => void;
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
 };
 
 export function useWorkspaceCanvasController({
   activeUserCanvasTemplateId,
   assetPickerNodeId,
+  canvasHistory,
   capabilities,
+  commitCanvasGraph,
   commitTimelineItems,
   defaultModelId,
   edges,
@@ -75,6 +86,7 @@ export function useWorkspaceCanvasController({
   nodes,
   playheadSec,
   pricingEstimates,
+  redoCanvas,
   selectedNodeId,
   setActiveEditorSurface,
   setActiveTemplateId,
@@ -96,6 +108,7 @@ export function useWorkspaceCanvasController({
   studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
+  undoCanvas,
   userCanvasTemplates,
 }: UseWorkspaceCanvasControllerParams) {
   const {
@@ -111,13 +124,12 @@ export function useWorkspaceCanvasController({
     patchShot,
   } = useWorkspaceGraphActions({
     capabilities,
+    commitCanvasGraph,
     defaultModelId,
     edges,
     nodes,
     setActiveEditorSurface,
     setAssetPickerNodeId,
-    setEdges,
-    setNodes,
     setNotice,
     setSelectedNodeId,
     studioNotices,
@@ -128,12 +140,11 @@ export function useWorkspaceCanvasController({
     handleCanvasTextPaste,
     handleSendProgramSnapshotToCanvas,
   } = useWorkspaceCanvasImportActions({
+    commitCanvasGraph,
     defaultModelId,
     nodes,
-    patchNodeData,
     setActiveEditorSurface,
     setFocusMode,
-    setNodes,
     setNotice,
     setSelectedNodeId,
     studioNotices,
@@ -185,7 +196,21 @@ export function useWorkspaceCanvasController({
     onSendOutputToTimeline: handleSendOutputToTimeline,
   });
 
-  const renderEdges = useMemo(() => filterRenderableWorkspaceEdges(renderNodes, edges), [edges, renderNodes]);
+  const renderEdges = useMemo(() => {
+    return filterRenderableWorkspaceEdges(renderNodes, edges).map((edge) => {
+      const edgeData = edge.data;
+      if (!edgeData?.kind) return edge;
+      const label = localizeStudioEdgeKindLabel(edgeData.kind, studioCanvasCopy.nodes);
+      return {
+        ...edge,
+        label,
+        data: {
+          ...edgeData,
+          label,
+        },
+      };
+    });
+  }, [edges, renderNodes, studioCanvasCopy.nodes]);
   const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;
   const assetPickerNode = renderNodes.find((node) => node.id === assetPickerNodeId) ?? null;
   const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined, studioAssetLibraryCopy);
@@ -199,14 +224,13 @@ export function useWorkspaceCanvasController({
     handleSaveCanvasTemplate,
   } = useWorkspaceCanvasTemplateActions({
     activeUserCanvasTemplateId,
+    commitCanvasGraph,
     edges,
     nodes,
     setActiveEditorSurface,
     setActiveTemplateId,
     setActiveUserCanvasTemplateId,
     setCanvasRevision,
-    setEdges,
-    setNodes,
     setNotice,
     setSelectedNodeId,
     setUserCanvasTemplates,
@@ -217,6 +241,7 @@ export function useWorkspaceCanvasController({
   return {
     assetPickerLibrary,
     assetPickerNode,
+    canvasHistory,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
     handleCanvasFileDrop,
@@ -240,8 +265,10 @@ export function useWorkspaceCanvasController({
     patchNodeData,
     patchShot,
     projectMediaLibrary,
+    redoCanvas,
     renderEdges,
     renderNodes,
     selectedNode,
+    undoCanvas,
   };
 }

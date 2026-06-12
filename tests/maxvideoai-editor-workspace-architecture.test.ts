@@ -174,6 +174,8 @@ const workspaceNormalizersPath = join(workspaceDir, '_state/workspace-normalizer
 const editorAssetLibraryHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorAssetLibrary.ts');
 const editorNoticeHookPath = join(workspaceDir, '_hooks/useWorkspaceEditorNotice.ts');
 const canvasControllerHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasController.ts');
+const canvasGraphStateHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasGraphState.ts');
+const canvasHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceCanvasHistory.ts');
 const pricingHookPath = join(workspaceDir, '_hooks/useWorkspaceShotPricing.ts');
 const timelineClipActionsHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineClipActions.ts');
 const timelineHistoryHookPath = join(workspaceDir, '_hooks/useWorkspaceTimelineHistory.ts');
@@ -330,6 +332,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasSource = source(canvasPath);
   const canvasFloatingToolbarSource = source(canvasFloatingToolbarPath);
   const canvasControllerHookSource = source(canvasControllerHookPath);
+  const canvasGraphStateHookSource = source(canvasGraphStateHookPath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
   const canvasTemplateActionsHookSource = source(canvasTemplateActionsHookPath);
   const selectionActionsHookSource = source(selectionActionsHookPath);
@@ -524,7 +527,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(persistenceEffectsHookSource, /emptyTimelineItems: WorkspaceTimelineItem\[\] = \[\]/, 'new project canvas templates should start with a clean sequence instead of template demo timeline clips');
   const applyCanvasTemplateHandler = canvasTemplateActionsHookSource.match(/const handleApplyCanvasTemplate = useCallback\([\s\S]*?\n  \);\n/);
   assert.ok(applyCanvasTemplateHandler, 'canvas template action hook should define a canvas-only template application handler');
-  assert.match(applyCanvasTemplateHandler[0], /setNodes\(template\.nodes\)[\s\S]*setEdges\(template\.edges\)/, 'applying a canvas template should update the graph');
+  assert.match(applyCanvasTemplateHandler[0], /commitCanvasGraph\(\(\) => \(\{[\s\S]*edges: template\.edges,[\s\S]*nodes: template\.nodes/, 'applying a canvas template should update the graph through canvas history');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /setTimelineItems/, 'applying a canvas template should not reset or replace the montage timeline');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /setSequences/, 'applying a canvas template should not replace project sequences');
   assert.doesNotMatch(applyCanvasTemplateHandler[0], /timelineItems/, 'applying a canvas template should not copy template demo timeline items into the active sequence');
@@ -542,7 +545,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(selectionActionsHookSource, /handleInspectCanvasNode[\s\S]*setIsCanvasInspectorOpen\(Boolean\(nodeId\)\)/, 'Selection actions should own the explicit canvas inspect command');
   assert.match(selectionActionsHookSource, /handleSelectedCanvasNodeChange[\s\S]*if \(!nodeId\) setIsCanvasInspectorOpen\(false\)/, 'Simple canvas selection should close only on empty selection, not open the inspector');
   assert.match(nodeFrameSource, /data-canvas-node-inspect-button=\{nodeId\}/, 'Selected canvas nodes should expose a visible inspect affordance');
-  assert.match(workspaceSource, /const \[selectedNodeId, setSelectedNodeId\] = useState<string \| null>\(null\)/, 'Canvas mode should not preselect a node and open the inspector on workspace load');
+  assert.match(canvasGraphStateHookSource, /const \[selectedNodeId, setSelectedNodeId\] = useState<string \| null>\(null\)/, 'Canvas mode should not preselect a node and open the inspector on workspace load');
   assert.match(canvasTemplateActionsHookSource, /setSelectedNodeId\(null\)/, 'Applying a canvas template should leave the canvas inspector collapsed until the user selects a node');
   assert.match(shellStyleSource, /\.canvasEditorBody[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*0/, 'Canvas body should collapse the inspector column when no node is selected');
   assert.match(shellStyleSource, /\.canvasEditorBodyInspectorOpen[\s\S]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*340px/, 'Canvas body should expand the inspector column when a node is selected');
@@ -711,6 +714,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(editorAssetLibraryHookPath), 'studio should load the signed-in user media library through a route-local hook');
   assert.ok(existsSync(editorNoticeHookPath), 'editor notice auto-clear should live in a route-local hook');
   assert.ok(existsSync(canvasControllerHookPath), 'workspace canvas controller should live in a route-local hook');
+  assert.ok(existsSync(canvasGraphStateHookPath), 'canvas graph state should live in a route-local hook');
+  assert.ok(existsSync(canvasHistoryHookPath), 'canvas undo and redo history should live in a route-local hook');
   assert.ok(existsSync(projectMediaLibraryModalPath), 'viewer project media import modal should live in a route-local component');
   assert.ok(existsSync(pricingHookPath), 'workspace pricing hook should live in _hooks/useWorkspaceShotPricing.ts');
   assert.ok(existsSync(generationActionsHookPath), 'workspace shot generation actions should live in a route-local hook');
@@ -770,6 +775,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const projectMediaLibraryModalSource = source(projectMediaLibraryModalPath);
   const editorNoticeHookSource = source(editorNoticeHookPath);
   const canvasControllerHookSource = source(canvasControllerHookPath);
+  const canvasGraphStateHookSource = source(canvasGraphStateHookPath);
+  const canvasHistoryHookSource = source(canvasHistoryHookPath);
   const projectMediaControllerSource = source(projectMediaControllerPath);
   const projectMediaActionsHookSource = source(projectMediaActionsHookPath);
   const exportControllerSource = source(exportControllerPath);
@@ -993,7 +1000,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl[\s\S]*position:\s*absolute/, 'resize selector should be absolutely positioned by canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl[\s\S]*bottom:\s*-8px/, 'resize selector should sit on the bottom edge');
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl[\s\S]*left:\s*-8px/, 'resize selector should sit on the left edge');
-  assert.match(canvasNodeStyleSource, /cursor:\s*nwse-resize/, 'resize selector should communicate diagonal resize affordance');
+  assert.match(canvasNodeStyleSource, /cursor:\s*nesw-resize/, 'bottom-left resize selector should communicate the mirrored diagonal resize affordance');
   assert.match(canvasStyleSource, /react-flow__node-asset-image[\s\S]*react-flow__node-asset-video[\s\S]*react-flow__node-text-prompt[\s\S]*react-flow__node-output/, 'media, prompt, and output blocks should have explicit default node dimensions');
   assert.match(canvasStyleSource, /react-flow__node-asset-audio/, 'audio blocks should have explicit default node dimensions');
   assert.match(canvasStyleSource, /width:\s*210px/, 'source node defaults should keep a compact standard width until manually resized');
@@ -1493,6 +1500,19 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /\bsetTimelineHistory\s*\(/, 'orchestrator should not mutate timeline history directly');
   assert.match(workspaceEditorLayoutSource, /onUndo=\{timelineHistory\.undoTimeline\}/, 'workspace should support timeline undo');
   assert.match(workspaceEditorLayoutSource, /onRedo=\{timelineHistory\.redoTimeline\}/, 'workspace should support timeline redo');
+  assert.match(workspaceSource, /useWorkspaceCanvasGraphState/, 'workspace should delegate canvas graph state to a route-local hook');
+  assert.match(canvasGraphStateHookSource, /useWorkspaceCanvasHistory/, 'canvas graph state hook should delegate undo and redo to the history hook');
+  assert.match(canvasHistoryHookSource, /CanvasGraphHistoryState/, 'canvas history hook should own graph undo and redo state');
+  assert.match(canvasHistoryHookSource, /commitCanvasGraph/, 'canvas history hook should expose a graph commit wrapper');
+  assert.match(canvasHistoryHookSource, /undoCanvas/, 'canvas history hook should expose canvas undo');
+  assert.match(canvasHistoryHookSource, /redoCanvas/, 'canvas history hook should expose canvas redo');
+  assert.doesNotMatch(workspaceSource, /useState<CanvasGraphHistoryState>/, 'workspace orchestrator should not own canvas history state directly');
+  assert.match(workspaceEditorLayoutSource, /onUndo:\s*canvas\.undoCanvas/, 'canvas toolbar should receive canvas undo');
+  assert.match(workspaceEditorLayoutSource, /onRedo:\s*canvas\.redoCanvas/, 'canvas toolbar should receive canvas redo');
+  assert.match(canvasFloatingToolbarSource, /Undo2/, 'canvas toolbar should render an undo button');
+  assert.match(canvasFloatingToolbarSource, /Redo2/, 'canvas toolbar should render a redo button');
+  assert.match(canvasSource, /event\.code === 'KeyZ'/, 'canvas should expose Cmd/Ctrl+Z undo and redo shortcuts');
+  assert.match(canvasSource, /isEditableCanvasShortcutTarget/, 'canvas shortcuts should not intercept native text editing undo');
   assert.doesNotMatch(workspaceSource, /timelineEditMode/, 'workspace should no longer expose selectable insert, overwrite, or replace timeline modes');
   assert.match(canvasTimelineActionsHookSource, /insertWorkspaceTimelineItems/, 'canvas outputs should enter the sequence through timeline insert operations');
   assert.match(workspaceEditorLayoutSource, /onNodeDropToTimeline=\{canvas\.handleDropNodeToTimeline\}/, 'canvas media nodes should be droppable directly onto a timeline track');

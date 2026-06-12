@@ -47,6 +47,7 @@ export function useTimelineKeyboardShortcuts({
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.code === 'KeyZ') {
+        if (!isShortcutActive) return;
         if (isTimelineShortcutTarget(event.target)) return;
         event.preventDefault();
         if (event.shiftKey) {

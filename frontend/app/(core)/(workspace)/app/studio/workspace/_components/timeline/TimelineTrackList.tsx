@@ -61,6 +61,7 @@ type TimelineRenderedTrackItem = TimelinePreviewTrackItem & {
 
 type TimelineTrackListProps = {
   copy: StudioCopy['timeline'];
+  canvasNodeCopy: StudioCopy['canvas']['nodes'];
   activeTool: TimelineTool;
   audioTrackCount: number;
   clampedPlayheadSec: number;
@@ -112,6 +113,7 @@ function timelineRangesIntersect(startSec: number, durationSec: number, visibleS
 
 export const TimelineTrackList = memo(function TimelineTrackList({
   copy,
+  canvasNodeCopy,
   activeTool,
   audioTrackCount,
   clampedPlayheadSec,
@@ -243,6 +245,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
                   key={item.id}
                   item={item}
                   copy={copy.clips}
+                  canvasNodeCopy={canvasNodeCopy}
                   layout={layout}
                   index={trackIndex}
                   isInteracting={isItemInteracting(item)}

@@ -66,6 +66,7 @@ type UseWorkspacePersistenceEffectsParams = {
   buildPersistedWorkspaceState: () => PersistedWorkspaceState;
   hydrated: boolean;
   projectId?: string;
+  resetCanvasHistory: () => void;
   resetTimelineHistory: () => void;
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setActiveSequenceId: Dispatch<SetStateAction<string>>;
@@ -107,6 +108,7 @@ export function useWorkspacePersistenceEffects({
   buildPersistedWorkspaceState,
   hydrated,
   projectId,
+  resetCanvasHistory,
   resetTimelineHistory,
   setActiveEditorSurface,
   setActiveSequenceId,
@@ -173,6 +175,7 @@ export function useWorkspacePersistenceEffects({
       applyTimelineSelection(defaultTimelineSelectionIds(persisted.timelineItems));
       setPlayheadSec(0);
       setIsTimelinePlaying(false);
+      resetCanvasHistory();
       resetTimelineHistory();
       setActiveTemplateId(persisted.activeTemplateId);
       setProjectSettings(persisted.projectSettings);
@@ -210,6 +213,7 @@ export function useWorkspacePersistenceEffects({
       applyTimelineSelection([]);
       setPlayheadSec(0);
       setIsTimelinePlaying(false);
+      resetCanvasHistory();
       resetTimelineHistory();
       setActiveTemplateId(template.id);
       setActiveUserCanvasTemplateId(null);
@@ -283,6 +287,7 @@ export function useWorkspacePersistenceEffects({
   }, [
     applyTimelineSelection,
     projectId,
+    resetCanvasHistory,
     resetTimelineHistory,
     setActiveEditorSurface,
     setActiveSequenceId,

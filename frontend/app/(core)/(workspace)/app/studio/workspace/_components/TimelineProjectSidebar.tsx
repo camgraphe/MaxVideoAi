@@ -17,7 +17,11 @@ import type {
   WorkspaceProjectMediaFolder,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import {
+  localizeStudioGeneratedFolderDisplayName,
+  localizeStudioGeneratedSequenceDisplayName,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 export type { WorkspaceProjectSequenceSummary };
 
@@ -369,9 +373,9 @@ function ProjectMediaFolderDialog({
                 aria-checked={targetFolderId === folder.id}
                 role="radio"
                 onClick={() => setTargetFolderId(folder.id)}
-              >
-                <Folder size={15} />
-                <span>{folder.name}</span>
+            >
+              <Folder size={15} />
+                <span>{localizeStudioGeneratedFolderDisplayName(folder.name, copy)}</span>
                 {targetFolderId === folder.id ? <Check size={14} /> : null}
               </button>
             ))}
@@ -567,50 +571,57 @@ export function TimelineProjectSidebar({
           </button>
           <div className={styles.projectMediaFolderTitle}>
             <FolderOpen size={15} />
-            <strong>{projectMedia.activeFolder.name}</strong>
+            <strong>{localizeStudioGeneratedFolderDisplayName(projectMedia.activeFolder.name, copy)}</strong>
           </div>
         </div>
       ) : null}
 
       <div className={styles.projectMediaGrid} aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}>
-        {projectMedia.visibleSequences.map((sequence) => (
-          <ProjectMediaCard
-            key={sequence.id}
-            ariaPressed={sequence.isActive}
-            dataProjectSequenceId={sequence.id}
-            copy={copy}
-            id={projectMediaSelectionKey('sequence', sequence.id)}
-            isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
-            kind="sequence"
-            onClick={() => projectMedia.selectSequence(sequence.id)}
-            onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequence.name, type: 'sequence' })}
-            subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} ${sequence.clipCount === 1 ? copy.clipSingular : copy.clipPlural}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
-            thumbnailUrl={sequence.previewUrl}
-            title={sequence.name}
-          />
-        ))}
-
-        {projectMedia.visibleFolders.map(({ folder, key, subtitle }) => (
-          <div
-            key={folder.id}
-            data-project-media-folder-id={folder.id}
-            data-project-media-folder-drop-target={projectMedia.folderDropTargetId === folder.id ? 'true' : undefined}
-          >
+        {projectMedia.visibleSequences.map((sequence) => {
+          const sequenceTitle = localizeStudioGeneratedSequenceDisplayName(sequence.name, copy);
+          return (
             <ProjectMediaCard
+              key={sequence.id}
+              ariaPressed={sequence.isActive}
+              dataProjectSequenceId={sequence.id}
               copy={copy}
-              id={key}
-              isSelected={projectMedia.selectedKey === key || projectMedia.folderDropTargetId === folder.id}
-              kind="folder"
-              onClick={() => projectMedia.selectProjectMediaFolder(folder.id)}
-              onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folder.name, type: 'folder' })}
-              onDragLeave={(event) => projectMedia.handleFolderDragLeave(event, folder.id)}
-              onDragOver={(event) => projectMedia.handleFolderDragOver(event, folder.id)}
-              onDrop={(event) => projectMedia.handleFolderDrop(event, folder.id)}
-              subtitle={subtitle}
-              title={folder.name}
+              id={projectMediaSelectionKey('sequence', sequence.id)}
+              isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
+              kind="sequence"
+              onClick={() => projectMedia.selectSequence(sequence.id)}
+              onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequenceTitle, type: 'sequence' })}
+              subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} ${sequence.clipCount === 1 ? copy.clipSingular : copy.clipPlural}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
+              thumbnailUrl={sequence.previewUrl}
+              title={sequenceTitle}
             />
-          </div>
-        ))}
+          );
+        })}
+
+        {projectMedia.visibleFolders.map(({ folder, itemCount, key }) => {
+          const folderTitle = localizeStudioGeneratedFolderDisplayName(folder.name, copy);
+          const folderSubtitle = `${itemCount} ${itemCount === 1 ? copy.itemSingular : copy.itemPlural}`;
+          return (
+            <div
+              key={folder.id}
+              data-project-media-folder-id={folder.id}
+              data-project-media-folder-drop-target={projectMedia.folderDropTargetId === folder.id ? 'true' : undefined}
+            >
+              <ProjectMediaCard
+                copy={copy}
+                id={key}
+                isSelected={projectMedia.selectedKey === key || projectMedia.folderDropTargetId === folder.id}
+                kind="folder"
+                onClick={() => projectMedia.selectProjectMediaFolder(folder.id)}
+                onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folderTitle, type: 'folder' })}
+                onDragLeave={(event) => projectMedia.handleFolderDragLeave(event, folder.id)}
+                onDragOver={(event) => projectMedia.handleFolderDragOver(event, folder.id)}
+                onDrop={(event) => projectMedia.handleFolderDrop(event, folder.id)}
+                subtitle={folderSubtitle}
+                title={folderTitle}
+              />
+            </div>
+          );
+        })}
 
         {projectMedia.visibleProjectAssets.map(({ asset, cardKind, key, mediaKind, subtitle, thumbnailUrl, timelineDurationSec }) => {
           return (
