@@ -21,6 +21,11 @@ function createProjectMediaFolderId(): string {
   return `folder-${Date.now().toString(36)}`;
 }
 
+function localizedProjectMediaInsertNotice(notice: string, studioNotices: StudioCopy['notices']): string {
+  if (notice === 'Project media asset not found.') return studioNotices.projectMediaAssetNotFound;
+  return notice;
+}
+
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
@@ -92,7 +97,7 @@ export function useWorkspaceProjectMediaActions({
         idSeed: timelineSeed,
       });
       if (!result.ok) {
-        setNotice(result.notice);
+        setNotice(localizedProjectMediaInsertNotice(result.notice, studioNotices));
         return;
       }
 
@@ -114,6 +119,7 @@ export function useWorkspaceProjectMediaActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
     ]
