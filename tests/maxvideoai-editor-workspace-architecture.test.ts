@@ -35,8 +35,12 @@ const workspaceDir = join(root, 'frontend/app/(core)/(workspace)/app/studio/work
 const pagePath = join(workspaceDir, 'page.tsx');
 const projectsPagePath = join(studioDir, 'projects/page.tsx');
 const projectsClientPath = join(studioDir, 'projects/StudioProjectsPage.client.tsx');
+const studioProjectsPageClientPath = projectsClientPath;
 const dynamicWorkspacePagePath = join(workspaceDir, '[projectId]/page.tsx');
 const workspacePagePath = join(workspaceDir, 'WorkspacePage.client.tsx');
+const workspacePageClientPath = workspacePagePath;
+const studioCopyPath = join(studioDir, '_lib/studio-copy.ts');
+const studioThemeHookPath = join(studioDir, '_hooks/useStudioThemeMode.ts');
 const studioProjectsApiPath = join(studioApiDir, 'projects/route.ts');
 const studioProjectApiPath = join(studioApiDir, 'projects/[projectId]/route.ts');
 const studioProjectSequencesApiPath = join(studioApiDir, 'projects/[projectId]/sequences/route.ts');
@@ -568,6 +572,21 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(visitorAccessSource, /normalized === '\/app\/studio\/workspace'/, 'editor route should follow existing visitor workspace browse access');
   assert.match(visitorAccessSource, /normalized === '\/app\/studio\/projects'/, 'studio projects route should be available through visitor workspace browse access');
   assert.match(visitorAccessSource, /normalized\.startsWith\('\/app\/studio\/workspace\/'\)/, 'project-scoped studio workspaces should be available through visitor workspace browse access');
+});
+
+test('MaxVideoAI Studio owns route-local copy and theme boundaries', () => {
+  assert.ok(existsSync(studioCopyPath), 'Studio copy helpers should live route-local under app/studio/_lib');
+  assert.ok(existsSync(studioThemeHookPath), 'Studio theme preference should live route-local under app/studio/_hooks');
+
+  const projectsSource = readFileSync(studioProjectsPageClientPath, 'utf8');
+  const workspaceSource = readFileSync(workspacePageClientPath, 'utf8');
+  const layoutSource = readFileSync(workspaceEditorLayoutPath, 'utf8');
+  const topbarSource = readFileSync(workspaceEditorTopbarPath, 'utf8');
+
+  assert.match(projectsSource, /useI18n\(\)/, 'Studio projects should resolve localized copy from the existing app i18n provider');
+  assert.match(workspaceSource, /resolveStudioCopy/, 'WorkspacePage should resolve Studio copy once and pass typed props down');
+  assert.match(layoutSource, /data-studio-theme/, 'Workspace editor shell should scope light and dark theme through a Studio data attribute');
+  assert.match(topbarSource, /studioCopy\.topbar/, 'Workspace topbar should render typed localized copy instead of inline English labels');
 });
 
 test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => {

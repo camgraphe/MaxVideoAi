@@ -235,6 +235,20 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   assertNoEditorClientErrors(errors);
 });
 
+test('Studio workspace can switch to light appearance', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  const shell = page.locator('[data-studio-theme]');
+  await expect(shell).toHaveAttribute('data-studio-theme', 'dark');
+
+  await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
+  await expect(shell).toHaveAttribute('data-studio-theme', 'light');
+  await expect(page.getByRole('button', { name: 'Switch Studio to dark mode' })).toBeVisible();
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('canvas toolbar can marquee select multiple nodes and delete them', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
