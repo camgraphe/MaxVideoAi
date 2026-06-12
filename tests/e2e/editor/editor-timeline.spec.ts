@@ -744,6 +744,32 @@ test('timeline end trim ripples clips attached to the cut', async ({ page }) => 
   assertNoEditorClientErrors(errors);
 });
 
+test('timeline end trim expands into a gap without pulling later clips', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  await dragTimelineClipEnd(page, 'timeline-output-01', -pixelsPerSecond);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(4);
+
+  await dragTimelineClip(page, 'timeline-output-02', pixelsPerSecond * 2);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(6);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(6);
+
+  await dragTimelineClipEnd(page, 'timeline-output-01', pixelsPerSecond);
+
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(6);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(6);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('insert-mode timeline drag resolves occupied drops to clip boundaries by default', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

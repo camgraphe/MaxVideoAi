@@ -12,6 +12,7 @@ import {
   trackForTimelineItem,
   type TimelineInteractionState,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-interaction';
+import { resizeWorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
 import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
 function timelineItem(overrides: Partial<WorkspaceTimelineItem>): WorkspaceTimelineItem {
@@ -138,4 +139,116 @@ test('timeline interaction helpers preserve linked selection and marquee behavio
     }),
     ['clip-a']
   );
+});
+
+test('timeline ripple end trim closes only directly attached same-track clips', () => {
+  const items = [
+    timelineItem({ id: 'clip-a', startSec: 0, durationSec: 5, sourceDurationSec: 12 }),
+    timelineItem({ id: 'clip-b', outputNodeId: 'node-b', startSec: 5, durationSec: 2 }),
+    timelineItem({ id: 'clip-c', outputNodeId: 'node-c', startSec: 7, durationSec: 2 }),
+    timelineItem({ id: 'clip-d', outputNodeId: 'node-d', startSec: 11, durationSec: 2 }),
+    timelineItem({ id: 'clip-overlay', outputNodeId: 'node-overlay', track: 'video-2', startSec: 5, durationSec: 2 }),
+  ];
+
+  const updated = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 4,
+    mode: 'ripple',
+  });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 4],
+      ['clip-b', 'video', 4, 2],
+      ['clip-c', 'video', 6, 2],
+      ['clip-d', 'video', 11, 2],
+      ['clip-overlay', 'video-2', 5, 2],
+    ]
+  );
+});
+
+test('timeline ripple end trim preserves one-frame gaps at 60fps', () => {
+  const oneFrameAt60Fps = 1 / 60;
+  const items = [
+    timelineItem({ id: 'clip-a', startSec: 0, durationSec: 5, sourceDurationSec: 12 }),
+    timelineItem({ id: 'clip-b', outputNodeId: 'node-b', startSec: 5 + oneFrameAt60Fps, durationSec: 2 }),
+  ];
+
+  const updated = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 4,
+    mode: 'ripple',
+  });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 4],
+      ['clip-b', 5 + oneFrameAt60Fps, 2],
+    ]
+  );
+});
+
+test('timeline ripple end expansion uses available gap without pulling later clips', () => {
+  const attachedGapSec = 1 / 96;
+  const expandBySec = 1 / 192;
+  const items = [
+    timelineItem({ id: 'clip-a', startSec: 0, durationSec: 4, sourceDurationSec: 12 }),
+    timelineItem({ id: 'clip-b', outputNodeId: 'node-b', startSec: 4 + attachedGapSec, durationSec: 2 }),
+    timelineItem({ id: 'clip-c', outputNodeId: 'node-c', startSec: 8, durationSec: 2 }),
+  ];
+
+  const updated = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 4 + expandBySec,
+    mode: 'ripple',
+  });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 0, 4.005208],
+      ['clip-b', 4 + attachedGapSec, 2],
+      ['clip-c', 8, 2],
+    ]
+  );
+});
+
+test('timeline ripple end expansion clamps to the nearest same-track blocker', () => {
+  const items = [
+    timelineItem({ id: 'clip-a', startSec: 0, durationSec: 4, sourceDurationSec: 12 }),
+    timelineItem({ id: 'clip-b', outputNodeId: 'node-b', startSec: 5, durationSec: 2 }),
+    timelineItem({ id: 'clip-overlay', outputNodeId: 'node-overlay', track: 'video-2', startSec: 4, durationSec: 3 }),
+  ];
+
+  const updated = resizeWorkspaceTimelineItem({
+    items,
+    itemId: 'clip-a',
+    edge: 'end',
+    nextStartSec: 0,
+    nextDurationSec: 6,
+    mode: 'ripple',
+  });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 5],
+      ['clip-b', 'video', 5, 2],
+      ['clip-overlay', 'video-2', 4, 3],
+    ]
+  );
+  const clipA = updated.find((item) => item.id === 'clip-a');
+  const clipB = updated.find((item) => item.id === 'clip-b');
+  assert.ok(clipA && clipB && clipA.startSec + clipA.durationSec <= clipB.startSec);
 });

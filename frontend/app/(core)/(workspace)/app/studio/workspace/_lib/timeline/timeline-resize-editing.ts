@@ -42,8 +42,9 @@ function contiguousTrackItemIdsAfter(
   let nextStartSec = snapTimelineValue(afterSec);
   primaryTrackItems(items, track).forEach((item) => {
     if (ignoredIds.has(item.id)) return;
-    if (item.startSec < nextStartSec - 0.0001) return;
-    if (Math.abs(item.startSec - nextStartSec) > 0.0001) return;
+    const itemStartSec = snapTimelineValue(item.startSec);
+    if (itemStartSec < nextStartSec) return;
+    if (itemStartSec !== nextStartSec) return;
     attachedIds.add(item.id);
     nextStartSec = snapTimelineValue(itemEndSec(item));
   });
@@ -79,6 +80,22 @@ function nearestTrackItemBefore(items: WorkspaceTimelineItem[], item: WorkspaceT
     .at(-1) ?? null;
 }
 
+function maxRippleExpansionDurationBeforeBlocker(
+  items: WorkspaceTimelineItem[],
+  groupItems: WorkspaceTimelineItem[],
+  primaryItem: WorkspaceTimelineItem
+): number | null {
+  const ignoredIds = new Set(groupItems.map((groupItem) => groupItem.id));
+  return groupItems.reduce<number | null>((maxDurationSec, groupItem) => {
+    const blocker = primaryTrackItems(items, groupItem.track).find(
+      (candidate) => !ignoredIds.has(candidate.id) && candidate.startSec >= primaryItem.startSec
+    );
+    if (!blocker) return maxDurationSec;
+    const blockerDurationSec = snapTimelineValue(blocker.startSec - primaryItem.startSec);
+    return maxDurationSec === null ? blockerDurationSec : Math.min(maxDurationSec, blockerDurationSec);
+  }, null);
+}
+
 export function resizeWorkspaceTimelineItem(params: {
   items: WorkspaceTimelineItem[];
   itemId: string;
@@ -92,7 +109,7 @@ export function resizeWorkspaceTimelineItem(params: {
   const primaryItem = primaryTimelineItemFor(params.items, item);
   const groupId = primaryItem.linkedGroupId ?? null;
   const groupItems = groupId ? params.items.filter((candidate) => candidate.linkedGroupId === groupId) : [primaryItem];
-  const { safeDurationSec, safeStartSec, sourceDeltaSec } = resolveResizeTarget({
+  let { safeDurationSec, safeStartSec, sourceDeltaSec } = resolveResizeTarget({
     item: primaryItem,
     edge: params.edge,
     nextDurationSec: params.nextDurationSec,
@@ -100,8 +117,21 @@ export function resizeWorkspaceTimelineItem(params: {
   const trimMode = params.mode ?? 'trim';
 
   if (trimMode === 'ripple') {
-    const nextDurationSec = safeDurationSec;
-    const durationDeltaSec = snapTimelineValue(nextDurationSec - primaryItem.durationSec);
+    let nextDurationSec = safeDurationSec;
+    let durationDeltaSec = snapTimelineValue(nextDurationSec - primaryItem.durationSec);
+    if (durationDeltaSec >= 0) {
+      const blockerDurationSec = maxRippleExpansionDurationBeforeBlocker(params.items, groupItems, primaryItem);
+      if (blockerDurationSec !== null && nextDurationSec > blockerDurationSec) {
+        if (blockerDurationSec <= primaryItem.durationSec) return params.items;
+        ({ safeDurationSec, safeStartSec, sourceDeltaSec } = resolveResizeTarget({
+          item: primaryItem,
+          edge: params.edge,
+          nextDurationSec: blockerDurationSec,
+        }));
+        nextDurationSec = safeDurationSec;
+        durationDeltaSec = snapTimelineValue(nextDurationSec - primaryItem.durationSec);
+      }
+    }
     const resizedItems = updateGroupItems(params.items, groupItems, (candidate) => ({
       ...candidate,
       startSec: primaryItem.startSec,
@@ -112,6 +142,7 @@ export function resizeWorkspaceTimelineItem(params: {
           : candidate.sourceStartSec,
     }));
     const ignoredIds = new Set(groupItems.map((groupItem) => groupItem.id));
+    if (durationDeltaSec >= 0) return resizedItems;
     return shiftAttachedTrackItemsAfter(resizedItems, primaryItem.track, itemEndSec(primaryItem), durationDeltaSec, ignoredIds);
   }
 
