@@ -54,7 +54,7 @@ export function useWorkspaceCanvasHistory({
 } {
   const [canvasHistory, setCanvasHistory] = useState<CanvasGraphHistoryState>({ past: [], future: [] });
   const pendingGestureSnapshotRef = useRef<CanvasGraphHistorySnapshot | null>(null);
-  const gestureCommitTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const gestureCommitTimerRef = useRef<number | null>(null);
 
   const currentSnapshot = useCallback((): CanvasGraphHistorySnapshot => ({
     edges: edgesRef.current,
