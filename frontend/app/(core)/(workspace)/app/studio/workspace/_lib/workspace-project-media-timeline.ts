@@ -11,7 +11,7 @@ import {
   workspaceTimelineItemsCompatibleWithTrack,
 } from './workspace-timeline-drops';
 import type { WorkspaceAssetRecord, WorkspaceTimelineItem, WorkspaceTimelineTrack } from './workspace-types';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
 
 type ResolveProjectAssetTimelineInsertSuccess = {
   items: WorkspaceTimelineItem[];
@@ -43,14 +43,15 @@ export function resolveProjectAssetTimelineInsert(params: {
   currentItems: WorkspaceTimelineItem[];
   idSeed: string;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
-  notices: StudioCopy['notices'];
+  notices?: StudioCopy['notices'];
   projectAssets: WorkspaceAssetRecord[];
   startSec: number;
   targetTrack?: WorkspaceTimelineTrack;
 }): ResolveProjectAssetTimelineInsertResult {
+  const notices = params.notices ?? DEFAULT_STUDIO_COPY.notices;
   const asset = params.projectAssets.find((candidate) => candidate.id === params.assetId);
   if (!asset) {
-    return { ok: false, notice: params.notices.projectMediaAssetNotFound };
+    return { ok: false, notice: notices.projectMediaAssetNotFound };
   }
 
   const assetUrl = asset.url ?? asset.thumbUrl ?? null;
@@ -61,13 +62,13 @@ export function resolveProjectAssetTimelineInsert(params: {
   if (!canInsertAsset) {
     return {
       ok: false,
-      notice: formatNotice(params.notices.projectMediaNotPlayable, { filename: asset.filename }),
+      notice: formatNotice(notices.projectMediaNotPlayable, { filename: asset.filename }),
     };
   }
   if (params.targetTrack && params.lockedTimelineTracks.includes(params.targetTrack)) {
     return {
       ok: false,
-      notice: formatNotice(params.notices.unlockTrackBeforeProjectMediaDrop, {
+      notice: formatNotice(notices.unlockTrackBeforeProjectMediaDrop, {
         track: workspaceTimelineTrackLabel(params.targetTrack),
       }),
     };
@@ -83,13 +84,13 @@ export function resolveProjectAssetTimelineInsert(params: {
   if (!draftItems.length) {
     return {
       ok: false,
-      notice: formatNotice(params.notices.projectMediaCannotBePlaced, { filename: asset.filename }),
+      notice: formatNotice(notices.projectMediaCannotBePlaced, { filename: asset.filename }),
     };
   }
   if (params.targetTrack && !workspaceTimelineItemsCompatibleWithTrack(draftItems, params.targetTrack)) {
     return {
       ok: false,
-      notice: formatNotice(params.notices.projectMediaNotCompatibleWithTrack, {
+      notice: formatNotice(notices.projectMediaNotCompatibleWithTrack, {
         filename: asset.filename,
         track: params.targetTrack,
       }),
@@ -102,11 +103,11 @@ export function resolveProjectAssetTimelineInsert(params: {
   if (!selectedItemId || !resolvedTargetTrack) {
     return {
       ok: false,
-      notice: formatNotice(params.notices.projectMediaCannotBePlaced, { filename: asset.filename }),
+      notice: formatNotice(notices.projectMediaCannotBePlaced, { filename: asset.filename }),
     };
   }
   if (nextItems.some((item) => params.lockedTimelineTracks.includes(item.track))) {
-    return { ok: false, notice: params.notices.unlockTargetTrackBeforeProjectMediaInsert };
+    return { ok: false, notice: notices.unlockTargetTrackBeforeProjectMediaInsert };
   }
 
   const nextTimelineItems = insertWorkspaceTimelineItems({
@@ -125,8 +126,8 @@ export function resolveProjectAssetTimelineInsert(params: {
     return {
       ok: false,
       notice: isBlockedClipInsert
-        ? params.notices.projectMediaInsertNeedsEditPoint
-        : formatNotice(params.notices.projectMediaCouldNotBeInserted, { filename: asset.filename }),
+        ? notices.projectMediaInsertNeedsEditPoint
+        : formatNotice(notices.projectMediaCouldNotBeInserted, { filename: asset.filename }),
     };
   }
 
@@ -136,12 +137,12 @@ export function resolveProjectAssetTimelineInsert(params: {
     selectedItemId,
     playheadSec: insertedItem.startSec,
     notice: params.targetTrack
-      ? formatNotice(params.notices.projectMediaDroppedOnTimeline, {
+      ? formatNotice(notices.projectMediaDroppedOnTimeline, {
         filename: asset.filename,
         track: resolvedTargetTrack,
         time: insertedItem.startSec.toFixed(2),
       })
-      : formatNotice(params.notices.projectMediaInsertedAtPlayhead, {
+      : formatNotice(notices.projectMediaInsertedAtPlayhead, {
         filename: asset.filename,
         track: resolvedTargetTrack,
       }),

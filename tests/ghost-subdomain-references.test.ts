@@ -27,9 +27,11 @@ const ignoredDirectories = new Set([
   '.next',
   '.tmp',
   '.vercel',
+  '.worktrees',
   'build',
   'dist',
   'node_modules',
+  'worktrees',
 ]);
 const ignoredFiles = new Set(['tests/ghost-subdomain-references.test.ts']);
 

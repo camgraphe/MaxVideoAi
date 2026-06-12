@@ -93,7 +93,7 @@ test('project media drag payload preserves asset timeline duration and preview m
 
   assert.ok(payload);
   applyProjectMediaTimelineDragPayload(dataTransfer, payload);
-  assert.equal(dataTransfer.effectAllowed, 'copy');
+  assert.equal(dataTransfer.effectAllowed, 'copyMove');
   assert.deepEqual(JSON.parse(transferWrites.get(TIMELINE_NODE_DRAG_TYPE) ?? '{}'), payload);
   assert.equal(transferWrites.get('text/plain'), 'Product_shot.png');
 });

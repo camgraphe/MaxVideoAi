@@ -5,7 +5,7 @@ import type {
 import type { WorkspaceAssetRecord } from './workspace-types';
 import { isWorkspaceTimelineAudioTrack } from './workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from './workspace-timecode';
-import type { StudioCopy } from '../../_lib/studio-copy';
+import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
 
 export type {
   WorkspaceTimelineExportRangeMode,
@@ -224,7 +224,7 @@ export function serializeWorkspaceTimelineVideoExportRequest(request: WorkspaceT
 export function workspaceProjectAssetFromCompletedTimelineExport(
   job: CompletedTimelineExportJob,
   manifest: WorkspaceTimelineRenderManifest,
-  serverExportLabel: string
+  serverExportLabel: string = DEFAULT_STUDIO_COPY.notices.completedServerExportSubtitle
 ): WorkspaceAssetRecord | null {
   if (job.status !== 'completed' || !job.outputUrl) return null;
 
