@@ -1,7 +1,26 @@
 .projectsShell {
+  --studio-project-bg: #f6f8fc;
+  --studio-project-surface: rgba(255, 255, 255, 0.94);
+  --studio-project-surface-soft: #f8fafc;
+  --studio-project-surface-hover: #f1f5f9;
+  --studio-project-border: rgba(148, 163, 184, 0.26);
+  --studio-project-text: #111827;
+  --studio-project-muted: #64748b;
   display: grid;
   gap: 26px;
-  color: #111827;
+  min-height: 100vh;
+  background: var(--studio-project-bg);
+  color: var(--studio-project-text);
+}
+
+.projectsShell[data-studio-theme="dark"] {
+  --studio-project-bg: #050911;
+  --studio-project-surface: rgba(15, 23, 42, 0.9);
+  --studio-project-surface-soft: rgba(15, 23, 42, 0.72);
+  --studio-project-surface-hover: rgba(30, 41, 59, 0.86);
+  --studio-project-border: rgba(148, 163, 184, 0.16);
+  --studio-project-text: #f8fafc;
+  --studio-project-muted: #94a3b8;
 }
 
 .projectsHero,
@@ -33,7 +52,7 @@
 
 .projectsHero h1 {
   margin: 0;
-  color: #0f172a;
+  color: var(--studio-project-text);
   font-size: clamp(36px, 5vw, 52px);
   font-weight: 850;
   letter-spacing: 0;
@@ -43,7 +62,7 @@
 .projectsHero p {
   max-width: 720px;
   margin: 12px 0 0;
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 16px;
   line-height: 1.55;
 }
@@ -57,9 +76,9 @@
 
 .newProjectPanel,
 .recentProjectsPanel {
-  border: 1px solid rgba(148, 163, 184, 0.26);
+  border: 1px solid var(--studio-project-border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--studio-project-surface);
   box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
 }
 
@@ -100,7 +119,7 @@
 
 .panelTitleRow h2 {
   margin: 0;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 22px;
   font-weight: 820;
   letter-spacing: 0;
@@ -109,14 +128,14 @@
 .panelTitleRow span {
   display: block;
   margin-top: 5px;
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 13px;
 }
 
 .projectField {
   display: grid;
   gap: 10px;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 12px;
   font-weight: 800;
 }
@@ -129,7 +148,7 @@
 }
 
 .fieldLabelRow small {
-  color: #94a3b8;
+  color: var(--studio-project-muted);
   font-size: 12px;
   font-weight: 700;
 }
@@ -137,10 +156,10 @@
 .projectField input {
   width: 100%;
   height: 52px;
-  border: 1px solid #d8dee8;
+  border: 1px solid var(--studio-project-border);
   border-radius: 10px;
-  background: #fff;
-  color: #111827;
+  background: var(--studio-project-surface);
+  color: var(--studio-project-text);
   font: inherit;
   outline: none;
   padding: 0 16px;
@@ -148,7 +167,7 @@
 }
 
 .projectField input::placeholder {
-  color: #94a3b8;
+  color: var(--studio-project-muted);
 }
 
 .projectField input:focus {
@@ -172,7 +191,7 @@
 
 .templatePicker legend {
   margin-bottom: 4px;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 12px;
   font-weight: 800;
 }
@@ -189,10 +208,10 @@
   min-height: 228px;
   align-content: start;
   gap: 10px;
-  border: 1px solid #dbe2ec;
+  border: 1px solid var(--studio-project-border);
   border-radius: 11px;
-  background: #fff;
-  color: #475569;
+  background: var(--studio-project-surface);
+  color: var(--studio-project-muted);
   padding: 14px;
   text-align: left;
   cursor: pointer;
@@ -259,7 +278,7 @@
 
 .templateTitleRow strong {
   overflow: hidden;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 13px;
   font-weight: 840;
   text-overflow: ellipsis;
@@ -279,7 +298,7 @@
 }
 
 .templateCard > span:last-child {
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 12px;
   line-height: 1.45;
 }
@@ -298,9 +317,9 @@
 }
 
 .secondaryAction {
-  border: 1px solid #dbe2ec;
-  background: #fff;
-  color: #111827;
+  border: 1px solid var(--studio-project-border);
+  background: var(--studio-project-surface);
+  color: var(--studio-project-text);
 }
 
 .secondaryAction svg:last-child {
@@ -310,7 +329,7 @@
 .secondaryAction:hover,
 .secondaryAction:focus-visible {
   border-color: rgba(124, 58, 237, 0.42);
-  background: #faf7ff;
+  background: var(--studio-project-surface-hover);
   outline: none;
 }
 
@@ -342,7 +361,7 @@
 .emptyProjects {
   border: 0;
   background: transparent;
-  color: #475569;
+  color: var(--studio-project-muted);
 }
 
 .projectCard {
@@ -352,7 +371,7 @@
   gap: 10px;
   align-items: center;
   min-height: 100px;
-  border-bottom: 1px solid #e5eaf1;
+  border-bottom: 1px solid var(--studio-project-border);
   padding: 14px 0;
 }
 
@@ -364,7 +383,7 @@
   min-width: 0;
   border: 0;
   background: transparent;
-  color: #475569;
+  color: var(--studio-project-muted);
   padding: 0;
   text-align: left;
   cursor: pointer;
@@ -399,7 +418,7 @@
 
 .projectCardCopy strong {
   overflow: hidden;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 14px;
   font-weight: 840;
   text-overflow: ellipsis;
@@ -408,7 +427,7 @@
 }
 
 .projectCardCopy span {
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 12px;
 }
 
@@ -417,13 +436,13 @@
   min-width: 0;
   align-items: center;
   gap: 7px;
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 12px;
   line-height: 1.2;
 }
 
 .projectCardCopy small svg {
-  color: #64748b;
+  color: var(--studio-project-muted);
 }
 
 .projectActions {
@@ -442,14 +461,14 @@
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #111827;
+  color: var(--studio-project-text);
   cursor: pointer;
 }
 
 .projectActionButton:hover,
 .projectActionButton:focus-visible,
 .projectActionButton[aria-expanded="true"] {
-  background: #f1f5f9;
+  background: var(--studio-project-surface-hover);
   color: #6d28d9;
   outline: none;
 }
@@ -462,9 +481,9 @@
   display: grid;
   min-width: 154px;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  border: 1px solid var(--studio-project-border);
   border-radius: 10px;
-  background: #fff;
+  background: var(--studio-project-surface);
   box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
   padding: 5px;
 }
@@ -477,7 +496,7 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #334155;
+  color: var(--studio-project-text);
   cursor: pointer;
   font-size: 12px;
   font-weight: 780;
@@ -487,7 +506,7 @@
 
 .projectActionMenu button:hover,
 .projectActionMenu button:focus-visible {
-  background: #f8fafc;
+  background: var(--studio-project-surface-soft);
   color: #6d28d9;
   outline: none;
 }
@@ -507,19 +526,19 @@
   gap: 8px;
   min-height: 180px;
   place-content: center;
-  border: 1px dashed #dbe2ec;
+  border: 1px dashed var(--studio-project-border);
   border-radius: 12px;
   padding: 24px;
   text-align: center;
 }
 
 .emptyProjects strong {
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 14px;
 }
 
 .emptyProjects span {
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 13px;
 }
 
@@ -557,11 +576,11 @@
   display: grid;
   width: min(430px, 100%);
   gap: 20px;
-  border: 1px solid rgba(148, 163, 184, 0.26);
+  border: 1px solid var(--studio-project-border);
   border-radius: 14px;
-  background: #fff;
+  background: var(--studio-project-surface);
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.24);
-  color: #111827;
+  color: var(--studio-project-text);
   padding: 22px;
 }
 
@@ -574,7 +593,7 @@
 
 .dialogTitleRow h2 {
   margin: 0;
-  color: #111827;
+  color: var(--studio-project-text);
   font-size: 20px;
   font-weight: 840;
   letter-spacing: 0;
@@ -582,7 +601,7 @@
 
 .dialogTitleRow p {
   margin: 6px 0 0;
-  color: #64748b;
+  color: var(--studio-project-muted);
   font-size: 13px;
   line-height: 1.45;
 }
@@ -596,15 +615,15 @@
   justify-content: center;
   border: 0;
   border-radius: 9px;
-  background: #f8fafc;
-  color: #475569;
+  background: var(--studio-project-surface-soft);
+  color: var(--studio-project-muted);
   cursor: pointer;
 }
 
 .dialogTitleRow > button:hover,
 .dialogTitleRow > button:focus-visible {
-  background: #f1f5f9;
-  color: #111827;
+  background: var(--studio-project-surface-hover);
+  color: var(--studio-project-text);
   outline: none;
 }
 
@@ -640,9 +659,9 @@
 }
 
 .dialogSecondaryButton {
-  border: 1px solid #dbe2ec;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--studio-project-border);
+  background: var(--studio-project-surface);
+  color: var(--studio-project-text);
 }
 
 .dialogPrimaryButton {
@@ -660,7 +679,7 @@
 .dialogSecondaryButton:hover,
 .dialogSecondaryButton:focus-visible {
   border-color: rgba(124, 58, 237, 0.42);
-  background: #faf7ff;
+  background: var(--studio-project-surface-hover);
   outline: none;
 }
 

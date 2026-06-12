@@ -13,7 +13,7 @@
 .librarySidebar {
   min-height: 0;
   overflow: hidden;
-  background: rgba(8, 13, 24, 0.96);
+  background: var(--studio-surface-strong);
 }
 
 .librarySidebar {
@@ -21,7 +21,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 14px 12px;
-  border-right: 1px solid rgba(148, 163, 184, 0.13);
+  border-right: 1px solid var(--studio-border);
 }
 
 .panelHeader {
@@ -34,14 +34,14 @@
 .panelTitle {
   font-size: 13px;
   font-weight: 760;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
 }
 
 .panelSubtitle {
   display: block;
   margin-top: 4px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
 }
 
 .searchBox {
@@ -58,10 +58,10 @@
 
 .searchBox input {
   width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.86);
-  color: #e5e7eb;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   outline: none;
 }
 
@@ -83,15 +83,18 @@
   place-items: center;
   gap: 3px;
   border-radius: 8px;
-  background: rgba(30, 41, 59, 0.76);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font-size: 10px;
   cursor: pointer;
 }
 
-.libraryActionButton:hover,
+.libraryActionButton:hover {
+  background: var(--studio-bg-soft);
+}
+
 .primaryPanelButton:hover {
-  background: rgba(51, 65, 85, 0.92);
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
 }
 
 .assetList {
@@ -101,7 +104,7 @@
 
 .assetList {
   overflow: auto;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
 }
 
@@ -111,8 +114,8 @@
   gap: 10px;
   align-items: center;
   padding: 9px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
-  background: rgba(15, 23, 42, 0.34);
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--studio-surface);
 }
 
 .assetRow:last-child {
@@ -122,7 +125,7 @@
 .assetRow p {
   margin: 0;
   overflow: hidden;
-  color: #e2e8f0;
+  color: var(--studio-text);
   font-size: 12px;
   font-weight: 650;
   text-overflow: ellipsis;
@@ -132,7 +135,7 @@
 .assetRow span {
   display: block;
   margin-top: 2px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }
 
@@ -143,8 +146,8 @@
   place-items: center;
   overflow: hidden;
   border-radius: 7px;
-  background: #020617;
-  color: #94a3b8;
+  background: var(--studio-surface-strong);
+  color: var(--studio-text-muted);
 }
 
 .assetThumb img {
@@ -159,7 +162,7 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 8px;
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 700;
 }
@@ -182,10 +185,10 @@
   display: grid;
   min-height: 34px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.84);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 760;
   cursor: pointer;
@@ -204,7 +207,7 @@
   width: 100%;
   min-height: 38px;
   border-radius: 9px;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
   color: #ffffff;
   font-size: 12px;
   font-weight: 780;
@@ -223,10 +226,10 @@
   gap: 8px;
   width: 100%;
   min-height: 36px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font-size: 12px;
   font-weight: 760;
   cursor: pointer;

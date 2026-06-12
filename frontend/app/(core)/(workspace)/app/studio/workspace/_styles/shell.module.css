@@ -1,4 +1,14 @@
 .editorShell {
+  --studio-bg: #050911;
+  --studio-bg-soft: #0f172a;
+  --studio-surface: rgba(15, 23, 42, 0.86);
+  --studio-surface-strong: rgba(4, 7, 13, 0.94);
+  --studio-border: rgba(148, 163, 184, 0.14);
+  --studio-text: #eef2ff;
+  --studio-text-strong: #f8fafc;
+  --studio-text-muted: #94a3b8;
+  --studio-primary: #7c3aed;
+  --studio-primary-2: #4f46e5;
   position: relative;
   height: 100vh;
   display: grid;
@@ -6,9 +16,9 @@
   grid-template-rows: 54px minmax(300px, 1fr) var(--timeline-panel-height, var(--timeline-panel-fallback-height));
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(9, 13, 24, 0.98), rgba(5, 9, 17, 1)),
-    #050911;
-  color: #eef2ff;
+    linear-gradient(180deg, var(--studio-bg-soft), var(--studio-bg)),
+    var(--studio-bg);
+  color: var(--studio-text);
   font-family:
     Inter,
     ui-sans-serif,
@@ -19,6 +29,19 @@
     sans-serif;
 }
 
+.editorShell[data-studio-theme="light"] {
+  --studio-bg: #f6f8fc;
+  --studio-bg-soft: #eef2f8;
+  --studio-surface: rgba(255, 255, 255, 0.92);
+  --studio-surface-strong: rgba(255, 255, 255, 0.96);
+  --studio-border: rgba(100, 116, 139, 0.22);
+  --studio-text: #1f2937;
+  --studio-text-strong: #0f172a;
+  --studio-text-muted: #64748b;
+  --studio-primary: #6d28d9;
+  --studio-primary-2: #2563eb;
+}
+
 .editorTopbar {
   position: relative;
   z-index: 85;
@@ -27,8 +50,8 @@
   justify-content: space-between;
   gap: 18px;
   padding: 0 16px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-  background: rgba(4, 7, 13, 0.94);
+  border-bottom: 1px solid var(--studio-border);
+  background: var(--studio-surface-strong);
   backdrop-filter: blur(18px);
 }
 
@@ -43,14 +66,14 @@
   margin: 0;
   font-size: 14px;
   font-weight: 720;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
 }
 
 .brandCluster span {
   display: block;
   margin-top: 2px;
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
 }
 
 .brandLogo {
@@ -66,9 +89,9 @@
   align-items: center;
   gap: 3px;
   padding: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.78);
+  background: var(--studio-surface);
 }
 
 .modeSwitch button,
@@ -86,7 +109,7 @@
   min-height: 30px;
   padding: 0 13px;
   border-radius: 7px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 12px;
   background: transparent;
   cursor: pointer;
@@ -94,7 +117,7 @@
 
 .modeSwitch .modeActive {
   color: #ffffff;
-  background: linear-gradient(135deg, rgba(124, 58, 237, 0.95), rgba(79, 70, 229, 0.72));
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
   box-shadow: 0 10px 28px rgba(79, 70, 229, 0.24);
 }
 
@@ -122,8 +145,8 @@
   gap: 8px;
   min-height: 34px;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
@@ -137,12 +160,12 @@
 }
 
 .iconButton:hover {
-  background: rgba(51, 65, 85, 0.92);
+  background: var(--studio-bg-soft);
 }
 
 .exportButton {
   padding: 0 16px;
-  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
   color: #ffffff;
   font-size: 12px;
   font-weight: 700;
@@ -157,9 +180,9 @@
   padding: 10px 12px;
   border: 1px solid rgba(129, 140, 248, 0.34);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.94);
+  background: var(--studio-surface-strong);
   box-shadow: 0 18px 46px rgba(2, 6, 23, 0.38);
-  color: #dbeafe;
+  color: var(--studio-text);
   font-size: 12px;
   line-height: 1.35;
   pointer-events: none;
