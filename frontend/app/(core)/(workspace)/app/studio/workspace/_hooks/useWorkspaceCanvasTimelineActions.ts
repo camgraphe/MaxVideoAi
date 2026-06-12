@@ -25,6 +25,14 @@ import {
   playableOutputTimelineUrl,
 } from '../_state/workspace-normalizers';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 type WorkspaceTimelineNodeDropRejection = 'incompatible' | 'locked-track' | 'occupied-clip';
 
@@ -39,6 +47,7 @@ type UseWorkspaceCanvasTimelineActionsParams = {
   setPlayheadSec: Dispatch<SetStateAction<number>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
+  studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
 };
@@ -54,6 +63,7 @@ export function useWorkspaceCanvasTimelineActions({
   setPlayheadSec,
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
+  studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
 }: UseWorkspaceCanvasTimelineActionsParams): {
@@ -69,7 +79,7 @@ export function useWorkspaceCanvasTimelineActions({
       const output = mediaNode.data.output;
       const asset = mediaNode.data.asset;
       if (!output && !asset) {
-        setNotice('Select a generated output or media block before sending it to the timeline.');
+        setNotice(studioNotices.selectGeneratedOutputOrMedia);
         return;
       }
 
@@ -79,7 +89,7 @@ export function useWorkspaceCanvasTimelineActions({
         output.status === 'processing' ||
         output.status === 'failed'
       )) {
-        setNotice('This output is not ready for the timeline yet.');
+        setNotice(studioNotices.outputNotReadyForTimeline);
         return;
       }
 
@@ -90,7 +100,7 @@ export function useWorkspaceCanvasTimelineActions({
           (asset.kind === 'audio' && isPlayableAudioUrl(asset.url)) ||
           ((asset.kind === 'image' || asset.kind === 'logo') && isPlayableImageUrl(assetUrl));
         if (!canSendAsset) {
-          setNotice('Select a playable media file before sending this block to the timeline.');
+          setNotice(studioNotices.selectPlayableMediaForTimeline);
           return;
         }
       }
@@ -115,7 +125,7 @@ export function useWorkspaceCanvasTimelineActions({
           : [];
       const nextTimelineItemId = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.id ?? nextItems[0]?.id ?? null;
       if (!nextItems.length || !nextTimelineItemId) {
-        setNotice('This block cannot be placed on the timeline yet.');
+        setNotice(studioNotices.blockCannotBePlacedOnTimeline);
         return;
       }
       const targetTrack = nextItems.find((item) => isWorkspaceTimelineVideoTrack(item.track))?.track ?? nextItems[0]?.track ?? 'timeline';
@@ -131,7 +141,7 @@ export function useWorkspaceCanvasTimelineActions({
       const insertedItem = nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null;
       if (!insertedItem) {
         const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(timelineItemsRef.current, targetTrack, playheadSec);
-        setNotice(isBlockedClipInsert ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.' : 'This block could not be inserted on the timeline.');
+        setNotice(isBlockedClipInsert ? studioNotices.timelineDropNeedsEditPoint : studioNotices.blockCouldNotBeInsertedOnTimeline);
         return;
       }
       commitTimelineItems(() => nextTimelineItems);
@@ -139,7 +149,11 @@ export function useWorkspaceCanvasTimelineActions({
       setSelectedTimelineItemIds([nextTimelineItemId]);
       setPlayheadSec(insertedItem.startSec);
       setIsTimelinePlaying(false);
-      setNotice(`${mediaNode.data.title} inserted at the playhead on the ${targetTrack} track.`);
+      setNotice(formatNotice(studioNotices.nodeDroppedOnTimeline, {
+        title: mediaNode.data.title,
+        track: targetTrack,
+        time: insertedItem.startSec.toFixed(2),
+      }));
     },
     [
       commitTimelineItems,
@@ -150,6 +164,7 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
     ]
@@ -159,7 +174,9 @@ export function useWorkspaceCanvasTimelineActions({
     (nodeId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => {
       setActiveEditorSurface('timeline');
       if (lockedTimelineTracks.includes(targetTrack)) {
-        setNotice(`Unlock ${workspaceTimelineTrackLabel(targetTrack)} before dropping media on it.`);
+        setNotice(formatNotice(studioNotices.unlockTrackBeforeDroppingMedia, {
+          track: workspaceTimelineTrackLabel(targetTrack),
+        }));
         return;
       }
       const mediaNode = nodes.find((node) => node.id === nodeId);
@@ -167,11 +184,11 @@ export function useWorkspaceCanvasTimelineActions({
       const output = mediaNode.data.output;
       const asset = mediaNode.data.asset;
       if (!output && !asset) {
-        setNotice('Only ready media blocks can be dropped on the timeline.');
+        setNotice(studioNotices.selectGeneratedOutputOrMedia);
         return;
       }
       if (output && !playableOutputTimelineUrl(output)) {
-        setNotice('This generated output is not ready for timeline drop yet.');
+        setNotice(studioNotices.outputNotReadyForTimeline);
         return;
       }
 
@@ -194,11 +211,11 @@ export function useWorkspaceCanvasTimelineActions({
             })
           : [];
       if (!draftItems.length) {
-        setNotice('This block cannot be placed on the timeline yet.');
+        setNotice(studioNotices.blockCannotBePlacedOnTimeline);
         return;
       }
       if (!workspaceTimelineItemsCompatibleWithTrack(draftItems, targetTrack)) {
-        setNotice(`${mediaNode.data.title} is not compatible with the ${targetTrack} track.`);
+        setNotice(studioNotices.blockNotCompatibleWithTimelineTrack);
         return;
       }
 
@@ -217,7 +234,7 @@ export function useWorkspaceCanvasTimelineActions({
       const insertedItem = nextTimelineItemId ? nextTimelineItems.find((item) => item.id === nextTimelineItemId) ?? null : null;
       if (!nextTimelineItemId || !insertedItem) {
         const isBlockedClipInsert = !timelineInsertIntoClipEnabled && timelineTrackHasClipAt(currentItems, targetTrack, startSec);
-        setNotice(isBlockedClipInsert ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.' : 'This block could not be inserted on the timeline.');
+        setNotice(isBlockedClipInsert ? studioNotices.timelineDropNeedsEditPoint : studioNotices.blockCouldNotBeInsertedOnTimeline);
         return;
       }
 
@@ -226,7 +243,11 @@ export function useWorkspaceCanvasTimelineActions({
       setSelectedTimelineItemIds([nextTimelineItemId]);
       setPlayheadSec(insertedItem.startSec);
       setIsTimelinePlaying(false);
-      setNotice(`${mediaNode.data.title} dropped on ${targetTrack} at ${insertedItem.startSec.toFixed(2)}s.`);
+      setNotice(formatNotice(studioNotices.nodeDroppedOnTimeline, {
+        title: mediaNode.data.title,
+        track: targetTrack,
+        time: insertedItem.startSec.toFixed(2),
+      }));
     },
     [
       commitTimelineItems,
@@ -238,6 +259,7 @@ export function useWorkspaceCanvasTimelineActions({
       setPlayheadSec,
       setSelectedTimelineItemId,
       setSelectedTimelineItemIds,
+      studioNotices,
       timelineInsertIntoClipEnabled,
       timelineItemsRef,
     ]
@@ -249,13 +271,20 @@ export function useWorkspaceCanvasTimelineActions({
       setIsTimelinePlaying(false);
       setNotice(
         reason === 'locked-track'
-          ? 'Unlock the track before dropping media on it.'
+          ? studioNotices.unlockTrackBeforeDroppingMedia
           : reason === 'occupied-clip'
-          ? 'Drop on an edit point or enable Insert into clip to splice inside an existing clip.'
-          : 'This block is not compatible with that timeline track.'
+          ? studioNotices.timelineDropNeedsEditPoint
+          : studioNotices.blockNotCompatibleWithTimelineTrack
       );
     },
-    [setActiveEditorSurface, setIsTimelinePlaying, setNotice]
+    [
+      setActiveEditorSurface,
+      setIsTimelinePlaying,
+      setNotice,
+      studioNotices.blockNotCompatibleWithTimelineTrack,
+      studioNotices.timelineDropNeedsEditPoint,
+      studioNotices.unlockTrackBeforeDroppingMedia,
+    ]
   );
 
   return {

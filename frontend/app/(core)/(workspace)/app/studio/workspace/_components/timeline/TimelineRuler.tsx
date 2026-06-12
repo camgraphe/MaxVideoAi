@@ -9,8 +9,10 @@ import { memo, useMemo } from 'react';
 import controlStyles from '../../_styles/timeline-controls.module.css';
 import styles from '../../_styles/timeline.module.css';
 import { formatWorkspaceTimecode } from '../../_lib/workspace-timecode';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type TimelineRulerProps = {
+  copy: StudioCopy['timeline']['tools'];
   clampedPlayheadSec: number;
   frameStepSec: number;
   hasValidInOutRange: boolean;
@@ -33,6 +35,7 @@ type TimelineRulerProps = {
 };
 
 export const TimelineRuler = memo(function TimelineRuler({
+  copy,
   clampedPlayheadSec,
   frameStepSec,
   hasValidInOutRange,
@@ -65,11 +68,11 @@ export const TimelineRuler = memo(function TimelineRuler({
           <button
             type="button"
             className={`${styles.timelineRulerToolButton} ${controlStyles.timelineToolButton} ${snapEnabled ? controlStyles.timelineToolButtonActive : ''}`}
-            data-tooltip="Snapping: clips, playhead, zero (M)"
+            data-tooltip={copy.snappingTooltip}
             data-timeline-control="true"
-            title="Snapping to clip edges, playhead, and zero (M)"
+            title={copy.snappingTitle}
             onClick={onToggleSnap}
-            aria-label="Toggle snapping"
+            aria-label={copy.toggleSnapping}
             aria-pressed={snapEnabled}
           >
             <Magnet size={15} />
@@ -77,10 +80,10 @@ export const TimelineRuler = memo(function TimelineRuler({
           <button
             type="button"
             className={`${styles.timelineRulerToolButton} ${controlStyles.timelineToolButton} ${isInsertIntoClipEnabled ? controlStyles.timelineToolButtonActive : ''}`}
-            data-tooltip="Splice insert inside clips"
+            data-tooltip={copy.insertIntoClipTooltip}
             data-timeline-control="true"
-            title="Allow insert drags to split the clip under the drop point"
-            aria-label="Toggle insert into clip"
+            title={copy.insertIntoClipTitle}
+            aria-label={copy.toggleInsertIntoClip}
             aria-pressed={isInsertIntoClipEnabled}
             onClick={() => onInsertIntoClipChange(!isInsertIntoClipEnabled)}
           >
@@ -94,7 +97,7 @@ export const TimelineRuler = memo(function TimelineRuler({
           style={{ width: timelineWidth }}
           onClick={onSurfaceClick}
           onPointerDown={onSurfacePointerDown}
-          title="Drag to move the timeline playhead"
+          title={copy.dragPlayhead}
         >
           {hasValidInOutRange && safeInPointSec !== null && safeOutPointSec !== null ? (
             <span
@@ -139,8 +142,8 @@ export const TimelineRuler = memo(function TimelineRuler({
             onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
             data-playhead-handle="true"
             data-timeline-control="true"
-            title="Drag timeline playhead"
-            aria-label="Drag timeline playhead"
+            title={copy.dragPlayhead}
+            aria-label={copy.dragPlayhead}
           />
           {snapGuideSec !== null ? (
             <span
@@ -159,7 +162,7 @@ export const TimelineRuler = memo(function TimelineRuler({
             onChange={onScrub}
             onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
             data-timeline-control="true"
-            aria-label="Timeline scrubber"
+            aria-label={copy.scrubber}
             aria-valuetext={formatWorkspaceTimecode(clampedPlayheadSec, projectFps)}
           />
         </div>

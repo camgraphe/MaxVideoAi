@@ -6,12 +6,15 @@ import type { WorkspaceGraphNode } from '../_lib/workspace-types';
 import { WorkspaceAssetLibraryModal } from './WorkspaceAssetLibraryModal';
 import { WorkspaceExportDialog } from './WorkspaceExportDialog';
 import { WorkspaceProjectMediaLibraryModal } from './WorkspaceProjectMediaLibraryModal';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceExportDialogProps = ComponentProps<typeof WorkspaceExportDialog>;
 type WorkspaceAssetLibraryModalProps = ComponentProps<typeof WorkspaceAssetLibraryModal>;
 type WorkspaceProjectMediaLibraryModalProps = ComponentProps<typeof WorkspaceProjectMediaLibraryModal>;
 
 type WorkspaceRuntimeModalsProps = {
+  assetLibraryCopy: StudioCopy['assetLibrary'];
+  exportDialogCopy: StudioCopy['exportDialog'];
   activeExportJob: WorkspaceExportDialogProps['activeExportJob'];
   assetPickerLibrary: WorkspaceEditorAssetLibraryState;
   assetPickerNode: WorkspaceGraphNode | null;
@@ -43,6 +46,8 @@ type WorkspaceRuntimeModalsProps = {
 };
 
 export function WorkspaceRuntimeModals({
+  assetLibraryCopy,
+  exportDialogCopy,
   activeExportJob,
   assetPickerLibrary,
   assetPickerNode,
@@ -75,6 +80,7 @@ export function WorkspaceRuntimeModals({
   return (
     <>
       <WorkspaceExportDialog
+        copy={exportDialogCopy}
         activeExportJob={activeExportJob}
         exportEstimate={exportEstimate}
         exportQuota={exportQuota}
@@ -97,6 +103,7 @@ export function WorkspaceRuntimeModals({
         onRangeModeChange={onRangeModeChange}
       />
       <WorkspaceAssetLibraryModal
+        copy={assetLibraryCopy}
         node={assetPickerNode}
         assets={assetPickerLibrary.assets}
         isLoading={assetPickerLibrary.isLoading}
@@ -110,6 +117,7 @@ export function WorkspaceRuntimeModals({
         onSourceChange={assetPickerLibrary.setSource}
       />
       <WorkspaceProjectMediaLibraryModal
+        copy={assetLibraryCopy}
         isOpen={isProjectMediaPickerOpen}
         assets={projectMediaLibrary.assets}
         isLoading={projectMediaLibrary.isLoading}

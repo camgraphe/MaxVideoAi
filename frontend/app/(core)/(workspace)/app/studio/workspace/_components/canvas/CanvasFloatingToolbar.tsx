@@ -30,6 +30,7 @@ import {
 import styles from '../../_styles/canvas-toolbar.module.css';
 import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../../_lib/workspace-types';
 import { PALETTE_DRAG_START_EVENT } from './CanvasPaletteDragPreview';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type ToolbarMenuId = 'audio' | 'image' | 'templates' | 'text' | 'video';
 
@@ -56,6 +57,7 @@ export type CanvasToolbarUserTemplate = {
 };
 
 export type CanvasFloatingToolbarProps = {
+  copy: StudioCopy['canvas'];
   activeTemplateId: WorkspaceTemplateId | null;
   activeUserTemplateId: string | null;
   selectionTool: CanvasSelectionTool;
@@ -71,105 +73,113 @@ export type CanvasFloatingToolbarProps = {
   onSelectionToolChange: (tool: CanvasSelectionTool) => void;
 };
 
-const IMAGE_BLOCKS: ToolbarBlockDefinition[] = [
-  {
-    id: 'image',
-    kind: 'asset-image',
-    label: 'Image',
-    description: 'Image source, logo, product frame, storyboard panel.',
-    icon: <ImagePlus size={18} />,
-    accent: '#8b5cf6',
-  },
-  {
-    id: 'generate-image',
-    kind: 'shot',
-    label: 'Generate image',
-    description: 'Prompt-led generation block for visual outputs.',
-    icon: <WandSparkles size={18} />,
-    accent: '#6366f1',
-  },
-];
+function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'image' | 'text' | 'video', ToolbarBlockDefinition[]> {
+  return {
+    image: [
+      {
+        id: 'image',
+        kind: 'asset-image',
+        label: copy.image,
+        description: copy.imageDescription,
+        icon: <ImagePlus size={18} />,
+        accent: '#8b5cf6',
+      },
+      {
+        id: 'generate-image',
+        kind: 'shot',
+        label: copy.generateImage,
+        description: copy.generateImageDescription,
+        icon: <WandSparkles size={18} />,
+        accent: '#6366f1',
+      },
+    ],
+    video: [
+      {
+        id: 'video',
+        kind: 'asset-video',
+        label: copy.video,
+        description: copy.videoDescription,
+        icon: <Video size={18} />,
+        accent: '#3b82f6',
+      },
+      {
+        id: 'generate-video',
+        kind: 'shot',
+        label: copy.generateVideo,
+        description: copy.generateVideoDescription,
+        icon: <Clapperboard size={18} />,
+        accent: '#f97316',
+      },
+      {
+        id: 'modify-video',
+        kind: 'shot',
+        label: copy.modifyVideo,
+        description: copy.modifyVideoDescription,
+        icon: <SlidersHorizontal size={18} />,
+        accent: '#2563eb',
+      },
+      {
+        id: 'upscale',
+        kind: 'shot',
+        label: copy.upscale,
+        description: copy.upscaleDescription,
+        icon: <Sparkles size={18} />,
+        accent: '#0ea5e9',
+      },
+    ],
+    audio: [
+      {
+        id: 'music',
+        kind: 'asset-audio',
+        label: copy.music,
+        description: copy.musicDescription,
+        icon: <Music2 size={18} />,
+        accent: '#22c55e',
+      },
+      {
+        id: 'generate-music',
+        kind: 'shot',
+        label: copy.generateMusic,
+        description: copy.generateMusicDescription,
+        icon: <WandSparkles size={18} />,
+        accent: '#16a34a',
+      },
+      {
+        id: 'sfx',
+        kind: 'shot',
+        label: copy.sfx,
+        description: copy.sfxDescription,
+        icon: <AudioWaveform size={18} />,
+        accent: '#7c3aed',
+      },
+      {
+        id: 'voice-over',
+        kind: 'shot',
+        label: copy.voiceOver,
+        description: copy.voiceOverDescription,
+        icon: <Mic2 size={18} />,
+        accent: '#14b8a6',
+      },
+    ],
+    text: [
+      {
+        id: 'free-text',
+        kind: 'text-prompt',
+        label: copy.freeText,
+        description: copy.freeTextDescription,
+        icon: <Type size={18} />,
+        accent: '#60a5fa',
+      },
+    ],
+  };
+}
 
-const VIDEO_BLOCKS: ToolbarBlockDefinition[] = [
-  {
-    id: 'video',
-    kind: 'asset-video',
-    label: 'Video',
-    description: 'Video source, motion reference, source clip, B-roll.',
-    icon: <Video size={18} />,
-    accent: '#3b82f6',
-  },
-  {
-    id: 'generate-video',
-    kind: 'shot',
-    label: 'Generate video',
-    description: 'Video generation block with model-aware inputs.',
-    icon: <Clapperboard size={18} />,
-    accent: '#f97316',
-  },
-  {
-    id: 'modify-video',
-    kind: 'shot',
-    label: 'Modify video',
-    description: 'Video-to-video generation workflow block.',
-    icon: <SlidersHorizontal size={18} />,
-    accent: '#2563eb',
-  },
-  {
-    id: 'upscale',
-    kind: 'shot',
-    label: 'Upscale',
-    description: 'Enhancement workflow block for a video source.',
-    icon: <Sparkles size={18} />,
-    accent: '#0ea5e9',
-  },
-];
-
-const AUDIO_BLOCKS: ToolbarBlockDefinition[] = [
-  {
-    id: 'music',
-    kind: 'asset-audio',
-    label: 'Music',
-    description: 'Music source or reference audio.',
-    icon: <Music2 size={18} />,
-    accent: '#22c55e',
-  },
-  {
-    id: 'generate-music',
-    kind: 'shot',
-    label: 'Generate music',
-    description: 'Generation block for music direction.',
-    icon: <WandSparkles size={18} />,
-    accent: '#16a34a',
-  },
-  {
-    id: 'sfx',
-    kind: 'shot',
-    label: 'SFX',
-    description: 'Generation block for sound effects.',
-    icon: <AudioWaveform size={18} />,
-    accent: '#7c3aed',
-  },
-  {
-    id: 'voice-over',
-    kind: 'shot',
-    label: 'Voice over',
-    description: 'Generation block for narration or voice direction.',
-    icon: <Mic2 size={18} />,
-    accent: '#14b8a6',
-  },
-];
-
-const TEXT_BLOCKS: ToolbarBlockDefinition[] = [
-  {
-    id: 'free-text',
-    kind: 'text-prompt',
-    label: 'Free text',
-    description: 'Connectable text block for prompts, dialogue, notes, or metadata.',
-    icon: <Type size={18} />,
-    accent: '#60a5fa',
-  },
-];
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 function clearTextSelection(): void {
   window.getSelection()?.removeAllRanges();
@@ -183,6 +193,7 @@ function templateStyle(template: WorkspaceTemplateSummary): ToolbarTemplateStyle
 }
 
 export function CanvasFloatingToolbar({
+  copy,
   activeTemplateId,
   activeUserTemplateId,
   selectionTool,
@@ -200,6 +211,7 @@ export function CanvasFloatingToolbar({
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [templateName, setTemplateName] = useState('');
+  const blocks = toolbarBlocks(copy.nodes);
 
   useEffect(() => {
     if (!activeMenu) return;
@@ -264,11 +276,11 @@ export function CanvasFloatingToolbar({
   };
 
   return (
-    <div ref={toolbarRef} className={styles.canvasToolbar} data-canvas-toolbar="true" aria-label="Canvas creation toolbar">
+    <div ref={toolbarRef} className={styles.canvasToolbar} data-canvas-toolbar="true" aria-label={copy.toolbar.ariaLabel}>
       <button
         type="button"
         className={`${styles.toolbarButton} ${selectionTool === 'pointer' ? styles.toolbarButtonActive : ''}`}
-        aria-label="Select canvas nodes"
+        aria-label={copy.toolbar.selectNodes}
         aria-pressed={selectionTool === 'pointer'}
         onClick={() => onSelectionToolChange('pointer')}
       >
@@ -277,7 +289,7 @@ export function CanvasFloatingToolbar({
       <button
         type="button"
         className={`${styles.toolbarButton} ${selectionTool === 'marquee' ? styles.toolbarButtonActive : ''}`}
-        aria-label="Marquee select canvas nodes"
+        aria-label={copy.toolbar.marqueeSelectNodes}
         aria-pressed={selectionTool === 'marquee'}
         onClick={() => onSelectionToolChange('marquee')}
       >
@@ -286,7 +298,7 @@ export function CanvasFloatingToolbar({
       <button
         type="button"
         className={styles.toolbarButton}
-        aria-label="Delete selected canvas nodes"
+        aria-label={copy.toolbar.deleteSelectedNodes}
         disabled={selectedNodeCount === 0}
         onClick={onDeleteSelectedNodes}
       >
@@ -298,61 +310,61 @@ export function CanvasFloatingToolbar({
       <ToolbarMenuButton
         active={activeMenu === 'image'}
         icon={<ImagePlus size={18} />}
-        label="Image tools"
+        label={copy.toolbar.imageTools}
         onClick={() => toggleMenu('image')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'video'}
         icon={<Video size={18} />}
-        label="Video tools"
+        label={copy.toolbar.videoTools}
         onClick={() => toggleMenu('video')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'audio'}
         icon={<Music2 size={18} />}
-        label="Audio tools"
+        label={copy.toolbar.audioTools}
         onClick={() => toggleMenu('audio')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'text'}
         icon={<Type size={18} />}
-        label="Text tools"
+        label={copy.toolbar.textTools}
         onClick={() => toggleMenu('text')}
       />
 
       <ToolbarMenuButton
         active={activeMenu === 'templates'}
         icon={<LayoutTemplate size={18} />}
-        label="Canvas templates"
+        label={copy.toolbar.canvasTemplates}
         onClick={() => toggleMenu('templates')}
       />
 
       {activeMenu === 'image' ? (
-        <ToolbarPopover title="Image tools" description="Drag image blocks or image generation tools into the canvas.">
-          <BlockOptionList blocks={IMAGE_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        <ToolbarPopover title={copy.toolbar.imageTools} description={copy.toolbar.imageToolsDescription}>
+          <BlockOptionList blocks={blocks.image} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'video' ? (
-        <ToolbarPopover title="Video tools" description="Drag video sources or video generation tools into the canvas.">
-          <BlockOptionList blocks={VIDEO_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        <ToolbarPopover title={copy.toolbar.videoTools} description={copy.toolbar.videoToolsDescription}>
+          <BlockOptionList blocks={blocks.video} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'audio' ? (
-        <ToolbarPopover title="Audio tools" description="Drag music, sound, or voice tools into the canvas.">
-          <BlockOptionList blocks={AUDIO_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        <ToolbarPopover title={copy.toolbar.audioTools} description={copy.toolbar.audioToolsDescription}>
+          <BlockOptionList blocks={blocks.audio} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'text' ? (
-        <ToolbarPopover title="Text tools" description="Drag connectable free text into the canvas.">
-          <BlockOptionList blocks={TEXT_BLOCKS} onBlockMouseDown={handleBlockMouseDown} />
+        <ToolbarPopover title={copy.toolbar.textTools} description={copy.toolbar.textToolsDescription}>
+          <BlockOptionList blocks={blocks.text} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'templates' ? (
-        <ToolbarPopover title="Canvas templates" description="Apply graph templates without touching the timeline." wide>
+        <ToolbarPopover title={copy.toolbar.canvasTemplates} description={copy.toolbar.canvasTemplatesDescription} wide>
           <div className={styles.templateGrid}>
             {templates.map((template) => (
               <button
@@ -383,12 +395,12 @@ export function CanvasFloatingToolbar({
                 type="text"
                 value={templateName}
                 onChange={(event) => setTemplateName(event.target.value)}
-                placeholder="Template name"
-                aria-label="Canvas template name"
+                placeholder={copy.templates.templateNamePlaceholder}
+                aria-label={copy.templates.templateNameLabel}
               />
               <button type="submit">
                 <Save size={13} />
-                Save
+                {copy.templates.save}
               </button>
             </form>
             {userTemplates.length ? (
@@ -409,10 +421,10 @@ export function CanvasFloatingToolbar({
                       <span>{template.description}</span>
                     </button>
                     <div>
-                      <button type="button" onClick={() => onDuplicateUserTemplate(template.id)} aria-label={`Duplicate ${template.name}`}>
+                      <button type="button" onClick={() => onDuplicateUserTemplate(template.id)} aria-label={formatCopyValue(copy.templates.duplicate, { name: template.name })}>
                         <Copy size={12} />
                       </button>
-                      <button type="button" onClick={() => onDeleteUserTemplate(template.id)} aria-label={`Delete ${template.name}`}>
+                      <button type="button" onClick={() => onDeleteUserTemplate(template.id)} aria-label={formatCopyValue(copy.templates.delete, { name: template.name })}>
                         <Trash2 size={12} />
                       </button>
                     </div>
@@ -420,7 +432,7 @@ export function CanvasFloatingToolbar({
                 ))}
               </div>
             ) : (
-              <p className={styles.emptyTemplateState}>No saved canvas templates yet.</p>
+              <p className={styles.emptyTemplateState}>{copy.templates.empty}</p>
             )}
           </div>
         </ToolbarPopover>

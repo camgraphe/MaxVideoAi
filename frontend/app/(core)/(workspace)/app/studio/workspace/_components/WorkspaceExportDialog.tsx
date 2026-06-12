@@ -5,15 +5,17 @@ import { useEffect } from 'react';
 import editorStyles from '../maxvideoai-editor.module.css';
 import styles from '../_styles/export.module.css';
 import {
-  WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS,
+  workspaceTimelineExportQualityPresetOptions,
   workspaceTimelineExportReadinessChecks,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
   type WorkspaceTimelineRenderManifest,
 } from '../_lib/workspace-timeline-export';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceExportDialogProps = {
+  copy: StudioCopy['exportDialog'];
   activeExportJob: {
     id: string;
     status: 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
@@ -52,18 +54,28 @@ type WorkspaceExportDialogProps = {
   onRangeModeChange: (mode: WorkspaceTimelineExportRangeMode) => void;
 };
 
-function exportJobStatusLabel(status: NonNullable<WorkspaceExportDialogProps['activeExportJob']>['status']): string {
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function exportJobStatusLabel(
+  status: NonNullable<WorkspaceExportDialogProps['activeExportJob']>['status'],
+  copy: StudioCopy['exportDialog']
+): string {
   switch (status) {
     case 'queued':
-      return 'Queued';
+      return copy.queued;
     case 'rendering':
-      return 'Rendering';
+      return copy.rendering;
     case 'completed':
-      return 'Ready';
+      return copy.ready;
     case 'failed':
-      return 'Failed';
+      return copy.failed;
     case 'canceled':
-      return 'Canceled';
+      return copy.canceled;
   }
 }
 
@@ -72,6 +84,7 @@ function nullableTimecode(seconds: number | null, fps: number): string {
 }
 
 export function WorkspaceExportDialog({
+  copy,
   activeExportJob,
   exportEstimate,
   exportQuota,
@@ -95,23 +108,32 @@ export function WorkspaceExportDialog({
 }: WorkspaceExportDialogProps) {
   const fps = manifest.projectSettings?.fps ?? 24;
   const hasValidInOut = inPointSec !== null && outPointSec !== null && outPointSec > inPointSec;
-  const readinessChecks = workspaceTimelineExportReadinessChecks(manifest);
+  const qualityPresets = workspaceTimelineExportQualityPresetOptions(copy);
+  const readinessChecks = workspaceTimelineExportReadinessChecks(manifest, copy);
   const hasBlockingChecks = readinessChecks.some((check) => check.status === 'blocking');
   const isServerJobActive = activeExportJob?.status === 'queued' || activeExportJob?.status === 'rendering';
   const exportPriceLabel = exportEstimate
     ? exportEstimate.billingKind === 'free'
-      ? `Free export ${Math.max(0, exportEstimate.freeExportsRemaining)}/${exportQuota?.freeLimit ?? 2}`
+      ? formatCopyValue(copy.freeExport, {
+        remaining: Math.max(0, exportEstimate.freeExportsRemaining),
+        limit: exportQuota?.freeLimit ?? 2,
+      })
       : `${exportEstimate.currency.toUpperCase()} ${(exportEstimate.amountCents / 100).toFixed(2)}`
     : isEstimateLoading
-      ? 'Estimating...'
-      : 'Estimate unavailable';
-  const exportJobMessage = activeExportJob?.message ?? (
+      ? copy.estimating
+      : copy.estimateUnavailable;
+  const exportJobMessage =
     activeExportJob?.status === 'queued'
-      ? 'Queued on the server. A Fargate worker will claim this job and render the MP4.'
-      : isServerJobActive
-        ? 'Server worker is rendering the MP4.'
-        : null
-  );
+      ? copy.queuedServerWorker
+      : activeExportJob?.status === 'rendering'
+        ? copy.serverWorkerRendering
+        : activeExportJob?.status === 'completed'
+          ? copy.ready
+          : activeExportJob?.status === 'failed'
+            ? copy.exportCreateFailed
+            : activeExportJob?.status === 'canceled'
+              ? copy.canceled
+              : null;
   const dimensionsLabel = manifest.projectSettings
     ? `${manifest.projectSettings.aspectRatio} · ${manifest.projectSettings.resolution} · ${manifest.projectSettings.fps} fps`
     : `${fps} fps`;
@@ -145,14 +167,14 @@ export function WorkspaceExportDialog({
       >
         <div className={styles.exportHeader}>
           <div>
-            <p id="workspace-export-title">Export sequence</p>
+            <p id="workspace-export-title">{copy.title}</p>
             <span>{readinessLabel}</span>
           </div>
           <button
             type="button"
             className={styles.exportCloseButton}
             onClick={onClose}
-            aria-label="Close export dialog"
+            aria-label={copy.close}
           >
             <X size={16} />
           </button>
@@ -160,28 +182,28 @@ export function WorkspaceExportDialog({
         <div className={styles.exportDialogBody}>
           <section className={styles.exportSection}>
             <div className={styles.exportSectionHeader}>
-              <strong>Video export</strong>
-              <span>MP4 H.264</span>
+              <strong>{copy.videoExport}</strong>
+              <span>{copy.formatMp4}</span>
             </div>
             <div className={styles.exportSummaryGrid}>
-              <span>Sequence</span>
+              <span>{copy.sequence}</span>
               <strong>{manifest.sequenceName}</strong>
-              <span>Project</span>
+              <span>{copy.project}</span>
               <strong>{dimensionsLabel}</strong>
-              <span>Range</span>
-              <strong>{manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Sequence'}</strong>
-              <span>Duration</span>
+              <span>{copy.range}</span>
+              <strong>{manifest.exportRange.mode === 'in-out' ? copy.inOut : copy.fullSequenceRange}</strong>
+              <span>{copy.duration}</span>
               <strong>{formatWorkspaceTimecode(manifest.durationSec, fps)}</strong>
-              <span>Tracks</span>
+              <span>{copy.tracks}</span>
               <strong>{manifest.tracks.length}</strong>
             </div>
           </section>
 
           <section className={styles.exportSection}>
             <div className={styles.exportSectionHeader}>
-              <strong>Range</strong>
+              <strong>{copy.range}</strong>
             </div>
-            <div className={styles.exportRangeOptions} role="radiogroup" aria-label="Export range">
+            <div className={styles.exportRangeOptions} role="radiogroup" aria-label={copy.exportRange}>
               <label>
                 <input
                   type="radio"
@@ -189,7 +211,7 @@ export function WorkspaceExportDialog({
                   onChange={() => onRangeModeChange('sequence')}
                 />
                 <span>
-                  <strong>Full sequence</strong>
+                  <strong>{copy.fullSequence}</strong>
                   <small>{formatWorkspaceTimecode(0, fps)} - {formatWorkspaceTimecode(sequenceDurationSec, fps)}</small>
                 </span>
               </label>
@@ -201,7 +223,7 @@ export function WorkspaceExportDialog({
                   onChange={() => onRangeModeChange('in-out')}
                 />
                 <span>
-                  <strong>In/Out range</strong>
+                  <strong>{copy.inOutRange}</strong>
                   <small>{nullableTimecode(inPointSec, fps)} - {nullableTimecode(outPointSec, fps)}</small>
                 </span>
               </label>
@@ -210,10 +232,10 @@ export function WorkspaceExportDialog({
 
           <section className={styles.exportSection}>
             <div className={styles.exportSectionHeader}>
-              <strong>Quality preset</strong>
+              <strong>{copy.qualityPreset}</strong>
             </div>
-            <div className={styles.exportPresetGrid} role="radiogroup" aria-label="Quality preset">
-              {WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS.map((preset) => (
+            <div className={styles.exportPresetGrid} role="radiogroup" aria-label={copy.qualityPreset}>
+              {qualityPresets.map((preset) => (
                 <label
                   key={preset.id}
                   className={`${styles.exportPresetCard} ${exportQualityPreset === preset.id ? styles.exportPresetCardActive : ''}`}
@@ -234,8 +256,8 @@ export function WorkspaceExportDialog({
 
           <section className={styles.exportSection}>
             <div className={styles.exportSectionHeader}>
-              <strong>Preflight</strong>
-              <span>{manifest.status === 'ready' ? 'Ready' : 'Blocked'}</span>
+              <strong>{copy.preflight}</strong>
+              <span>{manifest.status === 'ready' ? copy.ready : copy.blocked}</span>
             </div>
             <div className={styles.exportReadinessList}>
               {readinessChecks.map((check) => (
@@ -254,38 +276,41 @@ export function WorkspaceExportDialog({
             onClick={onExportVideo}
           >
             <Film size={15} />
-            {isExportStarting ? 'Queueing...' : isServerJobActive ? 'Export queued' : activeExportJob?.status === 'failed' ? 'Retry export' : 'Export video'}
+            {isExportStarting ? copy.queueing : isServerJobActive ? copy.exportQueued : activeExportJob?.status === 'failed' ? copy.retryExport : copy.exportVideo}
           </button>
           <section className={`${styles.exportSection} ${styles.exportServerSection}`}>
             <div className={styles.exportSectionHeader}>
-              <strong>Server render</strong>
+              <strong>{copy.serverRender}</strong>
               <span>{exportPriceLabel}</span>
             </div>
             <div className={styles.exportServerCard} data-status={activeExportJob?.status ?? 'idle'}>
               <div>
-                <strong>{exportEstimate?.billingKind === 'paid' ? 'Paid export' : 'Server MP4'}</strong>
+                <strong>{exportEstimate?.billingKind === 'paid' ? copy.paidExport : copy.serverMp4}</strong>
                 <span>
                   {exportQuota
-                    ? `${exportQuota.freeExportsRemaining} free server export${exportQuota.freeExportsRemaining === 1 ? '' : 's'} remaining`
-                    : 'Final render job runs on MaxVideoAI servers.'}
+                    ? formatCopyValue(
+                      exportQuota.freeExportsRemaining === 1 ? copy.freeExportsRemaining : copy.freeExportsRemainingPlural,
+                      { count: exportQuota.freeExportsRemaining }
+                    )
+                    : copy.finalRenderJob}
                 </span>
                 {exportJobMessage ? <small>{exportJobMessage}</small> : null}
               </div>
               {activeExportJob ? (
                 <div className={styles.exportJobStatus} data-status={activeExportJob.status}>
-                  <span>{exportJobStatusLabel(activeExportJob.status)}</span>
+                  <span>{exportJobStatusLabel(activeExportJob.status, copy)}</span>
                   <strong>{activeExportJob.progress}%</strong>
                 </div>
               ) : null}
             </div>
             {activeExportJob ? (
-              <div className={styles.exportProgressTrack} data-status={activeExportJob.status} aria-label="Server export progress">
+              <div className={styles.exportProgressTrack} data-status={activeExportJob.status} aria-label={copy.serverProgress}>
                 <span style={{ width: `${activeExportJob.progress}%` }} />
               </div>
             ) : null}
             {activeExportJob?.outputUrl ? (
               <a className={styles.exportDownloadLink} href={activeExportJob.outputUrl} target="_blank" rel="noreferrer">
-                Download MP4
+                {copy.downloadMp4}
               </a>
             ) : null}
           </section>
@@ -296,15 +321,15 @@ export function WorkspaceExportDialog({
           ) : null}
 
           <details className={styles.exportAdvancedPanel} open>
-            <summary>Advanced</summary>
+            <summary>{copy.advanced}</summary>
             <div className={styles.exportAdvancedActions}>
               <button type="button" className={editorStyles.secondaryPanelButton} disabled={hasBlockingChecks} onClick={onExportEdl}>
                 <Download size={14} />
-                Export EDL
+                {copy.exportEdl}
               </button>
               <button type="button" className={editorStyles.secondaryPanelButton} onClick={onPrepareRender}>
                 <FileJson size={14} />
-                Prepare render JSON
+                {copy.prepareRenderJson}
               </button>
             </div>
           </details>

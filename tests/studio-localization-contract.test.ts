@@ -12,67 +12,19 @@ import {
 
 const root = process.cwd();
 const locales = ['en', 'fr', 'es'] as const;
-const requiredPaths = [
-  'workspace.studio.projects.metaTitle',
-  'workspace.studio.projects.heroBadge',
-  'workspace.studio.projects.title',
-  'workspace.studio.projects.subtitle',
-  'workspace.studio.projects.createTitle',
-  'workspace.studio.projects.createSubtitle',
-  'workspace.studio.projects.projectNameLabel',
-  'workspace.studio.projects.projectNamePlaceholder',
-  'workspace.studio.projects.canvasTemplateLabel',
-  'workspace.studio.projects.browseTemplates',
-  'workspace.studio.projects.createProject',
-  'workspace.studio.projects.creating',
-  'workspace.studio.projects.recentTitle',
-  'workspace.studio.projects.recentSubtitle',
-  'workspace.studio.projects.emptyRecent',
-  'workspace.studio.projects.viewAllProjects',
-  'workspace.studio.projects.projectActionsAria',
-  'workspace.studio.projects.rename',
-  'workspace.studio.projects.duplicate',
-  'workspace.studio.projects.duplicateSuffix',
-  'workspace.studio.projects.delete',
-  'workspace.studio.projects.renameTitle',
-  'workspace.studio.projects.renameSubmit',
-  'workspace.studio.projects.deleteTitle',
-  'workspace.studio.projects.deleteBody',
-  'workspace.studio.projects.deleteConfirm',
-  'workspace.studio.projects.cancel',
-  'workspace.studio.projects.closeDialog',
-  'workspace.studio.projects.untitledProject',
-  'workspace.studio.projects.localDraft',
-  'workspace.studio.projects.customCanvas',
-  'workspace.studio.topbar.productName',
-  'workspace.studio.topbar.breadcrumbProjects',
-  'workspace.studio.topbar.breadcrumbWorkspace',
-  'workspace.studio.topbar.workspaceViewLabel',
-  'workspace.studio.topbar.canvas',
-  'workspace.studio.topbar.viewer',
-  'workspace.studio.topbar.export',
-  'workspace.studio.topbar.exportAria',
-  'workspace.studio.topbar.mock',
-  'workspace.studio.topbar.live',
-  'workspace.studio.topbar.mockAria',
-  'workspace.studio.topbar.switchToLight',
-  'workspace.studio.topbar.switchToDark',
-  'workspace.studio.common.secondsShort',
-  'workspace.studio.common.itemSingular',
-  'workspace.studio.common.itemPlural',
-  'workspace.studio.common.folder',
-  'workspace.studio.common.generatedClip',
-  'workspace.studio.notices.canvasTemplateNotFound',
-  'workspace.studio.notices.projectMediaAssetNotFound',
-  'workspace.studio.notices.projectMediaFolderNotFound',
-  'workspace.studio.notices.generatedClipNotFound',
-  'workspace.studio.notices.unlockBeforeMoving',
-  'workspace.studio.notices.unlockBeforeCutting',
-  'workspace.studio.notices.unlockBeforeTrimming',
-  'workspace.studio.notices.unlockBeforeDeleting',
-  'workspace.studio.notices.selectedClipsUnlinked',
-  'workspace.studio.notices.selectedClipsLinked',
-];
+
+function requiredStudioCopyPaths(source: unknown, prefix = 'workspace.studio'): string[] {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return [];
+  return Object.entries(source as Record<string, unknown>).flatMap(([key, value]) => {
+    const keyPath = `${prefix}.${key}`;
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      return requiredStudioCopyPaths(value, keyPath);
+    }
+    return [keyPath];
+  });
+}
+
+const requiredPaths = requiredStudioCopyPaths(DEFAULT_STUDIO_COPY);
 
 function readPath(source: unknown, keyPath: string): unknown {
   return keyPath.split('.').reduce<unknown>((current, key) => {
@@ -108,6 +60,11 @@ test('resolveStudioCopy applies partial leaf overrides without dropping sibling 
         topbar: {
           canvas: 'Board',
         },
+        canvas: {
+          toolbar: {
+            selectNodes: 'Select blocks',
+          },
+        },
         notices: {
           unlockBeforeMoving: 'Unlock first.',
         },
@@ -120,6 +77,8 @@ test('resolveStudioCopy applies partial leaf overrides without dropping sibling 
   assert.equal(copy.topbar.canvas, 'Board');
   assert.equal(copy.topbar.viewer, DEFAULT_STUDIO_COPY.topbar.viewer);
   assert.equal(copy.common.itemPlural, DEFAULT_STUDIO_COPY.common.itemPlural);
+  assert.equal(copy.canvas.toolbar.selectNodes, 'Select blocks');
+  assert.equal(copy.canvas.toolbar.marqueeSelectNodes, DEFAULT_STUDIO_COPY.canvas.toolbar.marqueeSelectNodes);
   assert.equal(copy.notices.unlockBeforeMoving, 'Unlock first.');
   assert.equal(copy.notices.unlockBeforeCutting, DEFAULT_STUDIO_COPY.notices.unlockBeforeCutting);
 });
@@ -133,6 +92,11 @@ test('resolveStudioCopy ignores wrong-typed values and keeps defaults', () => {
           createProject: 'Create custom',
         },
         topbar: 'invalid topbar',
+        timeline: {
+          tools: {
+            selection: 123,
+          },
+        },
         common: {
           itemPlural: null,
         },
@@ -146,6 +110,7 @@ test('resolveStudioCopy ignores wrong-typed values and keeps defaults', () => {
   assert.equal(copy.projects.title, DEFAULT_STUDIO_COPY.projects.title);
   assert.equal(copy.projects.createProject, 'Create custom');
   assert.deepEqual(copy.topbar, DEFAULT_STUDIO_COPY.topbar);
+  assert.equal(copy.timeline.tools.selection, DEFAULT_STUDIO_COPY.timeline.tools.selection);
   assert.equal(copy.common.itemPlural, DEFAULT_STUDIO_COPY.common.itemPlural);
   assert.equal(copy.notices.unlockBeforeMoving, DEFAULT_STUDIO_COPY.notices.unlockBeforeMoving);
 });

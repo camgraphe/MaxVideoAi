@@ -40,6 +40,7 @@ import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
 import { useTimelinePreviewItems } from './timeline/useTimelinePreviewItems';
 import { useTimelineSurfaceSelection } from './timeline/useTimelineSurfaceSelection';
 import { useTimelineVisibleRange } from './timeline/useTimelineVisibleRange';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
 const MIN_TIMELINE_PIXELS_PER_SECOND = 18;
@@ -53,6 +54,7 @@ function formatDuration(seconds: number): string {
 }
 
 type WorkspaceTimelineProps = {
+  copy: StudioCopy['timeline'];
   canRedo: boolean;
   canUndo: boolean;
   isShortcutActive: boolean;
@@ -107,6 +109,7 @@ type WorkspaceTimelineProps = {
 };
 
 export function WorkspaceTimeline({
+  copy,
   canRedo,
   canUndo,
   isShortcutActive,
@@ -165,7 +168,7 @@ export function WorkspaceTimeline({
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const frameStepSec = frameStepSeconds(projectFps);
   const baseTimelineDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec));
-  const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items), [audioTrackCount, items, videoTrackCount]);
+  const timelineTracks = useMemo(() => buildTimelineTracks(videoTrackCount, audioTrackCount, items, copy.tracks), [audioTrackCount, copy.tracks, items, videoTrackCount]);
   const hiddenVideoTrackSet = useMemo(() => new Set<WorkspaceTimelineVideoTrack>(hiddenVideoTracks), [hiddenVideoTracks]);
   const lockedTrackSet = useMemo(() => new Set<WorkspaceTimelineTrack>(lockedTracks), [lockedTracks]);
   const mutedAudioTrackSet = useMemo(() => new Set<WorkspaceTimelineAudioTrack>(mutedAudioTracks), [mutedAudioTracks]);
@@ -362,7 +365,7 @@ export function WorkspaceTimeline({
       ref={timelinePanelRef}
       className={styles.timelinePanel}
       style={timelinePanelStyle}
-      aria-label="Video timeline"
+      aria-label={copy.tools.videoTimeline}
       data-timeline-frame-step={frameStepSec}
       data-timeline-pixels-per-second={pixelsPerSecond}
     >
@@ -373,8 +376,8 @@ export function WorkspaceTimeline({
         data-timeline-resize-handle="true"
         onMouseDown={handleBeginTimelinePanelMouseResize}
         onPointerDown={handleBeginTimelinePanelPointerResize}
-        title="Drag to resize montage timeline"
-        aria-label="Resize montage timeline"
+        title={copy.tools.resizeTimelineTitle}
+        aria-label={copy.tools.resizeTimeline}
       />
       <TimelineToolbar
         activeTimelineTool={activeTimelineTool}
@@ -390,6 +393,7 @@ export function WorkspaceTimeline({
         onZoomChange={setTimelineZoom}
         pixelsPerSecond={pixelsPerSecond}
         playheadSec={clampedPlayheadSec}
+        copy={copy.tools}
       />
       <div
         ref={timelineViewportRef}
@@ -416,8 +420,10 @@ export function WorkspaceTimeline({
           snapGuideSec={interaction?.snapGuideSec ?? null}
           timelineWidth={timelineWidth}
           totalDuration={totalDuration}
+          copy={copy.tools}
         />
         <TimelineTrackList
+          copy={copy}
           activeTool={activeTimelineTool}
           audioTrackCount={audioTrackCount}
           clampedPlayheadSec={clampedPlayheadSec}
@@ -464,6 +470,7 @@ export function WorkspaceTimeline({
         {marqueeStyle ? <span className={styles.timelineMarquee} style={marqueeStyle} aria-hidden="true" /> : null}
       </div>
       <TimelineContextMenus
+        copy={copy}
         clipMenu={clipMenu}
         onClipMenuAction={handleClipContextMenuAction}
         onTrackMenuAction={handleTrackContextMenuAction}

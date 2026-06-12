@@ -28,7 +28,12 @@ import {
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../workspace/_lib/workspace-templates';
 import type { WorkspaceProjectSettings, WorkspaceTemplateId } from '../workspace/_lib/workspace-types';
 import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
-import { formatStudioProjectDate, resolveStudioCopy, type StudioCopy } from '../_lib/studio-copy';
+import {
+  formatStudioProjectDate,
+  localizeStudioTemplateSummaries,
+  resolveStudioCopy,
+  type StudioCopy,
+} from '../_lib/studio-copy';
 import styles from './studio-projects.module.css';
 
 const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
@@ -155,8 +160,12 @@ async function deleteStudioProjectFromApi(projectId: string): Promise<boolean> {
   }
 }
 
-function studioProjectTemplateName(templateId: WorkspaceTemplateId, studioCopy: StudioCopy): string {
-  return WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === templateId)?.name ?? studioCopy.projects.customCanvas;
+function studioProjectTemplateName(
+  templateId: WorkspaceTemplateId,
+  templates: typeof WORKSPACE_TEMPLATE_SUMMARIES,
+  studioCopy: StudioCopy
+): string {
+  return templates.find((template) => template.id === templateId)?.name ?? studioCopy.projects.customCanvas;
 }
 
 function studioProjectTemplateThumbnail(templateId: WorkspaceTemplateId): string {
@@ -177,10 +186,14 @@ export default function StudioProjectsPageClient() {
   const [renameProjectId, setRenameProjectId] = useState<string | null>(null);
   const [renameProjectName, setRenameProjectName] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
-  const visibleTemplates = useMemo(() => WORKSPACE_TEMPLATE_SUMMARIES.slice(0, 3), []);
+  const localizedTemplates = useMemo(
+    () => localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy),
+    [studioCopy]
+  );
+  const visibleTemplates = useMemo(() => localizedTemplates.slice(0, 3), [localizedTemplates]);
   const selectedTemplate = useMemo(
-    () => WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === canvasTemplateId) ?? WORKSPACE_TEMPLATE_SUMMARIES[0],
-    [canvasTemplateId]
+    () => localizedTemplates.find((template) => template.id === canvasTemplateId) ?? localizedTemplates[0],
+    [canvasTemplateId, localizedTemplates]
   );
   const renameProject = useMemo(
     () => projects.find((project) => project.id === renameProjectId) ?? null,
@@ -356,7 +369,7 @@ export default function StudioProjectsPageClient() {
                     ) : null}
                     <span className={styles.templateTitleRow}>
                       <strong>{template.name}</strong>
-                      <em>Pro</em>
+                      {template.badge ? <em>{template.badge}</em> : null}
                     </span>
                     <span>{template.description}</span>
                   </button>
@@ -405,7 +418,7 @@ export default function StudioProjectsPageClient() {
                           <Film size={12} />
                           {project.settings.aspectRatio}
                           <Clock3 size={12} />
-                          {studioProjectTemplateName(project.canvasTemplateId, studioCopy)}
+                          {studioProjectTemplateName(project.canvasTemplateId, localizedTemplates, studioCopy)}
                         </small>
                       </span>
                     </button>

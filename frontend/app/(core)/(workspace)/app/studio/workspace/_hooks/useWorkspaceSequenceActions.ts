@@ -23,6 +23,14 @@ import type {
   WorkspaceTimelineVideoTrack,
 } from '../_lib/workspace-types';
 import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timeline-render';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 function createLocalWorkspaceSequenceId(): string {
   if (globalThis.crypto?.randomUUID) return `sequence_${globalThis.crypto.randomUUID()}`;
@@ -56,6 +64,7 @@ type UseWorkspaceSequenceActionsParams = {
   setTimelinePreview: Dispatch<SetStateAction<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
   snapshotActiveSequence: () => WorkspaceSequenceRecord;
+  studioNotices: StudioCopy['notices'];
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
 };
 
@@ -86,6 +95,7 @@ export function useWorkspaceSequenceActions({
   setTimelinePreview,
   setVideoTrackCount,
   snapshotActiveSequence,
+  studioNotices,
   timelineItemsRef,
 }: UseWorkspaceSequenceActionsParams): {
   handleCreateSequence: () => void;
@@ -141,7 +151,7 @@ export function useWorkspaceSequenceActions({
       if (sequenceId === activeSequenceId) return;
       const targetSequence = sequences.find((sequence) => sequence.id === sequenceId);
       if (!targetSequence) {
-        setNotice('Sequence not found.');
+        setNotice(studioNotices.sequenceNotFound);
         return;
       }
       const currentSequence = snapshotActiveSequence();
@@ -151,9 +161,9 @@ export function useWorkspaceSequenceActions({
       applyTimelineSelection([]);
       setActiveEditorSurface('timeline');
       setFocusMode('viewer');
-      setNotice(`${targetSequence.name} selected.`);
+      setNotice(formatNotice(studioNotices.sequenceSelected, { name: targetSequence.name }));
     },
-    [activeSequenceId, applyTimelineSelection, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setNotice, setSequences, snapshotActiveSequence]
+    [activeSequenceId, applyTimelineSelection, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setNotice, setSequences, snapshotActiveSequence, studioNotices.sequenceNotFound, studioNotices.sequenceSelected]
   );
 
   const handleCreateSequence = useCallback(
@@ -171,9 +181,9 @@ export function useWorkspaceSequenceActions({
       setInspectedSequenceId(nextSequence.id);
       setActiveEditorSurface('timeline');
       setFocusMode('viewer');
-      setNotice(`${nextSequence.name} created.`);
+      setNotice(formatNotice(studioNotices.sequenceCreated, { name: nextSequence.name }));
     },
-    [applyWorkspaceSequence, projectSettings, sequences.length, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
+    [applyWorkspaceSequence, projectSettings, sequences.length, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence, studioNotices.sequenceCreated]
   );
 
   const handleDuplicateSequence = useCallback(
@@ -182,7 +192,7 @@ export function useWorkspaceSequenceActions({
       const savedSequences = upsertWorkspaceSequence(sequences, currentSequence);
       const sourceSequence = savedSequences.find((sequence) => sequence.id === sequenceId);
       if (!sourceSequence) {
-        setNotice('Sequence not found.');
+        setNotice(studioNotices.sequenceNotFound);
         return;
       }
 
@@ -193,9 +203,9 @@ export function useWorkspaceSequenceActions({
       setInspectedSequenceId(duplicatedSequence.id);
       setActiveEditorSurface('timeline');
       setFocusMode('viewer');
-      setNotice(`${duplicatedSequence.name} created.`);
+      setNotice(formatNotice(studioNotices.sequenceCreated, { name: duplicatedSequence.name }));
     },
-    [applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
+    [applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence, studioNotices.sequenceCreated, studioNotices.sequenceNotFound]
   );
 
   const handleDeleteSequence = useCallback(
@@ -208,15 +218,18 @@ export function useWorkspaceSequenceActions({
         sequences: savedSequences,
       });
       if (!deleteResult.ok && deleteResult.reason === 'not_found') {
-        setNotice('Sequence not found.');
+        setNotice(studioNotices.sequenceNotFound);
         return;
       }
       if (!deleteResult.ok && deleteResult.reason === 'last_sequence') {
-        setNotice('Keep at least one sequence in the project.');
+        setNotice(studioNotices.keepAtLeastOneSequence);
         return;
       }
       if (!deleteResult.ok) return;
-      if (typeof window !== 'undefined' && !window.confirm(`Delete "${deleteResult.deletedSequence.name}"? This removes its timeline from the project.`)) return;
+      if (
+        typeof window !== 'undefined' &&
+        !window.confirm(formatNotice(studioNotices.deleteSequenceConfirm, { name: deleteResult.deletedSequence.name }))
+      ) return;
 
       setSequences(deleteResult.nextSequences);
       if (deleteResult.deletedActiveSequence) {
@@ -228,9 +241,9 @@ export function useWorkspaceSequenceActions({
       }
       setActiveEditorSurface('timeline');
       setFocusMode('viewer');
-      setNotice(`${deleteResult.deletedSequence.name} deleted.`);
+      setNotice(formatNotice(studioNotices.sequenceDeleted, { name: deleteResult.deletedSequence.name }));
     },
-    [activeSequenceId, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence]
+    [activeSequenceId, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence, studioNotices.deleteSequenceConfirm, studioNotices.keepAtLeastOneSequence, studioNotices.sequenceDeleted, studioNotices.sequenceNotFound]
   );
 
   const handleRenameActiveSequence = useCallback(

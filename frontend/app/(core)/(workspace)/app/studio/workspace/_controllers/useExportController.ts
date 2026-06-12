@@ -20,10 +20,13 @@ import {
   type TimelineExportClientJobStatus,
   type TimelineExportClientQuota,
 } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type UseExportControllerOptions = {
   manifest: WorkspaceTimelineRenderManifest;
   qualityPreset: WorkspaceTimelineExportQualityPreset;
+  copy: StudioCopy['exportDialog'];
+  notices: StudioCopy['notices'];
   onNotice: (message: string) => void;
 };
 
@@ -58,23 +61,41 @@ function isTerminalExportJob(job: TimelineExportClientJob | null): boolean {
   return job?.status === 'completed' || job?.status === 'failed' || job?.status === 'canceled';
 }
 
-function humanizeTimelineExportError(message: string): string {
+function formatStudioCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function humanizeTimelineExportError(
+  message: string,
+  notices: StudioCopy['notices'],
+  copy: StudioCopy['exportDialog'],
+  fallback = notices.serverExportFailed
+): string {
   if (message.includes('MISSING_TIMELINE_EXPORT_ECS_')) {
-    return 'Server export is not configured yet. Set the ECS worker environment variables before launching MP4 renders.';
+    return copy.exportWorkerNotConfigured;
   }
   if (message.includes('TIMELINE_EXPORT_ECS_RUN_TASK_FAILED')) {
-    return 'The export job was created, but the server render worker could not start. Billing was released for this failed launch.';
+    return copy.exportWorkerStartFailed;
   }
   if (message.includes('TIMELINE_EXPORT_ECS_RUN_TASK_EMPTY')) {
-    return 'The server accepted the export request but did not return a render task. Billing was released for this failed launch.';
+    return copy.exportWorkerEmpty;
   }
   if (message === 'INSUFFICIENT_WALLET_BALANCE') {
-    return 'Your wallet balance is too low for this export.';
+    return copy.insufficientWalletBalance;
   }
   if (message === 'EXPORT_CREATE_FAILED') {
-    return 'The export job could not be created.';
+    return copy.exportCreateFailed;
   }
-  return message;
+  if (message === 'EXPORT_ESTIMATE_FAILED') {
+    return notices.exportEstimateFailed;
+  }
+  if (message === 'EXPORT_JOB_INVALID') {
+    return copy.exportJobInvalid;
+  }
+  return fallback;
 }
 
 function downloadWorkspaceTextFile(filename: string, contents: string, type: string): void {
@@ -93,6 +114,8 @@ function downloadWorkspaceTextFile(filename: string, contents: string, type: str
 export function useExportController({
   manifest,
   qualityPreset,
+  copy,
+  notices,
   onNotice,
 }: UseExportControllerOptions) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
@@ -103,7 +126,7 @@ export function useExportController({
   const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string | null>(null);
   const [isExportEstimateLoading, setIsExportEstimateLoading] = useState(false);
   const [isExportVideoStarting, setIsExportVideoStarting] = useState(false);
-  const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(manifest), [manifest]);
+  const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(manifest, copy), [copy, manifest]);
 
   const resetExportSession = useCallback(() => {
     setExportVideoFeedback(null);
@@ -156,14 +179,16 @@ export function useExportController({
         if (controller.signal.aborted) return;
         setExportEstimate(null);
         setExportQuota(null);
-        setExportVideoFeedback(error instanceof Error ? error.message : 'Export estimate failed.');
+        setExportVideoFeedback(error instanceof Error
+          ? humanizeTimelineExportError(error.message, notices, copy, notices.exportEstimateFailed)
+          : notices.exportEstimateFailed);
       })
       .finally(() => {
         if (!controller.signal.aborted) setIsExportEstimateLoading(false);
       });
 
     return () => controller.abort();
-  }, [exportIdempotencyKey, isExportDialogOpen, manifest, qualityPreset]);
+  }, [copy, exportIdempotencyKey, isExportDialogOpen, manifest, notices, qualityPreset]);
 
   useEffect(() => {
     if (!activeExportJob || isTerminalExportJob(activeExportJob)) return;
@@ -180,15 +205,18 @@ export function useExportController({
         if (!nextJob) return;
         setActiveExportJob(nextJob);
         if (nextJob.status === 'completed') {
-          const message = nextJob.outputUrl ? 'Export ready. Download available.' : 'Export completed.';
+          const message = nextJob.outputUrl ? notices.exportReadyDownload : notices.exportCompleted;
           setExportVideoFeedback(message);
           onNotice(message);
         } else if (nextJob.status === 'failed') {
-          const message = nextJob.message ?? 'Server export failed.';
+          const message = nextJob.message
+            ? humanizeTimelineExportError(nextJob.message, notices, copy, notices.serverExportFailed)
+            : notices.serverExportFailed;
           setExportVideoFeedback(message);
           onNotice(message);
         } else {
-          setExportVideoFeedback(`${nextJob.message ?? 'Server export rendering.'} ${nextJob.progress}%`);
+          const message = nextJob.status === 'queued' ? notices.serverExportQueued : notices.serverExportRendering;
+          setExportVideoFeedback(`${message} ${nextJob.progress}%`);
         }
       } catch {
         // Keep the current job state. The next poll can recover from a transient network miss.
@@ -201,19 +229,19 @@ export function useExportController({
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [activeExportJob, onNotice]);
+  }, [activeExportJob, copy, notices, onNotice]);
 
   const exportTimelineRender = useCallback(() => {
     const serializedManifest = serializeWorkspaceTimelineRenderManifest(manifest);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(RENDER_MANIFEST_STORAGE_KEY, serializedManifest);
     }
-    const readinessLabel = workspaceTimelineRenderReadinessLabel(manifest);
+    const readinessLabel = workspaceTimelineRenderReadinessLabel(manifest, copy);
     onNotice(readinessLabel);
     if (manifest.status === 'blocked') return;
 
     downloadWorkspaceTextFile('maxvideoai-timeline-render.json', serializedManifest, 'application/json');
-  }, [manifest, onNotice]);
+  }, [copy, manifest, onNotice]);
 
   const exportTimelineVideo = useCallback(async () => {
     const idempotencyKey = activeExportJob && isTerminalExportJob(activeExportJob)
@@ -232,13 +260,13 @@ export function useExportController({
       window.localStorage.setItem(VIDEO_EXPORT_REQUEST_STORAGE_KEY, serializedRequest);
     }
     if (request.status === 'blocked') {
-      const blockedMessage = workspaceTimelineRenderReadinessLabel(manifest);
+      const blockedMessage = workspaceTimelineRenderReadinessLabel(manifest, copy);
       setExportVideoFeedback(blockedMessage);
       onNotice(blockedMessage);
       return;
     }
     setIsExportVideoStarting(true);
-    setExportVideoFeedback('Queueing server export.');
+    setExportVideoFeedback(notices.queueingServerExport);
     try {
       const response = await fetch('/api/studio/timeline-exports', {
         method: 'POST',
@@ -249,33 +277,35 @@ export function useExportController({
       const job = normalizeTimelineExportClientJob(payload?.export);
       if (!response.ok || !payload?.ok) {
         if (job) setActiveExportJob(job);
-        throw new Error(humanizeTimelineExportError(payload?.message ?? payload?.error ?? 'EXPORT_CREATE_FAILED'));
+        throw new Error(payload?.message ?? payload?.error ?? 'EXPORT_CREATE_FAILED');
       }
       if (!job) throw new Error('EXPORT_JOB_INVALID');
       setActiveExportJob(job);
-      const feedbackMessage = payload.reused ? 'Server export already queued.' : 'Server export queued.';
+      const feedbackMessage = payload.reused ? notices.serverExportAlreadyQueued : notices.serverExportQueued;
       setExportVideoFeedback(feedbackMessage);
       onNotice(feedbackMessage);
     } catch (error) {
-      const rawMessage = error instanceof Error ? error.message : 'Server export failed to start.';
-      const message = humanizeTimelineExportError(rawMessage);
+      const rawMessage = error instanceof Error ? error.message : notices.serverExportFailedToStart;
+      const message = humanizeTimelineExportError(rawMessage, notices, copy, notices.serverExportFailedToStart);
       setExportVideoFeedback(message);
       onNotice(message);
     } finally {
       setIsExportVideoStarting(false);
     }
-  }, [activeExportJob, exportIdempotencyKey, manifest, onNotice, qualityPreset]);
+  }, [activeExportJob, copy, exportIdempotencyKey, manifest, notices, onNotice, qualityPreset]);
 
   const exportTimelineEdl = useCallback(() => {
     const edl = buildWorkspaceTimelineEdl(manifest);
     onNotice(
       manifest.status === 'blocked'
-        ? workspaceTimelineRenderReadinessLabel(manifest)
-        : `EDL ready for ${manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'sequence'} export.`
+        ? workspaceTimelineRenderReadinessLabel(manifest, copy)
+        : formatStudioCopyValue(notices.exportEdlReady, {
+          range: manifest.exportRange.mode === 'in-out' ? copy.inOut : copy.fullSequenceRange.toLowerCase(),
+        })
     );
     if (manifest.status === 'blocked') return;
     downloadWorkspaceTextFile('maxvideoai-timeline.edl', edl, 'text/plain');
-  }, [manifest, onNotice]);
+  }, [copy, manifest, notices, onNotice]);
 
   return {
     activeExportJob,

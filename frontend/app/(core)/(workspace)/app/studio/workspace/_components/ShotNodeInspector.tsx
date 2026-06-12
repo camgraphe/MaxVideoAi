@@ -12,10 +12,12 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import { edgeLabel } from '../_lib/workspace-templates';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
 type ShotNodeInspectorProps = {
+  copy: StudioCopy['canvas']['nodes'];
   node: WorkspaceGraphNode;
   edges: WorkspaceGraphEdge[];
   capabilities: WorkspaceModelCapability[];
@@ -27,7 +29,15 @@ function workflowLabel(workflow: WorkspaceShotSettings['workflowType']): string 
   return workflow.replaceAll('_', ' ');
 }
 
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
 export function ShotNodeInspector({
+  copy,
   node,
   edges,
   capabilities,
@@ -46,7 +56,7 @@ export function ShotNodeInspector({
   const ratios = selectedCapability?.supported_aspect_ratios.length ? selectedCapability.supported_aspect_ratios : ['16:9', '9:16', '1:1'];
   const resolutions = selectedCapability?.supported_resolutions.length ? selectedCapability.supported_resolutions : ['720p', '1080p'];
   const fpsValues = selectedCapability?.supported_fps.length ? selectedCapability.supported_fps : [24, 30];
-  const pricingEstimate = node.data.pricingEstimate?.label ?? 'Estimating...';
+  const pricingEstimate = node.data.pricingEstimate?.label ?? copy.estimating;
   const recommendedModels = (validation?.recommendedModels ?? []).slice(0, 4);
   const recommendedModelIds = new Set(recommendedModels.map((model) => model.id));
   const remainingCapabilities = capabilities.filter((capability) => !recommendedModelIds.has(capability.id));
@@ -54,11 +64,11 @@ export function ShotNodeInspector({
   return (
     <>
       <FieldLabel>
-        Output name
+        {copy.outputName}
         <input className={styles.settingsInput} value={shot.outputName} onChange={(event) => onPatchShot(node.id, { outputName: event.currentTarget.value })} />
       </FieldLabel>
       <FieldLabel>
-        Model
+        {copy.model}
         <SelectControl
           value={shot.modelId}
           onChange={(value) => {
@@ -73,7 +83,7 @@ export function ShotNodeInspector({
           }}
         >
           {recommendedModels.length ? (
-            <optgroup label="Recommended">
+            <optgroup label={copy.recommended}>
               {recommendedModels.map((capability) => (
                 <option key={`recommended-${capability.id}`} value={capability.id}>
                   {capability.label}
@@ -81,7 +91,7 @@ export function ShotNodeInspector({
               ))}
             </optgroup>
           ) : null}
-          <optgroup label="All models">
+          <optgroup label={copy.allModels}>
             {remainingCapabilities.map((capability) => (
               <option key={capability.id} value={capability.id}>
                 {capability.label}
@@ -93,7 +103,7 @@ export function ShotNodeInspector({
 
       <div className={styles.settingsGrid}>
         <FieldLabel>
-          Duration
+          {copy.duration}
           <SelectControl value={shot.durationSec} onChange={(value) => onPatchShot(node.id, { durationSec: Number(value) })}>
             {durations.map((duration) => (
               <option key={duration} value={duration}>
@@ -103,7 +113,7 @@ export function ShotNodeInspector({
           </SelectControl>
         </FieldLabel>
         <FieldLabel>
-          Aspect
+          {copy.aspect}
           <SelectControl value={shot.aspectRatio} onChange={(value) => onPatchShot(node.id, { aspectRatio: value as WorkspaceShotSettings['aspectRatio'] })}>
             {ratios.map((ratio) => (
               <option key={ratio} value={ratio}>
@@ -113,7 +123,7 @@ export function ShotNodeInspector({
           </SelectControl>
         </FieldLabel>
         <FieldLabel>
-          Resolution
+          {copy.resolution}
           <SelectControl value={shot.resolution} onChange={(value) => onPatchShot(node.id, { resolution: value as WorkspaceShotSettings['resolution'] })}>
             {resolutions.map((resolution) => (
               <option key={resolution} value={resolution}>
@@ -123,7 +133,7 @@ export function ShotNodeInspector({
           </SelectControl>
         </FieldLabel>
         <FieldLabel>
-          FPS
+          {copy.fps}
           <SelectControl value={shot.fps} onChange={(value) => onPatchShot(node.id, { fps: Number(value) })}>
             {fpsValues.map((fps) => (
               <option key={fps} value={fps}>
@@ -135,7 +145,7 @@ export function ShotNodeInspector({
       </div>
 
       <FieldLabel>
-        Reference strength
+        {copy.referenceStrength}
         <NumberControl value={shot.referenceStrength} min={0} max={1} step={0.05} onChange={(value) => onPatchShot(node.id, { referenceStrength: value })} />
       </FieldLabel>
 
@@ -143,21 +153,21 @@ export function ShotNodeInspector({
         <div className={styles.toggleRow}>
           <span>{audioRenderOption.label}</span>
           <button type="button" className={shot.audioEnabled ? styles.toggleActive : ''} onClick={() => onPatchShot(node.id, { audioEnabled: !shot.audioEnabled })}>
-            {shot.audioEnabled ? 'On' : 'Off'}
+            {shot.audioEnabled ? copy.on : copy.off}
           </button>
         </div>
       ) : null}
       {audioRenderOption?.control === 'included' ? (
         <div className={styles.toggleRow}>
           <span>{audioRenderOption.label}</span>
-          <strong className={styles.optionStateBadge}>Included</strong>
+          <strong className={styles.optionStateBadge}>{copy.included}</strong>
         </div>
       ) : null}
       {lipSyncRenderOption?.control === 'toggle' ? (
         <div className={styles.toggleRow}>
           <span>{lipSyncRenderOption.label}</span>
           <button type="button" className={shot.lipSyncEnabled ? styles.toggleActive : ''} onClick={() => onPatchShot(node.id, { lipSyncEnabled: !shot.lipSyncEnabled })}>
-            {shot.lipSyncEnabled ? 'On' : 'Off'}
+            {shot.lipSyncEnabled ? copy.on : copy.off}
           </button>
         </div>
       ) : null}
@@ -165,45 +175,49 @@ export function ShotNodeInspector({
       <div className={styles.validationBox}>
         {validation?.canGenerate ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
         <div>
-          <p>{validation?.canGenerate ? 'Ready to generate' : 'Needs attention'}</p>
-          {validation?.missingInputs.length ? <span>Missing: {validation.missingInputs.map(edgeLabel).join(', ')}</span> : null}
-          {validation?.incompatibleInputs.length ? <span>Unsupported: {validation.incompatibleInputs.map(edgeLabel).join(', ')}</span> : null}
-          {!validation?.missingInputs.length && !validation?.incompatibleInputs.length ? <span>Connected inputs match selected model.</span> : null}
+          <p>{validation?.canGenerate ? copy.readyToGenerate : copy.needsAttention}</p>
+          {validation?.missingInputs.length ? (
+            <span>{formatCopyValue(copy.missingInputs, { inputs: validation.missingInputs.map(edgeLabel).join(', ') })}</span>
+          ) : null}
+          {validation?.incompatibleInputs.length ? (
+            <span>{formatCopyValue(copy.unsupportedInputs, { inputs: validation.incompatibleInputs.map(edgeLabel).join(', ') })}</span>
+          ) : null}
+          {!validation?.missingInputs.length && !validation?.incompatibleInputs.length ? <span>{copy.connectedInputsMatch}</span> : null}
         </div>
       </div>
 
       <div className={styles.pricingActionSummary}>
-        <span>Estimate</span>
+        <span>{copy.estimate}</span>
         <strong>{pricingEstimate}</strong>
       </div>
 
       <button type="button" className={styles.primaryPanelButton} disabled={!validation?.canGenerate || shot.status === 'generating'} onClick={() => onGenerateShot(node.id)}>
         <Sparkles size={15} />
-        {shot.status === 'generating' ? 'Generating' : 'Generate'}
+        {shot.status === 'generating' ? copy.generating : copy.generate}
       </button>
 
       <div className={styles.infoGrid}>
-        <span>Routing</span>
+        <span>{copy.routing}</span>
         <strong>{workflowLabel(validation?.resolvedWorkflowType ?? shot.workflowType)}</strong>
-        <span>Inputs</span>
+        <span>{copy.inputs}</span>
         <strong>{inputConnectors.length}</strong>
       </div>
 
       <div className={styles.connectedList}>
         <div className={styles.sectionHeading}>
-          <span>Available inputs</span>
+          <span>{copy.availableInputs}</span>
           <span>{inputConnectors.length}</span>
         </div>
         {inputConnectors.map((connector) => (
           <div key={connector.kind} className={styles.connectedRow}>
             <span style={{ background: connector.required ? '#f97316' : '#64748b' }} />
             <p>{connector.label}</p>
-            <small>{connector.capacityLabel ?? (connector.required ? 'Required' : 'Optional')}</small>
+            <small>{connector.capacityLabel ?? (connector.required ? copy.required : copy.optional)}</small>
           </div>
         ))}
       </div>
 
-      <NodeInspectorConnections node={node} edges={edges} />
+      <NodeInspectorConnections copy={copy} node={node} edges={edges} />
     </>
   );
 }

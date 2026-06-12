@@ -19,8 +19,10 @@ import {
   workspaceUploadAcceptForNodeKind,
   workspaceUploadEndpointForNodeKind,
 } from '../_lib/workspace-library-assets';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceAssetLibraryModalProps = {
+  copy: StudioCopy['assetLibrary'];
   node: WorkspaceGraphNode | null;
   assets: WorkspaceLibraryAsset[];
   isLoading: boolean;
@@ -34,14 +36,22 @@ type WorkspaceAssetLibraryModalProps = {
   onSourceChange: (source: WorkspaceLibrarySource) => void;
 };
 
-function assetTypeLabel(kind: WorkspaceGraphNode['data']['kind']): string {
-  if (kind === 'asset-image') return 'image';
-  if (kind === 'asset-video') return 'video';
-  if (kind === 'asset-audio') return 'audio';
-  return 'asset';
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function assetTypeLabel(kind: WorkspaceGraphNode['data']['kind'], copy: StudioCopy['assetLibrary']): string {
+  if (kind === 'asset-image') return copy.image;
+  if (kind === 'asset-video') return copy.video;
+  if (kind === 'asset-audio') return copy.audio;
+  return copy.asset;
 }
 
 export function WorkspaceAssetLibraryModal({
+  copy,
   node,
   assets,
   isLoading,
@@ -68,7 +78,7 @@ export function WorkspaceAssetLibraryModal({
       event.currentTarget.value = '';
       if (!file || !node || !uploadKind || !uploadEndpoint) return;
 
-      const fallback = `Upload ${uploadKind} failed. Please try again.`;
+      const fallback = formatCopyValue(copy.uploadFailed, { kind: uploadKind });
       setUploadError(null);
       setIsUploading(true);
       try {
@@ -101,18 +111,18 @@ export function WorkspaceAssetLibraryModal({
         setIsUploading(false);
       }
     },
-    [node, onSelectAsset, onSourceChange, uploadEndpoint, uploadKind]
+    [copy.uploadFailed, node, onSelectAsset, onSourceChange, uploadEndpoint, uploadKind]
   );
 
   if (!node) return null;
-  const typeLabel = assetTypeLabel(node.data.kind);
+  const typeLabel = assetTypeLabel(node.data.kind, copy);
 
   return (
     <div
       className={styles.assetLibraryOverlay}
       role="dialog"
       aria-modal="true"
-      aria-label={`Select ${typeLabel}`}
+      aria-label={formatCopyValue(copy.selectAsset, { type: typeLabel })}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -126,13 +136,14 @@ export function WorkspaceAssetLibraryModal({
           hidden
           onChange={handleUploadChange}
         />
-        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label="Close library">
+        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label={copy.closeLibrary}>
           <X size={16} />
         </button>
 
         <WorkspaceAssetLibraryBrowser
-          title="Library"
-          subtitle={`Select ${typeLabel} for ${node.data.title}`}
+          copy={copy}
+          title={copy.library}
+          subtitle={formatCopyValue(copy.selectForNode, { type: typeLabel, node: node.data.title })}
           layout="modal"
           assets={assets}
           isLoading={isLoading}
@@ -152,7 +163,7 @@ export function WorkspaceAssetLibraryModal({
                 onClick={() => uploadInputRef.current?.click()}
               >
                 <Upload size={14} />
-                {isUploading ? 'Uploading...' : 'Upload'}
+                {isUploading ? copy.uploading : copy.upload}
               </button>
             ) : null
           }

@@ -437,11 +437,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(styleSource, /\.viewerFocus \.panelSubtitle/, 'main CSS should not own Viewer panel subtitle compatibility rules after sidebar style extraction');
   assert.match(studioHeaderSessionSource, /useHeaderAccountState/, 'Studio header session should reuse the shared account and wallet state hook');
   assert.match(studioHeaderSessionSource, /walletPromptOpen/, 'Studio wallet status should open a top-up prompt inside the editor header');
-  assert.match(studioHeaderSessionSource, /workspace\.header\.walletTopUp\.cta/, 'Studio wallet prompt should reuse the main app top-up copy contract');
+  assert.match(studioHeaderSessionSource, /studioCopy\.topbar\.walletTopUpCta/, 'Studio wallet prompt should render route-local Studio copy from the topbar owner');
+  assert.doesNotMatch(studioHeaderSessionSource, /useI18n\(/, 'Studio header session should not resolve localized copy independently of its topbar owner');
   assert.match(studioHeaderSessionSource, /href="\/billing"/, 'Studio wallet prompt CTA should link to billing top-up');
   assert.match(studioHeaderSessionSource, /NAV_ITEMS\.map/, 'Studio session pill should expose the same account navigation menu as the main app');
   assert.match(studioHeaderSessionSource, /handleSignOut/, 'Studio session menu should keep the shared sign-out action inside the account menu');
-  assert.match(studioHeaderSessionSource, /aria-label="Exit to projects"/, 'Studio header exit control should return to project selection instead of signing out');
+  assert.match(studioHeaderSessionSource, /aria-label=\{studioCopy\.topbar\.exitToProjects\}/, 'Studio header exit control should return to project selection instead of signing out');
+  assert.match(workspaceEditorTopbarSource, /<StudioHeaderSession[\s\S]*studioCopy=\{studioCopy\}/, 'Studio header session should receive route-local Studio copy from the topbar owner');
   assert.doesNotMatch(studioHeaderSessionSource, /aria-label="Sign out of Studio"/, 'Studio header should not expose a direct sign-out button beside the session pill');
   assert.doesNotMatch(workspaceSource, /aria-label="Share project"/, 'Studio header should not expose inactive share controls');
   assert.doesNotMatch(workspaceSource, /aria-label="Generate selected shot"/, 'Studio header should not expose an inactive global generation control');
@@ -582,11 +584,47 @@ test('MaxVideoAI Studio owns route-local copy and theme boundaries', () => {
   const workspaceSource = readFileSync(workspacePageClientPath, 'utf8');
   const layoutSource = readFileSync(workspaceEditorLayoutPath, 'utf8');
   const topbarSource = readFileSync(workspaceEditorTopbarPath, 'utf8');
+  const canvasToolbarSource = readFileSync(canvasFloatingToolbarPath, 'utf8');
+  const timelineToolbarSource = readFileSync(timelineToolbarPath, 'utf8');
+  const exportDialogSource = readFileSync(exportDialogPath, 'utf8');
 
   assert.match(projectsSource, /useI18n\(\)/, 'Studio projects should resolve localized copy from the existing app i18n provider');
   assert.match(workspaceSource, /resolveStudioCopy/, 'WorkspacePage should resolve Studio copy once and pass typed props down');
   assert.match(layoutSource, /data-studio-theme/, 'Workspace editor shell should scope light and dark theme through a Studio data attribute');
   assert.match(topbarSource, /studioCopy\.topbar/, 'Workspace topbar should render typed localized copy instead of inline English labels');
+  assert.match(layoutSource, /copy=\{studioCopy\.timeline\}/, 'Workspace layout should pass timeline copy from the route-local Studio copy owner');
+  assert.match(layoutSource, /exportDialogCopy=\{studioCopy\.exportDialog\}/, 'Workspace layout should pass export dialog copy from the route-local Studio copy owner');
+
+  const hardcodedCanvasToolbarLabels = [
+    /Canvas creation toolbar/,
+    /Image tools/,
+    /Template name/,
+    /No saved canvas templates yet\./,
+  ];
+  hardcodedCanvasToolbarLabels.forEach((pattern) => {
+    assert.doesNotMatch(canvasToolbarSource, pattern, `canvas toolbar should localize ${pattern}`);
+  });
+
+  const hardcodedTimelineToolbarLabels = [
+    /Selection tool/,
+    /Blade \/ Cut tool/,
+    /Undo timeline edit/,
+    /Timeline zoom level/,
+  ];
+  hardcodedTimelineToolbarLabels.forEach((pattern) => {
+    assert.doesNotMatch(timelineToolbarSource, pattern, `timeline toolbar should localize ${pattern}`);
+  });
+
+  const hardcodedExportDialogLabels = [
+    /Export sequence/,
+    /Close export dialog/,
+    /Video export/,
+    /Server render/,
+    /Download MP4/,
+  ];
+  hardcodedExportDialogLabels.forEach((pattern) => {
+    assert.doesNotMatch(exportDialogSource, pattern, `export dialog should localize ${pattern}`);
+  });
 });
 
 test('MaxVideoAI editor owns authenticated Studio persistence contracts', () => {
@@ -878,19 +916,19 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasSource, /selectionOnDrag=\{isMarqueeSelectionTool\}/, 'canvas should enable drag selection only for the marquee tool');
   assert.match(canvasSource, /panOnDrag=\{!isMarqueeSelectionTool\}/, 'canvas should disable pane panning while the marquee tool is active');
   assert.match(canvasSource, /deleteElements\(\{ nodes: selectedNodeIds\.map/, 'canvas should delete the current React Flow node selection through React Flow');
-  assert.match(canvasFloatingToolbarSource, /Marquee select canvas nodes/, 'canvas toolbar should expose an explicit marquee selection tool');
-  assert.match(canvasFloatingToolbarSource, /Delete selected canvas nodes/, 'canvas toolbar should expose a selected-node deletion action');
-  assert.match(canvasFloatingToolbarSource, /Image tools/, 'canvas toolbar should group image creation actions');
-  assert.match(canvasFloatingToolbarSource, /Generate image/, 'canvas toolbar should expose image generation entry points');
-  assert.match(canvasFloatingToolbarSource, /Video tools/, 'canvas toolbar should group video creation actions');
-  assert.match(canvasFloatingToolbarSource, /Modify video/, 'canvas toolbar should expose video modification entry points');
-  assert.match(canvasFloatingToolbarSource, /Upscale/, 'canvas toolbar should expose video upscale entry points');
-  assert.match(canvasFloatingToolbarSource, /Audio tools/, 'canvas toolbar should group audio creation actions');
-  assert.match(canvasFloatingToolbarSource, /Generate music/, 'canvas toolbar should expose music generation entry points');
-  assert.match(canvasFloatingToolbarSource, /SFX/, 'canvas toolbar should expose SFX entry points');
-  assert.match(canvasFloatingToolbarSource, /Voice over/, 'canvas toolbar should expose voice-over entry points');
-  assert.match(canvasFloatingToolbarSource, /Text tools/, 'canvas toolbar should expose text creation actions');
-  assert.match(canvasFloatingToolbarSource, /Free text/, 'canvas toolbar text action should create a connectable free-text block');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.marqueeSelectNodes/, 'canvas toolbar should expose an explicit marquee selection tool through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.deleteSelectedNodes/, 'canvas toolbar should expose a selected-node deletion action through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.imageTools/, 'canvas toolbar should group image creation actions through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.generateImage/, 'canvas toolbar should expose image generation entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.videoTools/, 'canvas toolbar should group video creation actions through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.modifyVideo/, 'canvas toolbar should expose video modification entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.upscale/, 'canvas toolbar should expose video upscale entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.audioTools/, 'canvas toolbar should group audio creation actions through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.generateMusic/, 'canvas toolbar should expose music generation entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.sfx/, 'canvas toolbar should expose SFX entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.voiceOver/, 'canvas toolbar should expose voice-over entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.textTools/, 'canvas toolbar should expose text creation actions through localized copy');
+  assert.match(canvasFloatingToolbarSource, /copy\.freeText/, 'canvas toolbar text action should create a connectable free-text block through localized copy');
   assert.match(canvasFloatingToolbarSource, /\bType\b/, 'canvas toolbar text action should use a T-style icon');
   assert.doesNotMatch(canvasFloatingToolbarSource, /Quick add|Import media|Fit graph|Canvas tools|Media blocks|Text blocks|Generate blocks/, 'canvas toolbar should only expose the requested tool groups');
   assert.match(canvasSource, /onConnectStart/, 'canvas should track drags that start from a connector handle');
@@ -1237,7 +1275,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(canvasTimelineActionsHookSource, /setFocusMode\('viewer'\)/, 'sending a canvas item to the timeline should not automatically switch to Viewer mode');
   assert.doesNotMatch(workspaceSource, /const handleSendOutputToTimeline = useCallback/, 'workspace orchestrator should not own send-to-timeline internals');
   assert.doesNotMatch(workspaceSource, /buildWorkspaceTimelineItemsForAsset/, 'workspace orchestrator should not build imported canvas media timeline items inline');
-  assert.match(settingsSource, /AssetInspector[\s\S]*timelineInsertActions[\s\S]*Insert at playhead/, 'asset inspector should expose timeline insert actions for imported media blocks');
+  assert.match(settingsSource, /AssetInspector[\s\S]*timelineInsertActions[\s\S]*copy\.insertAtPlayhead/, 'asset inspector should expose timeline insert actions for imported media blocks through localized copy');
   assert.match(programPlaybackSyncSource, /playableImageUrlForItem/, 'montage viewer should preview imported image assets as still clips');
   assert.match(workspaceStateSource, /focusMode\?: WorkspaceFocusMode/, 'persisted workspace state should remember whether the user was in canvas or viewer mode');
   assert.match(persistenceEffectsHookSource, /setFocusMode\(persisted\.focusMode/, 'workspace hydration should restore the active canvas/viewer mode');
@@ -1273,7 +1311,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /const handleAddTimelineVideoTrack = useCallback/, 'workspace orchestrator should not own video track creation internals');
   assert.doesNotMatch(workspaceSource, /const handleDeleteTimelineTrack = useCallback/, 'workspace orchestrator should not own timeline track deletion internals');
   assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary/, 'canvas controller should feed the picker from the signed-in user media library');
-  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined\)/, 'canvas controller should load the signed-in media library only when the picker modal is open');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(assetPickerNode \? assetPickerNode\.data\.kind : undefined, studioAssetLibraryCopy\)/, 'canvas controller should load the signed-in media library only when the picker modal is open and pass localized library copy');
   assert.doesNotMatch(workspaceSource, /selectedMediaNodeKind/, 'selecting a media node should not preload the signed-in media library before the picker opens');
   assert.doesNotMatch(workspaceSource, /sidebarLibrary\s*=\s*useWorkspaceEditorAssetLibrary\(null\)/, 'orchestrator should not load the user media library directly in the sidebar');
   assert.match(workspaceSource, /assetPickerNodeId/, 'orchestrator should track which media node is being filled from the library');
@@ -1333,12 +1371,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(shotNodeInspectorSource, /render_options/, 'shot inspector should render engine-derived render options');
   assert.doesNotMatch(shotNodeInspectorSource, /<span>Lip-sync<\/span>[\s\S]*lipSyncEnabled/, 'shot inspector should not always render a generic lip-sync toggle');
   assert.match(shotNodeInspectorSource, /recommendedModels[\s\S]*slice\(0,\s*4\)/, 'shot inspector model selector should cap inline recommendations at four models');
-  assert.match(shotNodeInspectorSource, /<optgroup label="Recommended">[\s\S]*recommendedModels\.map/, 'shot inspector model selector should expose recommended models inside the model dropdown');
+  assert.match(shotNodeInspectorSource, /<optgroup label=\{copy\.recommended\}>[\s\S]*recommendedModels\.map/, 'shot inspector model selector should expose recommended models inside the model dropdown through localized copy');
   assert.match(shotNodeInspectorSource, /remainingCapabilities = capabilities\.filter/, 'shot inspector model selector should derive the full remaining model list after recommendations');
-  assert.match(shotNodeInspectorSource, /<optgroup label="All models">[\s\S]*remainingCapabilities\.map/, 'shot inspector model selector should keep the full model list available after recommendations');
+  assert.match(shotNodeInspectorSource, /<optgroup label=\{copy\.allModels\}>[\s\S]*remainingCapabilities\.map/, 'shot inspector model selector should keep the full model list available after recommendations through localized copy');
   assert.doesNotMatch(shotNodeInspectorSource, /styles\.recommendationList|<span>Recommended models<\/span>/, 'shot inspector should not render a separate recommended models section');
   assert.doesNotMatch(styleSource, /\.recommendationList/, 'editor CSS should not keep styling for the removed recommendation section');
-  assert.match(shotNodeInspectorSource, /styles\.pricingActionSummary[\s\S]*pricingEstimate[\s\S]*styles\.primaryPanelButton[\s\S]*<span>Routing<\/span>[\s\S]*Available inputs/, 'shot inspector should keep routing and available inputs below the price and generate action');
+  assert.match(shotNodeInspectorSource, /styles\.pricingActionSummary[\s\S]*pricingEstimate[\s\S]*styles\.primaryPanelButton[\s\S]*copy\.routing[\s\S]*copy\.availableInputs/, 'shot inspector should keep routing and available inputs below the price and generate action through localized copy');
   assert.match(settingsSource, /_styles\/inspector\.module\.css/, 'node settings inspector should import its focused inspector CSS module');
   assert.match(timelineClipInspectorSource, /_styles\/inspector\.module\.css/, 'timeline clip inspector should import its focused inspector CSS module');
   assert.match(inspectorStyleSource, /\.settingsPanel/, 'inspector CSS module should own the settings panel shell');
@@ -1400,8 +1438,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(programMonitorSource, /programFrameViewport/, 'program monitor should render the preview inside a contained program viewport');
   assert.match(programMonitorSource, /programFrame/, 'program monitor should constrain preview media to the project aspect-ratio frame');
   assert.match(programMonitorSource, /ProgramZoom/, 'program monitor should separate monitor zoom from sequence resolution settings');
-  assert.match(programMonitorSource, /PROGRAM_ZOOM_OPTIONS/, 'program monitor should expose standard program zoom options');
-  assert.match(programMonitorSource, /Program monitor zoom/, 'program monitor should label zoom as a monitor display setting');
+  assert.match(programMonitorSource, /PROGRAM_ZOOM_VALUES/, 'program monitor should expose standard program zoom options');
+  assert.match(programMonitorSource, /copy\.zoomTitle/, 'program monitor should label zoom as a monitor display setting through localized copy');
   assert.match(programMonitorSource, /programFrameScaled/, 'program monitor should support pixel-based sequence preview sizing outside Fit zoom');
   assert.match(programMonitorSource, /workspaceProjectDimensions/, 'program monitor should derive pixel preview size from project sequence dimensions');
   assert.match(programMonitorSource, /workspaceProjectAspectParts/, 'program monitor should use numeric aspect parts for contained program frame sizing');
@@ -1420,15 +1458,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceEditorLayoutSource, /selectedSequence=\{exportState\.selectedSequenceForInspector\}/, 'viewer mode inspector should receive selected sequence settings');
   assert.match(timelineProjectSidebarSource, /useProjectMediaController/, 'project media sidebar should delegate media behavior to the project media controller');
   assert.match(timelineProjectSidebarSource, /_styles\/media\.module\.css/, 'project media sidebar should import its focused media CSS module');
-  assert.match(timelineProjectSidebarSource, /Open sequence/, 'sequence cards should open a sequence from the Project media context menu');
-  assert.match(timelineProjectSidebarSource, /Duplicate/, 'sequence cards should expose duplication from the Project media context menu');
+  assert.match(timelineProjectSidebarSource, /copy\.openSequence/, 'sequence cards should open a sequence from the Project media context menu through localized copy');
+  assert.match(timelineProjectSidebarSource, /copy\.duplicate/, 'sequence cards should expose duplication from the Project media context menu through localized copy');
   assert.match(timelineProjectSidebarSource, /onDuplicate=\{projectMedia\.duplicateMenuItem\}/, 'project media sidebar should wire sequence duplication through its controller');
   assert.match(projectMediaControllerSource, /onInspectSequence\(sequenceId\)/, 'project media sequence cards should route sequence selection into the inspector');
   assert.match(projectMediaControllerSource, /onDuplicateSequence\(menu\.id\)/, 'project media controller should route sequence duplication to sequence actions');
-  assert.match(timelineClipInspectorSource, /Sequence settings/, 'timeline inspector should expose selected sequence settings');
-  assert.match(timelineClipInspectorSource, /Sequence aspect ratio/, 'timeline inspector should expose a sequence aspect ratio selector');
-  assert.match(timelineClipInspectorSource, /Sequence resolution/, 'timeline inspector should expose a sequence resolution selector');
-  assert.match(timelineClipInspectorSource, /Sequence FPS/, 'timeline inspector should expose a sequence FPS selector');
+  assert.match(timelineClipInspectorSource, /copy\.sequenceSettings/, 'timeline inspector should expose selected sequence settings through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.aspectRatio/, 'timeline inspector should expose a sequence aspect ratio selector through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.resolution/, 'timeline inspector should expose a sequence resolution selector through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.fps/, 'timeline inspector should expose a sequence FPS selector through localized copy');
   assert.doesNotMatch(videoViewerSource, /viewerSequenceControls/, 'viewer should not keep sequence settings as always-visible footer controls');
   assert.match(videoViewerSource, /formatWorkspaceTimecode/, 'viewer should display frame-based timecode');
   assert.doesNotMatch(videoViewerSource, /viewerFooter/, 'viewer should not render a duplicate footer below the program monitor');
@@ -1496,10 +1534,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportControllerSource, /MISSING_TIMELINE_EXPORT_ECS_/, 'export controller should explain missing ECS worker configuration');
   assert.match(exportControllerSource, /if \(job\) setActiveExportJob\(job\)/, 'export controller should keep failed server jobs visible after create failures');
   assert.match(exportControllerSource, /activeExportJob && isTerminalExportJob\(activeExportJob\)/, 'export retries after terminal jobs should use a fresh idempotency key');
-  assert.match(exportDialogSource, /Fargate worker will claim this job/, 'export dialog should explain queued jobs are claimed by the Fargate worker');
+  assert.match(exportDialogSource, /copy\.queuedServerWorker/, 'export dialog should explain queued jobs are claimed by the Fargate worker through localized copy');
   assert.match(exportDialogSource, /exportJobStatusLabel/, 'export dialog should show user-facing server export statuses');
-  assert.match(exportDialogSource, /Retry export/, 'export dialog should expose an explicit retry label after failed jobs');
-  assert.match(exportDialogSource, /Download MP4/, 'export dialog should expose the rendered MP4 output link');
+  assert.match(exportDialogSource, /copy\.retryExport/, 'export dialog should expose an explicit retry label after failed jobs through localized copy');
+  assert.match(exportDialogSource, /copy\.downloadMp4/, 'export dialog should expose the rendered MP4 output link through localized copy');
   assert.match(workspaceSource, /exportQualityPreset/, 'workspace export action should keep the selected video quality preset');
   assert.match(workspaceEditorLayoutSource, /onExportVideo=\{exportController\.exportTimelineVideo\}/, 'workspace should wire the primary export video action from the export controller');
   assert.match(workspaceEditorLayoutSource, /onPrepareRender=\{exportController\.exportTimelineRender\}/, 'workspace should wire the export dialog render action to timeline render handoff');
@@ -1534,14 +1572,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineRulerSource, /timelineSnapGuide/, 'timeline ruler should render a visible snap guide while editing');
   assert.match(timelineTrackRowSource, /timelineSnapGuide/, 'timeline track rows should render visible snap guides while editing');
   assert.match(timelineSource, /activeTimelineTool/, 'timeline should keep a selected edit tool mode');
-  assert.match(timelineToolbarSource, /Blade \/ Cut tool/, 'cut should be a selected blade tool instead of only a per-clip duplicate action');
-  assert.match(timelineToolbarSource, /Timeline editing tools/, 'timeline should expose editing tools as a toolbar');
+  assert.match(timelineToolbarSource, /copy\.blade/, 'cut should be a selected blade tool instead of only a per-clip duplicate action');
+  assert.match(timelineToolbarSource, /copy\.editingTools/, 'timeline should expose editing tools as a toolbar');
   assert.match(
     timelineToolbarSource,
     /timelineZoomSlot[\s\S]*timelineTransport[\s\S]*timelineToolGroup[\s\S]*timelineZoomControl/,
     'timeline undo, redo, and editing tools should sit in the right action slot immediately before zoom'
   );
-  assert.match(timelineToolbarSource, /Selection tool/, 'timeline should expose selection as an editing tool');
+  assert.match(timelineToolbarSource, /copy\.selection/, 'timeline should expose selection as an editing tool');
   assert.doesNotMatch(timelineToolbarSource, /aria-label="Trim tool"/, 'timeline toolbar should not expose trim as a selected tool while clip handles own simple trimming');
   assert.doesNotMatch(timelineToolbarSource, /aria-label="Ripple trim tool"/, 'timeline toolbar should not expose ripple trim for now');
   assert.doesNotMatch(timelineToolbarSource, /aria-label="Roll trim tool"/, 'timeline toolbar should not expose roll trim for now');
@@ -1582,16 +1620,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /handleBeginTimelineSurfacePointerDown/, 'timeline should let users drag empty timeline space to scrub');
   assert.match(timelineRulerSource, /data-playhead-handle="true"/, 'timeline ruler playhead should expose an interactive handle on the line');
   assert.match(timelineTrackRowSource, /data-playhead-handle="true"/, 'timeline track rows should expose interactive playhead handles on each lane');
-  assert.match(timelineRulerSource, /Drag timeline playhead/, 'timeline ruler playhead handle should have a clear accessible label');
-  assert.match(timelineTrackRowSource, /Drag timeline playhead/, 'timeline row playhead handles should have clear accessible labels');
-  assert.match(timelineRulerSource, /Timeline scrubber/, 'timeline ruler should expose a scrubber for playhead positioning');
+  assert.match(timelineRulerSource, /copy\.dragPlayhead/, 'timeline ruler playhead handle should have a clear accessible label through localized copy');
+  assert.match(timelineTrackRowSource, /copy\.dragPlayheadOnTrack/, 'timeline row playhead handles should have clear accessible labels through localized copy');
+  assert.match(timelineRulerSource, /copy\.scrubber/, 'timeline ruler should expose a scrubber for playhead positioning through localized copy');
   assert.match(timelineSource, /onResizeItem/, 'timeline clips should wire resize controls');
-  assert.match(timelineClipSource, /Trim clip start/, 'timeline clips should expose a start trim handle');
-  assert.match(timelineClipSource, /Trim clip end/, 'timeline clips should expose an end trim handle');
-  assert.match(timelineContextMenusSource, /Unlink selected clips/, 'timeline context menus should expose clip unlink actions');
-  assert.match(timelineContextMenusSource, /Link selected clips/, 'timeline context menus should expose clip link actions');
-  assert.match(timelineContextMenusSource, /Add \{trackMenu\.kind\} track/, 'timeline context menus should expose track add actions');
-  assert.match(timelineContextMenusSource, /Delete \{trackMenu\.kind\} track/, 'timeline context menus should expose track delete actions');
+  assert.match(timelineClipSource, /copy\.trimStart/, 'timeline clips should expose a start trim handle through localized copy');
+  assert.match(timelineClipSource, /copy\.trimEnd/, 'timeline clips should expose an end trim handle through localized copy');
+  assert.match(timelineContextMenusSource, /copy\.clips\.unlinkSelected/, 'timeline context menus should expose clip unlink actions through localized copy');
+  assert.match(timelineContextMenusSource, /copy\.clips\.linkSelected/, 'timeline context menus should expose clip link actions through localized copy');
+  assert.match(timelineContextMenusSource, /copy\.tracks\.addTrack/, 'timeline context menus should expose track add actions through localized copy');
+  assert.match(timelineContextMenusSource, /copy\.tracks\.deleteTrack/, 'timeline context menus should expose track delete actions through localized copy');
   assert.match(timelineClipInteractionHookSource, /TimelineInteractionState/, 'timeline clip interaction hook should keep lightweight preview state during pointer edits');
   assert.match(timelineClipInteractionHookSource, /originSourceStartSec/, 'timeline drag preview should remember the selected clip source in-point');
   assert.match(timelineClipInteractionHookSource, /originSourceDurationSec/, 'timeline drag preview should remember the selected clip source duration');
@@ -1620,19 +1658,19 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceEditorLayoutSource, /<TimelineClipInspector[\s\S]*selectedItem=\{exportState\.selectedTimelineItem\}/, 'viewer mode inspector should edit the selected timeline item');
   assert.match(workspaceEditorLayoutSource, /<TimelineClipInspector[\s\S]*onPatchItem=\{timelineClip\.handlePatchTimelineItem\}/, 'viewer mode inspector should patch timeline clip edit properties');
   assert.match(timelineClipInspectorSource, /export function TimelineClipInspector/, 'timeline clip inspector should be exported');
-  assert.match(timelineClipInspectorSource, /Clip inspector/, 'timeline clip inspector should render a focused empty state');
+  assert.match(timelineClipInspectorSource, /copy\.clipInspector/, 'timeline clip inspector should render a focused empty state through localized copy');
   assert.match(timelineClipInspectorSource, /formatWorkspaceTimecode/, 'timeline clip inspector should show frame-accurate clip timing');
-  assert.match(timelineClipInspectorSource, /Scale/, 'timeline clip inspector should expose video scale');
-  assert.match(timelineClipInspectorSource, /Position X/, 'timeline clip inspector should expose video horizontal position');
-  assert.match(timelineClipInspectorSource, /Position Y/, 'timeline clip inspector should expose video vertical position');
-  assert.match(timelineClipInspectorSource, /Rotation/, 'timeline clip inspector should expose video rotation');
-  assert.match(timelineClipInspectorSource, /Opacity/, 'timeline clip inspector should expose video opacity');
+  assert.match(timelineClipInspectorSource, /copy\.scale/, 'timeline clip inspector should expose video scale through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.positionX/, 'timeline clip inspector should expose video horizontal position through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.positionY/, 'timeline clip inspector should expose video vertical position through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.rotation/, 'timeline clip inspector should expose video rotation through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.opacity/, 'timeline clip inspector should expose video opacity through localized copy');
   assert.match(timelineClipInspectorSource, /isWorkspaceTimelineVideoTrack/, 'timeline clip inspector should expose audio controls for every video track');
-  assert.match(timelineClipInspectorSource, /Volume/, 'timeline clip inspector should expose clip volume');
-  assert.match(timelineClipInspectorSource, /Mute clip/, 'timeline clip inspector should expose clip mute');
-  assert.match(timelineClipInspectorSource, /Crossfade to next clip/, 'timeline clip inspector should expose selected-clip transition controls');
+  assert.match(timelineClipInspectorSource, /copy\.volume/, 'timeline clip inspector should expose clip volume through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.muteClip/, 'timeline clip inspector should expose clip mute through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.crossfade/, 'timeline clip inspector should expose selected-clip transition controls through localized copy');
   assert.match(timelineClipInspectorSource, /onPatchItem\(selectedItem\.id/, 'timeline clip inspector should patch the selected timeline item only');
-  assert.match(settingsSource, /Insert at playhead/, 'output inspector should expose insert at playhead');
+  assert.match(settingsSource, /copy\.insertAtPlayhead/, 'output inspector should expose insert at playhead through localized copy');
   assert.doesNotMatch(settingsSource, /Overwrite/, 'output inspector should not expose overwrite edit');
   assert.doesNotMatch(settingsSource, /Replace selected/, 'output inspector should not expose replace selected edit');
   assert.match(assetLibraryBrowserSource, /export function WorkspaceAssetLibraryBrowser/, 'studio should wrap the app library structure in a route-local browser component');
@@ -1645,9 +1683,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(assetLibraryBrowserSource, /error/, 'studio library browser should render the app library error state');
   assert.match(assetLibraryBrowserSource, /emptySearchLabel/, 'studio library browser should render empty states for searches and sources');
   assert.match(assetLibraryBrowserSource, /headerActions\?: ReactNode/, 'studio library browser should accept route-local header actions like upload');
-  assert.match(canvasFloatingToolbarSource, /IMAGE_BLOCKS/, 'canvas toolbar should expose image workflow block templates');
-  assert.match(canvasFloatingToolbarSource, /VIDEO_BLOCKS/, 'canvas toolbar should expose video workflow block templates');
-  assert.match(canvasFloatingToolbarSource, /AUDIO_BLOCKS/, 'canvas toolbar should expose audio workflow block templates');
+  assert.match(canvasFloatingToolbarSource, /toolbarBlocks\(copy\.nodes\)/, 'canvas toolbar should derive workflow block templates from localized node copy');
+  assert.match(canvasFloatingToolbarSource, /image:\s*\[/, 'canvas toolbar should expose image workflow block templates');
+  assert.match(canvasFloatingToolbarSource, /video:\s*\[/, 'canvas toolbar should expose video workflow block templates');
+  assert.match(canvasFloatingToolbarSource, /audio:\s*\[/, 'canvas toolbar should expose audio workflow block templates');
+  assert.match(canvasFloatingToolbarSource, /text:\s*\[/, 'canvas toolbar should expose text workflow block templates');
   assert.match(canvasFloatingToolbarSource, /data-canvas-toolbar-block-kind/, 'canvas toolbar block templates should expose a stable drag test target');
   assert.match(canvasFloatingToolbarSource, /data-canvas-toolbar-block-id/, 'canvas toolbar block templates should expose stable workflow action ids');
   assert.doesNotMatch(canvasFloatingToolbarSource, /draggable/, 'canvas toolbar block templates should not use native HTML drag because it can leave the custom ghost stuck');
@@ -1683,7 +1723,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasToolbarStyleSource, /\.blockOptionList/, 'canvas toolbar block template list should be styled with focused toolbar CSS');
   assert.match(canvasToolbarStyleSource, /\.canvasToolbar[\s\S]*user-select:\s*none/, 'canvas toolbar labels should not be selectable during block drags');
   assert.match(canvasToolbarStyleSource, /\.blockOption/, 'canvas toolbar block template cards should be styled with focused toolbar CSS');
-  assert.match(canvasFloatingToolbarSource, /Canvas templates/, 'canvas toolbar should label starter templates as canvas templates');
+  assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.canvasTemplates/, 'canvas toolbar should label starter templates as canvas templates through localized copy');
   assert.match(canvasFloatingToolbarSource, /userTemplates/, 'canvas toolbar should reserve a place for user-saved canvas templates');
   assert.match(canvasFloatingToolbarSource, /onSaveCanvasTemplate/, 'canvas toolbar should let users save the current graph as a canvas template');
   assert.match(canvasFloatingToolbarSource, /onApplyUserTemplate/, 'canvas toolbar should let users re-apply a saved personal canvas template');
@@ -1699,8 +1739,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.viewerFocus \.templateButton/, 'Viewer mode should not compact canvas templates because they are not mounted there');
   assert.doesNotMatch(styleSource, /\.blockTemplateCard/, 'main editor CSS should no longer own canvas block template cards after modularization');
   assert.match(canvasFloatingToolbarSource, /_styles\/canvas-toolbar\.module\.css/, 'canvas toolbar should import the focused canvas toolbar CSS module');
-  assert.match(timelineProjectSidebarSource, /Project media/, 'viewer sidebar should lead with project media');
-  assert.match(timelineProjectSidebarSource, /Import media/, 'viewer sidebar should expose a media import entry point');
+  assert.match(timelineProjectSidebarSource, /copy\.title/, 'viewer sidebar should lead with project media through localized copy');
+  assert.match(timelineProjectSidebarSource, /copy\.importMedia/, 'viewer sidebar should expose a media import entry point through localized copy');
   assert.match(timelineProjectSidebarSource, /projectAssets/, 'viewer sidebar should render persisted project media assets, not canvas nodes');
   assert.match(projectMediaControllerSource, /onInsertProjectAsset/, 'viewer sidebar should insert imported project media at the playhead through its controller');
   assert.match(timelineProjectSidebarSource, /data-project-media-asset-id/, 'viewer sidebar should expose imported media as timeline-draggable project assets');
@@ -1719,7 +1759,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(lineCount(mediaStyleSource) <= 1200, 'project media CSS module should stay under the focused module size threshold');
   assert.match(timelineProjectSidebarSource, /data-project-media-generated-id/, 'viewer sidebar should expose generated clips as timeline-draggable media cards');
   assert.match(projectMediaDragSource, /nodeId/, 'viewer sidebar timeline drag payload should identify generated output nodes');
-  assert.match(timelineProjectSidebarSource, /New folder/, 'viewer sidebar should expose project media folder creation in the footer');
+  assert.match(timelineProjectSidebarSource, /copy\.newFolder/, 'viewer sidebar should expose project media folder creation in the footer through localized copy');
+  assert.match(timelineProjectSidebarSource, /copy\.newFolderDefaultName/, 'viewer sidebar should localize default project media folder names');
   assert.match(typesSource, /WorkspaceProjectMediaFolder/, 'project media folders should have a first-class workspace type');
   assert.match(workspaceStateSource, /projectMediaFolders\?: WorkspaceProjectMediaFolder\[\]/, 'persisted workspace state should remember project media folders');
   assert.match(projectMediaActionsHookSource, /handleCreateProjectMediaFolder/, 'project media actions should own folder creation');
@@ -1737,22 +1778,22 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineProjectSidebarSource, /data-project-media-folder-id/, 'viewer sidebar should render project media folders as selectable cards');
   assert.match(timelineProjectSidebarSource, /data-project-media-folder-drop-target/, 'viewer sidebar should render media folders as visible drag targets');
   assert.match(projectMediaControllerSource, /handleFolderDrop/, 'project media controller should own dropping imported and generated media into folders');
-  assert.match(timelineProjectSidebarSource, /Back to Project media/, 'viewer sidebar should show an explicit back action when a project media folder is open');
+  assert.match(timelineProjectSidebarSource, /copy\.backToProjectMedia/, 'viewer sidebar should show an explicit back action when a project media folder is open through localized copy');
   assert.match(timelineProjectSidebarSource, /projectMediaBackButton/, 'viewer sidebar should style the active folder back action separately from ordinary breadcrumbs');
   assert.match(mediaStyleSource, /\.projectMediaFolderGlyph/, 'project media folder cards should render a clear folder icon in the artwork area');
-  assert.match(timelineProjectSidebarSource, /Move to folder/, 'project media context menu should move media cards into folders');
-  assert.match(timelineProjectSidebarSource, /Rename folder/, 'project media context menu should rename folders');
+  assert.match(timelineProjectSidebarSource, /copy\.moveToFolder/, 'project media context menu should move media cards into folders through localized copy');
+  assert.match(timelineProjectSidebarSource, /copy\.renameFolder/, 'project media context menu should rename folders through localized copy');
   assert.match(timelineProjectSidebarSource, /ProjectMediaFolderDialog/, 'project media folder create, rename, and move actions should use an in-app dialog');
   assert.match(mediaStyleSource, /\.projectMediaDialog/, 'project media folder dialogs should be styled in the focused project media CSS module');
-  assert.match(timelineProjectSidebarSource, /New sequence/, 'viewer sidebar should expose sequence creation in the footer');
-  assert.match(timelineProjectSidebarSource, /Insert at playhead/, 'viewer sidebar should keep insertion available through the media context menu');
+  assert.match(timelineProjectSidebarSource, /copy\.newSequence/, 'viewer sidebar should expose sequence creation in the footer through localized copy');
+  assert.match(timelineProjectSidebarSource, /copy\.insertAtPlayhead/, 'viewer sidebar should keep insertion available through the media context menu through localized copy');
   assert.match(projectMediaControllerSource, /onDeleteProjectAsset/, 'viewer sidebar should let project media assets be deleted from the bin through its controller');
   assert.match(projectMediaControllerSource, /onDeleteGeneratedClip/, 'viewer sidebar should let generated clips be removed from project media through its controller');
   assert.match(workspaceStateSource, /projectAssets\?: WorkspaceAssetRecord\[\]/, 'persisted workspace state should remember imported project media assets');
   assert.doesNotMatch(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should not render the project media import modal inline');
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
-  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined\)/, 'project media import should load the signed-in library only while its modal is open');
+  assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined, studioAssetLibraryCopy\)/, 'project media import should load the signed-in library only while its modal is open and pass localized library copy');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
   assert.match(projectMediaLibraryModalSource, /workspaceLibraryAssetFromUploadedAsset/, 'project media uploads should normalize into reusable library assets');

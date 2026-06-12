@@ -1,11 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 type UseWorkspaceTimelinePlaybackOptions = {
   onNotice: (notice: string) => void;
   onResetExportRangeMode: () => void;
   projectFps: number;
+  studioNotices: StudioCopy['notices'];
   timelineCutPoints: number[];
   timelineDurationSec: number;
 };
@@ -14,6 +23,7 @@ export function useWorkspaceTimelinePlayback({
   onNotice,
   onResetExportRangeMode,
   projectFps,
+  studioNotices,
   timelineCutPoints,
   timelineDurationSec,
 }: UseWorkspaceTimelinePlaybackOptions) {
@@ -50,21 +60,21 @@ export function useWorkspaceTimelinePlayback({
   const handleMarkTimelineIn = useCallback(() => {
     const nextInPointSec = Math.max(0, Math.min(playheadSec, timelineDurationSec));
     setTimelineInPointSec(nextInPointSec);
-    onNotice(`In point set at ${formatWorkspaceTimecode(nextInPointSec, projectFps)}.`);
-  }, [onNotice, playheadSec, projectFps, timelineDurationSec]);
+    onNotice(formatNotice(studioNotices.inPointSet, { timecode: formatWorkspaceTimecode(nextInPointSec, projectFps) }));
+  }, [onNotice, playheadSec, projectFps, studioNotices.inPointSet, timelineDurationSec]);
 
   const handleMarkTimelineOut = useCallback(() => {
     const nextOutPointSec = Math.max(0, Math.min(playheadSec, timelineDurationSec));
     setTimelineOutPointSec(nextOutPointSec);
-    onNotice(`Out point set at ${formatWorkspaceTimecode(nextOutPointSec, projectFps)}.`);
-  }, [onNotice, playheadSec, projectFps, timelineDurationSec]);
+    onNotice(formatNotice(studioNotices.outPointSet, { timecode: formatWorkspaceTimecode(nextOutPointSec, projectFps) }));
+  }, [onNotice, playheadSec, projectFps, studioNotices.outPointSet, timelineDurationSec]);
 
   const handleClearTimelineInOut = useCallback(() => {
     setTimelineInPointSec(null);
     setTimelineOutPointSec(null);
     onResetExportRangeMode();
-    onNotice('In and Out points cleared.');
-  }, [onNotice, onResetExportRangeMode]);
+    onNotice(studioNotices.inOutPointsCleared);
+  }, [onNotice, onResetExportRangeMode, studioNotices.inOutPointsCleared]);
 
   useEffect(() => {
     if (playheadSec <= timelineDurationSec) return;

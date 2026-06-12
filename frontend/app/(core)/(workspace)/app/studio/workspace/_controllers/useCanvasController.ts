@@ -12,6 +12,7 @@ import {
   WORKSPACE_NODE_KIND_DRAG_TYPE,
 } from '../_components/canvas/CanvasPaletteDragPreview';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceNodeKind } from '../_lib/workspace-types';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type WorkspacePaletteDropRequest = {
   kind: WorkspaceNodeKind;
@@ -32,6 +33,7 @@ export type WorkspaceCanvasTextPasteRequest = {
 
 type UseCanvasControllerOptions = {
   canvasShellRef: RefObject<HTMLElement | null>;
+  copy: StudioCopy['canvas']['nodes'];
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
   onCanvasInteraction: () => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
@@ -50,6 +52,7 @@ function isEditablePasteTarget(target: EventTarget | null): boolean {
 
 export function useCanvasController({
   canvasShellRef,
+  copy,
   onCanvasFileDrop,
   onCanvasInteraction,
   onCanvasTextPaste,
@@ -75,14 +78,14 @@ export function useCanvasController({
       const detail = (event as CustomEvent<PaletteDragStartDetail>).detail;
       if (!detail || !isWorkspaceNodeKind(detail.kind)) return;
       const position = reactFlow.screenToFlowPosition({ x: detail.clientX, y: detail.clientY });
-      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position));
+      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy));
     };
 
     window.addEventListener(PALETTE_DRAG_START_EVENT, handlePaletteDragStart);
     return () => {
       window.removeEventListener(PALETTE_DRAG_START_EVENT, handlePaletteDragStart);
     };
-  }, [reactFlow, updatePaletteDragPreview]);
+  }, [copy, reactFlow, updatePaletteDragPreview]);
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
@@ -148,7 +151,7 @@ export function useCanvasController({
       clearPaletteDragPreview();
       if (!preview) return;
       const target = document.elementFromPoint(event.clientX, event.clientY);
-      if (!(target instanceof Element) || !target.closest('[aria-label="MaxVideoAI editor canvas"]')) return;
+      if (!(target instanceof Element) || !target.closest('[data-studio-canvas-shell="true"]')) return;
       onCreateNodeFromPaletteDrop({
         kind: preview.kind,
         position: reactFlow.screenToFlowPosition({ x: event.clientX, y: event.clientY }),

@@ -15,23 +15,39 @@ import type {
   WorkspacePricingEstimate,
 } from '../_lib/workspace-types';
 import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type UseWorkspaceRenderNodesOptions = {
   capabilities: WorkspaceModelCapability[];
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
   pricingEstimates: Record<string, WorkspacePricingEstimate>;
+  studioCanvasCopy: StudioCopy['canvas'];
   onGenerateShot: (nodeId: string) => Promise<void> | void;
   onOpenAssetLibrary: (nodeId: string) => void;
   onPatchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   onSendOutputToTimeline: (nodeId: string) => void;
 };
 
+function localizedOutputSubtitle(
+  node: WorkspaceGraphNode,
+  copy: StudioCopy['canvas']['nodes']
+): string | undefined {
+  const output = node.data.output;
+  if (node.data.kind !== 'output' || !output) return node.data.subtitle;
+  if (output.status === 'processing') return copy.outputProcessingRender;
+  if (output.status === 'placeholder') return copy.outputWaitingForMedia;
+  if (output.status === 'failed') return copy.failed;
+  if (output.durationSec && output.aspectRatio) return `${output.durationSec}s · ${output.aspectRatio}`;
+  return copy.generatedMedia;
+}
+
 export function useWorkspaceRenderNodes({
   capabilities,
   edges,
   nodes,
   pricingEstimates,
+  studioCanvasCopy,
   onGenerateShot,
   onOpenAssetLibrary,
   onPatchNodeData,
@@ -44,9 +60,11 @@ export function useWorkspaceRenderNodes({
           ...node,
           data: {
             ...node.data,
+            subtitle: localizedOutputSubtitle(node, studioCanvasCopy.nodes),
             onPromptChange: (nodeId: string, value: string) => onPatchNodeData(nodeId, { promptText: value }),
             onOpenAssetLibrary,
             onSendOutputToTimeline,
+            studioCanvasCopy,
           },
         };
       }
@@ -75,11 +93,12 @@ export function useWorkspaceRenderNodes({
           inputConnectors,
           validation,
           pricingEstimate: pricingEstimates[node.id],
+          studioCanvasCopy,
           onGenerateShot: (nodeId: string): void => {
             void onGenerateShot(nodeId);
           },
         },
       };
     });
-  }, [capabilities, edges, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onSendOutputToTimeline, pricingEstimates]);
+  }, [capabilities, edges, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onSendOutputToTimeline, pricingEstimates, studioCanvasCopy]);
 }

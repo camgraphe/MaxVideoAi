@@ -6,8 +6,10 @@ import { Film } from 'lucide-react';
 import styles from '../../_styles/viewer.module.css';
 import { clipVisualStyleFor } from './useProgramPlaybackSync';
 import type { AudioPlaybackLayer, PlaybackLayer } from './useProgramPlaybackSync';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type ProgramPlaybackLayersProps = {
+  copy: StudioCopy['viewer']['monitor'];
   audioPlaybackLayers: AudioPlaybackLayer[];
   linkedAudioGroupIds: Set<string>;
   playbackLayers: PlaybackLayer[];
@@ -19,6 +21,7 @@ type ProgramPlaybackLayersProps = {
 };
 
 export function ProgramPlaybackLayers({
+  copy,
   audioPlaybackLayers,
   linkedAudioGroupIds,
   playbackLayers,
@@ -77,8 +80,8 @@ export function ProgramPlaybackLayers({
       {shouldShowEmptyState ? (
         <div className={styles.viewerEmpty}>
           <Film size={34} />
-          <p>No playable clip selected</p>
-          <span>Send a generated video to the timeline, then select it for preview.</span>
+          <p>{copy.noPlayableClip}</p>
+          <span>{copy.emptyBody}</span>
         </div>
       ) : null}
     </>

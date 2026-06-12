@@ -14,6 +14,7 @@ import {
   coerceTimelinePanelHeight,
   type PersistedWorkspaceState,
 } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type UseWorkspaceShellActionsParams = {
   activeTemplateId: WorkspaceTemplateId;
@@ -28,6 +29,7 @@ type UseWorkspaceShellActionsParams = {
   setNotice: Dispatch<SetStateAction<string | null>>;
   setProjectSettings: Dispatch<SetStateAction<WorkspaceProjectSettings>>;
   setTimelinePanelHeight: Dispatch<SetStateAction<number | null>>;
+  studioNotices: StudioCopy['notices'];
   workspaceStorageKey: string;
 };
 
@@ -44,6 +46,7 @@ export function useWorkspaceShellActions({
   setNotice,
   setProjectSettings,
   setTimelinePanelHeight,
+  studioNotices,
   workspaceStorageKey,
 }: UseWorkspaceShellActionsParams): {
   handleExitToProjects: () => void;
@@ -68,7 +71,7 @@ export function useWorkspaceShellActions({
     if (typeof window === 'undefined') return;
     const state = buildPersistedWorkspaceState();
     window.localStorage.setItem(workspaceStorageKey, JSON.stringify(state));
-    setNotice('Workspace saved. Returning to projects.');
+    setNotice(studioNotices.workspaceSavedReturningToProjects);
 
     const navigateToProjects = () => {
       window.location.assign('/app/studio/projects');
@@ -86,7 +89,7 @@ export function useWorkspaceShellActions({
       settings: state.projectSettings,
       workspaceState: state,
     }).finally(navigateToProjects);
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, setNotice, workspaceStorageKey]);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, projectId, setNotice, studioNotices.workspaceSavedReturningToProjects, workspaceStorageKey]);
 
   const handleExportRangeModeChange = useCallback((mode: WorkspaceTimelineExportRangeMode) => {
     resetExportSession();

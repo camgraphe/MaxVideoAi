@@ -13,6 +13,7 @@ import {
   workspaceAudioEnabledForRequest,
 } from './workspace-capabilities';
 import { WORKSPACE_EDGE_COLORS, createWorkspaceEdge } from './workspace-templates';
+import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceGenerationMode = 'real' | 'mock';
 type WorkspaceShotGenerateRequest = Parameters<typeof runGenerate>[0] & {
@@ -121,10 +122,10 @@ function createOutputPosition(shotNode: WorkspaceGraphNode, siblingCount: number
   };
 }
 
-function outputSubtitle(output: WorkspaceOutputMetadata, settings: WorkspaceShotSettings): string {
-  if (output.status === 'processing') return 'Processing render...';
-  if (output.status === 'placeholder') return 'Waiting for generated media';
-  if (output.status === 'failed') return 'Generation failed';
+function outputSubtitle(output: WorkspaceOutputMetadata, settings: WorkspaceShotSettings, notices: StudioCopy['notices']): string {
+  if (output.status === 'processing') return notices.outputProcessingRender;
+  if (output.status === 'placeholder') return notices.outputWaitingForMedia;
+  if (output.status === 'failed') return notices.generationFailed;
   return `${output.durationSec ?? settings.durationSec}s · ${output.aspectRatio ?? settings.aspectRatio}`;
 }
 
@@ -142,15 +143,17 @@ function buildOutputNode(params: {
   capability: WorkspaceModelCapability | null;
   output: WorkspaceOutputMetadata;
   siblingCount: number;
+  notices?: StudioCopy['notices'];
 }): WorkspaceGraphNode {
+  const notices = params.notices ?? DEFAULT_STUDIO_COPY.notices;
   return {
     id: params.id ?? `output-${params.shotNode.id}-${Date.now().toString(36)}`,
     type: 'output',
     position: createOutputPosition(params.shotNode, params.siblingCount),
     data: {
       kind: 'output',
-      title: params.settings.outputName || 'Generated Output',
-      subtitle: outputSubtitle(params.output, params.settings),
+      title: params.settings.outputName || notices.generatedOutputTitle,
+      subtitle: outputSubtitle(params.output, params.settings, notices),
       accent: WORKSPACE_EDGE_COLORS.generated_output,
       output: params.output,
       targetHandles: ['generated_output'],
@@ -167,6 +170,7 @@ export function createPendingWorkspaceOutput(params: {
   edges: WorkspaceGraphEdge[];
   siblingCount?: number;
   outputNodeId?: string;
+  notices?: StudioCopy['notices'];
 }): WorkspaceGenerationResult {
   const resolvedWorkflowType = resolveWorkspaceWorkflowType({
     capability: params.capability,
@@ -198,6 +202,7 @@ export function createPendingWorkspaceOutput(params: {
     capability: params.capability,
     output,
     siblingCount: params.siblingCount ?? 0,
+    notices: params.notices,
   });
 
   return {

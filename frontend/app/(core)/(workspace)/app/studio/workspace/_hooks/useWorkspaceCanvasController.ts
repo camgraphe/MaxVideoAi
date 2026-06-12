@@ -54,6 +54,8 @@ type UseWorkspaceCanvasControllerParams = {
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
+  studioAssetLibraryCopy: StudioCopy['assetLibrary'];
+  studioCanvasCopy: StudioCopy['canvas'];
   studioNotices: StudioCopy['notices'];
   timelineInsertIntoClipEnabled: boolean;
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
@@ -89,6 +91,8 @@ export function useWorkspaceCanvasController({
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
   setUserCanvasTemplates,
+  studioAssetLibraryCopy,
+  studioCanvasCopy,
   studioNotices,
   timelineInsertIntoClipEnabled,
   timelineItemsRef,
@@ -116,6 +120,7 @@ export function useWorkspaceCanvasController({
     setNodes,
     setNotice,
     setSelectedNodeId,
+    studioNotices,
   });
 
   const {
@@ -131,6 +136,7 @@ export function useWorkspaceCanvasController({
     setNodes,
     setNotice,
     setSelectedNodeId,
+    studioNotices,
   });
 
   const { handleGenerateShot } = useWorkspaceGenerationActions({
@@ -144,6 +150,7 @@ export function useWorkspaceCanvasController({
     setNodes,
     setNotice,
     setSelectedNodeId,
+    studioNotices,
   });
 
   const {
@@ -161,6 +168,7 @@ export function useWorkspaceCanvasController({
     setPlayheadSec,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
+    studioNotices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
   });
@@ -170,6 +178,7 @@ export function useWorkspaceCanvasController({
     edges,
     nodes,
     pricingEstimates,
+    studioCanvasCopy,
     onGenerateShot: handleGenerateShot,
     onOpenAssetLibrary: handleOpenAssetLibrary,
     onPatchNodeData: patchNodeData,
@@ -179,8 +188,8 @@ export function useWorkspaceCanvasController({
   const renderEdges = useMemo(() => filterRenderableWorkspaceEdges(renderNodes, edges), [edges, renderNodes]);
   const selectedNode = renderNodes.find((node) => node.id === selectedNodeId) ?? null;
   const assetPickerNode = renderNodes.find((node) => node.id === assetPickerNodeId) ?? null;
-  const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined);
-  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined);
+  const assetPickerLibrary = useWorkspaceEditorAssetLibrary(assetPickerNode ? assetPickerNode.data.kind : undefined, studioAssetLibraryCopy);
+  const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined, studioAssetLibraryCopy);
 
   const {
     handleApplyCanvasTemplate,

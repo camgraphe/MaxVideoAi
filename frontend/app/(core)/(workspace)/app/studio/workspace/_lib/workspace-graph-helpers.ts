@@ -5,6 +5,7 @@ import {
   isWorkspaceConnectionCompatible,
   workspaceConnectionCapacity,
 } from './workspace-capabilities';
+import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
 import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
 import { inferWorkspaceEdgeKind } from './workspace-templates';
 import type {
@@ -53,12 +54,15 @@ export function findGeneratedOutputNodeForShot(
   return nodes.find((node) => node.id === outputEdge.target && node.data.kind === 'output') ?? null;
 }
 
-export function outputNodeSubtitle(output: NonNullable<WorkspaceGraphNode['data']['output']>): string {
-  if (output.status === 'processing') return 'Processing render...';
-  if (output.status === 'placeholder') return 'Waiting for generated media';
-  if (output.status === 'failed') return 'Generation failed';
+export function outputNodeSubtitle(
+  output: NonNullable<WorkspaceGraphNode['data']['output']>,
+  notices: StudioCopy['notices'] = DEFAULT_STUDIO_COPY.notices
+): string {
+  if (output.status === 'processing') return notices.outputProcessingRender;
+  if (output.status === 'placeholder') return notices.outputWaitingForMedia;
+  if (output.status === 'failed') return notices.generationFailed;
   if (output.durationSec && output.aspectRatio) return `${output.durationSec}s · ${output.aspectRatio}`;
-  return 'Generated media';
+  return notices.generatedOutputSubtitle;
 }
 
 export function connectorForTarget({

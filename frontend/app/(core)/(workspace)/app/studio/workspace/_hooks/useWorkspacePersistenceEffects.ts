@@ -50,6 +50,14 @@ import {
   type WorkspaceUserCanvasTemplate,
 } from '../_state/workspace-state';
 import { sequenceNameForIndex } from '../_state/workspace-selectors';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 type UseWorkspacePersistenceEffectsParams = {
   activeTemplateId: WorkspaceTemplateId;
@@ -87,6 +95,7 @@ type UseWorkspacePersistenceEffectsParams = {
   setTimelinePanelHeight: Dispatch<SetStateAction<number | null>>;
   setUserCanvasTemplates: Dispatch<SetStateAction<WorkspaceUserCanvasTemplate[]>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
+  studioNotices: StudioCopy['notices'];
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
   workspaceStorageKey: string;
 };
@@ -127,6 +136,7 @@ export function useWorkspacePersistenceEffects({
   setTimelinePanelHeight,
   setUserCanvasTemplates,
   setVideoTrackCount,
+  studioNotices,
   timelineItemsRef,
   workspaceStorageKey,
 }: UseWorkspacePersistenceEffectsParams): void {
@@ -216,7 +226,7 @@ export function useWorkspacePersistenceEffects({
       setTimelineOutPointSec(null);
       setSelectedNodeId(null);
       setCanvasRevision((value) => value + 1);
-      setNotice(`${project.name} project loaded with a clean sequence.`);
+      setNotice(formatNotice(studioNotices.projectLoadedCleanSequence, { name: project.name }));
     };
 
     const localUserTemplates = readUserCanvasTemplates(normalizeUserCanvasTemplate);
@@ -302,6 +312,7 @@ export function useWorkspacePersistenceEffects({
     setTimelinePanelHeight,
     setUserCanvasTemplates,
     setVideoTrackCount,
+    studioNotices.projectLoadedCleanSequence,
     timelineItemsRef,
     workspaceStorageKey,
   ]);

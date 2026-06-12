@@ -4,6 +4,7 @@ import type { MouseEvent, PointerEvent as ReactPointerEvent } from 'react';
 
 import styles from '../../_styles/timeline-context-menu.module.css';
 import type { WorkspaceTimelineTrack } from '../../_lib/workspace-types';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export type TimelineContextMenuState = {
   canLink: boolean;
@@ -25,6 +26,7 @@ export type TimelineTrackContextMenuState = {
 };
 
 type TimelineContextMenusProps = {
+  copy: StudioCopy['timeline'];
   clipMenu: TimelineContextMenuState | null;
   onClipMenuAction: (action: 'link' | 'unlink') => void;
   onTrackMenuAction: (action: 'add' | 'delete') => void;
@@ -36,6 +38,7 @@ function stopMenuPointer(event: MouseEvent<HTMLDivElement> | ReactPointerEvent<H
 }
 
 export const TimelineContextMenus = memo(function TimelineContextMenus({
+  copy,
   clipMenu,
   onClipMenuAction,
   onTrackMenuAction,
@@ -53,7 +56,10 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
           onMouseDown={stopMenuPointer}
           onPointerDown={stopMenuPointer}
         >
-          <span>{clipMenu.selectedClipCount} clip{clipMenu.selectedClipCount > 1 ? 's' : ''} selected</span>
+          <span>
+            {(clipMenu.selectedClipCount === 1 ? copy.tracks.clipSelected : copy.tracks.clipsSelected)
+              .replace('{count}', String(clipMenu.selectedClipCount))}
+          </span>
           <button
             type="button"
             role="menuitem"
@@ -61,7 +67,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onClipMenuAction('unlink')}
           >
             <Unlink2 size={14} />
-            Unlink selected clips
+            {copy.clips.unlinkSelected}
           </button>
           <button
             type="button"
@@ -70,7 +76,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onClipMenuAction('link')}
           >
             <Link2 size={14} />
-            Link selected clips
+            {copy.clips.linkSelected}
           </button>
         </div>
       ) : null}
@@ -84,7 +90,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
           onMouseDown={stopMenuPointer}
           onPointerDown={stopMenuPointer}
         >
-          <span>{trackMenu.label} track</span>
+          <span>{copy.tracks.trackContextLabel.replace('{track}', trackMenu.label)}</span>
           <button
             type="button"
             role="menuitem"
@@ -92,7 +98,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onTrackMenuAction('add')}
           >
             <Plus size={14} />
-            Add {trackMenu.kind} track
+            {copy.tracks.addTrack.replace('{kind}', trackMenu.kind)}
           </button>
           <button
             type="button"
@@ -101,7 +107,7 @@ export const TimelineContextMenus = memo(function TimelineContextMenus({
             onClick={() => onTrackMenuAction('delete')}
           >
             <Trash2 size={14} />
-            Delete {trackMenu.kind} track
+            {copy.tracks.deleteTrack.replace('{kind}', trackMenu.kind)}
           </button>
         </div>
       ) : null}

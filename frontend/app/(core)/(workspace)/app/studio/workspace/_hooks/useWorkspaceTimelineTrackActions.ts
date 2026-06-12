@@ -19,6 +19,14 @@ import {
   deleteWorkspaceTimelineTrackItems,
   type WorkspaceEditorSurface,
 } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 type UseWorkspaceTimelineTrackActionsParams = {
   applyTimelineSelection: (itemIds: string[]) => void;
@@ -32,6 +40,7 @@ type UseWorkspaceTimelineTrackActionsParams = {
   setMutedAudioTracks: Dispatch<SetStateAction<WorkspaceTimelineAudioTrack[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
+  studioNotices: StudioCopy['notices'];
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
   videoTrackCount: number;
 };
@@ -48,6 +57,7 @@ export function useWorkspaceTimelineTrackActions({
   setMutedAudioTracks,
   setNotice,
   setVideoTrackCount,
+  studioNotices,
   timelineItemsRef,
   videoTrackCount,
 }: UseWorkspaceTimelineTrackActionsParams): {
@@ -112,8 +122,8 @@ export function useWorkspaceTimelineTrackActions({
       const hasClips = timelineItemsRef.current.some((item) => item.track === track);
       const confirmed = typeof window === 'undefined' || window.confirm(
         hasClips
-          ? `Delete ${trackLabel} and all clips on this track?`
-          : `Delete ${trackLabel}?`
+          ? formatNotice(studioNotices.deleteTrackWithClipsConfirm, { track: trackLabel })
+          : formatNotice(studioNotices.deleteTrackConfirm, { track: trackLabel })
       );
       if (!confirmed) return;
 
@@ -136,7 +146,7 @@ export function useWorkspaceTimelineTrackActions({
       }
       commitTimelineItems(() => nextItems);
       applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
-      setNotice(`${trackLabel} deleted.`);
+      setNotice(formatNotice(studioNotices.timelineTrackDeleted, { track: trackLabel }));
     },
     [
       applyTimelineSelection,
@@ -150,6 +160,9 @@ export function useWorkspaceTimelineTrackActions({
       setMutedAudioTracks,
       setNotice,
       setVideoTrackCount,
+      studioNotices.deleteTrackConfirm,
+      studioNotices.deleteTrackWithClipsConfirm,
+      studioNotices.timelineTrackDeleted,
       timelineItemsRef,
       videoTrackCount,
     ]

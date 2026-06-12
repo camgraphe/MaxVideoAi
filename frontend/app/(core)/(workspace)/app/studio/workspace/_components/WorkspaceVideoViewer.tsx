@@ -8,10 +8,12 @@ import { ProgramMonitor } from './viewer/ProgramMonitor';
 import { ProgramPlaybackLayers } from './viewer/ProgramPlaybackLayers';
 import { useProgramPlaybackSync } from './viewer/useProgramPlaybackSync';
 import type { WorkspaceProgramSnapshotPayload } from './viewer/useProgramPlaybackSync';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type { WorkspaceProgramSnapshotPayload } from './viewer/useProgramPlaybackSync';
 
 type WorkspaceVideoViewerProps = {
+  copy: StudioCopy['viewer'];
   canGoToNextCut: boolean;
   canGoToPreviousCut: boolean;
   inPointSec: number | null;
@@ -51,6 +53,7 @@ function programModelLabel(modelId?: string): string | null {
 }
 
 export function WorkspaceVideoViewer({
+  copy,
   canGoToNextCut,
   canGoToPreviousCut,
   inPointSec,
@@ -101,7 +104,7 @@ export function WorkspaceVideoViewer({
   const activeModelLabel = programModelLabel(activePlaybackItem?.modelId);
 
   return (
-    <section className={styles.videoViewerShell} aria-label="Montage video viewer" data-testid="editor-video-viewer">
+    <section className={styles.videoViewerShell} aria-label={copy.monitor.viewerLabel} data-testid="editor-video-viewer">
       <div className={styles.viewerStage}>
         <ProgramMonitor
           activeModelLabel={activeModelLabel}
@@ -110,6 +113,7 @@ export function WorkspaceVideoViewer({
           projectSettings={projectSettings}
           layers={(
             <ProgramPlaybackLayers
+              copy={copy.monitor}
               audioPlaybackLayers={audioPlaybackLayers}
               linkedAudioGroupIds={linkedAudioGroupIds}
               playbackLayers={playbackLayers}
@@ -122,6 +126,7 @@ export function WorkspaceVideoViewer({
           )}
           controls={(
             <ProgramControls
+              copy={copy.controls}
               canGoToNextCut={canGoToNextCut}
               canGoToPreviousCut={canGoToPreviousCut}
               hasInOutMarks={hasInOutMarks}
@@ -142,6 +147,7 @@ export function WorkspaceVideoViewer({
               onTogglePlayback={onTogglePlayback}
             />
           )}
+          copy={copy.monitor}
         />
       </div>
     </section>

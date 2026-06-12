@@ -6,6 +6,7 @@ import { useReactFlow, useStore, type XYPosition } from '@xyflow/react';
 
 import styles from '../../_styles/canvas-map.module.css';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceNodeKind } from '../../_lib/workspace-types';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 const CANVAS_MINI_MAP_WIDTH = 164;
 const CANVAS_MINI_MAP_HEIGHT = 82;
@@ -192,9 +193,11 @@ function CanvasMiniatureNode({ node }: { node: CanvasMiniatureLayoutNode }) {
 }
 
 function CanvasMiniatureMap({
+  copy,
   edges,
   nodes,
 }: {
+  copy: StudioCopy['canvas']['map'];
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
 }) {
@@ -336,7 +339,7 @@ function CanvasMiniatureMap({
     <svg
       className={styles.canvasMiniMap}
       role="application"
-      aria-label="Canvas map. Drag the visible area to pan the canvas."
+      aria-label={copy.miniatureLabel}
       data-canvas-miniature-map="true"
       data-content-center-x={layout.contentCenter.x.toFixed(2)}
       data-content-center-y={layout.contentCenter.y.toFixed(2)}
@@ -385,9 +388,11 @@ function CanvasMiniatureMap({
 }
 
 export function CanvasMap({
+  copy,
   edges,
   nodes,
 }: {
+  copy: StudioCopy['canvas']['map'];
   edges: WorkspaceGraphEdge[];
   nodes: WorkspaceGraphNode[];
 }) {
@@ -421,22 +426,22 @@ export function CanvasMap({
     <div
       className={`${styles.canvasNavigator} nodrag nopan`}
       data-canvas-navigator="true"
-      aria-label="Canvas navigation"
+      aria-label={copy.navigationLabel}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={(event) => event.stopPropagation()}
     >
       <div className={styles.canvasNavigatorHeader}>
-        <span>Canvas map</span>
+        <span>{copy.mapTitle}</span>
       </div>
-      <CanvasMiniatureMap edges={edges} nodes={nodes} />
-      <div className={styles.canvasNavigatorControls} role="group" aria-label="Canvas zoom controls">
-        <button type="button" onClick={handleZoomOut} aria-label="Zoom out canvas" title="Zoom out canvas">
+      <CanvasMiniatureMap copy={copy} edges={edges} nodes={nodes} />
+      <div className={styles.canvasNavigatorControls} role="group" aria-label={copy.zoomControls}>
+        <button type="button" onClick={handleZoomOut} aria-label={copy.zoomOut} title={copy.zoomOut}>
           <Minus size={13} strokeWidth={2.4} />
         </button>
-        <button type="button" onClick={handleFitView} aria-label="Fit canvas" title="Fit canvas">
+        <button type="button" onClick={handleFitView} aria-label={copy.fit} title={copy.fit}>
           <Maximize2 size={13} strokeWidth={2.2} />
         </button>
-        <button type="button" onClick={handleZoomIn} aria-label="Zoom in canvas" title="Zoom in canvas">
+        <button type="button" onClick={handleZoomIn} aria-label={copy.zoomIn} title={copy.zoomIn}>
           <Plus size={13} strokeWidth={2.4} />
         </button>
       </div>

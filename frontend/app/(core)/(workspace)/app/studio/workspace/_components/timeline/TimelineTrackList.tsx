@@ -27,6 +27,7 @@ import {
 import { TimelineTrackRow } from './TimelineTrackRow';
 import type { TimelineTrackDefinition } from './timelineTrackDefinitions';
 import type { TimelineTool } from './TimelineToolbar';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export type TimelinePreviewTrackItem = {
   item: WorkspaceTimelineItem;
@@ -59,6 +60,7 @@ type TimelineRenderedTrackItem = TimelinePreviewTrackItem & {
 };
 
 type TimelineTrackListProps = {
+  copy: StudioCopy['timeline'];
   activeTool: TimelineTool;
   audioTrackCount: number;
   clampedPlayheadSec: number;
@@ -109,6 +111,7 @@ function timelineRangesIntersect(startSec: number, durationSec: number, visibleS
 }
 
 export const TimelineTrackList = memo(function TimelineTrackList({
+  copy,
   activeTool,
   audioTrackCount,
   clampedPlayheadSec,
@@ -202,6 +205,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
             key={track.id}
             audioTrackCount={audioTrackCount}
             audioTrackId={audioTrackId}
+            copy={copy.tracks}
             clampedPlayheadSec={clampedPlayheadSec}
             externalDropPreview={externalDropPreview}
             formatDropDuration={formatDropDuration}
@@ -238,6 +242,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
                 <TimelineClip
                   key={item.id}
                   item={item}
+                  copy={copy.clips}
                   layout={layout}
                   index={trackIndex}
                   isInteracting={isItemInteracting(item)}
@@ -257,7 +262,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
                 />
               ))
             ) : (
-              <span className={styles.trackEmpty}>Drop generated outputs here</span>
+              <span className={styles.trackEmpty}>{copy.tracks.emptyTrack}</span>
             )}
           </TimelineTrackRow>
         );

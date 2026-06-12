@@ -5,6 +5,7 @@ import type {
 import type { WorkspaceAssetRecord } from './workspace-types';
 import { isWorkspaceTimelineAudioTrack } from './workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from './workspace-timecode';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type {
   WorkspaceTimelineExportRangeMode,
@@ -68,6 +69,44 @@ export const WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS = [
   },
 ] as const satisfies readonly WorkspaceTimelineExportQualityPresetOption[];
 
+function exportCopy(copy: StudioCopy['exportDialog'] | undefined, key: string, fallback: string): string {
+  return copy?.[key] ?? fallback;
+}
+
+function formatExportCopy(
+  copy: StudioCopy['exportDialog'] | undefined,
+  key: string,
+  fallback: string,
+  replacements: Record<string, string | number>
+): string {
+  return Object.entries(replacements).reduce(
+    (current, [replacementKey, replacement]) => current.replaceAll(`{${replacementKey}}`, String(replacement)),
+    exportCopy(copy, key, fallback)
+  );
+}
+
+export function workspaceTimelineExportQualityPresetOptions(
+  copy?: StudioCopy['exportDialog']
+): WorkspaceTimelineExportQualityPresetOption[] {
+  return [
+    {
+      id: 'draft',
+      label: exportCopy(copy, 'draftPreset', 'Draft'),
+      description: exportCopy(copy, 'draftPresetDescription', 'Fast review export with lighter compression.'),
+    },
+    {
+      id: 'standard',
+      label: exportCopy(copy, 'standardPreset', 'Standard'),
+      description: exportCopy(copy, 'standardPresetDescription', 'Balanced MP4 for normal delivery.'),
+    },
+    {
+      id: 'high',
+      label: exportCopy(copy, 'highPreset', 'High'),
+      description: exportCopy(copy, 'highPresetDescription', 'Higher bitrate master for final review.'),
+    },
+  ];
+}
+
 function createExportIdempotencyKey(): string {
   if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
   return `export_${Date.now()}_${Math.random().toString(16).slice(2)}`;
@@ -83,7 +122,8 @@ function safeExportFilenamePrefix(value: string): string {
 }
 
 export function workspaceTimelineExportReadinessChecks(
-  manifest: WorkspaceTimelineRenderManifest
+  manifest: WorkspaceTimelineRenderManifest,
+  copy?: StudioCopy['exportDialog']
 ): WorkspaceTimelineExportReadinessCheck[] {
   const blockingIssueCodes = new Set(
     manifest.issues.filter((issue) => issue.severity === 'blocking').map((issue) => issue.code)
@@ -99,39 +139,55 @@ export function workspaceTimelineExportReadinessChecks(
   return [
     {
       id: 'media',
-      label: 'Media',
+      label: exportCopy(copy, 'readinessMedia', 'Media'),
       status: blockingIssueCodes.has('missing_media') || blockingIssueCodes.has('processing_media') ? 'blocking' : 'pass',
       message: blockingIssueCodes.has('missing_media') || blockingIssueCodes.has('processing_media')
-        ? 'Some clips are missing media or still processing.'
-        : `${clipCount} clip${clipCount === 1 ? '' : 's'} ready for export.`,
+        ? exportCopy(copy, 'readinessMediaBlocked', 'Some clips are missing media or still processing.')
+        : formatExportCopy(
+          copy,
+          clipCount === 1 ? 'readinessMediaReadySingular' : 'readinessMediaReadyPlural',
+          `${clipCount} clip${clipCount === 1 ? '' : 's'} ready for export.`,
+          { count: clipCount }
+        ),
     },
     {
       id: 'timeline',
-      label: 'Timeline',
+      label: exportCopy(copy, 'readinessTimeline', 'Timeline'),
       status: blockingIssueCodes.has('overlapping_clips')
         ? 'blocking'
         : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
           ? 'warning'
           : 'pass',
       message: blockingIssueCodes.has('overlapping_clips')
-        ? 'Fix overlapping clips before export.'
+        ? exportCopy(copy, 'readinessTimelineBlocked', 'Fix overlapping clips before export.')
         : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
-          ? 'Timeline has warnings, but export can be prepared.'
-          : 'No blocking timeline conflicts.',
+          ? exportCopy(copy, 'readinessTimelineWarnings', 'Timeline has warnings, but export can be prepared.')
+          : exportCopy(copy, 'readinessTimelineReady', 'No blocking timeline conflicts.'),
     },
     {
       id: 'range',
-      label: 'Range',
+      label: exportCopy(copy, 'readinessRange', 'Range'),
       status: manifest.durationSec > 0 ? 'pass' : 'blocking',
       message: manifest.durationSec > 0
-        ? `${manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Full sequence'} range is exportable.`
-        : 'Select a range with duration before export.',
+        ? exportCopy(
+          copy,
+          manifest.exportRange.mode === 'in-out' ? 'readinessRangeInOut' : 'readinessRangeFullSequence',
+          `${manifest.exportRange.mode === 'in-out' ? 'In/Out' : 'Full sequence'} range is exportable.`
+        )
+        : exportCopy(copy, 'readinessRangeBlocked', 'Select a range with duration before export.'),
     },
     {
       id: 'audio',
-      label: 'Audio',
+      label: exportCopy(copy, 'readinessAudio', 'Audio'),
       status: 'pass',
-      message: audioClipCount > 0 ? `${audioClipCount} audio clip${audioClipCount === 1 ? '' : 's'} included.` : 'No separate audio clips; embedded clip audio is preserved when available.',
+      message: audioClipCount > 0
+        ? formatExportCopy(
+          copy,
+          audioClipCount === 1 ? 'readinessAudioIncludedSingular' : 'readinessAudioIncludedPlural',
+          `${audioClipCount} audio clip${audioClipCount === 1 ? '' : 's'} included.`,
+          { count: audioClipCount }
+        )
+        : exportCopy(copy, 'readinessAudioEmbedded', 'No separate audio clips; embedded clip audio is preserved when available.'),
     },
   ];
 }
@@ -167,7 +223,8 @@ export function serializeWorkspaceTimelineVideoExportRequest(request: WorkspaceT
 
 export function workspaceProjectAssetFromCompletedTimelineExport(
   job: CompletedTimelineExportJob,
-  manifest: WorkspaceTimelineRenderManifest
+  manifest: WorkspaceTimelineRenderManifest,
+  serverExportLabel: string
 ): WorkspaceAssetRecord | null {
   if (job.status !== 'completed' || !job.outputUrl) return null;
 
@@ -180,7 +237,7 @@ export function workspaceProjectAssetFromCompletedTimelineExport(
     kind: 'video',
     filename,
     subtitle: [
-      'Server export',
+      serverExportLabel,
       projectSettings?.resolution,
       projectSettings?.aspectRatio,
       projectSettings?.fps ? `${projectSettings.fps} fps` : null,
@@ -221,11 +278,27 @@ export function buildWorkspaceTimelineEdl(manifest: WorkspaceTimelineRenderManif
   return `${lines.join('\n').trimEnd()}\n`;
 }
 
-export function workspaceTimelineRenderReadinessLabel(manifest: WorkspaceTimelineRenderManifest): string {
+export function workspaceTimelineRenderReadinessLabel(
+  manifest: WorkspaceTimelineRenderManifest,
+  copy?: StudioCopy['exportDialog']
+): string {
   const clipCount = manifest.tracks.reduce((count, track) => count + track.clips.length, 0);
   if (manifest.status === 'blocked') {
     const blockingCount = manifest.issues.filter((issue) => issue.severity === 'blocking').length;
-    return `Render blocked: ${blockingCount} issue${blockingCount > 1 ? 's' : ''} to fix.`;
+    return formatExportCopy(
+      copy,
+      blockingCount === 1 ? 'renderBlockedSingular' : 'renderBlockedPlural',
+      `Render blocked: ${blockingCount} issue${blockingCount > 1 ? 's' : ''} to fix.`,
+      { count: blockingCount }
+    );
   }
-  return `Render manifest ready: ${clipCount} clip${clipCount > 1 ? 's' : ''}, ${Math.round(manifest.durationSec)}s.`;
+  return formatExportCopy(
+    copy,
+    clipCount === 1 ? 'renderReadySingular' : 'renderReadyPlural',
+    `Render manifest ready: ${clipCount} clip${clipCount > 1 ? 's' : ''}, ${Math.round(manifest.durationSec)}s.`,
+    {
+      count: clipCount,
+      duration: Math.round(manifest.durationSec),
+    }
+  );
 }

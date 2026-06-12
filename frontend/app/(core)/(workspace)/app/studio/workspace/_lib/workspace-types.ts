@@ -1,6 +1,7 @@
 import type { Edge, Node } from '@xyflow/react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { AspectRatio, Mode, Resolution } from '@/types/engines';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type WorkspaceNodeKind =
   | 'asset-image'
@@ -213,6 +214,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   onSendOutputToTimeline?: (nodeId: string) => void;
   onPromptChange?: (nodeId: string, value: string) => void;
   onOpenAssetLibrary?: (nodeId: string) => void;
+  studioCanvasCopy?: StudioCopy['canvas'];
 };
 
 export type WorkspaceGraphNode = Node<WorkspaceNodeData>;

@@ -14,6 +14,14 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 type UseWorkspaceGenerationActionsParams = {
   capabilities: WorkspaceModelCapability[];
@@ -26,6 +34,7 @@ type UseWorkspaceGenerationActionsParams = {
   setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  studioNotices: StudioCopy['notices'];
 };
 
 export function useWorkspaceGenerationActions({
@@ -39,6 +48,7 @@ export function useWorkspaceGenerationActions({
   setNodes,
   setNotice,
   setSelectedNodeId,
+  studioNotices,
 }: UseWorkspaceGenerationActionsParams): {
   handleGenerateShot: (nodeId: string) => Promise<void>;
 } {
@@ -53,7 +63,7 @@ export function useWorkspaceGenerationActions({
       });
       if (!validation.canGenerate) {
         patchShot(nodeId, { status: 'incompatible' });
-        setNotice('This shot has incompatible or missing inputs for the selected model.');
+        setNotice(studioNotices.generationInvalidInputs);
         return;
       }
 
@@ -67,18 +77,26 @@ export function useWorkspaceGenerationActions({
         edges,
         siblingCount: nodes.filter((node) => node.data.output?.sourceShotId === shotNode.id).length,
         outputNodeId: existingOutputNode?.id,
+        notices: studioNotices,
       });
+      const pendingOutputTitle = shotNode.data.shot.outputName || existingOutputNode?.data.title || studioNotices.generatedOutputTitle;
       const pendingOutputNode = existingOutputNode
         ? {
             ...existingOutputNode,
             data: {
               ...existingOutputNode.data,
-              title: shotNode.data.shot.outputName || existingOutputNode.data.title,
-              subtitle: outputNodeSubtitle(pendingOutput.output),
+              title: pendingOutputTitle,
+              subtitle: outputNodeSubtitle(pendingOutput.output, studioNotices),
               output: pendingOutput.output,
             },
           }
-        : pendingOutput.outputNode;
+        : {
+            ...pendingOutput.outputNode,
+            data: {
+              ...pendingOutput.outputNode.data,
+              title: pendingOutputTitle,
+            },
+          };
 
       setNodes((current) => {
         const hasOutputNode = current.some((node) => node.id === pendingOutputNode.id);
@@ -105,7 +123,9 @@ export function useWorkspaceGenerationActions({
       }
       setActiveEditorSurface('canvas');
       setSelectedNodeId(pendingOutputNode.id);
-      setNotice(`${shotNode.data.title} generation started${mockMode ? ' in mock mode' : ''}.`);
+      setNotice(formatNotice(mockMode ? studioNotices.generationStartedMock : studioNotices.generationStarted, {
+        title: shotNode.data.title,
+      }));
       try {
         const result = await submitWorkspaceShotGeneration({
           nodes,
@@ -140,7 +160,7 @@ export function useWorkspaceGenerationActions({
                 data: {
                   ...node.data,
                   title: shotNode.data.shot?.outputName || node.data.title,
-                  subtitle: outputNodeSubtitle(result.output),
+                  subtitle: outputNodeSubtitle(result.output, studioNotices),
                   output: result.output,
                 },
               };
@@ -152,12 +172,12 @@ export function useWorkspaceGenerationActions({
         setSelectedNodeId(pendingOutputNode.id);
         setNotice(
           result.output.status === 'ready'
-            ? `${result.output.modelLabel} output created. Send it to the timeline when ready.`
+            ? formatNotice(studioNotices.generationOutputCreated, { model: result.output.modelLabel })
             : result.output.status === 'failed'
-              ? `${result.output.modelLabel} generation failed.`
-              : `${result.output.modelLabel} render is still processing. It will be available when the job completes.`
+              ? formatNotice(studioNotices.generationOutputFailed, { model: result.output.modelLabel })
+              : formatNotice(studioNotices.generationStillProcessing, { model: result.output.modelLabel })
         );
-      } catch (error) {
+      } catch {
         setNodes((current) =>
           current.map((node) => {
             if (node.id === nodeId && node.data.shot) {
@@ -183,7 +203,7 @@ export function useWorkspaceGenerationActions({
                 ...node,
                 data: {
                   ...node.data,
-                  subtitle: outputNodeSubtitle(failedOutput),
+                  subtitle: outputNodeSubtitle(failedOutput, studioNotices),
                   output: failedOutput,
                 },
               };
@@ -191,8 +211,7 @@ export function useWorkspaceGenerationActions({
             return node;
           })
         );
-        const message = error instanceof Error ? error.message : 'Generation failed.';
-        setNotice(message);
+        setNotice(studioNotices.generationFailed);
       }
     },
     [
@@ -206,6 +225,7 @@ export function useWorkspaceGenerationActions({
       setNodes,
       setNotice,
       setSelectedNodeId,
+      studioNotices,
     ]
   );
 

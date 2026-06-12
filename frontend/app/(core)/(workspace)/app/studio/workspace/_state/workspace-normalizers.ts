@@ -1,6 +1,7 @@
 import {
   WORKSPACE_DEMO_AUDIO_URL,
 } from '../_lib/workspace-library-assets';
+import { DEFAULT_STUDIO_COPY } from '../../_lib/studio-copy';
 import {
   isWorkspaceTimelineAudioTrack,
   normalizeWorkspaceTimelineTrack,
@@ -149,7 +150,7 @@ export function normalizePlaceholderOutputNodes(nodes: WorkspaceGraphNode[]): Wo
       ...node,
       data: {
         ...node.data,
-        subtitle: 'Waiting for generated media',
+        subtitle: DEFAULT_STUDIO_COPY.notices.outputWaitingForMedia,
         output: {
           ...output,
           status: 'placeholder',

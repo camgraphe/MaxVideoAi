@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
-import { resolveStudioCopy } from '../_lib/studio-copy';
+import { localizeStudioTemplateSummary, resolveStudioCopy } from '../_lib/studio-copy';
 import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
 import { useWorkspaceCanvasController } from './_hooks/useWorkspaceCanvasController';
@@ -134,10 +134,11 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const workspaceStorageKey = useMemo(() => workspaceStorageKeyForProject(projectId), [projectId]);
   const registeredExportAssetJobIdRef = useRef<string | null>(null);
   const activeUserCanvasTemplate = userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId) ?? null;
+  const activeRegistryTemplate = WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId) ?? null;
   const activeTemplateName =
     storedProjectName ??
     activeUserCanvasTemplate?.name ??
-    WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === activeTemplateId)?.name ??
+    (activeRegistryTemplate ? localizeStudioTemplateSummary(activeRegistryTemplate, studioCopy).name : null) ??
     'Workspace';
   const pricingEstimates = useWorkspaceShotPricing({ nodes, edges, capabilities });
   const timelineDurationSec = useMemo(() => workspaceTimelineDurationSec(timelineItems), [timelineItems]);
@@ -157,6 +158,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     onNotice: setNotice,
     onResetExportRangeMode: selectionActions.handleResetExportRangeMode,
     projectFps: projectSettings.fps,
+    studioNotices: studioCopy.notices,
     timelineCutPoints,
     timelineDurationSec,
   });
@@ -202,13 +204,19 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const exportController = useExportController({
     manifest: exportState.exportManifest,
     qualityPreset: exportQualityPreset,
+    copy: studioCopy.exportDialog,
+    notices: studioCopy.notices,
     onNotice: setNotice,
   });
 
   useEffect(() => {
     const job = exportController.activeExportJob;
     if (!job || registeredExportAssetJobIdRef.current === job.id) return;
-    const exportAsset = workspaceProjectAssetFromCompletedTimelineExport(job, exportState.exportManifest);
+    const exportAsset = workspaceProjectAssetFromCompletedTimelineExport(
+      job,
+      exportState.exportManifest,
+      studioCopy.notices.completedServerExportSubtitle
+    );
     if (!exportAsset) return;
 
     registeredExportAssetJobIdRef.current = job.id;
@@ -216,8 +224,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       exportAsset,
       ...current.filter((asset) => asset.id !== exportAsset.id),
     ].slice(0, 120));
-    setNotice(`${exportAsset.filename} added to Project media.`);
-  }, [exportController.activeExportJob, exportState.exportManifest, setNotice]);
+    setNotice(studioCopy.notices.projectMediaAdded.replace('{filename}', exportAsset.filename));
+  }, [exportController.activeExportJob, exportState.exportManifest, setNotice, studioCopy.notices]);
 
   const timelineHistoryController = useWorkspaceTimelineHistory({
     timelineItemsRef,
@@ -253,6 +261,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setTimelinePreview,
     setVideoTrackCount,
     snapshotActiveSequence: sequenceSnapshots.snapshotActiveSequence,
+    studioNotices: studioCopy.notices,
     timelineItemsRef,
   });
 
@@ -292,6 +301,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setTimelinePanelHeight,
     setUserCanvasTemplates,
     setVideoTrackCount,
+    studioNotices: studioCopy.notices,
     timelineItemsRef,
     workspaceStorageKey,
   });
@@ -341,6 +351,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
     setUserCanvasTemplates,
+    studioAssetLibraryCopy: studioCopy.assetLibrary,
+    studioCanvasCopy: studioCopy.canvas,
     studioNotices: studioCopy.notices,
     timelineInsertIntoClipEnabled,
     timelineItemsRef,
@@ -400,6 +412,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setMutedAudioTracks,
     setNotice,
     setVideoTrackCount,
+    studioNotices: studioCopy.notices,
     timelineItemsRef,
     videoTrackCount,
   });
@@ -417,6 +430,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setNotice,
     setProjectSettings,
     setTimelinePanelHeight,
+    studioNotices: studioCopy.notices,
     workspaceStorageKey,
   });
 

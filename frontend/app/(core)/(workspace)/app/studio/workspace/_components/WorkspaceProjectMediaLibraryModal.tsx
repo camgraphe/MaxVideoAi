@@ -16,8 +16,10 @@ import type {
 import {
   workspaceLibraryAssetFromUploadedAsset,
 } from '../_lib/workspace-library-assets';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceProjectMediaLibraryModalProps = {
+  copy: StudioCopy['assetLibrary'];
   assets: WorkspaceLibraryAsset[];
   error: string | null;
   isLoading: boolean;
@@ -39,6 +41,13 @@ const PROJECT_MEDIA_UPLOAD_ENDPOINTS = {
   audio: '/api/uploads/audio',
 } as const satisfies Record<WorkspaceLibraryKind, string>;
 
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
 function projectMediaUploadKindForFile(file: File): WorkspaceLibraryKind | null {
   if (file.type.startsWith('image/')) return 'image';
   if (file.type.startsWith('video/')) return 'video';
@@ -47,6 +56,7 @@ function projectMediaUploadKindForFile(file: File): WorkspaceLibraryKind | null 
 }
 
 export function WorkspaceProjectMediaLibraryModal({
+  copy,
   assets,
   error,
   isLoading,
@@ -71,11 +81,11 @@ export function WorkspaceProjectMediaLibraryModal({
 
       const uploadKind = projectMediaUploadKindForFile(file);
       if (!uploadKind) {
-        setUploadError('Upload image, video, or audio media for the project.');
+        setUploadError(copy.invalidProjectMediaUpload);
         return;
       }
 
-      const fallback = `Upload ${uploadKind} failed. Please try again.`;
+      const fallback = formatCopyValue(copy.uploadFailed, { kind: uploadKind });
       setUploadError(null);
       setIsUploading(true);
       try {
@@ -108,7 +118,7 @@ export function WorkspaceProjectMediaLibraryModal({
         setIsUploading(false);
       }
     },
-    [onSelectAsset, onSourceChange]
+    [copy, onSelectAsset, onSourceChange]
   );
 
   if (!isOpen) return null;
@@ -118,7 +128,7 @@ export function WorkspaceProjectMediaLibraryModal({
       className={styles.assetLibraryOverlay}
       role="dialog"
       aria-modal="true"
-      aria-label="Import project media"
+      aria-label={copy.importProjectMedia}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -132,12 +142,13 @@ export function WorkspaceProjectMediaLibraryModal({
           hidden
           onChange={handleUploadChange}
         />
-        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label="Close project media library">
+        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label={copy.closeProjectMediaLibrary}>
           <X size={16} />
         </button>
         <WorkspaceAssetLibraryBrowser
-          title="Library"
-          subtitle="Import media into Project media"
+          copy={copy}
+          title={copy.library}
+          subtitle={copy.importProjectMediaSubtitle}
           layout="modal"
           assets={assets}
           isLoading={isLoading}
@@ -156,10 +167,10 @@ export function WorkspaceProjectMediaLibraryModal({
               onClick={() => uploadInputRef.current?.click()}
             >
               <Upload size={14} />
-              {isUploading ? 'Uploading...' : 'Upload'}
+              {isUploading ? copy.uploading : copy.upload}
             </button>
           }
-          emptyLabel="No media in your project library yet."
+          emptyLabel={copy.noProjectMedia}
         />
       </section>
     </div>

@@ -20,6 +20,7 @@ import {
   workspaceTimelineTrackLabel,
 } from '../_lib/workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -37,6 +38,7 @@ const DEFAULT_AUDIO_MIX: WorkspaceTimelineAudioMix = {
 };
 
 type TimelineClipInspectorProps = {
+  copy: StudioCopy['timeline']['inspector'];
   selectedItem: WorkspaceTimelineItem | null;
   selectedSequence: {
     clipCount: number;
@@ -63,19 +65,19 @@ function clampNumber(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-function InspectorEmptyState() {
+function InspectorEmptyState({ copy }: { copy: StudioCopy['timeline']['inspector'] }) {
   return (
-    <aside className={styles.settingsPanel} aria-label="Timeline clip settings">
+    <aside className={styles.settingsPanel} aria-label={copy.clipSettings}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.panelTitle}>Clip inspector</p>
-          <span className={styles.panelSubtitle}>Select a timeline clip to edit</span>
+          <p className={styles.panelTitle}>{copy.clipInspector}</p>
+          <span className={styles.panelSubtitle}>{copy.selectClip}</span>
         </div>
       </div>
       <div className={styles.emptyInspector}>
         <Sparkles size={22} />
-        <p>Timeline first</p>
-        <span>Pick a clip in the timeline to adjust its edit properties.</span>
+        <p>{copy.timelineFirst}</p>
+        <span>{copy.emptyBody}</span>
       </div>
     </aside>
   );
@@ -129,10 +131,12 @@ function InspectorSlider({
 }
 
 function SequenceInspector({
+  copy,
   sequence,
   onRenameSequence,
   onSequenceSettingsChange,
 }: {
+  copy: StudioCopy['timeline']['inspector'];
   sequence: NonNullable<TimelineClipInspectorProps['selectedSequence']>;
   onRenameSequence: (name: string) => void;
   onSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
@@ -140,16 +144,16 @@ function SequenceInspector({
   const dimensionsLabel = workspaceProjectDimensionsLabel(sequence.settings);
 
   return (
-    <aside className={styles.settingsPanel} aria-label="Sequence settings">
+    <aside className={styles.settingsPanel} aria-label={copy.sequenceSettings}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.panelTitle}>{sequence.name}</p>
-          <span className={styles.panelSubtitle}>Sequence settings</span>
+          <span className={styles.panelSubtitle}>{copy.sequenceSettings}</span>
         </div>
       </div>
       <div className={styles.settingsBody}>
         <label className={styles.settingsLabel}>
-          Sequence name
+          {copy.sequenceName}
           <input
             className={styles.settingsInput}
             value={sequence.name}
@@ -157,17 +161,17 @@ function SequenceInspector({
           />
         </label>
 
-        <section className={styles.timelineInspectorGroup} aria-label="Sequence format">
+        <section className={styles.timelineInspectorGroup} aria-label={copy.sequenceFormat}>
           <div className={styles.sectionHeading}>
-            <span>Format</span>
+            <span>{copy.format}</span>
           </div>
           <label className={styles.settingsLabel}>
-            Aspect ratio
+            {copy.aspectRatio}
             <select
               className={styles.settingsInput}
               value={sequence.settings.aspectRatio}
               onChange={(event) => onSequenceSettingsChange({ aspectRatio: event.currentTarget.value as WorkspaceProjectSettings['aspectRatio'] })}
-              aria-label="Sequence aspect ratio"
+              aria-label={copy.aspectRatio}
             >
               {WORKSPACE_PROJECT_ASPECT_RATIOS.map((aspectRatio) => (
                 <option key={aspectRatio} value={aspectRatio}>{aspectRatio}</option>
@@ -175,12 +179,12 @@ function SequenceInspector({
             </select>
           </label>
           <label className={styles.settingsLabel}>
-            Resolution
+            {copy.resolution}
             <select
               className={styles.settingsInput}
               value={sequence.settings.resolution}
               onChange={(event) => onSequenceSettingsChange({ resolution: event.currentTarget.value as WorkspaceProjectSettings['resolution'] })}
-              aria-label="Sequence resolution"
+              aria-label={copy.resolution}
             >
               {WORKSPACE_PROJECT_RESOLUTIONS.map((resolution) => (
                 <option key={resolution} value={resolution}>{resolution}</option>
@@ -188,12 +192,12 @@ function SequenceInspector({
             </select>
           </label>
           <label className={styles.settingsLabel}>
-            FPS
+            {copy.fps}
             <select
               className={styles.settingsInput}
               value={sequence.settings.fps}
               onChange={(event) => onSequenceSettingsChange({ fps: Number(event.currentTarget.value) as WorkspaceProjectSettings['fps'] })}
-              aria-label="Sequence FPS"
+              aria-label={copy.fps}
             >
               {WORKSPACE_PROJECT_FPS_OPTIONS.map((fps) => (
                 <option key={fps} value={fps}>{fps}</option>
@@ -202,14 +206,14 @@ function SequenceInspector({
           </label>
         </section>
 
-        <div className={styles.infoGrid} data-sequence-settings-summary="true" aria-label="Sequence details">
-          <span>Duration</span>
+        <div className={styles.infoGrid} data-sequence-settings-summary="true" aria-label={copy.sequenceDetails}>
+          <span>{copy.duration}</span>
           <strong>{formatWorkspaceTimecode(sequence.durationSec, sequence.settings.fps)}</strong>
-          <span>Clips</span>
+          <span>{copy.clips}</span>
           <strong>{sequence.clipCount}</strong>
-          <span>Frame</span>
+          <span>{copy.frame}</span>
           <strong>{dimensionsLabel}</strong>
-          <span>FPS</span>
+          <span>{copy.fps}</span>
           <strong>{sequence.settings.fps}</strong>
         </div>
       </div>
@@ -218,6 +222,7 @@ function SequenceInspector({
 }
 
 export function TimelineClipInspector({
+  copy,
   selectedItem,
   selectedSequence,
   projectFps,
@@ -227,7 +232,8 @@ export function TimelineClipInspector({
 }: TimelineClipInspectorProps) {
   if (!selectedItem && selectedSequence) {
     return (
-      <SequenceInspector
+        <SequenceInspector
+        copy={copy}
         sequence={selectedSequence}
         onRenameSequence={onRenameSequence}
         onSequenceSettingsChange={onSequenceSettingsChange}
@@ -235,7 +241,7 @@ export function TimelineClipInspector({
     );
   }
 
-  if (!selectedItem) return <InspectorEmptyState />;
+  if (!selectedItem) return <InspectorEmptyState copy={copy} />;
 
   const isVideoTrack = isWorkspaceTimelineVideoTrack(selectedItem.track);
   const isAudioClip = selectedItem.mediaKind === 'audio' || !isVideoTrack;
@@ -253,16 +259,16 @@ export function TimelineClipInspector({
   const transitionDuration = selectedItem.transitionOut?.type === 'crossfade' ? selectedItem.transitionOut.durationSec : 0;
 
   return (
-    <aside className={styles.settingsPanel} aria-label="Timeline clip settings">
+    <aside className={styles.settingsPanel} aria-label={copy.clipSettings}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.panelTitle}>{selectedItem.title}</p>
-          <span className={styles.panelSubtitle}>{workspaceTimelineTrackLabel(selectedItem.track)} clip</span>
+          <span className={styles.panelSubtitle}>{workspaceTimelineTrackLabel(selectedItem.track)} {copy.clip}</span>
         </div>
       </div>
       <div className={styles.settingsBody}>
         <label className={styles.settingsLabel}>
-          Clip name
+          {copy.clipName}
           <input
             className={styles.settingsInput}
             value={selectedItem.title}
@@ -271,21 +277,21 @@ export function TimelineClipInspector({
         </label>
 
         {canEditTransform ? (
-          <section className={styles.timelineInspectorGroup} aria-label="Clip transform">
+          <section className={styles.timelineInspectorGroup} aria-label={copy.clipTransform}>
             <div className={styles.sectionHeading}>
-              <span>Transform</span>
+              <span>{copy.transform}</span>
               <button
                 type="button"
                 className={styles.timelineInspectorResetButton}
                 onClick={() => onPatchItem(selectedItem.id, { transform: { ...DEFAULT_TRANSFORM } })}
-                aria-label="Reset clip transform"
-                title="Reset clip transform"
+                aria-label={copy.resetTransform}
+                title={copy.resetTransform}
               >
                 <RotateCcw size={13} />
               </button>
             </div>
             <InspectorSlider
-              label="Scale"
+              label={copy.scale}
               value={transform.scale}
               min={0.25}
               max={3}
@@ -294,7 +300,7 @@ export function TimelineClipInspector({
               onChange={(value) => patchTransform({ scale: value })}
             />
             <InspectorSlider
-              label="Position X"
+              label={copy.positionX}
               value={transform.positionX}
               min={-100}
               max={100}
@@ -303,7 +309,7 @@ export function TimelineClipInspector({
               onChange={(value) => patchTransform({ positionX: value })}
             />
             <InspectorSlider
-              label="Position Y"
+              label={copy.positionY}
               value={transform.positionY}
               min={-100}
               max={100}
@@ -312,7 +318,7 @@ export function TimelineClipInspector({
               onChange={(value) => patchTransform({ positionY: value })}
             />
             <InspectorSlider
-              label="Rotation"
+              label={copy.rotation}
               value={transform.rotation}
               min={-180}
               max={180}
@@ -321,7 +327,7 @@ export function TimelineClipInspector({
               onChange={(value) => patchTransform({ rotation: value })}
             />
             <InspectorSlider
-              label="Opacity"
+              label={copy.opacity}
               value={Math.round(transform.opacity * 100)}
               min={0}
               max={100}
@@ -333,12 +339,12 @@ export function TimelineClipInspector({
         ) : null}
 
         {canEditAudio ? (
-          <section className={styles.timelineInspectorGroup} aria-label="Clip audio">
+          <section className={styles.timelineInspectorGroup} aria-label={copy.clipAudio}>
             <div className={styles.sectionHeading}>
-              <span>Audio</span>
+              <span>{copy.audio}</span>
             </div>
             <InspectorSlider
-              label="Volume"
+              label={copy.volume}
               value={audioMix.volume}
               min={0}
               max={100}
@@ -352,15 +358,15 @@ export function TimelineClipInspector({
                 checked={audioMix.muted}
                 onChange={(event) => patchAudioMix({ muted: event.currentTarget.checked })}
               />
-              Mute clip
+              {copy.muteClip}
             </label>
           </section>
         ) : null}
 
         {!isAudioClip ? (
-          <section className={styles.timelineInspectorGroup} aria-label="Clip transition">
+          <section className={styles.timelineInspectorGroup} aria-label={copy.clipTransition}>
             <div className={styles.sectionHeading}>
-              <span>Transition</span>
+              <span>{copy.transition}</span>
             </div>
             <label className={styles.timelineInspectorCheckbox}>
               <input
@@ -370,11 +376,11 @@ export function TimelineClipInspector({
                   transitionOut: event.currentTarget.checked ? { type: 'crossfade', durationSec: 1 } : null,
                 })}
               />
-              Crossfade to next clip
+              {copy.crossfade}
             </label>
             {transitionDuration > 0 ? (
               <InspectorSlider
-                label="Duration"
+                label={copy.duration}
                 value={transitionDuration}
                 min={0.25}
                 max={2}
@@ -386,14 +392,14 @@ export function TimelineClipInspector({
           </section>
         ) : null}
 
-        <div className={styles.infoGrid} data-timeline-clip-timing="true" aria-label="Clip timing details">
-          <span>Start</span>
+        <div className={styles.infoGrid} data-timeline-clip-timing="true" aria-label={copy.clipTimingDetails}>
+          <span>{copy.start}</span>
           <strong>{formatWorkspaceTimecode(selectedItem.startSec, projectFps)}</strong>
-          <span>End</span>
+          <span>{copy.end}</span>
           <strong>{formatWorkspaceTimecode(itemEndSec(selectedItem), projectFps)}</strong>
-          <span>Duration</span>
+          <span>{copy.duration}</span>
           <strong>{formatWorkspaceTimecode(selectedItem.durationSec, projectFps)}</strong>
-          <span>Source in</span>
+          <span>{copy.sourceIn}</span>
           <strong>{formatWorkspaceTimecode(selectedItem.sourceStartSec ?? 0, projectFps)}</strong>
         </div>
       </div>

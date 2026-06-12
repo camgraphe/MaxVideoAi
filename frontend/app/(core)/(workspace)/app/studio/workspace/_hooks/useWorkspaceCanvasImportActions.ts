@@ -17,6 +17,14 @@ import type {
   WorkspaceCanvasTextPasteRequest,
 } from '../_components/WorkspaceCanvas.client';
 import type { WorkspaceProgramSnapshotPayload } from '../_components/WorkspaceVideoViewer';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 function createLocalCanvasImportId(prefix: string): string {
   if (globalThis.crypto?.randomUUID) return `${prefix}_${globalThis.crypto.randomUUID()}`;
@@ -32,6 +40,7 @@ type UseWorkspaceCanvasImportActionsParams = {
   setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  studioNotices: StudioCopy['notices'];
 };
 
 export function useWorkspaceCanvasImportActions({
@@ -43,6 +52,7 @@ export function useWorkspaceCanvasImportActions({
   setNodes,
   setNotice,
   setSelectedNodeId,
+  studioNotices,
 }: UseWorkspaceCanvasImportActionsParams): {
   handleCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
   handleCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest, sourceLabel?: string) => void;
@@ -79,7 +89,7 @@ export function useWorkspaceCanvasImportActions({
 
       const importIndex = nodes.length + canvasImportSequenceRef.current;
       canvasImportSequenceRef.current += 1;
-      const node = createAdHocWorkspaceNode(params.kind, importIndex, defaultModelId, {
+      const node = createAdHocWorkspaceNode(params.kind, importIndex, defaultModelId, studioNotices, {
         x: params.position.x - 105,
         y: params.position.y - 48,
       });
@@ -95,26 +105,34 @@ export function useWorkspaceCanvasImportActions({
       setSelectedNodeId(importedNode.id);
       setNotice(params.notice);
     },
-    [defaultModelId, nodes, patchNodeData, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId]
+    [defaultModelId, nodes, patchNodeData, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId, studioNotices]
   );
 
   const handleCanvasTextPaste = useCallback(
-    (request: WorkspaceCanvasTextPasteRequest, sourceLabel = 'pasted-text.txt') => {
+    (request: WorkspaceCanvasTextPasteRequest, sourceLabel?: string) => {
       const text = request.text.trim();
       if (!text) return;
+      const resolvedSourceLabel = sourceLabel ?? studioNotices.pastedTextFilename;
       applyCanvasImportedNodeData({
         kind: 'text-prompt',
         nodeData: {
-          subtitle: sourceLabel,
+          subtitle: resolvedSourceLabel,
           promptRole: 'prompt',
           promptText: text,
         },
-        notice: request.targetNodeId ? `${sourceLabel} pasted into the prompt block.` : `${sourceLabel} added to the canvas.`,
+        notice: request.targetNodeId
+          ? formatNotice(studioNotices.textPastedIntoPrompt, { source: resolvedSourceLabel })
+          : formatNotice(studioNotices.sourceAddedToCanvas, { source: resolvedSourceLabel }),
         position: request.position,
         targetNodeId: request.targetNodeId,
       });
     },
-    [applyCanvasImportedNodeData]
+    [
+      applyCanvasImportedNodeData,
+      studioNotices.pastedTextFilename,
+      studioNotices.sourceAddedToCanvas,
+      studioNotices.textPastedIntoPrompt,
+    ]
   );
 
   const handleCanvasFileDrop = useCallback(
@@ -128,7 +146,7 @@ export function useWorkspaceCanvasImportActions({
         };
         const targetNodeId = index === 0 ? request.targetNodeId : null;
         if (!kind) {
-          unsupportedFiles.push(file.name || 'Untitled file');
+          unsupportedFiles.push(file.name || studioNotices.untitledFile);
           return;
         }
 
@@ -142,11 +160,11 @@ export function useWorkspaceCanvasImportActions({
                   position,
                   targetNodeId,
                 },
-                file.name || localCanvasImportFallbackName(kind)
+                file.name || localCanvasImportFallbackName(kind, studioNotices)
               );
             })
             .catch(() => {
-              setNotice(`Could not read ${file.name || 'the text file'}.`);
+              setNotice(formatNotice(studioNotices.couldNotReadTextFile, { filename: file.name || localCanvasImportFallbackName(kind, studioNotices) }));
             });
           return;
         }
@@ -154,9 +172,9 @@ export function useWorkspaceCanvasImportActions({
         const idSeed = `${Date.now().toString(36)}-${index}-${canvasImportSequenceRef.current}`;
         const objectUrl = URL.createObjectURL(file);
         localCanvasObjectUrlsRef.current.push(objectUrl);
-        const asset = workspaceAssetRecordFromCanvasFile(file, kind, objectUrl, idSeed);
+        const asset = workspaceAssetRecordFromCanvasFile(file, kind, objectUrl, idSeed, studioNotices);
         if (!asset) {
-          unsupportedFiles.push(file.name || 'Untitled file');
+          unsupportedFiles.push(file.name || studioNotices.untitledFile);
           return;
         }
         applyCanvasImportedNodeData({
@@ -165,24 +183,31 @@ export function useWorkspaceCanvasImportActions({
             subtitle: asset.filename,
             asset,
           },
-          notice: targetNodeId ? `${asset.filename} attached to the media block.` : `${asset.filename} added to the canvas.`,
+          notice: targetNodeId
+            ? formatNotice(studioNotices.fileAttachedToMediaBlock, { filename: asset.filename })
+            : formatNotice(studioNotices.fileAddedToCanvas, { filename: asset.filename }),
           position,
           targetNodeId,
         });
       });
 
       if (unsupportedFiles.length) {
-        setNotice(`Unsupported file${unsupportedFiles.length > 1 ? 's' : ''}: ${unsupportedFiles.join(', ')}.`);
+        setNotice(formatNotice(unsupportedFiles.length > 1 ? studioNotices.unsupportedFiles : studioNotices.unsupportedFile, { files: unsupportedFiles.join(', ') }));
       }
     },
-    [applyCanvasImportedNodeData, handleCanvasTextPaste, setNotice]
+    [
+      applyCanvasImportedNodeData,
+      handleCanvasTextPaste,
+      setNotice,
+      studioNotices,
+    ]
   );
 
   const handleSendProgramSnapshotToCanvas = useCallback(
     (snapshot: WorkspaceProgramSnapshotPayload) => {
       const snapshotUrl = snapshot.dataUrl ?? snapshot.sourceUrl;
       if (!snapshotUrl) {
-        setNotice('No visible program frame is available for a snapshot.');
+        setNotice(studioNotices.noSnapshotFrame);
         return;
       }
 
@@ -192,12 +217,12 @@ export function useWorkspaceCanvasImportActions({
         id: createLocalCanvasImportId('program_snapshot'),
         kind: 'image',
         filename: snapshot.filename,
-        subtitle: `Snapshot · ${snapshot.timecode}`,
+        subtitle: formatNotice(studioNotices.snapshotSubtitle, { timecode: snapshot.timecode }),
         url: snapshotUrl,
         thumbUrl: snapshotUrl,
         dimensions: `${snapshot.width}x${snapshot.height}`,
       };
-      const node = createAdHocWorkspaceNode('asset-image', importIndex, defaultModelId, {
+      const node = createAdHocWorkspaceNode('asset-image', importIndex, defaultModelId, studioNotices, {
         x: -260 + (importIndex % 4) * 180,
         y: -170 + Math.floor(importIndex / 4) * 140,
       });
@@ -205,7 +230,7 @@ export function useWorkspaceCanvasImportActions({
         ...node,
         data: {
           ...node.data,
-          title: 'Program Snapshot',
+          title: studioNotices.programSnapshotTitle,
           subtitle: asset.filename,
           asset,
         },
@@ -215,9 +240,18 @@ export function useWorkspaceCanvasImportActions({
       setFocusMode('canvas');
       setActiveEditorSurface('canvas');
       setSelectedNodeId(snapshotNode.id);
-      setNotice(`${asset.filename} sent to the canvas.`);
+      setNotice(formatNotice(studioNotices.snapshotSentToCanvas, { filename: asset.filename }));
     },
-    [defaultModelId, nodes.length, setActiveEditorSurface, setFocusMode, setNodes, setNotice, setSelectedNodeId]
+    [
+      defaultModelId,
+      nodes.length,
+      setActiveEditorSurface,
+      setFocusMode,
+      setNodes,
+      setNotice,
+      setSelectedNodeId,
+      studioNotices,
+    ]
   );
 
   return {

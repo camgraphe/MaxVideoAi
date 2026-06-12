@@ -141,6 +141,7 @@ export function NodeFrame({
   const targetHandles = data.kind === 'shot' ? [] : inputHandles(data);
   const isResizable = isSourceResizableNodeKind(data.kind);
   const timelineMediaKind = timelineDragMediaKind(data);
+  const copy = data.studioCanvasCopy?.nodes;
   const suppressTimelineDragRef = useRef(false);
   const handlePointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     suppressTimelineDragRef.current = blocksTimelineNodeDrag(event.target);
@@ -204,8 +205,8 @@ export function NodeFrame({
             type="button"
             className={`${styles.nodeInspectButton} nodrag nowheel`}
             data-canvas-node-inspect-button={nodeId}
-            aria-label={`Open ${data.title} settings`}
-            title="Open settings (I)"
+            aria-label={(copy?.openSettings ?? 'Open {name} settings').replace('{name}', data.title)}
+            title={copy?.openSettingsTitle ?? 'Open settings (I)'}
           >
             <Settings2 size={13} strokeWidth={2.2} />
           </button>

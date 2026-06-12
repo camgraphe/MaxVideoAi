@@ -22,10 +22,12 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import { edgeLabel } from '../_lib/workspace-templates';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
 type NodeSettingsPanelProps = {
+  copy: StudioCopy['canvas']['nodes'];
   selectedNode: WorkspaceGraphNode | null;
   edges: WorkspaceGraphEdge[];
   capabilities: WorkspaceModelCapability[];
@@ -36,35 +38,37 @@ type NodeSettingsPanelProps = {
   onOpenAssetLibrary: (nodeId: string) => void;
 };
 
-function EmptyInspector() {
+function EmptyInspector({ copy }: { copy: StudioCopy['canvas']['nodes'] }) {
   return (
-    <aside className={styles.settingsPanel} aria-label="Node settings">
+    <aside className={styles.settingsPanel} aria-label={copy.nodeSettingsAria}>
       <div className={styles.panelHeader}>
         <div>
-          <p className={styles.panelTitle}>Inspector</p>
-          <span className={styles.panelSubtitle}>Select a node to edit settings</span>
+          <p className={styles.panelTitle}>{copy.inspectorTitle}</p>
+          <span className={styles.panelSubtitle}>{copy.selectNodeToEditSettings}</span>
         </div>
       </div>
       <div className={styles.emptyInspector}>
         <Sparkles size={22} />
-        <p>Canvas first</p>
-        <span>Pick a shot, prompt, asset or output to inspect its graph role.</span>
+        <p>{copy.canvasFirst}</p>
+        <span>{copy.emptyInspectorBody}</span>
       </div>
     </aside>
   );
 }
 
-function promptRoleLabel(role: WorkspacePromptRole): string {
-  if (role === 'scene_description') return 'Scene description';
+function promptRoleLabel(role: WorkspacePromptRole, copy: StudioCopy['canvas']['nodes']): string {
+  if (role === 'scene_description') return copy.promptRoleSceneDescription;
   return edgeLabel(role);
 }
 
 function AssetInspector({
+  copy,
   node,
   edges,
   onSendOutputToTimeline,
   onOpenAssetLibrary,
 }: {
+  copy: StudioCopy['canvas']['nodes'];
   node: WorkspaceGraphNode;
   edges: WorkspaceGraphEdge[];
   onSendOutputToTimeline: NodeSettingsPanelProps['onSendOutputToTimeline'];
@@ -88,40 +92,42 @@ function AssetInspector({
       {!asset?.thumbUrl && !asset?.url ? (
         <button type="button" className={styles.primaryPanelButton} onClick={() => onOpenAssetLibrary(node.id)}>
           <Plus size={15} />
-          Select media
+          {copy.selectMedia}
         </button>
       ) : (
         <button type="button" className={styles.secondaryPanelButton} onClick={() => onOpenAssetLibrary(node.id)}>
           <Plus size={15} />
-          Replace media
+          {copy.replaceMedia}
         </button>
       )}
       <div className={styles.timelineInsertActions}>
         <button type="button" className={styles.primaryPanelButton} disabled={!canSendAssetToTimeline} onClick={() => onSendOutputToTimeline(node.id)}>
           <Send size={15} />
-          Insert at playhead
+          {copy.insertAtPlayhead}
         </button>
       </div>
       <div className={styles.infoGrid}>
-        <span>Filename</span>
+        <span>{copy.filename}</span>
         <strong>{asset?.filename ?? node.data.subtitle ?? node.data.title}</strong>
-        <span>Type</span>
+        <span>{copy.type}</span>
         <strong>{asset?.kind ?? node.data.kind}</strong>
-        <span>Inputs</span>
+        <span>{copy.inputs}</span>
         <strong>{inputCount}</strong>
-        <span>Outputs</span>
+        <span>{copy.outputs}</span>
         <strong>{outputCount}</strong>
       </div>
-      <NodeInspectorConnections node={node} edges={edges} />
+      <NodeInspectorConnections copy={copy} node={node} edges={edges} />
     </>
   );
 }
 
 function PromptInspector({
+  copy,
   node,
   edges,
   onPatchNodeData,
 }: {
+  copy: StudioCopy['canvas']['nodes'];
   node: WorkspaceGraphNode;
   edges: WorkspaceGraphEdge[];
   onPatchNodeData: NodeSettingsPanelProps['onPatchNodeData'];
@@ -131,28 +137,28 @@ function PromptInspector({
   return (
     <>
       <div className={styles.infoGrid}>
-        <span>Type</span>
+        <span>{copy.type}</span>
         <strong>{node.data.kind}</strong>
-        <span>Inputs</span>
+        <span>{copy.inputs}</span>
         <strong>{inputCount}</strong>
-        <span>Outputs</span>
+        <span>{copy.outputs}</span>
         <strong>{outputCount}</strong>
       </div>
       <FieldLabel>
-        Prompt role
+        {copy.promptRole}
         <SelectControl
           value={String(node.data.promptRole ?? 'prompt')}
           onChange={(value) => onPatchNodeData(node.id, { promptRole: value as WorkspacePromptRole })}
         >
           {['prompt', 'style', 'camera', 'dialogue', 'narration', 'negative_prompt', 'scene_description'].map((role) => (
             <option key={role} value={role}>
-              {promptRoleLabel(role as WorkspacePromptRole)}
+              {promptRoleLabel(role as WorkspacePromptRole, copy)}
             </option>
           ))}
         </SelectControl>
       </FieldLabel>
       <FieldLabel>
-        Text
+        {copy.text}
         <textarea
           className={styles.settingsTextarea}
           value={String(node.data.promptText ?? '')}
@@ -160,30 +166,32 @@ function PromptInspector({
           onChange={(event) => onPatchNodeData(node.id, { promptText: event.currentTarget.value })}
         />
       </FieldLabel>
-      <NodeInspectorConnections node={node} edges={edges} />
+      <NodeInspectorConnections copy={copy} node={node} edges={edges} />
     </>
   );
 }
 
 function NoteInspector({
+  copy,
   node,
   onPatchNodeData,
 }: {
+  copy: StudioCopy['canvas']['nodes'];
   node: WorkspaceGraphNode;
   onPatchNodeData: NodeSettingsPanelProps['onPatchNodeData'];
 }) {
   return (
     <>
       <div className={styles.infoGrid}>
-        <span>Type</span>
+        <span>{copy.type}</span>
         <strong>{node.data.kind}</strong>
-        <span>Inputs</span>
+        <span>{copy.inputs}</span>
         <strong>0</strong>
-        <span>Outputs</span>
+        <span>{copy.outputs}</span>
         <strong>0</strong>
       </div>
       <FieldLabel>
-        Free text
+        {copy.freeText}
         <textarea
           className={styles.settingsTextarea}
           value={String(node.data.promptText ?? '')}
@@ -196,10 +204,12 @@ function NoteInspector({
 }
 
 function OutputInspector({
+  copy,
   node,
   edges,
   onSendOutputToTimeline,
 }: {
+  copy: StudioCopy['canvas']['nodes'];
   node: WorkspaceGraphNode;
   edges: WorkspaceGraphEdge[];
   onSendOutputToTimeline: NodeSettingsPanelProps['onSendOutputToTimeline'];
@@ -213,33 +223,34 @@ function OutputInspector({
     <>
       <NodeInspectorMediaPreview kind={output?.kind} thumbUrl={output?.thumbUrl ?? null} url={output?.url ?? null} />
       <div className={styles.infoGrid}>
-        <span>Model</span>
-        <strong>{output?.modelLabel ?? 'Unknown'}</strong>
-        <span>Status</span>
+        <span>{copy.model}</span>
+        <strong>{output?.modelLabel ?? copy.unknown}</strong>
+        <span>{copy.status}</span>
         <strong>{status}</strong>
-        <span>Workflow</span>
-        <strong>{output?.workflowType?.replaceAll('_', ' ') ?? 'Generated'}</strong>
-        <span>Duration</span>
-        <strong>{output?.durationSec ? `${output.durationSec}s` : 'n/a'}</strong>
-        <span>Job</span>
-        <strong>{output?.jobId ?? 'local'}</strong>
-        <span>Inputs</span>
+        <span>{copy.workflow}</span>
+        <strong>{output?.workflowType?.replaceAll('_', ' ') ?? copy.generatedResult}</strong>
+        <span>{copy.duration}</span>
+        <strong>{output?.durationSec ? `${output.durationSec}s` : copy.notAvailable}</strong>
+        <span>{copy.job}</span>
+        <strong>{output?.jobId ?? copy.localJob}</strong>
+        <span>{copy.inputs}</span>
         <strong>{inputCount}</strong>
-        <span>Outputs</span>
+        <span>{copy.outputs}</span>
         <strong>{outputCount}</strong>
       </div>
       <div className={styles.timelineInsertActions}>
         <button type="button" className={styles.primaryPanelButton} disabled={!canSendOutputToTimeline} onClick={() => onSendOutputToTimeline(node.id)}>
           <Send size={15} />
-          Insert at playhead
+          {copy.insertAtPlayhead}
         </button>
       </div>
-      <NodeInspectorConnections node={node} edges={edges} />
+      <NodeInspectorConnections copy={copy} node={node} edges={edges} />
     </>
   );
 }
 
 export function NodeSettingsPanel({
+  copy,
   selectedNode,
   edges,
   capabilities,
@@ -249,10 +260,10 @@ export function NodeSettingsPanel({
   onSendOutputToTimeline,
   onOpenAssetLibrary,
 }: NodeSettingsPanelProps) {
-  if (!selectedNode) return <EmptyInspector />;
+  if (!selectedNode) return <EmptyInspector copy={copy} />;
 
   return (
-    <aside className={styles.settingsPanel} aria-label="Node settings">
+    <aside className={styles.settingsPanel} aria-label={copy.nodeSettingsAria}>
       <div className={styles.panelHeader}>
         <div>
           <p className={styles.panelTitle}>{selectedNode.data.title}</p>
@@ -262,14 +273,14 @@ export function NodeSettingsPanel({
 
       <div className={styles.settingsBody}>
         {selectedNode.data.kind === 'asset-image' || selectedNode.data.kind === 'asset-video' || selectedNode.data.kind === 'asset-audio' ? (
-          <AssetInspector node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} onOpenAssetLibrary={onOpenAssetLibrary} />
+          <AssetInspector copy={copy} node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} onOpenAssetLibrary={onOpenAssetLibrary} />
         ) : null}
-        {selectedNode.data.kind === 'text-prompt' ? <PromptInspector node={selectedNode} edges={edges} onPatchNodeData={onPatchNodeData} /> : null}
-        {selectedNode.data.kind === 'note' ? <NoteInspector node={selectedNode} onPatchNodeData={onPatchNodeData} /> : null}
+        {selectedNode.data.kind === 'text-prompt' ? <PromptInspector copy={copy} node={selectedNode} edges={edges} onPatchNodeData={onPatchNodeData} /> : null}
+        {selectedNode.data.kind === 'note' ? <NoteInspector copy={copy} node={selectedNode} onPatchNodeData={onPatchNodeData} /> : null}
         {selectedNode.data.kind === 'shot' ? (
-          <ShotNodeInspector node={selectedNode} edges={edges} capabilities={capabilities} onPatchShot={onPatchShot} onGenerateShot={onGenerateShot} />
+          <ShotNodeInspector copy={copy} node={selectedNode} edges={edges} capabilities={capabilities} onPatchShot={onPatchShot} onGenerateShot={onGenerateShot} />
         ) : null}
-        {selectedNode.data.kind === 'output' ? <OutputInspector node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} /> : null}
+        {selectedNode.data.kind === 'output' ? <OutputInspector copy={copy} node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} /> : null}
       </div>
     </aside>
   );

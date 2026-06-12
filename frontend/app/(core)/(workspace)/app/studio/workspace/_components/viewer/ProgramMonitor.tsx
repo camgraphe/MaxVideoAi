@@ -11,17 +11,19 @@ import {
   workspaceProjectDimensions,
   workspaceProjectDimensionsLabel,
 } from '../../_lib/workspace-project-settings';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type ProgramZoom = 'fit' | '50' | '100';
 
-const PROGRAM_ZOOM_OPTIONS: Array<{ value: ProgramZoom; label: string }> = [
-  { value: 'fit', label: 'Fit' },
-  { value: '50', label: '50%' },
-  { value: '100', label: '100%' },
+const PROGRAM_ZOOM_VALUES: ProgramZoom[] = [
+  'fit',
+  '50',
+  '100',
 ];
 
 type ProgramMonitorProps = {
   activeModelLabel: string | null;
+  copy: StudioCopy['viewer']['monitor'];
   controls: ReactNode;
   layers: ReactNode;
   playheadSec: number;
@@ -31,6 +33,7 @@ type ProgramMonitorProps = {
 
 export function ProgramMonitor({
   activeModelLabel,
+  copy,
   controls,
   layers,
   playheadSec,
@@ -57,21 +60,21 @@ export function ProgramMonitor({
     <div className={styles.programMonitor} data-testid="editor-program-monitor">
       <div className={styles.programMonitorHeader}>
         <div className={styles.programMonitorTitle}>
-          <span>Program</span>
+          <span>{copy.program}</span>
           <small>{projectSettings.aspectRatio} · {projectDimensionsLabel} · {projectSettings.fps} fps</small>
           {activeModelLabel ? <em className={styles.programModelPill}>{activeModelLabel}</em> : null}
         </div>
         <div className={styles.programMonitorActions}>
           <label className={styles.programZoomControl}>
-            <span>Zoom</span>
+            <span>{copy.zoom}</span>
             <select
               value={programZoom}
               onChange={(event) => setProgramZoom(event.currentTarget.value as ProgramZoom)}
-              title="Program monitor zoom. Fit shows the whole sequence frame; 100% maps sequence pixels to preview pixels."
-              aria-label="Program monitor zoom"
+              title={copy.zoomTitle}
+              aria-label={copy.zoomAria}
             >
-              {PROGRAM_ZOOM_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>{option.label}</option>
+              {PROGRAM_ZOOM_VALUES.map((value) => (
+                <option key={value} value={value}>{value === 'fit' ? copy.fit : `${value}%`}</option>
               ))}
             </select>
           </label>
@@ -80,8 +83,8 @@ export function ProgramMonitor({
             type="button"
             className={styles.programFullscreenButton}
             onClick={() => setProgramZoom((current) => (current === 'fit' ? '100' : 'fit'))}
-            aria-label="Toggle program zoom"
-            title="Toggle program zoom"
+            aria-label={copy.toggleZoom}
+            title={copy.toggleZoom}
           >
             <Maximize2 size={14} />
           </button>

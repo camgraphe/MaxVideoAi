@@ -21,11 +21,13 @@ import {
 import type { WorkspaceTimelineItem } from '../../_lib/workspace-types';
 import { isWorkspaceTimelineVideoTrack } from '../../_lib/workspace-timeline-tracks';
 import type { TimelineTool } from './TimelineToolbar';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export type TimelineSelectionMode = 'replace' | 'toggle' | 'focus';
 
 type TimelineClipProps = {
   activeTool: TimelineTool;
+  copy: StudioCopy['timeline']['clips'];
   index: number;
   isInteracting: boolean;
   isLocked: boolean;
@@ -61,6 +63,7 @@ function waveformBarsForItem(item: WorkspaceTimelineItem): number[] {
 
 export const TimelineClip = memo(function TimelineClip({
   item,
+  copy,
   layout,
   index,
   isInteracting,
@@ -192,8 +195,8 @@ export const TimelineClip = memo(function TimelineClip({
       }}
       onMouseDown={handleClipMouseDown}
       onPointerDown={handleClipPointerDown}
-      title={isLocked ? 'Track locked' : activeTool === 'blade' ? 'Click to cut this clip' : activeTool === 'select' ? 'Drag to move this clip' : 'Use the trim handles for this tool'}
-      aria-label={`${item.title} timeline clip`}
+      title={isLocked ? copy.trackLocked : activeTool === 'blade' ? copy.clickToCut : activeTool === 'select' ? copy.dragToMove : copy.useTrimHandles}
+      aria-label={copy.timelineClip.replace('{title}', item.title)}
     >
       <div
         role="button"
@@ -202,8 +205,8 @@ export const TimelineClip = memo(function TimelineClip({
         onMouseDown={(event) => beginMouseResize(event, 'resize-start')}
         onPointerDown={(event) => beginPointerResize(event, 'resize-start')}
         onClick={(event) => event.stopPropagation()}
-        title="Trim clip start"
-        aria-label="Trim clip start"
+        title={copy.trimStart}
+        aria-label={copy.trimStart}
       />
       {showClipThumbnail ? <img src={item.thumbnailUrl ?? ''} alt="" /> : null}
       {isAudio ? (
@@ -217,7 +220,7 @@ export const TimelineClip = memo(function TimelineClip({
         <strong>{item.title}</strong>
         <span>
           {formatDuration(layout.durationSec)}
-          {item.sourceStartSec ? ` · in ${formatDuration(item.sourceStartSec)}` : ''}
+          {item.sourceStartSec ? ` · ${copy.sourceIn.replace('{time}', formatDuration(item.sourceStartSec))}` : ''}
         </span>
       </div>
       {item.transitionOut?.type === 'crossfade' ? (
@@ -230,8 +233,8 @@ export const TimelineClip = memo(function TimelineClip({
             onPointerDown={handleButtonPointer}
             onClick={(event) => { handleActionClick(event); onMove(item.id, -1); }}
             disabled={isLocked || index === 0}
-            title="Move clip left"
-            aria-label="Move clip left"
+            title={copy.moveLeft}
+            aria-label={copy.moveLeft}
           >
             <SkipBack size={12} />
           </button>
@@ -240,8 +243,8 @@ export const TimelineClip = memo(function TimelineClip({
             onPointerDown={handleButtonPointer}
             onClick={(event) => { handleActionClick(event); onMove(item.id, 1); }}
             disabled={isLocked || index === total - 1}
-            title="Move clip right"
-            aria-label="Move clip right"
+            title={copy.moveRight}
+            aria-label={copy.moveRight}
           >
             <SkipForward size={12} />
           </button>
@@ -254,8 +257,8 @@ export const TimelineClip = memo(function TimelineClip({
         onMouseDown={(event) => beginMouseResize(event, 'resize-end')}
         onPointerDown={(event) => beginPointerResize(event, 'resize-end')}
         onClick={(event) => event.stopPropagation()}
-        title="Trim clip end"
-        aria-label="Trim clip end"
+        title={copy.trimEnd}
+        aria-label={copy.trimEnd}
       />
     </div>
   );

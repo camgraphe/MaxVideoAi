@@ -48,6 +48,7 @@ import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
 import { workspaceNodeTypes } from './nodes/workspace-node-types';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type {
   WorkspaceCanvasFileDropRequest,
@@ -63,6 +64,8 @@ export type WorkspaceHandleDropRequest = {
 };
 
 type WorkspaceCanvasProps = {
+  copy: StudioCopy['canvas'];
+  notices: StudioCopy['notices'];
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   isKeyboardDeleteEnabled: boolean;
@@ -80,11 +83,13 @@ type WorkspaceCanvasProps = {
   onInspectNode: (nodeId: string | null) => void;
   toolbar: Omit<
     CanvasFloatingToolbarProps,
-    'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
+    'copy' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
   >;
 };
 
 export function WorkspaceCanvas({
+  copy,
+  notices,
   nodes,
   edges,
   isKeyboardDeleteEnabled,
@@ -106,6 +111,8 @@ export function WorkspaceCanvas({
     <ReactFlowProvider>
       <WorkspaceCanvasInner
         nodes={nodes}
+        copy={copy}
+        notices={notices}
         edges={edges}
         isKeyboardDeleteEnabled={isKeyboardDeleteEnabled}
         onNodesChange={onNodesChange}
@@ -155,6 +162,8 @@ function areCanvasNodeIdSelectionsEqual(left: string[], right: string[]): boolea
 }
 
 function WorkspaceCanvasInner({
+  copy,
+  notices,
   nodes,
   edges,
   isKeyboardDeleteEnabled,
@@ -207,6 +216,7 @@ function WorkspaceCanvasInner({
     paletteDragPreview,
   } = useCanvasController({
     canvasShellRef,
+    copy: copy.nodes,
     onCanvasFileDrop,
     onCanvasInteraction,
     onCanvasTextPaste,
@@ -274,7 +284,7 @@ function WorkspaceCanvasInner({
       }
 
       const handleId = inferWorkspaceEdgeKind(params.handleId, params.handleId);
-      const draft = resolveWorkspaceHandleDropDraft(handleId, handleType);
+      const draft = resolveWorkspaceHandleDropDraft(handleId, notices, handleType);
       const pointer = pointerFromConnectionEvent(event);
       if (!draft || !pointer) {
         updateHandleDropPreview(null);
@@ -291,7 +301,7 @@ function WorkspaceCanvasInner({
         position: flowPosition,
       });
     },
-    [onCanvasInteraction, reactFlow, updateHandleDropPreview]
+    [notices, onCanvasInteraction, reactFlow, updateHandleDropPreview]
   );
 
   const handlePaneMouseMove = useCallback(
@@ -328,7 +338,8 @@ function WorkspaceCanvasInner({
     <section
       ref={canvasShellRef}
       className={styles.canvasShell}
-      aria-label="MaxVideoAI editor canvas"
+      data-studio-canvas-shell="true"
+      aria-label={copy.ariaLabel}
       onClickCapture={handleCanvasClickCapture}
     >
       <ReactFlow
@@ -387,10 +398,11 @@ function WorkspaceCanvasInner({
         <Background color="rgba(148, 163, 184, 0.18)" gap={24} size={1} variant={BackgroundVariant.Dots} />
         {handleDropPreview ? <CanvasHandleDropPreview preview={handleDropPreview} /> : null}
         {paletteDragPreview ? <CanvasPaletteDragPreview preview={paletteDragPreview} /> : null}
-        <CanvasMap edges={edges} nodes={nodes} />
+        <CanvasMap copy={copy.map} edges={edges} nodes={nodes} />
       </ReactFlow>
       <CanvasFloatingToolbar
         {...toolbar}
+        copy={copy}
         selectionTool={selectionTool}
         selectedNodeCount={selectedNodeIds.length}
         onDeleteSelectedNodes={handleDeleteSelectedNodes}
@@ -398,8 +410,8 @@ function WorkspaceCanvasInner({
       />
       {nodes.length === 0 ? (
         <div className={styles.canvasEmptyState}>
-          <p>No graph yet</p>
-          <span>Start from a template or add nodes from the library.</span>
+          <p>{copy.toolbar.emptyTitle}</p>
+          <span>{copy.toolbar.emptyBody}</span>
         </div>
       ) : null}
     </section>

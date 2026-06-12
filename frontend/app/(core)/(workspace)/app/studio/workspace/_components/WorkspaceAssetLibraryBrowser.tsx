@@ -11,10 +11,12 @@ import type {
   WorkspaceLibraryAsset,
   WorkspaceLibrarySource,
 } from '../_lib/workspace-library-assets';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceAssetLibraryBrowserLayout = 'sidebar' | 'modal';
 
 type WorkspaceAssetLibraryBrowserProps = {
+  copy: StudioCopy['assetLibrary'];
   title: string;
   subtitle?: string;
   layout: WorkspaceAssetLibraryBrowserLayout;
@@ -33,8 +35,15 @@ type WorkspaceAssetLibraryBrowserProps = {
   emptySearchLabel?: string;
 };
 
-function pluralizeAssets(count: number): string {
-  return `${count} asset${count === 1 ? '' : 's'}`;
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function pluralizeAssets(count: number, copy: StudioCopy['assetLibrary']): string {
+  return `${count} ${count === 1 ? copy.assetSingular : copy.assetPlural}`;
 }
 
 function assetIcon(kind: WorkspaceLibraryAsset['kind']) {
@@ -45,6 +54,7 @@ function assetIcon(kind: WorkspaceLibraryAsset['kind']) {
 }
 
 export function WorkspaceAssetLibraryBrowser({
+  copy,
   title,
   subtitle,
   layout,
@@ -58,9 +68,9 @@ export function WorkspaceAssetLibraryBrowser({
   onSourceChange,
   onSelectAsset,
   headerActions,
-  searchPlaceholder = 'Search assets...',
-  emptyLabel = 'No matching media in your app library yet.',
-  emptySearchLabel = 'No assets match this search.',
+  searchPlaceholder,
+  emptyLabel,
+  emptySearchLabel,
 }: WorkspaceAssetLibraryBrowserProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -80,7 +90,7 @@ export function WorkspaceAssetLibraryBrowser({
     });
   }, [assets, searchQuery]);
 
-  const countLabel = isLoading ? 'Loading' : pluralizeAssets(filteredAssets.length);
+  const countLabel = isLoading ? copy.loading : pluralizeAssets(filteredAssets.length, copy);
   const browserClassName = `${styles.assetBrowser} ${
     layout === 'sidebar' ? styles.assetBrowserSidebar : styles.assetBrowserModal
   }`;
@@ -100,16 +110,16 @@ export function WorkspaceAssetLibraryBrowser({
 
       <label className={styles.assetBrowserSearch}>
         <Search size={14} />
-        <span>Search assets</span>
+        <span>{copy.searchAssets}</span>
         <input
           type="search"
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.currentTarget.value)}
-          placeholder={searchPlaceholder}
+          placeholder={searchPlaceholder ?? copy.searchPlaceholder}
         />
       </label>
 
-      <div className={styles.assetBrowserSources} role="tablist" aria-label="Library asset filters">
+      <div className={styles.assetBrowserSources} role="tablist" aria-label={copy.sourceFilters}>
         {sourceOptions.map((option) => {
           const active = source === option;
           return (
@@ -129,10 +139,10 @@ export function WorkspaceAssetLibraryBrowser({
 
       <div className={styles.assetBrowserContent}>
         {error ? <p className={styles.assetBrowserNotice}>{error}</p> : null}
-        {usingFallback ? <p className={styles.assetBrowserNotice}>Showing dev assets while your app library is empty.</p> : null}
-        {isLoading ? <p className={styles.assetBrowserNotice}>Loading your app library...</p> : null}
+        {usingFallback ? <p className={styles.assetBrowserNotice}>{copy.showingDevAssets}</p> : null}
+        {isLoading ? <p className={styles.assetBrowserNotice}>{copy.loadingLibrary}</p> : null}
         {!isLoading && filteredAssets.length === 0 ? (
-          <p className={styles.assetBrowserNotice}>{searchQuery.trim().length ? emptySearchLabel : emptyLabel}</p>
+          <p className={styles.assetBrowserNotice}>{searchQuery.trim().length ? emptySearchLabel ?? copy.emptySearch : emptyLabel ?? copy.emptyLibrary}</p>
         ) : null}
         <div className={styles.assetBrowserGrid}>
           {filteredAssets.map((asset) => {
@@ -155,7 +165,7 @@ export function WorkspaceAssetLibraryBrowser({
                   type="button"
                   className={styles.assetBrowserCard}
                   onClick={() => onSelectAsset(asset)}
-                  aria-label={`Use ${asset.name}`}
+                  aria-label={formatCopyValue(copy.useAsset, { name: asset.name })}
                 >
                   {content}
                 </button>

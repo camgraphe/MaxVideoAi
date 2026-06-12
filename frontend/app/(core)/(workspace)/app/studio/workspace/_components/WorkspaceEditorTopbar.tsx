@@ -87,7 +87,7 @@ export function WorkspaceEditorTopbar({
         </button>
       </div>
       <div className={styles.topbarRight}>
-        <StudioHeaderSession onExitToProjects={onExitToProjects} />
+        <StudioHeaderSession onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
         <div className={styles.topbarActions}>
           <button type="button" className={styles.exportButton} onClick={onOpenExportDialog} aria-label={studioCopy.topbar.exportAria}>
             <Download size={15} />

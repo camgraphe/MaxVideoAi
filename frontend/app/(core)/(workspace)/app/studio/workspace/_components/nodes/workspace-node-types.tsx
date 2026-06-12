@@ -13,6 +13,10 @@ import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector, Wo
 import { isPlayableAudioUrl, isPlayableVideoUrl, outputStatus } from '../../_lib/workspace-media-availability';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 
+function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] | null {
+  return data.studioCanvasCopy?.nodes ?? null;
+}
+
 function connectorLabel(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): string {
   return connectors.find((connector) => connector.kind === handle)?.label ?? edgeLabel(handle);
 }
@@ -119,24 +123,27 @@ function MediaPreview({
 function AssetMeta({ data }: { data: WorkspaceGraphNode['data'] }) {
   const asset = data.asset;
   if (!asset || typeof asset !== 'object') return null;
+  const copy = nodeCopy(data);
   return (
     <div className={styles.nodeMetaRow}>
-      <span>{String(asset.filename ?? data.subtitle ?? 'Asset')}</span>
+      <span>{String(asset.filename ?? data.subtitle ?? copy?.assetFallback ?? 'Asset')}</span>
       <span>{String(asset.subtitle ?? '')}</span>
     </div>
   );
 }
 
 export function AssetImageNode(props: NodeProps<WorkspaceGraphNode>) {
+  const copy = nodeCopy(props.data);
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<ImageIcon size={14} />} className={styles.assetNode}>
-      <MediaPreview data={props.data} icon={<ImageIcon size={22} />} label="Add image" nodeId={props.id} />
+      <MediaPreview data={props.data} icon={<ImageIcon size={22} />} label={copy?.addImage ?? 'Add image'} nodeId={props.id} />
       <AssetMeta data={props.data} />
     </NodeFrame>
   );
 }
 
 export function AssetVideoNode(props: NodeProps<WorkspaceGraphNode>) {
+  const copy = nodeCopy(props.data);
   const asset = props.data.asset;
   const thumbUrl = asset && typeof asset === 'object' && 'thumbUrl' in asset ? String(asset.thumbUrl ?? '') : '';
   const videoUrl = asset && typeof asset === 'object' && 'url' in asset ? String(asset.url ?? '') : '';
@@ -146,7 +153,7 @@ export function AssetVideoNode(props: NodeProps<WorkspaceGraphNode>) {
       {playableVideoUrl ? (
         <VideoPreview videoUrl={playableVideoUrl} posterUrl={thumbUrl || null} />
       ) : (
-        <MediaPreview data={props.data} icon={<Video size={22} />} label="Add video" nodeId={props.id} />
+        <MediaPreview data={props.data} icon={<Video size={22} />} label={copy?.addVideo ?? 'Add video'} nodeId={props.id} />
       )}
       {thumbUrl && !playableVideoUrl ? (
         <div className={styles.previewPlayBadge}>
@@ -159,6 +166,7 @@ export function AssetVideoNode(props: NodeProps<WorkspaceGraphNode>) {
 }
 
 export function AssetAudioNode(props: NodeProps<WorkspaceGraphNode>) {
+  const copy = nodeCopy(props.data);
   const asset = props.data.asset;
   const audioUrl = asset && typeof asset === 'object' && 'url' in asset ? String(asset.url ?? '') : '';
   const playableAudioUrl = isPlayableAudioUrl(audioUrl) ? audioUrl : null;
@@ -174,7 +182,7 @@ export function AssetAudioNode(props: NodeProps<WorkspaceGraphNode>) {
           ))}
         </div>
       ) : (
-        <EmptyMediaPicker data={props.data} icon={<Music2 size={22} />} label="Add audio" nodeId={props.id} />
+        <EmptyMediaPicker data={props.data} icon={<Music2 size={22} />} label={copy?.addAudio ?? 'Add audio'} nodeId={props.id} />
       )}
       <AssetMeta data={props.data} />
     </NodeFrame>
@@ -183,6 +191,7 @@ export function AssetAudioNode(props: NodeProps<WorkspaceGraphNode>) {
 
 export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
   const value = typeof props.data.promptText === 'string' ? props.data.promptText : '';
+  const copy = nodeCopy(props.data);
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<FileText size={14} />} className={styles.promptNode}>
       <textarea
@@ -193,8 +202,8 @@ export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
         spellCheck={false}
       />
       <div className={styles.nodeMetaRow}>
-        <span>{typeof props.data.promptRole === 'string' ? edgeLabel(props.data.promptRole as WorkspaceEdgeKind) : 'Prompt'}</span>
-        <span>{value.length} chars</span>
+        <span>{typeof props.data.promptRole === 'string' ? edgeLabel(props.data.promptRole as WorkspaceEdgeKind) : copy?.promptFallback ?? 'Prompt'}</span>
+        <span>{value.length} {copy?.chars ?? 'chars'}</span>
       </div>
     </NodeFrame>
   );
@@ -202,6 +211,7 @@ export function TextPromptNode(props: NodeProps<WorkspaceGraphNode>) {
 
 export function NoteNode(props: NodeProps<WorkspaceGraphNode>) {
   const value = typeof props.data.promptText === 'string' ? props.data.promptText : '';
+  const copy = nodeCopy(props.data);
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<StickyNote size={14} />} className={styles.noteNode}>
       <textarea
@@ -212,23 +222,24 @@ export function NoteNode(props: NodeProps<WorkspaceGraphNode>) {
         spellCheck={false}
       />
       <div className={styles.nodeMetaRow}>
-        <span>Canvas note</span>
-        <span>{value.length} chars</span>
+        <span>{copy?.canvasNote ?? 'Canvas note'}</span>
+        <span>{value.length} {copy?.chars ?? 'chars'}</span>
       </div>
     </NodeFrame>
   );
 }
 
-function statusLabel(status: WorkspaceShotStatus): string {
-  if (status === 'generating') return 'Generating';
-  if (status === 'completed') return 'Completed';
-  if (status === 'failed') return 'Failed';
-  if (status === 'incompatible') return 'Incompatible';
-  if (status === 'ready') return 'Ready';
-  return 'Draft';
+function statusLabel(status: WorkspaceShotStatus, copy: ReturnType<typeof nodeCopy>): string {
+  if (status === 'generating') return copy?.generating ?? 'Generating';
+  if (status === 'completed') return copy?.completed ?? 'Completed';
+  if (status === 'failed') return copy?.failed ?? 'Failed';
+  if (status === 'incompatible') return copy?.incompatible ?? 'Incompatible';
+  if (status === 'ready') return copy?.ready ?? 'Ready';
+  return copy?.draft ?? 'Draft';
 }
 
 export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
+  const copy = nodeCopy(props.data);
   const shot = props.data.shot;
   const status = shot?.status ?? 'draft';
   const validation = props.data.validation;
@@ -238,12 +249,12 @@ export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Clapperboard size={14} />} className={styles.shotNode}>
       <div className={styles.shotDropZone}>
         <Box size={22} />
-        <span>{status === 'completed' ? 'Output available' : 'Click to generate'}</span>
+        <span>{status === 'completed' ? copy?.outputAvailable ?? 'Output available' : copy?.clickToGenerate ?? 'Click to generate'}</span>
       </div>
       <div className={styles.shotNodeFooter}>
         <span>{shot?.durationSec ?? 5}s</span>
         <span>{shot?.aspectRatio ?? '16:9'}</span>
-        <span className={styles.modelBadge}>{validation?.capability?.label ?? shot?.modelId ?? 'Model'}</span>
+        <span className={styles.modelBadge}>{validation?.capability?.label ?? shot?.modelId ?? copy?.modelFallback ?? 'Model'}</span>
       </div>
       <div className={styles.shotCostLine}>
         <span>{estimatedCost}</span>
@@ -255,15 +266,16 @@ export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
         onClick={() => props.data.onGenerateShot?.(props.id)}
       >
         <Sparkles size={13} />
-        {status === 'generating' ? 'Generating' : 'Generate'}
+        {status === 'generating' ? copy?.generating ?? 'Generating' : copy?.generate ?? 'Generate'}
       </button>
-      <p className={`${styles.statusPill} ${styles[`status-${status}`]}`}>{statusLabel(status)}</p>
+      <p className={`${styles.statusPill} ${styles[`status-${status}`]}`}>{statusLabel(status, copy)}</p>
       <ShotInputDock data={props.data} />
     </NodeFrame>
   );
 }
 
 export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
+  const copy = nodeCopy(props.data);
   const output = props.data.output;
   const thumbUrl = output?.thumbUrl ?? output?.url ?? null;
   const status = outputStatus(output);
@@ -286,11 +298,11 @@ export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
       ) : (
         <div className={`${styles.nodePreviewEmpty} ${status === 'processing' ? styles.processingPreview : ''}`}>
           {status === 'processing' ? <Sparkles size={22} /> : <Play size={22} />}
-          <span>{status === 'processing' ? 'Processing' : 'Placeholder'}</span>
+          <span>{status === 'processing' ? copy?.processing ?? 'Processing' : copy?.placeholder ?? 'Placeholder'}</span>
         </div>
       )}
       <div className={styles.nodeMetaRow}>
-        <span>{output?.modelLabel ?? 'Generated output'}</span>
+        <span>{output?.modelLabel ?? copy?.generatedOutput ?? 'Generated output'}</span>
         <span>{status === 'ready' && output?.durationSec ? `${output.durationSec}s` : status}</span>
       </div>
       <button
@@ -300,7 +312,7 @@ export function OutputNode(props: NodeProps<WorkspaceGraphNode>) {
         onClick={() => props.data.onSendOutputToTimeline?.(props.id)}
       >
         <Send size={13} />
-        Send to timeline
+        {copy?.sendToTimeline ?? 'Send to timeline'}
       </button>
     </NodeFrame>
   );

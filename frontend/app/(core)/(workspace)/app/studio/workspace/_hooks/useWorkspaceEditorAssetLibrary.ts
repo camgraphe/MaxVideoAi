@@ -14,6 +14,7 @@ import {
   type WorkspaceLibraryAsset,
   type WorkspaceLibrarySource,
 } from '../_lib/workspace-library-assets';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceEditorAssetLibraryCacheEntry = {
   assets: WorkspaceLibraryAsset[];
@@ -29,7 +30,10 @@ function buildWorkspaceEditorAssetLibraryCacheKey(
   return `${kind ?? 'all'}:${source}`;
 }
 
-export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | null | undefined) {
+export function useWorkspaceEditorAssetLibrary(
+  nodeKind: WorkspaceNodeKind | null | undefined,
+  copy: StudioCopy['assetLibrary']
+) {
   const isEnabled = nodeKind !== undefined;
   const libraryKind = nodeKind ? workspaceLibraryKindForNodeKind(nodeKind) : null;
   const sourceOptions = useMemo(() => workspaceLibrarySourceOptionsForKind(libraryKind), [libraryKind]);
@@ -88,16 +92,16 @@ export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | nul
         if (response.status === 401) {
           WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
             assets: [],
-            error: 'Sign in to access your app library.',
+            error: copy.signInToAccessLibrary,
           });
           setUserAssets([]);
-          setError('Sign in to access your app library.');
+          setError(copy.signInToAccessLibrary);
           setLoadedKey(currentRequestKey);
           return;
         }
         const payload = await response.json().catch(() => null);
         if (!response.ok || !payload?.ok) {
-          throw new Error(typeof payload?.error === 'string' ? payload.error : 'Unable to load your app library.');
+          throw new Error(copy.unableToLoadLibrary);
         }
         const normalizedAssets = normalizeWorkspaceUserLibraryPayload(payload, libraryKind);
         WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
@@ -106,9 +110,9 @@ export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | nul
         });
         setUserAssets(normalizedAssets);
         setLoadedKey(currentRequestKey);
-      } catch (loadError) {
+      } catch {
         if (cancelled) return;
-        const nextError = loadError instanceof Error ? loadError.message : 'Unable to load your app library.';
+        const nextError = copy.unableToLoadLibrary;
         WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
           assets: [],
           error: nextError,
@@ -126,7 +130,7 @@ export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | nul
     return () => {
       cancelled = true;
     };
-  }, [activeSource, isEnabled, libraryKind, requestKey]);
+  }, [activeSource, copy.signInToAccessLibrary, copy.unableToLoadLibrary, isEnabled, libraryKind, requestKey]);
 
   const hasLoadedCurrentLibrary = Boolean(requestKey && loadedKey === requestKey);
   const shouldUseFallback =
@@ -135,7 +139,7 @@ export function useWorkspaceEditorAssetLibrary(nodeKind: WorkspaceNodeKind | nul
     userAssets.length === 0 &&
     fallbackAssets.length > 0 &&
     Boolean(error) &&
-    error !== 'Sign in to access your app library.';
+    error !== copy.signInToAccessLibrary;
   const assets = userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : [];
 
   return {

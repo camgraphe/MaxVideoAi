@@ -5,8 +5,8 @@ import { useCallback, useEffect, useId, useRef, useState, type MouseEvent as Rea
 import { LogOut, UserRound, Wallet } from 'lucide-react';
 import { NAV_ITEMS } from '@/components/AppSidebar';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
-import { useI18n } from '@/lib/i18n/I18nProvider';
 import styles from '../_styles/studio-session.module.css';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 function initialsFromEmail(email: string | null): string {
   if (!email) return '';
@@ -18,12 +18,19 @@ function initialsFromEmail(email: string | null): string {
   return name.slice(0, 2).toUpperCase();
 }
 
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
 type StudioHeaderSessionProps = {
   onExitToProjects: () => void;
+  studioCopy: StudioCopy;
 };
 
-export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionProps) {
-  const { t } = useI18n();
+export function StudioHeaderSession({ onExitToProjects, studioCopy }: StudioHeaderSessionProps) {
   const { authResolved, email, wallet, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
@@ -33,7 +40,7 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
   const sessionButtonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const walletAmount = wallet ? `$${wallet.balance.toFixed(2)}` : authResolved ? '--' : '...';
-  const sessionLabel = email ?? (authResolved ? 'No session' : 'Loading session');
+  const sessionLabel = email ?? (authResolved ? studioCopy.topbar.noSession : studioCopy.topbar.loadingSession);
   const initials = initialsFromEmail(email);
 
   useEffect(() => {
@@ -75,13 +82,13 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
   }, [signOut]);
 
   return (
-    <div className={styles.studioSessionCluster} aria-label="Studio account status">
+    <div className={styles.studioSessionCluster} aria-label={studioCopy.topbar.accountStatus}>
       <div className={styles.studioWalletShell}>
         <button
           ref={walletButtonRef}
           type="button"
           className={styles.studioWalletPill}
-          aria-label={`Studio wallet balance ${walletAmount}`}
+          aria-label={formatCopyValue(studioCopy.topbar.walletBalance, { amount: walletAmount })}
           aria-expanded={walletPromptOpen}
           aria-describedby={walletPromptOpen ? walletPromptId : undefined}
           onClick={() => {
@@ -99,10 +106,10 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
             role="status"
             className={styles.studioWalletPrompt}
           >
-            <p>{t('workspace.header.walletTopUp.label', 'Top up available')}</p>
-            <span>{t('workspace.header.walletTopUp.copy', 'Click to add funds and keep generating without interruption.')}</span>
+            <p>{studioCopy.topbar.walletTopUpLabel}</p>
+            <span>{studioCopy.topbar.walletTopUpCopy}</span>
             <Link href="/billing" prefetch={false} className={styles.studioWalletPromptCta}>
-              {t('workspace.header.walletTopUp.cta', 'Top up now')}
+              {studioCopy.topbar.walletTopUpCta}
             </Link>
           </div>
         ) : null}
@@ -130,13 +137,13 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
         {accountMenuOpen && email ? (
           <div ref={menuRef} className={styles.studioSessionMenu} role="menu">
             <div className={styles.studioSessionMenuHeader}>
-              <span>{t('workspace.header.signedIn', 'Signed in')}</span>
+              <span>{studioCopy.topbar.signedIn}</span>
               <strong>{email}</strong>
             </div>
-            <nav className={styles.studioSessionMenuNav} aria-label={t('workspace.header.primaryNav', 'Primary navigation')}>
+            <nav className={styles.studioSessionMenuNav} aria-label={studioCopy.topbar.primaryNavigation}>
               {NAV_ITEMS.map((item) => {
-                const label = t(`workspace.sidebar.links.${item.id}`, item.label);
-                const badgeLabel = item.badge ? t(`workspace.sidebar.badges.${item.badgeKey ?? item.id}`, item.badge) : null;
+                const label = studioCopy.topbar.navigationLabels[item.id] ?? item.label;
+                const badgeLabel = item.badge ? studioCopy.topbar.navigationLabels[item.badgeKey ?? item.id] ?? item.badge : null;
                 return (
                   <Link
                     key={item.id}
@@ -159,12 +166,12 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
                   className={styles.studioSessionMenuItem}
                   onClick={handleAdminNavigation}
                 >
-                  <span>Admin</span>
+                  <span>{studioCopy.topbar.admin}</span>
                 </Link>
               ) : null}
             </nav>
             <button type="button" className={styles.studioSessionMenuAction} onClick={handleSignOut}>
-              <span>{t('workspace.header.signOut', 'Sign out')}</span>
+              <span>{studioCopy.topbar.signOut}</span>
               <kbd>⌘⇧Q</kbd>
             </button>
           </div>
@@ -175,8 +182,8 @@ export function StudioHeaderSession({ onExitToProjects }: StudioHeaderSessionPro
           type="button"
           className={styles.studioSessionExit}
           onClick={onExitToProjects}
-          aria-label="Exit to projects"
-          title="Save and return to projects"
+          aria-label={studioCopy.topbar.exitToProjects}
+          title={studioCopy.topbar.saveAndReturnToProjects}
         >
           <LogOut size={13} />
         </button>

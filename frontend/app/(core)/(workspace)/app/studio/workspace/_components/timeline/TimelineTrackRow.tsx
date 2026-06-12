@@ -13,6 +13,7 @@ import type {
   WorkspaceTimelineTrack,
   WorkspaceTimelineVideoTrack,
 } from '../../_lib/workspace-types';
+import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type TimelineTrackDefinition = {
   id: WorkspaceTimelineTrack;
@@ -45,6 +46,7 @@ type TimelineTrackRowProps = {
   audioTrackId: WorkspaceTimelineAudioTrack | null;
   children: ReactNode;
   clampedPlayheadSec: number;
+  copy: StudioCopy['timeline']['tracks'];
   externalDropPreview: TimelineExternalDropPreview | null;
   formatDropDuration: (seconds: number) => string;
   isAudioTrack: boolean;
@@ -81,6 +83,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
   audioTrackId,
   children,
   clampedPlayheadSec,
+  copy,
   externalDropPreview,
   formatDropDuration,
   isAudioTrack,
@@ -127,7 +130,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
         data-timeline-track-locked={isTrackLocked ? 'true' : 'false'}
         data-timeline-track-muted={isTrackMuted ? 'true' : 'false'}
         onContextMenu={(event) => onOpenTrackContextMenu(event, track)}
-        title="Right-click for track actions"
+        title={copy.rightClickActions}
       >
         <div className={styles.trackLabelMain}>
           {track.icon}
@@ -144,8 +147,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
                 event.stopPropagation();
                 onAddVideoTrack();
               }}
-              title="Add video track"
-              aria-label="Add video track"
+              title={copy.addVideoTrack}
+              aria-label={copy.addVideoTrack}
             >
               <Plus size={12} />
             </button>
@@ -159,8 +162,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
                 event.stopPropagation();
                 onToggleVideoTrackVisibility(videoTrackId);
               }}
-              title={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
-              aria-label={isTrackHidden ? `Show ${track.label} track` : `Hide ${track.label} track`}
+              title={(isTrackHidden ? copy.showTrack : copy.hideTrack).replace('{track}', track.label)}
+              aria-label={(isTrackHidden ? copy.showTrack : copy.hideTrack).replace('{track}', track.label)}
               aria-pressed={isTrackHidden}
             >
               {isTrackHidden ? <EyeOff size={12} /> : <Eye size={12} />}
@@ -175,8 +178,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
                 event.stopPropagation();
                 onToggleAudioTrackMute(audioTrackId);
               }}
-              title={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
-              aria-label={isTrackMuted ? `Unmute ${track.label} track` : `Mute ${track.label} track`}
+              title={(isTrackMuted ? copy.unmuteTrack : copy.muteTrack).replace('{track}', track.label)}
+              aria-label={(isTrackMuted ? copy.unmuteTrack : copy.muteTrack).replace('{track}', track.label)}
               aria-pressed={isTrackMuted}
             >
               {isTrackMuted ? <VolumeX size={12} /> : <Volume2 size={12} />}
@@ -190,8 +193,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
               event.stopPropagation();
               onToggleTrackLock(track.id);
             }}
-            title={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
-            aria-label={isTrackLocked ? `Unlock ${track.label} track` : `Lock ${track.label} track`}
+            title={(isTrackLocked ? copy.unlockTrack : copy.lockTrack).replace('{track}', track.label)}
+            aria-label={(isTrackLocked ? copy.unlockTrack : copy.lockTrack).replace('{track}', track.label)}
             aria-pressed={isTrackLocked}
           >
             {isTrackLocked ? <Lock size={12} /> : <Unlock size={12} />}
@@ -206,8 +209,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
                 event.stopPropagation();
                 onAddAudioTrack();
               }}
-              title="Add audio track"
-              aria-label="Add audio track"
+              title={copy.addAudioTrack}
+              aria-label={copy.addAudioTrack}
             >
               <Plus size={12} />
             </button>
@@ -225,7 +228,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
           onDrop={(event) => onDropExternal(event, track.id)}
           onClick={onSurfaceClick}
           onPointerDown={onSurfacePointerDown}
-          title="Click empty timeline space to move the playhead, or drag to select clips"
+          title={copy.emptyLaneTitle}
         >
           <button
             type="button"
@@ -234,8 +237,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
             onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
             data-playhead-handle="true"
             data-timeline-control="true"
-            title="Drag timeline playhead"
-            aria-label={`Drag timeline playhead on ${track.label} track`}
+            title={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
+            aria-label={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
           />
           {snapGuideSec !== null ? (
             <span
@@ -275,7 +278,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
                   />
                 ) : null}
                 <span className={styles.timelineExternalDropGhostTitle}>
-                  {trackDropPreview.isValid ? trackDropPreview.title : 'Invalid drop'}
+                  {trackDropPreview.isValid ? trackDropPreview.title : copy.invalidDrop}
                 </span>
                 <span className={styles.timelineExternalDropGhostDuration}>
                   {formatDropDuration(trackDropPreview.durationSec)}

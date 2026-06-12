@@ -32,6 +32,25 @@ import {
   type WorkspaceLibraryAsset,
 } from '../_lib/workspace-library-assets';
 import type { WorkspaceEditorSurface } from '../_state/workspace-state';
+import type { StudioCopy } from '../../_lib/studio-copy';
+
+function formatNotice(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
+
+function localizedConnectionRejectionReason(reason: string, notices: StudioCopy['notices']): string {
+  if (reason === 'This link needs a source and a target connector.') return notices.linkNeedsSourceAndTarget;
+  if (reason === 'A block cannot link to itself.') return notices.blockCannotLinkToItself;
+  if (reason === 'These block connectors are not compatible.') return notices.connectorsNotCompatible;
+  const fullConnectorMatch = reason.match(/^(.+) is full\.$/);
+  if (fullConnectorMatch) {
+    return formatNotice(notices.connectorFull, { connector: fullConnectorMatch[1] });
+  }
+  return reason;
+}
 
 type UseWorkspaceGraphActionsParams = {
   capabilities: WorkspaceModelCapability[];
@@ -44,6 +63,7 @@ type UseWorkspaceGraphActionsParams = {
   setNodes: Dispatch<SetStateAction<WorkspaceGraphNode[]>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
+  studioNotices: StudioCopy['notices'];
 };
 
 export function useWorkspaceGraphActions({
@@ -57,6 +77,7 @@ export function useWorkspaceGraphActions({
   setNodes,
   setNotice,
   setSelectedNodeId,
+  studioNotices,
 }: UseWorkspaceGraphActionsParams): {
   handleCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   handleCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
@@ -131,9 +152,9 @@ export function useWorkspaceGraphActions({
       setActiveEditorSurface('canvas');
       setSelectedNodeId(nodeId);
       setAssetPickerNodeId(null);
-      setNotice(`${asset.name} attached to the media block.`);
+      setNotice(formatNotice(studioNotices.assetAttachedToMediaBlock, { name: asset.name }));
     },
-    [setActiveEditorSurface, setAssetPickerNodeId, setNodes, setNotice, setSelectedNodeId]
+    [setActiveEditorSurface, setAssetPickerNodeId, setNodes, setNotice, setSelectedNodeId, studioNotices.assetAttachedToMediaBlock]
   );
 
   const onNodesChange = useCallback(
@@ -159,7 +180,7 @@ export function useWorkspaceGraphActions({
     (connection: Connection) => {
       const rejectionReason = workspaceConnectionRejectionReason({ connection, nodes, edges, capabilities });
       if (rejectionReason) {
-        setNotice(rejectionReason);
+        setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices));
         return;
       }
       if (!connection.source || !connection.target) return;
@@ -172,16 +193,23 @@ export function useWorkspaceGraphActions({
         kind,
       });
       setEdges((current) => addEdge(edge, current));
-      setNotice(`${edge.data?.label ?? 'Graph'} link connected.`);
+      setNotice(formatNotice(studioNotices.graphLinkConnected, { label: edge.data?.label ?? studioNotices.graphFallbackLabel }));
     },
-    [capabilities, edges, nodes, setEdges, setNotice]
+    [
+      capabilities,
+      edges,
+      nodes,
+      setEdges,
+      setNotice,
+      studioNotices,
+    ]
   );
 
   const handleCreateNodeFromHandleDrop = useCallback(
     (request: WorkspaceHandleDropRequest) => {
-      const draft = resolveWorkspaceHandleDropDraft(request.handleId, request.handleType);
+      const draft = resolveWorkspaceHandleDropDraft(request.handleId, studioNotices, request.handleType);
       if (!draft) {
-        setNotice('No matching block is available for this connector.');
+        setNotice(studioNotices.noMatchingBlockForConnector);
         return;
       }
       if (request.handleType === 'target') {
@@ -197,7 +225,7 @@ export function useWorkspaceGraphActions({
           capabilities,
         });
         if (rejectionReason) {
-          setNotice(rejectionReason);
+          setNotice(localizedConnectionRejectionReason(rejectionReason, studioNotices));
           return;
         }
       }
@@ -206,6 +234,7 @@ export function useWorkspaceGraphActions({
         draft,
         defaultModelId,
         index: nodes.length,
+        notices: studioNotices,
         position: {
           x: request.position.x - 110,
           y: request.position.y - 48,
@@ -232,7 +261,10 @@ export function useWorkspaceGraphActions({
       setEdges((current) => addEdge(edge, current));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
-      setNotice(`${node.data.title} created from the ${edge.data?.label ?? 'connector'} connector.`);
+      setNotice(formatNotice(studioNotices.nodeCreatedFromConnector, {
+        title: node.data.title,
+        connector: edge.data?.label ?? studioNotices.connectorFallbackLabel,
+      }));
     },
     [
       capabilities,
@@ -244,21 +276,22 @@ export function useWorkspaceGraphActions({
       setNodes,
       setNotice,
       setSelectedNodeId,
+      studioNotices,
     ]
   );
 
   const handleCreateNodeFromPaletteDrop = useCallback(
     (request: WorkspacePaletteDropRequest) => {
-      const node = createAdHocWorkspaceNode(request.kind, nodes.length, defaultModelId, {
+      const node = createAdHocWorkspaceNode(request.kind, nodes.length, defaultModelId, studioNotices, {
         x: request.position.x - 105,
         y: request.position.y - 48,
       });
       setNodes((current) => appendSelectedWorkspaceGraphNode(current, node));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(node.id);
-      setNotice(`${node.data.title} dropped onto the canvas.`);
+      setNotice(formatNotice(studioNotices.nodeDroppedOntoCanvas, { title: node.data.title }));
     },
-    [defaultModelId, nodes.length, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId]
+    [defaultModelId, nodes.length, setActiveEditorSurface, setNodes, setNotice, setSelectedNodeId, studioNotices]
   );
 
   return {

@@ -199,7 +199,7 @@ export function useWorkspaceTimelineClipActions({
       if (!itemIds.length) return;
       setActiveEditorSurface('timeline');
       if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
-        setNotice('Unlock the track before unlinking clips.');
+        setNotice(studioNotices.unlockBeforeUnlinking);
         return;
       }
       setIsTimelinePlaying(false);
@@ -214,6 +214,7 @@ export function useWorkspaceTimelineClipActions({
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
+      studioNotices.unlockBeforeUnlinking,
       studioNotices.selectedClipsUnlinked,
       timelineItemsRef,
     ]
@@ -224,7 +225,7 @@ export function useWorkspaceTimelineClipActions({
       if (itemIds.length < 2) return;
       setActiveEditorSurface('timeline');
       if (timelineSelectionTouchesLockedTrack(timelineItemsRef.current, itemIds, lockedTimelineTracks)) {
-        setNotice('Unlock the track before linking clips.');
+        setNotice(studioNotices.unlockBeforeLinking);
         return;
       }
       setIsTimelinePlaying(false);
@@ -239,6 +240,7 @@ export function useWorkspaceTimelineClipActions({
       setActiveEditorSurface,
       setIsTimelinePlaying,
       setNotice,
+      studioNotices.unlockBeforeLinking,
       studioNotices.selectedClipsLinked,
       timelineItemsRef,
     ]

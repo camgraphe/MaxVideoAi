@@ -4,6 +4,7 @@ import type {
   WorkspaceGraphNode,
   WorkspaceNodeKind,
 } from './workspace-types';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export function workspaceNodeKindForCanvasFile(file: File): WorkspaceNodeKind | null {
   const mime = file.type.toLowerCase();
@@ -22,38 +23,43 @@ function workspaceAssetKindForCanvasNodeKind(kind: WorkspaceNodeKind): Workspace
   return null;
 }
 
-export function localCanvasImportFallbackName(kind: WorkspaceNodeKind): string {
-  if (kind === 'asset-image') return 'local-image';
-  if (kind === 'asset-video') return 'local-video';
-  if (kind === 'asset-audio') return 'local-audio';
-  return 'local-prompt.txt';
+export function localCanvasImportFallbackName(kind: WorkspaceNodeKind, notices: StudioCopy['notices']): string {
+  if (kind === 'asset-image') return notices.localImageFallbackName;
+  if (kind === 'asset-video') return notices.localVideoFallbackName;
+  if (kind === 'asset-audio') return notices.localAudioFallbackName;
+  return notices.localPromptFallbackName;
 }
 
-function formatCanvasImportFileSize(size: number): string {
-  if (!Number.isFinite(size) || size <= 0) return 'Local import';
+function formatCanvasImportFileSize(size: number, notices: StudioCopy['notices']): string {
+  if (!Number.isFinite(size) || size <= 0) return notices.localImportSizeLabel;
   if (size < 1024 * 1024) return `${Math.max(1, Math.round(size / 1024))} KB`;
   return `${(size / (1024 * 1024)).toFixed(size < 10 * 1024 * 1024 ? 1 : 0)} MB`;
 }
 
-function canvasImportAssetSubtitle(file: File, kind: WorkspaceNodeKind): string {
-  const label = kind === 'asset-image' ? 'Image' : kind === 'asset-video' ? 'Video' : 'Audio';
-  return `${label} · ${formatCanvasImportFileSize(file.size)}`;
+function canvasImportAssetSubtitle(file: File, kind: WorkspaceNodeKind, notices: StudioCopy['notices']): string {
+  const label = kind === 'asset-image'
+    ? notices.canvasImportImageLabel
+    : kind === 'asset-video'
+      ? notices.canvasImportVideoLabel
+      : notices.canvasImportAudioLabel;
+  return `${label} · ${formatCanvasImportFileSize(file.size, notices)}`;
 }
 
 export function workspaceAssetRecordFromCanvasFile(
   file: File,
   kind: WorkspaceNodeKind,
   objectUrl: string,
-  idSeed: string
+  idSeed: string,
+  notices: StudioCopy['notices']
 ): WorkspaceAssetRecord | null {
   const assetKind = workspaceAssetKindForCanvasNodeKind(kind);
   if (!assetKind) return null;
-  const filename = file.name || localCanvasImportFallbackName(kind);
+  const filename = file.name || localCanvasImportFallbackName(kind, notices);
   return {
     id: `local-${idSeed}-${filename}`,
     kind: assetKind,
     filename,
-    subtitle: canvasImportAssetSubtitle(file, kind),
+    subtitle: canvasImportAssetSubtitle(file, kind, notices),
     url: objectUrl,
     thumbUrl: assetKind === 'image' ? objectUrl : undefined,
   };
@@ -63,6 +69,7 @@ export function createAdHocWorkspaceNode(
   kind: WorkspaceNodeKind,
   index: number,
   modelId: string,
+  notices: StudioCopy['notices'],
   positionOverride?: { x: number; y: number }
 ): WorkspaceGraphNode {
   const position = positionOverride ?? { x: -220 + (index % 4) * 180, y: -120 + Math.floor(index / 4) * 140 };
@@ -75,8 +82,8 @@ export function createAdHocWorkspaceNode(
       position,
       data: {
         kind,
-        title: 'Image Reference',
-        subtitle: 'No image selected',
+        title: notices.adHocImageReferenceTitle,
+        subtitle: notices.noImageSelected,
         accent: '#8b5cf6',
         targetHandles: [],
         sourceHandles: ['reference'],
@@ -91,8 +98,8 @@ export function createAdHocWorkspaceNode(
       position,
       data: {
         kind,
-        title: 'Video Reference',
-        subtitle: 'No video selected',
+        title: notices.adHocVideoReferenceTitle,
+        subtitle: notices.noVideoSelected,
         accent: '#2563eb',
         targetHandles: [],
         sourceHandles: ['video_reference'],
@@ -107,8 +114,8 @@ export function createAdHocWorkspaceNode(
       position,
       data: {
         kind,
-        title: 'Audio Reference',
-        subtitle: 'No audio selected',
+        title: notices.adHocAudioReferenceTitle,
+        subtitle: notices.noAudioSelected,
         accent: '#22c55e',
         targetHandles: [],
         sourceHandles: ['audio'],
@@ -123,11 +130,11 @@ export function createAdHocWorkspaceNode(
       position,
       data: {
         kind,
-        title: 'Prompt',
-        subtitle: 'prompt.txt',
+        title: notices.adHocPromptTitle,
+        subtitle: notices.promptFileSubtitle,
         accent: '#60a5fa',
         promptRole: 'prompt',
-        promptText: 'Describe the next shot with subject, motion, lighting, lens, and mood.',
+        promptText: notices.defaultPromptText,
         sourceHandles: ['prompt'],
       },
     };
@@ -140,10 +147,10 @@ export function createAdHocWorkspaceNode(
       position,
       data: {
         kind,
-        title: 'Note',
-        subtitle: 'Canvas text',
+        title: notices.adHocNoteTitle,
+        subtitle: notices.canvasTextSubtitle,
         accent: '#facc15',
-        promptText: 'Write a free note for this canvas.',
+        promptText: notices.defaultNoteText,
       },
     };
   }
@@ -154,8 +161,8 @@ export function createAdHocWorkspaceNode(
     position,
     data: {
       kind: 'shot',
-      title: 'Shot',
-      subtitle: 'New generation block',
+      title: notices.adHocShotTitle,
+      subtitle: notices.newGenerationBlockSubtitle,
       accent: '#f97316',
       shot: {
         modelId,
@@ -168,7 +175,7 @@ export function createAdHocWorkspaceNode(
         audioEnabled: false,
         lipSyncEnabled: false,
         referenceStrength: 0.65,
-        outputName: 'New Shot',
+        outputName: notices.newShotOutputName,
         status: 'draft',
       },
       targetHandles: ['prompt', 'negative_prompt', 'product', 'character', 'style', 'video_reference', 'motion_reference', 'audio', 'voiceover', 'music', 'camera', 'dialogue', 'narration', 'previous_shot'],

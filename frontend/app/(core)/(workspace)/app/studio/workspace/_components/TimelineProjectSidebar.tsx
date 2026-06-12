@@ -17,12 +17,14 @@ import type {
   WorkspaceProjectMediaFolder,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type { WorkspaceProjectSequenceSummary };
 
 const styles = { ...baseStyles, ...mediaStyles };
 
 type TimelineProjectSidebarProps = {
+  copy: StudioCopy['viewer']['projectMedia'];
   nodes: WorkspaceGraphNode[];
   projectAssets: WorkspaceAssetRecord[];
   projectMediaFolders: WorkspaceProjectMediaFolder[];
@@ -54,6 +56,13 @@ type ProjectMediaFolderDialogState =
   | { initialName: string; type: 'create' }
   | { folderId: string; initialName: string; type: 'rename' }
   | { currentFolderId: string | null; itemId: string; itemType: 'asset' | 'generated'; title: string; type: 'move' };
+
+function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
+  return Object.entries(replacements).reduce(
+    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
+    value
+  );
+}
 
 function ProjectMediaBadge({ kind }: { kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video' }) {
   const icon =
@@ -109,6 +118,7 @@ function ProjectMediaArtwork({
 }
 
 function ProjectMediaCard({
+  copy,
   ariaPressed,
   canDrag,
   children,
@@ -129,6 +139,7 @@ function ProjectMediaCard({
   thumbnailUrl,
   title,
 }: {
+  copy: StudioCopy['viewer']['projectMedia'];
   ariaPressed?: boolean;
   canDrag?: boolean;
   children?: ReactNode;
@@ -179,7 +190,7 @@ function ProjectMediaCard({
       </div>
       {children}
       {onContextMenu ? (
-        <button type="button" className={styles.projectMediaMoreButton} aria-label={`More actions for ${title}`} onClick={(event) => {
+        <button type="button" className={styles.projectMediaMoreButton} aria-label={formatCopyValue(copy.moreActions, { title })} onClick={(event) => {
           event.stopPropagation();
           onContextMenu(event);
         }}>
@@ -191,6 +202,7 @@ function ProjectMediaCard({
 }
 
 function ProjectMediaContextMenu({
+  copy,
   canMoveMediaToFolder,
   menu,
   onClose,
@@ -200,6 +212,7 @@ function ProjectMediaContextMenu({
   onMove,
   onRename,
 }: {
+  copy: StudioCopy['viewer']['projectMedia'];
   canMoveMediaToFolder: boolean;
   menu: ProjectMediaContextMenu | null;
   onClose: () => void;
@@ -216,7 +229,7 @@ function ProjectMediaContextMenu({
       data-project-media-menu="true"
       style={{ left: menu.x, top: menu.y }}
       role="menu"
-      aria-label={`${menu.title} actions`}
+      aria-label={formatCopyValue(copy.actionsLabel, { title: menu.title })}
       onContextMenu={(event) => event.preventDefault()}
     >
       <span>{menu.title}</span>
@@ -225,7 +238,7 @@ function ProjectMediaContextMenu({
         onClose();
       }}>
         {menu.type === 'sequence' ? <Film size={13} /> : menu.type === 'folder' ? <Folder size={13} /> : <Plus size={13} />}
-        {menu.type === 'sequence' ? 'Open sequence' : menu.type === 'folder' ? 'Open folder' : 'Insert at playhead'}
+        {menu.type === 'sequence' ? copy.openSequence : menu.type === 'folder' ? copy.openFolder : copy.insertAtPlayhead}
       </button>
       {menu.type === 'sequence' ? (
         <button type="button" role="menuitem" onClick={() => {
@@ -233,7 +246,7 @@ function ProjectMediaContextMenu({
           onClose();
         }}>
           <FileVideo2 size={13} />
-          Duplicate
+          {copy.duplicate}
         </button>
       ) : null}
       {menu.type === 'folder' ? (
@@ -242,7 +255,7 @@ function ProjectMediaContextMenu({
           onClose();
         }}>
           <FolderPlus size={13} />
-          Rename folder
+          {copy.renameFolder}
         </button>
       ) : null}
       {canMoveMediaToFolder && (menu.type === 'asset' || menu.type === 'generated') ? (
@@ -251,7 +264,7 @@ function ProjectMediaContextMenu({
           onClose();
         }}>
           <Folder size={13} />
-          Move to folder
+          {copy.moveToFolder}
         </button>
       ) : null}
       <button type="button" role="menuitem" className={styles.projectMediaDangerAction} onClick={() => {
@@ -259,13 +272,14 @@ function ProjectMediaContextMenu({
         onClose();
       }}>
         <Trash2 size={13} />
-        Delete
+        {copy.delete}
       </button>
     </div>
   );
 }
 
 function ProjectMediaFolderDialog({
+  copy,
   dialog,
   folders,
   onClose,
@@ -273,6 +287,7 @@ function ProjectMediaFolderDialog({
   onMoveMedia,
   onRenameFolder,
 }: {
+  copy: StudioCopy['viewer']['projectMedia'];
   dialog: ProjectMediaFolderDialogState | null;
   folders: WorkspaceProjectMediaFolder[];
   onClose: () => void;
@@ -295,10 +310,10 @@ function ProjectMediaFolderDialog({
   if (!dialog) return null;
 
   const isMoveDialog = dialog.type === 'move';
-  const title = dialog.type === 'create' ? 'New folder' : dialog.type === 'rename' ? 'Rename folder' : 'Move to folder';
+  const title = dialog.type === 'create' ? copy.newFolder : dialog.type === 'rename' ? copy.renameFolder : copy.moveDialogTitle;
   const description = dialog.type === 'move'
-    ? `Choose a destination for ${dialog.title}.`
-    : 'Name this Project media folder.';
+    ? formatCopyValue(copy.moveDialogDescription, { title: dialog.title })
+    : copy.folderDialogDescription;
   const trimmedName = folderName.trim();
   const canSubmit = isMoveDialog || trimmedName.length > 0;
 
@@ -328,13 +343,13 @@ function ProjectMediaFolderDialog({
             <p>{title}</p>
             <span>{description}</span>
           </div>
-          <button type="button" onClick={onClose} aria-label="Close dialog">
+          <button type="button" onClick={onClose} aria-label={copy.closeDialog}>
             <X size={15} />
           </button>
         </div>
 
         {isMoveDialog ? (
-          <div className={styles.projectMediaFolderList} role="radiogroup" aria-label="Project media folder destination">
+          <div className={styles.projectMediaFolderList} role="radiogroup" aria-label={copy.folderDestination}>
             <button
               type="button"
               className={targetFolderId === null ? styles.projectMediaFolderOptionSelected : ''}
@@ -343,7 +358,7 @@ function ProjectMediaFolderDialog({
               onClick={() => setTargetFolderId(null)}
             >
               <FolderOpen size={15} />
-              <span>Project media</span>
+              <span>{copy.title}</span>
               {targetFolderId === null ? <Check size={14} /> : null}
             </button>
             {folders.map((folder) => (
@@ -363,7 +378,7 @@ function ProjectMediaFolderDialog({
           </div>
         ) : (
           <label className={styles.projectMediaDialogField}>
-            <span>Folder name</span>
+            <span>{copy.folderName}</span>
             <input
               autoFocus
               value={folderName}
@@ -374,9 +389,9 @@ function ProjectMediaFolderDialog({
         )}
 
         <div className={styles.projectMediaDialogActions}>
-          <button type="button" onClick={onClose}>Cancel</button>
+          <button type="button" onClick={onClose}>{copy.cancel}</button>
           <button type="submit" disabled={!canSubmit}>
-            {dialog.type === 'create' ? 'Create' : dialog.type === 'rename' ? 'Rename' : 'Move'}
+            {dialog.type === 'create' ? copy.create : dialog.type === 'rename' ? copy.rename : copy.move}
           </button>
         </div>
       </form>
@@ -411,6 +426,7 @@ function ProjectMediaFooterAction({
 }
 
 export function TimelineProjectSidebar({
+  copy,
   nodes,
   projectAssets,
   projectMediaFolders,
@@ -469,7 +485,7 @@ export function TimelineProjectSidebar({
 
   const openCreateFolderDialog = () => {
     setFolderDialog({
-      initialName: `New folder ${projectMediaFolders.length + 1}`,
+      initialName: formatCopyValue(copy.newFolderDefaultName, { index: projectMediaFolders.length + 1 }),
       type: 'create',
     });
   };
@@ -512,33 +528,33 @@ export function TimelineProjectSidebar({
   };
 
   return (
-    <aside className={`${styles.librarySidebar} ${styles.timelineProjectSidebar}`} aria-label="Project media library">
+    <aside className={`${styles.librarySidebar} ${styles.timelineProjectSidebar}`} aria-label={copy.sidebarLabel}>
       <div className={styles.projectMediaHeader}>
         <div className={styles.projectMediaHeaderCopy}>
-          <p className={styles.projectMediaTitle}>Project media</p>
-          <span className={styles.projectMediaSubtitle}>Assets, sequences and generated clips</span>
+          <p className={styles.projectMediaTitle}>{copy.title}</p>
+          <span className={styles.projectMediaSubtitle}>{copy.subtitle}</span>
         </div>
         <button type="button" className={styles.projectMediaActionButton} onClick={projectMedia.importMedia}>
           <Upload size={16} />
-          Import media
+          {copy.importMedia}
         </button>
       </div>
       <div className={styles.projectMediaControls}>
         <label className={styles.projectMediaSearch}>
           <Search size={14} />
-          <span>Search media</span>
+          <span>{copy.searchLabel}</span>
           <input
             type="search"
             value={projectMedia.searchQuery}
             onChange={(event) => projectMedia.setSearchQuery(event.currentTarget.value)}
-            placeholder="Search media..."
+            placeholder={copy.searchPlaceholder}
           />
         </label>
-        <div className={styles.projectMediaViewTools} aria-label="Project media view tools">
-          <button type="button" aria-label="Filter media">
+        <div className={styles.projectMediaViewTools} aria-label={copy.viewTools}>
+          <button type="button" aria-label={copy.filterMedia}>
             <ListFilter size={14} />
           </button>
-          <button type="button" aria-label="Grid view" aria-pressed="true">
+          <button type="button" aria-label={copy.gridView} aria-pressed="true">
             <LayoutGrid size={14} />
           </button>
         </div>
@@ -547,7 +563,7 @@ export function TimelineProjectSidebar({
         <div className={styles.projectMediaFolderHeader}>
           <button type="button" className={styles.projectMediaBackButton} onClick={projectMedia.openRootFolder}>
             <ArrowLeft size={14} />
-            Back to Project media
+            {copy.backToProjectMedia}
           </button>
           <div className={styles.projectMediaFolderTitle}>
             <FolderOpen size={15} />
@@ -556,18 +572,19 @@ export function TimelineProjectSidebar({
         </div>
       ) : null}
 
-      <div className={styles.projectMediaGrid} aria-label={`${projectName} project media`}>
+      <div className={styles.projectMediaGrid} aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}>
         {projectMedia.visibleSequences.map((sequence) => (
           <ProjectMediaCard
             key={sequence.id}
             ariaPressed={sequence.isActive}
             dataProjectSequenceId={sequence.id}
+            copy={copy}
             id={projectMediaSelectionKey('sequence', sequence.id)}
             isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
             kind="sequence"
             onClick={() => projectMedia.selectSequence(sequence.id)}
             onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequence.name, type: 'sequence' })}
-            subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} clip${sequence.clipCount === 1 ? '' : 's'}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
+            subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} ${sequence.clipCount === 1 ? copy.clipSingular : copy.clipPlural}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
             thumbnailUrl={sequence.previewUrl}
             title={sequence.name}
           />
@@ -580,6 +597,7 @@ export function TimelineProjectSidebar({
             data-project-media-folder-drop-target={projectMedia.folderDropTargetId === folder.id ? 'true' : undefined}
           >
             <ProjectMediaCard
+              copy={copy}
               id={key}
               isSelected={projectMedia.selectedKey === key || projectMedia.folderDropTargetId === folder.id}
               kind="folder"
@@ -604,6 +622,7 @@ export function TimelineProjectSidebar({
               data-project-media-title={asset.filename}
             >
               <ProjectMediaCard
+                copy={copy}
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
@@ -632,6 +651,7 @@ export function TimelineProjectSidebar({
               data-project-media-title={node.data.title}
             >
               <ProjectMediaCard
+                copy={copy}
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
@@ -652,7 +672,7 @@ export function TimelineProjectSidebar({
 
         {!projectMedia.totalItems || (!projectMedia.visibleSequences.length && !projectMedia.visibleFolders.length && !projectMedia.visibleProjectAssets.length && !projectMedia.visibleGeneratedNodes.length) ? (
           <p className={styles.projectMediaEmpty}>
-            {projectMedia.totalItems ? (projectMedia.activeFolder ? 'This folder is empty.' : 'No media matches this search.') : 'Import media or create a sequence to start.'}
+            {projectMedia.totalItems ? (projectMedia.activeFolder ? copy.folderEmpty : copy.noSearchMatches) : copy.empty}
           </p>
         ) : null}
       </div>
@@ -660,25 +680,26 @@ export function TimelineProjectSidebar({
       <div className={styles.projectMediaFooterBar}>
         <div className={styles.projectMediaItemCount}>
           <Layers3 size={16} />
-          <span>{projectMedia.visibleItemCount} item{projectMedia.visibleItemCount === 1 ? '' : 's'}</span>
+          <span>{projectMedia.visibleItemCount} {projectMedia.visibleItemCount === 1 ? copy.itemSingular : copy.itemPlural}</span>
         </div>
         <div className={styles.projectMediaFooterActions}>
           <ProjectMediaFooterAction onClick={openCreateFolderDialog}>
             <FolderPlus size={15} />
-            New folder
+            {copy.newFolder}
           </ProjectMediaFooterAction>
           <ProjectMediaFooterAction dataProjectSequenceCreate onClick={onNewSequence}>
             <FileVideo2 size={15} />
-            New sequence
+            {copy.newSequence}
           </ProjectMediaFooterAction>
           <ProjectMediaFooterAction danger disabled={!projectMedia.selectedCanDelete} onClick={projectMedia.deleteSelected}>
             <Trash2 size={15} />
-            Delete
+            {copy.delete}
           </ProjectMediaFooterAction>
         </div>
       </div>
 
       <ProjectMediaContextMenu
+        copy={copy}
         canMoveMediaToFolder={projectMedia.canMoveMediaToFolder}
         menu={projectMedia.contextMenu}
         onClose={() => projectMedia.setContextMenu(null)}
@@ -689,6 +710,7 @@ export function TimelineProjectSidebar({
         onRename={openRenameFolderDialog}
       />
       <ProjectMediaFolderDialog
+        copy={copy}
         dialog={folderDialog}
         folders={projectMediaFolders}
         onClose={() => setFolderDialog(null)}
