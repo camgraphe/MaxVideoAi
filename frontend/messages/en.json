@@ -3126,8 +3126,10 @@
         "recentSubtitle": "Pick up where you left off",
         "emptyRecent": "No Studio projects yet.",
         "viewAllProjects": "View all projects",
+        "projectActionsAria": "Project actions for {name}",
         "rename": "Rename",
         "duplicate": "Duplicate",
+        "duplicateSuffix": "copy",
         "delete": "Delete",
         "renameTitle": "Rename project",
         "renameSubmit": "Save name",
@@ -3135,6 +3137,7 @@
         "deleteBody": "This removes the project from Studio. This cannot be undone.",
         "deleteConfirm": "Delete project",
         "cancel": "Cancel",
+        "closeDialog": "Close dialog",
         "untitledProject": "Untitled edit",
         "localDraft": "Local draft",
         "customCanvas": "Custom canvas"

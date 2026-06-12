@@ -3161,8 +3161,10 @@
         "recentSubtitle": "Reprenez la ou vous vous etiez arrete",
         "emptyRecent": "Aucun projet Studio pour le moment.",
         "viewAllProjects": "Voir tous les projets",
+        "projectActionsAria": "Actions du projet pour {name}",
         "rename": "Renommer",
         "duplicate": "Dupliquer",
+        "duplicateSuffix": "copie",
         "delete": "Supprimer",
         "renameTitle": "Renommer le projet",
         "renameSubmit": "Enregistrer le nom",
@@ -3170,6 +3172,7 @@
         "deleteBody": "Cela retire le projet de Studio. Cette action est definitive.",
         "deleteConfirm": "Supprimer le projet",
         "cancel": "Annuler",
+        "closeDialog": "Fermer la fenetre",
         "untitledProject": "Montage sans titre",
         "localDraft": "Brouillon local",
         "customCanvas": "Canevas personnalise"

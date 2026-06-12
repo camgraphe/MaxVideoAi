@@ -264,7 +264,7 @@ export default function StudioProjectsPageClient() {
     const duplicate: StudioProjectRecord = {
       ...project,
       id: createStudioProjectId(),
-      name: `${project.name} ${studioCopy.projects.duplicate.toLowerCase()}`,
+      name: `${project.name} ${studioCopy.projects.duplicateSuffix}`,
       createdAt: now,
       updatedAt: now,
     };
@@ -387,11 +387,7 @@ export default function StudioProjectsPageClient() {
           <div className={styles.projectList}>
             {projects.length ? (
               projects.map((project) => {
-                const projectActionsLabel = [
-                  studioCopy.projects.rename,
-                  studioCopy.projects.duplicate,
-                  studioCopy.projects.delete,
-                ].join(' / ');
+                const projectActionsLabel = studioCopy.projects.projectActionsAria.replace('{name}', project.name);
                 return (
                   <div key={project.id} className={styles.projectCard}>
                     <button
@@ -415,7 +411,7 @@ export default function StudioProjectsPageClient() {
                       <button
                         type="button"
                         className={styles.projectActionButton}
-                        aria-label={`${projectActionsLabel}: ${project.name}`}
+                        aria-label={projectActionsLabel}
                         aria-haspopup="menu"
                         aria-expanded={openProjectMenuId === project.id}
                         onClick={() => setOpenProjectMenuId((current) => (current === project.id ? null : project.id))}
@@ -423,7 +419,7 @@ export default function StudioProjectsPageClient() {
                         <MoreVertical size={18} aria-hidden />
                       </button>
                       {openProjectMenuId === project.id ? (
-                        <span className={styles.projectActionMenu} role="menu" aria-label={`${projectActionsLabel}: ${project.name}`}>
+                        <span className={styles.projectActionMenu} role="menu" aria-label={projectActionsLabel}>
                           <button type="button" role="menuitem" onClick={() => openRenameDialog(project)}>
                             <Pencil size={14} />
                             {studioCopy.projects.rename}
@@ -470,7 +466,7 @@ export default function StudioProjectsPageClient() {
                 <h2 id="rename-project-title">{studioCopy.projects.renameTitle}</h2>
                 <p>{studioCopy.projects.projectNameLabel}</p>
               </div>
-              <button type="button" aria-label={studioCopy.projects.cancel} onClick={() => setRenameProjectId(null)}>
+              <button type="button" aria-label={studioCopy.projects.closeDialog} onClick={() => setRenameProjectId(null)}>
                 <X size={17} />
               </button>
             </div>
@@ -502,7 +498,7 @@ export default function StudioProjectsPageClient() {
                 <h2 id="delete-project-title">{studioCopy.projects.deleteTitle}</h2>
                 <p>{studioCopy.projects.deleteBody}</p>
               </div>
-              <button type="button" aria-label={studioCopy.projects.cancel} onClick={() => setDeleteProjectId(null)}>
+              <button type="button" aria-label={studioCopy.projects.closeDialog} onClick={() => setDeleteProjectId(null)}>
                 <X size={17} />
               </button>
             </div>

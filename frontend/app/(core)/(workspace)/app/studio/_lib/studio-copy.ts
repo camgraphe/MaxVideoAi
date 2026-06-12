@@ -19,8 +19,10 @@ export type StudioCopy = {
     recentSubtitle: string;
     emptyRecent: string;
     viewAllProjects: string;
+    projectActionsAria: string;
     rename: string;
     duplicate: string;
+    duplicateSuffix: string;
     delete: string;
     renameTitle: string;
     renameSubmit: string;
@@ -28,6 +30,7 @@ export type StudioCopy = {
     deleteBody: string;
     deleteConfirm: string;
     cancel: string;
+    closeDialog: string;
     untitledProject: string;
     localDraft: string;
     customCanvas: string;
@@ -86,8 +89,10 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     recentSubtitle: 'Pick up where you left off',
     emptyRecent: 'No Studio projects yet.',
     viewAllProjects: 'View all projects',
+    projectActionsAria: 'Project actions for {name}',
     rename: 'Rename',
     duplicate: 'Duplicate',
+    duplicateSuffix: 'copy',
     delete: 'Delete',
     renameTitle: 'Rename project',
     renameSubmit: 'Save name',
@@ -95,6 +100,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     deleteBody: 'This removes the project from Studio. This cannot be undone.',
     deleteConfirm: 'Delete project',
     cancel: 'Cancel',
+    closeDialog: 'Close dialog',
     untitledProject: 'Untitled edit',
     localDraft: 'Local draft',
     customCanvas: 'Custom canvas',

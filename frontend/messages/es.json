@@ -3153,8 +3153,10 @@
         "recentSubtitle": "Retoma donde lo dejaste",
         "emptyRecent": "Aun no hay proyectos Studio.",
         "viewAllProjects": "Ver todos los proyectos",
+        "projectActionsAria": "Acciones del proyecto para {name}",
         "rename": "Renombrar",
         "duplicate": "Duplicar",
+        "duplicateSuffix": "copia",
         "delete": "Eliminar",
         "renameTitle": "Renombrar proyecto",
         "renameSubmit": "Guardar nombre",
@@ -3162,6 +3164,7 @@
         "deleteBody": "Esto elimina el proyecto de Studio. No se puede deshacer.",
         "deleteConfirm": "Eliminar proyecto",
         "cancel": "Cancelar",
+        "closeDialog": "Cerrar dialogo",
         "untitledProject": "Edicion sin titulo",
         "localDraft": "Borrador local",
         "customCanvas": "Lienzo personalizado"
