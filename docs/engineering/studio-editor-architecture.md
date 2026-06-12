@@ -60,7 +60,7 @@ Use this map before adding new code. If a change does not fit one of these owner
 
 - `WorkspacePage.client.tsx`: state composition and hook wiring only.
 - `_components/WorkspaceEditorLayout.tsx`: surface composition and prop wiring only.
-- `_components/NodeLibrarySidebar.tsx`: Canvas-only block/template library.
+- `_components/canvas/CanvasFloatingToolbar.tsx`: Canvas-only block/template and canvas-template toolbar.
 - `_components/TimelineProjectSidebar.tsx`: Viewer-only Project media cards, context menu wiring, and drag surfaces.
 - `_components/WorkspaceCanvas.client.tsx`: React Flow canvas surface and canvas-level drop/paste wiring.
 - `_components/WorkspaceTimeline.tsx`: timeline shell, toolbar, track list, and high-level edit callbacks.

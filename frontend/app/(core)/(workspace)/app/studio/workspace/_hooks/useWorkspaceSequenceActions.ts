@@ -23,7 +23,11 @@ import type {
   WorkspaceTimelineVideoTrack,
 } from '../_lib/workspace-types';
 import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timeline-render';
-import { localizeStudioGeneratedSequenceDisplayName, type StudioCopy } from '../../_lib/studio-copy';
+import {
+  formatStudioCountLabel,
+  localizeStudioGeneratedSequenceDisplayName,
+  type StudioCopy,
+} from '../../_lib/studio-copy';
 
 function formatNotice(value: string, replacements: Record<string, string | number>): string {
   return Object.entries(replacements).reduce(
@@ -64,6 +68,7 @@ type UseWorkspaceSequenceActionsParams = {
   setTimelinePreview: Dispatch<SetStateAction<{ items: WorkspaceTimelineItem[]; playheadSec: number } | null>>;
   setVideoTrackCount: Dispatch<SetStateAction<number>>;
   snapshotActiveSequence: () => WorkspaceSequenceRecord;
+  studioCommonCopy: StudioCopy['common'];
   studioNotices: StudioCopy['notices'];
   studioProjectMediaCopy: StudioCopy['viewer']['projectMedia'];
   timelineItemsRef: MutableRefObject<WorkspaceTimelineItem[]>;
@@ -96,6 +101,7 @@ export function useWorkspaceSequenceActions({
   setTimelinePreview,
   setVideoTrackCount,
   snapshotActiveSequence,
+  studioCommonCopy,
   studioNotices,
   studioProjectMediaCopy,
   timelineItemsRef,
@@ -284,7 +290,11 @@ export function useWorkspaceSequenceActions({
 
       const sequenceDisplayName = deleteResult.deletedSequences.length === 1
         ? localizeStudioGeneratedSequenceDisplayName(deleteResult.deletedSequences[0].name, studioProjectMediaCopy)
-        : `${deleteResult.deletedSequences.length} ${studioProjectMediaCopy.sequenceName.replace(/\s*\{index\}/g, '').trim().toLowerCase()}s`;
+        : formatStudioCountLabel(
+            deleteResult.deletedSequences.length,
+            studioCommonCopy.sequenceSingular,
+            studioCommonCopy.sequencePlural
+          );
       if (
         typeof window !== 'undefined' &&
         !window.confirm(formatNotice(studioNotices.deleteSequenceConfirm, { name: sequenceDisplayName }))
@@ -303,7 +313,7 @@ export function useWorkspaceSequenceActions({
       setFocusMode('viewer');
       setNotice(formatNotice(studioNotices.sequenceDeleted, { name: sequenceDisplayName }));
     },
-    [activeSequenceId, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence, studioNotices.deleteSequenceConfirm, studioNotices.keepAtLeastOneSequence, studioNotices.sequenceDeleted, studioNotices.sequenceNotFound, studioProjectMediaCopy]
+    [activeSequenceId, applyWorkspaceSequence, sequences, setActiveEditorSurface, setActiveSequenceId, setFocusMode, setInspectedSequenceId, setNotice, setSequences, snapshotActiveSequence, studioCommonCopy, studioNotices.deleteSequenceConfirm, studioNotices.keepAtLeastOneSequence, studioNotices.sequenceDeleted, studioNotices.sequenceNotFound, studioProjectMediaCopy]
   );
 
   const handleRenameActiveSequence = useCallback(

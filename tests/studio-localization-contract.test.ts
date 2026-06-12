@@ -127,3 +127,30 @@ test('formatStudioProjectDate handles invalid and valid Studio dates', () => {
   assert.ok(formatted.trim().length > 0, 'valid Studio project date should format to a nonempty string');
   assert.notEqual(formatted, DEFAULT_STUDIO_COPY.projects.localDraft);
 });
+
+test('Studio source files do not keep legacy English UI copy outside the copy owner', () => {
+  const bannedFiles = [
+    'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceProjectMediaActions.ts',
+    'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceSequenceActions.ts',
+    'frontend/app/(core)/(workspace)/app/studio/workspace/_components/NodeLibrarySidebar.tsx',
+  ];
+
+  const bannedPatterns = [
+    /media assets?/,
+    /generated clips?/,
+    /\bfolders?\b/,
+    /\bBlock templates\b/,
+    /\bCanvas templates\b/,
+    /\bTemplate name\b/,
+    /\bNo saved canvas templates yet\b/,
+  ];
+
+  bannedFiles.forEach((relativePath) => {
+    const absolutePath = path.join(root, relativePath);
+    if (!fs.existsSync(absolutePath)) return;
+    const source = fs.readFileSync(absolutePath, 'utf8');
+    bannedPatterns.forEach((pattern) => {
+      assert.doesNotMatch(source, pattern, `${relativePath} should route visible copy through studio-copy.ts`);
+    });
+  });
+});

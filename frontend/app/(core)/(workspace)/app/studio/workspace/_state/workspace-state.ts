@@ -35,6 +35,7 @@ export const MIN_TIMELINE_PANEL_HEIGHT = 220;
 export const MAX_TIMELINE_PANEL_HEIGHT = 620;
 export const DEFAULT_WORKSPACE_SHOT_MODEL_ID = 'seedance-2-0';
 export const DEFAULT_WORKSPACE_SEQUENCE_ID = 'sequence-main';
+export const WORKSPACE_PROJECT_MEDIA_FOLDER_ID_PREFIX = 'folder-';
 export const STALE_EMPTY_DEMO_AUDIO_URL = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
 
 export type WorkspaceFocusMode = 'canvas' | 'viewer';

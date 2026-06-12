@@ -3214,7 +3214,15 @@
         "itemSingular": "elemento",
         "itemPlural": "elementos",
         "folder": "Carpeta",
-        "generatedClip": "Clip generado"
+        "generatedClip": "Clip generado",
+        "mediaAssetSingular": "recurso multimedia",
+        "mediaAssetPlural": "recursos multimedia",
+        "generatedClipSingular": "clip generado",
+        "generatedClipPlural": "clips generados",
+        "folderSingular": "carpeta",
+        "folderPlural": "carpetas",
+        "sequenceSingular": "secuencia",
+        "sequencePlural": "secuencias"
       },
       "notices": {
         "canvasTemplateNotFound": "No se encontró la plantilla de lienzo.",

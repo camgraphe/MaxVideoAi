@@ -1,6 +1,8 @@
 import { localeRegions, type AppLocale } from '@/i18n/locales';
 import type { Dictionary } from '@/lib/i18n/types';
 
+export const STUDIO_PROJECT_MEDIA_FOLDER_TOKEN = 'folder';
+
 export type StudioCopy = {
   projects: {
     metaTitle: string;
@@ -70,6 +72,14 @@ export type StudioCopy = {
     itemPlural: string;
     folder: string;
     generatedClip: string;
+    mediaAssetSingular: string;
+    mediaAssetPlural: string;
+    generatedClipSingular: string;
+    generatedClipPlural: string;
+    folderSingular: string;
+    folderPlural: string;
+    sequenceSingular: string;
+    sequencePlural: string;
   };
   canvas: {
     ariaLabel: string;
@@ -329,6 +339,14 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     itemPlural: 'items',
     folder: 'Folder',
     generatedClip: 'Generated clip',
+    mediaAssetSingular: 'media asset',
+    mediaAssetPlural: 'media assets',
+    generatedClipSingular: 'generated clip',
+    generatedClipPlural: 'generated clips',
+    folderSingular: 'folder',
+    folderPlural: 'folders',
+    sequenceSingular: 'sequence',
+    sequencePlural: 'sequences',
   },
   canvas: {
     ariaLabel: 'MaxVideoAI editor canvas',
@@ -1088,6 +1106,14 @@ function formatStudioCopyValue(value: string, replacements: Record<string, strin
     (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
     value
   );
+}
+
+export function formatStudioCountLabel(
+  count: number,
+  singular: string,
+  plural: string
+): string {
+  return `${count} ${count === 1 ? singular : plural}`;
 }
 
 function normalizedGeneratedName(value: string): string {

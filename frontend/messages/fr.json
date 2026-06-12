@@ -3222,7 +3222,15 @@
         "itemSingular": "element",
         "itemPlural": "elements",
         "folder": "Dossier",
-        "generatedClip": "Clip genere"
+        "generatedClip": "Clip genere",
+        "mediaAssetSingular": "média",
+        "mediaAssetPlural": "médias",
+        "generatedClipSingular": "clip généré",
+        "generatedClipPlural": "clips générés",
+        "folderSingular": "dossier",
+        "folderPlural": "dossiers",
+        "sequenceSingular": "séquence",
+        "sequencePlural": "séquences"
       },
       "notices": {
         "canvasTemplateNotFound": "Modèle de canevas introuvable.",

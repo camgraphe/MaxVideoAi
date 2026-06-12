@@ -3187,7 +3187,15 @@
         "itemSingular": "item",
         "itemPlural": "items",
         "folder": "Folder",
-        "generatedClip": "Generated clip"
+        "generatedClip": "Generated clip",
+        "mediaAssetSingular": "media asset",
+        "mediaAssetPlural": "media assets",
+        "generatedClipSingular": "generated clip",
+        "generatedClipPlural": "generated clips",
+        "folderSingular": "folder",
+        "folderPlural": "folders",
+        "sequenceSingular": "sequence",
+        "sequencePlural": "sequences"
       },
       "notices": {
         "canvasTemplateNotFound": "Canvas template not found.",
