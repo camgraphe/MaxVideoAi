@@ -108,6 +108,9 @@ export type StudioCopy = {
   exportDialog: Record<string, string>;
   assetLibrary: Record<string, string>;
   notices: {
+    studioApiUnauthorized: string;
+    studioApiUnavailable: string;
+    studioLocalFallbackActive: string;
     canvasTemplateNotFound: string;
     projectMediaAssetNotFound: string;
     projectMediaFolderNotFound: string;
@@ -959,6 +962,9 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     asset: 'asset',
   },
   notices: {
+    studioApiUnauthorized: 'Sign in to sync Studio projects. Local draft mode is active.',
+    studioApiUnavailable: 'Studio sync is temporarily unavailable. Local draft mode is active.',
+    studioLocalFallbackActive: 'Local draft mode active.',
     canvasTemplateNotFound: 'Canvas template not found.',
     projectMediaAssetNotFound: 'Project media asset not found.',
     projectMediaFolderNotFound: 'Project media folder not found.',

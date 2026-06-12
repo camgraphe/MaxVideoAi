@@ -6,6 +6,11 @@ import {
   createWorkspaceSequenceRecord,
   type WorkspaceSequenceRecord,
 } from './workspace-state';
+import {
+  studioApiSyncStatusFromResponse,
+  type StudioApiResult,
+  type StudioApiSyncStatus,
+} from './workspace-api-persistence';
 
 function workspaceSequenceTimelineState(sequence: WorkspaceSequenceRecord): Record<string, unknown> {
   return {
@@ -57,19 +62,32 @@ export async function readStudioSequencesFromApi(
   projectId: string,
   signal?: AbortSignal
 ): Promise<WorkspaceSequenceRecord[] | null> {
+  const result = await readStudioSequencesFromApiResult(projectId, signal);
+  return result.data;
+}
+
+export async function readStudioSequencesFromApiResult(
+  projectId: string,
+  signal?: AbortSignal
+): Promise<StudioApiResult<WorkspaceSequenceRecord[]>> {
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}/sequences`, {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
       signal,
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok || !Array.isArray(payload.sequences)) return null;
-    return payload.sequences
-      .map(normalizeStudioSequenceApiRecord)
-      .filter((sequence: WorkspaceSequenceRecord | null): sequence is WorkspaceSequenceRecord => Boolean(sequence));
+    if (!payload?.ok || !Array.isArray(payload.sequences)) return { data: null, status: 'error' };
+    return {
+      data: payload.sequences
+        .map(normalizeStudioSequenceApiRecord)
+        .filter((sequence: WorkspaceSequenceRecord | null): sequence is WorkspaceSequenceRecord => Boolean(sequence)),
+      status: 'ready',
+    };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
@@ -77,7 +95,7 @@ async function upsertStudioSequenceToApi(params: {
   projectId: string;
   sequence: WorkspaceSequenceRecord;
   signal?: AbortSignal;
-}): Promise<boolean> {
+}): Promise<StudioApiSyncStatus> {
   try {
     const response = await authFetch(
       `/api/studio/projects/${encodeURIComponent(params.projectId)}/sequences/${encodeURIComponent(params.sequence.id)}`,
@@ -97,10 +115,12 @@ async function upsertStudioSequenceToApi(params: {
         signal: params.signal,
       }
     );
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
     const payload = await response.json().catch(() => null);
-    return response.ok && Boolean(payload?.ok);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
-    return false;
+    return 'error';
   }
 }
 
@@ -108,7 +128,7 @@ async function deleteStudioSequenceFromApi(params: {
   projectId: string;
   sequenceId: string;
   signal?: AbortSignal;
-}): Promise<boolean> {
+}): Promise<StudioApiSyncStatus> {
   try {
     const response = await authFetch(
       `/api/studio/projects/${encodeURIComponent(params.projectId)}/sequences/${encodeURIComponent(params.sequenceId)}`,
@@ -118,10 +138,12 @@ async function deleteStudioSequenceFromApi(params: {
         signal: params.signal,
       }
     );
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
     const payload = await response.json().catch(() => null);
-    return response.ok && Boolean(payload?.ok);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
-    return false;
+    return 'error';
   }
 }
 
@@ -129,9 +151,9 @@ export async function saveStudioSequencesToApi(params: {
   projectId: string;
   sequences: WorkspaceSequenceRecord[];
   signal?: AbortSignal;
-}): Promise<boolean> {
+}): Promise<StudioApiSyncStatus> {
   const desiredSequences = params.sequences.length ? params.sequences : [];
-  if (!desiredSequences.length) return false;
+  if (!desiredSequences.length) return 'error';
 
   const upsertResults = await Promise.all(
     desiredSequences.map((sequence) => upsertStudioSequenceToApi({
@@ -140,10 +162,13 @@ export async function saveStudioSequencesToApi(params: {
       signal: params.signal,
     }))
   );
-  if (upsertResults.some((ok) => !ok)) return false;
+  const failedUpsert = upsertResults.find((status) => status !== 'ready');
+  if (failedUpsert) return failedUpsert;
 
-  const serverSequences = await readStudioSequencesFromApi(params.projectId, params.signal);
-  if (!serverSequences) return false;
+  const serverSequencesResult = await readStudioSequencesFromApiResult(params.projectId, params.signal);
+  if (serverSequencesResult.status !== 'ready') return serverSequencesResult.status;
+  const serverSequences = serverSequencesResult.data;
+  if (!serverSequences) return 'error';
 
   const desiredIds = new Set(desiredSequences.map((sequence) => sequence.id));
   const staleSequences = serverSequences.filter((sequence) => !desiredIds.has(sequence.id));
@@ -154,5 +179,5 @@ export async function saveStudioSequencesToApi(params: {
       signal: params.signal,
     }))
   );
-  return deleteResults.every(Boolean);
+  return deleteResults.find((status) => status !== 'ready') ?? 'ready';
 }

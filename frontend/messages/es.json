@@ -3225,6 +3225,9 @@
         "sequencePlural": "secuencias"
       },
       "notices": {
+        "studioApiUnauthorized": "Inicia sesión para sincronizar los proyectos de Studio. El modo borrador local está activo.",
+        "studioApiUnavailable": "La sincronización de Studio no está disponible temporalmente. El modo borrador local está activo.",
+        "studioLocalFallbackActive": "Modo borrador local activo.",
         "canvasTemplateNotFound": "No se encontró la plantilla de lienzo.",
         "projectMediaAssetNotFound": "No se encontró el recurso multimedia del proyecto.",
         "projectMediaFolderNotFound": "No se encontró la carpeta de medios del proyecto.",

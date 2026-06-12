@@ -479,6 +479,48 @@ test('Studio projects uses localized copy', async ({ page, context }) => {
   await expect(page.getByRole('button', { name: 'Creer le projet' })).toBeVisible();
 });
 
+test('unauthenticated Studio API responses keep local draft mode quiet', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await page.route('**/api/studio/**', async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'Unauthorized' }),
+    });
+  });
+  await page.route('**/_next/static/css/app/**/studio/workspace/**/page.css*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'text/css',
+      body: '',
+    });
+  });
+  await page.addInitScript(() => {
+    window.localStorage.removeItem('maxvideoai.editor.projects.v1');
+    window.localStorage.removeItem('maxvideoai.editor.workspace.v1.project_unauthorized');
+  });
+
+  await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
+  await dismissCookieBanner(page);
+
+  await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
+  await expect(page.getByText(/sign in.*local draft mode/i)).toBeVisible();
+
+  await page.goto('/app/studio/workspace/project_unauthorized', { waitUntil: 'domcontentloaded' });
+  await dismissCookieBanner(page);
+
+  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toBeVisible();
+  await expect(page.getByText(/local draft mode/i)).toBeVisible();
+  assertNoEditorClientErrors(errors, {
+    allowedResourceFailures: [
+      { status: 401, urlPattern: /\/api\/studio\// },
+      { status: 404, urlPattern: /\/api\/studio\// },
+    ],
+  });
+});
+
 test('Studio projects dark theme keeps core surfaces readable', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
   const darkProject = {

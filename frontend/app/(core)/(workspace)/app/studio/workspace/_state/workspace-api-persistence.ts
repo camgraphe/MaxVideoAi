@@ -52,8 +52,23 @@ import { sequenceNameForIndex } from './workspace-selectors';
 
 export {
   readStudioSequencesFromApi,
+  readStudioSequencesFromApiResult,
   saveStudioSequencesToApi,
 } from './workspace-sequence-api-persistence';
+
+export type StudioApiSyncStatus = 'ready' | 'unauthorized' | 'unavailable' | 'error';
+
+export type StudioApiResult<T> = {
+  data: T | null;
+  status: StudioApiSyncStatus;
+};
+
+export function studioApiSyncStatusFromResponse(response: Response): StudioApiSyncStatus {
+  if (response.status === 401) return 'unauthorized';
+  if (response.status === 503) return 'unavailable';
+  if (!response.ok) return 'error';
+  return 'ready';
+}
 
 export function normalizeStudioProjectTemplateId(value: unknown): WorkspaceTemplateId {
   if (typeof value === 'string' && WORKSPACE_TEMPLATE_SUMMARIES.some((template) => template.id === value)) {
@@ -199,17 +214,27 @@ export function normalizeStudioProjectApiRecord(value: unknown): StudioProjectSt
 }
 
 export async function readStudioProjectFromApi(projectId: string, signal?: AbortSignal): Promise<StudioProjectStorageRecord | null> {
+  const result = await readStudioProjectFromApiResult(projectId, signal);
+  return result.data;
+}
+
+export async function readStudioProjectFromApiResult(
+  projectId: string,
+  signal?: AbortSignal
+): Promise<StudioApiResult<StudioProjectStorageRecord>> {
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
       signal,
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok) return null;
-    return normalizeStudioProjectApiRecord(payload.project);
+    if (!payload?.ok) return { data: null, status: 'error' };
+    return { data: normalizeStudioProjectApiRecord(payload.project), status: 'ready' };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
@@ -220,9 +245,9 @@ export async function saveStudioProjectToApi(params: {
   settings: StudioProjectStorageRecord['settings'];
   workspaceState: PersistedWorkspaceState;
   signal?: AbortSignal;
-}): Promise<void> {
+}): Promise<StudioApiSyncStatus> {
   try {
-    await authFetch(`/api/studio/projects/${encodeURIComponent(params.projectId)}`, {
+    const response = await authFetch(`/api/studio/projects/${encodeURIComponent(params.projectId)}`, {
       method: 'PUT',
       headers: {
         Accept: 'application/json',
@@ -238,8 +263,13 @@ export async function saveStudioProjectToApi(params: {
       }),
       signal: params.signal,
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
+    const payload = await response.json().catch(() => null);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
     // Server persistence is best effort; local workspace storage remains the fallback.
+    return 'error';
   }
 }
 
@@ -305,18 +335,20 @@ export async function saveStudioWorkspaceToApi(params: {
   settings: StudioProjectStorageRecord['settings'];
   workspaceState: PersistedWorkspaceState;
   signal?: AbortSignal;
-}): Promise<void> {
-  const sequenceSyncOk = await saveStudioSequencesToApi({
+}): Promise<StudioApiSyncStatus> {
+  const sequenceSyncStatus = await saveStudioSequencesToApi({
     projectId: params.projectId,
     sequences: params.workspaceState.sequences ?? [],
     signal: params.signal,
   });
-  await saveStudioProjectToApi({
+  const projectSyncStatus = await saveStudioProjectToApi({
     ...params,
-    workspaceState: sequenceSyncOk
+    workspaceState: sequenceSyncStatus === 'ready'
       ? stripWorkspaceSequencesForProjectApi(params.workspaceState)
       : params.workspaceState,
   });
+  if (projectSyncStatus !== 'ready') return projectSyncStatus;
+  return sequenceSyncStatus;
 }
 
 export function describeCanvasTemplate(nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): string {
@@ -347,25 +379,37 @@ export function normalizeUserCanvasTemplate(value: unknown): WorkspaceUserCanvas
 }
 
 export async function readUserCanvasTemplatesFromApi(signal?: AbortSignal): Promise<WorkspaceUserCanvasTemplate[] | null> {
+  const result = await readUserCanvasTemplatesFromApiResult(signal);
+  return result.data;
+}
+
+export async function readUserCanvasTemplatesFromApiResult(
+  signal?: AbortSignal
+): Promise<StudioApiResult<WorkspaceUserCanvasTemplate[]>> {
   try {
     const response = await authFetch('/api/studio/canvas-templates', {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
       signal,
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok || !Array.isArray(payload.templates)) return null;
-    return payload.templates
-      .map(normalizeUserCanvasTemplate)
-      .filter((template: WorkspaceUserCanvasTemplate | null): template is WorkspaceUserCanvasTemplate => Boolean(template));
+    if (!payload?.ok || !Array.isArray(payload.templates)) return { data: null, status: 'error' };
+    return {
+      data: payload.templates
+        .map(normalizeUserCanvasTemplate)
+        .filter((template: WorkspaceUserCanvasTemplate | null): template is WorkspaceUserCanvasTemplate => Boolean(template)),
+      status: 'ready',
+    };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
-export async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasTemplate): Promise<void> {
+export async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasTemplate): Promise<StudioApiSyncStatus> {
   try {
-    await authFetch('/api/studio/canvas-templates', {
+    const response = await authFetch('/api/studio/canvas-templates', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -373,19 +417,29 @@ export async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasT
       },
       body: JSON.stringify({ template }),
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
+    const payload = await response.json().catch(() => null);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
     // User templates are still persisted locally when the API is unavailable.
+    return 'error';
   }
 }
 
-export async function deleteUserCanvasTemplateFromApi(templateId: string): Promise<void> {
+export async function deleteUserCanvasTemplateFromApi(templateId: string): Promise<StudioApiSyncStatus> {
   try {
-    await authFetch(`/api/studio/canvas-templates/${encodeURIComponent(templateId)}`, {
+    const response = await authFetch(`/api/studio/canvas-templates/${encodeURIComponent(templateId)}`, {
       method: 'DELETE',
       headers: { Accept: 'application/json' },
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
+    const payload = await response.json().catch(() => null);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
     // User templates are still deleted locally when the API is unavailable.
+    return 'error';
   }
 }
 

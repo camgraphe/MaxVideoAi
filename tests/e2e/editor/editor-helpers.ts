@@ -1,7 +1,24 @@
 import { expect, type Page } from '@playwright/test';
 import { assertNoClientErrors, trackClientErrors, type ClientErrors } from '../admin-helpers';
 
-export type EditorClientErrors = ClientErrors;
+type EditorResourceError = {
+  status: number;
+  url: string;
+};
+type EditorConsoleError = {
+  text: string;
+  url: string;
+};
+export type EditorClientErrors = ClientErrors & {
+  consoleResourceErrors: EditorConsoleError[];
+  resourceErrors: EditorResourceError[];
+};
+type AssertNoEditorClientErrorsOptions = {
+  allowedResourceFailures?: Array<{
+    status: number;
+    urlPattern: RegExp;
+  }>;
+};
 export type TimelineClipState = {
   duration: number;
   selected: boolean;
@@ -14,11 +31,48 @@ export type TimelineClipFullState = TimelineClipState & {
 };
 
 export function trackEditorClientErrors(page: Page): EditorClientErrors {
-  return trackClientErrors(page);
+  const errors = trackClientErrors(page) as EditorClientErrors;
+  errors.consoleResourceErrors = [];
+  errors.resourceErrors = [];
+  page.on('console', (message) => {
+    if (message.type() !== 'error') return;
+    errors.consoleResourceErrors.push({
+      text: message.text(),
+      url: message.location().url,
+    });
+  });
+  page.on('response', (response) => {
+    const status = response.status();
+    if (status < 400) return;
+    errors.resourceErrors.push({ status, url: response.url() });
+  });
+  return errors;
 }
 
-export function assertNoEditorClientErrors(errors: EditorClientErrors): void {
-  assertNoClientErrors(errors);
+export function assertNoEditorClientErrors(
+  errors: EditorClientErrors,
+  options: AssertNoEditorClientErrorsOptions = {}
+): void {
+  const allowedResourceErrors = new Set<string>();
+  (options.allowedResourceFailures ?? []).forEach((allowance) => {
+    errors.resourceErrors.forEach((error) => {
+      if (error.status !== allowance.status || !allowance.urlPattern.test(error.url)) return;
+      allowedResourceErrors.add(`${error.status}:${error.url}`);
+    });
+  });
+  const consoleErrors = errors.consoleErrors.filter((message, index) => {
+    const consoleResourceError = errors.consoleResourceErrors[index];
+    if (!consoleResourceError?.url) return true;
+    const matchedStatus = (options.allowedResourceFailures ?? []).find((allowance) => (
+      message.startsWith(`Failed to load resource: the server responded with a status of ${allowance.status}`)
+    ));
+    if (!matchedStatus) return true;
+    return !allowedResourceErrors.has(`${matchedStatus.status}:${consoleResourceError.url}`);
+  });
+  assertNoClientErrors({
+    pageErrors: errors.pageErrors,
+    consoleErrors,
+  });
 }
 
 async function mockEditorHeaderAccountApi(page: Page): Promise<void> {

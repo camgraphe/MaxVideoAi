@@ -103,6 +103,18 @@
   line-height: 1.55;
 }
 
+.syncNotice {
+  width: min(720px, 100%);
+  padding: 12px 14px;
+  border: 1px solid var(--studio-project-accent-border);
+  border-radius: 7px;
+  background: var(--studio-project-accent-soft);
+  color: var(--studio-project-text);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .projectsGrid {
   display: grid;
   grid-template-columns: minmax(0, 1.55fr) minmax(330px, 0.95fr);

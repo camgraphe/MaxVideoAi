@@ -3198,6 +3198,9 @@
         "sequencePlural": "sequences"
       },
       "notices": {
+        "studioApiUnauthorized": "Sign in to sync Studio projects. Local draft mode is active.",
+        "studioApiUnavailable": "Studio sync is temporarily unavailable. Local draft mode is active.",
+        "studioLocalFallbackActive": "Local draft mode active.",
         "canvasTemplateNotFound": "Canvas template not found.",
         "projectMediaAssetNotFound": "Project media asset not found.",
         "projectMediaFolderNotFound": "Project media folder not found.",

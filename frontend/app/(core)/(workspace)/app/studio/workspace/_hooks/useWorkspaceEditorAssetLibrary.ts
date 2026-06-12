@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { authFetch } from '@/lib/authFetch';
+import { studioApiSyncStatusFromResponse } from '../_state/workspace-api-persistence';
 import type { WorkspaceNodeKind } from '../_lib/workspace-types';
 import {
   WORKSPACE_LIBRARY_ASSETS,
@@ -89,7 +90,8 @@ export function useWorkspaceEditorAssetLibrary(
       try {
         const response = await authFetch(buildWorkspaceUserLibraryUrl(libraryKind, activeSource));
         if (cancelled) return;
-        if (response.status === 401) {
+        const status = studioApiSyncStatusFromResponse(response);
+        if (status === 'unauthorized') {
           WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
             assets: [],
             error: copy.signInToAccessLibrary,
@@ -99,8 +101,18 @@ export function useWorkspaceEditorAssetLibrary(
           setLoadedKey(currentRequestKey);
           return;
         }
+        if (status !== 'ready') {
+          WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
+            assets: [],
+            error: copy.unableToLoadLibrary,
+          });
+          setUserAssets([]);
+          setError(copy.unableToLoadLibrary);
+          setLoadedKey(currentRequestKey);
+          return;
+        }
         const payload = await response.json().catch(() => null);
-        if (!response.ok || !payload?.ok) {
+        if (!payload?.ok) {
           throw new Error(copy.unableToLoadLibrary);
         }
         const normalizedAssets = normalizeWorkspaceUserLibraryPayload(payload, libraryKind);

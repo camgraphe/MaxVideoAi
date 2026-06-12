@@ -1,4 +1,4 @@
-import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
   coerceWorkspaceProjectSettings,
@@ -23,11 +23,12 @@ import {
   normalizePersistedWorkspaceState,
   normalizeUserCanvasTemplate,
   mergePersistedWorkspaceWithServerSequences,
-  readStudioProjectFromApi,
-  readStudioSequencesFromApi,
-  readUserCanvasTemplatesFromApi,
+  readStudioProjectFromApiResult as readStudioProjectFromApi,
+  readStudioSequencesFromApiResult as readStudioSequencesFromApi,
+  readUserCanvasTemplatesFromApiResult,
   saveStudioWorkspaceToApi,
   shouldApplyStudioProjectWorkspaceState,
+  type StudioApiSyncStatus,
 } from '../_state/workspace-api-persistence';
 import {
   readPersistedWorkspaceState,
@@ -57,6 +58,13 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
     (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
     value
   );
+}
+
+function workspaceApiNotice(status: StudioApiSyncStatus, notices: StudioCopy['notices']): string | null {
+  if (status === 'ready') return null;
+  if (status === 'unauthorized') return notices.studioApiUnauthorized;
+  if (status === 'unavailable') return notices.studioApiUnavailable;
+  return null;
 }
 
 type UseWorkspacePersistenceEffectsParams = {
@@ -142,6 +150,8 @@ export function useWorkspacePersistenceEffects({
   timelineItemsRef,
   workspaceStorageKey,
 }: UseWorkspacePersistenceEffectsParams): void {
+  const notifiedAutosaveFallbackStatusesRef = useRef<Set<StudioApiSyncStatus>>(new Set());
+
   useEffect(() => {
     let cancelled = false;
 
@@ -236,10 +246,13 @@ export function useWorkspacePersistenceEffects({
     const localUserTemplates = readUserCanvasTemplates(normalizeUserCanvasTemplate);
     setUserCanvasTemplates(localUserTemplates);
     const templatesController = new AbortController();
-    void readUserCanvasTemplatesFromApi(templatesController.signal).then((serverTemplates) => {
-      if (cancelled || !serverTemplates) return;
-      setUserCanvasTemplates(serverTemplates);
-      writeUserCanvasTemplates(serverTemplates);
+    void readUserCanvasTemplatesFromApiResult(templatesController.signal).then((serverTemplatesResult) => {
+      if (cancelled) return;
+      const notice = workspaceApiNotice(serverTemplatesResult.status, studioNotices);
+      if (notice) setNotice(notice);
+      if (!serverTemplatesResult.data) return;
+      setUserCanvasTemplates(serverTemplatesResult.data);
+      writeUserCanvasTemplates(serverTemplatesResult.data);
     });
 
     const storedProject = readStudioProject(projectId);
@@ -257,8 +270,16 @@ export function useWorkspacePersistenceEffects({
       void Promise.all([
         readStudioProjectFromApi(projectId, projectController.signal),
         readStudioSequencesFromApi(projectId, projectController.signal),
-      ]).then(([serverProject, serverSequences]) => {
-        if (cancelled || !serverProject) return;
+      ]).then(([serverProjectResult, serverSequencesResult]) => {
+        if (cancelled) return;
+        const notice = workspaceApiNotice(
+          serverProjectResult.status !== 'ready' ? serverProjectResult.status : serverSequencesResult.status,
+          studioNotices
+        );
+        if (notice) setNotice(notice);
+        const serverProject = serverProjectResult.data;
+        const serverSequences = serverSequencesResult.data;
+        if (!serverProject) return;
         setStoredProjectName(serverProject.name);
         const serverPersistedBase = shouldApplyStudioProjectWorkspaceState(serverProject.workspaceState, serverSequences)
           ? normalizePersistedWorkspaceState(serverProject.workspaceState, { canvasTemplateId: serverProject.canvasTemplateId })
@@ -317,6 +338,9 @@ export function useWorkspacePersistenceEffects({
     setTimelinePanelHeight,
     setUserCanvasTemplates,
     setVideoTrackCount,
+    studioNotices,
+    studioNotices.studioApiUnauthorized,
+    studioNotices.studioApiUnavailable,
     studioNotices.projectLoadedCleanSequence,
     timelineItemsRef,
     workspaceStorageKey,
@@ -340,6 +364,18 @@ export function useWorkspacePersistenceEffects({
         settings: state.projectSettings,
         workspaceState: state,
         signal: controller.signal,
+      }).then((status) => {
+        if (controller.signal.aborted) return;
+        if (status === 'ready') {
+          notifiedAutosaveFallbackStatusesRef.current.clear();
+          return;
+        }
+        if (notifiedAutosaveFallbackStatusesRef.current.has(status)) return;
+        const notice = workspaceApiNotice(status, studioNotices);
+        if (notice) {
+          notifiedAutosaveFallbackStatusesRef.current.add(status);
+          setNotice(notice);
+        }
       });
     }, 900);
 
@@ -347,5 +383,5 @@ export function useWorkspacePersistenceEffects({
       window.clearTimeout(saveTimer);
       controller.abort();
     };
-  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, hydrated, projectId]);
+  }, [activeTemplateId, activeTemplateName, buildPersistedWorkspaceState, hydrated, projectId, setNotice, studioNotices]);
 }

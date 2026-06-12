@@ -3233,6 +3233,9 @@
         "sequencePlural": "séquences"
       },
       "notices": {
+        "studioApiUnauthorized": "Connectez-vous pour synchroniser les projets Studio. Le mode brouillon local est actif.",
+        "studioApiUnavailable": "La synchronisation Studio est temporairement indisponible. Le mode brouillon local est actif.",
+        "studioLocalFallbackActive": "Mode brouillon local actif.",
         "canvasTemplateNotFound": "Modèle de canevas introuvable.",
         "projectMediaAssetNotFound": "Média du projet introuvable.",
         "projectMediaFolderNotFound": "Dossier de médias du projet introuvable.",

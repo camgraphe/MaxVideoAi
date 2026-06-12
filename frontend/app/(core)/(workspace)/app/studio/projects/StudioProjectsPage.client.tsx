@@ -25,6 +25,11 @@ import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
   coerceWorkspaceProjectSettings,
 } from '../workspace/_lib/workspace-project-settings';
+import {
+  studioApiSyncStatusFromResponse,
+  type StudioApiResult,
+  type StudioApiSyncStatus,
+} from '../workspace/_state/workspace-api-persistence';
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../workspace/_lib/workspace-templates';
 import type { WorkspaceProjectSettings, WorkspaceTemplateId } from '../workspace/_lib/workspace-types';
 import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
@@ -95,23 +100,38 @@ function normalizeStudioProjectRecord(value: unknown, studioCopy: StudioCopy): S
   };
 }
 
-async function readStudioProjectsFromApi(studioCopy: StudioCopy): Promise<StudioProjectRecord[] | null> {
+function studioProjectsApiNotice(status: StudioApiSyncStatus, notices: StudioCopy['notices']): string | null {
+  if (status === 'ready') return null;
+  if (status === 'unauthorized') return notices.studioApiUnauthorized;
+  if (status === 'unavailable') return notices.studioApiUnavailable;
+  return notices.studioLocalFallbackActive;
+}
+
+async function readStudioProjectsFromApi(studioCopy: StudioCopy): Promise<StudioApiResult<StudioProjectRecord[]>> {
   try {
     const response = await authFetch('/api/studio/projects', {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok || !Array.isArray(payload.projects)) return null;
-    return payload.projects
-      .map((project: unknown) => normalizeStudioProjectRecord(project, studioCopy))
-      .filter((project: StudioProjectRecord | null): project is StudioProjectRecord => Boolean(project));
+    if (!payload?.ok || !Array.isArray(payload.projects)) return { data: null, status: 'error' };
+    return {
+      data: payload.projects
+        .map((project: unknown) => normalizeStudioProjectRecord(project, studioCopy))
+        .filter((project: StudioProjectRecord | null): project is StudioProjectRecord => Boolean(project)),
+      status: 'ready',
+    };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
-async function saveStudioProjectToApi(project: StudioProjectRecord, studioCopy: StudioCopy): Promise<StudioProjectRecord | null> {
+async function saveStudioProjectToApi(
+  project: StudioProjectRecord,
+  studioCopy: StudioCopy
+): Promise<StudioApiResult<StudioProjectRecord>> {
   try {
     const response = await authFetch('/api/studio/projects', {
       method: 'POST',
@@ -121,15 +141,20 @@ async function saveStudioProjectToApi(project: StudioProjectRecord, studioCopy: 
       },
       body: JSON.stringify({ project }),
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok) return null;
-    return normalizeStudioProjectRecord(payload.project, studioCopy);
+    if (!payload?.ok) return { data: null, status: 'error' };
+    return { data: normalizeStudioProjectRecord(payload.project, studioCopy), status: 'ready' };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
-async function updateStudioProjectInApi(project: StudioProjectRecord, studioCopy: StudioCopy): Promise<StudioProjectRecord | null> {
+async function updateStudioProjectInApi(
+  project: StudioProjectRecord,
+  studioCopy: StudioCopy
+): Promise<StudioApiResult<StudioProjectRecord>> {
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(project.id)}`, {
       method: 'PATCH',
@@ -139,24 +164,28 @@ async function updateStudioProjectInApi(project: StudioProjectRecord, studioCopy
       },
       body: JSON.stringify({ project }),
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return { data: null, status };
     const payload = await response.json().catch(() => null);
-    if (!response.ok || !payload?.ok) return null;
-    return normalizeStudioProjectRecord(payload.project, studioCopy);
+    if (!payload?.ok) return { data: null, status: 'error' };
+    return { data: normalizeStudioProjectRecord(payload.project, studioCopy), status: 'ready' };
   } catch {
-    return null;
+    return { data: null, status: 'error' };
   }
 }
 
-async function deleteStudioProjectFromApi(projectId: string): Promise<boolean> {
+async function deleteStudioProjectFromApi(projectId: string): Promise<StudioApiSyncStatus> {
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
       method: 'DELETE',
       headers: { Accept: 'application/json' },
     });
+    const status = studioApiSyncStatusFromResponse(response);
+    if (status !== 'ready') return status;
     const payload = await response.json().catch(() => null);
-    return response.ok && Boolean(payload?.ok);
+    return payload?.ok ? 'ready' : 'error';
   } catch {
-    return false;
+    return 'error';
   }
 }
 
@@ -186,6 +215,7 @@ export default function StudioProjectsPageClient() {
   const [renameProjectId, setRenameProjectId] = useState<string | null>(null);
   const [renameProjectName, setRenameProjectName] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [apiNotice, setApiNotice] = useState<string | null>(null);
   const localizedTemplates = useMemo(
     () => localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy),
     [studioCopy]
@@ -215,10 +245,13 @@ export default function StudioProjectsPageClient() {
     setProjects(localProjects);
 
     let cancelled = false;
-    void readStudioProjectsFromApi(studioCopy).then((serverProjects) => {
-      if (cancelled || !serverProjects) return;
-      setProjects(serverProjects);
-      writeStudioProjects(serverProjects);
+    void readStudioProjectsFromApi(studioCopy).then((serverResult) => {
+      if (cancelled) return;
+      const nextNotice = studioProjectsApiNotice(serverResult.status, studioCopy.notices);
+      setApiNotice(nextNotice);
+      if (!serverResult.data) return;
+      setProjects(serverResult.data);
+      writeStudioProjects(serverResult.data);
     });
 
     return () => {
@@ -239,9 +272,12 @@ export default function StudioProjectsPageClient() {
     const nextProjects = [project, ...projects].slice(0, 20);
     setProjects(nextProjects);
     writeStudioProjects(nextProjects);
-    const savedProject = await saveStudioProjectToApi(project, studioCopy);
+    const savedProjectResult = await saveStudioProjectToApi(project, studioCopy);
+    setApiNotice(studioProjectsApiNotice(savedProjectResult.status, studioCopy.notices));
+    const savedProject = savedProjectResult.data;
     if (savedProject) {
-      const serverProjects = [savedProject, ...nextProjects.filter((candidate) => candidate.id !== savedProject.id)].slice(0, 20);
+      const syncedProject = savedProject;
+      const serverProjects = [syncedProject, ...nextProjects.filter((candidate) => candidate.id !== syncedProject.id)].slice(0, 20);
       setProjects(serverProjects);
       writeStudioProjects(serverProjects);
     }
@@ -268,8 +304,10 @@ export default function StudioProjectsPageClient() {
     persistProjects(nextProjects);
     setRenameProjectId(null);
     const savedProject = await updateStudioProjectInApi(updatedProject, studioCopy);
-    if (savedProject) {
-      persistProjects(nextProjects.map((project) => (project.id === savedProject.id ? savedProject : project)));
+    setApiNotice(studioProjectsApiNotice(savedProject.status, studioCopy.notices));
+    if (savedProject.data) {
+      const syncedProject = savedProject.data;
+      persistProjects(nextProjects.map((project) => (project.id === syncedProject.id ? syncedProject : project)));
     }
   };
 
@@ -286,8 +324,9 @@ export default function StudioProjectsPageClient() {
     const nextProjects = [duplicate, ...projects].slice(0, 20);
     persistProjects(nextProjects);
     const savedProject = await saveStudioProjectToApi(duplicate, studioCopy);
-    if (savedProject) {
-      const syncedProjects = [savedProject, ...nextProjects.filter((candidate) => candidate.id !== duplicate.id)].slice(0, 20);
+    setApiNotice(studioProjectsApiNotice(savedProject.status, studioCopy.notices));
+    if (savedProject.data) {
+      const syncedProjects = [savedProject.data, ...nextProjects.filter((candidate) => candidate.id !== duplicate.id)].slice(0, 20);
       persistProjects(syncedProjects);
     }
   };
@@ -303,7 +342,8 @@ export default function StudioProjectsPageClient() {
     const nextProjects = projects.filter((project) => project.id !== projectId);
     persistProjects(nextProjects);
     setDeleteProjectId(null);
-    await deleteStudioProjectFromApi(projectId);
+    const status = await deleteStudioProjectFromApi(projectId);
+    setApiNotice(studioProjectsApiNotice(status, studioCopy.notices));
   };
 
   return (
@@ -317,6 +357,11 @@ export default function StudioProjectsPageClient() {
           <h1 id="studio-projects-title">{studioCopy.projects.title}</h1>
           <p>{studioCopy.projects.subtitle}</p>
         </div>
+        {apiNotice ? (
+          <div className={styles.syncNotice} role="status" aria-live="polite">
+            {apiNotice}
+          </div>
+        ) : null}
       </section>
 
       <section className={styles.projectsGrid}>
