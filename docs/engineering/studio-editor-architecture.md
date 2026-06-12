@@ -212,6 +212,14 @@ Do not add a button that appears to render server MP4 if it only creates a local
 - Keep drag payloads small and typed by capability: asset id, generated node id, media kind, duration, title, preview URL.
 - Prefer one derived summary list for sidebars over recomputing sequence/media metadata inside every card.
 
+## Localization And Appearance
+
+Studio uses the global Core `I18nProvider` and route-local typed copy under
+`frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy.ts`.
+Studio appearance is scoped with `data-studio-theme` on Studio shells and must not
+mutate the global `documentElement` theme. Dark remains the default. Light mode is
+persisted in `maxvideoai.studio.theme.v1`.
+
 ## Verification
 
 Focused Studio checks:
