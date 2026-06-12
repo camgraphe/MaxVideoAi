@@ -8,7 +8,6 @@
   --studio-project-muted: #64748b;
   display: grid;
   gap: 26px;
-  min-height: 100vh;
   background: var(--studio-project-bg);
   color: var(--studio-project-text);
 }
