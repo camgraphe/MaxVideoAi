@@ -135,14 +135,14 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
   },
 };
 
-export function readObject(source: Dictionary, path: string): unknown {
+function readObject(source: Dictionary, path: string): unknown {
   return path.split('.').reduce<unknown>((current, key) => {
     if (!current || typeof current !== 'object') return undefined;
     return (current as Record<string, unknown>)[key];
   }, source);
 }
 
-export function mergeCopy<T extends Record<string, unknown>>(fallback: T, value: unknown): T {
+function mergeCopy<T extends Record<string, unknown>>(fallback: T, value: unknown): T {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return fallback;
 
   const source = value as Record<string, unknown>;

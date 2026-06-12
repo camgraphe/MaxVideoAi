@@ -3,6 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
+import type { Dictionary } from '../frontend/lib/i18n/types';
+import {
+  DEFAULT_STUDIO_COPY,
+  formatStudioProjectDate,
+  resolveStudioCopy,
+} from '../frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy';
+
 const root = process.cwd();
 const locales = ['en', 'fr', 'es'] as const;
 const requiredPaths = [
@@ -80,4 +87,75 @@ test('Studio localization dictionaries expose required copy in every locale', ()
       assert.ok(String(value).trim().length > 0, `${locale} ${keyPath} should not be empty`);
     });
   });
+});
+
+test('resolveStudioCopy falls back when the Studio namespace is missing', () => {
+  const copy = resolveStudioCopy({ workspace: {} } as unknown as Dictionary);
+
+  assert.deepEqual(copy, DEFAULT_STUDIO_COPY);
+});
+
+test('resolveStudioCopy applies partial leaf overrides without dropping sibling defaults', () => {
+  const copy = resolveStudioCopy({
+    workspace: {
+      studio: {
+        projects: {
+          title: 'Custom Studio title',
+        },
+        topbar: {
+          canvas: 'Board',
+        },
+        notices: {
+          unlockBeforeMoving: 'Unlock first.',
+        },
+      },
+    },
+  } as unknown as Dictionary);
+
+  assert.equal(copy.projects.title, 'Custom Studio title');
+  assert.equal(copy.projects.createProject, DEFAULT_STUDIO_COPY.projects.createProject);
+  assert.equal(copy.topbar.canvas, 'Board');
+  assert.equal(copy.topbar.viewer, DEFAULT_STUDIO_COPY.topbar.viewer);
+  assert.equal(copy.common.itemPlural, DEFAULT_STUDIO_COPY.common.itemPlural);
+  assert.equal(copy.notices.unlockBeforeMoving, 'Unlock first.');
+  assert.equal(copy.notices.unlockBeforeCutting, DEFAULT_STUDIO_COPY.notices.unlockBeforeCutting);
+});
+
+test('resolveStudioCopy ignores wrong-typed values and keeps defaults', () => {
+  const copy = resolveStudioCopy({
+    workspace: {
+      studio: {
+        projects: {
+          title: 42,
+          createProject: 'Create custom',
+        },
+        topbar: 'invalid topbar',
+        common: {
+          itemPlural: null,
+        },
+        notices: {
+          unlockBeforeMoving: ['wrong'],
+        },
+      },
+    },
+  } as unknown as Dictionary);
+
+  assert.equal(copy.projects.title, DEFAULT_STUDIO_COPY.projects.title);
+  assert.equal(copy.projects.createProject, 'Create custom');
+  assert.deepEqual(copy.topbar, DEFAULT_STUDIO_COPY.topbar);
+  assert.equal(copy.common.itemPlural, DEFAULT_STUDIO_COPY.common.itemPlural);
+  assert.equal(copy.notices.unlockBeforeMoving, DEFAULT_STUDIO_COPY.notices.unlockBeforeMoving);
+});
+
+test('formatStudioProjectDate handles invalid and valid Studio dates', () => {
+  assert.equal(
+    formatStudioProjectDate('en', 'not-a-date', DEFAULT_STUDIO_COPY),
+    DEFAULT_STUDIO_COPY.projects.localDraft
+  );
+
+  const formatted = formatStudioProjectDate('en', '2026-06-12T14:30:00.000Z', DEFAULT_STUDIO_COPY);
+
+  assert.equal(typeof formatted, 'string');
+  assert.ok(formatted.trim().length > 0, 'valid Studio project date should format to a nonempty string');
+  assert.notEqual(formatted, DEFAULT_STUDIO_COPY.projects.localDraft);
 });
