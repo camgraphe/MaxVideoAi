@@ -172,36 +172,42 @@ function ProjectMediaCard({
   thumbnailUrl?: string | null;
   title: string;
 }) {
+  const isSelectionActive = isSelectionSelected ?? isSelected;
+
   return (
-    <div
-      className={`${styles.projectMediaTile} ${isSelected ? styles.projectMediaTileSelected : ''}`}
-      aria-pressed={ariaPressed}
-      data-project-media-card={id}
-      data-project-media-drag-kind={canDrag ? dragKind ?? kind : undefined}
-      data-project-sequence-id={dataProjectSequenceId}
-      data-selected={(isSelectionSelected ?? isSelected) ? 'true' : undefined}
-      draggable={Boolean(canDrag)}
-      onClick={onClick}
-      onContextMenu={onContextMenu}
-      onDragEnd={onDragEnd}
-      onDragLeave={onDragLeave}
-      onDragOver={onDragOver}
-      onDragStart={onDragStart}
-      onDrop={onDrop}
-      onKeyDown={(event: ReactKeyboardEvent<HTMLElement>) => {
-        if (event.key !== 'Enter' && event.key !== ' ') return;
-        event.preventDefault();
-        onClick(event);
-      }}
-      role="button"
-      tabIndex={0}
-    >
-      <ProjectMediaArtwork durationSec={durationSec} kind={kind} title={title} url={thumbnailUrl} />
-      <div className={styles.projectMediaTileBody}>
-        <strong>{title}</strong>
-        <span>{subtitle}</span>
+    <div className={styles.projectMediaTileFrame}>
+      <div
+        className={`${styles.projectMediaTile} ${isSelected ? styles.projectMediaTileSelected : ''}`}
+        aria-current={ariaPressed ? 'true' : undefined}
+        aria-pressed={Boolean(ariaPressed || isSelectionActive)}
+        data-project-media-card="true"
+        data-project-media-card-id={id}
+        data-project-media-drag-kind={canDrag ? dragKind ?? kind : undefined}
+        data-project-sequence-id={dataProjectSequenceId}
+        data-selected={isSelectionActive ? 'true' : undefined}
+        draggable={Boolean(canDrag)}
+        onClick={onClick}
+        onContextMenu={onContextMenu}
+        onDragEnd={onDragEnd}
+        onDragLeave={onDragLeave}
+        onDragOver={onDragOver}
+        onDragStart={onDragStart}
+        onDrop={onDrop}
+        onKeyDown={(event: ReactKeyboardEvent<HTMLElement>) => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          onClick(event);
+        }}
+        role="button"
+        tabIndex={0}
+      >
+        <ProjectMediaArtwork durationSec={durationSec} kind={kind} title={title} url={thumbnailUrl} />
+        <div className={styles.projectMediaTileBody}>
+          <strong>{title}</strong>
+          <span>{subtitle}</span>
+        </div>
+        {children}
       </div>
-      {children}
       {onContextMenu ? (
         <button type="button" className={styles.projectMediaMoreButton} aria-label={formatCopyValue(copy.moreActions, { title })} onClick={(event) => {
           event.stopPropagation();
@@ -595,7 +601,11 @@ export function TimelineProjectSidebar({
         </div>
       ) : null}
 
-      <div className={styles.projectMediaGrid} aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}>
+      <div
+        className={styles.projectMediaGrid}
+        data-project-media-grid="true"
+        aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}
+      >
         {projectMedia.visibleSequences.map((sequence) => {
           const sequenceTitle = localizeStudioGeneratedSequenceDisplayName(sequence.name, copy);
           const sequenceKey = projectMediaSelectionKey('sequence', sequence.id);

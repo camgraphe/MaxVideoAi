@@ -187,11 +187,12 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: max-content;
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   align-content: start;
   align-items: start;
   gap: 8px;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: none;
   padding: 0 14px 16px;
 }
@@ -200,9 +201,19 @@
   display: none;
 }
 
-.projectMediaTile {
+.projectMediaTileFrame {
   position: relative;
   min-width: 0;
+  height: 100%;
+}
+
+.projectMediaTile {
+  position: relative;
+  display: flex;
+  min-height: 112px;
+  min-width: 0;
+  height: 100%;
+  flex-direction: column;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   overflow: hidden;
@@ -246,6 +257,7 @@
 
 .projectMediaArtwork {
   position: relative;
+  flex: 0 0 auto;
   aspect-ratio: 16 / 9;
   height: auto;
   overflow: hidden;
@@ -393,6 +405,7 @@
 
 .projectMediaTileBody {
   min-width: 0;
+  flex: 1 1 auto;
   padding: 7px 24px 9px 8px;
 }
 
@@ -420,6 +433,7 @@
 
 .projectMediaMoreButton {
   position: absolute;
+  z-index: 2;
   right: 5px;
   bottom: 6px;
   display: grid;

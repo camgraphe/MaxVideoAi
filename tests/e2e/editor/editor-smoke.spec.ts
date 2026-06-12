@@ -1519,7 +1519,7 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await expect(page.locator('.react-flow__node', { hasText: 'Dev Image Block' })).toBeVisible();
 
   await switchEditorFocus(page, 'Viewer');
-  await expect(page.locator('[data-project-media-card="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 16:9');
+  await expect(page.locator('[data-project-media-card-id="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 16:9');
   await expect(page.getByText('16:9 · 1920x1080 · 24 fps')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
