@@ -129,6 +129,7 @@ export async function resolveGenerateBillingPreflight(params: {
     engine: pricingEngine,
     durationSec: params.durationSec,
     resolution: params.pricingResolution,
+    aspectRatio: params.aspectRatio,
     mode: params.mode,
     membershipTier: params.membershipTier,
     loop: params.isLumaRay2 ? params.loop : undefined,

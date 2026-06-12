@@ -116,6 +116,49 @@ test('billing preflight builds wallet receipts and pricing metadata', async () =
   });
 });
 
+test('billing preflight passes aspect ratio into pricing calculation', async () => {
+  let capturedAspectRatio: unknown = undefined;
+
+  const result = await resolveGenerateBillingPreflight({
+    req: createReq('US'),
+    engine,
+    mode: 't2v',
+    userId: 'user_123',
+    payment: { mode: 'wallet', paymentIntentId: null },
+    jobId: 'job_123',
+    durationSec: 12,
+    durationLabel: '12s',
+    pricingResolution: '720p',
+    effectiveResolution: '720p',
+    aspectRatio: '1:1',
+    membershipTier: 'plus',
+    isLumaRay2: false,
+    loop: false,
+    rawDurationOption: null,
+    lumaDurationLabel: null,
+    audioEnabled: true,
+    voiceControl: false,
+    deps: {
+      getUserPreferredCurrencyFn: async () => 'usd',
+      resolveCurrencyFn: () => ({ currency: 'usd', source: 'user_pref' }),
+      computePricingSnapshotFn: async (context) => {
+        capturedAspectRatio = context.aspectRatio;
+        return { ...pricing, totalCents: 202, meta: { ...pricing.meta } };
+      },
+      convertCentsFn: async () => ({ cents: 202, rate: 1, source: 'test' }),
+      getPlatformFeeCentsFn: () => 0,
+      receiptsPriceOnlyEnabledFn: () => true,
+      buildReceiptSnapshotFn: (value) => ({ totalCents: value.totalCents, currency: value.currency }),
+      applyEngineVariantPricingFn: (value) => value,
+      buildEngineAddonInputFn: () => ({ audio: true }),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(capturedAspectRatio, '1:1');
+  assert.equal(result.preflight.pricing.totalCents, 202);
+});
+
 test('billing preflight accepts captured direct payment intents', async () => {
   const ensuredCurrencies: string[] = [];
   const result = await resolveGenerateBillingPreflight({
