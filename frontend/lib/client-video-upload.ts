@@ -1,7 +1,9 @@
 import { authFetch } from '@/lib/authFetch';
 
 export const VERCEL_FUNCTION_BODY_LIMIT_BYTES = 4.5 * 1024 * 1024;
-export const DIRECT_VIDEO_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
+export const CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
+export const DIRECT_VIDEO_UPLOAD_THRESHOLD_BYTES = CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES;
+export const CHUNKED_VIDEO_UPLOAD_CHUNK_BYTES = 3_670_016;
 
 export type UploadedVideoAsset = {
   id: string;
@@ -24,12 +26,21 @@ type UploadFailure = Error & {
 
 type RequestFn = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-type DirectUploadPayload = {
+type ChunkedUploadPayload = {
   upload?: {
-    uploadUrl?: unknown;
+    uploadId?: unknown;
     key?: unknown;
     url?: unknown;
-    headers?: unknown;
+    chunkSizeBytes?: unknown;
+  };
+};
+
+type ChunkedPartPayload = {
+  part?: {
+    partNumber?: unknown;
+    etag?: unknown;
+    key?: unknown;
+    size?: unknown;
   };
 };
 
@@ -41,13 +52,6 @@ function createUploadFailure(status: number, payload: UploadFailurePayload, fall
   error.maxMB = maxMB;
   error.status = status;
   return error;
-}
-
-function parseHeaders(value: unknown): Record<string, string> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
-  return Object.fromEntries(
-    Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === 'string')
-  );
 }
 
 function readAssetPayload(payload: unknown): UploadedVideoAsset | null {
@@ -88,60 +92,114 @@ async function uploadVideoThroughApi(file: File, request: RequestFn): Promise<Up
   return asset;
 }
 
-async function uploadVideoDirectly(file: File, request: RequestFn): Promise<UploadedVideoAsset> {
-  const createResponse = await request('/api/uploads/video/direct', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      fileName: file.name,
-      mime: file.type || 'video/mp4',
-      size: file.size,
-    }),
-  });
-  const createPayload = (await readJson(createResponse)) as (Record<string, unknown> & DirectUploadPayload) | null;
-  if (!createResponse.ok || !createPayload?.ok) {
-    throw createUploadFailure(createResponse.status, createPayload as UploadFailurePayload, 'Upload failed');
-  }
+async function uploadVideoInChunks(file: File, request: RequestFn): Promise<UploadedVideoAsset> {
+  let uploadId = '';
+  let key = '';
+  const parts: Array<{ partNumber: number; etag: string; key: string; size: number }> = [];
 
-  const upload = createPayload.upload;
-  if (!upload || typeof upload !== 'object') {
-    throw new Error('Upload failed');
-  }
-  const uploadUrl = typeof upload?.uploadUrl === 'string' ? upload.uploadUrl : '';
-  const key = typeof upload?.key === 'string' ? upload.key : '';
-  if (!uploadUrl || !key) {
-    throw new Error('Upload failed');
-  }
+  try {
+    const startResponse = await request('/api/uploads/video/multipart/start', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fileName: file.name,
+        mime: file.type || 'video/mp4',
+        size: file.size,
+      }),
+    });
+    const startPayload = (await readJson(startResponse)) as (Record<string, unknown> & ChunkedUploadPayload) | null;
+    if (!startResponse.ok || !startPayload?.ok) {
+      throw createUploadFailure(startResponse.status, startPayload as UploadFailurePayload, 'Upload failed');
+    }
 
-  const putResponse = await fetch(uploadUrl, {
-    method: 'PUT',
-    headers: parseHeaders(upload.headers),
-    body: file,
-  });
-  if (!putResponse.ok) {
-    throw new Error('The video upload to storage failed. Please retry in a moment.');
-  }
+    const upload = startPayload.upload;
+    uploadId = typeof upload?.uploadId === 'string' ? upload.uploadId : '';
+    key = typeof upload?.key === 'string' ? upload.key : '';
+    const responseChunkSize =
+      typeof upload?.chunkSizeBytes === 'number' && Number.isFinite(upload.chunkSizeBytes)
+        ? Math.floor(upload.chunkSizeBytes)
+        : CHUNKED_VIDEO_UPLOAD_CHUNK_BYTES;
+    const chunkSize = responseChunkSize > 0 ? responseChunkSize : CHUNKED_VIDEO_UPLOAD_CHUNK_BYTES;
+    if (!uploadId || !key) {
+      throw new Error('Upload failed');
+    }
 
-  const completeResponse = await request('/api/uploads/video/complete', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      key,
-      fileName: file.name,
-      mime: file.type || 'video/mp4',
-      size: file.size,
-    }),
-  });
-  const completePayload = await readJson(completeResponse);
-  const asset = readAssetPayload(completePayload);
-  if (!completeResponse.ok || !completePayload?.ok || !asset) {
-    throw createUploadFailure(completeResponse.status, completePayload, 'Upload failed');
+    let partNumber = 1;
+    for (let offset = 0; offset < file.size; offset += chunkSize) {
+      const chunk = file.slice(offset, Math.min(offset + chunkSize, file.size), file.type || 'application/octet-stream');
+      const formData = new FormData();
+      formData.append('uploadId', uploadId);
+      formData.append('key', key);
+      formData.append('partNumber', String(partNumber));
+      formData.append('chunk', chunk, file.name);
+
+      const partResponse = await request('/api/uploads/video/multipart/part', {
+        method: 'POST',
+        body: formData,
+      });
+      const partPayload = (await readJson(partResponse)) as (Record<string, unknown> & ChunkedPartPayload) | null;
+      if (!partResponse.ok || !partPayload?.ok) {
+        throw createUploadFailure(partResponse.status, partPayload as UploadFailurePayload, 'Upload failed');
+      }
+
+      const part = partPayload.part;
+      const returnedPartNumber = typeof part?.partNumber === 'number' ? part.partNumber : partNumber;
+      const etag = typeof part?.etag === 'string' && part.etag ? part.etag : '';
+      const partKey = typeof part?.key === 'string' && part.key ? part.key : etag;
+      const size = typeof part?.size === 'number' && Number.isFinite(part.size) ? part.size : chunk.size;
+      if (!returnedPartNumber || !etag || !partKey || size <= 0) {
+        throw new Error('Upload failed');
+      }
+
+      parts.push({
+        partNumber: returnedPartNumber,
+        etag,
+        key: partKey,
+        size,
+      });
+      partNumber += 1;
+    }
+
+    const completeResponse = await request('/api/uploads/video/multipart/complete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        uploadId,
+        key,
+        fileName: file.name,
+        mime: file.type || 'video/mp4',
+        size: file.size,
+        parts,
+      }),
+    });
+    const completePayload = await readJson(completeResponse);
+    const asset = readAssetPayload(completePayload);
+    if (!completeResponse.ok || !completePayload?.ok || !asset) {
+      throw createUploadFailure(completeResponse.status, completePayload, 'Upload failed');
+    }
+    return asset;
+  } catch (error) {
+    if (uploadId && parts.length > 0) {
+      request('/api/uploads/video/multipart/abort', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uploadId, key, parts }),
+      }).catch(() => undefined);
+    }
+    throw error;
   }
-  return asset;
+}
+
+async function uploadLargeVideoFile(file: File, request: RequestFn): Promise<UploadedVideoAsset> {
+  return uploadVideoInChunks(file, request);
+}
+
+export function shouldUseChunkedVideoUpload(file: { size: number }): boolean {
+  return Number.isFinite(file.size) && file.size > CHUNKED_VIDEO_UPLOAD_THRESHOLD_BYTES;
 }
 
 export function shouldUseDirectVideoUpload(file: { size: number }): boolean {
-  return Number.isFinite(file.size) && file.size > DIRECT_VIDEO_UPLOAD_THRESHOLD_BYTES;
+  return shouldUseChunkedVideoUpload(file);
 }
 
 export async function uploadVideoFile(
@@ -149,7 +207,7 @@ export async function uploadVideoFile(
   options: { request?: RequestFn } = {}
 ): Promise<UploadedVideoAsset> {
   const request = options.request ?? authFetch;
-  return shouldUseDirectVideoUpload(file)
-    ? uploadVideoDirectly(file, request)
+  return shouldUseChunkedVideoUpload(file)
+    ? uploadLargeVideoFile(file, request)
     : uploadVideoThroughApi(file, request);
 }

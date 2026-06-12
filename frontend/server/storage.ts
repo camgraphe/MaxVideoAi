@@ -201,6 +201,19 @@ export function buildPublicStorageUrl(key: string): string {
   return buildPublicUrl(key);
 }
 
+export function createStorageFileKey(params: {
+  mime: string;
+  userId?: string | null;
+  fileName?: string | null;
+  prefix?: string;
+}): string {
+  return buildObjectKey({
+    prefix: params.prefix ?? 'files',
+    userId: params.userId ?? 'anonymous',
+    leafName: buildStorageLeafName({ mime: params.mime || 'application/octet-stream', fileName: params.fileName }),
+  });
+}
+
 export function isStorageKeyWithinUserPrefix(params: {
   key: string;
   prefix?: string;
@@ -346,6 +359,10 @@ async function deleteObjectFromStorage(key: string): Promise<void> {
   await client.send(command);
 }
 
+export async function deleteStorageObjectKey(key: string): Promise<void> {
+  await deleteObjectFromStorage(key);
+}
+
 export async function deleteStorageObjectByUrl(assetUrl: string): Promise<boolean> {
   const key = extractObjectKeyFromUrl(assetUrl);
   if (!key) return false;
@@ -472,7 +489,7 @@ export async function uploadFileBuffer(params: {
     CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
   });
 
-  const acl = params.acl ?? S3_UPLOAD_ACL;
+  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
   if (acl) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
@@ -492,6 +509,49 @@ export async function uploadFileBuffer(params: {
   }
 
   return { key, url: buildPublicUrl(key) };
+}
+
+export async function uploadFileBufferToKey(params: {
+  key: string;
+  data: Buffer;
+  mime: string;
+  cacheControl?: string;
+  acl?: string | null;
+}): Promise<{ key: string; url: string }> {
+  const client = getS3Client();
+  const keyBytes = getObjectKeySizeBytes(params.key);
+  if (keyBytes > MAX_SAFE_OBJECT_KEY_BYTES) {
+    throw new StorageUploadError('Storage object key is too long.', {
+      key: params.key,
+      keyBytes,
+    });
+  }
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: params.key,
+    Body: params.data,
+    ContentType: params.mime || 'application/octet-stream',
+    CacheControl: params.cacheControl ?? S3_CACHE_CONTROL,
+  });
+
+  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
+  if (acl) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
+    command.input.ACL = acl;
+  }
+
+  try {
+    await client.send(command);
+  } catch {
+    throw new StorageUploadError('Failed to upload file to storage.', {
+      key: params.key,
+      keyBytes,
+    });
+  }
+
+  return { key: params.key, url: buildPublicUrl(params.key) };
 }
 
 export async function createSignedUploadUrl(params: {
@@ -519,7 +579,7 @@ export async function createSignedUploadUrl(params: {
     CacheControl: cacheControl,
   });
 
-  const acl = params.acl ?? S3_UPLOAD_ACL;
+  const acl = params.acl === undefined ? S3_UPLOAD_ACL : params.acl;
   const headers: Record<string, string> = {
     'Content-Type': contentType,
     'Cache-Control': cacheControl,
@@ -551,6 +611,38 @@ export async function getStorageObjectMetadata(key: string): Promise<{ size: num
     size: typeof response.ContentLength === 'number' ? response.ContentLength : null,
     mime: response.ContentType ?? null,
   };
+}
+
+async function storageBodyToBuffer(body: unknown): Promise<Buffer> {
+  if (!body) return Buffer.alloc(0);
+  if (body instanceof Uint8Array) return Buffer.from(body);
+  if (typeof (body as { transformToByteArray?: unknown }).transformToByteArray === 'function') {
+    const bytes = await (body as { transformToByteArray: () => Promise<Uint8Array> }).transformToByteArray();
+    return Buffer.from(bytes);
+  }
+  if (typeof (body as { arrayBuffer?: unknown }).arrayBuffer === 'function') {
+    const arrayBuffer = await (body as { arrayBuffer: () => Promise<ArrayBuffer> }).arrayBuffer();
+    return Buffer.from(arrayBuffer);
+  }
+  if (typeof (body as AsyncIterable<Uint8Array | string>)[Symbol.asyncIterator] === 'function') {
+    const chunks: Buffer[] = [];
+    for await (const chunk of body as AsyncIterable<Uint8Array | string>) {
+      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
+  }
+  throw new StorageUploadError('Failed to read storage object body.');
+}
+
+export async function getStorageObjectBuffer(key: string): Promise<Buffer> {
+  const client = getS3Client();
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+    })
+  );
+  return storageBodyToBuffer(response.Body);
 }
 
 export async function createSignedDownloadUrl(key: string, { expiresInSeconds }: { expiresInSeconds: number }): Promise<string> {
