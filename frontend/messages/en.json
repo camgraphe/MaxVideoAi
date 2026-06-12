@@ -3108,6 +3108,72 @@
     "languageToggle": {
       "ariaLabel": "Change workspace language"
     },
+    "studio": {
+      "projects": {
+        "metaTitle": "Studio Projects | MaxVideoAI",
+        "heroBadge": "MaxVideoAI Studio",
+        "title": "Studio projects",
+        "subtitle": "Create a project, choose the starting canvas, then configure each sequence inside the editor.",
+        "createTitle": "Create a new project",
+        "createSubtitle": "Set up your project in a few steps",
+        "projectNameLabel": "Project name",
+        "projectNamePlaceholder": "Give your project a name...",
+        "canvasTemplateLabel": "Canvas template",
+        "browseTemplates": "Browse all templates",
+        "createProject": "Create project",
+        "creating": "Creating...",
+        "recentTitle": "Recent projects",
+        "recentSubtitle": "Pick up where you left off",
+        "emptyRecent": "No Studio projects yet.",
+        "viewAllProjects": "View all projects",
+        "rename": "Rename",
+        "duplicate": "Duplicate",
+        "delete": "Delete",
+        "renameTitle": "Rename project",
+        "renameSubmit": "Save name",
+        "deleteTitle": "Delete project",
+        "deleteBody": "This removes the project from Studio. This cannot be undone.",
+        "deleteConfirm": "Delete project",
+        "cancel": "Cancel",
+        "untitledProject": "Untitled edit",
+        "localDraft": "Local draft",
+        "customCanvas": "Custom canvas"
+      },
+      "topbar": {
+        "productName": "MaxVideoAI Editor",
+        "breadcrumbProjects": "Projects",
+        "breadcrumbWorkspace": "Workspace",
+        "workspaceViewLabel": "Workspace view",
+        "canvas": "Canvas",
+        "viewer": "Viewer",
+        "export": "Export",
+        "exportAria": "Open export dialog",
+        "mock": "Mock",
+        "live": "Live",
+        "mockAria": "Toggle mock generation",
+        "switchToLight": "Switch Studio to light mode",
+        "switchToDark": "Switch Studio to dark mode"
+      },
+      "common": {
+        "secondsShort": "s",
+        "itemSingular": "item",
+        "itemPlural": "items",
+        "folder": "Folder",
+        "generatedClip": "Generated clip"
+      },
+      "notices": {
+        "canvasTemplateNotFound": "Canvas template not found.",
+        "projectMediaAssetNotFound": "Project media asset not found.",
+        "projectMediaFolderNotFound": "Project media folder not found.",
+        "generatedClipNotFound": "Generated clip not found.",
+        "unlockBeforeMoving": "Unlock the track before moving clips.",
+        "unlockBeforeCutting": "Unlock the track before cutting clips.",
+        "unlockBeforeTrimming": "Unlock the track before trimming clips.",
+        "unlockBeforeDeleting": "Unlock the track before deleting clips.",
+        "selectedClipsUnlinked": "Selected timeline clips unlinked.",
+        "selectedClipsLinked": "Selected timeline clips linked."
+      }
+    },
     "generate": {
       "errors": {
         "loadEngines": "Failed to load engines",

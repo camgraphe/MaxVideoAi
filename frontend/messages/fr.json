@@ -3143,6 +3143,72 @@
     "languageToggle": {
       "ariaLabel": "Changer la langue de l’espace de travail"
     },
+    "studio": {
+      "projects": {
+        "metaTitle": "Projets Studio | MaxVideoAI",
+        "heroBadge": "MaxVideoAI Studio",
+        "title": "Projets Studio",
+        "subtitle": "Creez un projet, choisissez le canevas de depart, puis configurez chaque sequence dans l'editeur.",
+        "createTitle": "Creer un nouveau projet",
+        "createSubtitle": "Configurez votre projet en quelques etapes",
+        "projectNameLabel": "Nom du projet",
+        "projectNamePlaceholder": "Donnez un nom a votre projet...",
+        "canvasTemplateLabel": "Modele de canevas",
+        "browseTemplates": "Parcourir tous les modeles",
+        "createProject": "Creer le projet",
+        "creating": "Creation...",
+        "recentTitle": "Projets recents",
+        "recentSubtitle": "Reprenez la ou vous vous etiez arrete",
+        "emptyRecent": "Aucun projet Studio pour le moment.",
+        "viewAllProjects": "Voir tous les projets",
+        "rename": "Renommer",
+        "duplicate": "Dupliquer",
+        "delete": "Supprimer",
+        "renameTitle": "Renommer le projet",
+        "renameSubmit": "Enregistrer le nom",
+        "deleteTitle": "Supprimer le projet",
+        "deleteBody": "Cela retire le projet de Studio. Cette action est definitive.",
+        "deleteConfirm": "Supprimer le projet",
+        "cancel": "Annuler",
+        "untitledProject": "Montage sans titre",
+        "localDraft": "Brouillon local",
+        "customCanvas": "Canevas personnalise"
+      },
+      "topbar": {
+        "productName": "Editeur MaxVideoAI",
+        "breadcrumbProjects": "Projets",
+        "breadcrumbWorkspace": "Espace de travail",
+        "workspaceViewLabel": "Vue de l'espace de travail",
+        "canvas": "Canevas",
+        "viewer": "Visionneuse",
+        "export": "Exporter",
+        "exportAria": "Ouvrir la fenetre d'export",
+        "mock": "Mock",
+        "live": "Live",
+        "mockAria": "Activer ou desactiver la generation mock",
+        "switchToLight": "Passer Studio en mode clair",
+        "switchToDark": "Passer Studio en mode sombre"
+      },
+      "common": {
+        "secondsShort": "s",
+        "itemSingular": "element",
+        "itemPlural": "elements",
+        "folder": "Dossier",
+        "generatedClip": "Clip genere"
+      },
+      "notices": {
+        "canvasTemplateNotFound": "Modele de canevas introuvable.",
+        "projectMediaAssetNotFound": "Media du projet introuvable.",
+        "projectMediaFolderNotFound": "Dossier media du projet introuvable.",
+        "generatedClipNotFound": "Clip genere introuvable.",
+        "unlockBeforeMoving": "Deverrouillez la piste avant de deplacer des clips.",
+        "unlockBeforeCutting": "Deverrouillez la piste avant de couper des clips.",
+        "unlockBeforeTrimming": "Deverrouillez la piste avant d'ajuster des clips.",
+        "unlockBeforeDeleting": "Deverrouillez la piste avant de supprimer des clips.",
+        "selectedClipsUnlinked": "Clips selectionnes dissocies.",
+        "selectedClipsLinked": "Clips selectionnes lies."
+      }
+    },
     "generate": {
       "errors": {
         "loadEngines": "Impossible de charger les modèles",

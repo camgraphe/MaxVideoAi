@@ -3135,6 +3135,72 @@
     "languageToggle": {
       "ariaLabel": "Cambiar el idioma del workspace"
     },
+    "studio": {
+      "projects": {
+        "metaTitle": "Proyectos Studio | MaxVideoAI",
+        "heroBadge": "MaxVideoAI Studio",
+        "title": "Proyectos Studio",
+        "subtitle": "Crea un proyecto, elige el lienzo inicial y configura cada secuencia en el editor.",
+        "createTitle": "Crear un proyecto nuevo",
+        "createSubtitle": "Configura tu proyecto en pocos pasos",
+        "projectNameLabel": "Nombre del proyecto",
+        "projectNamePlaceholder": "Ponle un nombre a tu proyecto...",
+        "canvasTemplateLabel": "Plantilla de lienzo",
+        "browseTemplates": "Ver todas las plantillas",
+        "createProject": "Crear proyecto",
+        "creating": "Creando...",
+        "recentTitle": "Proyectos recientes",
+        "recentSubtitle": "Retoma donde lo dejaste",
+        "emptyRecent": "Aun no hay proyectos Studio.",
+        "viewAllProjects": "Ver todos los proyectos",
+        "rename": "Renombrar",
+        "duplicate": "Duplicar",
+        "delete": "Eliminar",
+        "renameTitle": "Renombrar proyecto",
+        "renameSubmit": "Guardar nombre",
+        "deleteTitle": "Eliminar proyecto",
+        "deleteBody": "Esto elimina el proyecto de Studio. No se puede deshacer.",
+        "deleteConfirm": "Eliminar proyecto",
+        "cancel": "Cancelar",
+        "untitledProject": "Edicion sin titulo",
+        "localDraft": "Borrador local",
+        "customCanvas": "Lienzo personalizado"
+      },
+      "topbar": {
+        "productName": "Editor MaxVideoAI",
+        "breadcrumbProjects": "Proyectos",
+        "breadcrumbWorkspace": "Workspace",
+        "workspaceViewLabel": "Vista del workspace",
+        "canvas": "Lienzo",
+        "viewer": "Visor",
+        "export": "Exportar",
+        "exportAria": "Abrir dialogo de exportacion",
+        "mock": "Mock",
+        "live": "Live",
+        "mockAria": "Alternar generacion mock",
+        "switchToLight": "Cambiar Studio a modo claro",
+        "switchToDark": "Cambiar Studio a modo oscuro"
+      },
+      "common": {
+        "secondsShort": "s",
+        "itemSingular": "elemento",
+        "itemPlural": "elementos",
+        "folder": "Carpeta",
+        "generatedClip": "Clip generado"
+      },
+      "notices": {
+        "canvasTemplateNotFound": "No se encontro la plantilla de lienzo.",
+        "projectMediaAssetNotFound": "No se encontro el recurso multimedia del proyecto.",
+        "projectMediaFolderNotFound": "No se encontro la carpeta multimedia del proyecto.",
+        "generatedClipNotFound": "No se encontro el clip generado.",
+        "unlockBeforeMoving": "Desbloquea la pista antes de mover clips.",
+        "unlockBeforeCutting": "Desbloquea la pista antes de cortar clips.",
+        "unlockBeforeTrimming": "Desbloquea la pista antes de recortar clips.",
+        "unlockBeforeDeleting": "Desbloquea la pista antes de eliminar clips.",
+        "selectedClipsUnlinked": "Clips de la linea de tiempo seleccionados desvinculados.",
+        "selectedClipsLinked": "Clips de la linea de tiempo seleccionados vinculados."
+      }
+    },
     "generate": {
       "errors": {
         "loadEngines": "No se pudieron cargar los motores",
