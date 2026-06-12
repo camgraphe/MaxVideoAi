@@ -230,9 +230,13 @@ export function WorkspaceEditorLayout({
             sequences={sequenceSnapshots.sequenceSummaries}
             timelineItems={timelineItems}
             onDeleteGeneratedClip={projectMedia.handleDeleteGeneratedClip}
+            onDeleteGeneratedClips={projectMedia.handleDeleteGeneratedClips}
             onDeleteProjectAsset={projectMedia.handleDeleteProjectAsset}
+            onDeleteProjectAssets={projectMedia.handleDeleteProjectAssets}
             onDeleteProjectMediaFolder={projectMedia.handleDeleteProjectMediaFolder}
+            onDeleteProjectMediaFolders={projectMedia.handleDeleteProjectMediaFolders}
             onDeleteSequence={sequence.handleDeleteSequence}
+            onDeleteSequences={sequence.handleDeleteSequences}
             onDuplicateSequence={sequence.handleDuplicateSequence}
             onImportMedia={projectMedia.handleImportProjectMedia}
             onInspectSequence={selection.handleInspectSequence}

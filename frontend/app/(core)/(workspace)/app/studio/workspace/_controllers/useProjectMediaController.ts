@@ -28,6 +28,12 @@ const MEDIA_DETAIL_SEPARATOR = ' • ';
 export type ProjectMediaSelection =
   | { id: string; type: 'asset' | 'folder' | 'generated' | 'sequence' }
   | null;
+export type ProjectMediaSelectionItem = NonNullable<ProjectMediaSelection>;
+export type ProjectMediaSelectionGesture = {
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  shiftKey?: boolean;
+};
 
 export type ProjectMediaContextMenu = {
   id: string;
@@ -80,9 +86,13 @@ type UseProjectMediaControllerArgs = {
   sequences: WorkspaceProjectSequenceSummary[];
   onClearSequenceInspector: () => void;
   onDeleteGeneratedClip: (nodeId: string) => void;
+  onDeleteGeneratedClips: (nodeIds: string[]) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteProjectAssets: (assetIds: string[]) => void;
   onDeleteProjectMediaFolder: (folderId: string) => void;
+  onDeleteProjectMediaFolders: (folderIds: string[]) => void;
   onDeleteSequence: (sequenceId: string) => void;
+  onDeleteSequences: (sequenceIds: string[]) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
   onInspectSequence: (sequenceId: string) => void;
@@ -104,6 +114,14 @@ export function formatProjectMediaDuration(seconds: number): string {
 
 export function projectMediaSelectionKey(type: NonNullable<ProjectMediaSelection>['type'], id: string): string {
   return `${type}:${id}`;
+}
+
+function projectMediaSelectionItemKey(item: ProjectMediaSelectionItem): string {
+  return projectMediaSelectionKey(item.type, item.id);
+}
+
+function isProjectMediaMultiSelectionGesture(gesture?: ProjectMediaSelectionGesture): boolean {
+  return Boolean(gesture?.ctrlKey || gesture?.metaKey || gesture?.shiftKey);
 }
 
 function generatedClipNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
@@ -164,9 +182,13 @@ export function useProjectMediaController({
   sequences,
   onClearSequenceInspector,
   onDeleteGeneratedClip,
+  onDeleteGeneratedClips,
   onDeleteProjectAsset,
+  onDeleteProjectAssets,
   onDeleteProjectMediaFolder,
+  onDeleteProjectMediaFolders,
   onDeleteSequence,
+  onDeleteSequences,
   onDuplicateSequence,
   onImportMedia,
   onInspectSequence,
@@ -178,7 +200,8 @@ export function useProjectMediaController({
   onSelectSequence,
 }: UseProjectMediaControllerArgs) {
   const generatedNodes = useMemo(() => generatedClipNodes(nodes), [nodes]);
-  const [selectedMedia, setSelectedMedia] = useState<ProjectMediaSelection>(null);
+  const [selectedMediaItems, setSelectedMediaItems] = useState<ProjectMediaSelectionItem[]>([]);
+  const [selectionAnchorKey, setSelectionAnchorKey] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [folderDropTargetId, setFolderDropTargetId] = useState<string | null>(null);
@@ -191,12 +214,11 @@ export function useProjectMediaController({
   );
   const canMoveMediaToFolder = projectMediaFolders.length > 0;
   const totalItems = sequences.length + projectMediaFolders.length + projectAssets.length + generatedNodes.length;
-  const selectedKey = selectedMedia ? projectMediaSelectionKey(selectedMedia.type, selectedMedia.id) : null;
-  const selectedCanDelete =
-    selectedMedia?.type === 'asset' ||
-    selectedMedia?.type === 'folder' ||
-    selectedMedia?.type === 'generated' ||
-    (selectedMedia?.type === 'sequence' && sequences.length > 1);
+  const selectedKey = selectedMediaItems.length === 1 ? projectMediaSelectionItemKey(selectedMediaItems[0]) : null;
+  const selectedKeySet = useMemo(
+    () => new Set(selectedMediaItems.map((item) => projectMediaSelectionItemKey(item))),
+    [selectedMediaItems]
+  );
   const normalizedSearchQuery = searchQuery.trim().toLowerCase();
 
   const matchesSearch = useMemo(() => {
@@ -268,11 +290,86 @@ export function useProjectMediaController({
     [activeFolderId, folderIds, generatedNodes, matchesSearch]
   );
   const visibleItemCount = visibleSequences.length + visibleFolders.length + visibleProjectAssets.length + visibleGeneratedNodes.length;
+  const visibleSelectionItems = useMemo(
+    () => [
+      ...visibleSequences.map((sequence) => ({
+        id: sequence.id,
+        key: projectMediaSelectionKey('sequence', sequence.id),
+        type: 'sequence' as const,
+      })),
+      ...visibleFolders.map(({ folder, key }) => ({
+        id: folder.id,
+        key,
+        type: 'folder' as const,
+      })),
+      ...visibleProjectAssets.map(({ asset, key }) => ({
+        id: asset.id,
+        key,
+        type: 'asset' as const,
+      })),
+      ...visibleGeneratedNodes.map(({ key, node }) => ({
+        id: node.id,
+        key,
+        type: 'generated' as const,
+      })),
+    ],
+    [visibleFolders, visibleGeneratedNodes, visibleProjectAssets, visibleSequences]
+  );
+  const existingSelectionKeys = useMemo(() => new Set([
+    ...sequences.map((sequence) => projectMediaSelectionKey('sequence', sequence.id)),
+    ...projectMediaFolders.map((folder) => projectMediaSelectionKey('folder', folder.id)),
+    ...projectAssets.map((asset) => projectMediaSelectionKey('asset', asset.id)),
+    ...generatedNodes.map((node) => projectMediaSelectionKey('generated', node.id)),
+  ]), [generatedNodes, projectAssets, projectMediaFolders, sequences]);
+  const selectedSequenceIds = selectedMediaItems
+    .filter((item) => item.type === 'sequence')
+    .map((item) => item.id);
+  const canDeleteSelectedSequences = selectedSequenceIds.length > 0 && sequences.length - selectedSequenceIds.length >= 1;
+  const deletableSelectedMediaItems = useMemo(
+    () => selectedMediaItems.filter((item) => item.type !== 'sequence' || canDeleteSelectedSequences),
+    [canDeleteSelectedSequences, selectedMediaItems]
+  );
+  const selectedCanDelete = deletableSelectedMediaItems.length > 0;
+
+  const selectProjectMediaItem = useCallback((item: ProjectMediaSelectionItem, gesture?: ProjectMediaSelectionGesture) => {
+    const itemKey = projectMediaSelectionItemKey(item);
+    setSelectedMediaItems((current) => {
+      const shouldRangeSelect = Boolean(gesture?.shiftKey && selectionAnchorKey);
+      if (shouldRangeSelect) {
+        const anchorIndex = visibleSelectionItems.findIndex((candidate) => candidate.key === selectionAnchorKey);
+        const itemIndex = visibleSelectionItems.findIndex((candidate) => candidate.key === itemKey);
+        if (anchorIndex !== -1 && itemIndex !== -1) {
+          const startIndex = Math.min(anchorIndex, itemIndex);
+          const endIndex = Math.max(anchorIndex, itemIndex);
+          return visibleSelectionItems
+            .slice(startIndex, endIndex + 1)
+            .map(({ id, type }) => ({ id, type }));
+        }
+      }
+
+      if (gesture?.ctrlKey || gesture?.metaKey) {
+        const isAlreadySelected = current.some((candidate) => projectMediaSelectionItemKey(candidate) === itemKey);
+        if (isAlreadySelected) {
+          return current.filter((candidate) => projectMediaSelectionItemKey(candidate) !== itemKey);
+        }
+        return [...current, item];
+      }
+
+      return [item];
+    });
+    setSelectionAnchorKey(itemKey);
+  }, [selectionAnchorKey, visibleSelectionItems]);
 
   const openContextMenu = useCallback((event: ReactMouseEvent<HTMLElement>, menu: Omit<ProjectMediaContextMenu, 'x' | 'y'>) => {
     event.preventDefault();
     event.stopPropagation();
-    setSelectedMedia({ id: menu.id, type: menu.type });
+    const menuSelection = { id: menu.id, type: menu.type };
+    const menuSelectionKey = projectMediaSelectionItemKey(menuSelection);
+    setSelectedMediaItems((current) => {
+      if (current.some((item) => projectMediaSelectionItemKey(item) === menuSelectionKey)) return current;
+      return [menuSelection];
+    });
+    setSelectionAnchorKey(menuSelectionKey);
     setContextMenu({
       ...menu,
       x: event.clientX,
@@ -280,28 +377,33 @@ export function useProjectMediaController({
     });
   }, []);
 
-  const selectSequence = useCallback((sequenceId: string) => {
-    setSelectedMedia({ id: sequenceId, type: 'sequence' });
+  const selectSequence = useCallback((sequenceId: string, gesture?: ProjectMediaSelectionGesture) => {
+    selectProjectMediaItem({ id: sequenceId, type: 'sequence' }, gesture);
+    if (isProjectMediaMultiSelectionGesture(gesture)) return;
     onInspectSequence(sequenceId);
     onSelectSequence(sequenceId);
-  }, [onInspectSequence, onSelectSequence]);
+  }, [onInspectSequence, onSelectSequence, selectProjectMediaItem]);
 
-  const selectProjectAsset = useCallback((assetId: string) => {
-    setSelectedMedia({ id: assetId, type: 'asset' });
+  const selectProjectAsset = useCallback((assetId: string, gesture?: ProjectMediaSelectionGesture) => {
+    selectProjectMediaItem({ id: assetId, type: 'asset' }, gesture);
     onClearSequenceInspector();
-  }, [onClearSequenceInspector]);
+  }, [onClearSequenceInspector, selectProjectMediaItem]);
 
-  const selectProjectMediaFolder = useCallback((folderId: string) => {
-    setSelectedMedia({ id: folderId, type: 'folder' });
+  const selectProjectMediaFolder = useCallback((folderId: string, gesture?: ProjectMediaSelectionGesture) => {
+    selectProjectMediaItem({ id: folderId, type: 'folder' }, gesture);
+    if (isProjectMediaMultiSelectionGesture(gesture)) {
+      onClearSequenceInspector();
+      return;
+    }
     setActiveFolderId(folderId);
     setSearchQuery('');
     onClearSequenceInspector();
-  }, [onClearSequenceInspector]);
+  }, [onClearSequenceInspector, selectProjectMediaItem]);
 
-  const selectGeneratedNode = useCallback((nodeId: string) => {
-    setSelectedMedia({ id: nodeId, type: 'generated' });
+  const selectGeneratedNode = useCallback((nodeId: string, gesture?: ProjectMediaSelectionGesture) => {
+    selectProjectMediaItem({ id: nodeId, type: 'generated' }, gesture);
     onClearSequenceInspector();
-  }, [onClearSequenceInspector]);
+  }, [onClearSequenceInspector, selectProjectMediaItem]);
 
   const insertMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onInsertProjectAsset(menu.id);
@@ -315,7 +417,9 @@ export function useProjectMediaController({
     else if (menu.type === 'folder') onDeleteProjectMediaFolder(menu.id);
     else if (menu.type === 'generated') onDeleteGeneratedClip(menu.id);
     else onDeleteSequence(menu.id);
-    setSelectedMedia(null);
+    const menuKey = projectMediaSelectionKey(menu.type, menu.id);
+    setSelectedMediaItems((current) => current.filter((item) => projectMediaSelectionItemKey(item) !== menuKey));
+    setSelectionAnchorKey((current) => (current === menuKey ? null : current));
   }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence]);
 
   const moveMenuItem = useCallback((menu: ProjectMediaContextMenu, folderId: string | null) => {
@@ -331,21 +435,41 @@ export function useProjectMediaController({
   const duplicateMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type !== 'sequence') return;
     onDuplicateSequence(menu.id);
-    setSelectedMedia(null);
+    setSelectedMediaItems([]);
+    setSelectionAnchorKey(null);
   }, [onDuplicateSequence]);
 
   const deleteSelected = useCallback(() => {
-    if (!selectedMedia || !selectedCanDelete) return;
-    if (selectedMedia.type === 'asset') onDeleteProjectAsset(selectedMedia.id);
-    if (selectedMedia.type === 'folder') onDeleteProjectMediaFolder(selectedMedia.id);
-    if (selectedMedia.type === 'generated') onDeleteGeneratedClip(selectedMedia.id);
-    if (selectedMedia.type === 'sequence') onDeleteSequence(selectedMedia.id);
-    setSelectedMedia(null);
-  }, [onDeleteGeneratedClip, onDeleteProjectAsset, onDeleteProjectMediaFolder, onDeleteSequence, selectedCanDelete, selectedMedia]);
+    if (!selectedCanDelete) return;
+    const assetIds = deletableSelectedMediaItems
+      .filter((item) => item.type === 'asset')
+      .map((item) => item.id);
+    const folderIds = deletableSelectedMediaItems
+      .filter((item) => item.type === 'folder')
+      .map((item) => item.id);
+    const generatedIds = deletableSelectedMediaItems
+      .filter((item) => item.type === 'generated')
+      .map((item) => item.id);
+    const sequenceIds = deletableSelectedMediaItems
+      .filter((item) => item.type === 'sequence')
+      .map((item) => item.id);
+
+    if (assetIds.length === 1) onDeleteProjectAsset(assetIds[0]);
+    if (assetIds.length > 1) onDeleteProjectAssets(assetIds);
+    if (folderIds.length === 1) onDeleteProjectMediaFolder(folderIds[0]);
+    if (folderIds.length > 1) onDeleteProjectMediaFolders(folderIds);
+    if (generatedIds.length === 1) onDeleteGeneratedClip(generatedIds[0]);
+    if (generatedIds.length > 1) onDeleteGeneratedClips(generatedIds);
+    if (sequenceIds.length === 1) onDeleteSequence(sequenceIds[0]);
+    if (sequenceIds.length > 1) onDeleteSequences(sequenceIds);
+    setSelectedMediaItems([]);
+    setSelectionAnchorKey(null);
+  }, [deletableSelectedMediaItems, onDeleteGeneratedClip, onDeleteGeneratedClips, onDeleteProjectAsset, onDeleteProjectAssets, onDeleteProjectMediaFolder, onDeleteProjectMediaFolders, onDeleteSequence, onDeleteSequences, selectedCanDelete]);
 
   const openRootFolder = useCallback(() => {
     setActiveFolderId(null);
-    setSelectedMedia(null);
+    setSelectedMediaItems([]);
+    setSelectionAnchorKey(null);
     setSearchQuery('');
     onClearSequenceInspector();
   }, [onClearSequenceInspector]);
@@ -358,7 +482,8 @@ export function useProjectMediaController({
     if (!payload || payload.sourceFolderId === folderId) return false;
     if (payload.itemType === 'asset') onMoveProjectAssetToFolder(payload.itemId, folderId);
     else onMoveGeneratedClipToFolder(payload.itemId, folderId);
-    setSelectedMedia({ id: payload.itemId, type: payload.itemType });
+    setSelectedMediaItems([{ id: payload.itemId, type: payload.itemType }]);
+    setSelectionAnchorKey(projectMediaSelectionKey(payload.itemType, payload.itemId));
     return true;
   }, [onMoveGeneratedClipToFolder, onMoveProjectAssetToFolder]);
 
@@ -411,8 +536,14 @@ export function useProjectMediaController({
   useEffect(() => {
     if (!activeFolderId || folderIds.has(activeFolderId)) return;
     setActiveFolderId(null);
-    setSelectedMedia(null);
+    setSelectedMediaItems([]);
+    setSelectionAnchorKey(null);
   }, [activeFolderId, folderIds]);
+
+  useEffect(() => {
+    setSelectedMediaItems((current) => current.filter((item) => existingSelectionKeys.has(projectMediaSelectionItemKey(item))));
+    setSelectionAnchorKey((current) => (current && existingSelectionKeys.has(current) ? current : null));
+  }, [existingSelectionKeys]);
 
   return {
     activeFolder,
@@ -434,8 +565,10 @@ export function useProjectMediaController({
     selectProjectAsset,
     selectProjectMediaFolder,
     selectedCanDelete,
+    selectedCount: selectedMediaItems.length,
     canMoveMediaToFolder,
     selectedKey,
+    selectedKeySet,
     selectSequence,
     folderDropTargetId,
     handleFolderDragLeave,

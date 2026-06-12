@@ -1,4 +1,4 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { ensureAssetSchema } from '@/lib/schema';
 import { query } from '@/lib/db';
@@ -195,6 +195,24 @@ function buildPublicUrl(key: string): string {
   }
   const host = S3_REGION ? `${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com` : `${S3_BUCKET}.s3.amazonaws.com`;
   return `https://${host}/${key}`;
+}
+
+export function buildPublicStorageUrl(key: string): string {
+  return buildPublicUrl(key);
+}
+
+export function isStorageKeyWithinUserPrefix(params: {
+  key: string;
+  prefix?: string;
+  userId?: string | null;
+}): boolean {
+  const markerKey = buildObjectKey({
+    prefix: params.prefix,
+    userId: params.userId,
+    leafName: '__upload_marker__',
+  });
+  const expectedPrefix = markerKey.slice(0, markerKey.lastIndexOf('/') + 1);
+  return params.key.startsWith(expectedPrefix);
 }
 
 export async function uploadImageToStorage(params: {
@@ -467,6 +485,65 @@ export async function uploadFileBuffer(params: {
   }
 
   return { key, url: buildPublicUrl(key) };
+}
+
+export async function createSignedUploadUrl(params: {
+  mime: string;
+  userId?: string | null;
+  fileName?: string | null;
+  prefix?: string;
+  expiresInSeconds?: number;
+  cacheControl?: string;
+  acl?: string | null;
+}): Promise<{ key: string; url: string; publicUrl: string; headers: Record<string, string> }> {
+  const client = getS3Client();
+  const contentType = params.mime || 'application/octet-stream';
+  const cacheControl = params.cacheControl ?? S3_CACHE_CONTROL;
+  const key = buildObjectKey({
+    prefix: params.prefix ?? 'files',
+    userId: params.userId ?? 'anonymous',
+    leafName: buildStorageLeafName({ mime: contentType, fileName: params.fileName }),
+  });
+
+  const command = new PutObjectCommand({
+    Bucket: S3_BUCKET,
+    Key: key,
+    ContentType: contentType,
+    CacheControl: cacheControl,
+  });
+
+  const acl = params.acl ?? S3_UPLOAD_ACL;
+  const headers: Record<string, string> = {
+    'Content-Type': contentType,
+    'Cache-Control': cacheControl,
+  };
+  if (acl) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore - ACL accepts specific string literals; keep runtime flexible via env
+    command.input.ACL = acl;
+    headers['x-amz-acl'] = acl;
+  }
+
+  return {
+    key,
+    url: await getSignedUrl(client, command, { expiresIn: params.expiresInSeconds ?? 600 }),
+    publicUrl: buildPublicUrl(key),
+    headers,
+  };
+}
+
+export async function getStorageObjectMetadata(key: string): Promise<{ size: number | null; mime: string | null }> {
+  const client = getS3Client();
+  const response = await client.send(
+    new HeadObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+    })
+  );
+  return {
+    size: typeof response.ContentLength === 'number' ? response.ContentLength : null,
+    mime: response.ContentType ?? null,
+  };
 }
 
 export async function createSignedDownloadUrl(key: string, { expiresInSeconds }: { expiresInSeconds: number }): Promise<string> {

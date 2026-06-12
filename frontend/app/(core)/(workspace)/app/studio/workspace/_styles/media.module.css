@@ -185,12 +185,19 @@
 .projectMediaGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: max-content;
   min-height: 0;
   flex: 1 1 auto;
   align-content: start;
+  align-items: start;
   gap: 8px;
   overflow-y: auto;
+  scrollbar-width: none;
   padding: 0 14px 16px;
+}
+
+.projectMediaGrid::-webkit-scrollbar {
+  display: none;
 }
 
 .projectMediaTile {

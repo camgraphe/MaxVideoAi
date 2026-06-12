@@ -290,6 +290,174 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   assertNoEditorClientErrors(errors);
 });
 
+test('light Studio keeps sequence inspector form text readable', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
+  await switchEditorFocus(page, 'Viewer');
+
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  await projectMediaSidebar.getByRole('button', { name: 'New sequence' }).click();
+
+  const sequenceSettings = page.getByRole('complementary', { name: 'Sequence settings' });
+  await expect(sequenceSettings).toBeVisible();
+
+  const colorMetrics = await sequenceSettings.evaluate((panel) => {
+    const input = panel.querySelector('input');
+    const select = panel.querySelector('select');
+    if (!(input instanceof HTMLElement) || !(select instanceof HTMLElement)) {
+      return null;
+    }
+
+    const luminance = (color: string) => {
+      const channels = color.match(/\d+(\.\d+)?/g)?.slice(0, 3).map(Number) ?? [255, 255, 255];
+      const [red, green, blue] = channels.map((channel) => {
+        const value = channel / 255;
+        return value <= 0.03928 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    };
+
+    const inputColor = getComputedStyle(input).color;
+    const selectColor = getComputedStyle(select).color;
+    return {
+      inputColor,
+      inputLuminance: luminance(inputColor),
+      selectColor,
+      selectLuminance: luminance(selectColor),
+    };
+  });
+
+  expect(colorMetrics).not.toBeNull();
+  expect(colorMetrics?.inputLuminance).toBeLessThan(0.2);
+  expect(colorMetrics?.selectLuminance).toBeLessThan(0.2);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('viewer project media grid scrolls without shrinking media cards', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const projectMediaGrid = page.locator('[class*="projectMediaGrid"]');
+  await expect(projectMediaGrid).toBeVisible();
+
+  for (let index = 0; index < 18; index += 1) {
+    await page.getByRole('button', { name: 'New sequence' }).click();
+  }
+
+  await expect(projectMediaGrid.locator('[data-project-media-card]')).toHaveCount(21);
+  const beforeMetrics = await projectMediaGrid.evaluate((grid) => {
+    const cardHeights = Array.from(grid.querySelectorAll('[data-project-media-card]'))
+      .map((card) => Math.round(card.getBoundingClientRect().height));
+    const styles = getComputedStyle(grid);
+    return {
+      cardHeights: Array.from(new Set(cardHeights)),
+      clientHeight: grid.clientHeight,
+      gridAutoRows: styles.gridAutoRows,
+      scrollHeight: grid.scrollHeight,
+      scrollbarWidth: styles.scrollbarWidth,
+    };
+  });
+
+  expect(beforeMetrics.scrollHeight).toBeGreaterThan(beforeMetrics.clientHeight);
+  expect(beforeMetrics.cardHeights).toEqual([121]);
+  expect(beforeMetrics.gridAutoRows).toBe('max-content');
+  expect(beforeMetrics.scrollbarWidth).toBe('none');
+
+  const gridBox = await projectMediaGrid.boundingBox();
+  expect(gridBox).not.toBeNull();
+  if (!gridBox) return;
+
+  await page.mouse.move(gridBox.x + gridBox.width / 2, gridBox.y + gridBox.height / 2);
+  await page.mouse.wheel(0, 520);
+
+  await expect.poll(async () => projectMediaGrid.evaluate((grid) => grid.scrollTop)).toBeGreaterThan(0);
+  const afterCardHeights = await projectMediaGrid.evaluate((grid) =>
+    Array.from(new Set(Array.from(grid.querySelectorAll('[data-project-media-card]'))
+      .map((card) => Math.round(card.getBoundingClientRect().height))))
+  );
+  expect(afterCardHeights).toEqual([121]);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('viewer project media supports range selection and bulk delete', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  const projectMediaGrid = projectMediaSidebar.locator('[class*="projectMediaGrid"]');
+  await expect(projectMediaGrid).toBeVisible();
+
+  for (let index = 0; index < 3; index += 1) {
+    await projectMediaSidebar.getByRole('button', { name: 'New sequence' }).click();
+  }
+
+  const sequence2 = projectMediaGrid.locator('[data-project-sequence-id]', { hasText: 'Sequence 2' });
+  const sequence3 = projectMediaGrid.locator('[data-project-sequence-id]', { hasText: 'Sequence 3' });
+  const sequence4 = projectMediaGrid.locator('[data-project-sequence-id]', { hasText: 'Sequence 4' });
+
+  await sequence2.click();
+  await sequence4.click({ modifiers: ['Shift'] });
+  await expect(projectMediaGrid.locator('[data-project-media-card][data-selected="true"]')).toHaveCount(3);
+
+  await sequence3.click({ modifiers: ['ControlOrMeta'] });
+  await expect(projectMediaGrid.locator('[data-project-media-card][data-selected="true"]')).toHaveCount(2);
+  await expect(sequence2).toHaveAttribute('data-selected', 'true');
+  await expect(sequence3).not.toHaveAttribute('data-selected', 'true');
+  await expect(sequence4).toHaveAttribute('data-selected', 'true');
+
+  let dialogCount = 0;
+  page.on('dialog', async (dialog) => {
+    dialogCount += 1;
+    await dialog.accept();
+  });
+  await projectMediaSidebar.getByRole('button', { name: 'Delete' }).click();
+
+  await expect(sequence2).toHaveCount(0);
+  await expect(sequence3).toBeVisible();
+  await expect(sequence4).toHaveCount(0);
+  await expect(projectMediaGrid.locator('[data-project-media-card][data-selected="true"]')).toHaveCount(0);
+  expect(dialogCount).toBe(1);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('viewer project media bulk deletes generated thumbnails with one confirmation', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  const projectMediaGrid = projectMediaSidebar.locator('[class*="projectMediaGrid"]');
+  const output1 = projectMediaGrid.locator('[data-project-media-generated-id]', { hasText: 'Output 01' });
+  const output2 = projectMediaGrid.locator('[data-project-media-generated-id]', { hasText: 'Output 02' });
+
+  await output1.click();
+  await output2.click({ modifiers: ['ControlOrMeta'] });
+  await expect(projectMediaGrid.locator('[data-project-media-card][data-selected="true"]')).toHaveCount(2);
+
+  let dialogCount = 0;
+  page.on('dialog', async (dialog) => {
+    dialogCount += 1;
+    await dialog.accept();
+  });
+  await projectMediaSidebar.getByRole('button', { name: 'Delete' }).click();
+
+  await expect(output1).toHaveCount(0);
+  await expect(output2).toHaveCount(0);
+  expect(dialogCount).toBe(1);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('canvas toolbar can marquee select multiple nodes and delete them', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

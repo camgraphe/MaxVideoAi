@@ -509,17 +509,24 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(sequenceActionsHookSource, /upsertWorkspaceSequence/, 'sequence action hook should preserve the current sequence before switching');
   assert.match(sequenceActionsHookSource, /handleDuplicateSequence/, 'sequence action hook should own sequence duplication');
   assert.match(sequenceActionsHookSource, /handleDeleteSequence/, 'sequence action hook should own sequence deletion');
+  assert.match(sequenceActionsHookSource, /handleDeleteSequences/, 'sequence action hook should own bulk sequence deletion');
   assert.match(sequenceActionsHookSource, /createWorkspaceSequenceDuplicate/, 'sequence action hook should delegate duplication record creation to the pure state helper');
   assert.match(sequenceActionsHookSource, /resolveWorkspaceSequenceDelete/, 'sequence action hook should delegate delete fallback decisions to the pure state helper');
+  assert.match(sequenceActionsHookSource, /resolveWorkspaceSequenceBulkDelete/, 'sequence action hook should delegate bulk delete fallback decisions to the pure state helper');
   assert.match(workspaceSequenceOperationsSource, /export function createWorkspaceSequenceDuplicate/, 'sequence operations helper should own duplicate sequence record creation');
   assert.match(workspaceSequenceOperationsSource, /export function resolveWorkspaceSequenceDelete/, 'sequence operations helper should own delete fallback resolution');
+  assert.match(workspaceSequenceOperationsSource, /export function resolveWorkspaceSequenceBulkDelete/, 'sequence operations helper should own bulk delete fallback resolution');
   assert.match(workspaceEditorLayoutSource, /onDeleteSequence=\{sequence\.handleDeleteSequence\}/, 'viewer project sidebar should delete sequences through sequence actions');
+  assert.match(workspaceEditorLayoutSource, /onDeleteSequences=\{sequence\.handleDeleteSequences\}/, 'viewer project sidebar should bulk-delete sequences through sequence actions');
   assert.match(workspaceEditorLayoutSource, /onDuplicateSequence=\{sequence\.handleDuplicateSequence\}/, 'viewer project sidebar should duplicate sequences through sequence actions');
   assert.match(projectMediaControllerSource, /type: 'asset' \| 'folder' \| 'generated' \| 'sequence'/, 'project media controller should treat sequences and folders as first-class selectable project media items');
   assert.match(projectMediaActionsHookSource, /resolveProjectAssetTimelineInsert/, 'project media action hook should route asset insertion through the pure timeline helper');
   assert.match(projectMediaActionsHookSource, /handleImportProjectMedia/, 'project media action hook should open the import picker');
   assert.match(projectMediaActionsHookSource, /handleDeleteProjectAsset/, 'project media action hook should own imported asset deletion');
+  assert.match(projectMediaActionsHookSource, /handleDeleteProjectAssets/, 'project media action hook should own bulk imported asset deletion');
   assert.match(projectMediaActionsHookSource, /handleDeleteGeneratedClip/, 'project media action hook should own generated media deletion');
+  assert.match(projectMediaActionsHookSource, /handleDeleteGeneratedClips/, 'project media action hook should own bulk generated media deletion');
+  assert.match(projectMediaActionsHookSource, /handleDeleteProjectMediaFolders/, 'project media action hook should own bulk project media folder deletion');
   assert.match(projectMediaActionsHookSource, /handleDropProjectAssetToTimeline/, 'project media action hook should own Project media drops to the timeline');
   assert.doesNotMatch(workspaceSource, /const handleImportProjectMedia = useCallback/, 'workspace orchestrator should not own Project media import internals');
   assert.doesNotMatch(workspaceSource, /const handleDeleteProjectAsset = useCallback/, 'workspace orchestrator should not own Project media deletion internals');
@@ -1773,6 +1780,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(mediaStyleSource, /\.timelineProjectSidebar/, 'project media CSS module should own the viewer media sidebar shell styles');
   assert.match(mediaStyleSource, /\.projectMediaGrid/, 'project media CSS module should own the media grid styles');
   assert.match(mediaStyleSource, /grid-template-columns:\s*repeat\(3,\s*minmax\(0,\s*1fr\)\)/, 'project media should use a compact three-column grid');
+  assert.match(mediaStyleSource, /\.projectMediaGrid[\s\S]*grid-auto-rows:\s*max-content/, 'project media cards should keep their intrinsic thumbnail size instead of shrinking rows');
+  assert.match(mediaStyleSource, /\.projectMediaGrid[\s\S]*scrollbar-width:\s*none/, 'project media grid should stay scrollable without showing a scrollbar');
+  assert.match(mediaStyleSource, /\.projectMediaGrid::-webkit-scrollbar[\s\S]*display:\s*none/, 'project media grid should hide WebKit scrollbars while preserving scroll');
   assert.match(mediaStyleSource, /\.projectMediaTile/, 'project media CSS module should own media card styles');
   assert.match(mediaStyleSource, /\.projectMediaBadge[\s\S]*width:\s*22px[\s\S]*height:\s*22px/, 'project media thumbnail badges should stay discreet in compact cards');
   assert.doesNotMatch(styleSource, /\.projectMediaGrid/, 'main editor CSS should no longer own project media grid styles after modularization');
@@ -2011,6 +2021,32 @@ test('MaxVideoAI editor timeline track helpers reject impossible video lanes', a
   assert.equal(workspaceTimelineAudioTrackIndex('audio-3'), 3, 'timeline should parse added audio track indexes');
   assert.equal(workspaceTimelineTrackLabel('audio'), 'Audio 1', 'timeline should label the base audio lane generically');
   assert.equal(workspaceTimelineTrackLabel('audio-3'), 'Audio 3', 'timeline should label added audio tracks generically');
+});
+
+test('MaxVideoAI editor timeline defaults to one video track and two audio tracks', async () => {
+  const {
+    MIN_TIMELINE_AUDIO_TRACKS,
+    audioTrackCountForTimelineItems,
+    createWorkspaceSequenceRecord,
+    videoTrackCountForTimelineItems,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state');
+  const { DEFAULT_WORKSPACE_PROJECT_SETTINGS } = await import(
+    '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings'
+  );
+
+  assert.equal(MIN_TIMELINE_AUDIO_TRACKS, 2, 'timeline should expose two audio tracks by default');
+  assert.equal(videoTrackCountForTimelineItems([]), 1, 'empty timelines should start with one video track');
+  assert.equal(audioTrackCountForTimelineItems([]), 2, 'empty timelines should start with two audio tracks');
+
+  const emptySequence = createWorkspaceSequenceRecord({
+    id: 'sequence-default-tracks',
+    name: 'Default tracks',
+    timelineItems: [],
+    projectSettings: DEFAULT_WORKSPACE_PROJECT_SETTINGS,
+  });
+
+  assert.equal(emptySequence.videoTrackCount, 1, 'new empty sequences should persist one video track');
+  assert.equal(emptySequence.audioTrackCount, 2, 'new empty sequences should persist two audio tracks');
 });
 
 test('MaxVideoAI editor render options reflect each engine audio capability', async () => {

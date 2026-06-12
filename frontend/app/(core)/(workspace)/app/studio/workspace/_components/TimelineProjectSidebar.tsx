@@ -9,6 +9,7 @@ import {
   projectMediaSelectionKey,
   useProjectMediaController,
   type ProjectMediaContextMenu,
+  type ProjectMediaSelectionGesture,
   type WorkspaceProjectSequenceSummary,
 } from '../_controllers/useProjectMediaController';
 import type {
@@ -36,9 +37,13 @@ type TimelineProjectSidebarProps = {
   sequences: WorkspaceProjectSequenceSummary[];
   timelineItems: WorkspaceTimelineItem[];
   onDeleteGeneratedClip: (nodeId: string) => void;
+  onDeleteGeneratedClips: (nodeIds: string[]) => void;
   onDeleteProjectAsset: (assetId: string) => void;
+  onDeleteProjectAssets: (assetIds: string[]) => void;
   onDeleteProjectMediaFolder: (folderId: string) => void;
+  onDeleteProjectMediaFolders: (folderIds: string[]) => void;
   onDeleteSequence: (sequenceId: string) => void;
+  onDeleteSequences: (sequenceIds: string[]) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
   onInspectSequence: (sequenceId: string) => void;
@@ -131,6 +136,7 @@ function ProjectMediaCard({
   durationSec,
   id,
   isSelected,
+  isSelectionSelected,
   kind,
   onClick,
   onContextMenu,
@@ -152,8 +158,9 @@ function ProjectMediaCard({
   durationSec?: number;
   id: string;
   isSelected: boolean;
+  isSelectionSelected?: boolean;
   kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video';
-  onClick: () => void;
+  onClick: (gesture: ProjectMediaSelectionGesture) => void;
   onContextMenu?: (event: ReactMouseEvent<HTMLElement>) => void;
   onDragStart?: (event: ReactDragEvent<HTMLElement>) => void;
   onDragEnd?: () => void;
@@ -171,6 +178,7 @@ function ProjectMediaCard({
       data-project-media-card={id}
       data-project-media-drag-kind={canDrag ? dragKind ?? kind : undefined}
       data-project-sequence-id={dataProjectSequenceId}
+      data-selected={(isSelectionSelected ?? isSelected) ? 'true' : undefined}
       draggable={Boolean(canDrag)}
       onClick={onClick}
       onContextMenu={onContextMenu}
@@ -182,7 +190,7 @@ function ProjectMediaCard({
       onKeyDown={(event: ReactKeyboardEvent<HTMLElement>) => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
-        onClick();
+        onClick(event);
       }}
       role="button"
       tabIndex={0}
@@ -437,9 +445,13 @@ export function TimelineProjectSidebar({
   projectName,
   sequences,
   onDeleteGeneratedClip,
+  onDeleteGeneratedClips,
   onDeleteProjectAsset,
+  onDeleteProjectAssets,
   onDeleteProjectMediaFolder,
+  onDeleteProjectMediaFolders,
   onDeleteSequence,
+  onDeleteSequences,
   onDuplicateSequence,
   onImportMedia,
   onInspectSequence,
@@ -461,9 +473,13 @@ export function TimelineProjectSidebar({
     sequences,
     onClearSequenceInspector,
     onDeleteGeneratedClip,
+    onDeleteGeneratedClips,
     onDeleteProjectAsset,
+    onDeleteProjectAssets,
     onDeleteProjectMediaFolder,
+    onDeleteProjectMediaFolders,
     onDeleteSequence,
+    onDeleteSequences,
     onDuplicateSequence,
     onImportMedia,
     onInspectSequence,
@@ -579,16 +595,19 @@ export function TimelineProjectSidebar({
       <div className={styles.projectMediaGrid} aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}>
         {projectMedia.visibleSequences.map((sequence) => {
           const sequenceTitle = localizeStudioGeneratedSequenceDisplayName(sequence.name, copy);
+          const sequenceKey = projectMediaSelectionKey('sequence', sequence.id);
+          const isSelectionSelected = projectMedia.selectedKeySet.has(sequenceKey);
           return (
             <ProjectMediaCard
               key={sequence.id}
               ariaPressed={sequence.isActive}
               dataProjectSequenceId={sequence.id}
               copy={copy}
-              id={projectMediaSelectionKey('sequence', sequence.id)}
-              isSelected={projectMedia.selectedKey === projectMediaSelectionKey('sequence', sequence.id) || sequence.isActive}
+              id={sequenceKey}
+              isSelected={isSelectionSelected || sequence.isActive}
+              isSelectionSelected={isSelectionSelected}
               kind="sequence"
-              onClick={() => projectMedia.selectSequence(sequence.id)}
+              onClick={(event) => projectMedia.selectSequence(sequence.id, event)}
               onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequenceTitle, type: 'sequence' })}
               subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} ${sequence.clipCount === 1 ? copy.clipSingular : copy.clipPlural}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
               thumbnailUrl={sequence.previewUrl}
@@ -609,9 +628,10 @@ export function TimelineProjectSidebar({
               <ProjectMediaCard
                 copy={copy}
                 id={key}
-                isSelected={projectMedia.selectedKey === key || projectMedia.folderDropTargetId === folder.id}
+                isSelected={projectMedia.selectedKeySet.has(key) || projectMedia.folderDropTargetId === folder.id}
+                isSelectionSelected={projectMedia.selectedKeySet.has(key)}
                 kind="folder"
-                onClick={() => projectMedia.selectProjectMediaFolder(folder.id)}
+                onClick={(event) => projectMedia.selectProjectMediaFolder(folder.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folderTitle, type: 'folder' })}
                 onDragLeave={(event) => projectMedia.handleFolderDragLeave(event, folder.id)}
                 onDragOver={(event) => projectMedia.handleFolderDragOver(event, folder.id)}
@@ -637,9 +657,9 @@ export function TimelineProjectSidebar({
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
-                isSelected={projectMedia.selectedKey === key}
+                isSelected={projectMedia.selectedKeySet.has(key)}
                 kind={cardKind}
-                onClick={() => projectMedia.selectProjectAsset(asset.id)}
+                onClick={(event) => projectMedia.selectProjectAsset(asset.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginProjectAssetTimelineDrag(event, asset) : undefined}
@@ -666,9 +686,9 @@ export function TimelineProjectSidebar({
                 canDrag={Boolean(mediaKind)}
                 dragKind={mediaKind ?? undefined}
                 id={key}
-                isSelected={projectMedia.selectedKey === key}
+                isSelected={projectMedia.selectedKeySet.has(key)}
                 kind="generated"
-                onClick={() => projectMedia.selectGeneratedNode(node.id)}
+                onClick={(event) => projectMedia.selectGeneratedNode(node.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginGeneratedNodeTimelineDrag(event, node) : undefined}

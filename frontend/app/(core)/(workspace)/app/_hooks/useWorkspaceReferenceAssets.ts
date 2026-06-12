@@ -3,6 +3,7 @@ import type { Dispatch, SetStateAction } from 'react';
 import { saveAssetToLibrary, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import {
   getSeedanceFieldBlockKey,
   isUnifiedSeedanceEngineId,
@@ -223,37 +224,36 @@ export function useWorkspaceReferenceAssets({
 
       const upload = async () => {
         try {
-          const preparedFile =
-            field.type === 'image'
-              ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-              : file;
-          const formData = new FormData();
-          formData.append('file', preparedFile, preparedFile.name);
-          const uploadEndpoint =
+          const assetResponse =
             field.type === 'video'
-              ? '/api/uploads/video'
-              : field.type === 'audio'
-                ? '/api/uploads/audio'
-                : '/api/uploads/image';
-          const uploadAssetType: UploadableAssetKind =
-            field.type === 'video' ? 'video' : field.type === 'audio' ? 'audio' : 'image';
-          const response = await authFetch(uploadEndpoint, {
-            method: 'POST',
-            body: formData,
-          });
-          const payload = await response.json().catch(() => null);
-          if (!response.ok || !payload?.ok) {
-            throw createUploadFailure(uploadAssetType, response.status, payload, 'Upload failed');
-          }
-          const assetResponse = payload.asset as {
-            id: string;
-            url: string;
-            width?: number | null;
-            height?: number | null;
-            size?: number;
-            mime?: string;
-            name?: string;
-          };
+              ? await uploadVideoFile(file)
+              : await (async () => {
+                  const preparedFile =
+                    field.type === 'image'
+                      ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
+                      : file;
+                  const formData = new FormData();
+                  formData.append('file', preparedFile, preparedFile.name);
+                  const uploadEndpoint = field.type === 'audio' ? '/api/uploads/audio' : '/api/uploads/image';
+                  const uploadAssetType: UploadableAssetKind = field.type === 'audio' ? 'audio' : 'image';
+                  const response = await authFetch(uploadEndpoint, {
+                    method: 'POST',
+                    body: formData,
+                  });
+                  const payload = await response.json().catch(() => null);
+                  if (!response.ok || !payload?.ok) {
+                    throw createUploadFailure(uploadAssetType, response.status, payload, 'Upload failed');
+                  }
+                  return payload.asset as {
+                    id: string;
+                    url: string;
+                    width?: number | null;
+                    height?: number | null;
+                    size?: number;
+                    mime?: string;
+                    name?: string;
+                  };
+                })();
           setInputAssets((previous) => {
             const current = previous[field.id];
             if (!current) return previous;

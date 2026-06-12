@@ -28,6 +28,10 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
   );
 }
 
+function countLabel(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 type UseWorkspaceProjectMediaActionsParams = {
   commitTimelineItems: (updater: (current: WorkspaceTimelineItem[]) => WorkspaceTimelineItem[]) => void;
   lockedTimelineTracks: WorkspaceTimelineTrack[];
@@ -73,8 +77,11 @@ export function useWorkspaceProjectMediaActions({
 }: UseWorkspaceProjectMediaActionsParams): {
   handleCreateProjectMediaFolder: (requestedName?: string) => void;
   handleDeleteGeneratedClip: (nodeId: string) => void;
+  handleDeleteGeneratedClips: (nodeIds: string[]) => void;
   handleDeleteProjectAsset: (assetId: string) => void;
+  handleDeleteProjectAssets: (assetIds: string[]) => void;
   handleDeleteProjectMediaFolder: (folderId: string) => void;
+  handleDeleteProjectMediaFolders: (folderIds: string[]) => void;
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
   handleImportProjectMedia: (folderId?: string | null) => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
@@ -176,6 +183,27 @@ export function useWorkspaceProjectMediaActions({
     [projectAssets, setNotice, setProjectAssets, studioNotices]
   );
 
+  const handleDeleteProjectAssets = useCallback(
+    (assetIds: string[]) => {
+      const assetIdSet = new Set(assetIds);
+      const assetsToDelete = projectAssets.filter((candidate) => assetIdSet.has(candidate.id));
+      if (!assetsToDelete.length) {
+        setNotice(studioNotices.projectMediaAssetNotFound);
+        return;
+      }
+      const label = assetsToDelete.length === 1
+        ? assetsToDelete[0].filename
+        : countLabel(assetsToDelete.length, 'media asset', 'media assets');
+      if (
+        typeof window !== 'undefined' &&
+        !window.confirm(formatNotice(studioNotices.deleteProjectAssetConfirm, { filename: label }))
+      ) return;
+      setProjectAssets((current) => current.filter((candidate) => !assetIdSet.has(candidate.id)));
+      setNotice(formatNotice(studioNotices.projectAssetRemoved, { filename: label }));
+    },
+    [projectAssets, setNotice, setProjectAssets, studioNotices]
+  );
+
   const handleDeleteGeneratedClip = useCallback(
     (nodeId: string) => {
       const node = nodes.find((candidate) => candidate.id === nodeId);
@@ -201,6 +229,39 @@ export function useWorkspaceProjectMediaActions({
         })
       );
       setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: node.data.title }));
+    },
+    [nodes, setNodes, setNotice, studioNotices]
+  );
+
+  const handleDeleteGeneratedClips = useCallback(
+    (nodeIds: string[]) => {
+      const nodeIdSet = new Set(nodeIds);
+      const nodesToDelete = nodes.filter((candidate) => nodeIdSet.has(candidate.id) && candidate.data.output);
+      if (!nodesToDelete.length) {
+        setNotice(studioNotices.generatedClipNotFound);
+        return;
+      }
+      const label = nodesToDelete.length === 1
+        ? nodesToDelete[0].data.title
+        : countLabel(nodesToDelete.length, 'generated clip', 'generated clips');
+      if (
+        typeof window !== 'undefined' &&
+        !window.confirm(formatNotice(studioNotices.deleteGeneratedClipConfirm, { title: label }))
+      ) return;
+      setNodes((current) =>
+        current.map((candidate) => {
+          if (!nodeIdSet.has(candidate.id) || !candidate.data.output) return candidate;
+          return {
+            ...candidate,
+            data: {
+              ...candidate.data,
+              output: undefined,
+              subtitle: candidate.data.subtitle ?? studioNotices.generatedOutputSubtitle,
+            },
+          };
+        })
+      );
+      setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: label }));
     },
     [nodes, setNodes, setNotice, studioNotices]
   );
@@ -248,6 +309,43 @@ export function useWorkspaceProjectMediaActions({
         };
       }));
       setNotice(formatNotice(studioNotices.projectMediaFolderDeleted, { name: folder.name }));
+    },
+    [projectMediaFolders, setNodes, setNotice, setProjectAssets, setProjectMediaFolders, studioNotices]
+  );
+
+  const handleDeleteProjectMediaFolders = useCallback(
+    (folderIds: string[]) => {
+      const folderIdSet = new Set(folderIds);
+      const foldersToDelete = projectMediaFolders.filter((candidate) => folderIdSet.has(candidate.id));
+      if (!foldersToDelete.length) {
+        setNotice(studioNotices.projectMediaFolderNotFound);
+        return;
+      }
+      const label = foldersToDelete.length === 1
+        ? foldersToDelete[0].name
+        : countLabel(foldersToDelete.length, 'folder', 'folders');
+      if (
+        typeof window !== 'undefined' &&
+        !window.confirm(formatNotice(studioNotices.deleteProjectMediaFolderConfirm, { name: label }))
+      ) return;
+      setProjectMediaFolders((current) => current.filter((candidate) => !folderIdSet.has(candidate.id)));
+      setProjectAssets((current) => current.map((asset) => folderIdSet.has(asset.folderId ?? '') ? { ...asset, folderId: null } : asset));
+      setNodes((current) => current.map((node) => {
+        if (node.data.kind !== 'output' || !folderIdSet.has(node.data.output?.projectMediaFolderId ?? '')) return node;
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            output: node.data.output
+              ? {
+                  ...node.data.output,
+                  projectMediaFolderId: null,
+                }
+              : node.data.output,
+          },
+        };
+      }));
+      setNotice(formatNotice(studioNotices.projectMediaFolderDeleted, { name: label }));
     },
     [projectMediaFolders, setNodes, setNotice, setProjectAssets, setProjectMediaFolders, studioNotices]
   );
@@ -337,8 +435,11 @@ export function useWorkspaceProjectMediaActions({
   return {
     handleCreateProjectMediaFolder,
     handleDeleteGeneratedClip,
+    handleDeleteGeneratedClips,
     handleDeleteProjectAsset,
+    handleDeleteProjectAssets,
     handleDeleteProjectMediaFolder,
+    handleDeleteProjectMediaFolders,
     handleDropProjectAssetToTimeline,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,

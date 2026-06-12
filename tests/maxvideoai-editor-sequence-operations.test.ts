@@ -8,6 +8,7 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
 import {
   createWorkspaceSequenceDuplicate,
+  resolveWorkspaceSequenceBulkDelete,
   resolveWorkspaceSequenceDelete,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-sequence-operations';
 
@@ -98,6 +99,49 @@ test('resolveWorkspaceSequenceDelete rejects missing and last sequence deletion'
     activeSequenceId: onlySequence.id,
     sequenceId: onlySequence.id,
     sequences: [onlySequence],
+  }), {
+    ok: false,
+    reason: 'last_sequence',
+  });
+});
+
+test('resolveWorkspaceSequenceBulkDelete removes several sequences and keeps the nearest active fallback', () => {
+  const first = sequence('sequence-1', 'Sequence 1');
+  const second = sequence('sequence-2', 'Sequence 2');
+  const third = sequence('sequence-3', 'Sequence 3');
+  const fourth = sequence('sequence-4', 'Sequence 4');
+
+  const result = resolveWorkspaceSequenceBulkDelete({
+    activeSequenceId: third.id,
+    sequenceIds: [second.id, third.id, second.id],
+    sequences: [first, second, third, fourth],
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.deletedActiveSequence, true);
+  assert.deepEqual(result.deletedSequences.map((candidate) => candidate.id), [second.id, third.id]);
+  assert.equal(result.nextActiveSequence.id, first.id);
+  assert.deepEqual(result.nextSequences.map((candidate) => candidate.id), [first.id, fourth.id]);
+});
+
+test('resolveWorkspaceSequenceBulkDelete rejects missing and all-sequence deletion', () => {
+  const first = sequence('sequence-1', 'Sequence 1');
+  const second = sequence('sequence-2', 'Sequence 2');
+
+  assert.deepEqual(resolveWorkspaceSequenceBulkDelete({
+    activeSequenceId: first.id,
+    sequenceIds: ['missing'],
+    sequences: [first, second],
+  }), {
+    ok: false,
+    reason: 'not_found',
+  });
+
+  assert.deepEqual(resolveWorkspaceSequenceBulkDelete({
+    activeSequenceId: first.id,
+    sequenceIds: [first.id, second.id],
+    sequences: [first, second],
   }), {
     ok: false,
     reason: 'last_sequence',

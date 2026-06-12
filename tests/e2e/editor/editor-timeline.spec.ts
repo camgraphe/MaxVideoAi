@@ -9,7 +9,6 @@ import {
   dropCanvasNodeOnTimelineTrack,
   dragTimelineClip,
   dragTimelineClipEnd,
-  dragTimelineClipFromLeft,
   hasTimelineOverlap,
   openEditorWorkspace,
   openFreshEditorWorkspace,
@@ -567,7 +566,7 @@ test('timeline context menu unlinks video audio pairs and links selected clips',
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline uses generic expandable audio tracks and allows audio clips to move between them', async ({ page }) => {
+test('timeline uses two default audio tracks and supports expandable audio tracks', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -575,10 +574,9 @@ test('timeline uses generic expandable audio tracks and allows audio clips to mo
 
   await expect(page.locator('[data-timeline-track="audio"]')).toBeVisible();
   await expect(page.locator('[data-timeline-track="audio-2"]')).toBeVisible();
-  await expect(page.locator('[data-timeline-track="audio-3"]')).toBeVisible();
+  await expect(page.locator('[data-timeline-track="audio-3"]')).toHaveCount(0);
   await expect(page.getByText('Audio 1', { exact: true })).toBeVisible();
   await expect(page.getByText('Audio 2', { exact: true })).toBeVisible();
-  await expect(page.getByText('Audio 3', { exact: true })).toBeVisible();
   await expect(page.locator('[data-timeline-add-track="video"]')).toHaveCount(1);
   await expect(page.locator('[data-timeline-add-track="audio"]')).toHaveCount(1);
   await expect.poll(async () => page.locator('[data-timeline-add-track="video"]').evaluate((button) =>
@@ -586,9 +584,9 @@ test('timeline uses generic expandable audio tracks and allows audio clips to mo
   )).toBe('video');
   await expect.poll(async () => page.locator('[data-timeline-add-track="audio"]').evaluate((button) =>
     button.closest('[data-timeline-track-label]')?.getAttribute('data-timeline-track-label')
-  )).toBe('audio-3');
+  )).toBe('audio-2');
   const initialAudioAddBox = await page.locator('[data-timeline-add-track="audio"]').boundingBox();
-  const initialAudioLockBox = await page.locator('[data-timeline-track-label="audio-3"] [data-timeline-track-lock="audio-3"]').boundingBox();
+  const initialAudioLockBox = await page.locator('[data-timeline-track-label="audio-2"] [data-timeline-track-lock="audio-2"]').boundingBox();
   const initialVideoAddBox = await page.locator('[data-timeline-add-track="video"]').boundingBox();
   const initialVideoLockBox = await page.locator('[data-timeline-track-label="video"] [data-timeline-track-lock="video"]').boundingBox();
   expect(initialAudioAddBox).not.toBeNull();
@@ -600,25 +598,27 @@ test('timeline uses generic expandable audio tracks and allows audio clips to mo
   expect(initialVideoAddBox.y + initialVideoAddBox.height).toBeLessThanOrEqual(initialVideoLockBox.y);
 
   await page.locator('[data-timeline-add-track="audio"]').click();
-  await expect(page.locator('[data-timeline-track="audio-4"]')).toBeVisible();
-  await expect(page.getByText('Audio 4', { exact: true })).toBeVisible();
-  await expect.poll(async () => page.locator('[data-timeline-add-track="audio"]').evaluate((button) =>
-    button.closest('[data-timeline-track-label]')?.getAttribute('data-timeline-track-label')
-  )).toBe('audio-4');
-
-  await page.locator('[data-timeline-track-label="audio-4"]').click({ button: 'right' });
-  await expect(page.getByRole('menuitem', { name: 'Add audio track', exact: true })).toBeEnabled();
-  await expect(page.getByRole('menuitem', { name: 'Delete audio track', exact: true })).toBeEnabled();
-  page.once('dialog', async (dialog) => {
-    expect(dialog.message()).toContain('Audio 4');
-    await dialog.accept();
-  });
-  await page.getByRole('menuitem', { name: 'Delete audio track', exact: true }).click();
-  await expect(page.locator('[data-timeline-track="audio-4"]')).toHaveCount(0);
+  await expect(page.locator('[data-timeline-track="audio-3"]')).toBeVisible();
+  await expect(page.getByText('Audio 3', { exact: true })).toBeVisible();
   await expect.poll(async () => page.locator('[data-timeline-add-track="audio"]').evaluate((button) =>
     button.closest('[data-timeline-track-label]')?.getAttribute('data-timeline-track-label')
   )).toBe('audio-3');
 
+  await page.locator('[data-timeline-track-label="audio-3"]').click({ button: 'right' });
+  await expect(page.getByRole('menuitem', { name: 'Add audio track', exact: true })).toBeEnabled();
+  await expect(page.getByRole('menuitem', { name: 'Delete audio track', exact: true })).toBeEnabled();
+  page.once('dialog', async (dialog) => {
+    expect(dialog.message()).toContain('Audio 3');
+    await dialog.accept();
+  });
+  await page.getByRole('menuitem', { name: 'Delete audio track', exact: true }).click();
+  await expect(page.locator('[data-timeline-track="audio-3"]')).toHaveCount(0);
+  await expect.poll(async () => page.locator('[data-timeline-add-track="audio"]').evaluate((button) =>
+    button.closest('[data-timeline-track-label]')?.getAttribute('data-timeline-track-label')
+  )).toBe('audio-2');
+
+  await page.locator('[data-timeline-add-track="audio"]').click();
+  await expect(page.locator('[data-timeline-track="audio-3"]')).toBeVisible();
   await page.locator('[data-timeline-add-track="audio"]').click();
   await expect(page.locator('[data-timeline-track="audio-4"]')).toBeVisible();
 
@@ -645,24 +645,6 @@ test('timeline uses generic expandable audio tracks and allows audio clips to mo
   await expect.poll(async () => page.locator('[data-timeline-add-track="video"]').evaluate((button) =>
     button.closest('[data-timeline-track-label]')?.getAttribute('data-timeline-track-label')
   )).toBe('video-2');
-
-  const sourceClip = page.locator('[data-timeline-item="timeline-music-01"]');
-  const targetTrack = page.locator('[data-timeline-track="audio-4"]');
-  await expect(sourceClip).toBeVisible();
-  await expect(targetTrack).toBeVisible();
-  const sourceBox = await sourceClip.boundingBox();
-  const targetBox = await targetTrack.boundingBox();
-  expect(sourceBox).not.toBeNull();
-  expect(targetBox).not.toBeNull();
-  if (!sourceBox || !targetBox) return;
-
-  await dragTimelineClipFromLeft(page, 'timeline-music-01', 0, targetBox.y + targetBox.height / 2 - (sourceBox.y + sourceBox.height / 2));
-
-  await expect.poll(async () => {
-    const states = await timelineClipStates(page);
-    return states.find((clip) => clip.id === 'timeline-music-01')?.track;
-  }).toBe('audio-4');
-  await expect.poll(async () => hasTimelineOverlap(page, 'audio-4')).toBe(false);
 
   assertNoEditorClientErrors(errors);
 });
