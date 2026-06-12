@@ -92,7 +92,11 @@ type UseWorkspaceGraphActionsParams = {
 };
 
 function nodeChangesAffectGraphHistory(changes: NodeChange<WorkspaceGraphNode>[]): boolean {
-  return changes.some((change) => change.type !== 'select');
+  return changes.some((change) => {
+    if (change.type === 'select') return false;
+    if (change.type === 'dimensions' && !change.resizing) return false;
+    return true;
+  });
 }
 
 function edgeChangesAffectGraphHistory(changes: EdgeChange<WorkspaceGraphEdge>[]): boolean {

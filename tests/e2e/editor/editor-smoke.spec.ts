@@ -928,7 +928,7 @@ test('canvas marquee selection draws a visible dashed selection rectangle', asyn
   await page.mouse.down();
   await page.mouse.move(bounds.right, bounds.bottom, { steps: 14 });
 
-  const selectionRect = page.locator('.react-flow__selection');
+  const selectionRect = page.locator('[data-canvas-selection-box="true"]');
   try {
     await expect(selectionRect).toBeVisible();
     const selectionStyle = await selectionRect.evaluate((element) => {
@@ -963,6 +963,8 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Canvas');
 
+  await expect(page.getByRole('button', { name: 'Undo canvas edit' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Redo canvas edit' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Select canvas nodes', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Marquee select canvas nodes' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Image tools' })).toBeVisible();
@@ -971,6 +973,7 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(page.getByRole('button', { name: 'Text tools' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
 
+  await expect(page.getByRole('button', { name: /^\+$/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Media blocks' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Text blocks' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Generate blocks' })).toHaveCount(0);
@@ -1006,6 +1009,104 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(textDialog).toBeVisible();
   await expect(textDialog.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
   await expect(textDialog.locator('[data-canvas-toolbar-block-kind="text-prompt"]')).toBeVisible();
+  assertNoEditorClientErrors(errors);
+});
+
+test('canvas keyboard shortcuts undo and redo canvas actions without stealing editable input shortcuts', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const initialNodeCount = await canvasNodeCount(page);
+  await page.getByRole('button', { name: 'Text tools' }).click();
+  const promptTemplate = page.locator('[data-canvas-toolbar-block-id="free-text"]');
+  const canvas = page.locator('.react-flow');
+  const templateBox = await promptTemplate.boundingBox();
+  const canvasBox = await canvas.boundingBox();
+  expect(templateBox).not.toBeNull();
+  expect(canvasBox).not.toBeNull();
+  if (!templateBox || !canvasBox) return;
+
+  await page.mouse.move(templateBox.x + templateBox.width / 2, templateBox.y + templateBox.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(canvasBox.x + canvasBox.width * 0.56, canvasBox.y + canvasBox.height * 0.32, { steps: 12 });
+  await page.mouse.up();
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.locator('[data-active-editor-surface="canvas"]')).toBeVisible();
+
+  await page.evaluate(() => {
+    document.querySelectorAll('[data-canvas-shortcut-editable-test]').forEach((element) => element.remove());
+
+    const createEditable = (id: string, contentEditableValue: string | null) => {
+      const editable = document.createElement('div');
+      editable.dataset.canvasShortcutEditableTest = id;
+      editable.tabIndex = 0;
+      editable.textContent = `${id} editor`;
+      editable.style.position = 'fixed';
+      editable.style.left = id === 'plain' ? '190px' : '24px';
+      editable.style.top = '24px';
+      editable.style.zIndex = '9999';
+      editable.style.width = '144px';
+      editable.style.height = '32px';
+      editable.style.padding = '4px';
+      editable.style.background = 'rgb(255, 255, 255)';
+      editable.style.color = 'rgb(0, 0, 0)';
+      if (contentEditableValue === null) {
+        editable.setAttribute('contenteditable', '');
+      } else {
+        editable.setAttribute('contenteditable', contentEditableValue);
+      }
+      document.body.append(editable);
+    };
+
+    createEditable('default', null);
+    createEditable('plain', 'plaintext-only');
+  });
+
+  await page.locator('[data-canvas-shortcut-editable-test="default"]').click();
+  await page.keyboard.press('Control+Z');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+
+  await page.locator('[data-canvas-shortcut-editable-test="plain"]').click();
+  await page.keyboard.press('Control+Z');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.getByRole('button', { name: 'Undo canvas edit' })).toBeEnabled();
+  await page.keyboard.press('Control+Z');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+  await expect(page.getByRole('button', { name: 'Redo canvas edit' })).toBeEnabled();
+
+  await page.getByRole('button', { name: 'Canvas templates' }).click();
+  await page.getByLabel('Canvas template name').fill('Draft template');
+  await page.keyboard.press('Control+Y');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await page.keyboard.press('Control+Y');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+
+  await page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true,
+      cancelable: true,
+      code: 'KeyY',
+      ctrlKey: true,
+      key: 'z',
+    }));
+  });
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+
+  await page.keyboard.press('Control+Y');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+
+  await page.keyboard.press('Control+Z');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+  await page.keyboard.press('Control+Shift+Z');
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
+
   assertNoEditorClientErrors(errors);
 });
 

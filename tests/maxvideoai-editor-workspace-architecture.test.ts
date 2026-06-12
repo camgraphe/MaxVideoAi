@@ -1523,8 +1523,11 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(workspaceEditorLayoutSource, /onRedo:\s*canvas\.redoCanvas/, 'canvas toolbar should receive canvas redo');
   assert.match(canvasFloatingToolbarSource, /Undo2/, 'canvas toolbar should render an undo button');
   assert.match(canvasFloatingToolbarSource, /Redo2/, 'canvas toolbar should render a redo button');
-  assert.match(canvasSource, /event\.code === 'KeyZ'/, 'canvas should expose Cmd/Ctrl+Z undo and redo shortcuts');
+  assert.match(canvasSource, /canvasHistoryShortcut/, 'canvas should centralize undo and redo shortcut parsing');
+  assert.match(canvasSource, /key === 'z'[\s\S]*'undo'/, 'canvas should treat Cmd/Ctrl+Z as undo before considering physical key codes');
+  assert.match(canvasSource, /key === 'y'[\s\S]*'redo'/, 'canvas should treat Cmd/Ctrl+Y as redo');
   assert.match(canvasSource, /isEditableCanvasShortcutTarget/, 'canvas shortcuts should not intercept native text editing undo');
+  assert.match(canvasSource, /contentEditable\.toLowerCase\(\) !== 'false'/, 'canvas shortcuts should skip all editable contenteditable targets');
   assert.doesNotMatch(workspaceSource, /timelineEditMode/, 'workspace should no longer expose selectable insert, overwrite, or replace timeline modes');
   assert.match(canvasTimelineActionsHookSource, /insertWorkspaceTimelineItems/, 'canvas outputs should enter the sequence through timeline insert operations');
   assert.match(workspaceEditorLayoutSource, /onNodeDropToTimeline=\{canvas\.handleDropNodeToTimeline\}/, 'canvas media nodes should be droppable directly onto a timeline track');

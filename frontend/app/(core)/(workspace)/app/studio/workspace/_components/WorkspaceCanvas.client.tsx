@@ -156,8 +156,36 @@ function droppedOnExistingGraphElement(event: MouseEvent | TouchEvent): boolean 
 }
 
 function isEditableCanvasShortcutTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+  let current = target instanceof Element ? target : null;
+  while (current) {
+    if (current.matches('input, textarea, select')) return true;
+    if (current instanceof HTMLElement && current.isContentEditable) return true;
+    const contentEditable = current.getAttribute('contenteditable');
+    if (contentEditable !== null && contentEditable.toLowerCase() !== 'false') return true;
+    current = current.parentElement;
+  }
+  return false;
+}
+
+function canvasShortcutLetter(event: KeyboardEvent): string {
+  const key = event.key.toLowerCase();
+  if (/^[a-z]$/.test(key)) return key;
+  const codeMatch = event.code.match(/^Key([A-Z])$/);
+  return codeMatch?.[1].toLowerCase() ?? '';
+}
+
+function canvasHistoryShortcut(event: KeyboardEvent): 'redo' | 'undo' | null {
+  if (!event.metaKey && !event.ctrlKey) return null;
+  const key = canvasShortcutLetter(event);
+  if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
+  if (key === 'y') return 'redo';
+  return null;
+}
+
+function markCanvasSelectionBoxes(root: HTMLElement): void {
+  root.querySelectorAll<HTMLElement>('.react-flow__selection').forEach((selectionBox) => {
+    selectionBox.dataset.canvasSelectionBox = 'true';
+  });
 }
 
 function areCanvasNodeIdSelectionsEqual(left: string[], right: string[]): boolean {
@@ -198,6 +226,13 @@ function WorkspaceCanvasInner({
     onRedo: onRedoCanvas,
     onUndo: onUndoCanvas,
   } = toolbar;
+  const canvasShortcutStateRef = useRef({
+    canRedo: canRedoCanvas,
+    canUndo: canUndoCanvas,
+    isActive: isShortcutActive,
+    onRedo: onRedoCanvas,
+    onUndo: onUndoCanvas,
+  });
   const nodeTypes = useMemo(() => workspaceNodeTypes, []);
   const edgeTypes = useMemo(() => workspaceEdgeTypes, []);
   const isMarqueeSelectionTool = selectionTool === 'marquee';
@@ -214,6 +249,14 @@ function WorkspaceCanvasInner({
     }),
     []
   );
+
+  canvasShortcutStateRef.current = {
+    canRedo: canRedoCanvas,
+    canUndo: canUndoCanvas,
+    isActive: isShortcutActive,
+    onRedo: onRedoCanvas,
+    onUndo: onUndoCanvas,
+  };
 
   const updateHandleDropPreview = useCallback((preview: HandleDropPreview | null) => {
     handleDropPreviewRef.current = preview;
@@ -252,23 +295,45 @@ function WorkspaceCanvasInner({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!isShortcutActive || event.defaultPrevented) return;
-      if (!((event.metaKey || event.ctrlKey) && event.code === 'KeyZ')) return;
+      const {
+        canRedo,
+        canUndo,
+        isActive,
+        onRedo,
+        onUndo,
+      } = canvasShortcutStateRef.current;
+      if (!isActive) return;
       if (isEditableCanvasShortcutTarget(event.target)) return;
+      const shortcut = canvasHistoryShortcut(event);
+      if (!shortcut) return;
 
       event.preventDefault();
-      if (event.shiftKey) {
-        if (canRedoCanvas) onRedoCanvas();
+      if (shortcut === 'redo') {
+        if (canRedo) onRedo();
         return;
       }
-      if (canUndoCanvas) onUndoCanvas();
+      if (canUndo) onUndo();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [canRedoCanvas, canUndoCanvas, isShortcutActive, onRedoCanvas, onUndoCanvas]);
+  }, []);
+
+  useEffect(() => {
+    const canvasShell = canvasShellRef.current;
+    if (!canvasShell) return;
+    markCanvasSelectionBoxes(canvasShell);
+
+    const observer = new MutationObserver(() => {
+      markCanvasSelectionBoxes(canvasShell);
+    });
+    observer.observe(canvasShell, { childList: true, subtree: true });
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   const handleCanvasClickCapture = useCallback(
     (event: ReactMouseEvent<HTMLElement>) => {
