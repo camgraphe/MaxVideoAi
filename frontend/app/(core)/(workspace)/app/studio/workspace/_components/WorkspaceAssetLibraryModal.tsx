@@ -6,7 +6,7 @@ import { Upload, X } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import styles from '../_styles/asset-library.module.css';
-import { createUploadFailure, getUploadFailureMessage } from '../../../_lib/workspace-upload-errors';
+import { createUploadFailure } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
 import type { WorkspaceGraphNode } from '../_lib/workspace-types';
 import type {
@@ -105,8 +105,8 @@ export function WorkspaceAssetLibraryModal({
 
         onSourceChange('upload');
         onSelectAsset(node.id, uploadedAsset);
-      } catch (error) {
-        setUploadError(getUploadFailureMessage(uploadKind, error, fallback));
+      } catch {
+        setUploadError(fallback);
       } finally {
         setIsUploading(false);
       }

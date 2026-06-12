@@ -185,3 +185,53 @@ test('Project media supports Shift range selection, Cmd Ctrl toggle, and confirm
 
   assertNoEditorClientErrors(errors);
 });
+
+test('Project media import shows localized upload failure and retry path', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  await page.route('**/api/media-library/assets?**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets: [] }),
+    });
+  });
+  await page.route('**/api/media-library/recent-outputs?**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, outputs: [] }),
+    });
+  });
+  await page.route('**/api/uploads/image', async (route) => {
+    await route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: false, error: 'UPLOAD_FAILED' }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await page.getByRole('button', { name: 'Import media' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await dialog.getByRole('button', { name: 'Upload' }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({
+    name: 'upload-failure.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+      'base64'
+    ),
+  });
+
+  await expect(dialog.getByRole('alert')).toContainText(/upload|import|retry|try again/i);
+  await expect(dialog.getByRole('button', { name: 'Upload' })).toBeVisible();
+  assertNoEditorClientErrors(errors, {
+    allowedResourceFailures: [{ status: 500, urlPattern: /\/api\/uploads\/image(?:$|\?)/ }],
+  });
+});

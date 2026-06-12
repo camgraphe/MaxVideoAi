@@ -130,7 +130,7 @@ export function WorkspaceExportDialog({
         : activeExportJob?.status === 'completed'
           ? copy.ready
           : activeExportJob?.status === 'failed'
-            ? copy.exportCreateFailed
+            ? activeExportJob.message ?? copy.exportCreateFailed
             : activeExportJob?.status === 'canceled'
               ? copy.canceled
               : null;
@@ -314,9 +314,9 @@ export function WorkspaceExportDialog({
               </a>
             ) : null}
           </section>
-          {exportVideoFeedback ? (
-            <p className={styles.exportStatusBanner} role="status">
-              {exportVideoFeedback}
+          {exportVideoFeedback || activeExportJob?.status === 'failed' ? (
+            <p className={styles.exportStatusBanner} role={activeExportJob?.status === 'failed' ? 'alert' : 'status'}>
+              {exportVideoFeedback ?? activeExportJob?.message ?? copy.failed}
             </p>
           ) : null}
 

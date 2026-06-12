@@ -138,7 +138,7 @@ export function WorkspaceAssetLibraryBrowser({
       </div>
 
       <div className={styles.assetBrowserContent}>
-        {error ? <p className={styles.assetBrowserNotice}>{error}</p> : null}
+        {error ? <p className={styles.assetBrowserNotice} role="alert">{error}</p> : null}
         {usingFallback ? <p className={styles.assetBrowserNotice}>{copy.showingDevAssets}</p> : null}
         {isLoading ? <p className={styles.assetBrowserNotice}>{copy.loadingLibrary}</p> : null}
         {!isLoading && filteredAssets.length === 0 ? (

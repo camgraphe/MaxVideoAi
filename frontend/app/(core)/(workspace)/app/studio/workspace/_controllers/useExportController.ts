@@ -287,6 +287,13 @@ export function useExportController({
     } catch (error) {
       const rawMessage = error instanceof Error ? error.message : notices.serverExportFailedToStart;
       const message = humanizeTimelineExportError(rawMessage, notices, copy, notices.serverExportFailedToStart);
+      setActiveExportJob({
+        id: idempotencyKey,
+        status: 'failed',
+        progress: 0,
+        message,
+        outputUrl: null,
+      });
       setExportVideoFeedback(message);
       onNotice(message);
     } finally {

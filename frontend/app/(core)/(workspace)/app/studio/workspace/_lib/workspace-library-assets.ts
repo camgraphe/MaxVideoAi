@@ -193,6 +193,7 @@ export function workspaceLibraryAssetFromUploadedAsset(
   item: unknown,
   kind: WorkspaceLibraryKind | null
 ): WorkspaceLibraryAsset | null {
+  if (!item || typeof item !== 'object') return null;
   const asset = item as {
     id?: unknown;
     url?: unknown;

@@ -336,6 +336,105 @@ test('viewer supports in and out marks with keyboard shortcuts and export dialog
   assertNoEditorClientErrors(errors);
 });
 
+test('Server export failure stays localized and retryable', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await page.route('**/api/studio/timeline-exports/estimate', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        quota: {
+          freeLimit: 2,
+          usedFreeExports: 0,
+          freeExportsRemaining: 2,
+          billingKind: 'free',
+        },
+        estimate: {
+          billingKind: 'free',
+          amountCents: 0,
+          currency: 'USD',
+          freeExportsRemaining: 2,
+          unitCentsPerSecond: 4,
+          multiplier: 1,
+        },
+      }),
+    });
+  });
+  let exportCreateRequests = 0;
+  let exportPollRequests = 0;
+  const exportIdempotencyKeys: string[] = [];
+  await page.route(/\/api\/studio\/timeline-exports\/tlx_retry_success(?:\?.*)?$/, async (route) => {
+    exportPollRequests += 1;
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        export: {
+          id: 'tlx_retry_success',
+          status: 'completed',
+          progress: 100,
+          message: 'Export completed.',
+          outputUrl: 'https://cdn.maxvideoai.test/exports/tlx_retry_success.mp4',
+        },
+      }),
+    });
+  });
+  await page.route(/\/api\/studio\/timeline-exports(?:\?.*)?$/, async (route) => {
+    exportCreateRequests += 1;
+    const payload = route.request().postDataJSON() as {
+      request?: { idempotencyKey?: unknown };
+    };
+    const idempotencyKey = payload.request?.idempotencyKey;
+    if (typeof idempotencyKey === 'string') exportIdempotencyKeys.push(idempotencyKey);
+    if (exportCreateRequests === 1) {
+      await route.fulfill({
+        status: 500,
+        contentType: 'application/json',
+        body: JSON.stringify({ ok: false, error: 'EXPORT_CREATE_FAILED' }),
+      });
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        export: {
+          id: 'tlx_retry_success',
+          status: 'queued',
+          progress: 0,
+          message: 'Export queued.',
+          outputUrl: null,
+        },
+      }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await page.getByRole('button', { name: 'Open export dialog' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Export sequence' });
+  await expect(dialog).toBeVisible();
+
+  await dialog.getByRole('button', { name: 'Export video' }).click();
+  await expect(dialog.getByRole('alert')).toContainText(/export|could not|failed|échec|falló/i);
+  await dialog.getByRole('button', { name: /retry export|réessayer|reintentar/i }).click();
+  await expect.poll(() => exportCreateRequests).toBe(2);
+  expect(exportIdempotencyKeys).toHaveLength(2);
+  expect(exportIdempotencyKeys[1]).not.toBe(exportIdempotencyKeys[0]);
+  await expect.poll(() => exportPollRequests).toBeGreaterThanOrEqual(1);
+  await expect(dialog.getByRole('alert')).toHaveCount(0);
+  await expect(dialog.getByRole('status')).toContainText(/ready|download|descarga|téléchargement|prêt/i);
+  await expect(dialog.getByRole('link', { name: /download mp4|télécharger le mp4|descargar mp4/i })).toBeVisible();
+  assertNoEditorClientErrors(errors, {
+    allowedResourceFailures: [{ status: 500, urlPattern: /\/api\/studio\/timeline-exports(?:$|\?)/ }],
+  });
+});
+
 test('video track labels expose visibility and lock controls', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

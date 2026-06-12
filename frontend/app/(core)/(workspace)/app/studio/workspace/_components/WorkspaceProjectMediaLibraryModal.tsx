@@ -6,7 +6,7 @@ import { Upload, X } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import styles from '../_styles/asset-library.module.css';
-import { createUploadFailure, getUploadFailureMessage } from '../../../_lib/workspace-upload-errors';
+import { createUploadFailure } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
 import type {
   WorkspaceLibraryKind,
@@ -112,8 +112,8 @@ export function WorkspaceProjectMediaLibraryModal({
 
         onSourceChange('upload');
         onSelectAsset(uploadedAsset);
-      } catch (uploadFailure) {
-        setUploadError(getUploadFailureMessage(uploadKind, uploadFailure, fallback));
+      } catch {
+        setUploadError(fallback);
       } finally {
         setIsUploading(false);
       }
