@@ -18,12 +18,9 @@ import {
   Trash2,
   X,
 } from 'lucide-react';
-import { locales, type AppLocale } from '@/i18n/locales';
+import type { AppLocale } from '@/i18n/locales';
 import { authFetch } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import enMessages from '@/messages/en.json';
-import esMessages from '@/messages/es.json';
-import frMessages from '@/messages/fr.json';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
   coerceWorkspaceProjectSettings,
@@ -34,12 +31,6 @@ import { formatStudioProjectDate, resolveStudioCopy, type StudioCopy } from '../
 import styles from './studio-projects.module.css';
 
 const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
-const STUDIO_LOCALE_COOKIE_NAMES = ['mvid_locale', 'NEXT_LOCALE'];
-const STUDIO_MESSAGES = {
-  en: enMessages,
-  es: esMessages,
-  fr: frMessages,
-};
 
 type StudioProjectRecord = {
   id: string;
@@ -53,22 +44,6 @@ type StudioProjectRecord = {
 function createStudioProjectId(): string {
   if (globalThis.crypto?.randomUUID) return `project_${globalThis.crypto.randomUUID()}`;
   return `project_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-function readCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : null;
-}
-
-function readStudioLocaleCookie(): AppLocale | null {
-  for (const cookieName of STUDIO_LOCALE_COOKIE_NAMES) {
-    const value = readCookie(cookieName)?.trim().toLowerCase();
-    if (value && (locales as readonly string[]).includes(value)) {
-      return value as AppLocale;
-    }
-  }
-  return null;
 }
 
 function readStudioProjects(): StudioProjectRecord[] {
@@ -190,9 +165,8 @@ function studioProjectTemplateThumbnail(templateId: WorkspaceTemplateId): string
 export default function StudioProjectsPageClient() {
   const router = useRouter();
   const { locale, dictionary } = useI18n();
-  const [studioLocaleCookie, setStudioLocaleCookie] = useState<AppLocale | null>(null);
-  const appLocale = studioLocaleCookie ?? (locale as AppLocale);
-  const studioCopy = useMemo(() => resolveStudioCopy(STUDIO_MESSAGES[appLocale] ?? dictionary), [appLocale, dictionary]);
+  const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
+  const appLocale = locale as AppLocale;
   const [isHydrated, setIsHydrated] = useState(false);
   const [projects, setProjects] = useState<StudioProjectRecord[]>([]);
   const [name, setName] = useState('');
@@ -219,10 +193,6 @@ export default function StudioProjectsPageClient() {
     setProjects(nextProjects);
     writeStudioProjects(nextProjects);
   };
-
-  useEffect(() => {
-    setStudioLocaleCookie(readStudioLocaleCookie());
-  }, []);
 
   useEffect(() => {
     setIsHydrated(true);

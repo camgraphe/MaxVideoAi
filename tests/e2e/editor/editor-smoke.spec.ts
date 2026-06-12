@@ -174,7 +174,11 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('Studio projects uses localized copy', async ({ page, context }) => {
-  await context.addCookies([{ name: 'NEXT_LOCALE', value: 'fr', domain: 'localhost', path: '/' }]);
+  await context.setExtraHTTPHeaders({ 'x-next-intl-locale': 'fr' });
+  await context.addCookies([
+    { name: 'NEXT_LOCALE', value: 'fr', domain: 'localhost', path: '/' },
+    { name: 'mvid_locale', value: 'fr', domain: 'localhost', path: '/' },
+  ]);
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('heading', { name: 'Projets Studio' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Creer le projet' })).toBeVisible();
