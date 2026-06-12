@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
 import { resolveStudioCopy } from '../_lib/studio-copy';
 import { WorkspaceEditorLayout } from './_components/WorkspaceEditorLayout';
 import { useExportController } from './_controllers/useExportController';
@@ -78,6 +79,7 @@ type WorkspacePageProps = {
 export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const { dictionary } = useI18n();
   const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
+  const studioTheme = useStudioThemeMode();
   const defaultTemplate = useMemo(() => createStarterWorkspaceTemplate('product-ad'), []);
   const defaultSequence = useMemo(
     () => createWorkspaceSequenceRecord({
@@ -468,6 +470,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
       setMockMode={setMockMode}
       setTimelineInsertIntoClipEnabled={setTimelineInsertIntoClipEnabled}
       studioCopy={studioCopy}
+      studioTheme={studioTheme}
       timelineDurationSec={timelineDurationSec}
       timelineInsertIntoClipEnabled={timelineInsertIntoClipEnabled}
       timelineItems={timelineItems}

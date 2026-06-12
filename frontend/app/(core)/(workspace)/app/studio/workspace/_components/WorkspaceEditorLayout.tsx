@@ -15,6 +15,7 @@ import type { useWorkspaceTimelinePlayback } from '../_hooks/useWorkspaceTimelin
 import type { useWorkspaceTimelineTrackActions } from '../_hooks/useWorkspaceTimelineTrackActions';
 import type { WorkspaceTimelineExportQualityPreset } from '../_lib/workspace-timeline-export';
 import type { WorkspaceTimelineExportRangeMode } from '../_lib/workspace-timeline-render';
+import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
 import type { StudioCopy } from '../../_lib/studio-copy';
 import type {
   WorkspaceAssetRecord,
@@ -103,6 +104,7 @@ type WorkspaceEditorLayoutProps = {
   setMockMode: Dispatch<SetStateAction<boolean>>;
   setTimelineInsertIntoClipEnabled: Dispatch<SetStateAction<boolean>>;
   studioCopy: StudioCopy;
+  studioTheme: ReturnType<typeof useStudioThemeMode>;
   timelineDurationSec: number;
   timelineInsertIntoClipEnabled: boolean;
   timelineItems: WorkspaceTimelineItem[];
@@ -149,6 +151,7 @@ export function WorkspaceEditorLayout({
   setMockMode,
   setTimelineInsertIntoClipEnabled,
   studioCopy,
+  studioTheme,
   timelineDurationSec,
   timelineInsertIntoClipEnabled,
   timelineItems,
@@ -179,6 +182,7 @@ export function WorkspaceEditorLayout({
       className={`${styles.editorShell} ${focusMode === 'viewer' ? `${baseStyles.viewerFocus} ${shellStyles.viewerFocus}` : ''}`}
       style={editorShellStyle}
       data-active-editor-surface={activeEditorSurface}
+      data-studio-theme={studioTheme.resolvedTheme}
     >
       <WorkspaceEditorTopbar
         activeTemplateName={activeTemplateName}
@@ -190,6 +194,7 @@ export function WorkspaceEditorLayout({
         onOpenExportDialog={shell.handleOpenExportDialog}
         onToggleMockMode={() => setMockMode((value) => !value)}
         studioCopy={studioCopy}
+        studioTheme={studioTheme}
       />
 
       {notice ? (

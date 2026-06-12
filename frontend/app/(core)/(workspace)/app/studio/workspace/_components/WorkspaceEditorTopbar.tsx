@@ -1,9 +1,11 @@
 'use client';
 
-import { Download, GitBranch, PanelRight, Settings } from 'lucide-react';
+import { Download, GitBranch, Moon, PanelRight, Settings, Sun } from 'lucide-react';
 import Image from 'next/image';
+import { useEffect, useState } from 'react';
 import { StudioHeaderSession } from './StudioHeaderSession';
 import type { WorkspaceEditorSurface, WorkspaceFocusMode } from '../_state/workspace-state';
+import type { useStudioThemeMode } from '../../_hooks/useStudioThemeMode';
 import type { StudioCopy } from '../../_lib/studio-copy';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
@@ -20,6 +22,7 @@ type WorkspaceEditorTopbarProps = {
   onOpenExportDialog: () => void;
   onToggleMockMode: () => void;
   studioCopy: StudioCopy;
+  studioTheme: ReturnType<typeof useStudioThemeMode>;
 };
 
 export function WorkspaceEditorTopbar({
@@ -32,7 +35,14 @@ export function WorkspaceEditorTopbar({
   onOpenExportDialog,
   onToggleMockMode,
   studioCopy,
+  studioTheme,
 }: WorkspaceEditorTopbarProps) {
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
   return (
     <header className={styles.editorTopbar}>
       <div className={styles.brandCluster}>
@@ -87,6 +97,17 @@ export function WorkspaceEditorTopbar({
             <Settings size={15} />
             <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
           </button>
+          {isHydrated ? (
+            <button
+              type="button"
+              className={styles.iconButton}
+              onClick={studioTheme.toggleResolvedTheme}
+              aria-label={studioTheme.resolvedTheme === 'light' ? studioCopy.topbar.switchToDark : studioCopy.topbar.switchToLight}
+              title={studioTheme.resolvedTheme === 'light' ? studioCopy.topbar.switchToDark : studioCopy.topbar.switchToLight}
+            >
+              {studioTheme.resolvedTheme === 'light' ? <Moon size={15} /> : <Sun size={15} />}
+            </button>
+          ) : null}
         </div>
       </div>
     </header>

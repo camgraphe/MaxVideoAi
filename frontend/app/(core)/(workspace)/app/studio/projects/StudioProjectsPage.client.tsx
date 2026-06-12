@@ -27,6 +27,7 @@ import {
 } from '../workspace/_lib/workspace-project-settings';
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../workspace/_lib/workspace-templates';
 import type { WorkspaceProjectSettings, WorkspaceTemplateId } from '../workspace/_lib/workspace-types';
+import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
 import { formatStudioProjectDate, resolveStudioCopy, type StudioCopy } from '../_lib/studio-copy';
 import styles from './studio-projects.module.css';
 
@@ -166,6 +167,7 @@ export default function StudioProjectsPageClient() {
   const router = useRouter();
   const { locale, dictionary } = useI18n();
   const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
+  const studioTheme = useStudioThemeMode();
   const appLocale = locale as AppLocale;
   const [isHydrated, setIsHydrated] = useState(false);
   const [projects, setProjects] = useState<StudioProjectRecord[]>([]);
@@ -292,7 +294,7 @@ export default function StudioProjectsPageClient() {
   };
 
   return (
-    <div className={styles.projectsShell}>
+    <div className={styles.projectsShell} data-studio-theme={studioTheme.resolvedTheme}>
       <section className={styles.projectsHero} aria-labelledby="studio-projects-title">
         <div className={styles.brandPill}>
           <Film size={16} />
