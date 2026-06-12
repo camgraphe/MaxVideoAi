@@ -43,7 +43,7 @@
   border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 62%, var(--studio-border));
   background:
     radial-gradient(circle at 18% 16%, color-mix(in srgb, var(--template-accent, #8b5cf6) 28%, transparent), transparent 44%),
-    linear-gradient(150deg, rgba(22, 32, 51, 0.98), var(--studio-surface));
+    linear-gradient(150deg, var(--studio-bg-soft), var(--studio-surface));
 }
 
 .blockTemplateCard:active {
@@ -130,7 +130,7 @@
 }
 
 .templateButton:hover {
-  background: rgba(51, 65, 85, 0.92);
+  background: var(--studio-bg-soft);
 }
 
 .templateThumbnail {
@@ -141,9 +141,9 @@
   overflow: hidden;
   border-radius: 7px;
   background:
-    linear-gradient(180deg, var(--studio-bg), var(--studio-bg)),
+    linear-gradient(180deg, color-mix(in srgb, var(--studio-bg) 12%, transparent), color-mix(in srgb, var(--studio-bg) 58%, transparent)),
     var(--template-thumbnail),
-    linear-gradient(135deg, var(--studio-bg-soft), rgba(17, 24, 39, 0.95));
+    linear-gradient(135deg, var(--studio-bg-soft), var(--studio-bg));
   background-position: center;
   background-size: cover;
   box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.08);
