@@ -7,6 +7,7 @@ import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { Button } from '@/components/ui/Button';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import { translateError } from '@/lib/error-messages';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { normalizeUiLocale } from '@/lib/ltx-localization';
@@ -290,10 +291,25 @@ export function AssetLibraryModal({
       setImportError(null);
       setIsImporting(true);
       try {
+        if (assetType === 'video') {
+          const uploadedAsset = await uploadVideoFile(file);
+          onSelect({
+            id: uploadedAsset.id,
+            url: uploadedAsset.url,
+            thumbUrl: uploadedAsset.thumbUrl ?? null,
+            previewUrl: null,
+            kind: 'video',
+            width: uploadedAsset.width ?? null,
+            height: uploadedAsset.height ?? null,
+            size: uploadedAsset.size ?? null,
+            mime: uploadedAsset.mime ?? null,
+            canDelete: true,
+          });
+          return;
+        }
+
         const preparedFile =
-          assetType === 'image'
-            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-            : file;
+          await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 });
         const formData = new FormData();
         formData.append('file', preparedFile, preparedFile.name);
         const response = await authFetch(importEndpoint, {

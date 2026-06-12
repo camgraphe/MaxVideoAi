@@ -3,10 +3,9 @@ import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
+import { getMaxVideoUploadMB, isSupportedVideoMime, videoUploadLimitBytes } from './_lib/video-upload-limits';
 
 export const runtime = 'nodejs';
-
-const MAX_VIDEO_MB = Number(process.env.ASSET_MAX_VIDEO_MB ?? '30');
 
 export async function POST(req: NextRequest) {
   const form = await req.formData();
@@ -18,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const mime = blob.type || 'application/octet-stream';
   const size = blob.size ?? 0;
-  if (!mime.startsWith('video/')) {
+  if (!isSupportedVideoMime(mime)) {
     console.warn('[upload] rejecting unsupported video upload', {
       fileName: blob.name,
       mime,
@@ -27,14 +26,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UNSUPPORTED_TYPE' }, { status: 415 });
   }
 
-  if (Number.isFinite(MAX_VIDEO_MB) && MAX_VIDEO_MB > 0 && size > MAX_VIDEO_MB * 1024 * 1024) {
+  const maxVideoMB = getMaxVideoUploadMB();
+  if (size > videoUploadLimitBytes(maxVideoMB)) {
     console.warn('[upload] rejecting oversized video upload', {
       fileName: blob.name,
       mime,
       size,
-      maxMB: MAX_VIDEO_MB,
+      maxMB: maxVideoMB,
     });
-    return NextResponse.json({ ok: false, error: 'FILE_TOO_LARGE', maxMB: MAX_VIDEO_MB }, { status: 413 });
+    return NextResponse.json({ ok: false, error: 'FILE_TOO_LARGE', maxMB: maxVideoMB }, { status: 413 });
   }
 
   const arrayBuffer = await blob.arrayBuffer();
