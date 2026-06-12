@@ -5,7 +5,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 25% 15%, rgba(59, 130, 246, 0.12), transparent 28%),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(3, 7, 18, 0.96));
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
 }
 
 .reactFlowCanvas {
@@ -131,11 +131,11 @@
 }
 
 .canvasShell :global(.react-flow__edge-textbg) {
-  fill: rgba(15, 23, 42, 0.9);
+  fill: var(--studio-surface);
 }
 
 .canvasShell :global(.react-flow__edge-text) {
-  fill: #cbd5e1;
+  fill: var(--studio-text);
   font-size: 10px;
   font-weight: 700;
 }
@@ -213,12 +213,12 @@
   border: 1px dashed color-mix(in srgb, var(--node-accent, #8b5cf6) 72%, rgba(226, 232, 240, 0.26));
   border-radius: 9px;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--node-accent, #8b5cf6) 24%, rgba(15, 23, 42, 0.92)), rgba(2, 6, 23, 0.76)),
-    rgba(15, 23, 42, 0.88);
+    linear-gradient(135deg, color-mix(in srgb, var(--node-accent, #8b5cf6) 24%, var(--studio-surface)), var(--studio-bg)),
+    var(--studio-surface);
   box-shadow:
-    0 18px 48px rgba(0, 0, 0, 0.3),
+    0 18px 48px var(--studio-node-shadow),
     0 0 30px color-mix(in srgb, var(--node-accent, #8b5cf6) 24%, transparent);
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   opacity: 0.82;
   pointer-events: none;
 }
@@ -233,7 +233,7 @@
 
 .workspaceGhostNode span {
   overflow: hidden;
-  color: #cbd5e1;
+  color: var(--studio-text);
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
@@ -249,21 +249,21 @@
   place-items: center;
   padding: 20px;
   transform: translate(-50%, -50%);
-  border: 1px dashed rgba(148, 163, 184, 0.25);
+  border: 1px dashed var(--studio-border);
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--studio-surface);
   text-align: center;
 }
 
 .canvasEmptyState p {
   margin: 0;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 14px;
   font-weight: 750;
 }
 
 .canvasEmptyState span {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 12px;
   line-height: 1.4;
 }

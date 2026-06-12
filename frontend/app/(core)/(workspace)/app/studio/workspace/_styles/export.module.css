@@ -5,7 +5,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(2, 6, 23, 0.7);
+  background: var(--studio-bg);
   backdrop-filter: blur(14px);
 }
 
@@ -15,10 +15,10 @@
   width: min(420px, 100%);
   max-height: calc(100vh - 48px);
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--studio-border);
   border-radius: 12px;
-  background: rgba(8, 13, 24, 0.98);
-  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.5);
+  background: var(--studio-surface);
+  box-shadow: 0 28px 90px var(--studio-node-shadow);
 }
 
 .exportDialog {
@@ -31,12 +31,12 @@
   justify-content: space-between;
   gap: 14px;
   padding: 16px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  border-bottom: 1px solid var(--studio-border);
 }
 
 .exportHeader p {
   margin: 0;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 14px;
   font-weight: 780;
 }
@@ -44,7 +44,7 @@
 .exportHeader span {
   display: block;
   margin-top: 4px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
@@ -55,15 +55,15 @@
   height: 32px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.76);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
 .exportCloseButton:hover {
-  border-color: rgba(148, 163, 184, 0.34);
+  border-color: var(--studio-border);
   color: #ffffff;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .exportSectionHeader strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
   font-weight: 820;
   letter-spacing: 0;
@@ -111,9 +111,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.62);
+  background: var(--studio-surface);
   cursor: pointer;
 }
 
@@ -127,12 +127,12 @@
 }
 
 .exportRangeOptions strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 12px;
 }
 
 .exportRangeOptions small {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
@@ -149,16 +149,16 @@
   gap: 8px 12px;
   padding: 10px;
   border-radius: 9px;
-  background: rgba(2, 6, 23, 0.38);
+  background: var(--studio-bg);
 }
 
 .exportSummaryGrid span {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }
 
 .exportSummaryGrid strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
 }
 
@@ -173,9 +173,9 @@
   gap: 7px;
   min-height: 84px;
   padding: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.58);
+  background: var(--studio-surface);
   cursor: pointer;
 }
 
@@ -198,13 +198,13 @@
 }
 
 .exportPresetCard strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
   font-weight: 820;
 }
 
 .exportPresetCard small {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
   line-height: 1.25;
 }
@@ -220,20 +220,20 @@
   gap: 8px;
   align-items: center;
   padding: 8px 10px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(2, 6, 23, 0.32);
+  background: var(--studio-bg);
 }
 
 .exportReadinessItem strong {
-  color: #dbeafe;
+  color: var(--studio-text);
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
 }
 
 .exportReadinessItem span {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
   line-height: 1.3;
 }
@@ -260,7 +260,7 @@
   border-radius: 10px;
   background:
     linear-gradient(135deg, rgba(20, 184, 166, 0.1), rgba(59, 130, 246, 0.06)),
-    rgba(2, 6, 23, 0.34);
+    var(--studio-bg);
 }
 
 .exportServerCard {
@@ -278,20 +278,20 @@
 }
 
 .exportServerCard strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 12px;
   font-weight: 840;
 }
 
 .exportServerCard span,
 .exportServerCard small {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
   line-height: 1.35;
 }
 
 .exportServerCard small {
-  color: #cbd5e1;
+  color: var(--studio-text);
 }
 
 .exportServerCard[data-status="failed"] small {
@@ -308,9 +308,9 @@
   gap: 3px;
   flex: 0 0 auto;
   padding: 7px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.56);
+  background: var(--studio-surface);
 }
 
 .exportJobStatus span {
@@ -334,7 +334,7 @@
 }
 
 .exportJobStatus strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 11px;
 }
@@ -343,7 +343,7 @@
   height: 5px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.86);
+  background: var(--studio-surface);
 }
 
 .exportProgressTrack span {
@@ -398,13 +398,13 @@
   display: grid;
   gap: 10px;
   padding: 11px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.42);
+  background: var(--studio-surface);
 }
 
 .exportAdvancedPanel summary {
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;

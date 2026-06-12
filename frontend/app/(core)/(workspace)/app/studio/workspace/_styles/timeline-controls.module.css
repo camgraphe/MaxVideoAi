@@ -7,9 +7,9 @@
   width: max-content;
   max-width: 220px;
   padding: 6px 8px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--studio-border);
   border-radius: 7px;
-  background: rgba(2, 6, 23, 0.96);
+  background: var(--studio-bg);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
   color: #e5e7eb;
   content: attr(data-tooltip);
@@ -38,7 +38,7 @@
   align-items: center;
   column-gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  border-bottom: 1px solid var(--studio-border);
 }
 
 .timelineTimecodeCluster {
@@ -48,7 +48,7 @@
 }
 
 .timelineCurrentTimecode {
-  color: #e2e8f0;
+  color: var(--studio-text-strong);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -83,8 +83,8 @@
   place-items: center;
   border: 0;
   border-radius: 7px;
-  background: rgba(30, 41, 59, 0.74);
-  color: #dbeafe;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .timelineToolButton {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 10px;
   font-weight: 800;
 }
@@ -104,9 +104,9 @@
   display: flex;
   gap: 2px;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--studio-surface);
 }
 
 .timelineToolGroup button {
@@ -116,7 +116,7 @@
   padding: 0;
   border-radius: 0;
   background: transparent;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
 }
 
 .timelineToolButton.timelineToolButtonActive {
@@ -131,16 +131,16 @@
   gap: 5px;
   height: 30px;
   padding: 0 6px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.72);
+  background: var(--studio-surface);
 }
 
 .timelineZoomControl button {
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: rgba(30, 41, 59, 0.66);
+  background: var(--studio-bg-soft);
 }
 
 .timelineZoomControl input {

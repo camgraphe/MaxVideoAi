@@ -3,7 +3,7 @@
   overflow: hidden;
   gap: 0;
   padding: 0;
-  border-right-color: rgba(148, 163, 184, 0.16);
+  border-right-color: var(--studio-border);
   background:
     radial-gradient(circle at 62% 0%, rgba(37, 99, 235, 0.16), transparent 32%),
     linear-gradient(180deg, rgba(8, 14, 25, 0.98), rgba(5, 9, 17, 0.99));
@@ -23,7 +23,7 @@
 
 .projectMediaTitle {
   margin: 0;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 17px;
   font-weight: 820;
   letter-spacing: 0;
@@ -46,7 +46,7 @@
   gap: 8px;
   border: 0;
   border-radius: 8px;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
   color: #fff;
   font: inherit;
   font-size: 12px;
@@ -73,10 +73,10 @@
   height: 34px;
   align-items: center;
   gap: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: rgba(6, 11, 22, 0.74);
-  color: #64748b;
+  color: var(--studio-text-muted);
   padding: 0 10px;
 }
 
@@ -94,13 +94,13 @@
   border: 0;
   outline: 0;
   background: transparent;
-  color: #dbeafe;
+  color: var(--studio-text);
   font: inherit;
   font-size: 12px;
 }
 
 .projectMediaSearch input::placeholder {
-  color: #64748b;
+  color: var(--studio-text-muted);
 }
 
 .projectMediaViewTools {
@@ -114,7 +114,7 @@
   width: 32px;
   height: 32px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: rgba(9, 15, 29, 0.82);
   color: #a7b4cc;
@@ -143,10 +143,10 @@
   min-height: 30px;
   align-items: center;
   gap: 7px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.78);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font: inherit;
   font-size: 11px;
   font-weight: 760;
@@ -157,7 +157,7 @@
 .projectMediaBackButton:hover,
 .projectMediaBackButton:focus-visible {
   border-color: rgba(96, 165, 250, 0.34);
-  background: rgba(30, 41, 59, 0.86);
+  background: var(--studio-bg-soft);
   color: #ffffff;
   outline: none;
 }
@@ -167,7 +167,7 @@
   min-width: 0;
   align-items: center;
   gap: 7px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
   font-weight: 720;
 }
@@ -179,7 +179,7 @@
 .projectMediaFolderTitle strong {
   min-width: 0;
   overflow: hidden;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -198,11 +198,11 @@
 .projectMediaTile {
   position: relative;
   min-width: 0;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 7px;
   overflow: hidden;
   background: linear-gradient(180deg, rgba(12, 21, 36, 0.82), rgba(7, 12, 23, 0.96));
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   text-align: left;
   cursor: pointer;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
@@ -227,13 +227,13 @@
   border-color: rgba(129, 140, 248, 0.72);
   box-shadow:
     0 0 0 1px rgba(129, 140, 248, 0.18),
-    0 16px 38px rgba(15, 23, 42, 0.28);
+    0 16px 38px var(--studio-surface);
 }
 
 [data-project-media-folder-drop-target="true"] .projectMediaTile {
   border-color: rgba(167, 139, 250, 0.9);
   background:
-    linear-gradient(180deg, rgba(59, 46, 132, 0.48), rgba(15, 23, 42, 0.96));
+    linear-gradient(180deg, rgba(59, 46, 132, 0.48), var(--studio-surface));
   box-shadow:
     0 0 0 1px rgba(167, 139, 250, 0.28),
     0 18px 42px rgba(88, 28, 135, 0.24);
@@ -258,14 +258,14 @@
   background:
     radial-gradient(circle at 28% 34%, rgba(167, 139, 250, 0.32), transparent 38%),
     linear-gradient(135deg, rgba(88, 28, 135, 0.66), rgba(49, 46, 129, 0.36)),
-    linear-gradient(180deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.98));
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
 }
 
 .projectMediaArtworkFolder {
   background:
     radial-gradient(circle at 50% 42%, rgba(245, 158, 11, 0.22), transparent 42%),
     linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0 1px, transparent 1px 38px),
-    linear-gradient(135deg, rgba(45, 33, 14, 0.94), rgba(15, 23, 42, 0.88));
+    linear-gradient(135deg, rgba(45, 33, 14, 0.94), var(--studio-surface));
 }
 
 .projectMediaFolderGlyph {
@@ -288,7 +288,7 @@
 .projectMediaFolderGlyph svg {
   position: relative;
   z-index: 1;
-  filter: drop-shadow(0 10px 18px rgba(2, 6, 23, 0.32));
+  filter: drop-shadow(0 10px 18px var(--studio-node-shadow));
 }
 
 .projectMediaArtworkAudio {
@@ -341,48 +341,48 @@
   color: #fff;
   border: 1px solid rgba(255, 255, 255, 0.16);
   opacity: 0.96;
-  box-shadow: 0 8px 18px rgba(2, 6, 23, 0.3);
+  box-shadow: 0 8px 18px var(--studio-bg);
 }
 
 .projectMediaBadgeSequence {
   background: linear-gradient(135deg, #8b5cf6, #6d28d9);
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(139, 92, 246, 0.18);
 }
 
 .projectMediaBadgeVideo {
   background: linear-gradient(135deg, #fb923c, #f97316);
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(249, 115, 22, 0.18);
 }
 
 .projectMediaBadgeImage {
-  background: linear-gradient(135deg, #38bdf8, #2563eb);
+  background: linear-gradient(135deg, #38bdf8, var(--studio-primary-2));
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(56, 189, 248, 0.18);
 }
 
 .projectMediaBadgeAudio {
   background: linear-gradient(135deg, #34d399, #059669);
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(52, 211, 153, 0.18);
 }
 
 .projectMediaBadgeFolder {
   background: linear-gradient(135deg, #fbbf24, #d97706);
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(251, 191, 36, 0.18);
 }
 
 .projectMediaBadgeGenerated {
-  background: linear-gradient(135deg, #ec4899, #7c3aed);
+  background: linear-gradient(135deg, #ec4899, var(--studio-primary));
   box-shadow:
-    0 8px 18px rgba(2, 6, 23, 0.3),
+    0 8px 18px var(--studio-bg),
     0 0 0 1px rgba(236, 72, 153, 0.2);
 }
 
@@ -392,8 +392,8 @@
   bottom: 5px;
   padding: 3px 5px;
   border-radius: 6px;
-  background: rgba(2, 6, 23, 0.78);
-  color: #f8fafc;
+  background: var(--studio-bg);
+  color: var(--studio-text-strong);
   font-size: 9.5px;
   font-weight: 760;
   line-height: 1;
@@ -414,7 +414,7 @@
 }
 
 .projectMediaTileBody strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
@@ -437,13 +437,13 @@
   border: 0;
   border-radius: 6px;
   background: transparent;
-  color: #dbeafe;
+  color: var(--studio-text);
   cursor: pointer;
 }
 
 .projectMediaMoreButton:hover,
 .projectMediaMoreButton:focus-visible {
-  background: rgba(148, 163, 184, 0.12);
+  background: var(--studio-border);
   outline: none;
 }
 
@@ -457,17 +457,17 @@
   z-index: 90;
   width: 190px;
   padding: 7px;
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
   background: rgba(9, 14, 26, 0.98);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.38);
+  box-shadow: 0 18px 48px var(--studio-node-shadow);
 }
 
 .projectMediaContextMenu > span {
   display: block;
   padding: 6px 8px 8px;
   overflow: hidden;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 11px;
@@ -483,7 +483,7 @@
   border-radius: 7px;
   padding: 8px;
   background: transparent;
-  color: #dbeafe;
+  color: var(--studio-text);
   font: inherit;
   font-size: 12px;
   cursor: pointer;
@@ -511,19 +511,19 @@
   display: grid;
   place-items: center;
   padding: 18px;
-  background: rgba(2, 6, 23, 0.62);
+  background: var(--studio-bg);
   backdrop-filter: blur(8px);
 }
 
 .projectMediaDialog {
   width: min(360px, 100%);
-  border: 1px solid rgba(148, 163, 184, 0.18);
+  border: 1px solid var(--studio-border);
   border-radius: 14px;
   background:
     radial-gradient(circle at 80% 0%, rgba(37, 99, 235, 0.18), transparent 34%),
     linear-gradient(180deg, rgba(13, 21, 37, 0.98), rgba(6, 10, 20, 0.98));
-  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.46);
-  color: #f8fafc;
+  box-shadow: 0 28px 80px var(--studio-node-shadow);
+  color: var(--studio-text-strong);
   padding: 14px;
 }
 
@@ -555,10 +555,10 @@
   height: 28px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
@@ -576,7 +576,7 @@
 }
 
 .projectMediaDialogField span {
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 740;
 }
@@ -584,10 +584,10 @@
 .projectMediaDialogField input {
   width: 100%;
   min-height: 38px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
   background: rgba(8, 13, 26, 0.88);
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font: inherit;
   font-size: 13px;
   outline: none;
@@ -613,10 +613,10 @@
   min-height: 38px;
   align-items: center;
   gap: 9px;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
   background: rgba(8, 13, 26, 0.76);
-  color: #dbeafe;
+  color: var(--studio-text);
   font: inherit;
   font-size: 12px;
   font-weight: 720;
@@ -651,10 +651,10 @@
   min-height: 34px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.78);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font: inherit;
   font-size: 11px;
   font-weight: 760;
@@ -664,7 +664,7 @@
 
 .projectMediaDialogActions button[type="submit"] {
   border: 0;
-  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
   color: #ffffff;
 }
 
@@ -685,7 +685,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 13px 16px 15px;
-  border-top: 1px solid rgba(148, 163, 184, 0.13);
+  border-top: 1px solid var(--studio-border);
   background: rgba(5, 9, 17, 0.82);
 }
 
@@ -695,7 +695,7 @@
   flex: 0 0 auto;
   align-items: center;
   gap: 6px;
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 680;
   white-space: nowrap;
@@ -705,7 +705,7 @@
   width: 14px;
   height: 14px;
   flex: 0 0 14px;
-  color: #cbd5e1;
+  color: var(--studio-text);
 }
 
 .projectMediaFooterActions {
@@ -723,10 +723,10 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.78);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font: inherit;
   font-size: 10px;
   font-weight: 720;
@@ -742,7 +742,7 @@
 .projectMediaFooterAction:hover,
 .projectMediaFooterAction:focus-visible {
   border-color: rgba(96, 165, 250, 0.34);
-  background: rgba(30, 41, 59, 0.86);
+  background: var(--studio-bg-soft);
   outline: none;
 }
 
@@ -765,7 +765,7 @@
 .projectMediaEmpty {
   grid-column: 1 / -1;
   padding: 18px 0;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 12px;
   line-height: 1.35;
 }

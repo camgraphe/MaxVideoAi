@@ -14,8 +14,8 @@
   min-width: 0;
   min-height: 0;
   overflow: hidden;
-  border-top: 1px solid rgba(148, 163, 184, 0.13);
-  background: rgba(5, 10, 18, 0.98);
+  border-top: 1px solid var(--studio-border);
+  background: var(--studio-bg);
 }
 
 .timelineResizeHandle {
@@ -39,8 +39,8 @@
   width: 58px;
   height: 3px;
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.34);
-  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.54), 0 0 12px rgba(99, 102, 241, 0.22);
+  background: var(--studio-border);
+  box-shadow: 0 0 0 1px var(--studio-surface), 0 0 12px rgba(99, 102, 241, 0.22);
   content: '';
   opacity: 0.72;
   transform: translateX(-50%);
@@ -74,7 +74,7 @@
   min-width: 0;
   min-height: 0;
   overflow: auto;
-  scrollbar-color: rgba(148, 163, 184, 0.34) rgba(15, 23, 42, 0.74);
+  scrollbar-color: var(--studio-border) var(--studio-surface);
   scrollbar-width: thin;
 }
 
@@ -84,13 +84,13 @@
 }
 
 .timelineViewport::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.76);
+  background: var(--studio-surface);
 }
 
 .timelineViewport::-webkit-scrollbar-thumb {
-  border: 2px solid rgba(15, 23, 42, 0.76);
+  border: 2px solid var(--studio-surface);
   border-radius: 999px;
-  background: rgba(148, 163, 184, 0.44);
+  background: var(--studio-border);
 }
 
 .timelineRuler {
@@ -102,8 +102,8 @@
   width: var(--timeline-scroll-width);
   min-width: 100%;
   height: 30px;
-  background: rgba(5, 10, 18, 0.98);
-  color: #94a3b8;
+  background: var(--studio-bg);
+  color: var(--studio-text-muted);
   font-size: 10px;
 }
 
@@ -111,8 +111,8 @@
   position: sticky;
   left: 0;
   z-index: 2;
-  border-right: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(5, 10, 18, 0.98);
+  border-right: 1px solid var(--studio-border);
+  background: var(--studio-bg);
 }
 
 .timelineRulerToolSlot {
@@ -130,15 +130,15 @@
   place-items: center;
   border: 0;
   border-radius: 7px;
-  background: rgba(30, 41, 59, 0.74);
-  color: #dbeafe;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
 .timelineRulerToolButton:focus-visible,
 .timelineRulerToolButton:hover {
   background: rgba(51, 65, 85, 0.86);
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   outline: none;
 }
 
@@ -181,7 +181,7 @@
   place-items: center;
   border: 1px solid rgba(196, 181, 253, 0.46);
   border-radius: 5px;
-  background: rgba(15, 23, 42, 0.96);
+  background: var(--studio-surface);
   color: #f5f3ff;
   font-size: 10px;
   font-weight: 900;
@@ -210,7 +210,7 @@
   width: var(--timeline-scroll-width);
   min-width: 100%;
   min-height: 42px;
-  border-top: 1px solid rgba(148, 163, 184, 0.08);
+  border-top: 1px solid var(--studio-border);
 }
 
 .trackLabel {
@@ -222,9 +222,9 @@
   justify-content: space-between;
   gap: 8px;
   padding: 0 12px 0 14px;
-  border-right: 1px solid rgba(148, 163, 184, 0.1);
-  background: rgba(5, 10, 18, 0.98);
-  color: #cbd5e1;
+  border-right: 1px solid var(--studio-border);
+  background: var(--studio-bg);
+  color: var(--studio-text);
   font-size: 11px;
 }
 
@@ -303,14 +303,14 @@
 .trackIconButton:focus-visible {
   border-color: rgba(167, 139, 250, 0.78);
   background: rgba(124, 58, 237, 0.66);
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   outline: none;
 }
 
 .trackIconButton {
-  border-color: rgba(148, 163, 184, 0.22);
-  background: rgba(15, 23, 42, 0.62);
-  color: #94a3b8;
+  border-color: var(--studio-border);
+  background: var(--studio-surface);
+  color: var(--studio-text-muted);
 }
 
 .trackIconButtonActive {
@@ -327,8 +327,8 @@
 .timelineTrackHidden .trackLane {
   overflow: visible;
   background:
-    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.05) 0, rgba(148, 163, 184, 0.05) 1px, transparent 1px, transparent 72px),
-    rgba(15, 23, 42, 0.11);
+    repeating-linear-gradient(90deg, var(--studio-timeline-grid) 0, var(--studio-timeline-grid) 1px, transparent 1px, transparent 72px),
+    var(--studio-surface);
 }
 
 .timelineTrackHidden [data-timeline-item] {
@@ -354,8 +354,8 @@
   overflow: visible;
   padding: 6px var(--timeline-track-lane-padding-x);
   background:
-    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.08) 0, rgba(148, 163, 184, 0.08) 1px, transparent 1px, transparent 72px),
-    rgba(15, 23, 42, 0.18);
+    repeating-linear-gradient(90deg, var(--studio-timeline-grid) 0, var(--studio-timeline-grid) 1px, transparent 1px, transparent 72px),
+    var(--studio-surface);
 }
 
 .trackLaneContent {
@@ -459,7 +459,7 @@
   border: 1px dashed rgba(147, 197, 253, 0.96);
   border-radius: 7px;
   background: linear-gradient(90deg, rgba(37, 99, 235, 0.58), rgba(30, 64, 175, 0.48));
-  color: #dbeafe;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0;
@@ -467,7 +467,7 @@
   pointer-events: none;
   box-shadow:
     inset 0 0 0 1px rgba(219, 234, 254, 0.22),
-    0 10px 26px rgba(15, 23, 42, 0.34),
+    0 10px 26px var(--studio-node-shadow),
     0 0 20px rgba(59, 130, 246, 0.22);
 }
 
@@ -492,7 +492,7 @@
   width: 30px;
   height: 24px;
   border-radius: 5px;
-  background-color: rgba(15, 23, 42, 0.72);
+  background-color: var(--studio-surface);
   background-position: center;
   background-size: cover;
   box-shadow: inset 0 0 0 1px rgba(226, 232, 240, 0.16);
@@ -556,7 +556,7 @@
   top: 50%;
   left: 0;
   transform: translateY(-50%);
-  color: #64748b;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }
 

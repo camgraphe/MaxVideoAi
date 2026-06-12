@@ -5,7 +5,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 50% 18%, rgba(37, 99, 235, 0.14), transparent 34%),
-    rgba(3, 7, 18, 0.96);
+    var(--studio-bg);
 }
 
 .viewerStage {
@@ -30,7 +30,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }
 
@@ -47,13 +47,13 @@
 }
 
 .programMonitorHeader span {
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-weight: 760;
   text-transform: uppercase;
 }
 
 .programMonitorTitle small {
-  color: #64748b;
+  color: var(--studio-text-muted);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -74,7 +74,7 @@
 }
 
 .programMonitorHeader strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
@@ -85,7 +85,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
   font-weight: 720;
   text-transform: uppercase;
@@ -94,9 +94,9 @@
 .programZoomControl select {
   height: 30px;
   min-width: 78px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.9);
+  background: var(--studio-surface);
   color: #e5e7eb;
   font: inherit;
   font-size: 11px;
@@ -108,17 +108,17 @@
   width: 30px;
   height: 30px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
 .programFullscreenButton:hover,
 .programFullscreenButton:focus-visible {
   border-color: rgba(129, 140, 248, 0.42);
-  background: rgba(30, 41, 59, 0.96);
+  background: var(--studio-bg-soft);
   color: #ffffff;
   outline: none;
 }
@@ -137,9 +137,9 @@
   display: grid;
   gap: 12px;
   padding: 12px 18px 14px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(8, 13, 24, 0.68);
+  background: var(--studio-surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
@@ -148,7 +148,7 @@
   grid-template-columns: auto minmax(120px, 1fr) auto;
   gap: 12px;
   align-items: center;
-  color: #dbeafe;
+  color: var(--studio-text);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
@@ -168,8 +168,8 @@
   height: 2px;
   border-radius: 999px;
   background:
-    repeating-linear-gradient(90deg, rgba(148, 163, 184, 0.22) 0 2px, transparent 2px 7px),
-    rgba(148, 163, 184, 0.12);
+    repeating-linear-gradient(90deg, var(--studio-timeline-grid) 0 2px, transparent 2px 7px),
+    var(--studio-border);
   content: "";
 }
 
@@ -197,10 +197,10 @@
   width: 38px;
   height: 38px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.82);
-  color: #dbeafe;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
@@ -208,8 +208,8 @@
 .viewerPlaybackControls button:hover,
 .viewerPlaybackControls button:focus-visible {
   border-color: rgba(129, 140, 248, 0.42);
-  background: rgba(30, 41, 59, 0.96);
-  color: #f8fafc;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
   outline: none;
 }
 
@@ -222,14 +222,14 @@
   width: 54px;
   height: 38px;
   border-color: rgba(129, 140, 248, 0.3);
-  background: rgba(30, 41, 59, 0.92);
+  background: var(--studio-bg-soft);
 }
 
 .viewerPlaybackDivider {
   width: 1px;
   height: 26px;
   margin: 0 4px;
-  background: rgba(148, 163, 184, 0.16);
+  background: var(--studio-border);
 }
 
 .viewerPlaybackControls .viewerMarkButton {
@@ -247,10 +247,10 @@
   min-width: 106px;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid var(--studio-border);
   border-radius: 7px;
-  background: rgba(15, 23, 42, 0.62);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
@@ -264,7 +264,7 @@
   align-items: center;
   justify-content: center;
   gap: 7px;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
   font-weight: 780;
 }
@@ -275,7 +275,7 @@
   padding: 0 8px;
   border-color: transparent;
   background: transparent;
-  color: #64748b;
+  color: var(--studio-text-muted);
   font-size: 9px;
   font-weight: 760;
   text-transform: uppercase;
@@ -288,7 +288,7 @@
   justify-content: center;
   gap: 16px;
   min-height: 16px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
@@ -300,11 +300,11 @@
   aspect-ratio: var(--workspace-project-aspect-ratio, 16 / 9);
   place-self: center;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: #020617;
+  background: var(--studio-bg);
   box-shadow:
-    0 24px 72px rgba(0, 0, 0, 0.42),
+    0 24px 72px var(--studio-node-shadow),
     inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
@@ -324,7 +324,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  background: #020617;
+  background: var(--studio-bg);
   object-fit: contain;
   pointer-events: none;
   transform-origin: center;
@@ -346,7 +346,7 @@
   align-content: center;
   gap: 8px;
   padding: 24px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   text-align: center;
 }
 
@@ -355,12 +355,12 @@
 }
 
 .viewerEmpty p {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 13px;
   font-weight: 760;
 }
 
 .viewerEmpty span {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }

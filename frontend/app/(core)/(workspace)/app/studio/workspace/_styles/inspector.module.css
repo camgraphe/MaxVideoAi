@@ -2,8 +2,8 @@
   min-height: 0;
   overflow: hidden;
   padding: 14px;
-  border-left: 1px solid rgba(148, 163, 184, 0.13);
-  background: rgba(8, 13, 24, 0.96);
+  border-left: 1px solid var(--studio-border);
+  background: var(--studio-surface);
 }
 
 .settingsBody {
@@ -26,7 +26,7 @@
 .settingsLabel {
   display: grid;
   gap: 6px;
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 700;
 }
@@ -34,9 +34,9 @@
 .settingsInput,
 .settingsTextarea {
   width: 100%;
-  border: 1px solid rgba(148, 163, 184, 0.13);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.86);
+  background: var(--studio-surface);
   color: #e5e7eb;
   outline: none;
 }
@@ -65,15 +65,15 @@
   display: grid;
   gap: 12px;
   padding: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.48);
+  background: var(--studio-surface);
 }
 
 .timelineInspectorControl {
   display: grid;
   gap: 7px;
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 700;
 }
@@ -85,7 +85,7 @@
 }
 
 .timelineInspectorControl strong {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -99,20 +99,20 @@
 
 .settingsRange {
   width: 100%;
-  accent-color: #7c3aed;
+  accent-color: var(--studio-primary);
 }
 
 .timelineInspectorCheckbox {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cbd5e1;
+  color: var(--studio-text);
   font-size: 11px;
   font-weight: 700;
 }
 
 .timelineInspectorCheckbox input {
-  accent-color: #7c3aed;
+  accent-color: var(--studio-primary);
 }
 
 .timelineInspectorResetButton {
@@ -120,10 +120,10 @@
   width: 26px;
   height: 26px;
   place-items: center;
-  border: 1px solid rgba(148, 163, 184, 0.14);
+  border: 1px solid var(--studio-border);
   border-radius: 7px;
-  background: rgba(15, 23, 42, 0.78);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
@@ -143,10 +143,10 @@
   justify-content: space-between;
   gap: 10px;
   padding: 10px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.52);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   font-size: 12px;
 }
 
@@ -156,7 +156,7 @@
   border: 0;
   border-radius: 999px;
   background: rgba(51, 65, 85, 0.82);
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   cursor: pointer;
   font: inherit;
 }
@@ -197,7 +197,7 @@
 }
 
 .pricingActionSummary strong {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 12px;
   font-weight: 820;
 }
@@ -205,10 +205,10 @@
 .validationBox {
   gap: 10px;
   padding: 11px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.66);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
 }
 
 .validationBox p,
@@ -217,7 +217,7 @@
 }
 
 .validationBox p {
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 12px;
   font-weight: 750;
 }
@@ -226,7 +226,7 @@
 .mutedText {
   display: block;
   margin-top: 3px;
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
   line-height: 1.35;
 }
@@ -241,7 +241,7 @@
   gap: 9px;
   padding: 8px;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.56);
+  background: var(--studio-surface);
 }
 
 .connectedRow > span {
@@ -253,13 +253,13 @@
 
 .connectedRow p {
   flex: 1;
-  color: #e2e8f0;
+  color: var(--studio-text-strong);
   font-size: 11px;
   font-weight: 700;
 }
 
 .connectedRow small {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 10px;
 }
 
@@ -268,7 +268,7 @@
   height: 148px;
   overflow: hidden;
   border-radius: 10px;
-  background: #020617;
+  background: var(--studio-bg);
   place-items: center;
 }
 
@@ -293,18 +293,18 @@
   gap: 8px 10px;
   padding: 10px;
   border-radius: 9px;
-  background: rgba(15, 23, 42, 0.56);
+  background: var(--studio-surface);
 }
 
 .infoGrid span {
-  color: #94a3b8;
+  color: var(--studio-text-muted);
   font-size: 11px;
 }
 
 .infoGrid strong {
   min-width: 0;
   overflow: hidden;
-  color: #f8fafc;
+  color: var(--studio-text-strong);
   font-size: 11px;
   text-overflow: ellipsis;
   white-space: nowrap;

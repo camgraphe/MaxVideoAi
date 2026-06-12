@@ -256,6 +256,15 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
   await expect(shell).toHaveAttribute('data-studio-theme', 'light');
   await expect(page.getByRole('button', { name: 'Switch Studio to dark mode' })).toBeVisible();
+  const shellColors = await page.locator('[data-studio-theme="light"]').evaluate((element) => {
+    const styles = getComputedStyle(element);
+    return {
+      background: styles.backgroundColor,
+      text: styles.color,
+    };
+  });
+  expect(shellColors.background).not.toBe('rgb(5, 9, 17)');
+  expect(shellColors.text).not.toBe('rgb(238, 242, 255)');
 
   assertNoEditorClientErrors(errors);
 });

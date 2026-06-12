@@ -9,6 +9,10 @@
   --studio-text-muted: #94a3b8;
   --studio-primary: #7c3aed;
   --studio-primary-2: #4f46e5;
+  --studio-canvas-grid: rgba(148, 163, 184, 0.05);
+  --studio-canvas-grid-strong: rgba(148, 163, 184, 0.09);
+  --studio-timeline-grid: rgba(148, 163, 184, 0.1);
+  --studio-node-shadow: rgba(2, 6, 23, 0.32);
   position: relative;
   height: 100vh;
   display: grid;
@@ -40,6 +44,10 @@
   --studio-text-muted: #64748b;
   --studio-primary: #6d28d9;
   --studio-primary-2: #2563eb;
+  --studio-canvas-grid: rgba(100, 116, 139, 0.12);
+  --studio-canvas-grid-strong: rgba(100, 116, 139, 0.18);
+  --studio-timeline-grid: rgba(100, 116, 139, 0.18);
+  --studio-node-shadow: rgba(15, 23, 42, 0.12);
 }
 
 .editorTopbar {
@@ -81,7 +89,7 @@
   height: 28px;
   flex: 0 0 auto;
   border-radius: 8px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.34);
+  box-shadow: 0 10px 28px var(--studio-node-shadow);
 }
 
 .modeSwitch {
@@ -181,7 +189,7 @@
   border: 1px solid rgba(129, 140, 248, 0.34);
   border-radius: 8px;
   background: var(--studio-surface-strong);
-  box-shadow: 0 18px 46px rgba(2, 6, 23, 0.38);
+  box-shadow: 0 18px 46px var(--studio-node-shadow);
   color: var(--studio-text);
   font-size: 12px;
   line-height: 1.35;

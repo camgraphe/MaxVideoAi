@@ -6,11 +6,11 @@
   width: 180px;
   height: 166px;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.16);
+  border: 1px solid var(--studio-border);
   border-radius: 11px;
   background:
-    linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.76)),
-    rgba(15, 23, 42, 0.86);
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
+    var(--studio-surface);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
   pointer-events: none;
 }
@@ -21,8 +21,8 @@
   justify-content: space-between;
   height: 34px;
   padding: 0 11px;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  color: #cbd5e1;
+  border-bottom: 1px solid var(--studio-border);
+  color: var(--studio-text);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0;
@@ -48,15 +48,15 @@
   justify-content: center;
   border: 0;
   border-radius: 7px;
-  background: rgba(15, 23, 42, 0.92);
-  color: #cbd5e1;
+  background: var(--studio-surface);
+  color: var(--studio-text);
   cursor: pointer;
 }
 
 .canvasNavigatorControls button:hover,
 .canvasNavigatorControls button:focus-visible {
-  background: rgba(30, 41, 59, 0.94);
-  color: #f8fafc;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
   outline: 1px solid rgba(147, 197, 253, 0.58);
 }
 
@@ -69,9 +69,9 @@
   width: 164px;
   height: 82px;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background: rgba(3, 7, 18, 0.86);
+  background: var(--studio-bg);
   cursor: grab;
   pointer-events: auto;
   touch-action: none;
@@ -82,7 +82,7 @@
 }
 
 .canvasMiniMapBackdrop {
-  fill: rgba(2, 6, 23, 0.86);
+  fill: var(--studio-bg);
 }
 
 .canvasMiniMapEdge {
@@ -93,7 +93,7 @@
 }
 
 .canvasMiniMapNode {
-  fill: rgba(15, 23, 42, 0.9);
+  fill: var(--studio-surface);
   stroke: rgba(226, 232, 240, 0.28);
   stroke-width: 1;
   vector-effect: non-scaling-stroke;
@@ -109,7 +109,7 @@
 }
 
 .canvasMiniMapShotWell {
-  fill: rgba(30, 41, 59, 0.72);
+  fill: var(--studio-bg-soft);
   stroke: rgba(226, 232, 240, 0.3);
   stroke-dasharray: 2 2;
   stroke-width: 0.8;
