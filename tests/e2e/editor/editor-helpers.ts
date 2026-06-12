@@ -22,6 +22,13 @@ export function assertNoEditorClientErrors(errors: EditorClientErrors): void {
 }
 
 async function mockEditorHeaderAccountApi(page: Page): Promise<void> {
+  await page.route('**/api/member-status', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ tier: 'Member' }),
+    });
+  });
   await page.route('**/api/wallet', async (route) => {
     await route.fulfill({
       status: 200,
@@ -86,6 +93,20 @@ async function mockEditorStudioPersistenceApi(page: Page): Promise<void> {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ ok: true, projects: [] }),
+    });
+  });
+  await page.route('**/api/studio/projects/*/sequences', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, sequences: [] }),
+    });
+  });
+  await page.route('**/api/studio/projects/*/sequences/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true }),
     });
   });
   await page.route('**/api/studio/projects/*', async (route) => {

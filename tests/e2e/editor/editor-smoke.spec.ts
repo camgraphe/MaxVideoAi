@@ -100,6 +100,13 @@ async function marqueeSelectCanvasNodes(page: Page, nodeIds: string[]): Promise<
 }
 
 async function mockStudioPersistenceApi(page: Page): Promise<void> {
+  await page.route('**/api/member-status', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ tier: 'Member' }),
+    });
+  });
   await page.route('**/api/studio/canvas-templates', async (route) => {
     if (route.request().method() === 'POST') {
       const payload = route.request().postDataJSON() as { template?: Record<string, unknown> } | null;
@@ -147,6 +154,20 @@ async function mockStudioPersistenceApi(page: Page): Promise<void> {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({ ok: true, projects: [] }),
+    });
+  });
+  await page.route('**/api/studio/projects/*/sequences', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, sequences: [] }),
+    });
+  });
+  await page.route('**/api/studio/projects/*/sequences/*', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true }),
     });
   });
   await page.route('**/api/studio/projects/*', async (route) => {
@@ -743,6 +764,13 @@ test('viewer project media upload imports local audio into the project bin', asy
           source: 'upload',
         },
       }),
+    });
+  });
+  await page.route('**/api/media-library/assets**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets: [] }),
     });
   });
 
