@@ -137,6 +137,7 @@ const timelineDropsPath = join(workspaceDir, '_lib/workspace-timeline-drops.ts')
 const timelineSelectionPath = join(workspaceDir, '_lib/workspace-timeline-selection.ts');
 const projectMediaDragPath = join(workspaceDir, '_lib/workspace-project-media-drag.ts');
 const projectMediaTimelinePath = join(workspaceDir, '_lib/workspace-project-media-timeline.ts');
+const projectMediaUploadPath = join(workspaceDir, '_lib/workspace-project-media-upload.ts');
 const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts');
 const timelineInteractionPath = join(workspaceDir, '_lib/timeline/timeline-interaction.ts');
 const timelineExternalDropPath = join(workspaceDir, '_lib/timeline/timeline-external-drop.ts');
@@ -826,6 +827,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelineSelectionSource = source(timelineSelectionPath);
   const projectMediaDragSource = source(projectMediaDragPath);
   const projectMediaTimelineSource = source(projectMediaTimelinePath);
+  const projectMediaUploadSource = source(projectMediaUploadPath);
   const timelineFramesSource = source(timelineFramesPath);
   const timelineInteractionSource = source(timelineInteractionPath);
   const timelineExternalDropSource = source(timelineExternalDropPath);
@@ -1251,7 +1253,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(libraryAssetsSource, /workspaceLibraryAssetsForNodeKind/, 'studio library should filter assets by media node kind');
   assert.match(editorAssetLibraryHookSource, /authFetch/, 'studio user library hook should reuse app session-aware authFetch');
   assert.match(editorAssetLibraryHookSource, /buildWorkspaceUserLibraryUrl/, 'studio user library hook should call the app media library endpoint');
-  assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPayload/, 'studio user library hook should normalize API results before rendering');
+  assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/, 'studio user library hook should normalize paginated API results before rendering');
   assert.match(editorAssetLibraryHookSource, /useState<WorkspaceLibrarySource>\('all'\)/, 'studio user library hook should own the active app-library source filter');
   assert.match(editorAssetLibraryHookSource, /WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE/, 'studio user library hook should cache loaded assets between picker openings');
   assert.match(editorAssetLibraryHookSource, /shouldUseFallback[\s\S]*Boolean\(error\)/, 'studio user library hook should not show dev assets while a real user-library request is loading or merely empty');
@@ -1836,8 +1838,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
   assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined, studioAssetLibraryCopy\)/, 'project media import should load the signed-in library only while its modal is open and pass localized library copy');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
-  assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
-  assert.match(projectMediaLibraryModalSource, /workspaceLibraryAssetFromUploadedAsset/, 'project media uploads should normalize into reusable library assets');
+  assert.match(projectMediaLibraryModalSource, /uploadWorkspaceProjectMediaFile/, 'project media library modal should delegate local file uploads to a shared helper');
+  assert.match(projectMediaUploadSource, /WORKSPACE_PROJECT_MEDIA_UPLOAD_ENDPOINTS/, 'project media uploads should reuse the app media upload endpoints');
+  assert.match(projectMediaUploadSource, /workspaceLibraryAssetFromUploadedAsset/, 'project media uploads should normalize into reusable library assets');
+  assert.match(projectMediaActionsHookSource, /handleImportLocalProjectMediaFiles/, 'project media actions should own importing compatible local files dropped from the desktop');
+  assert.match(projectMediaControllerSource, /onImportLocalMediaFiles/, 'project media controller should route local file drops to project media actions');
+  assert.match(timelineProjectSidebarSource, /onDrop=\{projectMedia\.handleProjectMediaDrop\}/, 'viewer sidebar grid should accept compatible local file drops from the desktop');
   assert.match(workspaceEditorLayoutSource, /onInsertProjectAsset=\{projectMedia\.handleInsertProjectAssetToTimeline\}/, 'editor layout should insert imported project media into the timeline');
   assert.match(workspaceEditorLayoutSource, /onProjectAssetDropToTimeline=\{projectMedia\.handleDropProjectAssetToTimeline\}/, 'editor layout should insert dragged project media on the target timeline track');
   assert.doesNotMatch(workspaceSource, /resolveProjectAssetTimelineInsert/, 'orchestrator should not own project media timeline insert resolution');
@@ -3993,6 +3999,7 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
     WORKSPACE_LIBRARY_ASSETS,
     WORKSPACE_LIBRARY_SOURCE_OPTIONS,
     buildWorkspaceUserLibraryUrl,
+    normalizeWorkspaceUserLibraryPage,
     normalizeWorkspaceUserLibraryPayload,
     workspaceLibrarySourceOptionsForKind,
     workspaceAssetRecordFromLibraryAsset,
@@ -4053,7 +4060,43 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
     buildWorkspaceUserLibraryUrl('image', 'generated'),
     '/api/media-library/assets?limit=60&kind=image&source=generated'
   );
+  assert.equal(
+    buildWorkspaceUserLibraryUrl('image', 'generated', { cursor: 'cursor_2' }),
+    '/api/media-library/assets?limit=60&kind=image&cursor=cursor_2&source=generated'
+  );
+  assert.equal(buildWorkspaceUserLibraryUrl(null, 'all', { limit: 48 }), '/api/media-library/assets?limit=48');
   assert.equal(buildWorkspaceUserLibraryUrl(null), '/api/media-library/assets?limit=60');
+
+  const workspaceLibraryAssetsSource = source(libraryAssetsPath);
+  assert.match(workspaceLibraryAssetsSource, /export function normalizeWorkspaceUserLibraryPage/);
+  assert.match(workspaceLibraryAssetsSource, /nextCursor:\s*typeof record\.nextCursor === 'string'/);
+  assert.match(workspaceLibraryAssetsSource, /hasMore:\s*record\.hasMore === true/);
+
+  const normalizedPage = normalizeWorkspaceUserLibraryPage(
+    {
+      ok: true,
+      nextCursor: 'cursor_2',
+      hasMore: true,
+      assets: [
+        {
+          id: 'page-image-1',
+          url: 'https://cdn.example.com/page-image.png',
+          kind: 'image',
+          mime: 'image/png',
+        },
+      ],
+    },
+    null
+  );
+  assert.deepEqual(
+    {
+      ids: normalizedPage.assets.map((asset) => asset.id),
+      nextCursor: normalizedPage.nextCursor,
+      hasMore: normalizedPage.hasMore,
+    },
+    { ids: ['page-image-1'], nextCursor: 'cursor_2', hasMore: true },
+    'studio library should preserve app media-library pagination metadata'
+  );
 
   const normalized = normalizeWorkspaceUserLibraryPayload(
     {
@@ -4200,4 +4243,28 @@ test('MaxVideoAI editor asset library modal keeps the asset grid scrollable', ()
     /\.assetBrowserModal\s+\.assetBrowserGrid\s*\{[\s\S]*overflow-y:\s*auto/,
     'asset library modal grid should be the vertical scroll container'
   );
+});
+
+test('studio editor asset library hook owns pagination and project media kind filters', () => {
+  const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
+
+  assert.match(editorAssetLibraryHookSource, /type WorkspaceLibraryKindFilter = 'all' \| WorkspaceLibraryKind/);
+  assert.match(editorAssetLibraryHookSource, /loadMore/);
+  assert.match(editorAssetLibraryHookSource, /isLoadingMore/);
+  assert.match(editorAssetLibraryHookSource, /hasMore/);
+  assert.match(editorAssetLibraryHookSource, /nextCursor/);
+  assert.match(editorAssetLibraryHookSource, /setKindFilter/);
+  assert.match(editorAssetLibraryHookSource, /buildWorkspaceUserLibraryUrl\(effectiveLibraryKind, activeSource,\s*\{/);
+  assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/);
+});
+
+test('studio asset library browser renders optional media kind filters and load more control', () => {
+  const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
+  const projectMediaModalSource = source(join(workspaceDir, '_components/WorkspaceProjectMediaLibraryModal.tsx'));
+
+  assert.match(assetLibraryBrowserSource, /mediaKindFilter\?:/);
+  assert.match(assetLibraryBrowserSource, /copy\.mediaKindFilters/);
+  assert.match(assetLibraryBrowserSource, /copy\.loadMore/);
+  assert.match(assetLibraryBrowserSource, /copy\.loadingMore/);
+  assert.match(projectMediaModalSource, /onMediaKindFilterChange=\{onMediaKindFilterChange\}/);
 });

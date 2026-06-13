@@ -97,6 +97,7 @@ type UseProjectMediaControllerArgs = {
   onDeleteSequences: (sequenceIds: string[]) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
+  onImportLocalMediaFiles: (files: File[], folderId?: string | null) => Promise<void> | void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
@@ -185,6 +186,14 @@ function endProjectMediaTimelineDrag(): void {
   clearTimelineNodeDragPayload();
 }
 
+function hasLocalFileDrag(dataTransfer: DataTransfer): boolean {
+  return dataTransfer.files.length > 0 || Array.from(dataTransfer.types).includes('Files');
+}
+
+function localFilesFromDataTransfer(dataTransfer: DataTransfer): File[] {
+  return Array.from(dataTransfer.files).filter((file) => Boolean(file.name || file.size || file.type));
+}
+
 export function useProjectMediaController({
   nodes,
   projectAssets,
@@ -202,6 +211,7 @@ export function useProjectMediaController({
   onDeleteSequences,
   onDuplicateSequence,
   onImportMedia,
+  onImportLocalMediaFiles,
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
@@ -489,6 +499,36 @@ export function useProjectMediaController({
     onImportMedia(activeFolderId);
   }, [activeFolderId, onImportMedia]);
 
+  const handleLocalFileDragOver = useCallback((event: ReactDragEvent<HTMLElement>, folderId?: string | null) => {
+    if (!hasLocalFileDrag(event.dataTransfer)) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    setFolderDropTargetId(folderId ?? null);
+    return true;
+  }, []);
+
+  const handleLocalFileDrop = useCallback((event: ReactDragEvent<HTMLElement>, folderId?: string | null) => {
+    if (!hasLocalFileDrag(event.dataTransfer)) return false;
+    const files = localFilesFromDataTransfer(event.dataTransfer);
+    event.preventDefault();
+    event.stopPropagation();
+    event.dataTransfer.dropEffect = 'copy';
+    setFolderDropTargetId(null);
+    if (files.length) {
+      void onImportLocalMediaFiles(files, folderId ?? null);
+    }
+    return true;
+  }, [onImportLocalMediaFiles]);
+
+  const handleProjectMediaDragOver = useCallback((event: ReactDragEvent<HTMLElement>) => {
+    handleLocalFileDragOver(event, null);
+  }, [handleLocalFileDragOver]);
+
+  const handleProjectMediaDrop = useCallback((event: ReactDragEvent<HTMLElement>) => {
+    handleLocalFileDrop(event, activeFolderId);
+  }, [activeFolderId, handleLocalFileDrop]);
+
   const moveDraggedMediaToFolder = useCallback((payload: ReturnType<typeof parseProjectMediaItemDragPayload>, folderId: string) => {
     if (!payload || payload.sourceFolderId === folderId) return false;
     if (payload.itemType === 'asset') onMoveProjectAssetToFolder(payload.itemId, folderId);
@@ -499,6 +539,7 @@ export function useProjectMediaController({
   }, [onMoveGeneratedClipToFolder, onMoveProjectAssetToFolder]);
 
   const handleFolderDragOver = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
+    if (handleLocalFileDragOver(event, folderId)) return;
     const payload = parseProjectMediaItemDragPayload(event.dataTransfer);
     if (!payload || payload.sourceFolderId === folderId) {
       event.dataTransfer.dropEffect = 'none';
@@ -508,7 +549,7 @@ export function useProjectMediaController({
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'move';
     setFolderDropTargetId(folderId);
-  }, []);
+  }, [handleLocalFileDragOver]);
 
   const handleFolderDragLeave = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
     if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
@@ -516,6 +557,7 @@ export function useProjectMediaController({
   }, []);
 
   const handleFolderDrop = useCallback((event: ReactDragEvent<HTMLElement>, folderId: string) => {
+    if (handleLocalFileDrop(event, folderId)) return;
     const payload = parseProjectMediaItemDragPayload(event.dataTransfer);
     setFolderDropTargetId(null);
     clearProjectMediaItemDragPayload();
@@ -524,7 +566,7 @@ export function useProjectMediaController({
     event.stopPropagation();
     event.dataTransfer.dropEffect = 'move';
     moveDraggedMediaToFolder(payload, folderId);
-  }, [moveDraggedMediaToFolder]);
+  }, [handleLocalFileDrop, moveDraggedMediaToFolder]);
 
   useEffect(() => {
     if (!contextMenu) return undefined;
@@ -587,6 +629,8 @@ export function useProjectMediaController({
     handleFolderDragLeave,
     handleFolderDragOver,
     handleFolderDrop,
+    handleProjectMediaDragOver,
+    handleProjectMediaDrop,
     setContextMenu,
     setSearchQuery,
     totalItems,

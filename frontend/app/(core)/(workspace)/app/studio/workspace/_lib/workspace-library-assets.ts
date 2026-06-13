@@ -11,6 +11,17 @@ export type WorkspaceLibraryAsset = {
   dimensions?: string;
 };
 
+export type WorkspaceLibraryRequestOptions = {
+  cursor?: string | null;
+  limit?: number;
+};
+
+export type WorkspaceUserLibraryPage = {
+  assets: WorkspaceLibraryAsset[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
 export type WorkspaceLibraryKind = 'image' | 'video' | 'audio';
 export type WorkspaceLibrarySource = 'all' | 'recent' | 'upload' | 'generated' | 'storyboard' | 'character' | 'angle' | 'upscale';
 
@@ -208,9 +219,14 @@ export function workspaceLibrarySourceOptionsForKind(kind: WorkspaceLibraryKind 
   return WORKSPACE_LIBRARY_SOURCE_OPTIONS;
 }
 
-export function buildWorkspaceUserLibraryUrl(kind: WorkspaceLibraryKind | null, source: WorkspaceLibrarySource = 'all'): string {
-  const params = new URLSearchParams({ limit: '60' });
+export function buildWorkspaceUserLibraryUrl(
+  kind: WorkspaceLibraryKind | null,
+  source: WorkspaceLibrarySource = 'all',
+  options: WorkspaceLibraryRequestOptions = {}
+): string {
+  const params = new URLSearchParams({ limit: String(options.limit ?? 60) });
   if (kind) params.set('kind', kind);
+  if (options.cursor) params.set('cursor', options.cursor);
   if (source === 'recent') return `/api/media-library/recent-outputs?${params.toString()}`;
   if (source !== 'all') params.set('source', source);
   return `/api/media-library/assets?${params.toString()}`;
@@ -278,15 +294,28 @@ export function workspaceLibraryAssetFromUploadedAsset(
   };
 }
 
+export function normalizeWorkspaceUserLibraryPage(
+  payload: unknown,
+  kind: WorkspaceLibraryKind | null
+): WorkspaceUserLibraryPage {
+  const record = payload && typeof payload === 'object'
+    ? (payload as { assets?: unknown; outputs?: unknown; nextCursor?: unknown; hasMore?: unknown })
+    : {};
+  const rawItems = Array.isArray(record.assets) ? record.assets : Array.isArray(record.outputs) ? record.outputs : [];
+  return {
+    assets: rawItems
+      .map((item) => workspaceLibraryAssetFromUploadedAsset(item, kind))
+      .filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset)),
+    nextCursor: typeof record.nextCursor === 'string' && record.nextCursor.length > 0 ? record.nextCursor : null,
+    hasMore: record.hasMore === true,
+  };
+}
+
 export function normalizeWorkspaceUserLibraryPayload(
   payload: unknown,
   kind: WorkspaceLibraryKind | null
 ): WorkspaceLibraryAsset[] {
-  const record = payload && typeof payload === 'object' ? (payload as { assets?: unknown; outputs?: unknown }) : {};
-  const rawItems = Array.isArray(record.assets) ? record.assets : Array.isArray(record.outputs) ? record.outputs : [];
-  return rawItems
-    .map((item) => workspaceLibraryAssetFromUploadedAsset(item, kind))
-    .filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset));
+  return normalizeWorkspaceUserLibraryPage(payload, kind).assets;
 }
 
 export function workspaceLibraryAssetsForNodeKind(kind: WorkspaceNodeKind): WorkspaceLibraryAsset[] {

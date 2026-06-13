@@ -47,6 +47,7 @@ type TimelineProjectSidebarProps = {
   onDeleteSequences: (sequenceIds: string[]) => void;
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
+  onImportLocalMediaFiles: (files: File[], folderId?: string | null) => Promise<void> | void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
@@ -462,6 +463,7 @@ export function TimelineProjectSidebar({
   onDeleteSequences,
   onDuplicateSequence,
   onImportMedia,
+  onImportLocalMediaFiles,
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
@@ -491,6 +493,7 @@ export function TimelineProjectSidebar({
     onDeleteSequences,
     onDuplicateSequence,
     onImportMedia,
+    onImportLocalMediaFiles,
     onInspectSequence,
     onInsertGeneratedClip,
     onInsertProjectAsset,
@@ -605,6 +608,8 @@ export function TimelineProjectSidebar({
         className={styles.projectMediaGrid}
         data-project-media-grid="true"
         aria-label={formatCopyValue(copy.projectMediaGrid, { project: projectName })}
+        onDragOver={projectMedia.handleProjectMediaDragOver}
+        onDrop={projectMedia.handleProjectMediaDrop}
       >
         {projectMedia.visibleSequences.map((sequence) => {
           const sequenceTitle = localizeStudioGeneratedSequenceDisplayName(sequence.name, copy);

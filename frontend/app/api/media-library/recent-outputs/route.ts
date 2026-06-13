@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractStoryboardGeneratorDraftFromPrompt } from '@/lib/storyboard-generator-handoff';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
-  listRecentOutputs,
+  listRecentOutputPage,
   listStoryboardKlingFirstFrameOutputs,
   type JobOutputRecord,
   type MediaKind,
@@ -46,20 +46,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, outputs: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let outputs: Awaited<ReturnType<typeof listRecentOutputs>>;
+  let page: Awaited<ReturnType<typeof listRecentOutputPage>>;
   const surface = req.nextUrl.searchParams.get('surface');
   try {
-    outputs = await listRecentOutputs({
+    page = await listRecentOutputPage({
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
       surface,
-      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+      limit: Number(req.nextUrl.searchParams.get('limit') ?? 60),
+      cursor: req.nextUrl.searchParams.get('cursor'),
     });
   } catch (error) {
     console.error('[media-library] failed to list recent outputs', error);
     return NextResponse.json({ ok: false, outputs: [], error: 'LOAD_FAILED' }, { status: 500 });
   }
 
+  const outputs = page.items;
   let klingFirstFramesByParentJobId = new Map<string, JobOutputRecord>();
   if (surface === 'storyboard' && outputs.length) {
     try {
@@ -74,6 +76,8 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
+    nextCursor: page.nextCursor,
+    hasMore: page.hasMore,
     outputs: outputs.map((output) => ({
       id: output.id,
       jobId: output.jobId,

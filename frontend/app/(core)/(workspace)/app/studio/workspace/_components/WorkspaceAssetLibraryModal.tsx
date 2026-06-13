@@ -25,13 +25,16 @@ type WorkspaceAssetLibraryModalProps = {
   copy: StudioCopy['assetLibrary'];
   node: WorkspaceGraphNode | null;
   assets: WorkspaceLibraryAsset[];
+  hasMore: boolean;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
   usingFallback: boolean;
   source: WorkspaceLibrarySource;
   sourceOptions: readonly WorkspaceLibrarySource[];
   sourceLabels: Record<WorkspaceLibrarySource, string>;
   onClose: () => void;
+  onLoadMore: () => void;
   onSelectAsset: (nodeId: string, asset: WorkspaceLibraryAsset) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
 };
@@ -54,13 +57,16 @@ export function WorkspaceAssetLibraryModal({
   copy,
   node,
   assets,
+  hasMore,
   isLoading,
+  isLoadingMore,
   error,
   usingFallback,
   source,
   sourceOptions,
   sourceLabels,
   onClose,
+  onLoadMore,
   onSelectAsset,
   onSourceChange,
 }: WorkspaceAssetLibraryModalProps) {
@@ -153,6 +159,9 @@ export function WorkspaceAssetLibraryModal({
           sourceOptions={sourceOptions}
           sourceLabels={sourceLabels}
           onSourceChange={onSourceChange}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMore}
           onSelectAsset={(asset) => onSelectAsset(node.id, asset)}
           headerActions={
             uploadEndpoint ? (

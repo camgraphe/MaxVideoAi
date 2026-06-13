@@ -20,6 +20,12 @@ import {
 } from '../media-library-records';
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
 import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
+import {
+  decodeMediaLibraryCursor,
+  resolveMediaLibraryLimit,
+  sliceMediaLibraryPage,
+  type MediaLibraryPage,
+} from './pagination';
 
 function inferLegacyAssetKind(url: string, mimeType: string | null): MediaKind {
   const normalizedMime = mimeType?.toLowerCase() ?? '';
@@ -35,13 +41,43 @@ export async function listLibraryAssets(params: {
   source?: string | null;
   originUrl?: string | null;
   limit?: number;
+  cursor?: string | null;
 }): Promise<MediaAssetRecord[]> {
+  const page = await listLibraryAssetPage({
+    userId: params.userId,
+    kind: params.kind,
+    source: params.source,
+    originUrl: params.originUrl,
+    limit: params.limit,
+    cursor: params.cursor ?? null,
+  });
+  return page.items;
+}
+
+export async function listLibraryAssetPage(params: {
+  userId: string;
+  kind?: MediaKind | null;
+  source?: string | null;
+  originUrl?: string | null;
+  limit?: number;
+  cursor?: string | null;
+}): Promise<MediaLibraryPage<MediaAssetRecord>> {
   await ensureMediaLibrarySchema();
   await ensureAssetSchema();
-  const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+  const limit = resolveMediaLibraryLimit(params.limit);
+  const pageLimit = limit + 1;
+  const cursor = decodeMediaLibraryCursor(params.cursor);
   const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
   const originUrl = normalizeString(params.originUrl) ?? null;
-  const values: unknown[] = [params.userId, limit, params.kind ?? null, source, originUrl];
+  const values: unknown[] = [
+    params.userId,
+    pageLimit,
+    params.kind ?? null,
+    source,
+    originUrl,
+    cursor?.createdAt ?? null,
+    cursor?.id ?? null,
+  ];
   const rows = await query<DbMediaAssetRow>(
     `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
             source_job_id, source_output_id, status, metadata, created_at
@@ -64,7 +100,11 @@ export async function listLibraryAssets(params: {
           )
         )
         AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
-      ORDER BY created_at DESC
+        AND (
+          $6::timestamptz IS NULL
+          OR (created_at, id) < ($6::timestamptz, $7::text)
+        )
+      ORDER BY created_at DESC, id DESC
       LIMIT $2`,
     values
   );
@@ -125,7 +165,11 @@ export async function listLibraryAssets(params: {
           )
         )
         AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
-      ORDER BY created_at DESC
+        AND (
+          $6::timestamptz IS NULL
+          OR (created_at, asset_id) < ($6::timestamptz, $7::text)
+        )
+      ORDER BY created_at DESC, asset_id DESC
       LIMIT $2`,
     values
   );
@@ -161,9 +205,7 @@ export async function listLibraryAssets(params: {
     seen.add(originDedupeKey);
   });
 
-  return assets
-    .sort((a, b) => Date.parse(b.createdAt ?? '') - Date.parse(a.createdAt ?? ''))
-    .slice(0, limit);
+  return sliceMediaLibraryPage(assets, limit);
 }
 
 export async function ensureReusableAsset(params: {

@@ -240,6 +240,7 @@ export function WorkspaceEditorLayout({
             onDeleteSequences={sequence.handleDeleteSequences}
             onDuplicateSequence={sequence.handleDuplicateSequence}
             onImportMedia={projectMedia.handleImportProjectMedia}
+            onImportLocalMediaFiles={projectMedia.handleImportLocalProjectMediaFiles}
             onInspectSequence={selection.handleInspectSequence}
             onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
             onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}

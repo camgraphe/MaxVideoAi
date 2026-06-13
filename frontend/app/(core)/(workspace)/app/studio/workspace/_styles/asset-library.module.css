@@ -1,7 +1,8 @@
 .assetLibraryClose,
 .assetLibraryUploadButton,
 .assetBrowserCard,
-.assetBrowserSourceButton {
+.assetBrowserSourceButton,
+.assetBrowserLoadMoreButton {
   border: 0;
   font: inherit;
   color: inherit;
@@ -151,6 +152,32 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 4px;
+}
+
+.assetBrowserLoadMore {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 2px;
+}
+
+.assetBrowserLoadMoreButton {
+  min-height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.assetBrowserLoadMoreButton:hover {
+  background: rgba(124, 58, 237, 0.14);
+}
+
+.assetBrowserLoadMoreButton:disabled {
+  cursor: wait;
+  opacity: 0.62;
 }
 
 .assetBrowserNotice {

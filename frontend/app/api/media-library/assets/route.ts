@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { deleteLibraryAsset, listLibraryAssets, type MediaKind } from '@/server/media-library';
+import { deleteLibraryAsset, listLibraryAssetPage, type MediaKind } from '@/server/media-library';
 
 export const runtime = 'nodejs';
 
@@ -15,13 +15,14 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ ok: false, assets: [], error: 'UNAUTHORIZED' }, { status: 401 });
   }
 
-  let assets: Awaited<ReturnType<typeof listLibraryAssets>>;
+  let page: Awaited<ReturnType<typeof listLibraryAssetPage>>;
   try {
-    assets = await listLibraryAssets({
+    page = await listLibraryAssetPage({
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
       source: req.nextUrl.searchParams.get('source'),
-      limit: Number(req.nextUrl.searchParams.get('limit') ?? 50),
+      limit: Number(req.nextUrl.searchParams.get('limit') ?? 60),
+      cursor: req.nextUrl.searchParams.get('cursor'),
     });
   } catch (error) {
     console.error('[media-library] failed to list assets', error);
@@ -30,7 +31,9 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    assets: assets.map((asset) => ({
+    nextCursor: page.nextCursor,
+    hasMore: page.hasMore,
+    assets: page.items.map((asset) => ({
       id: asset.id,
       url: asset.url,
       thumbUrl: asset.thumbUrl,

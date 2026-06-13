@@ -126,6 +126,22 @@ test('normalizes library sources to the canonical allowed set', () => {
   assert.equal(normalizeMediaAssetSource(null), 'import');
 });
 
+test('media library schema repairs legacy sources before applying the source constraint', () => {
+  const source = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/lib/schema/media-library-schema.ts'),
+    'utf8'
+  );
+  const repairIndex = source.indexOf('UPDATE media_assets');
+  const constraintIndex = source.indexOf('ADD CONSTRAINT media_assets_source_check');
+
+  assert.ok(repairIndex !== -1, 'schema ensure should repair legacy media asset sources');
+  assert.ok(constraintIndex !== -1, 'schema ensure should own the media asset source constraint');
+  assert.ok(repairIndex < constraintIndex, 'legacy source repair must run before the source constraint is added');
+  assert.match(source, /WHEN source IN \('generated','job_output'\) THEN 'saved_job_output'/);
+  assert.match(source, /'storyboard_template_reference'/);
+  assert.match(source, /ELSE 'import'/);
+});
+
 test('library listings hide internal storyboard template reference assets', () => {
   const source = fs.readFileSync(
     path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
@@ -134,6 +150,44 @@ test('library listings hide internal storyboard template reference assets', () =
 
   const exclusions = source.match(/storyboard_template_reference/g) ?? [];
   assert.ok(exclusions.length >= 2, 'canonical and legacy asset queries should exclude internal storyboard templates');
+});
+
+test('media library routes expose cursor pagination metadata', () => {
+  const assetsRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
+    'utf8'
+  );
+  const recentRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/recent-outputs/route.ts'),
+    'utf8'
+  );
+
+  assert.match(assetsRoute, /cursor:\s*req\.nextUrl\.searchParams\.get\('cursor'\)/);
+  assert.match(assetsRoute, /nextCursor:\s*page\.nextCursor/);
+  assert.match(assetsRoute, /hasMore:\s*page\.hasMore/);
+  assert.match(recentRoute, /cursor:\s*req\.nextUrl\.searchParams\.get\('cursor'\)/);
+  assert.match(recentRoute, /nextCursor:\s*page\.nextCursor/);
+  assert.match(recentRoute, /hasMore:\s*page\.hasMore/);
+});
+
+test('media library server keeps pagination helpers outside route handlers', () => {
+  const paginationPath = path.join(process.cwd(), 'frontend/server/media-library/pagination.ts');
+  const assetsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+  const jobOutputsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/job-outputs.ts'),
+    'utf8'
+  );
+
+  assert.ok(fs.existsSync(paginationPath), 'media library pagination helpers should be shared server code');
+  assert.match(assetsSource, /export async function listLibraryAssetPage/);
+  assert.match(assetsSource, /listLibraryAssetPage\(\{[\s\S]*cursor:/);
+  assert.match(assetsSource, /ORDER BY created_at DESC,\s*id DESC/i);
+  assert.match(assetsSource, /ORDER BY created_at DESC,\s*asset_id DESC/i);
+  assert.match(jobOutputsSource, /export async function listRecentOutputPage/);
+  assert.match(jobOutputsSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
 });
 
 test('legacy media library rows infer video and audio kind from URLs when MIME is missing', () => {

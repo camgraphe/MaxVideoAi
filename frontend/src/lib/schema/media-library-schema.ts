@@ -83,9 +83,20 @@ export async function ensureMediaLibrarySchema(): Promise<void> {
   `);
 
   await query(`
+    UPDATE media_assets
+    SET source = CASE
+      WHEN source IN ('generated','job_output') THEN 'saved_job_output'
+      WHEN source IN ('upload','saved_job_output','storyboard','character','angle','upscale','import','storyboard_template_reference') THEN source
+      ELSE 'import'
+    END
+    WHERE source IS NULL
+      OR source NOT IN ('upload','saved_job_output','storyboard','character','angle','upscale','import','storyboard_template_reference');
+  `);
+
+  await query(`
     ALTER TABLE media_assets
     ADD CONSTRAINT media_assets_source_check
-    CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','import'));
+    CHECK (source IN ('upload','saved_job_output','storyboard','character','angle','upscale','import','storyboard_template_reference'));
   `);
 
   await query(`

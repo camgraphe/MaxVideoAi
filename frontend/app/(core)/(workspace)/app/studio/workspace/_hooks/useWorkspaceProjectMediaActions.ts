@@ -3,6 +3,10 @@ import {
   workspaceAssetRecordFromLibraryAsset,
   type WorkspaceLibraryAsset,
 } from '../_lib/workspace-library-assets';
+import {
+  uploadWorkspaceProjectMediaFile,
+  workspaceProjectMediaUploadKindForFile,
+} from '../_lib/workspace-project-media-upload';
 import { resolveProjectAssetTimelineInsert } from '../_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -60,6 +64,7 @@ type UseWorkspaceProjectMediaActionsParams = {
   setProjectMediaFolders: Dispatch<SetStateAction<WorkspaceProjectMediaFolder[]>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemIds: Dispatch<SetStateAction<string[]>>;
+  studioAssetLibraryCopy: StudioCopy['assetLibrary'];
   studioCommonCopy: StudioCopy['common'];
   studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
   studioNotices: StudioCopy['notices'];
@@ -84,6 +89,7 @@ export function useWorkspaceProjectMediaActions({
   setProjectMediaFolders,
   setSelectedTimelineItemId,
   setSelectedTimelineItemIds,
+  studioAssetLibraryCopy,
   studioCommonCopy,
   studioCanvasNodeCopy,
   studioNotices,
@@ -98,6 +104,7 @@ export function useWorkspaceProjectMediaActions({
   handleDeleteProjectMediaFolder: (folderId: string) => void;
   handleDeleteProjectMediaFolders: (folderIds: string[]) => void;
   handleDropProjectAssetToTimeline: (assetId: string, startSec: number, targetTrack: WorkspaceTimelineTrack) => void;
+  handleImportLocalProjectMediaFiles: (files: File[], folderId?: string | null) => Promise<void>;
   handleImportProjectMedia: (folderId?: string | null) => void;
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
   handleMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
@@ -158,26 +165,95 @@ export function useWorkspaceProjectMediaActions({
     setActiveEditorSurface('timeline');
   }, [setActiveEditorSurface, setIsProjectMediaPickerOpen]);
 
+  const resolveProjectMediaFolderName = useCallback(
+    (folderId: string | null) => {
+      return folderId
+        ? projectMediaFolders.find((candidateFolder) => candidateFolder.id === folderId)?.name ?? studioNotices.projectMediaFallbackFolder
+        : studioNotices.projectMediaRoot;
+    },
+    [projectMediaFolders, studioNotices]
+  );
+
+  const addProjectMediaAssets = useCallback(
+    (assets: WorkspaceLibraryAsset[], folderId: string | null) => {
+      const assetRecords = assets.map((asset) => ({
+        ...workspaceAssetRecordFromLibraryAsset(asset),
+        folderId,
+      }));
+      if (!assetRecords.length) return;
+      const assetRecordIds = new Set(assetRecords.map((asset) => asset.id));
+      setProjectAssets((current) => [
+        ...assetRecords,
+        ...current.filter((candidate) => !assetRecordIds.has(candidate.id)),
+      ].slice(0, 120));
+    },
+    [setProjectAssets]
+  );
+
   const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
     const folderId = pendingImportFolderIdRef.current;
-    const assetRecord = {
-      ...workspaceAssetRecordFromLibraryAsset(asset),
-      folderId,
-    };
-    setProjectAssets((current) => [
-      assetRecord,
-      ...current.filter((candidate) => candidate.id !== assetRecord.id),
-    ].slice(0, 120));
+    addProjectMediaAssets([asset], folderId);
     pendingImportFolderIdRef.current = null;
     setIsProjectMediaPickerOpen(false);
-    const folderName = folderId
-      ? projectMediaFolders.find((candidateFolder) => candidateFolder.id === folderId)?.name ?? studioNotices.projectMediaFallbackFolder
-      : studioNotices.projectMediaRoot;
+    const folderName = resolveProjectMediaFolderName(folderId);
     setNotice(formatNotice(studioNotices.projectMediaImportedInto, {
       filename: asset.name,
       target: folderName,
     }));
-  }, [projectMediaFolders, setIsProjectMediaPickerOpen, setNotice, setProjectAssets, studioNotices]);
+  }, [addProjectMediaAssets, resolveProjectMediaFolderName, setIsProjectMediaPickerOpen, setNotice, studioNotices]);
+
+  const handleImportLocalProjectMediaFiles = useCallback(
+    async (files: File[], folderId?: string | null) => {
+      const targetFolderId = folderId ?? null;
+      const compatibleFiles = files.filter((file) => Boolean(workspaceProjectMediaUploadKindForFile(file)));
+      if (!compatibleFiles.length) {
+        setNotice(studioAssetLibraryCopy.invalidProjectMediaUpload);
+        return;
+      }
+
+      setActiveEditorSurface('timeline');
+      const importedAssets: WorkspaceLibraryAsset[] = [];
+      let lastFailureMessage: string | null = null;
+      for (const file of compatibleFiles) {
+        const uploadKind = workspaceProjectMediaUploadKindForFile(file);
+        if (!uploadKind) continue;
+        const failureMessage = formatNotice(studioAssetLibraryCopy.uploadFailed, { kind: uploadKind });
+        try {
+          importedAssets.push(await uploadWorkspaceProjectMediaFile(file, failureMessage));
+        } catch {
+          lastFailureMessage = failureMessage;
+        }
+      }
+
+      if (!importedAssets.length) {
+        setNotice(lastFailureMessage ?? studioAssetLibraryCopy.invalidProjectMediaUpload);
+        return;
+      }
+
+      addProjectMediaAssets(importedAssets, targetFolderId);
+      const folderName = resolveProjectMediaFolderName(targetFolderId);
+      const filename = importedAssets.length === 1
+        ? importedAssets[0].name
+        : formatStudioCountLabel(
+            importedAssets.length,
+            studioCommonCopy.mediaAssetSingular,
+            studioCommonCopy.mediaAssetPlural
+          );
+      setNotice(formatNotice(studioNotices.projectMediaImportedInto, {
+        filename,
+        target: folderName,
+      }));
+    },
+    [
+      addProjectMediaAssets,
+      resolveProjectMediaFolderName,
+      setActiveEditorSurface,
+      setNotice,
+      studioAssetLibraryCopy,
+      studioCommonCopy,
+      studioNotices,
+    ]
+  );
 
   const handleInsertProjectAssetToTimeline = useCallback((assetId: string) => {
     insertProjectAssetIntoTimeline(assetId, playheadSec);
@@ -471,6 +547,7 @@ export function useWorkspaceProjectMediaActions({
     handleDeleteProjectMediaFolder,
     handleDeleteProjectMediaFolders,
     handleDropProjectAssetToTimeline,
+    handleImportLocalProjectMediaFiles,
     handleImportProjectMedia,
     handleInsertProjectAssetToTimeline,
     handleMoveGeneratedClipToFolder,

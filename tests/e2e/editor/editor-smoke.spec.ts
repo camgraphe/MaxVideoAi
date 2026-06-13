@@ -324,6 +324,36 @@ async function dropLocalFileOnCanvas(
   );
 }
 
+async function dropLocalFileOnProjectMedia(page: Page, fixture: LocalFileDropFixture): Promise<void> {
+  const target = page.locator('[data-project-media-grid="true"]').first();
+  await expect(target).toBeVisible();
+  const box = await target.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) return;
+
+  await target.evaluate(
+    (element, { clientX, clientY, file }) => {
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(new File([file.content], file.name, { type: file.type }));
+      element.dispatchEvent(new DragEvent('dragover', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+      element.dispatchEvent(new DragEvent('drop', { bubbles: true, cancelable: true, clientX, clientY, dataTransfer }));
+    },
+    {
+      clientX: box.x + box.width * 0.5,
+      clientY: box.y + box.height * 0.42,
+      file: fixture,
+    }
+  );
+}
+
+async function pasteFileOnCanvas(page: Page, fixture: LocalFileDropFixture): Promise<void> {
+  await page.locator('.react-flow').evaluate((element, file) => {
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(new File([file.content], file.name, { type: file.type }));
+    element.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData: dataTransfer }));
+  }, fixture);
+}
+
 async function pasteTextOnCanvas(page: Page, text: string): Promise<void> {
   await page.locator('.react-flow').evaluate((element, pastedText) => {
     const dataTransfer = new DataTransfer();
@@ -1534,6 +1564,44 @@ test('viewer project media upload imports local audio into the project bin', asy
   assertNoEditorClientErrors(errors);
 });
 
+test('viewer project media accepts compatible Finder file drops into the project bin', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await page.route('**/api/uploads/video', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        asset: {
+          id: 'dropped-local-video',
+          url: '/studio/finder-shot.mp4',
+          kind: 'video',
+          mime: 'video/mp4',
+          durationSec: 9,
+          source: 'upload',
+        },
+      }),
+    });
+  });
+  await page.route('**/api/media-library/assets**', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets: [] }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  await dropLocalFileOnProjectMedia(page, { name: 'finder-shot.mp4', type: 'video/mp4', content: 'fake video bytes' });
+
+  await expect(page.getByText('finder-shot.mp4 imported into Project media.')).toBeVisible();
+  await expect(page.locator('[data-project-media-title="finder-shot.mp4"]')).toBeVisible();
+  assertNoEditorClientErrors(errors);
+});
+
 test('studio projects page creates a project-scoped clean workspace', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
@@ -1967,5 +2035,20 @@ test('canvas paste creates a prompt block from plain text', async ({ page }) => 
 
   await expect.poll(() => canvasNodeCount(page)).toBe(beforeCount + 1);
   await expect(page.locator('.react-flow__node textarea').last()).toHaveValue('Pasted launch scene: close-up product turn with moody light.');
+  assertNoEditorClientErrors(errors);
+});
+
+test('canvas paste creates an image source block from a compatible image file', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const beforeCount = await canvasNodeCount(page);
+  await pasteFileOnCanvas(page, { name: 'clipboard-product.png', type: 'image/png', content: 'fake image bytes' });
+
+  await expect.poll(() => canvasNodeCount(page)).toBe(beforeCount + 1);
+  await expect(page.locator('.react-flow__node', { hasText: 'clipboard-product.png' })).toBeVisible();
+  await expect(page.locator('.react-flow__node', { hasText: 'Image Reference' }).last()).toHaveAttribute('data-id', /asset-image/);
   assertNoEditorClientErrors(errors);
 });

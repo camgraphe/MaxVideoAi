@@ -8,6 +8,12 @@ import {
   type JobOutputRecord,
   type LegacyJobMediaRow,
 } from '../media-library-records';
+import {
+  decodeMediaLibraryCursor,
+  resolveMediaLibraryLimit,
+  sliceMediaLibraryPage,
+  type MediaLibraryPage,
+} from './pagination';
 
 export async function upsertJobOutputs(outputs: JobOutputRecord[]): Promise<void> {
   if (!outputs.length) return;
@@ -119,9 +125,22 @@ export async function listRecentOutputs(params: {
   kind?: import('../media-library-records').MediaKind | null;
   surface?: string | null;
   limit?: number;
+  cursor?: string | null;
 }): Promise<JobOutputRecord[]> {
+  const page = await listRecentOutputPage(params);
+  return page.items;
+}
+
+export async function listRecentOutputPage(params: {
+  userId: string;
+  kind?: import('../media-library-records').MediaKind | null;
+  surface?: string | null;
+  limit?: number;
+  cursor?: string | null;
+}): Promise<MediaLibraryPage<JobOutputRecord>> {
   await ensureMediaLibrarySchema();
-  const limit = Math.min(200, Math.max(1, params.limit ?? 50));
+  const limit = resolveMediaLibraryLimit(params.limit);
+  const cursor = decodeMediaLibraryCursor(params.cursor);
   const rows = await query<DbJobOutputRow>(
     `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
             o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
@@ -141,11 +160,15 @@ export async function listRecentOutputs(params: {
         AND ($3::text IS NULL OR o.kind = $3::text)
         AND ($4::text IS NULL OR j.surface = $4::text OR j.settings_snapshot->>'surface' = $4::text)
         AND ($4::text IS NULL OR $4::text <> 'storyboard' OR o.job_id NOT LIKE 'storyboard_kling_first_frame_%')
-      ORDER BY o.created_at DESC
+        AND (
+          $5::timestamptz IS NULL
+          OR (o.created_at, o.id) < ($5::timestamptz, $6::text)
+        )
+      ORDER BY o.created_at DESC, o.id DESC
       LIMIT $2`,
-    [params.userId, limit, params.kind ?? null, params.surface ?? null]
+    [params.userId, limit + 1, params.kind ?? null, params.surface ?? null, cursor?.createdAt ?? null, cursor?.id ?? null]
   );
-  return rows.map(mapOutputRow);
+  return sliceMediaLibraryPage(rows.map(mapOutputRow), limit);
 }
 
 export async function listStoryboardKlingFirstFrameOutputs(params: {

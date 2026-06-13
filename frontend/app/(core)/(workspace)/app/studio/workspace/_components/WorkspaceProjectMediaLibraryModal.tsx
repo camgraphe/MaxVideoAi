@@ -3,43 +3,41 @@
 import { useCallback, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Upload, X } from 'lucide-react';
-import { authFetch } from '@/lib/authFetch';
-import { prepareImageFileForUpload } from '@/lib/client-image-upload';
 import styles from '../_styles/asset-library.module.css';
-import { createUploadFailure } from '../../../_lib/workspace-upload-errors';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
 import type {
-  WorkspaceLibraryKind,
   WorkspaceLibraryAsset,
+  WorkspaceLibraryKind,
   WorkspaceLibrarySource,
 } from '../_lib/workspace-library-assets';
 import {
-  workspaceLibraryAssetFromUploadedAsset,
-} from '../_lib/workspace-library-assets';
+  WORKSPACE_PROJECT_MEDIA_UPLOAD_ACCEPT,
+  uploadWorkspaceProjectMediaFile,
+  workspaceProjectMediaUploadKindForFile,
+} from '../_lib/workspace-project-media-upload';
 import type { StudioCopy } from '../../_lib/studio-copy';
+
+type WorkspaceLibraryKindFilter = 'all' | WorkspaceLibraryKind;
 
 type WorkspaceProjectMediaLibraryModalProps = {
   copy: StudioCopy['assetLibrary'];
   assets: WorkspaceLibraryAsset[];
   error: string | null;
+  hasMore: boolean;
   isLoading: boolean;
+  isLoadingMore: boolean;
   isOpen: boolean;
+  mediaKindFilter: WorkspaceLibraryKindFilter;
   source: WorkspaceLibrarySource;
   sourceLabels: Record<WorkspaceLibrarySource, string>;
   sourceOptions: readonly WorkspaceLibrarySource[];
   usingFallback: boolean;
   onClose: () => void;
+  onLoadMore: () => void;
+  onMediaKindFilterChange: (kind: WorkspaceLibraryKindFilter) => void;
   onSelectAsset: (asset: WorkspaceLibraryAsset) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
 };
-
-const PROJECT_MEDIA_UPLOAD_ACCEPT = 'image/*,video/*,audio/*';
-
-const PROJECT_MEDIA_UPLOAD_ENDPOINTS = {
-  image: '/api/uploads/image',
-  video: '/api/uploads/video',
-  audio: '/api/uploads/audio',
-} as const satisfies Record<WorkspaceLibraryKind, string>;
 
 function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
   return Object.entries(replacements).reduce(
@@ -48,24 +46,22 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
   );
 }
 
-function projectMediaUploadKindForFile(file: File): WorkspaceLibraryKind | null {
-  if (file.type.startsWith('image/')) return 'image';
-  if (file.type.startsWith('video/')) return 'video';
-  if (file.type.startsWith('audio/')) return 'audio';
-  return null;
-}
-
 export function WorkspaceProjectMediaLibraryModal({
   copy,
   assets,
   error,
+  hasMore,
   isLoading,
+  isLoadingMore,
   isOpen,
+  mediaKindFilter,
   source,
   sourceLabels,
   sourceOptions,
   usingFallback,
   onClose,
+  onLoadMore,
+  onMediaKindFilterChange,
   onSelectAsset,
   onSourceChange,
 }: WorkspaceProjectMediaLibraryModalProps) {
@@ -79,7 +75,7 @@ export function WorkspaceProjectMediaLibraryModal({
       event.currentTarget.value = '';
       if (!file) return;
 
-      const uploadKind = projectMediaUploadKindForFile(file);
+      const uploadKind = workspaceProjectMediaUploadKindForFile(file);
       if (!uploadKind) {
         setUploadError(copy.invalidProjectMediaUpload);
         return;
@@ -89,27 +85,7 @@ export function WorkspaceProjectMediaLibraryModal({
       setUploadError(null);
       setIsUploading(true);
       try {
-        const preparedFile =
-          uploadKind === 'image'
-            ? await prepareImageFileForUpload(file, { maxBytes: 25 * 1024 * 1024 })
-            : file;
-        const formData = new FormData();
-        formData.append('file', preparedFile, preparedFile.name);
-        const response = await authFetch(PROJECT_MEDIA_UPLOAD_ENDPOINTS[uploadKind], {
-          method: 'POST',
-          body: formData,
-        });
-        const payload = (await response.json().catch(() => null)) as {
-          ok?: boolean;
-          asset?: unknown;
-          error?: unknown;
-          maxMB?: unknown;
-        } | null;
-        const uploadedAsset = workspaceLibraryAssetFromUploadedAsset(payload?.asset, uploadKind);
-        if (!response.ok || !payload?.ok || !uploadedAsset) {
-          throw createUploadFailure(uploadKind, response.status, payload, fallback);
-        }
-
+        const uploadedAsset = await uploadWorkspaceProjectMediaFile(file, fallback);
         onSourceChange('upload');
         onSelectAsset(uploadedAsset);
       } catch {
@@ -137,7 +113,7 @@ export function WorkspaceProjectMediaLibraryModal({
         <input
           ref={uploadInputRef}
           type="file"
-          accept={PROJECT_MEDIA_UPLOAD_ACCEPT}
+          accept={WORKSPACE_PROJECT_MEDIA_UPLOAD_ACCEPT}
           className={styles.assetLibraryUploadInput}
           hidden
           onChange={handleUploadChange}
@@ -158,6 +134,11 @@ export function WorkspaceProjectMediaLibraryModal({
           sourceOptions={sourceOptions}
           sourceLabels={sourceLabels}
           onSourceChange={onSourceChange}
+          mediaKindFilter={mediaKindFilter}
+          onMediaKindFilterChange={onMediaKindFilterChange}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={onLoadMore}
           onSelectAsset={onSelectAsset}
           headerActions={
             <button

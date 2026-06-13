@@ -106,13 +106,16 @@ export function WorkspaceRuntimeModals({
         copy={assetLibraryCopy}
         node={assetPickerNode}
         assets={assetPickerLibrary.assets}
+        hasMore={assetPickerLibrary.hasMore}
         isLoading={assetPickerLibrary.isLoading}
+        isLoadingMore={assetPickerLibrary.isLoadingMore}
         error={assetPickerLibrary.error}
         usingFallback={assetPickerLibrary.usingFallback}
         source={assetPickerLibrary.source}
         sourceOptions={assetPickerLibrary.sourceOptions}
         sourceLabels={assetPickerLibrary.sourceLabels}
         onClose={onAssetPickerClose}
+        onLoadMore={assetPickerLibrary.loadMore}
         onSelectAsset={onSelectAsset}
         onSourceChange={assetPickerLibrary.setSource}
       />
@@ -120,13 +123,18 @@ export function WorkspaceRuntimeModals({
         copy={assetLibraryCopy}
         isOpen={isProjectMediaPickerOpen}
         assets={projectMediaLibrary.assets}
+        hasMore={projectMediaLibrary.hasMore}
         isLoading={projectMediaLibrary.isLoading}
+        isLoadingMore={projectMediaLibrary.isLoadingMore}
         error={projectMediaLibrary.error}
+        mediaKindFilter={projectMediaLibrary.kindFilter}
         usingFallback={projectMediaLibrary.usingFallback}
         source={projectMediaLibrary.source}
         sourceOptions={projectMediaLibrary.sourceOptions}
         sourceLabels={projectMediaLibrary.sourceLabels}
         onClose={onProjectMediaPickerClose}
+        onLoadMore={projectMediaLibrary.loadMore}
+        onMediaKindFilterChange={projectMediaLibrary.setKindFilter}
         onSelectAsset={onSelectProjectMediaAsset}
         onSourceChange={projectMediaLibrary.setSource}
       />

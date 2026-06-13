@@ -374,6 +374,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setProjectMediaFolders,
     setSelectedTimelineItemId,
     setSelectedTimelineItemIds,
+    studioAssetLibraryCopy: studioCopy.assetLibrary,
     studioCommonCopy: studioCopy.common,
     studioCanvasNodeCopy: studioCopy.canvas.nodes,
     studioNotices: studioCopy.notices,

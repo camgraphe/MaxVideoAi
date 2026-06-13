@@ -19,6 +19,7 @@ export type {
 export {
   applyOutputsToJobPayload,
   listJobOutputsByJobIds,
+  listRecentOutputPage,
   listRecentOutputs,
   listStoryboardKlingFirstFrameOutputs,
   upsertJobOutputs,
@@ -28,6 +29,7 @@ export {
 export {
   deleteLibraryAsset,
   ensureReusableAsset,
+  listLibraryAssetPage,
   listLibraryAssets,
   saveJobOutputToLibrary,
 } from './media-library/assets';

@@ -235,3 +235,66 @@ test('Project media import shows localized upload failure and retry path', async
     allowedResourceFailures: [{ status: 500, urlPattern: /\/api\/uploads\/image(?:$|\?)/ }],
   });
 });
+
+test('Project media import pages through the app library and filters by media kind', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const requests: string[] = [];
+  const firstPage = Array.from({ length: 4 }, (_, index) => ({
+    id: `library-image-${index}`,
+    url: `https://cdn.maxvideoai.test/library/image-${index}.png`,
+    thumbUrl: transparentPng,
+    kind: 'image',
+    mime: 'image/png',
+    width: 1920,
+    height: 1080,
+    source: 'upload',
+    createdAt: `2026-06-13T12:0${index}:00.000Z`,
+  }));
+  const secondPage = [{
+    id: 'library-video-4',
+    url: 'https://cdn.maxvideoai.test/library/video-4.mp4',
+    thumbUrl: transparentPng,
+    kind: 'video',
+    mime: 'video/mp4',
+    width: 1920,
+    height: 1080,
+    source: 'upload',
+    createdAt: '2026-06-13T11:59:00.000Z',
+  }];
+
+  await page.route('**/api/media-library/assets?**', async (route) => {
+    const url = new URL(route.request().url());
+    requests.push(url.search);
+    const kind = url.searchParams.get('kind');
+    const cursor = url.searchParams.get('cursor');
+    const assets = kind === 'video' ? secondPage : cursor ? secondPage : firstPage;
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        assets,
+        nextCursor: !kind && !cursor ? 'cursor-page-2' : null,
+        hasMore: !kind && !cursor,
+      }),
+    });
+  });
+  await page.route('**/api/media-library/recent-outputs?**', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, outputs: [] }) });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+  await page.getByRole('button', { name: 'Import media' }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Use image-0.png' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Load more' }).click();
+  await expect(dialog.getByRole('button', { name: 'Use video-4.mp4' })).toBeVisible();
+
+  await dialog.getByRole('tab', { name: 'Video' }).click();
+  await expect.poll(() => Promise.resolve(requests.some((search) => search.includes('kind=video')))).toBe(true);
+  await expect(dialog.getByRole('button', { name: 'Use video-4.mp4' })).toBeVisible();
+
+  assertNoEditorClientErrors(errors);
+});
