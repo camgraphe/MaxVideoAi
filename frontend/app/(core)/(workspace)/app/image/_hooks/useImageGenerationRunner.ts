@@ -19,6 +19,7 @@ import {
 import {
   buildCustomImageSize,
 } from '../_lib/image-workspace-utils';
+import { shouldSendImageReferenceUrlsForMode } from '../_lib/image-workspace-generation-request';
 import {
   formatTemplate,
   type ImageWorkspaceCopy,
@@ -41,6 +42,7 @@ interface UseImageGenerationRunnerParams {
   hasOutputFormatField: boolean;
   hasQualityField: boolean;
   hasSeedField: boolean;
+  hasStyleField: boolean;
   hasThinkingLevelField: boolean;
   hasWatermarkField: boolean;
   limitGenerations: boolean;
@@ -59,6 +61,7 @@ interface UseImageGenerationRunnerParams {
   seed: string;
   selectedCharacterReferences: CharacterReferenceSelection[];
   selectedEngine: ImageEngineOption | undefined;
+  style: string | null;
   setAuthModalOpen: Dispatch<SetStateAction<boolean>>;
   setError: Dispatch<SetStateAction<string | null>>;
   setLocalHistory: Dispatch<SetStateAction<HistoryEntry[]>>;
@@ -83,6 +86,7 @@ export function useImageGenerationRunner({
   hasOutputFormatField,
   hasQualityField,
   hasSeedField,
+  hasStyleField,
   hasThinkingLevelField,
   hasWatermarkField,
   limitGenerations,
@@ -101,6 +105,7 @@ export function useImageGenerationRunner({
   seed,
   selectedCharacterReferences,
   selectedEngine,
+  style,
   setAuthModalOpen,
   setError,
   setLocalHistory,
@@ -173,14 +178,15 @@ export function useImageGenerationRunner({
           const parsed = Number(trimmed);
           return Number.isFinite(parsed) ? Math.round(parsed) : undefined;
         })();
+        const shouldSendImageUrls = shouldSendImageReferenceUrlsForMode(selectedEngine.engineCaps, mode);
         const response = await runImageGeneration({
           jobId: pendingId,
           engineId: selectedEngine.id,
           mode,
           prompt: trimmedPrompt,
           numImages,
-          imageUrls: mode === 'i2i' ? readyReferenceUrls : undefined,
-          referenceImageSizes: mode === 'i2i' ? readyReferenceSizes : undefined,
+          imageUrls: shouldSendImageUrls ? readyReferenceUrls : undefined,
+          referenceImageSizes: shouldSendImageUrls ? readyReferenceSizes : undefined,
           characterReferences: mode === 'i2i' ? selectedCharacterReferences : undefined,
           aspectRatio: appliedAspectRatio,
           resolution: resolution ?? undefined,
@@ -190,6 +196,7 @@ export function useImageGenerationRunner({
             ? ((outputFormat ?? undefined) as 'jpeg' | 'png' | 'webp' | undefined)
             : undefined,
           quality: hasQualityField ? ((quality ?? undefined) as 'low' | 'medium' | 'high' | undefined) : undefined,
+          style: hasStyleField ? style ?? undefined : undefined,
           maskUrl: trimmedMaskUrl || undefined,
           enableWebSearch: hasEnableWebSearchField ? enableWebSearch : undefined,
           thinkingLevel: hasThinkingLevelField
@@ -257,6 +264,7 @@ export function useImageGenerationRunner({
       hasOutputFormatField,
       hasQualityField,
       hasSeedField,
+      hasStyleField,
       hasThinkingLevelField,
       hasWatermarkField,
       limitGenerations,
@@ -278,6 +286,7 @@ export function useImageGenerationRunner({
       seed,
       selectedCharacterReferences,
       selectedEngine,
+      style,
       setAuthModalOpen,
       setError,
       setLocalHistory,

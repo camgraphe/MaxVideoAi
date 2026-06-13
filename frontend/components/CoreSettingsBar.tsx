@@ -30,9 +30,14 @@ interface CoreSettingsBarProps {
   onAudioChange?: (value: boolean) => void;
   audioControlDisabled?: boolean;
   audioControlNote?: string;
+  showHdrControl?: boolean;
+  hdrEnabled?: boolean;
+  onHdrChange?: (value: boolean) => void;
   durationManaged?: boolean;
   durationManagedLabel?: string;
 }
+
+type CoreControlKind = 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' | 'fps' | 'hdr';
 
 type DurationOptionMeta = {
   raw: number | string;
@@ -72,7 +77,7 @@ function matchesDurationOptionValue(option: DurationOptionMeta, raw: number | st
   return Math.abs(option.value - seconds) < 0.001;
 }
 
-function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'audio' | 'iterations' | 'fps' }) {
+function ControlIcon({ kind }: { kind: CoreControlKind }) {
   if (kind === 'duration') {
     return (
       <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
@@ -161,6 +166,20 @@ function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'a
       </svg>
     );
   }
+  if (kind === 'hdr') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <circle cx="10" cy="10" r="3.4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M10 2.8v2M10 15.2v2M17.2 10h-2M4.8 10h-2M15.1 4.9l-1.4 1.4M6.3 13.7l-1.4 1.4M15.1 15.1l-1.4-1.4M6.3 6.3 4.9 4.9"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
   return (
     <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
       <path d="M5 11.5V8.2a5 5 0 0 1 10 0v3.3" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -169,7 +188,7 @@ function ControlIcon({ kind }: { kind: 'duration' | 'resolution' | 'aspect' | 'a
   );
 }
 
-function createInlineLabel(kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio' | 'fps', label: string) {
+function createInlineLabel(kind: CoreControlKind, label: string) {
   return (
     <span className="inline-flex items-center gap-2">
       <ControlIcon kind={kind} />
@@ -186,7 +205,7 @@ function InlineSelectControl({
   disabled,
   className,
 }: {
-  kind: 'duration' | 'resolution' | 'aspect' | 'iterations' | 'audio' | 'fps';
+  kind: CoreControlKind;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
@@ -234,6 +253,9 @@ export function CoreSettingsBar({
   onAudioChange,
   audioControlDisabled = false,
   audioControlNote,
+  showHdrControl = false,
+  hdrEnabled = false,
+  onHdrChange,
   durationManaged = false,
   durationManagedLabel,
 }: CoreSettingsBarProps) {
@@ -351,6 +373,10 @@ export function CoreSettingsBar({
     { value: true, label: controlsCopy.audio.on },
     { value: false, label: controlsCopy.audio.off },
   ];
+  const hdrOptions = [
+    { value: false, label: 'HDR off' },
+    { value: true, label: 'HDR' },
+  ];
   const fpsOptionsList = fpsOptions.map((option) => ({
     value: option,
     label: (controlsCopy.fpsSuffix ?? '{value} fps').replace('{value}', String(option)),
@@ -402,6 +428,16 @@ export function CoreSettingsBar({
             value={resolution}
             onChange={(value) => onResolutionChange(String(value))}
             disabled={resolutionLocked}
+          />
+        ) : null}
+
+        {showHdrControl ? (
+          <InlineSelectControl
+            kind="hdr"
+            options={hdrOptions}
+            value={Boolean(hdrEnabled)}
+            onChange={(value) => onHdrChange?.(value === true || value === 'true' || value === 1)}
+            disabled={typeof onHdrChange !== 'function'}
           />
         ) : null}
 

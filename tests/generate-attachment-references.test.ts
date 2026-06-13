@@ -3,7 +3,10 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
-import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
+import {
+  deriveGenerationAttachmentReferences,
+  resolveSourceVideoDurationSec,
+} from '../frontend/app/api/generate/_lib/attachment-references';
 import type { NormalizedAttachment } from '../frontend/app/api/generate/_lib/attachments';
 
 const root = process.cwd();
@@ -36,6 +39,7 @@ test('generate route delegates attachment reference derivation', () => {
 
 test('attachment reference helper exposes the route contract', () => {
   assert.match(helperSource, /export function deriveGenerationAttachmentReferences/, 'deriveGenerationAttachmentReferences should be exported');
+  assert.match(helperSource, /export function resolveSourceVideoDurationSec/, 'resolveSourceVideoDurationSec should be exported');
   assert.match(helperSource, /function normalizeStringList/, 'reference list normalization should stay private');
   assert.match(helperSource, /function uniqueNonEmpty/, 'URL dedupe should stay private');
 });
@@ -67,6 +71,7 @@ test('attachment reference helper derives primary image, media lists, and frame 
     resolvedAudioUrl: 'https://cdn.maxvideoai.com/audio.mp3',
     initialImageUrl: undefined,
     resolvedFirstFrameUrl: 'https://cdn.maxvideoai.com/body-image.png',
+    startImageUrl: undefined,
     sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
   });
 });
@@ -95,5 +100,54 @@ test('attachment reference helper preserves Happy Horse slot routing', () => {
       rawAudioUrl: null,
     }).normalizedReferenceImages,
     ['https://cdn.maxvideoai.com/v2v-only.png']
+  );
+});
+
+test('source video duration helper uses source duration for reframe only', () => {
+  const attachments: NormalizedAttachment[] = [
+    attachment({
+      kind: 'video',
+      slotId: 'video_url',
+      url: 'https://cdn.maxvideoai.com/source.mp4',
+      durationSec: 8.2,
+    }),
+  ];
+
+  assert.deepEqual(
+    resolveSourceVideoDurationSec({
+      mode: 'reframe',
+      attachments,
+      sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+      fallbackDurationSec: 5,
+      maxDurationSec: 30,
+    }),
+    {
+      durationSec: 9,
+      durationLabel: '9s',
+      sourceDurationSec: 8.2,
+      maxDurationSec: 30,
+      exceedsMax: false,
+    }
+  );
+
+  assert.equal(
+    resolveSourceVideoDurationSec({
+      mode: 'v2v',
+      attachments,
+      sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+      fallbackDurationSec: 5,
+      maxDurationSec: 30,
+    }).durationSec,
+    5
+  );
+  assert.equal(
+    resolveSourceVideoDurationSec({
+      mode: 'reframe',
+      attachments: [attachment({ kind: 'video', slotId: 'video_url', url: 'https://cdn.maxvideoai.com/source.mp4', durationSec: 31 })],
+      sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+      fallbackDurationSec: 5,
+      maxDurationSec: 30,
+    }).exceedsMax,
+    true
   );
 });

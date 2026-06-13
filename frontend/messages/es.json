@@ -180,8 +180,8 @@
         "body": "Cuando hace falta generar loops divertidos o clips cortos, Pika 2.2 entrega varios formatos con costes contenidos. MaxVideoAI publica presets curados para saltar de reels verticales a piezas cuadradas sin salir del workspace. Compara texto‑a‑video e imagen‑a‑video en nuestra {{pika:guía rápida de Pika}} y reutiliza bancos de prompts ya aprobados para campañas seguras para la marca. Controles diarios de calidad detectan derivas de estilo o artefactos para decidir si regenerar, escalar o pasar el archivo a un animador."
       },
       {
-        "title": "Cómo MaxVideoAI orquesta Fal.ai",
-        "body": "Fal.ai impulsa la columna multi‑motor de MaxVideoAI y nos permite escalar sin perder una interfaz coherente. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
+        "title": "Cómo MaxVideoAI orquesta producción multi‑motor",
+        "body": "MaxVideoAI coordina capacidad multi‑motor detrás de una interfaz coherente para equipos creativos. Nuestra capa de orquestación mantiene los prompts portables, registra cada render y expone diagnósticos para saber cuándo reintentar o cambiar a otro motor como {{veoFast:Veo 3.1 Fast}} o {{hailuo:MiniMax Hailuo}} para estilos más artísticos. Los equipos acceden en un mismo espacio a tarifas, auditorías y notas de cumplimiento, con playbooks automáticos para aumentar prioridad o cambiar región cuando sube la demanda."
       }
     ],
     "comparison": {
@@ -220,8 +220,8 @@
     "faqTitle": "Preguntas frecuentes sobre enrutado IA",
     "faq": [
       {
-        "question": "¿MaxVideoAI ofrece facturación europea para Fal.ai?",
-        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso de Fal.ai, evitando filiales en EE. UU. o tarjetas prepago."
+        "question": "¿MaxVideoAI ofrece facturación europea para motores de video IA?",
+        "answer": "Sí. Emitimos facturas en EUR o GBP y las conciliamos con el uso del workspace, evitando filiales en EE. UU. o tarjetas prepago."
       },
       {
         "question": "¿Cuánto se tarda en arrancar un proyecto con Sora 2?",
@@ -1992,7 +1992,7 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Texto→Video y remezclas con audio nativo a través del enrutamiento de Fal.",
+        "description": "Texto→Video y remezclas con audio nativo a través de enrutamiento gestionado.",
         "priceBefore": "Precios en vivo dentro del workspace Generate.",
         "versionLabel": "v2"
       },
@@ -2053,7 +2053,7 @@
       "title": "Modelos IA de video e imagen: specs, límites y precios | MaxVideoAI",
       "description": "Compara modelos IA de video e imagen por precio, duración máxima, resolución, audio, modos de entrada, ejemplos y workflow antes de generar en MaxVideoAI."
     },
-    "note": "Los precios de Fal cambian rápido; confirma la pastilla Precio-Antes o tu clave directa antes de lanzar.",
+    "note": "Los precios de los modelos cambian rápido; confirma la pastilla Precio-Antes antes de lanzar.",
     "detail": {
       "backLabel": "← Volver",
       "renderLinkLabel": "Ver render →",
@@ -4194,7 +4194,7 @@
           "action": "Extender en",
           "unit": "segundos"
         },
-        "keyframes": "Keyframes compatibles (Pika 2.2)"
+        "keyframes": "Keyframes compatibles"
       },
       "preview": {
         "title": "Vista compuesta",
@@ -4476,7 +4476,8 @@
           "character": "Character",
           "angle": "Ángulo",
           "upscale": "Upscale",
-          "audio": "Audio"
+          "audio": "Audio",
+          "background-removal": "Eliminación de fondo"
         }
       },
       "insights": {
@@ -4703,7 +4704,7 @@
       "hero": {
         "eyebrow": "Workspace de imágenes",
         "title": "Generar imágenes",
-        "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y los motores de Fal."
+        "subtitle": "Crea y edita visuales de alta fidelidad con Nano Banana y otros motores de imagen."
       },
       "preview": {
         "eyebrow": "Previsualización",
@@ -4978,7 +4979,15 @@
       "angleTitle": "Angle / Perspective",
       "angleBody": "Sube una imagen, ajusta el ángulo de cámara y genera una primera imagen lista para workflows image-to-video.",
       "angleBadge": "Nueva vista",
-      "open": "Abrir herramienta"
+      "open": "Abrir herramienta",
+      "backgroundRemovalEyebrow": "Limpieza de video",
+      "backgroundRemovalTitle": "Video Background Remover",
+      "backgroundRemovalBody": "Elimina fondos de video en MaxVideoAI, crea recortes tipo pantalla verde, exporta video con alpha y reutiliza sujetos limpios.",
+      "backgroundRemovalBadge": "Rotoscopia IA",
+      "upscaleEyebrow": "Mejora de resolución",
+      "upscaleTitle": "AI Upscale",
+      "upscaleBody": "Upscalea assets de imagen o video corto con SeedVR2, Topaz, FlashVSR y Recraft antes de reutilizarlos en otros flujos.",
+      "upscaleBadge": "Imagen + video"
     },
     "storyboard": {
       "disabledTitle": "Las herramientas están desactivadas",
@@ -5736,6 +5745,71 @@
           }
         }
       }
+    },
+    "backgroundRemoval": {
+      "disabledTitle": "Tools are disabled",
+      "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+      "back": "Volver a herramientas",
+      "eyebrow": "Limpieza de video",
+      "title": "Video Background Remover",
+      "subtitle": "Elimina fondos de videos cortos, exporta WebM transparente o clips con fondo sólido, y reutiliza resultados desde la biblioteca.",
+      "sourceTitle": "Video fuente",
+      "sourceBody": "Sube un clip corto, pega una URL HTTPS o reutiliza un video guardado.",
+      "sourceStep": "1",
+      "dropzoneTitle": "Suelta un video aquí",
+      "dropzoneBody": "Clips MP4, MOV o WebM de hasta 60 segundos.",
+      "upload": "Subir video",
+      "urlLabel": "URL de video",
+      "urlPlaceholder": "https://example.com/source.mp4",
+      "urlHelp": "Pega una URL HTTPS directa de video.",
+      "library": "Biblioteca",
+      "libraryHelp": "Elige un video privado desde tu biblioteca.",
+      "libraryRefresh": "Actualizar",
+      "libraryAll": "Todos los videos",
+      "libraryUploaded": "Subidos",
+      "libraryGenerated": "Generados",
+      "libraryBackgroundRemoval": "Background removal",
+      "metadataLoading": "Leyendo metadatos...",
+      "metadataRequired": "Añade un video legible para estimar el precio.",
+      "metadataReady": "Listo para eliminar el fondo",
+      "durationTooLong": "Esta herramienta admite clips de hasta 60 segundos.",
+      "settingsTitle": "Ajustes de video",
+      "settingsStep": "2",
+      "backgroundColor": "Fondo",
+      "outputCodec": "Salida",
+      "outputCodecHint": "Usa WebM VP9 para transparencia, o MP4/MOV con pantalla verde o color sólido para herramientas de edición.",
+      "moreFormats": "Más formatos",
+      "formatRecommendation": "WebM VP9 es el export transparente. Usa MP4 o MOV con fondo sólido cuando el destino elimina alpha.",
+      "preserveAudio": "Conservar audio",
+      "audioOn": "audio",
+      "audioMuted": "sin audio",
+      "priceBeforeGeneration": "Precio visible antes de generar",
+      "priceLoading": "Cargando precio...",
+      "priceUnavailable": "Precio no disponible",
+      "priceReady": "Estimado para este clip",
+      "run": "Eliminar fondo",
+      "running": "Procesando...",
+      "previewTitle": "Vista previa",
+      "previewStep": "3",
+      "sourcePreview": "Fuente",
+      "resultPreview": "Resultado",
+      "compareSource": "Show source",
+      "compareResult": "Show result",
+      "noPreview": "Añade un video para ver la fuente.",
+      "emptyPreviewSource": "Clip fuente",
+      "emptyPreviewResult": "Resultado transparente",
+      "checkerboard": "Vista de salida transparente",
+      "save": "Guardar",
+      "saved": "Guardado en biblioteca.",
+      "saveFailed": "No se pudo guardar este resultado.",
+      "download": "Descargar",
+      "copyLink": "Copiar enlace",
+      "copied": "Enlace copiado.",
+      "recentTitle": "Eliminaciones recientes",
+      "recentEmpty": "Los resultados terminados aparecerán aquí.",
+      "recentFailed": "Failed",
+      "authTitle": "Inicia sesión para usar la herramienta",
+      "authBody": "La eliminación de fondo usa facturación de wallet y biblioteca privada."
     }
   },
   "cookieBanner": {
@@ -6183,6 +6257,13 @@
           "body": "Mejora la resolución de imágenes o videos cortos con SeedVR2, Topaz, FlashVSR y Recraft, y reutiliza el archivo más nítido en Image, Video o Biblioteca.",
           "cta": "Explorar herramienta",
           "imageAlt": "Interfaz de upscale IA con vista antes y después."
+        },
+        "backgroundRemoval": {
+          "eyebrow": "Limpieza de video",
+          "title": "Eliminar fondos de video",
+          "body": "Recorta personas o productos en clips cortos, reemplaza trabajos de pantalla verde, exporta video con alpha y descarga MOV listos para Premiere.",
+          "cta": "Explorar herramienta",
+          "imageAlt": "Workspace para eliminar fondos de video con vista transparente."
         }
       },
       "bestStartingPoints": {
@@ -6214,6 +6295,12 @@
             "title": "Mejora la resolución antes de reutilizar",
             "body": "Optimiza una imagen o clip corto antes de usarlo como referencia, referencia de prompt o entregable.",
             "cta": "Abrir Upscale"
+          },
+          "backgroundRemoval": {
+            "eyebrow": "Background Remover",
+            "title": "Recorta el sujeto antes de entregar",
+            "body": "Elimina el fondo de un video corto, guarda el resultado transparente y reutilízalo en anuncios, clips de producto y contenidos educativos.",
+            "cta": "Abrir herramienta de video"
           }
         }
       }
@@ -7122,6 +7209,196 @@
         "panelLeft": "Personaje definido",
         "panelRight": "Listo para reutilizar",
         "panelAlt": "Vista previa de una hoja de personaje IA reutilizable generada con Character Builder."
+      }
+    },
+    "backgroundRemoval": {
+      "meta": {
+        "title": "Eliminar fondos de video | Pantalla verde y rotoscopia IA",
+        "description": "Elimina fondos de video en MaxVideoAI. Crea recortes tipo pantalla verde, assets de rotoscopia IA, mates alfa, WebM transparente o clips con color sólido.",
+        "keywords": [
+          "eliminar fondos de video",
+          "quitar fondo de video",
+          "pantalla verde IA",
+          "rotoscopia IA",
+          "video transparente",
+          "mate alfa de video",
+          "recorte de sujeto en video",
+          "alternativa chroma key",
+          "export video transparente Premiere"
+        ],
+        "imageAlt": "Vista antes y después de eliminación de fondo de video con un presentador aislado sobre fondo transparente.",
+        "schemaName": "Video Background Remover",
+        "schemaDescription": "Herramienta MaxVideoAI para eliminar fondos de videos cortos, crear recortes estilo rotoscopia IA y exportar assets de video transparentes.",
+        "howToTitle": "Cómo eliminar fondos de video o crear un recorte con IA",
+        "howToDescription": "Sube o selecciona un video, elige salida transparente, pantalla verde o color sólido, ejecuta el recorte de video con IA y guarda o descarga el resultado."
+      },
+      "breadcrumb": {
+        "home": "Inicio",
+        "tools": "Herramientas",
+        "current": "Video Background Remover"
+      },
+      "hero": {
+        "badge": "Pantalla verde, alpha y rotoscopia IA",
+        "title": "Eliminar fondos de video y convertir sujetos en recortes reutilizables",
+        "body": "Sube un clip corto o elige un video de la biblioteca, ve el precio antes de generar, elimina el fondo y guarda un mate alfa, una placa tipo pantalla verde o una salida con color sólido para la siguiente edición.",
+        "primaryCta": "Abrir herramienta de video",
+        "secondaryCta": "Ver herramientas",
+        "assurances": [
+          {
+            "label": "Precio antes de generar",
+            "body": "La estimación de wallet aparece antes de iniciar."
+          },
+          {
+            "label": "Sin sorpresas",
+            "body": "Los jobs fallidos se reembolsan automáticamente."
+          },
+          {
+            "label": "Exports para edición",
+            "body": "Alpha, pantalla verde o color sólido."
+          }
+        ],
+        "stats": [
+          {
+            "value": "60 s",
+            "label": "clips studio"
+          },
+          {
+            "value": "Alpha",
+            "label": "Alpha WebM"
+          },
+          {
+            "value": "Biblioteca",
+            "label": "outputs guardados"
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Casos de uso",
+        "title": "Un sujeto limpio para muchos flujos de producción",
+        "body": "Usa la eliminación de fondo como rotoscopia IA, reemplazo de pantalla verde, recorte de producto, mate alfa y preparación de compositing antes de la siguiente edición.",
+        "cards": [
+          {
+            "title": "Talking heads",
+            "body": "Rotoscopia presentadores desde una sala cargada y colócalos sobre escenas, slides o layouts transparentes de marca."
+          },
+          {
+            "title": "Recortes de producto",
+            "body": "Separa videos de producto grabados a mano en assets de primer plano para anuncios, ecommerce y explicativos."
+          },
+          {
+            "title": "Compositing de anuncios",
+            "body": "Crea placas de primer plano tipo pantalla verde que editores puedan combinar con nuevos hooks, escenas y fondos de campaña."
+          },
+          {
+            "title": "Reemplazo de pantalla verde",
+            "body": "Mantén visible al instructor o speaker mientras reemplazas oficina, aula o fondo de marca sin grabar sobre pantalla verde."
+          },
+          {
+            "title": "Overlays sociales",
+            "body": "Exporta clips transparentes y overlays alpha reutilizables para posts verticales, stories, reels y demos."
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Guía de export",
+        "title": "Recorte de video con IA para pantalla verde y exports transparentes",
+        "body": "La herramienta se centra en exports finales: WebM transparente para web o archivos con pantalla verde/color sólido cuando alpha no está soportado.",
+        "columns": {
+          "model": "Salida",
+          "bestFor": "Mejor para",
+          "price": "Estimación",
+          "useWhen": "Úsalo cuando"
+        },
+        "rows": [
+          {
+            "model": "Recorte de video con IA",
+            "bestFor": "Videos cortos subidos o de biblioteca que necesitan eliminación de fondo, aislamiento de sujeto, mate alfa o reemplazo de pantalla verde.",
+            "price": "Estimación de wallet visible antes de iniciar. Los runs correctos se cobran según el presupuesto final de la app.",
+            "useWhen": "Para assets finales que quieres previsualizar, descargar y guardar."
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "Del clip fuente al asset alpha, pantalla verde o compositing",
+        "body": "Elige una fuente, configura la salida alpha o el nuevo fondo, ejecuta, revisa y guarda o descarga.",
+        "priceNote": "Antes de generar, MaxVideoAI muestra el precio estimado según el clip y los ajustes de salida seleccionados.",
+        "steps": [
+          {
+            "title": "Sube o selecciona un video",
+            "body": "Usa una URL MP4, MOV o WebM corta, sube un archivo o elige un video guardado."
+          },
+          {
+            "title": "Elige salida alpha, pantalla verde o con color",
+            "body": "Exporta WebM VP9 para transparencia, o una placa MP4/MOV con pantalla verde o color sólido cuando el destino no admite alpha."
+          },
+          {
+            "title": "Previsualiza, guarda y reutiliza",
+            "body": "Compara fuente y resultado, descarga el archivo o guárdalo en la biblioteca."
+          }
+        ]
+      },
+      "production": {
+        "eyebrow": "Calidad de export",
+        "title": "Descarga archivos que tus herramientas de edición puedan abrir",
+        "body": "El video transparente y los exports cercanos a rotoscopia IA dependen mucho del formato: WebM VP9 es el export transparente, mientras que las salidas MP4/MOV deben usar pantalla verde o color sólido.",
+        "panelCaption": "Usa WebM VP9 para navegadores y editores compatibles, y MP4/MOV en pantalla verde o color sólido cuando el destino no conserve alpha.",
+        "items": [
+          {
+            "title": "Overlay WebM transparente",
+            "body": "WebM VP9 sigue disponible para reproducción en navegador, overlays de landing page y reproductores web compatibles con WebM transparente."
+          },
+          {
+            "title": "Placas para edición",
+            "body": "Elige salida MP4/MOV con pantalla verde o color sólido cuando tu flujo de edición no conserve alpha WebM."
+          },
+          {
+            "title": "Placa pantalla verde",
+            "body": "Elige un fondo verde o color sólido cuando la plataforma final elimina canales alpha."
+          }
+        ]
+      },
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Preguntas sobre eliminación de fondo de video",
+        "body": "Detalles sobre transparencia, audio, precios y reutilización."
+      },
+      "faq": [
+        {
+          "q": "¿Puedo exportar video transparente o un mate alfa?",
+          "a": "Sí. Usa WebM VP9 cuando el destino acepte WebM transparente. Para editores que no conserven alpha WebM, usa una placa MP4/MOV con pantalla verde o color sólido."
+        },
+        {
+          "q": "¿La herramienta puede reemplazar pantalla verde o rotoscopia?",
+          "a": "Puede reemplazar muchas tareas simples de pantalla verde, chroma key y preparación de rotoscopia IA al aislar el sujeto y exportar una placa transparente o con color."
+        },
+        {
+          "q": "¿Puede conservar el audio?",
+          "a": "Sí. Studio incluye un ajuste para conservar el audio fuente cuando el formato lo permite."
+        },
+        {
+          "q": "¿Cómo se estima el precio?",
+          "a": "MaxVideoAI lee la duración y muestra una estimación de wallet antes de iniciar. Los runs fallidos se reembolsan automáticamente."
+        },
+        {
+          "q": "¿Cuál es el límite de duración?",
+          "a": "Esta versión se enfoca en clips de hasta 60 segundos para mantener proceso, preview y facturación predecibles."
+        },
+        {
+          "q": "¿Puedo reutilizar salidas guardadas?",
+          "a": "Sí. Guarda videos terminados en la biblioteca y selecciónalos más tarde."
+        },
+        {
+          "q": "¿Qué formato debo elegir para edición?",
+          "a": "Usa WebM transparente cuando tu editor lo soporte. Si no, exporta una placa MP4/MOV con pantalla verde o color sólido y haz key o compositing en el editor."
+        }
+      ],
+      "finalCta": {
+        "eyebrow": "¿Listo para limpiar el clip?",
+        "title": "Elimina un fondo y guarda el resultado en tu biblioteca MaxVideoAI",
+        "body": "Abre el workspace, estima el run y convierte videos cortos en sujetos recortados, mates alfa, placas de pantalla verde o assets con fondo sólido reutilizables.",
+        "primaryCta": "Abrir herramienta de video",
+        "secondaryCta": "Ver herramientas"
       }
     }
   },

@@ -180,8 +180,8 @@
         "body": "Quand il faut produire des boucles ludiques ou des formats courts, Pika 2.2 délivre plusieurs formats pour un budget réduit. MaxVideoAI propose des préréglages prêts à l’emploi afin de passer des reels verticaux aux visuels carrés sans quitter l’espace de travail. Comparez texte‑vers‑vidéo et image‑vers‑vidéo dans notre {{pika:guide Pika}} et réutilisez des prompts déjà validés pour les campagnes sûres pour la marque. Des contrôles qualité quotidiens signalent toute dérive de style afin de relancer, améliorer ou passer la main aux animateurs."
       },
       {
-        "title": "Comment MaxVideoAI orchestre Fal.ai",
-        "body": "Fal.ai alimente l’ossature multi‑modèles de MaxVideoAI, ce qui nous permet d’absorber les pics tout en offrant une interface cohérente. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre modèle comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des guides automatisés pour remonter les priorités ou changer de région lors des pics."
+        "title": "Comment MaxVideoAI orchestre la production multi‑modèles",
+        "body": "MaxVideoAI coordonne la capacité multi‑modèles derrière une interface cohérente pour les équipes créatives. Notre couche d’orchestration garde les prompts portables, journalise chaque rendu et expose les diagnostics pour savoir quand relancer ou basculer vers un autre modèle comme {{veoFast:Veo 3.1 Fast}} ou {{hailuo:MiniMax Hailuo}} pour des rendus stylisés. Les équipes disposent aussi des grilles tarifaires, pistes d’audit et notes de conformité dans un même espace, avec des guides automatisés pour remonter les priorités ou changer de région lors des pics."
       }
     ],
     "comparison": {
@@ -220,8 +220,8 @@
     "faqTitle": "FAQ sur le routage vidéo IA",
     "faq": [
       {
-        "question": "Proposez-vous une facturation européenne pour Fal.ai ?",
-        "answer": "Oui. Nous facturons en EUR ou GBP et rapprochons ces lignes avec l’usage Fal.ai afin que les finances n’aient pas besoin de filiale US ni de cartes prépayées."
+        "question": "Proposez-vous une facturation européenne pour les moteurs vidéo IA ?",
+        "answer": "Oui. Nous facturons en EUR ou GBP et rapprochons ces lignes avec l’usage du workspace afin que les finances n’aient pas besoin de filiale US ni de cartes prépayées."
       },
       {
         "question": "En combien de temps une équipe peut‑elle lancer Sora 2 ?",
@@ -1993,7 +1993,7 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Texte→Vidéo et remix avec audio natif via le routage Fal.",
+        "description": "Texte→Vidéo et remix avec audio natif via le routage géré.",
         "priceBefore": "Tarifs en direct dans le studio Generate.",
         "versionLabel": "v2"
       },
@@ -2054,7 +2054,7 @@
       "title": "Modèles IA vidéo & image : specs, limites et prix | MaxVideoAI",
       "description": "Comparez les modèles IA vidéo et image par prix, durée maximale, résolution, audio, modes d'entrée, exemples et workflow avant de générer sur MaxVideoAI."
     },
-    "note": "Les tarifs Fal évoluent vite : vérifiez la pastille Prix-Avant ou votre clé directe avant chaque lancement.",
+    "note": "Les tarifs des modèles évoluent vite : vérifiez la pastille Prix-Avant avant chaque lancement.",
     "detail": {
       "backLabel": "← Retour",
       "renderLinkLabel": "Voir le rendu →",
@@ -4202,7 +4202,7 @@
           "action": "Allonger de",
           "unit": "secondes"
         },
-        "keyframes": "Keyframes pris en charge (Pika 2.2)"
+        "keyframes": "Keyframes pris en charge"
       },
       "preview": {
         "title": "Aperçu composite",
@@ -4484,7 +4484,8 @@
           "character": "Character",
           "angle": "Angle",
           "upscale": "Upscale",
-          "audio": "Audio"
+          "audio": "Audio",
+          "background-removal": "Suppression arrière-plan"
         }
       },
       "insights": {
@@ -4711,7 +4712,7 @@
       "hero": {
         "eyebrow": "Espace image",
         "title": "Générer des images",
-        "subtitle": "Créez et éditez des visuels haute fidélité avec Nano Banana et les autres modèles Fal."
+        "subtitle": "Créez et éditez des visuels haute fidélité avec Nano Banana et d’autres modèles image."
       },
       "preview": {
         "eyebrow": "Aperçu de génération",
@@ -4986,7 +4987,15 @@
       "angleTitle": "Angle / Perspective",
       "angleBody": "Importe une image, ajuste l’angle caméra, puis génère une première image prête pour les workflows image-to-video.",
       "angleBadge": "Nouvelle vue",
-      "open": "Ouvrir l’outil"
+      "open": "Ouvrir l’outil",
+      "backgroundRemovalEyebrow": "Nettoyage vidéo",
+      "backgroundRemovalTitle": "Video Background Remover",
+      "backgroundRemovalBody": "Supprimez les arrière-plans vidéo dans MaxVideoAI, créez un effet fond vert, exportez en alpha et réutilisez des sujets détourés.",
+      "backgroundRemovalBadge": "Rotoscopie IA",
+      "upscaleEyebrow": "Gain de résolution",
+      "upscaleTitle": "AI Upscale",
+      "upscaleBody": "Upscalez images ou courtes vidéos avec SeedVR2, Topaz, FlashVSR et Recraft avant de les réutiliser dans vos workflows.",
+      "upscaleBadge": "Image + vidéo"
     },
     "storyboard": {
       "disabledTitle": "Les outils sont désactivés",
@@ -5744,6 +5753,71 @@
           }
         }
       }
+    },
+    "backgroundRemoval": {
+      "disabledTitle": "Tools are disabled",
+      "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+      "back": "Retour aux outils",
+      "eyebrow": "Nettoyage vidéo",
+      "title": "Video Background Remover",
+      "subtitle": "Supprimez l’arrière-plan de courtes vidéos, exportez en WebM transparent ou en clips à fond uni, puis réutilisez les résultats depuis la médiathèque.",
+      "sourceTitle": "Vidéo source",
+      "sourceBody": "Importez un clip court, collez une URL HTTPS ou réutilisez une vidéo de votre médiathèque.",
+      "sourceStep": "1",
+      "dropzoneTitle": "Déposez une vidéo ici",
+      "dropzoneBody": "Clips MP4, MOV ou WebM jusqu’à 60 secondes.",
+      "upload": "Importer une vidéo",
+      "urlLabel": "URL vidéo",
+      "urlPlaceholder": "https://example.com/source.mp4",
+      "urlHelp": "Collez une URL vidéo HTTPS directe.",
+      "library": "Médiathèque",
+      "libraryHelp": "Choisissez une vidéo privée depuis votre médiathèque.",
+      "libraryRefresh": "Actualiser",
+      "libraryAll": "Toutes les vidéos",
+      "libraryUploaded": "Importées",
+      "libraryGenerated": "Générées",
+      "libraryBackgroundRemoval": "Background removal",
+      "metadataLoading": "Lecture des métadonnées vidéo...",
+      "metadataRequired": "Ajoutez une vidéo lisible pour estimer le prix.",
+      "metadataReady": "Prêt pour la suppression d’arrière-plan",
+      "durationTooLong": "Cet outil accepte les clips jusqu’à 60 secondes.",
+      "settingsTitle": "Réglages vidéo",
+      "settingsStep": "2",
+      "backgroundColor": "Arrière-plan",
+      "outputCodec": "Sortie",
+      "outputCodecHint": "Utilisez WebM VP9 pour la transparence, ou MP4/MOV avec fond vert ou couleur unie pour les outils de montage.",
+      "moreFormats": "Autres formats",
+      "formatRecommendation": "WebM VP9 est l’export transparent. Utilisez MP4 ou MOV avec fond uni quand la destination supprime l’alpha.",
+      "preserveAudio": "Conserver l’audio",
+      "audioOn": "audio",
+      "audioMuted": "muet",
+      "priceBeforeGeneration": "Prix affiché avant génération",
+      "priceLoading": "Chargement du prix...",
+      "priceUnavailable": "Prix indisponible",
+      "priceReady": "Estimation pour ce clip",
+      "run": "Supprimer l’arrière-plan",
+      "running": "Traitement...",
+      "previewTitle": "Aperçu",
+      "previewStep": "3",
+      "sourcePreview": "Source",
+      "resultPreview": "Résultat",
+      "compareSource": "Show source",
+      "compareResult": "Show result",
+      "noPreview": "Ajoutez une vidéo pour prévisualiser la source.",
+      "emptyPreviewSource": "Clip source",
+      "emptyPreviewResult": "Résultat transparent",
+      "checkerboard": "Aperçu transparent",
+      "save": "Enregistrer",
+      "saved": "Enregistré dans la médiathèque.",
+      "saveFailed": "Impossible d’enregistrer ce résultat.",
+      "download": "Télécharger",
+      "copyLink": "Copier le lien",
+      "copied": "Lien copié.",
+      "recentTitle": "Suppressions récentes",
+      "recentEmpty": "Les résultats terminés apparaîtront ici.",
+      "recentFailed": "Failed",
+      "authTitle": "Connectez-vous pour utiliser l’outil",
+      "authBody": "La suppression d’arrière-plan utilise la facturation wallet et le stockage privé."
     }
   },
   "cookieBanner": {
@@ -6191,6 +6265,13 @@
           "body": "Upscalez images ou courtes vidéos avec SeedVR2, Topaz, FlashVSR et Recraft, puis réutilisez l'asset plus net dans Image, Vidéo ou la Bibliothèque.",
           "cta": "Explorer l'outil",
           "imageAlt": "Interface d'upscale IA avec aperçu avant et après."
+        },
+        "backgroundRemoval": {
+          "eyebrow": "Nettoyage video",
+          "title": "Supprimer l’arrière-plan vidéo",
+          "body": "Détourez personnes ou produits dans des clips courts, remplacez un workflow fond vert, exportez en alpha et téléchargez des MOV prêts pour Premiere.",
+          "cta": "Explorer l’outil",
+          "imageAlt": "Workspace de suppression d’arrière-plan vidéo avec aperçu transparent."
         }
       },
       "bestStartingPoints": {
@@ -6222,6 +6303,12 @@
             "title": "Augmentez la résolution avant réutilisation",
             "body": "Nettoyez une image ou un court clip avant d'en faire une référence, un asset de prompt ou un livrable.",
             "cta": "Ouvrir Upscale"
+          },
+          "backgroundRemoval": {
+            "eyebrow": "Background Remover",
+            "title": "Détourer le sujet avant livraison",
+            "body": "Supprimez l’arrière-plan d’une courte vidéo, enregistrez le résultat transparent et réutilisez-le dans vos publicités, clips produit et contenus pédagogiques.",
+            "cta": "Ouvrir l’outil vidéo"
           }
         }
       }
@@ -7130,6 +7217,196 @@
         "panelLeft": "Personnage verrouillé",
         "panelRight": "Prêt à réutiliser",
         "panelAlt": "Aperçu d'une planche personnage IA réutilisable générée avec Character Builder."
+      }
+    },
+    "backgroundRemoval": {
+      "meta": {
+        "title": "Supprimer l’arrière-plan vidéo | Fond vert et rotoscopie IA",
+        "description": "Supprimez l’arrière-plan vidéo dans MaxVideoAI. Créez des détourages type fond vert, des assets de rotoscopie IA, des caches alpha, du WebM transparent ou des clips en couleur unie.",
+        "keywords": [
+          "supprimer arrière-plan vidéo",
+          "fond vert IA",
+          "rotoscopie IA",
+          "détourage vidéo IA",
+          "video background remover",
+          "cache alpha vidéo",
+          "détourage sujet vidéo",
+          "alternative chroma key",
+          "export vidéo transparente Premiere"
+        ],
+        "imageAlt": "Aperçu avant/après de suppression d’arrière-plan vidéo avec un présentateur isolé sur fond transparent.",
+        "schemaName": "Video Background Remover",
+        "schemaDescription": "Outil MaxVideoAI pour supprimer l’arrière-plan de courtes vidéos, créer des détourages proches de la rotoscopie IA et exporter des assets vidéo transparents.",
+        "howToTitle": "Comment supprimer l’arrière-plan vidéo ou créer un détourage par IA",
+        "howToDescription": "Importez ou sélectionnez une vidéo, choisissez une sortie transparente, fond vert ou couleur unie, lancez le détourage vidéo IA, puis enregistrez ou téléchargez le résultat."
+      },
+      "breadcrumb": {
+        "home": "Accueil",
+        "tools": "Outils",
+        "current": "Video Background Remover"
+      },
+      "hero": {
+        "badge": "Fond vert, alpha et rotoscopie IA",
+        "title": "Supprimer l’arrière-plan vidéo et transformer un sujet en asset réutilisable",
+        "body": "Importez un clip court ou choisissez une vidéo de la médiathèque, voyez le prix avant de générer, supprimez l’arrière-plan et sauvegardez un cache alpha, un fond vert virtuel ou une sortie en couleur unie pour le montage suivant.",
+        "primaryCta": "Ouvrir l’outil vidéo",
+        "secondaryCta": "Voir tous les outils",
+        "assurances": [
+          {
+            "label": "Prix avant génération",
+            "body": "L’estimation wallet est affichée avant le lancement."
+          },
+          {
+            "label": "Pas de surprise",
+            "body": "Les jobs échoués sont remboursés automatiquement."
+          },
+          {
+            "label": "Exports montage",
+            "body": "Alpha, fond vert ou couleur unie."
+          }
+        ],
+        "stats": [
+          {
+            "value": "60 s",
+            "label": "clips studio"
+          },
+          {
+            "value": "Alpha",
+            "label": "Alpha WebM"
+          },
+          {
+            "value": "Médiathèque",
+            "label": "résultats privés"
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Cas d’usage",
+        "title": "Un sujet propre, plusieurs chemins de production",
+        "body": "Utilisez la suppression d’arrière-plan comme rotoscopie IA, remplacement fond vert, détourage produit, cache alpha et préparation compositing avant le montage suivant.",
+        "cards": [
+          {
+            "title": "Talking heads",
+            "body": "Rotoscopez un présentateur depuis une pièce chargée et placez-le sur des scènes, slides ou layouts transparents cohérents avec votre marque."
+          },
+          {
+            "title": "Détourages produit",
+            "body": "Séparez les vidéos produit filmées à la main en assets de premier plan pour ads, pages e-commerce et explicatifs."
+          },
+          {
+            "title": "Compositing publicitaire",
+            "body": "Créez des plans de premier plan type fond vert que les monteurs peuvent combiner avec de nouveaux hooks, décors et fonds de campagne."
+          },
+          {
+            "title": "Remplacement fond vert",
+            "body": "Gardez l’instructeur ou l’intervenant visible tout en remplaçant un bureau, une classe ou un décor de marque sans tourner sur fond vert."
+          },
+          {
+            "title": "Overlays sociaux",
+            "body": "Exportez des clips transparents et overlays alpha réutilisables pour posts verticaux, stories, reels et démos."
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Guide exports",
+        "title": "Détourage vidéo IA pour exports fond vert et transparents",
+        "body": "L’outil est concentré sur les exports finis : WebM transparent pour le web ou fichiers fond vert/couleur unie quand l’alpha n’est pas supporté.",
+        "columns": {
+          "model": "Sortie",
+          "bestFor": "Idéal pour",
+          "price": "Estimation",
+          "useWhen": "À utiliser quand"
+        },
+        "rows": [
+          {
+            "model": "Détourage vidéo IA",
+            "bestFor": "Courtes vidéos importées ou issues de la médiathèque nécessitant suppression d’arrière-plan, isolation de sujet, cache alpha ou remplacement fond vert.",
+            "price": "Estimation wallet affichée avant lancement. Les runs réussis sont débités selon le devis final de l’app.",
+            "useWhen": "Pour des assets finaux à prévisualiser, télécharger et sauvegarder."
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "Du clip source à l’asset alpha, fond vert ou compositing",
+        "body": "Choisissez une source, configurez la sortie alpha ou le nouveau fond, lancez, inspectez, puis sauvegardez ou téléchargez.",
+        "priceNote": "Avant de générer, MaxVideoAI affiche le prix estimé selon le clip et les réglages de sortie sélectionnés.",
+        "steps": [
+          {
+            "title": "Importer ou sélectionner une vidéo",
+            "body": "Utilisez une URL MP4, MOV ou WebM courte, importez un fichier ou choisissez une vidéo sauvegardée."
+          },
+          {
+            "title": "Choisir une sortie alpha, fond vert ou colorée",
+            "body": "Exportez en WebM VP9 pour la transparence, ou en plaque MP4/MOV fond vert ou couleur unie si la destination ne supporte pas l’alpha."
+          },
+          {
+            "title": "Prévisualiser, sauvegarder et réutiliser",
+            "body": "Comparez source et résultat, téléchargez le fichier ou sauvegardez-le dans la médiathèque."
+          }
+        ]
+      },
+      "production": {
+        "eyebrow": "Qualité d’export",
+        "title": "Téléchargez des fichiers que vos outils de montage savent ouvrir",
+        "body": "La vidéo transparente et les exports proches de la rotoscopie IA dépendent fortement du format : WebM VP9 est l’export transparent, tandis que les sorties MP4/MOV doivent utiliser un fond vert ou une couleur unie.",
+        "panelCaption": "Utilisez WebM VP9 pour les navigateurs et les monteurs compatibles, puis MP4/MOV en fond vert ou couleur unie quand la destination ne conserve pas l’alpha.",
+        "items": [
+          {
+            "title": "Overlay WebM transparent",
+            "body": "WebM VP9 reste disponible pour la lecture navigateur, les overlays de landing page et les lecteurs web compatibles WebM transparent."
+          },
+          {
+            "title": "Plaques prêtes pour montage",
+            "body": "Choisissez une sortie MP4/MOV fond vert ou couleur unie quand votre workflow de montage ne conserve pas l’alpha WebM."
+          },
+          {
+            "title": "Plan fond vert",
+            "body": "Choisissez un fond vert ou une couleur unie quand la plateforme finale supprime les canaux alpha."
+          }
+        ]
+      },
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Questions sur la suppression d’arrière-plan vidéo",
+        "body": "Détails pratiques sur transparence, audio, prix et réutilisation."
+      },
+      "faq": [
+        {
+          "q": "Puis-je exporter une vidéo transparente ou un cache alpha ?",
+          "a": "Oui. Utilisez WebM VP9 quand la destination accepte le WebM transparent. Pour les monteurs qui ne conservent pas l’alpha WebM, utilisez une plaque MP4/MOV fond vert ou couleur unie."
+        },
+        {
+          "q": "L’outil peut-il remplacer un fond vert ou une rotoscopie ?",
+          "a": "Il peut remplacer de nombreuses tâches simples de fond vert, chroma key et préparation de rotoscopie IA en isolant le sujet puis en exportant un plan transparent ou coloré."
+        },
+        {
+          "q": "L’audio peut-il être conservé ?",
+          "a": "Oui. Le mode Studio propose un réglage pour conserver l’audio source quand le format le permet."
+        },
+        {
+          "q": "Comment le prix est-il estimé ?",
+          "a": "MaxVideoAI lit la durée du clip et affiche une estimation wallet avant le lancement. Les runs échoués sont remboursés automatiquement."
+        },
+        {
+          "q": "Quelle est la limite de durée ?",
+          "a": "Cette version cible les clips courts jusqu’à 60 secondes pour garder traitement, aperçu et facturation prévisibles."
+        },
+        {
+          "q": "Puis-je réutiliser les sorties ?",
+          "a": "Oui. Enregistrez les vidéos terminées dans la médiathèque et reprenez-les plus tard."
+        },
+        {
+          "q": "Quel format choisir pour le montage ?",
+          "a": "Utilisez WebM transparent quand votre logiciel le supporte. Sinon, exportez une plaque MP4/MOV fond vert ou couleur unie et faites la key ou le compositing dans le montage."
+        }
+      ],
+      "finalCta": {
+        "eyebrow": "Prêt à nettoyer le clip ?",
+        "title": "Supprimez un arrière-plan et gardez le résultat dans votre médiathèque MaxVideoAI",
+        "body": "Ouvrez le workspace, estimez le run et transformez de courtes vidéos en sujets détourés, caches alpha, plans fond vert ou assets colorés réutilisables.",
+        "primaryCta": "Ouvrir l’outil vidéo",
+        "secondaryCta": "Voir les outils"
       }
     }
   },

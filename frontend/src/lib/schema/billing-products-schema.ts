@@ -39,7 +39,8 @@ export async function ensureBillingProductsSchema(): Promise<void> {
         ('upscale-image-recraft-crisp', 'upscale', 'Upscale Image Recraft Crisp', 'USD', 'run', 2, TRUE, '{"seeded":true,"tool":"upscale","engineId":"recraft-crisp","mediaType":"image"}'::jsonb),
         ('upscale-video-seedvr', 'upscale', 'Upscale Video SeedVR2', 'USD', 'run', 25, TRUE, '{"seeded":true,"tool":"upscale","engineId":"seedvr-video","mediaType":"video","dynamicPricing":true}'::jsonb),
         ('upscale-video-flashvsr', 'upscale', 'Upscale Video FlashVSR', 'USD', 'run', 18, TRUE, '{"seeded":true,"tool":"upscale","engineId":"flashvsr-video","mediaType":"video","dynamicPricing":true}'::jsonb),
-        ('upscale-video-topaz', 'upscale', 'Upscale Video Topaz', 'USD', 'run', 80, TRUE, '{"seeded":true,"tool":"upscale","engineId":"topaz-video","mediaType":"video","dynamicPricing":true}'::jsonb)
+        ('upscale-video-topaz', 'upscale', 'Upscale Video Topaz', 'USD', 'run', 80, TRUE, '{"seeded":true,"tool":"upscale","engineId":"topaz-video","mediaType":"video","dynamicPricing":true}'::jsonb),
+        ('background-removal-video-v3', 'background-removal', 'Background Removal Video Bria VRMBG 3.0', 'USD', 'run', 5, TRUE, '{"seeded":true,"tool":"background-removal","engineId":"bria-video-background-removal-v3","dynamicPricing":true}'::jsonb)
       ON CONFLICT (product_key) DO NOTHING;
     `);
 
@@ -50,5 +51,14 @@ export async function ensureBillingProductsSchema(): Promise<void> {
              updated_at = NOW()
        WHERE product_key IN ('angle-single', 'angle-multi')
          AND COALESCE(metadata->>'legacy', 'false') <> 'true';
+    `);
+
+    await query(`
+      UPDATE app_billing_products
+         SET active = FALSE,
+             metadata = COALESCE(metadata, '{}'::jsonb) || '{"legacy":true,"removedFeature":"background-removal-realtime"}'::jsonb,
+             updated_at = NOW()
+       WHERE product_key = 'background-removal-realtime'
+         AND active = TRUE;
     `);
 }

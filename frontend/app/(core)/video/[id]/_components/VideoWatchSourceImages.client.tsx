@@ -7,6 +7,7 @@ import type { WatchPageSourceImage } from '@/server/watch-page-signals';
 
 export type WatchSourceImageItem = WatchPageSourceImage & {
   imageUrl: string;
+  thumbnailUrl?: string;
 };
 
 function resolveNextIndex(current: number | null, direction: -1 | 1, count: number) {
@@ -52,29 +53,32 @@ export function VideoWatchSourceImagesClient({ images }: { images: WatchSourceIm
   return (
     <>
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {images.map((sourceImage, index) => (
-          <figure key={sourceImage.key} className="overflow-hidden rounded-input border border-hairline bg-surface-2">
-            <button
-              type="button"
-              onClick={() => setSelectedIndex(index)}
-              className="group block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-              aria-label={`Open ${sourceImage.label} larger`}
-            >
-              <span className="relative flex aspect-square items-center justify-center bg-black">
-                <img
-                  src={sourceImage.imageUrl}
-                  alt={sourceImage.alt}
-                  loading="lazy"
-                  className="h-full w-full object-contain transition group-hover:brightness-105"
-                />
-                <span className="absolute bottom-2 right-2 rounded-pill bg-black/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-micro text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
-                  View larger
+        {images.map((sourceImage, index) => {
+          const thumbnailUrl = sourceImage.thumbnailUrl ?? sourceImage.imageUrl;
+          return (
+            <figure key={sourceImage.key} className="overflow-hidden rounded-input border border-hairline bg-surface-2">
+              <button
+                type="button"
+                onClick={() => setSelectedIndex(index)}
+                className="group block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+                aria-label={`Open ${sourceImage.label} larger`}
+              >
+                <span className="relative flex aspect-square items-center justify-center bg-black">
+                  <img
+                    src={thumbnailUrl}
+                    alt={sourceImage.alt}
+                    loading="lazy"
+                    className="h-full w-full object-contain transition group-hover:brightness-105"
+                  />
+                  <span className="absolute bottom-2 right-2 rounded-pill bg-black/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-micro text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">
+                    View larger
+                  </span>
                 </span>
-              </span>
-            </button>
-            <figcaption className="px-3 py-2 text-xs font-semibold text-text-secondary">{sourceImage.label}</figcaption>
-          </figure>
-        ))}
+              </button>
+              <figcaption className="px-3 py-2 text-xs font-semibold text-text-secondary">{sourceImage.label}</figcaption>
+            </figure>
+          );
+        })}
       </div>
 
       {selectedImage ? (

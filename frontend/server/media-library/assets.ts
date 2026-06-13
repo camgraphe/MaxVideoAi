@@ -201,7 +201,7 @@ export async function listLibraryAssetPage(params: {
           $4::text IS NULL
           OR (
             CASE
-              WHEN source IN ('upload', 'storyboard', 'character', 'angle', 'upscale') THEN source
+            WHEN source IN ('upload', 'storyboard', 'character', 'angle', 'upscale', 'background-removal') THEN source
               WHEN source = 'generated' THEN 'saved_job_output'
               ELSE 'import'
             END
@@ -240,6 +240,7 @@ export async function listLibraryAssetPage(params: {
       width: row.width,
       height: row.height,
       sizeBytes: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
+      durationSec: typeof metadata.durationSec === 'number' && Number.isFinite(metadata.durationSec) ? metadata.durationSec : null,
       source: normalizeMediaAssetSource(row.source),
       sourceJobId: typeof metadata.jobId === 'string' ? metadata.jobId : null,
       sourceOutputId: null,
@@ -277,6 +278,7 @@ function mediaAssetFromJobOutput(output: JobOutputRecord): MediaAssetRecord {
     width: output.width,
     height: output.height,
     sizeBytes: null,
+    durationSec: output.durationSec,
     source: 'saved_job_output',
     sourceJobId: output.jobId,
     sourceOutputId: output.id,
@@ -303,8 +305,10 @@ export async function ensureReusableAsset(params: {
   width?: number | null;
   height?: number | null;
   sizeBytes?: number | null;
+  durationSec?: number | null;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  metadata?: Record<string, unknown> | null;
 }): Promise<MediaAssetRecord> {
   await ensureMediaLibrarySchema();
   const source = normalizeMediaAssetSource(params.source);
@@ -317,6 +321,10 @@ export async function ensureReusableAsset(params: {
     source,
     sourceOutputId: params.sourceOutputId ?? null,
   });
+  const durationSec =
+    typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
+      ? params.durationSec
+      : null;
   let resolvedThumbUrl = await resolveReusableAssetThumbUrl({
     userId: params.userId,
     kind: params.kind,
@@ -350,20 +358,26 @@ export async function ensureReusableAsset(params: {
         fileName: params.label ?? existing[0].id,
       });
     }
-    if ((!existing[0].thumb_url && resolvedThumbUrl) || (!existing[0].preview_url && resolvedPreviewUrl)) {
+    const existingDurationSec = normalizeMetadata(existing[0].metadata).durationSec;
+    const shouldBackfillDuration = Boolean(durationSec && !existingDurationSec);
+    if (
+      (!existing[0].thumb_url && resolvedThumbUrl) ||
+      (!existing[0].preview_url && resolvedPreviewUrl) ||
+      shouldBackfillDuration
+    ) {
       const rows = await query<DbMediaAssetRow>(
         `UPDATE media_assets
             SET thumb_url = COALESCE(thumb_url, $3),
                 preview_url = COALESCE(preview_url, $4),
                 metadata = COALESCE(metadata, '{}'::jsonb)
-                  || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text)),
+                  || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', $5::double precision)),
                 updated_at = NOW()
           WHERE id = $1
             AND user_id = $2
             AND deleted_at IS NULL
           RETURNING id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                     source_job_id, source_output_id, status, metadata, created_at`,
-        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl]
+        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec]
       );
       return mapAssetRow(rows[0] ?? existing[0]);
     }
@@ -409,6 +423,7 @@ export async function ensureReusableAsset(params: {
     width: copied.width ?? params.width ?? null,
     height: copied.height ?? params.height ?? null,
     sizeBytes: copied.sizeBytes ?? params.sizeBytes ?? null,
+    durationSec,
     source,
     sourceJobId: params.sourceJobId ?? null,
     sourceOutputId: params.sourceOutputId ?? null,
@@ -419,6 +434,8 @@ export async function ensureReusableAsset(params: {
       sourceOutputId: params.sourceOutputId ?? null,
       thumbUrl: resolvedThumbUrl,
       previewUrl: resolvedPreviewUrl,
+      durationSec,
+      ...(params.metadata ?? {}),
     },
   });
   insert.id = identity;
@@ -509,6 +526,7 @@ export async function saveJobOutputToLibrary(params: {
     mimeType: output.mimeType,
     width: output.width,
     height: output.height,
+    durationSec: output.durationSec,
     thumbUrl: output.thumbUrl,
     previewUrl: output.previewUrl,
   });

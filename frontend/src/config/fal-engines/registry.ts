@@ -3,9 +3,11 @@ import { PIKA_FAL_ENGINE_REGISTRY } from './pika';
 import { VEO_3_1_FAL_ENGINE_REGISTRY } from './veo-3-1';
 import { VEO_3_1_FAST_FAL_ENGINE_REGISTRY } from './veo-3-1-fast';
 import { VEO_3_1_LITE_FAL_ENGINE_REGISTRY } from './veo-3-1-lite';
-import { LUMA_RAY_3_2_FAL_ENGINE_REGISTRY } from './luma-ray-3-2';
 import { LUMA_RAY_2_FAL_ENGINE_REGISTRY } from './luma-ray-2';
 import { LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY } from './luma-ray-2-flash';
+import { LUMA_RAY_3_2_FAL_ENGINE_REGISTRY } from './luma-ray-3-2';
+import { LUMA_UNI_1_FAL_ENGINE_REGISTRY } from './luma-uni-1';
+import { LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY } from './luma-uni-1-max';
 import { SORA_FAL_ENGINE_REGISTRY } from './sora';
 import { KLING_2_5_FAL_ENGINE_REGISTRY } from './kling-2-5';
 import { KLING_2_6_FAL_ENGINE_REGISTRY } from './kling-2-6';
@@ -36,9 +38,11 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...VEO_3_1_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_FAST_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_LITE_FAL_ENGINE_REGISTRY,
-  ...LUMA_RAY_3_2_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY,
+  ...LUMA_RAY_3_2_FAL_ENGINE_REGISTRY,
+  ...LUMA_UNI_1_FAL_ENGINE_REGISTRY,
+  ...LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY,
   ...SORA_FAL_ENGINE_REGISTRY,
   ...KLING_2_5_FAL_ENGINE_REGISTRY,
   ...KLING_2_6_FAL_ENGINE_REGISTRY,

@@ -98,6 +98,10 @@ const specRowsSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-spec-rows.ts',
   'utf8'
 );
+const configSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts',
+  'utf8'
+);
 const detailContentSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareDetailContent.tsx',
   'utf8'
@@ -257,6 +261,10 @@ test('comparison detail helper facade delegates routing, pricing, specs, and loc
   assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
   assert.doesNotMatch(helperSource, /computeMarketingPriceRange/);
   assert.doesNotMatch(helperSource, /canonicalizeFalModelSlug/);
+});
+
+test('comparison route excludes image-only Luma Uni models', () => {
+  assert.match(configSource, /EXCLUDED_ENGINE_SLUGS[\s\S]*'luma-uni-1'[\s\S]*'luma-uni-1-max'/);
 });
 
 test('comparison detail split helpers own FAQ, scorecard, and generate card responsibilities', () => {

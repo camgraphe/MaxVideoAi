@@ -42,6 +42,7 @@ type UseImageSettingsFieldsParams = {
   setQuality: Dispatch<SetStateAction<string | null>>;
   setResolution: Dispatch<SetStateAction<string | null>>;
   setSeed: Dispatch<SetStateAction<string>>;
+  setStyle: Dispatch<SetStateAction<string | null>>;
   setThinkingLevel: Dispatch<SetStateAction<string | null>>;
   setWatermark: Dispatch<SetStateAction<boolean>>;
 };
@@ -62,6 +63,7 @@ export function useImageSettingsFields({
   setQuality,
   setResolution,
   setSeed,
+  setStyle,
   setThinkingLevel,
   setWatermark,
 }: UseImageSettingsFieldsParams) {
@@ -117,6 +119,14 @@ export function useImageSettingsFields({
   );
   const qualityOptions = useMemo(
     () => getImageFieldValues(selectedEngineCaps ?? null, 'quality', mode),
+    [selectedEngineCaps, mode]
+  );
+  const styleField = useMemo(
+    () => getImageInputField(selectedEngineCaps ?? null, 'style', mode),
+    [selectedEngineCaps, mode]
+  );
+  const styleOptions = useMemo(
+    () => getImageFieldValues(selectedEngineCaps ?? null, 'style', mode),
     [selectedEngineCaps, mode]
   );
   const maskUrlField = useMemo(
@@ -261,6 +271,21 @@ export function useImageSettingsFields({
   }, [qualityField, qualityOptions, selectedEngineCaps, mode, setQuality]);
 
   useEffect(() => {
+    if (!styleField || !styleOptions.length) {
+      setStyle(null);
+      return;
+    }
+    const defaultValue =
+      getImageFieldDefaultString(selectedEngineCaps ?? null, 'style', mode) ?? styleOptions[0] ?? null;
+    setStyle((previous) => {
+      if (previous && styleOptions.includes(previous)) {
+        return previous;
+      }
+      return defaultValue;
+    });
+  }, [styleField, styleOptions, selectedEngineCaps, mode, setStyle]);
+
+  useEffect(() => {
     if (!maskUrlField) {
       setMaskUrl('');
     }
@@ -360,6 +385,14 @@ export function useImageSettingsFields({
       })),
     [outputFormatOptions]
   );
+  const styleSelectOptions = useMemo(
+    () =>
+      styleOptions.map((option) => ({
+        value: option,
+        label: option === 'auto' ? 'Auto' : option === 'manga' ? 'Manga' : option,
+      })),
+    [styleOptions]
+  );
   const thinkingLevelSelectOptions = useMemo(
     () =>
       thinkingLevelOptions.map((option) => ({
@@ -381,6 +414,7 @@ export function useImageSettingsFields({
   const showResolutionControl = Boolean(resolutionField) && resolutionSelectOptions.length > 0;
   const showQualityControl = Boolean(qualityField) && qualitySelectOptions.length > 0;
   const showSeedControl = Boolean(seedField);
+  const showStyleControl = Boolean(styleField) && styleSelectOptions.length > 0;
   const showOutputFormatControl = Boolean(outputFormatField) && outputFormatSelectOptions.length > 0;
   const showCustomImageSizeControl =
     Boolean(customImageWidthField && customImageHeightField) && resolution === 'custom';
@@ -422,7 +456,11 @@ export function useImageSettingsFields({
     showQualityControl,
     showResolutionControl,
     showSeedControl,
+    showStyleControl,
     showThinkingLevelControl,
+    styleField,
+    styleOptions,
+    styleSelectOptions,
     supportedReferenceFormats,
     supportedReferenceFormatsLabel,
     thinkingLevelField,

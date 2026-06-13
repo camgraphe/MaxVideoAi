@@ -22,6 +22,7 @@ export type VideoProviderKey =
   | 'kling_direct'
   | 'byteplus_modelark'
   | 'google_vertex_veo_direct'
+  | 'luma_agents_direct'
   | 'luma_direct';
 
 export type ProviderSubmitInput = {

@@ -47,6 +47,7 @@ export const DEFAULT_DASHBOARD_COPY = {
       character: 'Character',
       angle: 'Angle',
       upscale: 'Upscale',
+      'background-removal': 'Background removal',
       audio: 'Audio',
     },
   },

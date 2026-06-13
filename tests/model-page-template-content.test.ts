@@ -32,6 +32,9 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'wan-2-6',
   'luma-ray-2',
   'luma-ray-2-flash',
+  'luma-ray-3-2',
+  'luma-uni-1',
+  'luma-uni-1-max',
   'happy-horse-1-0',
   'minimax-hailuo-02-text',
   'pika-text-to-video',
@@ -43,6 +46,10 @@ const MIGRATED_TEMPLATE_SLUGS = [
 
 const LOCALES = ['en', 'fr', 'es'] as const;
 const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const LUMA_AGENT_TEMPLATE_SLUGS = ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'] as const;
+const LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS =
+  /\b(?:fallback|fallback-safe|fal-reference|direct-only|layout|stills?|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
+const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'modelSlug']);
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
   const engine = listFalEngines().find((candidate) => candidate.id === slug || candidate.modelSlug === slug);
@@ -69,6 +76,33 @@ function visibleDecisionText(decision: NonNullable<ReturnType<typeof buildModelD
 function assertNonEmptyString(value: string, label: string) {
   assert.equal(typeof value, 'string', `${label} should be a string`);
   assert.ok(value.trim().length > 0, `${label} should not be empty`);
+}
+
+function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
+  const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
+  return JSON.parse(readFileSync(contentPath, 'utf8')) as {
+    custom?: {
+      specSections?: Array<Record<string, unknown>>;
+    };
+  };
+}
+
+function collectCustomerFacingStrings(value: unknown, skipKeys = new Set<string>()): string[] {
+  if (typeof value === 'string') {
+    return [value];
+  }
+
+  if (Array.isArray(value)) {
+    return value.flatMap((entry) => collectCustomerFacingStrings(entry, skipKeys));
+  }
+
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+
+  return Object.entries(value).flatMap(([key, entry]) =>
+    skipKeys.has(key) ? [] : collectCustomerFacingStrings(entry, skipKeys)
+  );
 }
 
 test('migrated model templates provide complete localized decision data', () => {
@@ -137,6 +171,31 @@ test('migrated model templates provide complete localized decision data', () => 
   }
 });
 
+test('Luma Ray 3.2 localized spec sections match the English structure', () => {
+  const englishSections = readModelContentJson('en', 'luma-ray-3-2').custom?.specSections;
+  assert.ok(Array.isArray(englishSections), 'luma-ray-3-2/en should define custom spec sections');
+
+  for (const locale of ['fr', 'es'] as const) {
+    const localizedSections = readModelContentJson(locale, 'luma-ray-3-2').custom?.specSections;
+    assert.ok(Array.isArray(localizedSections), `luma-ray-3-2/${locale} should define custom spec sections`);
+    assert.equal(
+      localizedSections.length,
+      englishSections.length,
+      `luma-ray-3-2/${locale} should keep the same custom spec section count as English`
+    );
+
+    for (const [index, englishSection] of englishSections.entries()) {
+      const localizedSection = localizedSections[index];
+      assert.ok(localizedSection, `luma-ray-3-2/${locale} spec section ${index + 1} should exist`);
+      assert.deepEqual(
+        Object.keys(localizedSection).sort(),
+        Object.keys(englishSection).sort(),
+        `luma-ray-3-2/${locale} spec section ${index + 1} should keep the same keys as English`
+      );
+    }
+  }
+});
+
 test('Spanish migrated template copy avoids Spain-only second-person and device phrasing', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const decision = buildModelDecisionData({ engine: getEngine(slug), locale: 'es' });
@@ -147,6 +206,32 @@ test('Spanish migrated template copy avoids Spain-only second-person and device 
       /\b(?:ordenador|vosotros|vosotras|vuestro|vuestra|vuestros|vuestras)\b/i,
       `${slug}/es should avoid Spain-only phrasing in visible copy`
     );
+  }
+});
+
+test('Luma Agents localized FR and ES copy avoids internal English launch terms', () => {
+  for (const locale of ['fr', 'es'] as const) {
+    for (const slug of LUMA_AGENT_TEMPLATE_SLUGS) {
+      const decision = buildModelDecisionData({ engine: getEngine(slug), locale });
+      assert.ok(decision, `${slug}/${locale} decision data should exist`);
+
+      for (const value of collectCustomerFacingStrings(decision, LOCALIZED_CONTENT_SKIP_KEYS)) {
+        assert.doesNotMatch(
+          value,
+          LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS,
+          `${slug}/${locale} decision copy should avoid internal English term in "${value}"`
+        );
+      }
+
+      const content = readModelContentJson(locale, slug);
+      for (const value of collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS)) {
+        assert.doesNotMatch(
+          value,
+          LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS,
+          `${slug}/${locale} localized content should avoid internal English term in "${value}"`
+        );
+      }
+    }
   }
 });
 
@@ -283,6 +368,32 @@ test('Seedream uses image-prep identity, official guide copy, and batch pricing 
   }
 });
 
+test('Luma Uni image pages stay image-only and avoid compare routes', () => {
+  for (const slug of ['luma-uni-1', 'luma-uni-1-max'] as const) {
+    const decision = buildModelDecisionData({ engine: getEngine(slug), locale: 'en' });
+    assert.ok(decision);
+    assert.match(decision.hero.primaryCta.href, /^\/app\/image\?engine=/);
+    assert.doesNotMatch(visibleDecisionText(decision), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
+
+    for (const locale of LOCALES) {
+      const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
+      const rawContent = readFileSync(contentPath, 'utf8');
+      assert.doesNotMatch(rawContent, /\/ai-video-engines\/|compare|comparar|comparer|vs /i);
+      assert.doesNotMatch(rawContent, /text-to-video|image-to-video|MP4|HDR|EXR/i);
+    }
+  }
+});
+
+test('Luma Ray 3.2 page is Modify/Reframe-first and does not expose direct-only HDR copy at launch', () => {
+  const decision = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  assert.ok(decision);
+  assert.equal(decision.hero.primaryCta.href, '/app?engine=luma-ray-3-2');
+  assert.doesNotMatch(visibleDecisionText(decision), /EXR|HDR export|video edit controls/i);
+  assert.match(visibleDecisionText(decision), /Modify|Reframe|guide\/keyframe|source-video/i);
+  assert.match(visibleDecisionText(decision), /silent video outputs|Silent by design/i);
+  assert.match(visibleDecisionText(decision), /5s|10s|540p|720p|1080p/i);
+});
+
 test('migrated localized model content avoids placeholder media copy', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     for (const locale of LOCALES) {
@@ -375,6 +486,9 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const wan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale: 'en' });
   const luma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale: 'en' });
   const lumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
+  const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
+  const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
   const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
   const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
   const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
@@ -405,6 +519,9 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(wan26);
   assert.ok(luma);
   assert.ok(lumaFlash);
+  assert.ok(lumaRay32);
+  assert.ok(lumaUni);
+  assert.ok(lumaUniMax);
   assert.ok(luma);
   assert.ok(lumaFlash);
   assert.ok(luma);
@@ -456,6 +573,9 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['wan-2-6', wan26.meta.title],
     ['luma-ray-2', luma.meta.title],
     ['luma-ray-2-flash', lumaFlash.meta.title],
+    ['luma-ray-3-2', lumaRay32.meta.title],
+    ['luma-uni-1', lumaUni.meta.title],
+    ['luma-uni-1-max', lumaUniMax.meta.title],
     ['happy-horse-1-0', happyHorse.meta.title],
     ['minimax-hailuo-02-text', hailuo.meta.title],
     ['pika-text-to-video', pika.meta.title],
@@ -477,8 +597,11 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(soraPro.meta.title, /Pricing|1080p|Examples/i);
   assert.match(wan25.meta.title, /Pricing|Audio Drafts|Examples/i);
   assert.match(wan26.meta.title, /Pricing|References|Examples/i);
-  assert.match(luma.meta.title, /Pricing|Modify|Reframe/i);
-  assert.match(lumaFlash.meta.title, /Pricing|Drafts|Examples/i);
+  assert.match(luma.meta.title, /Legacy|Modify|Reframe/i);
+  assert.match(lumaFlash.meta.title, /Legacy|Pricing|Drafts/i);
+  assert.match(lumaRay32.meta.title, /Pricing|5s\/10s|Examples/i);
+  assert.match(lumaUni.meta.title, /Image Pricing|References|Editing/i);
+  assert.match(lumaUniMax.meta.title, /Pricing|2K Images|Editing/i);
   assert.match(happyHorse.meta.title, /Pricing|Native Audio|R2V/i);
   assert.match(hailuo.meta.title, /Pricing|Motion Drafts|Examples/i);
   assert.equal(pika.meta.title, 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses');
@@ -514,6 +637,9 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const wan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale: 'en' });
   const luma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale: 'en' });
   const lumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
+  const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
+  const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
   const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
   const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
   const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
@@ -537,6 +663,9 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.ok(wan26);
   assert.ok(luma);
   assert.ok(lumaFlash);
+  assert.ok(lumaRay32);
+  assert.ok(lumaUni);
+  assert.ok(lumaUniMax);
   assert.ok(happyHorse);
   assert.ok(hailuo);
   assert.ok(pika);
@@ -587,18 +716,24 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     /15s|reference-to-video/i,
     'Wan 2.5 hero should not cannibalize Wan 2.6 reference-video positioning'
   );
-  assert.match(visibleDecisionText(luma), /premium|Modify|Reframe/i);
-  assert.match(visibleDecisionText(lumaFlash), /draft|lower-cost|Flash/i);
+  assert.match(visibleDecisionText(luma), /legacy|Ray 3\.2|Modify|Reframe/i);
+  assert.match(visibleDecisionText(lumaFlash), /legacy|Ray 3\.2|Flash/i);
+  assert.match(visibleDecisionText(lumaRay32), /5s|10s|540p|720p|1080p/i);
+  assert.match(visibleDecisionText(lumaUni), /2K image generation|image edits|multi-reference guidance/i);
+  assert.match(visibleDecisionText(lumaUniMax), /Higher-fidelity Uni-1 stills|precise image revisions|reference-led edits/i);
   assert.doesNotMatch(
     visibleDecisionText(lumaFlash),
     /higher-confidence finals|delivery-ready Luma variants|premium cinematic generation workflow/i,
-    'Luma Ray 2 Flash should not cannibalize Ray 2 premium-final positioning'
+    'Luma Ray 2 Flash should not revive old Ray 2 final-route positioning'
   );
   assert.doesNotMatch(
     visibleDecisionText(luma),
     /lower-cost iteration|draft speed|fast Luma drafts/i,
     'Luma Ray 2 should not cannibalize Flash draft-route positioning'
   );
+  assert.doesNotMatch(visibleDecisionText(lumaRay32), /HDR export|EXR|video edit controls/i);
+  assert.doesNotMatch(visibleDecisionText(lumaUni), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
+  assert.doesNotMatch(visibleDecisionText(lumaUniMax), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
   assert.match(visibleDecisionText(happyHorse), /native audio|lip-sync|R2V references|video edit/i);
   assert.doesNotMatch(
     visibleDecisionText(happyHorse),
@@ -660,6 +795,9 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const localizedLtx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale });
     const localizedLuma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale });
     const localizedLumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale });
+    const localizedLumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale });
+    const localizedLumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale });
+    const localizedLumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale });
     const localizedHappyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale });
     const localizedHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale });
     const localizedPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale });
@@ -685,6 +823,9 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(localizedLtx2Fast);
     assert.ok(localizedLuma);
     assert.ok(localizedLumaFlash);
+    assert.ok(localizedLumaRay32);
+    assert.ok(localizedLumaUni);
+    assert.ok(localizedLumaUniMax);
     assert.ok(localizedHappyHorse);
     assert.ok(localizedHailuo);
     assert.ok(localizedPika);
@@ -757,14 +898,44 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       `LTX 2 Fast ${locale} copy should not claim current LTX 2.3 fast capabilities`
     );
     assert.doesNotMatch(
+    visibleDecisionText(localizedLuma),
+      /audio native|audio natif|audio nativo|lower-cost iteration|iteración de menor coste|current default|route actuelle par défaut/i,
+      `Luma Ray 2 ${locale} copy should stay legacy/edit-route focused without audio or Flash-current positioning`
+    );
+    assert.match(
       visibleDecisionText(localizedLuma),
-      /audio native|audio natif|audio nativo|lower-cost iteration|iteración de menor coste/i,
-      `Luma Ray 2 ${locale} copy should stay premium/edit-route focused without audio or Flash positioning`
+      /Ray 3\.2|ancienne génération|generación anterior|legacy/i,
+      `Luma Ray 2 ${locale} copy should route new Luma work toward Ray 3.2`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedLumaFlash),
-      /premium final|rendus finaux premium|finales premium|higher-confidence finals/i,
-      `Luma Ray 2 Flash ${locale} copy should stay draft-route focused`
+      /premium final|rendus finaux premium|finales premium|higher-confidence finals|current default|route actuelle par défaut/i,
+      `Luma Ray 2 Flash ${locale} copy should stay legacy fast-route focused`
+    );
+    assert.match(
+      visibleDecisionText(localizedLumaFlash),
+      /Ray 3\.2|ancienne génération|generación anterior|legacy/i,
+      `Luma Ray 2 Flash ${locale} copy should route new Luma work toward Ray 3.2`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedLumaRay32),
+      /HDR export|EXR|video edit controls/i,
+      `Luma Ray 3.2 ${locale} copy should stay public Modify/Reframe focused`
+    );
+    assert.match(
+      visibleDecisionText(localizedLumaRay32),
+      /Modify|Reframe/i,
+      `Luma Ray 3.2 ${locale} copy should emphasize Modify and Reframe`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedLumaUni),
+      /text-to-video|image-to-video|MP4|HDR|EXR|vs /i,
+      `Luma Uni-1 ${locale} copy should stay image-only`
+    );
+    assert.doesNotMatch(
+      visibleDecisionText(localizedLumaUniMax),
+      /text-to-video|image-to-video|MP4|HDR|EXR|vs /i,
+      `Luma Uni-1 Max ${locale} copy should stay image-only`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedHappyHorse),
@@ -831,5 +1002,51 @@ test('migrated template product schemas avoid free price offers', () => {
 
     assert.ok(product, `${slug} should emit Product schema`);
     assert.ok(!('offers' in product), `${slug} Product schema should not emit a free price offer`);
+  }
+});
+
+test('new Luma model product schemas emit priced offers without synthetic ratings', () => {
+  const expectedOfferPrices = [
+    ['luma-ray-3-2', '0.65'],
+    ['luma-uni-1', '0.06'],
+    ['luma-uni-1-max', '0.14'],
+  ] as const;
+
+  for (const [slug, expectedPrice] of expectedOfferPrices) {
+    const engine = getEngine(slug);
+    const decision = buildModelDecisionData({ engine, locale: 'fr' });
+    assert.ok(decision, `${slug}/fr decision data should exist`);
+
+    const schemas = buildModelSchemaPayloads({
+      canonical: `https://maxvideoai.com/fr/modeles/${slug}`,
+      description: decision.meta.description,
+      engine,
+      heroPosterAbsolute: `https://maxvideoai.com/hero/${slug}.jpg`,
+      heroTitle: decision.hero.title,
+      inLanguage: 'fr-FR',
+      localizedCanonical: `https://maxvideoai.com/fr/modeles/${slug}`,
+      localizedHomeUrl: 'https://maxvideoai.com/fr',
+      localizedModelsUrl: 'https://maxvideoai.com/fr/modeles',
+      pageTitle: decision.meta.title,
+      pricingEngine: engine.engine,
+      resolvedBreadcrumb: {
+        home: 'Accueil',
+        models: 'Modèles',
+      },
+    }) as Array<Record<string, unknown>>;
+
+    const product = schemas.find((schema) => schema['@type'] === 'Product') as
+      | (Record<string, unknown> & { offers?: Record<string, unknown> })
+      | undefined;
+
+    assert.ok(product, `${slug} should emit Product schema`);
+    assert.ok(product.offers, `${slug} Product schema should emit an offer when pricing is available`);
+    assert.equal(product.offers?.['@type'], 'Offer');
+    assert.equal(product.offers?.priceCurrency, 'USD');
+    assert.equal(product.offers?.price, expectedPrice);
+    assert.ok(product.offers?.shippingDetails, `${slug} Product offer should include digital shipping details`);
+    assert.ok(product.offers?.hasMerchantReturnPolicy, `${slug} Product offer should include a return policy`);
+    assert.ok(!('review' in product), `${slug} should not invent reviews`);
+    assert.ok(!('aggregateRating' in product), `${slug} should not invent aggregate ratings`);
   }
 });

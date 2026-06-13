@@ -7,6 +7,7 @@ const TOOLS_INTERNAL_PATHS = [
   '/tools/angle',
   '/tools/character-builder',
   '/tools/upscale',
+  '/tools/background-removal',
 ];
 
 const fixtures: LocaleFixture[] = [
@@ -60,6 +61,18 @@ const fixtures: LocaleFixture[] = [
         'Output',
         'One output, reused everywhere',
       ],
+    },
+  },
+  {
+    englishPath: '/tools/background-removal',
+    localizableInternalPaths: TOOLS_INTERNAL_PATHS,
+    requiredTextByLocale: {
+      fr: ['Supprimer l’arrière-plan vidéo'],
+      es: ['eliminar fondos de video'],
+    },
+    forbiddenTextByLocale: {
+      fr: ['Remove video backgrounds'],
+      es: ['Remove video backgrounds'],
     },
   },
 ];

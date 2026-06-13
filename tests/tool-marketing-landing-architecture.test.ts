@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 const angleWrapperPath = join(root, 'frontend/src/components/tools/AngleLandingPage.tsx');
 const characterWrapperPath = join(root, 'frontend/src/components/tools/CharacterBuilderLandingPage.tsx');
+const backgroundRemovalWrapperPath = join(root, 'frontend/src/components/tools/BackgroundRemovalLandingPage.tsx');
 const angleViewPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingView.tsx');
 const angleSectionsPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingSections.tsx');
 const anglePrimitivesPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingPrimitives.tsx');
@@ -17,18 +18,24 @@ const characterWorkflowSectionsPath = join(root, 'frontend/src/components/tools/
 const characterConversionSectionsPath = join(root, 'frontend/src/components/tools/character-builder/landing/CharacterBuilderLandingConversionSections.tsx');
 const characterPrimitivesPath = join(root, 'frontend/src/components/tools/character-builder/landing/CharacterBuilderLandingPrimitives.tsx');
 const characterAssetsPath = join(root, 'frontend/src/components/tools/character-builder/landing/character-builder-landing-assets.ts');
+const backgroundRemovalViewPath = join(root, 'frontend/src/components/tools/background-removal/landing/BackgroundRemovalLandingView.tsx');
+const backgroundRemovalSectionsPath = join(root, 'frontend/src/components/tools/background-removal/landing/BackgroundRemovalLandingSections.tsx');
+const backgroundRemovalAssetsPath = join(root, 'frontend/src/components/tools/background-removal/landing/background-removal-landing-assets.ts');
 const jsonLdPath = join(root, 'frontend/src/components/tools/landing/tool-marketing-json-ld.ts');
 const angleRoutePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/tools/angle/page.tsx');
 const characterRoutePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/tools/character-builder/page.tsx');
+const backgroundRemovalRoutePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/tools/background-removal/page.tsx');
 
 const angleWrapperSource = readFileSync(angleWrapperPath, 'utf8');
 const characterWrapperSource = readFileSync(characterWrapperPath, 'utf8');
+const backgroundRemovalWrapperSource = readFileSync(backgroundRemovalWrapperPath, 'utf8');
 const angleViewSource = readFileSync(angleViewPath, 'utf8');
 const angleSectionsSource = readFileSync(angleSectionsPath, 'utf8');
 const characterViewSource = readFileSync(characterViewPath, 'utf8');
 const characterSectionsSource = readFileSync(characterSectionsPath, 'utf8');
 const characterLeadSectionsSource = readFileSync(characterLeadSectionsPath, 'utf8');
 const characterConversionSectionsSource = readFileSync(characterConversionSectionsPath, 'utf8');
+const backgroundRemovalViewSource = readFileSync(backgroundRemovalViewPath, 'utf8');
 const jsonLdSource = readFileSync(jsonLdPath, 'utf8');
 
 const landingFiles = [
@@ -43,18 +50,24 @@ const landingFiles = [
   characterConversionSectionsPath,
   characterPrimitivesPath,
   characterAssetsPath,
+  backgroundRemovalViewPath,
+  backgroundRemovalSectionsPath,
+  backgroundRemovalAssetsPath,
 ] as const;
 
 test('tool marketing landing entry files stay thin wrappers', () => {
   assert.ok(existsSync(angleViewPath), 'angle landing view should live in the angle landing folder');
   assert.ok(existsSync(characterViewPath), 'character builder landing view should live in the character builder landing folder');
+  assert.ok(existsSync(backgroundRemovalViewPath), 'background removal landing view should live in the background removal landing folder');
 
   assert.match(angleWrapperSource, /AngleLandingView/, 'angle wrapper should delegate to the colocated view');
   assert.match(characterWrapperSource, /CharacterBuilderLandingView/, 'character wrapper should delegate to the colocated view');
+  assert.match(backgroundRemovalWrapperSource, /BackgroundRemovalLandingView/, 'background removal wrapper should delegate to the colocated view');
 
   for (const [label, source] of [
     ['AngleLandingPage', angleWrapperSource],
     ['CharacterBuilderLandingPage', characterWrapperSource],
+    ['BackgroundRemovalLandingPage', backgroundRemovalWrapperSource],
   ] as const) {
     assert.ok(source.split('\n').length <= 12, `${label} should stay a thin route-facing wrapper`);
     assert.doesNotMatch(source, /FAQSchema|buildMarketingServiceJsonLd|dangerouslySetInnerHTML|next\/image/, `${label} should not own landing rendering or SEO scripts`);
@@ -64,12 +77,15 @@ test('tool marketing landing entry files stay thin wrappers', () => {
 test('tool marketing landing views own SEO orchestration and delegate sections', () => {
   assert.match(angleViewSource, /export function AngleLandingView/, 'angle view should export the render orchestrator');
   assert.match(characterViewSource, /export function CharacterBuilderLandingView/, 'character builder view should export the render orchestrator');
+  assert.match(backgroundRemovalViewSource, /export function BackgroundRemovalLandingView/, 'background removal view should export the render orchestrator');
   assert.match(angleViewSource, /AngleLandingSections/, 'angle view should delegate visible rendering to section components');
   assert.match(characterViewSource, /CharacterBuilderLandingSections/, 'character builder view should delegate visible rendering to section components');
+  assert.match(backgroundRemovalViewSource, /BackgroundRemovalLandingSections/, 'background removal view should delegate visible rendering to section components');
 
   for (const [label, source] of [
     ['AngleLandingView', angleViewSource],
     ['CharacterBuilderLandingView', characterViewSource],
+    ['BackgroundRemovalLandingView', backgroundRemovalViewSource],
   ] as const) {
     assert.match(source, /buildToolBreadcrumbJsonLd/, `${label} should use the shared breadcrumb JSON-LD helper`);
     assert.match(source, /buildToolHowToJsonLd/, `${label} should use the shared HowTo JSON-LD helper`);
@@ -89,6 +105,7 @@ test('tool marketing landing sections preserve CTAs and stay split by responsibi
   assert.match(characterLeadSectionsSource, /data-analytics-event="tool_cta_click"/, 'character hero should preserve CTA analytics attributes');
   assert.match(characterConversionSectionsSource, /data-analytics-event="tool_cta_click"/, 'character final CTA should preserve CTA analytics attributes');
   assert.match(characterSectionsSource, /CharacterBuilderOutputsWorkflowSection/, 'character section orchestrator should compose workflow rendering');
+  assert.match(backgroundRemovalViewSource, /buildMarketingServiceJsonLd/, 'background removal view should use shared service JSON-LD');
 
   for (const filePath of landingFiles) {
     const lineCount = readFileSync(filePath, 'utf8').split('\n').length;
@@ -99,7 +116,9 @@ test('tool marketing landing sections preserve CTAs and stay split by responsibi
 test('localized tool routes keep importing stable landing entry points', () => {
   const angleRouteSource = readFileSync(angleRoutePath, 'utf8');
   const characterRouteSource = readFileSync(characterRoutePath, 'utf8');
+  const backgroundRemovalRouteSource = readFileSync(backgroundRemovalRoutePath, 'utf8');
 
   assert.match(angleRouteSource, /@\/components\/tools\/AngleLandingPage/, 'angle route should keep the stable landing import');
   assert.match(characterRouteSource, /@\/components\/tools\/CharacterBuilderLandingPage/, 'character builder route should keep the stable landing import');
+  assert.match(backgroundRemovalRouteSource, /@\/components\/tools\/BackgroundRemovalLandingPage/, 'background removal route should keep the stable landing import');
 });

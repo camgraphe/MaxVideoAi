@@ -52,8 +52,10 @@ export function buildGenerateValidationPayload(params: {
   sourceInputVideoUrl: string | null | undefined;
   elements: MaxVideoProviderElement[] | null;
   endImageUrl: string | null | undefined;
+  startImageUrl: string | null | undefined;
   isLumaRay2: boolean;
   initialImageUrl: string | null | undefined;
+  loop?: boolean;
   deps?: GenerateValidationDeps;
 }): GenerateValidationPayloadResult {
   const validateRequestFn = params.deps?.validateRequestFn ?? validateRequest;
@@ -81,6 +83,10 @@ export function buildGenerateValidationPayload(params: {
     } else if (params.validationDuration != null) {
       payload.duration = params.validationDuration;
     }
+  }
+
+  if (typeof params.loop === 'boolean') {
+    payload.loop = params.loop;
   }
 
   if (params.maxUploadedBytes > 0) {
@@ -124,7 +130,12 @@ export function buildGenerateValidationPayload(params: {
   if (params.elements?.length) {
     payload.elements = params.elements;
   }
+  if (params.mode === 'ref2v' && params.startImageUrl) {
+    payload.start_image_url = params.startImageUrl;
+  }
   if (params.mode === 'i2v' && params.endImageUrl) {
+    payload.end_image_url = params.endImageUrl;
+  } else if (params.mode === 'ref2v' && params.endImageUrl) {
     payload.end_image_url = params.endImageUrl;
   }
 
@@ -151,6 +162,8 @@ export function buildGenerateValidationPayload(params: {
     videoUrls: params.videoUrls,
     sourceInputVideoUrl: params.sourceInputVideoUrl,
     resolvedAudioUrl: params.resolvedAudioUrl,
+    startImageUrl: params.startImageUrl,
+    endImageUrl: params.endImageUrl,
   });
   if (requiredInputError) {
     return requiredInputError;
@@ -220,6 +233,8 @@ function validateRequiredInputs(params: {
   videoUrls: string[];
   sourceInputVideoUrl: string | null | undefined;
   resolvedAudioUrl: string | null | undefined;
+  startImageUrl: string | null | undefined;
+  endImageUrl: string | null | undefined;
 }): Extract<GenerateValidationPayloadResult, { ok: false }> | null {
   if (params.isLumaRay2 && params.mode === 'i2v') {
     if (!params.initialImageUrl) {
@@ -234,6 +249,13 @@ function validateRequiredInputs(params: {
     return null;
   }
   if (params.needsReferenceImages) {
+    if (params.engineId.startsWith('kling-o3') && params.mode === 'ref2v' && params.endImageUrl && !params.startImageUrl) {
+      return missingInput(
+        'START_IMAGE_URL_REQUIRED',
+        params,
+        'End frame requires a start frame for Kling 3.0 Omni reference-to-video.'
+      );
+    }
     const bytePlusHasAnyReference =
       params.isBytePlusV1a && (params.normalizedReferenceImages.length > 0 || params.videoUrls.length > 0);
     if (!params.normalizedReferenceImages.length && !bytePlusHasAnyReference) {

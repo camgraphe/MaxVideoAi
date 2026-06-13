@@ -1,4 +1,5 @@
 export const DEFAULT_MAX_VIDEO_UPLOAD_MB = 50;
+export const VIDEO_MULTIPART_CHUNK_BYTES = 3_670_016;
 
 export function getMaxVideoUploadMB(): number {
   const configured = Number(process.env.ASSET_MAX_VIDEO_MB ?? String(DEFAULT_MAX_VIDEO_UPLOAD_MB));

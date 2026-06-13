@@ -36,9 +36,16 @@ interface ImageSettingsBarProps {
     options: ControlOption[];
     onChange: (value: string) => void;
   };
+  style?: {
+    value: string;
+    options: ControlOption[];
+    onChange: (value: string) => void;
+  };
 }
 
-function ControlIcon({ kind }: { kind: 'images' | 'aspect' | 'resolution' | 'format' | 'quality' }) {
+type InlineControlKind = 'images' | 'aspect' | 'resolution' | 'format' | 'quality' | 'style';
+
+function ControlIcon({ kind }: { kind: InlineControlKind }) {
   if (kind === 'images') {
     return (
       <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
@@ -76,6 +83,21 @@ function ControlIcon({ kind }: { kind: 'images' | 'aspect' | 'resolution' | 'for
       </svg>
     );
   }
+  if (kind === 'style') {
+    return (
+      <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
+        <path
+          d="M5.5 13.5c1.8-3.6 4.2-6.4 7.4-8.5 1.2-.8 2.7.7 1.9 1.9-2.1 3.2-4.9 5.6-8.5 7.4"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path d="M4.5 15.5c1.2.2 2.4-.1 3.2-.9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
   return (
     <svg aria-hidden viewBox="0 0 20 20" className="h-4 w-4">
       <path
@@ -90,7 +112,7 @@ function ControlIcon({ kind }: { kind: 'images' | 'aspect' | 'resolution' | 'for
   );
 }
 
-function createInlineLabel(kind: 'images' | 'aspect' | 'resolution' | 'format' | 'quality', label: string) {
+function createInlineLabel(kind: InlineControlKind, label: string) {
   return (
     <span className="inline-flex items-center gap-2">
       <ControlIcon kind={kind} />
@@ -106,7 +128,7 @@ function InlineControl({
   onChange,
   disabled,
 }: {
-  kind: 'images' | 'aspect' | 'resolution' | 'format' | 'quality';
+  kind: InlineControlKind;
   options: ControlOption[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
@@ -132,7 +154,7 @@ function InlineControl({
   );
 }
 
-export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFormat, quality }: ImageSettingsBarProps) {
+export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFormat, quality, style }: ImageSettingsBarProps) {
   return (
     <div className="min-w-0 flex-1">
       <div className={clsx('flex flex-wrap items-center gap-2')}>
@@ -167,6 +189,14 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             options={quality.options}
             value={quality.value}
             onChange={(value) => quality.onChange(String(value))}
+          />
+        ) : null}
+        {style ? (
+          <InlineControl
+            kind="style"
+            options={style.options}
+            value={style.value}
+            onChange={(value) => style.onChange(String(value))}
           />
         ) : null}
         {outputFormat ? (

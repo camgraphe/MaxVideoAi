@@ -44,7 +44,7 @@ const EXAMPLE_FAMILY_BY_MODEL: Record<string, string> = {
 };
 
 const TOP_PICK_IDS = ['seedance-2-0', 'kling-3-pro', 'seedance-2-0-fast', 'ltx-2-3-fast'] as const;
-const RECOMMENDED_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-fast'] as const;
+const RECOMMENDED_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
 
 export type ModelsCatalogDecisionBadge = {
   label: string;

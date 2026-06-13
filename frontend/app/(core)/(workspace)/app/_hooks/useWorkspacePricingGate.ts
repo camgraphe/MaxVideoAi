@@ -185,6 +185,7 @@ export function useWorkspacePricingGate({
       loop: form.loop,
       ...(supportsAudioToggle ? { audio: form.audio } : {}),
       ...(voiceControlEnabled ? { voiceControl: true } : {}),
+      ...(Object.keys(form.extraInputValues).length ? { extraInputValues: form.extraInputValues } : {}),
       user: { memberTier },
     };
     setPricing(true);

@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-04-01",
+  "last_updated": "2026-06-09",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -884,6 +884,110 @@
         "cameraMotionControls": "Basic",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": "Jun 2025"
+      }
+    },
+    {
+      "modelSlug": "luma-ray-3-2",
+      "sources": [
+        "https://maxvideoai.com/models/luma-ray-3-2",
+        "https://docs.agents.lumalabs.ai/api/python/resources/generations/",
+        "https://fal.ai/models/luma/agent/ray/v3.2/text-to-video",
+        "https://fal.ai/models/luma/agent/ray/v3.2/image-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (Ray 3.2 Modify and Reframe source-video routes)",
+        "firstLastFrame": "Supported (I2V end frame plus Modify guide/keyframes up to 64 anchors)",
+        "referenceImageStyle": "Supported through guide frames and indexed Modify keyframes",
+        "referenceVideo": "Supported for Modify and Reframe source-video workflows",
+        "maxResolution": "1080p",
+        "maxDuration": "10s generation; source clips up to 30s for Modify/Reframe intake",
+        "aspectRatios": [
+          "9:16",
+          "3:4",
+          "1:1",
+          "4:3",
+          "16:9",
+          "21:9"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Not supported",
+        "nativeAudioGeneration": "Not supported",
+        "lipSync": "Not supported",
+        "cameraMotionControls": "Prompt, source-video preservation, guide frames and Modify keyframes",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
+      "modelSlug": "luma-uni-1",
+      "sources": [
+        "https://maxvideoai.com/models/luma-uni-1",
+        "https://docs.agents.lumalabs.ai/guides/model/",
+        "https://fal.ai/models/luma/agent/uni-1/v1/text-to-image",
+        "https://fal.ai/models/luma/agent/uni-1/v1/edit"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 9 for generation; up to 8 references plus source for edit",
+        "webSearch": "Supported",
+        "maxResolution": "2048px / 2K",
+        "aspectRatios": [
+          "3:1",
+          "2:1",
+          "16:9",
+          "3:2",
+          "1:1",
+          "2:3",
+          "9:16",
+          "1:2",
+          "1:3"
+        ],
+        "outputFormats": [
+          "PNG",
+          "JPEG"
+        ],
+        "videoToVideo": "Not supported",
+        "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "luma-uni-1-max",
+      "sources": [
+        "https://maxvideoai.com/models/luma-uni-1-max",
+        "https://docs.agents.lumalabs.ai/guides/model/",
+        "https://fal.ai/models/luma/agent/uni-1/v1/max",
+        "https://fal.ai/models/luma/agent/uni-1/v1/max/edit"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 9 for generation; up to 8 references plus source for edit",
+        "webSearch": "Supported",
+        "maxResolution": "2048px / 2K",
+        "aspectRatios": [
+          "3:1",
+          "2:1",
+          "16:9",
+          "3:2",
+          "1:1",
+          "2:3",
+          "9:16",
+          "1:2",
+          "1:3"
+        ],
+        "outputFormats": [
+          "PNG",
+          "JPEG"
+        ],
+        "videoToVideo": "Not supported",
+        "audioOutput": "Not supported"
       }
     },
     {

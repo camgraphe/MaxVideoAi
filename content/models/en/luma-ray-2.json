@@ -2,15 +2,15 @@
   "marketingName": "Luma Ray 2",
   "versionLabel": "Ray 2",
   "seo": {
-    "title": "Luma Ray 2 Specs, Pricing and Cinematic Final Workflows | MaxVideoAI",
-    "description": "Use Luma Ray 2 in MaxVideoAI for premium cinematic shots, image-to-video, source-video modify, and delivery reframes. Ray 2 targets higher-confidence finals with 5s or 9s generate runs at 540p to 1080p.",
+    "title": "Luma Ray 2 Specs, Pricing and Legacy Workflows | MaxVideoAI",
+    "description": "Use Luma Ray 2 in MaxVideoAI as a previous-generation Luma route for cinematic shots, image-to-video, source-video modify, and delivery reframes. Start new Luma work on Ray 3.2 when Modify keyframes or Reframe matter.",
     "image": "/hero/luma-dream.jpg"
   },
-  "overview": "Luma Ray 2 is the premium finaling tier of the Luma family in MaxVideoAI. The family stays simple at the catalog level, while the model page exposes the active Luma workflow family: text-to-video, image-to-video, modify, and reframe.",
+  "overview": "Luma Ray 2 is a previous-generation Luma route in MaxVideoAI. Keep it for legacy prompts, older comparisons, and Ray 2-compatible generation, while new Luma video work should start on Ray 3.2 for Modify keyframes and Reframe.",
   "hero": {
     "title": "Luma Ray 2 - cinematic generation, modify, and reframe on one page",
-    "intro": "Use Ray 2 when the shot is moving past draft territory and you want the premium Luma tier for new cinematic shots, controlled still animation, source-video modifications, and final delivery reframes without splitting the workflow across separate model pages.",
-    "badge": "T2V + I2V + Modify + Reframe",
+    "intro": "Use Ray 2 when you need to revisit older Luma prompts or keep Ray 2-compatible text-to-video, image-to-video, source-video Modify, and Reframe runs. For new Luma production, Ray 3.2 is the current route.",
+    "badge": "Legacy Luma route - T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Start generating with Luma Ray 2",
       "href": "/app?engine=lumaRay2"

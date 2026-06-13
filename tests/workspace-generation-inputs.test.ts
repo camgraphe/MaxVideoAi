@@ -29,6 +29,7 @@ function asset(overrides: Partial<ReferenceAsset> = {}): ReferenceAsset {
     url: overrides.url ?? `https://cdn.example.com/${id}.${kind === 'video' ? 'mp4' : kind === 'audio' ? 'mp3' : 'jpg'}`,
     width: overrides.width ?? null,
     height: overrides.height ?? null,
+    durationSec: overrides.durationSec ?? null,
     assetId: overrides.assetId ?? id,
     status: overrides.status ?? 'ready',
   };
@@ -73,6 +74,7 @@ test('prepareGenerationInputs orders attachments and derives generation URL grou
     fieldId: 'reference_video_urls',
     kind: 'video',
     url: 'https://cdn.example.com/ref.mp4',
+    durationSec: 17.4,
   });
   const referenceAudioAsset = asset({
     id: 'audio_ref',
@@ -133,6 +135,7 @@ test('prepareGenerationInputs orders attachments and derives generation URL grou
   assert.equal(result.primaryAttachment?.url, 'https://cdn.example.com/primary.jpg');
   assert.deepEqual(result.referenceImageUrls, ['https://cdn.example.com/ref-1.jpg']);
   assert.deepEqual(result.referenceVideoUrls, ['https://cdn.example.com/ref.mp4']);
+  assert.equal(result.inputsPayload?.find((input) => input.slotId === 'reference_video_urls')?.durationSec, 17.4);
   assert.deepEqual(result.referenceAudioUrls, ['https://cdn.example.com/ref.mp3']);
   assert.equal(result.primaryImageUrl, 'https://cdn.example.com/primary.jpg');
   assert.equal(result.primaryAudioUrl, 'https://cdn.example.com/voice.mp3');
@@ -360,6 +363,47 @@ test('prepareGenerationInputs includes Kling 3.0 Omni elements in reference mode
       videoAssetId: undefined,
     },
   ]);
+});
+
+test('prepareGenerationInputs rejects Kling 3.0 Omni reference end frame without opening frame', () => {
+  const referenceImages = field('image_urls', 'image', 'Reference / storyboard images');
+  const endFrame = field('end_image_url', 'image', 'End frame');
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'kling-o3-standard',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'kling-o3-standard', mode: 'ref2v' }),
+    inputSchema: {
+      required: [],
+      optional: [referenceImages, endFrame],
+    },
+    inputSchemaSummary: {
+      assetFields: [
+        { field: referenceImages, required: false, role: 'reference' },
+        { field: endFrame, required: false, role: 'frame' },
+      ],
+    },
+    extraInputFields: [],
+    inputAssets: {
+      image_urls: [asset({ id: 'reference', fieldId: 'image_urls', url: 'https://cdn.example.com/reference.jpg' })],
+      end_image_url: [asset({ id: 'end', fieldId: 'end_image_url', url: 'https://cdn.example.com/end.jpg' })],
+    },
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(['image_urls']),
+    genericImageFieldIds: new Set(['image_urls']),
+    frameAssetFieldIds: new Set(['end_image_url']),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: true,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    message: 'End frame requires a start frame for Kling 3.0 Omni reference-to-video.',
+  });
 });
 
 test('prepareGenerationInputs keeps Kling 3.0 Omni elements when unified routing resolves reference mode', () => {

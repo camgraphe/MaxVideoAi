@@ -1,0 +1,210 @@
+{
+  "marketingName": "Luma Uni-1 Max",
+  "versionLabel": "Uni-1 Max",
+  "seo": {
+    "title": "Luma Uni-1 Max: precios, imágenes 2K y edición | MaxVideoAI",
+    "description": "Usa Luma Uni-1 Max en MaxVideoAI para imágenes 2K de alta fidelidad, visuales de producto, composiciones sensibles a tipografía, ediciones de fuente y flujos de imagen con referencias."
+  },
+  "overview": "Luma Uni-1 Max es la ruta Uni de mayor fidelidad en MaxVideoAI para imágenes seleccionadas que necesitan más detalle de producto, revisiones cuidadosas, composiciones sensibles a tipografía y dirección creativa con referencias.",
+  "pricingNotes": "Los precios mostrados usan precios públicos de referencia de MaxVideoAI. Uni-1 Max no se presenta como más barato o rápido que Uni-1; elige esta ruta cuando la imagen necesite mayor fidelidad.",
+  "hero": {
+    "title": "Luma Uni-1 Max - generación de imagen 2K premium y edición",
+    "intro": "Crea visuales principales, imágenes de producto, conceptos de póster y revisiones de fuente cuidadosas con una ruta Uni de mayor fidelidad.",
+    "badge": "Visuales 2K · Ediciones de fuente · Referencias",
+    "ctaPrimary": {
+      "label": "Lanzar Luma Uni-1 Max",
+      "href": "/app/image?engine=luma-uni-1-max"
+    },
+    "secondaryLinks": [
+      { "label": "Abrir espacio de imagen", "href": "/app/image?engine=luma-uni-1-max" },
+      { "label": "Revisar precios", "href": "/pricing#luma-uni-1-max-pricing" }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Mejores casos de uso",
+    "items": [
+      { "title": "Visuales principales para páginas de producto y campañas", "icon": "product" },
+      { "title": "Composiciones de póster o etiqueta sensibles a tipografía", "icon": "layout" },
+      { "title": "Revisiones de fuente de alto detalle", "icon": "layers" },
+      { "title": "Dirección creativa multi-referencia", "icon": "storyboard" },
+      { "title": "Imágenes finales antes de pasar a movimiento", "icon": "sparkles" }
+    ]
+  },
+  "technicalOverviewTitle": "Resumen técnico",
+  "technicalOverview": [
+    { "label": "Flujos", "body": "Texto a imagen y edición de imagen" },
+    { "label": "Salida", "body": "Imagen fija 2K" },
+    { "label": "Referencias", "body": "Las solicitudes de texto pueden usar varias referencias; las ediciones usan una fuente más referencias opcionales" },
+    { "label": "Estilo", "body": "Controles auto y manga donde estén disponibles" },
+    { "label": "Formato", "body": "PNG o JPEG en el espacio de imagen" },
+    { "label": "Precio", "body": "Los ejemplos públicos usan precios de referencia de MaxVideoAI" }
+  ],
+  "promptStructure": {
+    "title": "Mini-guía de prompt",
+    "quote": "Visual principal + producto o sujeto + intención de composición + referencias + elementos bloqueados.",
+    "description": "Uni-1 Max funciona mejor cuando la dirección ya está clara. Úsalo para una imagen o edición precisa, no para exploración amplia.",
+    "steps": [
+      "Nombra el entregable: visual principal, imagen de producto, póster o composición de etiqueta.",
+      "Describe geometría de producto, materiales, luz y composición.",
+      "Para tipografía, escribe el texto exacto y revisa la salida.",
+      "Para edición, di qué queda sin cambios antes de la revisión.",
+      "Agrega solo referencias con un rol claro.",
+      "Revisa el precio mostrado antes de generar."
+    ]
+  },
+  "tips": {
+    "title": "Consejos y límites",
+    "items": [
+      "Usa Uni-1 Max para imágenes seleccionadas, no cada borrador.",
+      "No supongas que siempre es más rápido o barato que Uni-1.",
+      "Escribe restricciones de preservación para producto y etiquetas.",
+      "Inspecciona tipografía, logos y detalles pequeños antes de publicar.",
+      "La cotización en la app es el precio para cliente."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Visual principal de producto",
+      "prompt": "Visual de producto 2K de alta fidelidad de un frasco skincare de cerámica sobre piedra clara, jerarquía de etiqueta nítida, reflejos de estudio suaves, sombra controlada, composición de página de destino, 4:3."
+    },
+    {
+      "title": "Composición de póster",
+      "prompt": "Concepto de póster minimalista con el título exacto \"NIGHT GARDEN\", tipografía elegante grande, textura botánica oscura, bloque de lugar centrado, espaciado editorial de alta gama."
+    },
+    {
+      "title": "Edición detallada",
+      "prompt": "Preserva la geometría de producto y el orden de la etiqueta subida, mejora realismo de materiales, limpia el fondo, refuerza bordes, mantiene reflejos naturales."
+    },
+    {
+      "title": "Dirección con referencias",
+      "prompt": "Usa referencia 1 para identidad de producto, 2 para material de superficie y 3 para ambiente de campaña. Crea una imagen de lanzamiento 2K con espacio para titular."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "¿Para qué sirve Luma Uni-1 Max?",
+      "a": "Usa Uni-1 Max para imágenes de mayor fidelidad, visuales de producto, composiciones sensibles a tipografía y ediciones de fuente cuidadosas."
+    },
+    {
+      "q": "¿Uni-1 Max siempre es más rápido o barato que Uni-1?",
+      "a": "No. La copia pública no debe prometerlo. Usa la cotización de la app y elige Max cuando la fidelidad importe."
+    },
+    {
+      "q": "¿Uni-1 Max puede editar con referencias?",
+      "a": "Sí. La ruta de edición usa una imagen fuente más referencias opcionales para guiar producto, estilo, composición o materiales."
+    },
+    {
+      "q": "¿Cómo se muestra el precio de Uni-1 Max?",
+      "a": "Los ejemplos mostrados usan precios públicos de referencia de MaxVideoAI con margen. La cotización exacta aparece antes de generar."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Modelo de imagen Luma Uni-1 Max",
+    "heroSupportLine": "Ideal para visuales principales 2K de alta fidelidad, imágenes de producto y ediciones con referencias.",
+    "heroSpecChips": [
+      { "label": "Texto->Imagen", "icon": "textToVideo" },
+      { "label": "Edición de imagen", "icon": "imageToVideo" },
+      { "label": "Salida 2K", "icon": "resolution" },
+      { "label": "Guiado por referencias" },
+      { "label": "PNG / JPEG" }
+    ],
+    "whyTitle": "Por qué Uni-1 Max es útil",
+    "heroDesc1": "Uni-1 Max da a las imágenes seleccionadas una ruta Luma de mayor fidelidad sin reemplazar cada pase de exploración más barato.",
+    "heroDesc2": "Úsalo cuando detalle de producto, revisión precisa, composición sensible a tipografía o visual principal de campaña son el trabajo central.",
+    "heroHighlights": [
+      "Ruta de imagen de mayor fidelidad||Usa Max cuando la imagen seleccionada necesita más detalle y acabado.",
+      "Producto y tipografía||Describe etiquetas, jerarquía y superficies de forma explícita, y revisa el resultado.",
+      "Ediciones con referencias||Usa una fuente más referencias útiles para revisiones controladas.",
+      "Contexto de precio||Los precios mostrados siguen referencias públicas de MaxVideoAI y la app confirma la cotización final."
+    ],
+    "specTitle": "Specs de imagen Uni-1 Max",
+    "specNote": "Estas specs describen la ruta pública del espacio de imagen MaxVideoAI.",
+    "specSections": [
+      {
+        "title": "Flujos de imagen",
+        "items": [
+          "Generación texto a imagen 2K.",
+          "Ediciones desde imagen fuente.",
+          "Referencias opcionales para producto, estilo, paleta o composición.",
+          "Salida PNG o JPEG."
+        ]
+      },
+      {
+        "title": "Comportamiento de precio",
+        "items": [
+          "Los costos de imagen y referencias siguen precios públicos de referencia.",
+          "El margen MaxVideoAI está incluido en ejemplos públicos.",
+          "La cotización exacta en la app manda.",
+          "Max es una ruta de mayor fidelidad, no una promesa de menor precio."
+        ]
+      }
+    ],
+    "whatTitle": "Cómo funciona Uni-1 Max",
+    "whatIntro1": "Elige Uni-1 Max en el espacio de imagen cuando la imagen ya tiene un objetivo de producción claro.",
+    "whatIntro2": "Usa fuente y referencias para acotar la revisión.",
+    "whatFlowTitle": "Flujo de trabajo",
+    "whatFlowSteps": [
+      "Elegir Luma Uni-1 Max.",
+      "Seleccionar creación o edición.",
+      "Escribir la consigna del visual principal o edición.",
+      "Agregar solo referencias con rol explícito.",
+      "Revisar el precio mostrado.",
+      "Inspeccionar tipografía, logos y detalles."
+    ],
+    "galleryTitle": "Ejemplos de imagen Luma Uni-1 Max",
+    "galleryIntro": "Planifica visuales principales, ediciones de producto y materiales de campaña guiados por referencias.",
+    "galleryAllCta": "Abrir espacio de imagen",
+    "recreateLabel": "Recrear esta imagen",
+    "tipsTitle": "Fortalezas prácticas y límites",
+    "strengths": [
+      "Adecuado para visuales principales 2K e imágenes de producto seleccionadas.",
+      "Útil cuando las referencias deben guiar revisiones precisas.",
+      "Mejor para composiciones pulidas que para exploración aleatoria."
+    ],
+    "boundaries": [
+      "Solo imágenes fijas.",
+      "No se presenta como siempre más barato o rápido que Uni-1.",
+      "Tipografía y etiquetas exactas deben revisarse.",
+      "Precio público basado en las referencias de MaxVideoAI."
+    ],
+    "safetyTitle": "Seguridad y semejanza",
+    "safetyRules": [
+      "No contenido sexual ni contenido con menores.",
+      "No odio, acoso ni violencia gráfica.",
+      "No imites personas reales sin consentimiento.",
+      "No incluyas datos personales privados."
+    ],
+    "promptingTitle": "Cómo escribir un buen prompt Uni-1 Max",
+    "promptingIntro": "Parte de una dirección creativa elegida y precisa la imagen final, restricciones de fuente y roles de referencias.",
+    "promptingTip": "Consejo: para producto o tipografía, escribe la jerarquía exacta y revisa antes de publicar.",
+    "promptingGlobalPrinciples": [
+      "Usa Max cuando detalle y acabado importan.",
+      "Separa preservación de fuente y revisión.",
+      "Da un rol a cada referencia."
+    ],
+    "promptingEngineWhy": [
+      "Las imágenes de mayor fidelidad se benefician de restricciones precisas.",
+      "Los roles de referencia reducen ambigüedad en producto y campaña.",
+      "Revisar texto mantiene las promesas prudentes."
+    ],
+    "promptingGuideLabel": "Guía de prompt Uni-1 Max",
+    "relatedItems": [
+      {
+        "brand": "luma",
+        "title": "Luma Uni-1",
+        "description": "Usa Uni-1 para exploración, preparación de referencias y ediciones de fuente antes de finales seleccionadas.",
+        "modelSlug": "luma-uni-1",
+        "ctaLabel": "Ver Uni-1"
+      },
+      {
+        "brand": "luma",
+        "title": "Luma Ray 3.2",
+        "description": "Usa Ray 3.2 cuando una imagen seleccionada está lista para una prueba corta de movimiento.",
+        "modelSlug": "luma-ray-3-2",
+        "ctaLabel": "Ver Ray 3.2"
+      }
+    ],
+    "finalPara1": "Luma Uni-1 Max es la ruta de imagen de mayor fidelidad de la familia Uni para visuales principales, imágenes de producto y ediciones de fuente cuidadosas.",
+    "finalButton": "Generar con Luma Uni-1 Max"
+  }
+}

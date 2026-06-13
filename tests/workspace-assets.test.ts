@@ -63,6 +63,7 @@ test('recent video asset payload keeps thumbnails and hover previews for the pic
           url: 'https://media.maxvideoai.com/renders/video.mp4',
           thumbUrl: 'https://media.maxvideoai.com/renders/thumb.jpg',
           previewUrl: 'https://media.maxvideoai.com/renders/preview.mp4',
+          durationSec: 12.4,
           mime: 'video/mp4',
           kind: 'video',
         },
@@ -75,7 +76,20 @@ test('recent video asset payload keeps thumbnails and hover previews for the pic
   assert.equal(asset?.kind, 'video');
   assert.equal(asset?.thumbUrl, 'https://media.maxvideoai.com/renders/thumb.jpg');
   assert.equal(asset?.previewUrl, 'https://media.maxvideoai.com/renders/preview.mp4');
+  assert.equal(asset?.durationSec, 12.4);
   assert.equal(asset?.source, 'recent');
+});
+
+test('library video assets preserve duration when selected as references', () => {
+  const selected = buildReferenceAssetFromLibraryAsset(videoField, userAsset({
+    id: 'video_asset',
+    kind: 'video',
+    mime: 'video/mp4',
+    url: 'https://cdn.example.com/source.mp4',
+    durationSec: 8.2,
+  }));
+
+  assert.equal(selected.durationSec, 8.2);
 });
 
 test('reference asset insertion fills slots, replaces assets, and preserves max count', () => {

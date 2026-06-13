@@ -55,6 +55,68 @@ test('publishes local storyboard template references before provider submission'
   assert.equal(recorded[0]?.metadata?.templatePath, '/storyboard/templates/storyboard-template-portrait-6.png');
 });
 
+test('leaves public storyboard template URLs unchanged in production', async () => {
+  const publicTemplateUrl = 'https://maxvideoai.com/storyboard/templates/storyboard-template-6.png';
+  const result = await resolveStoryboardTemplateReferenceUrls({
+    userId: 'user_storyboard',
+    urls: [publicTemplateUrl],
+    deps: {
+      isStorageConfiguredFn: () => {
+        throw new Error('storage should not be checked for public templates');
+      },
+      readFileFn: async () => {
+        throw new Error('public templates should not be read from the function filesystem');
+      },
+      uploadImageToStorageFn: async () => {
+        throw new Error('public templates should not be uploaded');
+      },
+    },
+  });
+
+  assert.deepEqual(result.urls, [publicTemplateUrl]);
+  assert.equal(result.storedAssetInfoByUrl.size, 0);
+});
+
+test('publishes storyboard templates when the server cwd is the repository root', async () => {
+  const attemptedPaths: string[] = [];
+  const result = await resolveStoryboardTemplateReferenceUrls({
+    userId: 'user_storyboard',
+    urls: ['http://localhost:3000/storyboard/templates/storyboard-template-6.png'],
+    deps: {
+      cwd: '/workspace',
+      isStorageConfiguredFn: () => true,
+      readFileFn: async (filePath) => {
+        const normalizedPath = String(filePath);
+        attemptedPaths.push(normalizedPath);
+        if (normalizedPath === '/workspace/public/storyboard/templates/storyboard-template-6.png') {
+          const error = new Error('ENOENT') as NodeJS.ErrnoException;
+          error.code = 'ENOENT';
+          throw error;
+        }
+        assert.equal(normalizedPath, '/workspace/frontend/public/storyboard/templates/storyboard-template-6.png');
+        return Buffer.from('png');
+      },
+      uploadImageToStorageFn: async ({ fileName, prefix, mime }) => ({
+        url: 'https://media.maxvideoai.com/storyboard-template-references/template-root.png',
+        key: `storyboard-template-references/user_storyboard/${fileName}`,
+        width: 1600,
+        height: 1000,
+        size: 3,
+        mime,
+        prefix,
+      }),
+      recordUserAssetFn: async () => 'asset_template',
+    },
+  });
+
+  assert.deepEqual(attemptedPaths, [
+    '/workspace/public/storyboard/templates/storyboard-template-6.png',
+    '/workspace/frontend/public/storyboard/templates/storyboard-template-6.png',
+  ]);
+  assert.deepEqual(result.urls, ['https://media.maxvideoai.com/storyboard-template-references/template-root.png']);
+  assert.equal(result.storedAssetInfoByUrl.get(result.urls[0])?.width, 1600);
+});
+
 test('leaves non-storyboard template URLs unchanged', async () => {
   const result = await resolveStoryboardTemplateReferenceUrls({
     userId: 'user_storyboard',

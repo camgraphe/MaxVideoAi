@@ -4,6 +4,42 @@ import type { AssetFieldRole } from './asset-dropzone-types';
 
 export const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
 
+export function resolveAssetFieldTitle(
+  field: EngineInputField,
+  role: AssetFieldRole,
+  assetCopy: ReturnType<typeof getLocalizedAssetDropzoneCopy>
+): string | undefined {
+  if (role === 'primary') return field.label ?? assetCopy.primaryImageFallback;
+  if (role === 'reference') return field.label ?? assetCopy.additionalReferencesFallback;
+  if (role === 'frame') return field.label ?? assetCopy.frameFallback;
+  return field.label;
+}
+
+export function resolveAssetRoleDescription(
+  role: AssetFieldRole,
+  assetCopy: ReturnType<typeof getLocalizedAssetDropzoneCopy>
+): string | null {
+  if (role === 'primary') return assetCopy.primaryRoleDescription;
+  if (role === 'reference') return assetCopy.referenceRoleDescription;
+  if (role === 'frame') return assetCopy.frameRoleDescription;
+  return null;
+}
+
+export function buildAssetFieldTooltipLines(items: {
+  roleDescription: string | null;
+  fieldDescription?: string;
+  referenceWarning?: string;
+  showReferenceWarning: boolean;
+  helperLines: string[];
+}): string[] {
+  return [
+    items.roleDescription,
+    items.fieldDescription,
+    items.referenceWarning && items.showReferenceWarning ? items.referenceWarning : null,
+    items.helperLines.length ? items.helperLines.join(' • ') : null,
+  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+}
+
 export function resolveSlotLabel(
   field: EngineInputField,
   role: AssetFieldRole,

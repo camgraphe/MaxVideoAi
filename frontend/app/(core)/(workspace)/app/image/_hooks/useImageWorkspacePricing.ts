@@ -99,7 +99,7 @@ export function useImageWorkspacePricing({
           numImages: count,
           resolution: requestResolution || undefined,
           customImageSize: requestCustomImageSize,
-          referenceImageSizes: requestMode === 'i2i' ? readyReferenceSizes : undefined,
+          referenceImageSizes: readyReferenceSizes.length ? readyReferenceSizes : undefined,
           quality: requestQuality || undefined,
           enableWebSearch: requestEnableWebSearch || undefined,
         }),

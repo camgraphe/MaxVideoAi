@@ -4,6 +4,7 @@ import {
   isLumaRay2GenerateMode,
   toLumaRay2DurationLabel,
 } from '@/lib/luma-ray2';
+import { isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } from '@/lib/fal-model-helpers';
 import { buildSoraFalInput } from '@/lib/sora';
 import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
@@ -30,7 +31,7 @@ export function buildFalGenerationRequest(
       requestBody.api_key = apiKey;
     }
   } else {
-    const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution);
+    const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution, model, payload.mode);
     requestBody = {
       fps: payload.fps,
     };
@@ -110,6 +111,10 @@ export function buildFalGenerationRequest(
       requestBody.loop = payload.loop;
     }
   }
+  const isLumaRay32PublicRequest = isLumaRay32EngineId(payload.engineId) && isLumaRay32PublicMode(payload.mode);
+  if (isLumaRay32PublicRequest && typeof payload.loop === 'boolean') {
+    requestBody.loop = payload.loop;
+  }
 
   if (typeof payload.cfgScale === 'number') {
     requestBody.cfg_scale = payload.cfgScale;
@@ -137,13 +142,6 @@ export function buildFalGenerationRequest(
     const urlCandidate = attachment.url?.trim() ?? attachment.dataUrl?.trim();
     if (!urlCandidate) continue;
 
-    if (!primaryImageUrl && attachment.kind === 'image') {
-      primaryImageUrl = urlCandidate;
-    }
-    if (!primaryAudioUrl && attachment.kind === 'audio') {
-      primaryAudioUrl = urlCandidate;
-    }
-
     const slotId = attachment.slotId?.trim();
     if (
       slotId === 'reference_images' ||
@@ -161,6 +159,12 @@ export function buildFalGenerationRequest(
         addToArray(slotId === 'images' ? 'image_urls' : slotId, urlCandidate);
       }
       continue;
+    }
+    if (!primaryImageUrl && attachment.kind === 'image') {
+      primaryImageUrl = urlCandidate;
+    }
+    if (!primaryAudioUrl && attachment.kind === 'audio') {
+      primaryAudioUrl = urlCandidate;
     }
     if (
       slotId === 'video_urls' ||
@@ -203,6 +207,12 @@ export function buildFalGenerationRequest(
       if (expectsFirstLastFrames) {
         if (!requestBody.first_frame_url) {
           requestBody.first_frame_url = urlCandidate;
+        }
+        continue;
+      }
+      if (payload.engineId.startsWith('kling-o3') && payload.mode === 'ref2v' && slotId === 'image_url') {
+        if (!requestBody.start_image_url) {
+          requestBody.start_image_url = urlCandidate;
         }
         continue;
       }
@@ -254,6 +264,10 @@ export function buildFalGenerationRequest(
     }
     if (expectsKlingO3VideoToVideoImages) {
       addToArray('image_urls', trimmed);
+      return;
+    }
+    if (isLumaRay32PublicRequest) {
+      addToArray('reference_image_urls', trimmed);
       return;
     }
     if (expectsSingleSourceVideo && (payload.engineId === 'happy-horse-1-0' || requestBody.reference_image_urls)) {

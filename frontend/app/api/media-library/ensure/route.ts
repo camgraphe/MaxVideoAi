@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       width: typeof payload?.width === 'number' ? payload.width : null,
       height: typeof payload?.height === 'number' ? payload.height : null,
       sizeBytes: typeof payload?.size === 'number' ? payload.size : null,
+      durationSec: typeof payload?.durationSec === 'number' ? payload.durationSec : null,
     });
 
     return NextResponse.json({
@@ -53,6 +54,7 @@ export async function POST(req: NextRequest) {
         previewUrl: asset.previewUrl,
         width: asset.width,
         height: asset.height,
+        durationSec: asset.durationSec,
         mime: asset.mimeType,
         size: asset.sizeBytes,
         source: asset.source,

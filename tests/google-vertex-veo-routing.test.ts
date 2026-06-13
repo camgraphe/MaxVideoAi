@@ -17,6 +17,7 @@ import {
 } from '../frontend/src/server/video-providers/google-vertex-veo/model-map';
 import { buildGoogleVertexVeoPayload } from '../frontend/src/server/video-providers/google-vertex-veo/payload';
 import { resolveVideoProviderRoutingPlan } from '../frontend/src/server/video-providers/router';
+import { normalizeProviderRoutedResolution } from '../frontend/app/api/generate/_lib/provider-resolution';
 
 test('Google Vertex Veo router selects admin-only direct routing for all public Veo 3.1 slugs', () => {
   const engineIds = ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'];
@@ -57,6 +58,97 @@ test('Google Vertex Veo router keeps Fal for public users while public routing i
       },
     }),
     { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+  );
+});
+
+test('Google Vertex Veo router enables public direct Extend only when input staging is configured', () => {
+  const baseEnv = {
+    GOOGLE_VERTEX_VEO_ENABLED: 'true',
+    GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED: 'false',
+    GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'true',
+    GOOGLE_VERTEX_VEO_PUBLIC_EXTEND_ROUTING_ENABLED: 'true',
+    GOOGLE_VERTEX_VEO_FALLBACK_TO_FAL_ENABLED: 'true',
+  };
+
+  assert.deepEqual(
+    resolveVideoProviderRoutingPlan({
+      engineId: 'veo-3-1',
+      mode: 't2v',
+      isAdmin: false,
+      env: {
+        ...baseEnv,
+        GOOGLE_VERTEX_VEO_INPUT_GCS_URI: 'gs://maxvideoai-veo-inputs/public-extend',
+      },
+    }),
+    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+  );
+
+  assert.deepEqual(
+    resolveVideoProviderRoutingPlan({
+      engineId: 'veo-3-1',
+      mode: 'extend',
+      isAdmin: false,
+      env: baseEnv,
+    }),
+    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+  );
+
+  assert.deepEqual(
+    resolveVideoProviderRoutingPlan({
+      engineId: 'veo-3-1',
+      mode: 'extend',
+      isAdmin: false,
+      env: {
+        ...baseEnv,
+        GOOGLE_VERTEX_VEO_INPUT_GCS_URI: 'gs://maxvideoai-veo-inputs/public-extend',
+      },
+    }),
+    {
+      kind: 'google_vertex_veo_primary',
+      primaryProvider: 'google_vertex_veo_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: true,
+    }
+  );
+});
+
+test('Fal-routed Google Vertex Veo Extend uses 720p for route pricing and job metadata', () => {
+  assert.deepEqual(
+    normalizeProviderRoutedResolution({
+      providerRoutingPlan: { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false },
+      engineId: 'veo-3-1',
+      mode: 'extend',
+      pricingResolution: '1080p',
+      effectiveResolution: '1080p',
+    }),
+    { pricingResolution: '720p', effectiveResolution: '720p' }
+  );
+
+  assert.deepEqual(
+    normalizeProviderRoutedResolution({
+      providerRoutingPlan: {
+        kind: 'google_vertex_veo_primary',
+        primaryProvider: 'google_vertex_veo_direct',
+        fallbackProvider: 'fal',
+        fallbackEnabled: true,
+      },
+      engineId: 'veo-3-1',
+      mode: 'extend',
+      pricingResolution: '1080p',
+      effectiveResolution: '1080p',
+    }),
+    { pricingResolution: '1080p', effectiveResolution: '1080p' }
+  );
+
+  assert.deepEqual(
+    normalizeProviderRoutedResolution({
+      providerRoutingPlan: { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false },
+      engineId: 'veo-3-1',
+      mode: 't2v',
+      pricingResolution: '1080p',
+      effectiveResolution: '1080p',
+    }),
+    { pricingResolution: '1080p', effectiveResolution: '1080p' }
   );
 });
 

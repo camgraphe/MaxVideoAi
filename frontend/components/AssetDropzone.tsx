@@ -10,15 +10,14 @@ import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-loca
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
+  buildAssetFieldTooltipLines,
   readMediaDuration,
+  resolveAssetFieldTitle,
+  resolveAssetRoleDescription,
   resolveSlotLabel,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
-import type {
-  AssetFieldRole,
-  AssetSlotAttachment,
-  AssetUploadMeta,
-} from '@/components/asset-dropzone/asset-dropzone-types';
+import type { AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
 export type {
   AssetFieldConfig,
@@ -75,14 +74,10 @@ export function AssetDropzone({
   const minCount = required ? (field.minCount ?? 1) : 0;
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
-  const acceptFormats = useMemo(
-    () => {
-      const configuredFormats =
-        caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
-      return configuredFormats?.map((format) => format.toLowerCase()) ?? [];
-    },
-    [caps?.acceptsImageFormats, constraints.supportedFormats]
-  );
+  const acceptFormats = useMemo(() => {
+    const configuredFormats = caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
+    return configuredFormats?.map((format) => format.toLowerCase()) ?? [];
+  }, [caps?.acceptsImageFormats, constraints.supportedFormats]);
   const accept = (() => {
     if (field.type === 'image') {
       return acceptFormats.length
@@ -145,6 +140,25 @@ export function AssetDropzone({
         onError?.(assetCopy.dropAudioFile);
         return;
       }
+      if (field.type === 'video') {
+        const maxSizeMB = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
+        if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
+          onError?.(assetCopy.fileTooLarge(maxSizeMB));
+          return;
+        }
+        const duration = await readMediaDuration(file, 'video');
+        const maxDurationSec = field.maxDurationSec ?? limits.videoMaxDurationSec;
+        if (duration == null && typeof maxDurationSec === 'number') {
+          onError?.(assetCopy.unableToReadVideoDuration);
+          return;
+        }
+        if (typeof maxDurationSec === 'number' && duration != null && duration > maxDurationSec) {
+          onError?.(assetCopy.videoMaxDuration(maxDurationSec));
+          return;
+        }
+        onSelect(field, file, slotIndex, { durationSec: duration ?? undefined });
+        return;
+      }
       if (field.type === 'audio') {
         const duration = await readMediaDuration(file, 'audio');
         if (duration == null) {
@@ -179,6 +193,7 @@ export function AssetDropzone({
       constraints.maxVideoSizeMB,
       field,
       limits.audioMaxDurationSec,
+      limits.videoMaxDurationSec,
       limits.videoMaxMB,
       onError,
       onSelect,
@@ -292,28 +307,15 @@ export function AssetDropzone({
     limits.videoMaxMB,
   ]);
 
-  const fieldTitle =
-    role === 'primary'
-      ? field.label ?? assetCopy.primaryImageFallback
-      : role === 'reference'
-        ? field.label ?? assetCopy.additionalReferencesFallback
-        : role === 'frame'
-          ? field.label ?? assetCopy.frameFallback
-          : field.label;
-  const roleDescription =
-    role === 'primary'
-      ? assetCopy.primaryRoleDescription
-      : role === 'reference'
-        ? assetCopy.referenceRoleDescription
-        : role === 'frame'
-          ? assetCopy.frameRoleDescription
-          : null;
-  const detailsTooltipLines = [
+  const fieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
+  const roleDescription = resolveAssetRoleDescription(role, assetCopy);
+  const detailsTooltipLines = buildAssetFieldTooltipLines({
     roleDescription,
-    field.description,
-    referenceWarning && role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id) ? referenceWarning : null,
-    helperLines.length ? helperLines.join(' • ') : null,
-  ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0);
+    fieldDescription: field.description,
+    referenceWarning,
+    showReferenceWarning: role !== 'frame' && VEO_REFERENCE_WARNING_ENGINES.has(engine.id),
+    helperLines,
+  });
   const fullBleedSingleAsset =
     !isCollectionField &&
     displaySlots.length === 1 &&

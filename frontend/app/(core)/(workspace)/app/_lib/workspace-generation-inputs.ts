@@ -1,7 +1,12 @@
 import type { MultiPromptScene } from '@/components/Composer';
 import type { KlingElementAsset, KlingElementState } from '@/components/KlingElementsBuilder';
 import type { EngineCaps, Mode } from '@/types/engines';
-import { isKlingO3FrameFieldId, shouldIgnoreKlingO3FrameAssets } from './kling-o3-unified-workflow';
+import {
+  getKlingO3AssetState,
+  isKlingO3FrameFieldId,
+  KLING_O3_END_FRAME_REQUIRES_START_FRAME_MESSAGE,
+  shouldIgnoreKlingO3FrameAssets,
+} from './kling-o3-unified-workflow';
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -16,6 +21,7 @@ export type GenerationAttachmentPayload = {
   url: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   assetId?: string;
 };
 
@@ -87,6 +93,7 @@ function buildAttachmentPayload(
     url: asset.url,
     width: asset.width,
     height: asset.height,
+    ...(typeof asset.durationSec === 'number' ? { durationSec: asset.durationSec } : {}),
     assetId: asset.assetId,
   };
 }
@@ -292,6 +299,15 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
   const endImageUrl =
     inputsPayload?.find((attachment) => attachment.slotId === 'end_image_url' && typeof attachment.url === 'string')
       ?.url ?? undefined;
+  if (options.selectedEngineId.startsWith('kling-o3-') && options.submissionMode === 'ref2v') {
+    const assetState = getKlingO3AssetState({
+      inputAssets: options.inputAssets,
+      klingElements: options.klingElements,
+    });
+    if (assetState.hasEndFrame && !assetState.hasOpeningFrame) {
+      return { ok: false, message: KLING_O3_END_FRAME_REQUIRES_START_FRAME_MESSAGE };
+    }
+  }
   const extraInputValues = options.extraInputFields.reduce<Record<string, unknown>>((acc, { field }) => {
     const normalized = normalizeExtraInputValue(field, options.form.extraInputValues[field.id] ?? field.default);
     if (normalized !== undefined) {

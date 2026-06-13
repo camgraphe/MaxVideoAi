@@ -17,6 +17,7 @@ import {
   type WatchPageDerivedSignals,
   type WatchPageRelatedLink,
 } from '@/server/watch-page-signals';
+import { resolveWatchSourceImageOriginalUrls } from '@/server/watch-source-image-originals';
 
 const BASE_WATCH_VIDEOS = [...VIDEO_SEO_WATCHLIST].sort((a, b) => b.priority - a.priority);
 const BASE_WATCH_VIDEO_MAP = new Map(BASE_WATCH_VIDEOS.map((entry) => [entry.id, entry] as const));
@@ -225,7 +226,9 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
   if (!video) return null;
 
   const entry = selectedRow?.entry ?? null;
-  const signals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video });
+  const baseSignals = selectedRow?.signals ?? deriveWatchPageSignals({ entry, video });
+  const sourceImages = await resolveWatchSourceImageOriginalUrls({ video, sourceImages: baseSignals.sourceImages });
+  const signals = sourceImages === baseSignals.sourceImages ? baseSignals : { ...baseSignals, sourceImages };
   const candidateRows = selectedRows.flatMap((row) => {
     if (!row.isEligible || !row.video || !row.signals) return [];
     return [toWatchPageRelatedCandidate({ entry: row.entry, video: row.video, signals: row.signals })];

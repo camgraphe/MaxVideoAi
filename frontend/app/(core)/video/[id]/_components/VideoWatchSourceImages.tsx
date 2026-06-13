@@ -15,6 +15,7 @@ export function VideoWatchSourceImages({
   const images: WatchSourceImageItem[] = sourceImages.map((sourceImage) => ({
     ...sourceImage,
     imageUrl: toAbsoluteUrl(sourceImage.url) ?? sourceImage.url,
+    thumbnailUrl: sourceImage.thumbUrl ? toAbsoluteUrl(sourceImage.thumbUrl) ?? sourceImage.thumbUrl : undefined,
   }));
 
   return (

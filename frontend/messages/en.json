@@ -1885,7 +1885,7 @@
     "meta": {
       "sora-2": {
         "displayName": "OpenAI Sora 2",
-        "description": "Text-to-video and remix with native audio via Fal routing.",
+        "description": "Text-to-video and remix with native audio via managed routing.",
         "priceBefore": "Live pricing updates inside the Generate workspace.",
         "versionLabel": "v2"
       },
@@ -2283,8 +2283,8 @@
         "body": "When teams need playful loops or short-form edits, Pika 2.2 delivers multi-aspect outputs at a fraction of the budget. MaxVideoAI exposes curated presets so editors can jump from vertical reels to square product shots without leaving the workspace. Compare text-to-video and image-to-video modes side-by-side on our {{pika:Pika quickstart guide}} and reuse prompt banks that have already been cleared for brand-safe campaigns. Daily QA passes flag style drift or artefacts so you know when to regenerate, upscale, or hand off to animators for refinement."
       },
       {
-        "title": "How MaxVideoAI routes Fal.ai engines",
-        "body": "Fal.ai powers the multi-engine routing backbone behind MaxVideoAI, letting us burst to capacity while surfacing a consistent interface to creative leads. Our orchestration layer keeps prompts portable, logs every render, and exposes diagnostics so you know when to retry or hand off to another engine like {{veoFast:Veo 3.1 Fast}} or {{hailuo:MiniMax Hailuo}} for stylised outputs. Teams also gain access to rate cards, audit trails, and regional compliance notes in one workspace, and automated playbooks explain how to escalate priority or swap render regions when demand peaks."
+        "title": "How MaxVideoAI routes multi-engine production",
+        "body": "MaxVideoAI coordinates multi-engine capacity behind one consistent interface for creative leads. Our orchestration layer keeps prompts portable, logs every render, and exposes diagnostics so you know when to retry or hand off to another engine like {{veoFast:Veo 3.1 Fast}} or {{hailuo:MiniMax Hailuo}} for stylised outputs. Teams also gain access to rate cards, audit trails, and regional compliance notes in one workspace, and automated playbooks explain how to escalate priority or swap render regions when demand peaks."
       }
     ],
     "comparison": {
@@ -2323,8 +2323,8 @@
     "faqTitle": "AI video routing FAQ",
     "faq": [
       {
-        "question": "Does MaxVideoAI support European billing for Fal.ai engines?",
-        "answer": "Yes. We process invoices in EUR or GBP and map them to Fal.ai usage so finance teams can reconcile spend without US subsidiaries or prepaid card workarounds."
+        "question": "Does MaxVideoAI support European billing for AI video engines?",
+        "answer": "Yes. We process invoices in EUR or GBP and map them to workspace usage so finance teams can reconcile spend without US subsidiaries or prepaid card workarounds."
       },
       {
         "question": "How quickly can teams launch a Sora 2 project?",
@@ -4167,7 +4167,7 @@
           "action": "Extend by",
           "unit": "seconds"
         },
-        "keyframes": "Keyframes supported (Pika 2.2)"
+        "keyframes": "Keyframes supported"
       },
       "preview": {
         "title": "Composite Preview",
@@ -4368,7 +4368,7 @@
       "hero": {
         "eyebrow": "Image workspace",
         "title": "Generate Images",
-        "subtitle": "Create and edit high-fidelity images with Nano Banana and other Fal image engines."
+        "subtitle": "Create and edit high-fidelity images with Nano Banana and other image engines."
       },
       "preview": {
         "eyebrow": "Generate preview",
@@ -4561,7 +4561,8 @@
           "character": "Character",
           "angle": "Angle",
           "upscale": "Upscale",
-          "audio": "Audio"
+          "audio": "Audio",
+          "background-removal": "Background removal"
         }
       },
       "insights": {
@@ -4951,7 +4952,15 @@
       "angleTitle": "Angle / Perspective",
       "angleBody": "Upload an image, adjust camera angle controls, and generate a first frame ready for image-to-video workflows.",
       "angleBadge": "New viewpoint",
-      "open": "Open Tool"
+      "open": "Open Tool",
+      "backgroundRemovalEyebrow": "Video cleanup",
+      "backgroundRemovalTitle": "Video Background Remover",
+      "backgroundRemovalBody": "Remove video backgrounds in MaxVideoAI, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
+      "backgroundRemovalBadge": "AI rotoscoping",
+      "upscaleEyebrow": "Resolution boost",
+      "upscaleTitle": "AI Upscale",
+      "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
+      "upscaleBadge": "Image + video"
     },
     "storyboard": {
       "disabledTitle": "Tools are disabled",
@@ -5709,6 +5718,71 @@
           }
         }
       }
+    },
+    "backgroundRemoval": {
+      "disabledTitle": "Tools are disabled",
+      "disabledBody": "Enable `FEATURES.workflows.toolsSection` to access this area.",
+      "back": "Back to tools",
+      "eyebrow": "Video cleanup",
+      "title": "Video Background Remover",
+      "subtitle": "Remove backgrounds from short videos, export transparent WebM or solid-color clips, and reuse results from your media library.",
+      "sourceTitle": "Source video",
+      "sourceBody": "Upload a short clip, paste an HTTPS video URL, or reuse a saved library video.",
+      "sourceStep": "1",
+      "dropzoneTitle": "Drop a video file here",
+      "dropzoneBody": "MP4, MOV, or WebM clips up to 60 seconds.",
+      "upload": "Upload video",
+      "urlLabel": "Video URL",
+      "urlPlaceholder": "https://example.com/source.mp4",
+      "urlHelp": "Paste a direct HTTPS video URL.",
+      "library": "Library",
+      "libraryHelp": "Choose a private video from your media library.",
+      "libraryRefresh": "Refresh",
+      "libraryAll": "All videos",
+      "libraryUploaded": "Uploaded",
+      "libraryGenerated": "Generated",
+      "libraryBackgroundRemoval": "Background removal",
+      "metadataLoading": "Reading video metadata...",
+      "metadataRequired": "Add a readable video source to estimate price.",
+      "metadataReady": "Ready for background removal",
+      "durationTooLong": "This tool supports clips up to 60 seconds.",
+      "settingsTitle": "Video settings",
+      "settingsStep": "2",
+      "backgroundColor": "Background",
+      "outputCodec": "Output",
+      "outputCodecHint": "Use WebM VP9 for transparent playback, or choose MP4/MOV with a green or solid background for editing tools.",
+      "moreFormats": "More formats",
+      "formatRecommendation": "WebM VP9 is the transparent export. Use MP4 or MOV with a solid background when the destination strips alpha.",
+      "preserveAudio": "Preserve audio",
+      "audioOn": "audio",
+      "audioMuted": "muted",
+      "priceBeforeGeneration": "Price shown before generation",
+      "priceLoading": "Loading price...",
+      "priceUnavailable": "Price unavailable",
+      "priceReady": "Estimated for this clip",
+      "run": "Remove Background",
+      "running": "Processing...",
+      "previewTitle": "Preview",
+      "previewStep": "3",
+      "sourcePreview": "Source",
+      "resultPreview": "Result",
+      "compareSource": "Show source",
+      "compareResult": "Show result",
+      "noPreview": "Add a video to preview the source.",
+      "emptyPreviewSource": "Source clip",
+      "emptyPreviewResult": "Transparent result",
+      "checkerboard": "Transparent output preview",
+      "save": "Save",
+      "saved": "Saved to library.",
+      "saveFailed": "Could not save this result.",
+      "download": "Download",
+      "copyLink": "Copy link",
+      "copied": "Link copied.",
+      "recentTitle": "Recent background removals",
+      "recentEmpty": "Finished results will appear here.",
+      "recentFailed": "Failed",
+      "authTitle": "Sign in to use the tool",
+      "authBody": "Background removal uses wallet billing and private library storage."
     }
   },
   "cookieBanner": {
@@ -6156,6 +6230,13 @@
           "body": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft, then reuse the sharper asset in Image, Video, or Library.",
           "cta": "Explore Tool",
           "imageAlt": "AI upscale workspace with before and after preview."
+        },
+        "backgroundRemoval": {
+          "eyebrow": "Video cleanup",
+          "title": "Remove backgrounds from video",
+          "body": "Cut out people or products from short clips, replace green-screen work, export alpha video, and download Premiere-ready MOV files.",
+          "cta": "Explore Tool",
+          "imageAlt": "Video background remover workspace with transparent output preview."
         }
       },
       "bestStartingPoints": {
@@ -6187,6 +6268,12 @@
             "title": "Raise the resolution before reuse",
             "body": "Clean up a still or short clip before it becomes a reference, prompt asset, or final deliverable.",
             "cta": "Open Upscale"
+          },
+          "backgroundRemoval": {
+            "eyebrow": "Background Remover",
+            "title": "Cut out the subject before delivery",
+            "body": "Remove the background from a short video, save the transparent result, and reuse it in ads, product clips, and education assets.",
+            "cta": "Open Video Background Remover"
           }
         }
       }
@@ -7095,6 +7182,196 @@
         "panelLeft": "Locked character",
         "panelRight": "Ready to reuse",
         "panelAlt": "Reusable AI character sheet preview generated with MaxVideoAI Character Builder."
+      }
+    },
+    "backgroundRemoval": {
+      "meta": {
+        "title": "Video Background Remover | Green Screen & AI Rotoscoping",
+        "description": "Remove video backgrounds in MaxVideoAI. Create green-screen-style cutouts, AI rotoscoping assets, alpha mattes, transparent WebM, or solid-color clips.",
+        "keywords": [
+          "video background remover",
+          "remove video background",
+          "green screen video remover",
+          "AI rotoscoping",
+          "transparent video background",
+          "alpha matte video",
+          "subject cutout video",
+          "chroma key alternative",
+          "Premiere transparent video export"
+        ],
+        "imageAlt": "Before and after video background removal preview with a presenter isolated on a transparent-style background.",
+        "schemaName": "Video Background Remover",
+        "schemaDescription": "A MaxVideoAI tool for removing backgrounds from short videos, creating AI rotoscoping-style subject cutouts, and exporting transparent video assets.",
+        "howToTitle": "How to remove a video background or create an AI rotoscope cutout",
+        "howToDescription": "Upload or select a video, choose transparent, green-screen-style, or solid-color output, run the AI video matting workflow, then save or download the result."
+      },
+      "breadcrumb": {
+        "home": "Home",
+        "tools": "Tools",
+        "current": "Video Background Remover"
+      },
+      "hero": {
+        "badge": "Green screen, alpha, and AI rotoscoping",
+        "title": "Remove video backgrounds and turn subjects into reusable cutouts",
+        "body": "Upload a short clip or choose a library video, see the price before generating, remove the background, and save an alpha matte, green-screen-style plate, or solid-color output for the next edit.",
+        "primaryCta": "Open Video Background Remover",
+        "secondaryCta": "View all tools",
+        "assurances": [
+          {
+            "label": "Price before generation",
+            "body": "The wallet estimate is shown before the run starts."
+          },
+          {
+            "label": "No surprise runs",
+            "body": "Failed jobs are refunded automatically."
+          },
+          {
+            "label": "Editor-ready output",
+            "body": "Export alpha, green screen, or solid color."
+          }
+        ],
+        "stats": [
+          {
+            "value": "60s",
+            "label": "studio clips"
+          },
+          {
+            "value": "Alpha",
+            "label": "WebM alpha"
+          },
+          {
+            "value": "Library",
+            "label": "save outputs"
+          }
+        ]
+      },
+      "useCases": {
+        "eyebrow": "Use cases",
+        "title": "One clean subject, many production paths",
+        "body": "Use background removal as AI rotoscoping, green screen replacement, product cutout, alpha matte, and compositing prep before the next edit.",
+        "cards": [
+          {
+            "title": "Talking heads",
+            "body": "Rotoscope presenters out of a busy room and place them over brand-safe scenes, decks, or transparent layouts."
+          },
+          {
+            "title": "Product cutouts",
+            "body": "Separate handheld product footage into foreground assets for ecommerce videos, landing pages, and explainers."
+          },
+          {
+            "title": "Ad compositing",
+            "body": "Create green-screen-style foreground plates that editors can combine with new hooks, scenes, and campaign backgrounds."
+          },
+          {
+            "title": "Green screen replacement",
+            "body": "Keep the instructor or speaker visible while replacing a classroom, office, or branded backdrop without filming on a green screen."
+          },
+          {
+            "title": "Social overlays",
+            "body": "Export reusable transparent clips and alpha overlays for vertical posts, stories, reels, and product demos."
+          }
+        ]
+      },
+      "modelGuide": {
+        "eyebrow": "Output guide",
+        "title": "AI video matting for green-screen and transparent exports",
+        "body": "The tool is focused on finished exports: transparent WebM for web playback, or solid-color and green-screen-style files for channels without alpha support.",
+        "columns": {
+          "model": "Output",
+          "bestFor": "Best for",
+          "price": "Estimate",
+          "useWhen": "Use when"
+        },
+        "rows": [
+          {
+            "model": "AI video matting",
+            "bestFor": "Short uploaded or library videos that need background removal, subject isolation, alpha matte export, or green-screen replacement.",
+            "price": "Wallet estimate shown before launch. Successful runs are charged from the final app quote.",
+            "useWhen": "Use for final assets you want to preview, download, and save to the media library."
+          }
+        ]
+      },
+      "workflow": {
+        "eyebrow": "Workflow",
+        "title": "From source clip to green-screen, alpha, or compositing asset",
+        "body": "The tool keeps the production loop compact: choose a source, configure the alpha or background output, run, inspect, then save or download.",
+        "priceNote": "Before you generate, MaxVideoAI displays the estimated price for the selected clip and output settings.",
+        "steps": [
+          {
+            "title": "Upload or select a video",
+            "body": "Use a short MP4, MOV, or WebM URL, upload a file, or pick a saved library video."
+          },
+          {
+            "title": "Choose alpha, green screen, or color output",
+            "body": "Export WebM VP9 for transparent playback, or a green/solid-color MP4 or MOV plate when the destination does not support alpha."
+          },
+          {
+            "title": "Preview, save, and reuse",
+            "body": "Compare source and result, download the file, or save it back to the MaxVideoAI library."
+          }
+        ]
+      },
+      "production": {
+        "eyebrow": "Export quality",
+        "title": "Download files your production tools can actually open",
+        "body": "Transparent video and AI rotoscoping outputs are format-sensitive, so WebM VP9 is the transparent export while MP4/MOV outputs should use green-screen or solid-color backgrounds.",
+        "panelCaption": "Use WebM VP9 for browsers and compatible editors, and green-screen or solid-color MP4/MOV when the destination cannot preserve alpha.",
+        "items": [
+          {
+            "title": "Transparent WebM overlay",
+            "body": "WebM VP9 stays available for browser playback, landing-page overlays, and web players that support transparent WebM."
+          },
+          {
+            "title": "Editor-friendly plates",
+            "body": "Choose green-screen or solid-color MP4/MOV output when your editing pipeline does not preserve transparent WebM."
+          },
+          {
+            "title": "Green-screen plate",
+            "body": "Choose a green or solid background when the final platform strips alpha channels."
+          }
+        ]
+      },
+      "faqSection": {
+        "eyebrow": "FAQ",
+        "title": "Video background removal questions",
+        "body": "Practical details for transparent output, audio, pricing, and library reuse."
+      },
+      "faq": [
+        {
+          "q": "Can I export a transparent video or alpha matte?",
+          "a": "Yes. Use WebM VP9 when the destination supports transparent WebM. For editors that do not preserve WebM alpha, use a green-screen or solid-color MP4/MOV plate."
+        },
+        {
+          "q": "Can this replace green screen or rotoscoping work?",
+          "a": "It can replace many simple green-screen, chroma key, and AI rotoscoping prep tasks by isolating the subject and exporting a transparent or solid-color plate."
+        },
+        {
+          "q": "Can the tool preserve audio?",
+          "a": "Yes. Studio mode includes an audio preservation toggle, so you can keep the source soundtrack when the selected output supports it."
+        },
+        {
+          "q": "How is pricing estimated?",
+          "a": "MaxVideoAI reads the clip duration and shows a wallet estimate before the run starts. Failed runs are refunded automatically."
+        },
+        {
+          "q": "What is the studio duration limit?",
+          "a": "This release is scoped to short clips up to 60 seconds so processing, preview, and billing stay predictable."
+        },
+        {
+          "q": "Can I reuse saved outputs?",
+          "a": "Yes. Save finished videos to the media library and select them later from the Background removal tab."
+        },
+        {
+          "q": "Which format should I choose for editing?",
+          "a": "Use transparent WebM when your editor supports it. Otherwise export a green-screen or solid-color MP4/MOV plate and key or composite it in the editor."
+        }
+      ],
+      "finalCta": {
+        "eyebrow": "Ready to clean the clip?",
+        "title": "Remove a background and keep the result in your MaxVideoAI library",
+        "body": "Open the workspace, estimate the run, and turn short source videos into reusable subject cutouts, alpha mattes, green-screen plates, or solid-background assets.",
+        "primaryCta": "Open Video Background Remover",
+        "secondaryCta": "View all tools"
       }
     }
   },

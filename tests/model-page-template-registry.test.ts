@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
   getModelPageTemplateConfig,
   listModelPageTemplateSlugs,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import { COMPARE_EXCLUDED_SLUGS } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-links.ts';
 import type { ModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-types.ts';
+
+const engineCatalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8')) as Array<{
+  modelSlug: string;
+}>;
+const CATALOG_MODEL_SLUGS = new Set(engineCatalog.map((entry) => entry.modelSlug));
 
 test('model page template config separates SEO intent from shared layout slots', () => {
   const config: ModelPageTemplateConfig = {
@@ -46,6 +53,9 @@ test('template registry enables Seedance production and draft model templates', 
   const ltxFast = getModelPageTemplateConfig('ltx-2-3-fast');
   const luma = getModelPageTemplateConfig('luma-ray-2');
   const lumaFlash = getModelPageTemplateConfig('luma-ray-2-flash');
+  const lumaRay32 = getModelPageTemplateConfig('luma-ray-3-2');
+  const lumaUni = getModelPageTemplateConfig('luma-uni-1');
+  const lumaUniMax = getModelPageTemplateConfig('luma-uni-1-max');
   const happyHorse = getModelPageTemplateConfig('happy-horse-1-0');
   const hailuo = getModelPageTemplateConfig('minimax-hailuo-02-text');
   const pika = getModelPageTemplateConfig('pika-text-to-video');
@@ -61,6 +71,9 @@ test('template registry enables Seedance production and draft model templates', 
   assert.ok(ltxFast);
   assert.ok(luma);
   assert.ok(lumaFlash);
+  assert.ok(lumaRay32);
+  assert.ok(lumaUni);
+  assert.ok(lumaUniMax);
   assert.ok(happyHorse);
   assert.ok(hailuo);
   assert.ok(pika);
@@ -75,6 +88,9 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(ltxFast.intent, 'draft');
   assert.equal(luma.intent, 'production');
   assert.equal(lumaFlash.intent, 'draft');
+  assert.equal(lumaRay32.intent, 'production');
+  assert.equal(lumaUni.intent, 'reference-prep');
+  assert.equal(lumaUniMax.intent, 'production');
   assert.equal(happyHorse.intent, 'production');
   assert.equal(hailuo.intent, 'draft');
   assert.equal(pika.intent, 'draft');
@@ -89,6 +105,9 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(ltxFast.hero.primaryCtaHref, '/app?engine=ltx-2-3-fast');
   assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
   assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
+  assert.equal(lumaRay32.hero.primaryCtaHref, '/app?engine=luma-ray-3-2');
+  assert.equal(lumaUni.hero.primaryCtaHref, '/app/image?engine=luma-uni-1');
+  assert.equal(lumaUniMax.hero.primaryCtaHref, '/app/image?engine=luma-uni-1-max');
   assert.equal(happyHorse.hero.primaryCtaHref, '/app?engine=happy-horse-1-0');
   assert.equal(hailuo.hero.primaryCtaHref, '/app?engine=minimax-hailuo-02-text');
   assert.equal(pika.hero.primaryCtaHref, '/app?engine=pika-text-to-video');
@@ -103,6 +122,9 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(ltxFast.pricing.anchorHref, '/pricing#ltx-2-3-fast-pricing');
   assert.equal(luma.pricing.anchorHref, '/pricing#luma-ray-2-pricing');
   assert.equal(lumaFlash.pricing.anchorHref, '/pricing#luma-ray-2-flash-pricing');
+  assert.equal(lumaRay32.pricing.anchorHref, '/pricing#luma-ray-3-2-pricing');
+  assert.equal(lumaUni.pricing.anchorHref, '/pricing#luma-uni-1-pricing');
+  assert.equal(lumaUniMax.pricing.anchorHref, '/pricing#luma-uni-1-max-pricing');
   assert.equal(happyHorse.pricing.anchorHref, '/pricing#happy-horse-1-0-pricing');
   assert.equal(hailuo.pricing.anchorHref, '/pricing#minimax-hailuo-02-text-pricing');
   assert.equal(pika.pricing.anchorHref, '/pricing#pika-text-to-video-pricing');
@@ -137,6 +159,18 @@ test('template registry enables Seedance production and draft model templates', 
   assert.deepEqual(
     lumaFlash.pricing.presets.map((preset) => preset.id),
     ['5s-540p', '5s-720p', '9s-720p', '9s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    lumaRay32.pricing.presets.map((preset) => preset.id),
+    ['5s-540p', '5s-720p', '10s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    lumaUni.pricing.presets.map((preset) => preset.id),
+    ['2k-image', 'single-edit', 'reference-edit-set']
+  );
+  assert.deepEqual(
+    lumaUniMax.pricing.presets.map((preset) => preset.id),
+    ['2k-hero-image', 'hero-edit', 'reference-edit-set']
   );
   assert.deepEqual(
     happyHorse.pricing.presets.map((preset) => preset.id),
@@ -183,6 +217,9 @@ test('template registry enables Seedance production and draft model templates', 
     'ltx-2-fast',
     'luma-ray-2',
     'luma-ray-2-flash',
+    'luma-ray-3-2',
+    'luma-uni-1',
+    'luma-uni-1-max',
     'minimax-hailuo-02-text',
     'nano-banana',
     'nano-banana-2',
@@ -376,7 +413,7 @@ test('Wan templates separate reference-video route from shorter audio drafts', (
   );
 });
 
-test('Luma Ray 2 templates separate premium final route from fast draft route', () => {
+test('Luma Ray 2 templates stay available as legacy routes behind Ray 3.2', () => {
   const luma = getModelPageTemplateConfig('luma-ray-2');
   const lumaFlash = getModelPageTemplateConfig('luma-ray-2-flash');
 
@@ -384,6 +421,10 @@ test('Luma Ray 2 templates separate premium final route from fast draft route', 
   assert.ok(lumaFlash);
   assert.equal(luma.intent, 'production');
   assert.equal(lumaFlash.intent, 'draft');
+  assert.equal(luma.hero.eyebrow, 'PREVIOUS-GENERATION LUMA ROUTE');
+  assert.equal(lumaFlash.hero.eyebrow, 'PREVIOUS-GENERATION FAST LUMA ROUTE');
+  assert.match(luma.hero.subtitleHighlightTerms.join(' '), /Ray 3\.2 migration/);
+  assert.match(lumaFlash.hero.subtitleHighlightTerms.join(' '), /Ray 3\.2 migration/);
   assert.equal(luma.hero.primaryCtaHref, '/app?engine=lumaRay2');
   assert.equal(lumaFlash.hero.primaryCtaHref, '/app?engine=lumaRay2_flash');
   assert.equal(luma.hero.quickLinks.some((link) => link.href === '#prompting'), true);
@@ -394,6 +435,56 @@ test('Luma Ray 2 templates separate premium final route from fast draft route', 
   assert.equal(lumaFlash.pricing.presets.some((preset) => preset.resolution === '1080p'), true);
 });
 
+test('Luma Agents templates expose fallback-safe pricing presets and no image compare sections', () => {
+  const lumaRay32 = getModelPageTemplateConfig('luma-ray-3-2');
+  const lumaUni = getModelPageTemplateConfig('luma-uni-1');
+  const lumaUniMax = getModelPageTemplateConfig('luma-uni-1-max');
+
+  assert.ok(lumaRay32);
+  assert.ok(lumaUni);
+  assert.ok(lumaUniMax);
+  assert.equal(lumaRay32.sections.compare, false);
+  assert.equal(lumaUni.sections.compare, false);
+  assert.equal(lumaUniMax.sections.compare, false);
+  assert.equal(lumaRay32.hero.quickLinks.some((link) => link.icon === 'compare'), false);
+  assert.equal(lumaRay32.hero.quickLinks.some((link) => link.href === '#specs'), true);
+  assert.equal(lumaUni.hero.quickLinks.some((link) => link.icon === 'compare'), false);
+  assert.equal(lumaUniMax.hero.quickLinks.some((link) => link.icon === 'compare'), false);
+  assert.deepEqual(
+    lumaRay32.pricing.presets.map((preset) => preset.id),
+    ['5s-540p', '5s-720p', '10s-1080p', 'max-duration']
+  );
+  assert.deepEqual(
+    lumaUni.pricing.presets.map((preset) => preset.id),
+    ['2k-image', 'single-edit', 'reference-edit-set']
+  );
+  assert.deepEqual(
+    lumaUniMax.pricing.presets.map((preset) => preset.id),
+    ['2k-hero-image', 'hero-edit', 'reference-edit-set']
+  );
+});
+
+test('templates only enable generic compare sections for catalog-backed compare engines', () => {
+  for (const slug of listModelPageTemplateSlugs()) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should have a template config`);
+
+    if (!config.sections.compare) continue;
+
+    assert.ok(
+      CATALOG_MODEL_SLUGS.has(slug),
+      `${slug} enables the generic compare section but is absent from the compare engine catalog`
+    );
+  }
+
+  const lumaRay32 = getModelPageTemplateConfig('luma-ray-3-2');
+  assert.ok(lumaRay32);
+  if (!CATALOG_MODEL_SLUGS.has('luma-ray-3-2')) {
+    assert.equal(lumaRay32.sections.compare, false);
+    assert.equal(COMPARE_EXCLUDED_SLUGS.has('luma-ray-3-2'), true);
+  }
+});
+
 test('template quick links avoid redirecting compare URLs', () => {
   const veo = getModelPageTemplateConfig('veo-3-1');
   assert.ok(veo);
@@ -401,4 +492,26 @@ test('template quick links avoid redirecting compare URLs', () => {
     veo.hero.quickLinks[0]?.href,
     '/ai-video-engines/kling-3-pro-vs-veo-3-1?order=veo-3-1'
   );
+});
+
+test('template compare quick links only reference published compare catalog slugs', () => {
+  for (const slug of listModelPageTemplateSlugs()) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should have a template config`);
+
+    for (const link of config.hero.quickLinks) {
+      if (!link.href.startsWith('/ai-video-engines/')) continue;
+
+      const pairSlug = link.href.split('?')[0]?.split('/').pop() ?? '';
+      const engineSlugs = pairSlug.split('-vs-');
+      assert.equal(engineSlugs.length, 2, `${slug} quick link ${link.href} should be a two-engine compare URL`);
+
+      for (const engineSlug of engineSlugs) {
+        assert.ok(
+          CATALOG_MODEL_SLUGS.has(engineSlug),
+          `${slug} quick link ${link.href} references unpublished compare engine ${engineSlug}`
+        );
+      }
+    }
+  }
 });

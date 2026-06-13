@@ -38,9 +38,9 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
       },
     },
     lumaRay2: {
-      bestFor: 'Premium cinematic generation with modify and reframe',
+      bestFor: 'Legacy Luma Generate, Modify and Reframe coverage',
     },
-    lumaRay3_2: {
+    'luma-ray-3-2': {
       bestFor: 'Direct Luma cinematic control with HDR, EXR, keyframes and video edit',
       features: {
         keyframes: { value: true },
@@ -49,7 +49,7 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
       },
     },
     lumaRay2_flash: {
-      bestFor: 'Fast cinematic drafts with modify and reframe',
+      bestFor: 'Legacy fast Luma drafts with Modify and Reframe',
     },
     'kling-2-6-pro': {
       bestFor: 'Cinematic dialogue',

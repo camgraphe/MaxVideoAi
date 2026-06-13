@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from 'next/link';
-import { Camera, Clapperboard, Maximize2, Sparkles, Wrench } from 'lucide-react';
+import { Camera, Clapperboard, Eraser, Maximize2, Sparkles, Wrench } from 'lucide-react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { ButtonLink } from '@/components/ui/Button';
@@ -33,6 +33,10 @@ const DEFAULT_TOOLS_COPY = {
   "upscaleTitle": "AI Upscale",
   "upscaleBody": "Upscale images or short videos with SeedVR2, Topaz, FlashVSR, and Recraft before reusing them in later workflows.",
   "upscaleBadge": "Image + video",
+  "backgroundRemovalEyebrow": "Video cleanup",
+  "backgroundRemovalTitle": "Video Background Remover",
+  "backgroundRemovalBody": "Remove video backgrounds in MaxVideoAI, create green-screen-style cutouts, export alpha video, and reuse clean subjects.",
+  "backgroundRemovalBadge": "AI rotoscoping",
   "open": "Open Tool"
 } as const;
 
@@ -112,7 +116,7 @@ export default function ToolsPage() {
               <p className="mt-2 max-w-2xl text-sm text-text-secondary">{copy.subtitle}</p>
             </section>
 
-            <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-4">
+            <section className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
               <Card className="overflow-hidden border border-border bg-surface p-0">
                 <ToolPreviewPanel className="aspect-[16/9] p-4">
                   <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
@@ -256,6 +260,45 @@ export default function ToolsPage() {
                       {copy.upscaleBadge}
                     </span>
                     <ButtonLink href="/app/tools/upscale" variant="primary" linkComponent={Link}>
+                      {copy.open}
+                    </ButtonLink>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="overflow-hidden border border-border bg-surface p-0">
+                <ToolPreviewPanel className="aspect-[16/9] p-4">
+                  <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(15,23,42,0.06))]" />
+                  <div className="relative grid h-full grid-cols-2 gap-3 rounded-[18px] border border-border/80 bg-bg/70 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-sm">
+                    <div className="overflow-hidden rounded-[14px] border border-border bg-surface-2">
+                      <img
+                        src={ANGLE_CARD_BACKGROUND_URL}
+                        alt="Source video preview"
+                        className="h-full w-full object-cover object-top"
+                      />
+                    </div>
+                    <div className="flex items-center justify-center overflow-hidden rounded-[14px] border border-border bg-[linear-gradient(45deg,#e5e7eb_25%,transparent_25%),linear-gradient(-45deg,#e5e7eb_25%,transparent_25%),linear-gradient(45deg,transparent_75%,#e5e7eb_75%),linear-gradient(-45deg,transparent_75%,#e5e7eb_75%)] bg-[length:18px_18px] bg-[position:0_0,0_9px,9px_-9px,-9px_0px]">
+                      <div className="h-20 w-12 rounded-t-full bg-brand shadow-[0_12px_24px_rgba(59,130,246,0.28)]" />
+                    </div>
+                  </div>
+                </ToolPreviewPanel>
+                <div className="p-5">
+                  <div className="mb-4 flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-input bg-brand/10 text-brand">
+                      <Eraser className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.backgroundRemovalEyebrow}</p>
+                      <h2 className="text-lg font-semibold text-text-primary">{copy.backgroundRemovalTitle}</h2>
+                    </div>
+                  </div>
+                  <p className="text-sm text-text-secondary">{copy.backgroundRemovalBody}</p>
+                  <div className="mt-5 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary">
+                      <Eraser className="h-3.5 w-3.5" />
+                      {copy.backgroundRemovalBadge}
+                    </span>
+                    <ButtonLink href="/app/tools/background-removal" variant="primary" linkComponent={Link}>
                       {copy.open}
                     </ButtonLink>
                   </div>

@@ -43,11 +43,11 @@ export async function GET(req: NextRequest) {
       width: asset.width,
       height: asset.height,
       size: asset.sizeBytes,
+      durationSec: asset.durationSec,
       kind: asset.kind,
       source: asset.source,
       jobId: asset.sourceJobId,
       sourceOutputId: asset.sourceOutputId,
-      durationSec: typeof asset.metadata.durationSec === 'number' ? asset.metadata.durationSec : undefined,
       createdAt: asset.createdAt,
     })),
   });

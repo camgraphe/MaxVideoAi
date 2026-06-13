@@ -267,7 +267,7 @@ test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3'
   assert.match(es.hero.subtitle, /Borradores 16:9 rápidos/);
 });
 
-test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => {
+test('Luma Ray 2 templates keep legacy Ray 2 routes behind current Ray 3.2', () => {
   const luma = getEngine('luma-ray-2');
   const flash = getEngine('luma-ray-2-flash');
   const en = buildModelDecisionData({ engine: luma, locale: 'en' });
@@ -281,11 +281,12 @@ test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => 
   assert.ok(es);
 
   assert.equal(en.hero.title, 'Luma Ray 2');
-  assert.match(en.hero.subtitle, /Premium cinematic shots/);
+  assert.match(en.hero.subtitle, /Previous-generation Luma route/);
   assert.match(en.hero.subtitle, /Modify/);
   assert.match(en.hero.subtitle, /Reframe/);
   assert.equal(en.hero.primaryCta.href, '/app?engine=lumaRay2');
-  assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en.hero.quickLinks.some((link) => link.href === '/models/luma-ray-3-2'), true);
+  assert.equal(en.hero.quickLinks.some((link) => link.href === '#prompting'), true);
   assert.deepEqual(
     en.pricing.scenarios.map((scenario) => scenario.id),
     ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']
@@ -293,22 +294,24 @@ test('Luma Ray 2 templates keep premium and Flash draft intent distinct', () => 
   assert.equal(en.pricing.scenarios.every((scenario) => scenario.value !== '—'), true);
   assert.doesNotMatch(
     visibleDecisionText(en),
-    /Seedance 2\.0|Native audio|Audio on|Dialogue, ambience|SFX generated|Armored skull|Motorcycle|Fal workflow|active Fal route|draft speed/i
+    /Seedance 2\.0|Native audio|Audio on|Dialogue, ambience|SFX generated|Armored skull|Motorcycle|Fal workflow|active Fal route|draft speed|current default/i
   );
-  assert.match(fr.hero.subtitle, /Plans cinématographiques premium/);
+  assert.match(fr.hero.subtitle, /ancienne génération/);
 
   assert.equal(fast.hero.title, 'Luma Ray 2 Flash');
-  assert.match(fast.hero.subtitle, /Fast Luma drafts/);
-  assert.match(fast.hero.subtitle, /lower-cost iteration/);
+  assert.match(fast.hero.subtitle, /Previous-generation fast Luma/);
+  assert.match(fast.hero.subtitle, /draft coverage/);
+  assert.match(fast.hero.subtitle, /Modify and Reframe/);
   assert.equal(fast.hero.primaryCta.href, '/app?engine=lumaRay2_flash');
-  assert.equal(fast.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(fast.hero.quickLinks.some((link) => link.href === '/models/luma-ray-3-2'), true);
+  assert.equal(fast.hero.quickLinks.some((link) => link.href === '#prompting'), true);
   assert.notEqual(fast.meta.title, en.meta.title);
-  assert.doesNotMatch(visibleDecisionText(fast), /premium cinematic generation workflow|delivery-ready Luma variants/i);
+  assert.doesNotMatch(visibleDecisionText(fast), /premium cinematic generation workflow|delivery-ready Luma variants|current default/i);
   assert.doesNotMatch(
     visibleDecisionText(fast),
     /Seedance 2\.0|Native audio|Audio on|Dialogue, ambience|SFX generated|Fal workflow|active Fal route/i
   );
-  assert.match(es.hero.subtitle, /Borradores Luma rápidos/);
+  assert.match(es.hero.subtitle, /generación anterior/);
 });
 
 test('remaining video templates preserve Happy Horse, Hailuo, and Pika route intent', () => {

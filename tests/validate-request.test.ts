@@ -646,6 +646,38 @@ test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () =
   assert.equal(fields.find((field) => field.id === 'reference_image_urls')?.slotLabelPattern, '@Image{n}');
 });
 
+test('Luma Ray 3.2 rejects looped 10 second public video requests', () => {
+  const invalidStringDuration = validateRequest('luma-ray-3-2', 't2v', {
+    prompt: 'Loop this shot',
+    duration: '10s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.equal(invalidStringDuration.ok, false);
+  assert.equal(invalidStringDuration.error?.field, 'loop');
+
+  const invalidNumericDuration = validateRequest('luma-ray-3-2', 'i2v', {
+    prompt: 'Loop this still',
+    image_url: 'https://example.com/start.png',
+    duration_seconds: 10,
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.equal(invalidNumericDuration.ok, false);
+  assert.equal(invalidNumericDuration.error?.field, 'loop');
+
+  const validFiveSecondLoop = validateRequest('luma-ray-3-2', 't2v', {
+    prompt: 'Loop this short shot',
+    duration: '5s',
+    resolution: '540p',
+    aspect_ratio: '16:9',
+    loop: true,
+  });
+  assert.deepEqual(validFiveSecondLoop, OK);
+});
+
 test('Kling 3 i2v enforces valid element inputs before provider submission', () => {
   const basePayload = {
     prompt: 'Animate this still',
@@ -928,15 +960,15 @@ test('Luma Ray 2 registry keeps the two public models with generate, modify, and
   assert.equal(registry.some((entry) => entry.id === 'lumaRay2_reframe'), false);
 });
 
-test('Luma Ray 3.2 registry is Luma-direct first with Fal fallback endpoints', () => {
+test('Luma Ray 3.2 registry exposes Luma direct generation and fallback model ids', () => {
   const registry = listFalEngines();
-  const lumaRay32 = registry.find((entry) => entry.id === 'lumaRay3_2');
+  const lumaRay32 = registry.find((entry) => entry.id === 'luma-ray-3-2');
 
   assert.ok(lumaRay32);
   assert.equal(lumaRay32?.modelSlug, 'luma-ray-3-2');
   assert.equal(lumaRay32?.engine.label, 'Luma Ray 3.2');
-  assert.equal(lumaRay32?.engine.providerMeta?.provider, 'luma');
-  assert.equal(lumaRay32?.engine.providerMeta?.modelSlug, 'ray-3.2');
+  assert.equal(lumaRay32?.engine.providerMeta?.provider, 'luma_agents_direct');
+  assert.equal(lumaRay32?.engine.providerMeta?.modelSlug, 'ray-3-2');
   assert.deepEqual(lumaRay32?.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe']);
   assert.deepEqual(lumaRay32?.engine.resolutions, ['540p', '720p', '1080p']);
   assert.deepEqual(lumaRay32?.engine.aspectRatios, ['9:16', '3:4', '1:1', '4:3', '16:9', '21:9']);
@@ -953,7 +985,7 @@ test('Luma Ray 3.2 registry is Luma-direct first with Fal fallback endpoints', (
   );
   assert.equal(
     lumaRay32?.modes.find((mode) => mode.mode === 'v2v')?.falModelId,
-    'luma/agent/ray/v3.2/video-to-video'
+    'luma/agent/ray/v3.2/video-edit'
   );
 
   const optionalFields = lumaRay32?.engine.inputSchema?.optional ?? [];
@@ -964,7 +996,7 @@ test('Luma Ray 3.2 registry is Luma-direct first with Fal fallback endpoints', (
 });
 
 test('Luma Ray 3.2 request validation supports direct-generation and edit constraints', () => {
-  const validText = validateRequest('lumaRay3_2', 't2v', {
+  const validText = validateRequest('luma-ray-3-2', 't2v', {
     prompt: 'A slow dolly shot through a misty greenhouse at sunrise',
     duration: '10s',
     resolution: '1080p',
@@ -972,7 +1004,7 @@ test('Luma Ray 3.2 request validation supports direct-generation and edit constr
   });
   assert.deepEqual(validText, OK);
 
-  const validImage = validateRequest('lumaRay3_2', 'i2v', {
+  const validImage = validateRequest('luma-ray-3-2', 'i2v', {
     prompt: 'The character turns to face camera',
     image_url: 'https://example.com/opening-frame.jpg',
     duration: '5s',
@@ -981,15 +1013,16 @@ test('Luma Ray 3.2 request validation supports direct-generation and edit constr
   });
   assert.deepEqual(validImage, OK);
 
-  const missingSource = validateRequest('lumaRay3_2', 'v2v', {
+  const missingSource = validateRequest('luma-ray-3-2', 'v2v', {
     prompt: 'Transform the scene into moonlit 35mm footage',
   });
   assert.equal(missingSource.ok, false);
   assert.equal(missingSource.error?.field, 'video_url');
 
-  const validEdit = validateRequest('lumaRay3_2', 'v2v', {
+  const validEdit = validateRequest('luma-ray-3-2', 'v2v', {
     video_url: 'https://example.com/source.mp4',
     prompt: 'Transform the scene into moonlit 35mm footage',
+    duration: '5s',
     edit_strength: 'flex_2',
     resolution: '720p',
   });

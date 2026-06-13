@@ -1,6 +1,7 @@
 export {
   runAngleTool,
   runAudioGenerate,
+  runBackgroundRemovalTool,
   runCharacterBuilderTool,
   runGenerate,
   runImageGeneration,

@@ -36,6 +36,7 @@ export async function persistCompletedImageGeneration(params: {
   quality: string | null;
   resolvedAspectRatio: string | null;
   resolution: string;
+  style?: string | null;
   thinkingLevel: string | null;
   userId: string;
   vendorAccountId: string | null;
@@ -65,6 +66,7 @@ export async function persistCompletedImageGeneration(params: {
     quality,
     resolvedAspectRatio,
     resolution,
+    style = null,
     thinkingLevel,
     userId,
     vendorAccountId,
@@ -171,6 +173,7 @@ export async function persistCompletedImageGeneration(params: {
             ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
             ...(outputFormat ? { output_format: outputFormat } : {}),
             ...(quality ? { quality } : {}),
+            ...(style ? { style } : {}),
             ...(maskUrl ? { mask_url: maskUrl } : {}),
             ...(enableWebSearch ? { enable_web_search: true } : {}),
             ...(thinkingLevel ? { thinking_level: thinkingLevel } : {}),

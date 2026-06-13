@@ -22,6 +22,7 @@ import {
 } from '@/server/video-providers/router';
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
+import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
 import { isLumaDirectEngine } from '@/server/video-providers/luma-direct/model-map';
 import type { EngineCaps, Mode } from '@/types/engines';
 import type { PaymentMode } from './initial-video-job';
@@ -94,7 +95,10 @@ export async function resolveGenerateRouteContext(params: {
   let isAdminForDirectProvider = false;
   if (
     !isBytePlusV1a &&
-    (isKlingDirectEngine(engine.id) || isGoogleVertexVeoEngine(engine.id) || isLumaDirectEngine(engine.id))
+    (isKlingDirectEngine(engine.id) ||
+      isGoogleVertexVeoEngine(engine.id) ||
+      isLumaAgentsVideoEngine(engine.id) ||
+      isLumaDirectEngine(engine.id))
   ) {
     try {
       await requireAdmin(req);

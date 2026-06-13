@@ -60,7 +60,7 @@ export const DEFAULT_CONTROLS_COPY = {
     action: 'Extend by',
     unit: 'seconds',
   },
-  keyframes: 'Keyframes supported (Pika 2.2)',
+  keyframes: 'Keyframes supported',
 } as const;
 
 export type SettingsControlsCopy = typeof DEFAULT_CONTROLS_COPY;

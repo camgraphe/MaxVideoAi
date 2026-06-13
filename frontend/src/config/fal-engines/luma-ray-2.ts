@@ -213,6 +213,7 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     versionLabel: 'Ray 2',
     availability: 'available',
     logoPolicy: 'logoAllowed',
+    isLegacy: true,
     engine: LUMA_RAY2_ENGINE,
     modes: [
       {
@@ -260,14 +261,14 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     defaultFalModelId: 'fal-ai/luma-dream-machine/ray-2',
     seo: {
-      title: 'Luma Ray 2 – Generate, Modify and Reframe AI Video',
+      title: 'Luma Ray 2 – Legacy Generate, Modify and Reframe AI Video',
       description:
-        'Use Luma Ray 2 for cinematic text-to-video, image-to-video, modify, and reframe workflows with 5 s or 9 s generation shots, up to 1080p output, source-video editing, and reframing tools inside MaxVideoAI.',
+        'Use Luma Ray 2 as a previous-generation Luma route for legacy text-to-video, image-to-video, modify, and reframe workflows, while starting new Luma edit work on Ray 3.2.',
       canonicalPath: '/models/luma-ray-2',
     },
     type: 'Text, image, modify, reframe',
     seoText:
-      'Luma Ray 2 on MaxVideoAI combines cinematic text generation, still-to-video, source-video modification, and reframe workflows in one unified model page, with 540p to 1080p generation outputs plus dedicated edit controls.',
+      'Luma Ray 2 remains available on MaxVideoAI as a legacy-compatible Luma route for older text generation, still-to-video, source-video modification, and reframe workflows. Ray 3.2 is the current Luma entry point for new Modify, guide/keyframe, and Reframe work.',
     demoUrl: '/hero/luma-dream.mp4',
     media: {
       videoUrl: '/hero/luma-dream.mp4',
@@ -310,9 +311,9 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     faqs: [
       {
-        question: 'What workflows does Luma Ray 2 expose in MaxVideoAI?',
+        question: 'How does Luma Ray 2 fit next to Ray 3.2?',
         answer:
-          'Ray 2 now keeps the full public generation surface inside one model page: text-to-video, image-to-video, modify, and reframe.',
+          'Ray 2 stays available for legacy-compatible text-to-video, image-to-video, modify, and reframe workflows. For new Luma source-video edits, guide/keyframes, and reframing work, Ray 3.2 is the current route.',
       },
       {
         question: 'Which options are exposed per workflow?',

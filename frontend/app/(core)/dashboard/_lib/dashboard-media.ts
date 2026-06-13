@@ -10,6 +10,8 @@ const DASHBOARD_PREVIEW_RATIO = 16 / 9;
 export function resolveWorkspaceJobHref(jobId: string, surface?: JobSurface | null): string {
   return surface === 'audio'
     ? `/app/audio?job=${encodeURIComponent(jobId)}`
+    : surface === 'background-removal'
+      ? `/app/tools/background-removal?job=${encodeURIComponent(jobId)}`
     : `/app?job=${encodeURIComponent(jobId)}`;
 }
 
@@ -120,4 +122,3 @@ export function buildEntriesFromGroup(group: GroupSummary, versionLabel: string)
     };
   });
 }
-

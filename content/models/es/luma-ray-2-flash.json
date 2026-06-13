@@ -2,15 +2,15 @@
   "marketingName": "Luma Ray 2 Flash",
   "versionLabel": "Ray 2 Flash",
   "seo": {
-    "title": "Luma Ray 2 Flash Specs, Precio y workflows draft rapidos | MaxVideoAI",
-    "description": "Usa Luma Ray 2 Flash en MaxVideoAI para drafts mas rapidos y baratos, tests image-to-video, pases modify sobre video fuente y reframes sociales. Flash mantiene la misma superficie workflow de Luma mientras prioriza velocidad de iteracion entre 540p y 1080p.",
+    "title": "Luma Ray 2 Flash Specs, Precio y workflows legacy rapidos | MaxVideoAI",
+    "description": "Usa Luma Ray 2 Flash en MaxVideoAI como ruta Luma rapida de generacion anterior para drafts antiguos, tests image-to-video, pases modify y reframes sociales. Empieza los nuevos edits Luma y Reframe en Ray 3.2.",
     "image": "/hero/luma-ray2-flash.jpg"
   },
-  "overview": "Luma Ray 2 Flash es el tier de draft rapido y throughput de la familia Luma dentro de MaxVideoAI. Igual que Ray 2, la pagina expone ahora el flujo principal de Luma en una sola pagina de modelo: text-to-video, image-to-video, modify y reframe.",
+  "overview": "Luma Ray 2 Flash es una ruta Luma rapida de generacion anterior dentro de MaxVideoAI. Mantenla para drafts Ray 2 Flash antiguos y contexto de comparacion, mientras Ray 3.2 es la ruta Luma actual para Modify, keyframes y Reframe.",
   "hero": {
     "title": "Luma Ray 2 Flash - drafts rapidos, modify y reframe",
-    "intro": "Usa Ray 2 Flash cuando quieras la misma cobertura workflow de Luma que en Ray 2, pero con un tier mas rapido y barato para validar direccion, explorar video fuente y producir reframes de entrega antes de subir al tier premium.",
-    "badge": "T2V + I2V + Modify + Reframe",
+    "intro": "Usa Ray 2 Flash cuando necesites retomar drafts Luma rapidos antiguos o exploracion de video fuente compatible con Ray 2 Flash. Para nuevos edits Luma, cuadros guia/keyframes y Reframe, empieza en Ray 3.2.",
+    "badge": "Ruta Luma rapida legacy - T2V + I2V + Modify + Reframe",
     "ctaPrimary": {
       "label": "Generar con Luma Ray 2 Flash",
       "href": "/app?engine=lumaRay2_flash"

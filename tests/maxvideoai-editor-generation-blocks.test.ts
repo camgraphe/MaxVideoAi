@@ -92,8 +92,8 @@ test('Studio specialized tool presets route to product tools instead of generic 
   assert.equal(angle?.defaultWorkflowType, 'angle_generation');
 
   const modifyVideo = getWorkspaceBlockPreset('modify-video');
-  assert.equal(modifyVideo?.defaultModelId, 'lumaRay3_2');
-  assert.equal(modifyVideo?.defaultShot?.modelId, 'lumaRay3_2');
+  assert.equal(modifyVideo?.defaultModelId, 'luma-ray-3-2');
+  assert.equal(modifyVideo?.defaultShot?.modelId, 'luma-ray-3-2');
 });
 
 test('Studio generation block output handles match the generated media type', () => {
@@ -402,7 +402,7 @@ test('shot inspector narrows model choices to the selected specialized tool surf
 
   assert.ok(modifyVideo);
   const modifyVideoModelIds = compatibleCapabilitiesForShot(modifyVideo, capabilities).map((capability) => capability.id);
-  assert.ok(modifyVideoModelIds.includes('lumaRay3_2'));
+  assert.ok(modifyVideoModelIds.includes('luma-ray-3-2'));
   assert.equal(modifyVideoModelIds.includes('seedance-2-0'), false);
   assert.equal(modifyVideoModelIds.includes('kling-2-1-pro'), false);
 

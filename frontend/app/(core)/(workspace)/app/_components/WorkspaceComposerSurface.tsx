@@ -8,10 +8,6 @@ import { CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
-import {
-  isLumaRay2EngineId,
-  isLumaRay2GenerateMode,
-} from '@/lib/luma-ray2';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { getSeedanceFieldBlockKey } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -32,10 +28,12 @@ import {
   buildComposerPromotedActions,
   type WorkspaceInputSchemaSummary,
 } from '../_lib/workspace-input-schema';
+import { supportsModeLoopControl } from '../_lib/workspace-engine-helpers';
 import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
+import { LumaRay32KeyframeEditor } from './LumaRay32KeyframeEditor';
 import { StoryboardLaunchModal } from './StoryboardLaunchModal';
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
@@ -138,6 +136,17 @@ function isStoryboardLaunchEngine(engineId: string): boolean {
   return normalized.includes('seedance') || normalized.includes('kling');
 }
 
+const LUMA_RAY32_MODIFY_ASSET_FIELD_IDS = new Set(['video_url', 'start_image_url', 'edit_keyframe_urls']);
+const LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS = new Set(['edit_keyframe_indexes']);
+const HDR_FIELD_ID = 'hdr';
+
+function isTruthyExtraInputValue(value: unknown): boolean {
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'string') return ['true', '1', 'yes', 'on'].includes(value.trim().toLowerCase());
+  return false;
+}
+
 export function WorkspaceComposerSurface({
   selectedEngine,
   form,
@@ -224,6 +233,14 @@ export function WorkspaceComposerSurface({
   const klingO3VideoToVideoSupported = supportsKlingO3VideoToVideo(selectedEngine);
   const klingO3VideoReferenceDisabledReason =
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
+  const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
+  const hdrFieldEntry = useMemo(
+    () =>
+      inputSchemaSummary.secondaryFields.find(({ field }) => field.id === HDR_FIELD_ID) ??
+      inputSchemaSummary.promotedFields.find(({ field }) => field.id === HDR_FIELD_ID) ??
+      null,
+    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
+  );
 
   const composerAssetFields = useMemo(() => {
     return inputSchemaSummary.assetFields.map((entry) => {
@@ -249,6 +266,9 @@ export function WorkspaceComposerSurface({
         disabled: Boolean(disabledReason),
         disabledReason,
       };
+    }).filter((entry) => {
+      if (!showLumaRay32KeyframeEditor) return true;
+      return !LUMA_RAY32_MODIFY_ASSET_FIELD_IDS.has(entry.field.id);
     });
   }, [
     guestUploadLockedReason,
@@ -258,9 +278,20 @@ export function WorkspaceComposerSurface({
     isUnifiedKlingO3,
     klingO3AssetState.hasAnyVideoInput,
     klingO3VideoToVideoSupported,
+    showLumaRay32KeyframeEditor,
     workflowCopy.clearReferencesToUseStartEnd,
     workflowCopy.clearStartEndToUseReferences,
   ]);
+
+  const advancedFields = useMemo(() => {
+    const shouldHideInlineField = (field: EngineInputField) => Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id);
+    if (!showLumaRay32KeyframeEditor) {
+      return inputSchemaSummary.secondaryFields.filter(({ field }) => !shouldHideInlineField(field));
+    }
+    return inputSchemaSummary.secondaryFields.filter(
+      ({ field }) => !LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS.has(field.id) && !shouldHideInlineField(field)
+    );
+  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor]);
 
   const handleExtraInputValueChange = useCallback(
     (field: EngineInputField, value: unknown) => {
@@ -280,6 +311,14 @@ export function WorkspaceComposerSurface({
   );
 
   const composerAssets = useMemo(() => buildComposerAttachments(inputAssets), [inputAssets]);
+  const hdrEnabled = hdrFieldEntry ? isTruthyExtraInputValue(form.extraInputValues[hdrFieldEntry.field.id]) : false;
+  const handleHdrChange = useCallback(
+    (enabled: boolean) => {
+      if (!hdrFieldEntry) return;
+      handleExtraInputValueChange(hdrFieldEntry.field, enabled);
+    },
+    [handleExtraInputValueChange, hdrFieldEntry]
+  );
   const storyboardLaunchAction = useMemo<ComposerPromotedAction | null>(() => {
     if (!isStoryboardLaunchEngine(selectedEngine.id)) return null;
     const tooltip =
@@ -326,6 +365,7 @@ export function WorkspaceComposerSurface({
   const durationSec = multiPromptActive ? multiPromptTotalSec : form.durationSec;
   const durationManagedLabel = `Duration managed by multi-prompt · ${multiPromptTotalSec}s`;
   const audioControlNote = voiceControlEnabled ? 'Audio locked by voice control' : undefined;
+  const showLoopControl = supportsModeLoopControl(selectedEngine, submissionMode);
   const showKlingElementsBuilder =
     supportsKlingV3Controls &&
     (isUnifiedKlingO3 || activeMode === 'i2v' || activeMode === 'ref2v');
@@ -412,6 +452,21 @@ export function WorkspaceComposerSurface({
         disableGenerate={multiPromptInvalid || audioWorkflowUnsupported || Boolean(klingO3UnsupportedVideoReason)}
         extraFields={
           <>
+            {showLumaRay32KeyframeEditor ? (
+              <LumaRay32KeyframeEditor
+                engine={selectedEngine}
+                caps={capability}
+                form={form}
+                setForm={setForm}
+                assetFields={inputSchemaSummary.assetFields}
+                inputAssets={inputAssets}
+                onAssetAdd={handleAssetAdd}
+                onAssetRemove={handleAssetRemove}
+                onOpenLibrary={handleOpenAssetLibrary}
+                onNotice={showNotice}
+                disabledReason={guestUploadLockedReason}
+              />
+            ) : null}
             {showRetakeWorkflowAction ? (
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-0.5">
@@ -462,12 +517,8 @@ export function WorkspaceComposerSurface({
               audioControlDisabled={voiceControlEnabled}
               audioControlNote={audioControlNote}
               onAudioChange={handleAudioChange}
-              showLoopControl={isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)}
-              loopEnabled={
-                isLumaRay2EngineId(selectedEngine.id) && isLumaRay2GenerateMode(submissionMode)
-                  ? Boolean(form.loop)
-                  : undefined
-              }
+              showLoopControl={showLoopControl}
+              loopEnabled={showLoopControl ? Boolean(form.loop) : undefined}
               onLoopChange={handleLoopChange}
               showExtendControl={false}
               seedLocked={form.seedLocked}
@@ -491,7 +542,7 @@ export function WorkspaceComposerSurface({
               safetyChecker={safetyCheckerValue}
               onSafetyCheckerChange={handleSafetyCheckerChange}
               showSafetyCheckerControl={showSafetyCheckerControl}
-              advancedFields={inputSchemaSummary.secondaryFields}
+              advancedFields={advancedFields}
               advancedFieldValues={form.extraInputValues}
               onAdvancedFieldChange={handleExtraInputValueChange}
               variant="advanced"
@@ -521,6 +572,9 @@ export function WorkspaceComposerSurface({
             audioControlDisabled={voiceControlEnabled}
             audioControlNote={audioControlNote}
             onAudioChange={handleAudioChange}
+            showHdrControl={Boolean(hdrFieldEntry)}
+            hdrEnabled={hdrEnabled}
+            onHdrChange={handleHdrChange}
             durationManaged={multiPromptActive}
             durationManagedLabel={durationManagedLabel}
           />

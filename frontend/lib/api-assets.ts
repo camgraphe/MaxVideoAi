@@ -5,6 +5,7 @@ type SavedAsset = {
   url: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   mime?: string | null;
   size?: number | null;
 };
@@ -18,6 +19,7 @@ export async function saveAssetToLibrary(payload: {
   sourceOutputId?: string | null;
   thumbUrl?: string | null;
   previewUrl?: string | null;
+  durationSec?: number | null;
 }) {
   const response = await authFetch('/api/media-library/ensure', {
     method: 'POST',
@@ -32,6 +34,7 @@ export async function saveAssetToLibrary(payload: {
       sourceOutputId: payload.sourceOutputId ?? null,
       thumbUrl: payload.thumbUrl ?? null,
       previewUrl: payload.previewUrl ?? null,
+      durationSec: payload.durationSec ?? null,
     }),
   });
   const data = (await response.json().catch(() => null)) as { ok?: boolean; error?: string; asset?: SavedAsset } | null;
