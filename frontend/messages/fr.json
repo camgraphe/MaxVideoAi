@@ -3991,7 +3991,15 @@
         "image": "image",
         "video": "vidéo",
         "audio": "audio",
-        "asset": "ressource"
+        "asset": "ressource",
+        "sourceAll": "Tous",
+        "sourceRecent": "Récents",
+        "sourceUploaded": "Importés",
+        "sourceGenerated": "Générés",
+        "sourceStoryboard": "Storyboard",
+        "sourceCharacter": "Personnage",
+        "sourceAngle": "Angle",
+        "sourceUpscale": "Upscale"
       }
     },
     "generate": {

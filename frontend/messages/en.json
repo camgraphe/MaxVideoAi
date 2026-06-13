@@ -3956,7 +3956,15 @@
         "image": "image",
         "video": "video",
         "audio": "audio",
-        "asset": "asset"
+        "asset": "asset",
+        "sourceAll": "All",
+        "sourceRecent": "Recent",
+        "sourceUploaded": "Uploaded",
+        "sourceGenerated": "Generated",
+        "sourceStoryboard": "Storyboard",
+        "sourceCharacter": "Character",
+        "sourceAngle": "Angle",
+        "sourceUpscale": "Upscale"
       }
     },
     "generate": {

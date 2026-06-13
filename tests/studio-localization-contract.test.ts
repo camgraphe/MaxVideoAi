@@ -34,6 +34,9 @@ import {
   localizeWorkspaceTimelineTrackLabel,
   localizeWorkspaceTimelineTrackNoticeLabel,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-tracks';
+import {
+  workspaceLibrarySourceLabelsFromCopy,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets';
 import { normalizePersistedWorkspaceState } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
 
@@ -340,6 +343,24 @@ test('Studio localization dictionaries expose required copy in every locale', ()
       assert.ok(String(value).trim().length > 0, `${locale} ${keyPath} should not be empty`);
     });
   });
+});
+
+test('Studio asset library source filters use localized copy', () => {
+  const frDictionary = JSON.parse(fs.readFileSync(path.join(root, 'frontend/messages/fr.json'), 'utf8')) as Dictionary;
+  const esDictionary = JSON.parse(fs.readFileSync(path.join(root, 'frontend/messages/es.json'), 'utf8')) as Dictionary;
+  const frLabels = workspaceLibrarySourceLabelsFromCopy(resolveStudioCopy(frDictionary).assetLibrary);
+  const esLabels = workspaceLibrarySourceLabelsFromCopy(resolveStudioCopy(esDictionary).assetLibrary);
+
+  assert.equal(frLabels.all, 'Tous');
+  assert.equal(frLabels.recent, 'Récents');
+  assert.equal(frLabels.upload, 'Importés');
+  assert.equal(frLabels.generated, 'Générés');
+  assert.equal(frLabels.character, 'Personnage');
+  assert.equal(esLabels.all, 'Todos');
+  assert.equal(esLabels.recent, 'Recientes');
+  assert.equal(esLabels.upload, 'Subidos');
+  assert.equal(esLabels.generated, 'Generados');
+  assert.equal(esLabels.character, 'Personaje');
 });
 
 test('resolveStudioCopy falls back when the Studio namespace is missing', () => {

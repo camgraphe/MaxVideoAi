@@ -6,11 +6,11 @@ import { studioApiSyncStatusFromResponse } from '../_state/workspace-api-persist
 import type { WorkspaceNodeKind } from '../_lib/workspace-types';
 import {
   WORKSPACE_LIBRARY_ASSETS,
-  WORKSPACE_LIBRARY_SOURCE_LABELS,
   buildWorkspaceUserLibraryUrl,
   normalizeWorkspaceUserLibraryPayload,
   workspaceLibraryAssetsForNodeKind,
   workspaceLibraryKindForNodeKind,
+  workspaceLibrarySourceLabelsFromCopy,
   workspaceLibrarySourceOptionsForKind,
   type WorkspaceLibraryAsset,
   type WorkspaceLibrarySource,
@@ -38,6 +38,7 @@ export function useWorkspaceEditorAssetLibrary(
   const isEnabled = nodeKind !== undefined;
   const libraryKind = nodeKind ? workspaceLibraryKindForNodeKind(nodeKind) : null;
   const sourceOptions = useMemo(() => workspaceLibrarySourceOptionsForKind(libraryKind), [libraryKind]);
+  const sourceLabels = useMemo(() => workspaceLibrarySourceLabelsFromCopy(copy), [copy]);
   const [source, setSource] = useState<WorkspaceLibrarySource>('all');
   const activeSource = sourceOptions.includes(source) ? source : 'all';
   const fallbackAssets = useMemo(
@@ -164,7 +165,7 @@ export function useWorkspaceEditorAssetLibrary(
     source: activeSource,
     setSource,
     sourceOptions,
-    sourceLabels: WORKSPACE_LIBRARY_SOURCE_LABELS,
+    sourceLabels,
     usingFallback: shouldUseFallback,
   };
 }

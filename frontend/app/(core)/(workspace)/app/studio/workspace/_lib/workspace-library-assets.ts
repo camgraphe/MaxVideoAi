@@ -38,6 +38,33 @@ export const WORKSPACE_LIBRARY_SOURCE_LABELS = {
   upscale: 'Upscale',
 } as const satisfies Record<WorkspaceLibrarySource, string>;
 
+type WorkspaceLibrarySourceCopy = Partial<Record<
+  | 'sourceAll'
+  | 'sourceRecent'
+  | 'sourceUploaded'
+  | 'sourceGenerated'
+  | 'sourceStoryboard'
+  | 'sourceCharacter'
+  | 'sourceAngle'
+  | 'sourceUpscale',
+  string
+>>;
+
+export function workspaceLibrarySourceLabelsFromCopy(
+  copy: WorkspaceLibrarySourceCopy
+): Record<WorkspaceLibrarySource, string> {
+  return {
+    all: copy.sourceAll ?? WORKSPACE_LIBRARY_SOURCE_LABELS.all,
+    recent: copy.sourceRecent ?? WORKSPACE_LIBRARY_SOURCE_LABELS.recent,
+    upload: copy.sourceUploaded ?? WORKSPACE_LIBRARY_SOURCE_LABELS.upload,
+    generated: copy.sourceGenerated ?? WORKSPACE_LIBRARY_SOURCE_LABELS.generated,
+    storyboard: copy.sourceStoryboard ?? WORKSPACE_LIBRARY_SOURCE_LABELS.storyboard,
+    character: copy.sourceCharacter ?? WORKSPACE_LIBRARY_SOURCE_LABELS.character,
+    angle: copy.sourceAngle ?? WORKSPACE_LIBRARY_SOURCE_LABELS.angle,
+    upscale: copy.sourceUpscale ?? WORKSPACE_LIBRARY_SOURCE_LABELS.upscale,
+  };
+}
+
 export const WORKSPACE_LIBRARY_ASSETS: WorkspaceLibraryAsset[] = [
   {
     id: 'chrono-watch',
