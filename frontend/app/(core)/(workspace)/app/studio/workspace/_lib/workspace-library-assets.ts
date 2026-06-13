@@ -13,6 +13,7 @@ export type WorkspaceLibraryAsset = {
 
 export type WorkspaceLibraryRequestOptions = {
   cursor?: string | null;
+  includeOutputs?: boolean;
   limit?: number;
 };
 
@@ -229,6 +230,7 @@ export function buildWorkspaceUserLibraryUrl(
   if (options.cursor) params.set('cursor', options.cursor);
   if (source === 'recent') return `/api/media-library/recent-outputs?${params.toString()}`;
   if (source !== 'all') params.set('source', source);
+  if (options.includeOutputs) params.set('includeOutputs', 'true');
   return `/api/media-library/assets?${params.toString()}`;
 }
 

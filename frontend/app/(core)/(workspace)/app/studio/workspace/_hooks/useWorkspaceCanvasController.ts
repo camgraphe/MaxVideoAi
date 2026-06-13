@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
+import { useCallback, useMemo, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { useWorkspaceCanvasImportActions } from './useWorkspaceCanvasImportActions';
 import { useWorkspaceCanvasTemplateActions } from './useWorkspaceCanvasTemplateActions';
 import { useWorkspaceCanvasTimelineActions } from './useWorkspaceCanvasTimelineActions';
@@ -111,6 +111,11 @@ export function useWorkspaceCanvasController({
   undoCanvas,
   userCanvasTemplates,
 }: UseWorkspaceCanvasControllerParams) {
+  const [canvasAutoCenterNodeId, setCanvasAutoCenterNodeId] = useState<string | null>(null);
+  const handleCanvasAutoCenterNodeConsumed = useCallback(() => {
+    setCanvasAutoCenterNodeId(null);
+  }, []);
+
   const {
     handleCreateNodeFromHandleDrop,
     handleCreateNodeFromPaletteDrop,
@@ -145,13 +150,14 @@ export function useWorkspaceCanvasController({
     defaultModelId,
     nodes,
     setActiveEditorSurface,
+    setCanvasAutoCenterNodeId,
     setFocusMode,
     setNotice,
     setSelectedNodeId,
     studioNotices,
   });
 
-  const { handleGenerateShot } = useWorkspaceGenerationActions({
+  const { handleGenerateShot, handleRunChat } = useWorkspaceGenerationActions({
     capabilities,
     edges,
     mockMode,
@@ -196,6 +202,8 @@ export function useWorkspaceCanvasController({
     onGenerateShot: handleGenerateShot,
     onOpenAssetLibrary: handleOpenAssetLibrary,
     onPatchNodeData: patchNodeData,
+    onPatchShot: patchShot,
+    onRunChat: handleRunChat,
     onSendOutputToTimeline: handleSendOutputToTimeline,
   });
 
@@ -245,17 +253,20 @@ export function useWorkspaceCanvasController({
   return {
     assetPickerLibrary,
     assetPickerNode,
+    canvasAutoCenterNodeId,
     canvasHistory,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
     handleCanvasFileDrop,
     handleCanvasTextPaste,
+    handleCanvasAutoCenterNodeConsumed,
     handleCreateNodeFromHandleDrop,
     handleCreateNodeFromPaletteDrop,
     handleDeleteUserCanvasTemplate,
     handleDropNodeToTimeline,
     handleDuplicateUserCanvasTemplate,
     handleGenerateShot,
+    handleRunChat,
     handleInvalidNodeDropToTimeline,
     handleOpenAssetLibrary,
     handleSaveCanvasTemplate,

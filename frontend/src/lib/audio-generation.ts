@@ -18,7 +18,7 @@ const AUDIO_PRICE_GEMINI_TTS_CENTS_PER_1000_CHARS = 15;
 const AUDIO_PRICE_MINIMAX_VOICE_CLONE_CENTS_PER_REQUEST = 150;
 const AUDIO_PRICE_MINIMAX_VOICE_CLONE_PREVIEW_CENTS_PER_1000_CHARS = 30;
 
-export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const;
+export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
 export const AUDIO_MOOD_VALUES = ['epic', 'tense', 'intimate', 'dark', 'dreamy', 'sci-fi', 'documentary'] as const;
@@ -85,6 +85,20 @@ const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
     requiresVideo: false,
     requiresMood: false,
     requiresScript: true,
+    supportsMusicToggle: false,
+    supportsAudioExport: false,
+    defaultMusicEnabled: false,
+  },
+  sfx_only: {
+    engineId: 'audio-sfx-only',
+    billingProductKey: 'audio-sfx-only',
+    label: 'SFX Only',
+    description: 'Standalone cinematic sound effects and ambience from a text prompt.',
+    includesVoice: false,
+    audioOnly: true,
+    requiresVideo: false,
+    requiresMood: false,
+    requiresScript: false,
     supportsMusicToggle: false,
     supportsAudioExport: false,
     defaultMusicEnabled: false,
@@ -286,7 +300,7 @@ function buildAudioVendorCostComponents(input: {
     amountCents: number;
   }> = [];
 
-  if (input.pack === 'cinematic' || input.pack === 'cinematic_voice') {
+  if (input.pack === 'sfx_only' || input.pack === 'cinematic' || input.pack === 'cinematic_voice') {
     components.push({
       type: 'sound_design_mirelo_sfx_v1_5',
       label: 'Mirelo SFX V1.5',

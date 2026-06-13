@@ -31,6 +31,10 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
       label: 'Voice Over Only',
       description: 'Narration only.',
     },
+    sfx_only: {
+      label: 'SFX Only',
+      description: 'Sound effects or ambience.',
+    },
     cinematic: {
       label: 'Cinematic',
       description: 'SFX + optional background music.',
@@ -238,6 +242,8 @@ export function translateAudioProcessingMessage(copy: AudioWorkspaceCopy, messag
   switch (message) {
     case 'Generating cinematic sound design…':
       return copy.messages.processing.soundDesign;
+    case 'Generating sound effects…':
+      return copy.messages.processing.soundDesign;
     case 'Generating music track…':
       return copy.messages.processing.musicTrack;
     case 'Generating music bed…':
@@ -268,7 +274,7 @@ export function buildAudioModeOptions(copy: AudioWorkspaceCopy): Array<{
   label: string;
   description: string;
 }> {
-  return (['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const).map((id) => ({
+  return (['music_only', 'voice_only', 'sfx_only', 'cinematic', 'cinematic_voice'] as const).map((id) => ({
     id,
     label: copy.modes[id].label,
     description: copy.modes[id].description,
@@ -279,6 +285,7 @@ export function formatAudioPackLabel(copy: AudioWorkspaceCopy, pack: string | nu
   switch (pack) {
     case 'music_only':
     case 'voice_only':
+    case 'sfx_only':
     case 'cinematic':
     case 'cinematic_voice':
       return copy.modes[pack].label;
@@ -290,6 +297,8 @@ export function formatAudioPackLabel(copy: AudioWorkspaceCopy, pack: string | nu
       return copy.modes.music_only.label;
     case 'Voice Over Only':
       return copy.modes.voice_only.label;
+    case 'SFX Only':
+      return copy.modes.sfx_only.label;
     default:
       return null;
   }

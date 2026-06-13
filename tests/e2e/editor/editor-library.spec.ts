@@ -46,6 +46,8 @@ test('asset library modal scrolls through a full app media library', async ({ pa
   await switchEditorFocus(page, 'Canvas');
 
   await clickCanvasNode(page, 'asset-product-image');
+  await page.getByRole('button', { name: 'Open Product Image settings' }).click();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
   await page.getByRole('button', { name: 'Replace media' }).click();
 
   const dialog = page.getByRole('dialog', { name: 'Select image' });
@@ -236,6 +238,69 @@ test('Project media import shows localized upload failure and retry path', async
   });
 });
 
+test('Project media import can add multiple library assets at once', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const assets = [
+    {
+      id: 'batch-image-0',
+      url: 'https://cdn.maxvideoai.test/library/batch-image-0.png',
+      thumbUrl: transparentPng,
+      kind: 'image',
+      mime: 'image/png',
+      width: 1920,
+      height: 1080,
+      source: 'upload',
+      createdAt: '2026-06-13T12:02:00.000Z',
+    },
+    {
+      id: 'batch-video-1',
+      url: 'https://cdn.maxvideoai.test/library/batch-video-1.mp4',
+      thumbUrl: transparentPng,
+      kind: 'video',
+      mime: 'video/mp4',
+      width: 1920,
+      height: 1080,
+      source: 'generated',
+      createdAt: '2026-06-13T12:01:00.000Z',
+    },
+    {
+      id: 'batch-audio-2',
+      url: 'https://cdn.maxvideoai.test/library/batch-audio-2.mp3',
+      kind: 'audio',
+      mime: 'audio/mpeg',
+      source: 'upload',
+      createdAt: '2026-06-13T12:00:00.000Z',
+    },
+  ];
+
+  await page.route('**/api/media-library/assets?**', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets, nextCursor: null, hasMore: false }),
+    });
+  });
+  await page.route('**/api/media-library/recent-outputs?**', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, outputs: [] }) });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+  await page.getByRole('button', { name: 'Import media' }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Select batch-image-0.png' }).click();
+  await dialog.getByRole('button', { name: 'Select batch-video-1.mp4' }).click();
+  await expect(dialog.getByRole('button', { name: /Import selected.*2/ })).toBeEnabled();
+  await dialog.getByRole('button', { name: /Import selected.*2/ }).click();
+
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByText('2 media assets imported into Project media.')).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id="batch-image-0"]')).toBeVisible();
+  await expect(page.locator('[data-project-media-asset-id="batch-video-1"]')).toBeVisible();
+  assertNoEditorClientErrors(errors);
+});
+
 test('Project media import pages through the app library and filters by media kind', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
   const requests: string[] = [];
@@ -261,13 +326,51 @@ test('Project media import pages through the app library and filters by media ki
     source: 'upload',
     createdAt: '2026-06-13T11:59:00.000Z',
   }];
+  const videoFirstPage = Array.from({ length: 60 }, (_, index) => {
+    const suffix = String(index).padStart(2, '0');
+    return {
+      id: `library-video-${suffix}`,
+      url: `https://cdn.maxvideoai.test/library/video-${suffix}.mp4`,
+      thumbUrl: transparentPng,
+      kind: 'video',
+      mime: 'video/mp4',
+      width: 1920,
+      height: 1080,
+      source: 'upload',
+      createdAt: `2026-06-13T11:${String(59 - index).padStart(2, '0')}:00.000Z`,
+    };
+  });
+  const videoSecondPage = [{
+    id: 'library-video-60',
+    url: 'https://cdn.maxvideoai.test/library/video-60.mp4',
+    thumbUrl: transparentPng,
+    kind: 'video',
+    mime: 'video/mp4',
+    width: 1920,
+    height: 1080,
+    source: 'upload',
+    createdAt: '2026-06-13T10:59:00.000Z',
+  }];
 
   await page.route('**/api/media-library/assets?**', async (route) => {
     const url = new URL(route.request().url());
     requests.push(url.search);
     const kind = url.searchParams.get('kind');
     const cursor = url.searchParams.get('cursor');
-    const assets = kind === 'video' ? secondPage : cursor ? secondPage : firstPage;
+    const source = url.searchParams.get('source');
+    if (kind === 'video') {
+      await route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ok: true,
+          assets: source === 'angle' ? [] : cursor ? videoSecondPage : videoFirstPage,
+          nextCursor: source === 'angle' || cursor ? null : 'video-page-2',
+          hasMore: source !== 'angle' && !cursor,
+        }),
+      });
+      return;
+    }
+    const assets = cursor ? secondPage : firstPage;
     await route.fulfill({
       contentType: 'application/json',
       body: JSON.stringify({
@@ -288,13 +391,34 @@ test('Project media import pages through the app library and filters by media ki
 
   const dialog = page.getByRole('dialog', { name: 'Import project media' });
   await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Use image-0.png' })).toBeVisible();
+  await expect.poll(() => Promise.resolve(
+    requests.some((search) => search.includes('includeOutputs=true'))
+  )).toBe(true);
+  await expect(dialog.getByRole('button', { name: 'Select image-0.png' })).toBeVisible();
   await dialog.getByRole('button', { name: 'Load more' }).click();
-  await expect(dialog.getByRole('button', { name: 'Use video-4.mp4' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Select video-4.mp4' })).toBeVisible();
 
+  await dialog.getByRole('tab', { name: 'Angle' }).click();
   await dialog.getByRole('tab', { name: 'Video' }).click();
   await expect.poll(() => Promise.resolve(requests.some((search) => search.includes('kind=video')))).toBe(true);
-  await expect(dialog.getByRole('button', { name: 'Use video-4.mp4' })).toBeVisible();
+  await expect.poll(() => Promise.resolve(
+    requests.some((search) => search.includes('kind=video') && !search.includes('source=angle'))
+  )).toBe(true);
+  await expect(dialog.getByRole('button', { name: 'Load more' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Load more' }).click();
+  await expect.poll(() => Promise.resolve(
+    requests.some((search) => search.includes('kind=video') && search.includes('cursor=video-page-2'))
+  )).toBe(true);
+
+  await dialog.getByRole('tab', { name: 'Generated' }).click();
+  await expect.poll(() => Promise.resolve(
+    requests.some((search) =>
+      search.includes('kind=video') &&
+      search.includes('source=generated') &&
+      search.includes('includeOutputs=true')
+    )
+  )).toBe(true);
+  await expect(dialog.getByRole('button', { name: 'Load more' })).toBeVisible();
 
   assertNoEditorClientErrors(errors);
 });

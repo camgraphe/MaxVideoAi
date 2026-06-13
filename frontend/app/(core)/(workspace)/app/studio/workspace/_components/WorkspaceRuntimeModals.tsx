@@ -43,6 +43,7 @@ type WorkspaceRuntimeModalsProps = {
   onRangeModeChange: WorkspaceExportDialogProps['onRangeModeChange'];
   onSelectAsset: WorkspaceAssetLibraryModalProps['onSelectAsset'];
   onSelectProjectMediaAsset: WorkspaceProjectMediaLibraryModalProps['onSelectAsset'];
+  onSelectProjectMediaAssets: WorkspaceProjectMediaLibraryModalProps['onSelectAssets'];
 };
 
 export function WorkspaceRuntimeModals({
@@ -76,6 +77,7 @@ export function WorkspaceRuntimeModals({
   onRangeModeChange,
   onSelectAsset,
   onSelectProjectMediaAsset,
+  onSelectProjectMediaAssets,
 }: WorkspaceRuntimeModalsProps) {
   return (
     <>
@@ -136,6 +138,7 @@ export function WorkspaceRuntimeModals({
         onLoadMore={projectMediaLibrary.loadMore}
         onMediaKindFilterChange={projectMediaLibrary.setKindFilter}
         onSelectAsset={onSelectProjectMediaAsset}
+        onSelectAssets={onSelectProjectMediaAssets}
         onSourceChange={projectMediaLibrary.setSource}
       />
     </>

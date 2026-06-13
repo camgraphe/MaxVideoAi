@@ -4,83 +4,40 @@
 
 import { memo, type MouseEvent, type ReactNode } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
-import { Handle, Position } from '@xyflow/react';
-import { Box, Clapperboard, FileText, ImageIcon, Music2, Play, Plus, Send, Sparkles, StickyNote, Video } from 'lucide-react';
-import { inputHandles, NodeFrame } from './workspace-node-frame';
+import {
+  Box,
+  Clapperboard,
+  FileText,
+  ImageIcon,
+  Music2,
+  Play,
+  Plus,
+  Send,
+  Sparkles,
+  StickyNote,
+  Video,
+} from 'lucide-react';
+import { AngleReferencePicker } from './workspace-angle-reference-picker';
+import { ChatNode } from './workspace-chat-node';
+import { NodeFrame } from './workspace-node-frame';
 import { AudioPreview, VideoPreview } from './workspace-node-media-preview';
+import { ShotInputDock } from './workspace-shot-input-dock';
 import styles from '../../_styles/canvas-nodes.module.css';
-import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector, WorkspaceShotStatus } from '../../_lib/workspace-types';
+import type {
+  WorkspaceEdgeKind,
+  WorkspaceGraphNode,
+  WorkspaceShotStatus,
+} from '../../_lib/workspace-types';
 import {
   localizeWorkspaceAssetSubtitle,
   localizeWorkspaceNodeGeneratedText,
 } from '../../_lib/workspace-generated-copy';
 import { isPlayableAudioUrl, isPlayableVideoUrl, outputStatus } from '../../_lib/workspace-media-availability';
-import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
+import { edgeLabel } from '../../_lib/workspace-templates';
 import { localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
 
 function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] | null {
   return data.studioCanvasCopy?.nodes ?? null;
-}
-
-function connectorLabel(
-  handle: WorkspaceEdgeKind,
-  connectors: WorkspaceInputConnector[],
-  copy: ReturnType<typeof nodeCopy>
-): string {
-  return connectors.find((connector) => connector.kind === handle)?.label ??
-    (copy ? localizeStudioEdgeKindLabel(handle, copy) : edgeLabel(handle));
-}
-
-function connectorRequired(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): boolean {
-  return Boolean(connectors.find((connector) => connector.kind === handle)?.required);
-}
-
-function connectorCapacity(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): Pick<WorkspaceInputConnector, 'capacityLabel' | 'remainingCount'> {
-  const connector = connectors.find((candidate) => candidate.kind === handle);
-  return {
-    capacityLabel: connector?.capacityLabel ?? null,
-    remainingCount: connector?.remainingCount,
-  };
-}
-
-function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
-  const handles = inputHandles(data);
-  const connectors = Array.isArray(data.inputConnectors) ? data.inputConnectors : [];
-  const copy = nodeCopy(data);
-  if (!handles.length) return null;
-  return (
-    <div className={styles.shotInputDock}>
-      {handles.map((handle) => {
-        const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
-        const label = connectorLabel(handle, connectors, copy);
-        const { capacityLabel, remainingCount } = connectorCapacity(handle, connectors);
-        const isFull = remainingCount === 0;
-        return (
-          <div key={`shot-input-${handle}`} className={`${styles.shotInputRow} ${isFull ? styles.shotInputRowDisabled : ''}`}>
-            <Handle
-              id={handle}
-              type="target"
-              position={Position.Left}
-              className={styles.graphHandle}
-              style={{
-                top: '50%',
-                left: -12,
-                borderColor: color,
-                background: color,
-                opacity: isFull ? 0.35 : 1,
-              }}
-              title={label}
-            />
-            <span className={styles.shotInputName}>
-              {label}
-              {connectorRequired(handle, connectors) ? ' *' : ''}
-            </span>
-            {capacityLabel ? <span className={styles.shotInputCapacity}>{capacityLabel}</span> : null}
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 function EmptyMediaPicker({
@@ -137,8 +94,7 @@ function AssetMeta({ data }: { data: WorkspaceGraphNode['data'] }) {
   const copy = nodeCopy(data);
   const assetSubtitle = localizeWorkspaceAssetSubtitle(String(asset.subtitle ?? ''), copy);
   return (
-    <div className={styles.nodeMetaRow}>
-      <span>{String(asset.filename ?? data.subtitle ?? copy?.assetFallback ?? 'Asset')}</span>
+    <div className={`${styles.nodeMetaRow} ${styles.assetMetaRow}`}>
       <span>{assetSubtitle}</span>
     </div>
   );
@@ -263,12 +219,29 @@ export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
   const validation = props.data.validation;
   const canGenerate = validation?.canGenerate ?? status !== 'incompatible';
   const estimatedCost = props.data.pricingEstimate?.label ?? 'Estimating...';
+  const angleReferenceMissing = validation?.missingInputs.includes('reference') ?? true;
+  const isAngleTool = Boolean(shot && shot.toolKind === 'angle');
   return (
     <NodeFrame nodeId={props.id} data={props.data} selected={props.selected} icon={<Clapperboard size={14} />} className={styles.shotNode}>
-      <div className={styles.shotDropZone}>
-        <Box size={22} />
-        <span>{status === 'completed' ? copy?.outputAvailable ?? 'Output available' : copy?.clickToGenerate ?? 'Click to generate'}</span>
-      </div>
+      {isAngleTool && shot ? (
+        <AngleReferencePicker
+          copy={copy}
+          disabled={angleReferenceMissing}
+          referencePreview={props.data.referencePreview ?? null}
+          shot={shot}
+          onPatchAngle={(angle) => props.data.onPatchShot?.(props.id, {
+            toolSettings: {
+              ...shot.toolSettings,
+              angle,
+            },
+          })}
+        />
+      ) : (
+        <div className={styles.shotDropZone}>
+          <Box size={22} />
+          <span>{status === 'completed' ? copy?.outputAvailable ?? 'Output available' : copy?.clickToGenerate ?? 'Click to generate'}</span>
+        </div>
+      )}
       <div className={styles.shotNodeFooter}>
         <span>{shot?.durationSec ?? 5}s</span>
         <span>{shot?.aspectRatio ?? '16:9'}</span>
@@ -343,5 +316,6 @@ export const workspaceNodeTypes: NodeTypes = {
   'text-prompt': memo(TextPromptNode),
   note: memo(NoteNode),
   shot: memo(ShotNode),
+  chat: memo(ChatNode),
   output: memo(OutputNode),
 };

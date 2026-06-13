@@ -1,6 +1,22 @@
 import type { Edge, Node } from '@xyflow/react';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { AspectRatio, Mode, Resolution } from '@/types/engines';
+import type {
+  AudioIntensity,
+  AudioLanguage,
+  AudioMood,
+  AudioVoiceDelivery,
+  AudioVoiceGender,
+  AudioVoiceProfile,
+} from '@/lib/audio-generation';
+import type {
+  CharacterBuilderConsistencyMode,
+  CharacterBuilderFormatMode,
+  CharacterBuilderOutputMode,
+  CharacterBuilderReferenceStrength,
+  CharacterBuilderRequest,
+  CharacterBuilderTraits,
+} from '@/types/character-builder';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type WorkspaceNodeKind =
@@ -10,6 +26,7 @@ export type WorkspaceNodeKind =
   | 'text-prompt'
   | 'note'
   | 'shot'
+  | 'chat'
   | 'output';
 
 export type WorkspaceEdgeKind =
@@ -41,7 +58,105 @@ export type WorkspaceWorkflowType =
   | 'text_to_video'
   | 'image_to_video'
   | 'video_to_video'
-  | 'storyboard_to_video';
+  | 'storyboard_to_video'
+  | 'character_to_video'
+  | 'character_builder'
+  | 'storyboard_generation'
+  | 'angle_generation'
+  | 'text_to_image'
+  | 'image_to_image'
+  | 'image_upscale'
+  | 'video_upscale'
+  | 'music_generation'
+  | 'voiceover_generation'
+  | 'sfx_generation'
+  | 'cinematic_audio'
+  | 'cinematic_voiceover'
+  | 'chat_completion';
+
+export type WorkspaceGenerationFamily = 'video' | 'image' | 'audio' | 'upscale' | 'chat';
+export type WorkspaceToolKind = 'angle' | 'character-builder' | 'storyboard';
+
+export type WorkspaceToolSettings = {
+  angle?: {
+    rotation: number;
+    tilt: number;
+    zoom: number;
+    safeMode: boolean;
+    generateBestAngles: boolean;
+  };
+  characterBuilder?: {
+    outputMode: CharacterBuilderOutputMode;
+    consistencyMode: CharacterBuilderConsistencyMode;
+    referenceStrength: CharacterBuilderReferenceStrength;
+    qualityMode: 'draft' | 'final';
+    formatMode: CharacterBuilderFormatMode;
+    traits: CharacterBuilderTraits;
+    outputOptions: CharacterBuilderRequest['outputOptions'];
+    advancedNotes: string;
+    mustRemainVisible: string[];
+    generateCount: 1 | 4;
+  };
+  storyboard?: {
+    targetModel: 'seedance' | 'kling';
+    lengthPreset: 'short' | 'medium' | 'long';
+    frameCount: 4 | 6 | 8;
+    durationSec: 6 | 10 | 15;
+    orientation: 'landscape' | 'portrait';
+    tier: 'hd' | '4k' | 'ultra';
+  };
+  upscale?: {
+    mode: 'factor' | 'target';
+    upscaleFactor: 2 | 4;
+    outputFormat?: string;
+  };
+  audio?: {
+    mood: AudioMood;
+    intensity: AudioIntensity;
+    musicEnabled: boolean;
+    voiceGender: AudioVoiceGender;
+    voiceProfile: AudioVoiceProfile;
+    voiceDelivery: AudioVoiceDelivery;
+    language: AudioLanguage;
+  };
+};
+
+export type WorkspaceGenerationPresetId =
+  | 'generate-video'
+  | 'modify-video'
+  | 'storyboard'
+  | 'character-builder'
+  | 'angle'
+  | 'generate-image'
+  | 'upscale-image'
+  | 'upscale-video'
+  | 'audio-music'
+  | 'audio-voiceover'
+  | 'audio-sfx'
+  | 'audio-sound-design'
+  | 'audio-sound-design-voice'
+  | 'chat-box';
+
+export type WorkspaceChatProvider = 'openai' | 'gemini';
+export type WorkspaceChatMode = 'assistant' | 'chatbot';
+
+export type WorkspaceChatMessage = {
+  id: string;
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+  createdAt: string;
+};
+
+export type WorkspaceChatSettings = {
+  mode: WorkspaceChatMode;
+  botName: string;
+  provider: WorkspaceChatProvider;
+  modelId: string;
+  systemPrompt: string;
+  draftMessage: string;
+  messages: WorkspaceChatMessage[];
+  status: 'idle' | 'running' | 'failed';
+};
 
 export type WorkspaceAssetKind = 'image' | 'video' | 'audio' | 'logo' | 'text';
 export type WorkspaceShotStatus = 'draft' | 'ready' | 'incompatible' | 'generating' | 'failed' | 'completed';
@@ -70,6 +185,15 @@ export type WorkspaceAssetRecord = {
   dimensions?: string;
 };
 
+export type WorkspaceReferencePreview = {
+  id?: string | null;
+  url: string;
+  previewUrl?: string | null;
+  width?: number | null;
+  height?: number | null;
+  name?: string | null;
+};
+
 export type WorkspaceProjectMediaFolder = {
   id: string;
   name: string;
@@ -78,6 +202,11 @@ export type WorkspaceProjectMediaFolder = {
 };
 
 export type WorkspaceShotSettings = {
+  presetId?: WorkspaceGenerationPresetId;
+  family?: WorkspaceGenerationFamily;
+  outputKind?: 'video' | 'image' | 'audio';
+  toolKind?: WorkspaceToolKind;
+  toolSettings?: WorkspaceToolSettings;
   modelId: string;
   workflowType: WorkspaceWorkflowType;
   durationSec: number;
@@ -140,12 +269,23 @@ export type WorkspaceModelCapability = {
   label: string;
   provider: string;
   providerEngineSlug: string;
+  family: WorkspaceGenerationFamily;
+  outputKind: 'video' | 'image' | 'audio' | 'text';
   modes: Mode[];
   workflows: WorkspaceWorkflowType[];
   text_to_video: boolean;
   image_to_video: boolean;
   video_to_video: boolean;
   storyboard_to_video: boolean;
+  character_to_video: boolean;
+  text_to_image: boolean;
+  image_to_image: boolean;
+  image_upscale: boolean;
+  video_upscale: boolean;
+  music_generation: boolean;
+  voiceover_generation: boolean;
+  sfx_generation: boolean;
+  chat_completion: boolean;
   reference_image: boolean;
   reference_video: boolean;
   product_reference: boolean;
@@ -181,7 +321,7 @@ export type WorkspaceShotValidation = {
 };
 
 export type WorkspacePricingEstimate = {
-  status: 'loading' | 'ready' | 'error';
+  status: 'blocked' | 'loading' | 'ready' | 'error';
   label: string;
   totalCents?: number;
   currency?: string;
@@ -233,16 +373,21 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   promptText?: string;
   promptRole?: WorkspacePromptRole;
   shot?: WorkspaceShotSettings;
+  chat?: WorkspaceChatSettings;
   output?: WorkspaceOutputMetadata;
   generatedCopy?: WorkspaceNodeGeneratedCopy;
   sourceHandles?: WorkspaceEdgeKind[];
   targetHandles?: WorkspaceEdgeKind[];
   inputConnectors?: WorkspaceInputConnector[];
+  referencePreview?: WorkspaceReferencePreview | null;
   validation?: WorkspaceShotValidation;
   pricingEstimate?: WorkspacePricingEstimate;
   onGenerateShot?: (nodeId: string) => void;
+  onPatchShot?: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   onSendOutputToTimeline?: (nodeId: string) => void;
   onPromptChange?: (nodeId: string, value: string) => void;
+  onChatDraftChange?: (nodeId: string, value: string) => void;
+  onRunChat?: (nodeId: string) => void;
   onOpenAssetLibrary?: (nodeId: string) => void;
   studioCanvasCopy?: StudioCopy['canvas'];
 };

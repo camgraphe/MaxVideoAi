@@ -1,7 +1,7 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import styles from '../_styles/asset-library.module.css';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
@@ -36,6 +36,7 @@ type WorkspaceProjectMediaLibraryModalProps = {
   onLoadMore: () => void;
   onMediaKindFilterChange: (kind: WorkspaceLibraryKindFilter) => void;
   onSelectAsset: (asset: WorkspaceLibraryAsset) => void;
+  onSelectAssets: (assets: WorkspaceLibraryAsset[]) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
 };
 
@@ -63,11 +64,71 @@ export function WorkspaceProjectMediaLibraryModal({
   onLoadMore,
   onMediaKindFilterChange,
   onSelectAsset,
+  onSelectAssets,
   onSourceChange,
 }: WorkspaceProjectMediaLibraryModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [lastSelectedAssetId, setLastSelectedAssetId] = useState<string | null>(null);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
+  const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
+  const selectedAssets = useMemo(
+    () => selectedAssetIds.map((assetId) => assetById.get(assetId)).filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset)),
+    [assetById, selectedAssetIds]
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedAssetIds([]);
+      setLastSelectedAssetId(null);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    setSelectedAssetIds([]);
+    setLastSelectedAssetId(null);
+  }, [mediaKindFilter, source]);
+
+  const closeAndResetSelection = useCallback(() => {
+    setSelectedAssetIds([]);
+    setLastSelectedAssetId(null);
+    onClose();
+  }, [onClose]);
+
+  const handleToggleAssetSelection = useCallback(
+    (
+      asset: WorkspaceLibraryAsset,
+      event: MouseEvent<HTMLButtonElement>,
+      visibleAssets: WorkspaceLibraryAsset[]
+    ) => {
+      setSelectedAssetIds((current) => {
+        const next = new Set(current);
+        if (event.shiftKey && lastSelectedAssetId) {
+          const visibleIds = visibleAssets.map((visibleAsset) => visibleAsset.id);
+          const startIndex = visibleIds.indexOf(lastSelectedAssetId);
+          const endIndex = visibleIds.indexOf(asset.id);
+          if (startIndex !== -1 && endIndex !== -1) {
+            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
+            visibleIds.slice(start, end + 1).forEach((assetId) => next.add(assetId));
+            return Array.from(next);
+          }
+        }
+        if (next.has(asset.id)) next.delete(asset.id);
+        else next.add(asset.id);
+        return Array.from(next);
+      });
+      setLastSelectedAssetId(asset.id);
+    },
+    [lastSelectedAssetId]
+  );
+
+  const handleImportSelectedAssets = useCallback(() => {
+    if (!selectedAssets.length) return;
+    onSelectAssets(selectedAssets);
+    setSelectedAssetIds([]);
+    setLastSelectedAssetId(null);
+  }, [onSelectAssets, selectedAssets]);
 
   const handleUploadChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +167,7 @@ export function WorkspaceProjectMediaLibraryModal({
       aria-modal="true"
       aria-label={copy.importProjectMedia}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target === event.currentTarget) closeAndResetSelection();
       }}
     >
       <section className={styles.assetLibraryModal}>
@@ -118,7 +179,7 @@ export function WorkspaceProjectMediaLibraryModal({
           hidden
           onChange={handleUploadChange}
         />
-        <button type="button" className={styles.assetLibraryClose} onClick={onClose} aria-label={copy.closeProjectMediaLibrary}>
+        <button type="button" className={styles.assetLibraryClose} onClick={closeAndResetSelection} aria-label={copy.closeProjectMediaLibrary}>
           <X size={16} />
         </button>
         <WorkspaceAssetLibraryBrowser
@@ -134,22 +195,33 @@ export function WorkspaceProjectMediaLibraryModal({
           sourceOptions={sourceOptions}
           sourceLabels={sourceLabels}
           onSourceChange={onSourceChange}
+          selectedAssetIds={selectedAssetIds}
+          onToggleAssetSelection={handleToggleAssetSelection}
           mediaKindFilter={mediaKindFilter}
           onMediaKindFilterChange={onMediaKindFilterChange}
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={onLoadMore}
-          onSelectAsset={onSelectAsset}
           headerActions={
-            <button
-              type="button"
-              className={styles.assetLibraryUploadButton}
-              disabled={isUploading}
-              onClick={() => uploadInputRef.current?.click()}
-            >
-              <Upload size={14} />
-              {isUploading ? copy.uploading : copy.upload}
-            </button>
+            <>
+              <button
+                type="button"
+                className={styles.assetLibraryImportSelectedButton}
+                disabled={!selectedAssets.length}
+                onClick={handleImportSelectedAssets}
+              >
+                {selectedAssets.length ? `${copy.importSelected} (${selectedAssets.length})` : copy.importSelected}
+              </button>
+              <button
+                type="button"
+                className={styles.assetLibraryUploadButton}
+                disabled={isUploading}
+                onClick={() => uploadInputRef.current?.click()}
+              >
+                <Upload size={14} />
+                {isUploading ? copy.uploading : copy.upload}
+              </button>
+            </>
           }
           emptyLabel={copy.noProjectMedia}
         />

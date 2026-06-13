@@ -45,6 +45,13 @@ type CssVariableColorMetrics = {
   };
 };
 
+function timelineTrackNoticeLabel(track: string): string {
+  const match = /^(audio|video)(?:-(\d+))?$/.exec(track);
+  if (!match) return track;
+  const [, kind, index = '1'] = match;
+  return `${kind === 'video' ? 'Video' : 'Audio'} ${index}`;
+}
+
 function relativeLuminance(color: RgbaColor): number {
   const [red, green, blue] = color.slice(0, 3).map((channel) => {
     const value = channel / 255;
@@ -1059,6 +1066,9 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(imageDialog).toBeVisible();
   await expect(imageDialog.locator('[data-canvas-toolbar-block-id="image"]')).toContainText('Image');
   await expect(imageDialog.locator('[data-canvas-toolbar-block-id="generate-image"]')).toContainText('Generate image');
+  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="character-builder"]')).toContainText('Character Builder');
+  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="angle"]')).toContainText('Angle');
+  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="upscale-image"]')).toContainText('Upscale image');
 
   await page.getByRole('button', { name: 'Video tools' }).click();
   const videoDialog = page.getByRole('dialog', { name: 'Video tools' });
@@ -1066,20 +1076,25 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(videoDialog.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
   await expect(videoDialog.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
   await expect(videoDialog.locator('[data-canvas-toolbar-block-id="modify-video"]')).toContainText('Modify video');
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="upscale"]')).toContainText('Upscale');
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="storyboard-video"]')).toHaveCount(0);
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="character-video"]')).toHaveCount(0);
+  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="upscale-video"]')).toContainText('Upscale video');
 
   await page.getByRole('button', { name: 'Audio tools' }).click();
   const audioDialog = page.getByRole('dialog', { name: 'Audio tools' });
   await expect(audioDialog).toBeVisible();
   await expect(audioDialog.locator('[data-canvas-toolbar-block-id="music"]')).toContainText('Music');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="generate-music"]')).toContainText('Generate music');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="sfx"]')).toContainText('SFX');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="voice-over"]')).toContainText('Voice over');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-music"]')).toContainText('Generate music');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-voiceover"]')).toContainText('Voice over');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sfx"]')).toContainText('SFX');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sound-design"]')).toContainText('Sound design');
+  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sound-design-voice"]')).toContainText('Sound design + voice');
 
   await page.getByRole('button', { name: 'Text tools' }).click();
   const textDialog = page.getByRole('dialog', { name: 'Text tools' });
   await expect(textDialog).toBeVisible();
   await expect(textDialog.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
+  await expect(textDialog.locator('[data-canvas-toolbar-block-id="chat-box"]')).toContainText('Chat box');
   await expect(textDialog.locator('[data-canvas-toolbar-block-kind="text-prompt"]')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
@@ -1251,7 +1266,8 @@ test('viewer project media import inserts a library asset into the timeline', as
   const initialTimelineItems = await timelineItemCount(page);
   await page.getByRole('button', { name: 'Import media' }).click();
   await expect(page.getByRole('dialog', { name: 'Import project media' })).toBeVisible();
-  await page.getByRole('button', { name: 'Use storyboarder-product-reference.jpg' }).click();
+  await page.getByRole('button', { name: 'Select storyboarder-product-reference.jpg' }).click();
+  await page.getByRole('button', { name: /Import selected.*1/ }).click();
   await expect(page.getByText('storyboarder-product-reference.jpg imported into Project media.')).toBeVisible();
 
   const importedCard = page.locator('[data-project-media-asset-id]', { hasText: 'storyboarder-product-reference.jpg' });
@@ -1297,7 +1313,8 @@ test('viewer project media can be dragged into a compatible timeline track', asy
   const initialTimelineItems = await timelineItemCount(page);
   await page.getByRole('button', { name: 'Add video track' }).click();
   await page.getByRole('button', { name: 'Import media' }).click();
-  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: 'Select aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: /Import selected.*1/ }).click();
   await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
 
   const importedVideoCard = page.locator('[data-project-media-asset-id]', { hasText: 'aerial-road.mp4' }).first();
@@ -1351,7 +1368,7 @@ test('viewer project media can be dragged into a compatible timeline track', asy
 
   await dropProjectMediaAssetOnTimelineTrack(page, 'aerial-road.mp4', 'video-2', 1);
 
-  await expect(page.getByText('aerial-road.mp4 dropped on video-2')).toBeVisible();
+  await expect(page.getByText('aerial-road.mp4 dropped on Video 2 at 1.00s.')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 2);
   assertNoEditorClientErrors(errors);
 });
@@ -1392,7 +1409,8 @@ test('viewer project media can drag assets into folders and back out of folder v
   await expect(page.getByText('Renders folder created in Project media.')).toBeVisible();
 
   await page.getByRole('button', { name: 'Import media' }).click();
-  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: 'Select aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: /Import selected.*1/ }).click();
   await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
 
   const importedVideoCard = page
@@ -1462,7 +1480,8 @@ test('viewer project media supports native mouse drag with a visible timeline gh
   const initialTimelineItems = await timelineItemCount(page);
   await page.getByRole('button', { name: 'Add video track' }).click();
   await page.getByRole('button', { name: 'Import media' }).click();
-  await page.getByRole('button', { name: 'Use aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: 'Select aerial-road.mp4' }).click();
+  await page.getByRole('button', { name: /Import selected.*1/ }).click();
   await expect(page.getByText('aerial-road.mp4 imported into Project media.')).toBeVisible();
 
   const importedVideoCard = page
@@ -1495,15 +1514,17 @@ test('viewer project media supports native mouse drag with a visible timeline gh
 
   await page.mouse.move(targetX, targetY, { steps: 12 });
 
-  const dropGhost = page.locator('[data-timeline-external-drop-ghost="true"]');
-  await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-kind', 'video');
-  await expect(dropGhost).toHaveAttribute('data-timeline-external-drop-duration', '8');
-  await expect(dropGhost).toContainText('aerial-road.mp4');
+  const videoDropGhost = page.locator('[data-timeline-external-drop-ghost="true"][data-timeline-external-drop-kind="video"]');
+  const audioDropGhost = page.locator('[data-timeline-external-drop-linked-audio-ghost="true"]');
+  await expect(videoDropGhost).toHaveAttribute('data-timeline-external-drop-duration', '8');
+  await expect(videoDropGhost).toContainText('aerial-road.mp4');
+  await expect(audioDropGhost).toHaveAttribute('data-timeline-external-drop-kind', 'audio');
+  await expect(audioDropGhost).toContainText('aerial-road.mp4 Audio');
 
   await page.mouse.up();
 
-  await expect(page.getByText('aerial-road.mp4 dropped on video-2')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 2);
+  await expect(page.getByText('Video 2 clip')).toBeVisible();
   assertNoEditorClientErrors(errors);
 });
 
@@ -1559,7 +1580,7 @@ test('viewer project media upload imports local audio into the project bin', asy
   await expect(page.getByText('demo-ambient.wav imported into Project media.')).toBeVisible();
   await dropProjectMediaAssetOnTimelineTrack(page, 'demo-ambient.wav', targetAudioTrack, 1);
 
-  await expect(page.getByText(`demo-ambient.wav dropped on ${targetAudioTrack}`)).toBeVisible();
+  await expect(page.getByText(`demo-ambient.wav dropped on ${timelineTrackNoticeLabel(targetAudioTrack)} at 1.00s.`)).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(initialTimelineItems + 1);
   assertNoEditorClientErrors(errors);
 });
@@ -1955,7 +1976,7 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   await page.mouse.up();
 
   await expect.poll(() => canvasNodeCount(page)).toBe(nodeCountBeforeDrop + 1);
-  const droppedShotNode = page.locator('.react-flow__node', { hasText: 'New generation block' }).last();
+  const droppedShotNode = page.locator('.react-flow__node', { hasText: 'Video generation' }).last();
   await expect(droppedShotNode).toContainText('Seedance 2.0');
   await droppedShotNode.getByRole('button', { name: /Open .* settings/ }).click();
 

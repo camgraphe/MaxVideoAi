@@ -16,6 +16,7 @@ import {
   Copy,
   ImagePlus,
   LayoutTemplate,
+  MessageSquareText,
   Mic2,
   Music2,
   MousePointer2,
@@ -30,7 +31,16 @@ import {
   WandSparkles,
 } from 'lucide-react';
 import styles from '../../_styles/canvas-toolbar.module.css';
-import type { WorkspaceNodeKind, WorkspaceTemplateId, WorkspaceTemplateSummary } from '../../_lib/workspace-types';
+import {
+  WORKSPACE_BLOCK_PRESETS,
+  type WorkspaceBlockPreset,
+} from '../../_lib/workspace-block-presets';
+import type {
+  WorkspaceGenerationPresetId,
+  WorkspaceNodeKind,
+  WorkspaceTemplateId,
+  WorkspaceTemplateSummary,
+} from '../../_lib/workspace-types';
 import { PALETTE_DRAG_START_EVENT } from './CanvasPaletteDragPreview';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
@@ -41,6 +51,7 @@ export type CanvasSelectionTool = 'pointer' | 'marquee';
 type ToolbarBlockDefinition = {
   id: string;
   kind: WorkspaceNodeKind;
+  presetId?: WorkspaceGenerationPresetId;
   label: string;
   description: string;
   icon: ReactNode;
@@ -79,6 +90,41 @@ export type CanvasFloatingToolbarProps = {
   onUndo: () => void;
 };
 
+function copyValue(copy: StudioCopy['canvas']['nodes'], key: string, fallback: string): string {
+  return copy[key] ?? fallback;
+}
+
+function blockFromPreset(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas']['nodes'], icon: ReactNode): ToolbarBlockDefinition {
+  return {
+    id: preset.id,
+    kind: preset.nodeKind,
+    presetId: preset.id,
+    label: copyValue(copy, preset.labelKey, preset.id),
+    description: copyValue(copy, preset.descriptionKey, preset.id),
+    icon,
+    accent: preset.accent,
+  };
+}
+
+function presetBlock(
+  presetId: WorkspaceGenerationPresetId,
+  copy: StudioCopy['canvas']['nodes'],
+  icon: ReactNode
+): ToolbarBlockDefinition {
+  const preset = WORKSPACE_BLOCK_PRESETS.find((candidate) => candidate.id === presetId);
+  if (!preset) {
+    return {
+      id: presetId,
+      kind: 'shot',
+      label: presetId,
+      description: presetId,
+      icon,
+      accent: '#8b5cf6',
+    };
+  }
+  return blockFromPreset(preset, copy, icon);
+}
+
 function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'image' | 'text' | 'video', ToolbarBlockDefinition[]> {
   return {
     image: [
@@ -90,14 +136,10 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         icon: <ImagePlus size={18} />,
         accent: '#8b5cf6',
       },
-      {
-        id: 'generate-image',
-        kind: 'shot',
-        label: copy.generateImage,
-        description: copy.generateImageDescription,
-        icon: <WandSparkles size={18} />,
-        accent: '#6366f1',
-      },
+      presetBlock('generate-image', copy, <WandSparkles size={18} />),
+      presetBlock('character-builder', copy, <Sparkles size={18} />),
+      presetBlock('angle', copy, <SlidersHorizontal size={18} />),
+      presetBlock('upscale-image', copy, <Sparkles size={18} />),
     ],
     video: [
       {
@@ -108,30 +150,9 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         icon: <Video size={18} />,
         accent: '#3b82f6',
       },
-      {
-        id: 'generate-video',
-        kind: 'shot',
-        label: copy.generateVideo,
-        description: copy.generateVideoDescription,
-        icon: <Clapperboard size={18} />,
-        accent: '#f97316',
-      },
-      {
-        id: 'modify-video',
-        kind: 'shot',
-        label: copy.modifyVideo,
-        description: copy.modifyVideoDescription,
-        icon: <SlidersHorizontal size={18} />,
-        accent: '#2563eb',
-      },
-      {
-        id: 'upscale',
-        kind: 'shot',
-        label: copy.upscale,
-        description: copy.upscaleDescription,
-        icon: <Sparkles size={18} />,
-        accent: '#0ea5e9',
-      },
+      presetBlock('generate-video', copy, <Clapperboard size={18} />),
+      presetBlock('modify-video', copy, <SlidersHorizontal size={18} />),
+      presetBlock('upscale-video', copy, <Sparkles size={18} />),
     ],
     audio: [
       {
@@ -142,30 +163,11 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         icon: <Music2 size={18} />,
         accent: '#22c55e',
       },
-      {
-        id: 'generate-music',
-        kind: 'shot',
-        label: copy.generateMusic,
-        description: copy.generateMusicDescription,
-        icon: <WandSparkles size={18} />,
-        accent: '#16a34a',
-      },
-      {
-        id: 'sfx',
-        kind: 'shot',
-        label: copy.sfx,
-        description: copy.sfxDescription,
-        icon: <AudioWaveform size={18} />,
-        accent: '#7c3aed',
-      },
-      {
-        id: 'voice-over',
-        kind: 'shot',
-        label: copy.voiceOver,
-        description: copy.voiceOverDescription,
-        icon: <Mic2 size={18} />,
-        accent: '#14b8a6',
-      },
+      presetBlock('audio-music', copy, <WandSparkles size={18} />),
+      presetBlock('audio-voiceover', copy, <Mic2 size={18} />),
+      presetBlock('audio-sfx', copy, <AudioWaveform size={18} />),
+      presetBlock('audio-sound-design', copy, <AudioWaveform size={18} />),
+      presetBlock('audio-sound-design-voice', copy, <Mic2 size={18} />),
     ],
     text: [
       {
@@ -176,6 +178,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         icon: <Type size={18} />,
         accent: '#60a5fa',
       },
+      presetBlock('chat-box', copy, <MessageSquareText size={18} />),
     ],
   };
 }
@@ -235,7 +238,11 @@ export function CanvasFloatingToolbar({
     };
   }, [activeMenu]);
 
-  const handleBlockMouseDown = (event: ReactMouseEvent, kind: WorkspaceNodeKind) => {
+  const handleBlockMouseDown = (
+    event: ReactMouseEvent,
+    kind: WorkspaceNodeKind,
+    presetId?: WorkspaceGenerationPresetId
+  ) => {
     if (event.button !== 0) return;
     event.preventDefault();
     event.stopPropagation();
@@ -255,6 +262,7 @@ export function CanvasFloatingToolbar({
         new CustomEvent(PALETTE_DRAG_START_EVENT, {
           detail: {
             kind,
+            presetId,
             clientX: moveEvent.clientX,
             clientY: moveEvent.clientY,
           },
@@ -526,7 +534,7 @@ function BlockOptionList({
   onBlockMouseDown,
 }: {
   blocks: ToolbarBlockDefinition[];
-  onBlockMouseDown: (event: ReactMouseEvent, kind: WorkspaceNodeKind) => void;
+  onBlockMouseDown: (event: ReactMouseEvent, kind: WorkspaceNodeKind, presetId?: WorkspaceGenerationPresetId) => void;
 }) {
   return (
     <div className={styles.blockOptionList}>
@@ -537,8 +545,9 @@ function BlockOptionList({
           className={styles.blockOption}
           data-canvas-toolbar-block-id={block.id}
           data-canvas-toolbar-block-kind={block.kind}
+          data-canvas-toolbar-preset-id={block.presetId}
           style={{ '--template-accent': block.accent } as ToolbarTemplateStyle}
-          onMouseDown={(event) => onBlockMouseDown(event, block.kind)}
+          onMouseDown={(event) => onBlockMouseDown(event, block.kind, block.presetId)}
         >
           <span className={styles.blockOptionIcon}>{block.icon}</span>
           <span>

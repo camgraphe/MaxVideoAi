@@ -928,6 +928,74 @@ test('Luma Ray 2 registry keeps the two public models with generate, modify, and
   assert.equal(registry.some((entry) => entry.id === 'lumaRay2_reframe'), false);
 });
 
+test('Luma Ray 3.2 registry is Luma-direct first with Fal fallback endpoints', () => {
+  const registry = listFalEngines();
+  const lumaRay32 = registry.find((entry) => entry.id === 'lumaRay3_2');
+
+  assert.ok(lumaRay32);
+  assert.equal(lumaRay32?.modelSlug, 'luma-ray-3-2');
+  assert.equal(lumaRay32?.engine.label, 'Luma Ray 3.2');
+  assert.equal(lumaRay32?.engine.providerMeta?.provider, 'luma');
+  assert.equal(lumaRay32?.engine.providerMeta?.modelSlug, 'ray-3.2');
+  assert.deepEqual(lumaRay32?.engine.modes, ['t2v', 'i2v', 'v2v', 'reframe']);
+  assert.deepEqual(lumaRay32?.engine.resolutions, ['540p', '720p', '1080p']);
+  assert.deepEqual(lumaRay32?.engine.aspectRatios, ['9:16', '3:4', '1:1', '4:3', '16:9', '21:9']);
+  assert.equal(lumaRay32?.engine.audio, false);
+  assert.equal(lumaRay32?.engine.keyframes, true);
+
+  assert.equal(
+    lumaRay32?.modes.find((mode) => mode.mode === 't2v')?.falModelId,
+    'luma/agent/ray/v3.2/text-to-video'
+  );
+  assert.equal(
+    lumaRay32?.modes.find((mode) => mode.mode === 'i2v')?.falModelId,
+    'luma/agent/ray/v3.2/image-to-video'
+  );
+  assert.equal(
+    lumaRay32?.modes.find((mode) => mode.mode === 'v2v')?.falModelId,
+    'luma/agent/ray/v3.2/video-to-video'
+  );
+
+  const optionalFields = lumaRay32?.engine.inputSchema?.optional ?? [];
+  assert.deepEqual(optionalFields.find((field) => field.id === 'duration')?.values, ['5s', '10s']);
+  assert.deepEqual(optionalFields.find((field) => field.id === 'resolution')?.values, ['540p', '720p', '1080p']);
+  assert.equal(optionalFields.some((field) => field.id === 'hdr' && field.type === 'boolean'), true);
+  assert.equal(optionalFields.some((field) => field.id === 'exr_export' && field.type === 'boolean'), true);
+});
+
+test('Luma Ray 3.2 request validation supports direct-generation and edit constraints', () => {
+  const validText = validateRequest('lumaRay3_2', 't2v', {
+    prompt: 'A slow dolly shot through a misty greenhouse at sunrise',
+    duration: '10s',
+    resolution: '1080p',
+    aspect_ratio: '21:9',
+  });
+  assert.deepEqual(validText, OK);
+
+  const validImage = validateRequest('lumaRay3_2', 'i2v', {
+    prompt: 'The character turns to face camera',
+    image_url: 'https://example.com/opening-frame.jpg',
+    duration: '5s',
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(validImage, OK);
+
+  const missingSource = validateRequest('lumaRay3_2', 'v2v', {
+    prompt: 'Transform the scene into moonlit 35mm footage',
+  });
+  assert.equal(missingSource.ok, false);
+  assert.equal(missingSource.error?.field, 'video_url');
+
+  const validEdit = validateRequest('lumaRay3_2', 'v2v', {
+    video_url: 'https://example.com/source.mp4',
+    prompt: 'Transform the scene into moonlit 35mm footage',
+    edit_strength: 'flex_2',
+    resolution: '720p',
+  });
+  assert.deepEqual(validEdit, OK);
+});
+
 test('Nano Banana 2 registry exposes image mappings and schema caps', () => {
   const registry = listFalEngines();
   const nanoBanana2 = registry.find((entry) => entry.id === 'nano-banana-2');

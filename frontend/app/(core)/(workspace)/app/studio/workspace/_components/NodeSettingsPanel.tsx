@@ -4,6 +4,7 @@ import { Plus, Send, Sparkles } from 'lucide-react';
 import { FieldLabel, SelectControl } from './NodeInspectorControls';
 import { NodeInspectorConnections } from './NodeInspectorConnections';
 import { NodeInspectorMediaPreview } from './NodeInspectorMediaPreview';
+import { ChatNodeInspector } from './ChatNodeInspector';
 import { ShotNodeInspector } from './ShotNodeInspector';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
@@ -37,6 +38,7 @@ type NodeSettingsPanelProps = {
   onPatchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   onPatchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   onGenerateShot: (nodeId: string) => void;
+  onRunChat: (nodeId: string) => void;
   onSendOutputToTimeline: (nodeId: string) => void;
   onOpenAssetLibrary: (nodeId: string) => void;
 };
@@ -263,6 +265,7 @@ export function NodeSettingsPanel({
   onPatchNodeData,
   onPatchShot,
   onGenerateShot,
+  onRunChat,
   onSendOutputToTimeline,
   onOpenAssetLibrary,
 }: NodeSettingsPanelProps) {
@@ -278,6 +281,15 @@ export function NodeSettingsPanel({
       </div>
 
       <div className={styles.settingsBody}>
+        <FieldLabel>
+          {copy.blockName}
+          <input
+            className={styles.settingsInput}
+            type="text"
+            value={selectedNode.data.title}
+            onChange={(event) => onPatchNodeData(selectedNode.id, { title: event.currentTarget.value })}
+          />
+        </FieldLabel>
         {selectedNode.data.kind === 'asset-image' || selectedNode.data.kind === 'asset-video' || selectedNode.data.kind === 'asset-audio' ? (
           <AssetInspector copy={copy} node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} onOpenAssetLibrary={onOpenAssetLibrary} />
         ) : null}
@@ -285,6 +297,9 @@ export function NodeSettingsPanel({
         {selectedNode.data.kind === 'note' ? <NoteInspector copy={copy} node={selectedNode} onPatchNodeData={onPatchNodeData} /> : null}
         {selectedNode.data.kind === 'shot' ? (
           <ShotNodeInspector copy={copy} node={selectedNode} edges={edges} capabilities={capabilities} onPatchShot={onPatchShot} onGenerateShot={onGenerateShot} />
+        ) : null}
+        {selectedNode.data.kind === 'chat' ? (
+          <ChatNodeInspector copy={copy} node={selectedNode} onPatchNodeData={onPatchNodeData} onRunChat={onRunChat} />
         ) : null}
         {selectedNode.data.kind === 'output' ? <OutputInspector copy={copy} node={selectedNode} edges={edges} onSendOutputToTimeline={onSendOutputToTimeline} /> : null}
       </div>

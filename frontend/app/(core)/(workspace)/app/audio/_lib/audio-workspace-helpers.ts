@@ -45,6 +45,10 @@ export const AUDIO_MODE_META: Record<
     icon: Mic2,
     providerKey: 'voice',
   },
+  sfx_only: {
+    icon: AudioLines,
+    providerKey: 'sfx',
+  },
   cinematic: {
     icon: Clapperboard,
     providerKey: 'sfx',

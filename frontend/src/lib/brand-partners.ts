@@ -106,6 +106,7 @@ const PARTNER_BRANDS: PartnerBrand[] = [
       'luma-dm',
       'lumadm',
       'luma-dream-machine',
+      'lumaRay3_2',
       'lumaRay2',
       'lumaRay2_flash',
       'lumaRay2_modify',

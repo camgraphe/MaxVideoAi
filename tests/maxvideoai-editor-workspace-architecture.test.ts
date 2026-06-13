@@ -17,6 +17,9 @@ import {
   workspaceConnectionCapacity,
   validateShotConnections,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-capabilities';
+import {
+  shotOutputSourceHandle,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers';
 import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
@@ -47,8 +50,10 @@ const studioProjectSequencesApiPath = join(studioApiDir, 'projects/[projectId]/s
 const studioProjectSequenceApiPath = join(studioApiDir, 'projects/[projectId]/sequences/[sequenceId]/route.ts');
 const studioCanvasTemplatesApiPath = join(studioApiDir, 'canvas-templates/route.ts');
 const studioCanvasTemplateApiPath = join(studioApiDir, 'canvas-templates/[templateId]/route.ts');
+const studioChatApiPath = join(studioApiDir, 'chat/route.ts');
 const studioRouteUtilsPath = join(studioApiDir, '_lib/studio-route-utils.ts');
 const studioServerContractsPath = join(studioServerDir, 'contracts.ts');
+const studioChatServerPath = join(studioServerDir, 'chat.ts');
 const studioServerSchemaPath = join(studioServerDir, 'schema.ts');
 const studioServerRepositoryPath = join(studioServerDir, 'repository.ts');
 const studioMigrationPath = join(root, 'neon/migrations/26_studio_projects.sql');
@@ -85,6 +90,7 @@ const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSess
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
 const shotNodeInspectorPath = join(workspaceDir, '_components/ShotNodeInspector.tsx');
+const chatInspectorPath = join(workspaceDir, '_components/ChatNodeInspector.tsx');
 const nodeInspectorControlsPath = join(workspaceDir, '_components/NodeInspectorControls.tsx');
 const nodeInspectorConnectionsPath = join(workspaceDir, '_components/NodeInspectorConnections.tsx');
 const nodeInspectorMediaPreviewPath = join(workspaceDir, '_components/NodeInspectorMediaPreview.tsx');
@@ -113,6 +119,7 @@ const programControlsPath = join(workspaceDir, '_components/viewer/ProgramContro
 const programPlaybackSyncPath = join(workspaceDir, '_components/viewer/useProgramPlaybackSync.ts');
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
 const nodeFramePath = join(workspaceDir, '_components/nodes/workspace-node-frame.tsx');
+const shotInputDockPath = join(workspaceDir, '_components/nodes/workspace-shot-input-dock.tsx');
 const nodeMediaPreviewPath = join(workspaceDir, '_components/nodes/workspace-node-media-preview.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
@@ -121,11 +128,14 @@ const modelCapabilityRegistryPath = join(workspaceDir, '_lib/models/model-capabi
 const modelEngineFieldsPath = join(workspaceDir, '_lib/models/model-engine-fields.ts');
 const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-connectors.ts');
 const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
+const blockPresetsPath = join(workspaceDir, '_lib/workspace-block-presets.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
+const generationRoutingPath = join(workspaceDir, '_lib/workspace-generation-routing.ts');
 const pricingPath = join(workspaceDir, '_lib/workspace-pricing.ts');
 const mediaAvailabilityPath = join(workspaceDir, '_lib/workspace-media-availability.ts');
 const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
 const canvasImportsPath = join(workspaceDir, '_lib/workspace-canvas-imports.ts');
+const programSnapshotPath = join(workspaceDir, '_lib/workspace-program-snapshot.ts');
 const graphHelpersPath = join(workspaceDir, '_lib/workspace-graph-helpers.ts');
 const projectSettingsPath = join(workspaceDir, '_lib/workspace-project-settings.ts');
 const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
@@ -217,6 +227,44 @@ function lineCount(sourceText: string): number {
   return sourceText.split(/\r?\n/).length;
 }
 
+test('program snapshots only fall back to image-safe preview URLs', async () => {
+  const {
+    isProgramSnapshotImageUrl,
+    resolveProgramSnapshotFallbackSourceUrl,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-program-snapshot');
+
+  assert.equal(isProgramSnapshotImageUrl('/api/media/frame.png'), true, 'snapshot helper should accept ordinary image URLs');
+  assert.equal(isProgramSnapshotImageUrl('data:image/jpeg;base64,abc'), true, 'snapshot helper should accept captured image data URLs');
+  assert.equal(isProgramSnapshotImageUrl('/api/media/source.mp4'), false, 'snapshot helper should reject video URLs for image nodes');
+  assert.equal(
+    resolveProgramSnapshotFallbackSourceUrl({
+      mediaKind: 'video',
+      sourceUrl: '/api/media/source.mp4',
+      thumbnailUrl: '/api/media/source-thumb.webp',
+    }),
+    '/api/media/source-thumb.webp',
+    'video snapshots should fall back to their image thumbnail when frame capture is unavailable'
+  );
+  assert.equal(
+    resolveProgramSnapshotFallbackSourceUrl({
+      mediaKind: 'image',
+      sourceUrl: '/api/media/source.png',
+      thumbnailUrl: '/api/media/source-thumb.webp',
+    }),
+    '/api/media/source.png',
+    'image snapshots should keep the visible image source before using a thumbnail'
+  );
+  assert.equal(
+    resolveProgramSnapshotFallbackSourceUrl({
+      mediaKind: 'video',
+      sourceUrl: '/api/media/source.mp4',
+      thumbnailUrl: null,
+    }),
+    undefined,
+    'video snapshots without a captured frame or thumbnail should not create broken image nodes'
+  );
+});
+
 test('MaxVideoAI editor workspace is an isolated authenticated app route', () => {
   assert.ok(existsSync(pagePath), 'editor workspace route should live under the authenticated /app studio workspace');
   assert.ok(existsSync(studioArchitectureGuidePath), 'studio editor should have an engineering architecture guide for additive changes');
@@ -232,8 +280,10 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(studioProjectSequenceApiPath), 'studio projects should expose authenticated sequence mutation APIs');
   assert.ok(existsSync(studioCanvasTemplatesApiPath), 'studio should expose authenticated canvas template APIs');
   assert.ok(existsSync(studioCanvasTemplateApiPath), 'studio should expose authenticated canvas template mutation APIs');
+  assert.ok(existsSync(studioChatApiPath), 'Studio chat should use an authenticated route handler');
   assert.ok(existsSync(studioRouteUtilsPath), 'studio route handlers should share auth/database response utilities');
   assert.ok(existsSync(studioServerContractsPath), 'studio server persistence contracts should live under frontend/src/server/studio');
+  assert.ok(existsSync(studioChatServerPath), 'Studio chat provider calls should live in server-only Studio code');
   assert.ok(existsSync(studioServerSchemaPath), 'studio server schema helper should live under frontend/src/server/studio');
   assert.ok(existsSync(studioServerRepositoryPath), 'studio server repository should live under frontend/src/server/studio');
   assert.ok(existsSync(studioMigrationPath), 'studio persistence should have a Neon migration');
@@ -268,6 +318,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(workspaceEditorTopbarPath), 'workspace topbar should live in a route-local shell component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
   assert.ok(existsSync(shotNodeInspectorPath), 'shot node settings should live in a focused route-local component');
+  assert.ok(existsSync(chatInspectorPath), 'chat node inspector should live in a focused route-local component');
   assert.ok(existsSync(nodeInspectorControlsPath), 'node inspector form controls should live in a focused route-local component');
   assert.ok(existsSync(nodeInspectorConnectionsPath), 'node inspector connection list should live in a focused route-local component');
   assert.ok(existsSync(nodeInspectorMediaPreviewPath), 'node inspector media preview should live in a focused route-local component');
@@ -574,15 +625,12 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.doesNotMatch(workspaceSource, />\s*Timeline\s*</, 'top switch should not duplicate the bottom timeline as a top-level mode');
   assert.doesNotMatch(workspaceSource, /HeaderBar|AppSidebar|WorkspaceChrome/, 'editor chrome should not inherit app shell chrome');
   assert.doesNotMatch(workspaceSource, /selected:\s*node\.id === selectedNodeId/, 'orchestrator should not manually control React Flow selected flags');
-  assert.match(workspaceApiPersistenceSource, /normalizeOutputOnlySourceNodes/, 'persisted workspace normalization should normalize stale source-block handles');
+  assert.match(workspaceApiPersistenceSource, /normalizeWorkspaceGraphNodes/, 'persisted workspace normalization should use the centralized graph node normalizer');
   assert.match(workspaceApiPersistenceSource, /normalizeOutputOnlySourceEdges/, 'persisted workspace normalization should normalize stale source edge handles');
-  assert.match(workspaceApiPersistenceSource, /normalizeGeneratedOutputNodes/, 'persisted workspace normalization should normalize stale output-block handles');
-  assert.match(workspaceApiPersistenceSource, /normalizePlaceholderOutputNodes/, 'persisted workspace normalization should normalize stale fake output media into placeholders');
   assert.match(workspaceApiPersistenceSource, /normalizeTimelineMediaUrls/, 'persisted workspace normalization should hydrate stale timeline clips with playable output media URLs');
   assert.match(canvasTimelineActionsHookSource, /isPlayableVideoUrl/, 'canvas timeline action hook should distinguish playable video URLs from image thumbnails');
   assert.match(canvasTimelineActionsHookSource, /isPlayableAudioUrl/, 'canvas timeline action hook should hydrate playable audio URLs for generic audio timeline clips');
   assert.match(workspaceApiPersistenceSource, /normalizeGeneratedOutputEdges/, 'persisted workspace normalization should normalize stale output edge handles');
-  assert.match(workspaceApiPersistenceSource, /normalizeShotOutputNodes/, 'persisted workspace normalization should normalize stale generated-shot output handles');
   assert.match(workspaceApiPersistenceSource, /normalizeShotOutputEdges/, 'persisted workspace normalization should normalize stale generated-shot source edge handles');
   assert.match(workspaceApiPersistenceSource, /normalizeWorkspaceEdgeTypes/, 'persisted workspace normalization should normalize stale saved edge types');
   assert.match(canvasStyleSource, /react-flow__handle-left/, 'focused canvas CSS should position left handles without inheriting React Flow global CSS');
@@ -699,11 +747,14 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(modelEngineFieldsPath), 'engine field scanning helpers should live in _lib/models/model-engine-fields.ts');
   assert.ok(existsSync(modelInputConnectorsPath), 'model input connectors should live in _lib/models/model-input-connectors.ts');
   assert.ok(existsSync(modelPricingAdapterPath), 'model render pricing options should live in _lib/models/model-pricing-adapter.ts');
+  assert.ok(existsSync(blockPresetsPath), 'canvas block presets should live in a focused route-local helper');
   assert.ok(existsSync(generationPath), 'workspace generation adapter should live in _lib/workspace-generation.ts');
+  assert.ok(existsSync(generationRoutingPath), 'generation routing should live outside WorkspacePage and UI components');
   assert.ok(existsSync(pricingPath), 'workspace pricing adapter should live in _lib/workspace-pricing.ts');
   assert.ok(existsSync(mediaAvailabilityPath), 'workspace media availability helpers should live in a pure route-local helper');
   assert.ok(existsSync(handleDropPath), 'handle-drop node creation should live in a pure route-local helper');
   assert.ok(existsSync(canvasImportsPath), 'canvas import helpers should live in a pure route-local helper');
+  assert.ok(existsSync(programSnapshotPath), 'program snapshot image URL rules should live in a pure route-local helper');
   assert.ok(existsSync(graphHelpersPath), 'canvas graph selection and connection helpers should live in a pure route-local helper');
   assert.ok(existsSync(projectSettingsPath), 'project settings helpers should live in a pure route-local helper');
   assert.ok(existsSync(timecodePath), 'timeline timecode helpers should live in a pure route-local helper');
@@ -798,6 +849,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const runtimeModalsSource = source(runtimeModalsPath);
   const nodeSource = source(nodeTypesPath);
   const nodeFrameSource = source(nodeFramePath);
+  const shotInputDockSource = source(shotInputDockPath);
   const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
   const shotNodeInspectorSource = source(shotNodeInspectorPath);
@@ -940,16 +992,24 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.marqueeSelectNodes/, 'canvas toolbar should expose an explicit marquee selection tool through localized copy');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.deleteSelectedNodes/, 'canvas toolbar should expose a selected-node deletion action through localized copy');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.imageTools/, 'canvas toolbar should group image creation actions through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.generateImage/, 'canvas toolbar should expose image generation entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('generate-image'/, 'canvas toolbar should expose image generation entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('character-builder'/, 'canvas toolbar should expose character builder entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('angle'/, 'canvas toolbar should expose angle tool entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('upscale-image'/, 'canvas toolbar should expose image upscale entry points through block presets');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.videoTools/, 'canvas toolbar should group video creation actions through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.modifyVideo/, 'canvas toolbar should expose video modification entry points through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.upscale/, 'canvas toolbar should expose video upscale entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('modify-video'/, 'canvas toolbar should expose video modification entry points through block presets');
+  assert.doesNotMatch(canvasFloatingToolbarSource, /presetBlock\('storyboard-video'/, 'canvas toolbar should not expose stale storyboard-video presets');
+  assert.doesNotMatch(canvasFloatingToolbarSource, /presetBlock\('character-video'/, 'canvas toolbar should not expose stale character-video presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('upscale-video'/, 'canvas toolbar should expose video upscale entry points through block presets');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.audioTools/, 'canvas toolbar should group audio creation actions through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.generateMusic/, 'canvas toolbar should expose music generation entry points through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.sfx/, 'canvas toolbar should expose SFX entry points through localized copy');
-  assert.match(canvasFloatingToolbarSource, /copy\.voiceOver/, 'canvas toolbar should expose voice-over entry points through localized copy');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('audio-music'/, 'canvas toolbar should expose music generation entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('audio-sfx'/, 'canvas toolbar should expose SFX entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('audio-voiceover'/, 'canvas toolbar should expose voice-over entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('audio-sound-design'/, 'canvas toolbar should expose sound design entry points through block presets');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('audio-sound-design-voice'/, 'canvas toolbar should expose sound design with voice entry points through block presets');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.textTools/, 'canvas toolbar should expose text creation actions through localized copy');
   assert.match(canvasFloatingToolbarSource, /copy\.freeText/, 'canvas toolbar text action should create a connectable free-text block through localized copy');
+  assert.match(canvasFloatingToolbarSource, /presetBlock\('chat-box'/, 'canvas toolbar should expose chat entry points through block presets');
   assert.match(canvasFloatingToolbarSource, /\bType\b/, 'canvas toolbar text action should use a T-style icon');
   assert.doesNotMatch(canvasFloatingToolbarSource, /Quick add|Import media|Fit graph|Canvas tools|Media blocks|Text blocks|Generate blocks/, 'canvas toolbar should only expose the requested tool groups');
   assert.match(canvasSource, /onConnectStart/, 'canvas should track drags that start from a connector handle');
@@ -972,6 +1032,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasImportActionsHookSource, /handleCanvasFileDrop/, 'canvas import hook should convert dropped local files into matching workspace nodes');
   assert.match(canvasImportActionsHookSource, /handleCanvasTextPaste/, 'canvas import hook should convert pasted plain text into prompt nodes');
   assert.match(canvasImportActionsHookSource, /handleSendProgramSnapshotToCanvas/, 'canvas import hook should convert program snapshots into image nodes');
+  assert.match(canvasImportActionsHookSource, /setCanvasAutoCenterNodeId\(snapshotNode\.id\)/, 'canvas import hook should request viewport centering for program snapshots created from viewer mode');
+  assert.match(canvasSource, /autoCenterNodeId/, 'canvas should accept a one-shot node id to center after opening from viewer mode');
+  assert.match(canvasSource, /reactFlow\.setCenter/, 'canvas should use React Flow viewport centering for snapshot nodes');
   assert.match(canvasImportActionsHookSource, /URL\.createObjectURL/, 'local file drops should use browser object URLs for immediate preview');
   assert.doesNotMatch(workspaceSource, /URL\.createObjectURL/, 'orchestrator should not own browser object URL creation for local canvas imports');
   assert.doesNotMatch(workspaceSource, /function workspaceNodeKindForCanvasFile/, 'orchestrator should not own local file type detection');
@@ -980,6 +1043,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasHandleDropPreviewSource, /ViewportPortal/, 'canvas should render handle-drag previews in flow coordinates');
   assert.match(canvasHandleDropPreviewSource, /workspaceGhostNode/, 'canvas should show a ghost block while dragging from a connector');
   assert.match(canvasHandleDropPreviewSource, /workspaceGhostLink/, 'canvas should show a ghost link while dragging from a connector');
+  assert.match(canvasHandleDropPreviewSource, /draft\?: WorkspaceHandleDropDraft/, 'connector drag preview should not require a node-creation draft');
+  assert.match(canvasHandleDropPreviewSource, /preview\.draft \?/, 'connector drag preview should render the ghost block only when a matching block can be created');
+  assert.match(canvasSource, /updateHandleDropPreview\(\{[\s\S]*draft,[\s\S]*\}\)/, 'canvas should start a connector preview even when no matching dropped block exists');
+  assert.match(canvasSource, /if \(!preview\.draft \|\| connectionState\.isValid/, 'canvas should only auto-create dropped blocks when the connector preview has a draft');
   assert.match(canvasPaletteDragPreviewSource, /workspaceGhostNode/, 'canvas should show a ghost block while dragging a toolbar template');
   assert.match(canvasSource, /useMemo\(\(\) => workspaceNodeTypes, \[\]\)/, 'canvas should memoize custom node type maps for React Flow');
   assert.match(canvasSource, /useMemo\(\(\) => workspaceEdgeTypes, \[\]\)/, 'canvas should memoize custom edge type maps for React Flow');
@@ -1007,7 +1074,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeFrameSource, /styles\.nodeResizeControl/, 'resize selector should use isolated editor CSS');
   assert.match(nodeFrameSource, /styles\.sourceResizableNode/, 'resizable source nodes should opt into fluid card sizing');
   assert.match(nodeFrameSource, /minWidth=\{SOURCE_NODE_MIN_WIDTH\}/, 'resize control should keep a standard minimum width');
-  assert.match(nodeFrameSource, /minHeight=\{SOURCE_NODE_MIN_HEIGHT\}/, 'resize control should keep a standard minimum height');
+  assert.match(nodeFrameSource, /const SOURCE_NODE_MIN_HEIGHT = 132;/, 'non-output resize control should keep a standard minimum height');
   assert.match(canvasNodeStyleSource, /\.sourceResizableNode/, 'resizable source node sizing should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl/, 'bottom-left resize selector should be styled in focused canvas node CSS');
   assert.match(canvasNodeStyleSource, /\.nodeResizeGrip/, 'resize selector should have a discreet visual grip');
@@ -1066,6 +1133,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(persistenceEffectsHookSource, /readStudioProjectFromApi/, 'workspace persistence hook should own server workspace hydration side effects');
   assert.match(persistenceEffectsHookSource, /saveStudioWorkspaceToApi/, 'workspace persistence hook should own server autosave side effects');
   assert.match(workspaceNormalizersSource, /function normalizeOutputOnlySourceNodes/, 'workspace normalizers should own stale source-node handle cleanup');
+  assert.match(workspaceNormalizersSource, /function normalizeWorkspaceGraphNodes/, 'workspace normalizers should centralize graph node migrations');
+  assert.match(workspaceNormalizersSource, /function generatedOutputSourceHandle/, 'workspace normalizers should keep output source handles media-specific');
+  assert.match(workspaceNormalizersSource, /function shotOutputSourceHandle/, 'workspace normalizers should keep generation block source handles media-specific');
+  assert.match(workspaceNormalizersSource, /function normalizeChatSettings/, 'workspace normalizers should own persisted chat node shape');
   assert.match(workspaceNormalizersSource, /function normalizePlaceholderOutputNodes/, 'workspace normalizers should own stale output placeholder cleanup');
   assert.match(workspaceNormalizersSource, /function normalizeTimelineMediaUrls/, 'workspace normalizers should own timeline media URL hydration');
   assert.match(workspaceNormalizersSource, /function playableOutputTimelineUrl/, 'workspace normalizers should own playable output media detection');
@@ -1358,21 +1429,22 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasControllerHookSource, /useWorkspaceRenderNodes/, 'canvas controller should delegate graph node render enrichment to a focused hook');
   assert.doesNotMatch(workspaceSource, /getWorkspaceShotTargetHandles/, 'orchestrator should not derive rendered shot target handles inline');
   assert.match(renderNodesHookSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
-  assert.match(renderNodesHookSource, /sourceHandles:\s*\[GENERATED_OUTPUT_TARGET_HANDLE\]/, 'rendered shot nodes should expose one reusable generated-output source handle');
+  assert.match(renderNodesHookSource, /sourceHandles:\s*\[shotOutputSourceHandle\(node\.data\.shot\)\]/, 'rendered shot nodes should expose one media-specific output source handle');
   assert.match(renderNodesHookSource, /inputConnectors/, 'rendered shot nodes should receive connector labels and metadata');
   assert.match(renderNodesHookSource, /validateShotConnections/, 'render node hook should own shot connection validation for rendered nodes');
   assert.match(renderNodesHookSource, /workspaceConnectionCapacity/, 'render node hook should own connector capacity labels for rendered nodes');
-  assert.match(nodeSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
-  assert.match(nodeSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
-  assert.match(nodeSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
+  assert.match(nodeSource, /workspace-shot-input-dock/, 'generate block input handles should delegate to a focused dock component');
+  assert.match(shotInputDockSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
+  assert.match(shotInputDockSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
+  assert.match(shotInputDockSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
   assert.match(nodeSource, /statusPill[\s\S]*ShotInputDock/, 'generate block connector dock should render below the Ready status');
-  assert.match(nodeSource, /styles\.shotInputDock/, 'generate block should place connector labels in a bottom dock, not over the preview');
+  assert.match(shotInputDockSource, /styles\.shotInputDock/, 'generate block should place connector labels in a bottom dock, not over the preview');
   assert.match(shotInputDockStyle, /display:\s*grid/, 'generate block connector dock should be styled in normal card flow');
   assert.doesNotMatch(shotInputDockStyle, /position:\s*absolute/, 'generate block connector dock should not be side-mounted');
   assert.match(shotInputDockStyle, /background:\s*transparent/, 'generate block connector dock should not render as a separate box');
   assert.doesNotMatch(shotInputDockStyle, /border:\s*1px/, 'generate block connector dock should not draw a boxed border');
   assert.match(canvasNodeStyleSource, /\.shotInputRow/, 'generate block connector rows should be styled in focused canvas node CSS');
-  assert.match(nodeSource, /left:\s*-12/, 'generate block input handles should sit on the card edge, not inside the label row');
+  assert.match(shotInputDockSource, /left:\s*-12/, 'generate block input handles should sit on the card edge, not inside the label row');
   assert.match(typesSource, /pricingEstimate\?: WorkspacePricingEstimate/, 'shot nodes should carry a live parameter-based pricing estimate');
   assert.match(nodeSource, /pricingEstimate/, 'shot nodes should render live parameter-based pricing estimates');
   assert.doesNotMatch(nodeSource, /estimated_cost_or_credits/, 'shot nodes should not render static engine pricing as the estimate');
@@ -1385,15 +1457,21 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeSource, /outputStatus/, 'output blocks should use shared placeholder, processing, and ready display state derivation');
   assert.match(nodeSource, /Processing/, 'output blocks should show a processing placeholder while generation is running');
   assert.match(nodeSource, /disabled=\{!canSendToTimeline\}/, 'output blocks should not send placeholders or processing outputs to the timeline');
+  assert.match(nodeFrameSource, /const OUTPUT_NODE_MIN_HEIGHT/, 'output nodes should have a dedicated resize minimum for timeline actions');
+  assert.match(nodeFrameSource, /sourceNodeMinHeight\(data\.kind\)/, 'node resize controls should use kind-specific minimum heights');
+  assert.match(canvasNodeStyleSource, /\.sourceResizableNode\.outputNode[\s\S]*min-height:\s*190px/, 'output nodes should reserve enough default height for media, metadata, and Send to timeline');
   assert.match(nodeSource, /function EmptyMediaPicker/, 'media nodes should render an empty picker state when no media is attached');
   assert.match(nodeSource, /onOpenAssetLibrary/, 'media node plus button should open the editor asset library');
+  assert.doesNotMatch(nodeSource, /asset\.filename\s*\?\?\s*data\.subtitle/, 'media node meta rows should not duplicate the filename already shown below the node title');
+  assert.match(nodeSource, /styles\.assetMetaRow/, 'media node meta rows should use a focused alignment class');
+  assert.match(canvasNodeStyleSource, /\.assetMetaRow[\s\S]*justify-content:\s*flex-end/, 'media node meta rows should keep media details aligned to the trailing edge');
   assert.match(settingsSource, /ShotNodeInspector/, 'node settings panel should delegate shot settings to a focused component');
   assert.match(shotNodeInspectorSource, /pricingEstimate/, 'shot inspector should render the same live pricing estimate');
   assert.match(shotNodeInspectorSource, /render_options/, 'shot inspector should render engine-derived render options');
   assert.doesNotMatch(shotNodeInspectorSource, /<span>Lip-sync<\/span>[\s\S]*lipSyncEnabled/, 'shot inspector should not always render a generic lip-sync toggle');
   assert.match(shotNodeInspectorSource, /recommendedModels[\s\S]*slice\(0,\s*4\)/, 'shot inspector model selector should cap inline recommendations at four models');
   assert.match(shotNodeInspectorSource, /<optgroup label=\{copy\.recommended\}>[\s\S]*recommendedModels\.map/, 'shot inspector model selector should expose recommended models inside the model dropdown through localized copy');
-  assert.match(shotNodeInspectorSource, /remainingCapabilities = capabilities\.filter/, 'shot inspector model selector should derive the full remaining model list after recommendations');
+  assert.match(shotNodeInspectorSource, /remainingCapabilities = compatibleCapabilities\.filter/, 'shot inspector model selector should derive the compatible remaining model list after recommendations');
   assert.match(shotNodeInspectorSource, /<optgroup label=\{copy\.allModels\}>[\s\S]*remainingCapabilities\.map/, 'shot inspector model selector should keep the full model list available after recommendations through localized copy');
   assert.doesNotMatch(shotNodeInspectorSource, /styles\.recommendationList|<span>Recommended models<\/span>/, 'shot inspector should not render a separate recommended models section');
   assert.doesNotMatch(styleSource, /\.recommendationList/, 'editor CSS should not keep styling for the removed recommendation section');
@@ -1406,6 +1484,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(styleSource, /\.pricingActionSummary/, 'main editor CSS should no longer own inspector price summary styles after modularization');
   assert.match(settingsSource, /NodeInspectorMediaPreview/, 'node settings panel should delegate media previews to a focused component');
   assert.match(settingsSource, /NodeInspectorConnections/, 'node settings panel should delegate connection rows to a focused component');
+  assert.match(settingsSource, /copy\.blockName/, 'node settings panel should expose a localized block name field');
+  assert.match(settingsSource, /onPatchNodeData\(selectedNode\.id,\s*\{\s*title:/, 'node settings panel should rename the selected canvas block through the shared graph patch action');
   assert.doesNotMatch(settingsSource, /connections\.map/, 'node settings panel should not render graph connection rows inline');
   assert.match(nodeInspectorConnectionsSource, /connectedEdges/, 'node inspector connection component should own graph connection row derivation');
   assert.match(nodeInspectorConnectionsSource, /localizeStudioEdgeKindLabel/, 'node inspector connection component should render localized connector labels');
@@ -1472,6 +1552,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(programControlsSource, /onMarkIn/, 'program controls should expose Mark In');
   assert.match(programControlsSource, /onMarkOut/, 'program controls should expose Mark Out');
   assert.match(programControlsSource, /onSendSnapshotToCanvas/, 'program controls should send the current frame snapshot back to canvas');
+  assert.match(programPlaybackSyncSource, /resolveProgramSnapshotFallbackSourceUrl/, 'viewer snapshots should only fall back to image-safe preview URLs when frame capture is unavailable');
   assert.doesNotMatch(videoViewerSource, /isSequenceSettingsOpen/, 'viewer should not own project settings dialog state');
   assert.doesNotMatch(videoViewerSource, /sequenceSettingsButton/, 'viewer should not expose project settings in its footer');
   assert.doesNotMatch(workspaceSource, /aria-label="Open project settings"/, 'topbar should not expose sequence settings as a project-level action');
@@ -1680,6 +1761,9 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineExternalDropSource, /application\/x-maxvideoai-timeline-node/, 'timeline should accept ready canvas media node drops');
   assert.match(timelineTrackRowSource, /timelineExternalDropGhost/, 'timeline track rows should preview external block insertions before drop');
   assert.match(timelineTrackRowSource, /data-timeline-external-drop-duration/, 'timeline external drop preview should expose the incoming clip duration for browser tests');
+  assert.match(timelineExternalDropSource, /hasTimelineAudio/, 'timeline external drop payloads should carry whether a video drop will create linked audio');
+  assert.match(timelineTrackRowSource, /ghostItems/, 'timeline track rows should render every external drop ghost, including linked audio peers');
+  assert.match(timelineTrackRowSource, /data-timeline-external-drop-linked-audio-ghost/, 'timeline track rows should expose linked audio drop ghosts for browser tests');
   assert.match(timelineExternalDropSource, /localizeWorkspaceTimelineItemTitle\(item,\s*copy\)/, 'timeline displacement previews should localize generated titles through timeline provenance');
   assert.match(timelineTrackRowSource, /\{item\.title\}/, 'timeline displacement ghost titles should render the preview label resolved by the external-drop helper');
   assert.doesNotMatch(timelineTrackRowSource, /localizeStudioGeneratedCanvasText/, 'timeline track rows should not relocalize raw clip titles by text pattern');
@@ -2597,7 +2681,8 @@ test('MaxVideoAI editor source blocks are output-only graph sources', () => {
     const shotNodes = template.nodes.filter((node) => node.data.kind === 'shot');
     assert.ok(shotNodes.length > 0, `${template.id} should include generated shot blocks`);
     for (const node of shotNodes) {
-      assert.deepEqual(node.data.sourceHandles ?? [], ['generated_output'], `${node.id} should expose one reusable generated output handle`);
+      assert.ok(node.data.shot, `${node.id} should carry shot settings for output handle derivation`);
+      assert.deepEqual(node.data.sourceHandles ?? [], [shotOutputSourceHandle(node.data.shot)], `${node.id} should expose one media-specific generated output handle`);
     }
 
     const outputNodes = template.nodes.filter((node) => node.data.kind === 'output');
@@ -2783,7 +2868,7 @@ test('MaxVideoAI editor creates a processing output before generated media exist
   assert.deepEqual(pending.outputNode.data.sourceHandles ?? [], ['video_reference']);
   assert.equal(pending.outputEdge.source, 'dev-shot');
   assert.equal(pending.outputEdge.target, pending.outputNode.id);
-  assert.equal(pending.outputEdge.sourceHandle, 'generated_output');
+  assert.equal(pending.outputEdge.sourceHandle, 'video_reference');
   assert.equal(pending.outputEdge.targetHandle, 'generated_output');
 });
 
@@ -2806,6 +2891,8 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     trimWorkspaceTimelineItem,
     unlinkWorkspaceTimelineSelection,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
+  const { resolveTimelineExternalDropPreview } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop');
+  const { projectMediaTimelineDragPayloadForAsset } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag');
   const { timelineTrackHasOverlap } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions');
   const assertNoTimelineOverlap = (candidateItems: WorkspaceTimelineItem[], message: string) => {
     assert.equal(timelineTrackHasOverlap(candidateItems), false, message);
@@ -3302,18 +3389,19 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'video outputs with sound should create synchronized video and audio timeline clips'
   );
 
+  const importedVideoAsset = {
+    id: 'imported-video',
+    kind: 'video' as const,
+    filename: 'phone-shot.mp4',
+    subtitle: 'Video · upload',
+    url: '/uploads/phone-shot.mp4',
+    thumbUrl: '/uploads/phone-shot.jpg',
+    durationSec: 9,
+  };
   const importedVideoItems = buildWorkspaceTimelineItemsForAsset({
     assetNodeId: 'asset-video-a',
     title: 'Imported Clip',
-    asset: {
-      id: 'imported-video',
-      kind: 'video',
-      filename: 'phone-shot.mp4',
-      subtitle: 'Video · upload',
-      url: '/uploads/phone-shot.mp4',
-      thumbUrl: '/uploads/phone-shot.jpg',
-      durationSec: 9,
-    },
+    asset: importedVideoAsset,
     startSec: 4,
     idSeed: 'asset-test',
   });
@@ -3324,6 +3412,26 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       ['audio', 9, 4, 'timeline-asset-video-a-asset-test', 'audio', '/uploads/phone-shot.mp4'],
     ],
     'imported video assets should enter the timeline as synchronized video and linked audio clips'
+  );
+  const importedVideoDropPayload = projectMediaTimelineDragPayloadForAsset(importedVideoAsset);
+  assert.equal(importedVideoDropPayload?.hasTimelineAudio, true, 'project-media video drags should advertise the linked audio peer before drop');
+  const importedVideoDropPreview = importedVideoDropPayload
+    ? resolveTimelineExternalDropPreview({
+        isInsertIntoClipEnabled: true,
+        items: [],
+        lockedTracks: new Set<WorkspaceTimelineTrack>(),
+        payload: importedVideoDropPayload,
+        rawStartSec: 4,
+        track: 'video',
+      })
+    : null;
+  assert.deepEqual(
+    importedVideoDropPreview?.ghostItems.map((item) => [item.trackId, item.mediaKind, item.startSec, item.durationSec, item.title]),
+    [
+      ['video', 'video', 4, 9, 'phone-shot.mp4'],
+      ['audio', 'audio', 4, 9, 'phone-shot.mp4 Audio'],
+    ],
+    'timeline external drop preview should show both video and linked audio ghosts for imported videos'
   );
 
   const unlinkedImportedVideoItems = unlinkWorkspaceTimelineSelection(importedVideoItems, ['timeline-asset-video-a-asset-test']);
@@ -3350,6 +3458,23 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       ['timeline-asset-video-a-asset-test-audio', 'audio', 12],
     ],
     'after unlink, dragging the audio peer should no longer move the video clip'
+  );
+  const unlinkedAudioTrackMove = moveWorkspaceTimelineSelectionWithMode({
+    items: unlinkedImportedVideoItems,
+    itemIds: ['timeline-asset-video-a-asset-test-audio'],
+    anchorItemId: 'timeline-asset-video-a-asset-test-audio',
+    nextStartSec: 12,
+    nextTrack: 'audio-2',
+    mode: 'insert',
+    idSeed: 'unlinked-audio-track-drag',
+  });
+  assert.deepEqual(
+    unlinkedAudioTrackMove.map((item) => [item.id, item.track, item.startSec]),
+    [
+      ['timeline-asset-video-a-asset-test', 'video', 4],
+      ['timeline-asset-video-a-asset-test-audio', 'audio-2', 12],
+    ],
+    'after unlink, dragging the audio peer vertically should move it from Audio 1 to Audio 2'
   );
 
   const relinkedImportedVideoItems = linkWorkspaceTimelineSelection(unlinkedImportedVideoItems, [
@@ -4064,6 +4189,14 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
     buildWorkspaceUserLibraryUrl('image', 'generated', { cursor: 'cursor_2' }),
     '/api/media-library/assets?limit=60&kind=image&cursor=cursor_2&source=generated'
   );
+  assert.equal(
+    buildWorkspaceUserLibraryUrl('video', 'all', { includeOutputs: true }),
+    '/api/media-library/assets?limit=60&kind=video&includeOutputs=true'
+  );
+  assert.equal(
+    buildWorkspaceUserLibraryUrl('video', 'generated', { includeOutputs: true }),
+    '/api/media-library/assets?limit=60&kind=video&source=generated&includeOutputs=true'
+  );
   assert.equal(buildWorkspaceUserLibraryUrl(null, 'all', { limit: 48 }), '/api/media-library/assets?limit=48');
   assert.equal(buildWorkspaceUserLibraryUrl(null), '/api/media-library/assets?limit=60');
 
@@ -4254,7 +4387,11 @@ test('studio editor asset library hook owns pagination and project media kind fi
   assert.match(editorAssetLibraryHookSource, /hasMore/);
   assert.match(editorAssetLibraryHookSource, /nextCursor/);
   assert.match(editorAssetLibraryHookSource, /setKindFilter/);
+  assert.match(editorAssetLibraryHookSource, /WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION/);
+  assert.match(editorAssetLibraryHookSource, /return `\$\{WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION\}:\$\{kind \?\? 'all'\}:\$\{source\}`/);
   assert.match(editorAssetLibraryHookSource, /buildWorkspaceUserLibraryUrl\(effectiveLibraryKind, activeSource,\s*\{/);
+  assert.match(editorAssetLibraryHookSource, /includeOutputs:\s*true/);
+  assert.match(editorAssetLibraryHookSource, /workspaceLibrarySourceOptionsForKind\(effectiveLibraryKind\)/);
   assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/);
 });
 

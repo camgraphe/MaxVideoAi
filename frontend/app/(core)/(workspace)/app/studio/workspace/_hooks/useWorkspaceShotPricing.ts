@@ -8,6 +8,7 @@ import {
   formatWorkspacePricingEstimate,
   loadingWorkspacePricingEstimate,
 } from '../_lib/workspace-pricing';
+import { buildWorkspaceToolPricingEstimate } from '../_lib/workspace-tool-pricing';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphEdge,
@@ -20,10 +21,20 @@ import { inferWorkspaceEdgeKind } from '../_lib/workspace-templates';
 const PRICING_DEBOUNCE_MS = 300;
 
 type WorkspacePricingRequest = {
+  kind: 'preflight';
   nodeId: string;
   key: string;
   request: ReturnType<typeof buildWorkspaceShotPreflightRequest>;
 };
+
+type WorkspaceLocalPricingRequest = {
+  kind: 'local';
+  nodeId: string;
+  key: string;
+  estimate: WorkspacePricingEstimate;
+};
+
+type WorkspaceAnyPricingRequest = WorkspacePricingRequest | WorkspaceLocalPricingRequest;
 
 type UseWorkspaceShotPricingOptions = {
   nodes: WorkspaceGraphNode[];
@@ -36,6 +47,20 @@ function connectedInputKinds(nodeId: string, edges: WorkspaceGraphEdge[]): Works
     .filter((edge) => edge.target === nodeId)
     .map((edge) => edge.data?.kind ?? inferWorkspaceEdgeKind(edge.sourceHandle, edge.targetHandle))
     .filter((kind) => kind !== 'generated_output' && kind !== 'output_to_timeline');
+}
+
+function promptTextForNode(nodeId: string, nodes: WorkspaceGraphNode[], edges: WorkspaceGraphEdge[]): string {
+  const promptKinds = new Set<WorkspaceEdgeKind>(['prompt', 'style', 'camera', 'dialogue', 'narration']);
+  return edges
+    .filter((edge) => edge.target === nodeId)
+    .filter((edge) => {
+      const kind = edge.data?.kind ?? inferWorkspaceEdgeKind(edge.sourceHandle, edge.targetHandle);
+      return promptKinds.has(kind);
+    })
+    .map((edge) => nodes.find((node) => node.id === edge.source)?.data.promptText)
+    .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+    .map((value) => value.trim())
+    .join('\n\n');
 }
 
 function pricingRequestKey(request: WorkspacePricingRequest['request']): string {
@@ -78,7 +103,7 @@ export function useWorkspaceShotPricing({
     };
   }, []);
 
-  const pricingRequests = useMemo<WorkspacePricingRequest[]>(() => {
+  const pricingRequests = useMemo<WorkspaceAnyPricingRequest[]>(() => {
     return nodes
       .filter((node) => node.data.kind === 'shot' && node.data.shot)
       .map((node) => {
@@ -90,6 +115,27 @@ export function useWorkspaceShotPricing({
           connectedInputs,
           capabilities,
         });
+        const toolEstimate = buildWorkspaceToolPricingEstimate({
+          settings,
+          validation,
+          prompt: promptTextForNode(node.id, nodes, edges),
+          connectedInputs,
+        });
+        if (toolEstimate) {
+          return {
+            kind: 'local' as const,
+            nodeId: node.id,
+            estimate: toolEstimate,
+            key: JSON.stringify({
+              status: toolEstimate.status,
+              label: toolEstimate.label,
+              totalCents: toolEstimate.totalCents,
+              currency: toolEstimate.currency,
+              settings,
+              connectedInputs,
+            }),
+          };
+        }
         const request = buildWorkspaceShotPreflightRequest({
           settings,
           connectedInputs,
@@ -97,12 +143,13 @@ export function useWorkspaceShotPricing({
           memberTier,
         });
         return {
+          kind: 'preflight' as const,
           nodeId: node.id,
           request,
           key: pricingRequestKey(request),
         };
       })
-      .filter((request): request is WorkspacePricingRequest => Boolean(request));
+      .filter((request): request is WorkspaceAnyPricingRequest => Boolean(request));
   }, [capabilities, edges, memberTier, nodes]);
 
   useEffect(() => {
@@ -115,14 +162,23 @@ export function useWorkspaceShotPricing({
     const activeNodeIds = new Set(pricingRequests.map((request) => request.nodeId));
     setEstimates((current) =>
       pricingRequests.reduce<Record<string, WorkspacePricingEstimate>>((next, request) => {
-        next[request.nodeId] = loadingWorkspacePricingEstimate(current[request.nodeId]);
+        next[request.nodeId] = request.kind === 'local'
+          ? request.estimate
+          : loadingWorkspacePricingEstimate(current[request.nodeId]);
         return next;
       }, {})
     );
 
+    const preflightRequests = pricingRequests.filter((request): request is WorkspacePricingRequest => request.kind === 'preflight');
+    if (!preflightRequests.length) {
+      return () => {
+        canceled = true;
+      };
+    }
+
     const timeout = window.setTimeout(() => {
       void Promise.all(
-        pricingRequests.map(async (pricingRequest) => {
+        preflightRequests.map(async (pricingRequest) => {
           try {
             const response = await runPreflight(pricingRequest.request);
             return [pricingRequest.nodeId, formatWorkspacePricingEstimate(response)] as const;
@@ -132,13 +188,13 @@ export function useWorkspaceShotPricing({
         })
       ).then((results) => {
         if (canceled) return;
-        setEstimates(
+        setEstimates((current) =>
           results.reduce<Record<string, WorkspacePricingEstimate>>((next, [nodeId, estimate]) => {
             if (activeNodeIds.has(nodeId)) {
               next[nodeId] = estimate;
             }
             return next;
-          }, {})
+          }, { ...current })
         );
       });
     }, PRICING_DEBOUNCE_MS);

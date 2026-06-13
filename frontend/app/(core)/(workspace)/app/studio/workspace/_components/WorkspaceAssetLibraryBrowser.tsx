@@ -3,8 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-import { FileText, ImageIcon, Music2, Search, Video } from 'lucide-react';
+import type { MouseEvent, ReactNode } from 'react';
+import { Check, FileText, ImageIcon, Music2, Search, Video } from 'lucide-react';
 import editorStyles from '../maxvideoai-editor.module.css';
 import styles from '../_styles/asset-library.module.css';
 import type {
@@ -36,6 +36,12 @@ type WorkspaceAssetLibraryBrowserProps = {
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
   onSelectAsset?: (asset: WorkspaceLibraryAsset) => void;
+  selectedAssetIds?: readonly string[];
+  onToggleAssetSelection?: (
+    asset: WorkspaceLibraryAsset,
+    event: MouseEvent<HTMLButtonElement>,
+    visibleAssets: WorkspaceLibraryAsset[]
+  ) => void;
   headerActions?: ReactNode;
   searchPlaceholder?: string;
   emptyLabel?: string;
@@ -79,12 +85,15 @@ export function WorkspaceAssetLibraryBrowser({
   isLoadingMore = false,
   onLoadMore,
   onSelectAsset,
+  selectedAssetIds = [],
+  onToggleAssetSelection,
   headerActions,
   searchPlaceholder,
   emptyLabel,
   emptySearchLabel,
 }: WorkspaceAssetLibraryBrowserProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const selectedAssetIdSet = useMemo(() => new Set(selectedAssetIds), [selectedAssetIds]);
 
   useEffect(() => {
     setSearchQuery('');
@@ -184,9 +193,16 @@ export function WorkspaceAssetLibraryBrowser({
         ) : null}
         <div className={styles.assetBrowserGrid}>
           {filteredAssets.map((asset) => {
-            const canSelect = typeof onSelectAsset === 'function';
+            const canToggleSelection = typeof onToggleAssetSelection === 'function';
+            const canSelect = typeof onSelectAsset === 'function' || canToggleSelection;
+            const isSelected = selectedAssetIdSet.has(asset.id);
             const content = (
               <>
+                {canToggleSelection && isSelected ? (
+                  <span className={styles.assetBrowserSelectionMark} aria-hidden="true">
+                    <Check size={12} />
+                  </span>
+                ) : null}
                 <span className={styles.assetBrowserThumb}>
                   {asset.thumbUrl ? <img src={asset.thumbUrl} alt="" /> : assetIcon(asset.kind)}
                 </span>
@@ -201,9 +217,20 @@ export function WorkspaceAssetLibraryBrowser({
                 <button
                   key={asset.id}
                   type="button"
-                  className={styles.assetBrowserCard}
-                  onClick={() => onSelectAsset(asset)}
-                  aria-label={formatCopyValue(copy.useAsset, { name: asset.name })}
+                  className={`${styles.assetBrowserCard} ${isSelected ? styles.assetBrowserCardSelected : ''}`}
+                  onClick={(event) => {
+                    if (onToggleAssetSelection) {
+                      onToggleAssetSelection(asset, event, filteredAssets);
+                      return;
+                    }
+                    onSelectAsset?.(asset);
+                  }}
+                  aria-pressed={canToggleSelection ? isSelected : undefined}
+                  aria-label={
+                    canToggleSelection
+                      ? formatCopyValue(isSelected ? copy.deselectAssetForImport : copy.selectAssetForImport, { name: asset.name })
+                      : formatCopyValue(copy.useAsset, { name: asset.name })
+                  }
                 >
                   {content}
                 </button>

@@ -175,15 +175,15 @@ export async function generateAudioRun(params: {
     let music: Awaited<ReturnType<typeof generateMusicTrack>> | null = null;
     let voiceTrack: Awaited<ReturnType<typeof generateStandardVoiceTrack>> | null = null;
 
-    if (normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') {
+    if (normalized.pack === 'sfx_only' || normalized.pack === 'cinematic' || normalized.pack === 'cinematic_voice') {
       await updateAudioJob(jobId, {
         progress: 24,
-        message: 'Generating cinematic sound design…',
+        message: normalized.pack === 'sfx_only' ? 'Generating sound effects…' : 'Generating cinematic sound design…',
       });
       soundDesign = await generateSoundDesignTrack({
-        sourceVideoUrl: sourceVideoUrl!,
+        sourceVideoUrl,
         durationSec,
-        mood: normalized.mood!,
+        mood: normalized.mood ?? 'epic',
         intensity: normalized.intensity,
         prompt: normalized.prompt,
       });
@@ -254,6 +254,18 @@ export async function generateAudioRun(params: {
       }
       audioBuffer = await mixAudioTracks({
         musicUrl: music.url,
+        targetDurationSec: durationSec,
+        mixIntensity: normalized.intensity,
+      });
+    } else if (normalized.pack === 'sfx_only') {
+      if (!soundDesign?.url) {
+        throw new AudioGenerationError('Sound design generation returned no audio output.', {
+          status: 502,
+          code: 'sound_design_output_missing',
+        });
+      }
+      audioBuffer = await mixAudioTracks({
+        soundDesignUrl: soundDesign.url,
         targetDurationSec: durationSec,
         mixIntensity: normalized.intensity,
       });

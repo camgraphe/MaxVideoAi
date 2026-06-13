@@ -356,7 +356,7 @@ export function useWorkspaceGraphActions({
       const node = createAdHocWorkspaceNode(request.kind, nodes.length, defaultModelId, studioNotices, {
         x: request.position.x - 105,
         y: request.position.y - 48,
-      });
+      }, request.presetId, studioCanvasNodeCopy);
       commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
         edges: currentEdges,
         nodes: appendSelectedWorkspaceGraphNode(currentNodes, node),
@@ -365,7 +365,16 @@ export function useWorkspaceGraphActions({
       setSelectedNodeId(node.id);
       setNotice(formatNotice(studioNotices.nodeDroppedOntoCanvas, { title: node.data.title }));
     },
-    [commitCanvasGraph, defaultModelId, nodes.length, setActiveEditorSurface, setNotice, setSelectedNodeId, studioNotices]
+    [
+      commitCanvasGraph,
+      defaultModelId,
+      nodes.length,
+      setActiveEditorSurface,
+      setNotice,
+      setSelectedNodeId,
+      studioCanvasNodeCopy,
+      studioNotices,
+    ]
   );
 
   return {

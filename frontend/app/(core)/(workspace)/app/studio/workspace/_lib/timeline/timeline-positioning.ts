@@ -26,7 +26,9 @@ export function positionWorkspaceTimelineItem(
   const primaryItem = primaryTimelineItemFor(items, item);
   const targetTrack = nextTrack && isWorkspaceTimelineVideoTrack(primaryItem.track) && isWorkspaceTimelineVideoTrack(nextTrack)
     ? nextTrack
-    : primaryItem.track;
+    : nextTrack && isWorkspaceTimelineAudioTrack(primaryItem.track) && isWorkspaceTimelineAudioTrack(nextTrack)
+      ? nextTrack
+      : primaryItem.track;
   const groupId = primaryItem.linkedGroupId ?? null;
   const groupItems = groupId ? items.filter((candidate) => candidate.linkedGroupId === groupId) : [primaryItem];
   const safeStartSec = snapTimelineValue(Math.max(0, nextStartSec));

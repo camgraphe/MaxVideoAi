@@ -49,6 +49,8 @@ export function validateShotConnections(params: {
   const missingInputs = Array.from(requiredForWorkflow).filter((kind) => !connectedSatisfiesRequirement(connected, kind));
   const incompatibleInputs = Array.from(connected).filter((kind) => !inputSupportedBy(kind, supportedInputs));
   const compatibleInputs = Array.from(connected).filter((kind) => inputSupportedBy(kind, supportedInputs));
+  const familyMismatch = Boolean(params.settings.family && capability.family !== params.settings.family);
+  const outputKindMismatch = Boolean(params.settings.outputKind && capability.outputKind !== params.settings.outputKind);
 
   return {
     capability,
@@ -62,7 +64,12 @@ export function validateShotConnections(params: {
       selectedModelId: params.settings.modelId,
     }),
     resolvedWorkflowType,
-    canGenerate: missingInputs.length === 0 && incompatibleInputs.length === 0 && capability.workflows.includes(resolvedWorkflowType),
+    canGenerate:
+      !familyMismatch &&
+      !outputKindMismatch &&
+      missingInputs.length === 0 &&
+      incompatibleInputs.length === 0 &&
+      capability.workflows.includes(resolvedWorkflowType),
   };
 }
 

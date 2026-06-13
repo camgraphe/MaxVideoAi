@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
       userId,
       kind: normalizeKind(req.nextUrl.searchParams.get('kind')),
       source: req.nextUrl.searchParams.get('source'),
+      includeOutputs: req.nextUrl.searchParams.get('includeOutputs') === 'true',
       limit: Number(req.nextUrl.searchParams.get('limit') ?? 60),
       cursor: req.nextUrl.searchParams.get('cursor'),
     });
@@ -46,6 +47,7 @@ export async function GET(req: NextRequest) {
       source: asset.source,
       jobId: asset.sourceJobId,
       sourceOutputId: asset.sourceOutputId,
+      durationSec: typeof asset.metadata.durationSec === 'number' ? asset.metadata.durationSec : undefined,
       createdAt: asset.createdAt,
     })),
   });

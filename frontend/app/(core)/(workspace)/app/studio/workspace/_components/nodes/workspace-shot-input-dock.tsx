@@ -1,0 +1,73 @@
+'use client';
+
+import { Handle, Position } from '@xyflow/react';
+import { inputHandles } from './workspace-node-frame';
+import styles from '../../_styles/canvas-nodes.module.css';
+import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector } from '../../_lib/workspace-types';
+import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
+import { localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
+
+function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] | null {
+  return data.studioCanvasCopy?.nodes ?? null;
+}
+
+function connectorLabel(
+  handle: WorkspaceEdgeKind,
+  connectors: WorkspaceInputConnector[],
+  copy: ReturnType<typeof nodeCopy>
+): string {
+  return connectors.find((connector) => connector.kind === handle)?.label ??
+    (copy ? localizeStudioEdgeKindLabel(handle, copy) : edgeLabel(handle));
+}
+
+function connectorRequired(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): boolean {
+  return Boolean(connectors.find((connector) => connector.kind === handle)?.required);
+}
+
+function connectorCapacity(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): Pick<WorkspaceInputConnector, 'capacityLabel' | 'remainingCount'> {
+  const connector = connectors.find((candidate) => candidate.kind === handle);
+  return {
+    capacityLabel: connector?.capacityLabel ?? null,
+    remainingCount: connector?.remainingCount,
+  };
+}
+
+export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
+  const handles = inputHandles(data);
+  const connectors = Array.isArray(data.inputConnectors) ? data.inputConnectors : [];
+  const copy = nodeCopy(data);
+  if (!handles.length) return null;
+  return (
+    <div className={styles.shotInputDock}>
+      {handles.map((handle) => {
+        const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
+        const label = connectorLabel(handle, connectors, copy);
+        const { capacityLabel, remainingCount } = connectorCapacity(handle, connectors);
+        const isFull = remainingCount === 0;
+        return (
+          <div key={`shot-input-${handle}`} className={`${styles.shotInputRow} ${isFull ? styles.shotInputRowDisabled : ''}`}>
+            <Handle
+              id={handle}
+              type="target"
+              position={Position.Left}
+              className={styles.graphHandle}
+              style={{
+                top: '50%',
+                left: -12,
+                borderColor: color,
+                background: color,
+                opacity: isFull ? 0.35 : 1,
+              }}
+              title={label}
+            />
+            <span className={styles.shotInputName}>
+              {label}
+              {connectorRequired(handle, connectors) ? ' *' : ''}
+            </span>
+            {capacityLabel ? <span className={styles.shotInputCapacity}>{capacityLabel}</span> : null}
+          </div>
+        );
+      })}
+    </div>
+  );
+}

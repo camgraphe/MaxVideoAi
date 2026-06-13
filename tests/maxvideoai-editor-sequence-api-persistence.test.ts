@@ -11,7 +11,15 @@ import {
   type PersistedWorkspaceState,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-state';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-settings';
-import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import {
+  normalizeGeneratedOutputEdges,
+  normalizeWorkspaceGraphNodes,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers';
+import type {
+  WorkspaceGraphEdge,
+  WorkspaceGraphNode,
+  WorkspaceTimelineItem,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
 const serverClip: WorkspaceTimelineItem = {
   id: 'clip-server',
@@ -100,4 +108,131 @@ test('server sequence records override stale project timeline payloads during hy
   assert.equal(merged.projectSettings.fps, 24);
   assert.equal(merged.timelineInPointSec, 1);
   assert.equal(merged.timelineOutPointSec, 4);
+});
+
+test('workspace graph normalization preserves media-specific output handles and generation metadata', () => {
+  const nodes: WorkspaceGraphNode[] = [
+    {
+      id: 'shot-image',
+      type: 'shot',
+      position: { x: 0, y: 0 },
+      data: {
+        kind: 'shot',
+        title: 'Legacy image shot',
+        subtitle: 'Legacy',
+        accent: '#6366f1',
+        targetHandles: ['prompt'],
+        sourceHandles: [],
+        shot: {
+          modelId: 'seedream',
+          workflowType: 'text_to_image',
+          durationSec: 1,
+          aspectRatio: '16:9',
+          resolution: '1080p',
+          fps: 24,
+          seed: null,
+          audioEnabled: false,
+          lipSyncEnabled: false,
+          referenceStrength: 0.65,
+          outputName: 'Image output',
+          status: 'draft',
+        },
+      },
+    },
+    {
+      id: 'output-image',
+      type: 'output',
+      position: { x: 320, y: 0 },
+      data: {
+        kind: 'output',
+        title: 'Image output',
+        subtitle: 'Ready',
+        accent: '#6366f1',
+        targetHandles: [],
+        sourceHandles: ['video_reference'],
+        output: {
+          kind: 'image',
+          modelId: 'seedream',
+          modelLabel: 'Seedream',
+          workflowType: 'text_to_image',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          sourceShotId: 'shot-image',
+          url: '/image.png',
+          thumbUrl: '/image.png',
+          status: 'ready',
+        },
+      },
+    },
+    {
+      id: 'output-audio',
+      type: 'output',
+      position: { x: 320, y: 120 },
+      data: {
+        kind: 'output',
+        title: 'Audio output',
+        subtitle: 'Ready',
+        accent: '#16a34a',
+        targetHandles: [],
+        sourceHandles: ['video_reference'],
+        output: {
+          kind: 'audio',
+          modelId: 'audio-music-only',
+          modelLabel: 'Music generator',
+          workflowType: 'music_generation',
+          createdAt: '2026-01-01T00:00:00.000Z',
+          sourceShotId: 'shot-audio',
+          url: '/audio.m4a',
+          audioUrl: '/audio.m4a',
+          status: 'ready',
+        },
+      },
+    },
+    {
+      id: 'chat-legacy',
+      type: 'chat',
+      position: { x: 0, y: 180 },
+      data: {
+        kind: 'chat',
+        title: 'Chat',
+        subtitle: 'LLM',
+        accent: '#64748b',
+        targetHandles: [],
+        sourceHandles: [],
+      },
+    },
+  ];
+  const edges: WorkspaceGraphEdge[] = [
+    {
+      id: 'edge-image-output',
+      source: 'output-image',
+      target: 'shot-image',
+      sourceHandle: 'video_reference',
+      targetHandle: 'reference',
+      data: { kind: 'reference' },
+    },
+    {
+      id: 'edge-audio-output',
+      source: 'output-audio',
+      target: 'shot-image',
+      sourceHandle: 'video_reference',
+      targetHandle: 'audio',
+      data: { kind: 'audio' },
+    },
+  ];
+
+  const normalizedNodes = normalizeWorkspaceGraphNodes(nodes);
+  const imageOutput = normalizedNodes.find((node) => node.id === 'output-image');
+  const audioOutput = normalizedNodes.find((node) => node.id === 'output-audio');
+  const imageShot = normalizedNodes.find((node) => node.id === 'shot-image');
+  const chat = normalizedNodes.find((node) => node.id === 'chat-legacy');
+  assert.deepEqual(imageOutput?.data.sourceHandles, ['reference']);
+  assert.deepEqual(audioOutput?.data.sourceHandles, ['audio']);
+  assert.equal(imageShot?.data.shot?.family, 'image');
+  assert.equal(imageShot?.data.shot?.outputKind, 'image');
+  assert.equal(chat?.data.chat?.provider, 'openai');
+  assert.deepEqual(chat?.data.sourceHandles, ['prompt']);
+
+  const normalizedEdges = normalizeGeneratedOutputEdges(normalizedNodes, edges);
+  assert.equal(normalizedEdges[0]?.sourceHandle, 'reference');
+  assert.equal(normalizedEdges[1]?.sourceHandle, 'audio');
 });

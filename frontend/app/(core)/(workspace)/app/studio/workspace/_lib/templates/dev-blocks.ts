@@ -182,7 +182,7 @@ export function createDevBlocksWorkspaceTemplate(copy?: WorkspaceTemplateBuildCo
           'narration',
           'previous_shot',
         ],
-        sourceHandles: ['generated_output'],
+        sourceHandles: ['video_reference'],
       },
     },
     {
@@ -223,7 +223,7 @@ export function createDevBlocksWorkspaceTemplate(copy?: WorkspaceTemplateBuildCo
     createWorkspaceEdge({ source: 'dev-asset-image', target: 'dev-shot', sourceHandle: 'reference', targetHandle: 'start_image', kind: 'start_image' }),
     createWorkspaceEdge({ source: 'dev-asset-video', target: 'dev-shot', sourceHandle: 'video_reference', targetHandle: 'video_reference', kind: 'video_reference' }),
     createWorkspaceEdge({ source: 'dev-text-prompt', target: 'dev-shot', sourceHandle: 'prompt', targetHandle: 'prompt', kind: 'prompt' }),
-    createWorkspaceEdge({ source: 'dev-shot', target: 'dev-output', kind: 'generated_output' }),
+    createWorkspaceEdge({ source: 'dev-shot', target: 'dev-output', sourceHandle: 'video_reference', targetHandle: 'generated_output', kind: 'generated_output' }),
   ];
 
   return localizeWorkspaceTemplateGeneratedState({

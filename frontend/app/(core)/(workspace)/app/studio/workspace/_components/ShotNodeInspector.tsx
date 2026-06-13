@@ -3,6 +3,7 @@
 import { AlertTriangle, CheckCircle2, Sparkles } from 'lucide-react';
 import { FieldLabel, NumberControl, SelectControl } from './NodeInspectorControls';
 import { NodeInspectorConnections } from './NodeInspectorConnections';
+import { ShotNodeToolSections } from './ShotNodeToolSections';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
 import type {
@@ -16,6 +17,11 @@ import {
   localizeStudioEdgeKindLabel,
   type StudioCopy,
 } from '../../_lib/studio-copy';
+import {
+  compatibleCapabilitiesForShot,
+  isToolOnlyPreset,
+  toolPanelSectionsForShot,
+} from '../_lib/workspace-shot-inspector-helpers';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -49,8 +55,12 @@ export function ShotNodeInspector({
 }: ShotNodeInspectorProps) {
   const shot = node.data.shot as WorkspaceShotSettings | undefined;
   if (!shot) return null;
+
   const validation = node.data.validation;
   const selectedCapability = validation?.capability ?? capabilities.find((capability) => capability.id === shot.modelId) ?? null;
+  const compatibleCapabilities = compatibleCapabilitiesForShot(shot, capabilities);
+  const inspectorSections = toolPanelSectionsForShot(shot);
+  const hideModelSelect = !inspectorSections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
   const inputConnectors = Array.isArray(node.data.inputConnectors) ? node.data.inputConnectors : selectedCapability?.input_connectors ?? [];
   const renderOptions = selectedCapability?.render_options ?? [];
   const audioRenderOption = renderOptions.find((option) => option.id === 'audio') ?? null;
@@ -60,104 +70,111 @@ export function ShotNodeInspector({
   const resolutions = selectedCapability?.supported_resolutions.length ? selectedCapability.supported_resolutions : ['720p', '1080p'];
   const fpsValues = selectedCapability?.supported_fps.length ? selectedCapability.supported_fps : [24, 30];
   const pricingEstimate = node.data.pricingEstimate?.label ?? copy.estimating;
-  const recommendedModels = (validation?.recommendedModels ?? []).slice(0, 4);
+  const recommendedModels = (validation?.recommendedModels ?? [])
+    .filter((capability) => compatibleCapabilities.some((candidate) => candidate.id === capability.id))
+    .slice(0, 4);
   const recommendedModelIds = new Set(recommendedModels.map((model) => model.id));
-  const remainingCapabilities = capabilities.filter((capability) => !recommendedModelIds.has(capability.id));
+  const remainingCapabilities = compatibleCapabilities.filter((capability) => !recommendedModelIds.has(capability.id));
   const edgeLabel = (kind: string) => localizeStudioEdgeKindLabel(kind, copy);
   const outputName = localizeWorkspaceShotOutputName(node, copy);
+  const patchShot = (patch: Partial<WorkspaceShotSettings>) => onPatchShot(node.id, patch);
 
   return (
     <>
       <FieldLabel>
         {copy.outputName}
-        <input className={styles.settingsInput} value={outputName} onChange={(event) => onPatchShot(node.id, { outputName: event.currentTarget.value })} />
+        <input className={styles.settingsInput} value={outputName} onChange={(event) => patchShot({ outputName: event.currentTarget.value })} />
       </FieldLabel>
-      <FieldLabel>
-        {copy.model}
-        <SelectControl
-          value={shot.modelId}
-          onChange={(value) => {
-            const nextCapability = capabilities.find((capability) => capability.id === value) ?? null;
-            const nextAudioOption = nextCapability?.render_options.find((option) => option.id === 'audio') ?? null;
-            const nextLipSyncOption = nextCapability?.render_options.find((option) => option.id === 'lip_sync') ?? null;
-            onPatchShot(node.id, {
-              modelId: value,
-              audioEnabled: nextAudioOption?.control === 'toggle' ? nextAudioOption.defaultEnabled : false,
-              lipSyncEnabled: nextLipSyncOption?.control === 'toggle' ? nextLipSyncOption.defaultEnabled : false,
-            });
-          }}
-        >
-          {recommendedModels.length ? (
-            <optgroup label={copy.recommended}>
-              {recommendedModels.map((capability) => (
-                <option key={`recommended-${capability.id}`} value={capability.id}>
+
+      {hideModelSelect ? (
+        <div className={styles.infoGrid}>
+          <span>{copy.model}</span>
+          <strong>{selectedCapability?.label ?? shot.modelId}</strong>
+        </div>
+      ) : (
+        <FieldLabel>
+          {copy.model}
+          <SelectControl
+            value={shot.modelId}
+            onChange={(value) => {
+              const nextCapability = capabilities.find((capability) => capability.id === value) ?? null;
+              const nextAudioOption = nextCapability?.render_options.find((option) => option.id === 'audio') ?? null;
+              const nextLipSyncOption = nextCapability?.render_options.find((option) => option.id === 'lip_sync') ?? null;
+              patchShot({
+                modelId: value,
+                family: nextCapability?.family ?? shot.family,
+                outputKind: nextCapability?.outputKind === 'text' ? shot.outputKind : nextCapability?.outputKind ?? shot.outputKind,
+                audioEnabled: nextAudioOption?.control === 'toggle' ? nextAudioOption.defaultEnabled : false,
+                lipSyncEnabled: nextLipSyncOption?.control === 'toggle' ? nextLipSyncOption.defaultEnabled : false,
+              });
+            }}
+          >
+            {recommendedModels.length ? (
+              <optgroup label={copy.recommended}>
+                {recommendedModels.map((capability) => (
+                  <option key={`recommended-${capability.id}`} value={capability.id}>
+                    {capability.label}
+                  </option>
+                ))}
+              </optgroup>
+            ) : null}
+            <optgroup label={copy.allModels}>
+              {remainingCapabilities.map((capability) => (
+                <option key={capability.id} value={capability.id}>
                   {capability.label}
                 </option>
               ))}
             </optgroup>
-          ) : null}
-          <optgroup label={copy.allModels}>
-            {remainingCapabilities.map((capability) => (
-              <option key={capability.id} value={capability.id}>
-                {capability.label}
-              </option>
-            ))}
-          </optgroup>
-        </SelectControl>
-      </FieldLabel>
+          </SelectControl>
+        </FieldLabel>
+      )}
 
       <div className={styles.settingsGrid}>
-        <FieldLabel>
-          {copy.duration}
-          <SelectControl value={shot.durationSec} onChange={(value) => onPatchShot(node.id, { durationSec: Number(value) })}>
-            {durations.map((duration) => (
-              <option key={duration} value={duration}>
-                {duration}s
-              </option>
-            ))}
-          </SelectControl>
-        </FieldLabel>
-        <FieldLabel>
-          {copy.aspect}
-          <SelectControl value={shot.aspectRatio} onChange={(value) => onPatchShot(node.id, { aspectRatio: value as WorkspaceShotSettings['aspectRatio'] })}>
-            {ratios.map((ratio) => (
-              <option key={ratio} value={ratio}>
-                {ratio}
-              </option>
-            ))}
-          </SelectControl>
-        </FieldLabel>
-        <FieldLabel>
-          {copy.resolution}
-          <SelectControl value={shot.resolution} onChange={(value) => onPatchShot(node.id, { resolution: value as WorkspaceShotSettings['resolution'] })}>
-            {resolutions.map((resolution) => (
-              <option key={resolution} value={resolution}>
-                {resolution}
-              </option>
-            ))}
-          </SelectControl>
-        </FieldLabel>
-        <FieldLabel>
-          {copy.fps}
-          <SelectControl value={shot.fps} onChange={(value) => onPatchShot(node.id, { fps: Number(value) })}>
-            {fpsValues.map((fps) => (
-              <option key={fps} value={fps}>
-                {fps}
-              </option>
-            ))}
-          </SelectControl>
-        </FieldLabel>
+        {shot.outputKind === 'video' || shot.family === 'audio' ? (
+          <FieldLabel>
+            {copy.duration}
+            <SelectControl value={shot.durationSec} onChange={(value) => patchShot({ durationSec: Number(value) })}>
+              {durations.map((duration) => <option key={duration} value={duration}>{duration}s</option>)}
+            </SelectControl>
+          </FieldLabel>
+        ) : null}
+        {shot.outputKind === 'video' || shot.outputKind === 'image' ? (
+          <FieldLabel>
+            {copy.aspect}
+            <SelectControl value={shot.aspectRatio} onChange={(value) => patchShot({ aspectRatio: value as WorkspaceShotSettings['aspectRatio'] })}>
+              {ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
+            </SelectControl>
+          </FieldLabel>
+        ) : null}
+        {shot.outputKind === 'video' || shot.outputKind === 'image' || shot.family === 'upscale' ? (
+          <FieldLabel>
+            {copy.resolution}
+            <SelectControl value={shot.resolution} onChange={(value) => patchShot({ resolution: value as WorkspaceShotSettings['resolution'] })}>
+              {resolutions.map((resolution) => <option key={resolution} value={resolution}>{resolution}</option>)}
+            </SelectControl>
+          </FieldLabel>
+        ) : null}
+        {shot.outputKind === 'video' ? (
+          <FieldLabel>
+            {copy.fps}
+            <SelectControl value={shot.fps} onChange={(value) => patchShot({ fps: Number(value) })}>
+              {fpsValues.map((fps) => <option key={fps} value={fps}>{fps}</option>)}
+            </SelectControl>
+          </FieldLabel>
+        ) : null}
       </div>
 
-      <FieldLabel>
-        {copy.referenceStrength}
-        <NumberControl value={shot.referenceStrength} min={0} max={1} step={0.05} onChange={(value) => onPatchShot(node.id, { referenceStrength: value })} />
-      </FieldLabel>
+      {shot.family !== 'audio' && !shot.toolKind ? (
+        <FieldLabel>
+          {copy.referenceStrength}
+          <NumberControl value={shot.referenceStrength} min={0} max={1} step={0.05} onChange={(value) => patchShot({ referenceStrength: value })} />
+        </FieldLabel>
+      ) : null}
 
       {audioRenderOption?.control === 'toggle' ? (
         <div className={styles.toggleRow}>
           <span>{audioRenderOption.label}</span>
-          <button type="button" className={shot.audioEnabled ? styles.toggleActive : ''} onClick={() => onPatchShot(node.id, { audioEnabled: !shot.audioEnabled })}>
+          <button type="button" className={shot.audioEnabled ? styles.toggleActive : ''} onClick={() => patchShot({ audioEnabled: !shot.audioEnabled })}>
             {shot.audioEnabled ? copy.on : copy.off}
           </button>
         </div>
@@ -171,22 +188,20 @@ export function ShotNodeInspector({
       {lipSyncRenderOption?.control === 'toggle' ? (
         <div className={styles.toggleRow}>
           <span>{lipSyncRenderOption.label}</span>
-          <button type="button" className={shot.lipSyncEnabled ? styles.toggleActive : ''} onClick={() => onPatchShot(node.id, { lipSyncEnabled: !shot.lipSyncEnabled })}>
+          <button type="button" className={shot.lipSyncEnabled ? styles.toggleActive : ''} onClick={() => patchShot({ lipSyncEnabled: !shot.lipSyncEnabled })}>
             {shot.lipSyncEnabled ? copy.on : copy.off}
           </button>
         </div>
       ) : null}
 
+      <ShotNodeToolSections shot={shot} sections={inspectorSections} onPatchShot={patchShot} />
+
       <div className={styles.validationBox}>
         {validation?.canGenerate ? <CheckCircle2 size={16} /> : <AlertTriangle size={16} />}
         <div>
           <p>{validation?.canGenerate ? copy.readyToGenerate : copy.needsAttention}</p>
-          {validation?.missingInputs.length ? (
-            <span>{formatCopyValue(copy.missingInputs, { inputs: validation.missingInputs.map(edgeLabel).join(', ') })}</span>
-          ) : null}
-          {validation?.incompatibleInputs.length ? (
-            <span>{formatCopyValue(copy.unsupportedInputs, { inputs: validation.incompatibleInputs.map(edgeLabel).join(', ') })}</span>
-          ) : null}
+          {validation?.missingInputs.length ? <span>{formatCopyValue(copy.missingInputs, { inputs: validation.missingInputs.map(edgeLabel).join(', ') })}</span> : null}
+          {validation?.incompatibleInputs.length ? <span>{formatCopyValue(copy.unsupportedInputs, { inputs: validation.incompatibleInputs.map(edgeLabel).join(', ') })}</span> : null}
           {!validation?.missingInputs.length && !validation?.incompatibleInputs.length ? <span>{copy.connectedInputsMatch}</span> : null}
         </div>
       </div>

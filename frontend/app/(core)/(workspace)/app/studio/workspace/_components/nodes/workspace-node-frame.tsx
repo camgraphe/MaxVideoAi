@@ -16,7 +16,12 @@ import {
   isPlayableVideoUrl,
   outputStatus,
 } from '../../_lib/workspace-media-availability';
-import { workspaceAssetTimelineDuration, workspaceOutputTimelineDuration } from '../../_lib/workspace-timeline-editing';
+import {
+  workspaceAssetHasTimelineAudio,
+  workspaceAssetTimelineDuration,
+  workspaceOutputHasTimelineAudio,
+  workspaceOutputTimelineDuration,
+} from '../../_lib/workspace-timeline-editing';
 import { WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
 import {
   DEFAULT_STUDIO_COPY,
@@ -25,9 +30,10 @@ import {
 
 const SOURCE_NODE_MIN_WIDTH = 190;
 const SOURCE_NODE_MIN_HEIGHT = 132;
+const OUTPUT_NODE_MIN_HEIGHT = 190;
 const SOURCE_NODE_MAX_WIDTH = 460;
 const SOURCE_NODE_MAX_HEIGHT = 380;
-const SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>(['asset-image', 'asset-video', 'asset-audio', 'text-prompt', 'note', 'output']);
+const SOURCE_RESIZABLE_NODE_KINDS = new Set<WorkspaceNodeKind>(['asset-image', 'asset-video', 'asset-audio', 'text-prompt', 'note', 'chat', 'output']);
 
 function nodeAccent(data: WorkspaceGraphNode['data']): string {
   return typeof data.accent === 'string' ? data.accent : '#8b5cf6';
@@ -35,6 +41,10 @@ function nodeAccent(data: WorkspaceGraphNode['data']): string {
 
 function isSourceResizableNodeKind(kind: WorkspaceNodeKind): boolean {
   return SOURCE_RESIZABLE_NODE_KINDS.has(kind);
+}
+
+function sourceNodeMinHeight(kind: WorkspaceNodeKind): number {
+  return kind === 'output' ? OUTPUT_NODE_MIN_HEIGHT : SOURCE_NODE_MIN_HEIGHT;
 }
 
 function outputHandles(data: WorkspaceGraphNode['data']): WorkspaceEdgeKind[] {
@@ -71,6 +81,12 @@ function timelineDragPreviewUrl(data: WorkspaceGraphNode['data']): string | null
   if (data.asset) return data.asset.thumbUrl ?? data.asset.url ?? null;
   if (data.output) return data.output.thumbUrl ?? data.output.url ?? null;
   return null;
+}
+
+function timelineDragHasAudio(data: WorkspaceGraphNode['data']): boolean {
+  if (data.asset) return workspaceAssetHasTimelineAudio(data.asset);
+  if (data.output && outputStatus(data.output) === 'ready') return workspaceOutputHasTimelineAudio(data.output);
+  return false;
 }
 
 function blocksTimelineNodeDrag(target: EventTarget | null): boolean {
@@ -167,6 +183,7 @@ export function NodeFrame({
     }
     const payload = {
       durationSec: timelineDragDuration(data),
+      hasTimelineAudio: timelineDragHasAudio(data),
       nodeId,
       mediaKind: timelineMediaKind,
       previewUrl: timelineDragPreviewUrl(data),
@@ -193,7 +210,7 @@ export function NodeFrame({
           position="bottom-left"
           className={`${styles.nodeResizeControl} nodrag nowheel`}
           minWidth={SOURCE_NODE_MIN_WIDTH}
-          minHeight={SOURCE_NODE_MIN_HEIGHT}
+          minHeight={sourceNodeMinHeight(data.kind)}
           maxWidth={SOURCE_NODE_MAX_WIDTH}
           maxHeight={SOURCE_NODE_MAX_HEIGHT}
         >

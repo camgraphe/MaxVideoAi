@@ -17,7 +17,12 @@ export type NormalizedVideoProviderTask = {
   raw: unknown;
 };
 
-export type VideoProviderKey = 'fal' | 'kling_direct' | 'byteplus_modelark' | 'google_vertex_veo_direct';
+export type VideoProviderKey =
+  | 'fal'
+  | 'kling_direct'
+  | 'byteplus_modelark'
+  | 'google_vertex_veo_direct'
+  | 'luma_direct';
 
 export type ProviderSubmitInput = {
   publicJobId: string;
@@ -30,6 +35,7 @@ export type ProviderSubmitInput = {
   audioEnabled?: boolean;
   imageUrl?: string | null;
   cfgScale?: number | null;
+  resolution?: string | null;
 };
 
 export type ProviderSubmitResult = {

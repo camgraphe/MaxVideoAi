@@ -27,7 +27,6 @@ const PRODUCT_FIXTURE_SHOT_02_DURATION_SEC = 8;
 const PRODUCT_FIXTURE_TWO_SECOND_DRAG_SEC = 2;
 const PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC = PRODUCT_FIXTURE_SHOT_02_START_SEC + PRODUCT_FIXTURE_TWO_SECOND_DRAG_SEC;
 const PRODUCT_FIXTURE_SHOT_02_SPLIT_START_SEC = PRODUCT_FIXTURE_SHOT_02_START_SEC + PRODUCT_FIXTURE_SHOT_02_DURATION_SEC / 2;
-const PRODUCT_FIXTURE_INSERT_PREVIEW_SHOT_01_START_SEC = 9;
 
 async function timelinePanelHeight(page: Page): Promise<number> {
   const timelinePanel = page.getByLabel('Video timeline');
@@ -736,7 +735,7 @@ test('timeline uses two default audio tracks and supports expandable audio track
   )).toBe('video-3');
   await page.locator('[data-timeline-track-label="video-3"]').click({ button: 'right' });
   page.once('dialog', async (dialog) => {
-    expect(dialog.message()).toContain('V3');
+    expect(dialog.message()).toContain('Video 3');
     await dialog.accept();
   });
   await page.getByRole('menuitem', { name: 'Delete video track', exact: true }).click();
@@ -802,7 +801,7 @@ test('delete key only applies to the active canvas or timeline surface', async (
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline undo and redo shortcuts work after focus returns to the canvas', async ({ page }) => {
+test('timeline undo and redo shortcuts stay scoped when focus returns to the canvas', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -816,6 +815,11 @@ test('timeline undo and redo shortcuts work after focus returns to the canvas', 
   await clickCanvasNode(page, 'asset-product-image');
   await expect(page.locator('[data-active-editor-surface="canvas"]')).toBeVisible();
 
+  await page.keyboard.press('Control+Z');
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(4);
+  await expect(page.getByRole('button', { name: 'Undo timeline edit' })).toBeEnabled();
+
+  await switchEditorFocus(page, 'Viewer');
   await page.keyboard.press('Control+Z');
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect(page.getByRole('button', { name: 'Redo timeline edit' })).toBeEnabled();
@@ -1020,7 +1024,7 @@ test('dragging linked audio keeps the video clip visible during preview', async 
   assertNoEditorClientErrors(errors);
 });
 
-test('insert drag preview resolves occupied clip drops to the intended edit boundary', async ({ page }) => {
+test('timeline drag preview can move right into free space after an occupied clip', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -1040,15 +1044,15 @@ test('insert drag preview resolves occupied clip drops to the intended edit boun
   await page.mouse.move(startX + pixelsPerSecond * 14, startY, { steps: 12 });
 
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(PRODUCT_FIXTURE_INSERT_PREVIEW_SHOT_01_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(14);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
 
   await page.mouse.up();
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(PRODUCT_FIXTURE_INSERT_PREVIEW_SHOT_01_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(14);
 
   assertNoEditorClientErrors(errors);
 });
@@ -1161,7 +1165,7 @@ test('viewer video frame updates on one-frame keyboard step while paused', async
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline ambiguous multi-select drag reverts relative offsets and linked audio sync', async ({ page }) => {
+test('timeline multi-select drag can move right and keep linked audio sync', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -1173,11 +1177,12 @@ test('timeline ambiguous multi-select drag reverts relative offsets and linked a
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).selected).toBe(true);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).selected).toBe(true);
 
-  await dragTimelineClip(page, 'timeline-output-01', 34);
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  await dragTimelineClip(page, 'timeline-output-01', pixelsPerSecond);
 
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(1);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC + 1);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC + 1);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);

@@ -4,7 +4,9 @@ import {
   type TimelineNodeDragPayload,
 } from './timeline/timeline-external-drop';
 import {
+  workspaceAssetHasTimelineAudio,
   workspaceAssetTimelineDuration,
+  workspaceOutputHasTimelineAudio,
   workspaceOutputTimelineDuration,
 } from './workspace-timeline-editing';
 import type {
@@ -72,6 +74,7 @@ export function projectMediaTimelineDragPayloadForAsset(asset: WorkspaceAssetRec
   return {
     assetId: asset.id,
     durationSec: workspaceAssetTimelineDuration(asset),
+    hasTimelineAudio: workspaceAssetHasTimelineAudio(asset),
     mediaKind,
     previewUrl: projectMediaAssetThumbnailUrl(asset),
     title: asset.filename,
@@ -84,6 +87,7 @@ export function projectMediaTimelineDragPayloadForGeneratedNode(node: WorkspaceG
   if (!mediaKind || !output) return null;
   return {
     durationSec: workspaceOutputTimelineDuration(output),
+    hasTimelineAudio: workspaceOutputHasTimelineAudio(output),
     mediaKind,
     nodeId: node.id,
     previewUrl: projectMediaGeneratedThumbnailUrl(node),

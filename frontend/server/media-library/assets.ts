@@ -15,6 +15,7 @@ import {
   resolveLibraryAssetOriginDedupeKey,
   type DbJobOutputRow,
   type DbMediaAssetRow,
+  type JobOutputRecord,
   type MediaAssetRecord,
   type MediaKind,
 } from '../media-library-records';
@@ -40,6 +41,7 @@ export async function listLibraryAssets(params: {
   kind?: MediaKind | null;
   source?: string | null;
   originUrl?: string | null;
+  includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
 }): Promise<MediaAssetRecord[]> {
@@ -48,6 +50,7 @@ export async function listLibraryAssets(params: {
     kind: params.kind,
     source: params.source,
     originUrl: params.originUrl,
+    includeOutputs: params.includeOutputs,
     limit: params.limit,
     cursor: params.cursor ?? null,
   });
@@ -59,6 +62,7 @@ export async function listLibraryAssetPage(params: {
   kind?: MediaKind | null;
   source?: string | null;
   originUrl?: string | null;
+  includeOutputs?: boolean;
   limit?: number;
   cursor?: string | null;
 }): Promise<MediaLibraryPage<MediaAssetRecord>> {
@@ -69,6 +73,8 @@ export async function listLibraryAssetPage(params: {
   const cursor = decodeMediaLibraryCursor(params.cursor);
   const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
   const originUrl = normalizeString(params.originUrl) ?? null;
+  const shouldIncludeJobOutputs = Boolean(params.includeOutputs) && (!source || source === 'saved_job_output');
+  const outputCursorId = cursor?.id?.startsWith('output:') ? cursor.id.slice('output:'.length) : cursor?.id ?? null;
   const values: unknown[] = [
     params.userId,
     pageLimit,
@@ -120,6 +126,51 @@ export async function listLibraryAssetPage(params: {
     seen.add(dedupeKey);
     seen.add(originDedupeKey);
   });
+
+  if (shouldIncludeJobOutputs) {
+    const outputValues = [...values];
+    outputValues[6] = outputCursorId;
+    const outputRows = await query<DbJobOutputRow>(
+      `SELECT o.id, o.job_id, o.user_id, o.kind, o.url, o.storage_url, o.thumb_url, o.preview_url, o.mime_type,
+              o.width, o.height, o.duration_sec, o.position, o.status, o.metadata, o.created_at,
+              saved.id AS saved_asset_id,
+              j.prompt AS job_prompt,
+              j.duration_sec AS job_duration_sec,
+              j.aspect_ratio AS job_aspect_ratio
+         FROM job_outputs o
+         JOIN app_jobs j
+           ON j.job_id = o.job_id
+          AND j.user_id = o.user_id
+         LEFT JOIN media_assets saved
+           ON saved.user_id = $1
+          AND saved.source_output_id = o.id
+          AND saved.deleted_at IS NULL
+        WHERE o.user_id = $1
+          AND j.hidden IS NOT TRUE
+          AND o.status = 'ready'
+          AND ($3::text IS NULL OR o.kind = $3::text)
+          AND ($4::text IS NULL OR $4::text = 'saved_job_output')
+          AND ($5::text IS NULL OR o.url = $5::text OR o.storage_url = $5::text OR o.metadata->>'originUrl' = $5::text)
+          AND (
+            $6::timestamptz IS NULL
+            OR (o.created_at, o.id) < ($6::timestamptz, $7::text)
+          )
+        ORDER BY o.created_at DESC, o.id DESC
+        LIMIT $2`,
+      outputValues
+    );
+
+    outputRows.forEach((row) => {
+      const outputAsset = mediaAssetFromJobOutput(mapOutputRow(row));
+      const dedupeKey = resolveLibraryAssetDedupeKey(outputAsset);
+      const originDedupeKey = resolveLibraryAssetOriginDedupeKey(outputAsset);
+      if (seen.has(outputAsset.id) || seen.has(dedupeKey) || seen.has(originDedupeKey)) return;
+      assets.push(outputAsset);
+      seen.add(outputAsset.id);
+      seen.add(dedupeKey);
+      seen.add(originDedupeKey);
+    });
+  }
 
   const legacyRows = await query<{
     asset_id: string;
@@ -206,6 +257,38 @@ export async function listLibraryAssetPage(params: {
   });
 
   return sliceMediaLibraryPage(assets, limit);
+}
+
+function mediaAssetFromJobOutput(output: JobOutputRecord): MediaAssetRecord {
+  return {
+    id: resolveLibraryAssetIdentity({
+      userId: output.userId ?? 'anonymous',
+      kind: output.kind,
+      url: output.url,
+      source: 'saved_job_output',
+      sourceOutputId: output.id,
+    }),
+    userId: output.userId,
+    kind: output.kind,
+    url: output.url,
+    thumbUrl: output.thumbUrl,
+    previewUrl: output.previewUrl,
+    mimeType: output.mimeType,
+    width: output.width,
+    height: output.height,
+    sizeBytes: null,
+    source: 'saved_job_output',
+    sourceJobId: output.jobId,
+    sourceOutputId: output.id,
+    status: output.status,
+    metadata: {
+      ...output.metadata,
+      durationSec: output.durationSec,
+      jobId: output.jobId,
+      sourceOutputId: output.id,
+    },
+    createdAt: output.createdAt,
+  };
 }
 
 export async function ensureReusableAsset(params: {

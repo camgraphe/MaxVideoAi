@@ -13,6 +13,7 @@ import type {
   WorkspaceTimelineTrack,
   WorkspaceTimelineVideoTrack,
 } from '../../_lib/workspace-types';
+import type { TimelineExternalDropPreview } from '../../_lib/timeline/timeline-external-drop';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type TimelineTrackDefinition = {
@@ -20,25 +21,6 @@ type TimelineTrackDefinition = {
   label: string;
   icon: ReactNode;
   kind: 'video' | 'audio';
-};
-
-type TimelineExternalDropPreview = {
-  displacedItems: Array<{
-    durationSec: number;
-    fromStartSec: number;
-    itemId: string;
-    mediaKind?: 'video' | 'audio' | 'image';
-    title: string;
-    toStartSec: number;
-    trackId: WorkspaceTimelineTrack;
-  }>;
-  durationSec: number;
-  isValid: boolean;
-  mediaKind: 'audio' | 'image' | 'video';
-  previewUrl?: string | null;
-  startSec: number;
-  title: string;
-  trackId: WorkspaceTimelineTrack;
 };
 
 type TimelineTrackRowProps = {
@@ -114,7 +96,8 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
   videoTrackCount,
   videoTrackId,
 }: TimelineTrackRowProps) {
-  const trackDropPreview = externalDropPreview?.trackId === track.id ? externalDropPreview : null;
+  const trackDropGhosts = externalDropPreview?.ghostItems.filter((item) => item.trackId === track.id) ?? [];
+  const primaryTrackDropGhost = trackDropGhosts.find((item) => item.isPrimary) ?? null;
   const displacedItems = externalDropPreview?.isValid
     ? externalDropPreview.displacedItems.filter((item) => item.trackId === track.id)
     : [];
@@ -247,45 +230,49 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
               aria-hidden="true"
             />
           ) : null}
-          {trackDropPreview ? (
+          {primaryTrackDropGhost && externalDropPreview ? (
             <>
               <span
-                className={`${styles.timelineExternalDropGuide} ${trackDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
-                style={{ left: trackDropPreview.startSec * pixelsPerSecond }}
+                className={`${styles.timelineExternalDropGuide} ${externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid}`}
+                style={{ left: primaryTrackDropGhost.startSec * pixelsPerSecond }}
                 aria-hidden="true"
               />
-              <span
-                className={[
-                  styles.timelineExternalDropGhost,
-                  trackDropPreview.mediaKind === 'audio' ? styles.timelineExternalDropGhostAudio : '',
-                  trackDropPreview.mediaKind === 'image' ? styles.timelineExternalDropGhostImage : '',
-                  trackDropPreview.previewUrl && trackDropPreview.mediaKind !== 'audio' ? styles.timelineExternalDropGhostWithPreview : '',
-                  trackDropPreview.isValid ? '' : styles.timelineExternalDropInvalid,
-                ].filter(Boolean).join(' ')}
-                data-timeline-external-drop-ghost="true"
-                data-timeline-external-drop-duration={trackDropPreview.durationSec}
-                data-timeline-external-drop-kind={trackDropPreview.mediaKind}
-                style={{
-                  left: trackDropPreview.startSec * pixelsPerSecond,
-                  width: Math.max(36, trackDropPreview.durationSec * pixelsPerSecond),
-                }}
-                aria-hidden="true"
-              >
-                {trackDropPreview.previewUrl && trackDropPreview.mediaKind !== 'audio' ? (
-                  <span
-                    className={styles.timelineExternalDropGhostThumb}
-                    style={{ backgroundImage: `url(${trackDropPreview.previewUrl})` }}
-                  />
-                ) : null}
-                <span className={styles.timelineExternalDropGhostTitle}>
-                  {trackDropPreview.isValid ? trackDropPreview.title : copy.invalidDrop}
-                </span>
-                <span className={styles.timelineExternalDropGhostDuration}>
-                  {formatDropDuration(trackDropPreview.durationSec)}
-                </span>
-              </span>
             </>
           ) : null}
+          {externalDropPreview ? trackDropGhosts.map((ghost) => (
+            <span
+              key={`${ghost.trackId}-${ghost.mediaKind}-${ghost.isPrimary ? 'primary' : 'linked'}`}
+              className={[
+                styles.timelineExternalDropGhost,
+                ghost.mediaKind === 'audio' ? styles.timelineExternalDropGhostAudio : '',
+                ghost.mediaKind === 'image' ? styles.timelineExternalDropGhostImage : '',
+                ghost.previewUrl && ghost.mediaKind !== 'audio' ? styles.timelineExternalDropGhostWithPreview : '',
+                externalDropPreview.isValid ? '' : styles.timelineExternalDropInvalid,
+              ].filter(Boolean).join(' ')}
+              data-timeline-external-drop-ghost="true"
+              data-timeline-external-drop-linked-audio-ghost={!ghost.isPrimary && ghost.mediaKind === 'audio' ? 'true' : 'false'}
+              data-timeline-external-drop-duration={ghost.durationSec}
+              data-timeline-external-drop-kind={ghost.mediaKind}
+              style={{
+                left: ghost.startSec * pixelsPerSecond,
+                width: Math.max(36, ghost.durationSec * pixelsPerSecond),
+              }}
+              aria-hidden="true"
+            >
+              {ghost.previewUrl && ghost.mediaKind !== 'audio' ? (
+                <span
+                  className={styles.timelineExternalDropGhostThumb}
+                  style={{ backgroundImage: `url(${ghost.previewUrl})` }}
+                />
+              ) : null}
+              <span className={styles.timelineExternalDropGhostTitle}>
+                {externalDropPreview.isValid ? ghost.title : copy.invalidDrop}
+              </span>
+              <span className={styles.timelineExternalDropGhostDuration}>
+                {formatDropDuration(ghost.durationSec)}
+              </span>
+            </span>
+          )) : null}
           {displacedItems.map((item) => (
             <span
               key={item.itemId}

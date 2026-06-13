@@ -258,6 +258,7 @@ export function WorkspaceEditorLayout({
             copy={studioCopy.canvas}
             notices={studioCopy.notices}
             key={`${activeTemplateId}-${canvasRevision}`}
+            autoCenterNodeId={canvas.canvasAutoCenterNodeId}
             nodes={canvas.renderNodes}
             edges={canvas.renderEdges}
             isKeyboardDeleteEnabled={activeEditorSurface === 'canvas'}
@@ -270,6 +271,7 @@ export function WorkspaceEditorLayout({
             onCreateNodeFromPaletteDrop={canvas.handleCreateNodeFromPaletteDrop}
             onCanvasFileDrop={canvas.handleCanvasFileDrop}
             onCanvasTextPaste={canvas.handleCanvasTextPaste}
+            onAutoCenterNodeConsumed={canvas.handleCanvasAutoCenterNodeConsumed}
             onCanvasInteraction={selection.handleCanvasInteraction}
             onSelectedNodeChange={selection.handleSelectedCanvasNodeChange}
             onSelectedNodeSync={selection.handleSyncSelectedCanvasNode}
@@ -323,6 +325,7 @@ export function WorkspaceEditorLayout({
                 onPatchNodeData={canvas.patchNodeData}
                 onPatchShot={canvas.patchShot}
                 onGenerateShot={canvas.handleGenerateShot}
+                onRunChat={canvas.handleRunChat}
                 onSendOutputToTimeline={canvas.handleSendOutputToTimeline}
                 onOpenAssetLibrary={canvas.handleOpenAssetLibrary}
               />
@@ -429,6 +432,7 @@ export function WorkspaceEditorLayout({
         onRangeModeChange={shell.handleExportRangeModeChange}
         onSelectAsset={canvas.handleSelectLibraryAsset}
         onSelectProjectMediaAsset={projectMedia.handleSelectProjectMediaAsset}
+        onSelectProjectMediaAssets={projectMedia.handleSelectProjectMediaAssets}
       />
     </main>
   );

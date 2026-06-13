@@ -1,6 +1,7 @@
 import type { Mode } from '@/types/engines';
 import { isGoogleVertexVeoEngine, isGoogleVertexVeoModeSupported } from './google-vertex-veo/model-map';
 import { isKlingDirectEngine, isKlingDirectModeSupported } from './kling-direct/model-map';
+import { isLumaDirectEngine, isLumaDirectModeSupported } from './luma-direct/model-map';
 
 type RoutingEnv = Partial<Record<
   | 'KLING_DIRECT_ENABLED'
@@ -12,7 +13,11 @@ type RoutingEnv = Partial<Record<
   | 'GOOGLE_VERTEX_VEO_ENABLED'
   | 'GOOGLE_VERTEX_VEO_PUBLIC_ROUTING_ENABLED'
   | 'GOOGLE_VERTEX_VEO_FALLBACK_TO_FAL_ENABLED'
-  | 'GOOGLE_VERTEX_VEO_ADMIN_ONLY',
+  | 'GOOGLE_VERTEX_VEO_ADMIN_ONLY'
+  | 'LUMA_DIRECT_ENABLED'
+  | 'LUMA_DIRECT_PUBLIC_ROUTING_ENABLED'
+  | 'LUMA_DIRECT_FALLBACK_TO_FAL_ENABLED'
+  | 'LUMA_DIRECT_ADMIN_ONLY',
   string | undefined
 >>;
 
@@ -35,6 +40,12 @@ export type VideoProviderRoutingPlan =
       primaryProvider: 'google_vertex_veo_direct';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
+    }
+  | {
+      kind: 'luma_direct_primary';
+      primaryProvider: 'luma_direct';
+      fallbackProvider: 'fal';
+      fallbackEnabled: boolean;
     };
 
 function flagEnabled(value: string | undefined): boolean {
@@ -52,6 +63,23 @@ export function resolveVideoProviderRoutingPlan(params: {
   env?: RoutingEnv;
 }): VideoProviderRoutingPlan {
   const falOnly: VideoProviderRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  if (isLumaDirectEngine(params.engineId)) {
+    if (!isLumaDirectModeSupported(params.engineId, params.mode)) return falOnly;
+    if (!flagEnabled(readEnv(params.env, 'LUMA_DIRECT_ENABLED'))) return falOnly;
+
+    const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'LUMA_DIRECT_PUBLIC_ROUTING_ENABLED'));
+    const adminOnly = flagEnabled(readEnv(params.env, 'LUMA_DIRECT_ADMIN_ONLY') ?? 'true');
+    if (adminOnly && !params.isAdmin) return falOnly;
+    if (!publicRoutingEnabled && !params.isAdmin) return falOnly;
+
+    return {
+      kind: 'luma_direct_primary',
+      primaryProvider: 'luma_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: flagEnabled(readEnv(params.env, 'LUMA_DIRECT_FALLBACK_TO_FAL_ENABLED')),
+    };
+  }
+
   if (isGoogleVertexVeoEngine(params.engineId)) {
     if (!isGoogleVertexVeoModeSupported(params.engineId, params.mode)) return falOnly;
     if (!flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_VEO_ENABLED'))) return falOnly;

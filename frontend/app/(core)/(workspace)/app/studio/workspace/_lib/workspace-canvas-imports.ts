@@ -1,8 +1,12 @@
-import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
+import { shotOutputSourceHandle } from '../_state/workspace-normalizers';
+import { getWorkspaceBlockPreset } from './workspace-block-presets';
 import type {
+  WorkspaceEdgeKind,
+  WorkspaceGenerationPresetId,
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
   WorkspaceNodeKind,
+  WorkspaceShotSettings,
 } from './workspace-types';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
@@ -70,10 +74,13 @@ export function createAdHocWorkspaceNode(
   index: number,
   modelId: string,
   notices: StudioCopy['notices'],
-  positionOverride?: { x: number; y: number }
+  positionOverride?: { x: number; y: number },
+  presetId?: WorkspaceGenerationPresetId,
+  nodeCopy?: StudioCopy['canvas']['nodes']
 ): WorkspaceGraphNode {
   const position = positionOverride ?? { x: -220 + (index % 4) * 180, y: -120 + Math.floor(index / 4) * 140 };
   const id = `${kind}-${Date.now().toString(36)}-${index}`;
+  const preset = getWorkspaceBlockPreset(presetId);
 
   if (kind === 'asset-image') {
     return {
@@ -155,6 +162,52 @@ export function createAdHocWorkspaceNode(
     };
   }
 
+  if (preset?.nodeKind === 'chat') {
+    return {
+      id,
+      type: 'chat',
+      position,
+      data: {
+        kind: 'chat',
+        title: nodeCopy?.[preset.titleKey] ?? 'LLM chat',
+        subtitle: nodeCopy?.[preset.subtitleKey] ?? 'OpenAI or Gemini conversation.',
+        accent: preset.accent,
+        promptText: '',
+        chat: {
+          ...preset.defaultChat,
+          mode: preset.defaultChat?.mode ?? 'assistant',
+          botName: nodeCopy?.chatbotDefaultName ?? preset.defaultChat?.botName ?? 'Studio assistant',
+          provider: preset.defaultChat?.provider ?? 'openai',
+          modelId: preset.defaultChat?.modelId ?? 'gpt-4.1-mini',
+          systemPrompt: nodeCopy?.defaultChatSystemPrompt ?? preset.defaultChat?.systemPrompt ?? '',
+          draftMessage: '',
+          messages: [],
+          status: 'idle',
+        },
+        targetHandles: ['prompt', 'reference', 'video_reference', 'audio'],
+        sourceHandles: ['prompt'],
+      },
+    };
+  }
+
+  if (preset?.nodeKind === 'shot' && preset.defaultShot) {
+    const shot = { ...preset.defaultShot };
+    return {
+      id,
+      type: 'shot',
+      position,
+      data: {
+        kind: 'shot',
+        title: nodeCopy?.[preset.titleKey] ?? preset.id,
+        subtitle: nodeCopy?.[preset.subtitleKey] ?? notices.newGenerationBlockSubtitle,
+        accent: preset.accent,
+        shot,
+        targetHandles: targetHandlesForPresetShot(shot),
+        sourceHandles: [shotOutputSourceHandle(shot)],
+      },
+    };
+  }
+
   return {
     id,
     type: 'shot',
@@ -179,7 +232,44 @@ export function createAdHocWorkspaceNode(
         status: 'draft',
       },
       targetHandles: ['prompt', 'negative_prompt', 'product', 'character', 'style', 'video_reference', 'motion_reference', 'audio', 'voiceover', 'music', 'camera', 'dialogue', 'narration', 'previous_shot'],
-      sourceHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
+      sourceHandles: [shotOutputSourceHandle({ workflowType: 'image_to_video' })],
     },
   };
+}
+
+function targetHandlesForPresetShot(shot: WorkspaceShotSettings): WorkspaceEdgeKind[] {
+  if (shot.workflowType === 'text_to_image') {
+    return ['prompt', 'reference', 'product', 'character', 'style', 'composition', 'logo'];
+  }
+  if (shot.workflowType === 'image_upscale') {
+    return ['reference', 'prompt'];
+  }
+  if (shot.workflowType === 'video_upscale' || shot.workflowType === 'video_to_video') {
+    return ['video_reference', 'prompt'];
+  }
+  if (shot.workflowType === 'storyboard_to_video') {
+    return ['prompt', 'reference', 'start_image', 'continuity', 'camera', 'narration'];
+  }
+  if (shot.workflowType === 'character_to_video') {
+    return ['prompt', 'character', 'reference', 'dialogue', 'voiceover', 'video_reference'];
+  }
+  if (shot.family === 'audio') {
+    return ['prompt', 'video_reference', 'voiceover', 'dialogue', 'narration', 'music', 'sfx'];
+  }
+  return [
+    'prompt',
+    'negative_prompt',
+    'product',
+    'character',
+    'style',
+    'video_reference',
+    'motion_reference',
+    'audio',
+    'voiceover',
+    'music',
+    'camera',
+    'dialogue',
+    'narration',
+    'previous_shot',
+  ];
 }

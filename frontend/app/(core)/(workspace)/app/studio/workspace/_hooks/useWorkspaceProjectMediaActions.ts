@@ -111,6 +111,7 @@ export function useWorkspaceProjectMediaActions({
   handleMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
   handleRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
+  handleSelectProjectMediaAssets: (assets: WorkspaceLibraryAsset[]) => void;
 } {
   const pendingImportFolderIdRef = useRef<string | null>(null);
 
@@ -190,17 +191,36 @@ export function useWorkspaceProjectMediaActions({
     [setProjectAssets]
   );
 
-  const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
+  const handleSelectProjectMediaAssets = useCallback((assets: WorkspaceLibraryAsset[]) => {
+    if (!assets.length) return;
     const folderId = pendingImportFolderIdRef.current;
-    addProjectMediaAssets([asset], folderId);
+    addProjectMediaAssets(assets, folderId);
     pendingImportFolderIdRef.current = null;
     setIsProjectMediaPickerOpen(false);
     const folderName = resolveProjectMediaFolderName(folderId);
+    const filename = assets.length === 1
+      ? assets[0].name
+      : formatStudioCountLabel(
+          assets.length,
+          studioCommonCopy.mediaAssetSingular,
+          studioCommonCopy.mediaAssetPlural
+        );
     setNotice(formatNotice(studioNotices.projectMediaImportedInto, {
-      filename: asset.name,
+      filename,
       target: folderName,
     }));
-  }, [addProjectMediaAssets, resolveProjectMediaFolderName, setIsProjectMediaPickerOpen, setNotice, studioNotices]);
+  }, [
+    addProjectMediaAssets,
+    resolveProjectMediaFolderName,
+    setIsProjectMediaPickerOpen,
+    setNotice,
+    studioCommonCopy,
+    studioNotices,
+  ]);
+
+  const handleSelectProjectMediaAsset = useCallback((asset: WorkspaceLibraryAsset) => {
+    handleSelectProjectMediaAssets([asset]);
+  }, [handleSelectProjectMediaAssets]);
 
   const handleImportLocalProjectMediaFiles = useCallback(
     async (files: File[], folderId?: string | null) => {
@@ -554,5 +574,6 @@ export function useWorkspaceProjectMediaActions({
     handleMoveProjectAssetToFolder,
     handleRenameProjectMediaFolder,
     handleSelectProjectMediaAsset,
+    handleSelectProjectMediaAssets,
   };
 }

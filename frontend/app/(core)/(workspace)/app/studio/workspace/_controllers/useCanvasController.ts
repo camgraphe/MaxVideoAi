@@ -11,11 +11,17 @@ import {
   type PaletteDragStartDetail,
   WORKSPACE_NODE_KIND_DRAG_TYPE,
 } from '../_components/canvas/CanvasPaletteDragPreview';
-import type { WorkspaceGraphEdge, WorkspaceGraphNode, WorkspaceNodeKind } from '../_lib/workspace-types';
+import type {
+  WorkspaceGenerationPresetId,
+  WorkspaceGraphEdge,
+  WorkspaceGraphNode,
+  WorkspaceNodeKind,
+} from '../_lib/workspace-types';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 export type WorkspacePaletteDropRequest = {
   kind: WorkspaceNodeKind;
+  presetId?: WorkspaceGenerationPresetId;
   position: XYPosition;
 };
 
@@ -78,7 +84,7 @@ export function useCanvasController({
       const detail = (event as CustomEvent<PaletteDragStartDetail>).detail;
       if (!detail || !isWorkspaceNodeKind(detail.kind)) return;
       const position = reactFlow.screenToFlowPosition({ x: detail.clientX, y: detail.clientY });
-      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy));
+      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy, detail.presetId));
     };
 
     window.addEventListener(PALETTE_DRAG_START_EVENT, handlePaletteDragStart);
@@ -154,6 +160,7 @@ export function useCanvasController({
       if (!(target instanceof Element) || !target.closest('[data-studio-canvas-shell="true"]')) return;
       onCreateNodeFromPaletteDrop({
         kind: preview.kind,
+        presetId: preview.presetId,
         position: reactFlow.screenToFlowPosition({ x: event.clientX, y: event.clientY }),
       });
     };

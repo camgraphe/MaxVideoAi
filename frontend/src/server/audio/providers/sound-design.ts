@@ -1,10 +1,18 @@
 import type { AudioIntensity, AudioMood } from '@/lib/audio-generation';
 import { runAudioRoleWithFallback } from './fal-runner';
 import { buildSoundDesignPrompt, limitProviderPrompt } from './prompts';
-import type { AudioProviderResult } from './types';
+import { AUDIO_PROVIDER_ROSTER } from './roster';
+import type { AudioProviderCandidate, AudioProviderResult } from './types';
+
+function orderSoundDesignProviders(sourceVideoUrl?: string | null): AudioProviderCandidate[] {
+  if (sourceVideoUrl) return AUDIO_PROVIDER_ROSTER.soundDesign;
+  return AUDIO_PROVIDER_ROSTER.soundDesign.filter((candidate) =>
+    candidate.key === 'mmaudio_v2_text' || candidate.key === 'stable_audio_25_sfx'
+  );
+}
 
 export async function generateSoundDesignTrack(input: {
-  sourceVideoUrl: string;
+  sourceVideoUrl?: string | null;
   durationSec: number;
   mood: AudioMood;
   intensity: AudioIntensity;
@@ -14,7 +22,7 @@ export async function generateSoundDesignTrack(input: {
     const prompt = limitProviderPrompt(buildSoundDesignPrompt(input.mood, input.intensity, input.prompt));
     if (candidate.key === 'mirelo_sfx_v1_5') {
       return {
-        video_url: input.sourceVideoUrl,
+        video_url: input.sourceVideoUrl!,
         text_prompt: prompt,
         duration: input.durationSec,
         num_samples: 2,
@@ -38,9 +46,11 @@ export async function generateSoundDesignTrack(input: {
       };
     }
     return {
-      video_url: input.sourceVideoUrl,
+      video_url: input.sourceVideoUrl!,
       prompt,
       duration: input.durationSec,
     };
+  }, {
+    candidates: orderSoundDesignProviders(input.sourceVideoUrl),
   });
 }

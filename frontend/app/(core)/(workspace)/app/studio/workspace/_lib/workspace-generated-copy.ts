@@ -13,6 +13,7 @@ import {
   localizeStudioGeneratedCanvasText,
   type StudioCopy,
 } from '../../_lib/studio-copy';
+import { getWorkspaceBlockPreset } from './workspace-block-presets';
 
 function formatGeneratedCopyValue(
   value: string,
@@ -88,14 +89,22 @@ export function localizeWorkspaceNodeTitle(
   node: WorkspaceGraphNode,
   copy: StudioCopy['canvas']['nodes']
 ): string {
-  return localizeWorkspaceNodeGeneratedText(node.data.title, node.data.generatedCopy?.title, copy) ?? node.data.title;
+  const preset = getWorkspaceBlockPreset(node.data.shot?.presetId);
+  const titleReference = node.data.generatedCopy?.title ?? (
+    preset ? generatedCopyReference(preset.titleKey as keyof StudioCopy['canvas']['nodes'] & string) : undefined
+  );
+  return localizeWorkspaceNodeGeneratedText(node.data.title, titleReference, copy) ?? node.data.title;
 }
 
 export function localizeWorkspaceNodeSubtitle(
   node: WorkspaceGraphNode,
   copy: StudioCopy['canvas']['nodes']
 ): string | undefined {
-  return localizeWorkspaceNodeGeneratedText(node.data.subtitle, node.data.generatedCopy?.subtitle, copy);
+  const preset = getWorkspaceBlockPreset(node.data.shot?.presetId);
+  const subtitleReference = node.data.generatedCopy?.subtitle ?? (
+    preset ? generatedCopyReference(preset.subtitleKey as keyof StudioCopy['canvas']['nodes'] & string) : undefined
+  );
+  return localizeWorkspaceNodeGeneratedText(node.data.subtitle, subtitleReference, copy);
 }
 
 export function localizeWorkspacePromptText(

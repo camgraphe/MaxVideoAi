@@ -37,7 +37,7 @@ import {
   resolveWorkspaceHandleDropDraft,
   type WorkspaceHandleDropDirection,
 } from '../_lib/workspace-handle-drop';
-import { inferWorkspaceEdgeKind } from '../_lib/workspace-templates';
+import { inferWorkspaceEdgeKind, WORKSPACE_EDGE_COLORS } from '../_lib/workspace-templates';
 import { CanvasHandleDropPreview, type HandleDropPreview } from './canvas/CanvasHandleDropPreview';
 import {
   CanvasFloatingToolbar,
@@ -56,6 +56,9 @@ export type {
   WorkspacePaletteDropRequest,
 } from '../_controllers/useCanvasController';
 
+const DEFAULT_CANVAS_NODE_CENTER_WIDTH = 210;
+const DEFAULT_CANVAS_NODE_CENTER_HEIGHT = 132;
+
 export type WorkspaceHandleDropRequest = {
   sourceNodeId: string;
   handleId: WorkspaceEdgeKind;
@@ -64,6 +67,7 @@ export type WorkspaceHandleDropRequest = {
 };
 
 type WorkspaceCanvasProps = {
+  autoCenterNodeId: string | null;
   copy: StudioCopy['canvas'];
   notices: StudioCopy['notices'];
   nodes: WorkspaceGraphNode[];
@@ -78,6 +82,7 @@ type WorkspaceCanvasProps = {
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
+  onAutoCenterNodeConsumed: () => void;
   onCanvasInteraction: () => void;
   onSelectedNodeChange: (nodeId: string | null) => void;
   onSelectedNodeSync: (nodeId: string | null) => void;
@@ -89,6 +94,7 @@ type WorkspaceCanvasProps = {
 };
 
 export function WorkspaceCanvas({
+  autoCenterNodeId,
   copy,
   notices,
   nodes,
@@ -103,6 +109,7 @@ export function WorkspaceCanvas({
   onCreateNodeFromPaletteDrop,
   onCanvasFileDrop,
   onCanvasTextPaste,
+  onAutoCenterNodeConsumed,
   onCanvasInteraction,
   onSelectedNodeChange,
   onSelectedNodeSync,
@@ -112,6 +119,7 @@ export function WorkspaceCanvas({
   return (
     <ReactFlowProvider>
       <WorkspaceCanvasInner
+        autoCenterNodeId={autoCenterNodeId}
         nodes={nodes}
         copy={copy}
         notices={notices}
@@ -126,6 +134,7 @@ export function WorkspaceCanvas({
         onCreateNodeFromPaletteDrop={onCreateNodeFromPaletteDrop}
         onCanvasFileDrop={onCanvasFileDrop}
         onCanvasTextPaste={onCanvasTextPaste}
+        onAutoCenterNodeConsumed={onAutoCenterNodeConsumed}
         onCanvasInteraction={onCanvasInteraction}
         onSelectedNodeChange={onSelectedNodeChange}
         onSelectedNodeSync={onSelectedNodeSync}
@@ -182,6 +191,10 @@ function canvasHistoryShortcut(event: KeyboardEvent): 'redo' | 'undo' | null {
   return null;
 }
 
+function renderedNodeDimension(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
 function markCanvasSelectionBoxes(root: HTMLElement): void {
   root.querySelectorAll<HTMLElement>('.react-flow__selection').forEach((selectionBox) => {
     selectionBox.dataset.canvasSelectionBox = 'true';
@@ -193,6 +206,7 @@ function areCanvasNodeIdSelectionsEqual(left: string[], right: string[]): boolea
 }
 
 function WorkspaceCanvasInner({
+  autoCenterNodeId,
   copy,
   notices,
   nodes,
@@ -207,6 +221,7 @@ function WorkspaceCanvasInner({
   onCreateNodeFromPaletteDrop,
   onCanvasFileDrop,
   onCanvasTextPaste,
+  onAutoCenterNodeConsumed,
   onCanvasInteraction,
   onSelectedNodeChange,
   onSelectedNodeSync,
@@ -275,6 +290,34 @@ function WorkspaceCanvasInner({
     onCanvasTextPaste,
     onCreateNodeFromPaletteDrop,
   });
+
+  useEffect(() => {
+    if (!autoCenterNodeId) return;
+    const autoCenterNode = nodes.find((node) => node.id === autoCenterNodeId);
+    if (!autoCenterNode) {
+      onAutoCenterNodeConsumed();
+      return;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      const measured = autoCenterNode.measured;
+      const nodeWidth = renderedNodeDimension(measured?.width ?? autoCenterNode.width, DEFAULT_CANVAS_NODE_CENTER_WIDTH);
+      const nodeHeight = renderedNodeDimension(measured?.height ?? autoCenterNode.height, DEFAULT_CANVAS_NODE_CENTER_HEIGHT);
+      void reactFlow.setCenter(
+        autoCenterNode.position.x + nodeWidth / 2,
+        autoCenterNode.position.y + nodeHeight / 2,
+        {
+          duration: 160,
+          zoom: Math.max(reactFlow.getZoom(), 0.7),
+        }
+      );
+      onAutoCenterNodeConsumed();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [autoCenterNodeId, nodes, onAutoCenterNodeConsumed, reactFlow]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -379,18 +422,19 @@ function WorkspaceCanvasInner({
       }
 
       const handleId = inferWorkspaceEdgeKind(params.handleId, params.handleId);
-      const draft = resolveWorkspaceHandleDropDraft(handleId, notices, handleType, copy.nodes);
       const pointer = pointerFromConnectionEvent(event);
-      if (!draft || !pointer) {
+      if (!pointer) {
         updateHandleDropPreview(null);
         return;
       }
 
+      const draft = resolveWorkspaceHandleDropDraft(handleId, notices, handleType, copy.nodes) ?? undefined;
       const flowPosition = reactFlow.screenToFlowPosition(pointer);
       updateHandleDropPreview({
         sourceNodeId: params.nodeId,
         handleId,
         handleType,
+        accent: draft?.accent ?? WORKSPACE_EDGE_COLORS[handleId] ?? '#8b5cf6',
         draft,
         origin: flowPosition,
         position: flowPosition,
@@ -415,7 +459,8 @@ function WorkspaceCanvasInner({
     (event, connectionState) => {
       const preview = handleDropPreviewRef.current;
       updateHandleDropPreview(null);
-      if (!preview || connectionState.isValid || connectionState.toHandle || droppedOnExistingGraphElement(event)) return;
+      if (!preview) return;
+      if (!preview.draft || connectionState.isValid || connectionState.toHandle || droppedOnExistingGraphElement(event)) return;
 
       const pointer = pointerFromConnectionEvent(event);
       if (!pointer) return;

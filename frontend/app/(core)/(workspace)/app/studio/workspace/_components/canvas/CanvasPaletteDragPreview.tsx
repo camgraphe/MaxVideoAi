@@ -4,7 +4,8 @@ import { ViewportPortal, type XYPosition } from '@xyflow/react';
 import type { CSSProperties } from 'react';
 
 import styles from '../../_styles/canvas.module.css';
-import type { WorkspaceNodeKind } from '../../_lib/workspace-types';
+import { getWorkspaceBlockPreset } from '../../_lib/workspace-block-presets';
+import type { WorkspaceGenerationPresetId, WorkspaceNodeKind } from '../../_lib/workspace-types';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export const WORKSPACE_NODE_KIND_DRAG_TYPE = 'application/x-maxvideoai-node-kind';
@@ -17,11 +18,13 @@ const WORKSPACE_NODE_KINDS: readonly WorkspaceNodeKind[] = [
   'text-prompt',
   'note',
   'shot',
+  'chat',
   'output',
 ];
 
 export type PaletteDragPreview = {
   kind: WorkspaceNodeKind;
+  presetId?: WorkspaceGenerationPresetId;
   title: string;
   subtitle: string;
   accent: string;
@@ -30,6 +33,7 @@ export type PaletteDragPreview = {
 
 export type PaletteDragStartDetail = {
   kind: WorkspaceNodeKind;
+  presetId?: WorkspaceGenerationPresetId;
   clientX: number;
   clientY: number;
 };
@@ -41,8 +45,20 @@ export function isWorkspaceNodeKind(value: string): value is WorkspaceNodeKind {
 export function palettePreviewForKind(
   kind: WorkspaceNodeKind,
   position: XYPosition,
-  copy: StudioCopy['canvas']['nodes']
+  copy: StudioCopy['canvas']['nodes'],
+  presetId?: WorkspaceGenerationPresetId
 ): PaletteDragPreview {
+  const preset = getWorkspaceBlockPreset(presetId);
+  if (preset) {
+    return {
+      kind,
+      presetId: preset.id,
+      title: copy[preset.titleKey] ?? copy[preset.labelKey] ?? preset.id,
+      subtitle: copy[preset.subtitleKey] ?? copy[preset.descriptionKey] ?? '',
+      accent: preset.accent,
+      position,
+    };
+  }
   if (kind === 'asset-image') return { kind, title: copy.imageReference, subtitle: copy.emptyMediaBlock, accent: '#8b5cf6', position };
   if (kind === 'asset-video') return { kind, title: copy.videoReference, subtitle: copy.emptyMediaBlock, accent: '#2563eb', position };
   if (kind === 'asset-audio') return { kind, title: copy.audioReference, subtitle: copy.emptyMediaBlock, accent: '#22c55e', position };

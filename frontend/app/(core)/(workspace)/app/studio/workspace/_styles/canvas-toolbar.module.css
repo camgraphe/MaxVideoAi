@@ -78,7 +78,7 @@
   left: 50%;
   display: grid;
   width: min(320px, calc(100vw - 40px));
-  max-height: min(560px, calc(100vh - 230px));
+  max-height: clamp(220px, calc(100vh - 430px), 360px);
   gap: 10px;
   padding: 12px;
   transform: translateX(-50%);

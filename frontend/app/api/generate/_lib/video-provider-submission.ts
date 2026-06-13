@@ -4,6 +4,7 @@ import type { VideoProviderRoutingPlan } from '@/server/video-providers/router';
 import { submitFalGenerateTask } from './fal-submission';
 import { submitGoogleVertexVeoGenerateTask } from './google-vertex-veo-submission';
 import { submitKlingDirectGenerateTask } from './kling-direct-submission';
+import { submitLumaDirectGenerateTask } from './luma-direct-submission';
 import type { FalInputSummary } from './fal-request';
 import type { PaymentMode, PendingReceipt } from './initial-video-job';
 import { createProviderJobTracker } from './provider-job-tracker';
@@ -142,6 +143,46 @@ export async function submitGenerateProviderTask(params: {
       return { kind: 'accepted_response', body: googleSubmission.body };
     }
     return { kind: 'generation_result', generationResult: googleSubmission.generationResult };
+  }
+
+  if (params.providerRoutingPlan.kind === 'luma_direct_primary') {
+    const lumaSubmission = await submitLumaDirectGenerateTask({
+      jobId: params.jobId,
+      userId: params.userId,
+      engineId: params.engineId,
+      engineLabel: params.engineLabel,
+      mode: params.mode,
+      prompt: params.prompt,
+      durationSec: params.durationSec,
+      aspectRatio: params.aspectRatio,
+      effectiveResolution: params.effectiveResolution,
+      imageUrl: params.imageUrl,
+      placeholderThumb: params.placeholderThumb,
+      pricing: params.pricing,
+      paymentStatus: params.paymentStatus,
+      pendingReceipt: params.pendingReceipt,
+      paymentMode: params.paymentMode,
+      walletChargeReserved: params.walletChargeReserved,
+      fallbackToFalEnabled: params.providerRoutingPlan.fallbackEnabled,
+      falPayload: params.falPayload,
+      falInputSummary: params.falInputSummary,
+      isLumaRay2: params.isLumaRay2,
+      batchId: params.batchId,
+      groupId: params.groupId,
+      iterationIndex: params.iterationIndex,
+      iterationCount: params.iterationCount,
+      renderIds: params.renderIds,
+      heroRenderId: params.heroRenderId,
+      localKey: params.localKey,
+      logMetricFn: params.logMetricFn,
+    });
+    if (!lumaSubmission.ok) {
+      return { kind: 'error_response', status: lumaSubmission.status, body: lumaSubmission.body };
+    }
+    if (lumaSubmission.kind === 'accepted') {
+      return { kind: 'accepted_response', body: lumaSubmission.body };
+    }
+    return { kind: 'generation_result', generationResult: lumaSubmission.generationResult };
   }
 
   const providerJobTracker = createProviderJobTracker({

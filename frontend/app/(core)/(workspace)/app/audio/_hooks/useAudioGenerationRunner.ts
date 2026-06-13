@@ -98,7 +98,7 @@ export function useAudioGenerationRunner({
         voiceProfile: showVoiceFields ? voiceProfile : undefined,
         voiceDelivery: showVoiceFields ? voiceDelivery : undefined,
         language: showVoiceFields ? language : undefined,
-        durationSec: pack === 'music_only' && !sourceVideo?.url ? manualDurationSec : undefined,
+        durationSec: (pack === 'music_only' || pack === 'sfx_only') && !sourceVideo?.url ? manualDurationSec : undefined,
         musicEnabled: showMusicToggle ? musicEnabled : undefined,
         exportAudioFile: showExportToggle ? exportAudioFile : undefined,
         locale,

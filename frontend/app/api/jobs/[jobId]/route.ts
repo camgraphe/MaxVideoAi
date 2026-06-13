@@ -16,6 +16,9 @@ import {
 } from '@/server/provider-output-policy';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
+import { getLumaDirectClient } from '@/server/video-providers/luma-direct/client';
+import { LUMA_DIRECT_PROVIDER } from '@/server/video-providers/luma-direct/model-map';
+import { normalizeLumaDirectGeneration } from '@/server/video-providers/luma-direct/response';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { VISITOR_WORKSPACE_ENABLED } from '@/lib/visitor-access';
@@ -307,6 +310,118 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ jobId: s
     parsedRenderThumbUrls = enriched.renderThumbUrls ?? parsedRenderThumbUrls;
   } catch (error) {
     console.warn('[api/jobs] media output detail enrichment failed', { jobId, error });
+  }
+
+  if (
+    surface !== 'audio' &&
+    (job.provider ?? '') === LUMA_DIRECT_PROVIDER &&
+    job.provider_job_id &&
+    job.status !== 'completed' &&
+    job.status !== 'failed'
+  ) {
+    try {
+      const generation = await getLumaDirectClient().fetchGeneration(job.provider_job_id);
+      const providerTask = normalizeLumaDirectGeneration(generation, job.provider_job_id);
+      let status = job.status;
+      let progress = job.progress;
+      let videoUrl = normalizedVideoUrl;
+      let thumbUrl = normalizedThumbUrl ?? null;
+      let message = job.message ?? null;
+
+      if (providerTask.status === 'completed' && providerTask.videoUrl) {
+        const normalizedProviderVideoUrl = normalizeMediaUrl(providerTask.videoUrl) ?? providerTask.videoUrl;
+        const copiedVideoUrl = await ensureFastStartVideo({
+          jobId,
+          userId: job.user_id ?? undefined,
+          videoUrl: normalizedProviderVideoUrl,
+        });
+        status = 'completed';
+        progress = 100;
+        videoUrl = copiedVideoUrl ?? normalizedProviderVideoUrl;
+        message = null;
+        if (/^https?:\/\//i.test(providerTask.videoUrl) && isPlaceholderThumbnail(thumbUrl)) {
+          const generatedThumb = await ensureJobThumbnail({
+            jobId,
+            userId: job.user_id ?? undefined,
+            videoUrl,
+            aspectRatio: job.aspect_ratio ?? undefined,
+            existingThumbUrl: thumbUrl ?? undefined,
+            force: true,
+          });
+          if (generatedThumb) {
+            thumbUrl = generatedThumb;
+          }
+        }
+      } else if (providerTask.status === 'failed') {
+        status = 'failed';
+        progress = 0;
+        message = providerTask.message ?? 'Luma Ray 3.2 generation failed.';
+      } else if (providerTask.status === 'running') {
+        status = 'running';
+        progress = Math.max(progress, 45);
+        message = 'Luma Ray 3.2 render is running.';
+      } else {
+        status = 'queued';
+        progress = Math.max(progress, 10);
+        message = 'Luma Ray 3.2 render is queued.';
+      }
+
+      if (
+        status !== job.status ||
+        progress !== job.progress ||
+        videoUrl !== normalizedVideoUrl ||
+        thumbUrl !== normalizedThumbUrl ||
+        message !== (job.message ?? null)
+      ) {
+        await query(
+          `UPDATE app_jobs
+              SET status = $1,
+                  progress = $2,
+                  video_url = $3,
+                  thumb_url = $4,
+                  preview_frame = $5,
+                  message = $7,
+                  updated_at = NOW()
+            WHERE job_id = $6`,
+          [status, progress, videoUrl ?? null, thumbUrl ?? null, thumbUrl ?? null, jobId, message]
+        );
+        return json({
+          ok: true,
+          jobId,
+          surface,
+          billingProductKey: job.billing_product_key ?? undefined,
+          createdAt: job.created_at,
+          status,
+          progress,
+          videoUrl: videoUrl ?? undefined,
+          previewVideoUrl: normalizedPreviewVideoUrl ?? undefined,
+          audioUrl: normalizedAudioUrl ?? undefined,
+          thumbUrl: thumbUrl ?? undefined,
+          aspectRatio: job.aspect_ratio ?? undefined,
+          pricing: job.pricing_snapshot ?? undefined,
+          settingsSnapshot: job.settings_snapshot ?? undefined,
+          finalPriceCents: job.final_price_cents ?? undefined,
+          currency: job.currency ?? 'USD',
+          paymentStatus: job.payment_status ?? undefined,
+          vendorAccountId: job.vendor_account_id ?? undefined,
+          stripePaymentIntentId: job.stripe_payment_intent_id ?? undefined,
+          stripeChargeId: job.stripe_charge_id ?? undefined,
+          batchId: job.batch_id ?? undefined,
+          groupId: job.group_id ?? undefined,
+          iterationIndex: job.iteration_index ?? undefined,
+          iterationCount: job.iteration_count ?? undefined,
+          renderIds: parsedRenderIds,
+          renderThumbUrls: parsedRenderThumbUrls,
+          heroRenderId: job.hero_render_id ?? undefined,
+          localKey: job.local_key ?? undefined,
+          message: message ?? undefined,
+          etaSeconds: job.eta_seconds ?? undefined,
+          etaLabel: job.eta_label ?? undefined,
+        });
+      }
+    } catch (error) {
+      console.warn('[api/jobs] Luma direct polling failed', { jobId, providerJobId: job.provider_job_id, error });
+    }
   }
 
   // Optionally poll FAL once if pending and we have provider job id

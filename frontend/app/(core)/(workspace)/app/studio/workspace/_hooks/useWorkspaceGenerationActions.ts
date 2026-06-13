@@ -8,6 +8,7 @@ import {
 } from '../_lib/workspace-graph-helpers';
 import { createPendingWorkspaceOutput, submitWorkspaceShotGeneration } from '../_lib/workspace-generation';
 import type {
+  WorkspaceChatMessage,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceModelCapability,
@@ -42,6 +43,11 @@ type UseWorkspaceGenerationActionsParams = {
   studioNotices: StudioCopy['notices'];
 };
 
+function chatMessageId(prefix: string): string {
+  const randomId = globalThis.crypto?.randomUUID?.();
+  return randomId ? `${prefix}-${randomId}` : `${prefix}-${Date.now().toString(36)}`;
+}
+
 export function useWorkspaceGenerationActions({
   capabilities,
   edges,
@@ -57,6 +63,7 @@ export function useWorkspaceGenerationActions({
   studioNotices,
 }: UseWorkspaceGenerationActionsParams): {
   handleGenerateShot: (nodeId: string) => Promise<void>;
+  handleRunChat: (nodeId: string) => Promise<void>;
 } {
   const handleGenerateShot = useCallback(
     async (nodeId: string): Promise<void> => {
@@ -251,5 +258,102 @@ export function useWorkspaceGenerationActions({
     ]
   );
 
-  return { handleGenerateShot };
+  const handleRunChat = useCallback(
+    async (nodeId: string): Promise<void> => {
+      const chatNode = nodes.find((node) => node.id === nodeId);
+      const chat = chatNode?.data.chat;
+      const draftMessage = chat?.draftMessage.trim();
+      if (!chat || chat.status === 'running' || !draftMessage) return;
+
+      const createdAt = new Date().toISOString();
+      const userMessage: WorkspaceChatMessage = {
+        id: chatMessageId('chat-user'),
+        role: 'user',
+        content: draftMessage,
+        createdAt,
+      };
+      const nextMessages = [...chat.messages, userMessage];
+      const apiMessages = [
+        ...(chat.systemPrompt.trim()
+          ? [{ role: 'system' as const, content: chat.systemPrompt.trim() }]
+          : []),
+        ...nextMessages.map(({ role, content }) => ({ role, content })),
+      ];
+
+      setNodes((current) => current.map((node) => (
+        node.id === nodeId && node.data.chat
+          ? {
+              ...node,
+              data: {
+                ...node.data,
+                promptText: draftMessage,
+                chat: {
+                  ...node.data.chat,
+                  messages: nextMessages,
+                  draftMessage: '',
+                  status: 'running',
+                },
+              },
+            }
+          : node
+      )));
+
+      try {
+        const response = await fetch('/api/studio/chat', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            provider: chat.provider,
+            modelId: chat.modelId,
+            messages: apiMessages,
+          }),
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.ok || typeof data.content !== 'string') {
+          throw new Error(data?.message ?? 'Chat failed.');
+        }
+        const assistantMessage: WorkspaceChatMessage = {
+          id: chatMessageId('chat-assistant'),
+          role: 'assistant',
+          content: data.content,
+          createdAt: new Date().toISOString(),
+        };
+        setNodes((current) => current.map((node) => (
+          node.id === nodeId && node.data.chat
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  promptText: data.content,
+                  chat: {
+                    ...node.data.chat,
+                    messages: [...nextMessages, assistantMessage],
+                    status: 'idle',
+                  },
+                },
+              }
+            : node
+        )));
+      } catch (error) {
+        setNodes((current) => current.map((node) => (
+          node.id === nodeId && node.data.chat
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  chat: {
+                    ...node.data.chat,
+                    status: 'failed',
+                  },
+                },
+              }
+            : node
+        )));
+        setNotice(error instanceof Error ? error.message : studioNotices.generationFailed);
+      }
+    },
+    [nodes, setNodes, setNotice, studioNotices.generationFailed]
+  );
+
+  return { handleGenerateShot, handleRunChat };
 }

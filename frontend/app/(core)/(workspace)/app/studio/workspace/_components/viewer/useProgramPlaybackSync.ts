@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { WorkspaceProjectSettings, WorkspaceTimelineItem } from '../../_lib/workspace-types';
+import { resolveProgramSnapshotFallbackSourceUrl } from '../../_lib/workspace-program-snapshot';
 import { workspaceProjectDimensions } from '../../_lib/workspace-project-settings';
 import {
   isWorkspaceTimelineAudioTrack,
@@ -371,7 +372,11 @@ export function useProgramPlaybackSync({
       filename: snapshotFilenameForTimecode(timecode),
       height: dimensions.height,
       playheadSec,
-      sourceUrl: visibleLayer.url,
+      sourceUrl: resolveProgramSnapshotFallbackSourceUrl({
+        mediaKind: visibleLayer.mediaKind,
+        sourceUrl: visibleLayer.url,
+        thumbnailUrl: visibleLayer.item.thumbnailUrl,
+      }),
       timecode,
       title: `${visibleLayer.item.title} snapshot`,
       width: dimensions.width,

@@ -40,6 +40,14 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     lumaRay2: {
       bestFor: 'Premium cinematic generation with modify and reframe',
     },
+    lumaRay3_2: {
+      bestFor: 'Direct Luma cinematic control with HDR, EXR, keyframes and video edit',
+      features: {
+        keyframes: { value: true },
+        hdr: { value: true },
+        exr: { value: true },
+      },
+    },
     lumaRay2_flash: {
       bestFor: 'Fast cinematic drafts with modify and reframe',
     },

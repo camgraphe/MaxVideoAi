@@ -149,7 +149,9 @@ export async function listRecentOutputPage(params: {
             j.duration_sec AS job_duration_sec,
             j.aspect_ratio AS job_aspect_ratio
        FROM job_outputs o
-       JOIN app_jobs j ON j.job_id = o.job_id
+       JOIN app_jobs j
+         ON j.job_id = o.job_id
+        AND j.user_id = o.user_id
        LEFT JOIN media_assets saved
          ON saved.user_id = $1
         AND saved.source_output_id = o.id

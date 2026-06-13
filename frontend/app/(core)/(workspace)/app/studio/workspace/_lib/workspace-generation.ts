@@ -12,6 +12,7 @@ import {
   resolveWorkspaceWorkflowType,
   workspaceAudioEnabledForRequest,
 } from './workspace-capabilities';
+import { outputSourceHandleForKind } from '../_state/workspace-normalizers';
 import { WORKSPACE_EDGE_COLORS, createWorkspaceEdge } from './workspace-templates';
 import {
   DEFAULT_STUDIO_COPY,
@@ -22,16 +23,13 @@ import {
   localizeWorkspaceShotOutputName,
   workspaceOutputNodeTitleDataForShot,
 } from './workspace-generated-copy';
+import { WORKSPACE_DEMO_AUDIO_URL } from './workspace-library-assets';
 
 type WorkspaceGenerationMode = 'real' | 'mock';
 type WorkspaceShotGenerateRequest = Parameters<typeof runGenerate>[0] & {
   seed?: number;
   imageUrl?: string;
   referenceImages?: string[];
-};
-type WorkspaceGenerationMediaResult = Awaited<ReturnType<typeof runGenerate>> & {
-  audioUrl?: string | null;
-  audio?: { url?: string | null } | null;
 };
 
 export type WorkspaceGenerationResult = {
@@ -179,10 +177,24 @@ function outputSubtitle(output: WorkspaceOutputMetadata, settings: WorkspaceShot
 }
 
 function outputIncludesAudio(settings: WorkspaceShotSettings, capability: WorkspaceModelCapability | null): boolean {
+  if (settings.outputKind === 'audio') return true;
   const audioOption = capability?.render_options.find((option) => option.id === 'audio');
   if (audioOption?.control === 'included') return true;
   if (audioOption?.control === 'toggle') return settings.audioEnabled;
   return false;
+}
+
+function outputKindForSettings(
+  settings: WorkspaceShotSettings,
+  capability: WorkspaceModelCapability | null
+): WorkspaceOutputMetadata['kind'] {
+  if (settings.outputKind === 'image' || settings.outputKind === 'audio' || settings.outputKind === 'video') {
+    return settings.outputKind;
+  }
+  if (capability?.outputKind === 'image' || capability?.outputKind === 'audio' || capability?.outputKind === 'video') {
+    return capability.outputKind;
+  }
+  return 'video';
 }
 
 function buildOutputNode(params: {
@@ -208,7 +220,7 @@ function buildOutputNode(params: {
       generatedCopy: titleData.generatedCopy,
       output: params.output,
       targetHandles: ['generated_output'],
-      sourceHandles: ['video_reference'],
+      sourceHandles: [outputSourceHandleForKind(params.output.kind)],
     },
   };
 }
@@ -228,8 +240,9 @@ export function createPendingWorkspaceOutput(params: {
     connectedInputs: connectedInputKinds(params.edges, params.shotNode.id),
     fallbackWorkflowType: params.settings.workflowType,
   });
+  const outputKind = outputKindForSettings(params.settings, params.capability);
   const output: WorkspaceOutputMetadata = {
-    kind: 'video',
+    kind: outputKind,
     modelId: params.settings.modelId,
     modelLabel: params.capability?.label ?? params.settings.modelId,
     workflowType: resolvedWorkflowType,
@@ -243,7 +256,7 @@ export function createPendingWorkspaceOutput(params: {
     thumbUrl: null,
     url: null,
     audioUrl: null,
-    hasAudio: outputIncludesAudio(params.settings, params.capability),
+    hasAudio: outputKind === 'audio' || outputIncludesAudio(params.settings, params.capability),
     jobId: null,
   };
   const outputNode = buildOutputNode({
@@ -262,7 +275,7 @@ export function createPendingWorkspaceOutput(params: {
     outputEdge: createWorkspaceEdge({
       source: params.shotNode.id,
       target: outputNode.id,
-      sourceHandle: 'generated_output',
+      sourceHandle: outputSourceHandleForKind(output.kind),
       targetHandle: 'generated_output',
       kind: 'generated_output',
     }),
@@ -285,8 +298,15 @@ export function createMockWorkspaceOutput(params: {
     connectedInputs: connectedInputKinds(params.edges, params.shotNode.id),
     fallbackWorkflowType: params.settings.workflowType,
   });
+  const outputKind = outputKindForSettings(params.settings, params.capability);
+  const outputUrl =
+    outputKind === 'video'
+      ? '/hero/veo3.mp4'
+      : outputKind === 'audio'
+        ? WORKSPACE_DEMO_AUDIO_URL
+        : sourceImage;
   const output: WorkspaceOutputMetadata = {
-    kind: 'video',
+    kind: outputKind,
     modelId: params.settings.modelId,
     modelLabel: params.capability?.label ?? params.settings.modelId,
     workflowType: resolvedWorkflowType,
@@ -297,10 +317,10 @@ export function createMockWorkspaceOutput(params: {
     status: 'ready',
     createdAt: new Date().toISOString(),
     sourceShotId: params.shotNode.id,
-    thumbUrl: sourceImage,
-    url: '/hero/veo3.mp4',
-    audioUrl: null,
-    hasAudio: outputIncludesAudio(params.settings, params.capability),
+    thumbUrl: outputKind === 'audio' ? null : sourceImage,
+    url: outputUrl,
+    audioUrl: outputKind === 'audio' ? outputUrl : null,
+    hasAudio: outputKind === 'audio' || outputIncludesAudio(params.settings, params.capability),
     jobId: `mock-${Date.now().toString(36)}`,
   };
   const outputNode = buildOutputNode({
@@ -317,7 +337,7 @@ export function createMockWorkspaceOutput(params: {
     outputEdge: createWorkspaceEdge({
       source: params.shotNode.id,
       target: outputNode.id,
-      sourceHandle: 'generated_output',
+      sourceHandle: outputSourceHandleForKind(output.kind),
       targetHandle: 'generated_output',
       kind: 'generated_output',
     }),
@@ -385,13 +405,6 @@ export function buildWorkspaceShotGenerateRequest(params: {
   return request;
 }
 
-function outputStatusFromGenerationResult(result: WorkspaceGenerationMediaResult): WorkspaceOutputMetadata['status'] {
-  const videoUrl = result.videoUrl ?? result.video?.url ?? null;
-  if (result.status === 'failed') return 'failed';
-  if (result.status === 'completed' && videoUrl) return 'ready';
-  return 'processing';
-}
-
 export async function submitWorkspaceShotGeneration(params: {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
@@ -432,50 +445,19 @@ export async function submitWorkspaceShotGeneration(params: {
     connectedInputs,
     fallbackWorkflowType: generationInputs.settings.workflowType,
   });
-  const referenceImages = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, [
-    'start_image',
-    'end_image',
-    'product',
-    'reference',
-    'style',
-    'character',
-    'logo',
-  ]);
-  const videoReferences = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['video_reference', 'motion_reference', 'previous_shot', 'continuity']);
-  const audioReferences = mediaUrlsFromKinds(params.nodes, params.edges, shotNode.id, ['audio', 'music', 'voiceover', 'sfx']);
-  const primaryImageUrl = referenceImages[0];
-
   try {
-    const result = await runGenerate(buildWorkspaceShotGenerateRequest({
+    const { submitWorkspaceGenerationByFamily } = await import('./workspace-generation-routing');
+    const output = await submitWorkspaceGenerationByFamily({
+      nodes: params.nodes,
+      edges: params.edges,
+      shotNode,
       settings: generationInputs.settings,
       capability: params.capability,
       prompt: generationInputs.prompt,
-      connectedInputs,
-      referenceImages,
-      videoReferences,
-      audioReferences,
-      shotNodeId: shotNode.id,
       outputName: generationInputs.outputName,
-    })) as WorkspaceGenerationMediaResult;
-
-    const output: WorkspaceOutputMetadata = {
-      kind: 'video',
-      modelId: generationInputs.settings.modelId,
-      modelLabel: params.capability?.label ?? generationInputs.settings.modelId,
-      workflowType: resolvedWorkflowType,
-      durationSec: generationInputs.settings.durationSec,
-      aspectRatio: generationInputs.settings.aspectRatio,
-      resolution: generationInputs.settings.resolution,
-      pricing: result.pricing ?? null,
-      status: outputStatusFromGenerationResult(result),
-      createdAt: new Date().toISOString(),
-      sourceShotId: shotNode.id,
-      url: result.videoUrl ?? result.video?.url ?? null,
-      audioUrl: result.audioUrl ?? result.audio?.url ?? null,
-      thumbUrl: result.thumbUrl ?? result.video?.thumbnailUrl ?? primaryImageUrl ?? null,
-      hasAudio: outputIncludesAudio(generationInputs.settings, params.capability),
-      jobId: result.jobId,
-    };
+      connectedInputs,
+      resolvedWorkflowType,
+    });
     const outputNode = buildOutputNode({
       shotNode,
       settings: generationInputs.settings,
@@ -490,7 +472,7 @@ export async function submitWorkspaceShotGeneration(params: {
       outputEdge: createWorkspaceEdge({
         source: shotNode.id,
         target: outputNode.id,
-        sourceHandle: 'generated_output',
+        sourceHandle: outputSourceHandleForKind(output.kind),
         targetHandle: 'generated_output',
         kind: 'generated_output',
       }),

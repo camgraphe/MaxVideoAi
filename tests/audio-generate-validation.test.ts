@@ -103,6 +103,35 @@ test('audio validation requires a duration for standalone music-only renders', (
   );
 });
 
+test('audio validation accepts standalone SFX prompt renders', () => {
+  const input = validateAudioGenerateRequest({
+    pack: 'sfx_only',
+    prompt: 'Clean product button click with a subtle digital shimmer.',
+    durationSec: 8,
+  });
+
+  assert.deepEqual(input, {
+    sourceJobId: null,
+    sourceVideoUrl: null,
+    pack: 'sfx_only',
+    prompt: 'Clean product button click with a subtle digital shimmer.',
+    mood: null,
+    intensity: 'standard',
+    script: null,
+    voiceSampleUrl: null,
+    voiceGender: null,
+    voiceProfile: null,
+    voiceDelivery: null,
+    language: null,
+    durationSec: 8,
+    musicEnabled: false,
+    exportAudioFile: false,
+    locale: null,
+    voiceMode: null,
+    outputKind: 'audio',
+  });
+});
+
 test('audio validation accepts longer standalone music durations', () => {
   const input = validateAudioGenerateRequest({
     pack: 'music_only',
@@ -197,6 +226,19 @@ test('audio validation rejects voice options on non-voice modes', () => {
 test('audio duration resolution allows music-only without a source video', () => {
   const duration = resolveAudioRenderDuration({
     pack: 'music_only',
+    sourceVideoUrl: null,
+    requiresVideo: false,
+    probedDurationSec: null,
+    requestedDurationSec: 8,
+    script: null,
+  });
+
+  assert.equal(duration, 8);
+});
+
+test('audio duration resolution allows SFX-only without a source video', () => {
+  const duration = resolveAudioRenderDuration({
+    pack: 'sfx_only',
     sourceVideoUrl: null,
     requiresVideo: false,
     probedDurationSec: null,

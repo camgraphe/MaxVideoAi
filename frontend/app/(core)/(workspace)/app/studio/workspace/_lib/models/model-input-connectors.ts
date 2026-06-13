@@ -247,6 +247,16 @@ function sortConnectors(connectors: WorkspaceInputConnector[]): WorkspaceInputCo
     .map(({ connector }) => connector);
 }
 
+export function inputConnectorsFromKinds(
+  requiredInputs: WorkspaceEdgeKind[],
+  optionalInputs: WorkspaceEdgeKind[]
+): WorkspaceInputConnector[] {
+  const connectors = new Map<WorkspaceEdgeKind, WorkspaceInputConnector>();
+  requiredInputs.forEach((kind) => insertConnector(connectors, connectorFromKind(kind, true)));
+  optionalInputs.forEach((kind) => insertConnector(connectors, connectorFromKind(kind, false)));
+  return sortConnectors(Array.from(connectors.values()));
+}
+
 export function inputConnectorsFor(engine: EngineCaps, requiredInputs: WorkspaceEdgeKind[], optionalInputs: WorkspaceEdgeKind[]): WorkspaceInputConnector[] {
   const connectors = new Map<WorkspaceEdgeKind, WorkspaceInputConnector>();
   const ingest = (fields: EngineInputField[] | undefined, origin: 'required' | 'optional') => {
@@ -367,6 +377,10 @@ function hasVideoInput(connected: Set<WorkspaceEdgeKind>): boolean {
   );
 }
 
+function isFixedToolWorkflow(workflow: WorkspaceWorkflowType): boolean {
+  return workflow === 'character_builder' || workflow === 'storyboard_generation' || workflow === 'angle_generation';
+}
+
 export function inputSupportedBy(kind: WorkspaceEdgeKind, supportedInputs: Set<WorkspaceEdgeKind>): boolean {
   if (supportedInputs.has(kind)) return true;
   if (['product', 'character', 'style', 'composition', 'logo'].includes(kind)) {
@@ -394,8 +408,17 @@ export function resolveWorkspaceWorkflowType(params: {
 }): WorkspaceWorkflowType {
   const connected = new Set(params.connectedInputs.map(normalizeConnectedInputKind));
   const capability = params.capability;
+  const primaryWorkflow = capability?.workflows[0];
+  if (primaryWorkflow && isFixedToolWorkflow(primaryWorkflow)) return primaryWorkflow;
+  if (capability?.family === 'image') {
+    return hasImageInput(connected) && capability.image_to_image ? 'image_to_image' : 'text_to_image';
+  }
+  if (capability?.family === 'audio') return capability.workflows[0] ?? params.fallbackWorkflowType;
+  if (capability?.family === 'upscale') return capability.workflows[0] ?? params.fallbackWorkflowType;
+  if (capability?.family === 'chat') return 'chat_completion';
   if (capability && hasVideoInput(connected) && capability.video_to_video) return 'video_to_video';
   if (capability && hasImageInput(connected) && capability.image_to_video) return 'image_to_video';
+  if (capability?.workflows.includes(params.fallbackWorkflowType)) return params.fallbackWorkflowType;
   if (capability?.text_to_video) return 'text_to_video';
   return capability?.workflows[0] ?? params.fallbackWorkflowType;
 }

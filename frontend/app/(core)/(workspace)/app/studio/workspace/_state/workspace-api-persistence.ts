@@ -21,14 +21,11 @@ import type {
 } from '../_lib/workspace-types';
 import {
   normalizeGeneratedOutputEdges,
-  normalizeGeneratedOutputNodes,
   normalizeOutputOnlySourceEdges,
-  normalizeOutputOnlySourceNodes,
-  normalizePlaceholderOutputNodes,
   normalizeShotOutputEdges,
-  normalizeShotOutputNodes,
   normalizeTimelineMediaUrls,
   normalizeWorkspaceEdgeTypes,
+  normalizeWorkspaceGraphNodes,
 } from './workspace-normalizers';
 import { saveStudioSequencesToApi } from './workspace-sequence-api-persistence';
 import {
@@ -360,9 +357,7 @@ export function normalizeUserCanvasTemplate(value: unknown): WorkspaceUserCanvas
   const record = value as Partial<WorkspaceUserCanvasTemplate>;
   if (typeof record.id !== 'string' || typeof record.name !== 'string') return null;
   if (!Array.isArray(record.nodes) || !Array.isArray(record.edges)) return null;
-  const nodes = normalizePlaceholderOutputNodes(
-    normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(record.nodes)))
-  );
+  const nodes = normalizeWorkspaceGraphNodes(record.nodes);
   const edges = normalizeWorkspaceEdgeTypes(
     normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, record.edges)))
   );
@@ -520,9 +515,7 @@ export function normalizePersistedWorkspaceState(
   const parsed = value as Partial<PersistedWorkspaceState> | null;
   if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges) || !Array.isArray(parsed.timelineItems)) return null;
   const activeTemplateId = starterTemplateIdForPersistedWorkspace(parsed, options);
-  const normalizedNodes = normalizePlaceholderOutputNodes(
-    normalizeGeneratedOutputNodes(normalizeShotOutputNodes(normalizeOutputOnlySourceNodes(parsed.nodes)))
-  );
+  const normalizedNodes = normalizeWorkspaceGraphNodes(parsed.nodes);
   const nodes = migrateStarterGeneratedCopyForNodes(activeTemplateId, normalizedNodes);
   const edges = normalizeWorkspaceEdgeTypes(
     normalizeGeneratedOutputEdges(nodes, normalizeShotOutputEdges(nodes, normalizeOutputOnlySourceEdges(nodes, parsed.edges)))

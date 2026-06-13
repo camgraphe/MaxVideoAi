@@ -9,10 +9,13 @@ import {
 } from '../_lib/workspace-capabilities';
 import { connectedInputCounts, connectedInputKinds } from '../_lib/workspace-graph-helpers';
 import type {
+  WorkspaceEdgeKind,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceModelCapability,
   WorkspacePricingEstimate,
+  WorkspaceReferencePreview,
+  WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import {
   localizeWorkspaceNodeSubtitle,
@@ -20,7 +23,7 @@ import {
   localizeWorkspacePromptText,
   localizeWorkspaceShotOutputName,
 } from '../_lib/workspace-generated-copy';
-import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
+import { shotOutputSourceHandle } from '../_state/workspace-normalizers';
 import {
   localizeStudioConnectorDisplayLabel,
   type StudioCopy,
@@ -35,6 +38,8 @@ type UseWorkspaceRenderNodesOptions = {
   onGenerateShot: (nodeId: string) => Promise<void> | void;
   onOpenAssetLibrary: (nodeId: string) => void;
   onPatchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
+  onPatchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
+  onRunChat: (nodeId: string) => Promise<void> | void;
   onSendOutputToTimeline: (nodeId: string) => void;
 };
 
@@ -51,6 +56,75 @@ function localizedOutputSubtitle(
   return copy.generatedMedia;
 }
 
+const REFERENCE_PREVIEW_INPUTS = new Set<WorkspaceEdgeKind>([
+  'reference',
+  'start_image',
+  'product',
+  'character',
+  'style',
+  'composition',
+  'logo',
+]);
+
+function stringOrNull(value: unknown): string | null {
+  return typeof value === 'string' && value.trim().length > 0 ? value : null;
+}
+
+function dimensionsFromAsset(value: string | undefined): Pick<WorkspaceReferencePreview, 'width' | 'height'> {
+  if (!value) return {};
+  const match = value.match(/(\d+)\s*[x×]\s*(\d+)/i);
+  if (!match) return {};
+  return {
+    width: Number(match[1]),
+    height: Number(match[2]),
+  };
+}
+
+function referencePreviewFromNode(node: WorkspaceGraphNode): WorkspaceReferencePreview | null {
+  const asset = node.data.asset;
+  const assetUrl = stringOrNull(asset?.url) ?? stringOrNull(asset?.thumbUrl);
+  if (asset && assetUrl) {
+    return {
+      id: asset.id,
+      url: assetUrl,
+      previewUrl: stringOrNull(asset.thumbUrl) ?? assetUrl,
+      name: asset.filename,
+      ...dimensionsFromAsset(asset.dimensions),
+    };
+  }
+
+  const output = node.data.output;
+  if (!output || output.status === 'placeholder' || output.status === 'processing' || output.status === 'failed') {
+    return null;
+  }
+  const outputUrl = stringOrNull(output.url) ?? stringOrNull(output.thumbUrl);
+  if (!outputUrl || output.kind === 'audio') return null;
+
+  return {
+    id: output.jobId ?? output.sourceShotId,
+    url: outputUrl,
+    previewUrl: stringOrNull(output.thumbUrl) ?? outputUrl,
+    name: output.modelLabel,
+  };
+}
+
+function referencePreviewForShotNode(
+  shotNode: WorkspaceGraphNode,
+  nodes: WorkspaceGraphNode[],
+  edges: WorkspaceGraphEdge[]
+): WorkspaceReferencePreview | null {
+  for (const edge of edges) {
+    if (edge.target !== shotNode.id) continue;
+    const kind = edge.data?.kind ?? edge.targetHandle;
+    if (typeof kind !== 'string' || !REFERENCE_PREVIEW_INPUTS.has(kind as WorkspaceEdgeKind)) continue;
+    const sourceNode = nodes.find((candidate) => candidate.id === edge.source);
+    if (!sourceNode) continue;
+    const preview = referencePreviewFromNode(sourceNode);
+    if (preview) return preview;
+  }
+  return null;
+}
+
 export function useWorkspaceRenderNodes({
   capabilities,
   edges,
@@ -60,6 +134,8 @@ export function useWorkspaceRenderNodes({
   onGenerateShot,
   onOpenAssetLibrary,
   onPatchNodeData,
+  onPatchShot,
+  onRunChat,
   onSendOutputToTimeline,
 }: UseWorkspaceRenderNodesOptions): WorkspaceGraphNode[] {
   return useMemo(() => {
@@ -78,6 +154,20 @@ export function useWorkspaceRenderNodes({
               ? { promptText: localizeWorkspacePromptText(node, studioCanvasCopy.nodes) ?? node.data.promptText }
               : {}),
             onPromptChange: (nodeId: string, value: string) => onPatchNodeData(nodeId, { promptText: value }),
+            onChatDraftChange: (nodeId: string, value: string) => {
+              const chat = node.data.chat;
+              if (!chat) return;
+              onPatchNodeData(nodeId, {
+                promptText: value,
+                chat: {
+                  ...chat,
+                  draftMessage: value,
+                },
+              });
+            },
+            onRunChat: (nodeId: string): void => {
+              void onRunChat(nodeId);
+            },
             onOpenAssetLibrary,
             onSendOutputToTimeline,
             studioCanvasCopy,
@@ -111,17 +201,19 @@ export function useWorkspaceRenderNodes({
             ...node.data.shot,
             outputName: localizeWorkspaceShotOutputName(node, studioCanvasCopy.nodes),
           },
-          sourceHandles: [GENERATED_OUTPUT_TARGET_HANDLE],
+          sourceHandles: [shotOutputSourceHandle(node.data.shot)],
           targetHandles: getWorkspaceShotTargetHandles(validation.capability),
           inputConnectors,
+          referencePreview: referencePreviewForShotNode(node, nodes, edges),
           validation,
           pricingEstimate: pricingEstimates[node.id],
           studioCanvasCopy,
           onGenerateShot: (nodeId: string): void => {
             void onGenerateShot(nodeId);
           },
+          onPatchShot,
         },
       };
     });
-  }, [capabilities, edges, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onSendOutputToTimeline, pricingEstimates, studioCanvasCopy]);
+  }, [capabilities, edges, nodes, onGenerateShot, onOpenAssetLibrary, onPatchNodeData, onPatchShot, onRunChat, onSendOutputToTimeline, pricingEstimates, studioCanvasCopy]);
 }

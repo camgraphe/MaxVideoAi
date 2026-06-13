@@ -20,6 +20,7 @@ import type {
   TimelineClipLayout,
   TimelineInteractionKind,
 } from '../../_lib/timeline/timeline-interaction';
+import type { TimelineExternalDropPreview } from '../../_lib/timeline/timeline-external-drop';
 import {
   TimelineClip,
   type TimelineSelectionMode,
@@ -32,25 +33,6 @@ import type { StudioCopy } from '../../../_lib/studio-copy';
 export type TimelinePreviewTrackItem = {
   item: WorkspaceTimelineItem;
   layout: TimelineClipLayout;
-  trackId: WorkspaceTimelineTrack;
-};
-
-type TimelineExternalDropPreview = {
-  displacedItems: Array<{
-    durationSec: number;
-    fromStartSec: number;
-    itemId: string;
-    mediaKind?: WorkspaceTimelineItem['mediaKind'];
-    title: string;
-    toStartSec: number;
-    trackId: WorkspaceTimelineTrack;
-  }>;
-  durationSec: number;
-  isValid: boolean;
-  mediaKind: 'audio' | 'image' | 'video';
-  previewUrl?: string | null;
-  startSec: number;
-  title: string;
   trackId: WorkspaceTimelineTrack;
 };
 

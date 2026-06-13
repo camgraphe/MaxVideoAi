@@ -1,0 +1,110 @@
+.chatbotPanel {
+  display: grid;
+  gap: 8px;
+  width: calc(100% - 24px);
+  margin: 0 12px 10px;
+}
+
+.chatMessageList {
+  display: grid;
+  max-height: 146px;
+  gap: 6px;
+  overflow: auto;
+  padding-right: 2px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.chatMessageList::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.chatMessage {
+  display: grid;
+  gap: 3px;
+  padding: 7px 8px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg);
+}
+
+.chatMessage strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 9px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chatMessage p,
+.chatEmpty {
+  margin: 0;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  line-height: 1.38;
+}
+
+.chatMessageAssistant {
+  border-color: color-mix(in srgb, var(--node-accent) 28%, var(--studio-border));
+  background: color-mix(in srgb, var(--node-accent) 10%, var(--studio-bg));
+}
+
+.chatMessageUser {
+  margin-left: 16px;
+}
+
+.chatEmpty {
+  min-height: 42px;
+  padding: 10px;
+  border: 1px dashed var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg);
+}
+
+.chatComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.chatInput {
+  min-width: 0;
+  min-height: 58px;
+  padding: 8px;
+  resize: none;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  font: inherit;
+  font-size: 10px;
+  line-height: 1.35;
+  outline: none;
+}
+
+.chatInput:focus-visible {
+  border-color: color-mix(in srgb, var(--node-accent) 70%, var(--studio-border));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--node-accent) 20%, transparent);
+}
+
+.chatSendButton {
+  display: grid;
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  place-items: center;
+  align-self: end;
+  border: 0;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-accent) 82%, var(--studio-bg-soft));
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.chatSendButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}

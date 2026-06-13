@@ -163,6 +163,7 @@ test('media library routes expose cursor pagination metadata', () => {
   );
 
   assert.match(assetsRoute, /cursor:\s*req\.nextUrl\.searchParams\.get\('cursor'\)/);
+  assert.match(assetsRoute, /includeOutputs:\s*req\.nextUrl\.searchParams\.get\('includeOutputs'\)\s*===\s*'true'/);
   assert.match(assetsRoute, /nextCursor:\s*page\.nextCursor/);
   assert.match(assetsRoute, /hasMore:\s*page\.hasMore/);
   assert.match(recentRoute, /cursor:\s*req\.nextUrl\.searchParams\.get\('cursor'\)/);
@@ -184,10 +185,36 @@ test('media library server keeps pagination helpers outside route handlers', () 
   assert.ok(fs.existsSync(paginationPath), 'media library pagination helpers should be shared server code');
   assert.match(assetsSource, /export async function listLibraryAssetPage/);
   assert.match(assetsSource, /listLibraryAssetPage\(\{[\s\S]*cursor:/);
+  assert.match(assetsSource, /shouldIncludeJobOutputs/);
+  assert.match(assetsSource, /JOIN app_jobs j\s+ON j\.job_id = o\.job_id\s+AND j\.user_id = o\.user_id/);
+  assert.match(assetsSource, /mediaAssetFromJobOutput\(mapOutputRow\(row\)\)/);
   assert.match(assetsSource, /ORDER BY created_at DESC,\s*id DESC/i);
   assert.match(assetsSource, /ORDER BY created_at DESC,\s*asset_id DESC/i);
+  assert.match(assetsSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
   assert.match(jobOutputsSource, /export async function listRecentOutputPage/);
+  assert.match(jobOutputsSource, /JOIN app_jobs j\s+ON j\.job_id = o\.job_id\s+AND j\.user_id = o\.user_id/);
   assert.match(jobOutputsSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
+});
+
+test('studio asset listings can include generated job outputs without requiring saved library copies', () => {
+  const assetsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+  const assetsRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
+    'utf8'
+  );
+
+  assert.match(assetsSource, /includeOutputs\?:\s*boolean/);
+  assert.match(assetsSource, /Boolean\(params\.includeOutputs\)\s*&&\s*\(!source\s*\|\|\s*source\s*===\s*'saved_job_output'\)/);
+  assert.match(assetsSource, /FROM job_outputs o/);
+  assert.match(assetsSource, /\(\$4::text IS NULL OR \$4::text = 'saved_job_output'\)/);
+  assert.match(assetsSource, /AND j\.hidden IS NOT TRUE/);
+  assert.match(assetsSource, /AND o\.status = 'ready'/);
+  assert.match(assetsSource, /source:\s*'saved_job_output'/);
+  assert.match(assetsSource, /sourceOutputId:\s*output\.id/);
+  assert.match(assetsRoute, /durationSec:\s*typeof asset\.metadata\.durationSec === 'number'/);
 });
 
 test('legacy media library rows infer video and audio kind from URLs when MIME is missing', () => {

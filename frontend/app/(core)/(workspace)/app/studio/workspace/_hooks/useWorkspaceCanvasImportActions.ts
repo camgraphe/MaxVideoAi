@@ -39,6 +39,7 @@ type UseWorkspaceCanvasImportActionsParams = {
   defaultModelId: string;
   nodes: WorkspaceGraphNode[];
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
+  setCanvasAutoCenterNodeId: Dispatch<SetStateAction<string | null>>;
   setFocusMode: Dispatch<SetStateAction<WorkspaceFocusMode>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
@@ -50,6 +51,7 @@ export function useWorkspaceCanvasImportActions({
   defaultModelId,
   nodes,
   setActiveEditorSurface,
+  setCanvasAutoCenterNodeId,
   setFocusMode,
   setNotice,
   setSelectedNodeId,
@@ -260,6 +262,7 @@ export function useWorkspaceCanvasImportActions({
       setFocusMode('canvas');
       setActiveEditorSurface('canvas');
       setSelectedNodeId(snapshotNode.id);
+      setCanvasAutoCenterNodeId(snapshotNode.id);
       setNotice(formatNotice(studioNotices.snapshotSentToCanvas, { filename: asset.filename }));
     },
     [
@@ -267,6 +270,7 @@ export function useWorkspaceCanvasImportActions({
       commitCanvasGraph,
       nodes.length,
       setActiveEditorSurface,
+      setCanvasAutoCenterNodeId,
       setFocusMode,
       setNotice,
       setSelectedNodeId,

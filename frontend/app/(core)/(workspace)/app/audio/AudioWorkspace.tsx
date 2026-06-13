@@ -136,7 +136,7 @@ export default function AudioWorkspace() {
   const showVoiceGender = showVoiceFields && !voiceSample;
   const showMusicToggle = packConfig.supportsMusicToggle;
   const showExportToggle = packConfig.supportsAudioExport;
-  const showManualDuration = pack === 'music_only' && !sourceVideo?.url;
+  const showManualDuration = (pack === 'music_only' || pack === 'sfx_only') && !sourceVideo?.url;
   const currentOutputKind: AudioOutputKind = packConfig.audioOnly ? 'audio' : exportAudioFile ? 'both' : 'video';
   const modeOptions = useMemo(() => buildAudioModeOptions(copy), [copy]);
   const intensityOptions = useMemo(
@@ -223,7 +223,7 @@ export default function AudioWorkspace() {
     if (sourceVideo?.durationSec) {
       return sourceVideo.durationSec;
     }
-    if (pack === 'music_only') {
+    if (pack === 'music_only' || pack === 'sfx_only') {
       return manualDurationSec;
     }
     return null;
@@ -245,7 +245,7 @@ export default function AudioWorkspace() {
     Boolean(user) &&
     !isGenerating &&
     (!sourceVideoRequired || Boolean(sourceVideo?.url)) &&
-    (pack !== 'music_only' || Boolean(sourceVideo?.url) || manualDurationSec >= 3) &&
+    ((pack !== 'music_only' && pack !== 'sfx_only') || Boolean(sourceVideo?.url) || manualDurationSec >= 3) &&
     (!packConfig.requiresScript || script.trim().length > 0) &&
     ((packConfig.includesVoice && pack !== 'cinematic') || prompt.trim().length > 0);
 

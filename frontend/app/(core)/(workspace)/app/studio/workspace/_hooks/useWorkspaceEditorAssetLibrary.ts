@@ -26,12 +26,13 @@ type WorkspaceEditorAssetLibraryCacheEntry = WorkspaceUserLibraryPage & {
 };
 
 const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE = new Map<string, WorkspaceEditorAssetLibraryCacheEntry>();
+const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION = 'with-outputs-v1';
 
 function buildWorkspaceEditorAssetLibraryCacheKey(
   kind: WorkspaceLibraryKind | null,
   source: WorkspaceLibrarySource
 ): string {
-  return `${kind ?? 'all'}:${source}`;
+  return `${WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION}:${kind ?? 'all'}:${source}`;
 }
 
 function mergeWorkspaceLibraryAssets(
@@ -52,7 +53,7 @@ export function useWorkspaceEditorAssetLibrary(
   const [kindFilter, setKindFilter] = useState<WorkspaceLibraryKindFilter>('all');
   const effectiveLibraryKind = libraryKind ?? (kindFilter === 'all' ? null : kindFilter);
   const canFilterKind = nodeKind === null;
-  const sourceOptions = useMemo(() => workspaceLibrarySourceOptionsForKind(libraryKind), [libraryKind]);
+  const sourceOptions = useMemo(() => workspaceLibrarySourceOptionsForKind(effectiveLibraryKind), [effectiveLibraryKind]);
   const sourceLabels = useMemo(() => workspaceLibrarySourceLabelsFromCopy(copy), [copy]);
   const [source, setSource] = useState<WorkspaceLibrarySource>('all');
   const activeSource = sourceOptions.includes(source) ? source : 'all';
@@ -78,7 +79,10 @@ export function useWorkspaceEditorAssetLibrary(
 
   const fetchLibraryPage = useCallback(
     async (cursor: string | null): Promise<WorkspaceEditorAssetLibraryCacheEntry> => {
-      const response = await authFetch(buildWorkspaceUserLibraryUrl(effectiveLibraryKind, activeSource, { cursor }));
+      const response = await authFetch(buildWorkspaceUserLibraryUrl(effectiveLibraryKind, activeSource, {
+        cursor,
+        includeOutputs: true,
+      }));
       const status = studioApiSyncStatusFromResponse(response);
       if (status === 'unauthorized') {
         return {

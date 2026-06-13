@@ -13,6 +13,7 @@ import type { StudioCopy } from '../../../_lib/studio-copy';
 export const TIMELINE_NODE_DRAG_TYPE = 'application/x-maxvideoai-timeline-node';
 
 const EXTERNAL_DROP_GHOST_FALLBACK_DURATION_SEC = 5;
+const LINKED_AUDIO_DROP_TRACK: WorkspaceTimelineTrack = 'audio';
 let activeTimelineNodeDragPayload: TimelineNodeDragPayload | null = null;
 
 type TimelineDataTransfer = {
@@ -23,7 +24,18 @@ type TimelineDataTransfer = {
 export type TimelineExternalDropPreview = {
   displacedItems: TimelineExternalDropDisplacement[];
   durationSec: number;
+  ghostItems: TimelineExternalDropGhost[];
   isValid: boolean;
+  mediaKind: 'audio' | 'image' | 'video';
+  previewUrl?: string | null;
+  startSec: number;
+  title: string;
+  trackId: WorkspaceTimelineTrack;
+};
+
+export type TimelineExternalDropGhost = {
+  durationSec: number;
+  isPrimary: boolean;
   mediaKind: 'audio' | 'image' | 'video';
   previewUrl?: string | null;
   startSec: number;
@@ -44,6 +56,7 @@ export type TimelineExternalDropDisplacement = {
 export type TimelineNodeDragPayload = {
   assetId?: string;
   durationSec?: number | null;
+  hasTimelineAudio?: boolean;
   mediaKind?: 'audio' | 'image' | 'video';
   nodeId?: string;
   previewUrl?: string | null;
@@ -117,12 +130,49 @@ export function titleForTimelineDropPayload(payload: TimelineNodeDragPayload): s
   return 'Video clip';
 }
 
+function linkedAudioTitleForTimelineDropPayload(payload: TimelineNodeDragPayload): string {
+  return `${titleForTimelineDropPayload(payload)} Audio`;
+}
+
 export function isExternalTimelineDropCompatible(
   mediaKind: TimelineExternalDropPreview['mediaKind'],
   track: WorkspaceTimelineTrack
 ): boolean {
   if (mediaKind === 'audio') return !isWorkspaceTimelineVideoTrack(track);
   return isWorkspaceTimelineVideoTrack(track);
+}
+
+function ghostItemsForTimelineDropPreview(params: {
+  durationSec: number;
+  isValid: boolean;
+  payload: TimelineNodeDragPayload;
+  startSec: number;
+  track: WorkspaceTimelineTrack;
+}): TimelineExternalDropGhost[] {
+  const primaryGhost: TimelineExternalDropGhost = {
+    durationSec: params.durationSec,
+    isPrimary: true,
+    mediaKind: params.payload.mediaKind ?? 'video',
+    previewUrl: params.payload.previewUrl,
+    startSec: params.startSec,
+    title: titleForTimelineDropPayload(params.payload),
+    trackId: params.track,
+  };
+  if (!params.isValid || params.payload.mediaKind !== 'video' || !params.payload.hasTimelineAudio) {
+    return [primaryGhost];
+  }
+  return [
+    primaryGhost,
+    {
+      durationSec: params.durationSec,
+      isPrimary: false,
+      mediaKind: 'audio',
+      previewUrl: null,
+      startSec: params.startSec,
+      title: linkedAudioTitleForTimelineDropPayload(params.payload),
+      trackId: LINKED_AUDIO_DROP_TRACK,
+    },
+  ];
 }
 
 export function insertionBoundaryForTimelineTrack(
@@ -212,6 +262,7 @@ export function resolveTimelineExternalDropPreview({
     : rawStartSec;
   const durationSec = durationForTimelineDropPayload(payload);
   const isValid = isExternalTimelineDropCompatible(payload.mediaKind, track) && !lockedTracks.has(track);
+  const title = titleForTimelineDropPayload(payload);
   return {
     displacedItems: isValid
       ? resolveTimelineExternalDropDisplacements({
@@ -223,11 +274,18 @@ export function resolveTimelineExternalDropPreview({
         })
       : [],
     durationSec,
+    ghostItems: ghostItemsForTimelineDropPreview({
+      durationSec,
+      isValid,
+      payload,
+      startSec,
+      track,
+    }),
     isValid,
     mediaKind: payload.mediaKind,
     previewUrl: payload.previewUrl,
     startSec,
-    title: titleForTimelineDropPayload(payload),
+    title,
     trackId: track,
   };
 }

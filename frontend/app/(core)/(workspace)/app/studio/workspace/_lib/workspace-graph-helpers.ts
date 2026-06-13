@@ -6,7 +6,7 @@ import {
   workspaceConnectionCapacity,
 } from './workspace-capabilities';
 import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
-import { GENERATED_OUTPUT_TARGET_HANDLE } from '../_state/workspace-normalizers';
+import { GENERATED_OUTPUT_TARGET_HANDLE, shotOutputSourceHandle } from '../_state/workspace-normalizers';
 import { inferWorkspaceEdgeKind } from './workspace-templates';
 import type {
   WorkspaceEdgeKind,
@@ -114,11 +114,17 @@ export function workspaceConnectionRejectionReason({
   if (connection.source === connection.target) {
     return { code: 'self_link' };
   }
-  if (!isWorkspaceConnectionCompatible({ sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle })) {
+  const sourceNode = nodes.find((node) => node.id === connection.source) ?? null;
+  const targetNode = nodes.find((node) => node.id === connection.target) ?? null;
+  const generatedOutputEdge =
+    sourceNode?.data.kind === 'shot' &&
+    targetNode?.data.kind === 'output' &&
+    connection.targetHandle === GENERATED_OUTPUT_TARGET_HANDLE &&
+    connection.sourceHandle === shotOutputSourceHandle(sourceNode.data.shot);
+  if (!generatedOutputEdge && !isWorkspaceConnectionCompatible({ sourceHandle: connection.sourceHandle, targetHandle: connection.targetHandle })) {
     return { code: 'incompatible_connectors' };
   }
   const targetHandle = inferWorkspaceEdgeKind(connection.sourceHandle, connection.targetHandle);
-  const targetNode = nodes.find((node) => node.id === connection.target) ?? null;
   const connector = connectorForTarget({ targetNode, targetHandle, capabilities });
   if (!connector) return null;
   const capacity = workspaceConnectionCapacity({
