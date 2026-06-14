@@ -761,6 +761,8 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
   timeline: {
     tools: {
       videoTimeline: 'Video timeline',
+      export: 'Export',
+      exportAria: 'Open export dialog',
       resizeTimeline: 'Resize montage timeline',
       resizeTimelineTitle: 'Drag to resize montage timeline',
       undoTooltip: 'Undo (Cmd/Ctrl + Z)',

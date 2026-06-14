@@ -205,8 +205,7 @@
 }
 
 .modeSwitch button,
-.iconButton,
-.exportButton {
+.iconButton {
   border: 0;
   font: inherit;
   color: inherit;
@@ -247,8 +246,7 @@
   gap: 10px;
 }
 
-.iconButton,
-.exportButton {
+.iconButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -350,14 +348,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.exportButton {
-  padding: 0 16px;
-  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
-  color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
 }
 
 .editorToast {

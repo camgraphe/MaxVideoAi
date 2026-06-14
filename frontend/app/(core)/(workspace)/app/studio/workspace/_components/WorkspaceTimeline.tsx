@@ -88,6 +88,7 @@ type WorkspaceTimelineProps = {
   onMarkIn: () => void;
   onMarkOut: () => void;
   onNodeDropToTimeline: (nodeId: string, startSec: number, track: WorkspaceTimelineTrack) => void;
+  onOpenExportDialog: () => void;
   onPanelHeightChange: (height: number) => void;
   onPlaybackChange: (isPlaying: boolean) => void;
   onPlayheadChange: (seconds: number) => void;
@@ -144,6 +145,7 @@ export function WorkspaceTimeline({
   onMarkOut,
   onMoveItem,
   onNodeDropToTimeline,
+  onOpenExportDialog,
   onPanelHeightChange,
   onPlaybackChange,
   onPlayheadChange,
@@ -393,6 +395,7 @@ export function WorkspaceTimeline({
         onSelectTool={handleSelectTimelineTool}
         onToggleBladeTool={handleToggleBladeTimelineTool}
         onUndo={onUndo}
+        onOpenExportDialog={onOpenExportDialog}
         onZoomChange={setTimelineZoom}
         pixelsPerSecond={pixelsPerSecond}
         playheadSec={clampedPlayheadSec}

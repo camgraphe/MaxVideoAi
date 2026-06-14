@@ -1,5 +1,6 @@
 .timelineTransport button[data-tooltip]::after,
-.timelineZoomControl button[data-tooltip]::after {
+.timelineZoomControl button[data-tooltip]::after,
+.timelineExportButton[data-tooltip]::after {
   position: absolute;
   right: 0;
   bottom: calc(100% + 8px);
@@ -25,7 +26,9 @@
 .timelineTransport button[data-tooltip]:hover::after,
 .timelineTransport button[data-tooltip]:focus-visible::after,
 .timelineZoomControl button[data-tooltip]:hover::after,
-.timelineZoomControl button[data-tooltip]:focus-visible::after {
+.timelineZoomControl button[data-tooltip]:focus-visible::after,
+.timelineExportButton[data-tooltip]:hover::after,
+.timelineExportButton[data-tooltip]:focus-visible::after {
   opacity: 1;
   transform: translateY(0);
 }
@@ -147,4 +150,44 @@
 .timelineZoomControl input {
   width: 72px;
   accent-color: #8b5cf6;
+}
+
+.timelineExportButton {
+  position: relative;
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 760;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.timelineExportButton:hover,
+.timelineExportButton:focus-visible {
+  filter: brightness(1.05);
+  outline: none;
+}
+
+.timelineExportButton span {
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .timelineExportButton {
+    width: 30px;
+    padding: 0;
+  }
+
+  .timelineExportButton span {
+    display: none;
+  }
 }

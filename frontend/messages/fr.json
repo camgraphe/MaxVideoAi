@@ -3792,6 +3792,8 @@
       "timeline": {
         "tools": {
           "videoTimeline": "Timeline vidéo",
+          "export": "Exporter",
+          "exportAria": "Ouvrir la fenetre d'export",
           "resizeTimeline": "Redimensionner la timeline de montage",
           "resizeTimelineTitle": "Glisser pour redimensionner la timeline de montage",
           "undoTooltip": "Annuler (Cmd/Ctrl + Z)",

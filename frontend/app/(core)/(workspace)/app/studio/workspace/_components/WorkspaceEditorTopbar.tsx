@@ -1,6 +1,6 @@
 'use client';
 
-import { Download, GitBranch, Moon, PanelRight, Settings, Sun } from 'lucide-react';
+import { GitBranch, Moon, PanelRight, Settings, Sun } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { StudioHeaderSession } from './StudioHeaderSession';
@@ -20,7 +20,6 @@ type WorkspaceEditorTopbarProps = {
   onEditorSurfaceChange: (surface: WorkspaceEditorSurface) => void;
   onExitToProjects: () => void;
   onFocusModeChange: (focusMode: WorkspaceFocusMode) => void;
-  onOpenExportDialog: () => void;
   onToggleMockMode: () => void;
   studioCopy: StudioCopy;
   studioTheme: ReturnType<typeof useStudioThemeMode>;
@@ -33,7 +32,6 @@ export function WorkspaceEditorTopbar({
   onEditorSurfaceChange,
   onExitToProjects,
   onFocusModeChange,
-  onOpenExportDialog,
   onToggleMockMode,
   studioCopy,
   studioTheme,
@@ -91,10 +89,6 @@ export function WorkspaceEditorTopbar({
       <div className={styles.topbarRight}>
         <StudioHeaderSession onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
         <div className={styles.topbarActions}>
-          <button type="button" className={styles.exportButton} onClick={onOpenExportDialog} aria-label={studioCopy.topbar.exportAria}>
-            <Download size={15} />
-            {studioCopy.topbar.export}
-          </button>
           <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label={studioCopy.topbar.mockAria}>
             <Settings size={15} />
             <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>

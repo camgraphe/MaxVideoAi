@@ -1,4 +1,4 @@
-import { MousePointer2, Redo2, Scissors, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
+import { Download, MousePointer2, Redo2, Scissors, Undo2, ZoomIn, ZoomOut } from 'lucide-react';
 import { memo } from 'react';
 
 import styles from '../../_styles/timeline-controls.module.css';
@@ -15,6 +15,7 @@ type TimelineToolbarProps = {
   maxPixelsPerSecond: number;
   minPixelsPerSecond: number;
   onRedo: () => void;
+  onOpenExportDialog: () => void;
   onSelectTool: () => void;
   onToggleBladeTool: () => void;
   onUndo: () => void;
@@ -34,6 +35,7 @@ export const TimelineToolbar = memo(function TimelineToolbar({
   maxPixelsPerSecond,
   minPixelsPerSecond,
   onRedo,
+  onOpenExportDialog,
   onSelectTool,
   onToggleBladeTool,
   onUndo,
@@ -132,6 +134,17 @@ export const TimelineToolbar = memo(function TimelineToolbar({
             <ZoomIn size={13} />
           </button>
         </div>
+        <button
+          type="button"
+          className={styles.timelineExportButton}
+          data-tooltip={copy.export}
+          title={copy.export}
+          aria-label={copy.exportAria}
+          onClick={onOpenExportDialog}
+        >
+          <Download size={14} />
+          <span>{copy.export}</span>
+        </button>
       </div>
     </div>
   );

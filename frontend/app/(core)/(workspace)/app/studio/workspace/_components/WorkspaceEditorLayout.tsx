@@ -203,7 +203,6 @@ export function WorkspaceEditorLayout({
         onEditorSurfaceChange={setActiveEditorSurface}
         onExitToProjects={shell.handleExitToProjects}
         onFocusModeChange={setFocusMode}
-        onOpenExportDialog={shell.handleOpenExportDialog}
         onToggleMockMode={() => setMockMode((value) => !value)}
         studioCopy={studioCopy}
         studioTheme={studioTheme}
@@ -409,6 +408,7 @@ export function WorkspaceEditorLayout({
         onResizeItem={timelineClip.handleResizeTimelineItem}
         onSelectItem={selection.handleSelectTimelineItem}
         onSelectItems={selection.handleSelectTimelineItems}
+        onOpenExportDialog={shell.handleOpenExportDialog}
         onInsertIntoClipChange={setTimelineInsertIntoClipEnabled}
         onDeleteTrack={timelineTrack.handleDeleteTimelineTrack}
         onLinkItems={timelineClip.handleLinkTimelineItems}

@@ -865,6 +865,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const edgeSource = source(edgeTypesPath);
   const timelineProjectSidebarSource = source(timelineProjectSidebarPath);
   const workspaceEditorLayoutSource = source(workspaceEditorLayoutPath);
+  const workspaceEditorTopbarSource = source(workspaceEditorTopbarPath);
   const assetLibraryModalSource = source(assetLibraryModalPath);
   const projectMediaLibraryModalSource = source(projectMediaLibraryModalPath);
   const editorNoticeHookSource = source(editorNoticeHookPath);
@@ -1993,6 +1994,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(workspaceSource, /WorkspaceProjectMediaLibraryModal/, 'orchestrator should not render the project media import modal inline');
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
+  assert.doesNotMatch(workspaceEditorTopbarSource, /onOpenExportDialog|exportButton|studioCopy\.topbar\.export/, 'workspace topbar should not own timeline export actions');
+  assert.doesNotMatch(workspaceEditorLayoutSource, /<WorkspaceEditorTopbar(?:(?!\/>)[\s\S])*onOpenExportDialog=/, 'workspace layout should not wire export into the topbar');
+  assert.match(workspaceEditorLayoutSource, /<WorkspaceTimeline[\s\S]*onOpenExportDialog=\{shell\.handleOpenExportDialog\}/, 'workspace layout should wire export into the timeline toolbar');
+  assert.match(timelineSource, /onOpenExportDialog/, 'timeline should receive the export action from the workspace shell controller');
+  assert.match(timelineToolbarSource, /onOpenExportDialog/, 'timeline toolbar should expose the export action beside timeline tools');
+  assert.match(timelineToolbarSource, /copy\.exportAria/, 'timeline toolbar export button should keep the existing localized export aria label');
+  assert.match(timelineControlStyleSource, /\.timelineExportButton/, 'timeline control CSS module should own timeline export button styling');
   assert.match(canvasControllerHookSource, /useWorkspaceEditorAssetLibrary\(isProjectMediaPickerOpen \? null : undefined, studioAssetLibraryCopy\)/, 'project media import should load the signed-in library only while its modal is open and pass localized library copy');
   assert.match(projectMediaLibraryModalSource, /PROJECT_MEDIA_UPLOAD_ACCEPT/, 'project media library modal should accept direct image, video, and audio uploads');
   assert.match(projectMediaLibraryModalSource, /uploadWorkspaceProjectMediaFile/, 'project media library modal should delegate local file uploads to a shared helper');
@@ -2018,7 +2026,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(typesSource, /onOpenAssetLibrary\?:/, 'node data should carry a media library open handler');
   assert.match(shellStyleSource, /\.editorShell/, 'shell CSS module should own workspace shell layout');
   assert.match(shellStyleSource, /\.modeSwitch/, 'shell CSS module should own Canvas/Viewer switch styling');
-  assert.match(shellStyleSource, /\.exportButton/, 'shell CSS module should own header export button styling');
+  assert.doesNotMatch(shellStyleSource, /\.exportButton/, 'shell CSS module should not keep unused topbar export button styling');
   assert.match(shellStyleSource, /\.iconButton/, 'shell CSS module should own compact header icon buttons');
   assert.doesNotMatch(styleSource, /\.brandLogo/, 'main editor CSS should no longer own brand logo styles after shell extraction');
   assert.ok(lineCount(shellStyleSource) <= 1200, 'editor shell CSS module should stay under the focused module size threshold');

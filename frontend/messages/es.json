@@ -3784,6 +3784,8 @@
       "timeline": {
         "tools": {
           "videoTimeline": "Línea de tiempo de video",
+          "export": "Exportar",
+          "exportAria": "Abrir dialogo de exportacion",
           "resizeTimeline": "Redimensionar la línea de tiempo del montaje",
           "resizeTimelineTitle": "Arrastra para redimensionar la línea de tiempo del montaje",
           "undoTooltip": "Deshacer (Cmd/Ctrl + Z)",
