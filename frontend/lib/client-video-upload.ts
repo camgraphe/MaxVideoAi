@@ -10,6 +10,7 @@ export type UploadedVideoAsset = {
   url: string;
   width?: number | null;
   height?: number | null;
+  durationSec?: number | null;
   size?: number | null;
   mime?: string | null;
   name?: string | null;
@@ -66,6 +67,7 @@ function readAssetPayload(payload: unknown): UploadedVideoAsset | null {
     url,
     width: typeof (asset as { width?: unknown }).width === 'number' ? (asset as { width: number }).width : null,
     height: typeof (asset as { height?: unknown }).height === 'number' ? (asset as { height: number }).height : null,
+    durationSec: typeof (asset as { durationSec?: unknown }).durationSec === 'number' ? (asset as { durationSec: number }).durationSec : null,
     size: typeof (asset as { size?: unknown }).size === 'number' ? (asset as { size: number }).size : null,
     mime: typeof (asset as { mime?: unknown }).mime === 'string' ? (asset as { mime: string }).mime : null,
     name: typeof (asset as { name?: unknown }).name === 'string' ? (asset as { name: string }).name : null,

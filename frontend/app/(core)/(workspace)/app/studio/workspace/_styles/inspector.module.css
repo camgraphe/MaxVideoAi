@@ -310,8 +310,29 @@
   white-space: nowrap;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 900px) {
   .settingsPanel {
-    display: none;
+    height: 100%;
+    overflow: hidden;
+    border-left: 0;
+    background: var(--studio-surface-strong);
+    padding: 12px;
+  }
+
+  .settingsBody {
+    height: calc(100% - 38px);
+    padding-right: 0;
+  }
+
+  .settingsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .timelineInspectorControlRow {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+
+  .infoGrid {
+    grid-template-columns: 82px minmax(0, 1fr);
   }
 }

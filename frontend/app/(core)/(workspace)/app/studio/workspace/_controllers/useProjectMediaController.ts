@@ -21,6 +21,10 @@ import {
   projectMediaTimelineKindForAsset,
   projectMediaTimelineKindForGeneratedNode,
 } from '../_lib/workspace-project-media-drag';
+import {
+  deriveWorkspaceMediaDimensions,
+  parseWorkspaceMediaDimensions,
+} from '../_lib/workspace-clip-composition';
 import { clearTimelineNodeDragPayload } from '../_lib/timeline/timeline-external-drop';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
@@ -138,20 +142,54 @@ function mediaCardKindForAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' |
   return 'image';
 }
 
-function mediaSubtitleForAsset(asset: WorkspaceAssetRecord): string {
+function greatestCommonDivisor(left: number, right: number): number {
+  let a = Math.abs(left);
+  let b = Math.abs(right);
+  while (b) {
+    const next = a % b;
+    a = b;
+    b = next;
+  }
+  return a || 1;
+}
+
+function aspectRatioLabelFromDimensions(value?: string): string | null {
+  const dimensions = parseWorkspaceMediaDimensions(value);
+  if (!dimensions) return null;
+  const divisor = greatestCommonDivisor(dimensions.width, dimensions.height);
+  return `${dimensions.width / divisor}:${dimensions.height / divisor}`;
+}
+
+export function mediaSubtitleForAsset(asset: WorkspaceAssetRecord): string {
   if (asset.kind === 'audio') {
     return [asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null, '48kHz'].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
   }
   if (asset.kind === 'video') {
-    return [asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null, asset.dimensions, '16:9'].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
+    return [
+      asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null,
+      asset.dimensions,
+      aspectRatioLabelFromDimensions(asset.dimensions),
+    ].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
   }
   return asset.dimensions ?? asset.subtitle;
 }
 
-function mediaSubtitleForGeneratedNode(node: WorkspaceGraphNode): string {
+export function mediaSubtitleForGeneratedNode(node: WorkspaceGraphNode): string {
   const output = node.data.output;
   if (!output) return node.data.subtitle ?? 'Generated clip';
-  return [output.durationSec ? formatProjectMediaDuration(output.durationSec) : null, output.modelLabel].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
+  const dimensions = output.kind === 'audio'
+    ? null
+    : deriveWorkspaceMediaDimensions({
+        aspectRatio: output.aspectRatio,
+        resolution: output.resolution,
+      });
+  const dimensionsLabel = dimensions ? `${dimensions.width}x${dimensions.height}` : null;
+  return [
+    output.durationSec ? formatProjectMediaDuration(output.durationSec) : null,
+    dimensionsLabel,
+    output.aspectRatio,
+    output.modelLabel,
+  ].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
 }
 
 function generatedNodeFolderId(node: WorkspaceGraphNode, folderIds: Set<string>): string | null {

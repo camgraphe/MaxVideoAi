@@ -171,3 +171,41 @@ test('timeline render manifest derives source composition from output resolution
   assert.equal(clip?.composition?.width, 1280);
   assert.equal(clip?.composition?.height, 720);
 });
+
+test('timeline render manifest warns when visual clips have unknown source dimensions', () => {
+  const timelineItems = [
+    {
+      id: 'unknown-source-video',
+      outputNodeId: 'project-asset-unknown-source',
+      track: 'video',
+      title: 'Unknown source video',
+      durationSec: 5,
+      startSec: 0,
+      sourceStartSec: 0,
+      sourceDurationSec: 5,
+      mediaKind: 'video',
+      mediaUrl: '/media/unknown-source.mp4',
+    },
+  ] as WorkspaceTimelineItem[];
+
+  const manifest = buildWorkspaceTimelineRenderManifest({
+    items: timelineItems,
+    nodes: [],
+    projectName: 'Unknown dimensions test',
+    projectSettings: {
+      aspectRatio: '16:9',
+      resolution: '1080p',
+      fps: 24,
+    },
+    createdAt: '2026-06-14T10:00:00.000Z',
+  });
+  const clip = manifest.tracks.find((track) => track.id === 'video')?.clips[0];
+
+  assert.equal(manifest.status, 'ready');
+  assert.equal(clip?.composition, null);
+  assert.deepEqual(
+    manifest.issues.map((issue) => [issue.code, issue.severity, issue.itemId]),
+    [['missing_dimensions', 'warning', 'unknown-source-video']],
+    'visual clips without source dimensions should be visible export warnings instead of silent full-frame fallbacks'
+  );
+});

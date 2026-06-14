@@ -325,6 +325,14 @@ export async function ensureReusableAsset(params: {
     typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
       ? params.durationSec
       : null;
+  const mediaWidth =
+    typeof params.width === 'number' && Number.isFinite(params.width) && params.width > 0
+      ? Math.round(params.width)
+      : null;
+  const mediaHeight =
+    typeof params.height === 'number' && Number.isFinite(params.height) && params.height > 0
+      ? Math.round(params.height)
+      : null;
   let resolvedThumbUrl = await resolveReusableAssetThumbUrl({
     userId: params.userId,
     kind: params.kind,
@@ -360,15 +368,19 @@ export async function ensureReusableAsset(params: {
     }
     const existingDurationSec = normalizeMetadata(existing[0].metadata).durationSec;
     const shouldBackfillDuration = Boolean(durationSec && !existingDurationSec);
+    const shouldBackfillDimensions = Boolean(mediaWidth && mediaHeight && (!existing[0].width || !existing[0].height));
     if (
       (!existing[0].thumb_url && resolvedThumbUrl) ||
       (!existing[0].preview_url && resolvedPreviewUrl) ||
-      shouldBackfillDuration
+      shouldBackfillDuration ||
+      shouldBackfillDimensions
     ) {
       const rows = await query<DbMediaAssetRow>(
         `UPDATE media_assets
             SET thumb_url = COALESCE(thumb_url, $3),
                 preview_url = COALESCE(preview_url, $4),
+                width = COALESCE(width, $6),
+                height = COALESCE(height, $7),
                 metadata = COALESCE(metadata, '{}'::jsonb)
                   || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', $5::double precision)),
                 updated_at = NOW()
@@ -377,7 +389,7 @@ export async function ensureReusableAsset(params: {
             AND deleted_at IS NULL
           RETURNING id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                     source_job_id, source_output_id, status, metadata, created_at`,
-        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec]
+        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec, mediaWidth, mediaHeight]
       );
       return mapAssetRow(rows[0] ?? existing[0]);
     }
@@ -398,8 +410,8 @@ export async function ensureReusableAsset(params: {
         url: normalizedUrl,
         thumbUrl: null,
         mimeType: params.mimeType ?? inferMimeFromUrl(normalizedUrl, params.kind),
-        width: params.width ?? null,
-        height: params.height ?? null,
+        width: mediaWidth,
+        height: mediaHeight,
         sizeBytes: params.sizeBytes ?? null,
       };
   if (!resolvedThumbUrl && copied.thumbUrl) {
@@ -420,8 +432,8 @@ export async function ensureReusableAsset(params: {
     thumbUrl: resolvedThumbUrl,
     previewUrl: resolvedPreviewUrl,
     mimeType: copied.mimeType,
-    width: copied.width ?? params.width ?? null,
-    height: copied.height ?? params.height ?? null,
+    width: copied.width ?? mediaWidth,
+    height: copied.height ?? mediaHeight,
     sizeBytes: copied.sizeBytes ?? params.sizeBytes ?? null,
     durationSec,
     source,

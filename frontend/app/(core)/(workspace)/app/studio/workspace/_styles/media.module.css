@@ -716,3 +716,46 @@
   font-size: 12px;
   line-height: 1.35;
 }
+
+@media (max-width: 900px) {
+  .timelineProjectSidebar {
+    height: 100%;
+    border-right: 0;
+  }
+
+  .projectMediaHeader {
+    grid-template-columns: 1fr;
+    gap: 9px;
+    padding: 14px 12px 10px;
+  }
+
+  .projectMediaActionButton {
+    width: 100%;
+  }
+
+  .projectMediaControls,
+  .projectMediaFolderHeader {
+    padding-inline: 12px;
+  }
+
+  .projectMediaGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    padding: 0 12px 14px;
+  }
+
+  .projectMediaFooterBar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 10px 12px 12px;
+  }
+
+  .projectMediaFooterActions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .projectMediaFooterAction {
+    flex: 1 1 0;
+  }
+}

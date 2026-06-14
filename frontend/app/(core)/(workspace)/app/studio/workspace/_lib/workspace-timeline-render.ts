@@ -28,6 +28,7 @@ type WorkspaceTimelineRenderIssueCode =
   | 'empty_timeline'
   | 'missing_media'
   | 'processing_media'
+  | 'missing_dimensions'
   | 'overlapping_clips'
   | 'orphan_linked_audio'
   | 'invalid_transition';
@@ -379,6 +380,25 @@ function linkedAudioIssues(
   });
 }
 
+function missingDimensionIssues(
+  nodes: WorkspaceGraphNode[],
+  items: WorkspaceTimelineItem[],
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): WorkspaceTimelineRenderIssue[] {
+  return items.flatMap((item) => {
+    if (mediaKindForItem(item) === 'audio') return [];
+    if (!mediaUrlForItem(nodes, item)) return [];
+    const sourceNode = nodeForItem(nodes, item);
+    if (workspaceMediaDimensionsForTimelineSource(item, sourceNode)) return [];
+    return [{
+      code: 'missing_dimensions' as const,
+      severity: 'warning' as const,
+      itemId: item.id,
+      message: `${issueTitle(item, canvasNodeCopy)} has unknown source dimensions. The render will keep a full-frame fallback until metadata is measured.`,
+    }];
+  });
+}
+
 function transitionIssues(
   items: WorkspaceTimelineItem[],
   canvasNodeCopy?: StudioCopy['canvas']['nodes']
@@ -440,6 +460,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
   issues.push(
     ...overlapIssues(exportItems, params.canvasNodeCopy, params.exportDialogCopy),
     ...linkedAudioIssues(exportItems, params.canvasNodeCopy),
+    ...missingDimensionIssues(params.nodes, exportItems, params.canvasNodeCopy),
     ...transitionIssues(exportItems, params.canvasNodeCopy)
   );
 

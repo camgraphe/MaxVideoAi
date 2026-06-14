@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
+import { detectVideoMetadata } from '@/server/media/detect-has-audio';
 import {
   deleteStorageObjectKey,
   getStorageObjectBuffer,
@@ -122,21 +123,28 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const uploadBuffer = Buffer.concat(buffers, totalSize);
     const uploadResult = await uploadFileBufferToKey({
       key,
-      data: Buffer.concat(buffers, totalSize),
+      data: uploadBuffer,
       mime,
     });
+    const videoMetadata = await detectVideoMetadata(uploadResult.url, { timeoutMs: 8_000 }).catch(() => null);
 
     const assetId = await recordUserAsset({
       userId,
       url: uploadResult.url,
       mime,
-      width: null,
-      height: null,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
       size: totalSize,
       source: 'upload',
-      metadata: { originalName: fileName, kind: 'video', chunkedUpload: true },
+      metadata: {
+        originalName: fileName,
+        kind: 'video',
+        chunkedUpload: true,
+        durationSec: videoMetadata?.durationSec ?? null,
+      },
     });
 
     await ensureReusableAsset({
@@ -146,6 +154,9 @@ export async function POST(req: NextRequest) {
       source: 'upload',
       mimeType: mime,
       sizeBytes: totalSize,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
+      durationSec: videoMetadata?.durationSec ?? null,
     }).catch((error) => {
       console.warn('[upload] failed to mirror chunked video into media_assets', error);
     });
@@ -157,12 +168,13 @@ export async function POST(req: NextRequest) {
       asset: {
         id: assetId,
         url: uploadResult.url,
-        width: null,
-        height: null,
+        width: videoMetadata?.width ?? null,
+        height: videoMetadata?.height ?? null,
         size: totalSize,
         mime,
         name: fileName,
         thumbUrl: null,
+        durationSec: videoMetadata?.durationSec ?? null,
       },
     });
   } catch (error) {

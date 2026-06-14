@@ -34,8 +34,10 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/page-architecture.md`: how route files, metadata, data builders, and page sections should be split.
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
+- `docs/engineering/studio-editor-architecture.md`: MaxVideoAI Studio editor entities, timeline, canvas, Project media, export, responsive, and metadata contracts.
 - `frontend/app/(core)/(workspace)/app/AGENTS.md`: authenticated video workspace boundaries.
 - `frontend/app/(core)/(workspace)/app/image/AGENTS.md`: image workspace boundaries.
+- `frontend/app/(core)/(workspace)/app/studio/AGENTS.md`: Studio route-local boundaries for projects, canvas, viewer, timeline, Project media, and export work.
 
 When instructions conflict, follow the nearest `AGENTS.md` for the files being edited, while preserving the root-level rules.
 

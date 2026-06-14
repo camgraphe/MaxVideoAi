@@ -34,8 +34,10 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Add timeline behavior in `workspace-timeline-editing.ts`, `workspace-timeline-render.ts`, or `workspace-timeline-tracks.ts` before wiring UI.
 - Add sequence list behavior in `workspace/_state/workspace-sequence-operations.ts` before wiring Project media or inspector UI.
 - Add Project media behavior in `workspace/_controllers/useProjectMediaController.ts`, `workspace/_components/TimelineProjectSidebar.tsx`, and pure timeline insertion helpers. Sequence cards manage sequences; folder cards filter media; media cards drag/insert media.
+- Add project media metadata hydration in `workspace/_hooks/useWorkspaceProjectMediaMetadataHydration.ts` and pure checks in `workspace/_lib/workspace-project-media-metadata.ts`. Upload and media-library paths should persist measured duration and dimensions instead of faking resolution.
 - Add viewer behavior in `WorkspaceVideoViewer.tsx` and pure render helpers, not inside the timeline component.
 - Add project persistence in `frontend/src/server/studio` plus `frontend/app/api/studio`; keep client fallback to local storage until backend availability is guaranteed.
+- Responsive shell changes belong in `WorkspaceEditorLayout.tsx`, `WorkspaceMobilePanelControls.tsx`, and focused CSS modules. Do not hide Project media or inspector on mobile; expose them as accessible panels around the primary canvas/viewer surface.
 - Add UI as route-local components under `workspace/_components` unless it is clearly reused by another route.
 - Add MP4 export behavior as API + worker orchestration. The browser can create requests and poll jobs, but it must not pretend to render final server MP4s without a running worker.
 
@@ -49,6 +51,8 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Timeline drags must be frame-aware and must revert if an operation cannot resolve cleanly.
 - Video clips with linked audio should move together by default until explicitly unlinked.
 - Project settings are sequence/project state, not scattered controls inside unrelated panels.
+- Export belongs to the timeline toolbar because it exports the active sequence. Keep the topbar for mode switching, Mock/Live, wallet/session, language, and theme controls.
+- Mock/Live stays to the left of the wallet/session cluster so account controls remain grouped.
 - Server MP4 export requires a job worker, storage, billing/idempotency, and completed artifact URL. Local manifest or EDL export is a different feature.
 - Keep the editor CSS isolated in `maxvideoai-editor.module.css`.
 

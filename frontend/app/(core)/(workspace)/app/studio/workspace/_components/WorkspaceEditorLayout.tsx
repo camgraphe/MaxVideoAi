@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import type { CSSProperties, Dispatch, SetStateAction } from 'react';
 import type { useExportController } from '../_controllers/useExportController';
 import type { useWorkspaceCanvasController } from '../_hooks/useWorkspaceCanvasController';
@@ -51,11 +52,14 @@ import { TimelineClipInspector } from './TimelineClipInspector';
 import { TimelineProjectSidebar } from './TimelineProjectSidebar';
 import { WorkspaceCanvas } from './WorkspaceCanvas.client';
 import { WorkspaceEditorTopbar } from './WorkspaceEditorTopbar';
+import { WorkspaceMobilePanelControls } from './WorkspaceMobilePanelControls';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
 import { WorkspaceTimeline } from './WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './WorkspaceVideoViewer';
 
 const styles = { ...baseStyles, ...shellStyles };
+
+type MobileWorkspacePanel = 'media' | 'inspector' | null;
 
 type WorkspaceEditorLayoutControllers = {
   canvas: ReturnType<typeof useWorkspaceCanvasController>;
@@ -163,10 +167,8 @@ export function WorkspaceEditorLayout({
   userCanvasTemplates,
   videoTrackCount,
 }: WorkspaceEditorLayoutProps) {
-  const editorShellStyle = timelinePanelHeight
-    ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties)
-    : undefined;
-
+  const [mobileWorkspacePanel, setMobileWorkspacePanel] = useState<MobileWorkspacePanel>(null);
+  const editorShellStyle = timelinePanelHeight ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties) : undefined;
   const {
     canvas,
     export: exportController,
@@ -182,12 +184,21 @@ export function WorkspaceEditorLayout({
   const localizedTemplateSummaries = localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy);
   const exportManifest = {
     ...exportState.exportManifest,
-    sequenceName: localizeStudioGeneratedSequenceDisplayName(
-      exportState.exportManifest.sequenceName,
-      studioCopy.viewer.projectMedia
-    ),
+    sequenceName: localizeStudioGeneratedSequenceDisplayName(exportState.exportManifest.sequenceName, studioCopy.viewer.projectMedia),
   };
   const shouldShowCanvasInspector = focusMode === 'canvas' && isCanvasInspectorOpen && Boolean(canvas.selectedNode);
+  const canOpenMobileProjectMedia = focusMode === 'viewer';
+  const canOpenMobileInspector = focusMode === 'viewer' || shouldShowCanvasInspector;
+  const mobileInspectorLabel = focusMode === 'canvas' ? studioCopy.canvas.nodes.inspectorTitle : studioCopy.timeline.inspector.clipInspector;
+
+  useEffect(() => {
+    setMobileWorkspacePanel(null);
+  }, [focusMode]);
+  useEffect(() => {
+    if ((mobileWorkspacePanel === 'media' && !canOpenMobileProjectMedia) || (mobileWorkspacePanel === 'inspector' && !canOpenMobileInspector)) {
+      setMobileWorkspacePanel(null);
+    }
+  }, [canOpenMobileInspector, canOpenMobileProjectMedia, mobileWorkspacePanel]);
 
   return (
     <main
@@ -218,40 +229,63 @@ export function WorkspaceEditorLayout({
         className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
           shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''
         }`}
+        data-mobile-panel={mobileWorkspacePanel ?? 'closed'}
       >
-        {focusMode === 'viewer' ? (
-          <TimelineProjectSidebar
-            studioCanvasNodeCopy={studioCopy.canvas.nodes}
-            copy={studioCopy.viewer.projectMedia}
-            nodes={canvas.renderNodes}
-            projectAssets={projectAssets}
-            projectMediaFolders={projectMediaFolders}
-            projectName={activeTemplateName}
-            sequences={sequenceSnapshots.sequenceSummaries}
-            timelineItems={timelineItems}
-            onDeleteGeneratedClip={projectMedia.handleDeleteGeneratedClip}
-            onDeleteGeneratedClips={projectMedia.handleDeleteGeneratedClips}
-            onDeleteProjectAsset={projectMedia.handleDeleteProjectAsset}
-            onDeleteProjectAssets={projectMedia.handleDeleteProjectAssets}
-            onDeleteProjectMediaFolder={projectMedia.handleDeleteProjectMediaFolder}
-            onDeleteProjectMediaFolders={projectMedia.handleDeleteProjectMediaFolders}
-            onDeleteSequence={sequence.handleDeleteSequence}
-            onDeleteSequences={sequence.handleDeleteSequences}
-            onDuplicateSequence={sequence.handleDuplicateSequence}
-            onImportMedia={projectMedia.handleImportProjectMedia}
-            onImportLocalMediaFiles={projectMedia.handleImportLocalProjectMediaFiles}
-            onInspectProjectAsset={selection.handleInspectProjectAsset}
-            onInspectSequence={selection.handleInspectSequence}
-            onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
-            onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
-            onMoveGeneratedClipToFolder={projectMedia.handleMoveGeneratedClipToFolder}
-            onMoveProjectAssetToFolder={projectMedia.handleMoveProjectAssetToFolder}
-            onNewFolder={projectMedia.handleCreateProjectMediaFolder}
-            onNewSequence={sequence.handleCreateSequence}
-            onRenameProjectMediaFolder={projectMedia.handleRenameProjectMediaFolder}
-            onSelectSequence={sequence.handleSelectSequence}
-            onClearProjectMediaInspector={selection.handleClearProjectMediaInspector}
+        {mobileWorkspacePanel ? (
+          <button
+            type="button"
+            className={styles.mobilePanelBackdrop}
+            aria-label={studioCopy.projects.closeDialog}
+            onClick={() => setMobileWorkspacePanel(null)}
           />
+        ) : null}
+        <WorkspaceMobilePanelControls
+          activePanel={mobileWorkspacePanel}
+          ariaLabel={studioCopy.topbar.workspaceViewLabel}
+          inspectorLabel={mobileInspectorLabel}
+          mediaLabel={studioCopy.viewer.projectMedia.title}
+          showInspector={canOpenMobileInspector}
+          showMedia={canOpenMobileProjectMedia}
+          onTogglePanel={(panel) => setMobileWorkspacePanel((current) => (current === panel ? null : panel))}
+        />
+        {focusMode === 'viewer' ? (
+          <div
+            id="studio-project-media-panel"
+            className={`${styles.projectMediaPanelSlot} ${mobileWorkspacePanel === 'media' ? styles.mobilePanelOpen : ''}`}
+          >
+            <TimelineProjectSidebar
+              studioCanvasNodeCopy={studioCopy.canvas.nodes}
+              copy={studioCopy.viewer.projectMedia}
+              nodes={canvas.renderNodes}
+              projectAssets={projectAssets}
+              projectMediaFolders={projectMediaFolders}
+              projectName={activeTemplateName}
+              sequences={sequenceSnapshots.sequenceSummaries}
+              timelineItems={timelineItems}
+              onDeleteGeneratedClip={projectMedia.handleDeleteGeneratedClip}
+              onDeleteGeneratedClips={projectMedia.handleDeleteGeneratedClips}
+              onDeleteProjectAsset={projectMedia.handleDeleteProjectAsset}
+              onDeleteProjectAssets={projectMedia.handleDeleteProjectAssets}
+              onDeleteProjectMediaFolder={projectMedia.handleDeleteProjectMediaFolder}
+              onDeleteProjectMediaFolders={projectMedia.handleDeleteProjectMediaFolders}
+              onDeleteSequence={sequence.handleDeleteSequence}
+              onDeleteSequences={sequence.handleDeleteSequences}
+              onDuplicateSequence={sequence.handleDuplicateSequence}
+              onImportMedia={projectMedia.handleImportProjectMedia}
+              onImportLocalMediaFiles={projectMedia.handleImportLocalProjectMediaFiles}
+              onInspectProjectAsset={selection.handleInspectProjectAsset}
+              onInspectSequence={selection.handleInspectSequence}
+              onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
+              onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
+              onMoveGeneratedClipToFolder={projectMedia.handleMoveGeneratedClipToFolder}
+              onMoveProjectAssetToFolder={projectMedia.handleMoveProjectAssetToFolder}
+              onNewFolder={projectMedia.handleCreateProjectMediaFolder}
+              onNewSequence={sequence.handleCreateSequence}
+              onRenameProjectMediaFolder={projectMedia.handleRenameProjectMediaFolder}
+              onSelectSequence={sequence.handleSelectSequence}
+              onClearProjectMediaInspector={selection.handleClearProjectMediaInspector}
+            />
+          </div>
         ) : null}
         {focusMode === 'canvas' ? (
           <WorkspaceCanvas
@@ -329,7 +363,11 @@ export function WorkspaceEditorLayout({
           />
         )}
         {focusMode === 'canvas' ? (
-          <div className={styles.canvasInspectorSlot} aria-hidden={!shouldShowCanvasInspector}>
+          <div
+            id="studio-inspector-panel"
+            className={`${styles.inspectorPanelSlot} ${styles.canvasInspectorSlot} ${mobileWorkspacePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
+            aria-hidden={!shouldShowCanvasInspector}
+          >
             {shouldShowCanvasInspector ? (
               <NodeSettingsPanel
                 copy={studioCopy.canvas.nodes}
@@ -346,19 +384,24 @@ export function WorkspaceEditorLayout({
             ) : null}
           </div>
         ) : (
-          <TimelineClipInspector
-            copy={studioCopy.timeline.inspector}
-            canvasNodeCopy={studioCopy.canvas.nodes}
-            projectMediaCopy={studioCopy.viewer.projectMedia}
-            selectedAsset={exportState.selectedProjectAssetForInspector}
-            selectedItem={exportState.selectedTimelineItem}
-            selectedSequence={exportState.selectedSequenceForInspector}
-            projectFps={projectSettings.fps}
-            onPatchItem={timelineClip.handlePatchTimelineItem}
-            onRenameProjectAsset={projectMedia.handleRenameProjectAsset}
-            onRenameSequence={sequence.handleRenameActiveSequence}
-            onSequenceSettingsChange={shell.handleSequenceSettingsChange}
-          />
+          <div
+            id="studio-inspector-panel"
+            className={`${styles.inspectorPanelSlot} ${mobileWorkspacePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
+          >
+            <TimelineClipInspector
+              copy={studioCopy.timeline.inspector}
+              canvasNodeCopy={studioCopy.canvas.nodes}
+              projectMediaCopy={studioCopy.viewer.projectMedia}
+              selectedAsset={exportState.selectedProjectAssetForInspector}
+              selectedItem={exportState.selectedTimelineItem}
+              selectedSequence={exportState.selectedSequenceForInspector}
+              projectFps={projectSettings.fps}
+              onPatchItem={timelineClip.handlePatchTimelineItem}
+              onRenameProjectAsset={projectMedia.handleRenameProjectAsset}
+              onRenameSequence={sequence.handleRenameActiveSequence}
+              onSequenceSettingsChange={shell.handleSequenceSettingsChange}
+            />
+          </div>
         )}
       </div>
 

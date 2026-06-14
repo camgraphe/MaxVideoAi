@@ -13,6 +13,10 @@ import {
   workspaceProjectAssetMetadataSourceUrl,
   workspaceAssetWithMeasuredMetadata,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-metadata';
+import {
+  mediaSubtitleForAsset,
+  mediaSubtitleForGeneratedNode,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -339,5 +343,44 @@ test('project media measured video metadata hydrates assets and existing timelin
     ),
     null,
     'compressed user upload thumbnails should not be treated as native source dimensions'
+  );
+});
+
+test('project media subtitles do not hide missing source dimensions', () => {
+  assert.equal(
+    mediaSubtitleForAsset({
+      id: 'unknown-video',
+      kind: 'video',
+      filename: 'unknown-source.mp4',
+      subtitle: 'Video',
+      url: '/media/unknown-source.mp4',
+      durationSec: 15,
+    }),
+    '00:15',
+    'video assets without measured dimensions should not display a fake aspect ratio'
+  );
+
+  assert.equal(
+    mediaSubtitleForGeneratedNode(generatedVideoNode({
+      data: {
+        kind: 'output',
+        title: 'Generated 720p',
+        output: {
+          kind: 'video',
+          modelId: 'luma-ray-3-2',
+          modelLabel: 'Luma Ray 3.2',
+          workflowType: 'image_to_video',
+          durationSec: 6,
+          aspectRatio: '16:9',
+          resolution: '720p',
+          status: 'ready',
+          createdAt: '2026-06-14T10:00:00.000Z',
+          sourceShotId: 'shot-1',
+          url: '/media/generated-720p.mp4',
+        },
+      },
+    })),
+    '00:06 • 1280x720 • 16:9 • Luma Ray 3.2',
+    'generated video cards should expose derived source dimensions from output metadata'
   );
 });

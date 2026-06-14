@@ -87,12 +87,12 @@ export function WorkspaceEditorTopbar({
         </button>
       </div>
       <div className={styles.topbarRight}>
+        <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label={studioCopy.topbar.mockAria}>
+          <Settings size={15} />
+          <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
+        </button>
         <StudioHeaderSession onExitToProjects={onExitToProjects} studioCopy={studioCopy} />
         <div className={styles.topbarActions}>
-          <button type="button" className={styles.iconButton} onClick={onToggleMockMode} aria-label={studioCopy.topbar.mockAria}>
-            <Settings size={15} />
-            <span>{mockMode ? studioCopy.topbar.mock : studioCopy.topbar.live}</span>
-          </button>
           <StudioLanguageToggle />
           {isHydrated ? (
             <button

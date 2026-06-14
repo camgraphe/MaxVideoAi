@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
+import { detectVideoMetadata } from '@/server/media/detect-has-audio';
 import {
   buildPublicStorageUrl,
   getStorageObjectMetadata,
@@ -76,17 +77,23 @@ export async function POST(req: NextRequest) {
   }
 
   const url = buildPublicStorageUrl(key);
+  const videoMetadata = await detectVideoMetadata(url, { timeoutMs: 8_000 }).catch(() => null);
 
   try {
     const assetId = await recordUserAsset({
       userId,
       url,
       mime,
-      width: null,
-      height: null,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
       size,
       source: 'upload',
-      metadata: { originalName: fileName, kind: 'video', directUpload: true },
+      metadata: {
+        originalName: fileName,
+        kind: 'video',
+        directUpload: true,
+        durationSec: videoMetadata?.durationSec ?? null,
+      },
     });
 
     await ensureReusableAsset({
@@ -96,6 +103,9 @@ export async function POST(req: NextRequest) {
       source: 'upload',
       mimeType: mime,
       sizeBytes: size,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
+      durationSec: videoMetadata?.durationSec ?? null,
     }).catch((error) => {
       console.warn('[upload] failed to mirror direct video into media_assets', error);
     });
@@ -105,12 +115,13 @@ export async function POST(req: NextRequest) {
       asset: {
         id: assetId,
         url,
-        width: null,
-        height: null,
+        width: videoMetadata?.width ?? null,
+        height: videoMetadata?.height ?? null,
         size,
         mime,
         name: fileName,
         thumbUrl: null,
+        durationSec: videoMetadata?.durationSec ?? null,
       },
     });
   } catch (error) {

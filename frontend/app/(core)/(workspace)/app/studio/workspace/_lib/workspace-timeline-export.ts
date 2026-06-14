@@ -156,12 +156,12 @@ export function workspaceTimelineExportReadinessChecks(
       label: exportCopy(copy, 'readinessTimeline', 'Timeline'),
       status: blockingIssueCodes.has('overlapping_clips')
         ? 'blocking'
-        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
+        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition') || warningIssueCodes.has('missing_dimensions')
           ? 'warning'
           : 'pass',
       message: blockingIssueCodes.has('overlapping_clips')
         ? exportCopy(copy, 'readinessTimelineBlocked', 'Fix overlapping clips before export.')
-        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition')
+        : warningIssueCodes.has('orphan_linked_audio') || warningIssueCodes.has('invalid_transition') || warningIssueCodes.has('missing_dimensions')
           ? exportCopy(copy, 'readinessTimelineWarnings', 'Timeline has warnings, but export can be prepared.')
           : exportCopy(copy, 'readinessTimelineReady', 'No blocking timeline conflicts.'),
     },

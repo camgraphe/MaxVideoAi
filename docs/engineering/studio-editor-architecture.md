@@ -64,13 +64,16 @@ Use this map before adding new code. If a change does not fit one of these owner
 - `_components/TimelineProjectSidebar.tsx`: Viewer-only Project media cards, context menu wiring, and drag surfaces.
 - `_components/WorkspaceCanvas.client.tsx`: React Flow canvas surface and canvas-level drop/paste wiring.
 - `_components/WorkspaceTimeline.tsx`: timeline shell, toolbar, track list, and high-level edit callbacks.
+- `_components/WorkspaceMobilePanelControls.tsx`: mobile-only controls that open Project media and inspector drawers.
 - `_components/timeline/*`: timeline presentation and pointer interaction hooks.
 - `_components/viewer/*`: program monitor, playback layers, viewer controls, and monitor-only display settings.
 - `_components/nodes/*`: canvas node cards and node-local UI.
 - `_controllers/*`: UI state controllers for a surface, such as canvas and Project media.
 - `_hooks/useWorkspace*Actions.ts`: React callbacks that connect UI events to pure helpers and state setters.
+- `_hooks/useWorkspaceProjectMediaMetadataHydration.ts`: browser-side repair for project media dimensions and duration that were missing when assets entered the workspace.
 - `_state/*`: persisted state contracts, normalizers, sequence snapshots, sequence operations, and local/API persistence adapters.
 - `_lib/timeline/*`: pure edit math and timeline invariants.
+- `_lib/workspace-project-media-metadata.ts`: pure metadata checks and timeline item repair for imported Project media.
 - `_lib/models/*`: model capability, connector, pricing, and render-option contracts.
 - `_lib/templates/*`: graph-only canvas templates.
 
@@ -87,6 +90,17 @@ Every Studio change should answer these questions before implementation:
 5. Which browser/E2E test is needed because a user gesture changed?
 
 If a change cannot answer those questions, start with a small design note or helper boundary instead of adding another inline branch.
+
+## Responsive Surface Rules
+
+Studio is desktop-first, but the workspace must remain usable on narrow screens.
+
+- Keep the central canvas/viewer surface primary. On mobile, it should collapse to a single editor column instead of compressing Project media and inspector into unusable side columns.
+- Project media and the inspector stay available on mobile through `WorkspaceMobilePanelControls` and responsive panel slots in `WorkspaceEditorLayout.tsx`.
+- Do not hide Project media or inspector permanently at mobile widths. If space is limited, use drawers/overlays with accessible toggle buttons, `aria-controls`, and `aria-expanded`.
+- Keep responsive layout state in `WorkspaceEditorLayout.tsx`, toggle UI in `WorkspaceMobilePanelControls.tsx`, and visual behavior in focused CSS modules such as `shell.module.css`, `media.module.css`, `inspector.module.css`, and `timeline.module.css`.
+- The timeline should keep a shared horizontal scroll surface. Mobile tweaks may compact labels and controls, but they should not change timeline edit rules.
+- Any responsive change needs desktop and mobile browser verification, including Viewer mode, Canvas mode, Project media, inspector, and timeline scroll.
 
 ## Add A Canvas Block
 
@@ -171,6 +185,26 @@ Timeline UI should call named operations. It should not encode new editing rules
 5. Sidebar buttons should not duplicate timeline tools.
 6. Sequence cards should select the active sequence and expose sequence settings in the inspector.
 
+## Media Metadata Rules
+
+Timeline sizing, export readiness, and inspector file details depend on real media metadata.
+
+- Imported video dimensions and duration should be detected at upload completion and persisted with reusable media-library assets.
+- Browser-side `media metadata hydration` is a repair path for project assets that entered the workspace before width, height, or duration was known. It should update project assets and any timeline clips derived from them.
+- Project media labels must not invent a resolution or aspect ratio when the source dimensions are unknown. Missing dimensions should stay missing until measured.
+- Export/render helpers should surface timeline-safe warnings such as `missing_dimensions` instead of silently treating unknown visual sources as 1080p.
+- Viewer display may fit a clip visually inside the sequence frame, but the render manifest should still know the source dimensions so scale/upscale decisions remain explicit.
+- File metadata shown in Project media inspectors should come from `WorkspaceAssetRecord` and shared metadata helpers, not duplicated card-specific guesses.
+
+## Shell Action Placement
+
+Keep shell actions close to the surface that owns the user intent.
+
+- The topbar owns project navigation, mode switching, session/wallet, language, theme, and the Mock/Live toggle.
+- Mock/Live stays to the left of the wallet/session cluster so account and balance controls remain grouped.
+- Export belongs to the timeline toolbar because it exports the active sequence, not the whole workspace shell.
+- Export dialog state still lives in the export controller and runtime modals. Moving the button must not move export job orchestration into the timeline component.
+
 ## Add Export Behavior
 
 1. Keep local EDL export separate from MP4 server render.
@@ -217,8 +251,9 @@ Do not add a button that appears to render server MP4 if it only creates a local
 Studio uses the global Core `I18nProvider` and route-local typed copy under
 `frontend/app/(core)/(workspace)/app/studio/_lib/studio-copy.ts`.
 Studio appearance is scoped with `data-studio-theme` on Studio shells and must not
-mutate the global `documentElement` theme. Dark remains the default. Light mode is
-persisted in `maxvideoai.studio.theme.v1`.
+mutate the global `documentElement` theme. Light is the default Studio editor theme.
+Explicit user theme choices are persisted in `maxvideoai.studio.theme.v1`, with a
+separate user-override flag so older dark defaults do not leak back into fresh sessions.
 
 ## Verification
 

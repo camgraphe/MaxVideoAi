@@ -560,8 +560,15 @@
   font-size: 11px;
 }
 
-@media (max-width: 760px) {
-  .timelinePanel {
-    --timeline-track-label-width: 104px;
-  }
+@media (max-width: 900px) {
+  .timelinePanel { --timeline-track-label-width: 96px; --timeline-track-lane-padding-x: 8px; }
+  .timelineViewport { scrollbar-width: none; }
+  .timelineViewport::-webkit-scrollbar { width: 0; height: 0; }
+  .timelineRuler { height: 28px; }
+  .timelineRulerToolSlot { gap: 4px; padding: 0 8px; }
+  .timelineRulerToolButton,
+  .trackIconButton { width: 22px; height: 22px; }
+  .trackLabel { gap: 5px; padding: 0 8px; font-size: 10px; }
+  .trackLabelControls { width: 42px; gap: 3px; padding-right: 14px; }
+  .trackLane { padding-inline: var(--timeline-track-lane-padding-x); }
 }

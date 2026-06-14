@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
+import { detectVideoMetadata } from '@/server/media/detect-has-audio';
 import { createUploadVideoThumbnail } from '@/server/upload-thumbnails';
 import { getMaxVideoUploadMB, isSupportedVideoMime, videoUploadLimitBytes } from './_lib/video-upload-limits';
 
@@ -80,21 +81,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const videoThumbUrl = await createUploadVideoThumbnail({
-      data: buffer,
-      userId,
-      fileName: blob.name,
-    });
+    const [videoThumbUrl, videoMetadata] = await Promise.all([
+      createUploadVideoThumbnail({
+        data: buffer,
+        userId,
+        fileName: blob.name,
+      }),
+      detectVideoMetadata(uploadResult.url, { timeoutMs: 8_000 }).catch(() => null),
+    ]);
 
     const assetId = await recordUserAsset({
       userId: userId ?? null,
       url: uploadResult.url,
       mime,
-      width: null,
-      height: null,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
       size: buffer.length,
       source: 'upload',
-      metadata: { originalName: blob.name, kind: 'video', thumbUrl: videoThumbUrl },
+      metadata: {
+        originalName: blob.name,
+        kind: 'video',
+        thumbUrl: videoThumbUrl,
+        durationSec: videoMetadata?.durationSec ?? null,
+      },
     });
 
     await ensureReusableAsset({
@@ -105,6 +114,9 @@ export async function POST(req: NextRequest) {
       mimeType: mime,
       sizeBytes: buffer.length,
       thumbUrl: videoThumbUrl,
+      width: videoMetadata?.width ?? null,
+      height: videoMetadata?.height ?? null,
+      durationSec: videoMetadata?.durationSec ?? null,
     }).catch((error) => {
       console.warn('[upload] failed to mirror video into media_assets', error);
     });
@@ -114,12 +126,13 @@ export async function POST(req: NextRequest) {
       asset: {
         id: assetId,
         url: uploadResult.url,
-        width: null,
-        height: null,
+        width: videoMetadata?.width ?? null,
+        height: videoMetadata?.height ?? null,
         size: buffer.length,
         mime,
         name: blob.name,
         thumbUrl: videoThumbUrl,
+        durationSec: videoMetadata?.durationSec ?? null,
       },
     });
   } catch (error) {

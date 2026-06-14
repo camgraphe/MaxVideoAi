@@ -29,6 +29,7 @@ import type {
 import type { EngineCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
+const rootAgentsPath = join(root, 'AGENTS.md');
 const studioArchitectureGuidePath = join(root, 'docs/engineering/studio-editor-architecture.md');
 const studioDir = join(root, 'frontend/app/(core)/(workspace)/app/studio');
 const studioAgentsPath = join(studioDir, 'AGENTS.md');
@@ -88,6 +89,7 @@ const runtimeModalsPath = join(workspaceDir, '_components/WorkspaceRuntimeModals
 const legacyLibraryPath = join(workspaceDir, '_components/NodeLibrarySidebar.tsx');
 const timelineProjectSidebarPath = join(workspaceDir, '_components/TimelineProjectSidebar.tsx');
 const workspaceEditorLayoutPath = join(workspaceDir, '_components/WorkspaceEditorLayout.tsx');
+const workspaceMobilePanelControlsPath = join(workspaceDir, '_components/WorkspaceMobilePanelControls.tsx');
 const studioHeaderSessionPath = join(workspaceDir, '_components/StudioHeaderSession.tsx');
 const workspaceEditorTopbarPath = join(workspaceDir, '_components/WorkspaceEditorTopbar.tsx');
 const settingsPath = join(workspaceDir, '_components/NodeSettingsPanel.tsx');
@@ -320,6 +322,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(runtimeModalsPath), 'workspace runtime modal wiring should live in a route-local component');
   assert.equal(existsSync(legacyLibraryPath), false, 'legacy block template sidebar should stay deleted');
   assert.ok(existsSync(timelineProjectSidebarPath), 'viewer project media sidebar should live in a route-local component');
+  assert.ok(existsSync(workspaceMobilePanelControlsPath), 'workspace responsive panel controls should live in a route-local component');
   assert.ok(existsSync(studioHeaderSessionPath), 'studio account and wallet status should live in a route-local component');
   assert.ok(existsSync(workspaceEditorTopbarPath), 'workspace topbar should live in a route-local shell component');
   assert.ok(existsSync(settingsPath), 'node settings panel should live in a route-local component');
@@ -377,6 +380,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(viewerStylesPath), 'program viewer styles should live in a focused route-local CSS module');
 
   const pageSource = source(pagePath);
+  const rootAgentsSource = source(rootAgentsPath);
   const studioArchitectureGuideSource = source(studioArchitectureGuidePath);
   const studioAgentsSource = source(studioAgentsPath);
   const projectsPageSource = source(projectsPagePath);
@@ -410,6 +414,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const exportDialogSource = source(exportDialogPath);
   const studioHeaderSessionSource = source(studioHeaderSessionPath);
   const workspaceEditorLayoutSource = source(workspaceEditorLayoutPath);
+  const workspaceMobilePanelControlsSource = source(workspaceMobilePanelControlsPath);
   const workspaceEditorTopbarSource = source(workspaceEditorTopbarPath);
   const nodeFrameSource = source(nodeFramePath);
   const templateRegistrySource = source(templateRegistryPath);
@@ -426,6 +431,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const timelineControlStyleSource = source(timelineControlStylesPath);
   const timelineClipStyleSource = source(timelineClipStylesPath);
   const timelineContextMenuStyleSource = source(timelineContextMenuStylesPath);
+  const inspectorStyleSource = source(inspectorStylesPath);
   const exportStyleSource = source(exportStylesPath);
   const assetLibraryStyleSource = source(assetLibraryStylesPath);
   const projectMediaMetadataSource = source(projectMediaMetadataPath);
@@ -438,7 +444,15 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(studioArchitectureGuideSource, /Add A Sequence Or Project Media Operation/, 'studio architecture guide should explain additive Project media and sequence work');
   assert.match(studioArchitectureGuideSource, /Render Worker Boundary/, 'studio architecture guide should define the MP4 render worker boundary');
   assert.match(studioArchitectureGuideSource, /State And Performance Contracts/, 'studio architecture guide should define state and performance contracts');
+  assert.match(studioArchitectureGuideSource, /Responsive Surface Rules/, 'studio architecture guide should define responsive surface ownership rules');
+  assert.match(studioArchitectureGuideSource, /Media Metadata Rules/, 'studio architecture guide should define timeline-safe media metadata rules');
+  assert.match(studioArchitectureGuideSource, /Shell Action Placement/, 'studio architecture guide should define header and timeline action placement');
   assert.match(studioAgentsSource, /Ownership Map and Additive Change Checklist/, 'studio AGENTS guide should route agents through the architecture ownership checklist');
+  assert.match(studioAgentsSource, /Responsive shell changes/, 'studio AGENTS guide should document responsive shell change ownership');
+  assert.match(studioAgentsSource, /media metadata hydration/, 'studio AGENTS guide should document metadata hydration ownership');
+  assert.match(studioAgentsSource, /Export belongs to the timeline toolbar/, 'studio AGENTS guide should document export action placement');
+  assert.match(rootAgentsSource, /docs\/engineering\/studio-editor-architecture\.md/, 'root AGENTS guide should route Studio work to the Studio architecture guide');
+  assert.match(rootAgentsSource, /frontend\/app\/\(core\)\/\(workspace\)\/app\/studio\/AGENTS\.md/, 'root AGENTS guide should mention the route-local Studio AGENTS guide');
   assert.match(studioAgentsSource, /workspace\/_state\/workspace-sequence-operations\.ts/, 'studio AGENTS guide should keep sequence list behavior in the sequence operations helper');
   assert.match(studioAgentsSource, /API \+ worker orchestration/, 'studio AGENTS guide should keep server MP4 export behind API and worker orchestration');
   assert.match(studioArchitectureGuideSource, /Add A Canvas Template/, 'studio architecture guide should explain additive template work');
@@ -479,6 +493,15 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(canvasSource, /CanvasFloatingToolbar/, 'canvas surface should compose the floating block toolbar');
   assert.match(canvasSource, /CanvasNavigatorPanel/, 'canvas surface should compose the project canvas navigator outside the toolbar');
   assert.match(workspaceEditorLayoutSource, /TimelineProjectSidebar/, 'editor layout should compose a project media sidebar for Viewer mode');
+  assert.match(workspaceEditorLayoutSource, /WorkspaceMobilePanelControls/, 'editor layout should delegate mobile panel toggle UI to a focused component');
+  assert.match(workspaceEditorLayoutSource, /type MobileWorkspacePanel = 'media' \| 'inspector' \| null/, 'editor layout should model the responsive side panels as explicit mobile-only state');
+  assert.match(workspaceEditorLayoutSource, /data-mobile-panel=\{mobileWorkspacePanel \?\? 'closed'\}/, 'editor body should expose the active mobile panel state for responsive styling');
+  assert.match(workspaceEditorLayoutSource, /styles\.projectMediaPanelSlot/, 'project media sidebar should sit in a responsive panel slot');
+  assert.match(workspaceEditorLayoutSource, /styles\.inspectorPanelSlot/, 'canvas and viewer inspectors should share a responsive panel slot');
+  assert.match(workspaceMobilePanelControlsSource, /aria-expanded=\{activePanel === 'media'\}/, 'mobile media toggle should expose expanded state to assistive tech');
+  assert.match(workspaceMobilePanelControlsSource, /aria-controls="studio-project-media-panel"/, 'mobile media toggle should target the media drawer');
+  assert.match(workspaceMobilePanelControlsSource, /aria-expanded=\{activePanel === 'inspector'\}/, 'mobile inspector toggle should expose expanded state to assistive tech');
+  assert.match(workspaceMobilePanelControlsSource, /aria-controls="studio-inspector-panel"/, 'mobile inspector toggle should target the inspector drawer');
   assert.match(workspaceEditorLayoutSource, /WorkspaceEditorTopbar/, 'editor layout should delegate the header to a route-local shell component');
   assert.doesNotMatch(workspaceSource, /StudioHeaderSession/, 'orchestrator should not own Studio session and wallet header composition inline');
   assert.match(workspaceEditorTopbarSource, /StudioHeaderSession/, 'workspace topbar should compose Studio session and wallet status in the header');
@@ -496,6 +519,13 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(timelineContextMenuStyleSource, /\.timelineContextMenu/, 'timeline context menu CSS should own context menu card styling');
   assert.match(shellStyleSource, /\.editorTopbar/, 'shell CSS should own the topbar layout');
   assert.match(shellStyleSource, /\.editorBody/, 'shell CSS should own the main body grid');
+  assert.match(shellStyleSource, /\.mobilePanelRail/, 'shell CSS should own mobile panel controls');
+  assert.match(shellStyleSource, /\.mobilePanelBackdrop/, 'shell CSS should own the mobile panel backdrop');
+  assert.match(shellStyleSource, /\.projectMediaPanelSlot/, 'shell CSS should own the project media responsive slot');
+  assert.match(shellStyleSource, /\.inspectorPanelSlot/, 'shell CSS should own the inspector responsive slot');
+  assert.match(shellStyleSource, /@media \(max-width:\s*900px\)[\s\S]*\.editorBody[\s\S]*grid-template-columns:\s*1fr/, 'mobile workspace should keep the central editor as a single-column primary surface');
+  assert.match(shellStyleSource, /@media \(max-width:\s*900px\)[\s\S]*\.mobilePanelOpen[\s\S]*pointer-events:\s*auto/, 'mobile panels should open as overlays instead of compressing the editor columns');
+  assert.doesNotMatch(inspectorStyleSource, /@media \(max-width:\s*980px\)[\s\S]*display:\s*none/, 'mobile inspector should remain available through the responsive drawer instead of disappearing');
   assert.match(studioSessionStyleSource, /\.studioWalletPill/, 'Studio session CSS should own wallet header styles');
   assert.match(studioSessionStyleSource, /\.studioSessionPill/, 'Studio session CSS should own account session styles');
   assert.doesNotMatch(shellStyleSource, /\.studioWalletPill/, 'shell CSS should no longer own wallet header styles');
@@ -1995,6 +2025,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(runtimeModalsSource, /WorkspaceProjectMediaLibraryModal/, 'runtime modals should open a project media import modal in Viewer mode');
   assert.match(runtimeModalsSource, /WorkspaceExportDialog/, 'runtime modals should render the export dialog');
   assert.doesNotMatch(workspaceEditorTopbarSource, /onOpenExportDialog|exportButton|studioCopy\.topbar\.export/, 'workspace topbar should not own timeline export actions');
+  assert.match(workspaceEditorTopbarSource, /<div className=\{styles\.topbarRight\}>[\s\S]*onClick=\{onToggleMockMode\}[\s\S]*<StudioHeaderSession/, 'workspace mock toggle should render to the left of the wallet/session cluster');
   assert.doesNotMatch(workspaceEditorLayoutSource, /<WorkspaceEditorTopbar(?:(?!\/>)[\s\S])*onOpenExportDialog=/, 'workspace layout should not wire export into the topbar');
   assert.match(workspaceEditorLayoutSource, /<WorkspaceTimeline[\s\S]*onOpenExportDialog=\{shell\.handleOpenExportDialog\}/, 'workspace layout should wire export into the timeline toolbar');
   assert.match(timelineSource, /onOpenExportDialog/, 'timeline should receive the export action from the workspace shell controller');

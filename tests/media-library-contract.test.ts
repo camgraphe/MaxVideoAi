@@ -214,7 +214,7 @@ test('studio asset listings can include generated job outputs without requiring 
   assert.match(assetsSource, /AND o\.status = 'ready'/);
   assert.match(assetsSource, /source:\s*'saved_job_output'/);
   assert.match(assetsSource, /sourceOutputId:\s*output\.id/);
-  assert.match(assetsRoute, /durationSec:\s*typeof asset\.metadata\.durationSec === 'number'/);
+  assert.match(assetsRoute, /durationSec:\s*asset\.durationSec/);
 });
 
 test('legacy media library rows infer video and audio kind from URLs when MIME is missing', () => {
@@ -570,6 +570,43 @@ test('upload routes persist reusable thumbnails for new image and video assets',
   assert.match(videoRoute, /thumbUrl:\s*videoThumbUrl/);
   assert.match(videoRoute, /ensureReusableAsset\([\s\S]*thumbUrl:\s*videoThumbUrl/);
   assert.match(videoRoute, /asset:\s*\{[\s\S]*thumbUrl:\s*videoThumbUrl/);
+});
+
+test('video upload routes persist measured metadata for timeline-safe media assets', () => {
+  const videoRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/uploads/video/route.ts'),
+    'utf8'
+  );
+  const directCompleteRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/uploads/video/complete/route.ts'),
+    'utf8'
+  );
+  const multipartCompleteRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/uploads/video/multipart/complete/route.ts'),
+    'utf8'
+  );
+  const reusableAssetsSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    'utf8'
+  );
+  const clientUploadSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/lib/client-video-upload.ts'),
+    'utf8'
+  );
+
+  for (const routeSource of [videoRoute, directCompleteRoute, multipartCompleteRoute]) {
+    assert.match(routeSource, /detectVideoMetadata/);
+    assert.match(routeSource, /width:\s*videoMetadata\?\.width\s*\?\?\s*null/);
+    assert.match(routeSource, /height:\s*videoMetadata\?\.height\s*\?\?\s*null/);
+    assert.match(routeSource, /durationSec:\s*videoMetadata\?\.durationSec\s*\?\?\s*null/);
+    assert.match(routeSource, /asset:\s*\{[\s\S]*durationSec:\s*videoMetadata\?\.durationSec\s*\?\?\s*null/);
+  }
+
+  assert.match(reusableAssetsSource, /shouldBackfillDimensions/);
+  assert.match(reusableAssetsSource, /width\s*=\s*COALESCE\(width,\s*\$6\)/);
+  assert.match(reusableAssetsSource, /height\s*=\s*COALESCE\(height,\s*\$7\)/);
+  assert.match(clientUploadSource, /durationSec\?:\s*number\s*\|\s*null/);
+  assert.match(clientUploadSource, /durationSec:\s*typeof \(asset as \{ durationSec\?: unknown \}\)\.durationSec === 'number'/);
 });
 
 test('image upload and library routes return stable JSON errors for storage failures', () => {
