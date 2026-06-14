@@ -44,6 +44,8 @@ export type WorkspaceEditorSurface = 'canvas' | 'timeline';
 export type PersistedWorkspaceState = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
+  activeCanvasId?: string | null;
+  savedCanvases?: WorkspaceUserCanvasTemplate[];
   projectAssets?: WorkspaceAssetRecord[];
   projectMediaFolders?: WorkspaceProjectMediaFolder[];
   timelineItems: WorkspaceTimelineItem[];
@@ -86,6 +88,7 @@ export type WorkspaceUserCanvasTemplate = {
   nodes: WorkspaceGraphNode[];
   edges: WorkspaceGraphEdge[];
   createdAt: string;
+  updatedAt?: string;
 };
 
 export type StudioProjectStorageRecord = {

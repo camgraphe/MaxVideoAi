@@ -1,0 +1,300 @@
+.canvasNavigator,
+.canvasNavigator button {
+  font: inherit;
+}
+
+.canvasNavigator {
+  position: absolute;
+  z-index: 43;
+  bottom: 18px;
+  left: 18px;
+  color: var(--studio-text);
+  user-select: none;
+}
+
+.navigatorTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 13px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-bg);
+  box-shadow: 0 18px 48px var(--studio-node-shadow);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.navigatorTrigger:hover,
+.navigatorTriggerActive {
+  border-color: color-mix(in srgb, var(--studio-primary) 54%, var(--studio-border));
+  background: var(--studio-bg-soft);
+  color: var(--studio-text-strong);
+}
+
+.navigatorTrigger span {
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.navigatorPanel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 0;
+  display: grid;
+  width: min(460px, calc(100vw - 36px));
+  max-height: min(620px, calc(100vh - 300px));
+  gap: 12px;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid var(--studio-border);
+  border-radius: 10px;
+  background:
+    linear-gradient(180deg, var(--studio-surface), var(--studio-bg)),
+    var(--studio-bg);
+  box-shadow: 0 28px 88px var(--studio-node-shadow);
+  scrollbar-width: none;
+}
+
+.navigatorPanel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.navigatorHeader {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+}
+
+.navigatorIcon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--studio-primary) 18%, var(--studio-surface));
+  color: var(--studio-primary);
+}
+
+.navigatorHeader span:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.navigatorHeader strong,
+.savedCanvasItem strong,
+.templateCard strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navigatorHeader small,
+.savedCanvasItem span,
+.templateCard small {
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  line-height: 1.32;
+}
+
+.navigatorTabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--studio-border);
+  border-radius: 9px;
+  background: var(--studio-bg-soft);
+}
+
+.navigatorTabs button {
+  min-height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--studio-text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.navigatorTabs button:hover,
+.navigatorTabs .navigatorTabActive {
+  background: var(--studio-surface);
+  color: var(--studio-text-strong);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.savedCanvasList {
+  display: grid;
+  gap: 8px;
+}
+
+.savedCanvasItem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  padding: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+}
+
+.savedCanvasItemActive {
+  border-color: color-mix(in srgb, var(--studio-primary) 60%, var(--studio-border));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--studio-primary) 24%, transparent);
+}
+
+.savedCanvasItem > button {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.savedCanvasActions {
+  display: flex;
+  gap: 4px;
+}
+
+.savedCanvasActions button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-bg);
+  color: var(--studio-text);
+  cursor: pointer;
+}
+
+.savedCanvasActions button:hover {
+  background: var(--studio-bg-soft);
+}
+
+.navigatorEmpty {
+  margin: 0;
+  padding: 12px;
+  border: 1px dashed var(--studio-border);
+  border-radius: 8px;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.templateCard {
+  position: relative;
+  display: grid;
+  min-height: 172px;
+  align-content: end;
+  gap: 9px;
+  padding: 9px;
+  overflow: hidden;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, transparent 0%, var(--studio-bg) 52%),
+    var(--template-thumbnail),
+    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, var(--studio-bg-soft)), var(--studio-bg));
+  background-position: center;
+  background-size: cover;
+}
+
+.templateCardActive {
+  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 70%, #ffffff 6%);
+}
+
+.templateThumbnail {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #8b5cf6, var(--studio-primary-2));
+  color: #ffffff;
+}
+
+.templateCard > div:first-of-type {
+  display: grid;
+  gap: 4px;
+}
+
+.templateCard em {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(124, 58, 237, 0.32);
+  color: #ddd6fe;
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.templateActions {
+  display: grid;
+  gap: 5px;
+}
+
+.templateActions button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  border: 1px solid var(--studio-border);
+  border-radius: 7px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 850;
+}
+
+.templateActions button:first-child {
+  border: 0;
+  background: linear-gradient(135deg, var(--studio-primary), var(--studio-primary-2));
+  color: #ffffff;
+}
+
+.templateActions button:hover {
+  filter: brightness(1.05);
+}
+
+@media (max-width: 760px) {
+  .canvasNavigator {
+    bottom: 64px;
+    left: 12px;
+  }
+
+  .navigatorPanel {
+    width: min(340px, calc(100vw - 24px));
+    max-height: min(520px, calc(100vh - 260px));
+  }
+
+  .templateGrid {
+    grid-template-columns: 1fr;
+  }
+}

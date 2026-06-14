@@ -363,14 +363,28 @@ export function normalizeUserCanvasTemplate(value: unknown): WorkspaceUserCanvas
   );
   return {
     id: record.id,
-    name: record.name.trim() || 'Untitled canvas template',
+    name: record.name.trim() || 'Untitled canvas',
     description: typeof record.description === 'string' && record.description.trim()
       ? record.description.trim()
       : describeCanvasTemplate(nodes, edges),
     nodes,
     edges,
     createdAt: typeof record.createdAt === 'string' ? record.createdAt : new Date().toISOString(),
+    updatedAt: typeof record.updatedAt === 'string' ? record.updatedAt : undefined,
   };
+}
+
+export function normalizeUserCanvasTemplates(value: unknown): WorkspaceUserCanvasTemplate[] {
+  if (!Array.isArray(value)) return [];
+  const templates = value
+    .map(normalizeUserCanvasTemplate)
+    .filter((template): template is WorkspaceUserCanvasTemplate => Boolean(template));
+  const seenIds = new Set<string>();
+  return templates.filter((template) => {
+    if (seenIds.has(template.id)) return false;
+    seenIds.add(template.id);
+    return true;
+  });
 }
 
 export async function readUserCanvasTemplatesFromApi(signal?: AbortSignal): Promise<WorkspaceUserCanvasTemplate[] | null> {
@@ -563,9 +577,15 @@ export function normalizePersistedWorkspaceState(
     activeSequence
   );
   const projectMediaFolders = normalizePersistedProjectMediaFolders(parsed.projectMediaFolders);
+  const savedCanvases = normalizeUserCanvasTemplates(parsed.savedCanvases);
+  const activeCanvasId = typeof parsed.activeCanvasId === 'string' && savedCanvases.some((canvas) => canvas.id === parsed.activeCanvasId)
+    ? parsed.activeCanvasId
+    : null;
   return {
     nodes,
     edges,
+    activeCanvasId,
+    savedCanvases,
     projectAssets: normalizeProjectMediaAssetFolders(normalizePersistedProjectAssets(parsed.projectAssets), projectMediaFolders),
     projectMediaFolders,
     timelineItems,

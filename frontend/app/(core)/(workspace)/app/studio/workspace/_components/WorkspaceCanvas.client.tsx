@@ -44,6 +44,10 @@ import {
   type CanvasFloatingToolbarProps,
   type CanvasSelectionTool,
 } from './canvas/CanvasFloatingToolbar';
+import {
+  CanvasNavigatorPanel,
+  type CanvasNavigatorPanelProps,
+} from './canvas/CanvasNavigatorPanel';
 import { CanvasMap } from './canvas/CanvasMap';
 import { CanvasPaletteDragPreview } from './canvas/CanvasPaletteDragPreview';
 import { workspaceEdgeTypes } from './edges/workspace-smart-edge';
@@ -91,6 +95,7 @@ type WorkspaceCanvasProps = {
     CanvasFloatingToolbarProps,
     'copy' | 'onDeleteSelectedNodes' | 'onSelectionToolChange' | 'selectedNodeCount' | 'selectionTool'
   >;
+  canvasNavigator: Omit<CanvasNavigatorPanelProps, 'copy'>;
 };
 
 export function WorkspaceCanvas({
@@ -115,6 +120,7 @@ export function WorkspaceCanvas({
   onSelectedNodeSync,
   onInspectNode,
   toolbar,
+  canvasNavigator,
 }: WorkspaceCanvasProps) {
   return (
     <ReactFlowProvider>
@@ -140,6 +146,7 @@ export function WorkspaceCanvas({
         onSelectedNodeSync={onSelectedNodeSync}
         onInspectNode={onInspectNode}
         toolbar={toolbar}
+        canvasNavigator={canvasNavigator}
       />
     </ReactFlowProvider>
   );
@@ -227,6 +234,7 @@ function WorkspaceCanvasInner({
   onSelectedNodeSync,
   onInspectNode,
   toolbar,
+  canvasNavigator,
 }: WorkspaceCanvasProps) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const canvasShellRef = useRef<HTMLElement | null>(null);
@@ -548,6 +556,7 @@ function WorkspaceCanvasInner({
         onDeleteSelectedNodes={handleDeleteSelectedNodes}
         onSelectionToolChange={setSelectionTool}
       />
+      <CanvasNavigatorPanel {...canvasNavigator} copy={copy} />
       {nodes.length === 0 ? (
         <div className={styles.canvasEmptyState}>
           <p>{copy.toolbar.emptyTitle}</p>

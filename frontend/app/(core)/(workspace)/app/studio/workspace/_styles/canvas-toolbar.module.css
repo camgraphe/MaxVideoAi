@@ -253,6 +253,57 @@
   padding-top: 2px;
 }
 
+.saveActionList {
+  display: grid;
+  gap: 8px;
+}
+
+.saveActionButton {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  min-height: 54px;
+  padding: 9px;
+  border: 1px solid var(--studio-border);
+  border-radius: 8px;
+  background: var(--studio-surface);
+  color: var(--studio-text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.saveActionButton:hover {
+  background: var(--studio-bg-soft);
+}
+
+.saveActionButton > svg {
+  color: var(--studio-primary);
+}
+
+.saveActionButton span {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.saveActionButton strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 12px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saveActionButton small {
+  overflow: hidden;
+  color: var(--studio-text-muted);
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .templateSaveForm {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -285,6 +336,13 @@
 
 .templateSaveForm button:hover {
   background: var(--studio-control-bg-hover);
+}
+
+.templateSaveForm input:disabled,
+.templateSaveForm button:disabled,
+.templateSaveForm button:disabled:hover {
+  opacity: 0.48;
+  cursor: not-allowed;
 }
 
 .userTemplateList {

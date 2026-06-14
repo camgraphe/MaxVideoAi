@@ -398,8 +398,11 @@ test('resolveStudioCopy applies partial leaf overrides without dropping sibling 
   assert.equal(copy.common.itemPlural, DEFAULT_STUDIO_COPY.common.itemPlural);
   assert.equal(copy.canvas.toolbar.selectNodes, 'Select blocks');
   assert.equal(copy.canvas.toolbar.marqueeSelectNodes, DEFAULT_STUDIO_COPY.canvas.toolbar.marqueeSelectNodes);
+  assert.equal(copy.canvas.toolbar.saveCanvas, DEFAULT_STUDIO_COPY.canvas.toolbar.saveCanvas);
+  assert.equal(copy.canvas.templates.canvasPanel, DEFAULT_STUDIO_COPY.canvas.templates.canvasPanel);
   assert.equal(copy.notices.unlockBeforeMoving, 'Unlock first.');
   assert.equal(copy.notices.unlockBeforeCutting, DEFAULT_STUDIO_COPY.notices.unlockBeforeCutting);
+  assert.equal(copy.notices.canvasTemplateCreatedFrom, DEFAULT_STUDIO_COPY.notices.canvasTemplateCreatedFrom);
 });
 
 test('resolveStudioCopy ignores wrong-typed values and keeps defaults', () => {

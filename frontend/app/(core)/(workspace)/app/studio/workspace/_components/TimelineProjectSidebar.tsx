@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, AudioLines, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, ImageIcon, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Sparkles, Trash2, Upload, Video, X } from 'lucide-react';
+import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
@@ -75,22 +75,6 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
   );
 }
 
-function ProjectMediaBadge({ kind }: { kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video' }) {
-  const icon =
-    kind === 'audio' ? <AudioLines size={12} /> :
-    kind === 'folder' ? <Folder size={12} /> :
-    kind === 'image' ? <ImageIcon size={12} /> :
-    kind === 'generated' ? <Sparkles size={12} /> :
-    kind === 'sequence' ? <Film size={12} /> :
-    <Video size={12} />;
-
-  return (
-    <span className={`${styles.projectMediaBadge} ${styles[`projectMediaBadge${kind[0].toUpperCase()}${kind.slice(1)}`]}`}>
-      {icon}
-    </span>
-  );
-}
-
 function ProjectMediaArtwork({
   durationSec,
   kind,
@@ -120,7 +104,6 @@ function ProjectMediaArtwork({
       ) : (
         <div className={styles.projectMediaPosterFallback} aria-hidden="true" />
       )}
-      <ProjectMediaBadge kind={kind} />
       {durationSec && kind !== 'audio' ? (
         <span className={styles.projectMediaDurationBadge}>{formatProjectMediaDuration(durationSec)}</span>
       ) : null}

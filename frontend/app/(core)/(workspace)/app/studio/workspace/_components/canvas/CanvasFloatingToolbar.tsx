@@ -13,9 +13,7 @@ import {
   AudioWaveform,
   BoxSelect,
   Clapperboard,
-  Copy,
   ImagePlus,
-  LayoutTemplate,
   MessageSquareText,
   Mic2,
   Music2,
@@ -38,13 +36,11 @@ import {
 import type {
   WorkspaceGenerationPresetId,
   WorkspaceNodeKind,
-  WorkspaceTemplateId,
-  WorkspaceTemplateSummary,
 } from '../../_lib/workspace-types';
 import { PALETTE_DRAG_START_EVENT } from './CanvasPaletteDragPreview';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
-type ToolbarMenuId = 'audio' | 'image' | 'templates' | 'text' | 'video';
+type ToolbarMenuId = 'audio' | 'image' | 'save' | 'text' | 'video';
 
 export type CanvasSelectionTool = 'pointer' | 'marquee';
 
@@ -58,33 +54,22 @@ type ToolbarBlockDefinition = {
   accent: string;
 };
 
-type ToolbarTemplateStyle = CSSProperties & {
+type ToolbarBlockStyle = CSSProperties & {
   '--template-accent'?: string;
-  '--template-thumbnail'?: string;
-};
-
-export type CanvasToolbarUserTemplate = {
-  id: string;
-  name: string;
-  description: string;
 };
 
 export type CanvasFloatingToolbarProps = {
   copy: StudioCopy['canvas'];
-  activeTemplateId: WorkspaceTemplateId | null;
-  activeUserTemplateId: string | null;
+  activeCanvasName: string | null;
   canRedo: boolean;
   canUndo: boolean;
+  canRenameActiveCanvas: boolean;
   selectionTool: CanvasSelectionTool;
   selectedNodeCount: number;
-  templates: WorkspaceTemplateSummary[];
-  userTemplates: CanvasToolbarUserTemplate[];
-  onApplyTemplate: (templateId: WorkspaceTemplateId) => void;
-  onApplyUserTemplate: (templateId: string) => void;
-  onDeleteUserTemplate: (templateId: string) => void;
   onDeleteSelectedNodes: () => void;
-  onDuplicateUserTemplate: (templateId: string) => void;
   onRedo: () => void;
+  onRenameActiveCanvas: (name: string) => void;
+  onSaveActiveCanvas: () => void;
   onSaveCanvasTemplate: (name: string) => void;
   onSelectionToolChange: (tool: CanvasSelectionTool) => void;
   onUndo: () => void;
@@ -183,47 +168,30 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
   };
 }
 
-function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
-  return Object.entries(replacements).reduce(
-    (current, [key, replacement]) => current.replaceAll(`{${key}}`, String(replacement)),
-    value
-  );
-}
-
 function clearTextSelection(): void {
   window.getSelection()?.removeAllRanges();
 }
 
-function templateStyle(template: WorkspaceTemplateSummary): ToolbarTemplateStyle {
-  return {
-    '--template-accent': template.accent ?? '#8b5cf6',
-    '--template-thumbnail': template.thumbnailUrl ? `url("${template.thumbnailUrl}")` : undefined,
-  };
-}
-
 export function CanvasFloatingToolbar({
   copy,
-  activeTemplateId,
-  activeUserTemplateId,
+  activeCanvasName,
   canRedo,
   canUndo,
+  canRenameActiveCanvas,
   selectionTool,
   selectedNodeCount,
-  templates,
-  userTemplates,
-  onApplyTemplate,
-  onApplyUserTemplate,
-  onDeleteUserTemplate,
   onDeleteSelectedNodes,
-  onDuplicateUserTemplate,
   onRedo,
+  onRenameActiveCanvas,
+  onSaveActiveCanvas,
   onSaveCanvasTemplate,
   onSelectionToolChange,
   onUndo,
 }: CanvasFloatingToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
-  const [templateName, setTemplateName] = useState('');
+  const [canvasName, setCanvasName] = useState('');
+  const [renameCanvasName, setRenameCanvasName] = useState('');
   const blocks = toolbarBlocks(copy.nodes);
 
   useEffect(() => {
@@ -283,10 +251,18 @@ export function CanvasFloatingToolbar({
     document.addEventListener('mouseup', handleUp, { once: true });
   };
 
-  const handleSaveTemplate = (event: FormEvent<HTMLFormElement>) => {
+  const handleSaveCanvasAs = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSaveCanvasTemplate(templateName);
-    setTemplateName('');
+    onSaveCanvasTemplate(canvasName);
+    setCanvasName('');
+    setActiveMenu(null);
+  };
+
+  const handleRenameCanvas = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onRenameActiveCanvas(renameCanvasName);
+    setRenameCanvasName('');
+    setActiveMenu(null);
   };
 
   const toggleMenu = (menu: ToolbarMenuId) => {
@@ -374,10 +350,10 @@ export function CanvasFloatingToolbar({
       />
 
       <ToolbarMenuButton
-        active={activeMenu === 'templates'}
-        icon={<LayoutTemplate size={18} />}
-        label={copy.toolbar.canvasTemplates}
-        onClick={() => toggleMenu('templates')}
+        active={activeMenu === 'save'}
+        icon={<Save size={18} />}
+        label={copy.toolbar.saveCanvas}
+        onClick={() => toggleMenu('save')}
       />
 
       {activeMenu === 'image' ? (
@@ -404,77 +380,49 @@ export function CanvasFloatingToolbar({
         </ToolbarPopover>
       ) : null}
 
-      {activeMenu === 'templates' ? (
-        <ToolbarPopover title={copy.toolbar.canvasTemplates} description={copy.toolbar.canvasTemplatesDescription} wide>
-          <div className={styles.templateGrid}>
-            {templates.map((template) => (
-              <button
-                key={template.id}
-                type="button"
-                className={`${styles.templateOption} ${template.id === activeTemplateId ? styles.templateOptionActive : ''}`}
-                style={templateStyle(template)}
-                onClick={() => {
-                  onApplyTemplate(template.id);
-                  setActiveMenu(null);
-                }}
-              >
-                <span className={styles.templateThumbnail} aria-hidden="true">
-                  <Sparkles size={15} />
-                </span>
-                <span>
-                  <strong>{template.name}</strong>
-                  <small>{template.description}</small>
-                </span>
-                {template.badge ? <em>{template.badge}</em> : null}
-              </button>
-            ))}
-          </div>
-
-          <div className={styles.templateSavePanel}>
-            <form className={styles.templateSaveForm} onSubmit={handleSaveTemplate}>
+      {activeMenu === 'save' ? (
+        <ToolbarPopover title={copy.toolbar.saveCanvas} description={copy.toolbar.saveCanvasDescription}>
+          <div className={styles.saveActionList}>
+            <button
+              type="button"
+              className={styles.saveActionButton}
+              onClick={() => {
+                onSaveActiveCanvas();
+                setActiveMenu(null);
+              }}
+            >
+              <Save size={15} />
+              <span>
+                <strong>{copy.templates.saveCurrentCanvas}</strong>
+                <small>{activeCanvasName ?? copy.templates.unsavedCanvas}</small>
+              </span>
+            </button>
+            <form className={styles.templateSaveForm} onSubmit={handleSaveCanvasAs}>
               <input
                 type="text"
-                value={templateName}
-                onChange={(event) => setTemplateName(event.target.value)}
-                placeholder={copy.templates.templateNamePlaceholder}
-                aria-label={copy.templates.templateNameLabel}
+                value={canvasName}
+                onChange={(event) => setCanvasName(event.target.value)}
+                placeholder={copy.templates.canvasNamePlaceholder}
+                aria-label={copy.templates.canvasNameLabel}
               />
               <button type="submit">
                 <Save size={13} />
-                {copy.templates.save}
+                {copy.templates.saveAsNewCanvas}
               </button>
             </form>
-            {userTemplates.length ? (
-              <div className={styles.userTemplateList}>
-                {userTemplates.map((template) => (
-                  <div
-                    key={template.id}
-                    className={`${styles.userTemplateItem} ${template.id === activeUserTemplateId ? styles.userTemplateItemActive : ''}`}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onApplyUserTemplate(template.id);
-                        setActiveMenu(null);
-                      }}
-                    >
-                      <strong>{template.name}</strong>
-                      <span>{template.description}</span>
-                    </button>
-                    <div>
-                      <button type="button" onClick={() => onDuplicateUserTemplate(template.id)} aria-label={formatCopyValue(copy.templates.duplicate, { name: template.name })}>
-                        <Copy size={12} />
-                      </button>
-                      <button type="button" onClick={() => onDeleteUserTemplate(template.id)} aria-label={formatCopyValue(copy.templates.delete, { name: template.name })}>
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className={styles.emptyTemplateState}>{copy.templates.empty}</p>
-            )}
+            <form className={styles.templateSaveForm} onSubmit={handleRenameCanvas}>
+              <input
+                type="text"
+                value={renameCanvasName}
+                onChange={(event) => setRenameCanvasName(event.target.value)}
+                placeholder={activeCanvasName ?? copy.templates.renameCanvasPlaceholder}
+                aria-label={copy.templates.renameCanvasLabel}
+                disabled={!canRenameActiveCanvas}
+              />
+              <button type="submit" disabled={!canRenameActiveCanvas}>
+                {copy.templates.renameCanvas}
+              </button>
+            </form>
           </div>
         </ToolbarPopover>
       ) : null}
@@ -546,7 +494,7 @@ function BlockOptionList({
           data-canvas-toolbar-block-id={block.id}
           data-canvas-toolbar-block-kind={block.kind}
           data-canvas-toolbar-preset-id={block.presetId}
-          style={{ '--template-accent': block.accent } as ToolbarTemplateStyle}
+          style={{ '--template-accent': block.accent } as ToolbarBlockStyle}
           onMouseDown={(event) => onBlockMouseDown(event, block.kind, block.presetId)}
         >
           <span className={styles.blockOptionIcon}>{block.icon}</span>

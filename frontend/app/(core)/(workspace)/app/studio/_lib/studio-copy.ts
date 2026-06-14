@@ -180,6 +180,8 @@ export type StudioCopy = {
     canvasTemplateDuplicateName: string;
     canvasTemplateSaved: string;
     canvasTemplateDeleted: string;
+    canvasTemplateCreatedFrom: string;
+    canvasTemplateRenamed: string;
     textPastedIntoPrompt: string;
     sourceAddedToCanvas: string;
     pastedTextFilename: string;
@@ -371,11 +373,13 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       audioTools: 'Audio tools',
       textTools: 'Text tools',
       canvasTemplates: 'Canvas templates',
+      saveCanvas: 'Save canvas',
       imageToolsDescription: 'Drag image blocks or image generation tools into the canvas.',
       videoToolsDescription: 'Drag video sources or video generation tools into the canvas.',
       audioToolsDescription: 'Drag music, sound, or voice tools into the canvas.',
       textToolsDescription: 'Drag connectable free text into the canvas.',
       canvasTemplatesDescription: 'Apply graph templates without touching the timeline.',
+      saveCanvasDescription: 'Save or rename the current canvas graph.',
       emptyTitle: 'No graph yet',
       emptyBody: 'Start from a template or add nodes from the library.',
     },
@@ -383,9 +387,26 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       templateNamePlaceholder: 'Template name',
       templateNameLabel: 'Canvas template name',
       save: 'Save',
+      canvasPanel: 'Canvas',
+      canvasPanelDescription: 'Switch saved canvases or start from a template.',
+      openCanvasPanel: 'Open canvas navigation',
+      myCanvases: 'My canvases',
+      starterTemplates: 'Templates',
+      canvasNamePlaceholder: 'Canvas name',
+      canvasNameLabel: 'Canvas name',
+      renameCanvasPlaceholder: 'Rename current canvas',
+      renameCanvasLabel: 'Rename current canvas',
+      saveCurrentCanvas: 'Save current canvas',
+      saveAsNewCanvas: 'Save as new canvas',
+      renameCanvas: 'Rename',
+      unsavedCanvas: 'Unsaved canvas',
+      createCanvasFromTemplate: 'New canvas',
+      replaceCurrentCanvas: 'Replace current',
+      replaceCurrentCanvasConfirm: 'Replace the current canvas with "{name}"? This will not touch the timeline.',
       duplicate: 'Duplicate {name}',
       delete: 'Delete {name}',
       empty: 'No saved canvas templates yet.',
+      emptyCanvases: 'No saved canvases yet. Save the current graph or start from a template.',
     },
     templateSummaries: {
       'product-ad': {
@@ -1117,12 +1138,14 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     projectMediaInsertedAtPlayhead: '{filename} inserted at the playhead on the {track} track.',
     completedServerExportSubtitle: 'Server export',
     deleteCanvasTemplateConfirm: 'Delete "{name}"?',
-    canvasTemplateApplied: '{name} canvas template applied.',
-    defaultCanvasTemplateName: 'Canvas template {index}',
-    canvasTemplateSavedAs: '{name} saved as a canvas template.',
+    canvasTemplateApplied: '{name} canvas loaded.',
+    defaultCanvasTemplateName: 'Canvas {index}',
+    canvasTemplateSavedAs: '{name} saved as a canvas.',
     canvasTemplateDuplicateName: '{name} copy',
     canvasTemplateSaved: '{name} saved.',
     canvasTemplateDeleted: '{name} deleted.',
+    canvasTemplateCreatedFrom: '{name} canvas created from template.',
+    canvasTemplateRenamed: '{name} renamed.',
     textPastedIntoPrompt: '{source} pasted into the prompt block.',
     sourceAddedToCanvas: '{source} added to the canvas.',
     pastedTextFilename: 'pasted-text.txt',

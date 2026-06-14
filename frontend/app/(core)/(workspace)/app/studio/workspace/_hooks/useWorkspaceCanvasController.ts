@@ -230,8 +230,11 @@ export function useWorkspaceCanvasController({
   const {
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
+    handleCreateCanvasFromTemplate,
     handleDeleteUserCanvasTemplate,
     handleDuplicateUserCanvasTemplate,
+    handleRenameUserCanvasTemplate,
+    handleSaveActiveCanvasTemplate,
     handleSaveCanvasTemplate,
   } = useWorkspaceCanvasTemplateActions({
     activeUserCanvasTemplateId,
@@ -257,6 +260,7 @@ export function useWorkspaceCanvasController({
     canvasHistory,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
+    handleCreateCanvasFromTemplate,
     handleCanvasFileDrop,
     handleCanvasTextPaste,
     handleCanvasAutoCenterNodeConsumed,
@@ -269,6 +273,8 @@ export function useWorkspaceCanvasController({
     handleRunChat,
     handleInvalidNodeDropToTimeline,
     handleOpenAssetLibrary,
+    handleRenameUserCanvasTemplate,
+    handleSaveActiveCanvasTemplate,
     handleSaveCanvasTemplate,
     handleSelectLibraryAsset,
     handleSendOutputToTimeline,

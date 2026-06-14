@@ -21,11 +21,9 @@ import {
 } from '../_lib/workspace-templates';
 import {
   normalizePersistedWorkspaceState,
-  normalizeUserCanvasTemplate,
   mergePersistedWorkspaceWithServerSequences,
   readStudioProjectFromApiResult as readStudioProjectFromApi,
   readStudioSequencesFromApiResult as readStudioSequencesFromApi,
-  readUserCanvasTemplatesFromApiResult,
   saveStudioWorkspaceToApi,
   shouldApplyStudioProjectWorkspaceState,
   type StudioApiSyncStatus,
@@ -33,8 +31,6 @@ import {
 import {
   readPersistedWorkspaceState,
   readStudioProject,
-  readUserCanvasTemplates,
-  writeUserCanvasTemplates,
 } from '../_state/workspace-persistence';
 import {
   DEFAULT_WORKSPACE_SEQUENCE_ID,
@@ -188,6 +184,8 @@ export function useWorkspacePersistenceEffects({
       resetCanvasHistory();
       resetTimelineHistory();
       setActiveTemplateId(persisted.activeTemplateId);
+      setActiveUserCanvasTemplateId(persisted.activeCanvasId ?? null);
+      setUserCanvasTemplates(persisted.savedCanvases ?? []);
       setProjectSettings(persisted.projectSettings);
       setFocusMode(persisted.focusMode ?? 'canvas');
       setActiveEditorSurface((persisted.focusMode ?? 'canvas') === 'viewer' ? 'timeline' : 'canvas');
@@ -227,6 +225,7 @@ export function useWorkspacePersistenceEffects({
       resetTimelineHistory();
       setActiveTemplateId(template.id);
       setActiveUserCanvasTemplateId(null);
+      setUserCanvasTemplates([]);
       setProjectSettings(coerceWorkspaceProjectSettings(project.settings ?? DEFAULT_WORKSPACE_PROJECT_SETTINGS));
       setFocusMode('canvas');
       setActiveEditorSurface('canvas');
@@ -242,18 +241,6 @@ export function useWorkspacePersistenceEffects({
       setCanvasRevision((value) => value + 1);
       setNotice(formatNotice(studioNotices.projectLoadedCleanSequence, { name: project.name }));
     };
-
-    const localUserTemplates = readUserCanvasTemplates(normalizeUserCanvasTemplate);
-    setUserCanvasTemplates(localUserTemplates);
-    const templatesController = new AbortController();
-    void readUserCanvasTemplatesFromApiResult(templatesController.signal).then((serverTemplatesResult) => {
-      if (cancelled) return;
-      const notice = workspaceApiNotice(serverTemplatesResult.status, studioNotices);
-      if (notice) setNotice(notice);
-      if (!serverTemplatesResult.data) return;
-      setUserCanvasTemplates(serverTemplatesResult.data);
-      writeUserCanvasTemplates(serverTemplatesResult.data);
-    });
 
     const storedProject = readStudioProject(projectId);
     setStoredProjectName(storedProject?.name ?? null);
@@ -302,7 +289,6 @@ export function useWorkspacePersistenceEffects({
 
     return () => {
       cancelled = true;
-      templatesController.abort();
       projectController.abort();
     };
   }, [

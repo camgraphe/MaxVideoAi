@@ -23,9 +23,11 @@ import {
   type PersistedWorkspaceState,
   type WorkspaceFocusMode,
   type WorkspaceSequenceRecord,
+  type WorkspaceUserCanvasTemplate,
 } from '../_state/workspace-state';
 
 type WorkspaceSequenceSnapshotArgs = {
+  activeCanvasId: string | null;
   activeSequenceId: string;
   activeTemplateId: WorkspaceTemplateId;
   audioTrackCount: number;
@@ -38,6 +40,7 @@ type WorkspaceSequenceSnapshotArgs = {
   projectAssets: WorkspaceAssetRecord[];
   projectMediaFolders: WorkspaceProjectMediaFolder[];
   projectSettings: WorkspaceProjectSettings;
+  savedCanvases: WorkspaceUserCanvasTemplate[];
   sequences: WorkspaceSequenceRecord[];
   timelineInPointSec: number | null;
   timelineItems: WorkspaceTimelineItem[];
@@ -47,6 +50,7 @@ type WorkspaceSequenceSnapshotArgs = {
 };
 
 export function useWorkspaceSequenceSnapshots({
+  activeCanvasId,
   activeSequenceId,
   activeTemplateId,
   audioTrackCount,
@@ -59,6 +63,7 @@ export function useWorkspaceSequenceSnapshots({
   projectAssets,
   projectMediaFolders,
   projectSettings,
+  savedCanvases,
   sequences,
   timelineInPointSec,
   timelineItems,
@@ -143,6 +148,8 @@ export function useWorkspaceSequenceSnapshots({
     return {
       nodes,
       edges,
+      activeCanvasId,
+      savedCanvases,
       projectAssets,
       projectMediaFolders,
       timelineItems,
@@ -161,6 +168,7 @@ export function useWorkspaceSequenceSnapshots({
       timelineOutPointSec,
     };
   }, [
+    activeCanvasId,
     activeSequenceId,
     activeTemplateId,
     audioTrackCount,
@@ -173,6 +181,7 @@ export function useWorkspaceSequenceSnapshots({
     projectAssets,
     projectMediaFolders,
     projectSettings,
+    savedCanvases,
     sequences,
     snapshotActiveSequence,
     timelineInPointSec,

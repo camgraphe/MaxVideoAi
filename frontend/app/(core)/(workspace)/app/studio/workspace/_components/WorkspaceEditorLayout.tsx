@@ -277,19 +277,32 @@ export function WorkspaceEditorLayout({
             onSelectedNodeSync={selection.handleSyncSelectedCanvasNode}
             onInspectNode={selection.handleInspectCanvasNode}
             toolbar={{
+              activeCanvasName: userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId)?.name ?? null,
+              canRedo: canvas.canvasHistory.future.length > 0,
+              canUndo: canvas.canvasHistory.past.length > 0,
+              canRenameActiveCanvas: Boolean(activeUserCanvasTemplateId),
+              onRedo: canvas.redoCanvas,
+              onRenameActiveCanvas: (name) => {
+                if (activeUserCanvasTemplateId) {
+                  canvas.handleRenameUserCanvasTemplate(activeUserCanvasTemplateId, name);
+                  return;
+                }
+                canvas.handleSaveCanvasTemplate(name);
+              },
+              onSaveActiveCanvas: canvas.handleSaveActiveCanvasTemplate,
+              onSaveCanvasTemplate: canvas.handleSaveCanvasTemplate,
+              onUndo: canvas.undoCanvas,
+            }}
+            canvasNavigator={{
               templates: localizedTemplateSummaries,
               activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
               userTemplates: userCanvasTemplates,
               activeUserTemplateId: activeUserCanvasTemplateId,
-              canRedo: canvas.canvasHistory.future.length > 0,
-              canUndo: canvas.canvasHistory.past.length > 0,
               onApplyTemplate: canvas.handleApplyCanvasTemplate,
               onApplyUserTemplate: canvas.handleApplyUserCanvasTemplate,
+              onCreateCanvasFromTemplate: canvas.handleCreateCanvasFromTemplate,
               onDeleteUserTemplate: canvas.handleDeleteUserCanvasTemplate,
               onDuplicateUserTemplate: canvas.handleDuplicateUserCanvasTemplate,
-              onRedo: canvas.redoCanvas,
-              onSaveCanvasTemplate: canvas.handleSaveCanvasTemplate,
-              onUndo: canvas.undoCanvas,
             }}
           />
         ) : (

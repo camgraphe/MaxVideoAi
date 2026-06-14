@@ -10,11 +10,8 @@ import type {
   WorkspaceGraphNode,
   WorkspaceTemplateId,
 } from '../_lib/workspace-types';
-import { writeUserCanvasTemplates } from '../_state/workspace-persistence';
 import {
-  deleteUserCanvasTemplateFromApi,
   describeCanvasTemplate,
-  saveUserCanvasTemplateToApi,
 } from '../_state/workspace-api-persistence';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
@@ -82,16 +79,17 @@ export function useWorkspaceCanvasTemplateActions({
 }: UseWorkspaceCanvasTemplateActionsParams): {
   handleApplyCanvasTemplate: (templateId: WorkspaceTemplateId) => void;
   handleApplyUserCanvasTemplate: (templateId: string) => void;
+  handleCreateCanvasFromTemplate: (templateId: WorkspaceTemplateId) => void;
   handleDeleteUserCanvasTemplate: (templateId: string) => void;
   handleDuplicateUserCanvasTemplate: (templateId: string) => void;
+  handleRenameUserCanvasTemplate: (templateId: string, name: string) => void;
+  handleSaveActiveCanvasTemplate: () => void;
   handleSaveCanvasTemplate: (name: string) => void;
 } {
   const updateUserCanvasTemplates = useCallback(
     (updater: (templates: WorkspaceUserCanvasTemplate[]) => WorkspaceUserCanvasTemplate[]) => {
       setUserCanvasTemplates((currentTemplates) => {
-        const nextTemplates = updater(currentTemplates);
-        writeUserCanvasTemplates(nextTemplates);
-        return nextTemplates;
+        return updater(currentTemplates);
       });
     },
     [setUserCanvasTemplates]
@@ -116,26 +114,65 @@ export function useWorkspaceCanvasTemplateActions({
     [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioCanvasCopy.templateSummaries, studioNotices.canvasTemplateApplied]
   );
 
-  const handleSaveCanvasTemplate = useCallback(
-    (name: string) => {
+  const saveCanvasSnapshot = useCallback(
+    (name: string): WorkspaceUserCanvasTemplate => {
       const trimmedName = name.trim();
       const templateName = trimmedName || formatCopyValue(studioNotices.defaultCanvasTemplateName, { index: userCanvasTemplates.length + 1 });
-      const createdAt = new Date().toISOString();
-      const template: WorkspaceUserCanvasTemplate = {
+      const timestamp = new Date().toISOString();
+      return {
         id: createLocalCanvasTemplateId(),
         name: templateName,
         description: describeCanvasTemplate(nodes, edges),
         nodes: cloneWorkspaceJson(nodes),
         edges: cloneWorkspaceJson(edges),
-        createdAt,
+        createdAt: timestamp,
+        updatedAt: timestamp,
       };
+    },
+    [edges, nodes, studioNotices.defaultCanvasTemplateName, userCanvasTemplates.length]
+  );
+
+  const handleSaveCanvasTemplate = useCallback(
+    (name: string) => {
+      const template = saveCanvasSnapshot(name);
       updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
-      void saveUserCanvasTemplateToApi(template);
       setActiveUserCanvasTemplateId(template.id);
       setActiveEditorSurface('canvas');
       setNotice(formatCopyValue(studioNotices.canvasTemplateSavedAs, { name: template.name }));
     },
-    [edges, nodes, setActiveEditorSurface, setActiveUserCanvasTemplateId, setNotice, studioNotices.canvasTemplateSavedAs, studioNotices.defaultCanvasTemplateName, updateUserCanvasTemplates, userCanvasTemplates.length]
+    [saveCanvasSnapshot, setActiveEditorSurface, setActiveUserCanvasTemplateId, setNotice, studioNotices.canvasTemplateSavedAs, updateUserCanvasTemplates]
+  );
+
+  const handleSaveActiveCanvasTemplate = useCallback(
+    () => {
+      if (!activeUserCanvasTemplateId) {
+        const template = saveCanvasSnapshot('');
+        updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
+        setActiveUserCanvasTemplateId(template.id);
+        setActiveEditorSurface('canvas');
+        setNotice(formatCopyValue(studioNotices.canvasTemplateSavedAs, { name: template.name }));
+        return;
+      }
+      const activeTemplate = userCanvasTemplates.find((template) => template.id === activeUserCanvasTemplateId);
+      if (!activeTemplate) {
+        setActiveUserCanvasTemplateId(null);
+        setNotice(studioNotices.canvasTemplateNotFound);
+        return;
+      }
+      const timestamp = new Date().toISOString();
+      updateUserCanvasTemplates((templates) => templates.map((template) => {
+        if (template.id !== activeUserCanvasTemplateId) return template;
+        return {
+          ...template,
+          description: describeCanvasTemplate(nodes, edges),
+          nodes: cloneWorkspaceJson(nodes),
+          edges: cloneWorkspaceJson(edges),
+          updatedAt: timestamp,
+        };
+      }));
+      setNotice(formatCopyValue(studioNotices.canvasTemplateSaved, { name: activeTemplate.name }));
+    },
+    [activeUserCanvasTemplateId, edges, nodes, saveCanvasSnapshot, setActiveEditorSurface, setActiveUserCanvasTemplateId, setNotice, studioNotices.canvasTemplateNotFound, studioNotices.canvasTemplateSaved, studioNotices.canvasTemplateSavedAs, updateUserCanvasTemplates, userCanvasTemplates]
   );
 
   const handleApplyUserCanvasTemplate = useCallback(
@@ -160,6 +197,35 @@ export function useWorkspaceCanvasTemplateActions({
     [commitCanvasGraph, setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioNotices.canvasTemplateApplied, studioNotices.canvasTemplateNotFound, userCanvasTemplates]
   );
 
+  const handleCreateCanvasFromTemplate = useCallback(
+    (templateId: WorkspaceTemplateId) => {
+      const starterTemplate = createStarterWorkspaceTemplate(templateId);
+      const starterName = starterTemplateNoticeName(starterTemplate.id, starterTemplate.name, studioCanvasCopy.templateSummaries);
+      const timestamp = new Date().toISOString();
+      const template: WorkspaceUserCanvasTemplate = {
+        id: createLocalCanvasTemplateId(),
+        name: starterName,
+        description: describeCanvasTemplate(starterTemplate.nodes, starterTemplate.edges),
+        nodes: cloneWorkspaceJson(starterTemplate.nodes),
+        edges: cloneWorkspaceJson(starterTemplate.edges),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      };
+      commitCanvasGraph(() => ({
+        edges: cloneWorkspaceJson(starterTemplate.edges),
+        nodes: cloneWorkspaceJson(starterTemplate.nodes),
+      }));
+      updateUserCanvasTemplates((templates) => [template, ...templates].slice(0, 24));
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(null);
+      setActiveTemplateId(starterTemplate.id);
+      setActiveUserCanvasTemplateId(template.id);
+      setCanvasRevision((value) => value + 1);
+      setNotice(formatCopyValue(studioNotices.canvasTemplateCreatedFrom, { name: template.name }));
+    },
+    [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioCanvasCopy.templateSummaries, studioNotices.canvasTemplateCreatedFrom, updateUserCanvasTemplates]
+  );
+
   const handleDuplicateUserCanvasTemplate = useCallback(
     (templateId: string) => {
       const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
@@ -171,12 +237,34 @@ export function useWorkspaceCanvasTemplateActions({
         nodes: cloneWorkspaceJson(template.nodes),
         edges: cloneWorkspaceJson(template.edges),
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       };
       updateUserCanvasTemplates((templates) => [duplicate, ...templates].slice(0, 24));
-      void saveUserCanvasTemplateToApi(duplicate);
       setNotice(formatCopyValue(studioNotices.canvasTemplateSaved, { name: duplicate.name }));
     },
     [setNotice, studioNotices.canvasTemplateDuplicateName, studioNotices.canvasTemplateSaved, updateUserCanvasTemplates, userCanvasTemplates]
+  );
+
+  const handleRenameUserCanvasTemplate = useCallback(
+    (templateId: string, name: string) => {
+      const trimmedName = name.trim();
+      if (!trimmedName) return;
+      const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
+      if (!template) {
+        setNotice(studioNotices.canvasTemplateNotFound);
+        return;
+      }
+      updateUserCanvasTemplates((templates) => templates.map((template) => {
+        if (template.id !== templateId) return template;
+        return {
+          ...template,
+          name: trimmedName,
+          updatedAt: new Date().toISOString(),
+        };
+      }));
+      setNotice(formatCopyValue(studioNotices.canvasTemplateRenamed, { name: trimmedName }));
+    },
+    [setNotice, studioNotices.canvasTemplateNotFound, studioNotices.canvasTemplateRenamed, updateUserCanvasTemplates, userCanvasTemplates]
   );
 
   const handleDeleteUserCanvasTemplate = useCallback(
@@ -188,7 +276,6 @@ export function useWorkspaceCanvasTemplateActions({
         !window.confirm(studioNotices.deleteCanvasTemplateConfirm.replace('{name}', template.name))
       ) return;
       updateUserCanvasTemplates((templates) => templates.filter((candidate) => candidate.id !== templateId));
-      void deleteUserCanvasTemplateFromApi(templateId);
       if (activeUserCanvasTemplateId === templateId) {
         setActiveUserCanvasTemplateId(null);
       }
@@ -200,8 +287,11 @@ export function useWorkspaceCanvasTemplateActions({
   return {
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
+    handleCreateCanvasFromTemplate,
     handleDeleteUserCanvasTemplate,
     handleDuplicateUserCanvasTemplate,
+    handleRenameUserCanvasTemplate,
+    handleSaveActiveCanvasTemplate,
     handleSaveCanvasTemplate,
   };
 }

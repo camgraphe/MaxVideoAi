@@ -60,9 +60,7 @@ import {
 } from './_state/workspace-selectors';
 import { workspaceStorageKeyForProject } from './_state/workspace-persistence';
 
-type WorkspacePageProps = {
-  projectId?: string;
-};
+type WorkspacePageProps = { projectId?: string };
 
 export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const { dictionary } = useI18n();
@@ -160,6 +158,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     timelineDurationSec,
   });
   const sequenceSnapshots = useWorkspaceSequenceSnapshots({
+    activeCanvasId: activeUserCanvasTemplateId,
     activeSequenceId,
     activeTemplateId,
     audioTrackCount,
@@ -172,6 +171,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     projectAssets,
     projectMediaFolders,
     projectSettings,
+    savedCanvases: userCanvasTemplates,
     sequences,
     timelineInPointSec: timelinePlayback.timelineInPointSec,
     timelineItems,

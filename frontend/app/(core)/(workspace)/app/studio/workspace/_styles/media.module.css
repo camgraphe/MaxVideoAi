@@ -333,63 +333,6 @@
   box-shadow: 0 0 18px rgba(16, 185, 129, 0.24);
 }
 
-.projectMediaBadge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  display: grid;
-  width: 22px;
-  height: 22px;
-  place-items: center;
-  border-radius: 6px;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  opacity: 0.96;
-  box-shadow: 0 8px 18px var(--studio-bg);
-}
-
-.projectMediaBadgeSequence {
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(139, 92, 246, 0.18);
-}
-
-.projectMediaBadgeVideo {
-  background: linear-gradient(135deg, #fb923c, #f97316);
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(249, 115, 22, 0.18);
-}
-
-.projectMediaBadgeImage {
-  background: linear-gradient(135deg, #38bdf8, var(--studio-primary-2));
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(56, 189, 248, 0.18);
-}
-
-.projectMediaBadgeAudio {
-  background: linear-gradient(135deg, #34d399, #059669);
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(52, 211, 153, 0.18);
-}
-
-.projectMediaBadgeFolder {
-  background: linear-gradient(135deg, #fbbf24, #d97706);
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(251, 191, 36, 0.18);
-}
-
-.projectMediaBadgeGenerated {
-  background: linear-gradient(135deg, #ec4899, var(--studio-primary));
-  box-shadow:
-    0 8px 18px var(--studio-bg),
-    0 0 0 1px rgba(236, 72, 153, 0.2);
-}
-
 .projectMediaDurationBadge {
   position: absolute;
   right: 5px;
