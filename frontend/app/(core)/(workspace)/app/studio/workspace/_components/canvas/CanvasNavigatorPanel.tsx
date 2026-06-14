@@ -5,8 +5,10 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import {
+  Blocks,
   Copy,
   Folders,
   LayoutGrid,
@@ -40,6 +42,7 @@ export type CanvasNavigatorPanelProps = {
   activeUserTemplateId: string | null;
   templates: WorkspaceTemplateSummary[];
   userTemplates: CanvasNavigatorUserCanvas[];
+  onAddTemplate: (templateId: WorkspaceTemplateId) => void;
   onApplyTemplate: (templateId: WorkspaceTemplateId) => void;
   onApplyUserTemplate: (templateId: string) => void;
   onCreateCanvasFromTemplate: (templateId: WorkspaceTemplateId) => void;
@@ -57,7 +60,7 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
 function templateStyle(template: WorkspaceTemplateSummary): CanvasNavigatorTemplateStyle {
   return {
     '--template-accent': template.accent ?? '#8b5cf6',
-    '--template-thumbnail': template.thumbnailUrl ? `url("${template.thumbnailUrl}")` : undefined,
+    '--template-thumbnail': template.thumbnailUrl ? `url("${template.thumbnailUrl}")` : 'none',
   };
 }
 
@@ -67,6 +70,7 @@ export function CanvasNavigatorPanel({
   activeUserTemplateId,
   templates,
   userTemplates,
+  onAddTemplate,
   onApplyTemplate,
   onApplyUserTemplate,
   onCreateCanvasFromTemplate,
@@ -74,6 +78,7 @@ export function CanvasNavigatorPanel({
   onDuplicateUserTemplate,
 }: CanvasNavigatorPanelProps) {
   const navigatorRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CanvasNavigatorTab>('saved');
 
@@ -96,9 +101,17 @@ export function CanvasNavigatorPanel({
     setIsOpen(false);
   };
 
+  const handlePanelKeyDown = (event: ReactKeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    event.stopPropagation();
+    setIsOpen(false);
+    triggerRef.current?.focus();
+  };
+
   return (
     <div ref={navigatorRef} className={styles.canvasNavigator} data-canvas-navigator="true">
       <button
+        ref={triggerRef}
         type="button"
         className={`${styles.navigatorTrigger} ${isOpen ? styles.navigatorTriggerActive : ''}`}
         aria-label={copy.templates.openCanvasPanel}
@@ -107,10 +120,16 @@ export function CanvasNavigatorPanel({
       >
         <LayoutGrid size={17} />
         <span>{copy.templates.canvasPanel}</span>
+        {userTemplates.length ? <strong>{userTemplates.length}</strong> : null}
       </button>
 
       {isOpen ? (
-        <section className={styles.navigatorPanel} role="dialog" aria-label={copy.templates.canvasPanel}>
+        <section
+          className={styles.navigatorPanel}
+          role="dialog"
+          aria-label={copy.templates.canvasPanel}
+          onKeyDown={handlePanelKeyDown}
+        >
           <header className={styles.navigatorHeader}>
             <span className={styles.navigatorIcon} aria-hidden="true">
               <Folders size={17} />
@@ -149,6 +168,7 @@ export function CanvasNavigatorPanel({
                   <div
                     key={template.id}
                     className={`${styles.savedCanvasItem} ${template.id === activeUserTemplateId ? styles.savedCanvasItemActive : ''}`}
+                    data-canvas-user-template-id={template.id}
                   >
                     <button
                       type="button"
@@ -160,6 +180,7 @@ export function CanvasNavigatorPanel({
                       <strong>{template.name}</strong>
                       <span>{template.description}</span>
                     </button>
+                    {template.id === activeUserTemplateId ? <span className={styles.savedCanvasActiveMarker} aria-hidden="true" /> : null}
                     <div className={styles.savedCanvasActions}>
                       <button type="button" onClick={() => onDuplicateUserTemplate(template.id)} aria-label={formatCopyValue(copy.templates.duplicate, { name: template.name })}>
                         <Copy size={13} />
@@ -180,14 +201,18 @@ export function CanvasNavigatorPanel({
                 <article
                   key={template.id}
                   className={`${styles.templateCard} ${template.id === activeTemplateId ? styles.templateCardActive : ''}`}
+                  data-canvas-template-id={template.id}
                   style={templateStyle(template)}
                 >
-                  <span className={styles.templateThumbnail} aria-hidden="true">
-                    <Sparkles size={15} />
+                  <span className={styles.templatePreview} data-canvas-template-preview="true" aria-hidden="true">
+                    <span className={styles.templateThumbnail}>
+                      <Sparkles size={15} />
+                    </span>
                   </span>
-                  <div>
+                  <div className={styles.templateBody}>
                     <strong>{template.name}</strong>
                     <small>{template.description}</small>
+                    <span className={styles.templateFlow}>{template.flow}</span>
                   </div>
                   {template.badge ? <em>{template.badge}</em> : null}
                   <div className={styles.templateActions}>
@@ -199,10 +224,20 @@ export function CanvasNavigatorPanel({
                       }}
                     >
                       <LayoutTemplate size={13} />
-                      {copy.templates.createCanvasFromTemplate}
+                      {copy.templates.newCanvas}
                     </button>
                     <button type="button" onClick={() => handleReplaceTemplate(template)}>
-                      {copy.templates.replaceCurrentCanvas}
+                      {copy.templates.replaceCanvas}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onAddTemplate(template.id);
+                        setIsOpen(false);
+                      }}
+                    >
+                      <Blocks size={13} />
+                      {copy.templates.addTemplate}
                     </button>
                   </div>
                 </article>

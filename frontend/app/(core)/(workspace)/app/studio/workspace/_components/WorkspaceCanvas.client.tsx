@@ -289,6 +289,7 @@ function WorkspaceCanvasInner({
   const {
     handleDragOver,
     handleDrop,
+    handlePalettePlacementCommit,
     paletteDragPreview,
   } = useCanvasController({
     canvasShellRef,
@@ -516,7 +517,8 @@ function WorkspaceCanvasInner({
           syncSelectedNodeIds([node.id]);
           onInspectNode(node.id);
         }}
-        onPaneClick={() => {
+        onPaneClick={(event) => {
+          if (handlePalettePlacementCommit(event)) return;
           onCanvasInteraction();
           selectedNodeIdRef.current = null;
           syncSelectedNodeIds([]);

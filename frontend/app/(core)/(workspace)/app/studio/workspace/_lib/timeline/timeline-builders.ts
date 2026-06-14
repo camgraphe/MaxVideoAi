@@ -3,6 +3,10 @@ import type {
   WorkspaceOutputMetadata,
   WorkspaceTimelineItem,
 } from '../workspace-types';
+import {
+  deriveWorkspaceMediaDimensions,
+  parseWorkspaceMediaDimensions,
+} from '../workspace-clip-composition';
 import { generatedTextReference } from '../workspace-generated-copy';
 import { MIN_CLIP_DURATION_SEC } from './timeline-frames';
 
@@ -75,6 +79,11 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
     mediaUrl,
     thumbnailUrl: params.asset.thumbUrl ?? mediaUrl,
   };
+  const sourceDimensions = parseWorkspaceMediaDimensions(params.asset.dimensions);
+  if (sourceDimensions) {
+    videoItem.sourceWidth = sourceDimensions.width;
+    videoItem.sourceHeight = sourceDimensions.height;
+  }
 
   if (!workspaceAssetHasTimelineAudio(params.asset)) return [videoItem];
 
@@ -145,6 +154,14 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
     mediaUrl: params.output.url ?? null,
     thumbnailUrl: params.output.thumbUrl ?? params.output.url ?? null,
   };
+  const sourceDimensions = deriveWorkspaceMediaDimensions({
+    aspectRatio: params.output.aspectRatio,
+    resolution: params.output.resolution,
+  });
+  if (sourceDimensions) {
+    videoItem.sourceWidth = sourceDimensions.width;
+    videoItem.sourceHeight = sourceDimensions.height;
+  }
 
   if (!workspaceOutputHasTimelineAudio(params.output)) return [videoItem];
 

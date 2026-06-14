@@ -27,15 +27,37 @@
 }
 
 .navigatorTrigger:hover,
+.navigatorTrigger:focus-visible,
 .navigatorTriggerActive {
   border-color: color-mix(in srgb, var(--studio-primary) 54%, var(--studio-border));
   background: var(--studio-bg-soft);
   color: var(--studio-text-strong);
 }
 
+.navigatorTrigger:focus-visible,
+.navigatorTabs button:focus-visible,
+.savedCanvasItem > button:focus-visible,
+.savedCanvasActions button:focus-visible,
+.templateActions button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
+}
+
 .navigatorTrigger span {
   font-size: 12px;
   font-weight: 850;
+}
+
+.navigatorTrigger strong {
+  display: grid;
+  min-width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--studio-primary) 16%, var(--studio-surface));
+  color: var(--studio-primary);
+  font-size: 10px;
+  font-weight: 900;
 }
 
 .navigatorPanel {
@@ -126,6 +148,7 @@
 }
 
 .navigatorTabs button:hover,
+.navigatorTabs button:focus-visible,
 .navigatorTabs .navigatorTabActive {
   background: var(--studio-surface);
   color: var(--studio-text-strong);
@@ -139,13 +162,21 @@
 
 .savedCanvasItem {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 8px;
   align-items: center;
   padding: 9px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-surface);
+}
+
+.savedCanvasActiveMarker {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--studio-primary);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--studio-primary) 18%, transparent);
 }
 
 .savedCanvasItemActive {
@@ -181,7 +212,8 @@
   cursor: pointer;
 }
 
-.savedCanvasActions button:hover {
+.savedCanvasActions button:hover,
+.savedCanvasActions button:focus-visible {
   background: var(--studio-bg-soft);
 }
 
@@ -203,29 +235,38 @@
 .templateCard {
   position: relative;
   display: grid;
-  min-height: 172px;
-  align-content: end;
+  min-height: 0;
   gap: 9px;
   padding: 9px;
   overflow: hidden;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
-  background:
-    linear-gradient(180deg, transparent 0%, var(--studio-bg) 52%),
-    var(--template-thumbnail),
-    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, var(--studio-bg-soft)), var(--studio-bg));
-  background-position: center;
-  background-size: cover;
+  background: var(--studio-surface);
 }
 
 .templateCardActive {
   border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 70%, #ffffff 6%);
 }
 
+.templatePreview {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--template-accent, #8b5cf6) 22%, var(--studio-border));
+  border-radius: 7px;
+  background:
+    linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--studio-bg) 70%, transparent) 100%),
+    var(--template-thumbnail),
+    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, var(--studio-bg-soft)), var(--studio-bg));
+  background-position: center;
+  background-size: cover;
+}
+
 .templateThumbnail {
   position: absolute;
-  top: 9px;
-  left: 9px;
+  top: 8px;
+  left: 8px;
   display: grid;
   width: 26px;
   height: 26px;
@@ -235,9 +276,18 @@
   color: #ffffff;
 }
 
-.templateCard > div:first-of-type {
+.templateBody {
   display: grid;
   gap: 4px;
+}
+
+.templateFlow {
+  overflow: hidden;
+  color: color-mix(in srgb, var(--template-accent, #8b5cf6) 70%, var(--studio-text-strong));
+  font-size: 10px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .templateCard em {
@@ -255,6 +305,7 @@
 
 .templateActions {
   display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 5px;
 }
 
@@ -262,15 +313,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 30px;
+  gap: 4px;
+  min-width: 0;
+  min-height: 28px;
+  padding: 0 6px;
   border: 1px solid var(--studio-border);
   border-radius: 7px;
   background: var(--studio-surface);
   color: var(--studio-text);
   cursor: pointer;
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 850;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .templateActions button:first-child {
@@ -279,7 +334,8 @@
   color: #ffffff;
 }
 
-.templateActions button:hover {
+.templateActions button:hover,
+.templateActions button:focus-visible {
   filter: brightness(1.05);
 }
 

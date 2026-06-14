@@ -11,6 +11,7 @@ type UseWorkspaceSelectionActionsParams = {
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setExportRangeMode: Dispatch<SetStateAction<WorkspaceTimelineExportRangeMode>>;
   setIsCanvasInspectorOpen: Dispatch<SetStateAction<boolean>>;
+  setInspectedProjectAssetId: Dispatch<SetStateAction<string | null>>;
   setInspectedSequenceId: Dispatch<SetStateAction<string | null>>;
   setSelectedNodeId: Dispatch<SetStateAction<string | null>>;
   setSelectedTimelineItemId: Dispatch<SetStateAction<string | null>>;
@@ -22,6 +23,7 @@ export function useWorkspaceSelectionActions({
   setActiveEditorSurface,
   setExportRangeMode,
   setIsCanvasInspectorOpen,
+  setInspectedProjectAssetId,
   setInspectedSequenceId,
   setSelectedNodeId,
   setSelectedTimelineItemId,
@@ -31,8 +33,10 @@ export function useWorkspaceSelectionActions({
   applyDefaultTimelineSelection: (items: WorkspaceTimelineItem[]) => void;
   applyTimelineSelection: (itemIds: string[]) => void;
   handleCanvasInteraction: () => void;
+  handleClearProjectMediaInspector: () => void;
   handleClearSequenceInspector: () => void;
   handleInspectCanvasNode: (nodeId: string | null) => void;
+  handleInspectProjectAsset: (assetId: string) => void;
   handleInspectSequence: (sequenceId: string) => void;
   handleResetExportRangeMode: () => void;
   handleSelectTimelineItem: (itemId: string, mode?: 'replace' | 'toggle' | 'focus') => void;
@@ -63,6 +67,7 @@ export function useWorkspaceSelectionActions({
   const handleSelectTimelineItem = useCallback(
     (itemId: string, mode: 'replace' | 'toggle' | 'focus' = 'replace') => {
       setActiveEditorSurface('timeline');
+      setInspectedProjectAssetId(null);
       setInspectedSequenceId(null);
       setSelectedTimelineItemIds((current) => {
         if (mode === 'focus') {
@@ -88,26 +93,43 @@ export function useWorkspaceSelectionActions({
         return [itemId];
       });
     },
-    [setActiveEditorSurface, setInspectedSequenceId, setSelectedTimelineItemId, setSelectedTimelineItemIds, timelineItemsRef]
+    [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId, setSelectedTimelineItemId, setSelectedTimelineItemIds, timelineItemsRef]
   );
 
   const handleSelectTimelineItems = useCallback(
     (itemIds: string[]) => {
       setActiveEditorSurface('timeline');
-      if (itemIds.length) setInspectedSequenceId(null);
+      if (itemIds.length) {
+        setInspectedProjectAssetId(null);
+        setInspectedSequenceId(null);
+      }
       applyTimelineSelection(itemIds);
     },
-    [applyTimelineSelection, setActiveEditorSurface, setInspectedSequenceId]
+    [applyTimelineSelection, setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId]
   );
 
   const handleInspectSequence = useCallback(
     (sequenceId: string) => {
       setActiveEditorSurface('timeline');
+      setInspectedProjectAssetId(null);
       setInspectedSequenceId(sequenceId);
-      applyTimelineSelection([]);
     },
-    [applyTimelineSelection, setActiveEditorSurface, setInspectedSequenceId]
+    [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId]
   );
+
+  const handleInspectProjectAsset = useCallback(
+    (assetId: string) => {
+      setActiveEditorSurface('timeline');
+      setInspectedProjectAssetId(assetId);
+      setInspectedSequenceId(null);
+    },
+    [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId]
+  );
+
+  const handleClearProjectMediaInspector = useCallback(() => {
+    setInspectedProjectAssetId(null);
+    setInspectedSequenceId(null);
+  }, [setInspectedProjectAssetId, setInspectedSequenceId]);
 
   const handleClearSequenceInspector = useCallback(() => {
     setInspectedSequenceId(null);
@@ -115,15 +137,19 @@ export function useWorkspaceSelectionActions({
 
   const handleCanvasInteraction = useCallback(() => {
     setActiveEditorSurface('canvas');
-  }, [setActiveEditorSurface]);
+    setInspectedProjectAssetId(null);
+    setInspectedSequenceId(null);
+  }, [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId]);
 
   const handleSelectedCanvasNodeChange = useCallback(
     (nodeId: string | null) => {
       setActiveEditorSurface('canvas');
+      setInspectedProjectAssetId(null);
+      setInspectedSequenceId(null);
       setSelectedNodeId(nodeId);
       if (!nodeId) setIsCanvasInspectorOpen(false);
     },
-    [setActiveEditorSurface, setIsCanvasInspectorOpen, setSelectedNodeId]
+    [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId, setIsCanvasInspectorOpen, setSelectedNodeId]
   );
 
   const handleSyncSelectedCanvasNode = useCallback(
@@ -137,18 +163,22 @@ export function useWorkspaceSelectionActions({
   const handleInspectCanvasNode = useCallback(
     (nodeId: string | null) => {
       setActiveEditorSurface('canvas');
+      setInspectedProjectAssetId(null);
+      setInspectedSequenceId(null);
       setSelectedNodeId(nodeId);
       setIsCanvasInspectorOpen(Boolean(nodeId));
     },
-    [setActiveEditorSurface, setIsCanvasInspectorOpen, setSelectedNodeId]
+    [setActiveEditorSurface, setInspectedProjectAssetId, setInspectedSequenceId, setIsCanvasInspectorOpen, setSelectedNodeId]
   );
 
   return {
     applyDefaultTimelineSelection,
     applyTimelineSelection,
     handleCanvasInteraction,
+    handleClearProjectMediaInspector,
     handleClearSequenceInspector,
     handleInspectCanvasNode,
+    handleInspectProjectAsset,
     handleInspectSequence,
     handleResetExportRangeMode,
     handleSelectTimelineItem,

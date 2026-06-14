@@ -10,6 +10,7 @@ import type { StudioCopy } from '../../../_lib/studio-copy';
 
 export const WORKSPACE_NODE_KIND_DRAG_TYPE = 'application/x-maxvideoai-node-kind';
 export const PALETTE_DRAG_START_EVENT = 'maxvideoai:palette-drag-start';
+export const PALETTE_PLACEMENT_ARM_EVENT = 'maxvideoai:palette-placement-arm';
 
 const WORKSPACE_NODE_KINDS: readonly WorkspaceNodeKind[] = [
   'asset-image',
@@ -37,6 +38,8 @@ export type PaletteDragStartDetail = {
   clientX: number;
   clientY: number;
 };
+
+export type PalettePlacementArmDetail = PaletteDragStartDetail;
 
 export function isWorkspaceNodeKind(value: string): value is WorkspaceNodeKind {
   return WORKSPACE_NODE_KINDS.includes(value as WorkspaceNodeKind);

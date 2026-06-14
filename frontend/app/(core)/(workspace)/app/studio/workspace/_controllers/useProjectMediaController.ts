@@ -86,7 +86,7 @@ type UseProjectMediaControllerArgs = {
   projectMediaFolders: WorkspaceProjectMediaFolder[];
   sequences: WorkspaceProjectSequenceSummary[];
   studioCanvasNodeCopy: StudioCopy['canvas']['nodes'];
-  onClearSequenceInspector: () => void;
+  onClearProjectMediaInspector: () => void;
   onDeleteGeneratedClip: (nodeId: string) => void;
   onDeleteGeneratedClips: (nodeIds: string[]) => void;
   onDeleteProjectAsset: (assetId: string) => void;
@@ -98,6 +98,7 @@ type UseProjectMediaControllerArgs = {
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
   onImportLocalMediaFiles: (files: File[], folderId?: string | null) => Promise<void> | void;
+  onInspectProjectAsset: (assetId: string) => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
@@ -200,7 +201,7 @@ export function useProjectMediaController({
   projectMediaFolders,
   sequences,
   studioCanvasNodeCopy,
-  onClearSequenceInspector,
+  onClearProjectMediaInspector,
   onDeleteGeneratedClip,
   onDeleteGeneratedClips,
   onDeleteProjectAsset,
@@ -212,6 +213,7 @@ export function useProjectMediaController({
   onDuplicateSequence,
   onImportMedia,
   onImportLocalMediaFiles,
+  onInspectProjectAsset,
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
@@ -407,24 +409,28 @@ export function useProjectMediaController({
 
   const selectProjectAsset = useCallback((assetId: string, gesture?: ProjectMediaSelectionGesture) => {
     selectProjectMediaItem({ id: assetId, type: 'asset' }, gesture);
-    onClearSequenceInspector();
-  }, [onClearSequenceInspector, selectProjectMediaItem]);
+    if (isProjectMediaMultiSelectionGesture(gesture)) {
+      onClearProjectMediaInspector();
+      return;
+    }
+    onInspectProjectAsset(assetId);
+  }, [onClearProjectMediaInspector, onInspectProjectAsset, selectProjectMediaItem]);
 
   const selectProjectMediaFolder = useCallback((folderId: string, gesture?: ProjectMediaSelectionGesture) => {
     selectProjectMediaItem({ id: folderId, type: 'folder' }, gesture);
     if (isProjectMediaMultiSelectionGesture(gesture)) {
-      onClearSequenceInspector();
+      onClearProjectMediaInspector();
       return;
     }
     setActiveFolderId(folderId);
     setSearchQuery('');
-    onClearSequenceInspector();
-  }, [onClearSequenceInspector, selectProjectMediaItem]);
+    onClearProjectMediaInspector();
+  }, [onClearProjectMediaInspector, selectProjectMediaItem]);
 
   const selectGeneratedNode = useCallback((nodeId: string, gesture?: ProjectMediaSelectionGesture) => {
     selectProjectMediaItem({ id: nodeId, type: 'generated' }, gesture);
-    onClearSequenceInspector();
-  }, [onClearSequenceInspector, selectProjectMediaItem]);
+    onClearProjectMediaInspector();
+  }, [onClearProjectMediaInspector, selectProjectMediaItem]);
 
   const insertMenuItem = useCallback((menu: ProjectMediaContextMenu) => {
     if (menu.type === 'asset') onInsertProjectAsset(menu.id);
@@ -492,8 +498,8 @@ export function useProjectMediaController({
     setSelectedMediaItems([]);
     setSelectionAnchorKey(null);
     setSearchQuery('');
-    onClearSequenceInspector();
-  }, [onClearSequenceInspector]);
+    onClearProjectMediaInspector();
+  }, [onClearProjectMediaInspector]);
 
   const importMedia = useCallback(() => {
     onImportMedia(activeFolderId);

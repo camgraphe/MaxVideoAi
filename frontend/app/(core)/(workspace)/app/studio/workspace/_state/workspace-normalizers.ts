@@ -3,6 +3,9 @@ import {
 } from '../_lib/workspace-library-assets';
 import { DEFAULT_STUDIO_COPY } from '../../_lib/studio-copy';
 import {
+  workspaceMediaDimensionsForTimelineSource,
+} from '../_lib/workspace-clip-composition';
+import {
   isWorkspaceTimelineAudioTrack,
   normalizeWorkspaceTimelineTrack,
 } from '../_lib/workspace-timeline-tracks';
@@ -364,20 +367,33 @@ export function normalizeTimelineMediaUrls(nodes: WorkspaceGraphNode[], items: W
       sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
       mediaKind: item.mediaKind ?? (isWorkspaceTimelineAudioTrack(track) ? 'audio' : 'video'),
     };
-    if (normalizedItem.mediaUrl && normalizedItem.mediaUrl !== STALE_EMPTY_DEMO_AUDIO_URL) return normalizedItem;
     const sourceNode = nodes.find((node) => node.id === item.outputNodeId);
+    const sourceDimensions = normalizedItem.mediaKind === 'audio'
+      ? null
+      : workspaceMediaDimensionsForTimelineSource(normalizedItem, sourceNode);
+    const itemWithSourceDimensions = sourceDimensions &&
+      (!normalizedItem.sourceWidth || !normalizedItem.sourceHeight)
+      ? {
+          ...normalizedItem,
+          sourceWidth: sourceDimensions.width,
+          sourceHeight: sourceDimensions.height,
+        }
+      : normalizedItem;
+    if (itemWithSourceDimensions.mediaUrl && itemWithSourceDimensions.mediaUrl !== STALE_EMPTY_DEMO_AUDIO_URL) {
+      return itemWithSourceDimensions;
+    }
     const output = sourceNode?.data.output;
     const asset = sourceNode?.data.asset;
-    const mediaUrl = normalizedItem.mediaKind === 'audio'
+    const mediaUrl = itemWithSourceDimensions.mediaKind === 'audio'
       ? [output?.audioUrl, output?.url, asset?.url]
         .map((url) => normalizePlayableAudioUrl(url))
         .find((url): url is string => Boolean(url)) ?? null
-      : normalizedItem.mediaKind === 'image'
+      : itemWithSourceDimensions.mediaKind === 'image'
         ? [output?.url, output?.thumbUrl, asset?.url, asset?.thumbUrl].find(isPlayableImageUrl) ?? null
         : [output?.url, asset?.url].find(isPlayableVideoUrl) ?? null;
-    if (!mediaUrl) return normalizedItem;
+    if (!mediaUrl) return itemWithSourceDimensions;
     return {
-      ...normalizedItem,
+      ...itemWithSourceDimensions,
       mediaUrl,
       thumbnailUrl: item.thumbnailUrl ?? output?.thumbUrl ?? asset?.thumbUrl ?? null,
     };

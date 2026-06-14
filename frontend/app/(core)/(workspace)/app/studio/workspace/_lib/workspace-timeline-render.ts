@@ -16,6 +16,11 @@ import {
   localizeStudioGeneratedSequenceDisplayName,
   type StudioCopy,
 } from '../../_lib/studio-copy';
+import {
+  resolveWorkspaceClipComposition,
+  workspaceMediaDimensionsForTimelineSource,
+  type WorkspaceTimelineClipComposition,
+} from './workspace-clip-composition';
 
 const WORKSPACE_TIMELINE_RENDER_VERSION = 1;
 
@@ -56,8 +61,11 @@ export type WorkspaceTimelineRenderClip = {
   sourceDurationSec: number;
   linkedGroupId?: string | null;
   hasEmbeddedAudio?: boolean;
+  sourceWidth?: number | null;
+  sourceHeight?: number | null;
   modelId?: string;
   transform?: WorkspaceTimelineItem['transform'];
+  composition?: WorkspaceTimelineClipComposition | null;
   audioMix?: WorkspaceTimelineItem['audioMix'];
   transitionOut?: WorkspaceTimelineRenderTransition | null;
 };
@@ -279,10 +287,23 @@ function renderClipForItem(
   nodes: WorkspaceGraphNode[],
   items: WorkspaceTimelineItem[],
   item: WorkspaceTimelineItem,
+  projectSettings?: WorkspaceProjectSettings,
   canvasNodeCopy?: StudioCopy['canvas']['nodes']
 ): WorkspaceTimelineRenderClip | null {
   const mediaUrl = mediaUrlForItem(nodes, item);
   if (!mediaUrl) return null;
+  const node = nodeForItem(nodes, item);
+  const sourceDimensions = mediaKindForItem(item) === 'audio'
+    ? null
+    : workspaceMediaDimensionsForTimelineSource(item, node);
+  const composition = mediaKindForItem(item) === 'audio'
+    ? null
+    : resolveWorkspaceClipComposition({
+        item,
+        projectSettings,
+        sourceDimensions,
+        sourceNode: node,
+      });
   const sourceStartSec = roundTimelineSeconds(item.sourceStartSec ?? 0);
   const durationSec = roundTimelineSeconds(item.durationSec);
   const sourceDurationSec = roundTimelineSeconds(item.sourceDurationSec ?? item.durationSec);
@@ -293,7 +314,7 @@ function renderClipForItem(
     track: item.track,
     mediaKind: mediaKindForItem(item),
     mediaUrl,
-    thumbnailUrl: item.thumbnailUrl ?? nodeForItem(nodes, item)?.data.output?.thumbUrl ?? nodeForItem(nodes, item)?.data.asset?.thumbUrl ?? null,
+    thumbnailUrl: item.thumbnailUrl ?? node?.data.output?.thumbUrl ?? node?.data.asset?.thumbUrl ?? null,
     startSec: roundTimelineSeconds(item.startSec),
     endSec: itemEndSec(item),
     durationSec,
@@ -302,8 +323,11 @@ function renderClipForItem(
     sourceDurationSec,
     linkedGroupId: item.linkedGroupId ?? null,
     hasEmbeddedAudio: item.hasEmbeddedAudio,
+    sourceWidth: sourceDimensions?.width ?? item.sourceWidth ?? null,
+    sourceHeight: sourceDimensions?.height ?? item.sourceHeight ?? null,
     modelId: item.modelId,
     transform: item.transform,
+    composition,
     audioMix: item.audioMix,
     transitionOut: transitionForItem(items, item),
   };
@@ -423,7 +447,7 @@ export function buildWorkspaceTimelineRenderManifest(params: {
     const clips = exportItems
       .filter((item) => item.track === track)
       .sort((left, right) => left.startSec - right.startSec)
-      .map((item) => renderClipForItem(params.nodes, exportItems, item, params.canvasNodeCopy))
+      .map((item) => renderClipForItem(params.nodes, exportItems, item, params.projectSettings, params.canvasNodeCopy))
       .filter((clip): clip is WorkspaceTimelineRenderClip => Boolean(clip));
     return {
       id: track,

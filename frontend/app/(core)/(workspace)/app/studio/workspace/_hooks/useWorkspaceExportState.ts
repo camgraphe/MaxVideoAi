@@ -11,6 +11,7 @@ import {
   muteAudioTrackItems,
 } from '../_lib/workspace-timeline-selection';
 import type {
+  WorkspaceAssetRecord,
   WorkspaceGraphNode,
   WorkspaceProjectSettings,
   WorkspaceTimelineAudioTrack,
@@ -34,10 +35,12 @@ type UseWorkspaceExportStateOptions = {
   activeTemplateName: string;
   exportRangeMode: WorkspaceTimelineExportRangeMode;
   hiddenVideoTracks: WorkspaceTimelineVideoTrack[];
+  inspectedProjectAssetId: string | null;
   inspectedSequenceId: string | null;
   mutedAudioTracks: WorkspaceTimelineAudioTrack[];
   nodes: WorkspaceGraphNode[];
   previewTimelineItems: WorkspaceTimelineItem[];
+  projectAssets: WorkspaceAssetRecord[];
   projectSettings: WorkspaceProjectSettings;
   selectedTimelineItemId: string | null;
   sequenceSummaries: WorkspaceSequenceSidebarSummary[];
@@ -55,6 +58,7 @@ type WorkspaceExportState = {
   exportTimelineItems: WorkspaceTimelineItem[];
   hasValidTimelineInOut: boolean;
   selectedSequenceForInspector: WorkspaceSequenceInspectorSummary | null;
+  selectedProjectAssetForInspector: WorkspaceAssetRecord | null;
   selectedTimelineItem: WorkspaceTimelineItem | null;
   viewerTimelineItems: WorkspaceTimelineItem[];
 };
@@ -64,10 +68,12 @@ export function useWorkspaceExportState({
   activeTemplateName,
   exportRangeMode,
   hiddenVideoTracks,
+  inspectedProjectAssetId,
   inspectedSequenceId,
   mutedAudioTracks,
   nodes,
   previewTimelineItems,
+  projectAssets,
   projectSettings,
   selectedTimelineItemId,
   sequenceSummaries,
@@ -91,6 +97,11 @@ export function useWorkspaceExportState({
   const selectedSequenceForInspector = useMemo(
     () => selectedWorkspaceSequenceInspectorSummary({ inspectedSequenceId, sequenceSummaries }),
     [inspectedSequenceId, sequenceSummaries]
+  );
+
+  const selectedProjectAssetForInspector = useMemo(
+    () => projectAssets.find((asset) => asset.id === inspectedProjectAssetId) ?? null,
+    [inspectedProjectAssetId, projectAssets]
   );
 
   const exportTimelineItems = useMemo(
@@ -152,6 +163,7 @@ export function useWorkspaceExportState({
     exportTimelineItems,
     hasValidTimelineInOut,
     selectedSequenceForInspector,
+    selectedProjectAssetForInspector,
     selectedTimelineItem,
     viewerTimelineItems,
   };

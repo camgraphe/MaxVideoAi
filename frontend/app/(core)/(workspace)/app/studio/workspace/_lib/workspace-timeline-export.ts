@@ -3,6 +3,7 @@ import type {
   WorkspaceTimelineRenderManifest,
 } from './workspace-timeline-render';
 import type { WorkspaceAssetRecord } from './workspace-types';
+import { workspaceProjectDimensionsLabel } from './workspace-project-settings';
 import { isWorkspaceTimelineAudioTrack } from './workspace-timeline-tracks';
 import { formatWorkspaceTimecode } from './workspace-timecode';
 import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
@@ -244,7 +245,7 @@ export function workspaceProjectAssetFromCompletedTimelineExport(
     ].filter(Boolean).join(' • '),
     url: job.outputUrl,
     durationSec: manifest.exportRange.durationSec,
-    dimensions: projectSettings?.resolution,
+    dimensions: projectSettings ? workspaceProjectDimensionsLabel(projectSettings) : undefined,
   };
 }
 

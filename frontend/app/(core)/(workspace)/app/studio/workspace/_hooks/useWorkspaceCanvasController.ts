@@ -228,6 +228,7 @@ export function useWorkspaceCanvasController({
   const projectMediaLibrary = useWorkspaceEditorAssetLibrary(isProjectMediaPickerOpen ? null : undefined, studioAssetLibraryCopy);
 
   const {
+    handleAddCanvasTemplate,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
     handleCreateCanvasFromTemplate,
@@ -258,6 +259,7 @@ export function useWorkspaceCanvasController({
     assetPickerNode,
     canvasAutoCenterNodeId,
     canvasHistory,
+    handleAddCanvasTemplate,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
     handleCreateCanvasFromTemplate,

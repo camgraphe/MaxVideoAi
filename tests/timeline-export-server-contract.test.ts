@@ -169,6 +169,8 @@ test('timeline export worker uses Remotion renderer outside route handlers', () 
   assert.match(readFileSync(compositionPath, 'utf8'), /<Sequence/);
   assert.match(readFileSync(compositionPath, 'utf8'), /<Video/);
   assert.match(readFileSync(compositionPath, 'utf8'), /<Audio/);
+  assert.match(readFileSync(compositionPath, 'utf8'), /clip\.composition/, 'Remotion should consume timeline clip composition geometry');
+  assert.doesNotMatch(readFileSync(compositionPath, 'utf8'), /objectFit:\s*'cover'/, 'server renders should not silently stretch native source media to full sequence frame');
 });
 
 test('timeline export worker has a dedicated Docker image and documented env', () => {

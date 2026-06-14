@@ -4,17 +4,13 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Check,
   ChevronRight,
-  Clock3,
   Copy,
   Film,
   FolderOpen,
-  Grid2X2,
   MoreVertical,
   Pencil,
   Plus,
-  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -32,16 +28,15 @@ import {
 } from '../workspace/_state/workspace-api-persistence';
 import { WORKSPACE_TEMPLATE_SUMMARIES } from '../workspace/_lib/workspace-templates';
 import type { WorkspaceProjectSettings, WorkspaceTemplateId } from '../workspace/_lib/workspace-types';
-import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
 import {
   formatStudioProjectDate,
-  localizeStudioTemplateSummaries,
   resolveStudioCopy,
   type StudioCopy,
 } from '../_lib/studio-copy';
 import styles from './studio-projects.module.css';
 
 const STUDIO_PROJECTS_STORAGE_KEY = 'maxvideoai.editor.projects.v1';
+const DEFAULT_STUDIO_PROJECT_TEMPLATE_ID: WorkspaceTemplateId = 'product-ad';
 
 type StudioProjectRecord = {
   id: string;
@@ -189,14 +184,6 @@ async function deleteStudioProjectFromApi(projectId: string): Promise<StudioApiS
   }
 }
 
-function studioProjectTemplateName(
-  templateId: WorkspaceTemplateId,
-  templates: typeof WORKSPACE_TEMPLATE_SUMMARIES,
-  studioCopy: StudioCopy
-): string {
-  return templates.find((template) => template.id === templateId)?.name ?? studioCopy.projects.customCanvas;
-}
-
 function studioProjectTemplateThumbnail(templateId: WorkspaceTemplateId): string {
   return WORKSPACE_TEMPLATE_SUMMARIES.find((template) => template.id === templateId)?.thumbnailUrl ?? '/assets/marketing/app-dashboard.webp';
 }
@@ -205,26 +192,17 @@ export default function StudioProjectsPageClient() {
   const router = useRouter();
   const { locale, dictionary } = useI18n();
   const studioCopy = useMemo(() => resolveStudioCopy(dictionary), [dictionary]);
-  const studioTheme = useStudioThemeMode();
   const appLocale = locale as AppLocale;
   const [isHydrated, setIsHydrated] = useState(false);
   const [projects, setProjects] = useState<StudioProjectRecord[]>([]);
-  const [name, setName] = useState('');
-  const [canvasTemplateId, setCanvasTemplateId] = useState<WorkspaceTemplateId>('product-ad');
+  const [showAllProjects, setShowAllProjects] = useState(false);
   const [openProjectMenuId, setOpenProjectMenuId] = useState<string | null>(null);
   const [renameProjectId, setRenameProjectId] = useState<string | null>(null);
   const [renameProjectName, setRenameProjectName] = useState('');
   const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
   const [apiNotice, setApiNotice] = useState<string | null>(null);
-  const localizedTemplates = useMemo(
-    () => localizeStudioTemplateSummaries(WORKSPACE_TEMPLATE_SUMMARIES, studioCopy),
-    [studioCopy]
-  );
-  const visibleTemplates = useMemo(() => localizedTemplates.slice(0, 3), [localizedTemplates]);
-  const selectedTemplate = useMemo(
-    () => localizedTemplates.find((template) => template.id === canvasTemplateId) ?? localizedTemplates[0],
-    [canvasTemplateId, localizedTemplates]
-  );
+  const visibleProjects = useMemo(() => (showAllProjects ? projects : projects.slice(0, 1)), [projects, showAllProjects]);
+  const latestProject = projects[0] ?? null;
   const renameProject = useMemo(
     () => projects.find((project) => project.id === renameProjectId) ?? null,
     [projects, renameProjectId]
@@ -263,11 +241,11 @@ export default function StudioProjectsPageClient() {
     const now = new Date().toISOString();
     const project: StudioProjectRecord = {
       id: createStudioProjectId(),
-      name: name.trim() || studioCopy.projects.untitledProject,
+      name: studioCopy.projects.untitledProject,
       createdAt: now,
       updatedAt: now,
       settings: { ...DEFAULT_WORKSPACE_PROJECT_SETTINGS },
-      canvasTemplateId,
+      canvasTemplateId: DEFAULT_STUDIO_PROJECT_TEMPLATE_ID,
     };
     const nextProjects = [project, ...projects].slice(0, 20);
     setProjects(nextProjects);
@@ -282,6 +260,11 @@ export default function StudioProjectsPageClient() {
       writeStudioProjects(serverProjects);
     }
     router.push(`/app/studio/workspace/${savedProject?.id ?? project.id}`);
+  };
+
+  const openLatestProject = () => {
+    if (!latestProject) return;
+    router.push(`/app/studio/workspace/${latestProject.id}`);
   };
 
   const openRenameDialog = (project: StudioProjectRecord) => {
@@ -347,13 +330,24 @@ export default function StudioProjectsPageClient() {
   };
 
   return (
-    <div className={styles.projectsShell} data-studio-theme={studioTheme.resolvedTheme}>
+    <div className={styles.projectsShell}>
       <section className={styles.projectsHero} aria-labelledby="studio-projects-title">
-        <div className={styles.brandPill}>
-          <Film size={16} />
-          {studioCopy.projects.heroBadge}
+        <div className={styles.projectsHeaderBar}>
+          <div className={styles.brandLockup}>
+            <Film size={24} />
+            <span>{studioCopy.projects.heroBadge}</span>
+          </div>
+          <button
+            type="button"
+            className={styles.openProjectButton}
+            onClick={openLatestProject}
+            disabled={!isHydrated || !latestProject}
+          >
+            <FolderOpen size={19} />
+            {studioCopy.projects.openProject}
+          </button>
         </div>
-        <div>
+        <div className={styles.projectsHeroCopy}>
           <h1 id="studio-projects-title">{studioCopy.projects.title}</h1>
           <p>{studioCopy.projects.subtitle}</p>
         </div>
@@ -365,88 +359,28 @@ export default function StudioProjectsPageClient() {
       </section>
 
       <section className={styles.projectsGrid}>
-        <section className={styles.newProjectPanel} aria-label={studioCopy.projects.createTitle}>
-          <div className={styles.panelTitleRow}>
-            <span className={styles.titleIcon}>
-              <Plus size={24} />
-            </span>
-            <div>
-              <h2>{studioCopy.projects.createTitle}</h2>
-              <span>{studioCopy.projects.createSubtitle}</span>
-            </div>
-          </div>
-
-          <label className={styles.projectField}>
-            <span className={styles.fieldLabelRow}>
-              {studioCopy.projects.projectNameLabel}
-              <small>{name.length} / 60</small>
-            </span>
-            <input
-              value={name}
-              maxLength={60}
-              placeholder={studioCopy.projects.projectNamePlaceholder}
-              onChange={(event) => setName(event.target.value)}
-              disabled={!isHydrated}
-            />
-          </label>
-
-          <fieldset className={styles.templatePicker} aria-label={studioCopy.projects.canvasTemplateLabel}>
-            <legend>{studioCopy.projects.canvasTemplateLabel}</legend>
-            <div className={styles.templateGrid}>
-              {visibleTemplates.map((template) => {
-                const selected = template.id === selectedTemplate?.id;
-                return (
-                  <button
-                    key={template.id}
-                    type="button"
-                    className={styles.templateCard}
-                    aria-pressed={selected}
-                    onClick={() => setCanvasTemplateId(template.id)}
-                    disabled={!isHydrated}
-                  >
-                    <span className={styles.templateThumb}>
-                      <img src={template.thumbnailUrl} alt="" />
-                    </span>
-                    {selected ? (
-                      <span className={styles.templateSelectedBadge} aria-hidden>
-                        <Check size={14} />
-                      </span>
-                    ) : null}
-                    <span className={styles.templateTitleRow}>
-                      <strong>{template.name}</strong>
-                      {template.badge ? <em>{template.badge}</em> : null}
-                    </span>
-                    <span>{template.description}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
-
-          <button type="button" className={styles.secondaryAction} disabled={!isHydrated}>
-            <Grid2X2 size={17} />
-            {studioCopy.projects.browseTemplates}
-            <ChevronRight size={16} />
-          </button>
-
-          <button type="button" className={styles.primaryAction} onClick={createProject} disabled={!isHydrated}>
-            <Sparkles size={16} />
-            {studioCopy.projects.createProject}
-          </button>
-        </section>
+        <button
+          type="button"
+          className={styles.newProjectLaunchCard}
+          onClick={() => void createProject()}
+          disabled={!isHydrated}
+        >
+          <span className={styles.newProjectPlus}>
+            <Plus size={34} />
+          </span>
+          <strong>{studioCopy.projects.createTitle}</strong>
+          <span>{studioCopy.projects.createSubtitle}</span>
+        </button>
 
         <section className={styles.recentProjectsPanel} aria-label={studioCopy.projects.recentTitle}>
-          <div className={styles.panelTitleRow}>
-            <FolderOpen size={17} />
-            <div>
-              <h2>{studioCopy.projects.recentTitle}</h2>
-              <span>{studioCopy.projects.recentSubtitle}</span>
-            </div>
+          <div className={styles.recentProjectsHeader}>
+            <h2>{studioCopy.projects.recentTitle}</h2>
+            <span>{studioCopy.projects.recentSubtitle}</span>
           </div>
 
-          <div className={styles.projectList}>
+          <div className={styles.projectList} id="studio-project-list">
             {projects.length ? (
-              projects.map((project) => {
+              visibleProjects.map((project) => {
                 const projectActionsLabel = studioCopy.projects.projectActionsAria.replace('{name}', project.name);
                 return (
                   <div key={project.id} className={styles.projectCard}>
@@ -459,12 +393,6 @@ export default function StudioProjectsPageClient() {
                       <span className={styles.projectCardCopy}>
                         <strong>{project.name}</strong>
                         <span>{formatStudioProjectDate(appLocale, project.updatedAt, studioCopy)}</span>
-                        <small>
-                          <Film size={12} />
-                          {project.settings.aspectRatio}
-                          <Clock3 size={12} />
-                          {studioProjectTemplateName(project.canvasTemplateId, localizedTemplates, studioCopy)}
-                        </small>
                       </span>
                     </button>
                     <span className={styles.projectActions}>
@@ -510,8 +438,8 @@ export default function StudioProjectsPageClient() {
               </div>
             )}
           </div>
-          {projects.length ? (
-            <button type="button" className={styles.viewAllProjects}>
+          {projects.length > visibleProjects.length ? (
+            <button type="button" className={styles.viewAllProjects} onClick={() => setShowAllProjects(true)}>
               {studioCopy.projects.viewAllProjects}
               <ChevronRight size={16} />
             </button>

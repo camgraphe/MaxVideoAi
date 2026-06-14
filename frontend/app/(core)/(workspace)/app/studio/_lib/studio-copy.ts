@@ -7,6 +7,7 @@ export type StudioCopy = {
   projects: {
     metaTitle: string;
     heroBadge: string;
+    openProject: string;
     title: string;
     subtitle: string;
     createTitle: string;
@@ -181,6 +182,7 @@ export type StudioCopy = {
     canvasTemplateSaved: string;
     canvasTemplateDeleted: string;
     canvasTemplateCreatedFrom: string;
+    canvasTemplateAdded: string;
     canvasTemplateRenamed: string;
     textPastedIntoPrompt: string;
     sourceAddedToCanvas: string;
@@ -270,10 +272,11 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
   projects: {
     metaTitle: 'Studio Projects | MaxVideoAI',
     heroBadge: 'MaxVideoAI Studio',
-    title: 'Studio projects',
-    subtitle: 'Create a project, choose the starting canvas, then configure each sequence inside the editor.',
-    createTitle: 'Create a new project',
-    createSubtitle: 'Set up your project in a few steps',
+    openProject: 'Open a project',
+    title: 'My projects',
+    subtitle: 'Create a new project or resume an existing one.',
+    createTitle: 'New project',
+    createSubtitle: 'Start a blank project',
     projectNameLabel: 'Project name',
     projectNamePlaceholder: 'Give your project a name...',
     canvasTemplateLabel: 'Canvas template',
@@ -401,7 +404,10 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       renameCanvas: 'Rename',
       unsavedCanvas: 'Unsaved canvas',
       createCanvasFromTemplate: 'New canvas',
+      newCanvas: 'New',
       replaceCurrentCanvas: 'Replace current',
+      replaceCanvas: 'Replace',
+      addTemplate: 'Add',
       replaceCurrentCanvasConfirm: 'Replace the current canvas with "{name}"? This will not touch the timeline.',
       duplicate: 'Duplicate {name}',
       delete: 'Delete {name}',
@@ -828,6 +834,9 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       selectClip: 'Select a timeline clip to edit',
       timelineFirst: 'Timeline first',
       emptyBody: 'Pick a clip in the timeline to adjust its edit properties.',
+      assetSettings: 'Asset settings',
+      assetName: 'Asset name',
+      assetDetails: 'Asset details',
       sequenceSettings: 'Sequence settings',
       sequenceName: 'Sequence name',
       sequenceFormat: 'Sequence format',
@@ -837,6 +846,8 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
       fps: 'FPS',
       sequenceDetails: 'Sequence details',
       duration: 'Duration',
+      type: 'Type',
+      unknown: 'Unknown',
       clips: 'Clips',
       frame: 'Frame',
       clipName: 'Clip name',
@@ -1145,6 +1156,7 @@ export const DEFAULT_STUDIO_COPY: StudioCopy = {
     canvasTemplateSaved: '{name} saved.',
     canvasTemplateDeleted: '{name} deleted.',
     canvasTemplateCreatedFrom: '{name} canvas created from template.',
+    canvasTemplateAdded: '{name} added to the current canvas.',
     canvasTemplateRenamed: '{name} renamed.',
     textPastedIntoPrompt: '{source} pasted into the prompt block.',
     sourceAddedToCanvas: '{source} added to the canvas.',

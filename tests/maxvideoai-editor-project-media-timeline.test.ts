@@ -6,6 +6,13 @@ import {
   projectMediaTimelineDragPayloadForAsset,
   projectMediaTimelineDragPayloadForGeneratedNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag';
+import {
+  applyWorkspaceProjectAssetMetadataToTimelineItems,
+  workspaceAssetNeedsMeasuredDimensions,
+  workspaceProjectAssetMetadataSource,
+  workspaceProjectAssetMetadataSourceUrl,
+  workspaceAssetWithMeasuredMetadata,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-metadata';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -78,6 +85,7 @@ test('project media drag payload preserves asset timeline duration and preview m
   assert.deepEqual(payload, {
     assetId: 'asset-product',
     durationSec: 4.2,
+    hasTimelineAudio: false,
     mediaKind: 'image',
     previewUrl: '/media/product-thumb.jpg',
     title: 'Product_shot.png',
@@ -103,6 +111,7 @@ test('project media drag payload only exposes completed generated media', () => 
 
   assert.deepEqual(payload, {
     durationSec: 6,
+    hasTimelineAudio: false,
     mediaKind: 'video',
     nodeId: 'generated-video-node',
     previewUrl: '/media/generated.jpg',
@@ -189,4 +198,146 @@ test('project media timeline resolver rejects incompatible target tracks', () =>
 
   assert.equal(result.ok, false);
   assert.match(result.notice, /not compatible with the Audio 2 track/);
+});
+
+test('project media measured video metadata hydrates assets and existing timeline clips', () => {
+  const videoAsset: WorkspaceAssetRecord = {
+    id: 'video-asset',
+    kind: 'video',
+    filename: 'Character_scene.mp4',
+    subtitle: 'Video',
+    url: '/media/character-scene.mp4',
+  };
+
+  assert.equal(workspaceAssetNeedsMeasuredDimensions(videoAsset), true);
+  assert.equal(workspaceProjectAssetMetadataSourceUrl(videoAsset, []), '/media/character-scene.mp4');
+  assert.deepEqual(workspaceProjectAssetMetadataSource(videoAsset, []), {
+    kind: 'video',
+    url: '/media/character-scene.mp4',
+  });
+
+  const hydratedAsset = workspaceAssetWithMeasuredMetadata(videoAsset, {
+    durationSec: 15.2,
+    height: 720,
+    width: 1280,
+  });
+
+  assert.deepEqual(
+    {
+      dimensions: hydratedAsset.dimensions,
+      durationSec: hydratedAsset.durationSec,
+      subtitle: hydratedAsset.subtitle,
+    },
+    {
+      dimensions: '1280x720',
+      durationSec: 15.2,
+      subtitle: 'Video · 1280x720',
+    }
+  );
+
+  const insertResult = resolveProjectAssetTimelineInsert({
+    assetId: videoAsset.id,
+    projectAssets: [hydratedAsset],
+    currentItems: [],
+    startSec: 0,
+    lockedTimelineTracks: [],
+    allowInsertIntoClip: false,
+    idSeed: 'metadata',
+  });
+  assert.equal(insertResult.ok, true);
+  if (!insertResult.ok) return;
+  assert.deepEqual(
+    insertResult.items
+      .filter((item) => item.mediaKind === 'video')
+      .map((item) => [item.sourceWidth, item.sourceHeight]),
+    [[1280, 720]],
+    'new timeline clips from hydrated project media should preserve source dimensions'
+  );
+
+  const patchedItems = applyWorkspaceProjectAssetMetadataToTimelineItems(
+    [
+      {
+        id: 'timeline-project-asset-video-asset-existing',
+        outputNodeId: 'project-asset-video-asset',
+        title: 'Character_scene.mp4',
+        track: 'video',
+        mediaKind: 'video',
+        durationSec: 6,
+        startSec: 0,
+        mediaUrl: '/media/character-scene.mp4',
+      },
+      {
+        id: 'timeline-project-asset-video-asset-existing-audio',
+        outputNodeId: 'project-asset-video-asset',
+        title: 'Character_scene.mp4 Audio',
+        track: 'audio',
+        mediaKind: 'audio',
+        durationSec: 6,
+        startSec: 0,
+        mediaUrl: '/media/character-scene.mp4',
+      },
+    ],
+    hydratedAsset
+  );
+
+  assert.deepEqual(
+    patchedItems.map((item) => [item.id, item.sourceWidth ?? null, item.sourceHeight ?? null]),
+    [
+      ['timeline-project-asset-video-asset-existing', 1280, 720],
+      ['timeline-project-asset-video-asset-existing-audio', null, null],
+    ],
+    'hydrating a project media asset should repair visual timeline clips that were inserted before dimensions were known'
+  );
+
+  const legacyVideoAsset: WorkspaceAssetRecord = {
+    id: videoAsset.id,
+    kind: videoAsset.kind,
+    filename: videoAsset.filename,
+    subtitle: videoAsset.subtitle,
+  };
+
+  assert.equal(
+    workspaceProjectAssetMetadataSourceUrl(
+      legacyVideoAsset,
+      [{
+        id: 'timeline-project-asset-video-asset-existing',
+        outputNodeId: 'project-asset-video-asset',
+        title: 'Character_scene.mp4',
+        track: 'video',
+        mediaKind: 'video',
+        durationSec: 6,
+        startSec: 0,
+        mediaUrl: '/media/legacy-character-scene.mp4',
+      }]
+    ),
+    '/media/legacy-character-scene.mp4',
+    'legacy project media without direct asset URLs should hydrate from existing timeline clip media'
+  );
+
+  assert.deepEqual(
+    workspaceProjectAssetMetadataSource(
+      {
+        ...legacyVideoAsset,
+        thumbUrl: 'https://media.maxvideoai.com/renders/user/render-preview.jpg',
+      },
+      []
+    ),
+    {
+      kind: 'image-preview',
+      url: 'https://media.maxvideoai.com/renders/user/render-preview.jpg',
+    },
+    'generated render previews can provide pixel dimensions when no video URL is still available'
+  );
+
+  assert.equal(
+    workspaceProjectAssetMetadataSource(
+      {
+        ...legacyVideoAsset,
+        thumbUrl: 'https://media.maxvideoai.com/user-asset-thumbs/user/compressed-preview.jpg',
+      },
+      []
+    ),
+    null,
+    'compressed user upload thumbnails should not be treated as native source dimensions'
+  );
 });

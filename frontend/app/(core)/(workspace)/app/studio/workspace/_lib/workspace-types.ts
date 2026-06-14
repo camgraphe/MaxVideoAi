@@ -423,6 +423,8 @@ export type WorkspaceTimelineItem = {
   hasEmbeddedAudio?: boolean;
   mediaUrl?: string | null;
   thumbnailUrl?: string | null;
+  sourceWidth?: number | null;
+  sourceHeight?: number | null;
   modelId?: string;
   status?: WorkspaceShotStatus;
   generatedCopy?: WorkspaceTimelineItemGeneratedCopy;

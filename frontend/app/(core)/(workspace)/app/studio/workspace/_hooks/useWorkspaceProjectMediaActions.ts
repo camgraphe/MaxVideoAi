@@ -109,6 +109,7 @@ export function useWorkspaceProjectMediaActions({
   handleInsertProjectAssetToTimeline: (assetId: string) => void;
   handleMoveGeneratedClipToFolder: (nodeId: string, folderId: string | null) => void;
   handleMoveProjectAssetToFolder: (assetId: string, folderId: string | null) => void;
+  handleRenameProjectAsset: (assetId: string, requestedName: string) => void;
   handleRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   handleSelectProjectMediaAsset: (asset: WorkspaceLibraryAsset) => void;
   handleSelectProjectMediaAssets: (assets: WorkspaceLibraryAsset[]) => void;
@@ -497,6 +498,22 @@ export function useWorkspaceProjectMediaActions({
     [projectMediaFolders, setNotice, setProjectMediaFolders, studioNotices]
   );
 
+  const handleRenameProjectAsset = useCallback(
+    (assetId: string, requestedName: string) => {
+      const asset = projectAssets.find((candidate) => candidate.id === assetId);
+      if (!asset) {
+        setNotice(studioNotices.projectMediaAssetNotFound);
+        return;
+      }
+      const filename = requestedName.trim();
+      if (!filename || filename === asset.filename) return;
+      setProjectAssets((current) => current.map((candidate) => (
+        candidate.id === assetId ? { ...candidate, filename } : candidate
+      )));
+    },
+    [projectAssets, setNotice, setProjectAssets, studioNotices]
+  );
+
   const handleMoveProjectAssetToFolder = useCallback(
     (assetId: string, folderId: string | null) => {
       const asset = projectAssets.find((candidate) => candidate.id === assetId);
@@ -572,6 +589,7 @@ export function useWorkspaceProjectMediaActions({
     handleInsertProjectAssetToTimeline,
     handleMoveGeneratedClipToFolder,
     handleMoveProjectAssetToFolder,
+    handleRenameProjectAsset,
     handleRenameProjectMediaFolder,
     handleSelectProjectMediaAsset,
     handleSelectProjectMediaAssets,

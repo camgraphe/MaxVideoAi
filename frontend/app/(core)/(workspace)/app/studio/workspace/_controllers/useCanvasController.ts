@@ -1,13 +1,23 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type DragEvent as ReactDragEvent, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type DragEvent as ReactDragEvent,
+  type MouseEvent as ReactMouseEvent,
+  type RefObject,
+} from 'react';
 import { useReactFlow, type XYPosition } from '@xyflow/react';
 
 import {
   isWorkspaceNodeKind,
   PALETTE_DRAG_START_EVENT,
+  PALETTE_PLACEMENT_ARM_EVENT,
   palettePreviewForKind,
   type PaletteDragPreview,
+  type PalettePlacementArmDetail,
   type PaletteDragStartDetail,
   WORKSPACE_NODE_KIND_DRAG_TYPE,
 } from '../_components/canvas/CanvasPaletteDragPreview';
@@ -46,6 +56,8 @@ type UseCanvasControllerOptions = {
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
 };
 
+type PaletteInteractionMode = 'drag' | 'placement';
+
 function targetNodeIdFromEventTarget(target: EventTarget | null): string | null {
   if (!(target instanceof Element)) return null;
   return target.closest('.react-flow__node')?.getAttribute('data-id') ?? null;
@@ -66,10 +78,15 @@ export function useCanvasController({
 }: UseCanvasControllerOptions) {
   const reactFlow = useReactFlow<WorkspaceGraphNode, WorkspaceGraphEdge>();
   const [paletteDragPreview, setPaletteDragPreview] = useState<PaletteDragPreview | null>(null);
+  const [paletteInteractionMode, setPaletteInteractionMode] = useState<PaletteInteractionMode | null>(null);
   const paletteDragPreviewRef = useRef<PaletteDragPreview | null>(null);
+  const paletteInteractionModeRef = useRef<PaletteInteractionMode | null>(null);
 
-  const updatePaletteDragPreview = useCallback((preview: PaletteDragPreview | null) => {
+  const updatePaletteDragPreview = useCallback((preview: PaletteDragPreview | null, mode?: PaletteInteractionMode | null) => {
     paletteDragPreviewRef.current = preview;
+    const nextMode = preview ? mode ?? paletteInteractionModeRef.current ?? 'drag' : null;
+    paletteInteractionModeRef.current = nextMode;
+    setPaletteInteractionMode(nextMode);
     setPaletteDragPreview(preview);
   }, []);
 
@@ -84,12 +101,20 @@ export function useCanvasController({
       const detail = (event as CustomEvent<PaletteDragStartDetail>).detail;
       if (!detail || !isWorkspaceNodeKind(detail.kind)) return;
       const position = reactFlow.screenToFlowPosition({ x: detail.clientX, y: detail.clientY });
-      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy, detail.presetId));
+      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy, detail.presetId), 'drag');
+    };
+    const handlePalettePlacementArm = (event: Event) => {
+      const detail = (event as CustomEvent<PalettePlacementArmDetail>).detail;
+      if (!detail || !isWorkspaceNodeKind(detail.kind)) return;
+      const position = reactFlow.screenToFlowPosition({ x: detail.clientX, y: detail.clientY });
+      updatePaletteDragPreview(palettePreviewForKind(detail.kind, position, copy, detail.presetId), 'placement');
     };
 
     window.addEventListener(PALETTE_DRAG_START_EVENT, handlePaletteDragStart);
+    window.addEventListener(PALETTE_PLACEMENT_ARM_EVENT, handlePalettePlacementArm);
     return () => {
       window.removeEventListener(PALETTE_DRAG_START_EVENT, handlePaletteDragStart);
+      window.removeEventListener(PALETTE_PLACEMENT_ARM_EVENT, handlePalettePlacementArm);
     };
   }, [copy, reactFlow, updatePaletteDragPreview]);
 
@@ -136,7 +161,8 @@ export function useCanvasController({
     };
   }, [canvasCenterFlowPosition, canvasShellRef, onCanvasFileDrop, onCanvasInteraction, onCanvasTextPaste]);
 
-  const isPaletteDragging = Boolean(paletteDragPreview);
+  const isPaletteDragging = paletteInteractionMode === 'drag';
+  const isPalettePlacementArmed = paletteInteractionMode === 'placement';
 
   useEffect(() => {
     if (!isPaletteDragging) return;
@@ -178,6 +204,61 @@ export function useCanvasController({
       window.removeEventListener('blur', clearPaletteDragPreview);
     };
   }, [isPaletteDragging, onCreateNodeFromPaletteDrop, reactFlow, updatePaletteDragPreview]);
+
+  useEffect(() => {
+    if (!isPalettePlacementArmed) return;
+
+    const clearPalettePlacement = () => {
+      updatePaletteDragPreview(null);
+    };
+    const handlePalettePlacementMove = (event: MouseEvent) => {
+      const preview = paletteDragPreviewRef.current;
+      if (!preview) return;
+      updatePaletteDragPreview({
+        ...preview,
+        position: reactFlow.screenToFlowPosition({ x: event.clientX, y: event.clientY }),
+      });
+    };
+    const handlePalettePlacementKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        clearPalettePlacement();
+      }
+    };
+    const handlePalettePlacementPointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (target instanceof Element && target.closest('[data-studio-canvas-shell="true"]')) return;
+      clearPalettePlacement();
+    };
+
+    window.addEventListener('mousemove', handlePalettePlacementMove);
+    window.addEventListener('keydown', handlePalettePlacementKeyDown, { capture: true });
+    window.addEventListener('mousedown', handlePalettePlacementPointerDown);
+    window.addEventListener('blur', clearPalettePlacement);
+    return () => {
+      window.removeEventListener('mousemove', handlePalettePlacementMove);
+      window.removeEventListener('keydown', handlePalettePlacementKeyDown, true);
+      window.removeEventListener('mousedown', handlePalettePlacementPointerDown);
+      window.removeEventListener('blur', clearPalettePlacement);
+    };
+  }, [isPalettePlacementArmed, reactFlow, updatePaletteDragPreview]);
+
+  const handlePalettePlacementCommit = useCallback(
+    (event: ReactMouseEvent) => {
+      if (paletteInteractionModeRef.current !== 'placement') return false;
+      const preview = paletteDragPreviewRef.current;
+      updatePaletteDragPreview(null);
+      if (!preview) return false;
+      onCanvasInteraction();
+      onCreateNodeFromPaletteDrop({
+        kind: preview.kind,
+        presetId: preview.presetId,
+        position: reactFlow.screenToFlowPosition({ x: event.clientX, y: event.clientY }),
+      });
+      return true;
+    },
+    [onCanvasInteraction, onCreateNodeFromPaletteDrop, reactFlow, updatePaletteDragPreview]
+  );
 
   const handleDragOver = useCallback((event: ReactDragEvent) => {
     const dragTypes = Array.from(event.dataTransfer.types);
@@ -234,6 +315,7 @@ export function useCanvasController({
   return {
     handleDragOver,
     handleDrop,
+    handlePalettePlacementCommit,
     paletteDragPreview,
   };
 }

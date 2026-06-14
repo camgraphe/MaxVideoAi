@@ -31,6 +31,11 @@ function createLocalCanvasTemplateId(): string {
   return `canvas_template_${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
+function createAdditiveTemplateGraphId(templateId: WorkspaceTemplateId): string {
+  const randomId = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  return `template_${templateId}_${randomId}`;
+}
+
 function starterTemplateNoticeName(
   templateId: WorkspaceTemplateId,
   fallbackName: string,
@@ -39,6 +44,61 @@ function starterTemplateNoticeName(
   const summary = WORKSPACE_TEMPLATE_SUMMARIES.find((candidate) => candidate.id === templateId);
   const localized = templateSummariesCopy[templateId];
   return localized?.name || summary?.name || fallbackName;
+}
+
+function graphNodeBounds(nodes: WorkspaceGraphNode[]): { minX: number; minY: number; maxX: number } | null {
+  if (!nodes.length) return null;
+  return nodes.reduce(
+    (bounds, node) => ({
+      minX: Math.min(bounds.minX, node.position.x),
+      minY: Math.min(bounds.minY, node.position.y),
+      maxX: Math.max(bounds.maxX, node.position.x + (node.width ?? node.measured?.width ?? 240)),
+    }),
+    { minX: Number.POSITIVE_INFINITY, minY: Number.POSITIVE_INFINITY, maxX: Number.NEGATIVE_INFINITY }
+  );
+}
+
+function offsetTemplateNodes({
+  currentNodes,
+  templateNodes,
+}: {
+  currentNodes: WorkspaceGraphNode[];
+  templateNodes: WorkspaceGraphNode[];
+}): WorkspaceGraphNode[] {
+  const currentBounds = graphNodeBounds(currentNodes);
+  const templateBounds = graphNodeBounds(templateNodes);
+  if (!currentBounds || !templateBounds) return templateNodes;
+  const gap = 220;
+  const offsetX = currentBounds.maxX + gap - templateBounds.minX;
+  const offsetY = currentBounds.minY - templateBounds.minY;
+  return templateNodes.map((node) => ({
+    ...node,
+    position: {
+      x: node.position.x + offsetX,
+      y: node.position.y + offsetY,
+    },
+  }));
+}
+
+function remapStarterTemplateGraph(templateId: WorkspaceTemplateId, template: { nodes: WorkspaceGraphNode[]; edges: WorkspaceGraphEdge[] }) {
+  const instanceId = createAdditiveTemplateGraphId(templateId);
+  const nodeIdMap = new Map(template.nodes.map((node) => [node.id, `${instanceId}_${node.id}`]));
+  const nextNodes = template.nodes.map((node) => ({
+    ...cloneWorkspaceJson(node),
+    id: nodeIdMap.get(node.id) ?? `${instanceId}_${node.id}`,
+    selected: false,
+  }));
+  const nextEdges = template.edges.map((edge) => ({
+    ...cloneWorkspaceJson(edge),
+    id: `${instanceId}_${edge.id}`,
+    source: nodeIdMap.get(edge.source) ?? edge.source,
+    target: nodeIdMap.get(edge.target) ?? edge.target,
+    selected: false,
+  }));
+  return {
+    edges: nextEdges,
+    nodes: nextNodes,
+  };
 }
 
 type UseWorkspaceCanvasTemplateActionsParams = {
@@ -77,6 +137,7 @@ export function useWorkspaceCanvasTemplateActions({
   studioNotices,
   userCanvasTemplates,
 }: UseWorkspaceCanvasTemplateActionsParams): {
+  handleAddCanvasTemplate: (templateId: WorkspaceTemplateId) => void;
   handleApplyCanvasTemplate: (templateId: WorkspaceTemplateId) => void;
   handleApplyUserCanvasTemplate: (templateId: string) => void;
   handleCreateCanvasFromTemplate: (templateId: WorkspaceTemplateId) => void;
@@ -226,6 +287,28 @@ export function useWorkspaceCanvasTemplateActions({
     [commitCanvasGraph, setActiveEditorSurface, setActiveTemplateId, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioCanvasCopy.templateSummaries, studioNotices.canvasTemplateCreatedFrom, updateUserCanvasTemplates]
   );
 
+  const handleAddCanvasTemplate = useCallback(
+    (templateId: WorkspaceTemplateId) => {
+      const starterTemplate = createStarterWorkspaceTemplate(templateId);
+      const starterName = starterTemplateNoticeName(starterTemplate.id, starterTemplate.name, studioCanvasCopy.templateSummaries);
+      const remappedTemplate = remapStarterTemplateGraph(starterTemplate.id, starterTemplate);
+      const templateNodes = offsetTemplateNodes({
+        currentNodes: nodes,
+        templateNodes: remappedTemplate.nodes,
+      });
+      commitCanvasGraph((current) => ({
+        edges: [...current.edges, ...remappedTemplate.edges],
+        nodes: [...current.nodes, ...templateNodes],
+      }));
+      setActiveEditorSurface('canvas');
+      setSelectedNodeId(null);
+      setActiveUserCanvasTemplateId(null);
+      setCanvasRevision((value) => value + 1);
+      setNotice(formatCopyValue(studioNotices.canvasTemplateAdded, { name: starterName }));
+    },
+    [commitCanvasGraph, nodes, setActiveEditorSurface, setActiveUserCanvasTemplateId, setCanvasRevision, setNotice, setSelectedNodeId, studioCanvasCopy.templateSummaries, studioNotices.canvasTemplateAdded]
+  );
+
   const handleDuplicateUserCanvasTemplate = useCallback(
     (templateId: string) => {
       const template = userCanvasTemplates.find((candidate) => candidate.id === templateId);
@@ -285,6 +368,7 @@ export function useWorkspaceCanvasTemplateActions({
   );
 
   return {
+    handleAddCanvasTemplate,
     handleApplyCanvasTemplate,
     handleApplyUserCanvasTemplate,
     handleCreateCanvasFromTemplate,

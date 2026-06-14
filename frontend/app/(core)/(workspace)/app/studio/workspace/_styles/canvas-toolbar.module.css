@@ -42,7 +42,8 @@
     transform 140ms ease;
 }
 
-.toolbarButton:hover {
+.toolbarButton:hover,
+.toolbarButton:focus-visible {
   background: var(--studio-bg-soft);
   color: var(--studio-text-strong);
 }
@@ -57,6 +58,15 @@
 
 .toolbarButton:active {
   transform: scale(0.98);
+}
+
+.toolbarButton:focus-visible,
+.blockOption:focus-visible,
+.saveActionButton:focus-visible,
+.templateSaveForm input:focus-visible,
+.templateSaveForm button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--studio-primary) 76%, #ffffff 10%);
+  outline-offset: 2px;
 }
 
 .toolbarButtonActive {
@@ -77,7 +87,7 @@
   bottom: calc(100% + 12px);
   left: 50%;
   display: grid;
-  width: min(320px, calc(100vw - 40px));
+  width: min(560px, calc(100vw - 40px));
   max-height: clamp(220px, calc(100vh - 430px), 360px);
   gap: 10px;
   padding: 12px;
@@ -121,16 +131,17 @@
 
 .blockOptionList {
   display: grid;
-  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
 }
 
 .blockOption {
   display: grid;
-  grid-template-columns: 34px minmax(0, 1fr);
-  gap: 10px;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 8px;
   align-items: center;
-  min-height: 62px;
-  padding: 10px;
+  min-height: 60px;
+  padding: 8px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background:
@@ -145,29 +156,28 @@
   cursor: grabbing;
 }
 
-.blockOption:hover {
+.blockOption:hover,
+.blockOption:focus-visible {
   border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 52%, rgba(226, 232, 240, 0.18));
 }
 
 .blockOptionIcon {
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   place-items: center;
   border-radius: 8px;
   background: color-mix(in srgb, var(--template-accent, #8b5cf6) 22%, var(--studio-surface));
   color: color-mix(in srgb, var(--template-accent, #8b5cf6) 82%, #ffffff 10%);
 }
 
-.blockOption span:last-child {
+.blockOptionContent {
   display: grid;
   min-width: 0;
   gap: 3px;
 }
 
-.blockOption strong,
-.templateOption strong,
-.userTemplateItem strong {
+.blockOption strong {
   overflow: hidden;
   color: var(--studio-text-strong);
   font-size: 12px;
@@ -176,81 +186,37 @@
   white-space: nowrap;
 }
 
-.blockOption small,
-.templateOption small,
-.userTemplateItem span {
+.blockOption small {
+  display: -webkit-box;
+  overflow: hidden;
   color: var(--studio-text-muted);
   font-size: 10px;
-  line-height: 1.32;
+  line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
 }
 
-.templateGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+.blockOptionMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
-.templateOption {
-  position: relative;
-  display: grid;
-  min-height: 112px;
-  align-content: end;
-  gap: 7px;
-  padding: 8px;
+.blockOptionMeta em {
+  min-width: 0;
+  max-width: 100%;
+  padding: 1px 5px;
   overflow: hidden;
-  border: 1px solid var(--studio-border);
-  border-radius: 8px;
-  background:
-    linear-gradient(180deg, transparent 0%, var(--studio-bg) 62%),
-    var(--template-thumbnail),
-    linear-gradient(135deg, color-mix(in srgb, var(--template-accent, #8b5cf6) 24%, var(--studio-bg-soft)), var(--studio-bg));
-  background-position: center;
-  background-size: cover;
-  color: var(--studio-text);
-  cursor: pointer;
-  text-align: left;
-}
-
-.templateOptionActive {
-  border-color: color-mix(in srgb, var(--template-accent, #8b5cf6) 70%, #ffffff 6%);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--template-accent, #8b5cf6) 35%, transparent);
-}
-
-.templateThumbnail {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border-radius: 7px;
-  background: linear-gradient(135deg, #8b5cf6, var(--studio-primary-2));
-  color: #ffffff;
-}
-
-.templateOption span:last-of-type {
-  display: grid;
-  gap: 3px;
-}
-
-.templateOption em {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  padding: 2px 5px;
+  border: 1px solid color-mix(in srgb, var(--template-accent, #8b5cf6) 30%, var(--studio-border));
   border-radius: 999px;
-  background: rgba(124, 58, 237, 0.32);
-  color: #ddd6fe;
+  background: color-mix(in srgb, var(--template-accent, #8b5cf6) 12%, var(--studio-bg-soft));
+  color: var(--studio-text);
   font-size: 9px;
   font-style: normal;
-  font-weight: 800;
-}
-
-.templateSavePanel {
-  display: grid;
-  gap: 8px;
-  padding-top: 2px;
+  font-weight: 850;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .saveActionList {
@@ -273,7 +239,8 @@
   text-align: left;
 }
 
-.saveActionButton:hover {
+.saveActionButton:hover,
+.saveActionButton:focus-visible {
   background: var(--studio-bg-soft);
 }
 
@@ -345,60 +312,6 @@
   cursor: not-allowed;
 }
 
-.userTemplateList {
-  display: grid;
-  gap: 7px;
-}
-
-.userTemplateItem {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
-  border: 1px solid var(--studio-border);
-  border-radius: 8px;
-  background: var(--studio-surface);
-}
-
-.userTemplateItemActive {
-  border-color: rgba(139, 92, 246, 0.55);
-}
-
-.userTemplateItem > button {
-  display: grid;
-  min-width: 0;
-  gap: 3px;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  text-align: left;
-}
-
-.userTemplateItem > div {
-  display: flex;
-  gap: 4px;
-}
-
-.userTemplateItem > div button {
-  display: grid;
-  width: 26px;
-  height: 26px;
-  place-items: center;
-  border: 1px solid var(--studio-border);
-  border-radius: 7px;
-  background: var(--studio-surface);
-  color: var(--studio-text);
-  cursor: pointer;
-}
-
-.emptyTemplateState {
-  margin: 0;
-  color: var(--studio-text-muted);
-  font-size: 11px;
-}
-
 @media (max-width: 760px) {
   .canvasToolbar {
     bottom: 12px;
@@ -410,7 +323,7 @@
     width: min(340px, calc(100vw - 24px));
   }
 
-  .templateGrid {
+  .blockOptionList {
     grid-template-columns: 1fr;
   }
 }

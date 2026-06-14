@@ -13,12 +13,26 @@ function clipTransformStyle(clip: WorkspaceTimelineRenderClip): React.CSSPropert
   const y = clip.transform?.positionY ?? 0;
   const rotation = clip.transform?.rotation ?? 0;
   const opacity = clip.transform?.opacity ?? 1;
+  if (clip.composition) {
+    return {
+      position: 'absolute',
+      left: clip.composition.left,
+      top: clip.composition.top,
+      width: clip.composition.width,
+      height: clip.composition.height,
+      objectFit: 'contain',
+      opacity: clip.composition.opacity,
+      transform: `translate(-50%, -50%) scale(${clip.composition.scale}) rotate(${clip.composition.rotation}deg)`,
+      transformOrigin: 'center center',
+    };
+  }
   return {
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: 'contain',
     opacity,
     transform: `translate(${x}%, ${y}%) scale(${scale}) rotate(${rotation}deg)`,
+    transformOrigin: 'center center',
   };
 }
 

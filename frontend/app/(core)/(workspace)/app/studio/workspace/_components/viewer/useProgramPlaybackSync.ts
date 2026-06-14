@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import type { WorkspaceProjectSettings, WorkspaceTimelineItem } from '../../_lib/workspace-types';
+import {
+  resolveWorkspaceClipComposition,
+  type WorkspaceTimelineClipComposition,
+} from '../../_lib/workspace-clip-composition';
 import { resolveProgramSnapshotFallbackSourceUrl } from '../../_lib/workspace-program-snapshot';
 import { workspaceProjectDimensions } from '../../_lib/workspace-project-settings';
 import {
@@ -28,6 +32,7 @@ export type PlaybackLayer = {
   url: string;
   mediaKind: 'video' | 'image';
   sourceTimeSec: number;
+  composition: WorkspaceTimelineClipComposition | null;
   opacity: number;
   isPreparing: boolean;
   isVisible: boolean;
@@ -131,7 +136,19 @@ function crossfadeDurationFor(left: WorkspaceTimelineItem, right: WorkspaceTimel
 
 export function clipVisualStyleFor(layer: PlaybackLayer): CSSProperties {
   const transform = layer.item.transform ?? DEFAULT_CLIP_TRANSFORM;
-  const opacity = clampSeconds(layer.opacity * transform.opacity, 0, 1);
+  const composition = layer.composition;
+  const opacity = clampSeconds(layer.opacity * (composition?.opacity ?? transform.opacity), 0, 1);
+  if (composition) {
+    return {
+      height: `${(composition.height / composition.sequenceHeight) * 100}%`,
+      left: `${(composition.left / composition.sequenceWidth) * 100}%`,
+      opacity,
+      top: `${(composition.top / composition.sequenceHeight) * 100}%`,
+      width: `${(composition.width / composition.sequenceWidth) * 100}%`,
+      zIndex: layer.zIndex,
+      transform: `translate(-50%, -50%) scale(${composition.scale}) rotate(${composition.rotation}deg)`,
+    };
+  }
   return {
     opacity,
     zIndex: layer.zIndex,
@@ -150,6 +167,32 @@ function snapshotPreviewDimensions(width: number, height: number): { height: num
     height: Math.max(1, Math.round(height * scale)),
     width: PROGRAM_SNAPSHOT_PREVIEW_MAX_WIDTH,
   };
+}
+
+function drawPlaybackLayerSnapshotSource(
+  context: CanvasRenderingContext2D,
+  source: CanvasImageSource,
+  layer: PlaybackLayer,
+  previewDimensions: { height: number; width: number }
+): void {
+  const composition = layer.composition;
+  if (!composition) {
+    context.drawImage(source, 0, 0, previewDimensions.width, previewDimensions.height);
+    return;
+  }
+
+  const scaleX = previewDimensions.width / composition.sequenceWidth;
+  const scaleY = previewDimensions.height / composition.sequenceHeight;
+  const width = composition.width * scaleX;
+  const height = composition.height * scaleY;
+
+  context.save();
+  context.globalAlpha = clampSeconds(layer.opacity * composition.opacity, 0, 1);
+  context.translate(composition.left * scaleX, composition.top * scaleY);
+  context.rotate((composition.rotation * Math.PI) / 180);
+  context.scale(composition.scale, composition.scale);
+  context.drawImage(source, -width / 2, -height / 2, width, height);
+  context.restore();
 }
 
 export function useProgramPlaybackSync({
@@ -205,6 +248,7 @@ export function useProgramPlaybackSync({
         url,
         mediaKind: imageUrl ? 'image' : 'video',
         sourceTimeSec: item.sourceStartSec ?? 0,
+        composition: resolveWorkspaceClipComposition({ item, projectSettings }),
         opacity: 0,
         isPreparing: false,
         isVisible: false,
@@ -267,7 +311,7 @@ export function useProgramPlaybackSync({
     });
 
     return Array.from(layerByItemId.values());
-  }, [activePlaybackItem, itemsAtPlayhead, nextVideoItem, playheadSec, videoItems]);
+  }, [activePlaybackItem, itemsAtPlayhead, nextVideoItem, playheadSec, projectSettings, videoItems]);
   const audioPlaybackLayers = useMemo(() => {
     return audioItems.flatMap((item): AudioPlaybackLayer[] => {
       const url = playableAudioUrlForItem(item);
@@ -392,6 +436,8 @@ export function useProgramPlaybackSync({
         onSendSnapshotToCanvas(basePayload);
         return;
       }
+      context.fillStyle = '#000000';
+      context.fillRect(0, 0, previewDimensions.width, previewDimensions.height);
 
       if (visibleLayer.mediaKind === 'video') {
         const video = playbackVideoRefs.current.get(visibleLayer.item.id);
@@ -399,7 +445,7 @@ export function useProgramPlaybackSync({
           onSendSnapshotToCanvas(basePayload);
           return;
         }
-        context.drawImage(video, 0, 0, previewDimensions.width, previewDimensions.height);
+        drawPlaybackLayerSnapshotSource(context, video, visibleLayer, previewDimensions);
         onSendSnapshotToCanvas({ ...basePayload, dataUrl: canvas.toDataURL('image/jpeg', 0.82) });
         return;
       }
@@ -410,7 +456,7 @@ export function useProgramPlaybackSync({
         onSendSnapshotToCanvas(basePayload);
         return;
       }
-      context.drawImage(image, 0, 0, previewDimensions.width, previewDimensions.height);
+      drawPlaybackLayerSnapshotSource(context, image, visibleLayer, previewDimensions);
       onSendSnapshotToCanvas({ ...basePayload, dataUrl: canvas.toDataURL('image/jpeg', 0.82) });
     } catch {
       onSendSnapshotToCanvas(basePayload);

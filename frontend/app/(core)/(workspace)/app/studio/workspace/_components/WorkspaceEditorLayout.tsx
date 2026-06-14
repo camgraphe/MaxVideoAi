@@ -241,6 +241,7 @@ export function WorkspaceEditorLayout({
             onDuplicateSequence={sequence.handleDuplicateSequence}
             onImportMedia={projectMedia.handleImportProjectMedia}
             onImportLocalMediaFiles={projectMedia.handleImportLocalProjectMediaFiles}
+            onInspectProjectAsset={selection.handleInspectProjectAsset}
             onInspectSequence={selection.handleInspectSequence}
             onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
             onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
@@ -250,7 +251,7 @@ export function WorkspaceEditorLayout({
             onNewSequence={sequence.handleCreateSequence}
             onRenameProjectMediaFolder={projectMedia.handleRenameProjectMediaFolder}
             onSelectSequence={sequence.handleSelectSequence}
-            onClearSequenceInspector={selection.handleClearSequenceInspector}
+            onClearProjectMediaInspector={selection.handleClearProjectMediaInspector}
           />
         ) : null}
         {focusMode === 'canvas' ? (
@@ -298,6 +299,7 @@ export function WorkspaceEditorLayout({
               activeTemplateId: activeUserCanvasTemplateId ? null : activeTemplateId,
               userTemplates: userCanvasTemplates,
               activeUserTemplateId: activeUserCanvasTemplateId,
+              onAddTemplate: canvas.handleAddCanvasTemplate,
               onApplyTemplate: canvas.handleApplyCanvasTemplate,
               onApplyUserTemplate: canvas.handleApplyUserCanvasTemplate,
               onCreateCanvasFromTemplate: canvas.handleCreateCanvasFromTemplate,
@@ -349,10 +351,12 @@ export function WorkspaceEditorLayout({
             copy={studioCopy.timeline.inspector}
             canvasNodeCopy={studioCopy.canvas.nodes}
             projectMediaCopy={studioCopy.viewer.projectMedia}
+            selectedAsset={exportState.selectedProjectAssetForInspector}
             selectedItem={exportState.selectedTimelineItem}
             selectedSequence={exportState.selectedSequenceForInspector}
             projectFps={projectSettings.fps}
             onPatchItem={timelineClip.handlePatchTimelineItem}
+            onRenameProjectAsset={projectMedia.handleRenameProjectAsset}
             onRenameSequence={sequence.handleRenameActiveSequence}
             onSequenceSettingsChange={shell.handleSequenceSettingsChange}
           />

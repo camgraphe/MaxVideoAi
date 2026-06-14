@@ -48,6 +48,7 @@ type TimelineProjectSidebarProps = {
   onDuplicateSequence: (sequenceId: string) => void;
   onImportMedia: (folderId?: string | null) => void;
   onImportLocalMediaFiles: (files: File[], folderId?: string | null) => Promise<void> | void;
+  onInspectProjectAsset: (assetId: string) => void;
   onInspectSequence: (sequenceId: string) => void;
   onInsertGeneratedClip: (nodeId: string) => void;
   onInsertProjectAsset: (assetId: string) => void;
@@ -57,7 +58,7 @@ type TimelineProjectSidebarProps = {
   onNewSequence: () => void;
   onRenameProjectMediaFolder: (folderId: string, requestedName: string) => void;
   onSelectSequence: (sequenceId: string) => void;
-  onClearSequenceInspector: () => void;
+  onClearProjectMediaInspector: () => void;
 };
 
 const MEDIA_DETAIL_SEPARATOR = ' • ';
@@ -447,6 +448,7 @@ export function TimelineProjectSidebar({
   onDuplicateSequence,
   onImportMedia,
   onImportLocalMediaFiles,
+  onInspectProjectAsset,
   onInspectSequence,
   onInsertGeneratedClip,
   onInsertProjectAsset,
@@ -456,7 +458,7 @@ export function TimelineProjectSidebar({
   onNewSequence,
   onRenameProjectMediaFolder,
   onSelectSequence,
-  onClearSequenceInspector,
+  onClearProjectMediaInspector,
 }: TimelineProjectSidebarProps) {
   const [folderDialog, setFolderDialog] = useState<ProjectMediaFolderDialogState | null>(null);
   const projectMedia = useProjectMediaController({
@@ -465,7 +467,7 @@ export function TimelineProjectSidebar({
     projectMediaFolders,
     sequences,
     studioCanvasNodeCopy,
-    onClearSequenceInspector,
+    onClearProjectMediaInspector,
     onDeleteGeneratedClip,
     onDeleteGeneratedClips,
     onDeleteProjectAsset,
@@ -477,6 +479,7 @@ export function TimelineProjectSidebar({
     onDuplicateSequence,
     onImportMedia,
     onImportLocalMediaFiles,
+    onInspectProjectAsset: (assetId) => onInspectProjectAsset(assetId),
     onInspectSequence,
     onInsertGeneratedClip,
     onInsertProjectAsset,

@@ -4,6 +4,7 @@ import { RotateCcw, Sparkles } from 'lucide-react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
 import type {
+  WorkspaceAssetRecord,
   WorkspaceProjectSettings,
   WorkspaceTimelineAudioMix,
   WorkspaceTimelineClipTransform,
@@ -48,6 +49,7 @@ type TimelineClipInspectorProps = {
   copy: StudioCopy['timeline']['inspector'];
   canvasNodeCopy: StudioCopy['canvas']['nodes'];
   projectMediaCopy: StudioCopy['viewer']['projectMedia'];
+  selectedAsset: WorkspaceAssetRecord | null;
   selectedItem: WorkspaceTimelineItem | null;
   selectedSequence: {
     clipCount: number;
@@ -58,6 +60,7 @@ type TimelineClipInspectorProps = {
   } | null;
   projectFps: number;
   onPatchItem: (itemId: string, patch: Partial<WorkspaceTimelineItem>) => void;
+  onRenameProjectAsset: (assetId: string, requestedName: string) => void;
   onRenameSequence: (name: string) => void;
   onSequenceSettingsChange: (patch: Partial<WorkspaceProjectSettings>) => void;
 };
@@ -233,20 +236,80 @@ function SequenceInspector({
   );
 }
 
+function ProjectMediaAssetInspector({
+  asset,
+  copy,
+  projectFps,
+  onRenameProjectAsset,
+}: {
+  asset: WorkspaceAssetRecord;
+  copy: StudioCopy['timeline']['inspector'];
+  projectFps: number;
+  onRenameProjectAsset: (assetId: string, requestedName: string) => void;
+}) {
+  const durationLabel =
+    typeof asset.durationSec === 'number' && asset.durationSec > 0
+      ? formatWorkspaceTimecode(asset.durationSec, projectFps)
+      : copy.unknown;
+  const resolutionLabel = asset.dimensions ?? copy.unknown;
+
+  return (
+    <aside className={styles.settingsPanel} aria-label={copy.assetSettings}>
+      <div className={styles.panelHeader}>
+        <div>
+          <p className={styles.panelTitle}>{asset.filename}</p>
+          <span className={styles.panelSubtitle}>{copy.assetSettings}</span>
+        </div>
+      </div>
+      <div className={styles.settingsBody}>
+        <label className={styles.settingsLabel}>
+          {copy.assetName}
+          <input
+            className={styles.settingsInput}
+            value={asset.filename}
+            onChange={(event) => onRenameProjectAsset(asset.id, event.currentTarget.value)}
+          />
+        </label>
+        <div className={styles.infoGrid} data-project-media-asset-details="true" aria-label={copy.assetDetails}>
+          <span>{copy.duration}</span>
+          <strong>{durationLabel}</strong>
+          <span>{copy.resolution}</span>
+          <strong>{resolutionLabel}</strong>
+          <span>{copy.type}</span>
+          <strong>{asset.kind}</strong>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
 export function TimelineClipInspector({
   copy,
   canvasNodeCopy,
   projectMediaCopy,
+  selectedAsset,
   selectedItem,
   selectedSequence,
   projectFps,
   onPatchItem,
+  onRenameProjectAsset,
   onRenameSequence,
   onSequenceSettingsChange,
 }: TimelineClipInspectorProps) {
-  if (!selectedItem && selectedSequence) {
+  if (selectedAsset) {
     return (
-        <SequenceInspector
+      <ProjectMediaAssetInspector
+        asset={selectedAsset}
+        copy={copy}
+        projectFps={projectFps}
+        onRenameProjectAsset={onRenameProjectAsset}
+      />
+    );
+  }
+
+  if (selectedSequence) {
+    return (
+      <SequenceInspector
         copy={copy}
         projectMediaCopy={projectMediaCopy}
         sequence={selectedSequence}

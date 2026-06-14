@@ -13,6 +13,7 @@ import { useWorkspaceEditorNotice } from './_hooks/useWorkspaceEditorNotice';
 import { useWorkspaceExportState } from './_hooks/useWorkspaceExportState';
 import { useWorkspacePersistenceEffects } from './_hooks/useWorkspacePersistenceEffects';
 import { useWorkspaceProjectMediaActions } from './_hooks/useWorkspaceProjectMediaActions';
+import { useWorkspaceProjectMediaMetadataHydration } from './_hooks/useWorkspaceProjectMediaMetadataHydration';
 import { useWorkspaceSelectionActions } from './_hooks/useWorkspaceSelectionActions';
 import { useWorkspaceSequenceActions } from './_hooks/useWorkspaceSequenceActions';
 import { useWorkspaceSequenceSnapshots } from './_hooks/useWorkspaceSequenceSnapshots';
@@ -24,16 +25,7 @@ import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineT
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
 import { useWorkspaceTimelineSelectionSync } from './_hooks/useWorkspaceTimelineSelectionSync';
 import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
-import type {
-  WorkspaceAssetRecord,
-  WorkspaceProjectMediaFolder,
-  WorkspaceProjectSettings,
-  WorkspaceTemplateId,
-  WorkspaceTimelineItem,
-  WorkspaceTimelineAudioTrack,
-  WorkspaceTimelineTrack,
-  WorkspaceTimelineVideoTrack,
-} from './_lib/workspace-types';
+import type { WorkspaceAssetRecord, WorkspaceProjectMediaFolder, WorkspaceProjectSettings, WorkspaceTemplateId, WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from './_lib/workspace-types';
 import { WORKSPACE_TEMPLATE_SUMMARIES, createStarterWorkspaceTemplate } from './_lib/workspace-templates';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from './_lib/workspace-project-settings';
 import { type WorkspaceTimelineExportRangeMode } from './_lib/workspace-timeline-render';
@@ -54,10 +46,7 @@ import {
   type WorkspaceSequenceRecord,
   type WorkspaceUserCanvasTemplate,
 } from './_state/workspace-state';
-import {
-  sequenceNameForIndex,
-  workspaceTimelineDurationSec,
-} from './_state/workspace-selectors';
+import { sequenceNameForIndex, workspaceTimelineDurationSec } from './_state/workspace-selectors';
 import { workspaceStorageKeyForProject } from './_state/workspace-persistence';
 
 type WorkspacePageProps = { projectId?: string };
@@ -120,6 +109,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
   const [focusMode, setFocusMode] = useState<WorkspaceFocusMode>('canvas');
   const [exportRangeMode, setExportRangeMode] = useState<WorkspaceTimelineExportRangeMode>('sequence');
   const [exportQualityPreset, setExportQualityPreset] = useState<WorkspaceTimelineExportQualityPreset>('standard');
+  const [inspectedProjectAssetId, setInspectedProjectAssetId] = useState<string | null>(null);
   const [inspectedSequenceId, setInspectedSequenceId] = useState<string | null>(null);
   const [mockMode, setMockMode] = useState(process.env.NODE_ENV !== 'production');
   const { notice, setNotice } = useWorkspaceEditorNotice();
@@ -143,6 +133,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setActiveEditorSurface,
     setExportRangeMode,
     setIsCanvasInspectorOpen,
+    setInspectedProjectAssetId,
     setInspectedSequenceId,
     setSelectedNodeId,
     setSelectedTimelineItemId,
@@ -184,10 +175,12 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     activeTemplateName,
     exportRangeMode,
     hiddenVideoTracks,
+    inspectedProjectAssetId,
     inspectedSequenceId,
     mutedAudioTracks,
     nodes,
     previewTimelineItems,
+    projectAssets,
     projectSettings,
     selectedTimelineItemId,
     sequenceSummaries: sequenceSnapshots.sequenceSummaries,
@@ -224,6 +217,8 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     selectDefaultItems: selectionActions.applyDefaultTimelineSelection,
     stopPlayback: timelinePlayback.stopTimelinePlayback,
   });
+  const projectMediaMetadataTimelineItems = useMemo(() => [...timelineItems, ...sequences.flatMap((sequence) => sequence.timelineItems)], [sequences, timelineItems]);
+  useWorkspaceProjectMediaMetadataHydration({ projectAssets, setProjectAssets, setSequences, setTimelineItems, timelineItems: projectMediaMetadataTimelineItems, timelineItemsRef });
 
   const sequenceActions = useWorkspaceSequenceActions({
     activeSequenceId,

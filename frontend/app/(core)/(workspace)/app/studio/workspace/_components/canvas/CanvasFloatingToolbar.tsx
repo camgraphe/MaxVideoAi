@@ -6,6 +6,7 @@ import {
   useState,
   type CSSProperties,
   type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type MouseEvent as ReactMouseEvent,
   type ReactNode,
 } from 'react';
@@ -37,7 +38,10 @@ import type {
   WorkspaceGenerationPresetId,
   WorkspaceNodeKind,
 } from '../../_lib/workspace-types';
-import { PALETTE_DRAG_START_EVENT } from './CanvasPaletteDragPreview';
+import {
+  PALETTE_DRAG_START_EVENT,
+  PALETTE_PLACEMENT_ARM_EVENT,
+} from './CanvasPaletteDragPreview';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type ToolbarMenuId = 'audio' | 'image' | 'save' | 'text' | 'video';
@@ -52,6 +56,7 @@ type ToolbarBlockDefinition = {
   description: string;
   icon: ReactNode;
   accent: string;
+  meta: string[];
 };
 
 type ToolbarBlockStyle = CSSProperties & {
@@ -79,6 +84,23 @@ function copyValue(copy: StudioCopy['canvas']['nodes'], key: string, fallback: s
   return copy[key] ?? fallback;
 }
 
+function uniqueMeta(values: string[]): string[] {
+  return Array.from(new Set(values.filter(Boolean))).slice(0, 3);
+}
+
+function outputKindLabel(kind: WorkspaceBlockPreset['outputKind'], copy: StudioCopy['canvas']['nodes']): string {
+  if (kind === 'audio') return copy.audioReference;
+  if (kind === 'image') return copy.image;
+  if (kind === 'text') return copy.text;
+  return copy.video;
+}
+
+function presetMeta(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas']['nodes']): string[] {
+  const workflowLabel = preset.family === 'upscale' ? copy.upscale : copy.workflow;
+  const modeLabel = preset.nodeKind === 'chat' ? copy.chatbotMode : workflowLabel;
+  return uniqueMeta([outputKindLabel(preset.outputKind, copy), modeLabel, copy.outputs]);
+}
+
 function blockFromPreset(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas']['nodes'], icon: ReactNode): ToolbarBlockDefinition {
   return {
     id: preset.id,
@@ -88,6 +110,7 @@ function blockFromPreset(preset: WorkspaceBlockPreset, copy: StudioCopy['canvas'
     description: copyValue(copy, preset.descriptionKey, preset.id),
     icon,
     accent: preset.accent,
+    meta: presetMeta(preset, copy),
   };
 }
 
@@ -105,6 +128,7 @@ function presetBlock(
       description: presetId,
       icon,
       accent: '#8b5cf6',
+      meta: uniqueMeta([copy.workflow, copy.outputs]),
     };
   }
   return blockFromPreset(preset, copy, icon);
@@ -120,6 +144,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.imageDescription,
         icon: <ImagePlus size={18} />,
         accent: '#8b5cf6',
+        meta: uniqueMeta([copy.image, copy.assetFallback, copy.outputs]),
       },
       presetBlock('generate-image', copy, <WandSparkles size={18} />),
       presetBlock('character-builder', copy, <Sparkles size={18} />),
@@ -134,6 +159,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.videoDescription,
         icon: <Video size={18} />,
         accent: '#3b82f6',
+        meta: uniqueMeta([copy.video, copy.assetFallback, copy.outputs]),
       },
       presetBlock('generate-video', copy, <Clapperboard size={18} />),
       presetBlock('modify-video', copy, <SlidersHorizontal size={18} />),
@@ -147,6 +173,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.musicDescription,
         icon: <Music2 size={18} />,
         accent: '#22c55e',
+        meta: uniqueMeta([copy.audioReference, copy.assetFallback, copy.outputs]),
       },
       presetBlock('audio-music', copy, <WandSparkles size={18} />),
       presetBlock('audio-voiceover', copy, <Mic2 size={18} />),
@@ -162,6 +189,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         description: copy.freeTextDescription,
         icon: <Type size={18} />,
         accent: '#60a5fa',
+        meta: uniqueMeta([copy.text, copy.promptRole, copy.outputs]),
       },
       presetBlock('chat-box', copy, <MessageSquareText size={18} />),
     ],
@@ -189,6 +217,7 @@ export function CanvasFloatingToolbar({
   onUndo,
 }: CanvasFloatingToolbarProps) {
   const toolbarRef = useRef<HTMLDivElement | null>(null);
+  const suppressBlockClickRef = useRef(false);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [canvasName, setCanvasName] = useState('');
   const [renameCanvasName, setRenameCanvasName] = useState('');
@@ -224,6 +253,7 @@ export function CanvasFloatingToolbar({
       moveEvent.preventDefault();
       if (hasStartedDrag || Math.hypot(moveEvent.clientX - startX, moveEvent.clientY - startY) <= 8) return;
       hasStartedDrag = true;
+      suppressBlockClickRef.current = true;
       clearTextSelection();
       setActiveMenu(null);
       window.dispatchEvent(
@@ -244,11 +274,45 @@ export function CanvasFloatingToolbar({
       document.removeEventListener('mousemove', handleMove);
       document.removeEventListener('selectstart', handleSelectStart);
       clearTextSelection();
+      if (hasStartedDrag) {
+        window.setTimeout(() => {
+          suppressBlockClickRef.current = false;
+        }, 0);
+      }
     };
 
     document.addEventListener('mousemove', handleMove);
     document.addEventListener('selectstart', handleSelectStart);
     document.addEventListener('mouseup', handleUp, { once: true });
+  };
+
+  const handleBlockClick = (
+    event: ReactMouseEvent<HTMLButtonElement>,
+    kind: WorkspaceNodeKind,
+    presetId?: WorkspaceGenerationPresetId
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (suppressBlockClickRef.current) {
+      suppressBlockClickRef.current = false;
+      return;
+    }
+
+    const rect = event.currentTarget.getBoundingClientRect();
+    const clientX = event.clientX || rect.left + rect.width / 2;
+    const clientY = event.clientY || rect.top + rect.height / 2;
+    clearTextSelection();
+    setActiveMenu(null);
+    window.dispatchEvent(
+      new CustomEvent(PALETTE_PLACEMENT_ARM_EVENT, {
+        detail: {
+          kind,
+          presetId,
+          clientX,
+          clientY,
+        },
+      })
+    );
   };
 
   const handleSaveCanvasAs = (event: FormEvent<HTMLFormElement>) => {
@@ -265,12 +329,24 @@ export function CanvasFloatingToolbar({
     setActiveMenu(null);
   };
 
+  const handleMenuKeyDown = (event: ReactKeyboardEvent) => {
+    if (event.key !== 'Escape') return;
+    event.stopPropagation();
+    setActiveMenu(null);
+  };
+
   const toggleMenu = (menu: ToolbarMenuId) => {
     setActiveMenu((current) => (current === menu ? null : menu));
   };
 
   return (
-    <div ref={toolbarRef} className={styles.canvasToolbar} data-canvas-toolbar="true" aria-label={copy.toolbar.ariaLabel}>
+    <div
+      ref={toolbarRef}
+      className={styles.canvasToolbar}
+      data-canvas-toolbar="true"
+      aria-label={copy.toolbar.ariaLabel}
+      onKeyDown={handleMenuKeyDown}
+    >
       <button
         type="button"
         className={styles.toolbarButton}
@@ -328,24 +404,28 @@ export function CanvasFloatingToolbar({
         active={activeMenu === 'image'}
         icon={<ImagePlus size={18} />}
         label={copy.toolbar.imageTools}
+        menuId="image"
         onClick={() => toggleMenu('image')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'video'}
         icon={<Video size={18} />}
         label={copy.toolbar.videoTools}
+        menuId="video"
         onClick={() => toggleMenu('video')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'audio'}
         icon={<Music2 size={18} />}
         label={copy.toolbar.audioTools}
+        menuId="audio"
         onClick={() => toggleMenu('audio')}
       />
       <ToolbarMenuButton
         active={activeMenu === 'text'}
         icon={<Type size={18} />}
         label={copy.toolbar.textTools}
+        menuId="text"
         onClick={() => toggleMenu('text')}
       />
 
@@ -353,30 +433,31 @@ export function CanvasFloatingToolbar({
         active={activeMenu === 'save'}
         icon={<Save size={18} />}
         label={copy.toolbar.saveCanvas}
+        menuId="save"
         onClick={() => toggleMenu('save')}
       />
 
       {activeMenu === 'image' ? (
         <ToolbarPopover title={copy.toolbar.imageTools} description={copy.toolbar.imageToolsDescription}>
-          <BlockOptionList blocks={blocks.image} onBlockMouseDown={handleBlockMouseDown} />
+          <BlockOptionList blocks={blocks.image} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'video' ? (
         <ToolbarPopover title={copy.toolbar.videoTools} description={copy.toolbar.videoToolsDescription}>
-          <BlockOptionList blocks={blocks.video} onBlockMouseDown={handleBlockMouseDown} />
+          <BlockOptionList blocks={blocks.video} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'audio' ? (
         <ToolbarPopover title={copy.toolbar.audioTools} description={copy.toolbar.audioToolsDescription}>
-          <BlockOptionList blocks={blocks.audio} onBlockMouseDown={handleBlockMouseDown} />
+          <BlockOptionList blocks={blocks.audio} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
       {activeMenu === 'text' ? (
         <ToolbarPopover title={copy.toolbar.textTools} description={copy.toolbar.textToolsDescription}>
-          <BlockOptionList blocks={blocks.text} onBlockMouseDown={handleBlockMouseDown} />
+          <BlockOptionList blocks={blocks.text} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
         </ToolbarPopover>
       ) : null}
 
@@ -435,11 +516,13 @@ function ToolbarMenuButton({
   active,
   icon,
   label,
+  menuId,
   onClick,
 }: {
   active: boolean;
   icon: ReactNode;
   label: string;
+  menuId: ToolbarMenuId;
   onClick: () => void;
 }) {
   return (
@@ -447,7 +530,9 @@ function ToolbarMenuButton({
       type="button"
       className={`${styles.toolbarButton} ${active ? styles.toolbarButtonActive : ''}`}
       aria-label={label}
+      aria-haspopup="dialog"
       aria-expanded={active}
+      data-canvas-toolbar-menu-id={menuId}
       onClick={onClick}
     >
       {icon}
@@ -479,9 +564,11 @@ function ToolbarPopover({
 
 function BlockOptionList({
   blocks,
+  onBlockClick,
   onBlockMouseDown,
 }: {
   blocks: ToolbarBlockDefinition[];
+  onBlockClick: (event: ReactMouseEvent<HTMLButtonElement>, kind: WorkspaceNodeKind, presetId?: WorkspaceGenerationPresetId) => void;
   onBlockMouseDown: (event: ReactMouseEvent, kind: WorkspaceNodeKind, presetId?: WorkspaceGenerationPresetId) => void;
 }) {
   return (
@@ -495,12 +582,18 @@ function BlockOptionList({
           data-canvas-toolbar-block-kind={block.kind}
           data-canvas-toolbar-preset-id={block.presetId}
           style={{ '--template-accent': block.accent } as ToolbarBlockStyle}
+          onClick={(event) => onBlockClick(event, block.kind, block.presetId)}
           onMouseDown={(event) => onBlockMouseDown(event, block.kind, block.presetId)}
         >
           <span className={styles.blockOptionIcon}>{block.icon}</span>
-          <span>
+          <span className={styles.blockOptionContent}>
             <strong>{block.label}</strong>
             <small>{block.description}</small>
+            <span className={styles.blockOptionMeta} aria-hidden="true">
+              {block.meta.map((item) => (
+                <em key={item}>{item}</em>
+              ))}
+            </span>
           </span>
         </button>
       ))}
