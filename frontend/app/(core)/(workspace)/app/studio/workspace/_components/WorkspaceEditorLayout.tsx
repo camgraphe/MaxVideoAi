@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import type { CSSProperties, Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, type CSSProperties, type Dispatch, type SetStateAction } from 'react';
 import type { useExportController } from '../_controllers/useExportController';
 import type { useWorkspaceCanvasController } from '../_hooks/useWorkspaceCanvasController';
 import type { useWorkspaceExportState } from '../_hooks/useWorkspaceExportState';
@@ -302,6 +301,7 @@ export function WorkspaceEditorLayout({
             onCreateNodeFromHandleDrop={canvas.handleCreateNodeFromHandleDrop}
             onCreateNodeFromPaletteDrop={canvas.handleCreateNodeFromPaletteDrop}
             onCanvasFileDrop={canvas.handleCanvasFileDrop}
+            onCopySelectedNodes={canvas.handleCopySelectedNodes} onPasteCopiedNodes={canvas.handlePasteCanvasClipboard}
             onCanvasTextPaste={canvas.handleCanvasTextPaste}
             onAutoCenterNodeConsumed={canvas.handleCanvasAutoCenterNodeConsumed}
             onCanvasInteraction={selection.handleCanvasInteraction}

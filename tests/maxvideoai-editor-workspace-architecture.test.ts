@@ -6,6 +6,7 @@ import {
   WORKSPACE_TEMPLATE_SUMMARIES,
   createDevBlocksWorkspaceTemplate,
   createProductAdWorkspaceTemplate,
+  createWorkspaceEdge,
   createStarterWorkspaceTemplate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 import {
@@ -21,6 +22,8 @@ import {
   shotOutputSourceHandle,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers';
 import type {
+  WorkspaceGraphEdge,
+  WorkspaceGraphNode,
   WorkspaceModelCapability,
   WorkspaceShotSettings,
   WorkspaceTimelineItem,
@@ -142,6 +145,7 @@ const handleDropPath = join(workspaceDir, '_lib/workspace-handle-drop.ts');
 const canvasImportsPath = join(workspaceDir, '_lib/workspace-canvas-imports.ts');
 const programSnapshotPath = join(workspaceDir, '_lib/workspace-program-snapshot.ts');
 const graphHelpersPath = join(workspaceDir, '_lib/workspace-graph-helpers.ts');
+const graphClipboardPath = join(workspaceDir, '_lib/workspace-graph-clipboard.ts');
 const projectSettingsPath = join(workspaceDir, '_lib/workspace-project-settings.ts');
 const timecodePath = join(workspaceDir, '_lib/workspace-timecode.ts');
 const timelineEditingPath = join(workspaceDir, '_lib/workspace-timeline-editing.ts');
@@ -272,6 +276,92 @@ test('program snapshots only fall back to image-safe preview URLs', async () => 
     }),
     undefined,
     'video snapshots without a captured frame or thumbnail should not create broken image nodes'
+  );
+});
+
+test('canvas clipboard duplicates selected graph nodes and their internal edges', async () => {
+  const {
+    createWorkspaceGraphClipboardSnapshot,
+    pasteWorkspaceGraphClipboardSnapshot,
+  } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard');
+
+  const nodes: WorkspaceGraphNode[] = [
+    {
+      id: 'prompt-a',
+      type: 'text',
+      position: { x: 10, y: 20 },
+      data: { kind: 'text', title: 'Prompt A', promptText: 'hello' },
+    },
+    {
+      id: 'shot-b',
+      type: 'shot',
+      position: { x: 240, y: 20 },
+      data: { kind: 'shot', title: 'Shot B', shot: { modelId: 'seedance-2.0', durationSec: 5 } as WorkspaceShotSettings },
+    },
+    {
+      id: 'output-c',
+      type: 'output',
+      position: { x: 480, y: 20 },
+      data: { kind: 'output', title: 'Output C' },
+    },
+  ];
+  const edges: WorkspaceGraphEdge[] = [
+    createWorkspaceEdge({
+      source: 'prompt-a',
+      target: 'shot-b',
+      sourceHandle: 'prompt',
+      targetHandle: 'prompt',
+      kind: 'prompt',
+    }),
+    createWorkspaceEdge({
+      source: 'shot-b',
+      target: 'output-c',
+      sourceHandle: 'generated_output',
+      targetHandle: 'generated_output',
+      kind: 'generated_output',
+    }),
+  ];
+
+  const snapshot = createWorkspaceGraphClipboardSnapshot({
+    edges,
+    nodes,
+    selectedNodeIds: ['prompt-a', 'shot-b'],
+  });
+  assert.ok(snapshot, 'copy should create a snapshot for selected nodes');
+  assert.deepEqual(snapshot.nodes.map((node) => node.id), ['prompt-a', 'shot-b']);
+  assert.deepEqual(snapshot.edges.map((edge) => edge.id), ['prompt-a-prompt-shot-b']);
+
+  const result = pasteWorkspaceGraphClipboardSnapshot({
+    currentEdges: edges,
+    currentNodes: nodes,
+    idSeed: 'paste-1',
+    offset: { x: 32, y: 40 },
+    snapshot,
+  });
+
+  assert.deepEqual(result.pastedNodeIds, ['prompt-a-copy-paste-1', 'shot-b-copy-paste-1']);
+  assert.equal(result.nodes.length, 5, 'paste should append copied nodes');
+  assert.equal(result.edges.length, 3, 'paste should append only the copied internal edge');
+  assert.equal(result.nodes.find((node) => node.id === 'prompt-a')?.selected, false, 'original nodes should be deselected');
+  assert.equal(result.nodes.find((node) => node.id === 'prompt-a-copy-paste-1')?.selected, true, 'pasted nodes should be selected');
+  assert.deepEqual(
+    result.nodes.find((node) => node.id === 'prompt-a-copy-paste-1')?.position,
+    { x: 42, y: 60 },
+    'pasted nodes should appear offset from the copied selection'
+  );
+  assert.ok(
+    result.edges.some((edge) => (
+      edge.source === 'prompt-a-copy-paste-1' &&
+      edge.target === 'shot-b-copy-paste-1' &&
+      edge.sourceHandle === 'prompt' &&
+      edge.targetHandle === 'prompt'
+    )),
+    'internal edges should be retargeted to the pasted nodes'
+  );
+  assert.equal(
+    result.edges.some((edge) => edge.source === 'shot-b-copy-paste-1' && edge.target === 'output-c'),
+    false,
+    'external edges should not be duplicated into the paste'
   );
 });
 
@@ -439,6 +529,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasSource = source(canvasPath);
   const canvasFloatingToolbarSource = source(canvasFloatingToolbarPath);
   const canvasNavigatorPanelSource = source(canvasNavigatorPanelPath);
+  const canvasControllerSource = source(canvasControllerPath);
   const canvasControllerHookSource = source(canvasControllerHookPath);
   const canvasGraphStateHookSource = source(canvasGraphStateHookPath);
   const canvasTimelineActionsHookSource = source(canvasTimelineActionsHookPath);
@@ -858,6 +949,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(existsSync(canvasImportsPath), 'canvas import helpers should live in a pure route-local helper');
   assert.ok(existsSync(programSnapshotPath), 'program snapshot image URL rules should live in a pure route-local helper');
   assert.ok(existsSync(graphHelpersPath), 'canvas graph selection and connection helpers should live in a pure route-local helper');
+  assert.ok(existsSync(graphClipboardPath), 'canvas copy/paste should use a pure route-local graph clipboard helper');
   assert.ok(existsSync(projectSettingsPath), 'project settings helpers should live in a pure route-local helper');
   assert.ok(existsSync(timecodePath), 'timeline timecode helpers should live in a pure route-local helper');
   assert.ok(existsSync(timelineEditingPath), 'timeline editing helpers should live in a pure route-local helper');
@@ -974,6 +1066,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const handleDropSource = source(handleDropPath);
   const canvasImportsSource = source(canvasImportsPath);
   const graphHelpersSource = source(graphHelpersPath);
+  const graphClipboardSource = source(graphClipboardPath);
   const projectSettingsSource = source(projectSettingsPath);
   const timecodeSource = source(timecodePath);
   const timelineEditingSource = source(timelineEditingPath);
@@ -1487,6 +1580,12 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(graphActionsHookSource, /workspaceConnectionRejectionReason/, 'graph action hook should own connection rejection handling');
   assert.match(graphActionsHookSource, /handleCreateNodeFromHandleDrop/, 'graph action hook should own handle-drop node creation');
   assert.match(graphActionsHookSource, /handleCreateNodeFromPaletteDrop/, 'graph action hook should own palette node creation');
+  assert.match(graphActionsHookSource, /createWorkspaceGraphClipboardSnapshot/, 'graph action hook should snapshot selected canvas nodes for copy');
+  assert.match(graphActionsHookSource, /pasteWorkspaceGraphClipboardSnapshot/, 'graph action hook should paste copied canvas nodes through the pure graph clipboard helper');
+  assert.match(graphClipboardSource, /export function createWorkspaceGraphClipboardSnapshot/, 'graph clipboard helper should expose a copy snapshot operation');
+  assert.match(graphClipboardSource, /export function pasteWorkspaceGraphClipboardSnapshot/, 'graph clipboard helper should expose a paste operation');
+  assert.match(canvasSource, /WORKSPACE_GRAPH_CLIPBOARD_TYPE/, 'canvas surface should mark canvas graph copy events with a dedicated clipboard type');
+  assert.match(canvasControllerSource, /onCanvasGraphPaste/, 'canvas paste controller should route graph clipboard pastes before text or file imports');
   assert.match(graphActionsHookSource, /handleSelectLibraryAsset/, 'graph action hook should own filling media nodes from the library');
   assert.match(graphActionsHookSource, /appendSelectedWorkspaceGraphNode/, 'graph action hook should select newly added blocks so the inspector follows them');
   assert.doesNotMatch(workspaceSource, /const onConnect = useCallback/, 'workspace orchestrator should not own graph connection internals');
@@ -3091,6 +3190,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
   const { resolveWorkspaceTimelineGapSelection } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing');
   const { resolveTimelineExternalDropPreview } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop');
+  const { nextTimelineInteractionState } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-interaction');
   const { projectMediaTimelineDragPayloadForAsset } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag');
   const { timelineTrackHasOverlap } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions');
   const assertNoTimelineOverlap = (candidateItems: WorkspaceTimelineItem[], message: string) => {
@@ -3543,6 +3643,75 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     missingSourceDurationExpansion.find((item) => item.id === 'clip-b')?.durationSec,
     6,
     'clips without explicit source duration should treat their current duration as the source cap'
+  );
+
+  const linkedStartExpansionWithAudioBlockerItems: WorkspaceTimelineItem[] = [
+    {
+      ...items[0],
+      startSec: 10,
+      durationSec: 6,
+      sourceStartSec: 4,
+      sourceDurationSec: 16,
+    },
+    {
+      ...items[1],
+      startSec: 10,
+      durationSec: 6,
+      sourceStartSec: 4,
+      sourceDurationSec: 16,
+    },
+    {
+      id: 'previous-audio',
+      outputNodeId: 'previous-audio',
+      track: 'audio',
+      title: 'Previous Audio',
+      durationSec: 5,
+      startSec: 4,
+      mediaKind: 'audio',
+    },
+  ];
+  const blockedLinkedStartExpansion = resizeWorkspaceTimelineItem({
+    items: linkedStartExpansionWithAudioBlockerItems,
+    itemId: 'clip-a',
+    edge: 'start',
+    nextStartSec: 6,
+    nextDurationSec: 10,
+  });
+  assertNoTimelineOverlap(blockedLinkedStartExpansion, 'linked start trim should not overlap existing audio on the linked audio track');
+  assert.deepEqual(
+    blockedLinkedStartExpansion.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec, item.sourceStartSec]),
+    [
+      ['clip-a', 9, 7, 3],
+      ['clip-a-audio', 9, 7, 3],
+    ],
+    'start-resize should clamp a linked video expansion to the nearest blocker on its linked audio track'
+  );
+  const blockedLinkedStartPreview = nextTimelineInteractionState({
+    itemId: 'clip-a',
+    linkedGroupId: 'group-a',
+    selectedItemIds: ['clip-a'],
+    selectedKeys: ['group:group-a'],
+    originLayoutsById: {
+      'clip-a': { startSec: 10, durationSec: 6 },
+      'clip-a-audio': { startSec: 10, durationSec: 6 },
+    },
+    kind: 'resize-start',
+    originClientX: 0,
+    originTrack: 'video',
+    originStartSec: 10,
+    originDurationSec: 6,
+    originSourceStartSec: 4,
+    originSourceDurationSec: 16,
+    snapStepSec: 1,
+    previewTrack: 'video',
+    previewStartSec: 10,
+    previewDurationSec: 6,
+    snapGuideSec: null,
+  }, -4, linkedStartExpansionWithAudioBlockerItems, 0, false, 1);
+  assert.deepEqual(
+    [blockedLinkedStartPreview.previewStartSec, blockedLinkedStartPreview.previewDurationSec],
+    [9, 7],
+    'start-resize preview should clamp against blockers on linked audio peer tracks before release'
   );
 
   const rippleResizedEnd = resizeWorkspaceTimelineItem({

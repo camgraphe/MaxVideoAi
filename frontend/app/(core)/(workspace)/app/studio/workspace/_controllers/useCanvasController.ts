@@ -29,6 +29,9 @@ import type {
 } from '../_lib/workspace-types';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
+export const WORKSPACE_GRAPH_CLIPBOARD_TYPE = 'application/x-maxvideoai-canvas-graph';
+export const WORKSPACE_GRAPH_CLIPBOARD_TEXT = 'MaxVideoAI canvas graph selection';
+
 export type WorkspacePaletteDropRequest = {
   kind: WorkspaceNodeKind;
   presetId?: WorkspaceGenerationPresetId;
@@ -51,6 +54,7 @@ type UseCanvasControllerOptions = {
   canvasShellRef: RefObject<HTMLElement | null>;
   copy: StudioCopy['canvas']['nodes'];
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
+  onCanvasGraphPaste: () => void;
   onCanvasInteraction: () => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
@@ -72,6 +76,7 @@ export function useCanvasController({
   canvasShellRef,
   copy,
   onCanvasFileDrop,
+  onCanvasGraphPaste,
   onCanvasInteraction,
   onCanvasTextPaste,
   onCreateNodeFromPaletteDrop,
@@ -134,6 +139,13 @@ export function useCanvasController({
       if (!clipboardData) return;
       const files = Array.from(clipboardData.files);
       const text = clipboardData.getData('text/plain').trim();
+      const types = Array.from(clipboardData.types);
+      if (types.includes(WORKSPACE_GRAPH_CLIPBOARD_TYPE) || text === WORKSPACE_GRAPH_CLIPBOARD_TEXT) {
+        event.preventDefault();
+        onCanvasInteraction();
+        onCanvasGraphPaste();
+        return;
+      }
       if (!files.length && !text) return;
 
       event.preventDefault();
@@ -159,7 +171,7 @@ export function useCanvasController({
     return () => {
       window.removeEventListener('paste', handlePaste);
     };
-  }, [canvasCenterFlowPosition, canvasShellRef, onCanvasFileDrop, onCanvasInteraction, onCanvasTextPaste]);
+  }, [canvasCenterFlowPosition, canvasShellRef, onCanvasFileDrop, onCanvasGraphPaste, onCanvasInteraction, onCanvasTextPaste]);
 
   const isPaletteDragging = paletteInteractionMode === 'drag';
   const isPalettePlacementArmed = paletteInteractionMode === 'placement';

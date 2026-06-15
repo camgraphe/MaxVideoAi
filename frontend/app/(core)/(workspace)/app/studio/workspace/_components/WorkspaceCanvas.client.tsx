@@ -28,6 +28,8 @@ import {
 import styles from '../_styles/canvas.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphEdge, WorkspaceGraphNode } from '../_lib/workspace-types';
 import {
+  WORKSPACE_GRAPH_CLIPBOARD_TEXT,
+  WORKSPACE_GRAPH_CLIPBOARD_TYPE,
   useCanvasController,
   type WorkspaceCanvasFileDropRequest,
   type WorkspaceCanvasTextPasteRequest,
@@ -85,6 +87,8 @@ type WorkspaceCanvasProps = {
   onCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
+  onCopySelectedNodes: (nodeIds: string[]) => void;
+  onPasteCopiedNodes: () => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
   onAutoCenterNodeConsumed: () => void;
   onCanvasInteraction: () => void;
@@ -113,6 +117,8 @@ export function WorkspaceCanvas({
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
   onCanvasFileDrop,
+  onCopySelectedNodes,
+  onPasteCopiedNodes,
   onCanvasTextPaste,
   onAutoCenterNodeConsumed,
   onCanvasInteraction,
@@ -139,6 +145,8 @@ export function WorkspaceCanvas({
         onCreateNodeFromHandleDrop={onCreateNodeFromHandleDrop}
         onCreateNodeFromPaletteDrop={onCreateNodeFromPaletteDrop}
         onCanvasFileDrop={onCanvasFileDrop}
+        onCopySelectedNodes={onCopySelectedNodes}
+        onPasteCopiedNodes={onPasteCopiedNodes}
         onCanvasTextPaste={onCanvasTextPaste}
         onAutoCenterNodeConsumed={onAutoCenterNodeConsumed}
         onCanvasInteraction={onCanvasInteraction}
@@ -227,6 +235,8 @@ function WorkspaceCanvasInner({
   onCreateNodeFromHandleDrop,
   onCreateNodeFromPaletteDrop,
   onCanvasFileDrop,
+  onCopySelectedNodes,
+  onPasteCopiedNodes,
   onCanvasTextPaste,
   onAutoCenterNodeConsumed,
   onCanvasInteraction,
@@ -256,6 +266,13 @@ function WorkspaceCanvasInner({
     onRedo: onRedoCanvas,
     onUndo: onUndoCanvas,
   });
+  const canvasClipboardStateRef = useRef({
+    isActive: isShortcutActive,
+    onCopySelectedNodes,
+    onPasteCopiedNodes,
+    selectedNodeIds,
+  });
+  const pendingGraphPasteTimerRef = useRef<number | null>(null);
   const nodeTypes = useMemo(() => workspaceNodeTypes, []);
   const edgeTypes = useMemo(() => workspaceEdgeTypes, []);
   const isMarqueeSelectionTool = selectionTool === 'marquee';
@@ -280,6 +297,12 @@ function WorkspaceCanvasInner({
     onRedo: onRedoCanvas,
     onUndo: onUndoCanvas,
   };
+  canvasClipboardStateRef.current = {
+    isActive: isShortcutActive,
+    onCopySelectedNodes,
+    onPasteCopiedNodes,
+    selectedNodeIds,
+  };
 
   const updateHandleDropPreview = useCallback((preview: HandleDropPreview | null) => {
     handleDropPreviewRef.current = preview;
@@ -295,6 +318,7 @@ function WorkspaceCanvasInner({
     canvasShellRef,
     copy: copy.nodes,
     onCanvasFileDrop,
+    onCanvasGraphPaste: onPasteCopiedNodes,
     onCanvasInteraction,
     onCanvasTextPaste,
     onCreateNodeFromPaletteDrop,
@@ -370,6 +394,70 @@ function WorkspaceCanvasInner({
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  useEffect(() => {
+    const clearPendingGraphPaste = () => {
+      if (pendingGraphPasteTimerRef.current === null) return;
+      window.clearTimeout(pendingGraphPasteTimerRef.current);
+      pendingGraphPasteTimerRef.current = null;
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || (!event.metaKey && !event.ctrlKey)) return;
+      if (isEditableCanvasShortcutTarget(event.target)) return;
+      const { isActive, onCopySelectedNodes: copySelectedNodes, onPasteCopiedNodes: pasteCopiedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
+      if (!isActive) return;
+      const key = canvasShortcutLetter(event);
+      if (key === 'c' && copiedNodeIds.length) {
+        copySelectedNodes(copiedNodeIds);
+        return;
+      }
+      if (key !== 'v') return;
+      clearPendingGraphPaste();
+      pendingGraphPasteTimerRef.current = window.setTimeout(() => {
+        pendingGraphPasteTimerRef.current = null;
+        pasteCopiedNodes();
+      }, 80);
+    };
+    const handlePaste = () => {
+      clearPendingGraphPaste();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('paste', handlePaste, { capture: true });
+    return () => {
+      clearPendingGraphPaste();
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('paste', handlePaste, true);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleCopy = (event: ClipboardEvent) => {
+      const { isActive, onCopySelectedNodes: copySelectedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
+      if (!isActive || !copiedNodeIds.length) return;
+      if (isEditableCanvasShortcutTarget(event.target)) return;
+      const target = event.target instanceof Element ? event.target : null;
+      const activeElement = document.activeElement;
+      const isNeutralDocumentCopy =
+        !target ||
+        target === document.body ||
+        target === document.documentElement ||
+        activeElement === document.body ||
+        activeElement === document.documentElement;
+      if (target && !canvasShellRef.current?.contains(target) && !isNeutralDocumentCopy) return;
+      const clipboardData = event.clipboardData;
+      if (!clipboardData) return;
+      clipboardData.setData(WORKSPACE_GRAPH_CLIPBOARD_TYPE, '1');
+      clipboardData.setData('text/plain', WORKSPACE_GRAPH_CLIPBOARD_TEXT);
+      event.preventDefault();
+      copySelectedNodes(copiedNodeIds);
+    };
+
+    window.addEventListener('copy', handleCopy);
+    return () => {
+      window.removeEventListener('copy', handleCopy);
     };
   }, []);
 

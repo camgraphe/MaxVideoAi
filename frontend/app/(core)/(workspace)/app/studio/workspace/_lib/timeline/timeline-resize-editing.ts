@@ -96,6 +96,48 @@ function maxRippleExpansionDurationBeforeBlocker(
   }, null);
 }
 
+function constrainTrimResizeToGroupTrackGaps(params: {
+  edge: WorkspaceTimelineTrimEdge;
+  groupItems: WorkspaceTimelineItem[];
+  items: WorkspaceTimelineItem[];
+  primaryItem: WorkspaceTimelineItem;
+  safeDurationSec: number;
+  safeStartSec: number;
+}): { safeDurationSec: number; safeStartSec: number; sourceDeltaSec: number } {
+  const groupIds = new Set(params.groupItems.map((groupItem) => groupItem.id));
+
+  if (params.edge === 'start') {
+    const previousEndSec = params.groupItems.reduce((maxTrackEndSec, groupItem) => {
+      const trackEndSec = primaryTrackItems(params.items, groupItem.track)
+        .filter((candidate) => !groupIds.has(candidate.id) && itemEndSec(candidate) <= groupItem.startSec)
+        .reduce((maxEndSec, candidate) => Math.max(maxEndSec, itemEndSec(candidate)), 0);
+      return Math.max(maxTrackEndSec, trackEndSec);
+    }, 0);
+    const primaryEndSec = itemEndSec(params.primaryItem);
+    const safeStartSec = snapTimelineValue(Math.max(params.safeStartSec, previousEndSec));
+    return {
+      safeStartSec,
+      safeDurationSec: snapTimelineValue(primaryEndSec - safeStartSec),
+      sourceDeltaSec: snapTimelineValue(safeStartSec - params.primaryItem.startSec),
+    };
+  }
+
+  const requestedEndSec = snapTimelineValue(params.safeStartSec + params.safeDurationSec);
+  const nextStartSec = params.groupItems.reduce((minTrackStartSec, groupItem) => {
+    const groupItemEndSec = itemEndSec(groupItem);
+    const trackStartSec = primaryTrackItems(params.items, groupItem.track)
+      .filter((candidate) => !groupIds.has(candidate.id) && candidate.startSec >= groupItemEndSec)
+      .reduce((minStartSec, candidate) => Math.min(minStartSec, candidate.startSec), Number.POSITIVE_INFINITY);
+    return Math.min(minTrackStartSec, trackStartSec);
+  }, Number.POSITIVE_INFINITY);
+  const safeEndSec = Number.isFinite(nextStartSec) ? Math.min(requestedEndSec, nextStartSec) : requestedEndSec;
+  return {
+    safeStartSec: params.safeStartSec,
+    safeDurationSec: snapTimelineValue(Math.max(MIN_CLIP_DURATION_SEC, safeEndSec - params.safeStartSec)),
+    sourceDeltaSec: 0,
+  };
+}
+
 export function resizeWorkspaceTimelineItem(params: {
   items: WorkspaceTimelineItem[];
   itemId: string;
@@ -115,6 +157,17 @@ export function resizeWorkspaceTimelineItem(params: {
     nextDurationSec: params.nextDurationSec,
   });
   const trimMode = params.mode ?? 'trim';
+
+  if (trimMode === 'trim') {
+    ({ safeDurationSec, safeStartSec, sourceDeltaSec } = constrainTrimResizeToGroupTrackGaps({
+      edge: params.edge,
+      groupItems,
+      items: params.items,
+      primaryItem,
+      safeDurationSec,
+      safeStartSec,
+    }));
+  }
 
   if (trimMode === 'ripple') {
     let nextDurationSec = safeDurationSec;

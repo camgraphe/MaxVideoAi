@@ -1,4 +1,4 @@
-import { useCallback, type Dispatch, type SetStateAction } from 'react';
+import { useCallback, useRef, type Dispatch, type SetStateAction } from 'react';
 import {
   addEdge,
   applyEdgeChanges,
@@ -21,6 +21,11 @@ import type {
 } from '../_lib/workspace-types';
 import { clearWorkspaceGeneratedCopyReferences } from '../_lib/workspace-generated-copy';
 import { createWorkspaceHandleDropNode, resolveWorkspaceHandleDropDraft } from '../_lib/workspace-handle-drop';
+import {
+  createWorkspaceGraphClipboardSnapshot,
+  pasteWorkspaceGraphClipboardSnapshot,
+  type WorkspaceGraphClipboardSnapshot,
+} from '../_lib/workspace-graph-clipboard';
 import {
   appendSelectedWorkspaceGraphNode,
   workspaceConnectionRejectionReason,
@@ -103,6 +108,10 @@ function edgeChangesAffectGraphHistory(changes: EdgeChange<WorkspaceGraphEdge>[]
   return changes.some((change) => change.type !== 'select');
 }
 
+function createWorkspaceClipboardPasteSeed(): string {
+  return globalThis.crypto?.randomUUID?.().slice(0, 8) ?? String(Date.now());
+}
+
 export function useWorkspaceGraphActions({
   capabilities,
   commitCanvasGraph,
@@ -118,6 +127,8 @@ export function useWorkspaceGraphActions({
 }: UseWorkspaceGraphActionsParams): {
   handleCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   handleCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
+  handleCopySelectedNodes: (selectedNodeIds: string[]) => void;
+  handlePasteCanvasClipboard: () => void;
   handleOpenAssetLibrary: (nodeId: string) => void;
   handleSelectLibraryAsset: (nodeId: string, asset: WorkspaceLibraryAsset) => void;
   isValidConnection: (connection: Connection | WorkspaceGraphEdge) => boolean;
@@ -127,6 +138,50 @@ export function useWorkspaceGraphActions({
   patchNodeData: (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => void;
   patchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
 } {
+  const graphClipboardRef = useRef<WorkspaceGraphClipboardSnapshot | null>(null);
+
+  const handleCopySelectedNodes = useCallback(
+    (selectedNodeIds: string[]) => {
+      const snapshot = createWorkspaceGraphClipboardSnapshot({
+        edges,
+        nodes,
+        selectedNodeIds,
+      });
+      if (snapshot) graphClipboardRef.current = snapshot;
+    },
+    [edges, nodes]
+  );
+
+  const handlePasteCanvasClipboard = useCallback(() => {
+    const snapshot = graphClipboardRef.current;
+    if (!snapshot) return;
+    let pastedNodeIds: string[] = [];
+    let pastedSnapshot: WorkspaceGraphClipboardSnapshot | null = null;
+    commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => {
+      const result = pasteWorkspaceGraphClipboardSnapshot({
+        currentEdges,
+        currentNodes,
+        idSeed: createWorkspaceClipboardPasteSeed(),
+        snapshot,
+      });
+      pastedNodeIds = result.pastedNodeIds;
+      if (!pastedNodeIds.length) return { edges: currentEdges, nodes: currentNodes };
+      pastedSnapshot = createWorkspaceGraphClipboardSnapshot({
+        edges: result.edges,
+        nodes: result.nodes,
+        selectedNodeIds: pastedNodeIds,
+      });
+      return {
+        edges: result.edges,
+        nodes: result.nodes,
+      };
+    });
+    if (!pastedNodeIds.length) return;
+    if (pastedSnapshot) graphClipboardRef.current = pastedSnapshot;
+    setActiveEditorSurface('canvas');
+    setSelectedNodeId(pastedNodeIds[0] ?? null);
+  }, [commitCanvasGraph, setActiveEditorSurface, setSelectedNodeId]);
+
   const patchNodeData = useCallback(
     (nodeId: string, patch: Partial<WorkspaceGraphNode['data']>) => {
       commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
@@ -380,6 +435,8 @@ export function useWorkspaceGraphActions({
   return {
     handleCreateNodeFromHandleDrop,
     handleCreateNodeFromPaletteDrop,
+    handleCopySelectedNodes,
+    handlePasteCanvasClipboard,
     handleOpenAssetLibrary,
     handleSelectLibraryAsset,
     isValidConnection,

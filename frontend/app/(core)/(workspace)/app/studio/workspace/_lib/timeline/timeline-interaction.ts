@@ -217,34 +217,17 @@ export function closestSnapCandidate(
   };
 }
 
-function primaryItemForInteraction(
-  items: WorkspaceTimelineItem[],
-  interaction: TimelineInteractionState
-): WorkspaceTimelineItem | null {
-  const activeItem = items.find((item) => item.id === interaction.itemId);
-  if (!activeItem?.linkedGroupId) return activeItem ?? null;
-  return items.find((item) => (
-    item.linkedGroupId === activeItem.linkedGroupId &&
-    isWorkspaceTimelineVideoTrack(item.track)
-  )) ?? activeItem;
-}
-
-function sameTrackBlockers(
+function interactionResizeItems(
   items: WorkspaceTimelineItem[],
   interaction: TimelineInteractionState
 ): WorkspaceTimelineItem[] {
-  const primaryItem = primaryItemForInteraction(items, interaction);
-  if (!primaryItem) return [];
-  const blockerTrack = (
-    interaction.kind === 'move' &&
-    isWorkspaceTimelineVideoTrack(primaryItem.track) &&
-    isWorkspaceTimelineVideoTrack(interaction.previewTrack)
-  )
-    ? interaction.previewTrack
-    : primaryItem.track;
   return items
-    .filter((item) => item.track === blockerTrack && !interactionMatchesTimelineItem(interaction, item))
-    .sort((left, right) => left.startSec - right.startSec);
+    .filter((item) => interactionMatchesTimelineItem(interaction, item))
+    .sort((left, right) => {
+      const leftPrimary = isWorkspaceTimelineVideoTrack(left.track) ? 0 : 1;
+      const rightPrimary = isWorkspaceTimelineVideoTrack(right.track) ? 0 : 1;
+      return leftPrimary - rightPrimary || left.track.localeCompare(right.track) || left.id.localeCompare(right.id);
+    });
 }
 
 function constrainResizeStartToTrackGaps(
@@ -252,9 +235,17 @@ function constrainResizeStartToTrackGaps(
   items: WorkspaceTimelineItem[],
   interaction: TimelineInteractionState
 ): TimelineTrackConstraint {
-  const previousEndSec = sameTrackBlockers(items, interaction)
-    .filter((item) => item.startSec + item.durationSec <= interaction.originStartSec)
-    .reduce((maxEndSec, item) => Math.max(maxEndSec, item.startSec + item.durationSec), 0);
+  const activeItems = interactionResizeItems(items, interaction);
+  const previousEndSec = activeItems.reduce((maxTrackEndSec, activeItem) => {
+    const trackEndSec = items
+      .filter((item) => (
+        item.track === activeItem.track &&
+        !interactionMatchesTimelineItem(interaction, item) &&
+        item.startSec + item.durationSec <= activeItem.startSec
+      ))
+      .reduce((maxEndSec, item) => Math.max(maxEndSec, item.startSec + item.durationSec), 0);
+    return Math.max(maxTrackEndSec, trackEndSec);
+  }, 0);
   const constrainedStartSec = Math.max(previousEndSec, startSec);
   return {
     startSec: snapTimelineSeconds(constrainedStartSec, interaction.snapStepSec),
@@ -267,9 +258,18 @@ function constrainResizeEndToTrackGaps(
   items: WorkspaceTimelineItem[],
   interaction: TimelineInteractionState
 ): TimelineTrackConstraint {
-  const nextStartSec = sameTrackBlockers(items, interaction)
-    .filter((item) => item.startSec >= interaction.originStartSec + interaction.originDurationSec)
-    .reduce((minStartSec, item) => Math.min(minStartSec, item.startSec), Number.POSITIVE_INFINITY);
+  const activeItems = interactionResizeItems(items, interaction);
+  const nextStartSec = activeItems.reduce((minTrackStartSec, activeItem) => {
+    const activeEndSec = activeItem.startSec + activeItem.durationSec;
+    const trackStartSec = items
+      .filter((item) => (
+        item.track === activeItem.track &&
+        !interactionMatchesTimelineItem(interaction, item) &&
+        item.startSec >= activeEndSec
+      ))
+      .reduce((minStartSec, item) => Math.min(minStartSec, item.startSec), Number.POSITIVE_INFINITY);
+    return Math.min(minTrackStartSec, trackStartSec);
+  }, Number.POSITIVE_INFINITY);
   if (!Number.isFinite(nextStartSec) || endSec <= nextStartSec) {
     return { startSec: snapTimelineSeconds(endSec, interaction.snapStepSec), guideSec: null };
   }
