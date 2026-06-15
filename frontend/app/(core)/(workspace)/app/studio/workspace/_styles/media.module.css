@@ -333,19 +333,6 @@
   box-shadow: 0 0 18px rgba(16, 185, 129, 0.24);
 }
 
-.projectMediaDurationBadge {
-  position: absolute;
-  right: 5px;
-  bottom: 5px;
-  padding: 3px 5px;
-  border-radius: 6px;
-  background: var(--studio-bg);
-  color: var(--studio-text-strong);
-  font-size: 9.5px;
-  font-weight: 760;
-  line-height: 1;
-}
-
 .projectMediaTileBody {
   min-width: 0;
   flex: 1 1 auto;

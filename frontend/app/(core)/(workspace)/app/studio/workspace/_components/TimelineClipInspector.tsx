@@ -29,6 +29,7 @@ import {
   clearWorkspaceTimelineItemGeneratedCopyReferences,
   localizeWorkspaceTimelineItemTitle,
 } from '../_lib/workspace-generated-copy';
+import { resolveWorkspaceClipFitHeightScale } from '../_lib/workspace-clip-composition';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -45,6 +46,9 @@ const DEFAULT_AUDIO_MIX: WorkspaceTimelineAudioMix = {
   muted: false,
 };
 
+const TRANSFORM_SCALE_MIN = 0.25;
+const TRANSFORM_SCALE_MAX = 6;
+
 type TimelineClipInspectorProps = {
   copy: StudioCopy['timeline']['inspector'];
   canvasNodeCopy: StudioCopy['canvas']['nodes'];
@@ -58,6 +62,7 @@ type TimelineClipInspectorProps = {
     name: string;
     settings: WorkspaceProjectSettings;
   } | null;
+  projectSettings: WorkspaceProjectSettings;
   projectFps: number;
   onPatchItem: (itemId: string, patch: Partial<WorkspaceTimelineItem>) => void;
   onRenameProjectAsset: (assetId: string, requestedName: string) => void;
@@ -290,6 +295,7 @@ export function TimelineClipInspector({
   selectedAsset,
   selectedItem,
   selectedSequence,
+  projectSettings,
   projectFps,
   onPatchItem,
   onRenameProjectAsset,
@@ -328,9 +334,16 @@ export function TimelineClipInspector({
   const canEditAudio = isAudioClip || isVideoTrack || selectedItem.hasEmbeddedAudio;
   const transform = selectedItem.transform ?? DEFAULT_TRANSFORM;
   const audioMix = selectedItem.audioMix ?? DEFAULT_AUDIO_MIX;
+  const fitHeightScale = canEditTransform
+    ? resolveWorkspaceClipFitHeightScale({ item: selectedItem, projectSettings })
+    : null;
 
   const patchTransform = (patch: Partial<WorkspaceTimelineClipTransform>) => {
     onPatchItem(selectedItem.id, { transform: { ...DEFAULT_TRANSFORM, ...transform, ...patch } });
+  };
+  const fitHeightToSequence = () => {
+    if (fitHeightScale === null) return;
+    patchTransform({ scale: fitHeightScale });
   };
   const patchAudioMix = (patch: Partial<WorkspaceTimelineAudioMix>) => {
     onPatchItem(selectedItem.id, { audioMix: { ...DEFAULT_AUDIO_MIX, ...audioMix, ...patch } });
@@ -375,12 +388,23 @@ export function TimelineClipInspector({
             <InspectorSlider
               label={copy.scale}
               value={transform.scale}
-              min={0.25}
-              max={3}
+              min={TRANSFORM_SCALE_MIN}
+              max={TRANSFORM_SCALE_MAX}
               step={0.05}
               displayValue={percentLabel(transform.scale)}
               onChange={(value) => patchTransform({ scale: value })}
             />
+            <button
+              type="button"
+              className={styles.timelineInspectorInlineButton}
+              disabled={fitHeightScale === null}
+              onClick={fitHeightToSequence}
+              aria-label={copy.fitHeightToSequence}
+              title={fitHeightScale === null ? copy.fitHeightUnavailable : copy.fitHeightToSequence}
+            >
+              {copy.fitHeight}
+              {fitHeightScale !== null ? <strong>{percentLabel(fitHeightScale)}</strong> : null}
+            </button>
             <InspectorSlider
               label={copy.positionX}
               value={transform.positionX}

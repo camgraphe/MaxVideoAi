@@ -15,13 +15,16 @@
 
 .graphNode {
   position: relative;
-  width: 210px;
-  border: 1px solid var(--studio-border);
-  border-radius: 9px;
+  width: 260px;
+  border: 1px solid color-mix(in srgb, var(--node-accent) 30%, var(--studio-border));
+  border-radius: 15px;
   background:
-    linear-gradient(180deg, var(--studio-bg-soft), var(--studio-surface)),
-    var(--studio-bg-soft);
-  box-shadow: 0 22px 70px var(--studio-node-shadow);
+    linear-gradient(140deg, color-mix(in srgb, var(--node-accent) 9%, transparent), transparent 58%),
+    linear-gradient(180deg, color-mix(in srgb, var(--studio-surface) 94%, var(--node-accent) 6%), color-mix(in srgb, var(--studio-bg-soft) 76%, var(--studio-surface))),
+    var(--studio-surface);
+  box-shadow:
+    0 14px 34px color-mix(in srgb, var(--studio-node-shadow) 38%, transparent),
+    0 1px 0 color-mix(in srgb, #ffffff 54%, transparent) inset;
   color: var(--studio-text);
 }
 
@@ -44,14 +47,15 @@
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--node-accent) 36%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--node-accent) 10%, transparent);
 }
 
 .graphNodeSelected {
-  border-color: color-mix(in srgb, var(--node-accent) 74%, #ffffff 8%);
+  border-color: color-mix(in srgb, var(--node-accent) 68%, var(--studio-border));
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--node-accent) 45%, transparent),
-    0 26px 80px var(--studio-node-shadow);
+    0 0 0 1px color-mix(in srgb, var(--node-accent) 20%, transparent),
+    0 18px 42px color-mix(in srgb, var(--studio-node-shadow) 48%, transparent),
+    0 1px 0 color-mix(in srgb, #ffffff 58%, transparent) inset;
 }
 
 .graphNodeTimelineDraggable {
@@ -101,28 +105,28 @@
 
 .nodeHeader {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   gap: 9px;
   align-items: center;
-  padding: 11px 12px 8px;
+  padding: 14px 15px 10px;
 }
 
 .nodeIcon {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   place-items: center;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--node-accent) 18%, transparent);
-  color: color-mix(in srgb, var(--node-accent) 88%, #ffffff 14%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--node-accent) 16%, var(--studio-surface));
+  color: color-mix(in srgb, var(--node-accent) 90%, var(--studio-text-strong) 10%);
 }
 
 .nodeTitle {
   margin: 0;
   overflow: hidden;
   color: var(--studio-text-strong);
-  font-size: 11px;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 700;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -131,18 +135,19 @@
   margin: 2px 0 0;
   overflow: hidden;
   color: var(--studio-text-muted);
-  font-size: 10px;
+  font-size: 10.5px;
+  font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .nodeInspectButton {
   display: grid;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   place-items: center;
-  border-radius: 7px;
-  background: var(--studio-surface);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--studio-surface) 78%, transparent);
   color: color-mix(in srgb, var(--node-accent) 70%, var(--studio-text));
   cursor: pointer;
   opacity: 0.78;
@@ -167,11 +172,11 @@
   position: relative;
   display: grid;
   height: 96px;
-  margin: 0 12px 9px;
+  margin: 0 15px 12px;
   place-items: center;
   overflow: hidden;
-  border-radius: 8px;
-  background: var(--studio-bg);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--studio-bg) 82%, var(--node-accent) 4%);
 }
 
 .sourceResizableNode .nodePreview,
@@ -192,7 +197,7 @@
 .nodePreviewEmpty,
 .mediaPickerEmpty {
   color: var(--studio-text-muted);
-  border: 1px dashed var(--studio-border);
+  border: 1px dashed color-mix(in srgb, var(--node-accent) 30%, var(--studio-border));
 }
 
 .nodePreviewEmpty span {
@@ -232,10 +237,10 @@
 }
 
 .mediaPickerEmpty {
-  width: calc(100% - 24px);
+  width: calc(100% - 30px);
   cursor: pointer;
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--node-accent) 12%, var(--studio-surface)), var(--studio-bg)),
+    linear-gradient(135deg, color-mix(in srgb, var(--node-accent) 9%, var(--studio-surface)), var(--studio-bg)),
     var(--studio-bg);
 }
 
@@ -245,11 +250,11 @@
 
 .mediaPickerEmpty strong {
   position: absolute;
-  right: 10px;
-  bottom: 10px;
+  right: 9px;
+  bottom: 9px;
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   place-items: center;
   border-radius: 999px;
   background: color-mix(in srgb, var(--node-accent) 78%, var(--studio-bg-soft));
@@ -275,19 +280,18 @@
   backdrop-filter: blur(8px);
 }
 
-.nodeMetaRow,
-.shotNodeFooter {
+.nodeMetaRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  padding: 0 12px 11px;
+  padding: 0 15px 12px;
   color: var(--studio-text-muted);
   font-size: 10px;
+  font-weight: 500;
 }
 
-.nodeMetaRow span,
-.shotNodeFooter span {
+.nodeMetaRow span {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -303,9 +307,9 @@
   align-items: center;
   gap: 3px;
   height: 66px;
-  margin: 0 12px 10px;
+  margin: 0 15px 12px;
   padding: 10px;
-  border-radius: 8px;
+  border-radius: 12px;
   background: rgba(20, 83, 45, 0.32);
 }
 
@@ -322,13 +326,13 @@
 }
 
 .promptTextarea {
-  width: calc(100% - 24px);
+  width: calc(100% - 30px);
   min-height: 92px;
-  margin: 0 12px 10px;
-  padding: 9px;
+  margin: 0 15px 12px;
+  padding: 10px;
   resize: none;
   border: 1px solid var(--studio-border);
-  border-radius: 8px;
+  border-radius: 11px;
   background: var(--studio-bg);
   color: var(--studio-text);
   font-size: 11px;
@@ -354,40 +358,34 @@
   min-height: 76px;
 }
 
-.shotDropZone {
-  display: grid;
-  height: 116px;
-  margin: 0 12px 8px;
-  place-items: center;
-  border: 1px dashed var(--studio-border);
-  border-radius: 9px;
-  background: var(--studio-bg);
-  color: var(--studio-text-muted);
-}
-
-.shotDropZone span {
-  font-size: 11px;
-}
-
 .shotInputDock {
   display: grid;
-  gap: 4px;
-  margin: -5px 12px 12px;
-  padding: 0;
+  gap: 5px;
+  margin: 0 15px 14px;
+  padding: 9px 0 0;
+  border-top: 1px solid color-mix(in srgb, var(--node-accent) 18%, var(--studio-border));
   background: transparent;
   pointer-events: all;
+}
+
+.shotInputLabel {
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 720;
+  letter-spacing: 0;
+  line-height: 1;
 }
 
 .shotInputRow {
   position: relative;
   display: flex;
-  min-height: 15px;
+  min-height: 17px;
   align-items: center;
   justify-content: space-between;
-  gap: 6px;
+  gap: 7px;
   color: var(--studio-text);
-  font-size: 10px;
-  font-weight: 750;
+  font-size: 10.5px;
+  font-weight: 640;
   line-height: 1.05;
   text-align: left;
 }
@@ -406,24 +404,8 @@
 .shotInputCapacity {
   flex: 0 0 auto;
   color: var(--studio-info-text);
-  font-size: 9px;
-  font-weight: 800;
-}
-
-.modelBadge {
-  max-width: 92px;
-  padding: 3px 7px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--node-accent) 24%, transparent);
-  color: #ffffff;
-}
-
-.shotCostLine {
-  margin: -5px 12px 10px;
-  color: var(--studio-success-text);
-  font-size: 10px;
-  font-weight: 700;
-  text-align: right;
+  font-size: 9.5px;
+  font-weight: 720;
 }
 
 .nodeActionButton {
@@ -434,7 +416,7 @@
   width: calc(100% - 24px);
   height: 30px;
   margin: 0 12px 10px;
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--studio-bg-soft);
   color: var(--studio-text);
   font-size: 11px;
@@ -451,34 +433,6 @@
   opacity: 0.45;
 }
 
-.statusPill {
-  margin: 0 12px 12px;
-  padding: 5px 8px;
-  border-radius: 7px;
-  background: var(--studio-surface);
-  color: var(--studio-text);
-  font-size: 10px;
-  text-align: center;
-}
-
-.status-draft {
-  color: var(--studio-text);
-}
-
-.status-ready,
-.status-completed {
-  color: var(--studio-success-text);
-}
-
-.status-incompatible,
-.status-failed {
-  color: var(--studio-danger-text);
-}
-
-.status-generating {
-  color: var(--studio-info-text);
-}
-
 @keyframes processingPulse {
   0%,
   100% {
@@ -493,8 +447,10 @@
 }
 
 .graphHandle {
-  width: 10px;
-  height: 10px;
-  border-width: 2px;
-  box-shadow: 0 0 0 3px var(--studio-bg);
+  width: 9px;
+  height: 9px;
+  border: 0;
+  border-radius: 2px;
+  box-shadow: none;
+  opacity: 0.94;
 }

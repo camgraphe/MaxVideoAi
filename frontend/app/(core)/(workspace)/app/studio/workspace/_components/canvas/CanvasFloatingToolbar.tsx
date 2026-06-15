@@ -147,6 +147,7 @@ function toolbarBlocks(copy: StudioCopy['canvas']['nodes']): Record<'audio' | 'i
         meta: uniqueMeta([copy.image, copy.assetFallback, copy.outputs]),
       },
       presetBlock('generate-image', copy, <WandSparkles size={18} />),
+      presetBlock('modify-image', copy, <SlidersHorizontal size={18} />),
       presetBlock('character-builder', copy, <Sparkles size={18} />),
       presetBlock('angle', copy, <SlidersHorizontal size={18} />),
       presetBlock('upscale-image', copy, <Sparkles size={18} />),

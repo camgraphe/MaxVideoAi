@@ -2,7 +2,7 @@
 
 import type { NodeProps } from '@xyflow/react';
 import type { FormEvent, KeyboardEvent, SyntheticEvent } from 'react';
-import { MessageSquareText, Send } from 'lucide-react';
+import { Copy, MessageSquareText, RotateCcw, Send, Trash2 } from 'lucide-react';
 import { NodeFrame } from './workspace-node-frame';
 import chatStyles from '../../_styles/canvas-chat-node.module.css';
 import styles from '../../_styles/canvas-nodes.module.css';
@@ -31,6 +31,11 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
   const isRunning = chat?.status === 'running';
   const canSend = Boolean(draft.trim()) && !isRunning;
   const botName = chat?.botName?.trim() || copy?.chatbotDefaultName || 'Studio assistant';
+  const latestAssistantMessage = [...messages].reverse().find((message) => message.role === 'assistant');
+  const latestUserMessage = [...messages].reverse().find((message) => message.role === 'user');
+  const canCopyAnswer = Boolean(latestAssistantMessage?.content);
+  const canReuseUserMessage = Boolean(latestUserMessage?.content) && !isRunning;
+  const canClearChat = Boolean(chat?.messages.length) && !isRunning;
 
   const handleDraftChange = (value: string): void => {
     props.data.onChatDraftChange?.(props.id, value);
@@ -49,6 +54,28 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
       event.preventDefault();
       if (canSend) props.data.onRunChat?.(props.id);
     }
+  };
+
+  const handleCopyLastAnswer = (event: SyntheticEvent<HTMLButtonElement>): void => {
+    stopNodeInteraction(event);
+    const content = latestAssistantMessage?.content;
+    if (!content) return;
+    void navigator.clipboard.writeText(content);
+  };
+
+  const handleReuseLastMessage = (event: SyntheticEvent<HTMLButtonElement>): void => {
+    stopNodeInteraction(event);
+    const content = latestUserMessage?.content;
+    if (!content) return;
+    props.data.onChatDraftChange?.(props.id, content);
+  };
+
+  const handleClearChat = (event: SyntheticEvent<HTMLButtonElement>): void => {
+    stopNodeInteraction(event);
+    props.data.onPatchChat?.(props.id, {
+      messages: [],
+      status: 'idle',
+    });
   };
 
   return (
@@ -70,6 +97,35 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
             )) : (
               <p className={chatStyles.chatEmpty}>{copy?.emptyChat ?? 'Start a conversation from this block.'}</p>
             )}
+          </div>
+          <div className={chatStyles.chatUtilityBar}>
+            <button
+              type="button"
+              className={chatStyles.chatUtilityButton}
+              disabled={!canCopyAnswer}
+              aria-label={copy?.copyLastAnswer ?? 'Copy last answer'}
+              onClick={handleCopyLastAnswer}
+            >
+              <Copy size={12} />
+            </button>
+            <button
+              type="button"
+              className={chatStyles.chatUtilityButton}
+              disabled={!canReuseUserMessage}
+              aria-label={copy?.reuseLastMessage ?? 'Reuse last message'}
+              onClick={handleReuseLastMessage}
+            >
+              <RotateCcw size={12} />
+            </button>
+            <button
+              type="button"
+              className={chatStyles.chatUtilityButton}
+              disabled={!canClearChat}
+              aria-label={copy?.clearConversation ?? 'Clear conversation'}
+              onClick={handleClearChat}
+            >
+              <Trash2 size={12} />
+            </button>
           </div>
           <form className={chatStyles.chatComposer} onSubmit={handleSubmit}>
             <textarea

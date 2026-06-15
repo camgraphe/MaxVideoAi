@@ -5,10 +5,10 @@ import { inputHandles } from './workspace-node-frame';
 import styles from '../../_styles/canvas-nodes.module.css';
 import type { WorkspaceEdgeKind, WorkspaceGraphNode, WorkspaceInputConnector } from '../../_lib/workspace-types';
 import { edgeLabel, WORKSPACE_EDGE_COLORS } from '../../_lib/workspace-templates';
-import { localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
+import { DEFAULT_STUDIO_COPY, localizeStudioEdgeKindLabel } from '../../../_lib/studio-copy';
 
-function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] | null {
-  return data.studioCanvasCopy?.nodes ?? null;
+function nodeCopy(data: WorkspaceGraphNode['data']): NonNullable<WorkspaceGraphNode['data']['studioCanvasCopy']>['nodes'] {
+  return data.studioCanvasCopy?.nodes ?? DEFAULT_STUDIO_COPY.canvas.nodes;
 }
 
 function connectorLabel(
@@ -39,6 +39,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
   if (!handles.length) return null;
   return (
     <div className={styles.shotInputDock}>
+      <span className={styles.shotInputLabel}>{copy.inputs}</span>
       {handles.map((handle) => {
         const color = WORKSPACE_EDGE_COLORS[handle] ?? '#8b5cf6';
         const label = connectorLabel(handle, connectors, copy);
@@ -53,7 +54,7 @@ export function ShotInputDock({ data }: { data: WorkspaceGraphNode['data'] }) {
               className={styles.graphHandle}
               style={{
                 top: '50%',
-                left: -12,
+                left: -13,
                 borderColor: color,
                 background: color,
                 opacity: isFull ? 0.35 : 1,

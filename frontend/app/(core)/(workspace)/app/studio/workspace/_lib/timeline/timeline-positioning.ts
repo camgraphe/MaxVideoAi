@@ -24,36 +24,44 @@ export function positionWorkspaceTimelineItem(
   const item = items.find((candidate) => candidate.id === itemId);
   if (!item) return items;
   const primaryItem = primaryTimelineItemFor(items, item);
-  const targetTrack = nextTrack && isWorkspaceTimelineVideoTrack(primaryItem.track) && isWorkspaceTimelineVideoTrack(nextTrack)
+  const shouldRetargetDraggedItem = Boolean(
+    nextTrack &&
+    (
+      (isWorkspaceTimelineVideoTrack(item.track) && isWorkspaceTimelineVideoTrack(nextTrack)) ||
+      (isWorkspaceTimelineAudioTrack(item.track) && isWorkspaceTimelineAudioTrack(nextTrack))
+    )
+  );
+  const trackAnchorItem = shouldRetargetDraggedItem ? item : primaryItem;
+  const targetTrack = nextTrack && isWorkspaceTimelineVideoTrack(trackAnchorItem.track) && isWorkspaceTimelineVideoTrack(nextTrack)
     ? nextTrack
-    : nextTrack && isWorkspaceTimelineAudioTrack(primaryItem.track) && isWorkspaceTimelineAudioTrack(nextTrack)
+    : nextTrack && isWorkspaceTimelineAudioTrack(trackAnchorItem.track) && isWorkspaceTimelineAudioTrack(nextTrack)
       ? nextTrack
-      : primaryItem.track;
+      : trackAnchorItem.track;
   const groupId = primaryItem.linkedGroupId ?? null;
   const groupItems = groupId ? items.filter((candidate) => candidate.linkedGroupId === groupId) : [primaryItem];
   const safeStartSec = snapTimelineValue(Math.max(0, nextStartSec));
-  const startDeltaSec = safeStartSec - primaryItem.startSec;
-  const primaryCenterSec = safeStartSec + primaryItem.durationSec / 2;
+  const startDeltaSec = safeStartSec - trackAnchorItem.startSec;
+  const anchorCenterSec = safeStartSec + trackAnchorItem.durationSec / 2;
   const trackItems = items
     .filter((candidate) => candidate.track === targetTrack)
     .sort((left, right) => left.startSec - right.startSec);
   const crossedTrackNeighbor = trackItems.some((candidate) => {
-    if (candidate.id === primaryItem.id) return false;
-    if (!timelineRangeOverlapsItem(candidate, safeStartSec, safeStartSec + primaryItem.durationSec)) return false;
+    if (candidate.id === trackAnchorItem.id) return false;
+    if (!timelineRangeOverlapsItem(candidate, safeStartSec, safeStartSec + trackAnchorItem.durationSec)) return false;
     const candidateMidSec = candidate.startSec + candidate.durationSec / 2;
-    if (primaryItem.startSec < candidate.startSec) return primaryCenterSec >= candidateMidSec;
-    if (primaryItem.startSec > candidate.startSec) return primaryCenterSec <= candidateMidSec;
+    if (trackAnchorItem.startSec < candidate.startSec) return anchorCenterSec >= candidateMidSec;
+    if (trackAnchorItem.startSec > candidate.startSec) return anchorCenterSec <= candidateMidSec;
     return false;
   });
 
   if (crossedTrackNeighbor) {
-    const reorderedItems = trackItems.filter((candidate) => candidate.id !== primaryItem.id);
-    const insertionIndex = reorderedItems.findIndex((candidate) => primaryCenterSec < candidate.startSec + candidate.durationSec / 2);
+    const reorderedItems = trackItems.filter((candidate) => candidate.id !== trackAnchorItem.id);
+    const insertionIndex = reorderedItems.findIndex((candidate) => anchorCenterSec < candidate.startSec + candidate.durationSec / 2);
     reorderedItems.splice(insertionIndex < 0 ? reorderedItems.length : insertionIndex, 0, {
-      ...primaryItem,
+      ...trackAnchorItem,
       track: targetTrack,
     });
-    const remainingItems = items.filter((candidate) => candidate.id !== primaryItem.id && candidate.track !== targetTrack);
+    const remainingItems = items.filter((candidate) => candidate.id !== trackAnchorItem.id && candidate.track !== targetTrack);
     return normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems]);
   }
 
@@ -61,7 +69,7 @@ export function positionWorkspaceTimelineItem(
     if (!groupItems.some((groupItem) => groupItem.id === candidate.id)) return candidate;
     return {
       ...candidate,
-      track: candidate.id === primaryItem.id ? targetTrack : candidate.track,
+      track: candidate.id === trackAnchorItem.id ? targetTrack : candidate.track,
       startSec: snapTimelineValue(Math.max(0, candidate.startSec + startDeltaSec)),
     };
   });

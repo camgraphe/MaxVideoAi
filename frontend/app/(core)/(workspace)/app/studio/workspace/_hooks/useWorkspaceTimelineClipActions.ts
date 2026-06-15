@@ -1,12 +1,14 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   deleteWorkspaceTimelineItem,
+  deleteWorkspaceTimelineGap,
   linkWorkspaceTimelineSelection,
   moveWorkspaceTimelineItem,
   moveWorkspaceTimelineSelectionWithMode,
   resizeWorkspaceTimelineItem,
   splitWorkspaceTimelineItem,
   unlinkWorkspaceTimelineSelection,
+  type WorkspaceTimelineGapSelection,
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
 } from '../_lib/workspace-timeline-editing';
@@ -62,6 +64,7 @@ export function useWorkspaceTimelineClipActions({
 }: UseWorkspaceTimelineClipActionsParams): {
   handleCutTimelineItem: (itemId: string, splitOffsetSec?: number) => void;
   handleDeleteTimelineItem: (ripple?: boolean) => void;
+  handleDeleteTimelineGap: (gap: WorkspaceTimelineGapSelection) => void;
   handleLinkTimelineItems: (itemIds: string[]) => void;
   handleMoveTimelineItem: (itemId: string, direction: -1 | 1) => void;
   handlePatchTimelineItem: (itemId: string, patch: Partial<WorkspaceTimelineItem>) => void;
@@ -293,8 +296,42 @@ export function useWorkspaceTimelineClipActions({
     ]
   );
 
+  const handleDeleteTimelineGap = useCallback(
+    (gap: WorkspaceTimelineGapSelection) => {
+      setActiveEditorSurface('timeline');
+      const currentItems = timelineItemsRef.current;
+      const movingLockedTrackItem = currentItems.some((item) => (
+        lockedTimelineTracks.includes(item.track) &&
+        item.startSec >= gap.endSec
+      ));
+      if (movingLockedTrackItem) {
+        setNotice(studioNotices.unlockBeforeDeleting);
+        return;
+      }
+
+      const nextItems = deleteWorkspaceTimelineGap(currentItems, gap);
+      if (nextItems === currentItems) return;
+      commitTimelineItems(() => nextItems);
+      applyTimelineSelection([]);
+      setPlayheadSec(gap.startSec);
+      setIsTimelinePlaying(false);
+    },
+    [
+      applyTimelineSelection,
+      commitTimelineItems,
+      lockedTimelineTracks,
+      setActiveEditorSurface,
+      setIsTimelinePlaying,
+      setNotice,
+      setPlayheadSec,
+      studioNotices.unlockBeforeDeleting,
+      timelineItemsRef,
+    ]
+  );
+
   return {
     handleCutTimelineItem,
+    handleDeleteTimelineGap,
     handleDeleteTimelineItem,
     handleLinkTimelineItems,
     handleMoveTimelineItem,

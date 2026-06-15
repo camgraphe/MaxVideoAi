@@ -12,10 +12,12 @@ import {
   type TimelineMarqueeRect,
   type TimelineMarqueeState,
 } from '../../_lib/timeline/timeline-interaction';
+import type { WorkspaceTimelineTrack } from '../../_lib/workspace-types';
 
 type UseTimelineSurfaceSelectionOptions = {
   onPlaybackChange: (isPlaying: boolean) => void;
   onPlayheadChange: (seconds: number) => void;
+  onSelectGap?: (seconds: number, track: WorkspaceTimelineTrack) => void;
   onSelectItems: (itemIds: string[]) => void;
   secondsFromTimelineElement: (clientX: number, element: HTMLElement) => number;
   timelineViewportClassName: string;
@@ -24,6 +26,7 @@ type UseTimelineSurfaceSelectionOptions = {
 export function useTimelineSurfaceSelection({
   onPlaybackChange,
   onPlayheadChange,
+  onSelectGap,
   onSelectItems,
   secondsFromTimelineElement,
   timelineViewportClassName,
@@ -93,12 +96,15 @@ export function useTimelineSurfaceSelection({
       }
       onPlaybackChange(false);
       onSelectItems([]);
-      onPlayheadChange(secondsFromTimelineElement(pointerEvent.clientX, laneElement));
+      const seconds = secondsFromTimelineElement(pointerEvent.clientX, laneElement);
+      const track = laneElement.dataset.timelineTrack as WorkspaceTimelineTrack | undefined;
+      onPlayheadChange(seconds);
+      if (track) onSelectGap?.(seconds, track);
     };
 
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
-  }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement, timelineViewportClassName]);
+  }, [onPlaybackChange, onPlayheadChange, onSelectGap, onSelectItems, secondsFromTimelineElement, timelineViewportClassName]);
 
   const handleTimelineSurfaceClick = useCallback((event: MouseEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement;
@@ -107,10 +113,13 @@ export function useTimelineSurfaceSelection({
       suppressNextSurfaceClickRef.current = false;
       return;
     }
+    const seconds = secondsFromTimelineElement(event.clientX, event.currentTarget);
+    const track = event.currentTarget.dataset.timelineTrack as WorkspaceTimelineTrack | undefined;
     onPlaybackChange(false);
     onSelectItems([]);
-    onPlayheadChange(secondsFromTimelineElement(event.clientX, event.currentTarget));
-  }, [onPlaybackChange, onPlayheadChange, onSelectItems, secondsFromTimelineElement]);
+    onPlayheadChange(seconds);
+    if (track) onSelectGap?.(seconds, track);
+  }, [onPlaybackChange, onPlayheadChange, onSelectGap, onSelectItems, secondsFromTimelineElement]);
 
   const marqueeStyle = useMemo<TimelineMarqueeRect | null>(
     () => marquee ? marqueeRectForState(marquee) : null,

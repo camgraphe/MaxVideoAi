@@ -94,7 +94,7 @@ export function createWorkspaceEdge(params: {
     },
     style: {
       stroke: color,
-      strokeWidth: 2,
+      strokeWidth: 2.35,
     },
   };
 }
@@ -116,4 +116,3 @@ export function shotSettings(overrides: Partial<WorkspaceShotSettings>): Workspa
     ...overrides,
   };
 }
-

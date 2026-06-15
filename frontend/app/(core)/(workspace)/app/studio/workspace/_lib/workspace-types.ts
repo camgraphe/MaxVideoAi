@@ -128,6 +128,7 @@ export type WorkspaceGenerationPresetId =
   | 'character-builder'
   | 'angle'
   | 'generate-image'
+  | 'modify-image'
   | 'upscale-image'
   | 'upscale-video'
   | 'audio-music'
@@ -379,6 +380,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   sourceHandles?: WorkspaceEdgeKind[];
   targetHandles?: WorkspaceEdgeKind[];
   inputConnectors?: WorkspaceInputConnector[];
+  modelCapabilities?: WorkspaceModelCapability[];
   referencePreview?: WorkspaceReferencePreview | null;
   validation?: WorkspaceShotValidation;
   pricingEstimate?: WorkspacePricingEstimate;
@@ -387,6 +389,7 @@ export type WorkspaceNodeData = Record<string, unknown> & {
   onSendOutputToTimeline?: (nodeId: string) => void;
   onPromptChange?: (nodeId: string, value: string) => void;
   onChatDraftChange?: (nodeId: string, value: string) => void;
+  onPatchChat?: (nodeId: string, patch: Partial<WorkspaceChatSettings>) => void;
   onRunChat?: (nodeId: string) => void;
   onOpenAssetLibrary?: (nodeId: string) => void;
   studioCanvasCopy?: StudioCopy['canvas'];

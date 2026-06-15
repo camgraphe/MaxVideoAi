@@ -33,9 +33,19 @@ import {
   localizeWorkspaceNodeTitle,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-copy';
 import {
+  compactStudioChatMessages,
+  getDefaultStudioChatModel,
+  getStudioChatModels,
+  isStudioChatModelAllowed,
+} from '../frontend/lib/studio-chat-models';
+import {
   compatibleCapabilitiesForShot,
   isToolOnlyPreset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers';
+import {
+  getWorkspaceBlockCompatibleCapabilities,
+  resolveWorkspaceBlockPolicy,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy';
 import type { WorkspaceShotSettings } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import type { CharacterBuilderTraits } from '../frontend/types/character-builder';
 
@@ -45,6 +55,7 @@ test('Studio canvas exposes generation block presets for every requested workflo
   const presetIds = WORKSPACE_BLOCK_PRESETS.map((preset) => preset.id);
   for (const id of [
     'generate-image',
+    'modify-image',
     'generate-video',
     'storyboard',
     'character-builder',
@@ -63,6 +74,7 @@ test('Studio canvas exposes generation block presets for every requested workflo
   }
 
   assert.equal(getWorkspaceBlockPreset('generate-image')?.outputKind, 'image');
+  assert.equal(getWorkspaceBlockPreset('modify-image')?.defaultShot?.workflowType, 'image_to_image');
   assert.equal(getWorkspaceBlockPreset('audio-music')?.outputKind, 'audio');
   assert.equal(getWorkspaceBlockPreset('chat-box')?.family, 'chat');
 });
@@ -419,6 +431,122 @@ test('shot inspector narrows model choices to the selected specialized tool surf
   );
 });
 
+test('shot inspector model filtering delegates to the block capability policy', () => {
+  const helperSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers.ts'),
+    'utf8'
+  );
+
+  assert.match(helperSource, /getWorkspaceBlockCompatibleCapabilities/);
+  assert.match(helperSource, /return getWorkspaceBlockCompatibleCapabilities\(\{/);
+});
+
+test('Studio block capability policy separates generate and modify image/video intent', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateImage = getWorkspaceBlockPreset('generate-image')?.defaultShot;
+  const modifyImage = getWorkspaceBlockPreset('modify-image')?.defaultShot;
+  const modifyVideo = getWorkspaceBlockPreset('modify-video')?.defaultShot;
+  assert.ok(generateImage);
+  assert.ok(modifyImage);
+  assert.ok(modifyVideo);
+
+  const generateImagePolicy = resolveWorkspaceBlockPolicy({
+    settings: generateImage,
+    capability: capabilities.find((capability) => capability.id === generateImage.modelId) ?? null,
+    connectedInputs: ['prompt'],
+  });
+  assert.equal(generateImagePolicy.mode, 'text-to-image');
+  assert.equal(generateImagePolicy.canGenerate, true);
+  assert.deepEqual(generateImagePolicy.requiredInputs, ['prompt']);
+
+  const modifyImagePolicy = resolveWorkspaceBlockPolicy({
+    settings: modifyImage,
+    capability: capabilities.find((capability) => capability.id === modifyImage.modelId) ?? null,
+    connectedInputs: ['prompt'],
+  });
+  assert.equal(modifyImagePolicy.mode, 'image-edit');
+  assert.equal(modifyImagePolicy.canGenerate, false);
+  assert.deepEqual(modifyImagePolicy.missingInputs, ['reference']);
+
+  const modifyImageCapabilities = getWorkspaceBlockCompatibleCapabilities({
+    settings: modifyImage,
+    capabilities,
+  });
+  assert.ok(modifyImageCapabilities.length > 0);
+  assert.equal(
+    modifyImageCapabilities.every((capability) => capability.family === 'image' && capability.workflows.includes('image_to_image')),
+    true
+  );
+
+  const modifyVideoCapabilities = getWorkspaceBlockCompatibleCapabilities({
+    settings: modifyVideo,
+    capabilities,
+  });
+  assert.ok(modifyVideoCapabilities.some((capability) => capability.id === 'luma-ray-3-2'));
+  assert.equal(
+    modifyVideoCapabilities.every((capability) => capability.family === 'video' && capability.workflows.includes('video_to_video')),
+    true
+  );
+});
+
+test('Studio block policy disables video start/reference controls when the selected mode makes them exclusive', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  assert.ok(generateVideo);
+  const capability = capabilities.find((candidate) => candidate.id === generateVideo.modelId) ?? null;
+  assert.ok(capability);
+
+  const startImagePolicy = resolveWorkspaceBlockPolicy({
+    settings: generateVideo,
+    capability,
+    connectedInputs: ['prompt', 'start_image'],
+  });
+  const referenceControl = startImagePolicy.controls.find((control) => control.id === 'reference');
+  assert.equal(referenceControl?.disabled, true);
+  assert.match(referenceControl?.reason ?? '', /start image/i);
+
+  const referencePolicy = resolveWorkspaceBlockPolicy({
+    settings: generateVideo,
+    capability,
+    connectedInputs: ['prompt', 'reference'],
+  });
+  const startImageControl = referencePolicy.controls.find((control) => control.id === 'start_image');
+  assert.equal(startImageControl?.disabled, true);
+  assert.match(startImageControl?.reason ?? '', /reference/i);
+});
+
+test('Studio shot node controls do not expose draft as a user-facing status label', () => {
+  const nodeControlsSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'),
+    'utf8'
+  );
+
+  assert.doesNotMatch(nodeControlsSource, /copy\.draft/);
+  assert.doesNotMatch(nodeControlsSource, /status-\$\{shot\.status\}/);
+});
+
+test('Studio shot generate button uses the full action row after status badge removal', () => {
+  const controlsStyles = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-shot-controls.module.css'),
+    'utf8'
+  );
+
+  assert.match(controlsStyles, /\.shotActionRow\s*\{[\s\S]*grid-template-columns:\s*1fr/);
+  assert.doesNotMatch(controlsStyles, /grid-template-columns:\s*minmax\(54px,\s*0\.42fr\)/);
+});
+
+test('Studio rendered shot nodes derive input docks and target handles from block policy', () => {
+  const renderNodesSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceRenderNodes.ts'),
+    'utf8'
+  );
+
+  assert.match(renderNodesSource, /resolveWorkspaceBlockPolicy/);
+  assert.match(renderNodesSource, /policy\.inputConnectors/);
+  assert.match(renderNodesSource, /targetHandles:\s*inputConnectors\.map\(\(connector\) => connector\.kind\)/);
+  assert.doesNotMatch(renderNodesSource, /getWorkspaceShotTargetHandles\(validation\.capability\)/);
+});
+
 test('image generation preset validates against image models and rejects video-only models', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const imagePreset = getWorkspaceBlockPreset('generate-image');
@@ -439,6 +567,29 @@ test('image generation preset validates against image models and rejects video-o
   });
   assert.equal(invalid.canGenerate, false);
   assert.notEqual(invalid.capability?.outputKind, 'image');
+});
+
+test('modify image preset requires an image source before generation', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const modifyImage = getWorkspaceBlockPreset('modify-image')?.defaultShot;
+  assert.ok(modifyImage);
+
+  const missingSource = validateShotConnections({
+    settings: modifyImage,
+    connectedInputs: ['prompt'],
+    capabilities,
+  });
+  assert.equal(missingSource.canGenerate, false);
+  assert.deepEqual(missingSource.missingInputs, ['reference']);
+
+  const ready = validateShotConnections({
+    settings: modifyImage,
+    connectedInputs: ['prompt', 'reference'],
+    capabilities,
+  });
+  assert.equal(ready.canGenerate, true);
+  assert.deepEqual(ready.missingInputs, []);
+  assert.equal(ready.resolvedWorkflowType, 'image_to_image');
 });
 
 test('tool-only image blocks keep their specialized workflow during validation', () => {
@@ -564,9 +715,76 @@ test('chat settings preserve chatbot mode and display name for canvas chatbot bl
   assert.equal(settings.mode, 'chatbot');
   assert.equal(settings.botName, 'Storyboard assistant');
   assert.equal(settings.provider, 'gemini');
-  assert.equal(settings.modelId, 'gemini-2.5-flash');
+  assert.equal(settings.modelId, 'gemini-3.5-flash');
   assert.equal(settings.status, 'idle');
   assert.equal(settings.messages[0]?.id, 'chat-message-1');
+});
+
+test('Studio chat model registry exposes curated Gemini models and rejects arbitrary ids', () => {
+  const geminiModels = getStudioChatModels('gemini');
+  assert.deepEqual(
+    geminiModels.map((model) => model.modelId),
+    [
+      'gemini-3.5-flash',
+      'gemini-3.1-pro-preview',
+      'gemini-3.1-flash-lite',
+      'gemini-2.5-pro',
+      'gemini-2.5-flash',
+    ]
+  );
+  assert.equal(getDefaultStudioChatModel('gemini').modelId, 'gemini-3.5-flash');
+  assert.equal(isStudioChatModelAllowed('gemini', 'gemini-3.1-pro-preview'), true);
+  assert.equal(isStudioChatModelAllowed('gemini', 'gemini-unlisted-experimental'), false);
+});
+
+test('Studio chat compaction keeps system context and the most recent conversation turns', () => {
+  const compacted = compactStudioChatMessages([
+    { role: 'system', content: 'Always answer as a storyboard producer.' },
+    ...Array.from({ length: 16 }, (_, index) => ({
+      role: index % 2 === 0 ? 'user' as const : 'assistant' as const,
+      content: `message-${index} ${'x'.repeat(160)}`,
+    })),
+  ], { maxChars: 900, keepLast: 6 });
+
+  assert.equal(compacted[0]?.role, 'system');
+  assert.match(compacted[0]?.content ?? '', /storyboard producer/);
+  assert.ok(compacted.length <= 7);
+  assert.equal(compacted.at(-1)?.content.startsWith('message-15'), true);
+});
+
+test('Studio chat UI and API use the shared model registry instead of hardcoded model lists', () => {
+  const inspectorSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/ChatNodeInspector.tsx'),
+    'utf8'
+  );
+  const routeSource = readFileSync(join(root, 'frontend/app/api/studio/chat/route.ts'), 'utf8');
+  const serverSource = readFileSync(join(root, 'frontend/src/server/studio/chat.ts'), 'utf8');
+
+  assert.match(inspectorSource, /getStudioChatModels/);
+  assert.match(routeSource, /isStudioChatModelAllowed/);
+  assert.match(serverSource, /resolveStudioChatModel/);
+  assert.doesNotMatch(inspectorSource, /<option value="gemini-2\.5-flash">/);
+});
+
+test('Studio chat node exposes portable conversation actions on the canvas node', () => {
+  const chatNodeSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-chat-node.tsx'),
+    'utf8'
+  );
+  const renderNodesSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceRenderNodes.ts'),
+    'utf8'
+  );
+  const workspaceTypesSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types.ts'),
+    'utf8'
+  );
+
+  assert.match(workspaceTypesSource, /onPatchChat\?:/);
+  assert.match(renderNodesSource, /onPatchChat:/);
+  assert.match(chatNodeSource, /chatUtilityBar/);
+  assert.match(chatNodeSource, /navigator\.clipboard\.writeText/);
+  assert.match(chatNodeSource, /messages:\s*\[\]/);
 });
 
 test('Character Builder preset stores full product tool settings instead of a tiny subset', () => {

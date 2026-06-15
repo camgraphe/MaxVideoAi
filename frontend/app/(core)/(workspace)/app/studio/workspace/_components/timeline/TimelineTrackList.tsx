@@ -21,6 +21,7 @@ import type {
   TimelineInteractionKind,
 } from '../../_lib/timeline/timeline-interaction';
 import type { TimelineExternalDropPreview } from '../../_lib/timeline/timeline-external-drop';
+import type { WorkspaceTimelineGapSelection } from '../../_lib/timeline/timeline-gap-editing';
 import {
   TimelineClip,
   type TimelineSelectionMode,
@@ -52,6 +53,7 @@ type TimelineTrackListProps = {
   hiddenVideoTrackSet: ReadonlySet<WorkspaceTimelineVideoTrack>;
   highestVideoTrackId: WorkspaceTimelineTrack;
   isItemInteracting: (item: WorkspaceTimelineItem) => boolean;
+  isPlayheadVisibleInViewport: boolean;
   lockedTrackSet: ReadonlySet<WorkspaceTimelineTrack>;
   lowestAudioTrackId: WorkspaceTimelineTrack;
   maxAudioTrackCount: number;
@@ -77,6 +79,7 @@ type TimelineTrackListProps = {
   onToggleVideoTrackVisibility: (trackId: WorkspaceTimelineVideoTrack) => void;
   pixelsPerSecond: number;
   previewItems: TimelinePreviewTrackItem[];
+  selectedGap: WorkspaceTimelineGapSelection | null;
   selectedKeys: ReadonlySet<string>;
   selectionKeyForItem: (item: WorkspaceTimelineItem) => string;
   snapGuideSec: number | null;
@@ -104,6 +107,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
   hiddenVideoTrackSet,
   highestVideoTrackId,
   isItemInteracting,
+  isPlayheadVisibleInViewport,
   lockedTrackSet,
   lowestAudioTrackId,
   maxAudioTrackCount,
@@ -129,6 +133,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
   onToggleVideoTrackVisibility,
   pixelsPerSecond,
   previewItems,
+  selectedGap,
   selectedKeys,
   selectionKeyForItem,
   snapGuideSec,
@@ -196,6 +201,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
             isAudioTrack={isAudioTrack}
             isHighestVideoTrack={track.id === highestVideoTrackId}
             isLowestAudioTrack={track.id === lowestAudioTrackId}
+            isPlayheadVisibleInViewport={isPlayheadVisibleInViewport}
             isTrackHidden={isTrackHidden}
             isTrackLocked={isTrackLocked}
             isTrackMuted={isTrackMuted}
@@ -215,6 +221,7 @@ export const TimelineTrackList = memo(function TimelineTrackList({
             onToggleTrackLock={onToggleTrackLock}
             onToggleVideoTrackVisibility={onToggleVideoTrackVisibility}
             pixelsPerSecond={pixelsPerSecond}
+            selectedGap={selectedGap}
             snapGuideSec={snapGuideSec}
             timelineWidth={timelineWidth}
             track={track}

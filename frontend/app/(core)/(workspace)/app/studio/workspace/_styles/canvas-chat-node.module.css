@@ -63,6 +63,34 @@
   background: var(--studio-bg);
 }
 
+.chatUtilityBar {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.chatUtilityButton {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--node-accent) 18%, var(--studio-border));
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--node-accent) 7%, var(--studio-bg));
+  color: var(--studio-text-muted);
+  cursor: pointer;
+}
+
+.chatUtilityButton:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--node-accent) 44%, var(--studio-border));
+  color: var(--studio-text-strong);
+}
+
+.chatUtilityButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .chatComposer {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 30px;

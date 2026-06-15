@@ -77,12 +77,10 @@ function formatCopyValue(value: string, replacements: Record<string, string | nu
 }
 
 function ProjectMediaArtwork({
-  durationSec,
   kind,
   title,
   url,
 }: {
-  durationSec?: number;
   kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video';
   title: string;
   url?: string | null;
@@ -105,9 +103,6 @@ function ProjectMediaArtwork({
       ) : (
         <div className={styles.projectMediaPosterFallback} aria-hidden="true" />
       )}
-      {durationSec && kind !== 'audio' ? (
-        <span className={styles.projectMediaDurationBadge}>{formatProjectMediaDuration(durationSec)}</span>
-      ) : null}
     </div>
   );
 }
@@ -119,7 +114,6 @@ function ProjectMediaCard({
   children,
   dataProjectSequenceId,
   dragKind,
-  durationSec,
   id,
   isSelected,
   isSelectionSelected,
@@ -141,7 +135,6 @@ function ProjectMediaCard({
   children?: ReactNode;
   dataProjectSequenceId?: string;
   dragKind?: 'audio' | 'image' | 'video';
-  durationSec?: number;
   id: string;
   isSelected: boolean;
   isSelectionSelected?: boolean;
@@ -186,7 +179,7 @@ function ProjectMediaCard({
         role="button"
         tabIndex={0}
       >
-        <ProjectMediaArtwork durationSec={durationSec} kind={kind} title={title} url={thumbnailUrl} />
+        <ProjectMediaArtwork kind={kind} title={title} url={thumbnailUrl} />
         <div className={styles.projectMediaTileBody}>
           <strong>{title}</strong>
           <span>{subtitle}</span>
@@ -667,7 +660,6 @@ export function TimelineProjectSidebar({
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginProjectAssetTimelineDrag(event, asset) : undefined}
-                durationSec={asset.durationSec}
                 subtitle={subtitle}
                 thumbnailUrl={thumbnailUrl}
                 title={asset.filename}
@@ -696,7 +688,6 @@ export function TimelineProjectSidebar({
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginGeneratedNodeTimelineDrag(event, node) : undefined}
-                durationSec={node.data.output?.durationSec}
                 subtitle={subtitle}
                 thumbnailUrl={thumbnailUrl}
                 title={node.data.title}

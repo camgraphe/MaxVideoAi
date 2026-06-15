@@ -2,6 +2,7 @@ import type {
   WorkspaceModelCapability,
   WorkspaceShotSettings,
 } from './workspace-types';
+import { getWorkspaceBlockCompatibleCapabilities } from './models/workspace-block-capability-policy';
 
 export type WorkspaceShotInspectorSection =
   | 'angle-controls'
@@ -21,48 +22,14 @@ export function isToolOnlyPreset(settings: WorkspaceShotSettings): boolean {
   return Boolean(settings.toolKind && SINGLE_ENGINE_TOOL_IDS[settings.toolKind]);
 }
 
-function genericCompatibleCapabilitiesForShot(
-  settings: WorkspaceShotSettings,
-  capabilities: WorkspaceModelCapability[]
-): WorkspaceModelCapability[] {
-  return capabilities.filter((capability) => {
-    const familyMatches = !settings.family || capability.family === settings.family;
-    const outputMatches = !settings.outputKind || capability.outputKind === settings.outputKind;
-    const workflowMatches = capability.workflows.includes(settings.workflowType);
-    return familyMatches && outputMatches && workflowMatches;
-  });
-}
-
 export function compatibleCapabilitiesForShot(
   settings: WorkspaceShotSettings,
   capabilities: WorkspaceModelCapability[]
 ): WorkspaceModelCapability[] {
-  const singleEngineId = settings.toolKind ? SINGLE_ENGINE_TOOL_IDS[settings.toolKind] : null;
-  if (singleEngineId) {
-    return capabilities.filter((capability) => capability.id === singleEngineId);
-  }
-  if (settings.toolKind === 'angle') {
-    return capabilities.filter((capability) => (
-      capability.family === 'image' &&
-      capability.outputKind === 'image' &&
-      capability.workflows.includes('angle_generation')
-    ));
-  }
-  if (settings.family === 'upscale') {
-    return capabilities.filter((capability) => (
-      capability.family === 'upscale' &&
-      capability.outputKind === settings.outputKind &&
-      capability.workflows.includes(settings.workflowType)
-    ));
-  }
-  if (settings.workflowType === 'video_to_video') {
-    return capabilities.filter((capability) => (
-      capability.family === 'video' &&
-      capability.outputKind === 'video' &&
-      capability.workflows.includes('video_to_video')
-    ));
-  }
-  return genericCompatibleCapabilitiesForShot(settings, capabilities);
+  return getWorkspaceBlockCompatibleCapabilities({
+    settings,
+    capabilities,
+  });
 }
 
 export function toolPanelSectionsForShot(settings: WorkspaceShotSettings): WorkspaceShotInspectorSection[] {

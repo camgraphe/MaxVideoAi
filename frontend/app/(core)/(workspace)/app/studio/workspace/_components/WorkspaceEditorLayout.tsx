@@ -58,7 +58,6 @@ import { WorkspaceTimeline } from './WorkspaceTimeline';
 import { WorkspaceVideoViewer } from './WorkspaceVideoViewer';
 
 const styles = { ...baseStyles, ...shellStyles };
-
 type MobileWorkspacePanel = 'media' | 'inspector' | null;
 
 type WorkspaceEditorLayoutControllers = {
@@ -120,7 +119,6 @@ type WorkspaceEditorLayoutProps = {
   userCanvasTemplates: WorkspaceUserCanvasTemplate[];
   videoTrackCount: number;
 };
-
 export function WorkspaceEditorLayout({
   activeEditorSurface,
   activeTemplateId,
@@ -395,6 +393,7 @@ export function WorkspaceEditorLayout({
               selectedAsset={exportState.selectedProjectAssetForInspector}
               selectedItem={exportState.selectedTimelineItem}
               selectedSequence={exportState.selectedSequenceForInspector}
+              projectSettings={projectSettings}
               projectFps={projectSettings.fps}
               onPatchItem={timelineClip.handlePatchTimelineItem}
               onRenameProjectAsset={projectMedia.handleRenameProjectAsset}
@@ -433,6 +432,7 @@ export function WorkspaceEditorLayout({
         onAddAudioTrack={timelineTrack.handleAddTimelineAudioTrack}
         onAddVideoTrack={timelineTrack.handleAddTimelineVideoTrack}
         onCutItem={timelineClip.handleCutTimelineItem}
+        onDeleteGap={timelineClip.handleDeleteTimelineGap}
         onDeleteItem={timelineClip.handleDeleteTimelineItem}
         onMarkIn={timelinePlayback.handleMarkTimelineIn}
         onMarkOut={timelinePlayback.handleMarkTimelineOut}

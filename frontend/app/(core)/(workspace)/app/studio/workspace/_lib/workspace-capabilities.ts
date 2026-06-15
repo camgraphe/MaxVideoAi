@@ -1,11 +1,11 @@
 import type { WorkspaceEdgeKind, WorkspaceModelCapability, WorkspaceShotSettings, WorkspaceShotValidation, WorkspaceWorkflowType } from './workspace-types';
 import { getWorkspaceModelCapabilities, getWorkspaceModelCapability } from './models/model-capability-registry';
 import {
-  connectedSatisfiesRequirement,
   inputSupportedBy,
   normalizeConnectedInputKind,
   resolveWorkspaceWorkflowType,
 } from './models/model-input-connectors';
+import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
 
 export { getWorkspaceModelCapabilities, getWorkspaceModelCapability } from './models/model-capability-registry';
 export {
@@ -18,6 +18,20 @@ export {
   workspaceConnectionCapacity,
 } from './models/model-input-connectors';
 export { resolveWorkspaceRenderOptions, workspaceAudioEnabledForRequest } from './models/model-pricing-adapter';
+
+function workflowFromPolicy(
+  policyMode: ReturnType<typeof resolveWorkspaceBlockPolicy>['mode'],
+  params: {
+    capability: WorkspaceModelCapability;
+    connectedInputs: WorkspaceEdgeKind[];
+    fallbackWorkflowType: WorkspaceWorkflowType;
+  }
+): WorkspaceWorkflowType {
+  if (policyMode === 'image-edit') return 'image_to_image';
+  if (policyMode === 'text-to-image') return 'text_to_image';
+  if (policyMode === 'video-edit' || policyMode === 'video-reframe') return 'video_to_video';
+  return resolveWorkspaceWorkflowType(params);
+}
 
 export function validateShotConnections(params: {
   settings: WorkspaceShotSettings;
@@ -39,14 +53,18 @@ export function validateShotConnections(params: {
     };
   }
 
-  const resolvedWorkflowType = resolveWorkspaceWorkflowType({
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: params.settings,
+    capability,
+    connectedInputs: params.connectedInputs,
+  });
+  const resolvedWorkflowType = workflowFromPolicy(policy.mode, {
     capability,
     connectedInputs: params.connectedInputs,
     fallbackWorkflowType: params.settings.workflowType,
   });
-  const requiredForWorkflow = new Set<WorkspaceEdgeKind>(capability.required_inputs);
-  const supportedInputs = new Set([...capability.required_inputs, ...capability.optional_inputs]);
-  const missingInputs = Array.from(requiredForWorkflow).filter((kind) => !connectedSatisfiesRequirement(connected, kind));
+  const supportedInputs = new Set(policy.inputConnectors.map((connector) => connector.kind));
+  const missingInputs = policy.missingInputs;
   const incompatibleInputs = Array.from(connected).filter((kind) => !inputSupportedBy(kind, supportedInputs));
   const compatibleInputs = Array.from(connected).filter((kind) => inputSupportedBy(kind, supportedInputs));
   const familyMismatch = Boolean(params.settings.family && capability.family !== params.settings.family);

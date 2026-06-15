@@ -1,6 +1,7 @@
 import {
   WORKSPACE_DEMO_AUDIO_URL,
 } from '../_lib/workspace-library-assets';
+import { resolveStudioChatModel } from '@/lib/studio-chat-models';
 import { DEFAULT_STUDIO_COPY } from '../../_lib/studio-copy';
 import {
   workspaceMediaDimensionsForTimelineSource,
@@ -308,7 +309,7 @@ function normalizeChatMessage(value: unknown, index: number): WorkspaceChatMessa
 export function normalizeChatSettings(value: unknown): WorkspaceChatSettings {
   const record = value && typeof value === 'object' ? value as Partial<WorkspaceChatSettings> : {};
   const provider = normalizeChatProvider(record.provider);
-  const defaultModelId = provider === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4.1-mini';
+  const model = resolveStudioChatModel(provider, record.modelId);
   const messages = Array.isArray(record.messages)
     ? record.messages.map(normalizeChatMessage).filter((message): message is WorkspaceChatMessage => Boolean(message))
     : [];
@@ -318,7 +319,7 @@ export function normalizeChatSettings(value: unknown): WorkspaceChatSettings {
       ? record.botName
       : DEFAULT_STUDIO_COPY.canvas.nodes.chatbotDefaultName,
     provider,
-    modelId: typeof record.modelId === 'string' && record.modelId.trim() ? record.modelId : defaultModelId,
+    modelId: model.modelId,
     systemPrompt: typeof record.systemPrompt === 'string' ? record.systemPrompt : '',
     draftMessage: typeof record.draftMessage === 'string' ? record.draftMessage : '',
     messages,

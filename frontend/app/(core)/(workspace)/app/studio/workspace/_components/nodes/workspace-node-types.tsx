@@ -5,7 +5,6 @@
 import { memo, type MouseEvent, type ReactNode } from 'react';
 import type { NodeProps, NodeTypes } from '@xyflow/react';
 import {
-  Box,
   Clapperboard,
   FileText,
   ImageIcon,
@@ -21,12 +20,12 @@ import { AngleReferencePicker } from './workspace-angle-reference-picker';
 import { ChatNode } from './workspace-chat-node';
 import { NodeFrame } from './workspace-node-frame';
 import { AudioPreview, VideoPreview } from './workspace-node-media-preview';
+import { ShotNodeControls } from './workspace-shot-node-controls';
 import { ShotInputDock } from './workspace-shot-input-dock';
 import styles from '../../_styles/canvas-nodes.module.css';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGraphNode,
-  WorkspaceShotStatus,
 } from '../../_lib/workspace-types';
 import {
   localizeWorkspaceAssetSubtitle,
@@ -203,22 +202,10 @@ export function NoteNode(props: NodeProps<WorkspaceGraphNode>) {
   );
 }
 
-function statusLabel(status: WorkspaceShotStatus, copy: ReturnType<typeof nodeCopy>): string {
-  if (status === 'generating') return copy?.generating ?? 'Generating';
-  if (status === 'completed') return copy?.completed ?? 'Completed';
-  if (status === 'failed') return copy?.failed ?? 'Failed';
-  if (status === 'incompatible') return copy?.incompatible ?? 'Incompatible';
-  if (status === 'ready') return copy?.ready ?? 'Ready';
-  return copy?.draft ?? 'Draft';
-}
-
 export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
   const copy = nodeCopy(props.data);
   const shot = props.data.shot;
-  const status = shot?.status ?? 'draft';
   const validation = props.data.validation;
-  const canGenerate = validation?.canGenerate ?? status !== 'incompatible';
-  const estimatedCost = props.data.pricingEstimate?.label ?? 'Estimating...';
   const angleReferenceMissing = validation?.missingInputs.includes('reference') ?? true;
   const isAngleTool = Boolean(shot && shot.toolKind === 'angle');
   return (
@@ -236,30 +223,8 @@ export function ShotNode(props: NodeProps<WorkspaceGraphNode>) {
             },
           })}
         />
-      ) : (
-        <div className={styles.shotDropZone}>
-          <Box size={22} />
-          <span>{status === 'completed' ? copy?.outputAvailable ?? 'Output available' : copy?.clickToGenerate ?? 'Click to generate'}</span>
-        </div>
-      )}
-      <div className={styles.shotNodeFooter}>
-        <span>{shot?.durationSec ?? 5}s</span>
-        <span>{shot?.aspectRatio ?? '16:9'}</span>
-        <span className={styles.modelBadge}>{validation?.capability?.label ?? shot?.modelId ?? copy?.modelFallback ?? 'Model'}</span>
-      </div>
-      <div className={styles.shotCostLine}>
-        <span>{estimatedCost}</span>
-      </div>
-      <button
-        type="button"
-        className={`${styles.nodeActionButton} nodrag`}
-        disabled={!canGenerate || status === 'generating'}
-        onClick={() => props.data.onGenerateShot?.(props.id)}
-      >
-        <Sparkles size={13} />
-        {status === 'generating' ? copy?.generating ?? 'Generating' : copy?.generate ?? 'Generate'}
-      </button>
-      <p className={`${styles.statusPill} ${styles[`status-${status}`]}`}>{statusLabel(status, copy)}</p>
+      ) : null}
+      <ShotNodeControls data={props.data} nodeId={props.id} />
       <ShotInputDock data={props.data} />
     </NodeFrame>
   );

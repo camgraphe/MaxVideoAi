@@ -267,7 +267,7 @@ function WorkspaceCanvasInner({
         color: '#8b5cf6',
       },
       style: {
-        strokeWidth: 2,
+        strokeWidth: 2.35,
       },
     }),
     []

@@ -1,0 +1,230 @@
+.shotControlPanel {
+  display: grid;
+  gap: 8px;
+  margin: 0 15px 12px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background:
+    linear-gradient(180deg, transparent, color-mix(in srgb, var(--node-accent) 5%, transparent));
+}
+
+.shotModelSummary {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 650;
+  text-transform: uppercase;
+}
+
+.shotModelSummary strong {
+  overflow: hidden;
+  color: var(--studio-text-strong);
+  font-size: 10.5px;
+  font-weight: 690;
+  text-align: right;
+  text-overflow: ellipsis;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.shotControlField {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.shotControlField > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shotModelField {
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+}
+
+.shotSettingsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.shotSelect,
+.shotRange {
+  min-width: 0;
+  outline: none;
+}
+
+.shotSelect {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--node-accent) 13%, var(--studio-border));
+  border-radius: 9px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--studio-surface) 92%, #ffffff 8%), var(--studio-surface));
+  color: var(--studio-text-strong);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 640;
+  text-transform: none;
+}
+
+.shotReferenceControl {
+  grid-template-columns: 92px minmax(0, 1fr) 38px;
+  gap: 8px;
+  align-items: center;
+}
+
+.shotReferenceControl strong {
+  color: var(--studio-text-strong);
+  font-size: 10px;
+  font-weight: 680;
+  text-align: right;
+}
+
+.shotRange {
+  width: 100%;
+  accent-color: var(--node-accent);
+}
+
+.shotToggleGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.shotToggleRow {
+  display: flex;
+  min-width: 0;
+  height: 28px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 0 8px;
+  border: 1px solid color-mix(in srgb, var(--node-accent) 14%, var(--studio-border));
+  border-radius: 9px;
+  background: var(--studio-surface);
+  color: var(--studio-text-muted);
+  font-size: 9.5px;
+  font-weight: 640;
+}
+
+.shotToggleRow span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shotToggleRow strong,
+.shotToggleButton {
+  flex: 0 0 auto;
+  border: 0;
+  color: var(--studio-text-strong);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.shotToggleButton {
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--node-accent) 9%, var(--studio-control-bg));
+  cursor: pointer;
+}
+
+.shotToggleButtonActive {
+  background: color-mix(in srgb, var(--node-accent) 74%, transparent);
+  color: #ffffff;
+}
+
+.shotActionRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  align-items: center;
+}
+
+.shotGenerateButton {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--node-accent) 84%, #2563eb 16%), color-mix(in srgb, var(--node-accent) 74%, #22c55e 14%));
+  color: #ffffff;
+  box-shadow: 0 10px 20px color-mix(in srgb, var(--node-accent) 18%, transparent);
+  font-size: 11px;
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.shotGenerateButton span,
+.shotGenerateButton strong {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shotGenerateButton strong {
+  flex: 0 0 auto;
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.shotGenerateButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  box-shadow: none;
+}
+
+.shotValidationLine {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid color-mix(in srgb, var(--node-accent) 16%, var(--studio-border));
+  color: var(--studio-text-muted);
+  font-size: 9.5px;
+  font-weight: 600;
+}
+
+.shotValidationLine span {
+  color: var(--studio-text);
+  font-weight: 690;
+}
+
+.shotValidationLine small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shotValidationReady svg {
+  color: var(--studio-success-text);
+}
+
+.shotValidationWarning svg {
+  color: var(--studio-warning-text);
+}

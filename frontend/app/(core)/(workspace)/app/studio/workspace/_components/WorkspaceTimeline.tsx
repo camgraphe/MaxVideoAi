@@ -10,9 +10,11 @@ import type {
 import styles from '../_styles/timeline.module.css';
 import type { WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from '../_lib/workspace-types';
 import {
+  type WorkspaceTimelineGapSelection,
   type WorkspaceTimelineTrimEdge,
   type WorkspaceTimelineTrimMode,
 } from '../_lib/workspace-timeline-editing';
+import { resolveWorkspaceTimelineGapSelection } from '../_lib/timeline/timeline-gap-editing';
 import {
   frameStepSeconds,
   layoutForTimelineItem,
@@ -40,6 +42,7 @@ import { useTimelinePlayheadDrag } from './timeline/useTimelinePlayheadDrag';
 import { useTimelinePreviewItems } from './timeline/useTimelinePreviewItems';
 import { useTimelineSurfaceSelection } from './timeline/useTimelineSurfaceSelection';
 import { useTimelineVisibleRange } from './timeline/useTimelineVisibleRange';
+import { isTimelinePlayheadVisibleInViewport } from '../_lib/timeline/timeline-playhead-visibility';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 const DEFAULT_TIMELINE_PIXELS_PER_SECOND = 34;
@@ -81,6 +84,7 @@ type WorkspaceTimelineProps = {
   onAddAudioTrack: () => void;
   onAddVideoTrack: () => void;
   onCutItem: (itemId: string, splitOffsetSec?: number) => void;
+  onDeleteGap: (gap: WorkspaceTimelineGapSelection) => void;
   onDeleteItem: (ripple?: boolean) => void;
   onMoveItem: (itemId: string, direction: -1 | 1) => void;
   onInvalidNodeDropToTimeline: (reason: 'incompatible' | 'locked-track' | 'occupied-clip') => void;
@@ -138,6 +142,7 @@ export function WorkspaceTimeline({
   onAddAudioTrack,
   onAddVideoTrack,
   onCutItem,
+  onDeleteGap,
   onDeleteItem,
   onGoToCut,
   onInvalidNodeDropToTimeline,
@@ -169,6 +174,7 @@ export function WorkspaceTimeline({
   const [activeTimelineTool, setActiveTimelineTool] = useState<TimelineTool>('select');
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [pixelsPerSecond, setPixelsPerSecond] = useState(DEFAULT_TIMELINE_PIXELS_PER_SECOND);
+  const [selectedTimelineGap, setSelectedTimelineGap] = useState<WorkspaceTimelineGapSelection | null>(null);
   const timelineViewportRef = useRef<HTMLDivElement | null>(null);
   const frameStepSec = frameStepSeconds(projectFps);
   const baseTimelineDuration = Math.max(1, ...items.map((item) => item.startSec + item.durationSec));
@@ -181,6 +187,25 @@ export function WorkspaceTimeline({
   const clampedPlayheadSec = Math.max(0, Math.min(playheadSec, baseTimelineDuration));
   const selectedItem = items.find((item) => item.id === selectedItemId) ?? null;
   const selectedKeys = useMemo(() => selectionKeysForTimelineItemIds(items, selectedItemIds), [items, selectedItemIds]);
+  const handleSelectTimelineItem = useCallback((itemId: string, mode?: TimelineSelectionMode) => {
+    setSelectedTimelineGap(null);
+    onSelectItem(itemId, mode);
+  }, [onSelectItem]);
+  const handleSelectTimelineItems = useCallback((itemIds: string[]) => {
+    setSelectedTimelineGap(null);
+    onSelectItems(itemIds);
+  }, [onSelectItems]);
+  const handleSelectTimelineGap = useCallback((seconds: number, track: WorkspaceTimelineTrack) => {
+    setSelectedTimelineGap(resolveWorkspaceTimelineGapSelection(items, seconds, track));
+  }, [items]);
+  const handleDeleteTimelineSelection = useCallback((ripple?: boolean) => {
+    if (selectedTimelineGap) {
+      onDeleteGap(selectedTimelineGap);
+      setSelectedTimelineGap(null);
+      return;
+    }
+    onDeleteItem(ripple);
+  }, [onDeleteGap, onDeleteItem, selectedTimelineGap]);
   const {
     clearTimelineContextMenus,
     clipMenu,
@@ -199,7 +224,7 @@ export function WorkspaceTimeline({
     onAddVideoTrack,
     onDeleteTrack,
     onLinkItems,
-    onSelectItem,
+    onSelectItem: handleSelectTimelineItem,
     onUnlinkItems,
     selectedItemIds,
     selectedKeys,
@@ -229,7 +254,7 @@ export function WorkspaceTimeline({
     onPlayheadChange,
     onPositionItem,
     onResizeItem,
-    onSelectItem,
+    onSelectItem: handleSelectTimelineItem,
     pixelsPerSecond,
     selectedItemIds,
     selectedKeys,
@@ -284,6 +309,12 @@ export function WorkspaceTimeline({
     timelineViewportRef,
     totalDuration,
   });
+  const isPlayheadVisibleInViewport = isTimelinePlayheadVisibleInViewport({
+    frameStepSec,
+    playheadSec: clampedPlayheadSec,
+    viewportEndSec: visibleTimelineRange.viewportEndSec,
+    viewportStartSec: visibleTimelineRange.viewportStartSec,
+  });
   const secondsFromTimelineElement = useCallback((clientX: number, element: HTMLElement): number => {
     const rect = element.getBoundingClientRect();
     const rawSeconds = (clientX - rect.left) / pixelsPerSecond;
@@ -296,7 +327,8 @@ export function WorkspaceTimeline({
   } = useTimelineSurfaceSelection({
     onPlaybackChange,
     onPlayheadChange,
-    onSelectItems,
+    onSelectGap: handleSelectTimelineGap,
+    onSelectItems: handleSelectTimelineItems,
     secondsFromTimelineElement,
     timelineViewportClassName: styles.timelineViewport,
   });
@@ -336,7 +368,7 @@ export function WorkspaceTimeline({
     frameStepSec,
     isShortcutActive,
     onCutAtPlayhead: handleCutSelectedAtPlayhead,
-    onDeleteItem,
+    onDeleteItem: handleDeleteTimelineSelection,
     onGoToCut,
     onMarkIn,
     onMarkOut,
@@ -411,6 +443,7 @@ export function WorkspaceTimeline({
           frameStepSec={frameStepSec}
           hasValidInOutRange={hasValidInOutRange}
           isInsertIntoClipEnabled={isInsertIntoClipEnabled}
+          isPlayheadVisibleInViewport={isPlayheadVisibleInViewport}
           onBeginPlayheadDrag={handleBeginPlayheadDrag}
           onInsertIntoClipChange={onInsertIntoClipChange}
           onScrub={handleScrub}
@@ -439,6 +472,7 @@ export function WorkspaceTimeline({
           hiddenVideoTrackSet={hiddenVideoTrackSet}
           highestVideoTrackId={highestVideoTrackId}
           isItemInteracting={isItemInteracting}
+          isPlayheadVisibleInViewport={isPlayheadVisibleInViewport}
           lockedTrackSet={lockedTrackSet}
           lowestAudioTrackId={lowestAudioTrackId}
           maxAudioTrackCount={maxAudioTrackCount}
@@ -456,7 +490,7 @@ export function WorkspaceTimeline({
           onOpenClipContextMenu={handleOpenClipContextMenu}
           onOpenTrackContextMenu={handleOpenTrackContextMenu}
           onPlayheadChange={onPlayheadChange}
-          onSelectItem={onSelectItem}
+          onSelectItem={handleSelectTimelineItem}
           onSurfaceClick={handleTimelineSurfaceClick}
           onSurfacePointerDown={handleBeginTimelineSurfacePointerDown}
           onToggleAudioTrackMute={onToggleAudioTrackMute}
@@ -464,6 +498,7 @@ export function WorkspaceTimeline({
           onToggleVideoTrackVisibility={onToggleVideoTrackVisibility}
           pixelsPerSecond={pixelsPerSecond}
           previewItems={previewItems}
+          selectedGap={selectedTimelineGap}
           selectedKeys={selectedKeys}
           selectionKeyForItem={selectionKeyForTimelineItem}
           snapGuideSec={interaction?.snapGuideSec ?? null}

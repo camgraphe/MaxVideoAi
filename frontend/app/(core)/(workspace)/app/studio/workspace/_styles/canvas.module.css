@@ -4,7 +4,7 @@
   min-height: 0;
   overflow: hidden;
   background:
-    radial-gradient(circle at 25% 15%, rgba(59, 130, 246, 0.12), transparent 28%),
+    radial-gradient(circle at 28% 18%, rgba(59, 130, 246, 0.055), transparent 30%),
     linear-gradient(180deg, var(--studio-surface), var(--studio-bg));
 }
 
@@ -66,12 +66,12 @@
 .canvasShell :global(.react-flow__node-text-prompt),
 .canvasShell :global(.react-flow__node-note),
 .canvasShell :global(.react-flow__node-output) {
-  width: 210px;
+  width: 260px;
   height: 166px;
 }
 
 .canvasShell :global(.react-flow__node-asset-audio) {
-  width: 210px;
+  width: 260px;
   height: 138px;
 }
 
@@ -110,7 +110,7 @@
 }
 
 .canvasShell :global(.react-flow__edge.selected .react-flow__edge-path) {
-  filter: drop-shadow(0 0 12px rgba(167, 139, 250, 0.68));
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.42));
 }
 
 .canvasShell :global(.react-flow__edge-labels) {
@@ -127,7 +127,7 @@
 }
 
 .canvasShell :global(.react-flow__edge-path) {
-  filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.24));
+  filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.18));
 }
 
 .canvasShell :global(.react-flow__edge-textbg) {
@@ -193,7 +193,7 @@
 
 .workspaceGhostLink path {
   fill: none;
-  stroke-width: 2;
+  stroke-width: 2.35;
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-dasharray: 7 7;

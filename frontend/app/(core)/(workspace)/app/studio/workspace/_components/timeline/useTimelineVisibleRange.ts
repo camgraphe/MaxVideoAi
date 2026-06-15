@@ -7,6 +7,8 @@ const TIMELINE_VISIBLE_RANGE_BUFFER_PX = 360;
 export type TimelineVisibleRange = {
   startSec: number;
   endSec: number;
+  viewportStartSec: number;
+  viewportEndSec: number;
 };
 
 type UseTimelineVisibleRangeOptions = {
@@ -26,31 +28,60 @@ export function useTimelineVisibleRange({
   const [visibleTimelineRange, setVisibleTimelineRange] = useState<TimelineVisibleRange>(() => ({
     startSec: 0,
     endSec: Number.POSITIVE_INFINITY,
+    viewportStartSec: 0,
+    viewportEndSec: Number.POSITIVE_INFINITY,
   }));
 
   const updateVisibleTimelineRange = useCallback(() => {
     const viewportElement = timelineViewportRef.current;
     if (!viewportElement) {
       setVisibleTimelineRange((currentRange) => (
-        currentRange.startSec === 0 && currentRange.endSec === totalDuration
+        currentRange.startSec === 0 &&
+        currentRange.endSec === totalDuration &&
+        currentRange.viewportStartSec === 0 &&
+        currentRange.viewportEndSec === totalDuration
           ? currentRange
-          : { startSec: 0, endSec: totalDuration }
+          : {
+            startSec: 0,
+            endSec: totalDuration,
+            viewportStartSec: 0,
+            viewportEndSec: totalDuration,
+          }
       ));
       return;
     }
 
     const bufferSec = TIMELINE_VISIBLE_RANGE_BUFFER_PX / pixelsPerSecond;
-    const nextStartSec = Math.max(0, viewportElement.scrollLeft / pixelsPerSecond - bufferSec);
+    const nextViewportStartSec = Math.max(0, viewportElement.scrollLeft / pixelsPerSecond);
+    const nextViewportEndSec = Math.min(
+      totalDuration,
+      (viewportElement.scrollLeft + viewportElement.clientWidth) / pixelsPerSecond
+    );
+    const nextStartSec = Math.max(0, nextViewportStartSec - bufferSec);
     const nextEndSec = Math.min(
       totalDuration,
-      (viewportElement.scrollLeft + viewportElement.clientWidth) / pixelsPerSecond + bufferSec
+      nextViewportEndSec + bufferSec
     );
 
     setVisibleTimelineRange((currentRange) => {
       const startDelta = Math.abs(currentRange.startSec - nextStartSec);
       const endDelta = Math.abs(currentRange.endSec - nextEndSec);
-      if (startDelta < frameStepSec && endDelta < frameStepSec) return currentRange;
-      return { startSec: nextStartSec, endSec: nextEndSec };
+      const viewportStartDelta = Math.abs(currentRange.viewportStartSec - nextViewportStartSec);
+      const viewportEndDelta = Math.abs(currentRange.viewportEndSec - nextViewportEndSec);
+      if (
+        startDelta < frameStepSec &&
+        endDelta < frameStepSec &&
+        viewportStartDelta < frameStepSec &&
+        viewportEndDelta < frameStepSec
+      ) {
+        return currentRange;
+      }
+      return {
+        startSec: nextStartSec,
+        endSec: nextEndSec,
+        viewportStartSec: nextViewportStartSec,
+        viewportEndSec: nextViewportEndSec,
+      };
     });
   }, [frameStepSec, pixelsPerSecond, timelineViewportRef, totalDuration]);
 

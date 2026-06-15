@@ -2,14 +2,14 @@
 
 import { useMemo } from 'react';
 import {
-  getWorkspaceShotInputConnectors,
-  getWorkspaceShotTargetHandles,
   validateShotConnections,
   workspaceConnectionCapacity,
 } from '../_lib/workspace-capabilities';
+import { resolveWorkspaceBlockPolicy } from '../_lib/models/workspace-block-capability-policy';
 import { connectedInputCounts, connectedInputKinds } from '../_lib/workspace-graph-helpers';
 import type {
   WorkspaceEdgeKind,
+  WorkspaceChatSettings,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
   WorkspaceModelCapability,
@@ -165,6 +165,16 @@ export function useWorkspaceRenderNodes({
                 },
               });
             },
+            onPatchChat: (nodeId: string, patch: Partial<WorkspaceChatSettings>) => {
+              const chat = node.data.chat;
+              if (!chat) return;
+              onPatchNodeData(nodeId, {
+                chat: {
+                  ...chat,
+                  ...patch,
+                },
+              });
+            },
             onRunChat: (nodeId: string): void => {
               void onRunChat(nodeId);
             },
@@ -174,13 +184,19 @@ export function useWorkspaceRenderNodes({
           },
         };
       }
+      const connectedInputs = connectedInputKinds(node.id, edges);
       const validation = validateShotConnections({
         settings: node.data.shot,
-        connectedInputs: connectedInputKinds(node.id, edges),
+        connectedInputs,
         capabilities,
       });
+      const policy = resolveWorkspaceBlockPolicy({
+        settings: node.data.shot,
+        capability: validation.capability,
+        connectedInputs,
+      });
       const inputCounts = connectedInputCounts(node.id, edges);
-      const inputConnectors = getWorkspaceShotInputConnectors(validation.capability).map((connector) => {
+      const inputConnectors = policy.inputConnectors.map((connector) => {
         const connectedCount = inputCounts.get(connector.kind) ?? 0;
         const capacity = workspaceConnectionCapacity({ connector, connectedCount });
         return {
@@ -202,8 +218,9 @@ export function useWorkspaceRenderNodes({
             outputName: localizeWorkspaceShotOutputName(node, studioCanvasCopy.nodes),
           },
           sourceHandles: [shotOutputSourceHandle(node.data.shot)],
-          targetHandles: getWorkspaceShotTargetHandles(validation.capability),
+          targetHandles: inputConnectors.map((connector) => connector.kind),
           inputConnectors,
+          modelCapabilities: capabilities,
           referencePreview: referencePreviewForShotNode(node, nodes, edges),
           validation,
           pricingEstimate: pricingEstimates[node.id],

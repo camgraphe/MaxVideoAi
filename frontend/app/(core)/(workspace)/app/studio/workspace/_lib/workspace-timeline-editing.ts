@@ -6,6 +6,7 @@ import {
 } from './timeline/timeline-frames';
 import {
   timelineRangeOverlapsItem,
+  timelineTrackHasOverlap,
 } from './timeline/timeline-collisions';
 import {
   groupItemsFor,
@@ -57,6 +58,11 @@ export {
   resizeWorkspaceTimelineItem,
   toggleWorkspaceTimelineCrossfade,
 } from './timeline/timeline-resize-editing';
+export {
+  deleteWorkspaceTimelineGap,
+  resolveWorkspaceTimelineGapSelection,
+} from './timeline/timeline-gap-editing';
+export type { WorkspaceTimelineGapSelection } from './timeline/timeline-gap-editing';
 export type { WorkspaceTimelineTrimMode } from './timeline/timeline-resize-editing';
 export { linkWorkspaceTimelineSelection, unlinkWorkspaceTimelineSelection } from './timeline/timeline-selection-groups';
 export type WorkspaceTimelineInsertMode = 'insert' | 'overwrite' | 'replace';
@@ -427,6 +433,14 @@ function timelineSelectionCanMoveFreely(params: {
   });
 }
 
+function revertIfTimelineOverlapRegresses(
+  originalItems: WorkspaceTimelineItem[],
+  candidateItems: WorkspaceTimelineItem[]
+): WorkspaceTimelineItem[] {
+  if (timelineTrackHasOverlap(originalItems)) return candidateItems;
+  return timelineTrackHasOverlap(candidateItems) ? originalItems : candidateItems;
+}
+
 export function moveWorkspaceTimelineSelectionWithMode(params: {
   allowInsertIntoClip?: boolean;
   anchorItemId: string;
@@ -453,7 +467,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
 
   const targetTrack = params.nextTrack && isWorkspaceTimelineVideoTrack(anchorPrimaryItem.track) && isWorkspaceTimelineVideoTrack(params.nextTrack)
     ? params.nextTrack
-    : params.nextTrack && isWorkspaceTimelineAudioTrack(anchorItem.track) && isWorkspaceTimelineAudioTrack(params.nextTrack) && !hasLinkedVideoPeer(selectedItems, anchorItem)
+    : params.nextTrack && isWorkspaceTimelineAudioTrack(anchorItem.track) && isWorkspaceTimelineAudioTrack(params.nextTrack)
       ? params.nextTrack
       : anchorPrimaryItem.track;
   const anchorOffsetSec = snapTimelineValue(anchorPrimaryItem.startSec - packagePrimaryItem.startSec);
@@ -479,9 +493,10 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
 
   if (params.mode === 'insert' && targetInsideSelection && !targetInsideExternalClip) {
     if (isWorkspaceTimelineVideoTrack(targetTrack)) return params.items;
-    return selectedKeys.size > 1
+    const positionedItems = selectedKeys.size > 1
       ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
       : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
+    return revertIfTimelineOverlapRegresses(params.items, positionedItems);
   }
   const baseItems = params.mode === 'insert'
     ? removeTimelineSelectionWithRipple(params.items, selectedKeys)

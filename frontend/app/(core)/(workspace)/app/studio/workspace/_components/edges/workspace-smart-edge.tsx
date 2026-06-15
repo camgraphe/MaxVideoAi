@@ -9,8 +9,10 @@ type Rect = { id: string; left: number; right: number; top: number; bottom: numb
 
 const NODE_CLEARANCE = 28;
 const HANDLE_CLEARANCE = 44;
-const SELECTED_EDGE_WIDTH = 5;
-const SELECTED_EDGE_FILTER = 'drop-shadow(0 0 12px rgba(167, 139, 250, 0.68))';
+const EDGE_CORNER_RADIUS = 18;
+const DEFAULT_EDGE_WIDTH = 2.35;
+const SELECTED_EDGE_WIDTH = 3.4;
+const SELECTED_EDGE_FILTER = 'drop-shadow(0 0 10px rgba(99, 102, 241, 0.42))';
 
 function nodeRect(node: unknown): Rect | null {
   const candidate = node as {
@@ -110,8 +112,45 @@ export function routeAvoidingNodes(params: {
     .sort((a, b) => routeScore(a, params.rects, preferredY) - routeScore(b, params.rects, preferredY))[0];
 }
 
-function polylinePath(points: Point[]): string {
-  return points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ');
+function pointDistance(start: Point, end: Point): number {
+  return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
+}
+
+function pointToward(from: Point, to: Point, distance: number): Point {
+  if (from.x === to.x) {
+    return { x: from.x, y: from.y + Math.sign(to.y - from.y) * distance };
+  }
+  if (from.y === to.y) {
+    return { x: from.x + Math.sign(to.x - from.x) * distance, y: from.y };
+  }
+  return from;
+}
+
+function roundedPolylinePath(points: Point[]): string {
+  if (points.length < 2) return '';
+  const lastPoint = points[points.length - 1];
+  const commands = [`M ${points[0].x} ${points[0].y}`];
+  for (let index = 1; index < points.length - 1; index += 1) {
+    const previous = points[index - 1];
+    const current = points[index];
+    const next = points[index + 1];
+    const previousLength = pointDistance(previous, current);
+    const nextLength = pointDistance(current, next);
+    const radius = Math.min(EDGE_CORNER_RADIUS, previousLength / 2, nextLength / 2);
+    if (
+      !radius ||
+      (previous.x !== current.x && previous.y !== current.y) ||
+      (current.x !== next.x && current.y !== next.y)
+    ) {
+      commands.push(`L ${current.x} ${current.y}`);
+      continue;
+    }
+    const cornerStart = pointToward(current, previous, radius);
+    const cornerEnd = pointToward(current, next, radius);
+    commands.push(`L ${cornerStart.x} ${cornerStart.y}`, `Q ${current.x} ${current.y} ${cornerEnd.x} ${cornerEnd.y}`);
+  }
+  commands.push(`L ${lastPoint.x} ${lastPoint.y}`);
+  return commands.join(' ');
 }
 
 function pathLabelPosition(points: Point[]): Point {
@@ -134,13 +173,24 @@ function pathLabelPosition(points: Point[]): Point {
   return points[Math.floor(points.length / 2)] ?? points[0];
 }
 
-function selectedEdgeStyle(style: EdgeProps<WorkspaceGraphEdge>['style']): EdgeProps<WorkspaceGraphEdge>['style'] {
+function edgeStyle(
+  style: EdgeProps<WorkspaceGraphEdge>['style'],
+  selected: boolean
+): EdgeProps<WorkspaceGraphEdge>['style'] {
+  const strokeWidth = typeof style?.strokeWidth === 'number'
+    ? Math.max(style.strokeWidth, DEFAULT_EDGE_WIDTH)
+    : DEFAULT_EDGE_WIDTH;
   return {
     ...style,
     stroke: style?.stroke ?? '#a78bfa',
-    strokeWidth: SELECTED_EDGE_WIDTH,
-    filter: SELECTED_EDGE_FILTER,
+    strokeWidth: selected ? SELECTED_EDGE_WIDTH : strokeWidth,
+    opacity: selected ? 1 : style?.opacity ?? 0.9,
+    filter: selected ? SELECTED_EDGE_FILTER : style?.filter,
   };
+}
+
+function selectedEdgeStyle(style: EdgeProps<WorkspaceGraphEdge>['style']): EdgeProps<WorkspaceGraphEdge>['style'] {
+  return edgeStyle(style, true);
 }
 
 export function WorkspaceSmartEdge({
@@ -180,7 +230,7 @@ export function WorkspaceSmartEdge({
   return (
     <BaseEdge
       id={id}
-      path={polylinePath(points)}
+      path={roundedPolylinePath(points)}
       label={label}
       labelX={labelPosition.x}
       labelY={labelPosition.y}
@@ -191,7 +241,7 @@ export function WorkspaceSmartEdge({
       labelBgBorderRadius={labelBgBorderRadius}
       markerEnd={markerEnd}
       markerStart={markerStart}
-      style={selected ? selectedEdgeStyle(style) : style}
+      style={selected ? selectedEdgeStyle(style) : edgeStyle(style, false)}
       interactionWidth={selected ? Math.max(interactionWidth ?? 16, 22) : interactionWidth}
     />
   );

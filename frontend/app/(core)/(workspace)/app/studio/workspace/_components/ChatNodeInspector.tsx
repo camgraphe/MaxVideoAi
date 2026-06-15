@@ -1,6 +1,7 @@
 'use client';
 
 import { Send } from 'lucide-react';
+import { getDefaultStudioChatModel, getStudioChatModels, resolveStudioChatModel } from '@/lib/studio-chat-models';
 import { FieldLabel, SelectControl } from './NodeInspectorControls';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
@@ -17,21 +18,24 @@ type ChatNodeInspectorProps = {
 };
 
 function patchChat(chat: WorkspaceChatSettings | undefined, patch: Partial<WorkspaceChatSettings>): WorkspaceChatSettings {
+  const provider = patch.provider ?? chat?.provider ?? 'openai';
+  const model = resolveStudioChatModel(provider, patch.modelId ?? chat?.modelId);
   return {
     mode: chat?.mode ?? 'assistant',
     botName: chat?.botName ?? 'Studio assistant',
-    provider: chat?.provider ?? 'openai',
-    modelId: chat?.modelId ?? 'gpt-4.1-mini',
     systemPrompt: chat?.systemPrompt ?? '',
     draftMessage: chat?.draftMessage ?? '',
     messages: chat?.messages ?? [],
     status: chat?.status ?? 'idle',
     ...patch,
+    provider,
+    modelId: model.modelId,
   };
 }
 
 export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: ChatNodeInspectorProps) {
   const chat = patchChat(node.data.chat, {});
+  const chatModels = getStudioChatModels(chat.provider);
   return (
     <>
       <FieldLabel>
@@ -62,7 +66,7 @@ export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: Ch
           onChange={(value) => onPatchNodeData(node.id, {
             chat: patchChat(chat, {
               provider: value === 'gemini' ? 'gemini' : 'openai',
-              modelId: value === 'gemini' ? 'gemini-2.5-flash' : 'gpt-4.1-mini',
+              modelId: getDefaultStudioChatModel(value === 'gemini' ? 'gemini' : 'openai').modelId,
             }),
           })}
         >
@@ -76,17 +80,11 @@ export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: Ch
           value={chat.modelId}
           onChange={(value) => onPatchNodeData(node.id, { chat: patchChat(chat, { modelId: value }) })}
         >
-          {chat.provider === 'openai' ? (
-            <>
-              <option value="gpt-4.1-mini">GPT-4.1 mini</option>
-              <option value="gpt-4.1">GPT-4.1</option>
-            </>
-          ) : (
-            <>
-              <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-            </>
-          )}
+          {chatModels.map((model) => (
+            <option key={model.modelId} value={model.modelId}>
+              {model.label}
+            </option>
+          ))}
         </SelectControl>
       </FieldLabel>
       <FieldLabel>
@@ -105,7 +103,9 @@ export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: Ch
           rows={6}
           value={chat.draftMessage}
           onChange={(event) => onPatchNodeData(node.id, {
-            chat: patchChat(chat, { draftMessage: event.currentTarget.value }),
+            chat: patchChat(chat, {
+              draftMessage: event.currentTarget.value,
+            }),
             promptText: event.currentTarget.value,
           })}
         />

@@ -2,6 +2,7 @@ export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
+import { compactStudioChatMessages, isStudioChatModelAllowed, resolveStudioChatModel } from '@/lib/studio-chat-models';
 import { runStudioChat, type StudioChatMessageInput } from '@/server/studio/chat';
 import { studioJson } from '../_lib/studio-route-utils';
 
@@ -33,10 +34,16 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const provider = payload.provider === 'gemini' ? 'gemini' : 'openai';
+    const requestedModelId = typeof payload.modelId === 'string' ? payload.modelId : '';
+    if (requestedModelId && !isStudioChatModelAllowed(provider, requestedModelId)) {
+      return studioJson({ ok: false, error: 'MODEL_NOT_ALLOWED', message: 'This Studio chat model is not available.' }, { status: 400 });
+    }
+    const model = resolveStudioChatModel(provider, requestedModelId);
     const result = await runStudioChat({
-      provider: payload.provider === 'gemini' ? 'gemini' : 'openai',
-      modelId: typeof payload.modelId === 'string' ? payload.modelId : '',
-      messages,
+      provider,
+      modelId: model.modelId,
+      messages: compactStudioChatMessages(messages),
     });
     return studioJson({ ok: true, ...result });
   } catch (error) {

@@ -14,6 +14,7 @@ import type {
   WorkspaceTimelineVideoTrack,
 } from '../../_lib/workspace-types';
 import type { TimelineExternalDropPreview } from '../../_lib/timeline/timeline-external-drop';
+import type { WorkspaceTimelineGapSelection } from '../../_lib/timeline/timeline-gap-editing';
 import type { StudioCopy } from '../../../_lib/studio-copy';
 
 type TimelineTrackDefinition = {
@@ -34,6 +35,7 @@ type TimelineTrackRowProps = {
   isAudioTrack: boolean;
   isHighestVideoTrack: boolean;
   isLowestAudioTrack: boolean;
+  isPlayheadVisibleInViewport: boolean;
   isTrackHidden: boolean;
   isTrackLocked: boolean;
   isTrackMuted: boolean;
@@ -53,6 +55,7 @@ type TimelineTrackRowProps = {
   onToggleTrackLock: (trackId: WorkspaceTimelineTrack) => void;
   onToggleVideoTrackVisibility: (trackId: WorkspaceTimelineVideoTrack) => void;
   pixelsPerSecond: number;
+  selectedGap: WorkspaceTimelineGapSelection | null;
   snapGuideSec: number | null;
   timelineWidth: number;
   track: TimelineTrackDefinition;
@@ -71,6 +74,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
   isAudioTrack,
   isHighestVideoTrack,
   isLowestAudioTrack,
+  isPlayheadVisibleInViewport,
   isTrackHidden,
   isTrackLocked,
   isTrackMuted,
@@ -90,6 +94,7 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
   onToggleTrackLock,
   onToggleVideoTrackVisibility,
   pixelsPerSecond,
+  selectedGap,
   snapGuideSec,
   timelineWidth,
   track,
@@ -213,16 +218,38 @@ export const TimelineTrackRow = memo(function TimelineTrackRow({
           onPointerDown={onSurfacePointerDown}
           title={copy.emptyLaneTitle}
         >
-          <button
-            type="button"
-            className={styles.timelinePlayhead}
-            style={{ left: clampedPlayheadSec * pixelsPerSecond }}
-            onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
-            data-playhead-handle="true"
-            data-timeline-control="true"
-            title={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
-            aria-label={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
-          />
+          {selectedGap?.track === track.id ? (
+            <span
+              data-timeline-gap-selection="true"
+              data-timeline-gap-start={selectedGap.startSec}
+              data-timeline-gap-end={selectedGap.endSec}
+              style={{
+                position: 'absolute',
+                top: 4,
+                bottom: 4,
+                zIndex: 1,
+                left: selectedGap.startSec * pixelsPerSecond,
+                width: Math.max(2, (selectedGap.endSec - selectedGap.startSec) * pixelsPerSecond),
+                border: '1px dashed rgba(124, 58, 237, 0.74)',
+                borderRadius: 6,
+                background: 'rgba(124, 58, 237, 0.1)',
+                pointerEvents: 'none',
+              }}
+              aria-hidden="true"
+            />
+          ) : null}
+          {isPlayheadVisibleInViewport ? (
+            <button
+              type="button"
+              className={styles.timelinePlayhead}
+              style={{ left: clampedPlayheadSec * pixelsPerSecond }}
+              onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
+              data-playhead-handle="true"
+              data-timeline-control="true"
+              title={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
+              aria-label={copy.dragPlayheadOnTrack.replace('{track}', track.label)}
+            />
+          ) : null}
           {snapGuideSec !== null ? (
             <span
               className={styles.timelineSnapGuide}

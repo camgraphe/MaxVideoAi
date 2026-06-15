@@ -5,6 +5,21 @@ function isTimelineShortcutTarget(target: EventTarget | null): boolean {
   return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
 }
 
+function timelineShortcutLetter(event: globalThis.KeyboardEvent): string {
+  const key = event.key.toLowerCase();
+  if (/^[a-z]$/.test(key)) return key;
+  const codeMatch = event.code.match(/^Key([A-Z])$/);
+  return codeMatch?.[1].toLowerCase() ?? '';
+}
+
+function timelineHistoryShortcut(event: globalThis.KeyboardEvent): 'redo' | 'undo' | null {
+  if (!event.metaKey && !event.ctrlKey) return null;
+  const key = timelineShortcutLetter(event);
+  if (key === 'z') return event.shiftKey ? 'redo' : 'undo';
+  if (key === 'y') return 'redo';
+  return null;
+}
+
 type UseTimelineKeyboardShortcutsOptions = {
   canRedo: boolean;
   canUndo: boolean;
@@ -46,11 +61,12 @@ export function useTimelineKeyboardShortcuts({
 }: UseTimelineKeyboardShortcutsOptions) {
   useEffect(() => {
     const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.code === 'KeyZ') {
+      const historyShortcut = timelineHistoryShortcut(event);
+      if (historyShortcut) {
         if (!isShortcutActive) return;
         if (isTimelineShortcutTarget(event.target)) return;
         event.preventDefault();
-        if (event.shiftKey) {
+        if (historyShortcut === 'redo') {
           if (canRedo) onRedo();
         } else if (canUndo) {
           onUndo();

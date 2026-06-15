@@ -6,6 +6,9 @@ import {
 import {
   buildWorkspaceTimelineRenderManifest,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
+import {
+  resolveWorkspaceClipFitHeightScale,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
 import type {
   WorkspaceTimelineRenderManifest,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
@@ -170,6 +173,52 @@ test('timeline render manifest derives source composition from output resolution
   assert.equal(clip?.composition?.sourceHeight, 720);
   assert.equal(clip?.composition?.width, 1280);
   assert.equal(clip?.composition?.height, 720);
+});
+
+test('timeline clip fit-height scale matches source height to sequence height', () => {
+  assert.equal(
+    resolveWorkspaceClipFitHeightScale({
+      item: {
+        id: 'clip-720p',
+        outputNodeId: 'asset-720p',
+        track: 'video',
+        title: '720p upload',
+        durationSec: 4,
+        startSec: 0,
+        mediaKind: 'video',
+        sourceWidth: 1280,
+        sourceHeight: 720,
+      },
+      projectSettings: {
+        aspectRatio: '16:9',
+        resolution: '1080p',
+        fps: 24,
+      },
+    }),
+    1.5,
+    'a 720p source should scale to 150% to match a 1080p sequence height'
+  );
+
+  assert.equal(
+    resolveWorkspaceClipFitHeightScale({
+      item: {
+        id: 'clip-unknown',
+        outputNodeId: 'asset-unknown',
+        track: 'video',
+        title: 'Unknown source',
+        durationSec: 4,
+        startSec: 0,
+        mediaKind: 'video',
+      },
+      projectSettings: {
+        aspectRatio: '16:9',
+        resolution: '1080p',
+        fps: 24,
+      },
+    }),
+    null,
+    'fit-height should stay unavailable when source dimensions are unknown'
+  );
 });
 
 test('timeline render manifest warns when visual clips have unknown source dimensions', () => {

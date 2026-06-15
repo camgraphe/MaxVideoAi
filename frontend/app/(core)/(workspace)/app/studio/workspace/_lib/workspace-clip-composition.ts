@@ -70,6 +70,10 @@ function roundCompositionPixel(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
+function roundScale(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
 function aspectParts(value?: AspectRatio | null): [number, number] | null {
   if (!value || value === 'custom' || value === 'source' || value === 'auto') return null;
   const [width, height] = value.split(':').map((part) => Number(part));
@@ -156,4 +160,17 @@ export function resolveWorkspaceClipComposition(params: {
     rotation: transform.rotation,
     opacity: transform.opacity,
   };
+}
+
+export function resolveWorkspaceClipFitHeightScale(params: {
+  item: WorkspaceTimelineItem;
+  projectSettings?: WorkspaceProjectSettings;
+  sourceDimensions?: WorkspaceMediaDimensions | null;
+  sourceNode?: WorkspaceGraphNode | null;
+}): number | null {
+  const sourceDimensions = params.sourceDimensions ?? workspaceMediaDimensionsForTimelineSource(params.item, params.sourceNode);
+  if (!sourceDimensions) return null;
+
+  const sequenceDimensions = workspaceProjectDimensions(params.projectSettings ?? DEFAULT_WORKSPACE_PROJECT_SETTINGS);
+  return roundScale(sequenceDimensions.height / sourceDimensions.height);
 }

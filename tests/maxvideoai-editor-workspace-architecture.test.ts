@@ -124,6 +124,7 @@ const programPlaybackSyncPath = join(workspaceDir, '_components/viewer/useProgra
 const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types.tsx');
 const nodeFramePath = join(workspaceDir, '_components/nodes/workspace-node-frame.tsx');
 const shotInputDockPath = join(workspaceDir, '_components/nodes/workspace-shot-input-dock.tsx');
+const shotNodeControlsPath = join(workspaceDir, '_components/nodes/workspace-shot-node-controls.tsx');
 const nodeMediaPreviewPath = join(workspaceDir, '_components/nodes/workspace-node-media-preview.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
@@ -157,6 +158,7 @@ const timelineFramesPath = join(workspaceDir, '_lib/timeline/timeline-frames.ts'
 const timelineInteractionPath = join(workspaceDir, '_lib/timeline/timeline-interaction.ts');
 const timelineExternalDropPath = join(workspaceDir, '_lib/timeline/timeline-external-drop.ts');
 const timelinePerformancePath = join(workspaceDir, '_lib/timeline/timeline-performance.ts');
+const timelinePlayheadVisibilityPath = join(workspaceDir, '_lib/timeline/timeline-playhead-visibility.ts');
 const timelineCollisionsPath = join(workspaceDir, '_lib/timeline/timeline-collisions.ts');
 const timelineInsertPath = join(workspaceDir, '_lib/timeline/timeline-insert.ts');
 const timelineTrimPath = join(workspaceDir, '_lib/timeline/timeline-trim.ts');
@@ -206,6 +208,7 @@ const canvasStylesPath = join(workspaceDir, '_styles/canvas.module.css');
 const canvasToolbarStylesPath = join(workspaceDir, '_styles/canvas-toolbar.module.css');
 const canvasNavigatorStylesPath = join(workspaceDir, '_styles/canvas-navigator.module.css');
 const canvasNodeStylesPath = join(workspaceDir, '_styles/canvas-nodes.module.css');
+const canvasShotControlsStylesPath = join(workspaceDir, '_styles/canvas-shot-controls.module.css');
 const canvasMapStylesPath = join(workspaceDir, '_styles/canvas-map.module.css');
 const timelineStylesPath = join(workspaceDir, '_styles/timeline.module.css');
 const timelineControlStylesPath = join(workspaceDir, '_styles/timeline-controls.module.css');
@@ -272,6 +275,43 @@ test('program snapshots only fall back to image-safe preview URLs', async () => 
   );
 });
 
+test('timeline playhead visibility follows the unbuffered viewport window', async () => {
+  const { isTimelinePlayheadVisibleInViewport } = await import(
+    '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-playhead-visibility'
+  );
+
+  assert.equal(
+    isTimelinePlayheadVisibleInViewport({
+      frameStepSec: 1 / 24,
+      playheadSec: 1.75,
+      viewportStartSec: 4,
+      viewportEndSec: 36,
+    }),
+    false,
+    'playhead handles should be hidden when the current time is before the visible timeline window'
+  );
+  assert.equal(
+    isTimelinePlayheadVisibleInViewport({
+      frameStepSec: 1 / 24,
+      playheadSec: 4,
+      viewportStartSec: 4,
+      viewportEndSec: 36,
+    }),
+    true,
+    'playhead handles should remain visible when the current time is exactly at the visible start'
+  );
+  assert.equal(
+    isTimelinePlayheadVisibleInViewport({
+      frameStepSec: 1 / 24,
+      playheadSec: 36.25,
+      viewportStartSec: 4,
+      viewportEndSec: 36,
+    }),
+    false,
+    'playhead handles should be hidden when the current time is after the visible timeline window'
+  );
+});
+
 test('MaxVideoAI editor workspace is an isolated authenticated app route', () => {
   assert.ok(existsSync(pagePath), 'editor workspace route should live under the authenticated /app studio workspace');
   assert.ok(existsSync(studioArchitectureGuidePath), 'studio editor should have an engineering architecture guide for additive changes');
@@ -300,6 +340,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(canvasHandleDropPreviewPath), 'canvas handle drag preview should live in a focused route-local canvas component');
   assert.ok(existsSync(canvasFloatingToolbarPath), 'canvas creation toolbar should live in a focused route-local canvas component');
   assert.ok(existsSync(canvasPaletteDragPreviewPath), 'canvas palette drag preview should live in a focused route-local canvas component');
+  assert.ok(existsSync(shotNodeControlsPath), 'shot node generation controls should live in a focused route-local node component');
+  assert.ok(existsSync(canvasShotControlsStylesPath), 'shot node generation controls should use a focused route-local CSS module');
   assert.ok(existsSync(canvasControllerPath), 'canvas drop and paste controller should live in a focused route-local controller');
   assert.ok(existsSync(canvasImportActionsHookPath), 'canvas local file, paste, and snapshot imports should live in a focused route-local hook');
   assert.ok(existsSync(canvasTimelineActionsHookPath), 'canvas media timeline actions should live in a focused route-local hook');
@@ -352,6 +394,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.ok(existsSync(timelinePreviewItemsHookPath), 'timeline preview projection should live in a focused route-local hook');
   assert.ok(existsSync(timelineSurfaceSelectionHookPath), 'timeline empty-surface selection should live in a focused route-local hook');
   assert.ok(existsSync(timelineVisibleRangeHookPath), 'timeline visible range scheduling should live in a focused route-local hook');
+  assert.ok(existsSync(timelinePlayheadVisibilityPath), 'timeline playhead viewport visibility should live in a pure timeline helper');
   assert.ok(existsSync(timelineTrackDefinitionsPath), 'timeline track definitions should live in a focused route-local helper');
   assert.ok(existsSync(videoViewerPath), 'video montage viewer should live in a route-local component');
   assert.ok(existsSync(programMonitorPath), 'program monitor frame and zoom should live in a route-local viewer component');
@@ -426,6 +469,7 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   const canvasToolbarStyleSource = source(canvasToolbarStylesPath);
   const canvasNavigatorStyleSource = source(canvasNavigatorStylesPath);
   const canvasNodeStyleSource = source(canvasNodeStylesPath);
+  const canvasShotControlsStyleSource = source(canvasShotControlsStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
   const timelineControlStyleSource = source(timelineControlStylesPath);
@@ -910,6 +954,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const nodeSource = source(nodeTypesPath);
   const nodeFrameSource = source(nodeFramePath);
   const shotInputDockSource = source(shotInputDockPath);
+  const shotNodeControlsSource = source(shotNodeControlsPath);
   const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
   const shotNodeInspectorSource = source(shotNodeInspectorPath);
@@ -999,6 +1044,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const timelinePreviewItemsHookSource = source(timelinePreviewItemsHookPath);
   const timelineSurfaceSelectionHookSource = source(timelineSurfaceSelectionHookPath);
   const timelineVisibleRangeHookSource = source(timelineVisibleRangeHookPath);
+  const timelinePlayheadVisibilitySource = source(timelinePlayheadVisibilityPath);
   const timelineTrackDefinitionsSource = source(timelineTrackDefinitionsPath);
   const videoViewerSource = source(videoViewerPath);
   const shellStyleSource = source(shellStylesPath);
@@ -1007,6 +1053,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const canvasToolbarStyleSource = source(canvasToolbarStylesPath);
   const canvasNavigatorStyleSource = source(canvasNavigatorStylesPath);
   const canvasNodeStyleSource = source(canvasNodeStylesPath);
+  const canvasShotControlsStyleSource = source(canvasShotControlsStylesPath);
   const canvasMapStyleSource = source(canvasMapStylesPath);
   const timelineStyleSource = source(timelineStylesPath);
   const timelineControlStyleSource = source(timelineControlStylesPath);
@@ -1036,6 +1083,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(nodeSource, /_styles\/canvas-nodes\.module\.css/, 'workspace node renderers should import focused canvas node CSS');
   assert.match(nodeFrameSource, /_styles\/canvas-nodes\.module\.css/, 'workspace node frame should import focused canvas node CSS');
   assert.match(nodeSource, /workspace-node-frame/, 'workspace node renderers should delegate shared frame behavior');
+  assert.match(nodeSource, /ShotNodeControls/, 'shot node renderers should delegate compact inline generation settings to a focused component');
+  assert.doesNotMatch(nodeSource, /shotDropZone/, 'shot nodes should not reserve a large click-to-generate placeholder when inline settings are available');
   assert.match(nodeMediaPreviewSource, /_styles\/canvas-nodes\.module\.css/, 'node media previews should import focused canvas node CSS');
   assert.match(timelineProjectSidebarSource, /WorkspaceProjectSequenceSummary/, 'viewer sidebar should receive summarized project sequences');
   assert.match(timelineProjectSidebarSource, /onSelectSequence/, 'viewer sidebar should expose sequence switching');
@@ -1150,9 +1199,26 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl[\s\S]*bottom:\s*-8px/, 'resize selector should sit on the bottom edge');
   assert.match(canvasNodeStyleSource, /\.nodeResizeControl[\s\S]*left:\s*-8px/, 'resize selector should sit on the left edge');
   assert.match(canvasNodeStyleSource, /cursor:\s*nesw-resize/, 'bottom-left resize selector should communicate the mirrored diagonal resize affordance');
+  assert.match(canvasNodeStyleSource, /\.graphHandle[\s\S]*border:\s*0/, 'canvas connector handles should render as solid colored squares without inherited white outlines');
+  assert.match(canvasNodeStyleSource, /\.graphHandle[\s\S]*box-shadow:\s*none/, 'canvas connector handles should not keep a light halo around selection squares');
+  assert.match(canvasNodeStyleSource, /\.graphHandle[\s\S]*width:\s*9px/, 'canvas connector handles should stay visually compact next to dense node controls');
+  assert.match(canvasNodeStyleSource, /\.graphHandle[\s\S]*height:\s*9px/, 'canvas connector handles should stay visually compact next to dense node controls');
+  assert.match(shotNodeControlsSource, /onPatchShot/, 'inline shot controls should patch generation settings directly from the canvas node');
+  assert.match(shotNodeControlsSource, /modelCapabilities/, 'inline shot controls should receive compatible model choices from rendered node data');
+  assert.match(shotNodeControlsSource, /shot\.modelId/, 'inline shot controls should expose the model selection');
+  assert.match(shotNodeControlsSource, /shot\.durationSec/, 'inline shot controls should expose generation duration');
+  assert.match(shotNodeControlsSource, /shot\.aspectRatio/, 'inline shot controls should expose aspect ratio');
+  assert.match(shotNodeControlsSource, /shot\.resolution/, 'inline shot controls should expose output resolution');
+  assert.match(shotNodeControlsSource, /shot\.fps/, 'inline shot controls should expose frame rate');
+  assert.match(shotNodeControlsSource, /shot\.referenceStrength/, 'inline shot controls should expose reference strength');
+  assert.match(shotNodeControlsSource, /audioEnabled/, 'inline shot controls should expose audio generation toggles when available');
+  assert.match(shotNodeControlsSource, /lipSyncEnabled/, 'inline shot controls should expose lip sync toggles when available');
+  assert.match(shotNodeControlsSource, /canvas-shot-controls\.module\.css/, 'inline shot controls should import focused shot control styles');
+  assert.match(canvasShotControlsStyleSource, /\.shotControlPanel/, 'compact shot generation controls should be styled inside the focused shot control CSS');
+  assert.match(canvasShotControlsStyleSource, /\.shotSettingsGrid/, 'shot setting controls should use a compact grid in the node');
   assert.match(canvasStyleSource, /react-flow__node-asset-image[\s\S]*react-flow__node-asset-video[\s\S]*react-flow__node-text-prompt[\s\S]*react-flow__node-output/, 'media, prompt, and output blocks should have explicit default node dimensions');
   assert.match(canvasStyleSource, /react-flow__node-asset-audio/, 'audio blocks should have explicit default node dimensions');
-  assert.match(canvasStyleSource, /width:\s*210px/, 'source node defaults should keep a compact standard width until manually resized');
+  assert.match(canvasStyleSource, /width:\s*260px/, 'source node defaults should keep a readable standard width until manually resized');
   assert.match(canvasStyleSource, /height:\s*166px/, 'visual and prompt source nodes should keep a compact standard height until manually resized');
   assert.match(canvasStyleSource, /height:\s*138px/, 'audio source nodes should keep a compact standard height until manually resized');
   assert.match(canvasNodeStyleSource, /\.nodePreview img[\s\S]*object-fit:\s*contain/, 'media previews should scale inside the block while preserving their source ratio');
@@ -1241,6 +1307,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSurfaceSelectionHookSource, /suppressNextSurfaceClickRef/, 'timeline surface selection hook should prevent marquee pointer-up from also scrubbing');
   assert.match(timelineVisibleRangeHookSource, /requestAnimationFrame/, 'timeline visible range hook should throttle scroll range updates with requestAnimationFrame');
   assert.match(timelineVisibleRangeHookSource, /TIMELINE_VISIBLE_RANGE_BUFFER_PX/, 'timeline visible range hook should own the buffered render window');
+  assert.match(timelineVisibleRangeHookSource, /viewportStartSec/, 'timeline visible range hook should expose the unbuffered viewport start for playhead visibility');
+  assert.match(timelineVisibleRangeHookSource, /viewportEndSec/, 'timeline visible range hook should expose the unbuffered viewport end for playhead visibility');
+  assert.match(timelinePlayheadVisibilitySource, /export function isTimelinePlayheadVisibleInViewport/, 'timeline playhead viewport visibility should stay in a pure helper');
+  assert.match(timelineSource, /isTimelinePlayheadVisibleInViewport/, 'timeline should derive playhead visibility from the unbuffered viewport window');
   assert.match(timelinePerformanceSource, /export function markTimelinePerformance/, 'timeline performance markers should be shared outside the component');
   assert.doesNotMatch(timelineSource, /playheadDragFrameRef|pendingPlayheadDragSecRef/, 'timeline component should not own playhead drag animation refs inline');
   assert.doesNotMatch(timelineSource, /visibleRangeFrameRef/, 'timeline component should not own visible range animation refs inline');
@@ -1498,7 +1568,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(templateCinematicSceneSource, /createCinematicSceneWorkspaceTemplate/, 'Cinematic Scene should have a focused template builder');
   assert.match(canvasControllerHookSource, /useWorkspaceRenderNodes/, 'canvas controller should delegate graph node render enrichment to a focused hook');
   assert.doesNotMatch(workspaceSource, /getWorkspaceShotTargetHandles/, 'orchestrator should not derive rendered shot target handles inline');
-  assert.match(renderNodesHookSource, /getWorkspaceShotTargetHandles/, 'rendered shot nodes should derive target handles from the selected engine');
+  assert.match(renderNodesHookSource, /resolveWorkspaceBlockPolicy/, 'rendered shot nodes should derive target handles from the centralized block policy');
+  assert.match(renderNodesHookSource, /targetHandles:\s*inputConnectors\.map/, 'rendered shot nodes should expose only the policy-resolved input handles');
   assert.match(renderNodesHookSource, /sourceHandles:\s*\[shotOutputSourceHandle\(node\.data\.shot\)\]/, 'rendered shot nodes should expose one media-specific output source handle');
   assert.match(renderNodesHookSource, /inputConnectors/, 'rendered shot nodes should receive connector labels and metadata');
   assert.match(renderNodesHookSource, /validateShotConnections/, 'render node hook should own shot connection validation for rendered nodes');
@@ -1507,16 +1578,16 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(shotInputDockSource, /function ShotInputDock/, 'generate block input handles should render in a dedicated bottom dock');
   assert.match(shotInputDockSource, /capacityLabel/, 'generate block input handles should render remaining/max counts for multi-reference connectors');
   assert.match(shotInputDockSource, /remainingCount === 0/, 'generate block input handles should mark full connectors as unavailable');
-  assert.match(nodeSource, /statusPill[\s\S]*ShotInputDock/, 'generate block connector dock should render below the Ready status');
+  assert.match(nodeSource, /ShotNodeControls[\s\S]*ShotInputDock/, 'generate block connector dock should render below the inline generation controls');
   assert.match(shotInputDockSource, /styles\.shotInputDock/, 'generate block should place connector labels in a bottom dock, not over the preview');
   assert.match(shotInputDockStyle, /display:\s*grid/, 'generate block connector dock should be styled in normal card flow');
   assert.doesNotMatch(shotInputDockStyle, /position:\s*absolute/, 'generate block connector dock should not be side-mounted');
   assert.match(shotInputDockStyle, /background:\s*transparent/, 'generate block connector dock should not render as a separate box');
   assert.doesNotMatch(shotInputDockStyle, /border:\s*1px/, 'generate block connector dock should not draw a boxed border');
   assert.match(canvasNodeStyleSource, /\.shotInputRow/, 'generate block connector rows should be styled in focused canvas node CSS');
-  assert.match(shotInputDockSource, /left:\s*-12/, 'generate block input handles should sit on the card edge, not inside the label row');
+  assert.match(shotInputDockSource, /left:\s*-13/, 'generate block input handles should be centered on the node edge like output handles');
   assert.match(typesSource, /pricingEstimate\?: WorkspacePricingEstimate/, 'shot nodes should carry a live parameter-based pricing estimate');
-  assert.match(nodeSource, /pricingEstimate/, 'shot nodes should render live parameter-based pricing estimates');
+  assert.match(shotNodeControlsSource, /pricingEstimate/, 'shot node controls should render live parameter-based pricing estimates');
   assert.doesNotMatch(nodeSource, /estimated_cost_or_credits/, 'shot nodes should not render static engine pricing as the estimate');
   assert.doesNotMatch(nodeSource, /function isPlayableVideoUrl/, 'node renderers should not redefine playable video detection inline');
   assert.doesNotMatch(nodeSource, /function isPlayableAudioUrl/, 'node renderers should not redefine playable audio detection inline');
@@ -1791,10 +1862,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.doesNotMatch(timelineKeyboardShortcutsSource, /event\.code === 'KeyR'/, 'R should not activate hidden ripple trim');
   assert.doesNotMatch(timelineKeyboardShortcutsSource, /event\.code === 'KeyY'/, 'Y should not activate hidden roll trim');
   assert.match(timelineKeyboardShortcutsSource, /event\.code === 'Delete'/, 'Delete should remove the selected timeline clip');
-  assert.match(timelineKeyboardShortcutsSource, /Cmd\/Ctrl \+ Z|KeyZ/, 'timeline should expose undo and redo shortcuts');
+  assert.match(timelineKeyboardShortcutsSource, /Cmd\/Ctrl \+ Z|timelineHistoryShortcut/, 'timeline should expose undo and redo shortcuts');
+  assert.match(timelineKeyboardShortcutsSource, /timelineHistoryShortcut/, 'timeline should centralize undo and redo shortcut parsing');
+  assert.match(timelineKeyboardShortcutsSource, /key === 'z'[\s\S]*'undo'/, 'timeline should treat Cmd/Ctrl+Z as undo before considering physical key codes');
+  assert.match(timelineKeyboardShortcutsSource, /key === 'y'[\s\S]*'redo'/, 'timeline should treat Cmd/Ctrl+Y as redo');
   assert.match(
     timelineKeyboardShortcutsSource,
-    /event\.code === 'KeyZ'[\s\S]*if \(!isShortcutActive\) return/,
+    /timelineHistoryShortcut\(event\)[\s\S]*if \(!isShortcutActive\) return/,
     'timeline undo and redo shortcuts should run before the surface-scoped shortcut gate'
   );
   assert.doesNotMatch(timelineSource, /Timeline insert mode/, 'timeline toolbar should not expose insert, overwrite, or replace mode switches');
@@ -1808,6 +1882,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineSource, /formatWorkspaceTimecode/, 'timeline should display HH:MM:SS:FF timecode labels');
   assert.match(timelineSource, /handleBeginPlayheadDrag/, 'timeline should let users drag the playhead line directly');
   assert.match(timelineSource, /handleBeginTimelineSurfacePointerDown/, 'timeline should let users drag empty timeline space to scrub');
+  assert.match(timelineRulerSource, /isPlayheadVisibleInViewport\s*\?/, 'timeline ruler should hide the playhead handle when it is outside the visible timeline viewport');
+  assert.match(timelineTrackRowSource, /isPlayheadVisibleInViewport\s*\?/, 'timeline track rows should hide playhead handles when they are outside the visible timeline viewport');
   assert.match(timelineRulerSource, /data-playhead-handle="true"/, 'timeline ruler playhead should expose an interactive handle on the line');
   assert.match(timelineTrackRowSource, /data-playhead-handle="true"/, 'timeline track rows should expose interactive playhead handles on each lane');
   assert.match(timelineRulerSource, /copy\.dragPlayhead/, 'timeline ruler playhead handle should have a clear accessible label through localized copy');
@@ -1840,6 +1916,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineTrackRowSource, /\{item\.title\}/, 'timeline displacement ghost titles should render the preview label resolved by the external-drop helper');
   assert.doesNotMatch(timelineTrackRowSource, /localizeStudioGeneratedCanvasText/, 'timeline track rows should not relocalize raw clip titles by text pattern');
   assert.match(timelineProjectSidebarSource, /data-project-media-duration-sec/, 'viewer media cards should include clip duration in their timeline drag payload');
+  assert.doesNotMatch(timelineProjectSidebarSource, /projectMediaDurationBadge/, 'project media cards should not duplicate duration as an artwork overlay because duration already appears in metadata');
+  assert.doesNotMatch(mediaStyleSource, /\.projectMediaDurationBadge/, 'project media styles should not include a thumbnail duration badge');
   assert.match(timelineClipInteractionHookSource, /setPointerCapture/, 'timeline clip interaction hook should capture pointer drags instead of relying on HTML drag/drop');
   assert.match(timelineSource, /onPositionItem/, 'timeline should commit direct clip movement');
   assert.match(timelineSource, /onResizeItem/, 'timeline should commit direct clip resizing');
@@ -1865,6 +1943,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineClipInspectorSource, /copy\.clipInspector/, 'timeline clip inspector should render a focused empty state through localized copy');
   assert.match(timelineClipInspectorSource, /formatWorkspaceTimecode/, 'timeline clip inspector should show frame-accurate clip timing');
   assert.match(timelineClipInspectorSource, /copy\.scale/, 'timeline clip inspector should expose video scale through localized copy');
+  assert.match(timelineClipInspectorSource, /copy\.fitHeight/, 'timeline clip inspector should expose a localized fit-height transform action');
+  assert.match(timelineClipInspectorSource, /resolveWorkspaceClipFitHeightScale/, 'timeline clip inspector should use the shared fit-height scale helper');
   assert.match(timelineClipInspectorSource, /copy\.positionX/, 'timeline clip inspector should expose video horizontal position through localized copy');
   assert.match(timelineClipInspectorSource, /copy\.positionY/, 'timeline clip inspector should expose video vertical position through localized copy');
   assert.match(timelineClipInspectorSource, /copy\.rotation/, 'timeline clip inspector should expose video rotation through localized copy');
@@ -2069,6 +2149,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.ok(lineCount(canvasStyleSource) <= 300, 'canvas CSS module should stay under the focused surface threshold');
   assert.ok(lineCount(canvasToolbarStyleSource) <= 520, 'canvas toolbar CSS module should stay under the focused toolbar threshold');
   assert.ok(lineCount(canvasNodeStyleSource) <= 520, 'canvas node CSS module should stay under the focused node styling threshold');
+  assert.ok(lineCount(canvasShotControlsStyleSource) <= 280, 'shot control CSS module should stay focused on inline generation controls');
   assert.ok(lineCount(canvasMapStyleSource) <= 300, 'canvas map CSS module should stay small and focused');
   assert.match(canvasStyleSource, /\.canvasShell/, 'canvas surface should be styled in focused canvas CSS');
   assert.match(canvasMapStyleSource, /\.canvasNavigator/, 'canvas map CSS should own canvas navigation shell styles');
@@ -2993,6 +3074,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     buildWorkspaceTimelineItemsForAsset,
     buildWorkspaceTimelineItemsForOutput,
     deleteWorkspaceTimelineItem,
+    deleteWorkspaceTimelineGap,
     insertWorkspaceTimelineItems,
     linkWorkspaceTimelineSelection,
     moveWorkspaceTimelineItem,
@@ -3007,6 +3089,7 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     trimWorkspaceTimelineItem,
     unlinkWorkspaceTimelineSelection,
   } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing');
+  const { resolveWorkspaceTimelineGapSelection } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing');
   const { resolveTimelineExternalDropPreview } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop');
   const { projectMediaTimelineDragPayloadForAsset } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag');
   const { timelineTrackHasOverlap } = await import('../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions');
@@ -3078,6 +3161,44 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     moved.filter((item) => item.track === 'audio-2').map((item) => [item.id, item.startSec]),
     [['music-a', 0]],
     'moving video clips should not disturb music track timing'
+  );
+
+  const timelineGapItems: WorkspaceTimelineItem[] = [
+    { id: 'gap-video-a', outputNodeId: 'gap-video-a', track: 'video', title: 'Video A', durationSec: 4, startSec: 0, mediaKind: 'video' },
+    { id: 'gap-audio-a', outputNodeId: 'gap-audio-a', track: 'audio', title: 'Audio A', durationSec: 4, startSec: 0, mediaKind: 'audio' },
+    { id: 'gap-audio-b', outputNodeId: 'gap-audio-b', track: 'audio', title: 'Audio B', durationSec: 8, startSec: 10, mediaKind: 'audio' },
+    { id: 'gap-video-b', outputNodeId: 'gap-video-b', track: 'video', title: 'Video B', durationSec: 4, startSec: 12, mediaKind: 'video' },
+  ];
+  assert.deepEqual(
+    resolveWorkspaceTimelineGapSelection(timelineGapItems, 8),
+    { startSec: 4, endSec: 10 },
+    'clicking empty timeline space should select the common gap across every track'
+  );
+  assert.deepEqual(
+    resolveWorkspaceTimelineGapSelection(timelineGapItems, 8, 'audio-2'),
+    { startSec: 4, endSec: 10, track: 'audio-2' },
+    'timeline gap selection should remember the clicked track for single-lane visual feedback'
+  );
+  assert.equal(
+    resolveWorkspaceTimelineGapSelection(timelineGapItems, 11),
+    null,
+    'timeline gap selection should be refused when another track has content at that time'
+  );
+  const deletedGapItems = deleteWorkspaceTimelineGap(timelineGapItems, { startSec: 4, endSec: 10 });
+  assert.deepEqual(
+    deletedGapItems.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['gap-video-a', 'video', 0, 4],
+      ['gap-audio-a', 'audio', 0, 4],
+      ['gap-audio-b', 'audio', 4, 8],
+      ['gap-video-b', 'video', 6, 4],
+    ],
+    'deleting a selected common gap should ripple every later track item left by the gap duration'
+  );
+  assert.equal(
+    deleteWorkspaceTimelineGap(timelineGapItems, { startSec: 9, endSec: 12 }),
+    timelineGapItems,
+    'gap deletion should no-op when any track contains media inside the requested range'
   );
 
   const dragged = reorderWorkspaceTimelineItem(items, 'clip-a', 'clip-b');
@@ -3270,6 +3391,81 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
       ['clip-a-audio', 'audio', 1, 8],
     ],
     'vertical drag should move the video clip to a target video track while keeping linked audio synchronized'
+  );
+
+  const timelineItemsWithOpenAudio2 = items.filter((item) => item.id !== 'music-a');
+  const movedLinkedAudioToSecondTrack = positionWorkspaceTimelineItem(timelineItemsWithOpenAudio2, 'clip-a-audio', 0, 'audio-2');
+  assert.deepEqual(
+    movedLinkedAudioToSecondTrack.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 8],
+      ['clip-a-audio', 'audio-2', 0, 8],
+    ],
+    'vertical drag should move linked audio to a target audio track while keeping its linked video synchronized'
+  );
+  const movedLinkedAudioWithInsertMode = moveWorkspaceTimelineSelectionWithMode({
+    items: timelineItemsWithOpenAudio2,
+    itemIds: ['clip-a-audio'],
+    anchorItemId: 'clip-a-audio',
+    nextStartSec: 0,
+    nextTrack: 'audio-2',
+    mode: 'insert',
+    idSeed: 'linked-audio-track-drag',
+  });
+  assert.deepEqual(
+    movedLinkedAudioWithInsertMode.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 8],
+      ['clip-a-audio', 'audio-2', 0, 8],
+    ],
+    'pointer drag should let a linked audio clip retarget to another audio track without unlinking it'
+  );
+  const splitTrackLinkedItems: WorkspaceTimelineItem[] = [
+    { ...items[0], track: 'video', startSec: 0 },
+    { ...items[1], track: 'audio-2', startSec: 0 },
+    { id: 'music-b', outputNodeId: 'audio-b', track: 'audio-2', title: 'Music B', durationSec: 4, startSec: 10, mediaKind: 'audio' },
+  ];
+  const blockedLinkedVideoMove = moveWorkspaceTimelineSelectionWithMode({
+    items: splitTrackLinkedItems,
+    itemIds: ['clip-a'],
+    anchorItemId: 'clip-a',
+    nextStartSec: 8,
+    mode: 'insert',
+    idSeed: 'linked-peer-collision',
+  });
+  assertNoTimelineOverlap(blockedLinkedVideoMove, 'linked timeline drags should not overlap clips on the linked audio peer track');
+  assert.deepEqual(
+    blockedLinkedVideoMove.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 8],
+      ['clip-a-audio', 'audio-2', 0, 8],
+      ['music-b', 'audio-2', 10, 4],
+    ],
+    'moving a linked video should stay blocked when its linked audio would collide on the current audio track'
+  );
+  const linkedAudioDragWithBlockedVideoPeerItems: WorkspaceTimelineItem[] = [
+    { ...items[0], track: 'video', startSec: 0 },
+    { ...items[1], track: 'audio-2', startSec: 0 },
+    { id: 'clip-b-peer-blocker', outputNodeId: 'output-b', track: 'video', title: 'Clip B', durationSec: 4, startSec: 8, mediaKind: 'video' },
+  ];
+  const blockedLinkedAudioMove = moveWorkspaceTimelineSelectionWithMode({
+    items: linkedAudioDragWithBlockedVideoPeerItems,
+    itemIds: ['clip-a-audio'],
+    anchorItemId: 'clip-a-audio',
+    nextStartSec: 2,
+    nextTrack: 'audio-2',
+    mode: 'insert',
+    idSeed: 'linked-video-peer-collision',
+  });
+  assertNoTimelineOverlap(blockedLinkedAudioMove, 'linked audio drags should not overlap clips on the linked video peer track');
+  assert.deepEqual(
+    blockedLinkedAudioMove.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['clip-a', 'video', 0, 8],
+      ['clip-a-audio', 'audio-2', 0, 8],
+      ['clip-b-peer-blocker', 'video', 8, 4],
+    ],
+    'moving linked audio should stay blocked when its linked video would collide on the current video track'
   );
 
   const resizedEnd = resizeWorkspaceTimelineItem({

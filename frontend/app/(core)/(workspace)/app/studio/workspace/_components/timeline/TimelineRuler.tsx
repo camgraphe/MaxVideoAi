@@ -17,6 +17,7 @@ type TimelineRulerProps = {
   frameStepSec: number;
   hasValidInOutRange: boolean;
   isInsertIntoClipEnabled: boolean;
+  isPlayheadVisibleInViewport: boolean;
   onBeginPlayheadDrag: (event: ReactPointerEvent<HTMLElement>, containerElement: HTMLElement | null) => void;
   onInsertIntoClipChange: (enabled: boolean) => void;
   onScrub: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -40,6 +41,7 @@ export const TimelineRuler = memo(function TimelineRuler({
   frameStepSec,
   hasValidInOutRange,
   isInsertIntoClipEnabled,
+  isPlayheadVisibleInViewport,
   onBeginPlayheadDrag,
   onInsertIntoClipChange,
   onScrub,
@@ -135,16 +137,18 @@ export const TimelineRuler = memo(function TimelineRuler({
               {formatWorkspaceTimecode(tickSec, projectFps)}
             </span>
           ))}
-          <button
-            type="button"
-            className={`${styles.timelinePlayhead} ${styles.timelineRulerPlayhead}`}
-            style={{ left: clampedPlayheadSec * pixelsPerSecond }}
-            onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
-            data-playhead-handle="true"
-            data-timeline-control="true"
-            title={copy.dragPlayhead}
-            aria-label={copy.dragPlayhead}
-          />
+          {isPlayheadVisibleInViewport ? (
+            <button
+              type="button"
+              className={`${styles.timelinePlayhead} ${styles.timelineRulerPlayhead}`}
+              style={{ left: clampedPlayheadSec * pixelsPerSecond }}
+              onPointerDown={(event) => onBeginPlayheadDrag(event, event.currentTarget.parentElement)}
+              data-playhead-handle="true"
+              data-timeline-control="true"
+              title={copy.dragPlayhead}
+              aria-label={copy.dragPlayhead}
+            />
+          ) : null}
           {snapGuideSec !== null ? (
             <span
               className={styles.timelineSnapGuide}
