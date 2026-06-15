@@ -3150,6 +3150,9 @@
       "gallery": {
         "empty": "Lancez un rendu pour remplir votre galerie. Les variantes de chaque essai s’afficheront ici."
       },
+      "messages": {
+        "generatingInProgress": "Génération en cours ({count})…"
+      },
       "wallet": {
         "insufficient": "Solde insuffisant. Merci d’ajouter des fonds pour continuer.",
         "insufficientWithAmount": "Solde insuffisant. Ajoutez au moins {amount} pour continuer."

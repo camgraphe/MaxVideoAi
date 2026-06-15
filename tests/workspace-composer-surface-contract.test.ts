@@ -5,6 +5,7 @@ import test from 'node:test';
 const appClientPath = 'frontend/app/(core)/(workspace)/app/AppClient.tsx';
 const readyViewPath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppReadyView.tsx';
 const composerSurfacePath = 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx';
+const workspaceCopyPath = 'frontend/app/(core)/(workspace)/app/_lib/workspace-copy.ts';
 
 test('workspace composer and settings surface is owned by a route-local component', () => {
   assert.equal(existsSync(readyViewPath), true);
@@ -41,4 +42,22 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.match(surfaceSource, /getSeedanceFieldBlockKey/);
   assert.match(surfaceSource, /MULTI_PROMPT_MIN_SEC/);
   assert.match(surfaceSource, /getLocalizedModeLabel/);
+});
+
+test('workspace video composer shows in-progress render banner from pending groups', () => {
+  assert.equal(existsSync(readyViewPath), true);
+  assert.equal(existsSync(composerSurfacePath), true);
+  assert.equal(existsSync(workspaceCopyPath), true);
+
+  const readyViewSource = readFileSync(readyViewPath, 'utf8');
+  const surfaceSource = readFileSync(composerSurfacePath, 'utf8');
+  const copySource = readFileSync(workspaceCopyPath, 'utf8');
+
+  assert.match(copySource, /generatingInProgress:/);
+  assert.match(readyViewSource, /buildWorkspaceInProgressMessage\(pendingGroups\.length, workspaceCopy\)/);
+  assert.match(readyViewSource, /inProgressMessage=\{inProgressMessage\}/);
+  assert.match(surfaceSource, /inProgressMessage: string \| null;/);
+  assert.match(surfaceSource, /role="status"/);
+  assert.match(surfaceSource, /aria-live="polite"/);
+  assert.match(surfaceSource, /bg-success-bg/);
 });

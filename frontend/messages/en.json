@@ -3115,6 +3115,9 @@
       "gallery": {
         "empty": "Launch a generation to populate your gallery. Variants for each run will appear here."
       },
+      "messages": {
+        "generatingInProgress": "Generating in progress ({count})…"
+      },
       "wallet": {
         "insufficient": "Insufficient wallet balance. Please add funds to continue generating.",
         "insufficientWithAmount": "Insufficient wallet balance. Add at least {amount} to continue generating."
