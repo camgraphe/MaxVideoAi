@@ -16,6 +16,7 @@ import type { useWorkspacePreviewState } from '../_hooks/useWorkspacePreviewStat
 import type { useWorkspacePricingGate } from '../_hooks/useWorkspacePricingGate';
 import type { useWorkspaceRenderState } from '../_hooks/useWorkspaceRenderState';
 import type { useWorkspaceRouteFormState } from '../_hooks/useWorkspaceRouteFormState';
+import { buildWorkspaceInProgressMessage } from '../_lib/workspace-copy';
 
 type WorkspaceAppReadyViewProps = {
   app: ReturnType<typeof useWorkspaceAppBootstrap>;
@@ -81,9 +82,11 @@ export function WorkspaceAppReadyView({
     isGenerationLoading,
     generationSkeletonCount,
     normalizedPendingGroups,
+    pendingGroups,
     renderGroups,
     setViewMode,
   } = renderState;
+  const inProgressMessage = buildWorkspaceInProgressMessage(pendingGroups.length, workspaceCopy);
   const { displayCompositeGroup, setViewerTarget, viewerGroup } = previewState;
   const {
     form,
@@ -248,6 +251,7 @@ export function WorkspaceAppReadyView({
             activeManualMode={activeManualMode}
             handleComposerModeToggle={handleComposerModeToggle}
             composerWorkflowNotice={composerWorkflowNotice}
+            inProgressMessage={inProgressMessage}
             handleAssetAdd={handleAssetAdd}
             handleAssetRemove={handleAssetRemove}
             handleOpenAssetLibrary={handleOpenAssetLibrary}

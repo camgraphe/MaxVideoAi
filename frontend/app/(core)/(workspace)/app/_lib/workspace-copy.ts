@@ -6,6 +6,9 @@ export const DEFAULT_WORKSPACE_COPY = {
   gallery: {
     empty: 'Launch a generation to populate your gallery. Variants for each run will appear here.',
   },
+  messages: {
+    generatingInProgress: 'Generating in progress ({count})…',
+  },
   wallet: {
     insufficient: 'Insufficient wallet balance. Please add funds to continue generating.',
     insufficientWithAmount: 'Insufficient wallet balance. Add at least {amount} to continue generating.',
@@ -82,4 +85,17 @@ export function mergeCopy<T extends Record<string, unknown>>(defaults: T, overri
     }
   });
   return next as T;
+}
+
+export type WorkspaceCopy = typeof DEFAULT_WORKSPACE_COPY;
+
+export function formatWorkspaceTemplate(template: string, values: Record<string, string | number>): string {
+  return Object.entries(values).reduce((result, [key, value]) => {
+    return result.replaceAll(`{${key}}`, String(value));
+  }, template);
+}
+
+export function buildWorkspaceInProgressMessage(pendingGroupCount: number, copy: WorkspaceCopy): string | null {
+  if (pendingGroupCount <= 0) return null;
+  return formatWorkspaceTemplate(copy.messages.generatingInProgress, { count: pendingGroupCount });
 }

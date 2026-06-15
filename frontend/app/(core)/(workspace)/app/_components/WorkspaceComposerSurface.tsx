@@ -76,6 +76,7 @@ type WorkspaceComposerSurfaceProps = {
   activeManualMode: Mode | null;
   handleComposerModeToggle: (mode: Mode | null) => void;
   composerWorkflowNotice: string | null;
+  inProgressMessage: string | null;
   handleAssetAdd: NonNullable<ComposerProps['onAssetAdd']>;
   handleAssetRemove: NonNullable<ComposerProps['onAssetRemove']>;
   handleOpenAssetLibrary: NonNullable<ComposerProps['onOpenLibrary']>;
@@ -174,6 +175,7 @@ export function WorkspaceComposerSurface({
   activeManualMode,
   handleComposerModeToggle,
   composerWorkflowNotice,
+  inProgressMessage,
   handleAssetAdd,
   handleAssetRemove,
   handleOpenAssetLibrary,
@@ -404,6 +406,15 @@ export function WorkspaceComposerSurface({
 
   return (
     <>
+      {inProgressMessage ? (
+        <p
+          role="status"
+          aria-live="polite"
+          className="rounded-card border border-success-border bg-success-bg px-3 py-2 text-sm text-success"
+        >
+          {inProgressMessage}
+        </p>
+      ) : null}
       <Composer
         engine={selectedEngine}
         prompt={prompt}

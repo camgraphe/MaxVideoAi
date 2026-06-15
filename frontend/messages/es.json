@@ -4126,6 +4126,9 @@
       "gallery": {
         "empty": "Inicia un render para llenar la galería. Las variantes de cada ejecución aparecerán aquí."
       },
+      "messages": {
+        "generatingInProgress": "Generación en curso ({count})…"
+      },
       "wallet": {
         "insufficient": "Saldo insuficiente. Añade fondos para seguir creando.",
         "insufficientWithAmount": "Saldo insuficiente. Añade al menos {amount} para continuar."
