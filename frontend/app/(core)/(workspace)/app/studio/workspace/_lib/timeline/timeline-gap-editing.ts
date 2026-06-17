@@ -39,6 +39,10 @@ export function resolveWorkspaceTimelineGapSelection(
   track?: WorkspaceTimelineTrack
 ): WorkspaceTimelineGapSelection | null {
   const scopedItems = gapScopedTimelineItems(items, track);
+  if (track && !scopedItems.length) {
+    const sharedGap = resolveWorkspaceTimelineGapSelection(items, seconds);
+    return sharedGap ? { ...sharedGap, track } : null;
+  }
   if (!scopedItems.length) return null;
   const safeSeconds = snapTimelineValue(Math.max(0, seconds));
   if (scopedItems.some((item) => itemContainsTimelineSecond(item, safeSeconds))) return null;
