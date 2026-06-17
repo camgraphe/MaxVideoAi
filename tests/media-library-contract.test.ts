@@ -609,6 +609,24 @@ test('video upload routes persist measured metadata for timeline-safe media asse
   assert.match(clientUploadSource, /durationSec:\s*typeof \(asset as \{ durationSec\?: unknown \}\)\.durationSec === 'number'/);
 });
 
+test('audio upload and save-output routes preserve truthful duration metadata', () => {
+  const audioRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/uploads/audio/route.ts'),
+    'utf8'
+  );
+  const saveOutputRoute = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/app/api/media-library/save-output/route.ts'),
+    'utf8'
+  );
+
+  assert.match(audioRoute, /detectMediaDuration/);
+  assert.match(audioRoute, /const\s+audioDurationSec\s*=\s*await\s+detectMediaDuration\(uploadResult\.url,\s*\{\},\s*'a'\)/);
+  assert.match(audioRoute, /metadata:\s*\{[\s\S]*durationSec:\s*audioDurationSec\s*\?\?\s*null/);
+  assert.match(audioRoute, /ensureReusableAsset\([\s\S]*durationSec:\s*audioDurationSec\s*\?\?\s*null/);
+  assert.match(audioRoute, /asset:\s*\{[\s\S]*durationSec:\s*audioDurationSec\s*\?\?\s*null/);
+  assert.match(saveOutputRoute, /durationSec:\s*asset\.durationSec\s*\?\?\s*null/);
+});
+
 test('image upload and library routes return stable JSON errors for storage failures', () => {
   const imageRoute = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/uploads/image/route.ts'),

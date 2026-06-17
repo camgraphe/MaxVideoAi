@@ -3,7 +3,7 @@
 import { useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   applyWorkspaceProjectAssetMetadataToTimelineItems,
-  workspaceAssetNeedsMeasuredDimensions,
+  workspaceAssetNeedsMetadataHydration,
   workspaceProjectAssetMetadataSource,
   workspaceAssetWithMeasuredMetadata,
   type WorkspaceProjectAssetMetadataSource,
@@ -101,7 +101,7 @@ export function useWorkspaceProjectMediaMetadataHydration({
         asset,
         source: workspaceProjectAssetMetadataSource(asset, timelineItems),
       }))
-      .filter(({ asset, source }) => workspaceAssetNeedsMeasuredDimensions(asset) && Boolean(source));
+      .filter(({ asset, source }) => workspaceAssetNeedsMetadataHydration(asset) && Boolean(source));
     if (!candidates.length) return;
 
     let cancelled = false;

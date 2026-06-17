@@ -162,7 +162,7 @@ function aspectRatioLabelFromDimensions(value?: string): string | null {
 
 export function mediaSubtitleForAsset(asset: WorkspaceAssetRecord): string {
   if (asset.kind === 'audio') {
-    return [asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null, '48kHz'].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
+    return [asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null].filter(Boolean).join(MEDIA_DETAIL_SEPARATOR);
   }
   if (asset.kind === 'video') {
     return [

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { uploadFileBuffer, recordUserAsset } from '@/server/storage';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { ensureReusableAsset } from '@/server/media-library';
+import { detectMediaDuration } from '@/server/media/detect-has-audio';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +51,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: false, error: 'UPLOAD_FAILED' }, { status: 500 });
   }
 
+  const audioDurationSec = await detectMediaDuration(uploadResult.url, {}, 'a');
+
   try {
     const assetId = await recordUserAsset({
       userId: userId ?? null,
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
       height: null,
       size: buffer.length,
       source: 'upload',
-      metadata: { originalName: blob.name, kind: 'audio' },
+      metadata: { originalName: blob.name, kind: 'audio', durationSec: audioDurationSec ?? null },
     });
 
     await ensureReusableAsset({
@@ -69,6 +72,7 @@ export async function POST(req: NextRequest) {
       source: 'upload',
       mimeType: mime,
       sizeBytes: buffer.length,
+      durationSec: audioDurationSec ?? null,
     }).catch((error) => {
       console.warn('[upload] failed to mirror audio into media_assets', error);
     });
@@ -83,6 +87,7 @@ export async function POST(req: NextRequest) {
         size: buffer.length,
         mime,
         name: blob.name,
+        durationSec: audioDurationSec ?? null,
       },
     });
   } catch (error) {

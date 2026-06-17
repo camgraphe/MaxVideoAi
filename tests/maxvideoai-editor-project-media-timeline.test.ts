@@ -285,12 +285,17 @@ test('project media measured video metadata hydrates assets and existing timelin
   );
 
   assert.deepEqual(
-    patchedItems.map((item) => [item.id, item.sourceWidth ?? null, item.sourceHeight ?? null]),
+    patchedItems.map((item) => [
+      item.id,
+      item.sourceWidth ?? null,
+      item.sourceHeight ?? null,
+      item.sourceDurationSec ?? null,
+    ]),
     [
-      ['timeline-project-asset-video-asset-existing', 1280, 720],
-      ['timeline-project-asset-video-asset-existing-audio', null, null],
+      ['timeline-project-asset-video-asset-existing', 1280, 720, 15.2],
+      ['timeline-project-asset-video-asset-existing-audio', null, null, 15.2],
     ],
-    'hydrating a project media asset should repair visual timeline clips that were inserted before dimensions were known'
+    'hydrating a project media asset should repair source metadata on timeline clips that were inserted before metadata was known'
   );
 
   const legacyVideoAsset: WorkspaceAssetRecord = {
@@ -346,6 +351,73 @@ test('project media measured video metadata hydrates assets and existing timelin
   );
 });
 
+test('project media metadata hydration candidates include missing image dimensions and video duration', () => {
+  assert.equal(
+    workspaceAssetNeedsMeasuredDimensions(imageAsset({
+      dimensions: undefined,
+      subtitle: 'Image',
+      thumbUrl: 'https://media.maxvideoai.com/renders/user/still-preview.jpg',
+      url: undefined,
+    })),
+    true,
+    'render-backed image assets without dimensions should be repaired by browser metadata hydration'
+  );
+
+  assert.equal(
+    workspaceAssetNeedsMeasuredDimensions({
+      id: 'durationless-video',
+      kind: 'video',
+      filename: 'Durationless_scene.mp4',
+      subtitle: 'Video · 1920x1080',
+      url: '/media/durationless-scene.mp4',
+      dimensions: '1920x1080',
+    }),
+    true,
+    'video assets with dimensions but missing duration should still be metadata hydration candidates'
+  );
+
+  const durationOnlyHydratedAsset = workspaceAssetWithMeasuredMetadata(
+    {
+      id: 'durationless-video',
+      kind: 'video',
+      filename: 'Durationless_scene.mp4',
+      subtitle: 'Video · 1920x1080',
+      url: '/media/durationless-scene.mp4',
+      dimensions: '1920x1080',
+    },
+    { durationSec: 9.25 }
+  );
+
+  assert.equal(durationOnlyHydratedAsset.durationSec, 9.25);
+  assert.equal(durationOnlyHydratedAsset.subtitle, 'Video · 1920x1080');
+
+  const patchedItems = applyWorkspaceProjectAssetMetadataToTimelineItems(
+    [
+      {
+        id: 'timeline-project-asset-durationless-video',
+        outputNodeId: 'project-asset-durationless-video',
+        title: 'Durationless_scene.mp4',
+        track: 'video',
+        mediaKind: 'video',
+        durationSec: 5,
+        startSec: 0,
+        mediaUrl: '/media/durationless-scene.mp4',
+      },
+    ],
+    durationOnlyHydratedAsset
+  );
+
+  assert.deepEqual(
+    patchedItems.map((item) => ({
+      sourceDurationSec: item.sourceDurationSec ?? null,
+      sourceHeight: item.sourceHeight ?? null,
+      sourceWidth: item.sourceWidth ?? null,
+    })),
+    [{ sourceDurationSec: 9.25, sourceHeight: 1080, sourceWidth: 1920 }],
+    'duration-only repairs should still update derived timeline clip source duration'
+  );
+});
+
 test('project media subtitles do not hide missing source dimensions', () => {
   assert.equal(
     mediaSubtitleForAsset({
@@ -358,6 +430,31 @@ test('project media subtitles do not hide missing source dimensions', () => {
     }),
     '00:15',
     'video assets without measured dimensions should not display a fake aspect ratio'
+  );
+
+  assert.equal(
+    mediaSubtitleForAsset({
+      id: 'unknown-audio',
+      kind: 'audio',
+      filename: 'unknown-source.wav',
+      subtitle: 'Audio',
+      url: '/media/unknown-source.wav',
+    }),
+    '',
+    'audio assets without measured details should not display a fabricated sample rate'
+  );
+
+  assert.equal(
+    mediaSubtitleForAsset({
+      id: 'measured-audio',
+      kind: 'audio',
+      filename: 'measured-source.wav',
+      subtitle: 'Audio',
+      url: '/media/measured-source.wav',
+      durationSec: 12,
+    }),
+    '00:12',
+    'audio assets should only display measured metadata'
   );
 
   assert.equal(

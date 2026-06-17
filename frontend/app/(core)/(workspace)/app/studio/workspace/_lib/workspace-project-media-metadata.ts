@@ -37,8 +37,26 @@ function assetKindLabel(asset: WorkspaceAssetRecord): string {
   return 'Image';
 }
 
+function assetHasMeasuredDuration(asset: WorkspaceAssetRecord): boolean {
+  return positiveDuration(asset.durationSec) !== null;
+}
+
+function assetHasMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
+  return Boolean(parseWorkspaceMediaDimensions(asset.dimensions));
+}
+
+export function workspaceAssetNeedsMetadataHydration(asset: WorkspaceAssetRecord): boolean {
+  if (asset.kind === 'video') {
+    return !assetHasMeasuredDimensions(asset) || !assetHasMeasuredDuration(asset);
+  }
+  if (asset.kind === 'image' || asset.kind === 'logo') {
+    return !assetHasMeasuredDimensions(asset);
+  }
+  return false;
+}
+
 export function workspaceAssetNeedsMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
-  return asset.kind === 'video' && !parseWorkspaceMediaDimensions(asset.dimensions);
+  return workspaceAssetNeedsMetadataHydration(asset);
 }
 
 export function workspaceProjectAssetMetadataSourceUrl(
@@ -52,6 +70,13 @@ export function workspaceProjectAssetMetadataSource(
   asset: WorkspaceAssetRecord,
   items: WorkspaceTimelineItem[]
 ): WorkspaceProjectAssetMetadataSource | null {
+  if (asset.kind === 'image' || asset.kind === 'logo') {
+    const imageUrl = asset.url ?? asset.thumbUrl ?? null;
+    return imageUrl ? { kind: 'image-preview', url: imageUrl } : null;
+  }
+
+  if (asset.kind !== 'video') return null;
+
   if (asset.url) return { kind: 'video', url: asset.url };
 
   const sourceNodeId = projectAssetTimelineNodeId(asset);
@@ -71,7 +96,7 @@ export function workspaceAssetWithMeasuredMetadata(
   const dimensions = measuredDimensions(metadata);
   const durationSec = positiveDuration(metadata.durationSec);
   const dimensionsLabel = dimensions ? `${dimensions.width}x${dimensions.height}` : asset.dimensions;
-  const nextDurationSec = asset.durationSec ?? durationSec ?? undefined;
+  const nextDurationSec = positiveDuration(asset.durationSec) ?? durationSec ?? undefined;
   const nextSubtitle = dimensionsLabel ? `${assetKindLabel(asset)} · ${dimensionsLabel}` : asset.subtitle;
 
   if (
@@ -93,18 +118,27 @@ export function applyWorkspaceProjectAssetMetadataToTimelineItems(
   asset: WorkspaceAssetRecord
 ): WorkspaceTimelineItem[] {
   const dimensions = parseWorkspaceMediaDimensions(asset.dimensions);
-  if (!dimensions) return items;
+  const durationSec = positiveDuration(asset.durationSec);
+  if (!dimensions && !durationSec) return items;
 
   const sourceNodeId = projectAssetTimelineNodeId(asset);
   let didChange = false;
   const nextItems = items.map((item) => {
-    if (item.outputNodeId !== sourceNodeId || item.mediaKind === 'audio') return item;
-    if (item.sourceWidth === dimensions.width && item.sourceHeight === dimensions.height) return item;
+    if (item.outputNodeId !== sourceNodeId) return item;
+    const nextSourceWidth = item.mediaKind === 'audio' ? item.sourceWidth : dimensions?.width ?? item.sourceWidth;
+    const nextSourceHeight = item.mediaKind === 'audio' ? item.sourceHeight : dimensions?.height ?? item.sourceHeight;
+    const nextSourceDurationSec = durationSec ?? item.sourceDurationSec;
+    if (
+      item.sourceWidth === nextSourceWidth &&
+      item.sourceHeight === nextSourceHeight &&
+      item.sourceDurationSec === nextSourceDurationSec
+    ) return item;
     didChange = true;
     return {
       ...item,
-      sourceWidth: dimensions.width,
-      sourceHeight: dimensions.height,
+      sourceWidth: nextSourceWidth,
+      sourceHeight: nextSourceHeight,
+      sourceDurationSec: nextSourceDurationSec,
     };
   });
 

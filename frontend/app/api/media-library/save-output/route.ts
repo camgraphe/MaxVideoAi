@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
         height: asset.height,
         mime: asset.mimeType,
         size: asset.sizeBytes,
+        durationSec: asset.durationSec ?? null,
         source: asset.source,
         jobId: asset.sourceJobId,
         sourceOutputId: asset.sourceOutputId,
