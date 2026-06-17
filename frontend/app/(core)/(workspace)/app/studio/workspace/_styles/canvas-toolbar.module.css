@@ -82,6 +82,10 @@
   background: var(--studio-border);
 }
 
+.toolbarControl {
+  display: contents;
+}
+
 .toolbarPopover {
   position: absolute;
   bottom: calc(100% + 12px);

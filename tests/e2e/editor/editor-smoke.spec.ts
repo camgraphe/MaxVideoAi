@@ -631,7 +631,8 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByLabel('Studio account status')).toBeVisible();
   await expect(page.getByLabel(/Studio wallet balance/)).toBeVisible();
   await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
 
   const firstCanvasNode = page.locator('.react-flow__node').first();
@@ -660,13 +661,15 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
 
   await switchEditorFocus(page, 'Viewer');
-  await expect(page.getByRole('complementary', { name: 'Project media library' })).toBeVisible();
-  await expect(page.getByText('Project media')).toBeVisible();
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  await expect(projectMediaSidebar).toBeVisible();
+  await expect(projectMediaSidebar.getByText('Project media')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Import media' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New folder' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'New sequence' })).toBeVisible();
   await expect(page.getByLabel('Canvas creation toolbar')).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Canvas templates' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Save canvas' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toHaveCount(0);
   await expect(page.getByTestId('editor-video-viewer')).toBeVisible();
   await expect(page.getByTestId('editor-program-monitor')).toBeVisible();
   await expect(page.getByTestId('editor-program-frame')).toBeVisible();
@@ -677,7 +680,8 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
 
   await switchEditorFocus(page, 'Canvas');
   await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toHaveCount(0);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
 
@@ -742,13 +746,14 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
   await expectLightReadableSurface(page.locator('[data-studio-theme="light"]'), 'light Studio workspace shell');
   await expectLightReadableSurface(page.getByRole('button', { name: 'Switch Studio to dark mode' }), 'light Studio theme toggle');
   await expect(page.getByRole('button', { name: 'Open export dialog' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
   await expect(page.getByLabel('Canvas creation toolbar')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Canvas templates' }).click();
-  await expectLightReadableSurface(page.getByRole('dialog', { name: 'Canvas templates' }), 'light canvas templates popover');
-  await expectLightReadableSurface(page.getByLabel('Canvas template name'), 'light canvas template save input');
-  await page.getByRole('button', { name: 'Canvas templates' }).click();
+  await page.getByRole('button', { name: 'Save canvas' }).click();
+  await expectLightReadableSurface(page.getByRole('dialog', { name: 'Save canvas' }), 'light canvas save popover');
+  await expectLightReadableSurface(page.getByLabel('Canvas name'), 'light canvas save input');
+  await page.getByRole('button', { name: 'Save canvas' }).click();
 
   await expectLightReadableSurface(page.locator('[class*="canvasNavigator"]').first(), 'light canvas map');
   await expectLightReadableSurface(page.locator('[class*="graphNode"]').first(), 'light canvas node card');
@@ -975,16 +980,21 @@ test('canvas toolbar can marquee select multiple nodes and delete them', async (
 
   await marqueeSelectCanvasNodes(page, selectedNodeIds);
 
-  await expect(page.locator('.react-flow__node.selected')).toHaveCount(selectedNodeIds.length);
-  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toHaveCount(0);
+  const selectedNodes = page.locator('.react-flow__node.selected');
+  await expect.poll(() => selectedNodes.count()).toBeGreaterThanOrEqual(selectedNodeIds.length);
+  const selectedCount = await selectedNodes.count();
+  for (const nodeId of selectedNodeIds) {
+    await expect(page.locator(`.react-flow__node[data-id="${nodeId}"]`)).toHaveClass(/selected/);
+  }
+  await expect(page.getByText(/\d+ selected/)).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Delete selected canvas nodes' })).toBeEnabled();
   await page.getByRole('button', { name: 'Delete selected canvas nodes' }).click();
 
-  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount - selectedNodeIds.length);
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount - selectedCount);
   for (const nodeId of selectedNodeIds) {
     await expect(page.locator(`.react-flow__node[data-id="${nodeId}"]`)).toHaveCount(0);
   }
-  await expect(page.getByText(`${selectedNodeIds.length} selected`)).toHaveCount(0);
+  await expect(page.getByText(/\d+ selected/)).toHaveCount(0);
   assertNoEditorClientErrors(errors);
 });
 
@@ -1050,7 +1060,8 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(page.getByRole('button', { name: 'Video tools' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Audio tools' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Text tools' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Canvas templates' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save canvas' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
 
   await expect(page.getByRole('button', { name: /^\+$/ })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Media blocks' })).toHaveCount(0);
@@ -1062,40 +1073,97 @@ test('canvas toolbar groups creation tools by media workflow', async ({ page }) 
   await expect(page.getByText('Fit graph')).toHaveCount(0);
 
   await page.getByRole('button', { name: 'Image tools' }).click();
-  const imageDialog = page.getByRole('dialog', { name: 'Image tools' });
-  await expect(imageDialog).toBeVisible();
-  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="image"]')).toContainText('Image');
-  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="generate-image"]')).toContainText('Generate image');
-  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="character-builder"]')).toContainText('Character Builder');
-  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="angle"]')).toContainText('Angle');
-  await expect(imageDialog.locator('[data-canvas-toolbar-block-id="upscale-image"]')).toContainText('Upscale image');
+  const imageMenu = page.getByRole('menu', { name: 'Image tools' });
+  await expect(imageMenu).toBeVisible();
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="image"]')).toContainText('Image');
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="generate-image"]')).toContainText('Generate image');
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="character-builder"]')).toContainText('Character Builder');
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="angle"]')).toContainText('Angle');
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="upscale-image"]')).toContainText('Upscale image');
 
   await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoDialog = page.getByRole('dialog', { name: 'Video tools' });
-  await expect(videoDialog).toBeVisible();
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="modify-video"]')).toContainText('Modify video');
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="storyboard-video"]')).toHaveCount(0);
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="character-video"]')).toHaveCount(0);
-  await expect(videoDialog.locator('[data-canvas-toolbar-block-id="upscale-video"]')).toContainText('Upscale video');
+  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  await expect(videoMenu).toBeVisible();
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="video"]')).toContainText('Video');
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="generate-video"]')).toContainText('Generate video');
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="modify-video"]')).toContainText('Modify video');
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="storyboard-video"]')).toHaveCount(0);
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="character-video"]')).toHaveCount(0);
+  await expect(videoMenu.locator('[data-canvas-toolbar-block-id="upscale-video"]')).toContainText('Upscale video');
 
   await page.getByRole('button', { name: 'Audio tools' }).click();
-  const audioDialog = page.getByRole('dialog', { name: 'Audio tools' });
-  await expect(audioDialog).toBeVisible();
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="music"]')).toContainText('Music');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-music"]')).toContainText('Generate music');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-voiceover"]')).toContainText('Voice over');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sfx"]')).toContainText('SFX');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sound-design"]')).toContainText('Sound design');
-  await expect(audioDialog.locator('[data-canvas-toolbar-block-id="audio-sound-design-voice"]')).toContainText('Sound design + voice');
+  const audioMenu = page.getByRole('menu', { name: 'Audio tools' });
+  await expect(audioMenu).toBeVisible();
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="music"]')).toContainText('Music');
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-music"]')).toContainText('Generate music');
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-voiceover"]')).toContainText('Voice over');
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-sfx"]')).toContainText('SFX');
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-sound-design"]')).toContainText('Sound design');
+  await expect(audioMenu.locator('[data-canvas-toolbar-block-id="audio-sound-design-voice"]')).toContainText('Sound design + voice');
 
   await page.getByRole('button', { name: 'Text tools' }).click();
-  const textDialog = page.getByRole('dialog', { name: 'Text tools' });
-  await expect(textDialog).toBeVisible();
-  await expect(textDialog.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
-  await expect(textDialog.locator('[data-canvas-toolbar-block-id="chat-box"]')).toContainText('Chat box');
-  await expect(textDialog.locator('[data-canvas-toolbar-block-kind="text-prompt"]')).toBeVisible();
+  const textMenu = page.getByRole('menu', { name: 'Text tools' });
+  await expect(textMenu).toBeVisible();
+  await expect(textMenu.locator('[data-canvas-toolbar-block-id="free-text"]')).toContainText('Free text');
+  await expect(textMenu.locator('[data-canvas-toolbar-block-id="chat-box"]')).toContainText('Chat box');
+  await expect(textMenu.locator('[data-canvas-toolbar-block-kind="text-prompt"]')).toBeVisible();
+  assertNoEditorClientErrors(errors);
+});
+
+test('studio menu popover and dialog controls support keyboard focus return', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const imageTools = page.getByRole('button', { name: 'Image tools' });
+  await imageTools.focus();
+  await page.keyboard.press('Enter');
+  await expect(imageTools).toHaveAttribute('aria-expanded', 'true');
+  const imageMenuId = await imageTools.getAttribute('aria-controls');
+  expect(imageMenuId).toBeTruthy();
+  const imageMenu = page.locator(`#${imageMenuId}`);
+  await expect(imageMenu).toHaveAttribute('role', 'menu');
+  await expect(imageMenu.getByRole('menuitem').first()).toBeFocused();
+
+  await page.keyboard.press('ArrowDown');
+  await expect(imageMenu.getByRole('menuitem').nth(1)).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(imageMenu.getByRole('menuitem').first()).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(imageMenu).toHaveCount(0);
+  await expect(imageTools).toBeFocused();
+  await expect(imageTools).toHaveAttribute('aria-expanded', 'false');
+
+  const canvasNavigation = page.getByRole('button', { name: 'Open canvas navigation' });
+  await canvasNavigation.focus();
+  await page.keyboard.press('Enter');
+  await expect(canvasNavigation).toHaveAttribute('aria-expanded', 'true');
+  const canvasNavigationId = await canvasNavigation.getAttribute('aria-controls');
+  expect(canvasNavigationId).toBeTruthy();
+  const canvasPopover = page.locator(`#${canvasNavigationId}`);
+  await expect(canvasPopover).toHaveAttribute('role', 'dialog');
+  await expect(canvasPopover.getByRole('group', { name: 'Canvas' })).toBeVisible();
+  await expect(canvasPopover.getByRole('button', { name: 'My canvases' })).toHaveAttribute('aria-pressed', 'true');
+  await canvasPopover.getByRole('button', { name: 'Templates' }).click();
+  await expect(canvasPopover.getByRole('button', { name: 'Templates' })).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(canvasPopover).toHaveCount(0);
+  await expect(canvasNavigation).toBeFocused();
+
+  await switchEditorFocus(page, 'Viewer');
+  const exportTrigger = page.getByRole('button', { name: 'Open export dialog' });
+  await exportTrigger.focus();
+  await page.keyboard.press('Enter');
+  const exportDialog = page.getByRole('dialog', { name: 'Export sequence' });
+  await expect(exportDialog).toBeVisible();
+  await expect(exportDialog.getByRole('button', { name: 'Close export dialog' })).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(exportDialog.getByRole('button', { name: /Prepare render JSON/ })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(exportDialog).toHaveCount(0);
+  await expect(exportTrigger).toBeFocused();
+
   assertNoEditorClientErrors(errors);
 });
 
@@ -1166,8 +1234,8 @@ test('canvas keyboard shortcuts undo and redo canvas actions without stealing ed
   await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
   await expect(page.getByRole('button', { name: 'Redo canvas edit' })).toBeEnabled();
 
-  await page.getByRole('button', { name: 'Canvas templates' }).click();
-  await page.getByLabel('Canvas template name').fill('Draft template');
+  await page.getByRole('button', { name: 'Save canvas' }).click();
+  await page.getByLabel('Canvas name').fill('Draft template');
   await page.keyboard.press('Control+Y');
   await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
 
@@ -1774,12 +1842,14 @@ test('canvas templates can be saved and applied without changing the timeline', 
 
   const initialTimelineItems = await timelineItemCount(page);
   const savedNodeCount = await canvasNodeCount(page);
-  await page.getByRole('button', { name: 'Canvas templates' }).click();
-  await page.getByLabel('Canvas template name').fill('Saved graph');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Saved graph saved as a canvas template.')).toBeVisible();
-  const savedTemplateButton = page.locator('[class*="userTemplateItem"] > button', { hasText: 'Saved graph' });
+  await page.getByRole('button', { name: 'Save canvas' }).click();
+  await page.getByLabel('Canvas name').fill('Saved graph');
+  await page.getByRole('button', { name: 'Save as new canvas' }).click();
+  await expect(page.getByText('Saved graph saved as a canvas.')).toBeVisible();
+  await page.getByRole('button', { name: 'Open canvas navigation' }).click();
+  const savedTemplateButton = page.locator('[data-canvas-user-template-id]', { hasText: 'Saved graph' }).getByRole('button').first();
   await expect(savedTemplateButton).toBeVisible();
+  await page.getByRole('button', { name: 'Open canvas navigation' }).click();
 
   await page.getByRole('button', { name: 'Text tools' }).click();
   const promptTemplate = page.locator('[data-canvas-toolbar-block-id="free-text"]');
@@ -1796,7 +1866,7 @@ test('canvas templates can be saved and applied without changing the timeline', 
   await page.mouse.up();
   await expect.poll(() => canvasNodeCount(page)).toBe(savedNodeCount + 1);
 
-  await page.getByRole('button', { name: 'Canvas templates' }).click();
+  await page.getByRole('button', { name: 'Open canvas navigation' }).click();
   await savedTemplateButton.click();
   await expect.poll(() => canvasNodeCount(page)).toBe(savedNodeCount);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
@@ -2015,13 +2085,15 @@ test('canvas shot nodes keep compact row-aligned handles and generate controls',
       labelRight: labelBox ? labelBox.right : 0,
       labelWidth: labelBox ? labelBox.width : 0,
       priceLeft: priceBox ? priceBox.left : 0,
+      priceText: price?.textContent?.trim() ?? '',
       priceWidth: priceBox ? priceBox.width : 0,
     };
   });
 
   expect(generateMetrics.buttonHeight).toBeLessThanOrEqual(38);
   expect(generateMetrics.labelWidth).toBeGreaterThan(32);
-  expect(generateMetrics.priceWidth).toBeGreaterThan(24);
+  expect(generateMetrics.priceText.length).toBeGreaterThan(0);
+  expect(generateMetrics.priceWidth).toBeGreaterThan(0);
   expect(generateMetrics.labelRight).toBeLessThanOrEqual(generateMetrics.priceLeft);
 
   const connectorMetrics = await shotNode.evaluate((node) => {

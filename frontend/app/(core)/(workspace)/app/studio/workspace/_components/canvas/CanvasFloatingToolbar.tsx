@@ -1,7 +1,6 @@
 'use client';
 
 import {
-  useEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -43,6 +42,8 @@ import {
   PALETTE_PLACEMENT_ARM_EVENT,
 } from './CanvasPaletteDragPreview';
 import type { StudioCopy } from '../../../_lib/studio-copy';
+import { StudioMenu } from '../ui/StudioMenu';
+import { StudioPopover } from '../ui/StudioPopover';
 
 type ToolbarMenuId = 'audio' | 'image' | 'save' | 'text' | 'video';
 
@@ -217,24 +218,11 @@ export function CanvasFloatingToolbar({
   onSelectionToolChange,
   onUndo,
 }: CanvasFloatingToolbarProps) {
-  const toolbarRef = useRef<HTMLDivElement | null>(null);
   const suppressBlockClickRef = useRef(false);
   const [activeMenu, setActiveMenu] = useState<ToolbarMenuId | null>(null);
   const [canvasName, setCanvasName] = useState('');
   const [renameCanvasName, setRenameCanvasName] = useState('');
   const blocks = toolbarBlocks(copy.nodes);
-
-  useEffect(() => {
-    if (!activeMenu) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      if (event.target instanceof Node && toolbarRef.current?.contains(event.target)) return;
-      setActiveMenu(null);
-    };
-    window.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [activeMenu]);
 
   const handleBlockMouseDown = (
     event: ReactMouseEvent,
@@ -330,23 +318,15 @@ export function CanvasFloatingToolbar({
     setActiveMenu(null);
   };
 
-  const handleMenuKeyDown = (event: ReactKeyboardEvent) => {
-    if (event.key !== 'Escape') return;
-    event.stopPropagation();
-    setActiveMenu(null);
-  };
-
-  const toggleMenu = (menu: ToolbarMenuId) => {
-    setActiveMenu((current) => (current === menu ? null : menu));
+  const setMenuOpen = (menu: ToolbarMenuId) => (open: boolean) => {
+    setActiveMenu(open ? menu : null);
   };
 
   return (
     <div
-      ref={toolbarRef}
       className={styles.canvasToolbar}
       data-canvas-toolbar="true"
       aria-label={copy.toolbar.ariaLabel}
-      onKeyDown={handleMenuKeyDown}
     >
       <button
         type="button"
@@ -401,69 +381,105 @@ export function CanvasFloatingToolbar({
 
       <span className={styles.toolbarSeparator} />
 
-      <ToolbarMenuButton
-        active={activeMenu === 'image'}
-        icon={<ImagePlus size={18} />}
+      <StudioMenu
+        id="canvas-toolbar-image-menu"
         label={copy.toolbar.imageTools}
-        menuId="image"
-        onClick={() => toggleMenu('image')}
-      />
-      <ToolbarMenuButton
-        active={activeMenu === 'video'}
-        icon={<Video size={18} />}
+        open={activeMenu === 'image'}
+        onOpenChange={setMenuOpen('image')}
+        className={styles.toolbarControl}
+        menuClassName={styles.toolbarPopover}
+        trigger={(triggerProps) => (
+          <ToolbarMenuButton
+            active={activeMenu === 'image'}
+            icon={<ImagePlus size={18} />}
+            label={copy.toolbar.imageTools}
+            menuId="image"
+            triggerProps={triggerProps}
+          />
+        )}
+      >
+        <ToolbarPanelHeader title={copy.toolbar.imageTools} description={copy.toolbar.imageToolsDescription} />
+        <BlockOptionList blocks={blocks.image} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+      </StudioMenu>
+      <StudioMenu
+        id="canvas-toolbar-video-menu"
         label={copy.toolbar.videoTools}
-        menuId="video"
-        onClick={() => toggleMenu('video')}
-      />
-      <ToolbarMenuButton
-        active={activeMenu === 'audio'}
-        icon={<Music2 size={18} />}
+        open={activeMenu === 'video'}
+        onOpenChange={setMenuOpen('video')}
+        className={styles.toolbarControl}
+        menuClassName={styles.toolbarPopover}
+        trigger={(triggerProps) => (
+          <ToolbarMenuButton
+            active={activeMenu === 'video'}
+            icon={<Video size={18} />}
+            label={copy.toolbar.videoTools}
+            menuId="video"
+            triggerProps={triggerProps}
+          />
+        )}
+      >
+        <ToolbarPanelHeader title={copy.toolbar.videoTools} description={copy.toolbar.videoToolsDescription} />
+        <BlockOptionList blocks={blocks.video} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+      </StudioMenu>
+      <StudioMenu
+        id="canvas-toolbar-audio-menu"
         label={copy.toolbar.audioTools}
-        menuId="audio"
-        onClick={() => toggleMenu('audio')}
-      />
-      <ToolbarMenuButton
-        active={activeMenu === 'text'}
-        icon={<Type size={18} />}
+        open={activeMenu === 'audio'}
+        onOpenChange={setMenuOpen('audio')}
+        className={styles.toolbarControl}
+        menuClassName={styles.toolbarPopover}
+        trigger={(triggerProps) => (
+          <ToolbarMenuButton
+            active={activeMenu === 'audio'}
+            icon={<Music2 size={18} />}
+            label={copy.toolbar.audioTools}
+            menuId="audio"
+            triggerProps={triggerProps}
+          />
+        )}
+      >
+        <ToolbarPanelHeader title={copy.toolbar.audioTools} description={copy.toolbar.audioToolsDescription} />
+        <BlockOptionList blocks={blocks.audio} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+      </StudioMenu>
+      <StudioMenu
+        id="canvas-toolbar-text-menu"
         label={copy.toolbar.textTools}
-        menuId="text"
-        onClick={() => toggleMenu('text')}
-      />
+        open={activeMenu === 'text'}
+        onOpenChange={setMenuOpen('text')}
+        className={styles.toolbarControl}
+        menuClassName={styles.toolbarPopover}
+        trigger={(triggerProps) => (
+          <ToolbarMenuButton
+            active={activeMenu === 'text'}
+            icon={<Type size={18} />}
+            label={copy.toolbar.textTools}
+            menuId="text"
+            triggerProps={triggerProps}
+          />
+        )}
+      >
+        <ToolbarPanelHeader title={copy.toolbar.textTools} description={copy.toolbar.textToolsDescription} />
+        <BlockOptionList blocks={blocks.text} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
+      </StudioMenu>
 
-      <ToolbarMenuButton
-        active={activeMenu === 'save'}
-        icon={<Save size={18} />}
+      <StudioPopover
+        id="canvas-toolbar-save-popover"
         label={copy.toolbar.saveCanvas}
-        menuId="save"
-        onClick={() => toggleMenu('save')}
-      />
-
-      {activeMenu === 'image' ? (
-        <ToolbarPopover title={copy.toolbar.imageTools} description={copy.toolbar.imageToolsDescription}>
-          <BlockOptionList blocks={blocks.image} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'video' ? (
-        <ToolbarPopover title={copy.toolbar.videoTools} description={copy.toolbar.videoToolsDescription}>
-          <BlockOptionList blocks={blocks.video} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'audio' ? (
-        <ToolbarPopover title={copy.toolbar.audioTools} description={copy.toolbar.audioToolsDescription}>
-          <BlockOptionList blocks={blocks.audio} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'text' ? (
-        <ToolbarPopover title={copy.toolbar.textTools} description={copy.toolbar.textToolsDescription}>
-          <BlockOptionList blocks={blocks.text} onBlockClick={handleBlockClick} onBlockMouseDown={handleBlockMouseDown} />
-        </ToolbarPopover>
-      ) : null}
-
-      {activeMenu === 'save' ? (
-        <ToolbarPopover title={copy.toolbar.saveCanvas} description={copy.toolbar.saveCanvasDescription}>
+        open={activeMenu === 'save'}
+        onOpenChange={setMenuOpen('save')}
+        className={styles.toolbarControl}
+        panelClassName={`${styles.toolbarPopover} ${styles.toolbarPopoverWide}`}
+        trigger={(triggerProps) => (
+          <ToolbarMenuButton
+            active={activeMenu === 'save'}
+            icon={<Save size={18} />}
+            label={copy.toolbar.saveCanvas}
+            menuId="save"
+            triggerProps={triggerProps}
+          />
+        )}
+      >
+        <ToolbarPanelHeader title={copy.toolbar.saveCanvas} description={copy.toolbar.saveCanvasDescription} />
           <div className={styles.saveActionList}>
             <button
               type="button"
@@ -506,8 +522,7 @@ export function CanvasFloatingToolbar({
               </button>
             </form>
           </div>
-        </ToolbarPopover>
-      ) : null}
+      </StudioPopover>
 
     </div>
   );
@@ -518,48 +533,53 @@ function ToolbarMenuButton({
   icon,
   label,
   menuId,
-  onClick,
+  triggerProps,
 }: {
   active: boolean;
   icon: ReactNode;
   label: string;
   menuId: ToolbarMenuId;
-  onClick: () => void;
+  triggerProps: {
+    'aria-controls': string;
+    'aria-expanded': boolean;
+    'aria-haspopup': 'dialog' | 'menu';
+    id: string;
+    onClick: () => void;
+    onKeyDown: (event: ReactKeyboardEvent<HTMLButtonElement>) => void;
+    ref: (node: HTMLButtonElement | null) => void;
+  };
 }) {
   return (
     <button
+      ref={triggerProps.ref}
+      id={triggerProps.id}
       type="button"
       className={`${styles.toolbarButton} ${active ? styles.toolbarButtonActive : ''}`}
       aria-label={label}
-      aria-haspopup="dialog"
-      aria-expanded={active}
+      aria-haspopup={triggerProps['aria-haspopup']}
+      aria-expanded={triggerProps['aria-expanded']}
+      aria-controls={triggerProps['aria-controls']}
       data-canvas-toolbar-menu-id={menuId}
-      onClick={onClick}
+      onClick={triggerProps.onClick}
+      onKeyDown={triggerProps.onKeyDown}
     >
       {icon}
     </button>
   );
 }
 
-function ToolbarPopover({
-  children,
+function ToolbarPanelHeader({
   description,
   title,
-  wide = false,
 }: {
-  children: ReactNode;
   description: string;
   title: string;
-  wide?: boolean;
 }) {
   return (
-    <section className={`${styles.toolbarPopover} ${wide ? styles.toolbarPopoverWide : ''}`} role="dialog" aria-label={title}>
-      <div className={styles.popoverHeader}>
-        <strong>{title}</strong>
-        <span>{description}</span>
-      </div>
-      {children}
-    </section>
+    <div className={styles.popoverHeader}>
+      <strong>{title}</strong>
+      <span>{description}</span>
+    </div>
   );
 }
 
@@ -578,6 +598,7 @@ function BlockOptionList({
         <button
           key={block.id}
           type="button"
+          role="menuitem"
           className={styles.blockOption}
           data-canvas-toolbar-block-id={block.id}
           data-canvas-toolbar-block-kind={block.kind}

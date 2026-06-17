@@ -1,11 +1,8 @@
 'use client';
 
 import {
-  useEffect,
-  useRef,
   useState,
   type CSSProperties,
-  type KeyboardEvent as ReactKeyboardEvent,
 } from 'react';
 import {
   Blocks,
@@ -22,6 +19,8 @@ import type {
 } from '../../_lib/workspace-types';
 import styles from '../../_styles/canvas-navigator.module.css';
 import type { StudioCopy } from '../../../_lib/studio-copy';
+import { StudioPopover } from '../ui/StudioPopover';
+import { StudioSegmentedControl } from '../ui/StudioSegmentedControl';
 
 type CanvasNavigatorTab = 'saved' | 'templates';
 
@@ -77,22 +76,8 @@ export function CanvasNavigatorPanel({
   onDeleteUserTemplate,
   onDuplicateUserTemplate,
 }: CanvasNavigatorPanelProps) {
-  const navigatorRef = useRef<HTMLDivElement | null>(null);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<CanvasNavigatorTab>('saved');
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const handlePointerDown = (event: PointerEvent) => {
-      if (event.target instanceof Node && navigatorRef.current?.contains(event.target)) return;
-      setIsOpen(false);
-    };
-    window.addEventListener('pointerdown', handlePointerDown);
-    return () => {
-      window.removeEventListener('pointerdown', handlePointerDown);
-    };
-  }, [isOpen]);
 
   const handleReplaceTemplate = (template: WorkspaceTemplateSummary) => {
     const message = formatCopyValue(copy.templates.replaceCurrentCanvasConfirm, { name: template.name });
@@ -101,35 +86,34 @@ export function CanvasNavigatorPanel({
     setIsOpen(false);
   };
 
-  const handlePanelKeyDown = (event: ReactKeyboardEvent) => {
-    if (event.key !== 'Escape') return;
-    event.stopPropagation();
-    setIsOpen(false);
-    triggerRef.current?.focus();
-  };
-
   return (
-    <div ref={navigatorRef} className={styles.canvasNavigator} data-canvas-navigator="true">
-      <button
-        ref={triggerRef}
-        type="button"
-        className={`${styles.navigatorTrigger} ${isOpen ? styles.navigatorTriggerActive : ''}`}
-        aria-label={copy.templates.openCanvasPanel}
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-      >
-        <LayoutGrid size={17} />
-        <span>{copy.templates.canvasPanel}</span>
-        {userTemplates.length ? <strong>{userTemplates.length}</strong> : null}
-      </button>
-
-      {isOpen ? (
-        <section
-          className={styles.navigatorPanel}
-          role="dialog"
-          aria-label={copy.templates.canvasPanel}
-          onKeyDown={handlePanelKeyDown}
+    <StudioPopover
+      id="canvas-navigator-popover"
+      label={copy.templates.canvasPanel}
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className={styles.canvasNavigator}
+      panelClassName={styles.navigatorPanel}
+      trigger={(triggerProps) => (
+        <button
+          ref={triggerProps.ref}
+          id={triggerProps.id}
+          type="button"
+          className={`${styles.navigatorTrigger} ${isOpen ? styles.navigatorTriggerActive : ''}`}
+          aria-label={copy.templates.openCanvasPanel}
+          aria-haspopup={triggerProps['aria-haspopup']}
+          aria-controls={triggerProps['aria-controls']}
+          aria-expanded={triggerProps['aria-expanded']}
+          data-canvas-navigator="true"
+          onClick={triggerProps.onClick}
+          onKeyDown={triggerProps.onKeyDown}
         >
+          <LayoutGrid size={17} />
+          <span>{copy.templates.canvasPanel}</span>
+          {userTemplates.length ? <strong>{userTemplates.length}</strong> : null}
+        </button>
+      )}
+    >
           <header className={styles.navigatorHeader}>
             <span className={styles.navigatorIcon} aria-hidden="true">
               <Folders size={17} />
@@ -140,26 +124,17 @@ export function CanvasNavigatorPanel({
             </span>
           </header>
 
-          <div className={styles.navigatorTabs} role="tablist" aria-label={copy.templates.canvasPanel}>
-            <button
-              type="button"
-              role="tab"
-              className={activeTab === 'saved' ? styles.navigatorTabActive : ''}
-              aria-selected={activeTab === 'saved'}
-              onClick={() => setActiveTab('saved')}
-            >
-              {copy.templates.myCanvases}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              className={activeTab === 'templates' ? styles.navigatorTabActive : ''}
-              aria-selected={activeTab === 'templates'}
-              onClick={() => setActiveTab('templates')}
-            >
-              {copy.templates.starterTemplates}
-            </button>
-          </div>
+          <StudioSegmentedControl<CanvasNavigatorTab>
+            className={styles.navigatorTabs}
+            activeButtonClassName={styles.navigatorTabActive}
+            label={copy.templates.canvasPanel}
+            value={activeTab}
+            onChange={setActiveTab}
+            options={[
+              { label: copy.templates.myCanvases, value: 'saved' },
+              { label: copy.templates.starterTemplates, value: 'templates' },
+            ]}
+          />
 
           {activeTab === 'saved' ? (
             <div className={styles.savedCanvasList}>
@@ -244,8 +219,6 @@ export function CanvasNavigatorPanel({
               ))}
             </div>
           )}
-        </section>
-      ) : null}
-    </div>
+    </StudioPopover>
   );
 }

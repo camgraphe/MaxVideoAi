@@ -1,7 +1,7 @@
 'use client';
 
 import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
 import {
@@ -19,6 +19,7 @@ import type {
   WorkspaceProjectMediaFolder,
   WorkspaceTimelineItem,
 } from '../_lib/workspace-types';
+import { StudioSegmentedControl } from './ui/StudioSegmentedControl';
 import {
   localizeStudioGeneratedFolderDisplayName,
   localizeStudioGeneratedSequenceDisplayName,
@@ -121,6 +122,8 @@ function ProjectMediaCard({
   kind,
   onClick,
   onContextMenu,
+  contextMenuOpen,
+  contextMenuToken,
   onDragEnd,
   onDragLeave,
   onDragOver,
@@ -141,6 +144,8 @@ function ProjectMediaCard({
   isSelectionSelected?: boolean;
   kind: 'audio' | 'folder' | 'generated' | 'image' | 'sequence' | 'video';
   onClick: (gesture: ProjectMediaSelectionGesture) => void;
+  contextMenuOpen?: boolean;
+  contextMenuToken?: string;
   onContextMenu?: (event: ReactMouseEvent<HTMLElement>) => void;
   onDragStart?: (event: ReactDragEvent<HTMLElement>) => void;
   onDragEnd?: () => void;
@@ -191,7 +196,7 @@ function ProjectMediaCard({
         <button type="button" className={styles.projectMediaMoreButton} aria-label={formatCopyValue(copy.moreActions, { title })} onClick={(event) => {
           event.stopPropagation();
           onContextMenu(event);
-        }}>
+        }} aria-haspopup="menu" aria-controls="project-media-context-menu" aria-expanded={contextMenuOpen} data-project-media-menu-trigger={contextMenuToken}>
           <MoreHorizontal size={16} />
         </button>
       ) : null}
@@ -220,15 +225,70 @@ function ProjectMediaContextMenu({
   onMove: (menu: ProjectMediaContextMenu) => void;
   onRename: (menu: ProjectMediaContextMenu) => void;
 }) {
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!menu) return;
+    const frame = window.requestAnimationFrame(() => {
+      menuRef.current?.querySelector<HTMLElement>('[role="menuitem"]:not([disabled])')?.focus();
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [menu]);
+
   if (!menu) return null;
+
+  const focusTrigger = () => {
+    document.querySelector<HTMLElement>(`[data-project-media-menu-trigger="${menu.type}:${menu.id}"]`)?.focus();
+  };
+
+  const menuItems = () => Array.from(menuRef.current?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? []);
+  const moveMenuFocus = (direction: 1 | -1) => {
+    const items = menuItems();
+    if (!items.length) return;
+    const currentIndex = Math.max(0, items.findIndex((item) => item === document.activeElement));
+    items[(currentIndex + direction + items.length) % items.length]?.focus();
+  };
+  const closeAndFocusTrigger = () => {
+    onClose();
+    window.requestAnimationFrame(focusTrigger);
+  };
+
   return (
     <div
+      ref={menuRef}
+      id="project-media-context-menu"
       className={styles.projectMediaContextMenu}
       data-project-media-menu="true"
       style={{ left: menu.x, top: menu.y }}
       role="menu"
       aria-label={formatCopyValue(copy.actionsLabel, { title: menu.title })}
       onContextMenu={(event) => event.preventDefault()}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeAndFocusTrigger();
+          return;
+        }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          moveMenuFocus(1);
+          return;
+        }
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          moveMenuFocus(-1);
+          return;
+        }
+        if (event.key === 'Home') {
+          event.preventDefault();
+          menuItems()[0]?.focus();
+          return;
+        }
+        if (event.key === 'End') {
+          event.preventDefault();
+          menuItems().at(-1)?.focus();
+        }
+      }}
     >
       <span>{menu.title}</span>
       <button type="button" role="menuitem" onClick={() => {
@@ -500,6 +560,9 @@ export function TimelineProjectSidebar({
     { label: copy.mediaKindVideo, value: 'video' },
     { label: copy.mediaKindAudio, value: 'audio' },
   ];
+  const isContextMenuOpen = (type: ProjectMediaContextMenu['type'], id: string) => (
+    projectMedia.contextMenu?.type === type && projectMedia.contextMenu.id === id
+  );
 
   const openCreateFolderDialog = () => {
     setFolderDialog({
@@ -569,22 +632,15 @@ export function TimelineProjectSidebar({
           />
         </label>
       </div>
-      <div className={styles.projectMediaKindFilters} role="group" aria-label={copy.mediaKindFilters}>
-        {mediaKindFilterOptions.map((option) => {
-          const active = projectMedia.mediaKindFilter === option.value;
-          return (
-            <button
-              key={option.value}
-              type="button"
-              className={`${styles.projectMediaKindFilterButton} ${active ? styles.projectMediaKindFilterButtonActive : ''}`}
-              aria-pressed={active}
-              onClick={() => projectMedia.setMediaKindFilter(option.value)}
-            >
-              {option.label}
-            </button>
-          );
-        })}
-      </div>
+      <StudioSegmentedControl<ProjectMediaKindFilter>
+        className={styles.projectMediaKindFilters}
+        buttonClassName={styles.projectMediaKindFilterButton}
+        activeButtonClassName={styles.projectMediaKindFilterButtonActive}
+        label={copy.mediaKindFilters}
+        value={projectMedia.mediaKindFilter}
+        onChange={projectMedia.setMediaKindFilter}
+        options={mediaKindFilterOptions}
+      />
       {projectMedia.activeFolder ? (
         <div className={styles.projectMediaFolderHeader}>
           <button type="button" className={styles.projectMediaBackButton} onClick={projectMedia.openRootFolder}>
@@ -619,6 +675,8 @@ export function TimelineProjectSidebar({
               isSelected={isSelectionSelected || sequence.isActive}
               isSelectionSelected={isSelectionSelected}
               kind="sequence"
+              contextMenuOpen={isContextMenuOpen('sequence', sequence.id)}
+              contextMenuToken={`sequence:${sequence.id}`}
               onClick={(event) => projectMedia.selectSequence(sequence.id, event)}
               onContextMenu={(event) => projectMedia.openContextMenu(event, { id: sequence.id, title: sequenceTitle, type: 'sequence' })}
               subtitle={`${formatProjectMediaDuration(sequence.durationSec)}${MEDIA_DETAIL_SEPARATOR}${sequence.clipCount} ${sequence.clipCount === 1 ? copy.clipSingular : copy.clipPlural}${MEDIA_DETAIL_SEPARATOR}${sequence.settings.aspectRatio}`}
@@ -643,6 +701,8 @@ export function TimelineProjectSidebar({
                 isSelected={projectMedia.selectedKeySet.has(key) || projectMedia.folderDropTargetId === folder.id}
                 isSelectionSelected={projectMedia.selectedKeySet.has(key)}
                 kind="folder"
+                contextMenuOpen={isContextMenuOpen('folder', folder.id)}
+                contextMenuToken={`folder:${folder.id}`}
                 onClick={(event) => projectMedia.selectProjectMediaFolder(folder.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: folder.id, title: folderTitle, type: 'folder' })}
                 onDragLeave={(event) => projectMedia.handleFolderDragLeave(event, folder.id)}
@@ -671,6 +731,8 @@ export function TimelineProjectSidebar({
                 id={key}
                 isSelected={projectMedia.selectedKeySet.has(key)}
                 kind={cardKind}
+                contextMenuOpen={isContextMenuOpen('asset', asset.id)}
+                contextMenuToken={`asset:${asset.id}`}
                 onClick={(event) => projectMedia.selectProjectAsset(asset.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
@@ -699,6 +761,8 @@ export function TimelineProjectSidebar({
                 id={key}
                 isSelected={projectMedia.selectedKeySet.has(key)}
                 kind="generated"
+                contextMenuOpen={isContextMenuOpen('generated', node.id)}
+                contextMenuToken={`generated:${node.id}`}
                 onClick={(event) => projectMedia.selectGeneratedNode(node.id, event)}
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: node.id, title: node.data.title, type: 'generated' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}

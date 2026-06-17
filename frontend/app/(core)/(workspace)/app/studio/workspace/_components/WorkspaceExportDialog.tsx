@@ -1,7 +1,6 @@
 'use client';
 
 import { Download, FileJson, Film, X } from 'lucide-react';
-import { useEffect } from 'react';
 import editorStyles from '../maxvideoai-editor.module.css';
 import styles from '../_styles/export.module.css';
 import {
@@ -13,6 +12,7 @@ import {
 } from '../_lib/workspace-timeline-export';
 import { formatWorkspaceTimecode } from '../_lib/workspace-timecode';
 import type { StudioCopy } from '../../_lib/studio-copy';
+import { StudioDialog } from './ui/StudioDialog';
 
 type WorkspaceExportDialogProps = {
   copy: StudioCopy['exportDialog'];
@@ -138,33 +138,15 @@ export function WorkspaceExportDialog({
     ? `${manifest.projectSettings.aspectRatio} · ${manifest.projectSettings.resolution} · ${manifest.projectSettings.fps} fps`
     : `${fps} fps`;
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      event.preventDefault();
-      onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
-
   return (
-    <div
-      className={styles.exportOverlay}
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
+    <StudioDialog
+      open={isOpen}
+      onClose={onClose}
+      overlayClassName={styles.exportOverlay}
+      dialogClassName={`${styles.exportDialogShell} ${styles.exportDialog}`}
+      ariaLabelledBy="workspace-export-title"
+      initialFocusSelector="[data-export-dialog-close='true']"
     >
-      <div
-        className={`${styles.exportDialogShell} ${styles.exportDialog}`}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="workspace-export-title"
-      >
         <div className={styles.exportHeader}>
           <div>
             <p id="workspace-export-title">{copy.title}</p>
@@ -175,6 +157,7 @@ export function WorkspaceExportDialog({
             className={styles.exportCloseButton}
             onClick={onClose}
             aria-label={copy.close}
+            data-export-dialog-close="true"
           >
             <X size={16} />
           </button>
@@ -334,7 +317,6 @@ export function WorkspaceExportDialog({
             </div>
           </details>
         </div>
-      </div>
-    </div>
+    </StudioDialog>
   );
 }

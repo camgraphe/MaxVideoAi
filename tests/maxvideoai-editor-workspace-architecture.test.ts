@@ -2150,14 +2150,15 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(canvasToolbarStyleSource, /\.blockOptionList/, 'canvas toolbar block template list should be styled with focused toolbar CSS');
   assert.match(canvasToolbarStyleSource, /\.canvasToolbar[\s\S]*user-select:\s*none/, 'canvas toolbar labels should not be selectable during block drags');
   assert.match(canvasToolbarStyleSource, /\.blockOption/, 'canvas toolbar block template cards should be styled with focused toolbar CSS');
-  assert.match(canvasFloatingToolbarSource, /onKeyDown=\{handleMenuKeyDown\}/, 'canvas toolbar menus should close with keyboard handling');
+  assert.match(canvasFloatingToolbarSource, /StudioMenu/, 'canvas toolbar block pickers should use the shared Studio menu primitive for keyboard handling');
   assert.match(canvasFloatingToolbarSource, /data-canvas-toolbar-menu-id/, 'canvas toolbar menu buttons should expose stable menu ids');
   assert.match(canvasFloatingToolbarSource, /block\.meta/, 'canvas toolbar block cards should expose compact metadata chips');
   assert.match(canvasFloatingToolbarSource, /copy\.toolbar\.saveCanvas/, 'canvas toolbar should expose saving as a direct canvas action');
   assert.doesNotMatch(canvasFloatingToolbarSource, /copy\.toolbar\.canvasTemplates/, 'canvas toolbar should not expose starter templates as an active creation tool');
   assert.doesNotMatch(canvasFloatingToolbarSource, /onApplyUserTemplate/, 'canvas toolbar should not own saved canvas navigation');
   assert.match(canvasNavigatorPanelSource, /copy\.templates\.canvasPanel/, 'canvas navigator should own canvas navigation copy');
-  assert.match(canvasNavigatorPanelSource, /onKeyDown=\{handlePanelKeyDown\}/, 'canvas navigator should support keyboard dismissal');
+  assert.match(canvasNavigatorPanelSource, /StudioPopover/, 'canvas navigator should use the shared Studio popover primitive for keyboard dismissal');
+  assert.match(canvasNavigatorPanelSource, /StudioSegmentedControl/, 'canvas navigator filters should use segmented buttons instead of fake tabs');
   assert.match(canvasNavigatorPanelSource, /template\.flow/, 'canvas navigator should show template workflow context while preserving thumbnails');
   assert.match(canvasNavigatorPanelSource, /onCreateCanvasFromTemplate/, 'canvas navigator should create project canvases from starter templates');
   assert.match(canvasNavigatorPanelSource, /replaceCurrentCanvasConfirm/, 'canvas navigator should confirm replacing the current canvas graph');
