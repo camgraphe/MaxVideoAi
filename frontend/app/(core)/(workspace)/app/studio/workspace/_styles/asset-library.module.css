@@ -95,6 +95,13 @@
   color: var(--studio-text-muted);
 }
 
+.assetBrowserSearchHint {
+  margin: -4px 0 0;
+  color: var(--studio-text-muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .assetBrowserSources {
   display: flex;
   gap: 6px;

@@ -58,10 +58,7 @@
 }
 
 .projectMediaControls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
-  align-items: center;
+  display: block;
   padding: 0 14px 12px;
 }
 
@@ -101,27 +98,30 @@
   color: var(--studio-text-muted);
 }
 
-.projectMediaViewTools {
+.projectMediaKindFilters {
   display: flex;
-  align-items: center;
-  gap: 5px;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 14px 12px;
 }
 
-.projectMediaViewTools button {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
+.projectMediaKindFilterButton {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 0 10px;
   border: 1px solid var(--studio-border);
   border-radius: 8px;
   background: var(--studio-media-tool-bg);
   color: var(--studio-text-muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 760;
   cursor: pointer;
 }
 
-.projectMediaViewTools button:hover,
-.projectMediaViewTools button:focus-visible,
-.projectMediaViewTools button[aria-pressed="true"] {
+.projectMediaKindFilterButton:hover,
+.projectMediaKindFilterButton:focus-visible,
+.projectMediaKindFilterButtonActive {
   border-color: rgba(129, 140, 248, 0.42);
   background: var(--studio-control-bg-hover);
   color: var(--studio-text-strong);
@@ -721,6 +721,7 @@
   }
 
   .projectMediaControls,
+  .projectMediaKindFilters,
   .projectMediaFolderHeader {
     padding-inline: 12px;
   }

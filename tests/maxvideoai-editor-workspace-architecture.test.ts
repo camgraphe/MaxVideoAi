@@ -2098,8 +2098,10 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(assetLibraryBrowserSource, /export function WorkspaceAssetLibraryBrowser/, 'studio should wrap the app library structure in a route-local browser component');
   assert.match(assetLibraryBrowserSource, /searchQuery/, 'studio library browser should keep the app library search interaction');
   assert.match(assetLibraryBrowserSource, /filteredAssets/, 'studio library browser should filter visible assets from the search query');
-  assert.match(assetLibraryBrowserSource, /role="tablist"/, 'studio library browser should expose source filters as tabs like the app library');
-  assert.match(assetLibraryBrowserSource, /aria-selected/, 'studio library browser source tabs should expose selected state');
+  assert.match(assetLibraryBrowserSource, /copy\.searchLoadedItemsHint/, 'studio library browser should label search as loaded-assets-only until search is server-backed');
+  assert.match(assetLibraryBrowserSource, /role="group"/, 'studio library browser should expose source filters as segmented filter groups');
+  assert.match(assetLibraryBrowserSource, /aria-pressed/, 'studio library browser source filter buttons should expose pressed state');
+  assert.doesNotMatch(assetLibraryBrowserSource, /role="tablist"|role="tab"|aria-selected/, 'studio library browser filters should not pretend to be tabs without tab panels');
   assert.match(assetLibraryBrowserSource, /countLabel/, 'studio library browser should expose an asset count label');
   assert.match(assetLibraryBrowserSource, /isLoading/, 'studio library browser should render the app library loading state');
   assert.match(assetLibraryBrowserSource, /error/, 'studio library browser should render the app library error state');
@@ -4935,6 +4937,7 @@ test('MaxVideoAI editor asset library modal keeps the asset grid scrollable', ()
 
 test('studio editor asset library hook owns pagination and project media kind filters', () => {
   const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
+  const projectMediaModalSource = source(projectMediaLibraryModalPath);
 
   assert.match(editorAssetLibraryHookSource, /type WorkspaceLibraryKindFilter = 'all' \| WorkspaceLibraryKind/);
   assert.match(editorAssetLibraryHookSource, /loadMore/);
@@ -4948,6 +4951,9 @@ test('studio editor asset library hook owns pagination and project media kind fi
   assert.match(editorAssetLibraryHookSource, /includeOutputs:\s*true/);
   assert.match(editorAssetLibraryHookSource, /workspaceLibrarySourceOptionsForKind\(effectiveLibraryKind\)/);
   assert.match(editorAssetLibraryHookSource, /normalizeWorkspaceUserLibraryPage/);
+  assert.match(editorAssetLibraryHookSource, /export function patchWorkspaceEditorAssetLibraryCache/, 'studio asset library cache should be patchable after uploads and saves');
+  assert.match(editorAssetLibraryHookSource, /export function invalidateWorkspaceEditorAssetLibraryCache/, 'studio asset library cache should be invalidated after deletes or uncertain mutations');
+  assert.match(projectMediaModalSource, /patchWorkspaceEditorAssetLibraryCache\(uploadedAsset/, 'project media upload flow should patch the Studio library cache with the uploaded asset');
 });
 
 test('studio asset library browser renders optional media kind filters and load more control', () => {
@@ -4958,5 +4964,6 @@ test('studio asset library browser renders optional media kind filters and load 
   assert.match(assetLibraryBrowserSource, /copy\.mediaKindFilters/);
   assert.match(assetLibraryBrowserSource, /copy\.loadMore/);
   assert.match(assetLibraryBrowserSource, /copy\.loadingMore/);
+  assert.match(assetLibraryBrowserSource, /copy\.searchLoadedItemsHint/);
   assert.match(projectMediaModalSource, /onMediaKindFilterChange=\{onMediaKindFilterChange\}/);
 });

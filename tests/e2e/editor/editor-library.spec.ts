@@ -9,6 +9,16 @@ import {
 
 const transparentPng =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
+const transparentPngBody = Buffer.from(transparentPng.split(',')[1] ?? '', 'base64');
+
+test.beforeEach(async ({ page }) => {
+  await page.route('https://cdn.maxvideoai.test/**', async (route) => {
+    await route.fulfill({
+      contentType: 'image/png',
+      body: transparentPngBody,
+    });
+  });
+});
 
 async function mockScrollableImageLibrary(page: Page): Promise<void> {
   const assets = Array.from({ length: 54 }, (_, index) => {
@@ -220,7 +230,7 @@ test('Project media import shows localized upload failure and retry path', async
   await expect(dialog).toBeVisible();
 
   const fileChooserPromise = page.waitForEvent('filechooser');
-  await dialog.getByRole('button', { name: 'Upload' }).click();
+  await dialog.getByRole('button', { name: 'Upload', exact: true }).click();
   const fileChooser = await fileChooserPromise;
   await fileChooser.setFiles({
     name: 'upload-failure.png',
@@ -232,7 +242,7 @@ test('Project media import shows localized upload failure and retry path', async
   });
 
   await expect(dialog.getByRole('alert')).toContainText(/upload|import|retry|try again/i);
-  await expect(dialog.getByRole('button', { name: 'Upload' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Upload', exact: true })).toBeVisible();
   assertNoEditorClientErrors(errors, {
     allowedResourceFailures: [{ status: 500, urlPattern: /\/api\/uploads\/image(?:$|\?)/ }],
   });
@@ -391,6 +401,7 @@ test('Project media import pages through the app library and filters by media ki
 
   const dialog = page.getByRole('dialog', { name: 'Import project media' });
   await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('Search applies to loaded assets');
   await expect.poll(() => Promise.resolve(
     requests.some((search) => search.includes('includeOutputs=true'))
   )).toBe(true);
@@ -398,8 +409,8 @@ test('Project media import pages through the app library and filters by media ki
   await dialog.getByRole('button', { name: 'Load more' }).click();
   await expect(dialog.getByRole('button', { name: 'Select video-4.mp4' })).toBeVisible();
 
-  await dialog.getByRole('tab', { name: 'Angle' }).click();
-  await dialog.getByRole('tab', { name: 'Video' }).click();
+  await dialog.getByRole('button', { name: 'Angle' }).click();
+  await dialog.getByRole('button', { name: 'Video' }).click();
   await expect.poll(() => Promise.resolve(requests.some((search) => search.includes('kind=video')))).toBe(true);
   await expect.poll(() => Promise.resolve(
     requests.some((search) => search.includes('kind=video') && !search.includes('source=angle'))
@@ -410,7 +421,7 @@ test('Project media import pages through the app library and filters by media ki
     requests.some((search) => search.includes('kind=video') && search.includes('cursor=video-page-2'))
   )).toBe(true);
 
-  await dialog.getByRole('tab', { name: 'Generated' }).click();
+  await dialog.getByRole('button', { name: 'Generated' }).click();
   await expect.poll(() => Promise.resolve(
     requests.some((search) =>
       search.includes('kind=video') &&
@@ -419,6 +430,151 @@ test('Project media import pages through the app library and filters by media ki
     )
   )).toBe(true);
   await expect(dialog.getByRole('button', { name: 'Load more' })).toBeVisible();
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('Project media sidebar filters imported media by kind', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const assets = [
+    {
+      id: 'filter-image-0',
+      url: 'https://cdn.maxvideoai.test/library/filter-image-0.png',
+      thumbUrl: transparentPng,
+      kind: 'image',
+      mime: 'image/png',
+      width: 1920,
+      height: 1080,
+      source: 'upload',
+      createdAt: '2026-06-13T12:02:00.000Z',
+    },
+    {
+      id: 'filter-video-1',
+      url: 'https://cdn.maxvideoai.test/library/filter-video-1.mp4',
+      thumbUrl: transparentPng,
+      kind: 'video',
+      mime: 'video/mp4',
+      width: 1920,
+      height: 1080,
+      source: 'upload',
+      createdAt: '2026-06-13T12:01:00.000Z',
+    },
+    {
+      id: 'filter-audio-2',
+      url: 'https://cdn.maxvideoai.test/library/filter-audio-2.mp3',
+      kind: 'audio',
+      mime: 'audio/mpeg',
+      source: 'upload',
+      createdAt: '2026-06-13T12:00:00.000Z',
+    },
+  ];
+
+  await page.route('**/api/media-library/assets?**', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets, nextCursor: null, hasMore: false }),
+    });
+  });
+  await page.route('**/api/media-library/recent-outputs?**', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, outputs: [] }) });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+  await page.getByRole('button', { name: 'Import media' }).click();
+
+  const dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Select filter-image-0.png' }).click();
+  await dialog.getByRole('button', { name: 'Select filter-video-1.mp4' }).click();
+  await dialog.getByRole('button', { name: 'Select filter-audio-2.mp3' }).click();
+  await dialog.getByRole('button', { name: /Import selected.*3/ }).click();
+
+  const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
+  const projectMediaGrid = projectMediaSidebar.locator('[data-project-media-grid="true"]');
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+
+  const kindFilters = projectMediaSidebar.getByRole('group', { name: 'Project media type filters' });
+  await kindFilters.getByRole('button', { name: 'Image', exact: true }).click();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toHaveCount(0);
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toHaveCount(0);
+
+  await kindFilters.getByRole('button', { name: 'Video', exact: true }).click();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toHaveCount(0);
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toHaveCount(0);
+
+  await kindFilters.getByRole('button', { name: 'Audio', exact: true }).click();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toHaveCount(0);
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toHaveCount(0);
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+
+  await kindFilters.getByRole('button', { name: 'All media', exact: true }).click();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-image-0"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-video-1"]')).toBeVisible();
+  await expect(projectMediaGrid.locator('[data-project-media-asset-id="filter-audio-2"]')).toBeVisible();
+  await expect(projectMediaSidebar.getByLabel('Project media view tools')).toHaveCount(0);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('Project media upload patches the Studio library cache for the next import', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+  const uploadedAsset = {
+    id: 'uploaded-cache-image',
+    url: 'https://cdn.maxvideoai.test/library/uploaded-cache.png',
+    thumbUrl: transparentPng,
+    kind: 'image',
+    mime: 'image/png',
+    width: 1,
+    height: 1,
+    source: 'upload',
+    createdAt: '2026-06-13T12:04:00.000Z',
+  };
+
+  await page.route('**/api/media-library/assets?**', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, assets: [], nextCursor: null, hasMore: false }),
+    });
+  });
+  await page.route('**/api/media-library/recent-outputs?**', async (route) => {
+    await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ ok: true, outputs: [] }) });
+  });
+  await page.route('**/api/uploads/image', async (route) => {
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ ok: true, asset: uploadedAsset }),
+    });
+  });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+  await page.getByRole('button', { name: 'Import media' }).click();
+
+  let dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+  const fileChooserPromise = page.waitForEvent('filechooser');
+  await dialog.getByRole('button', { name: 'Upload', exact: true }).click();
+  const fileChooser = await fileChooserPromise;
+  await fileChooser.setFiles({
+    name: 'uploaded-cache.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+      'base64'
+    ),
+  });
+  await expect(dialog).toHaveCount(0);
+  await expect(page.locator('[data-project-media-asset-id="uploaded-cache-image"]')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Import media' }).click();
+  dialog = page.getByRole('dialog', { name: 'Import project media' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Select uploaded-cache.png' })).toBeVisible();
 
   assertNoEditorClientErrors(errors);
 });

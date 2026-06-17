@@ -34,6 +34,7 @@ export type ProjectMediaSelection =
   | { id: string; type: 'asset' | 'folder' | 'generated' | 'sequence' }
   | null;
 export type ProjectMediaSelectionItem = NonNullable<ProjectMediaSelection>;
+export type ProjectMediaKindFilter = 'all' | 'audio' | 'image' | 'video';
 export type ProjectMediaSelectionGesture = {
   ctrlKey?: boolean;
   metaKey?: boolean;
@@ -266,9 +267,25 @@ export function useProjectMediaController({
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
   const [folderDropTargetId, setFolderDropTargetId] = useState<string | null>(null);
+  const [mediaKindFilter, setMediaKindFilter] = useState<ProjectMediaKindFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const folderIds = useMemo(() => new Set(projectMediaFolders.map((folder) => folder.id)), [projectMediaFolders]);
+  const folderItemCounts = useMemo(() => {
+    const counts = new Map(projectMediaFolders.map((folder) => [folder.id, 0]));
+    projectAssets.forEach((asset) => {
+      if (asset.folderId && counts.has(asset.folderId)) {
+        counts.set(asset.folderId, (counts.get(asset.folderId) ?? 0) + 1);
+      }
+    });
+    generatedNodes.forEach((node) => {
+      const folderId = generatedNodeFolderId(node, folderIds);
+      if (folderId && counts.has(folderId)) {
+        counts.set(folderId, (counts.get(folderId) ?? 0) + 1);
+      }
+    });
+    return counts;
+  }, [folderIds, generatedNodes, projectAssets, projectMediaFolders]);
   const activeFolder = useMemo(
     () => projectMediaFolders.find((folder) => folder.id === activeFolderId) ?? null,
     [activeFolderId, projectMediaFolders]
@@ -288,19 +305,23 @@ export function useProjectMediaController({
       return `${title} ${subtitle} ${kind}`.toLowerCase().includes(normalizedSearchQuery);
     };
   }, [normalizedSearchQuery]);
+  const matchesMediaKindFilter = useCallback((kind: ProjectMediaKindFilter | null) => {
+    return mediaKindFilter === 'all' || kind === mediaKindFilter;
+  }, [mediaKindFilter]);
 
   const visibleSequences = useMemo(
-    () => activeFolderId ? [] : sequences.filter((sequence) => matchesSearch(
+    () => activeFolderId || mediaKindFilter !== 'all' ? [] : sequences.filter((sequence) => matchesSearch(
       sequence.name,
       `${formatProjectMediaDuration(sequence.durationSec)} ${sequence.clipCount} clips ${sequence.settings.aspectRatio}`,
       'sequence'
     )),
-    [activeFolderId, matchesSearch, sequences]
+    [activeFolderId, matchesSearch, mediaKindFilter, sequences]
   );
 
   const visibleProjectAssets = useMemo<ProjectMediaAssetView[]>(
     () => projectAssets
       .filter((asset) => (asset.folderId ?? null) === activeFolderId)
+      .filter((asset) => matchesMediaKindFilter(projectMediaTimelineKindForAsset(asset)))
       .filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind))
       .map((asset) => {
         const payload = projectMediaTimelineDragPayloadForAsset(asset);
@@ -314,15 +335,14 @@ export function useProjectMediaController({
           timelineDurationSec: payload?.durationSec ?? 0,
         };
       }),
-    [activeFolderId, matchesSearch, projectAssets]
+    [activeFolderId, matchesMediaKindFilter, matchesSearch, projectAssets]
   );
 
   const visibleFolders = useMemo<ProjectMediaFolderView[]>(
-    () => activeFolderId ? [] : projectMediaFolders
+    () => activeFolderId || mediaKindFilter !== 'all' ? [] : projectMediaFolders
       .filter((folder) => matchesSearch(folder.name, 'Folder', 'folder'))
       .map((folder) => {
-        const itemCount = projectAssets.filter((asset) => asset.folderId === folder.id).length +
-          generatedNodes.filter((node) => generatedNodeFolderId(node, folderIds) === folder.id).length;
+        const itemCount = folderItemCounts.get(folder.id) ?? 0;
         return {
           folder,
           itemCount,
@@ -330,12 +350,13 @@ export function useProjectMediaController({
           subtitle: `${itemCount} item${itemCount === 1 ? '' : 's'}`,
         };
       }),
-    [activeFolderId, folderIds, generatedNodes, matchesSearch, projectAssets, projectMediaFolders]
+    [activeFolderId, folderItemCounts, matchesSearch, mediaKindFilter, projectMediaFolders]
   );
 
   const visibleGeneratedNodes = useMemo<ProjectMediaGeneratedView[]>(
     () => generatedNodes
       .filter((node) => generatedNodeFolderId(node, folderIds) === activeFolderId)
+      .filter((node) => matchesMediaKindFilter(projectMediaTimelineKindForGeneratedNode(node)))
       .filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated'))
       .map((node) => {
         const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
@@ -348,7 +369,7 @@ export function useProjectMediaController({
           timelineDurationSec: payload?.durationSec,
         };
       }),
-    [activeFolderId, folderIds, generatedNodes, matchesSearch]
+    [activeFolderId, folderIds, generatedNodes, matchesMediaKindFilter, matchesSearch]
   );
   const visibleItemCount = visibleSequences.length + visibleFolders.length + visibleProjectAssets.length + visibleGeneratedNodes.length;
   const visibleSelectionItems = useMemo(
@@ -539,6 +560,13 @@ export function useProjectMediaController({
     onClearProjectMediaInspector();
   }, [onClearProjectMediaInspector]);
 
+  const setProjectMediaKindFilter = useCallback((filter: ProjectMediaKindFilter) => {
+    setMediaKindFilter(filter);
+    setSelectedMediaItems([]);
+    setSelectionAnchorKey(null);
+    onClearProjectMediaInspector();
+  }, [onClearProjectMediaInspector]);
+
   const importMedia = useCallback(() => {
     onImportMedia(activeFolderId);
   }, [activeFolderId, onImportMedia]);
@@ -655,6 +683,7 @@ export function useProjectMediaController({
     duplicateMenuItem,
     importMedia,
     insertMenuItem,
+    mediaKindFilter,
     moveMenuItem,
     openContextMenu,
     openRootFolder,
@@ -669,6 +698,7 @@ export function useProjectMediaController({
     selectedKey,
     selectedKeySet,
     selectSequence,
+    setMediaKindFilter: setProjectMediaKindFilter,
     folderDropTargetId,
     handleFolderDragLeave,
     handleFolderDragOver,

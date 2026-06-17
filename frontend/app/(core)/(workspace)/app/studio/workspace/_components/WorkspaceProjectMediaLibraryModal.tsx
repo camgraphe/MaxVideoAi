@@ -5,6 +5,7 @@ import type { ChangeEvent, MouseEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import styles from '../_styles/asset-library.module.css';
 import { WorkspaceAssetLibraryBrowser } from './WorkspaceAssetLibraryBrowser';
+import { patchWorkspaceEditorAssetLibraryCache } from '../_hooks/useWorkspaceEditorAssetLibrary';
 import type {
   WorkspaceLibraryAsset,
   WorkspaceLibraryKind,
@@ -147,6 +148,7 @@ export function WorkspaceProjectMediaLibraryModal({
       setIsUploading(true);
       try {
         const uploadedAsset = await uploadWorkspaceProjectMediaFile(file, fallback);
+        patchWorkspaceEditorAssetLibraryCache(uploadedAsset);
         onSourceChange('upload');
         onSelectAsset(uploadedAsset);
       } catch {

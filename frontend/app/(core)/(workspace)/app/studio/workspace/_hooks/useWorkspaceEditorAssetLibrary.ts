@@ -27,6 +27,7 @@ type WorkspaceEditorAssetLibraryCacheEntry = WorkspaceUserLibraryPage & {
 
 const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE = new Map<string, WorkspaceEditorAssetLibraryCacheEntry>();
 const WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE_VERSION = 'with-outputs-v1';
+const WORKSPACE_EDITOR_PATCH_SOURCES = ['all', 'upload'] as const satisfies readonly WorkspaceLibrarySource[];
 
 function buildWorkspaceEditorAssetLibraryCacheKey(
   kind: WorkspaceLibraryKind | null,
@@ -42,6 +43,45 @@ function mergeWorkspaceLibraryAssets(
 ): WorkspaceLibraryAsset[] {
   const assets = mode === 'append' ? [...currentAssets, ...nextAssets] : nextAssets;
   return Array.from(new Map(assets.map((asset) => [asset.id, asset])).values());
+}
+
+function cacheKindsForAsset(asset: WorkspaceLibraryAsset): Array<WorkspaceLibraryKind | null> {
+  if (asset.kind === 'image' || asset.kind === 'video' || asset.kind === 'audio') return [null, asset.kind];
+  return [null];
+}
+
+export function patchWorkspaceEditorAssetLibraryCache(
+  asset: WorkspaceLibraryAsset,
+  sources: readonly WorkspaceLibrarySource[] = WORKSPACE_EDITOR_PATCH_SOURCES
+): void {
+  for (const kind of cacheKindsForAsset(asset)) {
+    for (const source of sources) {
+      const cacheKey = buildWorkspaceEditorAssetLibraryCacheKey(kind, source);
+      const cached = WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.get(cacheKey);
+      WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(cacheKey, {
+        assets: mergeWorkspaceLibraryAssets([asset], cached?.assets ?? [], 'append'),
+        nextCursor: cached?.nextCursor ?? null,
+        hasMore: cached?.hasMore ?? false,
+        error: null,
+      });
+    }
+  }
+}
+
+export function invalidateWorkspaceEditorAssetLibraryCache(assetIds?: string | readonly string[]): void {
+  if (assetIds === undefined) {
+    WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.clear();
+    return;
+  }
+  const ids = new Set(Array.isArray(assetIds) ? assetIds : [assetIds]);
+  for (const [cacheKey, cached] of WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.entries()) {
+    const nextAssets = cached.assets.filter((asset) => !ids.has(asset.id));
+    if (nextAssets.length === cached.assets.length) continue;
+    WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(cacheKey, {
+      ...cached,
+      assets: nextAssets,
+    });
+  }
 }
 
 export function useWorkspaceEditorAssetLibrary(

@@ -145,17 +145,17 @@ export function WorkspaceAssetLibraryBrowser({
           placeholder={searchPlaceholder ?? copy.searchPlaceholder}
         />
       </label>
+      <p className={styles.assetBrowserSearchHint}>{copy.searchLoadedItemsHint}</p>
 
       {onMediaKindFilterChange ? (
-        <div className={styles.assetBrowserSources} role="tablist" aria-label={copy.mediaKindFilters}>
+        <div className={styles.assetBrowserSources} role="group" aria-label={copy.mediaKindFilters}>
           {mediaKindOptions.map((option) => {
             const active = mediaKindFilter === option.value;
             return (
               <button
                 key={option.value}
                 type="button"
-                role="tab"
-                aria-selected={active}
+                aria-pressed={active}
                 className={`${styles.assetBrowserSourceButton} ${active ? styles.assetBrowserSourceButtonActive : ''}`}
                 onClick={() => onMediaKindFilterChange(option.value)}
               >
@@ -166,15 +166,14 @@ export function WorkspaceAssetLibraryBrowser({
         </div>
       ) : null}
 
-      <div className={styles.assetBrowserSources} role="tablist" aria-label={copy.sourceFilters}>
+      <div className={styles.assetBrowserSources} role="group" aria-label={copy.sourceFilters}>
         {sourceOptions.map((option) => {
           const active = source === option;
           return (
             <button
               key={option}
               type="button"
-              role="tab"
-              aria-selected={active}
+              aria-pressed={active}
               className={`${styles.assetBrowserSourceButton} ${active ? styles.assetBrowserSourceButtonActive : ''}`}
               onClick={() => onSourceChange(option)}
             >

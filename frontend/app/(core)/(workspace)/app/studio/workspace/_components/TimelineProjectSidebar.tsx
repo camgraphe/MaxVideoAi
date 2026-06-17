@@ -1,11 +1,12 @@
 'use client';
 
-import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, LayoutGrid, ListFilter, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
+import { ArrowLeft, Check, FileVideo2, Film, Folder, FolderOpen, FolderPlus, Layers3, MoreHorizontal, Plus, Search, Trash2, Upload, X } from 'lucide-react';
 import { useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent as ReactMouseEvent, type ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import mediaStyles from '../_styles/media.module.css';
 import {
   formatProjectMediaDuration,
+  type ProjectMediaKindFilter,
   projectMediaSelectionKey,
   useProjectMediaController,
   type ProjectMediaContextMenu,
@@ -493,6 +494,12 @@ export function TimelineProjectSidebar({
     () => new Map(nodes.map((node) => [node.id, node])),
     [nodes]
   );
+  const mediaKindFilterOptions: Array<{ label: string; value: ProjectMediaKindFilter }> = [
+    { label: copy.mediaKindAll, value: 'all' },
+    { label: copy.mediaKindImage, value: 'image' },
+    { label: copy.mediaKindVideo, value: 'video' },
+    { label: copy.mediaKindAudio, value: 'audio' },
+  ];
 
   const openCreateFolderDialog = () => {
     setFolderDialog({
@@ -561,14 +568,22 @@ export function TimelineProjectSidebar({
             placeholder={copy.searchPlaceholder}
           />
         </label>
-        <div className={styles.projectMediaViewTools} aria-label={copy.viewTools}>
-          <button type="button" aria-label={copy.filterMedia}>
-            <ListFilter size={14} />
-          </button>
-          <button type="button" aria-label={copy.gridView} aria-pressed="true">
-            <LayoutGrid size={14} />
-          </button>
-        </div>
+      </div>
+      <div className={styles.projectMediaKindFilters} role="group" aria-label={copy.mediaKindFilters}>
+        {mediaKindFilterOptions.map((option) => {
+          const active = projectMedia.mediaKindFilter === option.value;
+          return (
+            <button
+              key={option.value}
+              type="button"
+              className={`${styles.projectMediaKindFilterButton} ${active ? styles.projectMediaKindFilterButtonActive : ''}`}
+              aria-pressed={active}
+              onClick={() => projectMedia.setMediaKindFilter(option.value)}
+            >
+              {option.label}
+            </button>
+          );
+        })}
       </div>
       {projectMedia.activeFolder ? (
         <div className={styles.projectMediaFolderHeader}>
