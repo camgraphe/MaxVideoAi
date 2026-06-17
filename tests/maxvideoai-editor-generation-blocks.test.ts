@@ -46,10 +46,78 @@ import {
   getWorkspaceBlockCompatibleCapabilities,
   resolveWorkspaceBlockPolicy,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy';
-import type { WorkspaceShotSettings } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
+import type {
+  WorkspaceEdgeKind,
+  WorkspaceGenerationFamily,
+  WorkspaceGenerationPresetId,
+  WorkspaceShotSettings,
+  WorkspaceWorkflowType,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import type { CharacterBuilderTraits } from '../frontend/types/character-builder';
 
 const root = process.cwd();
+
+type PolicyMatrixExpectation = {
+  presetId: WorkspaceGenerationPresetId;
+  defaultModelId: string;
+  family: WorkspaceGenerationFamily;
+  workflow: WorkspaceWorkflowType;
+  outputMediaKind: 'audio' | 'image' | 'text' | 'video';
+  outputCount: number | { min: number; max: number };
+  requiredInputs: WorkspaceEdgeKind[];
+  optionalInputs: WorkspaceEdgeKind[];
+  readyInputs: WorkspaceEdgeKind[];
+  missingInputs: WorkspaceEdgeKind[];
+  mode: string;
+  pricingAvailable: boolean;
+  missingReason: boolean;
+};
+
+const BASE_POLICY_TEST_SHOT: Omit<WorkspaceShotSettings, 'modelId' | 'workflowType'> = {
+  durationSec: 1,
+  aspectRatio: '16:9',
+  resolution: '1080p',
+  fps: 24,
+  seed: null,
+  audioEnabled: false,
+  lipSyncEnabled: false,
+  referenceStrength: 0.65,
+  outputName: 'Policy matrix test',
+  status: 'draft',
+};
+
+function policySettingsForPreset(expectation: PolicyMatrixExpectation): WorkspaceShotSettings {
+  const preset = getWorkspaceBlockPreset(expectation.presetId);
+  assert.ok(preset, `${expectation.presetId} should exist`);
+  if (preset.defaultShot) return preset.defaultShot;
+  return {
+    ...BASE_POLICY_TEST_SHOT,
+    presetId: expectation.presetId,
+    family: preset.family,
+    outputKind: preset.outputKind as WorkspaceShotSettings['outputKind'],
+    modelId: preset.defaultModelId,
+    workflowType: preset.defaultWorkflowType,
+  };
+}
+
+function resolvePolicyForPreset(expectation: PolicyMatrixExpectation, connectedInputs: WorkspaceEdgeKind[]) {
+  const capabilities = getWorkspaceModelCapabilities();
+  const settings = policySettingsForPreset(expectation);
+  const capability = capabilities.find((candidate) => candidate.id === expectation.defaultModelId) ?? null;
+  assert.ok(capability, `${expectation.defaultModelId} should resolve to a model capability`);
+  return resolveWorkspaceBlockPolicy({
+    settings,
+    capability,
+    connectedInputs,
+  }) as ReturnType<typeof resolveWorkspaceBlockPolicy> & {
+    optionalInputs?: WorkspaceEdgeKind[];
+    outputMediaKind?: 'audio' | 'image' | 'text' | 'video';
+    outputCount?: number | { min: number; max: number };
+    controlFields?: string[];
+    pricingRelevantFields?: string[];
+    disabledReason?: string;
+  };
+}
 
 test('Studio canvas exposes generation block presets for every requested workflow', () => {
   const presetIds = WORKSPACE_BLOCK_PRESETS.map((preset) => preset.id);
@@ -487,6 +555,264 @@ test('Studio block capability policy separates generate and modify image/video i
     modifyVideoCapabilities.every((capability) => capability.family === 'video' && capability.workflows.includes('video_to_video')),
     true
   );
+});
+
+test('Studio block capability policy defines a normalized per-preset capability matrix', () => {
+  const matrix: PolicyMatrixExpectation[] = [
+    {
+      presetId: 'generate-video',
+      defaultModelId: 'seedance-2-0',
+      family: 'video',
+      workflow: 'image_to_video',
+      outputMediaKind: 'video',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['start_image', 'reference', 'style', 'camera'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'text-to-video',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'modify-video',
+      defaultModelId: 'luma-ray-3-2',
+      family: 'video',
+      workflow: 'video_to_video',
+      outputMediaKind: 'video',
+      outputCount: 1,
+      requiredInputs: ['prompt', 'video_reference'],
+      optionalInputs: ['motion_reference', 'previous_shot', 'continuity', 'style'],
+      readyInputs: ['prompt', 'video_reference'],
+      missingInputs: ['prompt', 'video_reference'],
+      mode: 'video-edit',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'generate-image',
+      defaultModelId: 'seedream',
+      family: 'image',
+      workflow: 'text_to_image',
+      outputMediaKind: 'image',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['reference', 'style'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'text-to-image',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'modify-image',
+      defaultModelId: 'seedream',
+      family: 'image',
+      workflow: 'image_to_image',
+      outputMediaKind: 'image',
+      outputCount: 1,
+      requiredInputs: ['prompt', 'reference'],
+      optionalInputs: ['style'],
+      readyInputs: ['prompt', 'reference'],
+      missingInputs: ['prompt', 'reference'],
+      mode: 'image-edit',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'character-builder',
+      defaultModelId: 'character-builder-tool',
+      family: 'image',
+      workflow: 'character_builder',
+      outputMediaKind: 'image',
+      outputCount: { min: 1, max: 4 },
+      requiredInputs: [],
+      optionalInputs: ['prompt', 'reference', 'style'],
+      readyInputs: [],
+      missingInputs: [],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: false,
+    },
+    {
+      presetId: 'angle',
+      defaultModelId: 'angle-flux-multiple-angles',
+      family: 'image',
+      workflow: 'angle_generation',
+      outputMediaKind: 'image',
+      outputCount: { min: 1, max: 4 },
+      requiredInputs: ['reference'],
+      optionalInputs: ['prompt'],
+      readyInputs: ['reference'],
+      missingInputs: ['reference'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'upscale-image',
+      defaultModelId: 'upscale-image-seedvr',
+      family: 'upscale',
+      workflow: 'image_upscale',
+      outputMediaKind: 'image',
+      outputCount: 1,
+      requiredInputs: ['reference'],
+      optionalInputs: ['prompt'],
+      readyInputs: ['reference'],
+      missingInputs: ['reference'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'upscale-video',
+      defaultModelId: 'upscale-video-seedvr',
+      family: 'upscale',
+      workflow: 'video_upscale',
+      outputMediaKind: 'video',
+      outputCount: 1,
+      requiredInputs: ['video_reference'],
+      optionalInputs: ['prompt'],
+      readyInputs: ['video_reference'],
+      missingInputs: ['video_reference'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'audio-music',
+      defaultModelId: 'audio-music-only',
+      family: 'audio',
+      workflow: 'music_generation',
+      outputMediaKind: 'audio',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['style'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'audio-voiceover',
+      defaultModelId: 'audio-voice-only',
+      family: 'audio',
+      workflow: 'voiceover_generation',
+      outputMediaKind: 'audio',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['voiceover', 'dialogue', 'narration'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'audio-sfx',
+      defaultModelId: 'audio-sfx-only',
+      family: 'audio',
+      workflow: 'sfx_generation',
+      outputMediaKind: 'audio',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['video_reference', 'motion_reference'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'audio-sound-design',
+      defaultModelId: 'audio-cinematic',
+      family: 'audio',
+      workflow: 'cinematic_audio',
+      outputMediaKind: 'audio',
+      outputCount: 1,
+      requiredInputs: ['video_reference'],
+      optionalInputs: ['prompt', 'music', 'sfx'],
+      readyInputs: ['video_reference'],
+      missingInputs: ['video_reference'],
+      mode: 'tool',
+      pricingAvailable: true,
+      missingReason: true,
+    },
+    {
+      presetId: 'chat-box',
+      defaultModelId: 'studio-chat-openai',
+      family: 'chat',
+      workflow: 'chat_completion',
+      outputMediaKind: 'text',
+      outputCount: 1,
+      requiredInputs: ['prompt'],
+      optionalInputs: ['reference', 'video_reference', 'audio'],
+      readyInputs: ['prompt'],
+      missingInputs: ['prompt'],
+      mode: 'chat',
+      pricingAvailable: false,
+      missingReason: true,
+    },
+  ];
+
+  for (const expectation of matrix) {
+    const preset = getWorkspaceBlockPreset(expectation.presetId);
+    assert.ok(preset, `${expectation.presetId} should exist`);
+    assert.equal(preset.defaultModelId, expectation.defaultModelId, `${expectation.presetId} default model`);
+    assert.equal(preset.family, expectation.family, `${expectation.presetId} family`);
+    assert.equal(preset.defaultWorkflowType, expectation.workflow, `${expectation.presetId} workflow`);
+    assert.equal(preset.outputKind, expectation.outputMediaKind, `${expectation.presetId} output kind`);
+
+    const missingPolicy = resolvePolicyForPreset(expectation, []);
+    assert.equal(missingPolicy.mode, expectation.mode, `${expectation.presetId} mode`);
+    assert.deepEqual(missingPolicy.requiredInputs, expectation.requiredInputs, `${expectation.presetId} required inputs`);
+    assert.deepEqual(missingPolicy.missingInputs, expectation.missingInputs, `${expectation.presetId} missing inputs`);
+    assert.equal(missingPolicy.canGenerate, expectation.missingInputs.length === 0, `${expectation.presetId} canGenerate without inputs`);
+    assert.equal(missingPolicy.outputMediaKind, expectation.outputMediaKind, `${expectation.presetId} policy output kind`);
+    assert.deepEqual(missingPolicy.outputCount, expectation.outputCount, `${expectation.presetId} policy output count`);
+    assert.equal(
+      Boolean(missingPolicy.pricingRelevantFields?.length),
+      expectation.pricingAvailable,
+      `${expectation.presetId} pricing availability`
+    );
+    assert.ok(missingPolicy.controlFields?.length, `${expectation.presetId} should expose policy control fields`);
+    if (expectation.missingReason) {
+      assert.match(missingPolicy.disabledReason ?? '', /connect|required|missing/i, `${expectation.presetId} should explain missing inputs`);
+    } else {
+      assert.equal(missingPolicy.disabledReason ?? '', '', `${expectation.presetId} should not expose a disabled reason`);
+    }
+
+    const optionalInputs = missingPolicy.optionalInputs ?? [];
+    for (const optionalInput of expectation.optionalInputs) {
+      assert.ok(optionalInputs.includes(optionalInput), `${expectation.presetId} should expose optional input ${optionalInput}`);
+      assert.equal(
+        missingPolicy.requiredInputs.includes(optionalInput),
+        false,
+        `${expectation.presetId} should not mark ${optionalInput} required and optional`
+      );
+    }
+    for (const kind of [...expectation.requiredInputs, ...expectation.optionalInputs]) {
+      const connector = missingPolicy.inputConnectors.find((candidate) => candidate.kind === kind);
+      assert.ok(connector, `${expectation.presetId} should expose connector metadata for ${kind}`);
+      const connectorMetadata = connector as typeof connector & {
+        acceptedFormats?: unknown;
+        acceptedMediaKinds?: unknown;
+        maxCount?: unknown;
+        minCount?: unknown;
+      };
+      assert.ok(Array.isArray(connectorMetadata.acceptedMediaKinds), `${expectation.presetId} ${kind} should describe accepted media kinds`);
+      assert.equal(typeof connectorMetadata.minCount, 'number', `${expectation.presetId} ${kind} should describe a minimum count`);
+      assert.equal(typeof connectorMetadata.maxCount, 'number', `${expectation.presetId} ${kind} should describe a maximum count`);
+      if (connector.sourceType !== 'text') {
+        assert.ok(Array.isArray(connectorMetadata.acceptedFormats), `${expectation.presetId} ${kind} should describe accepted formats`);
+      }
+    }
+
+    const readyPolicy = resolvePolicyForPreset(expectation, expectation.readyInputs);
+    assert.equal(readyPolicy.canGenerate, true, `${expectation.presetId} should generate when required inputs are present`);
+    assert.deepEqual(readyPolicy.missingInputs, [], `${expectation.presetId} should have no missing ready inputs`);
+  }
 });
 
 test('Studio block policy disables video start/reference controls when the selected mode makes them exclusive', () => {

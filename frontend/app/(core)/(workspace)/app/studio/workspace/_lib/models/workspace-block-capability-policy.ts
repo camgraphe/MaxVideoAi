@@ -1,27 +1,22 @@
 import type {
+  WorkspaceBlockMode,
   WorkspaceEdgeKind,
   WorkspaceInputConnector,
   WorkspaceModelCapability,
+  WorkspaceOutputCount,
+  WorkspaceOutputMediaKind,
+  WorkspacePolicyControlField,
   WorkspaceShotSettings,
 } from '../workspace-types';
 import { edgeLabel } from '../workspace-templates';
 import {
   connectedSatisfiesRequirement,
   getWorkspaceShotInputConnectors,
+  inputConnectorsFromKinds,
   normalizeConnectedInputKind,
 } from './model-input-connectors';
 
-export type WorkspaceBlockMode =
-  | 'chat'
-  | 'first-last-video'
-  | 'image-edit'
-  | 'image-to-video'
-  | 'reference-to-video'
-  | 'text-to-image'
-  | 'text-to-video'
-  | 'tool'
-  | 'video-edit'
-  | 'video-reframe';
+export type { WorkspaceBlockMode } from '../workspace-types';
 
 export type WorkspaceResolvedControl = {
   id: string;
@@ -32,6 +27,7 @@ export type WorkspaceResolvedControl = {
   disabled: boolean;
   required: boolean;
   reason?: string;
+  disabledReason?: string;
   compact: boolean;
 };
 
@@ -40,7 +36,13 @@ export type WorkspaceBlockPolicyResult = {
   controls: WorkspaceResolvedControl[];
   inputConnectors: WorkspaceInputConnector[];
   requiredInputs: WorkspaceEdgeKind[];
+  optionalInputs: WorkspaceEdgeKind[];
   missingInputs: WorkspaceEdgeKind[];
+  outputMediaKind: WorkspaceOutputMediaKind;
+  outputCount: WorkspaceOutputCount;
+  controlFields: WorkspacePolicyControlField[];
+  pricingRelevantFields: WorkspacePolicyControlField[];
+  disabledReason?: string;
   canGenerate: boolean;
 };
 
@@ -165,41 +167,103 @@ function requiredInputsForMode(
   return capability?.required_inputs ?? [];
 }
 
-function connectorForKind(kind: WorkspaceEdgeKind, required: boolean): WorkspaceInputConnector {
-  const sourceType: WorkspaceInputConnector['sourceType'] =
-    kind === 'prompt' ||
-    kind === 'negative_prompt' ||
-    kind === 'camera' ||
-    kind === 'dialogue' ||
-    kind === 'narration'
-      ? 'text'
-      : kind === 'video_reference' || kind === 'motion_reference' || kind === 'previous_shot' || kind === 'continuity'
-        ? 'video'
-        : kind === 'audio' || kind === 'voiceover' || kind === 'music' || kind === 'sfx'
-          ? 'audio'
-          : 'image';
+function minimumOptionalInputsForMode(settings: WorkspaceShotSettings, mode: WorkspaceBlockMode): WorkspaceEdgeKind[] {
+  const id = presetId(settings);
+  if (id === 'generate-video') return ['start_image', 'reference', 'style', 'camera'];
+  if (id === 'modify-video') return ['motion_reference', 'previous_shot', 'continuity', 'style'];
+  if (id === 'generate-image') return ['reference', 'style'];
+  if (id === 'modify-image') return ['style'];
+  if (mode === 'image-to-video') return ['reference', 'style', 'camera'];
+  if (mode === 'reference-to-video') return ['start_image', 'style', 'camera'];
+  return [];
+}
+
+function connectorForKind(kind: WorkspaceEdgeKind, required: boolean, mode: WorkspaceBlockMode): WorkspaceInputConnector {
+  const connector = inputConnectorsFromKinds(required ? [kind] : [], required ? [] : [kind])[0];
   return {
     kind,
-    label: edgeLabel(kind),
+    label: connector?.label ?? edgeLabel(kind),
     required,
-    sourceType,
+    requiredInModes: required ? [mode] : connector?.requiredInModes,
+    minCount: connector?.minCount ?? (required ? 1 : 0),
+    maxCount: connector?.maxCount ?? 1,
+    acceptedMediaKinds: connector?.acceptedMediaKinds,
+    acceptedFormats: connector?.acceptedFormats,
+    sourceType: connector?.sourceType ?? 'control',
+  };
+}
+
+function connectorMutualExclusions(
+  settings: WorkspaceShotSettings,
+  kind: WorkspaceEdgeKind
+): WorkspaceEdgeKind[] | undefined {
+  if (!isGenerateVideo(settings)) return undefined;
+  if (kind === 'reference') return ['start_image'];
+  if (kind === 'start_image') return ['reference'];
+  return undefined;
+}
+
+function normalizedConnector({
+  connected,
+  connector,
+  mode,
+  required,
+  settings,
+}: {
+  connected: Set<WorkspaceEdgeKind>;
+  connector: WorkspaceInputConnector;
+  mode: WorkspaceBlockMode;
+  required: boolean;
+  settings: WorkspaceShotSettings;
+}): WorkspaceInputConnector {
+  const disabledReason = disabledReasonForControl(connector.kind, settings, connected);
+  const requiredInModes = new Set(connector.requiredInModes ?? []);
+  if (required) requiredInModes.add(mode);
+  return {
+    ...connector,
+    required,
+    requiredInModes: requiredInModes.size ? Array.from(requiredInModes) : connector.requiredInModes,
+    minCount: connector.minCount ?? (required ? 1 : 0),
+    maxCount: connector.maxCount ?? 1,
+    mutuallyExclusiveWith: connector.mutuallyExclusiveWith ?? connectorMutualExclusions(settings, connector.kind),
+    acceptedMediaKinds: connector.acceptedMediaKinds,
+    acceptedFormats: connector.acceptedFormats,
+    maxDurationSec: connector.maxDurationSec,
+    maxFileSizeMb: connector.maxFileSizeMb,
+    disabledReason,
   };
 }
 
 function mergeConnectors(
   capability: WorkspaceModelCapability | null,
-  requiredInputs: WorkspaceEdgeKind[]
+  requiredInputs: WorkspaceEdgeKind[],
+  optionalInputs: WorkspaceEdgeKind[],
+  mode: WorkspaceBlockMode,
+  connected: Set<WorkspaceEdgeKind>,
+  settings: WorkspaceShotSettings
 ): WorkspaceInputConnector[] {
   const byKind = new Map<WorkspaceEdgeKind, WorkspaceInputConnector>();
   for (const connector of getWorkspaceShotInputConnectors(capability)) {
-    byKind.set(connector.kind, {
-      ...connector,
-      required: requiredInputs.includes(connector.kind) || connector.required,
-    });
+    byKind.set(connector.kind, normalizedConnector({
+      connected,
+      connector,
+      mode,
+      required: requiredInputs.includes(connector.kind),
+      settings,
+    }));
   }
   for (const kind of requiredInputs) {
     const current = byKind.get(kind);
-    byKind.set(kind, current ? { ...current, required: true } : connectorForKind(kind, true));
+    byKind.set(kind, current
+      ? normalizedConnector({ connected, connector: current, mode, required: true, settings })
+      : normalizedConnector({ connected, connector: connectorForKind(kind, true, mode), mode, required: true, settings }));
+  }
+  for (const kind of optionalInputs) {
+    if (requiredInputs.includes(kind)) continue;
+    const current = byKind.get(kind);
+    byKind.set(kind, current
+      ? normalizedConnector({ connected, connector: current, mode, required: false, settings })
+      : normalizedConnector({ connected, connector: connectorForKind(kind, false, mode), mode, required: false, settings }));
   }
   return Array.from(byKind.values());
 }
@@ -219,6 +283,76 @@ function disabledReasonForControl(
   return undefined;
 }
 
+function outputMediaKindForPolicy(
+  settings: WorkspaceShotSettings,
+  capability: WorkspaceModelCapability | null
+): WorkspaceOutputMediaKind {
+  return settings.outputKind ?? capability?.outputKind ?? (settings.family === 'chat' ? 'text' : 'video');
+}
+
+function outputCountForPolicy(
+  settings: WorkspaceShotSettings,
+  capability: WorkspaceModelCapability | null
+): WorkspaceOutputCount {
+  if (settings.toolKind === 'character-builder' || settings.toolKind === 'angle') return { min: 1, max: 4 };
+  return capability?.output_count ?? 1;
+}
+
+function controlFieldsForPolicy(
+  settings: WorkspaceShotSettings,
+  capability: WorkspaceModelCapability | null,
+  outputMediaKind: WorkspaceOutputMediaKind
+): WorkspacePolicyControlField[] {
+  if (settings.family === 'chat') return capability?.control_fields?.length
+    ? capability.control_fields
+    : ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'];
+  if (settings.toolKind === 'character-builder') return capability?.control_fields?.length
+    ? capability.control_fields
+    : ['model', 'outputCount', 'characterOutputMode', 'characterQualityMode', 'characterFormatMode'];
+  if (settings.toolKind === 'angle') return capability?.control_fields?.length
+    ? capability.control_fields
+    : ['model', 'outputCount', 'angleRotation', 'angleTilt', 'angleZoom', 'angleSafeMode'];
+  if (settings.family === 'audio') return capability?.control_fields?.length
+    ? capability.control_fields
+    : ['model', 'durationSec', 'audioMood', 'audioIntensity'];
+  if (settings.family === 'upscale') return capability?.control_fields?.length
+    ? capability.control_fields
+    : ['model', 'resolution', 'upscaleFactor', 'outputFormat'];
+
+  const fields = new Set<WorkspacePolicyControlField>(capability?.control_fields ?? ['model']);
+  if (outputMediaKind === 'video') {
+    fields.add('durationSec');
+    fields.add('aspectRatio');
+    fields.add('resolution');
+    fields.add('fps');
+    fields.add('referenceStrength');
+  }
+  if (outputMediaKind === 'image') {
+    fields.add('aspectRatio');
+    fields.add('resolution');
+    fields.add('referenceStrength');
+  }
+  return Array.from(fields);
+}
+
+function pricingRelevantFieldsForPolicy(
+  settings: WorkspaceShotSettings,
+  capability: WorkspaceModelCapability | null,
+  outputMediaKind: WorkspaceOutputMediaKind
+): WorkspacePolicyControlField[] {
+  if (settings.family === 'chat') return [];
+  if (capability?.pricing_relevant_fields) return capability.pricing_relevant_fields;
+  const fields = new Set<WorkspacePolicyControlField>(['model']);
+  if (outputMediaKind === 'video' || outputMediaKind === 'audio') fields.add('durationSec');
+  if (outputMediaKind === 'video' || outputMediaKind === 'image') fields.add('resolution');
+  return Array.from(fields);
+}
+
+function disabledReasonForMissingInputs(missingInputs: WorkspaceEdgeKind[]): string | undefined {
+  if (!missingInputs.length) return undefined;
+  return `Connect required ${missingInputs.map(edgeLabel).join(', ')} input${missingInputs.length === 1 ? '' : 's'}.`;
+}
+
 export function resolveWorkspaceBlockPolicy({
   settings,
   capability,
@@ -231,10 +365,16 @@ export function resolveWorkspaceBlockPolicy({
   const connected = connectedSet(connectedInputs);
   const mode = inferBlockMode(settings, connected);
   const requiredInputs = requiredInputsForMode(settings, capability, mode);
-  const inputConnectors = mergeConnectors(capability, requiredInputs);
+  const optionalInputs = Array.from(new Set([
+    ...(capability?.optional_inputs ?? []),
+    ...minimumOptionalInputsForMode(settings, mode),
+  ])).filter((kind) => !requiredInputs.includes(kind));
+  const inputConnectors = mergeConnectors(capability, requiredInputs, optionalInputs, mode, connected, settings);
   const missingInputs = requiredInputs.filter((kind) => !connectedSatisfiesRequirement(connected, kind));
+  const outputMediaKind = outputMediaKindForPolicy(settings, capability);
+  const disabledReason = disabledReasonForMissingInputs(missingInputs);
   const controls = inputConnectors.map<WorkspaceResolvedControl>((connector) => {
-    const reason = disabledReasonForControl(connector.kind, settings, connected);
+    const reason = connector.disabledReason;
     return {
       id: connector.kind,
       label: connector.label,
@@ -243,6 +383,7 @@ export function resolveWorkspaceBlockPolicy({
       disabled: Boolean(reason),
       required: requiredInputs.includes(connector.kind),
       reason,
+      disabledReason: reason,
       compact: true,
     };
   });
@@ -252,7 +393,13 @@ export function resolveWorkspaceBlockPolicy({
     controls,
     inputConnectors,
     requiredInputs,
+    optionalInputs,
     missingInputs,
+    outputMediaKind,
+    outputCount: outputCountForPolicy(settings, capability),
+    controlFields: controlFieldsForPolicy(settings, capability, outputMediaKind),
+    pricingRelevantFields: pricingRelevantFieldsForPolicy(settings, capability, outputMediaKind),
+    disabledReason,
     canGenerate: missingInputs.length === 0,
   };
 }

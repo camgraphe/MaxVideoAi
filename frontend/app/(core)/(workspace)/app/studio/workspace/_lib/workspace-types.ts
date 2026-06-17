@@ -76,6 +76,57 @@ export type WorkspaceWorkflowType =
 
 export type WorkspaceGenerationFamily = 'video' | 'image' | 'audio' | 'upscale' | 'chat';
 export type WorkspaceToolKind = 'angle' | 'character-builder' | 'storyboard';
+export type WorkspaceBlockMode =
+  | 'chat'
+  | 'first-last-video'
+  | 'image-edit'
+  | 'image-to-video'
+  | 'reference-to-video'
+  | 'text-to-image'
+  | 'text-to-video'
+  | 'tool'
+  | 'video-edit'
+  | 'video-reframe';
+export type WorkspaceOutputMediaKind = 'audio' | 'image' | 'text' | 'video';
+export type WorkspaceOutputCount = number | { min: number; max: number };
+export type WorkspacePolicyControlField =
+  | 'model'
+  | 'durationSec'
+  | 'aspectRatio'
+  | 'resolution'
+  | 'fps'
+  | 'seed'
+  | 'audioEnabled'
+  | 'lipSyncEnabled'
+  | 'referenceStrength'
+  | 'outputFormat'
+  | 'outputCount'
+  | 'characterOutputMode'
+  | 'characterConsistencyMode'
+  | 'characterQualityMode'
+  | 'characterFormatMode'
+  | 'characterReferenceStrength'
+  | 'characterTraits'
+  | 'angleRotation'
+  | 'angleTilt'
+  | 'angleZoom'
+  | 'angleSafeMode'
+  | 'angleBestAngles'
+  | 'upscaleMode'
+  | 'upscaleFactor'
+  | 'audioMood'
+  | 'audioIntensity'
+  | 'audioMusicEnabled'
+  | 'voiceGender'
+  | 'voiceProfile'
+  | 'voiceDelivery'
+  | 'audioLanguage'
+  | 'chatProvider'
+  | 'chatModel'
+  | 'chatSystemPrompt'
+  | 'chatMessage'
+  | `tool.${string}`
+  | `setting.${string}`;
 
 export type WorkspaceToolSettings = {
   angle?: {
@@ -160,6 +211,7 @@ export type WorkspaceChatSettings = {
 };
 
 export type WorkspaceAssetKind = 'image' | 'video' | 'audio' | 'logo' | 'text';
+export type WorkspaceAcceptedMediaKind = WorkspaceAssetKind;
 export type WorkspaceShotStatus = 'draft' | 'ready' | 'incompatible' | 'generating' | 'failed' | 'completed';
 export type WorkspaceOutputStatus = 'placeholder' | 'processing' | 'ready' | 'failed';
 export type WorkspacePromptRole = 'prompt' | 'negative_prompt' | 'style' | 'camera' | 'dialogue' | 'narration' | 'scene_description';
@@ -205,7 +257,7 @@ export type WorkspaceProjectMediaFolder = {
 export type WorkspaceShotSettings = {
   presetId?: WorkspaceGenerationPresetId;
   family?: WorkspaceGenerationFamily;
-  outputKind?: 'video' | 'image' | 'audio';
+  outputKind?: WorkspaceOutputMediaKind;
   toolKind?: WorkspaceToolKind;
   toolSettings?: WorkspaceToolSettings;
   modelId: string;
@@ -246,9 +298,17 @@ export type WorkspaceInputConnector = {
   kind: WorkspaceEdgeKind;
   label: string;
   required: boolean;
+  requiredInModes?: WorkspaceBlockMode[];
   fieldId?: string;
   description?: string;
+  minCount?: number;
   maxCount?: number;
+  mutuallyExclusiveWith?: WorkspaceEdgeKind[];
+  acceptedMediaKinds?: WorkspaceAcceptedMediaKind[];
+  acceptedFormats?: string[];
+  maxDurationSec?: number;
+  maxFileSizeMb?: number;
+  disabledReason?: string;
   connectedCount?: number;
   remainingCount?: number;
   capacityLabel?: string | null;
@@ -271,7 +331,7 @@ export type WorkspaceModelCapability = {
   provider: string;
   providerEngineSlug: string;
   family: WorkspaceGenerationFamily;
-  outputKind: 'video' | 'image' | 'audio' | 'text';
+  outputKind: WorkspaceOutputMediaKind;
   modes: Mode[];
   workflows: WorkspaceWorkflowType[];
   text_to_video: boolean;
@@ -309,6 +369,9 @@ export type WorkspaceModelCapability = {
   required_inputs: WorkspaceEdgeKind[];
   optional_inputs: WorkspaceEdgeKind[];
   unsupported_inputs: WorkspaceEdgeKind[];
+  output_count?: WorkspaceOutputCount;
+  control_fields?: WorkspacePolicyControlField[];
+  pricing_relevant_fields?: WorkspacePolicyControlField[];
 };
 
 export type WorkspaceShotValidation = {

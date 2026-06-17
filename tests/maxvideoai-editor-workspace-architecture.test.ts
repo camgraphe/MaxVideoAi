@@ -137,6 +137,7 @@ const modelCapabilityRegistryPath = join(workspaceDir, '_lib/models/model-capabi
 const modelEngineFieldsPath = join(workspaceDir, '_lib/models/model-engine-fields.ts');
 const modelInputConnectorsPath = join(workspaceDir, '_lib/models/model-input-connectors.ts');
 const modelPricingAdapterPath = join(workspaceDir, '_lib/models/model-pricing-adapter.ts');
+const blockCapabilityPolicyPath = join(workspaceDir, '_lib/models/workspace-block-capability-policy.ts');
 const blockPresetsPath = join(workspaceDir, '_lib/workspace-block-presets.ts');
 const generationPath = join(workspaceDir, '_lib/workspace-generation.ts');
 const generationRoutingPath = join(workspaceDir, '_lib/workspace-generation-routing.ts');
@@ -2695,6 +2696,41 @@ test('MaxVideoAI editor active model capabilities expose additive engine contrac
       `${capability.id} should derive lip_sync from render options`
     );
   }
+});
+
+test('MaxVideoAI editor block policy remains the source for generation mode, connector, and control rules', () => {
+  const blockPolicySource = source(blockCapabilityPolicyPath);
+  const modelInputConnectorsSource = source(modelInputConnectorsPath);
+  const renderNodesSource = source(renderNodesHookPath);
+  const shotInspectorSource = source(shotNodeInspectorPath);
+  const shotNodeControlsSource = source(shotNodeControlsPath);
+
+  assert.match(blockPolicySource, /export type WorkspaceBlockPolicyResult/, 'block policy should own the normalized policy result contract');
+  for (const field of [
+    'requiredInModes',
+    'minCount',
+    'maxCount',
+    'mutuallyExclusiveWith',
+    'acceptedMediaKinds',
+    'acceptedFormats',
+    'maxDurationSec',
+    'maxFileSizeMb',
+    'outputMediaKind',
+    'outputCount',
+    'controlFields',
+    'pricingRelevantFields',
+    'disabledReason',
+  ]) {
+    assert.match(blockPolicySource, new RegExp(field), `block policy should normalize ${field}`);
+  }
+  assert.match(modelInputConnectorsSource, /requiredInModes/, 'connector helpers should carry per-mode requirement metadata');
+  assert.match(modelInputConnectorsSource, /acceptedMediaKinds/, 'connector helpers should carry media-kind metadata from engine schemas');
+  assert.match(modelInputConnectorsSource, /acceptedFormats/, 'connector helpers should carry accepted format metadata from engine schemas');
+  assert.match(renderNodesSource, /resolveWorkspaceBlockPolicy/, 'rendered shot nodes should resolve block policy centrally');
+  assert.match(renderNodesSource, /policy\.inputConnectors/, 'rendered shot nodes should derive connectors from policy output');
+  assert.doesNotMatch(renderNodesSource, /getWorkspaceShotTargetHandles\(validation\.capability\)/, 'rendered shot nodes should not bypass policy connectors');
+  assert.doesNotMatch(shotInspectorSource, /\.required_inputs\.includes|\.optional_inputs\.includes/, 'inspector should not duplicate connector requirement rules');
+  assert.doesNotMatch(shotNodeControlsSource, /\.required_inputs\.includes|\.optional_inputs\.includes/, 'node controls should not duplicate connector requirement rules');
 });
 
 test('MaxVideoAI editor generation resolves connected output media references', async () => {

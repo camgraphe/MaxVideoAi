@@ -1,6 +1,13 @@
 import { getBaseEnginesByCategory } from '@/lib/engines';
 import type { AspectRatio, EngineCaps, Resolution } from '@/types/engines';
-import type { WorkspaceEdgeKind, WorkspaceModelCapability, WorkspaceWorkflowType } from '../workspace-types';
+import type {
+  WorkspaceEdgeKind,
+  WorkspaceModelCapability,
+  WorkspaceOutputCount,
+  WorkspacePolicyControlField,
+  WorkspaceRenderOption,
+  WorkspaceWorkflowType,
+} from '../workspace-types';
 import {
   ALL_INPUT_KINDS,
   inputConnectorsFor,
@@ -82,6 +89,46 @@ function supportedFps(engine: EngineCaps): number[] {
   return Array.from(fps).sort((a, b) => a - b);
 }
 
+function controlFieldsForCapability(input: {
+  family: WorkspaceModelCapability['family'];
+  outputKind: WorkspaceModelCapability['outputKind'];
+  renderOptions: WorkspaceRenderOption[];
+}): WorkspacePolicyControlField[] {
+  const fields = new Set<WorkspacePolicyControlField>(['model']);
+  if (input.outputKind === 'video' || input.family === 'audio') fields.add('durationSec');
+  if (input.outputKind === 'video' || input.outputKind === 'image') {
+    fields.add('aspectRatio');
+    fields.add('resolution');
+  }
+  if (input.outputKind === 'video') {
+    fields.add('fps');
+    fields.add('referenceStrength');
+  }
+  if (input.outputKind === 'image' && input.family !== 'upscale') fields.add('referenceStrength');
+  if (input.family === 'upscale') fields.add('upscaleFactor');
+  for (const option of input.renderOptions) {
+    if (option.id === 'audio') fields.add('audioEnabled');
+    if (option.id === 'lip_sync') fields.add('lipSyncEnabled');
+  }
+  return Array.from(fields);
+}
+
+function pricingRelevantFieldsForCapability(input: {
+  family: WorkspaceModelCapability['family'];
+  outputKind: WorkspaceModelCapability['outputKind'];
+  renderOptions: WorkspaceRenderOption[];
+}): WorkspacePolicyControlField[] {
+  if (input.family === 'chat') return [];
+  const fields = new Set<WorkspacePolicyControlField>(['model']);
+  if (input.outputKind === 'video' || input.family === 'audio') fields.add('durationSec');
+  if (input.outputKind === 'video' || input.outputKind === 'image' || input.family === 'upscale') fields.add('resolution');
+  for (const option of input.renderOptions) {
+    if (option.id === 'audio') fields.add('audioEnabled');
+    if (option.id === 'lip_sync') fields.add('lipSyncEnabled');
+  }
+  return Array.from(fields);
+}
+
 function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
   const workflows = workflowTypesFor(engine);
   const family = engine.id.toLowerCase();
@@ -91,6 +138,8 @@ function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
   const supportsVideo = hasMode(engine, ['v2v', 'extend', 'retake', 'reframe']) || hasFieldType(engine, 'video');
   const supportsAudio = engine.audio || hasFieldType(engine, 'audio') || hasMode(engine, ['a2v']);
   const renderOptions = resolveWorkspaceRenderOptions(engine);
+  const controlFields = controlFieldsForCapability({ family: generationFamily, outputKind, renderOptions });
+  const pricingRelevantFields = pricingRelevantFieldsForCapability({ family: generationFamily, outputKind, renderOptions });
   const baseRequiredInputs = requiredInputsFor(engine);
   const baseOptionalInputs = optionalInputsFor(engine);
   const inputConnectors = inputConnectorsFor(engine, baseRequiredInputs, baseOptionalInputs);
@@ -142,6 +191,9 @@ function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
     required_inputs: requiredInputs,
     optional_inputs: optionalInputs,
     unsupported_inputs: ALL_INPUT_KINDS.filter((kind) => !supportedInputs.has(kind)),
+    output_count: 1,
+    control_fields: controlFields,
+    pricing_relevant_fields: pricingRelevantFields,
   };
 }
 
@@ -153,6 +205,9 @@ function virtualCapability(input: {
   workflow: WorkspaceWorkflowType;
   requiredInputs: WorkspaceEdgeKind[];
   optionalInputs: WorkspaceEdgeKind[];
+  controlFields?: WorkspacePolicyControlField[];
+  outputCount?: WorkspaceOutputCount;
+  pricingRelevantFields?: WorkspacePolicyControlField[];
 }): WorkspaceModelCapability {
   const inputConnectors = inputConnectorsFromKinds(input.requiredInputs, input.optionalInputs);
   const supportedInputs = new Set([...input.requiredInputs, ...input.optionalInputs]);
@@ -164,6 +219,16 @@ function virtualCapability(input: {
         defaultEnabled: true,
       }]
     : [];
+  const controlFields = input.controlFields ?? controlFieldsForCapability({
+    family: input.family,
+    outputKind: input.outputKind,
+    renderOptions,
+  });
+  const pricingRelevantFields = input.pricingRelevantFields ?? pricingRelevantFieldsForCapability({
+    family: input.family,
+    outputKind: input.outputKind,
+    renderOptions,
+  });
   return {
     id: input.id,
     label: input.label,
@@ -209,6 +274,9 @@ function virtualCapability(input: {
     required_inputs: input.requiredInputs,
     optional_inputs: input.optionalInputs,
     unsupported_inputs: ALL_INPUT_KINDS.filter((kind) => !supportedInputs.has(kind)),
+    output_count: input.outputCount ?? 1,
+    control_fields: controlFields,
+    pricing_relevant_fields: pricingRelevantFields,
   };
 }
 
@@ -222,6 +290,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'music_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['style'],
+      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'audioMusicEnabled'],
+      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-voice-only',
@@ -231,6 +301,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'voiceover_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['voiceover', 'dialogue', 'narration'],
+      controlFields: ['model', 'durationSec', 'voiceGender', 'voiceProfile', 'voiceDelivery', 'audioLanguage'],
+      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-sfx-only',
@@ -240,6 +312,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'sfx_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['video_reference', 'motion_reference'],
+      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity'],
+      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-cinematic',
@@ -249,6 +323,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'cinematic_audio',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt', 'music', 'sfx'],
+      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'audioMusicEnabled'],
+      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-cinematic-voice',
@@ -258,6 +334,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'cinematic_voiceover',
       requiredInputs: ['video_reference', 'prompt'],
       optionalInputs: ['music', 'sfx', 'voiceover', 'dialogue', 'narration'],
+      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'voiceGender', 'voiceProfile', 'voiceDelivery', 'audioLanguage'],
+      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'character-builder-tool',
@@ -267,6 +345,18 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'character_builder',
       requiredInputs: [],
       optionalInputs: ['prompt', 'reference', 'style'],
+      outputCount: { min: 1, max: 4 },
+      controlFields: [
+        'model',
+        'outputCount',
+        'characterOutputMode',
+        'characterConsistencyMode',
+        'characterQualityMode',
+        'characterFormatMode',
+        'characterReferenceStrength',
+        'characterTraits',
+      ],
+      pricingRelevantFields: ['model', 'outputCount', 'characterQualityMode', 'characterFormatMode'],
     }),
     virtualCapability({
       id: 'storyboard-gpt-image-2',
@@ -285,6 +375,9 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'angle_generation',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
+      outputCount: { min: 1, max: 4 },
+      controlFields: ['model', 'outputCount', 'angleRotation', 'angleTilt', 'angleZoom', 'angleSafeMode', 'angleBestAngles'],
+      pricingRelevantFields: ['model', 'outputCount'],
     }),
     virtualCapability({
       id: 'angle-qwen-multiple-angles',
@@ -294,6 +387,9 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'angle_generation',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
+      outputCount: { min: 1, max: 4 },
+      controlFields: ['model', 'outputCount', 'angleRotation', 'angleTilt', 'angleZoom', 'angleSafeMode', 'angleBestAngles'],
+      pricingRelevantFields: ['model', 'outputCount'],
     }),
     virtualCapability({
       id: 'upscale-image-seedvr',
@@ -303,6 +399,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-image-topaz',
@@ -312,6 +410,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-image-recraft-crisp',
@@ -321,6 +421,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-seedvr',
@@ -330,6 +432,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-flashvsr',
@@ -339,6 +443,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-topaz',
@@ -348,6 +454,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
+      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
+      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'studio-chat-openai',
@@ -357,6 +465,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'chat_completion',
       requiredInputs: ['prompt'],
       optionalInputs: ['reference', 'video_reference', 'audio'],
+      controlFields: ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'],
+      pricingRelevantFields: [],
     }),
     virtualCapability({
       id: 'studio-chat-gemini',
@@ -366,6 +476,8 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       workflow: 'chat_completion',
       requiredInputs: ['prompt'],
       optionalInputs: ['reference', 'video_reference', 'audio'],
+      controlFields: ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'],
+      pricingRelevantFields: [],
     }),
   ];
 }

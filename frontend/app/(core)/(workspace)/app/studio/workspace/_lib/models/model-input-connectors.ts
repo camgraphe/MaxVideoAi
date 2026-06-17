@@ -1,5 +1,13 @@
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
-import type { WorkspaceEdgeKind, WorkspaceInputConnector, WorkspaceModelCapability, WorkspaceShotSettings, WorkspaceWorkflowType } from '../workspace-types';
+import type {
+  WorkspaceAcceptedMediaKind,
+  WorkspaceBlockMode,
+  WorkspaceEdgeKind,
+  WorkspaceInputConnector,
+  WorkspaceModelCapability,
+  WorkspaceShotSettings,
+  WorkspaceWorkflowType,
+} from '../workspace-types';
 import { edgeLabel } from '../workspace-templates';
 import { hasFieldId, hasFieldType, hasMode } from './model-engine-fields';
 
@@ -107,6 +115,117 @@ function sourceTypeForField(field: EngineInputField): WorkspaceInputConnector['s
   return 'control';
 }
 
+function blockModesForEngineModes(modes: Mode[] | undefined): WorkspaceBlockMode[] | undefined {
+  if (!modes?.length) return undefined;
+  const mapped = new Set<WorkspaceBlockMode>();
+  for (const mode of modes) {
+    if (mode === 't2v') mapped.add('text-to-video');
+    if (mode === 'i2v') mapped.add('image-to-video');
+    if (mode === 'ref2v' || mode === 'r2v') mapped.add('reference-to-video');
+    if (mode === 'fl2v') mapped.add('first-last-video');
+    if (mode === 'v2v' || mode === 'extend' || mode === 'retake') mapped.add('video-edit');
+    if (mode === 'reframe') mapped.add('video-reframe');
+    if (mode === 't2i') mapped.add('text-to-image');
+    if (mode === 'i2i') mapped.add('image-edit');
+    if (mode === 'a2v') mapped.add('tool');
+  }
+  return mapped.size ? Array.from(mapped) : undefined;
+}
+
+function acceptedMediaKindsForKind(kind: WorkspaceEdgeKind): WorkspaceAcceptedMediaKind[] {
+  if (
+    kind === 'prompt' ||
+    kind === 'negative_prompt' ||
+    kind === 'camera' ||
+    kind === 'dialogue' ||
+    kind === 'narration'
+  ) {
+    return ['text'];
+  }
+  if (kind === 'video_reference' || kind === 'motion_reference' || kind === 'previous_shot' || kind === 'continuity') {
+    return ['video'];
+  }
+  if (kind === 'audio' || kind === 'voiceover' || kind === 'music' || kind === 'sfx') {
+    return ['audio'];
+  }
+  if (kind === 'logo') return ['logo', 'image'];
+  return ['image'];
+}
+
+function acceptedFormatsForSourceType(
+  sourceType: WorkspaceInputConnector['sourceType'],
+  engine?: EngineCaps
+): string[] | undefined {
+  if (sourceType === 'text') return ['text/plain'];
+  if (sourceType === 'image') {
+    const modeCapsFormats = Object.values(engine?.modeCaps ?? {})
+      .flatMap((caps) => caps?.acceptsImageFormats ?? []);
+    return engine?.inputSchema?.constraints?.supportedFormats?.length
+      ? engine.inputSchema.constraints.supportedFormats
+      : modeCapsFormats.length
+        ? Array.from(new Set(modeCapsFormats))
+        : ['jpg', 'jpeg', 'png', 'webp'];
+  }
+  if (sourceType === 'video') {
+    return engine?.inputLimits.videoCodecs?.length ? engine.inputLimits.videoCodecs : ['mp4', 'mov', 'webm'];
+  }
+  if (sourceType === 'audio') return ['mp3', 'wav', 'm4a', 'aac', 'ogg'];
+  return undefined;
+}
+
+function maxFileSizeMbForSourceType(
+  sourceType: WorkspaceInputConnector['sourceType'],
+  engine?: EngineCaps
+): number | undefined {
+  if (sourceType === 'image') {
+    return engine?.inputSchema?.constraints?.maxImageSizeMB ?? engine?.inputLimits.imageMaxMB;
+  }
+  if (sourceType === 'video') {
+    return engine?.inputSchema?.constraints?.maxVideoSizeMB ?? engine?.inputLimits.videoMaxMB;
+  }
+  if (sourceType === 'audio') {
+    return engine?.inputSchema?.constraints?.maxAudioSizeMB ?? engine?.inputLimits.audioMaxMB;
+  }
+  return undefined;
+}
+
+function maxDurationSecForSourceType(
+  sourceType: WorkspaceInputConnector['sourceType'],
+  field?: EngineInputField,
+  engine?: EngineCaps
+): number | undefined {
+  if (typeof field?.maxDurationSec === 'number') return field.maxDurationSec;
+  if (sourceType === 'video') return engine?.inputLimits.videoMaxDurationSec;
+  if (sourceType === 'audio') return engine?.inputLimits.audioMaxDurationSec;
+  return undefined;
+}
+
+function connectorPolicyMetadata({
+  engine,
+  field,
+  kind,
+  origin,
+  sourceType,
+}: {
+  engine?: EngineCaps;
+  field?: EngineInputField;
+  kind: WorkspaceEdgeKind;
+  origin: 'required' | 'optional';
+  sourceType: WorkspaceInputConnector['sourceType'];
+}): Pick<
+  WorkspaceInputConnector,
+  'acceptedFormats' | 'acceptedMediaKinds' | 'maxDurationSec' | 'maxFileSizeMb' | 'minCount' | 'requiredInModes'
+> {
+  return {
+    acceptedMediaKinds: acceptedMediaKindsForKind(kind),
+    acceptedFormats: acceptedFormatsForSourceType(sourceType, engine),
+    maxDurationSec: maxDurationSecForSourceType(sourceType, field, engine),
+    maxFileSizeMb: maxFileSizeMbForSourceType(sourceType, engine),
+    minCount: field?.minCount ?? (origin === 'required' ? 1 : 0),
+    requiredInModes: blockModesForEngineModes(field?.requiredInModes),
+  };
+}
+
 function connectorRequired(field: EngineInputField, origin: 'required' | 'optional'): boolean {
   if (origin !== 'required') return false;
   return !field.modes?.length || field.modes.includes('t2v');
@@ -130,17 +249,19 @@ function insertConnector(
   }
 }
 
-function connectorFromField(field: EngineInputField, origin: 'required' | 'optional'): WorkspaceInputConnector | null {
+function connectorFromField(field: EngineInputField, origin: 'required' | 'optional', engine: EngineCaps): WorkspaceInputConnector | null {
   const kind = connectorKindForField(field);
   if (!kind) return null;
+  const sourceType = sourceTypeForField(field);
   return {
     kind,
     label: sanitizeConnectorLabel(field.label || edgeLabel(kind), field.maxCount),
     required: connectorRequired(field, origin),
     fieldId: field.id,
     description: field.description,
-    maxCount: field.maxCount,
-    sourceType: sourceTypeForField(field),
+    maxCount: field.maxCount ?? 1,
+    sourceType,
+    ...connectorPolicyMetadata({ engine, field, kind, origin, sourceType }),
   };
 }
 
@@ -228,6 +349,10 @@ function connectorFromKind(kind: WorkspaceEdgeKind, required: boolean): Workspac
     kind,
     label: edgeLabel(kind),
     required,
+    minCount: required ? 1 : 0,
+    maxCount: 1,
+    acceptedMediaKinds: acceptedMediaKindsForKind(kind),
+    acceptedFormats: acceptedFormatsForSourceType(sourceType),
     sourceType,
   };
 }
@@ -261,7 +386,7 @@ export function inputConnectorsFor(engine: EngineCaps, requiredInputs: Workspace
   const connectors = new Map<WorkspaceEdgeKind, WorkspaceInputConnector>();
   const ingest = (fields: EngineInputField[] | undefined, origin: 'required' | 'optional') => {
     fields?.forEach((field) => {
-      const connector = connectorFromField(field, origin);
+      const connector = connectorFromField(field, origin, engine);
       if (connector) insertConnector(connectors, connector);
     });
   };
