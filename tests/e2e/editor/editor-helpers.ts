@@ -124,6 +124,29 @@ async function mockEditorStudioPersistenceApi(page: Page): Promise<void> {
       body: JSON.stringify({ ok: true }),
     });
   });
+  await page.route('**/api/studio/timeline-exports/estimate', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        quota: {
+          billingKind: 'free',
+          freeExportsRemaining: 2,
+          freeLimit: 2,
+          usedFreeExports: 0,
+        },
+        estimate: {
+          amountCents: 0,
+          billingKind: 'free',
+          currency: 'USD',
+          freeExportsRemaining: 2,
+          multiplier: 1,
+          unitCentsPerSecond: 4,
+        },
+      }),
+    });
+  });
   await page.route('**/api/studio/projects', async (route) => {
     if (route.request().method() === 'POST') {
       const now = new Date().toISOString();

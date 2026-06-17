@@ -571,36 +571,9 @@
   .trackLabel { gap: 5px; padding: 0 8px; font-size: 10px; }
   .trackLabelControls { width: 64px; gap: 4px; padding-right: 16px; }
   .trackLane { padding-inline: var(--timeline-track-lane-padding-x); }
-
-  .timelinePanel :global([class*="timelineTopbar"]) {
-    height: auto;
-    min-height: 52px;
-    grid-template-columns: auto minmax(max-content, 1fr);
-    overflow-x: auto;
-    overscroll-behavior-x: contain;
-    padding: 6px 8px;
-    scrollbar-width: none;
-  }
-
-  .timelinePanel :global([class*="timelineTopbar"]::-webkit-scrollbar) {
-    width: 0;
-    height: 0;
-  }
-
-  .timelinePanel :global([class*="timelineZoomSlot"]) {
-    min-width: max-content;
-  }
-
-  .timelinePanel :global([class*="timelineTransport"] button),
-  .timelinePanel :global([class*="timelineZoomControl"] button),
-  .timelinePanel :global([class*="timelineExportButton"]) {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    min-height: 40px;
-  }
-
-  .timelinePanel :global([class*="timelineExportButton"]) {
-    padding: 0;
-  }
+  .timelinePanel :global([class*="timelineTopbar"]) { height: auto; min-height: 52px; grid-template-columns: auto minmax(max-content, 1fr); overflow-x: auto; overscroll-behavior-x: contain; padding: 6px 8px; scrollbar-width: none; }
+  .timelinePanel :global([class*="timelineTopbar"]::-webkit-scrollbar) { width: 0; height: 0; }
+  .timelinePanel :global([class*="timelineZoomSlot"]) { min-width: max-content; }
+  .timelinePanel :global([class*="timelineTransport"] button), .timelinePanel :global([class*="timelineZoomControl"] button), .timelinePanel :global([class*="timelineExportButton"]) { width: 40px; min-width: 40px; height: 40px; min-height: 40px; }
+  .timelinePanel :global([class*="timelineExportButton"]) { padding: 0; }
 }

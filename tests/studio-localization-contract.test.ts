@@ -1579,11 +1579,16 @@ test('Studio project media timeline and drag-preview labels use active localized
     'utf8'
   );
   assert.match(sidebarSource, /studioCanvasNodeCopy,/);
+  const projectMediaPanelSource = fs.readFileSync(
+    path.join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaPanel.tsx'),
+    'utf8'
+  );
+  assert.match(projectMediaPanelSource, /studioCanvasNodeCopy=\{studioCopy\.canvas\.nodes\}/);
   const layoutSource = fs.readFileSync(
     path.join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceEditorLayout.tsx'),
     'utf8'
   );
-  assert.match(layoutSource, /studioCanvasNodeCopy=\{studioCopy\.canvas\.nodes\}/);
+  assert.match(layoutSource, /WorkspaceProjectMediaPanel/);
 });
 
 test('Studio export preflight issues localize generated timeline clip titles', async () => {

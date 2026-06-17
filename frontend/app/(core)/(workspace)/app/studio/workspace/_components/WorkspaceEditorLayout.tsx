@@ -1,19 +1,9 @@
 'use client';
-
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type Dispatch,
-  type KeyboardEvent as ReactKeyboardEvent,
-  type SetStateAction,
-} from 'react';
-import { X } from 'lucide-react';
+import { type CSSProperties, type Dispatch, type SetStateAction } from 'react';
 import type { useExportController } from '../_controllers/useExportController';
 import type { useWorkspaceCanvasController } from '../_hooks/useWorkspaceCanvasController';
 import type { useWorkspaceExportState } from '../_hooks/useWorkspaceExportState';
+import { useWorkspaceMobilePanels } from '../_hooks/useWorkspaceMobilePanels';
 import type { useWorkspaceProjectMediaActions } from '../_hooks/useWorkspaceProjectMediaActions';
 import type { useWorkspaceSelectionActions } from '../_hooks/useWorkspaceSelectionActions';
 import type { useWorkspaceSequenceActions } from '../_hooks/useWorkspaceSequenceActions';
@@ -56,33 +46,18 @@ import {
 } from '../_state/workspace-state';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
-import { NodeSettingsPanel } from './NodeSettingsPanel';
-import { TimelineClipInspector } from './TimelineClipInspector';
-import { TimelineProjectSidebar } from './TimelineProjectSidebar';
+import { WorkspaceCanvasInspectorPanel } from './WorkspaceCanvasInspectorPanel';
 import { WorkspaceCanvas } from './WorkspaceCanvas.client';
 import { WorkspaceEditorTopbar } from './WorkspaceEditorTopbar';
+import { WorkspaceMobilePanelFrame } from './WorkspaceMobilePanelFrame';
 import { WorkspaceMobilePanelControls } from './WorkspaceMobilePanelControls';
+import { WorkspaceProjectMediaPanel } from './WorkspaceProjectMediaPanel';
 import { WorkspaceRuntimeModals } from './WorkspaceRuntimeModals';
 import { WorkspaceTimeline } from './WorkspaceTimeline';
+import { WorkspaceTimelineInspectorPanel } from './WorkspaceTimelineInspectorPanel';
 import { WorkspaceVideoViewer } from './WorkspaceVideoViewer';
 
 const styles = { ...baseStyles, ...shellStyles };
-type MobileWorkspacePanel = 'media' | 'inspector' | null;
-const FOCUSABLE_DRAWER_SELECTOR = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-].join(',');
-
-function focusableDrawerElements(root: HTMLElement | null): HTMLElement[] {
-  if (!root) return [];
-  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_DRAWER_SELECTOR)).filter((element) => (
-    element.offsetParent !== null && element.getAttribute('aria-hidden') !== 'true'
-  ));
-}
 
 type WorkspaceEditorLayoutControllers = {
   canvas: ReturnType<typeof useWorkspaceCanvasController>;
@@ -189,10 +164,6 @@ export function WorkspaceEditorLayout({
   userCanvasTemplates,
   videoTrackCount,
 }: WorkspaceEditorLayoutProps) {
-  const [mobileWorkspacePanel, setMobileWorkspacePanel] = useState<MobileWorkspacePanel>(null);
-  const mobilePanelReturnFocusRef = useRef<HTMLElement | null>(null);
-  const mobileProjectMediaPanelRef = useRef<HTMLDivElement | null>(null);
-  const mobileInspectorPanelRef = useRef<HTMLDivElement | null>(null);
   const editorShellStyle = timelinePanelHeight ? ({ '--timeline-panel-height': `${timelinePanelHeight}px` } as CSSProperties) : undefined;
   const {
     canvas,
@@ -217,70 +188,11 @@ export function WorkspaceEditorLayout({
   const mobileInspectorLabel = focusMode === 'canvas' ? studioCopy.canvas.nodes.inspectorTitle : studioCopy.timeline.inspector.clipInspector;
   const closeProjectMediaDrawerLabel = `${studioCopy.projects.closeDialog}: ${studioCopy.viewer.projectMedia.title}`;
   const closeInspectorDrawerLabel = `${studioCopy.projects.closeDialog}: ${mobileInspectorLabel}`;
-
-  const closeMobileWorkspacePanel = useCallback(() => {
-    setMobileWorkspacePanel(null);
-    window.requestAnimationFrame(() => mobilePanelReturnFocusRef.current?.focus());
-  }, []);
-
-  const handleToggleMobilePanel = useCallback((panel: Exclude<MobileWorkspacePanel, null>, trigger: HTMLButtonElement) => {
-    setMobileWorkspacePanel((current) => {
-      mobilePanelReturnFocusRef.current = trigger;
-      if (current === panel) {
-        window.requestAnimationFrame(() => mobilePanelReturnFocusRef.current?.focus());
-        return null;
-      }
-      return panel;
-    });
-  }, []);
-
-  const handleMobilePanelKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (!mobileWorkspacePanel) return;
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      closeMobileWorkspacePanel();
-      return;
-    }
-    if (event.key !== 'Tab') return;
-
-    const focusables = focusableDrawerElements(event.currentTarget);
-    if (!focusables.length) {
-      event.preventDefault();
-      event.currentTarget.focus();
-      return;
-    }
-
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (event.shiftKey && document.activeElement === first) {
-      event.preventDefault();
-      last?.focus();
-      return;
-    }
-    if (!event.shiftKey && document.activeElement === last) {
-      event.preventDefault();
-      first?.focus();
-    }
-  }, [closeMobileWorkspacePanel, mobileWorkspacePanel]);
-
-  useEffect(() => {
-    setMobileWorkspacePanel(null);
-  }, [focusMode]);
-  useEffect(() => {
-    if ((mobileWorkspacePanel === 'media' && !canOpenMobileProjectMedia) || (mobileWorkspacePanel === 'inspector' && !canOpenMobileInspector)) {
-      setMobileWorkspacePanel(null);
-    }
-  }, [canOpenMobileInspector, canOpenMobileProjectMedia, mobileWorkspacePanel]);
-  useEffect(() => {
-    if (!mobileWorkspacePanel) return;
-    const panelRef = mobileWorkspacePanel === 'media' ? mobileProjectMediaPanelRef : mobileInspectorPanelRef;
-    const frame = window.requestAnimationFrame(() => {
-      const closeButton = panelRef.current?.querySelector<HTMLElement>('[data-mobile-panel-close]');
-      (closeButton ?? focusableDrawerElements(panelRef.current)[0] ?? panelRef.current)?.focus();
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [mobileWorkspacePanel]);
-
+  const mobilePanels = useWorkspaceMobilePanels({
+    canOpenInspector: canOpenMobileInspector,
+    canOpenProjectMedia: canOpenMobileProjectMedia,
+    focusMode,
+  });
   return (
     <main
       className={`${styles.editorShell} ${focusMode === 'viewer' ? `${baseStyles.viewerFocus} ${shellStyles.viewerFocus}` : ''}`}
@@ -299,7 +211,6 @@ export function WorkspaceEditorLayout({
         studioCopy={studioCopy}
         studioTheme={studioTheme}
       />
-
       {notice ? (
         <div className={styles.editorToast} role="status" aria-live="polite" data-editor-status="true">
           {notice}
@@ -310,82 +221,54 @@ export function WorkspaceEditorLayout({
         className={`${styles.editorBody} ${focusMode === 'canvas' ? styles.canvasEditorBody : ''} ${
           shouldShowCanvasInspector ? styles.canvasEditorBodyInspectorOpen : ''
         }`}
-        data-mobile-panel={mobileWorkspacePanel ?? 'closed'}
+        data-mobile-panel={mobilePanels.activePanel ?? 'closed'}
       >
-        {mobileWorkspacePanel ? (
+        {mobilePanels.activePanel ? (
           <button
             type="button"
             className={styles.mobilePanelBackdrop}
             aria-label={studioCopy.projects.closeDialog}
-            onClick={closeMobileWorkspacePanel}
+            onClick={mobilePanels.closePanel}
           />
         ) : null}
         <WorkspaceMobilePanelControls
-          activePanel={mobileWorkspacePanel}
+          activePanel={mobilePanels.activePanel}
           ariaLabel={studioCopy.topbar.workspaceViewLabel}
           inspectorLabel={mobileInspectorLabel}
           mediaLabel={studioCopy.viewer.projectMedia.title}
           showInspector={canOpenMobileInspector}
           showMedia={canOpenMobileProjectMedia}
-          onTogglePanel={handleToggleMobilePanel}
+          onTogglePanel={mobilePanels.togglePanel}
         />
         {focusMode === 'viewer' ? (
           <div
-            ref={mobileProjectMediaPanelRef}
+            ref={mobilePanels.projectMediaPanelRef}
             id="studio-project-media-panel"
-            className={`${styles.projectMediaPanelSlot} ${mobileWorkspacePanel === 'media' ? styles.mobilePanelOpen : ''}`}
-            role={mobileWorkspacePanel === 'media' ? 'dialog' : undefined}
-            aria-modal={mobileWorkspacePanel === 'media' ? true : undefined}
-            aria-label={mobileWorkspacePanel === 'media' ? studioCopy.viewer.projectMedia.title : undefined}
-            tabIndex={mobileWorkspacePanel === 'media' ? -1 : undefined}
-            onKeyDown={mobileWorkspacePanel === 'media' ? handleMobilePanelKeyDown : undefined}
+            className={`${styles.projectMediaPanelSlot} ${mobilePanels.activePanel === 'media' ? styles.mobilePanelOpen : ''}`}
+            role={mobilePanels.activePanel === 'media' ? 'dialog' : undefined}
+            aria-modal={mobilePanels.activePanel === 'media' ? true : undefined}
+            aria-label={mobilePanels.activePanel === 'media' ? studioCopy.viewer.projectMedia.title : undefined}
+            tabIndex={mobilePanels.activePanel === 'media' ? -1 : undefined}
+            onKeyDown={mobilePanels.activePanel === 'media' ? mobilePanels.handlePanelKeyDown : undefined}
           >
-            <div className={styles.mobilePanelChrome}>
-              <button
-                type="button"
-                className={styles.mobilePanelCloseButton}
-                data-mobile-panel-close="true"
-                aria-label={closeProjectMediaDrawerLabel}
-                onClick={closeMobileWorkspacePanel}
-              >
-                <span>{studioCopy.viewer.projectMedia.title}</span>
-                <X size={16} aria-hidden="true" />
-              </button>
-              <div className={styles.mobilePanelContent}>
-                <TimelineProjectSidebar
-                  studioCanvasNodeCopy={studioCopy.canvas.nodes}
-                  copy={studioCopy.viewer.projectMedia}
-                  nodes={canvas.renderNodes}
-                  projectAssets={projectAssets}
-                  projectMediaFolders={projectMediaFolders}
-                  projectName={activeTemplateName}
-                  sequences={sequenceSnapshots.sequenceSummaries}
-                  timelineItems={timelineItems}
-                  onDeleteGeneratedClip={projectMedia.handleDeleteGeneratedClip}
-                  onDeleteGeneratedClips={projectMedia.handleDeleteGeneratedClips}
-                  onDeleteProjectAsset={projectMedia.handleDeleteProjectAsset}
-                  onDeleteProjectAssets={projectMedia.handleDeleteProjectAssets}
-                  onDeleteProjectMediaFolder={projectMedia.handleDeleteProjectMediaFolder}
-                  onDeleteProjectMediaFolders={projectMedia.handleDeleteProjectMediaFolders}
-                  onDeleteSequence={sequence.handleDeleteSequence}
-                  onDeleteSequences={sequence.handleDeleteSequences}
-                  onDuplicateSequence={sequence.handleDuplicateSequence}
-                  onImportMedia={projectMedia.handleImportProjectMedia}
-                  onImportLocalMediaFiles={projectMedia.handleImportLocalProjectMediaFiles}
-                  onInspectProjectAsset={selection.handleInspectProjectAsset}
-                  onInspectSequence={selection.handleInspectSequence}
-                  onInsertGeneratedClip={canvas.handleSendOutputToTimeline}
-                  onInsertProjectAsset={projectMedia.handleInsertProjectAssetToTimeline}
-                  onMoveGeneratedClipToFolder={projectMedia.handleMoveGeneratedClipToFolder}
-                  onMoveProjectAssetToFolder={projectMedia.handleMoveProjectAssetToFolder}
-                  onNewFolder={projectMedia.handleCreateProjectMediaFolder}
-                  onNewSequence={sequence.handleCreateSequence}
-                  onRenameProjectMediaFolder={projectMedia.handleRenameProjectMediaFolder}
-                  onSelectSequence={sequence.handleSelectSequence}
-                  onClearProjectMediaInspector={selection.handleClearProjectMediaInspector}
-                />
-              </div>
-            </div>
+            <WorkspaceMobilePanelFrame
+              closeLabel={closeProjectMediaDrawerLabel}
+              title={studioCopy.viewer.projectMedia.title}
+              onClose={mobilePanels.closePanel}
+            >
+              <WorkspaceProjectMediaPanel
+                activeTemplateName={activeTemplateName}
+                canvas={canvas}
+                projectAssets={projectAssets}
+                projectMedia={projectMedia}
+                projectMediaFolders={projectMediaFolders}
+                selection={selection}
+                sequence={sequence}
+                sequenceSnapshots={sequenceSnapshots}
+                studioCopy={studioCopy}
+                timelineItems={timelineItems}
+              />
+            </WorkspaceMobilePanelFrame>
           </div>
         ) : null}
         {focusMode === 'canvas' ? (
@@ -466,84 +349,57 @@ export function WorkspaceEditorLayout({
         )}
         {focusMode === 'canvas' ? (
           <div
-            ref={mobileInspectorPanelRef}
+            ref={mobilePanels.inspectorPanelRef}
             id="studio-inspector-panel"
-            className={`${styles.inspectorPanelSlot} ${styles.canvasInspectorSlot} ${mobileWorkspacePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
+            className={`${styles.inspectorPanelSlot} ${styles.canvasInspectorSlot} ${mobilePanels.activePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
             aria-hidden={!shouldShowCanvasInspector}
-            role={mobileWorkspacePanel === 'inspector' ? 'dialog' : undefined}
-            aria-modal={mobileWorkspacePanel === 'inspector' ? true : undefined}
-            aria-label={mobileWorkspacePanel === 'inspector' ? mobileInspectorLabel : undefined}
-            tabIndex={mobileWorkspacePanel === 'inspector' ? -1 : undefined}
-            onKeyDown={mobileWorkspacePanel === 'inspector' ? handleMobilePanelKeyDown : undefined}
+            role={mobilePanels.activePanel === 'inspector' ? 'dialog' : undefined}
+            aria-modal={mobilePanels.activePanel === 'inspector' ? true : undefined}
+            aria-label={mobilePanels.activePanel === 'inspector' ? mobileInspectorLabel : undefined}
+            tabIndex={mobilePanels.activePanel === 'inspector' ? -1 : undefined}
+            onKeyDown={mobilePanels.activePanel === 'inspector' ? mobilePanels.handlePanelKeyDown : undefined}
           >
-            <div className={styles.mobilePanelChrome}>
-              <button
-                type="button"
-                className={styles.mobilePanelCloseButton}
-                data-mobile-panel-close="true"
-                aria-label={closeInspectorDrawerLabel}
-                onClick={closeMobileWorkspacePanel}
-              >
-                <span>{mobileInspectorLabel}</span>
-                <X size={16} aria-hidden="true" />
-              </button>
-              <div className={styles.mobilePanelContent}>
-                {shouldShowCanvasInspector ? (
-                  <NodeSettingsPanel
-                    copy={studioCopy.canvas.nodes}
-                    selectedNode={canvas.selectedNode}
-                    edges={edges}
-                    capabilities={capabilities}
-                    onPatchNodeData={canvas.patchNodeData}
-                    onPatchShot={canvas.patchShot}
-                    onGenerateShot={canvas.handleGenerateShot}
-                    onRunChat={canvas.handleRunChat}
-                    onSendOutputToTimeline={canvas.handleSendOutputToTimeline}
-                    onOpenAssetLibrary={canvas.handleOpenAssetLibrary}
-                  />
-                ) : null}
-              </div>
-            </div>
+            <WorkspaceMobilePanelFrame
+              closeLabel={closeInspectorDrawerLabel}
+              title={mobileInspectorLabel}
+              onClose={mobilePanels.closePanel}
+            >
+              {shouldShowCanvasInspector ? (
+                <WorkspaceCanvasInspectorPanel
+                  canvas={canvas}
+                  capabilities={capabilities}
+                  edges={edges}
+                  studioCopy={studioCopy}
+                />
+              ) : null}
+            </WorkspaceMobilePanelFrame>
           </div>
         ) : (
           <div
-            ref={mobileInspectorPanelRef}
+            ref={mobilePanels.inspectorPanelRef}
             id="studio-inspector-panel"
-            className={`${styles.inspectorPanelSlot} ${mobileWorkspacePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
-            role={mobileWorkspacePanel === 'inspector' ? 'dialog' : undefined}
-            aria-modal={mobileWorkspacePanel === 'inspector' ? true : undefined}
-            aria-label={mobileWorkspacePanel === 'inspector' ? mobileInspectorLabel : undefined}
-            tabIndex={mobileWorkspacePanel === 'inspector' ? -1 : undefined}
-            onKeyDown={mobileWorkspacePanel === 'inspector' ? handleMobilePanelKeyDown : undefined}
+            className={`${styles.inspectorPanelSlot} ${mobilePanels.activePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
+            role={mobilePanels.activePanel === 'inspector' ? 'dialog' : undefined}
+            aria-modal={mobilePanels.activePanel === 'inspector' ? true : undefined}
+            aria-label={mobilePanels.activePanel === 'inspector' ? mobileInspectorLabel : undefined}
+            tabIndex={mobilePanels.activePanel === 'inspector' ? -1 : undefined}
+            onKeyDown={mobilePanels.activePanel === 'inspector' ? mobilePanels.handlePanelKeyDown : undefined}
           >
-            <div className={styles.mobilePanelChrome}>
-              <button
-                type="button"
-                className={styles.mobilePanelCloseButton}
-                data-mobile-panel-close="true"
-                aria-label={closeInspectorDrawerLabel}
-                onClick={closeMobileWorkspacePanel}
-              >
-                <span>{mobileInspectorLabel}</span>
-                <X size={16} aria-hidden="true" />
-              </button>
-              <div className={styles.mobilePanelContent}>
-                <TimelineClipInspector
-                  copy={studioCopy.timeline.inspector}
-                  canvasNodeCopy={studioCopy.canvas.nodes}
-                  projectMediaCopy={studioCopy.viewer.projectMedia}
-                  selectedAsset={exportState.selectedProjectAssetForInspector}
-                  selectedItem={exportState.selectedTimelineItem}
-                  selectedSequence={exportState.selectedSequenceForInspector}
-                  projectSettings={projectSettings}
-                  projectFps={projectSettings.fps}
-                  onPatchItem={timelineClip.handlePatchTimelineItem}
-                  onRenameProjectAsset={projectMedia.handleRenameProjectAsset}
-                  onRenameSequence={sequence.handleRenameActiveSequence}
-                  onSequenceSettingsChange={shell.handleSequenceSettingsChange}
-                />
-              </div>
-            </div>
+            <WorkspaceMobilePanelFrame
+              closeLabel={closeInspectorDrawerLabel}
+              title={mobileInspectorLabel}
+              onClose={mobilePanels.closePanel}
+            >
+              <WorkspaceTimelineInspectorPanel
+                exportState={exportState}
+                projectMedia={projectMedia}
+                projectSettings={projectSettings}
+                sequence={sequence}
+                shell={shell}
+                studioCopy={studioCopy}
+                timelineClip={timelineClip}
+              />
+            </WorkspaceMobilePanelFrame>
           </div>
         )}
       </div>
