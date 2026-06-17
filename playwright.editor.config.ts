@@ -4,7 +4,7 @@ const host = process.env.PLAYWRIGHT_EDITOR_HOST ?? 'localhost';
 const port = Number(process.env.PLAYWRIGHT_EDITOR_PORT ?? process.env.PORT ?? 3000);
 const baseURL = process.env.PLAYWRIGHT_EDITOR_BASE_URL ?? `http://${host}:${port}`;
 const webServerCommand = process.env.PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND
-  ?? `frontend/node_modules/.bin/next dev ./frontend --hostname ${host} --port ${port}`;
+  ?? `pnpm --dir frontend exec next dev --hostname ${host} --port ${port}`;
 const shouldStartWebServer = process.env.PLAYWRIGHT_EDITOR_SKIP_WEB_SERVER !== '1';
 
 export default defineConfig({
