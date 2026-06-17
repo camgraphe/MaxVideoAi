@@ -38,6 +38,7 @@
     "timeline-exports:worker:once": "pnpm --prefix frontend run timeline-exports:worker:once",
     "test:validate": "tsx --tsconfig frontend/tsconfig.json --test tests/*.test.ts",
     "test:editor": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts tests/maxvideoai-editor-sequence-api-persistence.test.ts",
+    "test:editor:contracts": "tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-workspace-architecture.test.ts tests/maxvideoai-editor-sequence-api-persistence.test.ts tests/maxvideoai-editor-generation-blocks.test.ts tests/maxvideoai-editor-project-media-timeline.test.ts tests/maxvideoai-editor-timeline-external-drop.test.ts tests/maxvideoai-editor-timeline-interaction.test.ts tests/maxvideoai-editor-timeline-selection.test.ts tests/maxvideoai-editor-timeline-export.test.ts tests/studio-localization-contract.test.ts",
     "test:editor:e2e": "playwright test -c playwright.editor.config.ts",
     "test:editor:perf": "frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts tests/e2e/editor/editor-performance.spec.ts",
     "qa:editor": "npm run test:editor && frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json && npm --prefix frontend run lint && git diff --check"

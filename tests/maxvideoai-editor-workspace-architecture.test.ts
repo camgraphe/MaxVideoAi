@@ -32,6 +32,7 @@ import type {
 import type { EngineCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
+const packageJsonPath = join(root, 'package.json');
 const rootAgentsPath = join(root, 'AGENTS.md');
 const studioArchitectureGuidePath = join(root, 'docs/engineering/studio-editor-architecture.md');
 const studioDir = join(root, 'frontend/app/(core)/(workspace)/app/studio');
@@ -883,6 +884,29 @@ test('MaxVideoAI Studio owns route-local copy and theme boundaries', () => {
   ];
   hardcodedExportDialogLabels.forEach((pattern) => {
     assert.doesNotMatch(exportDialogSource, pattern, `export dialog should localize ${pattern}`);
+  });
+});
+
+test('MaxVideoAI editor exposes an expanded Studio contract test bundle', () => {
+  const packageJson = JSON.parse(source(packageJsonPath)) as { scripts?: Record<string, string> };
+  const contractCommand = packageJson.scripts?.['test:editor:contracts'];
+
+  assert.equal(typeof contractCommand, 'string', 'package.json should define test:editor:contracts');
+  assert.match(
+    contractCommand,
+    /^tsx --tsconfig frontend\/tsconfig\.json --test /,
+    'editor contract command should run node:test through the frontend TypeScript config'
+  );
+
+  [
+    'tests/maxvideoai-editor-workspace-architecture.test.ts',
+    'tests/maxvideoai-editor-sequence-api-persistence.test.ts',
+    'tests/maxvideoai-editor-generation-blocks.test.ts',
+    'tests/maxvideoai-editor-project-media-timeline.test.ts',
+    'tests/maxvideoai-editor-timeline-external-drop.test.ts',
+    'tests/studio-localization-contract.test.ts',
+  ].forEach((contractFile) => {
+    assert.ok(contractCommand?.includes(contractFile), `test:editor:contracts should include ${contractFile}`);
   });
 });
 
