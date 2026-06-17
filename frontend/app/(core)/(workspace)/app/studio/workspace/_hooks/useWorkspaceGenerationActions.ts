@@ -356,7 +356,7 @@ export function useWorkspaceGenerationActions({
         setNotice(error instanceof Error ? error.message : studioNotices.generationFailed);
       }
     },
-    [nodes, setNodes, setNotice, studioNotices.generationFailed]
+    [edges, nodes, setNodes, setNotice, studioCanvasNodeCopy, studioNotices.generationFailed]
   );
 
   return { handleGenerateShot, handleRunChat };
