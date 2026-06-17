@@ -15,6 +15,10 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import {
+  buildWorkspaceChatApiRequest,
+  workspaceChatContextSummariesForNode,
+} from '../_lib/workspace-tool-requests';
+import {
   localizeWorkspaceNodeTitle,
   workspaceOutputNodeTitleDataForShot,
 } from '../_lib/workspace-generated-copy';
@@ -273,12 +277,16 @@ export function useWorkspaceGenerationActions({
         createdAt,
       };
       const nextMessages = [...chat.messages, userMessage];
-      const apiMessages = [
-        ...(chat.systemPrompt.trim()
-          ? [{ role: 'system' as const, content: chat.systemPrompt.trim() }]
-          : []),
-        ...nextMessages.map(({ role, content }) => ({ role, content })),
-      ];
+      const chatRequest = buildWorkspaceChatApiRequest({
+        chat,
+        nextMessages,
+        contextSummaries: workspaceChatContextSummariesForNode({
+          nodes,
+          edges,
+          chatNodeId: nodeId,
+          canvasNodeCopy: studioCanvasNodeCopy,
+        }),
+      });
 
       setNodes((current) => current.map((node) => (
         node.id === nodeId && node.data.chat
@@ -302,11 +310,7 @@ export function useWorkspaceGenerationActions({
         const response = await fetch('/api/studio/chat', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            provider: chat.provider,
-            modelId: chat.modelId,
-            messages: apiMessages,
-          }),
+          body: JSON.stringify(chatRequest),
         });
         const data = await response.json().catch(() => null);
         if (!response.ok || !data?.ok || typeof data.content !== 'string') {

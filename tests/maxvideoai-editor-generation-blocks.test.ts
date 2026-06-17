@@ -27,8 +27,10 @@ import {
   buildWorkspaceAngleToolRequest,
   buildWorkspaceAudioGenerateRequest,
   buildWorkspaceCharacterBuilderRequest,
+  buildWorkspaceChatApiRequest,
   buildWorkspaceImageGenerationRequest,
   buildWorkspaceUpscaleToolRequest,
+  workspaceChatContextSummariesForNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-requests';
 import {
   buildWorkspaceToolPricingEstimate,
@@ -42,6 +44,7 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-copy';
 import {
   compactStudioChatMessages,
+  formatStudioChatContextSummaries,
   getDefaultStudioChatModel,
   getStudioChatModels,
   isStudioChatModelAllowed,
@@ -58,6 +61,7 @@ import type {
   WorkspaceEdgeKind,
   WorkspaceGenerationFamily,
   WorkspaceGenerationPresetId,
+  WorkspaceGraphNode,
   WorkspaceShotSettings,
   WorkspaceWorkflowType,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
@@ -761,7 +765,7 @@ test('Studio block capability policy defines a normalized per-preset capability 
       outputMediaKind: 'text',
       outputCount: 1,
       requiredInputs: ['prompt'],
-      optionalInputs: ['reference', 'video_reference', 'audio'],
+      optionalInputs: [],
       readyInputs: ['prompt'],
       missingInputs: ['prompt'],
       mode: 'chat',
@@ -804,6 +808,13 @@ test('Studio block capability policy defines a normalized per-preset capability 
         missingPolicy.requiredInputs.includes(optionalInput),
         false,
         `${expectation.presetId} should not mark ${optionalInput} required and optional`
+      );
+    }
+    if (expectation.presetId === 'chat-box') {
+      assert.deepEqual(
+        missingPolicy.inputConnectors.map((connector) => connector.kind),
+        ['prompt'],
+        'chat should only expose text prompt context until binary media context is implemented'
       );
     }
     for (const kind of [...expectation.requiredInputs, ...expectation.optionalInputs]) {
@@ -1092,6 +1103,141 @@ test('Studio chat compaction keeps system context and the most recent conversati
   assert.equal(compacted.at(-1)?.content.startsWith('message-15'), true);
 });
 
+test('Studio chat request includes connected text context and preserves multi-turn messages', () => {
+  const chatNode: WorkspaceGraphNode = {
+    id: 'chat-node',
+    type: 'chat',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'chat',
+      title: 'LLM chat',
+      subtitle: '',
+      targetHandles: ['prompt'],
+      sourceHandles: ['prompt'],
+      promptText: '',
+      chat: {
+        mode: 'chatbot',
+        botName: 'Studio assistant',
+        provider: 'openai',
+        modelId: 'gpt-4.1-mini',
+        systemPrompt: 'Answer as a production assistant.',
+        draftMessage: 'Turn this into a video prompt.',
+        messages: [
+          {
+            id: 'chat-user-1',
+            role: 'user',
+            content: 'Earlier question',
+            createdAt: '2026-06-17T10:00:00.000Z',
+          },
+          {
+            id: 'chat-assistant-1',
+            role: 'assistant',
+            content: 'Earlier answer',
+            createdAt: '2026-06-17T10:00:01.000Z',
+          },
+        ],
+        status: 'idle',
+      },
+    },
+  };
+  const promptNode: WorkspaceGraphNode = {
+    id: 'prompt-node',
+    type: 'text-prompt',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'text-prompt',
+      title: 'Scene prompt',
+      subtitle: '',
+      promptText: 'A neon product reveal with precise camera timing.',
+      sourceHandles: ['prompt'],
+      targetHandles: [],
+    },
+  };
+  const mediaNode: WorkspaceGraphNode = {
+    id: 'image-node',
+    type: 'asset',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'asset-image',
+      title: 'Moodboard',
+      subtitle: '',
+      sourceHandles: ['reference'],
+      targetHandles: [],
+      asset: {
+        id: 'asset-image',
+        kind: 'image',
+        filename: 'moodboard.png',
+        subtitle: '',
+        url: 'https://cdn.example.com/moodboard.png',
+      },
+    },
+  };
+  const edges = [
+    {
+      id: 'prompt-chat',
+      source: 'prompt-node',
+      target: 'chat-node',
+      sourceHandle: 'prompt',
+      targetHandle: 'prompt',
+      data: { kind: 'prompt' as const, label: 'Prompt', color: '#64748b' },
+    },
+    {
+      id: 'image-chat',
+      source: 'image-node',
+      target: 'chat-node',
+      sourceHandle: 'reference',
+      targetHandle: 'reference',
+      data: { kind: 'reference' as const, label: 'Reference', color: '#64748b' },
+    },
+  ];
+
+  const contextSummaries = workspaceChatContextSummariesForNode({
+    nodes: [chatNode, promptNode, mediaNode],
+    edges,
+    chatNodeId: chatNode.id,
+  });
+  const request = buildWorkspaceChatApiRequest({
+    chat: chatNode.data.chat!,
+    nextMessages: [
+      ...chatNode.data.chat!.messages,
+      {
+        id: 'chat-user-2',
+        role: 'user',
+        content: chatNode.data.chat!.draftMessage,
+        createdAt: '2026-06-17T10:01:00.000Z',
+      },
+    ],
+    contextSummaries,
+  });
+
+  assert.deepEqual(contextSummaries.map((context) => context.kind), ['text']);
+  assert.match(contextSummaries[0]?.content ?? '', /neon product reveal/);
+  assert.doesNotMatch(JSON.stringify(contextSummaries), /moodboard\.png/);
+  assert.deepEqual(request.messages.map((message) => message.role), ['system', 'user', 'assistant', 'user']);
+  assert.equal(request.messages.at(-1)?.content, 'Turn this into a video prompt.');
+  assert.deepEqual(request.contextSummaries, contextSummaries);
+});
+
+test('Studio chat context summaries format text context without binary media claims', () => {
+  const formatted = formatStudioChatContextSummaries([
+    {
+      kind: 'text',
+      label: 'Prompt',
+      content: 'Use a slow dolly move and warm product reflections.',
+    },
+    {
+      kind: 'unsupported',
+      label: 'Image reference',
+      content: 'https://cdn.example.com/reference.png',
+    },
+  ]);
+
+  assert.match(formatted, /Connected Studio text context/);
+  assert.match(formatted, /slow dolly move/);
+  assert.doesNotMatch(formatted, /reference\.png/);
+  assert.doesNotMatch(formatted, /image reference/i);
+});
+
 test('Studio chat UI and API use the shared model registry instead of hardcoded model lists', () => {
   const inspectorSource = readFileSync(
     join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/ChatNodeInspector.tsx'),
@@ -1123,8 +1269,12 @@ test('Studio chat node exposes portable conversation actions on the canvas node'
   assert.match(workspaceTypesSource, /onPatchChat\?:/);
   assert.match(renderNodesSource, /onPatchChat:/);
   assert.match(chatNodeSource, /chatUtilityBar/);
+  assert.match(chatNodeSource, /resolveStudioChatModel/);
+  assert.match(chatNodeSource, /slice\(-3\)/);
+  assert.match(chatNodeSource, /Output text/);
   assert.match(chatNodeSource, /navigator\.clipboard\.writeText/);
   assert.match(chatNodeSource, /messages:\s*\[\]/);
+  assert.doesNotMatch(chatNodeSource, /messages\.map\(\(message\)/);
 });
 
 test('Character Builder preset stores full product tool settings instead of a tiny subset', () => {
@@ -1554,11 +1704,11 @@ test('Studio pricing states stay truthful for missing, estimable, and unsupporte
     settings: chatSettings,
     validation: validateShotConnections({
       settings: chatSettings,
-      connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+      connectedInputs: ['prompt'],
       capabilities,
     }),
     prompt: 'Review this context.',
-    connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+    connectedInputs: ['prompt'],
   });
   assert.equal(chatUnsupported?.status, 'error');
   assert.equal(chatUnsupported?.label, 'Price unavailable');

@@ -337,7 +337,7 @@ export function normalizeWorkspaceChatNodes(nodes: WorkspaceGraphNode[]): Worksp
         ...node.data,
         promptText: typeof node.data.promptText === 'string' ? node.data.promptText : '',
         chat,
-        targetHandles: ['prompt', 'reference', 'video_reference', 'audio'],
+        targetHandles: ['prompt'],
         sourceHandles: ['prompt'],
       },
     };

@@ -2,7 +2,13 @@ export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
-import { compactStudioChatMessages, isStudioChatModelAllowed, resolveStudioChatModel } from '@/lib/studio-chat-models';
+import {
+  attachStudioChatContextSummaries,
+  compactStudioChatMessages,
+  isStudioChatModelAllowed,
+  resolveStudioChatModel,
+  type StudioChatContextSummary,
+} from '@/lib/studio-chat-models';
 import { runStudioChat, type StudioChatMessageInput } from '@/server/studio/chat';
 import { studioJson } from '../_lib/studio-route-utils';
 
@@ -20,6 +26,22 @@ function normalizeMessages(value: unknown): StudioChatMessageInput[] {
     .filter((message): message is StudioChatMessageInput => Boolean(message));
 }
 
+function normalizeContextSummaries(value: unknown): StudioChatContextSummary[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((context): StudioChatContextSummary | null => {
+      if (!context || typeof context !== 'object') return null;
+      const record = context as { kind?: unknown; label?: unknown; content?: unknown; sourceId?: unknown };
+      if (record.kind !== 'text') return null;
+      const content = typeof record.content === 'string' ? record.content.trim() : '';
+      if (!content) return null;
+      const label = typeof record.label === 'string' && record.label.trim() ? record.label.trim() : 'Text context';
+      const sourceId = typeof record.sourceId === 'string' && record.sourceId.trim() ? record.sourceId.trim() : null;
+      return { kind: 'text', label, content, sourceId };
+    })
+    .filter((context): context is StudioChatContextSummary => Boolean(context));
+}
+
 export async function POST(req: NextRequest) {
   const { userId } = await getRouteAuthContext(req);
   if (!userId) {
@@ -29,6 +51,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const payload = body && typeof body === 'object' ? body as Record<string, unknown> : {};
   const messages = normalizeMessages(payload.messages);
+  const contextSummaries = normalizeContextSummaries(payload.contextSummaries);
   if (!messages.length) {
     return studioJson({ ok: false, error: 'MESSAGE_REQUIRED', message: 'At least one message is required.' }, { status: 400 });
   }
@@ -43,7 +66,7 @@ export async function POST(req: NextRequest) {
     const result = await runStudioChat({
       provider,
       modelId: model.modelId,
-      messages: compactStudioChatMessages(messages),
+      messages: compactStudioChatMessages(attachStudioChatContextSummaries(messages, contextSummaries)),
     });
     return studioJson({ ok: true, ...result });
   } catch (error) {

@@ -1,5 +1,6 @@
 import type { AudioGenerateRequestBody, AudioPackId } from '@/lib/audio-generation';
 import { getAudioPackConfig } from '@/lib/audio-generation';
+import type { StudioChatContextSummary, StudioChatMessageLike } from '@/lib/studio-chat-models';
 import type { CharacterBuilderRequest } from '@/types/character-builder';
 import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { AngleToolEngineId, AngleToolRequest } from '@/types/tools-angle';
@@ -10,9 +11,19 @@ import type {
   UpscaleToolEngineId,
   UpscaleToolRequest,
 } from '@/types/tools-upscale';
-import type { WorkspacePolicyControlField, WorkspaceShotSettings } from './workspace-types';
+import { localizeWorkspacePromptText } from './workspace-generated-copy';
+import type {
+  WorkspaceChatMessage,
+  WorkspaceChatSettings,
+  WorkspaceEdgeKind,
+  WorkspaceGraphEdge,
+  WorkspaceGraphNode,
+  WorkspacePolicyControlField,
+  WorkspaceShotSettings,
+} from './workspace-types';
 import type { WorkspaceBlockPolicyResult } from './models/workspace-block-capability-policy';
 import { normalizeWorkspaceCharacterBuilderSettings } from './workspace-tool-settings';
+import type { StudioCopy } from '../../_lib/studio-copy';
 
 type BuildWorkspaceCharacterBuilderRequestInput = {
   settings: WorkspaceShotSettings;
@@ -31,6 +42,21 @@ type WorkspaceRequestPolicy = Pick<
   'controlFields' | 'outputCount' | 'outputMediaKind' | 'pricingRelevantFields'
 > | null | undefined;
 
+export type WorkspaceChatApiRequest = {
+  provider: WorkspaceChatSettings['provider'];
+  modelId: string;
+  messages: StudioChatMessageLike[];
+  contextSummaries: StudioChatContextSummary[];
+};
+
+const CHAT_TEXT_CONTEXT_HANDLES = new Set<WorkspaceEdgeKind>([
+  'prompt',
+  'negative_prompt',
+  'camera',
+  'dialogue',
+  'narration',
+]);
+
 function policyAllowsField(
   policy: WorkspaceRequestPolicy,
   field: WorkspacePolicyControlField
@@ -47,6 +73,93 @@ function outputCountForImageRequest(policy: WorkspaceRequestPolicy): number {
 function optionalString(value: string | null | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed ? trimmed : undefined;
+}
+
+function connectedEdgeKind(edge: WorkspaceGraphEdge): WorkspaceEdgeKind | null {
+  const kind = edge.data?.kind ?? edge.targetHandle ?? edge.sourceHandle;
+  return typeof kind === 'string' ? kind as WorkspaceEdgeKind : null;
+}
+
+function latestChatText(node: WorkspaceGraphNode): string {
+  const messages = node.data.chat?.messages ?? [];
+  const latestAssistant = [...messages].reverse().find((message) => message.role === 'assistant');
+  const latestMessage = latestAssistant ?? [...messages].reverse().find((message) => message.role !== 'system');
+  return latestMessage?.content.trim() ?? '';
+}
+
+function textContextFromNode(
+  node: WorkspaceGraphNode,
+  canvasNodeCopy?: StudioCopy['canvas']['nodes']
+): string {
+  const localizedPrompt = canvasNodeCopy
+    ? localizeWorkspacePromptText(node, canvasNodeCopy)
+    : null;
+  const promptText = localizedPrompt ?? node.data.promptText;
+  if (typeof promptText === 'string' && promptText.trim()) return promptText.trim();
+  if (node.data.kind === 'chat') return latestChatText(node);
+  return '';
+}
+
+export function workspaceChatContextSummariesForNode({
+  nodes,
+  edges,
+  chatNodeId,
+  canvasNodeCopy,
+}: {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+  chatNodeId: string;
+  canvasNodeCopy?: StudioCopy['canvas']['nodes'];
+}): StudioChatContextSummary[] {
+  const summaries: StudioChatContextSummary[] = [];
+  const seen = new Set<string>();
+
+  for (const edge of edges) {
+    if (edge.target !== chatNodeId) continue;
+    const kind = connectedEdgeKind(edge);
+    if (!kind || !CHAT_TEXT_CONTEXT_HANDLES.has(kind)) continue;
+    const sourceNode = nodes.find((node) => node.id === edge.source);
+    if (!sourceNode) continue;
+    const content = textContextFromNode(sourceNode, canvasNodeCopy);
+    if (!content) continue;
+    const key = `${sourceNode.id}:${content}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    summaries.push({
+      kind: 'text',
+      label: sourceNode.data.title || 'Text context',
+      content,
+      sourceId: sourceNode.id,
+    });
+  }
+
+  return summaries;
+}
+
+export function buildWorkspaceChatApiRequest({
+  chat,
+  nextMessages,
+  contextSummaries,
+}: {
+  chat: WorkspaceChatSettings;
+  nextMessages: WorkspaceChatMessage[];
+  contextSummaries: StudioChatContextSummary[];
+}): WorkspaceChatApiRequest {
+  const messages: StudioChatMessageLike[] = [
+    ...(chat.systemPrompt.trim()
+      ? [{ role: 'system' as const, content: chat.systemPrompt.trim() }]
+      : []),
+    ...nextMessages
+      .map((message) => ({ role: message.role, content: message.content.trim() }))
+      .filter((message) => message.content),
+  ];
+
+  return {
+    provider: chat.provider,
+    modelId: chat.modelId,
+    messages,
+    contextSummaries: contextSummaries.filter((context) => context.kind === 'text' && context.content.trim()),
+  };
 }
 
 export function buildWorkspaceImageGenerationRequest({

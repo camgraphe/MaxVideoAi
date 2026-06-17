@@ -119,14 +119,20 @@ export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: Ch
         <Send size={15} />
         {chat.status === 'running' ? copy.running : copy.send}
       </button>
-      <div className={styles.connectedList}>
-        {chat.messages.map((message) => (
+      <div className={styles.connectedList} aria-label="Full chat transcript">
+        {chat.messages.length ? chat.messages.map((message) => (
           <div key={message.id} className={styles.connectedRow}>
             <span />
             <p>{message.role}</p>
             <small>{message.content}</small>
           </div>
-        ))}
+        )) : (
+          <div className={styles.connectedRow}>
+            <span />
+            <p>{copy.messages}</p>
+            <small>{copy.emptyChat}</small>
+          </div>
+        )}
       </div>
     </>
   );

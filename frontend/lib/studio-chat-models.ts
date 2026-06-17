@@ -17,6 +17,13 @@ export type StudioChatMessageLike = {
   content: string;
 };
 
+export type StudioChatContextSummary = {
+  kind: string;
+  label?: string | null;
+  content: string;
+  sourceId?: string | null;
+};
+
 export const STUDIO_CHAT_MODELS: StudioChatModel[] = [
   {
     provider: 'openai',
@@ -113,6 +120,46 @@ export function resolveStudioChatModel(provider: StudioChatProvider, modelId?: s
   return requested || getDefaultStudioChatModel(provider);
 }
 
+function cleanContextText(value: string): string {
+  return value
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 2000);
+}
+
+export function formatStudioChatContextSummaries(contextSummaries: StudioChatContextSummary[]): string {
+  const lines = contextSummaries
+    .filter((context) => context.kind === 'text')
+    .map((context) => {
+      const content = cleanContextText(context.content);
+      if (!content) return '';
+      const label = cleanContextText(context.label ?? 'Text context') || 'Text context';
+      return `- ${label}: ${content}`;
+    })
+    .filter(Boolean);
+
+  return lines.length ? `Connected Studio text context:\n${lines.join('\n')}` : '';
+}
+
+export function attachStudioChatContextSummaries<TMessage extends StudioChatMessageLike>(
+  messages: TMessage[],
+  contextSummaries: StudioChatContextSummary[]
+): TMessage[] {
+  const contextMessage = formatStudioChatContextSummaries(contextSummaries);
+  if (!contextMessage) return messages;
+
+  const systemIndex = messages.findIndex((message) => message.role === 'system' && message.content.trim());
+  if (systemIndex === -1) {
+    return [{ role: 'system', content: contextMessage } as TMessage, ...messages];
+  }
+
+  return messages.map((message, index) => (
+    index === systemIndex
+      ? { ...message, content: [message.content.trim(), contextMessage].filter(Boolean).join('\n\n') }
+      : message
+  ));
+}
+
 export function compactStudioChatMessages<TMessage extends StudioChatMessageLike>(
   messages: TMessage[],
   options: {
@@ -122,7 +169,13 @@ export function compactStudioChatMessages<TMessage extends StudioChatMessageLike
 ): TMessage[] {
   const keepLast = Math.max(1, options.keepLast ?? 12);
   const maxChars = Math.max(400, options.maxChars ?? 12000);
-  const system = messages.find((message) => message.role === 'system' && message.content.trim());
+  const systemMessages = messages.filter((message) => message.role === 'system' && message.content.trim());
+  const system = systemMessages.length
+    ? {
+        ...systemMessages[0],
+        content: systemMessages.map((message) => message.content.trim()).join('\n\n'),
+      } as TMessage
+    : undefined;
   const recent = messages.filter((message) => message.role !== 'system' && message.content.trim()).slice(-keepLast);
   const selected: TMessage[] = [];
   let totalChars = system?.content.length ?? 0;
