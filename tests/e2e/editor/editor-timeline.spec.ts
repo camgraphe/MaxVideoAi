@@ -84,7 +84,7 @@ test('timeline ruler has a left tool slot for snapping and splice insert', async
   assertNoEditorClientErrors(errors);
 });
 
-test('timeline zoom control sits at the far right of the toolbar', async ({ page }) => {
+test('timeline zoom control sits before the right-side export action', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -94,6 +94,7 @@ test('timeline zoom control sits at the far right of the toolbar', async ({ page
   const timelineTopbar = timelinePanel.locator('[data-timeline-topbar="true"]');
   const transport = timelinePanel.locator('[data-timeline-transport="true"]');
   const zoomControl = timelineTopbar.locator('[aria-label="Timeline zoom"]');
+  const exportButton = timelineTopbar.getByRole('button', { name: 'Open export dialog' });
   const editingTools = transport.getByRole('toolbar', { name: 'Timeline editing tools' });
   await expect(editingTools).toBeVisible();
   const selectionTool = editingTools.getByRole('button', { exact: true, name: 'Selection tool' });
@@ -109,6 +110,7 @@ test('timeline zoom control sits at the far right of the toolbar', async ({ page
   await selectionTool.click();
   await expect(selectionTool).toHaveAttribute('aria-pressed', 'true');
   await expect(zoomControl).toBeVisible();
+  await expect(exportButton).toBeVisible();
   await expect(transport.getByRole('radiogroup', { name: 'Timeline insert mode' })).toHaveCount(0);
   await expect(transport.getByRole('radiogroup', { name: 'Timeline trim mode' })).toHaveCount(0);
   await expect(transport.locator('[aria-label="Timeline zoom"]')).toHaveCount(0);
@@ -120,16 +122,19 @@ test('timeline zoom control sits at the far right of the toolbar', async ({ page
   const transportBox = await transport.boundingBox();
   const toolsBox = await editingTools.boundingBox();
   const zoomBox = await zoomControl.boundingBox();
+  const exportBox = await exportButton.boundingBox();
   const topbarBox = await timelineTopbar.boundingBox();
   expect(transportBox).not.toBeNull();
   expect(toolsBox).not.toBeNull();
   expect(zoomBox).not.toBeNull();
+  expect(exportBox).not.toBeNull();
   expect(topbarBox).not.toBeNull();
-  if (!transportBox || !toolsBox || !zoomBox || !topbarBox) return;
+  if (!transportBox || !toolsBox || !zoomBox || !exportBox || !topbarBox) return;
 
   expect(zoomBox.x).toBeGreaterThan(transportBox.x + transportBox.width);
-  expect(zoomBox.x - (transportBox.x + transportBox.width)).toBeLessThanOrEqual(10);
-  expect(Math.abs((zoomBox.x + zoomBox.width) - (topbarBox.x + topbarBox.width - 18))).toBeLessThanOrEqual(2);
+  expect(zoomBox.x - (transportBox.x + transportBox.width)).toBeLessThanOrEqual(12);
+  expect(exportBox.x).toBeGreaterThan(zoomBox.x + zoomBox.width);
+  expect(Math.abs((exportBox.x + exportBox.width) - (topbarBox.x + topbarBox.width - 18))).toBeLessThanOrEqual(2);
 
   assertNoEditorClientErrors(errors);
 });

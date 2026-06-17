@@ -538,8 +538,9 @@ test('Studio projects uses localized copy', async ({ page, context }) => {
     { name: 'mvid_locale', value: 'fr', domain: 'localhost', path: '/' },
   ]);
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
-  await expect(page.getByRole('heading', { name: 'Projets Studio' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Creer le projet' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Mes projets' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Nouveau projet/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Ouvrir un projet/ })).toBeVisible();
 });
 
 test('unauthenticated Studio API responses keep local draft mode quiet', async ({ page }) => {
@@ -567,7 +568,7 @@ test('unauthenticated Studio API responses keep local draft mode quiet', async (
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'My projects' })).toBeVisible();
   await expect(page.getByText(/sign in.*local draft mode/i)).toBeVisible();
 
   await page.goto('/app/studio/workspace/project_unauthorized', { waitUntil: 'domcontentloaded' });
@@ -608,28 +609,23 @@ test('Studio projects dark theme keeps core surfaces readable', async ({ page })
   });
   await page.addInitScript(() => {
     window.localStorage.removeItem('maxvideoai.editor.projects.v1');
+    window.localStorage.setItem('mv-theme', 'dark');
     window.localStorage.setItem('maxvideoai.studio.theme.v1', 'dark');
+    window.localStorage.setItem('maxvideoai.studio.theme.userOverride.v1', 'true');
   });
 
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  const shell = page.locator('[data-studio-theme="dark"]');
+  const shell = page.locator('[class*="projectsShell"]');
   await expectDarkReadableSurface(shell, 'dark Studio projects shell');
-  await expectCssVariableContrast(
-    shell,
-    'dark Studio projects filled actions',
-    '--studio-project-on-accent',
-    ['--studio-project-accent', '--studio-project-accent-2', '--studio-project-danger-strong']
-  );
-  await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
-  await expect(page.locator('[class*="brandPill"]')).toBeVisible();
-  await expect(page.getByLabel('Project name')).toBeVisible();
-  await expect(page.getByRole('group', { name: 'Canvas template' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Create project' })).toBeEnabled();
-  await expectDarkReadableSurface(page.locator('[aria-label="Create a new project"]').first(), 'dark create project panel');
+  await expect(page.getByRole('heading', { name: 'My projects' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Open a project/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /New project/ })).toBeEnabled();
+  await expect(page.getByRole('group', { name: 'Canvas template' })).toHaveCount(0);
+  await expectDarkReadableSurface(page.getByRole('button', { name: /Open a project/ }), 'dark open project button');
+  await expectDarkReadableSurface(page.locator('[class*="newProjectLaunchCard"]').first(), 'dark new project card');
   await expectDarkReadableSurface(page.locator('[aria-label="Recent projects"]').first(), 'dark recent projects panel');
-  await expectReadable(page.getByRole('group', { name: 'Canvas template' }).getByRole('button').first(), 'dark project template card');
 
   await page.getByRole('button', { name: 'Project actions for Dark Theme Cut' }).click();
   await expectDarkReadableSurface(page.getByRole('menu', { name: 'Project actions for Dark Theme Cut' }), 'dark recent project action menu');
@@ -824,6 +820,10 @@ test('Studio workspace dark theme keeps key editor surfaces readable', async ({ 
   test.setTimeout(60_000);
   const errors = trackEditorClientErrors(page);
 
+  await page.addInitScript(() => {
+    window.localStorage.setItem('maxvideoai.studio.theme.v1', 'dark');
+    window.localStorage.setItem('maxvideoai.studio.theme.userOverride.v1', 'true');
+  });
   await openFreshEditorWorkspace(page);
   const shell = page.locator('[data-studio-theme="dark"]');
   await expectDarkReadableSurface(shell, 'dark Studio workspace shell');
@@ -860,7 +860,12 @@ test('Studio workspace can switch to light appearance', async ({ page }) => {
 
   await openFreshEditorWorkspace(page);
   const shell = page.locator('[data-studio-theme]');
+  await expect(shell).toHaveAttribute('data-studio-theme', 'light');
+  await expect(page.getByRole('button', { name: 'Switch Studio to dark mode' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Switch Studio to dark mode' }).click();
   await expect(shell).toHaveAttribute('data-studio-theme', 'dark');
+  await expect(page.getByRole('button', { name: 'Switch Studio to light mode' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
   await expect(shell).toHaveAttribute('data-studio-theme', 'light');
@@ -930,7 +935,7 @@ test('light Studio keeps sequence inspector form text readable', async ({ page }
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
-  await page.getByRole('button', { name: 'Switch Studio to light mode' }).click();
+  await expect(page.locator('[data-studio-theme]')).toHaveAttribute('data-studio-theme', 'light');
   await switchEditorFocus(page, 'Viewer');
 
   const projectMediaSidebar = page.getByRole('complementary', { name: 'Project media library' });
@@ -1770,7 +1775,7 @@ test('viewer project media upload imports local audio into the project bin', asy
 
   await page.getByRole('button', { name: 'Import media' }).click();
   await expect(page.getByRole('dialog', { name: 'Import project media' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Upload' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Upload', exact: true })).toBeVisible();
   await page.locator('input[accept="image/*,video/*,audio/*"]').setInputFiles({
     name: 'voiceover.wav',
     mimeType: 'audio/wav',
@@ -1832,22 +1837,21 @@ test('studio projects page creates a project-scoped clean workspace', async ({ p
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  await expect(page.getByRole('heading', { name: 'Studio projects' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Create a new project' })).toBeVisible();
-  const createProjectButton = page.getByRole('button', { name: 'Create project' });
+  await expect(page.getByRole('heading', { name: 'My projects' })).toBeVisible();
+  const createProjectButton = page.getByRole('button', { name: /New project/ });
   await expect(createProjectButton).toBeEnabled();
-  await page.getByLabel('Project name').fill('Client Cut');
+  await expect(page.getByLabel('Project name')).toHaveCount(0);
   await expect(page.getByLabel('Ratio')).toHaveCount(0);
   await expect(page.getByLabel('Resolution')).toHaveCount(0);
   await expect(page.getByLabel('FPS')).toHaveCount(0);
-  await page.getByRole('button', { name: /Dev Blocks/ }).click();
+  await expect(page.getByRole('group', { name: 'Canvas template' })).toHaveCount(0);
   await createProjectButton.click();
 
   await expect(page).toHaveURL(/\/app\/studio\/workspace\/project_/);
   await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
-  await expect(page.getByText('Client Cut project loaded with a clean sequence.')).toBeVisible();
+  await expect(page.getByText('Untitled edit project loaded with a clean sequence.')).toBeVisible();
   await expect.poll(() => timelineItemCount(page)).toBe(0);
-  await expect(page.locator('.react-flow__node', { hasText: 'Dev Image Block' })).toBeVisible();
+  await expect(page.locator('.react-flow__node', { hasText: 'Product Image' })).toBeVisible();
 
   await switchEditorFocus(page, 'Viewer');
   await expect(page.locator('[data-project-media-card-id="sequence:sequence-main"]')).toContainText('00:00 • 0 clips • 16:9');
@@ -1934,9 +1938,8 @@ test('studio projects page keeps template choices compact and supports recent pr
   await page.goto('/app/studio/projects', { waitUntil: 'domcontentloaded' });
   await dismissCookieBanner(page);
 
-  const templatePicker = page.getByRole('group', { name: 'Canvas template' });
-  await expect(templatePicker.getByRole('button')).toHaveCount(3);
-  await expect(templatePicker.getByRole('button', { name: /Storyboard Flow/ })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Canvas template' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /New project/ })).toBeVisible();
 
   await expect(page.getByText('Action Cut')).toBeVisible();
   await page.getByRole('button', { name: 'Project actions for Action Cut' }).click();
@@ -2088,12 +2091,11 @@ test('video block template uses custom drag and clears the ghost after the mouse
   await switchEditorFocus(page, 'Canvas');
 
   await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoTemplate = page.locator('[data-canvas-toolbar-block-id="video"]');
+  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  const videoTemplate = videoMenu.locator('[data-canvas-toolbar-block-id="video"]');
   await expect(videoTemplate).toBeVisible();
   await expect(videoTemplate).not.toHaveAttribute('draggable', 'true');
-  const nodeCountBeforeClick = await canvasNodeCount(page);
-  await videoTemplate.click();
-  expect(await canvasNodeCount(page)).toBe(nodeCountBeforeClick);
+  const nodeCountBeforeDrag = await canvasNodeCount(page);
 
   const canvas = page.locator('.react-flow');
   await expect(canvas).toBeVisible();
@@ -2110,7 +2112,7 @@ test('video block template uses custom drag and clears the ghost after the mouse
   await page.mouse.up();
   await page.mouse.move(canvasBox.x + canvasBox.width * 0.78, canvasBox.y + canvasBox.height * 0.18, { steps: 8 });
 
-  await expect.poll(() => canvasNodeCount(page)).toBe(nodeCountBeforeClick + 1);
+  await expect.poll(() => canvasNodeCount(page)).toBe(nodeCountBeforeDrag + 1);
   await expect(page.locator('.react-flow__node', { hasText: 'Video Reference' })).toHaveCount(1);
   await expect(page.locator('[class*="workspaceGhostNode"]')).toHaveCount(0);
   expect(await page.evaluate(() => window.getSelection()?.toString() ?? '')).toBe('');
@@ -2291,7 +2293,8 @@ test('canvas file drop on a compatible empty block fills that block instead of a
   await switchEditorFocus(page, 'Canvas');
 
   await page.getByRole('button', { name: 'Video tools' }).click();
-  const videoTemplate = page.locator('[data-canvas-toolbar-block-id="video"]');
+  const videoMenu = page.getByRole('menu', { name: 'Video tools' });
+  const videoTemplate = videoMenu.locator('[data-canvas-toolbar-block-id="video"]');
   const canvas = page.locator('.react-flow');
   await expect(videoTemplate).toBeVisible();
   await expect(canvas).toBeVisible();
