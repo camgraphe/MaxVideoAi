@@ -114,7 +114,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
       : copy.connectedInputsMatch;
 
   return (
-    <div className={styles.shotControlPanel}>
+    <div className={styles.shotControlPanel} data-shot-node-grammar="primary-settings generate-status">
       {hideModelSelect ? (
         <div className={styles.shotModelSummary}>
           <span>{copy.model}</span>
@@ -217,13 +217,14 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
           type="button"
           className={`${styles.shotGenerateButton} nodrag`}
           disabled={!canGenerate || shot.status === 'generating'}
+          aria-busy={shot.status === 'generating'}
           onClick={() => data.onGenerateShot?.(nodeId)}
         >
-          <span>
+          <span className={styles.shotGenerateLabel} data-shot-generate-label="true">
             <Sparkles size={12} />
-            {shot.status === 'generating' ? copy.generating : copy.generate}
+            <span>{shot.status === 'generating' ? copy.generating : copy.generate}</span>
           </span>
-          <strong>{estimatedCost}</strong>
+          <strong className={styles.shotGeneratePrice} data-shot-generate-price="true" title={estimatedCost}>{estimatedCost}</strong>
         </button>
       </div>
 

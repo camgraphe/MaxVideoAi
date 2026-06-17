@@ -157,44 +157,63 @@
 }
 
 .shotGenerateButton {
-  display: flex;
-  height: 34px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  min-height: 34px;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   min-width: 0;
-  padding: 0 12px;
+  padding: 6px 9px 6px 10px;
   border: 0;
   border-radius: 9px;
   background: linear-gradient(90deg, color-mix(in srgb, var(--node-accent) 84%, #2563eb 16%), color-mix(in srgb, var(--node-accent) 74%, #22c55e 14%));
   color: #ffffff;
   box-shadow: 0 10px 20px color-mix(in srgb, var(--node-accent) 18%, transparent);
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 720;
+  line-height: 1.1;
   cursor: pointer;
 }
 
-.shotGenerateButton span,
-.shotGenerateButton strong {
+.shotGenerateLabel,
+.shotGeneratePrice {
   display: inline-flex;
   min-width: 0;
   align-items: center;
-  gap: 5px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.shotGenerateButton strong {
+.shotGenerateLabel {
+  gap: 5px;
+}
+
+.shotGenerateLabel span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shotGeneratePrice {
   flex: 0 0 auto;
-  font-size: 11px;
+  max-width: 96px;
+  justify-content: flex-end;
+  padding: 2px 0 2px 6px;
+  font-size: 10px;
   font-weight: 780;
 }
 
 .shotGenerateButton:disabled {
+  background: color-mix(in srgb, var(--studio-control-bg) 88%, var(--node-accent) 12%);
+  color: var(--studio-text-muted);
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 1;
   box-shadow: none;
+}
+
+.shotGenerateButton:disabled .shotGeneratePrice {
+  color: var(--studio-text);
 }
 
 .shotValidationLine {

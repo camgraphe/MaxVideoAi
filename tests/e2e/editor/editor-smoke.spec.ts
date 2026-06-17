@@ -1988,6 +1988,77 @@ test('dropped generate blocks default to Seedance 2.0', async ({ page }) => {
   assertNoEditorClientErrors(errors);
 });
 
+test('canvas shot nodes keep compact row-aligned handles and generate controls', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const shotNode = page.locator('.react-flow__node-shot').first();
+  await expect(shotNode).toBeVisible();
+  await expect(shotNode.locator('[class*="nodePreviewEmpty"], [class*="mediaPickerEmpty"]')).toHaveCount(0);
+
+  const generateButton = shotNode.locator('button:has([data-shot-generate-label])').first();
+  await expect(generateButton).toBeVisible();
+  await expect(generateButton.locator('[data-shot-generate-label]')).toBeVisible();
+  await expect(generateButton.locator('[data-shot-generate-price]')).toBeVisible();
+
+  const generateMetrics = await generateButton.evaluate((button) => {
+    const label = button.querySelector<HTMLElement>('[data-shot-generate-label]');
+    const price = button.querySelector<HTMLElement>('[data-shot-generate-price]');
+    const buttonBox = button.getBoundingClientRect();
+    const labelBox = label?.getBoundingClientRect();
+    const priceBox = price?.getBoundingClientRect();
+
+    return {
+      buttonHeight: buttonBox.height,
+      labelRight: labelBox ? labelBox.right : 0,
+      labelWidth: labelBox ? labelBox.width : 0,
+      priceLeft: priceBox ? priceBox.left : 0,
+      priceWidth: priceBox ? priceBox.width : 0,
+    };
+  });
+
+  expect(generateMetrics.buttonHeight).toBeLessThanOrEqual(38);
+  expect(generateMetrics.labelWidth).toBeGreaterThan(32);
+  expect(generateMetrics.priceWidth).toBeGreaterThan(24);
+  expect(generateMetrics.labelRight).toBeLessThanOrEqual(generateMetrics.priceLeft);
+
+  const connectorMetrics = await shotNode.evaluate((node) => {
+    return Array.from(node.querySelectorAll<HTMLElement>('[data-shot-connector-row]')).map((row) => {
+      const handle = row.querySelector<HTMLElement>('.react-flow__handle');
+      const rowBox = row.getBoundingClientRect();
+      const handleBox = handle?.getBoundingClientRect();
+      const handleStyle = handle ? getComputedStyle(handle) : null;
+      const rowCenterY = rowBox.top + rowBox.height / 2;
+      const handleCenterY = handleBox ? handleBox.top + handleBox.height / 2 : 0;
+
+      return {
+        backgroundColor: handleStyle?.backgroundColor ?? '',
+        borderTopWidth: handleStyle?.borderTopWidth ?? '',
+        distanceFromRowCenter: Math.abs(rowCenterY - handleCenterY),
+        height: handleBox?.height ?? 0,
+        kind: row.getAttribute('data-shot-connector-kind'),
+        role: row.getAttribute('data-shot-connector-row'),
+        width: handleBox?.width ?? 0,
+      };
+    });
+  });
+
+  expect(connectorMetrics.length).toBeGreaterThan(0);
+  expect(connectorMetrics.some((metric) => metric.role === 'output')).toBe(true);
+  for (const metric of connectorMetrics) {
+    expect(metric.kind).toBeTruthy();
+    expect(metric.width).toBeLessThanOrEqual(8);
+    expect(metric.height).toBeLessThanOrEqual(8);
+    expect(metric.borderTopWidth).toBe('0px');
+    expect(metric.backgroundColor).not.toBe('rgba(0, 0, 0, 0)');
+    expect(metric.distanceFromRowCenter).toBeLessThanOrEqual(1.5);
+  }
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('canvas accepts local media file drops and creates matching source blocks', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

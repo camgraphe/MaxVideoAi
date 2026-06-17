@@ -360,12 +360,18 @@
 
 .shotInputDock {
   display: grid;
-  gap: 5px;
-  margin: 0 15px 14px;
-  padding: 9px 0 0;
+  gap: 7px;
+  margin: 0 14px 12px;
+  padding: 8px 0 0;
   border-top: 1px solid color-mix(in srgb, var(--node-accent) 18%, var(--studio-border));
   background: transparent;
   pointer-events: all;
+}
+
+.shotConnectorGroup {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
 }
 
 .shotInputLabel {
@@ -379,10 +385,11 @@
 .shotInputRow {
   position: relative;
   display: flex;
-  min-height: 17px;
+  min-height: 18px;
   align-items: center;
   justify-content: space-between;
   gap: 7px;
+  padding: 0 2px;
   color: var(--studio-text);
   font-size: 10.5px;
   font-weight: 640;
@@ -392,6 +399,10 @@
 
 .shotInputRowDisabled {
   color: var(--studio-text-muted);
+}
+
+.shotOutputRow {
+  color: var(--studio-text-strong);
 }
 
 .shotInputName {
@@ -406,6 +417,10 @@
   color: var(--studio-info-text);
   font-size: 9.5px;
   font-weight: 720;
+}
+
+.shotInputRowHandle {
+  transform: translateY(-50%);
 }
 
 .nodeActionButton {
@@ -447,10 +462,10 @@
 }
 
 .graphHandle {
-  width: 9px;
-  height: 9px;
+  width: 7px;
+  height: 7px;
   border: 0;
-  border-radius: 2px;
+  border-radius: 999px;
   box-shadow: none;
   opacity: 0.94;
 }

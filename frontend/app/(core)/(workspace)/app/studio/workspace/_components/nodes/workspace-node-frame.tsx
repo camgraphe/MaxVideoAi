@@ -47,7 +47,7 @@ function sourceNodeMinHeight(kind: WorkspaceNodeKind): number {
   return kind === 'output' ? OUTPUT_NODE_MIN_HEIGHT : SOURCE_NODE_MIN_HEIGHT;
 }
 
-function outputHandles(data: WorkspaceGraphNode['data']): WorkspaceEdgeKind[] {
+export function outputHandles(data: WorkspaceGraphNode['data']): WorkspaceEdgeKind[] {
   return Array.isArray(data.sourceHandles) ? (data.sourceHandles as WorkspaceEdgeKind[]) : [];
 }
 
@@ -162,6 +162,7 @@ export function NodeFrame({
 }) {
   const accent = nodeAccent(data);
   const targetHandles = data.kind === 'shot' ? [] : inputHandles(data);
+  const sourceHandles = data.kind === 'shot' ? [] : outputHandles(data);
   const isResizable = isSourceResizableNodeKind(data.kind);
   const timelineMediaKind = timelineDragMediaKind(data);
   const copy = data.studioCanvasCopy?.nodes;
@@ -237,7 +238,7 @@ export function NodeFrame({
         ) : null}
       </div>
       {children}
-      <HandleStack copy={copy} handles={outputHandles(data)} type="source" />
+      <HandleStack copy={copy} handles={sourceHandles} type="source" />
     </article>
   );
 }
