@@ -3,7 +3,7 @@ import { buildStoryboardPrompt } from '@/components/tools/storyboard/_lib/storyb
 import { getAbsoluteStoryboardTemplateUrl, getStoryboardLengthPreset, getStoryboardOutputConfig } from '@/components/tools/storyboard/_lib/storyboard-templates';
 import type { AngleToolEngineId } from '@/types/tools-angle';
 import type { AudioPackId } from '@/lib/audio-generation';
-import type { UpscaleOutputFormat, UpscaleTargetResolution, UpscaleToolEngineId } from '@/types/tools-upscale';
+import type { UpscaleToolEngineId } from '@/types/tools-upscale';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type {
   WorkspaceEdgeKind,
@@ -15,11 +15,18 @@ import type {
   WorkspaceWorkflowType,
 } from './workspace-types';
 import { workspaceAudioEnabledForRequest } from './workspace-capabilities';
+import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
 import {
   buildWorkspaceShotGenerateRequest,
   mediaUrlsFromKinds,
 } from './workspace-generation';
-import { buildWorkspaceCharacterBuilderRequest } from './workspace-tool-requests';
+import {
+  buildWorkspaceAngleToolRequest,
+  buildWorkspaceAudioGenerateRequest,
+  buildWorkspaceCharacterBuilderRequest,
+  buildWorkspaceImageGenerationRequest,
+  buildWorkspaceUpscaleToolRequest,
+} from './workspace-tool-requests';
 
 type WorkspaceGenerationRouteParams = {
   nodes: WorkspaceGraphNode[];
@@ -39,6 +46,7 @@ export type WorkspaceGenerationRoute =
   | 'character-builder'
   | 'image'
   | 'storyboard'
+  | 'unsupported'
   | 'upscale'
   | 'video';
 
@@ -47,6 +55,7 @@ export function resolveWorkspaceGenerationRoute(settings: WorkspaceShotSettings)
   if (settings.toolKind === 'storyboard') return 'storyboard';
   if (settings.toolKind === 'angle') return 'angle';
   const family = settings.family ?? 'video';
+  if (family === 'chat') return 'unsupported';
   if (family === 'image') return 'image';
   if (family === 'audio') return 'audio';
   if (family === 'upscale') return 'upscale';
@@ -90,13 +99,21 @@ function styleImagesFor(params: WorkspaceGenerationRouteParams): string[] {
   return mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, ['style']);
 }
 
-function videoReferencesFor(params: WorkspaceGenerationRouteParams): string[] {
+export function workspaceVideoReferencesForGeneration(params: {
+  nodes: WorkspaceGraphNode[];
+  edges: WorkspaceGraphEdge[];
+  shotNode: WorkspaceGraphNode;
+}): string[] {
   return mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, [
     'video_reference',
     'motion_reference',
     'previous_shot',
     'continuity',
   ]);
+}
+
+function videoReferencesFor(params: WorkspaceGenerationRouteParams): string[] {
+  return workspaceVideoReferencesForGeneration(params);
 }
 
 function audioReferencesFor(params: WorkspaceGenerationRouteParams): string[] {
@@ -142,19 +159,17 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
 
 async function submitImageGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
   const referenceImages = referenceImagesFor(params);
-  const result = await runImageGeneration({
-    mode: referenceImages.length ? 'i2i' : 't2i',
-    prompt: params.prompt,
-    numImages: 1,
-    imageUrls: referenceImages.length ? referenceImages : undefined,
-    allowIndex: false,
-    indexable: false,
-    visibility: 'private',
-    seed: params.settings.seed ?? undefined,
-    engineId: params.settings.modelId,
-    aspectRatio: params.settings.aspectRatio,
-    resolution: params.settings.resolution,
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: params.settings,
+    capability: params.capability,
+    connectedInputs: params.connectedInputs,
   });
+  const result = await runImageGeneration(buildWorkspaceImageGenerationRequest({
+    settings: params.settings,
+    prompt: params.prompt,
+    referenceImages,
+    policy,
+  }));
   const image = result.images[0];
   if (!image?.url) {
     throw new Error('Image generation returned no image output.');
@@ -202,13 +217,6 @@ export function angleEngineIdForStudioModel(modelId: string): AngleToolEngineId 
   return 'flux-multiple-angles';
 }
 
-function upscaleTargetResolutionFor(settings: WorkspaceShotSettings): UpscaleTargetResolution {
-  if (settings.resolution === '4k') return '2160p';
-  if (settings.resolution === '1440p') return '1440p';
-  if (settings.resolution === '720p') return '720p';
-  return '1080p';
-}
-
 function pricingSnapshotFromToolPricing(pricing: unknown): PricingSnapshot | null {
   return pricing ? pricing as PricingSnapshot : null;
 }
@@ -220,15 +228,12 @@ async function submitUpscaleGeneration(params: WorkspaceGenerationRouteParams): 
     throw new Error(mediaType === 'video' ? 'A source video is required for upscale.' : 'A source image is required for upscale.');
   }
 
-  const result = await runUpscaleTool({
+  const result = await runUpscaleTool(buildWorkspaceUpscaleToolRequest({
+    settings: params.settings,
     mediaType,
     mediaUrl,
     engineId: upscaleEngineIdForStudioModel(params.settings.modelId, mediaType),
-    mode: params.settings.toolSettings?.upscale?.mode ?? 'target',
-    upscaleFactor: params.settings.toolSettings?.upscale?.upscaleFactor,
-    targetResolution: upscaleTargetResolutionFor(params.settings),
-    outputFormat: params.settings.toolSettings?.upscale?.outputFormat as UpscaleOutputFormat | undefined,
-  });
+  }));
   const outputUrl = result.output?.url ?? null;
   if (!outputUrl) {
     throw new Error('Upscale returned no media output.');
@@ -264,22 +269,13 @@ export function audioPackForWorkflow(workflowType: WorkspaceWorkflowType): Audio
 
 async function submitAudioGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
   const pack = audioPackForWorkflow(params.settings.workflowType);
-  const audioSettings = params.settings.toolSettings?.audio;
   const videoReferences = videoReferencesFor(params);
-  const result = await runAudioGenerate({
-    sourceVideoUrl: videoReferences[0],
+  const result = await runAudioGenerate(buildWorkspaceAudioGenerateRequest({
+    settings: params.settings,
     pack,
-    prompt: pack === 'voice_only' ? undefined : params.prompt,
-    mood: pack === 'voice_only' ? undefined : audioSettings?.mood ?? 'epic',
-    intensity: audioSettings?.intensity ?? 'standard',
-    script: pack === 'voice_only' ? params.prompt : undefined,
-    voiceGender: audioSettings?.voiceGender,
-    voiceProfile: audioSettings?.voiceProfile,
-    voiceDelivery: audioSettings?.voiceDelivery,
-    language: audioSettings?.language,
-    musicEnabled: audioSettings?.musicEnabled,
-    durationSec: params.settings.durationSec,
-  });
+    prompt: params.prompt,
+    sourceVideoUrl: videoReferences[0],
+  }));
   const audioUrl = result.audioUrl ?? (result.outputKind === 'audio' ? result.videoUrl : null);
   const mediaUrl = result.outputKind === 'video' ? result.videoUrl : audioUrl;
 
@@ -410,18 +406,11 @@ async function submitAngleGeneration(params: WorkspaceGenerationRouteParams): Pr
   if (!imageUrl) {
     throw new Error('A source image is required for angle generation.');
   }
-  const angleSettings = params.settings.toolSettings?.angle;
-  const result = await runAngleTool({
+  const result = await runAngleTool(buildWorkspaceAngleToolRequest({
+    settings: params.settings,
     imageUrl,
     engineId: angleEngineIdForStudioModel(params.settings.modelId),
-    params: {
-      rotation: angleSettings?.rotation ?? 35,
-      tilt: angleSettings?.tilt ?? 0,
-      zoom: angleSettings?.zoom ?? 1,
-    },
-    safeMode: angleSettings?.safeMode ?? true,
-    generateBestAngles: angleSettings?.generateBestAngles ?? false,
-  });
+  }));
   const image = result.outputs[0] ?? null;
   if (!image?.url) {
     throw new Error('Angle tool returned no image output.');
@@ -455,5 +444,6 @@ export async function submitWorkspaceGenerationByFamily(params: WorkspaceGenerat
   if (route === 'image') return submitImageGeneration(params);
   if (route === 'audio') return submitAudioGeneration(params);
   if (route === 'upscale') return submitUpscaleGeneration(params);
+  if (route === 'unsupported') throw new Error('This Studio block does not support generation through media routes.');
   return submitVideoGeneration(params);
 }

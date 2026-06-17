@@ -12,6 +12,7 @@ import type {
   WorkspaceShotValidation,
   WorkspaceWorkflowType,
 } from './workspace-types';
+import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
 import { normalizeWorkspaceCharacterBuilderSettings } from './workspace-tool-settings';
 
 const CHARACTER_DRAFT_CENTS = 8;
@@ -40,11 +41,22 @@ function readyEstimate(totalCents: number, currency = 'USD', pricing?: PricingSn
   };
 }
 
-export function blockedWorkspacePricingEstimate(validation: WorkspaceShotValidation): WorkspacePricingEstimate {
+export function blockedWorkspacePricingEstimate(
+  validation: WorkspaceShotValidation,
+  reason?: string
+): WorkspacePricingEstimate {
   return {
     status: 'blocked',
     label: validation.missingInputs.length ? 'Connect input' : 'Needs attention',
-    error: [...validation.missingInputs, ...validation.incompatibleInputs].join(', '),
+    error: reason ?? [...validation.missingInputs, ...validation.incompatibleInputs].join(', '),
+  };
+}
+
+function unavailableWorkspacePricingEstimate(error: string): WorkspacePricingEstimate {
+  return {
+    status: 'error',
+    label: 'Price unavailable',
+    error,
   };
 }
 
@@ -101,17 +113,28 @@ export function buildWorkspaceToolPricingEstimate({
   settings,
   validation,
   prompt,
+  connectedInputs,
 }: {
   settings: WorkspaceShotSettings;
   validation: WorkspaceShotValidation;
   prompt: string;
   connectedInputs: WorkspaceEdgeKind[];
 }): WorkspacePricingEstimate | null {
+  const policy = resolveWorkspaceBlockPolicy({
+    settings,
+    capability: validation.capability,
+    connectedInputs,
+  });
   const characterCanPriceFromScratch =
     settings.toolKind === 'character-builder' &&
     validation.missingInputs.length === 0 &&
     validation.incompatibleInputs.length === 0;
-  if (!validation.canGenerate && !characterCanPriceFromScratch) return blockedWorkspacePricingEstimate(validation);
+  if (!validation.canGenerate && !characterCanPriceFromScratch) {
+    return blockedWorkspacePricingEstimate(validation, policy.disabledReason);
+  }
+  if (settings.family === 'chat' || policy.outputMediaKind === 'text' || policy.pricingRelevantFields.length === 0) {
+    return unavailableWorkspacePricingEstimate('Studio chat pricing is unavailable until chat media context generation is implemented.');
+  }
   if (settings.toolKind === 'character-builder') return estimateCharacterBuilderPricing(settings);
   if (settings.toolKind === 'angle') return estimateAnglePricing(settings);
   if (settings.family === 'upscale') return estimateUpscalePricing(settings);

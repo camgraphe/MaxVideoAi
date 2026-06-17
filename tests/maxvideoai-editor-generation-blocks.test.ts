@@ -21,13 +21,21 @@ import {
   angleEngineIdForStudioModel,
   resolveWorkspaceGenerationRoute,
   upscaleEngineIdForStudioModel,
+  workspaceVideoReferencesForGeneration,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-routing';
 import {
+  buildWorkspaceAngleToolRequest,
+  buildWorkspaceAudioGenerateRequest,
   buildWorkspaceCharacterBuilderRequest,
+  buildWorkspaceImageGenerationRequest,
+  buildWorkspaceUpscaleToolRequest,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-requests';
 import {
   buildWorkspaceToolPricingEstimate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-pricing';
+import {
+  buildWorkspaceShotPreflightRequest,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing';
 import {
   localizeWorkspaceNodeSubtitle,
   localizeWorkspaceNodeTitle,
@@ -117,6 +125,12 @@ function resolvePolicyForPreset(expectation: PolicyMatrixExpectation, connectedI
     pricingRelevantFields?: string[];
     disabledReason?: string;
   };
+}
+
+function defaultShotForPreset(presetId: WorkspaceGenerationPresetId): WorkspaceShotSettings {
+  const shot = getWorkspaceBlockPreset(presetId)?.defaultShot;
+  assert.ok(shot, `${presetId} should expose default shot settings`);
+  return shot;
 }
 
 test('Studio canvas exposes generation block presets for every requested workflow', () => {
@@ -1193,6 +1207,217 @@ test('Studio builds Character Builder API requests without dropping node trait a
   assert.deepEqual(request.referenceImages.map((image) => image.role), ['identity', 'style']);
 });
 
+test('Studio request builders forward supported settings for image, angle, upscale, and audio tools', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateImage = defaultShotForPreset('generate-image');
+  const modifyImage = defaultShotForPreset('modify-image');
+  const angle = defaultShotForPreset('angle');
+  const upscaleVideo = defaultShotForPreset('upscale-video');
+  const soundDesignVoice = defaultShotForPreset('audio-sound-design-voice');
+
+  const generateImagePolicy = resolveWorkspaceBlockPolicy({
+    settings: generateImage,
+    capability: capabilities.find((capability) => capability.id === generateImage.modelId) ?? null,
+    connectedInputs: ['prompt'],
+  });
+  const imageRequest = buildWorkspaceImageGenerationRequest({
+    settings: {
+      ...generateImage,
+      aspectRatio: '9:16',
+      resolution: '4k',
+      seed: 42,
+    },
+    prompt: 'A product hero frame on a reflective table.',
+    referenceImages: [],
+    policy: generateImagePolicy,
+  });
+  assert.equal(imageRequest.mode, 't2i');
+  assert.equal(imageRequest.engineId, 'seedream');
+  assert.equal(imageRequest.aspectRatio, '9:16');
+  assert.equal(imageRequest.resolution, '4k');
+  assert.equal(imageRequest.seed, 42);
+  assert.equal(imageRequest.imageUrls, undefined);
+
+  const modifyImageRequest = buildWorkspaceImageGenerationRequest({
+    settings: {
+      ...modifyImage,
+      aspectRatio: '1:1',
+      resolution: '1080p',
+    },
+    prompt: 'Keep the product shape and replace the background.',
+    referenceImages: ['https://cdn.example.com/source.png', 'https://cdn.example.com/style.png'],
+  });
+  assert.equal(modifyImageRequest.mode, 'i2i');
+  assert.deepEqual(modifyImageRequest.imageUrls, [
+    'https://cdn.example.com/source.png',
+    'https://cdn.example.com/style.png',
+  ]);
+  assert.equal(modifyImageRequest.aspectRatio, '1:1');
+  assert.equal(modifyImageRequest.resolution, '1080p');
+
+  const angleRequest = buildWorkspaceAngleToolRequest({
+    settings: {
+      ...angle,
+      toolSettings: {
+        angle: {
+          rotation: 125,
+          tilt: -12,
+          zoom: 1.4,
+          safeMode: false,
+          generateBestAngles: true,
+        },
+      },
+    },
+    imageUrl: 'https://cdn.example.com/product.png',
+  });
+  assert.equal(angleRequest.imageUrl, 'https://cdn.example.com/product.png');
+  assert.equal(angleRequest.engineId, 'flux-multiple-angles');
+  assert.deepEqual(angleRequest.params, { rotation: 125, tilt: -12, zoom: 1.4 });
+  assert.equal(angleRequest.safeMode, false);
+  assert.equal(angleRequest.generateBestAngles, true);
+
+  const upscaleRequest = buildWorkspaceUpscaleToolRequest({
+    settings: {
+      ...upscaleVideo,
+      resolution: '4k',
+      toolSettings: {
+        upscale: {
+          mode: 'factor',
+          upscaleFactor: 4,
+          outputFormat: 'webm',
+        },
+      },
+    },
+    mediaType: 'video',
+    mediaUrl: 'https://cdn.example.com/source.mp4',
+    engineId: 'seedvr-video',
+  });
+  assert.deepEqual(upscaleRequest, {
+    mediaType: 'video',
+    mediaUrl: 'https://cdn.example.com/source.mp4',
+    engineId: 'seedvr-video',
+    mode: 'factor',
+    upscaleFactor: 4,
+    targetResolution: '2160p',
+    outputFormat: 'webm',
+  });
+
+  const audioRequest = buildWorkspaceAudioGenerateRequest({
+    settings: {
+      ...soundDesignVoice,
+      durationSec: 12,
+      toolSettings: {
+        audio: {
+          mood: 'tense',
+          intensity: 'intense',
+          musicEnabled: false,
+          voiceGender: 'female',
+          voiceProfile: 'warm',
+          voiceDelivery: 'trailer',
+          language: 'french',
+        },
+      },
+    },
+    pack: 'cinematic_voice',
+    prompt: 'A whispered launch countdown over rising mechanical pulses.',
+    sourceVideoUrl: 'https://cdn.example.com/source.mp4',
+  });
+  assert.deepEqual(audioRequest, {
+    sourceVideoUrl: 'https://cdn.example.com/source.mp4',
+    pack: 'cinematic_voice',
+    prompt: 'A whispered launch countdown over rising mechanical pulses.',
+    mood: 'tense',
+    intensity: 'intense',
+    script: 'A whispered launch countdown over rising mechanical pulses.',
+    voiceGender: 'female',
+    voiceProfile: 'warm',
+    voiceDelivery: 'trailer',
+    language: 'french',
+    durationSec: 12,
+    musicEnabled: false,
+  });
+});
+
+test('Studio generation routing keeps source video first and blocks unsupported chat generation', () => {
+  const modifyVideo = defaultShotForPreset('modify-video');
+  const shotNode = {
+    id: 'modify-video-shot',
+    type: 'shot',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'shot' as const,
+      title: 'Modify video',
+      subtitle: 'Modify video',
+      sourceHandles: ['video_reference'],
+      targetHandles: ['prompt', 'video_reference', 'motion_reference', 'previous_shot', 'continuity'],
+      shot: modifyVideo,
+    },
+  };
+  const nodes = [
+    shotNode,
+    {
+      id: 'source-video',
+      type: 'asset',
+      position: { x: 0, y: 0 },
+      data: {
+        kind: 'asset-video' as const,
+        title: 'Source',
+        subtitle: '',
+        sourceHandles: ['video_reference'],
+        targetHandles: [],
+        asset: { id: 'source-video', kind: 'video' as const, filename: 'source.mp4', subtitle: '', url: 'https://cdn.example.com/source.mp4' },
+      },
+    },
+    {
+      id: 'motion-video',
+      type: 'asset',
+      position: { x: 0, y: 0 },
+      data: {
+        kind: 'asset-video' as const,
+        title: 'Motion',
+        subtitle: '',
+        sourceHandles: ['video_reference'],
+        targetHandles: [],
+        asset: { id: 'motion-video', kind: 'video' as const, filename: 'motion.mp4', subtitle: '', url: 'https://cdn.example.com/motion.mp4' },
+      },
+    },
+    {
+      id: 'previous-video',
+      type: 'asset',
+      position: { x: 0, y: 0 },
+      data: {
+        kind: 'asset-video' as const,
+        title: 'Previous',
+        subtitle: '',
+        sourceHandles: ['video_reference'],
+        targetHandles: [],
+        asset: { id: 'previous-video', kind: 'video' as const, filename: 'previous.mp4', subtitle: '', url: 'https://cdn.example.com/previous.mp4' },
+      },
+    },
+  ];
+  const edges = [
+    { id: 'source-edge', source: 'source-video', target: 'modify-video-shot', sourceHandle: 'video_reference', targetHandle: 'video_reference', data: { kind: 'video_reference' as const } },
+    { id: 'motion-edge', source: 'motion-video', target: 'modify-video-shot', sourceHandle: 'video_reference', targetHandle: 'motion_reference', data: { kind: 'motion_reference' as const } },
+    { id: 'previous-edge', source: 'previous-video', target: 'modify-video-shot', sourceHandle: 'video_reference', targetHandle: 'previous_shot', data: { kind: 'previous_shot' as const } },
+  ];
+
+  assert.deepEqual(workspaceVideoReferencesForGeneration({ nodes, edges, shotNode }), [
+    'https://cdn.example.com/source.mp4',
+    'https://cdn.example.com/motion.mp4',
+    'https://cdn.example.com/previous.mp4',
+  ]);
+
+  const chatSettings: WorkspaceShotSettings = {
+    ...BASE_POLICY_TEST_SHOT,
+    presetId: 'chat-box',
+    family: 'chat',
+    outputKind: 'text',
+    modelId: 'studio-chat-openai',
+    workflowType: 'chat_completion',
+  };
+  assert.equal(resolveWorkspaceGenerationRoute(chatSettings), 'unsupported');
+});
+
 test('tool-aware pricing blocks missing inputs and estimates ready Character and Audio blocks', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const angle = getWorkspaceBlockPreset('angle')?.defaultShot;
@@ -1253,6 +1478,91 @@ test('tool-aware pricing blocks missing inputs and estimates ready Character and
   assert.equal(audioReady?.status, 'ready');
   assert.equal(audioReady?.currency, 'USD');
   assert.ok((audioReady?.totalCents ?? 0) > 0);
+});
+
+test('Studio pricing states stay truthful for missing, estimable, and unsupported blocks', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const modifyVideo = defaultShotForPreset('modify-video');
+  const audioSfx = defaultShotForPreset('audio-sfx');
+  const chatSettings: WorkspaceShotSettings = {
+    ...BASE_POLICY_TEST_SHOT,
+    presetId: 'chat-box',
+    family: 'chat',
+    outputKind: 'text',
+    modelId: 'studio-chat-openai',
+    workflowType: 'chat_completion',
+  };
+
+  const missingModifyVideo = buildWorkspaceToolPricingEstimate({
+    settings: modifyVideo,
+    validation: validateShotConnections({
+      settings: modifyVideo,
+      connectedInputs: ['prompt'],
+      capabilities,
+    }),
+    prompt: 'Reframe this clip.',
+    connectedInputs: ['prompt'],
+  });
+  assert.equal(missingModifyVideo?.status, 'blocked');
+  assert.equal(missingModifyVideo?.label, 'Connect input');
+
+  const readyModifyVideo = buildWorkspaceToolPricingEstimate({
+    settings: modifyVideo,
+    validation: validateShotConnections({
+      settings: modifyVideo,
+      connectedInputs: ['prompt', 'video_reference'],
+      capabilities,
+    }),
+    prompt: 'Reframe this clip.',
+    connectedInputs: ['prompt', 'video_reference'],
+  });
+  assert.equal(readyModifyVideo, null, 'ready video pricing should use backend preflight instead of a local fake estimate');
+  const videoPreflight = buildWorkspaceShotPreflightRequest({
+    settings: modifyVideo,
+    connectedInputs: ['prompt', 'video_reference'],
+    capability: capabilities.find((capability) => capability.id === modifyVideo.modelId) ?? null,
+  });
+  assert.equal(videoPreflight.mode, 'v2v');
+
+  const readyAudio = buildWorkspaceToolPricingEstimate({
+    settings: { ...audioSfx, durationSec: 8 },
+    validation: validateShotConnections({
+      settings: audioSfx,
+      connectedInputs: ['prompt'],
+      capabilities,
+    }),
+    prompt: 'A short metallic whoosh.',
+    connectedInputs: ['prompt'],
+  });
+  assert.equal(readyAudio?.status, 'ready');
+  assert.ok((readyAudio?.totalCents ?? 0) > 0);
+
+  const chatMissing = buildWorkspaceToolPricingEstimate({
+    settings: chatSettings,
+    validation: validateShotConnections({
+      settings: chatSettings,
+      connectedInputs: [],
+      capabilities,
+    }),
+    prompt: '',
+    connectedInputs: [],
+  });
+  assert.equal(chatMissing?.status, 'blocked');
+  assert.equal(chatMissing?.label, 'Connect input');
+
+  const chatUnsupported = buildWorkspaceToolPricingEstimate({
+    settings: chatSettings,
+    validation: validateShotConnections({
+      settings: chatSettings,
+      connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+      capabilities,
+    }),
+    prompt: 'Review this context.',
+    connectedInputs: ['prompt', 'reference', 'video_reference', 'audio'],
+  });
+  assert.equal(chatUnsupported?.status, 'error');
+  assert.equal(chatUnsupported?.label, 'Price unavailable');
+  assert.match(chatUnsupported?.error ?? '', /chat pricing/i);
 });
 
 test('Angle and Upscale Studio routing preserves product API pricing in output metadata', () => {
