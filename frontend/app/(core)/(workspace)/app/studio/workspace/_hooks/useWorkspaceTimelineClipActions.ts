@@ -1,12 +1,13 @@
 import { useCallback, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
-  deleteWorkspaceTimelineItem,
   deleteWorkspaceTimelineGap,
+  deleteWorkspaceTimelineItems,
   linkWorkspaceTimelineSelection,
   moveWorkspaceTimelineItem,
   moveWorkspaceTimelineSelectionWithMode,
   resizeWorkspaceTimelineItem,
   splitWorkspaceTimelineItem,
+  timelineEditTouchesLockedTracks,
   unlinkWorkspaceTimelineSelection,
   type WorkspaceTimelineGapSelection,
   type WorkspaceTimelineTrimEdge,
@@ -272,10 +273,12 @@ export function useWorkspaceTimelineClipActions({
         return;
       }
       const selectedItem = currentItems.find((item) => item.id === selectedItemIds[0]);
-      const nextItems = selectedItemIds.reduce(
-        (nextTimelineItems, itemId) => deleteWorkspaceTimelineItem(nextTimelineItems, itemId, { ripple }),
-        currentItems
-      );
+      const nextItems = deleteWorkspaceTimelineItems(currentItems, selectedItemIds, { ripple });
+      if (nextItems === currentItems) return;
+      if (timelineEditTouchesLockedTracks(currentItems, nextItems, lockedTimelineTracks)) {
+        setNotice(studioNotices.unlockBeforeDeleting);
+        return;
+      }
       commitTimelineItems(() => nextItems);
       applyTimelineSelection(defaultTimelineSelectionIds(nextItems));
       setPlayheadSec(selectedItem?.startSec ?? 0);
@@ -300,17 +303,13 @@ export function useWorkspaceTimelineClipActions({
     (gap: WorkspaceTimelineGapSelection) => {
       setActiveEditorSurface('timeline');
       const currentItems = timelineItemsRef.current;
-      const movingLockedTrackItem = currentItems.some((item) => (
-        lockedTimelineTracks.includes(item.track) &&
-        item.startSec >= gap.endSec
-      ));
-      if (movingLockedTrackItem) {
+      const nextItems = deleteWorkspaceTimelineGap(currentItems, gap);
+      if (nextItems === currentItems) return;
+      if (timelineEditTouchesLockedTracks(currentItems, nextItems, lockedTimelineTracks)) {
         setNotice(studioNotices.unlockBeforeDeleting);
         return;
       }
 
-      const nextItems = deleteWorkspaceTimelineGap(currentItems, gap);
-      if (nextItems === currentItems) return;
       commitTimelineItems(() => nextItems);
       applyTimelineSelection([]);
       setPlayheadSec(gap.startSec);

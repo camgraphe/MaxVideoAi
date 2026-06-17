@@ -1,9 +1,13 @@
 import type { WorkspaceTimelineItem, WorkspaceTimelineTrack } from '../workspace-types';
-import { timelineRangeOverlapsItem } from './timeline-collisions';
+import {
+  timelineRangeOverlapsItem,
+  timelineTrackHasOverlap,
+} from './timeline-collisions';
 import {
   snapTimelineValue,
   workspaceTimelineItemEndSec as itemEndSec,
 } from './timeline-frames';
+import { syncLinkedAudioWithVideo } from './timeline-linked-audio';
 
 export type WorkspaceTimelineGapSelection = {
   endSec: number;
@@ -15,20 +19,35 @@ function itemContainsTimelineSecond(item: WorkspaceTimelineItem, seconds: number
   return item.startSec <= seconds && itemEndSec(item) > seconds;
 }
 
+function gapScopedTimelineItems(
+  items: WorkspaceTimelineItem[],
+  track?: WorkspaceTimelineTrack
+): WorkspaceTimelineItem[] {
+  return track ? items.filter((item) => item.track === track) : items;
+}
+
+function timelineEditIntroducesOverlap(
+  originalItems: WorkspaceTimelineItem[],
+  candidateItems: WorkspaceTimelineItem[]
+): boolean {
+  return !timelineTrackHasOverlap(originalItems) && timelineTrackHasOverlap(candidateItems);
+}
+
 export function resolveWorkspaceTimelineGapSelection(
   items: WorkspaceTimelineItem[],
   seconds: number,
   track?: WorkspaceTimelineTrack
 ): WorkspaceTimelineGapSelection | null {
-  if (!items.length) return null;
+  const scopedItems = gapScopedTimelineItems(items, track);
+  if (!scopedItems.length) return null;
   const safeSeconds = snapTimelineValue(Math.max(0, seconds));
-  if (items.some((item) => itemContainsTimelineSecond(item, safeSeconds))) return null;
+  if (scopedItems.some((item) => itemContainsTimelineSecond(item, safeSeconds))) return null;
 
-  const previousBoundarySec = items.reduce((boundarySec, item) => {
+  const previousBoundarySec = scopedItems.reduce((boundarySec, item) => {
     const endSec = itemEndSec(item);
     return endSec <= safeSeconds ? Math.max(boundarySec, endSec) : boundarySec;
   }, 0);
-  const nextBoundarySec = items.reduce((boundarySec, item) => {
+  const nextBoundarySec = scopedItems.reduce((boundarySec, item) => {
     return item.startSec > safeSeconds ? Math.min(boundarySec, item.startSec) : boundarySec;
   }, Number.POSITIVE_INFINITY);
 
@@ -46,13 +65,20 @@ export function deleteWorkspaceTimelineGap(
   const endSec = snapTimelineValue(Math.max(gap.startSec, gap.endSec));
   const durationSec = snapTimelineValue(endSec - startSec);
   if (durationSec <= 0) return items;
-  if (items.some((item) => timelineRangeOverlapsItem(item, startSec, endSec))) return items;
+  const scopedItems = gapScopedTimelineItems(items, gap.track);
+  if (!scopedItems.length) return items;
+  if (scopedItems.some((item) => timelineRangeOverlapsItem(item, startSec, endSec))) return items;
 
-  return items.map((item) => {
-    if (item.startSec < endSec) return item;
+  let changed = false;
+  const shiftedItems = items.map((item) => {
+    if ((gap.track && item.track !== gap.track) || item.startSec < endSec) return item;
+    changed = true;
     return {
       ...item,
       startSec: snapTimelineValue(Math.max(0, item.startSec - durationSec)),
     };
   });
+  if (!changed) return items;
+  const syncedItems = syncLinkedAudioWithVideo(shiftedItems);
+  return timelineEditIntroducesOverlap(items, syncedItems) ? items : syncedItems;
 }

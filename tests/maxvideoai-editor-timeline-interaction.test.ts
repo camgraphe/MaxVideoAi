@@ -12,7 +12,13 @@ import {
   trackForTimelineItem,
   type TimelineInteractionState,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-interaction';
-import { resizeWorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
+import { timelineTrackHasOverlap } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions';
+import {
+  deleteWorkspaceTimelineGap,
+  deleteWorkspaceTimelineItems,
+  resizeWorkspaceTimelineItem,
+  timelineEditTouchesLockedTracks,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
 import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
 function timelineItem(overrides: Partial<WorkspaceTimelineItem>): WorkspaceTimelineItem {
@@ -251,4 +257,230 @@ test('timeline ripple end expansion clamps to the nearest same-track blocker', (
   const clipA = updated.find((item) => item.id === 'clip-a');
   const clipB = updated.find((item) => item.id === 'clip-b');
   assert.ok(clipA && clipB && clipA.startSec + clipA.durationSec <= clipB.startSec);
+});
+
+test('timeline gap deletion ripples the clicked track without shifting unrelated tracks', () => {
+  const items = [
+    timelineItem({ id: 'video-a', outputNodeId: 'video-a', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'video-b', outputNodeId: 'video-b', startSec: 10, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({
+      id: 'audio-a',
+      outputNodeId: 'audio-a',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 0,
+      durationSec: 4,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    }),
+    timelineItem({
+      id: 'audio-b',
+      outputNodeId: 'audio-b',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 10,
+      durationSec: 4,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineGap(items, { startSec: 4, endSec: 10, track: 'video' });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.track, item.startSec]),
+    [
+      ['video-a', 'video', 0],
+      ['video-b', 'video', 4],
+      ['audio-a', 'audio', 0],
+      ['audio-b', 'audio', 10],
+    ]
+  );
+});
+
+test('timeline gap deletion keeps automatic linked audio synced after a clicked-track ripple', () => {
+  const items = [
+    timelineItem({ id: 'intro', outputNodeId: 'intro', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'linked-video', outputNodeId: 'linked', startSec: 10, durationSec: 4, linkedGroupId: 'linked', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'linked-audio',
+      outputNodeId: 'linked',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 10,
+      durationSec: 4,
+      linkedGroupId: 'linked',
+      linkedGroupKind: 'video-audio',
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineGap(items, { startSec: 4, endSec: 10, track: 'video' });
+
+  assert.deepEqual(
+    updated.filter((item) => item.linkedGroupId === 'linked').map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['linked-video', 'video', 4, 4],
+      ['linked-audio', 'audio', 4, 4],
+    ]
+  );
+  assert.equal(timelineTrackHasOverlap(updated), false);
+});
+
+test('timeline gap deletion rejects linked sync that would create a same-track overlap', () => {
+  const items = [
+    timelineItem({ id: 'intro', outputNodeId: 'intro', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'linked-video', outputNodeId: 'linked', startSec: 10, durationSec: 4, linkedGroupId: 'linked', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'linked-audio',
+      outputNodeId: 'linked',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 10,
+      durationSec: 4,
+      linkedGroupId: 'linked',
+      linkedGroupKind: 'video-audio',
+    }),
+    timelineItem({
+      id: 'music-bed',
+      outputNodeId: 'music-bed',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 5,
+      durationSec: 2,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineGap(items, { startSec: 4, endSec: 10, track: 'video' });
+
+  assert.equal(updated, items);
+});
+
+test('timeline atomic ripple delete removes linked groups once and keeps later groups synced', () => {
+  const items = [
+    timelineItem({ id: 'clip-a', outputNodeId: 'clip-a', startSec: 0, durationSec: 4, linkedGroupId: 'group-a', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'clip-a-audio',
+      outputNodeId: 'clip-a',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 0,
+      durationSec: 4,
+      linkedGroupId: 'group-a',
+      linkedGroupKind: 'video-audio',
+    }),
+    timelineItem({ id: 'clip-b', outputNodeId: 'clip-b', startSec: 4, durationSec: 4, linkedGroupId: 'group-b', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'clip-b-audio',
+      outputNodeId: 'clip-b',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 4,
+      durationSec: 4,
+      linkedGroupId: 'group-b',
+      linkedGroupKind: 'video-audio',
+    }),
+    timelineItem({ id: 'clip-c', outputNodeId: 'clip-c', startSec: 8, durationSec: 4, linkedGroupId: 'group-c', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'clip-c-audio',
+      outputNodeId: 'clip-c',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 8,
+      durationSec: 4,
+      linkedGroupId: 'group-c',
+      linkedGroupKind: 'video-audio',
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineItems(items, ['clip-a', 'clip-a-audio', 'clip-b'], { ripple: true });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.track, item.startSec, item.durationSec, item.linkedGroupId]),
+    [
+      ['clip-c', 'video', 0, 4, 'group-c'],
+      ['clip-c-audio', 'audio', 0, 4, 'group-c'],
+    ]
+  );
+  assert.equal(timelineTrackHasOverlap(updated), false);
+});
+
+test('timeline atomic ripple delete resyncs linked groups after unrelated shifts', () => {
+  const items = [
+    timelineItem({ id: 'intro', outputNodeId: 'intro', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'late-video', outputNodeId: 'late', startSec: 8, durationSec: 4, linkedGroupId: 'late', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'late-audio',
+      outputNodeId: 'late',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 8,
+      durationSec: 4,
+      linkedGroupId: 'late',
+      linkedGroupKind: 'video-audio',
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineItems(items, ['intro'], { ripple: true });
+
+  assert.deepEqual(
+    updated.map((item) => [item.id, item.track, item.startSec, item.durationSec]),
+    [
+      ['late-video', 'video', 4, 4],
+      ['late-audio', 'audio', 4, 4],
+    ]
+  );
+});
+
+test('timeline atomic ripple delete rejects linked sync that would overlap another audio clip', () => {
+  const items = [
+    timelineItem({ id: 'intro', outputNodeId: 'intro', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'late-video', outputNodeId: 'late', startSec: 8, durationSec: 4, linkedGroupId: 'late', linkedGroupKind: 'video-audio' }),
+    timelineItem({
+      id: 'late-audio',
+      outputNodeId: 'late',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 8,
+      durationSec: 4,
+      linkedGroupId: 'late',
+      linkedGroupKind: 'video-audio',
+    }),
+    timelineItem({
+      id: 'music-bed',
+      outputNodeId: 'music-bed',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 5,
+      durationSec: 2,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    }),
+  ];
+
+  const updated = deleteWorkspaceTimelineItems(items, ['intro'], { ripple: true });
+
+  assert.equal(updated, items);
+});
+
+test('timeline locked-track guard reports only tracks changed by an edit', () => {
+  const items = [
+    timelineItem({ id: 'video-a', outputNodeId: 'video-a', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({ id: 'video-b', outputNodeId: 'video-b', startSec: 10, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
+    timelineItem({
+      id: 'audio-b',
+      outputNodeId: 'audio-b',
+      track: 'audio',
+      mediaKind: 'audio',
+      startSec: 10,
+      durationSec: 4,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    }),
+  ];
+  const nextItems = deleteWorkspaceTimelineGap(items, { startSec: 4, endSec: 10, track: 'video' });
+
+  assert.equal(timelineEditTouchesLockedTracks(items, nextItems, ['audio']), false);
+  assert.equal(timelineEditTouchesLockedTracks(items, nextItems, ['video']), true);
 });

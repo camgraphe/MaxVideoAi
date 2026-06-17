@@ -8,6 +8,7 @@ import {
   timelineSelectionTouchesLockedTrack,
   workspaceTimelineCutPoints,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-selection';
+import { resolveWorkspaceTimelineGapSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing';
 import type { WorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
 const videoItem: WorkspaceTimelineItem = {
@@ -62,4 +63,52 @@ test('timeline selection helpers derive preview cut points, hidden video, and mu
   const mutedItems = muteAudioTrackItems(items, ['audio']);
   assert.equal(mutedItems.find((item) => item.id === 'clip-audio')?.audioMix?.muted, true);
   assert.equal(mutedItems.find((item) => item.id === 'clip-video')?.audioMix?.muted, undefined);
+});
+
+test('timeline gap selection resolves the clicked track independently', () => {
+  const items: WorkspaceTimelineItem[] = [
+    {
+      ...videoItem,
+      id: 'wide-video',
+      outputNodeId: 'wide-video',
+      startSec: 0,
+      durationSec: 12,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    },
+    {
+      ...linkedAudioItem,
+      id: 'audio-a',
+      outputNodeId: 'audio-a',
+      startSec: 0,
+      durationSec: 4,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    },
+    {
+      ...linkedAudioItem,
+      id: 'audio-b',
+      outputNodeId: 'audio-b',
+      startSec: 10,
+      durationSec: 4,
+      linkedGroupId: null,
+      linkedGroupKind: null,
+    },
+  ];
+
+  assert.equal(
+    resolveWorkspaceTimelineGapSelection(items, 8),
+    null,
+    'without a clicked track, media on any track should still block a sequence-wide gap'
+  );
+  assert.deepEqual(
+    resolveWorkspaceTimelineGapSelection(items, 8, 'audio'),
+    { startSec: 4, endSec: 10, track: 'audio' },
+    'clicked audio lanes should select their own gap even when video covers that time'
+  );
+  assert.equal(
+    resolveWorkspaceTimelineGapSelection(items, 8, 'video'),
+    null,
+    'clicked video lanes should not select a gap under video media'
+  );
 });

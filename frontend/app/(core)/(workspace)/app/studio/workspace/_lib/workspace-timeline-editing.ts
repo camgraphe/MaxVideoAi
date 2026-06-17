@@ -9,7 +9,6 @@ import {
   timelineTrackHasOverlap,
 } from './timeline/timeline-collisions';
 import {
-  groupItemsFor,
   hasLinkedVideoPeer,
   primaryTimelineItemFor,
   syncLinkedAudioWithVideo,
@@ -79,48 +78,52 @@ function orderedTrackItems(items: WorkspaceTimelineItem[], track: WorkspaceTimel
   return order.map((id) => itemById.get(id)).filter((item): item is WorkspaceTimelineItem => Boolean(item));
 }
 
-function shiftTrackItemsAfter(
-  items: WorkspaceTimelineItem[],
-  track: WorkspaceTimelineTrack,
-  afterSec: number,
-  deltaSec: number,
-  ignoredIds: Set<string>
-): WorkspaceTimelineItem[] {
-  if (deltaSec === 0) return items;
-  return syncLinkedAudioWithVideo(items.map((item) => {
-    if (item.track !== track || ignoredIds.has(item.id) || item.startSec < afterSec) return item;
-    return {
-      ...item,
-      startSec: snapTimelineValue(Math.max(0, item.startSec + deltaSec)),
-    };
-  }));
-}
-
 export function deleteWorkspaceTimelineItem(
   items: WorkspaceTimelineItem[],
   itemId: string,
   options: { ripple?: boolean } = {}
 ): WorkspaceTimelineItem[] {
-  const item = items.find((candidate) => candidate.id === itemId);
-  if (!item) return items;
-  const primaryItem = primaryTimelineItemFor(items, item);
-  const groupItems = groupItemsFor(items, primaryItem);
-  const removedIds = new Set(groupItems.map((groupItem) => groupItem.id));
-  const removedTrackDurations = new Map<WorkspaceTimelineTrack, number>();
-  groupItems.forEach((groupItem) => {
-    removedTrackDurations.set(groupItem.track, Math.max(removedTrackDurations.get(groupItem.track) ?? 0, groupItem.durationSec));
+  return deleteWorkspaceTimelineItems(items, [itemId], options);
+}
+
+export function deleteWorkspaceTimelineItems(
+  items: WorkspaceTimelineItem[],
+  itemIds: string[],
+  options: { ripple?: boolean } = {}
+): WorkspaceTimelineItem[] {
+  const selectedKeys = timelineSelectionKeysForItemIds(items, itemIds);
+  if (!selectedKeys.size) return items;
+  return removeTimelineSelectionByKeys(items, selectedKeys, {
+    includeAutomaticLinkedAudioEvents: true,
+    ripple: options.ripple,
   });
+}
 
-  const remainingItems = items.filter((candidate) => !removedIds.has(candidate.id));
-  if (!options.ripple) return remainingItems;
+export function timelineEditTouchesLockedTracks(
+  previousItems: WorkspaceTimelineItem[],
+  nextItems: WorkspaceTimelineItem[],
+  lockedTracks: WorkspaceTimelineTrack[]
+): boolean {
+  if (!lockedTracks.length || previousItems === nextItems) return false;
+  const lockedTrackSet = new Set<WorkspaceTimelineTrack>(lockedTracks);
+  const previousById = new Map(previousItems.map((item) => [item.id, item]));
+  const nextById = new Map(nextItems.map((item) => [item.id, item]));
+  const itemIds = new Set([...previousById.keys(), ...nextById.keys()]);
 
-  return remainingItems.map((candidate) => {
-    const rippleDurationSec = removedTrackDurations.get(candidate.track);
-    if (!rippleDurationSec || candidate.startSec < primaryItem.startSec + primaryItem.durationSec) return candidate;
-    return {
-      ...candidate,
-      startSec: snapTimelineValue(Math.max(0, candidate.startSec - rippleDurationSec)),
-    };
+  return Array.from(itemIds).some((itemId) => {
+    const previousItem = previousById.get(itemId);
+    const nextItem = nextById.get(itemId);
+    const previousTrackLocked = previousItem ? lockedTrackSet.has(previousItem.track) : false;
+    const nextTrackLocked = nextItem ? lockedTrackSet.has(nextItem.track) : false;
+    if (!previousTrackLocked && !nextTrackLocked) return false;
+    if (!previousItem || !nextItem) return true;
+    return (
+      previousItem.track !== nextItem.track ||
+      previousItem.startSec !== nextItem.startSec ||
+      previousItem.durationSec !== nextItem.durationSec ||
+      previousItem.sourceStartSec !== nextItem.sourceStartSec ||
+      previousItem.sourceDurationSec !== nextItem.sourceDurationSec
+    );
   });
 }
 
@@ -326,14 +329,23 @@ function packagePrimaryTimelineItemFor(items: WorkspaceTimelineItem[]): Workspac
     ))[0] ?? null;
 }
 
-function timelineSelectionRemovalEvents(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): Array<{
+type TimelineSelectionRemovalEvent = {
   durationSec: number;
   startSec: number;
   track: WorkspaceTimelineTrack;
-}> {
+};
+
+function timelineSelectionRemovalEvents(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  options: { includeAutomaticLinkedAudioEvents?: boolean } = {}
+): TimelineSelectionRemovalEvent[] {
   const selectedItems = timelineSelectionItemsForKeys(items, selectedKeys);
   return selectedItems
-    .filter((item) => !(isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(selectedItems, item)))
+    .filter((item) => (
+      options.includeAutomaticLinkedAudioEvents ||
+      !(isWorkspaceTimelineAudioTrack(item.track) && hasLinkedVideoPeer(selectedItems, item))
+    ))
     .map((item) => ({
       durationSec: item.durationSec,
       startSec: item.startSec,
@@ -342,20 +354,47 @@ function timelineSelectionRemovalEvents(items: WorkspaceTimelineItem[], selected
     .sort((left, right) => left.startSec - right.startSec || left.track.localeCompare(right.track));
 }
 
-function removeTimelineSelectionWithRipple(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
-  const selectedIds = new Set(timelineSelectionItemsForKeys(items, selectedKeys).map((item) => item.id));
-  const removalEvents = timelineSelectionRemovalEvents(items, selectedKeys);
-  const removedDurationByTrack = new Map<WorkspaceTimelineTrack, number>();
-  let nextItems = items.filter((item) => !selectedIds.has(item.id));
-
-  removalEvents.forEach((event) => {
-    const removedBeforeSec = removedDurationByTrack.get(event.track) ?? 0;
-    const adjustedAfterSec = snapTimelineValue(event.startSec + event.durationSec - removedBeforeSec);
-    nextItems = shiftTrackItemsAfter(nextItems, event.track, adjustedAfterSec, -event.durationSec, new Set());
-    removedDurationByTrack.set(event.track, snapTimelineValue(removedBeforeSec + event.durationSec));
+function shiftTimelineItemsAfterRemovalEvents(
+  items: WorkspaceTimelineItem[],
+  removalEvents: TimelineSelectionRemovalEvent[]
+): WorkspaceTimelineItem[] {
+  if (!removalEvents.length) return items;
+  return items.map((item) => {
+    const removedDurationSec = removalEvents
+      .filter((event) => event.track === item.track && snapTimelineValue(event.startSec + event.durationSec) <= item.startSec)
+      .reduce((durationSec, event) => snapTimelineValue(durationSec + event.durationSec), 0);
+    if (removedDurationSec <= 0) return item;
+    return {
+      ...item,
+      startSec: snapTimelineValue(Math.max(0, item.startSec - removedDurationSec)),
+    };
   });
+}
 
-  return nextItems;
+function removeTimelineSelectionByKeys(
+  items: WorkspaceTimelineItem[],
+  selectedKeys: Set<string>,
+  options: {
+    includeAutomaticLinkedAudioEvents?: boolean;
+    ripple?: boolean;
+  } = {}
+): WorkspaceTimelineItem[] {
+  const selectedItems = timelineSelectionItemsForKeys(items, selectedKeys);
+  if (!selectedItems.length) return items;
+  const selectedIds = new Set(selectedItems.map((item) => item.id));
+  const remainingItems = items.filter((item) => !selectedIds.has(item.id));
+  if (!options.ripple) return remainingItems;
+
+  const removalEvents = timelineSelectionRemovalEvents(items, selectedKeys, {
+    includeAutomaticLinkedAudioEvents: options.includeAutomaticLinkedAudioEvents,
+  });
+  const shiftedItems = shiftTimelineItemsAfterRemovalEvents(remainingItems, removalEvents);
+  const syncedItems = syncLinkedAudioWithVideo(shiftedItems);
+  return revertIfTimelineOverlapRegresses(items, syncedItems);
+}
+
+function removeTimelineSelectionWithRipple(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
+  return removeTimelineSelectionByKeys(items, selectedKeys, { ripple: true });
 }
 
 function adjustInsertStartAfterSelectionRipple(
