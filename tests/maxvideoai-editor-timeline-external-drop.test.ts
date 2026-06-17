@@ -66,6 +66,17 @@ test('timeline external drop helper resolves ghost duration and insertion bounda
     {
       displacedItems: [],
       durationSec: 6,
+      ghostItems: [
+        {
+          durationSec: 6,
+          isPrimary: true,
+          mediaKind: 'video',
+          previewUrl: undefined,
+          startSec: 12,
+          title: 'Generated clip',
+          trackId: 'video',
+        },
+      ],
       isValid: true,
       mediaKind: 'video',
       previewUrl: undefined,
@@ -179,4 +190,43 @@ test('timeline external drop helper previews shifted clips on affected tracks', 
     ],
     'external drop preview should show the final pushed positions used by whole-clip insert'
   );
+});
+
+test('timeline external drop helper previews linked audio ghosts for video assets with audio', () => {
+  const preview = resolveTimelineExternalDropPreview({
+    isInsertIntoClipEnabled: true,
+    items: [],
+    lockedTracks: new Set(),
+    payload: {
+      assetId: 'asset-linked',
+      durationSec: 8,
+      hasTimelineAudio: true,
+      mediaKind: 'video',
+      previewUrl: '/media/linked.jpg',
+      title: 'Linked video',
+    },
+    rawStartSec: 2,
+    track: 'video-2',
+  });
+
+  assert.deepEqual(preview?.ghostItems, [
+    {
+      durationSec: 8,
+      isPrimary: true,
+      mediaKind: 'video',
+      previewUrl: '/media/linked.jpg',
+      startSec: 2,
+      title: 'Linked video',
+      trackId: 'video-2',
+    },
+    {
+      durationSec: 8,
+      isPrimary: false,
+      mediaKind: 'audio',
+      previewUrl: null,
+      startSec: 2,
+      title: 'Linked video Audio',
+      trackId: 'audio',
+    },
+  ]);
 });
