@@ -304,6 +304,32 @@ async function expectActiveControlFillReadable(locator: Locator, label: string, 
   }
 }
 
+async function expectTapTarget(locator: Locator, label: string, minSize = 40): Promise<void> {
+  await expect(locator.first(), `${label} should be visible before measuring tap target`).toBeVisible();
+  const box = await locator.first().boundingBox();
+  expect(box, `${label} should have a measurable bounding box`).not.toBeNull();
+  if (!box) return;
+  expect(box.width, `${label} should be at least ${minSize}px wide`).toBeGreaterThanOrEqual(minSize);
+  expect(box.height, `${label} should be at least ${minSize}px tall`).toBeGreaterThanOrEqual(minSize);
+}
+
+async function expectWithinViewport(page: Page, locator: Locator, label: string): Promise<void> {
+  await expect(locator.first(), `${label} should be visible before viewport bounds check`).toBeVisible();
+  const viewport = page.viewportSize();
+  expect(viewport, `${label} should have a known viewport`).not.toBeNull();
+  if (!viewport) return;
+  await expect.poll(async () => {
+    const box = await locator.first().boundingBox();
+    if (!box) return false;
+    return (
+      box.x >= 0 &&
+      box.y >= 0 &&
+      box.x + box.width <= viewport.width + 1 &&
+      box.y + box.height <= viewport.height + 1
+    );
+  }, { message: `${label} should settle within the viewport` }).toBe(true);
+}
+
 async function dropLocalFileOnCanvas(
   page: Page,
   fixture: LocalFileDropFixture,
@@ -684,6 +710,112 @@ test('MaxVideoAI editor loads canvas, viewer, and timeline without client errors
   await expect(page.getByRole('button', { name: 'Open canvas navigation' })).toBeVisible();
   await expect(page.getByRole('complementary', { name: 'Project media library' })).toHaveCount(0);
   expect(await timelineItemCount(page)).toBe(initialTimelineItems);
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('mobile drawer controls open project media and inspector drawers with focus return', async ({ page }) => {
+  test.setTimeout(60_000);
+  const errors = trackEditorClientErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const mediaToggle = page.getByRole('button', { name: 'Project media', exact: true });
+  await expect(mediaToggle).toBeVisible();
+  await expect(mediaToggle).toHaveAttribute('aria-controls', 'studio-project-media-panel');
+  await expect(mediaToggle).toHaveAttribute('aria-expanded', 'false');
+  await expectTapTarget(mediaToggle, 'mobile Project media drawer toggle');
+
+  await mediaToggle.click();
+  await expect(mediaToggle).toHaveAttribute('aria-expanded', 'true');
+  const mediaDrawer = page.locator('#studio-project-media-panel');
+  await expect(mediaDrawer).toBeVisible();
+  await expectWithinViewport(page, mediaDrawer, 'mobile Project media drawer');
+  await expect(mediaDrawer.getByRole('searchbox', { name: 'Search media' })).toBeVisible();
+  const closeMediaDrawer = mediaDrawer.getByRole('button', { name: 'Close dialog: Project media' });
+  await expectTapTarget(closeMediaDrawer, 'mobile Project media drawer close');
+  await expect(closeMediaDrawer).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect.poll(() => mediaDrawer.evaluate((drawer) => drawer.contains(document.activeElement))).toBe(true);
+  await closeMediaDrawer.click();
+  await expect(mediaToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(mediaToggle).toBeFocused();
+
+  const inspectorToggle = page.getByRole('button', { name: 'Clip inspector', exact: true });
+  await expect(inspectorToggle).toHaveAttribute('aria-controls', 'studio-inspector-panel');
+  await expect(inspectorToggle).toHaveAttribute('aria-expanded', 'false');
+  await expectTapTarget(inspectorToggle, 'mobile Inspector drawer toggle');
+
+  await inspectorToggle.click();
+  await expect(inspectorToggle).toHaveAttribute('aria-expanded', 'true');
+  const inspectorDrawer = page.locator('#studio-inspector-panel');
+  await expect(inspectorDrawer).toBeVisible();
+  await expectWithinViewport(page, inspectorDrawer, 'mobile Inspector drawer');
+  await expect(inspectorDrawer.getByText('Clip name')).toBeVisible();
+  const closeInspectorDrawer = inspectorDrawer.getByRole('button', { name: 'Close dialog: Clip inspector' });
+  await expectTapTarget(closeInspectorDrawer, 'mobile Inspector drawer close');
+  await expect(closeInspectorDrawer).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(inspectorToggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(inspectorToggle).toBeFocused();
+
+  assertNoEditorClientErrors(errors);
+});
+
+test('mobile responsive canvas controls timeline scroll and export dialog stay usable', async ({ page }) => {
+  test.setTimeout(60_000);
+  const errors = trackEditorClientErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const canvasToolbar = page.getByLabel('Canvas creation toolbar');
+  await expectWithinViewport(page, canvasToolbar, 'mobile canvas creation toolbar');
+  const imageTools = page.getByRole('button', { name: 'Image tools' });
+  await expectTapTarget(imageTools, 'mobile Image tools button', 38);
+  await imageTools.click();
+  const imageMenu = page.getByRole('menu', { name: 'Image tools' });
+  await expectWithinViewport(page, imageMenu, 'mobile Image tools drawer menu');
+  await expect(imageMenu.locator('[data-canvas-toolbar-block-id="generate-image"]')).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  const canvasNavigation = page.getByRole('button', { name: 'Open canvas navigation' });
+  await expectTapTarget(canvasNavigation, 'mobile canvas navigator button', 38);
+  await canvasNavigation.click();
+  const canvasNavigationId = await canvasNavigation.getAttribute('aria-controls');
+  expect(canvasNavigationId).toBeTruthy();
+  const canvasPopover = page.locator(`#${canvasNavigationId}`);
+  await expectWithinViewport(page, canvasPopover, 'mobile canvas navigator drawer');
+  await expect(canvasPopover.getByRole('group', { name: 'Canvas' })).toBeVisible();
+  await page.keyboard.press('Escape');
+
+  await switchEditorFocus(page, 'Viewer');
+  const timelineViewport = page.locator('[class*="timelineViewport"]').first();
+  await expect(timelineViewport).toBeVisible();
+  const timelineScrollMetrics = await timelineViewport.evaluate((element) => {
+    const before = element.scrollLeft;
+    element.scrollLeft = 160;
+    element.dispatchEvent(new Event('scroll', { bubbles: true }));
+    return {
+      before,
+      clientWidth: element.clientWidth,
+      scrollLeft: element.scrollLeft,
+      scrollWidth: element.scrollWidth,
+    };
+  });
+  expect(timelineScrollMetrics.scrollWidth).toBeGreaterThan(timelineScrollMetrics.clientWidth);
+  expect(timelineScrollMetrics.scrollLeft).toBeGreaterThan(timelineScrollMetrics.before);
+
+  const exportTrigger = page.getByRole('button', { name: 'Open export dialog' });
+  await expectTapTarget(exportTrigger, 'mobile export dialog trigger', 38);
+  await exportTrigger.click();
+  const exportDialog = page.getByRole('dialog', { name: 'Export sequence' });
+  await expectWithinViewport(page, exportDialog, 'mobile export dialog');
+  await expect(exportDialog.getByRole('button', { name: 'Export video' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close export dialog' }).click();
 
   assertNoEditorClientErrors(errors);
 });

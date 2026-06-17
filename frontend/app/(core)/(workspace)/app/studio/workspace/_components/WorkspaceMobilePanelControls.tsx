@@ -12,7 +12,7 @@ type WorkspaceMobilePanelControlsProps = {
   mediaLabel: string;
   showInspector: boolean;
   showMedia: boolean;
-  onTogglePanel: (panel: Exclude<MobilePanel, null>) => void;
+  onTogglePanel: (panel: Exclude<MobilePanel, null>, trigger: HTMLButtonElement) => void;
 };
 
 export function WorkspaceMobilePanelControls({
@@ -34,7 +34,7 @@ export function WorkspaceMobilePanelControls({
           className={activePanel === 'media' ? styles.mobilePanelButtonActive : styles.mobilePanelButton}
           aria-controls="studio-project-media-panel"
           aria-expanded={activePanel === 'media'}
-          onClick={() => onTogglePanel('media')}
+          onClick={(event) => onTogglePanel('media', event.currentTarget)}
         >
           <PanelLeftOpen size={15} />
           <span>{mediaLabel}</span>
@@ -46,7 +46,7 @@ export function WorkspaceMobilePanelControls({
           className={activePanel === 'inspector' ? styles.mobilePanelButtonActive : styles.mobilePanelButton}
           aria-controls="studio-inspector-panel"
           aria-expanded={activePanel === 'inspector'}
-          onClick={() => onTogglePanel('inspector')}
+          onClick={(event) => onTogglePanel('inspector', event.currentTarget)}
         >
           <PanelRightOpen size={15} />
           <span>{inspectorLabel}</span>

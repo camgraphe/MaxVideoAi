@@ -389,9 +389,19 @@
   min-height: 0;
 }
 
-.projectMediaPanelSlot > *,
-.inspectorPanelSlot > * {
+.mobilePanelChrome,
+.mobilePanelContent,
+.mobilePanelContent > * {
   height: 100%;
+  min-height: 0;
+}
+
+.mobilePanelChrome {
+  display: grid;
+}
+
+.mobilePanelCloseButton {
+  display: none;
 }
 
 .canvasEditorBody {
@@ -554,13 +564,13 @@
   .mobilePanelButton,
   .mobilePanelButtonActive {
     display: inline-flex;
-    min-height: 34px;
+    min-height: 42px;
     align-items: center;
     justify-content: center;
     gap: 7px;
     border: 0;
     border-radius: 9px;
-    padding: 0 10px;
+    padding: 0 12px;
     background: transparent;
     color: var(--studio-text);
     font: inherit;
@@ -609,6 +619,11 @@
     will-change: opacity, transform;
   }
 
+  .projectMediaPanelSlot:focus,
+  .inspectorPanelSlot:focus {
+    outline: none;
+  }
+
   .projectMediaPanelSlot {
     left: 10px;
     transform: translateX(-106%);
@@ -625,14 +640,79 @@
     transform: translateX(0);
   }
 
-  .projectMediaPanelSlot > *,
-  .inspectorPanelSlot > * {
+  .mobilePanelChrome {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
     width: 100%;
     height: 100%;
     overflow: hidden;
     border: 1px solid var(--studio-border);
     border-radius: 14px;
     box-shadow: 0 24px 74px var(--studio-node-shadow);
+    background: var(--studio-surface-strong);
+  }
+
+  .mobilePanelCloseButton {
+    display: flex;
+    width: 100%;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border: 0;
+    border-bottom: 1px solid var(--studio-border);
+    background: var(--studio-surface-strong);
+    color: var(--studio-text-strong);
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 820;
+    padding: 0 12px;
+    text-align: left;
+  }
+
+  .mobilePanelCloseButton span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobilePanelCloseButton:hover,
+  .mobilePanelCloseButton:focus-visible {
+    background: var(--studio-control-bg-hover);
+    outline: none;
+  }
+
+  .mobilePanelContent {
+    overflow: hidden;
+  }
+
+  .editorShell :global([class*="canvasToolbar"]) {
+    max-width: calc(100vw - 24px);
+    overscroll-behavior-x: contain;
+  }
+
+  .editorShell :global([class*="canvasToolbar"] [class*="toolbarButton"]) {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+  }
+
+  .editorShell :global([class*="canvasToolbar"] [class*="toolbarSeparator"]) {
+    flex: 0 0 1px;
+  }
+
+  .editorShell :global([class*="toolbarPopover"]),
+  .editorShell :global([class*="navigatorPanel"]) {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: 74px;
+    width: auto;
+    max-height: min(56dvh, 440px);
+    border-radius: 14px;
+    transform: none;
   }
 
   .canvasInspectorSlot {

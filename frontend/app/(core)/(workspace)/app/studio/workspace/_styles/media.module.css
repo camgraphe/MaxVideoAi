@@ -706,6 +706,7 @@
 
 @media (max-width: 900px) {
   .timelineProjectSidebar {
+    display: flex;
     height: 100%;
     border-right: 0;
   }
@@ -718,6 +719,16 @@
 
   .projectMediaActionButton {
     width: 100%;
+    min-height: 40px;
+  }
+
+  .projectMediaSearch {
+    height: 40px;
+  }
+
+  .projectMediaKindFilterButton,
+  .projectMediaBackButton {
+    min-height: 38px;
   }
 
   .projectMediaControls,
@@ -745,5 +756,13 @@
 
   .projectMediaFooterAction {
     flex: 1 1 0;
+    min-height: 40px;
+  }
+
+  .projectMediaMoreButton {
+    width: 34px;
+    height: 34px;
+    right: 3px;
+    bottom: 3px;
   }
 }

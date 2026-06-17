@@ -360,6 +360,24 @@
     grid-template-columns: 1fr;
   }
 
+  .settingsInput {
+    min-height: 40px;
+  }
+
+  .timelineInspectorInlineButton {
+    min-height: 40px;
+  }
+
+  .timelineInspectorResetButton {
+    width: 36px;
+    height: 36px;
+  }
+
+  .toggleRow button {
+    min-width: 56px;
+    min-height: 32px;
+  }
+
   .timelineInspectorControlRow {
     grid-template-columns: minmax(0, 1fr) 58px;
   }
