@@ -414,13 +414,19 @@
 
 .shotInputCapacity {
   flex: 0 0 auto;
-  color: var(--studio-info-text);
-  font-size: 9.5px;
-  font-weight: 720;
+  min-width: 28px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--node-accent) 12%, var(--studio-surface));
+  color: color-mix(in srgb, var(--node-accent) 74%, var(--studio-text-strong));
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .shotInputRowHandle {
-  transform: translateY(-50%);
+  z-index: 3;
 }
 
 .nodeActionButton {
@@ -462,10 +468,40 @@
 }
 
 .graphHandle {
-  width: 7px;
-  height: 7px;
+  width: 20px;
+  height: 20px;
   border: 0;
   border-radius: 999px;
+  background: transparent;
   box-shadow: none;
-  opacity: 0.94;
+  cursor: crosshair;
+  opacity: 1;
+  touch-action: none;
+}
+
+.graphHandle::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--workspace-handle-color, var(--node-accent));
+  transform: translate(-50%, -50%);
+  transition:
+    width 120ms ease,
+    height 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.graphHandle:hover::after,
+.graphHandle:focus-visible::after {
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--workspace-handle-color, var(--node-accent)) 14%, transparent);
+}
+
+.graphHandle:focus-visible {
+  outline: none;
 }

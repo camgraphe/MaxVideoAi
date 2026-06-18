@@ -6,9 +6,13 @@ import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
 type FetchInput = Parameters<typeof fetch>[0];
 type FetchInit = Parameters<typeof fetch>[1];
 
+export function hasAuthFetchSessionHint(): boolean {
+  return Boolean(readLastKnownUserId() || hasSupabaseAuthCookie());
+}
+
 export async function authFetch(input: FetchInput, init?: FetchInit): Promise<Response> {
   let token: string | null = null;
-  if (readLastKnownUserId() || hasSupabaseAuthCookie()) {
+  if (hasAuthFetchSessionHint()) {
     try {
       const { supabase } = await import('@/lib/supabaseClient');
       const { data } = await supabase.auth.getSession();

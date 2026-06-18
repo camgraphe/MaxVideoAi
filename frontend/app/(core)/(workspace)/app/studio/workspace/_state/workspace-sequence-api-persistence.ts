@@ -1,4 +1,4 @@
-import { authFetch } from '@/lib/authFetch';
+import { authFetch, hasAuthFetchSessionHint } from '@/lib/authFetch';
 import {
   coerceWorkspaceProjectSettings,
 } from '../_lib/workspace-project-settings';
@@ -70,6 +70,7 @@ export async function readStudioSequencesFromApiResult(
   projectId: string,
   signal?: AbortSignal
 ): Promise<StudioApiResult<WorkspaceSequenceRecord[]>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}/sequences`, {
       headers: { Accept: 'application/json' },
@@ -96,6 +97,7 @@ async function upsertStudioSequenceToApi(params: {
   sequence: WorkspaceSequenceRecord;
   signal?: AbortSignal;
 }): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch(
       `/api/studio/projects/${encodeURIComponent(params.projectId)}/sequences/${encodeURIComponent(params.sequence.id)}`,
@@ -129,6 +131,7 @@ async function deleteStudioSequenceFromApi(params: {
   sequenceId: string;
   signal?: AbortSignal;
 }): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch(
       `/api/studio/projects/${encodeURIComponent(params.projectId)}/sequences/${encodeURIComponent(params.sequenceId)}`,

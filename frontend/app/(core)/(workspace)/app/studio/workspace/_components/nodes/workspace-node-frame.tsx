@@ -135,8 +135,8 @@ function HandleStack({
             style={{
               top: offset,
               borderColor: color,
-              background: color,
-            }}
+              '--workspace-handle-color': color,
+            } as CSSProperties}
             title={localizeStudioEdgeKindLabel(handle, labelCopy)}
           />
         );

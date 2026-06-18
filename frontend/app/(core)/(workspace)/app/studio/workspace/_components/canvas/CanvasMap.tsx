@@ -109,10 +109,16 @@ function buildCanvasMiniatureNodes(nodes: WorkspaceGraphNode[]): CanvasMiniature
 
 function calculateCanvasMiniatureBounds(nodes: CanvasMiniatureNode[]): { x: number; y: number; width: number; height: number } {
   if (!nodes.length) return { x: -120, y: -80, width: 240, height: 160 };
-  const minX = Math.min(...nodes.map((node) => node.x));
-  const minY = Math.min(...nodes.map((node) => node.y));
-  const maxX = Math.max(...nodes.map((node) => node.x + node.width));
-  const maxY = Math.max(...nodes.map((node) => node.y + node.height));
+  let minX = Number.POSITIVE_INFINITY;
+  let minY = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let maxY = Number.NEGATIVE_INFINITY;
+  for (const node of nodes) {
+    minX = Math.min(minX, node.x);
+    minY = Math.min(minY, node.y);
+    maxX = Math.max(maxX, node.x + node.width);
+    maxY = Math.max(maxY, node.y + node.height);
+  }
   return {
     x: minX - CANVAS_MINI_MAP_CONTENT_PADDING,
     y: minY - CANVAS_MINI_MAP_CONTENT_PADDING,
@@ -221,31 +227,46 @@ function CanvasMiniatureMap({
     const toMapX = (x: number) => offsetX + (x - bounds.x) * scale;
     const toMapY = (y: number) => offsetY + (y - bounds.y) * scale;
     const byId = new Map(miniatureNodes.map((node) => [node.id, node]));
-    const layoutNodes = miniatureNodes.map((node) => ({
-      ...node,
-      mapX: toMapX(node.x),
-      mapY: toMapY(node.y),
-      mapWidth: Math.max(3, node.width * scale),
-      mapHeight: Math.max(3, node.height * scale),
-    }));
+    let contentMinX = Number.POSITIVE_INFINITY;
+    let contentMinY = Number.POSITIVE_INFINITY;
+    let contentMaxX = Number.NEGATIVE_INFINITY;
+    let contentMaxY = Number.NEGATIVE_INFINITY;
+    const layoutNodes = miniatureNodes.map((node) => {
+      const mapX = toMapX(node.x);
+      const mapY = toMapY(node.y);
+      const mapWidth = Math.max(3, node.width * scale);
+      const mapHeight = Math.max(3, node.height * scale);
+      contentMinX = Math.min(contentMinX, mapX);
+      contentMinY = Math.min(contentMinY, mapY);
+      contentMaxX = Math.max(contentMaxX, mapX + mapWidth);
+      contentMaxY = Math.max(contentMaxY, mapY + mapHeight);
+      return {
+        ...node,
+        mapX,
+        mapY,
+        mapWidth,
+        mapHeight,
+      };
+    });
     const contentCenter = layoutNodes.length
       ? {
-          x: (Math.min(...layoutNodes.map((node) => node.mapX)) + Math.max(...layoutNodes.map((node) => node.mapX + node.mapWidth))) / 2,
-          y: (Math.min(...layoutNodes.map((node) => node.mapY)) + Math.max(...layoutNodes.map((node) => node.mapY + node.mapHeight))) / 2,
+          x: (contentMinX + contentMaxX) / 2,
+          y: (contentMinY + contentMaxY) / 2,
         }
       : { x: CANVAS_MINI_MAP_WIDTH / 2, y: CANVAS_MINI_MAP_HEIGHT / 2 };
-    const layoutEdges = edges.flatMap((edge): CanvasMiniatureEdge[] => {
+    const layoutEdges: CanvasMiniatureEdge[] = [];
+    for (const edge of edges) {
       const source = byId.get(edge.source);
       const target = byId.get(edge.target);
-      if (!source || !target) return [];
-      return [{
+      if (!source || !target) continue;
+      layoutEdges.push({
         id: edge.id,
         sourceX: toMapX(source.x + source.width),
         sourceY: toMapY(source.y + source.height / 2),
         targetX: toMapX(target.x),
         targetY: toMapY(target.y + target.height / 2),
-      }];
-    });
+      });
+    }
     const viewportBounds = flowWidth > 0 && flowHeight > 0
       ? {
           x: -transform[0] / zoom,

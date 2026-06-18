@@ -207,6 +207,13 @@
   height: 100%;
 }
 
+@supports (content-visibility: auto) {
+  .projectMediaTileFrame {
+    content-visibility: auto;
+    contain-intrinsic-size: 128px 112px;
+  }
+}
+
 .projectMediaTile {
   position: relative;
   display: flex;

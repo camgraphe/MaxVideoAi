@@ -1,4 +1,4 @@
-import { authFetch } from '@/lib/authFetch';
+import { authFetch, hasAuthFetchSessionHint } from '@/lib/authFetch';
 import {
   createStarterWorkspaceTemplate,
   WORKSPACE_TEMPLATE_SUMMARIES,
@@ -219,6 +219,7 @@ export async function readStudioProjectFromApiResult(
   projectId: string,
   signal?: AbortSignal
 ): Promise<StudioApiResult<StudioProjectStorageRecord>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
       headers: { Accept: 'application/json' },
@@ -243,6 +244,7 @@ export async function saveStudioProjectToApi(params: {
   workspaceState: PersistedWorkspaceState;
   signal?: AbortSignal;
 }): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(params.projectId)}`, {
       method: 'PUT',
@@ -395,6 +397,7 @@ export async function readUserCanvasTemplatesFromApi(signal?: AbortSignal): Prom
 export async function readUserCanvasTemplatesFromApiResult(
   signal?: AbortSignal
 ): Promise<StudioApiResult<WorkspaceUserCanvasTemplate[]>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch('/api/studio/canvas-templates', {
       headers: { Accept: 'application/json' },
@@ -417,6 +420,7 @@ export async function readUserCanvasTemplatesFromApiResult(
 }
 
 export async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasTemplate): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch('/api/studio/canvas-templates', {
       method: 'POST',
@@ -437,6 +441,7 @@ export async function saveUserCanvasTemplateToApi(template: WorkspaceUserCanvasT
 }
 
 export async function deleteUserCanvasTemplateFromApi(templateId: string): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch(`/api/studio/canvas-templates/${encodeURIComponent(templateId)}`, {
       method: 'DELETE',

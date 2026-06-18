@@ -15,7 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import type { AppLocale } from '@/i18n/locales';
-import { authFetch } from '@/lib/authFetch';
+import { authFetch, hasAuthFetchSessionHint } from '@/lib/authFetch';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
   DEFAULT_WORKSPACE_PROJECT_SETTINGS,
@@ -103,6 +103,7 @@ function studioProjectsApiNotice(status: StudioApiSyncStatus, notices: StudioCop
 }
 
 async function readStudioProjectsFromApi(studioCopy: StudioCopy): Promise<StudioApiResult<StudioProjectRecord[]>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch('/api/studio/projects', {
       headers: { Accept: 'application/json' },
@@ -127,6 +128,7 @@ async function saveStudioProjectToApi(
   project: StudioProjectRecord,
   studioCopy: StudioCopy
 ): Promise<StudioApiResult<StudioProjectRecord>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch('/api/studio/projects', {
       method: 'POST',
@@ -150,6 +152,7 @@ async function updateStudioProjectInApi(
   project: StudioProjectRecord,
   studioCopy: StudioCopy
 ): Promise<StudioApiResult<StudioProjectRecord>> {
+  if (!hasAuthFetchSessionHint()) return { data: null, status: 'unauthorized' };
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(project.id)}`, {
       method: 'PATCH',
@@ -170,6 +173,7 @@ async function updateStudioProjectInApi(
 }
 
 async function deleteStudioProjectFromApi(projectId: string): Promise<StudioApiSyncStatus> {
+  if (!hasAuthFetchSessionHint()) return 'unauthorized';
   try {
     const response = await authFetch(`/api/studio/projects/${encodeURIComponent(projectId)}`, {
       method: 'DELETE',

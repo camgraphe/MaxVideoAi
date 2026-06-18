@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react';
+import { useCallback, useDeferredValue, useEffect, useMemo, useState, type DragEvent as ReactDragEvent, type MouseEvent as ReactMouseEvent } from 'react';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
@@ -269,6 +269,7 @@ export function useProjectMediaController({
   const [folderDropTargetId, setFolderDropTargetId] = useState<string | null>(null);
   const [mediaKindFilter, setMediaKindFilter] = useState<ProjectMediaKindFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const deferredSearchQuery = useDeferredValue(searchQuery);
 
   const folderIds = useMemo(() => new Set(projectMediaFolders.map((folder) => folder.id)), [projectMediaFolders]);
   const folderItemCounts = useMemo(() => {
@@ -297,7 +298,7 @@ export function useProjectMediaController({
     () => new Set(selectedMediaItems.map((item) => projectMediaSelectionItemKey(item))),
     [selectedMediaItems]
   );
-  const normalizedSearchQuery = searchQuery.trim().toLowerCase();
+  const normalizedSearchQuery = deferredSearchQuery.trim().toLowerCase();
 
   const matchesSearch = useMemo(() => {
     return (title: string, subtitle: string, kind: string) => {
@@ -319,22 +320,27 @@ export function useProjectMediaController({
   );
 
   const visibleProjectAssets = useMemo<ProjectMediaAssetView[]>(
-    () => projectAssets
-      .filter((asset) => (asset.folderId ?? null) === activeFolderId)
-      .filter((asset) => matchesMediaKindFilter(projectMediaTimelineKindForAsset(asset)))
-      .filter((asset) => matchesSearch(asset.filename, mediaSubtitleForAsset(asset), asset.kind))
-      .map((asset) => {
+    () => {
+      const views: ProjectMediaAssetView[] = [];
+      for (const asset of projectAssets) {
+        if ((asset.folderId ?? null) !== activeFolderId) continue;
+        const timelineKind = projectMediaTimelineKindForAsset(asset);
+        if (!matchesMediaKindFilter(timelineKind)) continue;
+        const subtitle = mediaSubtitleForAsset(asset);
+        if (!matchesSearch(asset.filename, subtitle, asset.kind)) continue;
         const payload = projectMediaTimelineDragPayloadForAsset(asset);
-        return {
+        views.push({
           asset,
           cardKind: mediaCardKindForAsset(asset),
           key: projectMediaSelectionKey('asset', asset.id),
-          mediaKind: payload?.mediaKind ?? projectMediaTimelineKindForAsset(asset),
-          subtitle: mediaSubtitleForAsset(asset),
+          mediaKind: payload?.mediaKind ?? timelineKind,
+          subtitle,
           thumbnailUrl: projectMediaAssetThumbnailUrl(asset),
           timelineDurationSec: payload?.durationSec ?? 0,
-        };
-      }),
+        });
+      }
+      return views;
+    },
     [activeFolderId, matchesMediaKindFilter, matchesSearch, projectAssets]
   );
 
@@ -354,21 +360,26 @@ export function useProjectMediaController({
   );
 
   const visibleGeneratedNodes = useMemo<ProjectMediaGeneratedView[]>(
-    () => generatedNodes
-      .filter((node) => generatedNodeFolderId(node, folderIds) === activeFolderId)
-      .filter((node) => matchesMediaKindFilter(projectMediaTimelineKindForGeneratedNode(node)))
-      .filter((node) => matchesSearch(node.data.title, mediaSubtitleForGeneratedNode(node), 'generated'))
-      .map((node) => {
+    () => {
+      const views: ProjectMediaGeneratedView[] = [];
+      for (const node of generatedNodes) {
+        if (generatedNodeFolderId(node, folderIds) !== activeFolderId) continue;
+        const timelineKind = projectMediaTimelineKindForGeneratedNode(node);
+        if (!matchesMediaKindFilter(timelineKind)) continue;
+        const subtitle = mediaSubtitleForGeneratedNode(node);
+        if (!matchesSearch(node.data.title, subtitle, 'generated')) continue;
         const payload = projectMediaTimelineDragPayloadForGeneratedNode(node);
-        return {
+        views.push({
           key: projectMediaSelectionKey('generated', node.id),
-          mediaKind: payload?.mediaKind ?? projectMediaTimelineKindForGeneratedNode(node),
+          mediaKind: payload?.mediaKind ?? timelineKind,
           node,
-          subtitle: mediaSubtitleForGeneratedNode(node),
+          subtitle,
           thumbnailUrl: projectMediaGeneratedThumbnailUrl(node),
           timelineDurationSec: payload?.durationSec,
-        };
-      }),
+        });
+      }
+      return views;
+    },
     [activeFolderId, folderIds, generatedNodes, matchesMediaKindFilter, matchesSearch]
   );
   const visibleItemCount = visibleSequences.length + visibleFolders.length + visibleProjectAssets.length + visibleGeneratedNodes.length;
