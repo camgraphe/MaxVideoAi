@@ -40,6 +40,8 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.engine.status, 'live');
   assert.equal(seedance.engine.modes.includes('ref2v'), true);
   assert.equal(fast.engine.modes.includes('ref2v'), true);
+  assert.equal(seedance.engine.extend, false);
+  assert.equal(fast.engine.extend, false);
   assert.equal(seedance.modes.some((mode) => mode.mode === 'ref2v'), true);
   assert.equal(fast.modes.some((mode) => mode.mode === 'ref2v'), true);
   assert.deepEqual(seedance.engine.resolutions, ['480p', '720p', '1080p']);
@@ -74,6 +76,9 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(seedanceFields.find((field) => field.id === 'image_urls')?.label, 'Reference images (up to 9)');
   assert.equal(seedanceFields.find((field) => field.id === 'video_urls')?.label, 'Reference video clips (up to 3)');
   assert.equal(seedanceFields.find((field) => field.id === 'audio_urls')?.label, 'Reference audio clips (up to 3)');
+  const seedanceVideoField = seedanceFields.find((field) => field.id === 'video_urls');
+  assert.equal(seedanceVideoField?.minDurationSec, 2);
+  assert.equal(seedanceVideoField?.maxDurationSec, 15);
   assert.equal(seedanceFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
   assert.ok(fastFields.some((field) => field.id === 'end_image_url' && field.modes?.includes('i2v')));
   assert.ok(fastFields.some((field) => field.id === 'image_urls' && field.modes?.includes('ref2v') && field.maxCount === 9));
@@ -84,6 +89,9 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fastFields.find((field) => field.id === 'image_urls')?.label, 'Reference images (up to 9)');
   assert.equal(fastFields.find((field) => field.id === 'video_urls')?.label, 'Reference video clips (up to 3)');
   assert.equal(fastFields.find((field) => field.id === 'audio_urls')?.label, 'Reference audio clips (up to 3)');
+  const fastVideoField = fastFields.find((field) => field.id === 'video_urls');
+  assert.equal(fastVideoField?.minDurationSec, 2);
+  assert.equal(fastVideoField?.maxDurationSec, 15);
   assert.equal(fastFields.some((field) => field.id === 'reference_image_urls' && field.modes?.includes('ref2v')), false);
 
   assert.equal(seedance.availability, 'available');
@@ -347,6 +355,12 @@ test('Unified Seedance workspace switches mode from attached assets and blocks t
   assert.equal(getUnifiedSeedanceMode(referenceAssets), 'ref2v');
   assert.equal(getSeedanceFieldBlockKey('image_url', referenceAssets), 'clearReferences');
   assert.equal(getSeedanceFieldBlockKey('video_urls', referenceAssets, true), null);
+
+  const videoOnlyReferenceAssets = {
+    video_urls: [{ kind: 'video' as const }],
+  };
+  assert.equal(getUnifiedSeedanceMode(videoOnlyReferenceAssets), 'ref2v');
+  assert.equal(getSeedanceFieldBlockKey('image_url', videoOnlyReferenceAssets), 'clearReferences');
 
   const audioOnlyAssets = {
     audio_urls: [{ kind: 'audio' as const }],

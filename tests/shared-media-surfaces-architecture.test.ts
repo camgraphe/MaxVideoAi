@@ -65,6 +65,16 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(assetDropzoneSource, /<AssetFieldTooltip/, 'AssetDropzone should compose a field-level details tooltip');
   assert.match(
     assetDropzoneSource,
+    /const maxVideoDuration = field\.maxDurationSec \?\? limits\.videoMaxDurationSec;[\s\S]*assetCopy\.secondsMax\(maxVideoDuration\)/,
+    'video helper copy should surface field-level duration limits such as Seedance reference videos'
+  );
+  assert.match(
+    assetDropzoneSource,
+    /const visibleHelperText = field\.type === 'video'[\s\S]*helperLines\.join\(' · '\)/,
+    'video helper copy should render visibly instead of living only inside the tooltip'
+  );
+  assert.match(
+    assetDropzoneSource,
     /const isSourceVideoDisabledState = disabledReason\?\.toLowerCase\(\)\.includes\('source video'\);[\s\S]*const disabledStatusLabel = isSourceVideoDisabledState[\s\S]*Source video active[\s\S]*Unavailable/,
     'disabled asset fields should show a specific source-video status instead of relying on greyed styling'
   );
