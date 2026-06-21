@@ -33,6 +33,17 @@ test('workspace video reference uploads bypass the Next API body limit for large
   assert.ok(fs.existsSync(path.join(root, 'frontend/app/api/uploads/video/multipart/abort/route.ts')));
 });
 
+test('audio source video uploads use the chunked video upload helper', () => {
+  const root = process.cwd();
+  const audioHelperSource = fs.readFileSync(
+    path.join(root, 'frontend/app/(core)/(workspace)/app/audio/_lib/audio-workspace-helpers.ts'),
+    'utf8'
+  );
+
+  assert.match(audioHelperSource, /from '@\/lib\/client-video-upload'/);
+  assert.match(audioHelperSource, /uploadVideoFile\(file\)/);
+});
+
 test('large video uploads use chunked server relay instead of browser storage PUT', async () => {
   const file = new File([new Uint8Array(Math.ceil(4.6 * 1024 * 1024))], 'reference.mp4', {
     type: 'video/mp4',
