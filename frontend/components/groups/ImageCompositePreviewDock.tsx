@@ -82,7 +82,8 @@ export function ImageCompositePreviewDock({
   const images = entry?.images ?? [];
   const safeIndex = Math.min(Math.max(0, selectedIndex), Math.max(0, images.length - 1));
   const selected = images.length ? images[safeIndex] : null;
-  const selectedPreviewUrl = selected?.url ?? selected?.thumbUrl ?? null;
+  const selectedPreviewUrl =
+    resolveStableMediaUrl(selected?.url, selected?.thumbUrl) ?? selected?.url ?? selected?.thumbUrl ?? null;
   const selectedActionUrl = resolveStableMediaUrl(selected?.url, selected?.thumbUrl);
   const aspectRatioCss = resolveCssAspectRatio({
     value: entry?.aspectRatio ?? null,
