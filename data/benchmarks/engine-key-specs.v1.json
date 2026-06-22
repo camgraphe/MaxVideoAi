@@ -701,6 +701,49 @@
       }
     },
     {
+      "modelSlug": "happy-horse-1-1",
+      "sources": [
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/text-to-video/api",
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/image-to-video/api",
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/reference-to-video/api",
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/text-to-video",
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/image-to-video",
+        "https://fal.ai/models/alibaba/happy-horse/v1.1/reference-to-video"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Not supported in current Happy Horse 1.1 Fal route",
+        "firstLastFrame": "Not supported",
+        "referenceImageStyle": "Supported (1-9 reference stills)",
+        "referenceVideo": "Not supported in current Happy Horse 1.1 Fal route",
+        "maxResolution": "1080p",
+        "maxDuration": "15s output",
+        "aspectRatios": [
+          "16:9",
+          "9:16",
+          "1:1",
+          "4:3",
+          "3:4",
+          "21:9",
+          "9:21",
+          "5:4",
+          "4:5"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Supported",
+        "cameraMotionControls": "Basic",
+        "watermark": "No (MaxVideoAI)"
+      }
+    },
+    {
       "modelSlug": "seedance-1-5-pro",
       "sources": [
         "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/image-to-video",

@@ -56,7 +56,8 @@ test('template registry enables Seedance production and draft model templates', 
   const lumaRay32 = getModelPageTemplateConfig('luma-ray-3-2');
   const lumaUni = getModelPageTemplateConfig('luma-uni-1');
   const lumaUniMax = getModelPageTemplateConfig('luma-uni-1-max');
-  const happyHorse = getModelPageTemplateConfig('happy-horse-1-0');
+  const happyHorse = getModelPageTemplateConfig('happy-horse-1-1');
+  const happyHorseLegacy = getModelPageTemplateConfig('happy-horse-1-0');
   const hailuo = getModelPageTemplateConfig('minimax-hailuo-02-text');
   const pika = getModelPageTemplateConfig('pika-text-to-video');
   const gptImage = getModelPageTemplateConfig('gpt-image-2');
@@ -75,6 +76,7 @@ test('template registry enables Seedance production and draft model templates', 
   assert.ok(lumaUni);
   assert.ok(lumaUniMax);
   assert.ok(happyHorse);
+  assert.ok(happyHorseLegacy);
   assert.ok(hailuo);
   assert.ok(pika);
   assert.ok(gptImage);
@@ -92,6 +94,7 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(lumaUni.intent, 'reference-prep');
   assert.equal(lumaUniMax.intent, 'production');
   assert.equal(happyHorse.intent, 'production');
+  assert.equal(happyHorseLegacy.intent, 'production');
   assert.equal(hailuo.intent, 'draft');
   assert.equal(pika.intent, 'draft');
   assert.equal(gptImage.intent, 'specialized');
@@ -108,7 +111,8 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(lumaRay32.hero.primaryCtaHref, '/app?engine=luma-ray-3-2');
   assert.equal(lumaUni.hero.primaryCtaHref, '/app/image?engine=luma-uni-1');
   assert.equal(lumaUniMax.hero.primaryCtaHref, '/app/image?engine=luma-uni-1-max');
-  assert.equal(happyHorse.hero.primaryCtaHref, '/app?engine=happy-horse-1-0');
+  assert.equal(happyHorse.hero.primaryCtaHref, '/app?engine=happy-horse-1-1');
+  assert.equal(happyHorseLegacy.hero.primaryCtaHref, '/app?engine=happy-horse-1-0');
   assert.equal(hailuo.hero.primaryCtaHref, '/app?engine=minimax-hailuo-02-text');
   assert.equal(pika.hero.primaryCtaHref, '/app?engine=pika-text-to-video');
   assert.equal(gptImage.hero.primaryCtaHref, '/app/image?engine=gpt-image-2');
@@ -125,7 +129,8 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(lumaRay32.pricing.anchorHref, '/pricing#luma-ray-3-2-pricing');
   assert.equal(lumaUni.pricing.anchorHref, '/pricing#luma-uni-1-pricing');
   assert.equal(lumaUniMax.pricing.anchorHref, '/pricing#luma-uni-1-max-pricing');
-  assert.equal(happyHorse.pricing.anchorHref, '/pricing#happy-horse-1-0-pricing');
+  assert.equal(happyHorse.pricing.anchorHref, '/pricing#happy-horse-1-1-pricing');
+  assert.equal(happyHorseLegacy.pricing.anchorHref, '/pricing#happy-horse-1-0-pricing');
   assert.equal(hailuo.pricing.anchorHref, '/pricing#minimax-hailuo-02-text-pricing');
   assert.equal(pika.pricing.anchorHref, '/pricing#pika-text-to-video-pricing');
   assert.equal(gptImage.pricing.anchorHref, '/pricing#gpt-image-2-pricing');
@@ -177,6 +182,10 @@ test('template registry enables Seedance production and draft model templates', 
     ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
   );
   assert.deepEqual(
+    happyHorseLegacy.pricing.presets.map((preset) => preset.id),
+    ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
+  );
+  assert.deepEqual(
     hailuo.pricing.presets.map((preset) => preset.id),
     ['6s-512p', '10s-768p', 'max-duration']
   );
@@ -203,6 +212,7 @@ test('template registry enables Seedance production and draft model templates', 
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
     'gpt-image-2',
     'happy-horse-1-0',
+    'happy-horse-1-1',
     'kling-2-5-turbo',
     'kling-2-6-pro',
     'kling-3-4k',

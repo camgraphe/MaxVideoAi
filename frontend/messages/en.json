@@ -409,11 +409,11 @@
               ]
             },
             {
-              "engineId": "happy-horse-1-0",
-              "name": "Happy Horse 1.0",
+              "engineId": "happy-horse-1-1",
+              "name": "Happy Horse 1.1",
               "provider": "Alibaba",
-              "bestFor": "Unified lip-sync",
-              "fallbackPrice": "from $0.70 / 5s",
+              "bestFor": "Audio + references",
+              "fallbackPrice": "from $0.91 / 5s",
               "scores": [
                 {
                   "label": "Motion",
@@ -566,22 +566,6 @@
             "examplesSlug": "kling"
           },
           {
-            "id": "fallback-ltx",
-            "title": "LTX 2.3 Fast",
-            "engine": "LTX 2.3 Fast",
-            "engineId": "ltx-2-3-fast",
-            "modelSlug": "ltx-2-3-fast",
-            "mode": "Text-to-video",
-            "duration": "10s",
-            "price": "$0.52",
-            "useCase": "Fast drafts",
-            "cta": "Examples & prompts",
-            "modelCta": "Specs & pricing",
-            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
-            "imageAlt": "LTX 2.3 Fast AI video example for fast draft generation.",
-            "examplesSlug": "ltx"
-          },
-          {
             "id": "fallback-veo",
             "title": "Veo 3.1",
             "engine": "Veo 3.1",
@@ -598,6 +582,38 @@
             "examplesSlug": "veo"
           },
           {
+            "id": "fallback-happy-horse",
+            "title": "Happy Horse 1.1",
+            "engine": "Happy Horse 1.1",
+            "engineId": "happy-horse-1-1",
+            "modelSlug": "happy-horse-1-1",
+            "mode": "Text/image/reference-to-video",
+            "duration": "10s",
+            "price": "$2.34",
+            "useCase": "Audio-native workflows",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
+            "imageAlt": "Happy Horse 1.1 AI video example for audio-native reference workflows.",
+            "examplesSlug": "happy-horse"
+          },
+          {
+            "id": "fallback-ltx",
+            "title": "LTX 2.3 Fast",
+            "engine": "LTX 2.3 Fast",
+            "engineId": "ltx-2-3-fast",
+            "modelSlug": "ltx-2-3-fast",
+            "mode": "Text-to-video",
+            "duration": "10s",
+            "price": "$0.52",
+            "useCase": "Fast drafts",
+            "cta": "Examples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
+            "imageAlt": "LTX 2.3 Fast AI video example for fast draft generation.",
+            "examplesSlug": "ltx"
+          },
+          {
             "id": "fallback-wan",
             "title": "Wan 2.6",
             "engine": "Wan 2.6",
@@ -612,22 +628,6 @@
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Wan 2.6 AI video example for structured video workflows.",
             "examplesSlug": "wan"
-          },
-          {
-            "id": "fallback-happy-horse",
-            "title": "Happy Horse 1.0",
-            "engine": "Happy Horse 1.0",
-            "engineId": "happy-horse-1-0",
-            "modelSlug": "happy-horse-1-0",
-            "mode": "Text/image/reference-to-video",
-            "duration": "10s",
-            "price": "$1.82",
-            "useCase": "Audio-native workflows",
-            "cta": "Examples & prompts",
-            "modelCta": "Specs & pricing",
-            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
-            "imageAlt": "Happy Horse 1.0 AI video example for audio-native reference workflows.",
-            "examplesSlug": "happy-horse"
           }
         ]
       },

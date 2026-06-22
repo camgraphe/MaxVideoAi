@@ -128,7 +128,7 @@ test('normalizes library sources to the canonical allowed set', () => {
 
 test('library listings hide internal storyboard template reference assets', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 
@@ -161,7 +161,7 @@ test('builds idempotent media asset identity from source output when available',
 
 test('deduplicates canonical and legacy library rows by media URL identity', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 
@@ -189,7 +189,7 @@ test('deduplicates canonical and legacy library rows by media URL identity', () 
 
 test('deduplicates copied generated assets against legacy origin urls', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 

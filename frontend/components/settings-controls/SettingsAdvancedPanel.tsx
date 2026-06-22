@@ -121,6 +121,8 @@ function LoopModeControl({
 }
 
 function StandaloneSeedControls({
+  engine,
+  mode,
   safetyChecker,
   seedLocked,
   seedValue,
@@ -131,6 +133,8 @@ function StandaloneSeedControls({
   onSeedLockedChange,
 }: Pick<
   SettingsAdvancedPanelProps,
+  | 'engine'
+  | 'mode'
   | 'onSafetyCheckerChange'
   | 'onSeedChange'
   | 'onSeedLockedChange'
@@ -142,6 +146,10 @@ function StandaloneSeedControls({
   state: SettingsControlState;
 }) {
   const { controlsCopy, seed, setSeed } = state;
+  const seedField = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])].find((field) => {
+    if (field.id !== 'seed') return false;
+    return !field.modes || field.modes.includes(mode);
+  });
 
   return (
     <div className="grid gap-3 md:grid-cols-3 md:items-end">
@@ -149,6 +157,9 @@ function StandaloneSeedControls({
         <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
         <input
           type="number"
+          min={seedField?.min}
+          max={seedField?.max}
+          step={seedField?.step ?? 1}
           placeholder={controlsCopy.seed.placeholder}
           value={onSeedChange ? seedValue : seed}
           onChange={(event) => {
@@ -195,13 +206,19 @@ function StandaloneSeedControls({
 }
 
 function EmbeddedSeedControls({
+  engine,
+  mode,
   seedLocked,
   state,
   onSeedLockedChange,
-}: Pick<SettingsAdvancedPanelProps, 'onSeedLockedChange' | 'seedLocked'> & {
+}: Pick<SettingsAdvancedPanelProps, 'engine' | 'mode' | 'onSeedLockedChange' | 'seedLocked'> & {
   state: SettingsControlState;
 }) {
   const { controlsCopy, seed, setSeed } = state;
+  const seedField = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])].find((field) => {
+    if (field.id !== 'seed') return false;
+    return !field.modes || field.modes.includes(mode);
+  });
 
   return (
     <>
@@ -209,6 +226,9 @@ function EmbeddedSeedControls({
         <span className="text-[12px] uppercase tracking-micro text-text-muted">{controlsCopy.seed.label}</span>
         <input
           type="number"
+          min={seedField?.min}
+          max={seedField?.max}
+          step={seedField?.step ?? 1}
           placeholder={controlsCopy.seed.placeholder}
           value={seed}
           onChange={(event) => setSeed(event.currentTarget.value)}

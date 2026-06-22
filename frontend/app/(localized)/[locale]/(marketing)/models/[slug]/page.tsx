@@ -273,7 +273,9 @@ async function renderMarketingModelPage({
       heroMedia = toFeaturedMedia(heroCandidate) ?? heroMedia;
     }
   }
-  let demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia);
+  let demoMedia = pickDemoMedia(galleryVideos, heroMedia?.id ?? null, preferredIds.demo, fallbackMedia, {
+    allowFallbackReuse: engine.modelSlug === 'happy-horse-1-1',
+  });
   if (engine.modelSlug === 'sora-2-pro') {
     demoMedia = heroMedia;
   }

@@ -68,16 +68,16 @@ export async function resolveRelatedBestForGuides(locale: AppLocale, slug: strin
 
 export function getAlsoAvailableModels(slug: string, topPicks: string[]) {
   const preferred: Record<string, string[]> = {
-    'cinematic-realism': ['ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-0'],
-    'image-to-video': ['sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
-    'character-reference': ['seedance-2-0', 'sora-2-pro', 'veo-3-1', 'happy-horse-1-0'],
-    'reference-to-video': ['sora-2-pro', 'veo-3-1-fast', 'wan-2-6', 'happy-horse-1-0'],
-    'multi-shot-video': ['ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-0'],
+    'cinematic-realism': ['ltx-2-3-fast', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-1'],
+    'image-to-video': ['sora-2-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
+    'character-reference': ['seedance-2-0', 'sora-2-pro', 'veo-3-1', 'happy-horse-1-1'],
+    'reference-to-video': ['sora-2-pro', 'veo-3-1-fast', 'wan-2-6', 'happy-horse-1-1'],
+    'multi-shot-video': ['ltx-2-3-pro', 'wan-2-6', 'pika-text-to-video', 'happy-horse-1-1'],
     '4k-video': ['ltx-2-3-pro', 'ltx-2-3-fast', 'kling-3-pro', 'sora-2-pro'],
-    ads: ['veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video', 'happy-horse-1-0'],
-    'ugc-ads': ['ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
-    'product-videos': ['kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-0'],
-    'lipsync-dialogue': ['ltx-2-3-pro', 'sora-2', 'pika-text-to-video', 'happy-horse-1-0'],
+    ads: ['veo-3-1-fast', 'sora-2-pro', 'pika-text-to-video', 'happy-horse-1-1'],
+    'ugc-ads': ['ltx-2-3-pro', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
+    'product-videos': ['kling-3-4k', 'veo-3-1-fast', 'pika-text-to-video', 'happy-horse-1-1'],
+    'lipsync-dialogue': ['ltx-2-3-pro', 'sora-2', 'pika-text-to-video', 'happy-horse-1-1'],
     'fast-drafts': ['pika-text-to-video', 'minimax-hailuo-02-text', 'wan-2-6'],
     'stylized-anime': ['seedance-2-0', 'wan-2-6', 'ltx-2-3-fast'],
   };

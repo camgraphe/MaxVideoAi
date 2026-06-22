@@ -646,6 +646,133 @@ test('Happy Horse 1.0 validates text, image, R2V, and V2V workflow inputs', () =
   assert.equal(fields.find((field) => field.id === 'reference_image_urls')?.slotLabelPattern, '@Image{n}');
 });
 
+test('Happy Horse 1.1 validates text, image, and reference workflow inputs only', () => {
+  const expectedDurations = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+  const expectedRatios = ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', '9:21', '5:4', '4:5'];
+
+  const textValid = validateRequest('happy-horse-1-1', 't2v', {
+    prompt: 'Native audio presenter in a modern studio',
+    duration: 15,
+    resolution: '1080p',
+    aspect_ratio: '9:21',
+    seed: 2147483647,
+    enable_safety_checker: false,
+  });
+  assert.deepEqual(textValid, OK);
+
+  expectedDurations.forEach((duration) => {
+    assert.deepEqual(
+      validateRequest('happy-horse-1-1', 't2v', {
+        prompt: `Duration ${duration}`,
+        duration,
+        resolution: '720p',
+        aspect_ratio: '16:9',
+      }),
+      OK,
+      `Happy Horse 1.1 should accept ${duration}s`
+    );
+  });
+  expectedRatios.forEach((aspectRatio) => {
+    assert.deepEqual(
+      validateRequest('happy-horse-1-1', 'ref2v', {
+        prompt: `Use character1 in ${aspectRatio}`,
+        image_urls: ['https://example.com/ref-1.png'],
+        duration: 5,
+        resolution: '1080p',
+        aspect_ratio: aspectRatio,
+      }),
+      OK,
+      `Happy Horse 1.1 should accept ${aspectRatio}`
+    );
+  });
+
+  const tooShort = validateRequest('happy-horse-1-1', 't2v', {
+    prompt: 'Too short',
+    duration: 2,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(tooShort.ok, false);
+  assert.equal(tooShort.error?.field, 'duration');
+
+  const tooLong = validateRequest('happy-horse-1-1', 't2v', {
+    prompt: 'Too long',
+    duration: 16,
+    resolution: '1080p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(tooLong.ok, false);
+  assert.equal(tooLong.error?.field, 'duration');
+
+  const imageValid = validateRequest('happy-horse-1-1', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 3,
+    resolution: '720p',
+    seed: 0,
+    enable_safety_checker: true,
+  });
+  assert.deepEqual(imageValid, OK);
+
+  const imageAspectInvalid = validateRequest('happy-horse-1-1', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 5,
+    resolution: '720p',
+    aspect_ratio: '16:9',
+  });
+  assert.equal(imageAspectInvalid.ok, false);
+  assert.equal(imageAspectInvalid.error?.field, 'aspect_ratio');
+
+  const invalidSeed = validateRequest('happy-horse-1-1', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 5,
+    resolution: '720p',
+    seed: 2147483648,
+  });
+  assert.equal(invalidSeed.ok, false);
+  assert.equal(invalidSeed.error?.field, 'seed');
+
+  const invalidSafetyChecker = validateRequest('happy-horse-1-1', 'i2v', {
+    image_url: 'https://example.com/start.png',
+    duration: 5,
+    resolution: '720p',
+    enable_safety_checker: 'false',
+  });
+  assert.equal(invalidSafetyChecker.ok, false);
+  assert.equal(invalidSafetyChecker.error?.field, 'enable_safety_checker');
+
+  const r2vValid = validateRequest('happy-horse-1-1', 'ref2v', {
+    prompt: 'Use character1 and character2 in a short product demo',
+    image_urls: ['https://example.com/ref-1.png', 'https://example.com/ref-2.png'],
+    duration: 12,
+    resolution: '1080p',
+    aspect_ratio: '4:5',
+  });
+  assert.deepEqual(r2vValid, OK);
+
+  const unsupportedV2v = validateRequest('happy-horse-1-1', 'v2v', {
+    video_url: 'https://example.com/source.mp4',
+    prompt: 'Warm studio relight',
+    resolution: '1080p',
+  });
+  assert.equal(unsupportedV2v.ok, false);
+
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
+  assert.ok(engine);
+  assert.deepEqual(engine.modes, ['t2v', 'i2v', 'ref2v']);
+  assert.deepEqual(engine.aspectRatios, expectedRatios);
+  assert.deepEqual(engine.modeCaps?.t2v?.duration && 'options' in engine.modeCaps.t2v.duration ? engine.modeCaps.t2v.duration.options : [], expectedDurations);
+  assert.deepEqual(engine.modeCaps?.i2v?.duration && 'options' in engine.modeCaps.i2v.duration ? engine.modeCaps.i2v.duration.options : [], expectedDurations);
+  assert.deepEqual(engine.modeCaps?.ref2v?.duration && 'options' in engine.modeCaps.ref2v.duration ? engine.modeCaps.ref2v.duration.options : [], expectedDurations);
+  assert.equal(engine.modeCaps?.i2v?.aspectRatio, undefined);
+  const fields = [...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])];
+  assert.equal(fields.find((field) => field.id === 'image_url')?.maxCount, 1);
+  assert.equal(fields.find((field) => field.id === 'image_urls')?.maxCount, 9);
+  assert.equal(fields.find((field) => field.id === 'seed')?.min, 0);
+  assert.equal(fields.find((field) => field.id === 'seed')?.max, 2147483647);
+  assert.equal(fields.some((field) => field.id === 'video_url'), false);
+  assert.equal(fields.some((field) => field.id === 'reference_image_urls'), false);
+});
+
 test('Luma Ray 3.2 rejects looped 10 second public video requests', () => {
   const invalidStringDuration = validateRequest('luma-ray-3-2', 't2v', {
     prompt: 'Loop this shot',

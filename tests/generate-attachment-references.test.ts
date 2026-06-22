@@ -101,6 +101,26 @@ test('attachment reference helper preserves Happy Horse slot routing', () => {
     }).normalizedReferenceImages,
     ['https://cdn.maxvideoai.com/v2v-only.png']
   );
+
+  assert.deepEqual(
+    deriveGenerationAttachmentReferences({
+      engineId: 'happy-horse-1-1',
+      mode: 'ref2v',
+      attachments,
+      rawAudioUrl: null,
+    }).normalizedReferenceImages,
+    ['https://cdn.maxvideoai.com/ref2v-only.png']
+  );
+
+  assert.deepEqual(
+    deriveGenerationAttachmentReferences({
+      engineId: 'happy-horse-1-1',
+      mode: 'v2v',
+      attachments,
+      rawAudioUrl: null,
+    }).normalizedReferenceImages,
+    []
+  );
 });
 
 test('source video duration helper uses source duration for reframe only', () => {

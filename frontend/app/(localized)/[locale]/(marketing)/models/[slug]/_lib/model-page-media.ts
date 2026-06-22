@@ -141,7 +141,8 @@ export function pickDemoMedia(
   cards: ExampleGalleryVideo[],
   heroId: string | null,
   preferredId: string | null,
-  fallback: FeaturedMedia | null
+  fallback: FeaturedMedia | null,
+  options?: { allowFallbackReuse?: boolean }
 ): FeaturedMedia | null {
   const preferred =
     preferredId && preferredId !== heroId
@@ -156,7 +157,7 @@ export function pickDemoMedia(
     cards.find((card) => card.id !== heroId);
   const resolved = toFeaturedMedia(candidate, true);
   if (resolved) return resolved;
-  if (fallback && (!heroId || fallback.id !== heroId)) {
+  if (fallback && (options?.allowFallbackReuse || !heroId || fallback.id !== heroId)) {
     return fallback;
   }
   return null;

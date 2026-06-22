@@ -7,6 +7,7 @@ const root = process.cwd();
 const facadePath = join(root, 'frontend/server/media-library.ts');
 const modulesDir = join(root, 'frontend/server/media-library');
 const modules = [
+  'asset-listing.ts',
   'asset-media.ts',
   'asset-resolvers.ts',
   'assets.ts',
@@ -63,6 +64,7 @@ test('media library focused modules expose the expected contracts', () => {
   assert.match(readModule('asset-media.ts'), /export async function createRemoteVideoAssetThumbnail/);
   assert.match(readModule('asset-resolvers.ts'), /export async function resolveReusableAssetThumbUrl/);
   assert.match(readModule('asset-resolvers.ts'), /export async function resolveReusableAssetPreviewUrl/);
+  assert.match(readModule('asset-listing.ts'), /export async function listLibraryAssetPage/);
   assert.match(readModule('assets.ts'), /export async function listLibraryAssets/);
   assert.match(readModule('assets.ts'), /export async function ensureReusableAsset/);
   assert.match(readModule('assets.ts'), /export async function saveJobOutputToLibrary/);

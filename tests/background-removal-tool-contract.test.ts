@@ -141,7 +141,7 @@ test('background removal library and recent flows stay scoped to video assets', 
   );
   const recentJobsPath = join(root, 'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalRecentJobs.ts');
   const sourceMediaPath = join(root, 'frontend/src/components/tools/background-removal/_hooks/useBackgroundRemovalSourceMedia.ts');
-  const mediaAssetsPath = join(root, 'frontend/server/media-library/assets.ts');
+  const mediaAssetsPath = join(root, 'frontend/server/media-library/asset-listing.ts');
   const adminPendingPath = join(root, 'frontend/app/api/admin/videos/pending/route.ts');
 
   const recentActionsSource = readFileSync(recentActionsPath, 'utf8');

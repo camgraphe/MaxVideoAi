@@ -2,15 +2,15 @@
   "marketingName": "Happy Horse 1.0",
   "versionLabel": "1.0",
   "seo": {
-    "title": "Happy Horse 1.0 | Unified AI Video Model with Native Audio | MaxVideoAI",
-    "description": "Use Happy Horse 1.0 on MaxVideoAI for text-to-video, image-to-video, R2V reference images, video editing, native audio, and lip-sync.",
+    "title": "Happy Horse 1.0 | Legacy Video Edit Route | MaxVideoAI",
+    "description": "Use the legacy Happy Horse 1.0 video-edit route on MaxVideoAI. Use Happy Horse 1.1 for new text, image and reference generations.",
     "image": "/assets/models/models-hero-horses-reference.webp"
   },
-  "overview": "Happy Horse 1.0 is Alibaba's unified AI video model on MaxVideoAI for text prompts, first-frame images, R2V reference-image control, and video-to-video editing with native synchronized audio and lip-sync.",
+  "overview": "Happy Horse 1.0 is the legacy Happy Horse 1.0 video-edit route on MaxVideoAI. Use Happy Horse 1.1 for new text, image and reference generations, and keep 1.0 when a source clip needs video-to-video editing.",
   "pricingNotes": "Text, image, and R2V runs use standard per-second rates by resolution. Video edit is billed at a combined input/output rate, so it costs double the standard rate for the selected resolution.",
   "hero": {
-    "title": "Happy Horse 1.0 - unified video generation with native audio",
-    "intro": "Generate from text, animate an image, guide a scene with up to nine reference images, or edit an existing clip from the same Happy Horse model card.",
+    "title": "Happy Horse 1.0 - legacy video-edit route",
+    "intro": "Use Happy Horse 1.0 when a selected source clip needs legacy video edit. Start new text, image, and reference generations on Happy Horse 1.1.",
     "badge": "Text · Image · R2V · V2V · 720p/1080p · Native audio · Lip-sync",
     "ctaPrimary": {
       "label": "Generate with Happy Horse 1.0",
@@ -18,8 +18,8 @@
     },
     "secondaryLinks": [
       {
-        "label": "Compare Happy Horse vs Seedance 2.0",
-        "href": "/ai-video-engines/happy-horse-1-0-vs-seedance-2-0"
+        "label": "Compare Happy Horse 1.1 vs 1.0",
+        "href": "/ai-video-engines/happy-horse-1-1-vs-happy-horse-1-0"
       },
       {
         "label": "Compare Happy Horse vs Veo 3.1",
@@ -32,8 +32,8 @@
     ]
   },
   "compareLink": {
-    "label": "Compare Happy Horse 1.0 vs Seedance 2.0 ->",
-    "href": "/ai-video-engines/happy-horse-1-0-vs-seedance-2-0"
+    "label": "Compare Happy Horse 1.1 vs Happy Horse 1.0 ->",
+    "href": "/ai-video-engines/happy-horse-1-1-vs-happy-horse-1-0"
   },
   "bestUseCases": {
     "title": "Best use cases",
@@ -64,7 +64,7 @@
   "technicalOverview": [
     {
       "label": "Workflows",
-      "body": "Text-to-video, image-to-video, R2V reference-image generation, and video edit are exposed as one model in MaxVideoAI."
+      "body": "Happy Horse 1.0 remains available for legacy video edit. Use Happy Horse 1.1 for new text-to-video, image-to-video, and reference-to-video jobs."
     },
     {
       "label": "Duration",
@@ -125,8 +125,8 @@
   "faqTitle": "FAQ - Happy Horse 1.0 on MaxVideoAI",
   "faqs": [
     {
-      "q": "What inputs does Happy Horse 1.0 support?",
-      "a": "MaxVideoAI exposes Happy Horse 1.0 as one model with text-to-video, image-to-video, R2V reference images, and video-to-video edit workflows."
+      "q": "What should Happy Horse 1.0 be used for now?",
+      "a": "Use Happy Horse 1.0 for the legacy video-edit route. Use Happy Horse 1.1 for new text, image and reference generations."
     },
     {
       "q": "Does Happy Horse support lip-sync?",
@@ -139,7 +139,7 @@
   ],
   "custom": {
     "galleryTitle": "Happy Horse 1.0 model demos",
-    "galleryIntro": "Review the model page clips for native audio, lip-sync, and video-edit behavior. Comparison pages intentionally stay text/spec focused for this launch.",
+    "galleryIntro": "Review legacy video-edit behavior. Comparison pages intentionally stay text/spec focused for this launch.",
     "galleryAllCta": "Start a Happy Horse generation ->",
     "demoTitle": "Demo prompt - Happy Horse 1.0",
     "demoPromptLabel": "Prompt",
@@ -167,8 +167,8 @@
         "ctaLabel": "Compare Happy Horse vs Veo 3.1 ->"
       }
     ],
-    "finalPara1": "Happy Horse 1.0 fits best when the brief needs one model to cover prompt generation, image animation, reference-guided consistency, native audio, lip-sync, and source video editing; choose Seedance or Kling first when raw realism, image quality, and motion are the priority.",
-    "finalPara2": "For launch work, start with text or R2V to establish the shot, then use V2V when an approved clip needs a directed edit.",
+    "finalPara1": "Happy Horse 1.0 fits best when an approved source clip needs a directed legacy video edit. Use Happy Horse 1.1 for new text, image and reference generations.",
+    "finalPara2": "For launch work, start on Happy Horse 1.1, Seedance, Kling or Veo, then return to 1.0 only when a source clip needs the legacy video-edit endpoint.",
     "finalButton": "Generate with Happy Horse 1.0"
   }
 }

@@ -251,6 +251,136 @@ test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls on
   assert.equal(result.requestBody.generate_audio, true);
 });
 
+test('Fal request body routes Happy Horse 1.1 reference-to-video with image_urls only', () => {
+  const payload = {
+    engineId: 'happy-horse-1-1',
+    prompt: 'Use character1 and character2 in a studio product demo.',
+    mode: 'ref2v',
+    durationOption: 5,
+    resolution: '1080p',
+    aspectRatio: '5:4',
+    imageUrl: 'https://cdn.maxvideoai.com/start-should-not-be-sent.png',
+    referenceImages: [
+      'https://cdn.maxvideoai.com/character-1.png',
+      'https://cdn.maxvideoai.com/character-2.png',
+    ],
+  };
+
+  const model = resolveFalModelSlug(payload, 'alibaba/happy-horse/v1.1/text-to-video');
+  assert.equal(model, 'alibaba/happy-horse/v1.1/reference-to-video');
+
+  const result = buildFalGenerationRequest(payload, model ?? '');
+  assert.equal(result.model, 'alibaba/happy-horse/v1.1/reference-to-video');
+  assert.equal(result.requestBody.image_url, undefined);
+  assert.equal(result.requestBody.reference_image_urls, undefined);
+  assert.deepEqual(result.requestBody.image_urls, [
+    'https://cdn.maxvideoai.com/character-1.png',
+    'https://cdn.maxvideoai.com/character-2.png',
+  ]);
+  assert.equal(result.requestBody.duration, 5);
+  assert.equal(result.requestBody.resolution, '1080p');
+  assert.equal(result.requestBody.aspect_ratio, '5:4');
+});
+
+test('Fal request body only sends Happy Horse 1.1 fields supported by Fal schemas', () => {
+  const cases = [
+    {
+      mode: 't2v',
+      model: 'alibaba/happy-horse/v1.1/text-to-video',
+      payload: {
+        engineId: 'happy-horse-1-1',
+        prompt: 'A cinematic presenter shot with native audio.',
+        mode: 't2v',
+        durationOption: 15,
+        resolution: '1080p',
+        aspectRatio: '9:21',
+        fps: 24,
+        seed: 2147483647,
+        safetyChecker: false,
+      },
+      expected: {
+        prompt: 'A cinematic presenter shot with native audio.',
+        duration: 15,
+        resolution: '1080p',
+        aspect_ratio: '9:21',
+        seed: 2147483647,
+        enable_safety_checker: false,
+      },
+    },
+    {
+      mode: 'i2v',
+      model: 'alibaba/happy-horse/v1.1/image-to-video',
+      payload: {
+        engineId: 'happy-horse-1-1',
+        prompt: 'Animate the product naturally.',
+        mode: 'i2v',
+        durationOption: 3,
+        resolution: '720p',
+        aspectRatio: '9:21',
+        fps: 24,
+        seed: 0,
+        safetyChecker: true,
+        inputs: [
+          attachment({
+            kind: 'image',
+            slotId: 'image_url',
+            url: 'https://cdn.maxvideoai.com/start.png',
+          }),
+        ],
+      },
+      expected: {
+        prompt: 'Animate the product naturally.',
+        duration: 3,
+        resolution: '720p',
+        image_url: 'https://cdn.maxvideoai.com/start.png',
+        seed: 0,
+        enable_safety_checker: true,
+      },
+    },
+    {
+      mode: 'ref2v',
+      model: 'alibaba/happy-horse/v1.1/reference-to-video',
+      payload: {
+        engineId: 'happy-horse-1-1',
+        prompt: 'Use character1 and character2 in a product demo.',
+        mode: 'ref2v',
+        durationOption: 12,
+        resolution: '1080p',
+        aspectRatio: '4:5',
+        fps: 24,
+        referenceImages: [
+          'https://cdn.maxvideoai.com/character-1.png',
+          'https://cdn.maxvideoai.com/character-2.png',
+        ],
+      },
+      expected: {
+        prompt: 'Use character1 and character2 in a product demo.',
+        duration: 12,
+        resolution: '1080p',
+        aspect_ratio: '4:5',
+        image_urls: [
+          'https://cdn.maxvideoai.com/character-1.png',
+          'https://cdn.maxvideoai.com/character-2.png',
+        ],
+      },
+    },
+  ];
+
+  cases.forEach(({ mode, model, payload, expected }) => {
+    const result = buildFalGenerationRequest(payload, model);
+    assert.equal(result.model, model);
+    Object.entries(expected).forEach(([field, value]) => {
+      assert.deepEqual(result.requestBody[field], value, `${mode}.${field}`);
+    });
+    assert.equal(result.requestBody.fps, undefined, `${mode} must not send unsupported fps`);
+    assert.equal(result.requestBody.video_url, undefined, `${mode} must not send unsupported video_url`);
+    if (mode === 'i2v') {
+      assert.equal(result.requestBody.aspect_ratio, undefined, 'Happy Horse 1.1 I2V must not send aspect_ratio');
+      assert.equal(result.requestBody.image_urls, undefined, 'Happy Horse 1.1 I2V must not send image_urls');
+    }
+  });
+});
+
 test('Fal request body clamps Veo 3.1 Extend resolution to 720p', () => {
   const cases = [
     ['veo-3-1', 'fal-ai/veo3.1', 'fal-ai/veo3.1/extend-video', '1080p'],

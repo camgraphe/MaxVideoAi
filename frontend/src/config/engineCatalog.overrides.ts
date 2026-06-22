@@ -70,6 +70,12 @@ export function getEngineCatalogOverrides(): Record<string, EngineCatalogOverrid
     'seedance-2-0-fast': {
       bestFor: 'Fast Seedance drafts, reference tests, and shot planning',
     },
+    'happy-horse-1-1': {
+      bestFor: 'Alibaba native-audio text, image and reference video',
+    },
+    'happy-horse-1-0': {
+      bestFor: 'Legacy Alibaba video edit route',
+    },
     'wan-2-6': {
       bestFor: 'General purpose video',
     },

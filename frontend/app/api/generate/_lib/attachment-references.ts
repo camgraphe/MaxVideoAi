@@ -1,4 +1,5 @@
 import type { Mode } from '@/types/engines';
+import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import type { NormalizedAttachment } from './attachments';
 
 type AttachmentReferenceParams = {
@@ -83,9 +84,12 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const attachmentReferenceImageUrls = params.attachments
     .filter((attachment) => {
       if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
-      if (params.engineId === 'happy-horse-1-0') {
-        if (params.mode === 'v2v') return attachment.slotId === 'reference_image_urls';
+      if (isHappyHorseEngineId(params.engineId)) {
+        if (params.mode === 'v2v' && supportsHappyHorseVideoEdit(params.engineId)) {
+          return attachment.slotId === 'reference_image_urls';
+        }
         if (params.mode === 'ref2v') return attachment.slotId === 'image_urls' || attachment.slotId === 'reference_images';
+        if (params.mode === 'v2v') return false;
       }
       return (
         attachment.slotId === 'image_urls' ||

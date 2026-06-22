@@ -1,7 +1,7 @@
 import type { EngineCaps, Mode } from '@/types/engines';
+import { HAPPY_HORSE_LEGACY_ENGINE_ID } from '@/lib/happy-horse-workflow';
 
 const KLING_ENGINE_ID = 'kling-2-5-turbo';
-const HAPPY_HORSE_ENGINE_ID = 'happy-horse-1-0';
 const KLING_O3_V2V_PRICING: Record<
   string,
   { pricingDetails: EngineCaps['pricingDetails']; pricing: EngineCaps['pricing'] }
@@ -94,7 +94,7 @@ export function applyEngineVariantPricing(engine: EngineCaps, mode?: Mode): Engi
       pricing: KLING_STANDARD_PRICING,
     };
   }
-  if (engine.id === HAPPY_HORSE_ENGINE_ID && mode === 'v2v') {
+  if (engine.id === HAPPY_HORSE_LEGACY_ENGINE_ID && mode === 'v2v') {
     return {
       ...engine,
       pricingDetails: HAPPY_HORSE_V2V_PRICING_DETAILS,

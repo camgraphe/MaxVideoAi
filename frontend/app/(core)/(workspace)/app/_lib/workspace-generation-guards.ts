@@ -6,6 +6,7 @@ import {
   isLumaRay2GenerateMode,
   LUMA_RAY2_ERROR_UNSUPPORTED,
 } from '@/lib/luma-ray2';
+import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import type { Mode } from '@/types/engines';
 import type { GenerationAttachmentPayload } from './workspace-generation-inputs';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
@@ -190,7 +191,7 @@ export function getGenerationIterationGuardMessage(options: GenerationIterationG
       if (options.selectedEngineId.startsWith('kling-o3-') && options.hasKlingElements) {
         return null;
       }
-      return options.selectedEngineId === 'happy-horse-1-0'
+      return isHappyHorseEngineId(options.selectedEngineId)
         ? 'Add 1–9 reference images before running Happy Horse R2V.'
         : 'Add 1–4 reference images before running Reference → Video.';
     }

@@ -180,6 +180,43 @@ test('prepareGenerationInputs preserves Happy Horse reference slot routing', () 
   assert.deepEqual(result.referenceImageUrls, ['https://cdn.example.com/v2v.jpg']);
 });
 
+test('prepareGenerationInputs uses only image_urls for Happy Horse 1.1 reference-to-video', () => {
+  const imageUrls = field('image_urls', 'image', 'Happy Horse 1.1 refs');
+  const referenceImageUrls = field('reference_image_urls', 'image', 'Legacy edit refs');
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'happy-horse-1-1',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: baseForm({ engineId: 'happy-horse-1-1', mode: 'ref2v' }),
+    inputSchema: { required: [imageUrls], optional: [referenceImageUrls] },
+    inputSchemaSummary: {
+      assetFields: [
+        { field: imageUrls, required: true, role: 'reference' },
+        { field: referenceImageUrls, required: false, role: 'reference' },
+      ],
+    },
+    extraInputFields: [],
+    inputAssets: {
+      image_urls: [asset({ id: 'r2v', fieldId: 'image_urls', url: 'https://cdn.example.com/r2v.jpg' })],
+      reference_image_urls: [
+        asset({ id: 'v2v', fieldId: 'reference_image_urls', url: 'https://cdn.example.com/v2v.jpg' }),
+      ],
+    },
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(['image_urls', 'reference_image_urls']),
+    genericImageFieldIds: new Set(['image_urls', 'reference_image_urls']),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: false,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(result.referenceImageUrls, ['https://cdn.example.com/r2v.jpg']);
+});
+
 test('prepareGenerationInputs reports unavailable assets before generation', () => {
   const image = field('image_url', 'image', 'Primary image');
   const result = prepareGenerationInputs({

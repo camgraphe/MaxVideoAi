@@ -133,7 +133,7 @@ test('pricing matrix data is generated from the catalog with scenario total pres
   assert.match(hubDataSource, /PRICING_DISPLAY_MODEL_ORDER/);
   assert.match(hubDataSource, /PRICING_DISPLAY_FAMILY_ORDER/);
   assert.match(hubDataSource, /getPricingDisplayRank/);
-  assert.match(hubDataSource, /'seedance-2-0'[\s\S]*'kling-3-pro'[\s\S]*'veo-3-1'[\s\S]*'happy-horse-1-0'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-2-6'[\s\S]*'minimax-hailuo-02-text'[\s\S]*'luma-ray-2'/);
+  assert.match(hubDataSource, /'seedance-2-0'[\s\S]*'kling-3-pro'[\s\S]*'veo-3-1'[\s\S]*'happy-horse-1-1'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-2-6'[\s\S]*'minimax-hailuo-02-text'[\s\S]*'luma-ray-2'[\s\S]*'happy-horse-1-0'/);
   assert.match(hubDataSource, /5s 720p/);
   assert.match(hubDataSource, /8s 1080p/);
   assert.match(hubDataSource, /10s 1080p/);

@@ -20,16 +20,18 @@ test('Happy Horse resolves to Alibaba logo assets', () => {
   assert.equal(brand.label, 'Alibaba');
   assert.equal(brand.policy.logoAllowed, true);
   assert.equal(brand.wordmark?.light.src, '/brand/partners/alibaba/alibaba-wordmark.png');
+  assert.equal(getPartnerByEngineId('happy-horse-1-1')?.id, 'alibaba');
   assert.equal(getPartnerByEngineId('happy-horse-1-0')?.id, 'alibaba');
+  assert.equal(getPartnerByEngineId('alibaba/happy-horse/v1.1/text-to-video')?.id, 'alibaba');
   assert.equal(getPartnerByEngineId('alibaba/happy-horse/video-edit')?.id, 'alibaba');
 
-  const mark = getPartnerBrandMark({ id: 'happy-horse-1-0', brandId: 'alibaba' });
+  const mark = getPartnerBrandMark({ id: 'happy-horse-1-1', brandId: 'alibaba' });
   assert.equal(mark?.light.src, '/brand/partners/alibaba/alibaba-icon.png');
   assert.equal(mark?.dark.src, '/brand/partners/alibaba/alibaba-icon.png');
 });
 
 test('Alibaba fallback pictogram has theme-backed colors', () => {
-  const pictogram = getEnginePictogram({ brandId: 'alibaba' }, 'Happy Horse 1.0');
+  const pictogram = getEnginePictogram({ brandId: 'alibaba' }, 'Happy Horse 1.1');
 
   assert.equal(pictogram.code, 'Al');
   assert.equal(pictogram.backgroundColor, 'var(--engine-alibaba-bg)');

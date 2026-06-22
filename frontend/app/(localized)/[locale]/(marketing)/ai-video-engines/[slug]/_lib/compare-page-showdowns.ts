@@ -35,6 +35,10 @@ function hasCuratedShowdowns(slug: string | null | undefined) {
   return Boolean(SHOWDOWNS[slug]?.some((entry) => Boolean(entry)));
 }
 
+function logShowdownMediaLookupError(operation: string, error: unknown) {
+  console.warn(`[compare-page] Skipping optional showdown media lookup after ${operation} failed.`, error);
+}
+
 export async function buildCompareShowdownSlots({
   activeLocale,
   canonicalSlug,
@@ -86,10 +90,14 @@ export async function buildCompareShowdownSlots({
     const rightOverride = SHOWDOWN_OVERRIDES[right.modelSlug]?.[template.id];
     if (rightOverride) overrideJobs.add(rightOverride);
   });
-  const overrideVideos =
-    overrideJobs.size && isDatabaseConfigured()
-      ? await getPublicVideosByIds(Array.from(overrideJobs))
-      : new Map<string, GalleryVideo>();
+  let overrideVideos = new Map<string, GalleryVideo>();
+  if (overrideJobs.size && isDatabaseConfigured()) {
+    try {
+      overrideVideos = await getPublicVideosByIds(Array.from(overrideJobs));
+    } catch (error) {
+      logShowdownMediaLookupError('override video lookup', error);
+    }
+  }
   const fallbackByTemplateId = new Map<string, { left?: GalleryVideo; right?: GalleryVideo }>();
   if (isDatabaseConfigured()) {
     const lookupTasks: Array<Promise<void>> = [];
@@ -100,25 +108,31 @@ export async function buildCompareShowdownSlots({
       if (!needsLeft && !needsRight) return;
       if (needsLeft) {
         lookupTasks.push(
-          getLatestPublicVideoByPromptAndEngine(template.prompt, left.engineId || left.modelSlug).then((video) => {
-            if (!video) return;
-            const current = fallbackByTemplateId.get(template.id) ?? {};
-            fallbackByTemplateId.set(template.id, { ...current, left: video });
-          })
+          getLatestPublicVideoByPromptAndEngine(template.prompt, left.engineId || left.modelSlug)
+            .then((video) => {
+              if (!video) return;
+              const current = fallbackByTemplateId.get(template.id) ?? {};
+              fallbackByTemplateId.set(template.id, { ...current, left: video });
+            })
         );
       }
       if (needsRight) {
         lookupTasks.push(
-          getLatestPublicVideoByPromptAndEngine(template.prompt, right.engineId || right.modelSlug).then((video) => {
-            if (!video) return;
-            const current = fallbackByTemplateId.get(template.id) ?? {};
-            fallbackByTemplateId.set(template.id, { ...current, right: video });
-          })
+          getLatestPublicVideoByPromptAndEngine(template.prompt, right.engineId || right.modelSlug)
+            .then((video) => {
+              if (!video) return;
+              const current = fallbackByTemplateId.get(template.id) ?? {};
+              fallbackByTemplateId.set(template.id, { ...current, right: video });
+            })
         );
       }
     });
     if (lookupTasks.length) {
-      await Promise.all(lookupTasks);
+      const results = await Promise.allSettled(lookupTasks);
+      const failure = results.find((result): result is PromiseRejectedResult => result.status === 'rejected');
+      if (failure) {
+        logShowdownMediaLookupError('fallback video lookup', failure.reason);
+      }
     }
   }
 

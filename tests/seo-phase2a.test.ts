@@ -70,10 +70,12 @@ test('builds family dictionary from real app model families', () => {
   assert.ok(labels.includes('Veo'));
   assert.ok(labels.includes('LTX'));
   assert.ok(labels.includes('Happy Horse'));
+  assert.ok(dictionary.find((family) => family.label === 'Happy Horse')?.modelSlugs.includes('happy-horse-1-1'));
   assert.ok(dictionary.find((family) => family.label === 'Happy Horse')?.modelSlugs.includes('happy-horse-1-0'));
 });
 
 test('matches real app family aliases including Happy Horse', () => {
+  assert.equal(detectStrategicModelFamily('happy horse 1.1 examples'), 'Happy Horse');
   assert.equal(detectStrategicModelFamily('happy horse 1.0 examples'), 'Happy Horse');
   assert.equal(detectStrategicModelFamily('happyhorse reference to video'), 'Happy Horse');
   assert.equal(detectStrategicModelFamily('alibaba happy horse vs seedance'), 'Happy Horse');

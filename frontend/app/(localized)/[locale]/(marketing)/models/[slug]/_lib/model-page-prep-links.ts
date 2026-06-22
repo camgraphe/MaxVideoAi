@@ -2,7 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { PrepLinksSection } from '../_components/ModelPrepLinksSection';
 
 const NANO_BANANA_MODEL_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
-const VIDEO_PREP_MODEL_SLUGS = new Set(['veo-3-1', 'kling-3-pro', 'happy-horse-1-0', 'sora-2-pro', 'ltx-2-3-pro', 'ltx-2-3-fast']);
+const VIDEO_PREP_MODEL_SLUGS = new Set(['veo-3-1', 'kling-3-pro', 'happy-horse-1-1', 'happy-horse-1-0', 'sora-2-pro', 'ltx-2-3-pro', 'ltx-2-3-fast']);
 const gptImagePrepLinks = {
   en: [{ href: '/tools/character-builder', label: 'Build a reusable character reference' }, { href: '/tools/angle', label: 'Change the viewpoint before the edit' }, { href: '/app/image?engine=gpt-image-2', label: 'Open GPT Image 2' }],
   fr: [{ href: '/tools/character-builder', label: 'Créer une référence personnage réutilisable' }, { href: '/tools/angle', label: "Changer le point de vue avant l'edit" }, { href: '/app/image?engine=gpt-image-2', label: 'Ouvrir GPT Image 2' }],

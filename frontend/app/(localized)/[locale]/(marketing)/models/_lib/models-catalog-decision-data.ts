@@ -39,12 +39,13 @@ const EXAMPLE_FAMILY_BY_MODEL: Record<string, string> = {
   'wan-2-6': 'wan',
   'wan-2-5': 'wan',
   'pika-text-to-video': 'pika',
+  'happy-horse-1-1': 'happy-horse',
   'happy-horse-1-0': 'happy-horse',
   'minimax-hailuo-02-text': 'hailuo',
 };
 
-const TOP_PICK_IDS = ['seedance-2-0', 'kling-3-pro', 'seedance-2-0-fast', 'ltx-2-3-fast'] as const;
-const RECOMMENDED_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
+const TOP_PICK_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1'] as const;
+const RECOMMENDED_IDS = ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'happy-horse-1-1', 'ltx-2-3-fast', 'luma-ray-3-2'] as const;
 
 export type ModelsCatalogDecisionBadge = {
   label: string;
@@ -146,20 +147,20 @@ function buildTopPickCopy(locale: AppLocale) {
     en: {
       'seedance-2-0': { reason: 'Best native audio', detail: 'Native audio, lip sync, realistic motion' },
       'kling-3-pro': { reason: 'Best control', detail: 'Cinematic sequences and prompt control' },
-      'seedance-2-0-fast': { reason: 'Best fast drafts', detail: 'Quick iterations and lower-cost tests' },
-      'ltx-2-3-fast': { reason: 'Best value / long clips', detail: 'Low-cost drafts, 20s clips, 4K output' },
+      'veo-3-1': { reason: 'Best Google route', detail: 'Ad-ready prompts, references, and extend control' },
+      'happy-horse-1-1': { reason: 'Best Alibaba audio route', detail: 'Text, image, and references with native audio' },
     },
     fr: {
       'seedance-2-0': { reason: 'Meilleur audio natif', detail: 'Audio natif, lip sync, mouvement realiste' },
       'kling-3-pro': { reason: 'Meilleur controle', detail: 'Sequences cine et controle du prompt' },
-      'seedance-2-0-fast': { reason: 'Meilleurs drafts rapides', detail: 'Iterations rapides et tests moins chers' },
-      'ltx-2-3-fast': { reason: 'Meilleure valeur / longs clips', detail: 'Drafts bas cout, clips 20s, sortie 4K' },
+      'veo-3-1': { reason: 'Meilleure route Google', detail: 'Prompts pub, references et extension' },
+      'happy-horse-1-1': { reason: 'Meilleure route audio Alibaba', detail: 'Texte, image et references avec audio natif' },
     },
     es: {
       'seedance-2-0': { reason: 'Mejor audio nativo', detail: 'Audio nativo, lip sync y movimiento realista' },
       'kling-3-pro': { reason: 'Mejor control', detail: 'Secuencias cinematicas y control de prompt' },
-      'seedance-2-0-fast': { reason: 'Mejores borradores rapidos', detail: 'Iteraciones rapidas y pruebas de menor costo' },
-      'ltx-2-3-fast': { reason: 'Mejor valor / clips largos', detail: 'Borradores de bajo costo, clips 20s, salida 4K' },
+      'veo-3-1': { reason: 'Mejor ruta Google', detail: 'Prompts para ads, referencias y extension' },
+      'happy-horse-1-1': { reason: 'Mejor ruta audio Alibaba', detail: 'Texto, imagen y referencias con audio nativo' },
     },
   });
 }
@@ -370,11 +371,15 @@ export function buildModelsCatalogDecisionData({
     useCases: buildUseCases(activeLocale),
     recommendedCards: pickCards(cards, RECOMMENDED_IDS),
     popularComparisons: [
-      { label: 'Seedance 2.0 vs Seedance 2.0 Fast', href: { ...buildModelCompareHref('seedance-2-0', 'seedance-2-0-fast'), params: { slug: 'seedance-2-0-vs-seedance-2-0-fast' } } },
+      { label: 'Seedance 2.0 vs Kling 3 Pro', href: buildModelCompareHref('seedance-2-0', 'kling-3-pro') },
+      {
+        label: 'Seedance 2.0 vs Seedance 2.0 Fast',
+        href: { pathname: '/ai-video-engines/[slug]', params: { slug: 'seedance-2-0-vs-seedance-2-0-fast' } },
+      },
       { label: 'Kling 3 Pro vs Veo 3.1', href: buildModelCompareHref('kling-3-pro', 'veo-3-1') },
-      { label: 'LTX 2.3 Fast vs Seedance 2.0', href: buildModelCompareHref('ltx-2-3-fast', 'seedance-2-0') },
+      { label: 'Happy Horse 1.1 vs Seedance 2.0', href: buildModelCompareHref('happy-horse-1-1', 'seedance-2-0') },
+      { label: 'Happy Horse 1.1 vs Veo 3.1', href: buildModelCompareHref('happy-horse-1-1', 'veo-3-1') },
       { label: 'Veo 3.1 Fast vs Veo 3.1 Lite', href: buildModelCompareHref('veo-3-1-fast', 'veo-3-1-lite') },
-      { label: 'Kling 3 Pro vs Kling 3 Standard', href: buildModelCompareHref('kling-3-pro', 'kling-3-standard') },
     ],
     pricingLimits: buildPricingLimits(activeLocale),
     faqItems: buildDecisionFaqItems(activeLocale),

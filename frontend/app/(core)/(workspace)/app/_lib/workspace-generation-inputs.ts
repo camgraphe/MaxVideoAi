@@ -7,6 +7,7 @@ import {
   KLING_O3_END_FRAME_REQUIRES_START_FRAME_MESSAGE,
   shouldIgnoreKlingO3FrameAssets,
 } from './kling-o3-unified-workflow';
+import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -237,9 +238,11 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
     ? options.referenceAssetFieldIds
     : options.genericImageFieldIds;
   const activeReferenceSlots =
-    options.selectedEngineId === 'happy-horse-1-0'
+    isHappyHorseEngineId(options.selectedEngineId)
       ? options.submissionMode === 'v2v'
-        ? new Set(['reference_image_urls'])
+        ? supportsHappyHorseVideoEdit(options.selectedEngineId)
+          ? new Set(['reference_image_urls'])
+          : referenceSlots
         : options.submissionMode === 'ref2v'
           ? new Set(['image_urls'])
           : referenceSlots

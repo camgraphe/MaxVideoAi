@@ -4584,30 +4584,31 @@ const LUMA_UNI_1_MAX_COPY: LocalizedTemplateCopy = {
 const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
   en: {
     hero: {
-      eyebrow: 'UNIFIED AUDIO VIDEO ROUTE',
+      eyebrow: 'LEGACY VIDEO EDIT ROUTE',
       title: 'Happy Horse 1.0',
-      subtitle: 'Native audio, lip-sync, R2V references and video editing inside one unified AI video route.',
-      subtitleHighlights: ['Native audio', 'lip-sync', 'R2V references'],
+      subtitle:
+        'Legacy video-edit route for source clip adjustments; use Happy Horse 1.1 for new text, image and reference generations.',
+      subtitleHighlights: ['legacy video-edit', 'source clip adjustments', 'Happy Horse 1.1'],
       paragraph:
-        'Use Happy Horse 1.0 when a shot needs audio and edit control in the same route: text-to-video, image-to-video, R2V references and video-to-video adjustments for production experiments.',
+        'Use Happy Horse 1.0 only when you need the legacy video-edit endpoint. Use Happy Horse 1.1 for new text, image and reference generations.',
       primaryCta: { label: 'Generate with Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
       secondaryCta: { label: 'View examples', href: examplesHref('en', 'happy-horse') },
       quickLinks: [
-        { label: 'Compare vs Seedance', href: compareHref('en', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'Compare vs Happy Horse 1.1', href: compareHref('en', 'happy-horse-1-1', 'happy-horse-1-0', 'happy-horse-1-1') },
         { label: 'View pricing', href: pricingHref('en', 'happy-horse-1-0-pricing') },
         { label: 'Prompt examples', href: '#prompting' },
       ],
     },
     media: {
       caption: 'Happy Horse 1.0 example',
-      description: 'Native-audio reference-guided video route',
+      description: 'Legacy native-audio video-edit route',
       renderLabel: 'View render',
       badges: ['Native audio', 'R2V', '1080p'],
       altContext: 'Happy Horse 1.0 native audio reference-guided video example',
     },
     features: [
       { title: 'Native audio', body: 'Generate dialogue, ambience and SFX with the render when the route supports it.', tone: 'audio' },
-      { title: 'Text or image', body: 'Start from a scene brief or a still image to lock subject and composition.', tone: 'reference' },
+      { title: 'Current route moved', body: 'Use Happy Horse 1.1 for new text, image and reference generations.', tone: 'reference' },
       { title: 'R2V references', body: 'Use multiple references to guide identity, motion, style or scene details.', tone: 'continuity' },
       { title: 'Video edit', body: 'Modify an existing clip when you need a controlled visual adjustment.', tone: 'quality' },
       { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolution before generation.', tone: 'quality' },
@@ -4615,9 +4616,9 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
     ],
     decisionCards: [
       {
-        title: 'Happy Horse or Seedance?',
-        body: 'Use Happy Horse when native audio, lip-sync and route flexibility matter. Use Seedance 2.0 for current Seedance production continuity.',
-        cta: { label: 'Compare Happy Horse vs Seedance', href: compareHref('en', 'happy-horse-1-0', 'seedance-2-0') },
+        title: 'Need the current Happy Horse?',
+        body: 'Start on Happy Horse 1.1 for new text, image and reference generations. Keep 1.0 only for legacy video-edit jobs.',
+        cta: { label: 'Open Happy Horse 1.1', href: modelsHref('en', 'happy-horse-1-1') },
       },
       {
         title: 'Working from references?',
@@ -4645,37 +4646,38 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Up to 1080p',
     },
     meta: {
-      title: 'Happy Horse 1.0: Pricing, Native Audio & R2V Examples | MaxVideoAI',
+      title: 'Happy Horse 1.0 Legacy Video Edit Route | MaxVideoAI',
       description:
-        'Explore Happy Horse 1.0 pricing, native audio, lip-sync, R2V references, image-to-video and video editing workflows on MaxVideoAI.',
+        'Use Happy Horse 1.0 as the legacy Alibaba video-edit route on MaxVideoAI. Use Happy Horse 1.1 for new text, image and reference generations.',
     },
   },
   fr: {
     hero: {
-      eyebrow: 'ROUTE VIDÉO AUDIO UNIFIÉE',
+      eyebrow: 'ANCIENNE ROUTE D’ÉDITION VIDÉO',
       title: 'Happy Horse 1.0',
-      subtitle: 'Audio natif, lip-sync, références R2V et montage vidéo dans une même route IA.',
-      subtitleHighlights: ['Audio natif', 'lip-sync', 'références R2V'],
+      subtitle:
+        'Ancienne route d’édition vidéo pour clip source ; utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.',
+      subtitleHighlights: ['édition vidéo', 'clip source', 'Happy Horse 1.1'],
       paragraph:
-        'Utilisez Happy Horse 1.0 quand un plan doit réunir audio et contrôle d’édition : texte-vidéo, image-vidéo, références R2V et ajustements vidéo-vidéo pour vos essais de production.',
+        'Utilisez Happy Horse 1.0 seulement pour l’ancien endpoint d’édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.',
       primaryCta: { label: 'Générer avec Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'happy-horse') },
       quickLinks: [
-        { label: 'Comparer vs Seedance', href: compareHref('fr', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'Comparer vs Happy Horse 1.1', href: compareHref('fr', 'happy-horse-1-1', 'happy-horse-1-0', 'happy-horse-1-1') },
         { label: 'Voir les tarifs', href: pricingHref('fr', 'happy-horse-1-0-pricing') },
         { label: 'Exemples de prompts', href: '#prompting' },
       ],
     },
     media: {
       caption: 'Exemple Happy Horse 1.0',
-      description: 'Route vidéo guidée par références avec audio natif',
+      description: 'Ancienne route d’édition vidéo avec audio natif',
       renderLabel: 'Voir le rendu',
       badges: ['Audio natif', 'R2V', '1080p'],
       altContext: 'exemple vidéo Happy Horse 1.0 avec audio natif et références',
     },
     features: [
       { title: 'Audio natif', body: 'Générez dialogue, ambiance et SFX avec le rendu quand la route le permet.', tone: 'audio' },
-      { title: 'Texte ou image', body: 'Partez d’un brief ou d’une image pour verrouiller sujet et composition.', tone: 'reference' },
+      { title: 'Route actuelle déplacée', body: 'Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.', tone: 'reference' },
       { title: 'Références R2V', body: 'Utilisez plusieurs références pour guider identité, mouvement, style ou décor.', tone: 'continuity' },
       { title: 'Édition vidéo', body: 'Modifiez un clip existant pour un ajustement visuel plus contrôlé.', tone: 'quality' },
       { title: '720p ou 1080p', body: 'Choisissez la résolution exposée dans MaxVideoAI avant génération.', tone: 'quality' },
@@ -4683,9 +4685,9 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
     ],
     decisionCards: [
       {
-        title: 'Happy Horse ou Seedance ?',
-        body: 'Choisissez Happy Horse pour audio natif, lip-sync et flexibilité de route. Gardez Seedance 2.0 pour la continuité de production Seedance.',
-        cta: { label: 'Comparer Happy Horse vs Seedance', href: compareHref('fr', 'happy-horse-1-0', 'seedance-2-0') },
+        title: 'Besoin du Happy Horse actuel ?',
+        body: 'Démarrez sur Happy Horse 1.1 pour les nouvelles générations texte, image et référence. Gardez 1.0 uniquement pour l’ancienne édition vidéo.',
+        cta: { label: 'Ouvrir Happy Horse 1.1', href: modelsHref('fr', 'happy-horse-1-1') },
       },
       {
         title: 'Travail avec références ?',
@@ -4713,37 +4715,38 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Jusqu’à 1080p',
     },
     meta: {
-      title: 'Happy Horse 1.0 : tarifs, audio natif et exemples R2V | MaxVideoAI',
+      title: 'Happy Horse 1.0 : ancienne édition vidéo | MaxVideoAI',
       description:
-        'Explorez Happy Horse 1.0 : prix, audio natif, lip-sync, références R2V, image-to-video et édition vidéo sur MaxVideoAI.',
+        'Utilisez Happy Horse 1.0 comme ancienne route Happy Horse pour l’édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.',
     },
   },
   es: {
     hero: {
-      eyebrow: 'RUTA UNIFICADA DE VIDEO CON AUDIO',
+      eyebrow: 'RUTA ANTERIOR DE EDICIÓN DE VIDEO',
       title: 'Happy Horse 1.0',
-      subtitle: 'Audio nativo, lip-sync, referencias R2V y edición de video dentro de una sola ruta IA.',
-      subtitleHighlights: ['Audio nativo', 'lip-sync', 'referencias R2V'],
+      subtitle:
+        'Ruta anterior de edición de video para clip fuente; usa Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia.',
+      subtitleHighlights: ['edición de video', 'clip fuente', 'Happy Horse 1.1'],
       paragraph:
-        'Usa Happy Horse 1.0 cuando un plano necesita audio y control de edición en la misma ruta: texto a video, imagen a video, referencias R2V y ajustes de video a video para pruebas de producción.',
+        'Usa Happy Horse 1.0 solo para el endpoint anterior de edición de video. Usa Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia.',
       primaryCta: { label: 'Generar con Happy Horse 1.0', href: '/app?engine=happy-horse-1-0' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'happy-horse') },
       quickLinks: [
-        { label: 'Comparar vs Seedance', href: compareHref('es', 'happy-horse-1-0', 'seedance-2-0') },
+        { label: 'Comparar vs Happy Horse 1.1', href: compareHref('es', 'happy-horse-1-1', 'happy-horse-1-0', 'happy-horse-1-1') },
         { label: 'Ver precios', href: pricingHref('es', 'happy-horse-1-0-pricing') },
         { label: 'Ejemplos de prompts', href: '#prompting' },
       ],
     },
     media: {
       caption: 'Ejemplo Happy Horse 1.0',
-      description: 'Ruta con audio nativo guiada por referencias',
+      description: 'Ruta anterior de edición de video con audio nativo',
       renderLabel: 'Ver resultado',
       badges: ['Audio nativo', 'R2V', '1080p'],
       altContext: 'ejemplo de Happy Horse 1.0 con audio nativo y referencias',
     },
     features: [
       { title: 'Audio nativo', body: 'Genera diálogo, ambiente y SFX con el render cuando la ruta lo permite.', tone: 'audio' },
-      { title: 'Texto o imagen', body: 'Empieza con un brief o una imagen para fijar sujeto y composición.', tone: 'reference' },
+      { title: 'Ruta actual movida', body: 'Usa Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia.', tone: 'reference' },
       { title: 'Referencias R2V', body: 'Usa varias referencias para guiar identidad, movimiento, estilo o escena.', tone: 'continuity' },
       { title: 'Edición de video', body: 'Modifica un clip existente cuando necesitas un ajuste visual controlado.', tone: 'quality' },
       { title: '720p o 1080p', body: 'Elige la resolución disponible en MaxVideoAI antes de generar.', tone: 'quality' },
@@ -4751,9 +4754,9 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
     ],
     decisionCards: [
       {
-        title: '¿Happy Horse o Seedance?',
-        body: 'Usa Happy Horse para audio nativo, lip-sync y flexibilidad de ruta. Usa Seedance 2.0 para continuidad de producción Seedance.',
-        cta: { label: 'Comparar Happy Horse vs Seedance', href: compareHref('es', 'happy-horse-1-0', 'seedance-2-0') },
+        title: '¿Necesitas el Happy Horse actual?',
+        body: 'Empieza en Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia. Mantén 1.0 solo para la edición de video anterior.',
+        cta: { label: 'Abrir Happy Horse 1.1', href: modelsHref('es', 'happy-horse-1-1') },
       },
       {
         title: '¿Trabajas con referencias?',
@@ -4781,9 +4784,219 @@ const HAPPY_HORSE_10_COPY: LocalizedTemplateCopy = {
       maxDurationNote: 'Hasta 1080p',
     },
     meta: {
-      title: 'Happy Horse 1.0: precios, audio nativo y ejemplos R2V | MaxVideoAI',
+      title: 'Happy Horse 1.0: edición de video anterior | MaxVideoAI',
       description:
-        'Explora Happy Horse 1.0: precios, audio nativo, lip-sync, referencias R2V, imagen a video y edición de video en MaxVideoAI.',
+        'Usa Happy Horse 1.0 como ruta anterior de Happy Horse para edición de video. Usa Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia.',
+    },
+  },
+};
+
+const HAPPY_HORSE_11_COPY: LocalizedTemplateCopy = {
+  en: {
+    ...HAPPY_HORSE_10_COPY.en,
+    hero: {
+      eyebrow: 'CURRENT ALIBABA VIDEO MODEL',
+      title: 'Happy Horse 1.1',
+      subtitle: 'Native audio, lip-sync, image-to-video and reference-to-video in one current Alibaba route.',
+      subtitleHighlights: ['Native audio', 'image-to-video', 'reference-to-video'],
+      paragraph:
+        'Use Happy Horse 1.1 when a shot needs synchronized speech or sound from text, a starting image, or up to nine reference images. Keep Happy Horse 1.0 for legacy video-edit jobs.',
+      primaryCta: { label: 'Generate with Happy Horse 1.1', href: '/app?engine=happy-horse-1-1' },
+      secondaryCta: { label: 'View examples', href: examplesHref('en', 'happy-horse') },
+      quickLinks: [
+        { label: 'Compare vs Seedance', href: compareHref('en', 'happy-horse-1-1', 'seedance-2-0') },
+        { label: 'View pricing', href: pricingHref('en', 'happy-horse-1-1-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Happy Horse 1.1 example',
+      description: 'Native-audio text, image and reference video route',
+      renderLabel: 'View render',
+      badges: ['Native audio', 'Reference video', '1080p'],
+      altContext: 'Happy Horse 1.1 native audio reference-guided video example',
+    },
+    features: [
+      { title: 'Native audio', body: 'Generate dialogue, ambience and SFX with the render when the route supports it.', tone: 'audio' },
+      { title: 'Text or image', body: 'Start from a scene brief or a still image to lock subject and composition.', tone: 'reference' },
+      { title: 'Reference images', body: 'Use up to nine references with character1 through character9 prompt anchors.', tone: 'continuity' },
+      { title: 'Expanded ratios', body: 'Use landscape, vertical, square, classic, wide, tall, 5:4 or 4:5 composition.', tone: 'quality' },
+      { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolution before generation.', tone: 'quality' },
+      { title: 'Lower 1080p provider rate', body: 'Happy Horse 1.1 uses the current Fal 1080p rate before MaxVideoAI margin.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Happy Horse 1.1 or Seedance?',
+        body: 'Use Happy Horse 1.1 for Alibaba native-audio text, image and reference generation. Use Seedance 2.0 when multimodal references, longer production continuity and current Seedance behavior are the priority.',
+        cta: { label: 'Compare Happy Horse vs Seedance', href: compareHref('en', 'happy-horse-1-1', 'seedance-2-0') },
+      },
+      {
+        title: 'Need video edit?',
+        body: 'Use Happy Horse 1.0 only when you specifically need the legacy video-edit endpoint. New text, image and reference jobs should start on 1.1.',
+        cta: { label: 'Open legacy Happy Horse 1.0', href: modelsHref('en', 'happy-horse-1-0') },
+      },
+      {
+        title: 'Working from references?',
+        body: 'Assign each file one job: identity, wardrobe, movement, environment or audio mood.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text-to-video', body: 'Write the subject, action, camera, style and audio beats in a compact brief.' },
+      { title: 'Image-to-video', body: 'Use a still image to anchor subject, product, wardrobe or composition.' },
+      { title: 'Reference-to-video', body: 'Name each reference as character1, character2 and onward to keep roles clear.' },
+      { title: 'Legacy video edit', body: 'Switch to Happy Horse 1.0 only when a source video must be edited rather than regenerated.' },
+      { title: 'Audio handling', body: 'Keep dialogue short and tie SFX to visible actions for cleaner synchronized output.' },
+    ],
+    pricingCopy: {
+      title: 'Happy Horse 1.1 pricing at a glance',
+      subtitle: 'Preset native-audio totals - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
+      ctaLabel: 'View full pricing',
+      maxDurationNote: 'Up to 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.1: Pricing, Native Audio & Reference Video | MaxVideoAI',
+      description:
+        'Explore Happy Horse 1.1 pricing, native audio, lip-sync, text-to-video, image-to-video and reference-to-video workflows on MaxVideoAI.',
+    },
+  },
+  fr: {
+    ...HAPPY_HORSE_10_COPY.fr,
+    hero: {
+      eyebrow: 'MODÈLE VIDÉO ALIBABA ACTUEL',
+      title: 'Happy Horse 1.1',
+      subtitle: 'Audio natif, synchronisation labiale, génération depuis image et génération guidée par références dans la route Alibaba actuelle.',
+      subtitleHighlights: ['Audio natif', 'synchronisation labiale', 'références'],
+      paragraph:
+        'Utilisez Happy Horse 1.1 quand un plan doit générer voix ou son synchronisé depuis un texte, une image de départ ou jusqu’à neuf références. Gardez Happy Horse 1.0 pour l’ancienne édition vidéo.',
+      primaryCta: { label: 'Générer avec Happy Horse 1.1', href: '/app?engine=happy-horse-1-1' },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr', 'happy-horse') },
+      quickLinks: [
+        { label: 'Comparer vs Seedance', href: compareHref('fr', 'happy-horse-1-1', 'seedance-2-0') },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'happy-horse-1-1-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Happy Horse 1.1',
+      description: 'Route texte, image et références avec audio natif',
+      renderLabel: 'Voir le rendu',
+      badges: ['Audio natif', 'Références', '1080p'],
+      altContext: 'exemple vidéo Happy Horse 1.1 avec audio natif et références',
+    },
+    features: [
+      { title: 'Audio natif', body: 'Générez dialogue, ambiance et SFX avec le rendu quand la route le permet.', tone: 'audio' },
+      { title: 'Texte ou image', body: 'Partez d’un brief ou d’une image pour verrouiller sujet et composition.', tone: 'reference' },
+      { title: 'Images de référence', body: 'Utilisez jusqu’à neuf références avec les ancres character1 à character9.', tone: 'continuity' },
+      { title: 'Ratios élargis', body: 'Utilisez paysage, vertical, carré, classique, très large, très haut, 5:4 ou 4:5.', tone: 'quality' },
+      { title: '720p ou 1080p', body: 'Choisissez la résolution exposée dans MaxVideoAI avant génération.', tone: 'quality' },
+      { title: '1080p fournisseur moins cher', body: 'Happy Horse 1.1 utilise le tarif Fal 1080p actuel avant marge MaxVideoAI.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: 'Happy Horse 1.1 ou Seedance ?',
+        body: 'Choisissez Happy Horse 1.1 pour les générations Alibaba avec audio natif depuis texte, image ou références. Choisissez Seedance 2.0 pour des références multimodales et une continuité de production Seedance actuelle.',
+        cta: { label: 'Comparer Happy Horse vs Seedance', href: compareHref('fr', 'happy-horse-1-1', 'seedance-2-0') },
+      },
+      {
+        title: 'Besoin de montage vidéo ?',
+        body: 'Utilisez Happy Horse 1.0 seulement si vous avez besoin de l’ancien endpoint d’édition vidéo. Les nouvelles générations texte, image et référence doivent partir de 1.1.',
+        cta: { label: 'Ouvrir l’ancienne route Happy Horse 1.0', href: modelsHref('fr', 'happy-horse-1-0') },
+      },
+      {
+        title: 'Travail avec références ?',
+        body: 'Donnez un rôle clair à chaque fichier : identité, tenue, mouvement, environnement ou humeur audio.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texte vers vidéo', body: 'Structurez sujet, action, caméra, style et indications audio dans une consigne courte.' },
+      { title: 'Image vers vidéo', body: 'Utilisez une image pour ancrer sujet, produit, tenue ou composition.' },
+      { title: 'Références vers vidéo', body: 'Nommez chaque référence character1, character2 et ainsi de suite pour clarifier les rôles.' },
+      { title: 'Ancienne édition vidéo', body: 'Passez à Happy Horse 1.0 uniquement quand une vidéo source doit être éditée plutôt que régénérée.' },
+      { title: 'Gestion audio', body: 'Gardez les dialogues courts et liez les SFX aux actions visibles.' },
+    ],
+    pricingCopy: {
+      title: 'Prix Happy Horse 1.1 en un coup d’œil',
+      subtitle: 'Prix totaux avec audio natif — prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+      maxDurationNote: 'Jusqu’à 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.1 : tarifs, audio natif et références | MaxVideoAI',
+      description:
+        'Explorez Happy Horse 1.1 : prix, audio natif, synchronisation labiale, génération depuis texte, image et références sur MaxVideoAI.',
+    },
+  },
+  es: {
+    ...HAPPY_HORSE_10_COPY.es,
+    hero: {
+      eyebrow: 'MODELO DE VIDEO ALIBABA ACTUAL',
+      title: 'Happy Horse 1.1',
+      subtitle: 'Audio nativo, sincronización labial, imagen a video y generación guiada por referencias en la ruta actual de Alibaba.',
+      subtitleHighlights: ['Audio nativo', 'sincronización labial', 'referencias'],
+      paragraph:
+        'Usa Happy Horse 1.1 cuando un plano necesita voz o sonido sincronizado desde texto, una imagen inicial o hasta nueve referencias. Mantén Happy Horse 1.0 para la edición de video anterior.',
+      primaryCta: { label: 'Generar con Happy Horse 1.1', href: '/app?engine=happy-horse-1-1' },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es', 'happy-horse') },
+      quickLinks: [
+        { label: 'Comparar vs Seedance', href: compareHref('es', 'happy-horse-1-1', 'seedance-2-0') },
+        { label: 'Ver precios', href: pricingHref('es', 'happy-horse-1-1-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Happy Horse 1.1',
+      description: 'Ruta de texto, imagen y referencias con audio nativo',
+      renderLabel: 'Ver resultado',
+      badges: ['Audio nativo', 'Referencias', '1080p'],
+      altContext: 'ejemplo de Happy Horse 1.1 con audio nativo y referencias',
+    },
+    features: [
+      { title: 'Audio nativo', body: 'Genera diálogo, ambiente y SFX con el render cuando la ruta lo permite.', tone: 'audio' },
+      { title: 'Texto o imagen', body: 'Empieza con un brief o una imagen para fijar sujeto y composición.', tone: 'reference' },
+      { title: 'Imágenes de referencia', body: 'Usa hasta nueve referencias con anclas character1 a character9.', tone: 'continuity' },
+      { title: 'Ratios ampliados', body: 'Usa paisaje, vertical, cuadrado, clásico, panorámico, alto, 5:4 o 4:5.', tone: 'quality' },
+      { title: '720p o 1080p', body: 'Elige la resolución disponible en MaxVideoAI antes de generar.', tone: 'quality' },
+      { title: '1080p proveedor más barato', body: 'Happy Horse 1.1 usa la tarifa Fal 1080p actual antes del margen MaxVideoAI.', tone: 'price' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Happy Horse 1.1 o Seedance?',
+        body: 'Usa Happy Horse 1.1 para generación Alibaba con audio nativo desde texto, imagen o referencias. Usa Seedance 2.0 para referencias multimodales y continuidad actual de producción Seedance.',
+        cta: { label: 'Comparar Happy Horse vs Seedance', href: compareHref('es', 'happy-horse-1-1', 'seedance-2-0') },
+      },
+      {
+        title: '¿Necesitas edición de video?',
+        body: 'Usa Happy Horse 1.0 solo si necesitas el endpoint anterior de edición de video. Los nuevos trabajos de texto, imagen y referencia deben empezar en 1.1.',
+        cta: { label: 'Abrir la ruta anterior Happy Horse 1.0', href: modelsHref('es', 'happy-horse-1-0') },
+      },
+      {
+        title: '¿Trabajas con referencias?',
+        body: 'Dale una función clara a cada archivo: identidad, vestuario, movimiento, entorno o mood de audio.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Texto a video', body: 'Define sujeto, acción, cámara, estilo e indicaciones de audio en un prompt compacto.' },
+      { title: 'Imagen a video', body: 'Usa una imagen para fijar sujeto, producto, vestuario o composición.' },
+      { title: 'Referencias a video', body: 'Nombra cada referencia como character1, character2 y así sucesivamente para aclarar roles.' },
+      { title: 'Edición de video anterior', body: 'Cambia a Happy Horse 1.0 solo cuando una fuente de video deba editarse en lugar de regenerarse.' },
+      { title: 'Manejo de audio', body: 'Mantén diálogo corto y conecta SFX con acciones visibles.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de Happy Horse 1.1 de un vistazo',
+      subtitle: 'Totales con audio nativo. Consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
+      ctaLabel: 'Ver precios completos',
+      maxDurationNote: 'Hasta 1080p',
+    },
+    meta: {
+      title: 'Happy Horse 1.1: precios, audio nativo y referencias | MaxVideoAI',
+      description:
+        'Explora Happy Horse 1.1: precios, audio nativo, sincronización labial, texto a video, imagen a video y referencias a video en MaxVideoAI.',
     },
   },
 };
@@ -6033,6 +6246,7 @@ const NANO_BANANA_PRO_COPY: LocalizedTemplateCopy = {
 export const ADDITIONAL_TEMPLATE_COPY = {
   'gpt-image-2': GPT_IMAGE_2_COPY,
   'happy-horse-1-0': HAPPY_HORSE_10_COPY,
+  'happy-horse-1-1': HAPPY_HORSE_11_COPY,
   'kling-2-5-turbo': KLING_25_TURBO_COPY,
   'kling-2-6-pro': KLING_26_PRO_COPY,
   'kling-3-4k': KLING_3_4K_COPY,

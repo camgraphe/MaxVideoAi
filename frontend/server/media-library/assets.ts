@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { query } from '@/lib/db';
-import { ensureAssetSchema, ensureMediaLibrarySchema } from '@/lib/schema';
+import { ensureMediaLibrarySchema } from '@/lib/schema';
 import { recordUserAsset } from '@/server/storage';
 import {
   buildMediaAssetInsert,
@@ -10,155 +10,48 @@ import {
   normalizeMediaAssetSource,
   normalizeMetadata,
   normalizeString,
-  resolveLibraryAssetDedupeKey,
   resolveLibraryAssetIdentity,
-  resolveLibraryAssetOriginDedupeKey,
   type DbJobOutputRow,
   type DbMediaAssetRow,
   type MediaAssetRecord,
   type MediaKind,
 } from '../media-library-records';
+import { listLibraryAssetPage as listLibraryAssetPageFromListing } from './asset-listing';
 import { copyRemoteMedia, createRemoteVideoAssetThumbnail } from './asset-media';
 import { resolveReusableAssetPreviewUrl, resolveReusableAssetThumbUrl } from './asset-resolvers';
+import type { MediaLibraryPage } from './pagination';
 
 export async function listLibraryAssets(params: {
   userId: string;
   kind?: MediaKind | null;
   source?: string | null;
   originUrl?: string | null;
+  includeOutputs?: boolean;
   limit?: number;
+  cursor?: string | null;
 }): Promise<MediaAssetRecord[]> {
-  await ensureMediaLibrarySchema();
-  await ensureAssetSchema();
-  const limit = Math.min(200, Math.max(1, params.limit ?? 50));
-  const source = params.source && params.source !== 'all' ? normalizeMediaAssetSource(params.source) : null;
-  const originUrl = normalizeString(params.originUrl) ?? null;
-  const values: unknown[] = [params.userId, limit, params.kind ?? null, source, originUrl];
-  const rows = await query<DbMediaAssetRow>(
-    `SELECT id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
-            source_job_id, source_output_id, status, metadata, created_at
-      FROM media_assets
-      WHERE user_id = $1
-        AND deleted_at IS NULL
-        AND COALESCE(source, '') <> 'storyboard_template_reference'
-        AND ($3::text IS NULL OR kind = $3::text)
-        AND (
-          $4::text IS NULL
-          OR source = $4::text
-          OR (
-            $4::text = 'saved_job_output'
-            AND source = 'import'
-            AND (
-              source_job_id IS NOT NULL
-              OR metadata->>'jobId' IS NOT NULL
-              OR metadata->>'sourceJobId' IS NOT NULL
-            )
-          )
-        )
-        AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
-      ORDER BY created_at DESC
-      LIMIT $2`,
-    values
-  );
-  const assets: MediaAssetRecord[] = [];
-  const seen = new Set<string>();
-  rows.forEach((row) => {
-    const asset = mapAssetRow(row);
-    const dedupeKey = resolveLibraryAssetDedupeKey(asset);
-    const originDedupeKey = resolveLibraryAssetOriginDedupeKey(asset);
-    if (seen.has(asset.id) || seen.has(dedupeKey) || seen.has(originDedupeKey)) return;
-    assets.push(asset);
-    seen.add(asset.id);
-    seen.add(dedupeKey);
-    seen.add(originDedupeKey);
+  const page = await listLibraryAssetPage({
+    userId: params.userId,
+    kind: params.kind,
+    source: params.source,
+    originUrl: params.originUrl,
+    includeOutputs: params.includeOutputs,
+    limit: params.limit,
+    cursor: params.cursor ?? null,
   });
+  return page.items;
+}
 
-  const legacyRows = await query<{
-    asset_id: string;
-    user_id: string | null;
-    url: string;
-    mime_type: string | null;
-    width: number | null;
-    height: number | null;
-    size_bytes: string | number | null;
-    source: string | null;
-    metadata: unknown;
-    created_at: string;
-  }>(
-    `SELECT asset_id, user_id, url, mime_type, width, height, size_bytes, source, metadata, created_at
-      FROM user_assets
-      WHERE user_id = $1
-        AND COALESCE(source, '') <> 'storyboard_template_reference'
-        AND ($3::text IS NULL OR (
-          CASE
-            WHEN COALESCE(mime_type, '') LIKE 'video/%' THEN 'video'
-            WHEN COALESCE(mime_type, '') LIKE 'audio/%' THEN 'audio'
-            ELSE 'image'
-          END
-        ) = $3::text)
-        AND (
-          $4::text IS NULL
-          OR (
-            CASE
-            WHEN source IN ('upload', 'storyboard', 'character', 'angle', 'upscale', 'background-removal') THEN source
-              WHEN source = 'generated' THEN 'saved_job_output'
-              ELSE 'import'
-            END
-          ) = $4::text
-          OR (
-            $4::text = 'saved_job_output'
-            AND source = 'import'
-            AND (
-              metadata->>'jobId' IS NOT NULL
-              OR metadata->>'sourceJobId' IS NOT NULL
-            )
-          )
-        )
-        AND ($5::text IS NULL OR url = $5::text OR metadata->>'originUrl' = $5::text)
-      ORDER BY created_at DESC
-      LIMIT $2`,
-    values
-  );
-
-  legacyRows.forEach((row) => {
-    if (seen.has(row.asset_id)) return;
-    const kind: MediaKind = row.mime_type?.startsWith('video/')
-      ? 'video'
-      : row.mime_type?.startsWith('audio/')
-        ? 'audio'
-        : 'image';
-    const metadata = normalizeMetadata(row.metadata);
-    const legacyAsset: MediaAssetRecord = {
-      id: row.asset_id,
-      userId: row.user_id,
-      kind,
-      url: row.url,
-      thumbUrl: typeof metadata.thumbUrl === 'string' ? metadata.thumbUrl : null,
-      previewUrl: typeof metadata.previewUrl === 'string' ? metadata.previewUrl : null,
-      mimeType: row.mime_type,
-      width: row.width,
-      height: row.height,
-      sizeBytes: typeof row.size_bytes === 'string' ? Number(row.size_bytes) : row.size_bytes,
-      durationSec: typeof metadata.durationSec === 'number' && Number.isFinite(metadata.durationSec) ? metadata.durationSec : null,
-      source: normalizeMediaAssetSource(row.source),
-      sourceJobId: typeof metadata.jobId === 'string' ? metadata.jobId : null,
-      sourceOutputId: null,
-      status: 'ready',
-      metadata,
-      createdAt: row.created_at,
-    };
-    const dedupeKey = resolveLibraryAssetDedupeKey(legacyAsset);
-    const originDedupeKey = resolveLibraryAssetOriginDedupeKey(legacyAsset);
-    if (seen.has(dedupeKey) || seen.has(originDedupeKey)) return;
-    assets.push(legacyAsset);
-    seen.add(row.asset_id);
-    seen.add(dedupeKey);
-    seen.add(originDedupeKey);
-  });
-
-  return assets
-    .sort((a, b) => Date.parse(b.createdAt ?? '') - Date.parse(a.createdAt ?? ''))
-    .slice(0, limit);
+export async function listLibraryAssetPage(params: {
+  userId: string;
+  kind?: MediaKind | null;
+  source?: string | null;
+  originUrl?: string | null;
+  includeOutputs?: boolean;
+  limit?: number;
+  cursor?: string | null;
+}): Promise<MediaLibraryPage<MediaAssetRecord>> {
+  return listLibraryAssetPageFromListing(params);
 }
 
 export async function ensureReusableAsset(params: {
@@ -192,6 +85,14 @@ export async function ensureReusableAsset(params: {
   const durationSec =
     typeof params.durationSec === 'number' && Number.isFinite(params.durationSec) && params.durationSec > 0
       ? params.durationSec
+      : null;
+  const mediaWidth =
+    typeof params.width === 'number' && Number.isFinite(params.width) && params.width > 0
+      ? Math.round(params.width)
+      : null;
+  const mediaHeight =
+    typeof params.height === 'number' && Number.isFinite(params.height) && params.height > 0
+      ? Math.round(params.height)
       : null;
   let resolvedThumbUrl = await resolveReusableAssetThumbUrl({
     userId: params.userId,
@@ -228,15 +129,19 @@ export async function ensureReusableAsset(params: {
     }
     const existingDurationSec = normalizeMetadata(existing[0].metadata).durationSec;
     const shouldBackfillDuration = Boolean(durationSec && !existingDurationSec);
+    const shouldBackfillDimensions = Boolean(mediaWidth && mediaHeight && (!existing[0].width || !existing[0].height));
     if (
       (!existing[0].thumb_url && resolvedThumbUrl) ||
       (!existing[0].preview_url && resolvedPreviewUrl) ||
-      shouldBackfillDuration
+      shouldBackfillDuration ||
+      shouldBackfillDimensions
     ) {
       const rows = await query<DbMediaAssetRow>(
         `UPDATE media_assets
             SET thumb_url = COALESCE(thumb_url, $3),
                 preview_url = COALESCE(preview_url, $4),
+                width = COALESCE(width, $6),
+                height = COALESCE(height, $7),
                 metadata = COALESCE(metadata, '{}'::jsonb)
                   || jsonb_strip_nulls(jsonb_build_object('thumbUrl', $3::text, 'previewUrl', $4::text, 'durationSec', $5::double precision)),
                 updated_at = NOW()
@@ -245,7 +150,7 @@ export async function ensureReusableAsset(params: {
             AND deleted_at IS NULL
           RETURNING id, user_id, kind, url, thumb_url, preview_url, mime_type, width, height, size_bytes, source,
                     source_job_id, source_output_id, status, metadata, created_at`,
-        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec]
+        [identity, params.userId, resolvedThumbUrl, resolvedPreviewUrl, durationSec, mediaWidth, mediaHeight]
       );
       return mapAssetRow(rows[0] ?? existing[0]);
     }
@@ -266,8 +171,8 @@ export async function ensureReusableAsset(params: {
         url: normalizedUrl,
         thumbUrl: null,
         mimeType: params.mimeType ?? inferMimeFromUrl(normalizedUrl, params.kind),
-        width: params.width ?? null,
-        height: params.height ?? null,
+        width: mediaWidth,
+        height: mediaHeight,
         sizeBytes: params.sizeBytes ?? null,
       };
   if (!resolvedThumbUrl && copied.thumbUrl) {
@@ -288,8 +193,8 @@ export async function ensureReusableAsset(params: {
     thumbUrl: resolvedThumbUrl,
     previewUrl: resolvedPreviewUrl,
     mimeType: copied.mimeType,
-    width: copied.width ?? params.width ?? null,
-    height: copied.height ?? params.height ?? null,
+    width: copied.width ?? mediaWidth,
+    height: copied.height ?? mediaHeight,
     sizeBytes: copied.sizeBytes ?? params.sizeBytes ?? null,
     durationSec,
     source,

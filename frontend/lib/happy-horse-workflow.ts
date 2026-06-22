@@ -5,7 +5,10 @@ type AssetEntry = { kind?: AssetKind | null } | null | undefined;
 
 export type HappyHorseAssetMap = Record<string, AssetEntry[] | undefined>;
 
-export const HAPPY_HORSE_ENGINE_ID = 'happy-horse-1-0';
+export const HAPPY_HORSE_CURRENT_ENGINE_ID = 'happy-horse-1-1';
+export const HAPPY_HORSE_LEGACY_ENGINE_ID = 'happy-horse-1-0';
+export const HAPPY_HORSE_ENGINE_IDS = new Set([HAPPY_HORSE_CURRENT_ENGINE_ID, HAPPY_HORSE_LEGACY_ENGINE_ID]);
+export const HAPPY_HORSE_VIDEO_EDIT_ENGINE_IDS = new Set([HAPPY_HORSE_LEGACY_ENGINE_ID]);
 export const HAPPY_HORSE_START_IMAGE_FIELD_IDS = new Set(['image_url']);
 export const HAPPY_HORSE_R2V_REFERENCE_IMAGE_FIELD_IDS = new Set(['image_urls']);
 export const HAPPY_HORSE_EDIT_VIDEO_FIELD_IDS = new Set(['video_url']);
@@ -16,7 +19,15 @@ function hasAssetKind(entries: AssetEntry[] | undefined, kind: AssetKind): boole
 }
 
 export function isHappyHorseEngineId(engineId?: string | null): boolean {
-  return engineId === HAPPY_HORSE_ENGINE_ID;
+  return typeof engineId === 'string' && HAPPY_HORSE_ENGINE_IDS.has(engineId);
+}
+
+export function isHappyHorseFalModelId(modelId?: string | null): boolean {
+  return typeof modelId === 'string' && modelId.startsWith('alibaba/happy-horse/');
+}
+
+export function supportsHappyHorseVideoEdit(engineId?: string | null): boolean {
+  return typeof engineId === 'string' && HAPPY_HORSE_VIDEO_EDIT_ENGINE_IDS.has(engineId);
 }
 
 export function getHappyHorseAssetState(inputAssets: HappyHorseAssetMap) {
@@ -35,9 +46,12 @@ export function getHappyHorseAssetState(inputAssets: HappyHorseAssetMap) {
   };
 }
 
-export function getUnifiedHappyHorseMode(inputAssets: HappyHorseAssetMap): Mode {
+export function getUnifiedHappyHorseMode(
+  inputAssets: HappyHorseAssetMap,
+  options: { supportsVideoEdit?: boolean } = {}
+): Mode {
   const state = getHappyHorseAssetState(inputAssets);
-  if (state.hasEditInputs) return 'v2v';
+  if (options.supportsVideoEdit && state.hasEditInputs) return 'v2v';
   if (state.hasR2vReferenceImage) return 'ref2v';
   if (state.hasStartImage) return 'i2v';
   return 't2v';

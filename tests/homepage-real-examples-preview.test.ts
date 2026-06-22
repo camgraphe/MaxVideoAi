@@ -52,10 +52,10 @@ test('homepage real examples preview uses compact decision-oriented copy and CTA
     [
       ['Seedance 2.0', 'Cinematic realism', 'Reference-to-video', '12s', '$4.72'],
       ['Kling 3 Pro', 'Camera motion', 'Image-to-video', '15s', '$4.37'],
-      ['LTX 2.3 Fast', 'Fast drafts', 'Text-to-video', '10s', '$0.52'],
       ['Veo 3.1', 'Premium realism', 'Image-to-video', '6s', '$3.12'],
+      ['Happy Horse 1.1', 'Audio-native workflows', 'Text/image/reference-to-video', '10s', '$2.34'],
+      ['LTX 2.3 Fast', 'Fast drafts', 'Text-to-video', '10s', '$0.52'],
       ['Wan 2.6', 'Structured video workflows', 'Text/image-to-video', '5s', '$0.65'],
-      ['Happy Horse 1.0', 'Audio-native workflows', 'Text/image/reference-to-video', '10s', '$1.82'],
     ]
   );
 
@@ -82,7 +82,7 @@ test('homepage examples preview pins accurate recent 16:9 media for Wan, Veo, an
   assert.doesNotMatch(homeRouteDataSource, /8a1ff925-a483-4dfd-8c29-8ba2e003b86d-job_2c795d5a/);
 
   const wan = cards.find((card) => card.engineId === 'wan-2-6');
-  const happyHorse = cards.find((card) => card.engineId === 'happy-horse-1-0');
+  const happyHorse = cards.find((card) => card.engineId === 'happy-horse-1-1');
 
   assert.equal(wan?.mode, 'Text/image-to-video');
   assert.equal(happyHorse?.mode, 'Text/image/reference-to-video');
@@ -93,10 +93,10 @@ test('homepage examples preview keeps only real crawlable example routes', () =>
   const expectedExamples = new Map([
     ['Seedance 2.0', 'seedance'],
     ['Kling 3 Pro', 'kling'],
-    ['LTX 2.3 Fast', 'ltx'],
     ['Veo 3.1', 'veo'],
+    ['Happy Horse 1.1', 'happy-horse'],
+    ['LTX 2.3 Fast', 'ltx'],
     ['Wan 2.6', 'wan'],
-    ['Happy Horse 1.0', 'happy-horse'],
   ]);
 
   for (const [title, examplesSlug] of expectedExamples) {

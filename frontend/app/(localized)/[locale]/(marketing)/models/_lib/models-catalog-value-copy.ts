@@ -27,6 +27,8 @@ export const USE_CASE_MAP: Record<string, string> = {
   'ltx-2': 'fast iteration with responsive motion',
   'ltx-2-fast': 'rapid testing and quick iteration',
   'minimax-hailuo-02-text': 'budget-friendly concept tests',
+  'happy-horse-1-1': 'Alibaba text, image, and reference video with native audio',
+  'happy-horse-1-0': 'legacy Alibaba video edit workflows',
   'gpt-image-2': 'text-heavy stills, product photography, and controlled edits',
   seedream: 'clean reference images for Seedance animation and product visuals',
   'nano-banana': 'storyboards and still-first workflows',
@@ -80,8 +82,10 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Idéal pour des tests de concepts économiques, rapides et stables, en texte-vers-vidéo et image-vers-vidéo, avec contrôle début/fin.',
     'gpt-image-2':
       'Idéal pour des images riches en texte, des packshots produit, des mockups UI et des retouches guidées par référence.',
+    'happy-horse-1-1':
+      'Idéal pour les générations Alibaba texte, image et référence, avec audio natif et lip-sync.',
     'happy-horse-1-0':
-      'Idéal pour le texte-vers-vidéo, l’image-vers-vidéo et la vidéo-vers-vidéo, avec audio natif, lip-sync précis et forte contrôlabilité.',
+      'Route Alibaba legacy pour les anciens workflows d’édition vidéo et jobs Happy Horse 1.0.',
     'nano-banana-2': 'Idéal pour des images fixes guidées et des retouches grand format, avec des performances fiables.',
     'nano-banana-pro': 'Idéal pour des visuels de campagne et des retouches typographiques, avec des performances fiables.',
     seedream:
@@ -106,6 +110,10 @@ export const MODEL_CARD_DESCRIPTION_OVERRIDES: Partial<Record<AppLocale, Record<
       'Ideal para renders 4K nativos guiados por referencias o storyboard después de validar la dirección en O3 Standard o Pro.',
     'veo-3-1':
       'Ideal para tomas publicitarias con referencias, control del último frame y extensión.',
+    'happy-horse-1-1':
+      'Ideal para generación Alibaba desde texto, imagen y referencias, con audio nativo y lip sync.',
+    'happy-horse-1-0':
+      'Ruta Alibaba legacy para flujos antiguos de edición de video y trabajos Happy Horse 1.0.',
   },
 };
 

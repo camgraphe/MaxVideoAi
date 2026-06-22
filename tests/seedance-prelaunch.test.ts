@@ -295,9 +295,10 @@ test('Examples hub family order follows the current business priority without re
 
 test('Happy Horse has a crawlable examples family and appears in example family selectors', () => {
   assert.equal(isIndexedExampleFamilyId('happy-horse'), true);
+  assert.equal(resolveExampleFamilyId('happy-horse-1-1'), 'happy-horse');
   assert.equal(resolveExampleFamilyId('happy-horse-1-0'), 'happy-horse');
-  assert.deepEqual(getExampleFamilyModelSlugs('happy-horse'), ['happy-horse-1-0']);
-  assert.deepEqual(getExampleFamilyCurrentModelSlugs('happy-horse'), ['happy-horse-1-0']);
+  assert.deepEqual(getExampleFamilyModelSlugs('happy-horse'), ['happy-horse-1-1', 'happy-horse-1-0']);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('happy-horse'), ['happy-horse-1-1']);
   assert.equal(getExampleNavFamilyIds().includes('happy-horse'), true);
 });
 
@@ -389,12 +390,16 @@ test('Progressive asset slots show existing assets plus one empty slot', () => {
   assert.equal(getVisibleAssetSlots({ assets: Array.from({ length: 9 }, () => null), maxCount: 9 }).length, 1);
 });
 
-test('Unified Happy Horse workspace infers R2V and V2V from reference slots', () => {
+test('Unified Happy Horse workspace infers current 1.1 modes and legacy V2V mode from reference slots', () => {
   assert.equal(getUnifiedHappyHorseMode({}), 't2v');
   assert.equal(getUnifiedHappyHorseMode({ image_url: [{ kind: 'image' }] }), 'i2v');
   assert.equal(getUnifiedHappyHorseMode({ image_urls: [{ kind: 'image' }] }), 'ref2v');
-  assert.equal(getUnifiedHappyHorseMode({ reference_image_urls: [{ kind: 'image' }] }), 'v2v');
-  assert.equal(getUnifiedHappyHorseMode({ video_url: [{ kind: 'video' }] }), 'v2v');
+  assert.equal(
+    getUnifiedHappyHorseMode({ reference_image_urls: [{ kind: 'image' }] }, { supportsVideoEdit: true }),
+    'v2v'
+  );
+  assert.equal(getUnifiedHappyHorseMode({ video_url: [{ kind: 'video' }] }, { supportsVideoEdit: true }), 'v2v');
+  assert.equal(getUnifiedHappyHorseMode({ video_url: [{ kind: 'video' }] }), 't2v');
   assert.equal(getHappyHorseAssetState({ image_urls: [{ kind: 'image' }] }).hasR2vReferenceImage, true);
 });
 

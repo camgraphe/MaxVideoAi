@@ -1,6 +1,6 @@
 import type { runGenerate } from '@/lib/api';
 import { toLumaRay2DurationLabel, type LumaRay2DurationLabel } from '@/lib/luma-ray2';
-import type { EngineModeUiCaps, Mode } from '@/types/engines';
+import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import type {
   GenerationAttachmentPayload,
   GenerationKlingElementPayload,
@@ -30,6 +30,7 @@ export type BuildWorkspaceGeneratePayloadOptions = {
   paymentMode: 'wallet' | 'platform';
   cfgScale?: number | null;
   capability?: EngineModeUiCaps | null;
+  inputSchema?: EngineCaps['inputSchema'] | null;
   supportsNegativePrompt: boolean;
   supportsAudioToggle: boolean;
   isSeedance: boolean;
@@ -55,6 +56,16 @@ export type BuildWorkspaceGeneratePayloadOptions = {
   multiPromptPayload?: Array<{ prompt: string; duration: number }>;
   klingElementsPayload?: GenerationKlingElementPayload[];
 };
+
+function schemaSupportsField(inputSchema: EngineCaps['inputSchema'] | null | undefined, fieldId: string, mode: Mode): boolean {
+  if (!inputSchema) return false;
+  const fields = [...(inputSchema.required ?? []), ...(inputSchema.optional ?? [])];
+  return fields.some((field) => {
+    if (field.id !== fieldId) return false;
+    if (!field.modes && !field.requiredInModes) return true;
+    return Boolean(field.modes?.includes(mode) || field.requiredInModes?.includes(mode));
+  });
+}
 
 export function buildWorkspaceGeneratePayload(
   options: BuildWorkspaceGeneratePayloadOptions
@@ -92,6 +103,12 @@ export function buildWorkspaceGeneratePayload(
       : undefined;
   const cameraFixed = typeof options.form.cameraFixed === 'boolean' ? options.form.cameraFixed : undefined;
   const safetyChecker = typeof options.form.safetyChecker === 'boolean' ? options.form.safetyChecker : undefined;
+  const requestMode = options.submissionMode as Mode;
+  const supportsSeed = options.isSeedance || schemaSupportsField(options.inputSchema, 'seed', requestMode);
+  const supportsCameraFixed =
+    options.isSeedance || schemaSupportsField(options.inputSchema, 'camera_fixed', requestMode);
+  const supportsSafetyChecker =
+    options.isSeedance || schemaSupportsField(options.inputSchema, 'enable_safety_checker', requestMode);
 
   const payload: WorkspaceGeneratePayload = {
     engineId: options.selectedEngineId,
@@ -128,13 +145,9 @@ export function buildWorkspaceGeneratePayload(
           ...(options.klingElementsPayload ? { elements: options.klingElementsPayload } : {}),
         }
       : {}),
-    ...(options.isSeedance
-      ? {
-          ...(typeof seedNumber === 'number' ? { seed: seedNumber } : {}),
-          ...(typeof cameraFixed === 'boolean' ? { cameraFixed } : {}),
-          ...(typeof safetyChecker === 'boolean' ? { safetyChecker } : {}),
-        }
-      : {}),
+    ...(supportsSeed && typeof seedNumber === 'number' ? { seed: seedNumber } : {}),
+    ...(supportsCameraFixed && typeof cameraFixed === 'boolean' ? { cameraFixed } : {}),
+    ...(supportsSafetyChecker && typeof safetyChecker === 'boolean' ? { safetyChecker } : {}),
     idempotencyKey: options.localKey,
     batchId: options.batchId,
     groupId: options.batchId,
