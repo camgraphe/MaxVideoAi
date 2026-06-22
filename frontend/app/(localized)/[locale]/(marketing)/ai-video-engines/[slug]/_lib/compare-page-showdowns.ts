@@ -30,6 +30,14 @@ function isKlingOmni(entry: EngineCatalogEntry) {
   return entry.modelSlug.startsWith('kling-o3-') || entry.engineId.startsWith('kling-o3-');
 }
 
+function requiresCuratedShowdowns(entry: EngineCatalogEntry) {
+  return (
+    isKlingOmni(entry) ||
+    entry.modelSlug.startsWith('happy-horse-') ||
+    entry.engineId.startsWith('happy-horse-')
+  );
+}
+
 function hasCuratedShowdowns(slug: string | null | undefined) {
   if (!slug) return false;
   return Boolean(SHOWDOWNS[slug]?.some((entry) => Boolean(entry)));
@@ -58,7 +66,7 @@ export async function buildCompareShowdownSlots({
 }): Promise<CompareShowdownSlot[]> {
   const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
   const hasCuratedPairShowdowns = hasCuratedShowdowns(canonicalSlug) || hasCuratedShowdowns(reversedShowdownSlug);
-  if ((isKlingOmni(left) || isKlingOmni(right)) && !hasCuratedPairShowdowns) {
+  if ((requiresCuratedShowdowns(left) || requiresCuratedShowdowns(right)) && !hasCuratedPairShowdowns) {
     return [];
   }
   const compareShowdowns = pairHasKling3Native4k ? [] : getCompareShowdowns({ pairHasNativeAudio });
