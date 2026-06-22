@@ -296,7 +296,7 @@ export const HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'Does Happy Horse 1.1 support video editing?',
         answer:
-          'No official Happy Horse 1.1 video-edit endpoint is exposed on Fal for this launch. MaxVideoAI keeps Happy Horse 1.0 available as the legacy video-edit route.',
+          'Happy Horse 1.1 does not expose video editing in the current MaxVideoAI route. Happy Horse 1.0 remains available as the legacy video-edit route.',
       },
     ],
     pricingHint: {

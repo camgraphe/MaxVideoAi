@@ -713,10 +713,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported in current Happy Horse 1.1 Fal route",
+        "videoToVideo": "Not supported in the current Happy Horse 1.1 route",
         "firstLastFrame": "Not supported",
         "referenceImageStyle": "Supported (1-9 reference stills)",
-        "referenceVideo": "Not supported in current Happy Horse 1.1 Fal route",
+        "referenceVideo": "Not supported in the current Happy Horse 1.1 route",
         "maxResolution": "1080p",
         "maxDuration": "15s output",
         "aspectRatios": [

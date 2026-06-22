@@ -4822,7 +4822,7 @@ const HAPPY_HORSE_11_COPY: LocalizedTemplateCopy = {
       { title: 'Reference images', body: 'Use up to nine references with character1 through character9 prompt anchors.', tone: 'continuity' },
       { title: 'Expanded ratios', body: 'Use landscape, vertical, square, classic, wide, tall, 5:4 or 4:5 composition.', tone: 'quality' },
       { title: '720p or 1080p', body: 'Choose the exposed MaxVideoAI resolution before generation.', tone: 'quality' },
-      { title: 'Lower 1080p provider rate', body: 'Happy Horse 1.1 uses the current Fal 1080p rate before MaxVideoAI margin.', tone: 'price' },
+      { title: 'Lower 1080p provider rate', body: 'Happy Horse 1.1 uses the current 1080p provider rate before MaxVideoAI margin.', tone: 'price' },
     ],
     decisionCards: [
       {
@@ -4891,7 +4891,7 @@ const HAPPY_HORSE_11_COPY: LocalizedTemplateCopy = {
       { title: 'Images de référence', body: 'Utilisez jusqu’à neuf références avec les ancres character1 à character9.', tone: 'continuity' },
       { title: 'Ratios élargis', body: 'Utilisez paysage, vertical, carré, classique, très large, très haut, 5:4 ou 4:5.', tone: 'quality' },
       { title: '720p ou 1080p', body: 'Choisissez la résolution exposée dans MaxVideoAI avant génération.', tone: 'quality' },
-      { title: '1080p fournisseur moins cher', body: 'Happy Horse 1.1 utilise le tarif Fal 1080p actuel avant marge MaxVideoAI.', tone: 'price' },
+      { title: '1080p fournisseur moins cher', body: 'Happy Horse 1.1 utilise le tarif fournisseur 1080p actuel avant marge MaxVideoAI.', tone: 'price' },
     ],
     decisionCards: [
       {
@@ -4960,7 +4960,7 @@ const HAPPY_HORSE_11_COPY: LocalizedTemplateCopy = {
       { title: 'Imágenes de referencia', body: 'Usa hasta nueve referencias con anclas character1 a character9.', tone: 'continuity' },
       { title: 'Ratios ampliados', body: 'Usa paisaje, vertical, cuadrado, clásico, panorámico, alto, 5:4 o 4:5.', tone: 'quality' },
       { title: '720p o 1080p', body: 'Elige la resolución disponible en MaxVideoAI antes de generar.', tone: 'quality' },
-      { title: '1080p proveedor más barato', body: 'Happy Horse 1.1 usa la tarifa Fal 1080p actual antes del margen MaxVideoAI.', tone: 'price' },
+      { title: '1080p proveedor más barato', body: 'Happy Horse 1.1 usa la tarifa actual del proveedor para 1080p antes del margen MaxVideoAI.', tone: 'price' },
     ],
     decisionCards: [
       {

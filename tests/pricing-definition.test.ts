@@ -142,7 +142,7 @@ test('Happy Horse pricing definition exposes standard and V2V rates', () => {
   assert.equal(v2vDefinition.resolutionMultipliers['1080p'], 2);
 });
 
-test('Happy Horse 1.1 pricing definition uses current Fal 1080p rate', () => {
+test('Happy Horse 1.1 pricing definition uses current 1080p provider rate', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
   assert.ok(engine);
 
@@ -194,7 +194,7 @@ test('Happy Horse 1.1 benchmark specs mark current route limits', () => {
   assert.ok(happyHorse);
   assert.equal(happyHorse.keySpecs?.textToVideo, 'Supported');
   assert.equal(happyHorse.keySpecs?.imageToVideo, 'Supported');
-  assert.equal(happyHorse.keySpecs?.videoToVideo, 'Not supported in current Happy Horse 1.1 Fal route');
+  assert.equal(happyHorse.keySpecs?.videoToVideo, 'Not supported in the current Happy Horse 1.1 route');
   assert.equal(happyHorse.keySpecs?.referenceImageStyle, 'Supported (1-9 reference stills)');
   assert.equal(happyHorse.keySpecs?.maxResolution, '1080p');
   assert.equal(happyHorse.keySpecs?.maxDuration, '15s output');
