@@ -714,7 +714,7 @@
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
         "videoToVideo": "Not supported in the current Happy Horse 1.1 route",
-        "firstLastFrame": "Not supported",
+        "firstLastFrame": "First frame supported via Image-to-Video; last frame not supported",
         "referenceImageStyle": "Supported (1-9 reference stills)",
         "referenceVideo": "Not supported in the current Happy Horse 1.1 route",
         "maxResolution": "1080p",

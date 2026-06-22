@@ -195,6 +195,10 @@ test('Happy Horse 1.1 benchmark specs mark current route limits', () => {
   assert.equal(happyHorse.keySpecs?.textToVideo, 'Supported');
   assert.equal(happyHorse.keySpecs?.imageToVideo, 'Supported');
   assert.equal(happyHorse.keySpecs?.videoToVideo, 'Not supported in the current Happy Horse 1.1 route');
+  assert.equal(
+    happyHorse.keySpecs?.firstLastFrame,
+    'First frame supported via Image-to-Video; last frame not supported'
+  );
   assert.equal(happyHorse.keySpecs?.referenceImageStyle, 'Supported (1-9 reference stills)');
   assert.equal(happyHorse.keySpecs?.maxResolution, '1080p');
   assert.equal(happyHorse.keySpecs?.maxDuration, '15s output');
