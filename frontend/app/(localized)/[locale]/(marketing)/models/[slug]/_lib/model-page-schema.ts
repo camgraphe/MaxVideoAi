@@ -231,7 +231,7 @@ function buildDigitalShippingDetails(currency: string) {
 function buildDigitalReturnPolicy() {
   return {
     '@type': 'MerchantReturnPolicy',
-    applicableCountry: [...MERCHANT_POLICY_COUNTRIES],
+    returnPolicyCountry: [...MERCHANT_POLICY_COUNTRIES],
     returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted',
   };
 }

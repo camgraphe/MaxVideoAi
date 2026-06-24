@@ -11,6 +11,7 @@ const copyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/model
 const valueCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-value-copy.ts');
 const sectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-sections.ts');
 const decisionDataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-decision-data.ts');
+const jsonLdLibPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-jsonld.ts');
 const heroPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogHero.tsx');
 const gallerySectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogGallerySection.tsx');
 const jsonLdScriptsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogJsonLdScripts.tsx');
@@ -28,6 +29,7 @@ const copySource = readFileSync(copyPath, 'utf8');
 const valueCopySource = readFileSync(valueCopyPath, 'utf8');
 const sectionsSource = readFileSync(sectionsPath, 'utf8');
 const decisionDataSource = readFileSync(decisionDataPath, 'utf8');
+const jsonLdLibSource = readFileSync(jsonLdLibPath, 'utf8');
 const heroSource = readFileSync(heroPath, 'utf8');
 const gallerySectionSource = readFileSync(gallerySectionPath, 'utf8');
 const jsonLdScriptsSource = readFileSync(jsonLdScriptsPath, 'utf8');
@@ -46,6 +48,7 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.ok(existsSync(valueCopyPath), 'models catalog value copy module should exist');
   assert.ok(existsSync(sectionsPath), 'models catalog section data module should exist');
   assert.ok(existsSync(decisionDataPath), 'models catalog decision data should live in a route-local helper');
+  assert.ok(existsSync(jsonLdLibPath), 'models catalog JSON-LD builders should live in a route-local helper');
   assert.ok(existsSync(heroPath), 'models catalog hero should live in a route-local component');
   assert.ok(existsSync(gallerySectionPath), 'models catalog gallery section should live in a route-local component');
   assert.ok(existsSync(jsonLdScriptsPath), 'models catalog JSON-LD scripts should live in a route-local component');
@@ -60,6 +63,7 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-cards'/, 'route should import catalog card builder');
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-sections'/, 'route should import section builders');
   assert.match(pageSource, /from '\.\/_lib\/models-catalog-decision-data'/);
+  assert.match(pageSource, /from '\.\/_lib\/models-catalog-jsonld'/);
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogHero'/, 'route should import the hero component');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogGallerySection'/, 'route should import the gallery section component');
   assert.match(pageSource, /from '\.\/_components\/ModelsCatalogJsonLdScripts'/, 'route should import the JSON-LD script component');
@@ -89,6 +93,9 @@ test('models catalog route delegates catalog helper logic', () => {
   assert.doesNotMatch(pageSource, /lg:min-h-\[430px\]/, 'hero layout belongs in ModelsCatalogHero.tsx');
   assert.doesNotMatch(pageSource, /id="models-grid"/, 'gallery section markup belongs in ModelsCatalogGallerySection.tsx');
   assert.doesNotMatch(pageSource, /models-breadcrumb-jsonld/, 'JSON-LD script tags belong in ModelsCatalogJsonLdScripts.tsx');
+  assert.doesNotMatch(pageSource, /'@type': 'BreadcrumbList'/, 'breadcrumb schema belongs in models-catalog-jsonld');
+  assert.doesNotMatch(pageSource, /'@type': 'FAQPage'/, 'FAQ schema belongs in models-catalog-jsonld');
+  assert.doesNotMatch(pageSource, /'@type': 'ItemList'/, 'item list schema belongs in models-catalog-jsonld');
 
   const lineCount = pageSource.split('\n').length;
   assert.ok(lineCount <= 500, `ModelsCatalogPage should stay below 500 lines after card data extraction, got ${lineCount}`);
@@ -117,6 +124,15 @@ test('models catalog decision hub sections stay route-local and focused', () => 
   assert.ok(popularComparisonsSource.split('\n').length <= 180, 'popular comparisons should stay focused');
   assert.ok(pricingLimitsSource.split('\n').length <= 180, 'pricing limits section should stay focused');
   assert.ok(decisionFaqSource.split('\n').length <= 180, 'decision FAQ should stay focused');
+});
+
+test('models catalog JSON-LD helper owns schema payload construction', () => {
+  assert.match(jsonLdLibSource, /export function buildModelsCatalogBreadcrumbJsonLd/);
+  assert.match(jsonLdLibSource, /export function buildModelsCatalogItemListJsonLd/);
+  assert.match(jsonLdLibSource, /export function buildModelsCatalogFaqJsonLd/);
+  assert.match(jsonLdLibSource, /'@type': 'BreadcrumbList'/);
+  assert.match(jsonLdLibSource, /'@type': 'ItemList'/);
+  assert.match(jsonLdLibSource, /'@type': 'FAQPage'/);
 });
 
 test('models catalog helper module exposes the route contract', () => {

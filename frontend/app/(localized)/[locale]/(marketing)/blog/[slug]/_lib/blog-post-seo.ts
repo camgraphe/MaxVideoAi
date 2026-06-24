@@ -23,6 +23,18 @@ export type BlogPostLocalization = {
   slugMap: Partial<Record<AppLocale, string>>;
 };
 
+function resolveAbsoluteImageUrl(image?: string | null) {
+  const candidate = typeof image === 'string' && image.trim().length > 0 ? image.trim() : '/og/price-before.png';
+  if (candidate.startsWith('http://') || candidate.startsWith('https://')) {
+    return candidate;
+  }
+  if (candidate.startsWith('//')) {
+    return `https:${candidate}`;
+  }
+  const normalizedPath = candidate.startsWith('/') ? candidate : `/${candidate}`;
+  return `${SITE_BASE_URL}${normalizedPath}`;
+}
+
 export function buildBlogPostLocalization({
   canonicalSlug,
   locale,
@@ -93,6 +105,7 @@ export function buildBlogPostMetadata({
     BLOG_TITLE_OVERRIDES[localization.canonicalSlug]?.en ??
     null;
   const pageTitle = overrideTitle ?? `${post.title} — MaxVideo AI`;
+  const imageUrl = resolveAbsoluteImageUrl(post.image);
 
   return buildSeoMetadata({
     locale,
@@ -102,7 +115,7 @@ export function buildBlogPostMetadata({
     englishPath: `/blog/${localization.canonicalSlug}`,
     availableLocales: localization.availableLocales,
     canonicalOverride: !localization.hasLocalizedVersion ? localization.canonicalUrl : undefined,
-    image: post.image ?? '/og/price-before.png',
+    image: imageUrl,
     imageAlt: post.title,
     ogType: 'article',
     robots: !localization.hasLocalizedVersion ? { index: false, follow: true } : undefined,
@@ -128,6 +141,8 @@ export function buildBlogPostJsonLd({
   publishedIso: string;
 }) {
   const breadcrumbLabels = getBreadcrumbLabels(locale);
+  const imageUrl = resolveAbsoluteImageUrl(post.image);
+  const publisherLogoUrl = resolveAbsoluteImageUrl('/og/price-before.png');
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -161,7 +176,7 @@ export function buildBlogPostJsonLd({
     datePublished: publishedIso,
     dateModified: modifiedIso,
     inLanguage: localeRegions[locale],
-    image: post.image ?? '/og/price-before.png',
+    image: imageUrl,
     author: {
       '@type': 'Organization',
       name: 'MaxVideo AI',
@@ -171,7 +186,7 @@ export function buildBlogPostJsonLd({
       name: 'MaxVideo AI',
       logo: {
         '@type': 'ImageObject',
-        url: '/og/price-before.png',
+        url: publisherLogoUrl,
       },
     },
     mainEntityOfPage: {

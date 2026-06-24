@@ -1,12 +1,9 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { FAQSchema } from '@/components/seo/FAQSchema';
-import { localePathnames, type AppLocale } from '@/i18n/locales';
+import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { buildSlugMap } from '@/lib/i18nSlugs';
-import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
-import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
-import { buildMarketingServiceJsonLd } from '@/lib/seo/marketingServiceJsonLd';
+import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { PricingCreditsRefundsSection } from './_components/PricingCreditsRefundsSection';
 import { PricingHeroSection } from './_components/PricingHeroSection';
@@ -16,8 +13,7 @@ import { PricingPopularChecksSection } from './_components/PricingPopularChecksS
 import { PricingRefundsFaqSection } from './_components/PricingRefundsFaqSection';
 import { PricingVideoMatrixSection } from './_components/PricingVideoMatrixSection';
 import { buildPricingHubData } from './_lib/pricingHubData';
-
-const PRICING_SLUG_MAP = buildSlugMap('pricing');
+import { PRICING_SLUG_MAP, buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from './_lib/pricing-jsonld';
 
 export const revalidate = 600;
 
@@ -45,51 +41,8 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const faq = content.faq;
   const faqEntries = (faq.entries ?? []).slice(0, 12);
   const canonical = buildMetadataUrls(locale, PRICING_SLUG_MAP, { englishPath: '/pricing' }).canonical;
-  const breadcrumbLabels = getBreadcrumbLabels(locale);
-  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
-  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: breadcrumbLabels.home,
-        item: homeUrl,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: breadcrumbLabels.pricing,
-        item: canonical,
-      },
-    ],
-  };
-  const serviceSchema = buildMarketingServiceJsonLd({
-    name:
-      locale === 'fr' ? 'Tarifs MaxVideoAI' : locale === 'es' ? 'Precios de MaxVideoAI' : 'MaxVideoAI pricing',
-    description:
-      locale === 'fr'
-        ? 'Comparez les prix MaxVideoAI par moteur, durée, résolution, audio, image et outils.'
-        : locale === 'es'
-          ? 'Compara precios de MaxVideoAI por motor, duración, resolución, audio, imagen y herramientas.'
-          : 'Compare MaxVideoAI prices by engine, duration, resolution, audio, image and tools.',
-    serviceType:
-      locale === 'fr'
-        ? 'Comparaison de prix IA'
-        : locale === 'es'
-          ? 'Comparación de precios de IA'
-          : 'AI pricing comparison',
-    category: locale === 'fr' ? 'Tarification' : locale === 'es' ? 'Precios' : 'Pricing',
-    url: canonical,
-    offers: {
-      priceCurrency: 'USD',
-      price: '10.00',
-      availability: 'https://schema.org/InStock',
-      url: canonical,
-    },
-  });
+  const breadcrumbJsonLd = buildPricingBreadcrumbJsonLd({ canonical, locale });
+  const serviceSchema = buildPricingServiceJsonLd({ canonical, locale });
 
   return (
     <main className="bg-bg">
