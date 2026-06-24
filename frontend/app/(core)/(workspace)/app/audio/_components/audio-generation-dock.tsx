@@ -67,7 +67,13 @@ export function AudioGenerationDock({
               <UIIcon icon={AudioLines} size={18} />
               {isGenerating ? copy.pricing.generating : copy.pricing.generate}
             </Button>
-            <Button type="button" size="lg" disabled={!canGenerate} className="rounded-l-none border-l border-white/25 px-3">
+            <Button
+              type="button"
+              size="lg"
+              disabled={!canGenerate}
+              aria-label="Audio generation options"
+              className="rounded-l-none border-l border-white/25 px-3"
+            >
               <ChevronDown className="h-4 w-4" aria-hidden />
             </Button>
           </div>

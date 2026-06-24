@@ -179,3 +179,10 @@ test('audio helper modules expose the expected workspace contract', () => {
     assert.match(typesSource, new RegExp(`export type ${typeName}`), `${typeName} should be exported`);
   }
 });
+
+test('audio generation dock keeps icon-only controls accessible', () => {
+  const generationDockSource = readFileSync(generationDockPath, 'utf8');
+
+  assert.match(generationDockSource, /aria-label="Audio generation options"/);
+  assert.match(generationDockSource, /<ChevronDown className="h-4 w-4" aria-hidden/);
+});

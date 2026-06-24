@@ -31,6 +31,25 @@ test('workspace video rail opens renders in the composite preview, not the group
   assert.match(railSource, /onGroupAction\(original,\s*'open',\s*\{\s*autoPlayPreview:\s*true\s*\}\)/);
 });
 
+test('grouped job media action surface does not nest the action menu control', () => {
+  const cardSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/components/GroupedJobCard.tsx'),
+    'utf8'
+  );
+  const figureStart = cardSource.indexOf('<figure');
+  const figureEnd = cardSource.indexOf('</figure>', figureStart);
+
+  assert.notEqual(figureStart, -1, 'GroupedJobCard should keep a focused media figure');
+  assert.notEqual(figureEnd, -1, 'GroupedJobCard media figure should close before sibling controls render');
+
+  const mediaFigureSource = cardSource.slice(figureStart, figureEnd);
+  assert.doesNotMatch(
+    mediaFigureSource,
+    /<button\b/,
+    'media figure must not contain nested button controls because that causes invalid interactive HTML and hydration errors'
+  );
+});
+
 test('Seedance completion persists canonical video outputs before preview enrichment', () => {
   const pollSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/server/byteplus-poll.ts'),
