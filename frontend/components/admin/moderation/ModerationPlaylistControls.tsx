@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import clsx from 'clsx';
 import { Button } from '@/components/ui/Button';
 import type {
@@ -35,11 +36,14 @@ export function ModerationPlaylistControls({
   playlistState?: PlaylistState;
   video: ModerationVideo;
 }) {
+  const generatedPlaylistSelectId = useId();
+
   if (!enabled) return null;
 
   const isAssigningPlaylist = Boolean(playlistState?.loading);
   const playlistMessage = playlistState?.message ?? null;
   const playlistErrorMessage = playlistState?.error ?? null;
+  const playlistSelectId = `moderation-playlist-${generatedPlaylistSelectId}`;
 
   return (
     <div className="space-y-2 text-xs">
@@ -71,10 +75,14 @@ export function ModerationPlaylistControls({
       ) : (
         <p className="text-xs text-text-muted">No playlist assignment yet.</p>
       )}
-      {compact ? null : (
-        <label className="block text-[11px] font-semibold uppercase tracking-micro text-text-muted">Add to playlist</label>
-      )}
+      <label
+        htmlFor={playlistSelectId}
+        className={compact ? 'sr-only' : 'block text-[11px] font-semibold uppercase tracking-micro text-text-muted'}
+      >
+        Add to playlist
+      </label>
       <select
+        id={playlistSelectId}
         className={clsx(
           'w-full rounded-input border border-hairline bg-bg text-xs text-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
           compact ? 'px-2 py-1.5' : 'px-2 py-2'

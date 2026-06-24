@@ -264,7 +264,8 @@ export function AssetDropzone({
       lines.push(assetCopy.formats('MP4, MOV'));
       const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
       if (maxVideo) lines.push(assetCopy.mbMax(maxVideo));
-      if (limits.videoMaxDurationSec) lines.push(assetCopy.secondsMax(limits.videoMaxDurationSec));
+      const maxVideoDuration = field.maxDurationSec ?? limits.videoMaxDurationSec;
+      if (maxVideoDuration) lines.push(assetCopy.secondsMax(maxVideoDuration));
     } else {
       lines.push(assetCopy.formats('MP3, WAV, M4A'));
       const maxAudio = constraints.maxAudioSizeMB ?? limits.audioMaxMB ?? limits.videoMaxMB;
@@ -309,6 +310,7 @@ export function AssetDropzone({
 
   const fieldTitle = resolveAssetFieldTitle(field, role, assetCopy);
   const roleDescription = resolveAssetRoleDescription(role, assetCopy);
+  const visibleHelperText = field.type === 'video' && helperLines.length ? helperLines.join(' · ') : null;
   const detailsTooltipLines = buildAssetFieldTooltipLines({
     roleDescription,
     fieldDescription: field.description,
@@ -445,9 +447,9 @@ export function AssetDropzone({
             );
           })}
         </div>
-        {isCollectionField ? (
+        {visibleHelperText || isCollectionField ? (
           <p className="text-[11px] leading-none text-text-muted dark:text-white/45">
-            {assetCopy.slotsRemaining(remainingSlotCount)}
+            {[visibleHelperText, isCollectionField ? assetCopy.slotsRemaining(remainingSlotCount) : null].filter(Boolean).join(' · ')}
           </p>
         ) : null}
       </div>

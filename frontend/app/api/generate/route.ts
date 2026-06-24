@@ -209,9 +209,7 @@ export async function POST(req: NextRequest) {
     elements,
     endImageUrl,
     startImageUrl,
-    isLumaRay2,
-    initialImageUrl,
-    loop,
+    isLumaRay2, initialImageUrl, loop, seed, safetyChecker,
   });
   if (!validationPayloadResult.ok) {
     logMetric('rejected', validationPayloadResult.metric);

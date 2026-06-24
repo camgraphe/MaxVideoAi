@@ -57,8 +57,9 @@ export function sliceMediaLibraryPage<T extends { id: string; createdAt?: string
   return {
     items: visibleItems,
     hasMore,
-    nextCursor: hasMore && lastVisibleItem?.createdAt
-      ? encodeMediaLibraryCursor({ createdAt: lastVisibleItem.createdAt, id: lastVisibleItem.id })
-      : null,
+    nextCursor:
+      hasMore && lastVisibleItem?.createdAt
+        ? encodeMediaLibraryCursor({ createdAt: lastVisibleItem.createdAt, id: lastVisibleItem.id })
+        : null,
   };
 }

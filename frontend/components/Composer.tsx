@@ -11,6 +11,7 @@ import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPr
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import type { ComposerProps } from '@/components/composer/composer-types';
 
 export type {
@@ -145,7 +146,7 @@ export function Composer({
       engine.id.startsWith('ltx-2-3') ||
       engine.id.startsWith('lumaRay2') ||
       engine.id.startsWith('seedance-2-0') ||
-      engine.id === 'happy-horse-1-0';
+      isHappyHorseEngineId(engine.id);
     if (!useCustomAssetOrder) {
       return assetFields;
     }
@@ -173,7 +174,7 @@ export function Composer({
   const useLtxAssetGridLayout =
     engine.id.startsWith('ltx-2-3') ||
     engine.id.startsWith('seedance-2-0') ||
-    engine.id === 'happy-horse-1-0';
+    isHappyHorseEngineId(engine.id);
   const assetFieldLayoutClass = useMemo(() => {
     if (!useLtxAssetGridLayout) {
       return 'flex flex-wrap gap-4';
@@ -327,6 +328,7 @@ export function Composer({
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
                 rows={6}
+                aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',

@@ -34,3 +34,11 @@ test('composer delegates copy, contracts, multi-prompt, and promoted action icon
   const lineCount = composerSource.split('\n').length;
   assert.ok(lineCount <= 500, `Composer.tsx should stay below 500 lines after composer surface extraction, got ${lineCount}`);
 });
+
+test('composer prompt textarea uses the configured prompt label as its accessible name', () => {
+  const textareaStart = composerSource.indexOf('<textarea');
+  const textareaEnd = composerSource.indexOf('suppressHydrationWarning', textareaStart);
+  const textareaBlock = composerSource.slice(textareaStart, textareaEnd);
+
+  assert.match(textareaBlock, /aria-label=\{promptLabel\}/);
+});

@@ -61,23 +61,23 @@ export const REFERENCE_WORKFLOW_VISUALS = [
   '/assets/marketing/reference-workflow-final-video.webp',
 ] as const;
 
-export const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'ltx-2-3-pro', 'happy-horse-1-0'] as const;
+export const HERO_VIDEO_ORDER = ['seedance-2-0', 'kling-3-pro', 'veo-3-1-lite', 'happy-horse-1-1', 'ltx-2-3-pro'] as const;
 export const HOME_HERO_IMAGE_URL = '/assets/home/home-hero-reference.webp';
 
 export const HERO_VIDEO_MODE_LABELS: Record<string, string> = {
   'kling-3-pro': 'image-to-video',
   'seedance-2-0': 'image-to-video',
   'veo-3-1-lite': 'image-to-video',
+  'happy-horse-1-1': 'reference-to-video',
   'ltx-2-3-pro': 'audio-to-video',
-  'happy-horse-1-0': 'reference-to-video',
 };
 
 export const HERO_VIDEO_CHIPS: Record<string, string[]> = {
   'kling-3-pro': ['Cinematic', 'Camera move'],
   'seedance-2-0': ['Cinematic', 'Realism'],
   'veo-3-1-lite': ['Realistic', 'Premium'],
+  'happy-horse-1-1': ['Lip-sync', 'Unified'],
   'ltx-2-3-pro': ['Audio', 'Retake'],
-  'happy-horse-1-0': ['Lip-sync', 'Unified'],
 };
 
 export const PROOF_ICONS: Record<string, LucideIcon> = {
@@ -141,7 +141,7 @@ export const HERO_ENGINE_MEDIA: Record<
     estimateValue: '$0.78',
     estimateMeta: '10s generation',
   },
-  'happy-horse-1-0': {
+  'happy-horse-1-1': {
     posterSrc:
       'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/a3182fc5-e993-4a3b-9b5a-805997bd3e68.jpg',
     videoSrc: 'https://media.maxvideoai.com/renders/marketing/f808f22b-c463-421f-b5dc-ec6c898ece40.mp4',

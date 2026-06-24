@@ -17,6 +17,7 @@ import type {
   AudioVoiceGender,
   AudioVoiceProfile,
 } from '@/lib/audio-generation';
+import { uploadVideoFile } from '@/lib/client-video-upload';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { AudioJobDetail } from './audio-workspace-types';
 
@@ -136,9 +137,17 @@ export async function probeVideoDuration(url: string): Promise<number | null> {
 }
 
 export async function uploadAsset(file: File, kind: 'video' | 'audio'): Promise<{ url: string; name: string }> {
+  if (kind === 'video') {
+    const uploaded = await uploadVideoFile(file);
+    return {
+      url: uploaded.url,
+      name: uploaded.name ?? file.name,
+    };
+  }
+
   const formData = new FormData();
   formData.append('file', file, file.name);
-  const response = await authFetch(kind === 'video' ? '/api/uploads/video' : '/api/uploads/audio', {
+  const response = await authFetch('/api/uploads/audio', {
     method: 'POST',
     body: formData,
   });

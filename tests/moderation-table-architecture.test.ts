@@ -123,3 +123,16 @@ test('moderation actions can send published videos to video SEO candidates', () 
   assert.doesNotMatch(seoCandidateButtonSource, /seoStatus:\s*'approved'/, 'candidate action must not directly approve or index Video SEO pages');
   assert.doesNotMatch(seoCandidateButtonSource, /include_?in_?sitemap/i, 'candidate action must not expose a direct sitemap toggle');
 });
+
+test('moderation playlist select keeps an accessible label in compact and full layouts', () => {
+  assert.match(playlistControlsSource, /import \{ useId \} from 'react'/);
+  assert.match(playlistControlsSource, /const generatedPlaylistSelectId = useId\(\)/);
+  assert.match(playlistControlsSource, /const playlistSelectId = `moderation-playlist-\$\{generatedPlaylistSelectId\}`/);
+  assert.match(playlistControlsSource, /htmlFor=\{playlistSelectId\}/);
+  assert.match(playlistControlsSource, /compact \? 'sr-only'/);
+  assert.match(playlistControlsSource, /id=\{playlistSelectId\}/);
+});
+
+test('moderation date labels use the fixed admin timezone to avoid hydration text drift', () => {
+  assert.match(utilsSource, /timeZone:\s*'Europe\/Paris'/);
+});

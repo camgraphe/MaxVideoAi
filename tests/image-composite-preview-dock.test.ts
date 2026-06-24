@@ -4,11 +4,11 @@ import test from 'node:test';
 
 const source = readFileSync('frontend/components/groups/ImageCompositePreviewDock.tsx', 'utf8');
 
-test('image composite main preview prefers the full render URL over thumbnails', () => {
+test('image composite main preview uses stable media urls during polling refreshes', () => {
   assert.match(
     source,
-    /const selectedPreviewUrl = selected\?\.url \?\? selected\?\.thumbUrl \?\? null;/,
-    'the large composite preview should display the full-quality render URL'
+    /const selectedPreviewUrl =\s*resolveStableMediaUrl\(selected\?\.url,\s*selected\?\.thumbUrl\)\s*\?\?\s*selected\?\.url\s*\?\?\s*selected\?\.thumbUrl\s*\?\?\s*null;/,
+    'the large composite preview should avoid temporary provider URLs that can change on refresh'
   );
   assert.match(
     source,

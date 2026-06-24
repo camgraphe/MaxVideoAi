@@ -5,6 +5,7 @@ import {
   HAPPY_HORSE_DURATION_OPTIONS,
   HAPPY_HORSE_ENDPOINTS,
 } from './launch-config';
+import { HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY } from './happy-horse-1-1';
 
 const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
   id: 'happy-horse-1-0',
@@ -239,15 +240,17 @@ const HAPPY_HORSE_1_0_ENGINE: EngineCaps = {
 
 
 export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
+  ...HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY,
   {
     id: 'happy-horse-1-0',
     modelSlug: 'happy-horse-1-0',
     marketingName: 'Happy Horse 1.0',
-    cardTitle: 'Happy Horse 1.0 - Unified audio-native video model',
+    cardTitle: 'Happy Horse 1.0 - Legacy video-edit route',
     provider: 'Alibaba',
     brandId: 'alibaba',
     family: 'happy-horse',
     versionLabel: '1.0',
+    isLegacy: true,
     availability: 'available',
     logoPolicy: 'logoAllowed',
     surfaces: {
@@ -260,19 +263,19 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'sora-2-pro'],
-        publishedPairs: ['seedance-2-0', 'veo-3-1', 'kling-3-pro', 'sora-2-pro'],
+        suggestOpponents: ['happy-horse-1-1', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
+        publishedPairs: ['happy-horse-1-1', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
         includeInHub: true,
       },
       app: {
         enabled: true,
-        discoveryRank: 8,
+        discoveryRank: 50,
         variantGroup: 'happy-horse',
-        variantLabel: '1.0',
+        variantLabel: '1.0 legacy',
       },
       pricing: {
         includeInEstimator: true,
-        featuredScenario: 'unified native-audio video',
+        featuredScenario: 'legacy happy-horse-video-edit',
       },
     },
     engine: HAPPY_HORSE_1_0_ENGINE,
@@ -330,14 +333,14 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     defaultFalModelId: HAPPY_HORSE_ENDPOINTS.t2v,
     seo: {
-      title: 'Happy Horse 1.0 - Unified AI Video Model with Native Audio | MaxVideoAI',
+      title: 'Happy Horse 1.0 - Legacy Video Edit Route | MaxVideoAI',
       description:
-        'Generate Happy Horse 1.0 videos on MaxVideoAI with text, image, R2V reference, and video-edit workflows plus native synchronized audio and lip-sync.',
+        'Use Happy Horse 1.0 on MaxVideoAI as the legacy Alibaba video-edit route while new text, image, and reference workflows move to Happy Horse 1.1.',
       canonicalPath: '/models/happy-horse-1-0',
     },
     type: 'textImageReferenceVideoEdit',
     seoText:
-      'Happy Horse 1.0 combines text-to-video, image-to-video, reference-image R2V, and video-edit workflows in one Alibaba model card, with native audio and lip-sync treated as part of the generation rather than a separate post step.',
+      'Happy Horse 1.0 remains available for legacy Alibaba video-edit jobs. Use Happy Horse 1.1 for the current text-to-video, image-to-video, and reference-to-video workflows.',
     demoUrl: 'https://media.maxvideoai.com/renders/marketing/69f25df5-9354-4387-a3d2-44b1736727e2.mp4',
     media: {
       videoUrl: 'https://media.maxvideoai.com/renders/marketing/69f25df5-9354-4387-a3d2-44b1736727e2.mp4',
@@ -374,7 +377,7 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       {
         question: 'What Happy Horse workflows are available in MaxVideoAI?',
         answer:
-          'Happy Horse 1.0 is exposed as one unified model with text-to-video, image-to-video, R2V reference-image generation, and video-to-video editing.',
+          'Happy Horse 1.0 remains available for legacy video edit. New text, image, and reference generations should use Happy Horse 1.1.',
       },
       {
         question: 'Does Happy Horse include lip-sync?',

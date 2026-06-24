@@ -42,6 +42,18 @@ test('workspace library client delegates data and mutation orchestration', () =>
   assert.ok(clientLines < 500, `expected LibraryPageClient to stay under 500 lines, got ${clientLines}`);
 });
 
+test('workspace library import input stays hidden from keyboard traversal', () => {
+  const clientSource = readFileSync(clientPath, 'utf8');
+  const inputStart = clientSource.indexOf('<input');
+  const inputEnd = clientSource.indexOf('/>', inputStart);
+  const inputBlock = clientSource.slice(inputStart, inputEnd);
+
+  assert.match(inputBlock, /ref=\{importInputRef\}/);
+  assert.match(inputBlock, /type="file"/);
+  assert.match(inputBlock, /aria-hidden="true"/);
+  assert.match(inputBlock, /tabIndex=\{-1\}/);
+});
+
 test('workspace library data and mutation hooks own server data workflows', () => {
   const dataHookSource = readFileSync(dataHookPath, 'utf8');
   const mutationHookSource = readFileSync(mutationHookPath, 'utf8');

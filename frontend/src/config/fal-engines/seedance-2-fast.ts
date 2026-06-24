@@ -109,6 +109,8 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         description: 'Optional pacing or motion references for draft-speed ref2v runs. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.',
         minCount: 0,
         maxCount: 3,
+        minDurationSec: 2,
+        maxDurationSec: 15,
         modes: ['ref2v'],
         source: 'either',
       },

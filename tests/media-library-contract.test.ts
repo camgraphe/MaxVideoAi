@@ -144,7 +144,7 @@ test('media library schema repairs legacy sources before applying the source con
 
 test('library listings hide internal storyboard template reference assets', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 
@@ -177,6 +177,10 @@ test('media library server keeps pagination helpers outside route handlers', () 
     path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
     'utf8'
   );
+  const assetListingSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
+    'utf8'
+  );
   const jobOutputsSource = fs.readFileSync(
     path.join(process.cwd(), 'frontend/server/media-library/job-outputs.ts'),
     'utf8'
@@ -185,20 +189,21 @@ test('media library server keeps pagination helpers outside route handlers', () 
   assert.ok(fs.existsSync(paginationPath), 'media library pagination helpers should be shared server code');
   assert.match(assetsSource, /export async function listLibraryAssetPage/);
   assert.match(assetsSource, /listLibraryAssetPage\(\{[\s\S]*cursor:/);
-  assert.match(assetsSource, /shouldIncludeJobOutputs/);
-  assert.match(assetsSource, /JOIN app_jobs j\s+ON j\.job_id = o\.job_id\s+AND j\.user_id = o\.user_id/);
-  assert.match(assetsSource, /mediaAssetFromJobOutput\(mapOutputRow\(row\)\)/);
-  assert.match(assetsSource, /ORDER BY created_at DESC,\s*id DESC/i);
-  assert.match(assetsSource, /ORDER BY created_at DESC,\s*asset_id DESC/i);
-  assert.match(assetsSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
+  assert.match(assetsSource, /listLibraryAssetPageFromListing\(params\)/);
+  assert.match(assetListingSource, /shouldIncludeJobOutputs/);
+  assert.match(assetListingSource, /JOIN app_jobs j\s+ON j\.job_id = o\.job_id\s+AND j\.user_id = o\.user_id/);
+  assert.match(assetListingSource, /mediaAssetFromJobOutput\(mapOutputRow\(row\)\)/);
+  assert.match(assetListingSource, /ORDER BY created_at DESC,\s*id DESC/i);
+  assert.match(assetListingSource, /ORDER BY created_at DESC,\s*asset_id DESC/i);
+  assert.match(assetListingSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
   assert.match(jobOutputsSource, /export async function listRecentOutputPage/);
   assert.match(jobOutputsSource, /JOIN app_jobs j\s+ON j\.job_id = o\.job_id\s+AND j\.user_id = o\.user_id/);
   assert.match(jobOutputsSource, /ORDER BY o\.created_at DESC,\s*o\.id DESC/i);
 });
 
 test('studio asset listings can include generated job outputs without requiring saved library copies', () => {
-  const assetsSource = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+  const assetListingSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
   const assetsRoute = fs.readFileSync(
@@ -206,20 +211,20 @@ test('studio asset listings can include generated job outputs without requiring 
     'utf8'
   );
 
-  assert.match(assetsSource, /includeOutputs\?:\s*boolean/);
-  assert.match(assetsSource, /Boolean\(params\.includeOutputs\)\s*&&\s*\(!source\s*\|\|\s*source\s*===\s*'saved_job_output'\)/);
-  assert.match(assetsSource, /FROM job_outputs o/);
-  assert.match(assetsSource, /\(\$4::text IS NULL OR \$4::text = 'saved_job_output'\)/);
-  assert.match(assetsSource, /AND j\.hidden IS NOT TRUE/);
-  assert.match(assetsSource, /AND o\.status = 'ready'/);
-  assert.match(assetsSource, /source:\s*'saved_job_output'/);
-  assert.match(assetsSource, /sourceOutputId:\s*output\.id/);
+  assert.match(assetListingSource, /includeOutputs\?:\s*boolean/);
+  assert.match(assetListingSource, /Boolean\(params\.includeOutputs\)\s*&&\s*\(!source\s*\|\|\s*source\s*===\s*'saved_job_output'\)/);
+  assert.match(assetListingSource, /FROM job_outputs o/);
+  assert.match(assetListingSource, /\(\$4::text IS NULL OR \$4::text = 'saved_job_output'\)/);
+  assert.match(assetListingSource, /AND j\.hidden IS NOT TRUE/);
+  assert.match(assetListingSource, /AND o\.status = 'ready'/);
+  assert.match(assetListingSource, /source:\s*'saved_job_output'/);
+  assert.match(assetListingSource, /sourceOutputId:\s*output\.id/);
   assert.match(assetsRoute, /durationSec:\s*asset\.durationSec/);
 });
 
 test('legacy media library rows infer video and audio kind from URLs when MIME is missing', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 
@@ -254,7 +259,7 @@ test('builds idempotent media asset identity from source output when available',
 
 test('deduplicates canonical and legacy library rows by media URL identity', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 
@@ -282,7 +287,7 @@ test('deduplicates canonical and legacy library rows by media URL identity', () 
 
 test('deduplicates copied generated assets against legacy origin urls', () => {
   const source = fs.readFileSync(
-    path.join(process.cwd(), 'frontend/server/media-library/assets.ts'),
+    path.join(process.cwd(), 'frontend/server/media-library/asset-listing.ts'),
     'utf8'
   );
 

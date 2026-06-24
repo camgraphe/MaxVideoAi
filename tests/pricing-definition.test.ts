@@ -142,6 +142,20 @@ test('Happy Horse pricing definition exposes standard and V2V rates', () => {
   assert.equal(v2vDefinition.resolutionMultipliers['1080p'], 2);
 });
 
+test('Happy Horse 1.1 pricing definition uses current 1080p provider rate', () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
+  assert.ok(engine);
+
+  const definition = buildPricingDefinition(engine);
+
+  assert.ok(definition);
+  assert.equal(definition.baseUnitPriceCents, 14);
+  assert.equal(definition.resolutionMultipliers['720p'], 1);
+  assert.equal(definition.resolutionMultipliers['1080p'], 18 / 14);
+  assert.equal(definition.durationSteps.min, 3);
+  assert.equal(definition.durationSteps.max, 15);
+});
+
 test('Kling 3 4K benchmark specs mark effective lip sync support', () => {
   const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
   const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
@@ -166,6 +180,29 @@ test('Happy Horse benchmark specs mark unified native audio support', () => {
   assert.equal(happyHorse.keySpecs?.imageToVideo, 'Supported');
   assert.equal(happyHorse.keySpecs?.videoToVideo, 'Supported (video edit)');
   assert.equal(happyHorse.keySpecs?.referenceImageStyle, 'Supported (1-9 reference stills)');
+  assert.equal(happyHorse.keySpecs?.lipSync, 'Supported');
+  assert.equal(happyHorse.keySpecs?.nativeAudioGeneration, 'Supported');
+});
+
+test('Happy Horse 1.1 benchmark specs mark current route limits', () => {
+  const benchmarkPath = path.join(process.cwd(), 'data/benchmarks/engine-key-specs.v1.json');
+  const benchmarkData = JSON.parse(fs.readFileSync(benchmarkPath, 'utf8')) as {
+    specs?: Array<{ modelSlug?: string; keySpecs?: Record<string, unknown> }>;
+  };
+  const happyHorse = benchmarkData.specs?.find((entry) => entry.modelSlug === 'happy-horse-1-1');
+
+  assert.ok(happyHorse);
+  assert.equal(happyHorse.keySpecs?.textToVideo, 'Supported');
+  assert.equal(happyHorse.keySpecs?.imageToVideo, 'Supported');
+  assert.equal(happyHorse.keySpecs?.videoToVideo, 'Not supported in the current Happy Horse 1.1 route');
+  assert.equal(
+    happyHorse.keySpecs?.firstLastFrame,
+    'First frame supported via Image-to-Video; last frame not supported'
+  );
+  assert.equal(happyHorse.keySpecs?.referenceImageStyle, 'Supported (1-9 reference stills)');
+  assert.equal(happyHorse.keySpecs?.maxResolution, '1080p');
+  assert.equal(happyHorse.keySpecs?.maxDuration, '15s output');
+  assert.deepEqual(happyHorse.keySpecs?.aspectRatios, ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', '9:21', '5:4', '4:5']);
   assert.equal(happyHorse.keySpecs?.lipSync, 'Supported');
   assert.equal(happyHorse.keySpecs?.nativeAudioGeneration, 'Supported');
 });
@@ -215,8 +252,8 @@ test('Happy Horse is distributed across relevant best-for pages', () => {
     'product-videos',
     'lipsync-dialogue',
   ].forEach((slug) => {
-    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), true, `${slug} should include Happy Horse`);
-    assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-0', `${slug} should not rank Happy Horse first`);
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-1'), true, `${slug} should include Happy Horse`);
+    assert.notEqual(topPicksBySlug.get(slug)?.[0], 'happy-horse-1-1', `${slug} should not rank Happy Horse first`);
   });
 
   assert.deepEqual(topPicksBySlug.get('cinematic-realism')?.slice(0, 2), ['seedance-2-0', 'kling-3-pro']);
@@ -224,7 +261,7 @@ test('Happy Horse is distributed across relevant best-for pages', () => {
   assert.deepEqual(topPicksBySlug.get('character-reference')?.slice(0, 2), ['kling-3-pro', 'seedance-2-0']);
 
   ['4k-video', 'fast-drafts', 'stylized-anime'].forEach((slug) => {
-    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-0'), false, `${slug} should not include Happy Horse`);
+    assert.equal(topPicksBySlug.get(slug)?.includes('happy-horse-1-1'), false, `${slug} should not include Happy Horse`);
   });
 });
 
@@ -240,7 +277,7 @@ test('Happy Horse benchmark score is calibrated below Seedance and Kling 3 Pro f
       lipsyncQuality?: number;
     }>;
   };
-  const happyHorse = benchmarkData.scores?.find((entry) => entry.modelSlug === 'happy-horse-1-0');
+  const happyHorse = benchmarkData.scores?.find((entry) => entry.modelSlug === 'happy-horse-1-1');
   const seedance = benchmarkData.scores?.find((entry) => entry.modelSlug === 'seedance-2-0');
   const kling = benchmarkData.scores?.find((entry) => entry.modelSlug === 'kling-3-pro');
 
@@ -252,6 +289,23 @@ test('Happy Horse benchmark score is calibrated below Seedance and Kling 3 Pro f
   assert.ok((happyHorse.motion ?? 0) < (seedance.motion ?? 0));
   assert.ok((happyHorse.visualQuality ?? 0) < (kling.visualQuality ?? 0));
   assert.ok((happyHorse.motion ?? 0) < (kling.motion ?? 0));
+});
+
+test('Happy Horse 1.1 displayed quotes include MaxVideoAI margin', async () => {
+  const engine = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
+  assert.ok(engine);
+
+  const snapshot = await computePricingSnapshot({
+    engine,
+    durationSec: 5,
+    resolution: '1080p',
+    mode: 't2v',
+    membershipTier: 'member',
+  });
+
+  assert.equal(snapshot.base.amountCents, 90);
+  assert.equal(snapshot.margin.amountCents, 27);
+  assert.equal(snapshot.totalCents, 117);
 });
 
 test('Kling 3 displayed quotes include the MaxVideoAI margin', async () => {

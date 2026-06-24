@@ -184,52 +184,56 @@ export function GroupedJobCard({
         menuOpen && 'z-30'
       )}
     >
-      <figure
-        className="group relative cursor-pointer overflow-hidden rounded-t-card"
-        role="button"
-        tabIndex={0}
-        aria-label={openLabel}
-        onClick={() => onOpen?.(group)}
+      <div
+        className="relative overflow-hidden rounded-t-card"
         onPointerEnter={() => {
           setIsPreviewWarm(true);
           setHovered(true);
         }}
         onPointerLeave={() => setHovered(false)}
-        onFocus={() => {
-          setIsPreviewWarm(true);
-          setHovered(true);
-        }}
-        onBlur={() => setHovered(false)}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            onOpen?.(group);
-          }
-        }}
       >
-        <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
-          <GroupedJobCardPreviewGrid
-            group={group}
-            hovered={hovered}
-            isPreviewWarm={isPreviewWarm}
-            isSinglePreview={isSinglePreview}
-            previewCount={previewCount}
-            previewGridClass={previewGridClass}
-            previews={previews}
-          />
-        </div>
-        {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
-        {group.count > 1 ? (
-          <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[11px] font-semibold text-on-inverse shadow">
-            {splitLabel}
+        <figure
+          className="group relative cursor-pointer"
+          role="button"
+          tabIndex={0}
+          aria-label={openLabel}
+          onClick={() => onOpen?.(group)}
+          onFocus={() => {
+            setIsPreviewWarm(true);
+            setHovered(true);
+          }}
+          onBlur={() => setHovered(false)}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onOpen?.(group);
+            }
+          }}
+        >
+          <div className="relative w-full" style={{ aspectRatio: '16 / 9' }}>
+            <GroupedJobCardPreviewGrid
+              group={group}
+              hovered={hovered}
+              isPreviewWarm={isPreviewWarm}
+              isSinglePreview={isSinglePreview}
+              previewCount={previewCount}
+              previewGridClass={previewGridClass}
+              previews={previews}
+            />
           </div>
-        ) : null}
-        {showOpenOverlay && onOpen ? (
-          <div className="pointer-events-none absolute bottom-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-surface-on-media-dark-75 px-2.5 py-1 text-[11px] font-semibold text-on-inverse shadow-md backdrop-blur transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus:opacity-100">
-            <Maximize2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            <span className="truncate">{openLabel}</span>
-          </div>
-        ) : null}
+          {heroHasAudio ? <AudioEqualizerBadge tone="light" size="sm" label="Audio available" /> : null}
+          {group.count > 1 ? (
+            <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-surface-on-media-dark-65 px-2.5 py-0.5 text-[11px] font-semibold text-on-inverse shadow">
+              {splitLabel}
+            </div>
+          ) : null}
+          {showOpenOverlay && onOpen ? (
+            <div className="pointer-events-none absolute bottom-3 right-3 inline-flex max-w-[calc(100%-1.5rem)] items-center gap-1.5 rounded-full bg-surface-on-media-dark-75 px-2.5 py-1 text-[11px] font-semibold text-on-inverse shadow-md backdrop-blur transition-opacity duration-150 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus:opacity-100">
+              <Maximize2 className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <span className="truncate">{openLabel}</span>
+            </div>
+          ) : null}
+        </figure>
         {showMenu && (
           <button
             ref={menuButtonRef}
@@ -263,7 +267,7 @@ export function GroupedJobCard({
             )}
           </button>
         )}
-      </figure>
+      </div>
       <div className="overflow-hidden rounded-b-card">
         <div className="flex items-center justify-between gap-4 border-t border-hairline bg-surface-glass-80 px-3 py-2 text-sm text-text-secondary">
           <div className="flex items-center gap-2">

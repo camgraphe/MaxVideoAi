@@ -359,6 +359,7 @@ export function useWorkspaceComposerState({
         }
         const parsed = Number(trimmed);
         if (!Number.isFinite(parsed)) return current;
+        if (parsed < 0 || parsed > 2147483647) return current;
         return { ...current, seed: Math.trunc(parsed) };
       });
     },

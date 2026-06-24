@@ -9,6 +9,7 @@ import { normalizeFalDurationValueForModel, resolveFalVideoResolutionInput } fro
 import { buildSoraFalInput } from '@/lib/sora';
 import { stripKlingDirectOnlyExtraInputValues } from '@/lib/kling-direct-extra-values';
 import { buildFalElementInputs } from '@/lib/video-provider-elements';
+import { isHappyHorseFalModelId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
 import type { GeneratePayload } from '@/lib/fal-types';
 
 export function buildFalGenerationRequest(
@@ -32,16 +33,18 @@ export function buildFalGenerationRequest(
     }
   } else {
     const resolution = resolveFalVideoResolutionInput(payload.engineId, payload.resolution, model, payload.mode);
-    requestBody = {
-      fps: payload.fps,
-    };
+    requestBody = {};
+    if (!isHappyHorseFalModelId(model) && typeof payload.fps === 'number' && Number.isFinite(payload.fps)) {
+      requestBody.fps = payload.fps;
+    }
     if (resolution) {
       requestBody.resolution = resolution;
     }
     if (payload.prompt.trim().length) {
       requestBody.prompt = payload.prompt;
     }
-    if (payload.aspectRatio) {
+    const shouldSendAspectRatio = !(isHappyHorseFalModelId(model) && payload.mode === 'i2v');
+    if (payload.aspectRatio && shouldSendAspectRatio) {
       requestBody.aspect_ratio = payload.aspectRatio;
     }
 
@@ -270,7 +273,7 @@ export function buildFalGenerationRequest(
       addToArray('reference_image_urls', trimmed);
       return;
     }
-    if (expectsSingleSourceVideo && (payload.engineId === 'happy-horse-1-0' || requestBody.reference_image_urls)) {
+    if (expectsSingleSourceVideo && (supportsHappyHorseVideoEdit(payload.engineId) || requestBody.reference_image_urls)) {
       addToArray('reference_image_urls', trimmed);
       return;
     }

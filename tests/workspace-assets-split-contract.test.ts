@@ -6,6 +6,7 @@ const assetsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceA
 const assetLibraryHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceAssetLibrary.ts';
 const referenceAssetsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceReferenceAssets.ts';
 const klingAssetsHookPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceKlingElementAssets.ts';
+const assetDropzoneSlotPath = 'frontend/components/asset-dropzone/AssetDropzoneSlot.tsx';
 
 test('workspace asset library, field assets, and Kling element assets are split from the assets orchestrator', () => {
   assert.equal(existsSync(assetLibraryHookPath), true);
@@ -43,4 +44,15 @@ test('workspace asset library, field assets, and Kling element assets are split 
   assert.match(klingAssetsSource, /const handleKlingElementAssetAdd = useCallback/);
   assert.match(klingAssetsSource, /const handleKlingElementAssetRemove = useCallback/);
   assert.match(klingAssetsSource, /insertKlingLibraryAsset/);
+});
+
+test('workspace asset dropzone keeps the technical file input out of keyboard traversal', () => {
+  assert.equal(existsSync(assetDropzoneSlotPath), true);
+
+  const source = readFileSync(assetDropzoneSlotPath, 'utf8');
+  const inputBlock = source.slice(source.indexOf('<input'), source.indexOf('suppressHydrationWarning'));
+
+  assert.match(inputBlock, /type="file"/);
+  assert.match(inputBlock, /aria-hidden="true"/);
+  assert.match(inputBlock, /tabIndex=\{-1\}/);
 });

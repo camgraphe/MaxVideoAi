@@ -284,6 +284,7 @@ export async function runWorkspaceGenerationIteration({
       paymentMode,
       cfgScale,
       capability,
+      inputSchema: selectedEngine.inputSchema,
       supportsNegativePrompt,
       supportsAudioToggle,
       isSeedance,

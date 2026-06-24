@@ -9,6 +9,7 @@ import {
 import {
   getUnifiedHappyHorseMode,
   isHappyHorseEngineId,
+  supportsHappyHorseVideoEdit,
 } from '@/lib/happy-horse-workflow';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import {
@@ -231,7 +232,9 @@ export function useWorkspaceEngineModeState({
       });
     }
     if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
-      return getUnifiedHappyHorseMode(inputAssets);
+      return getUnifiedHappyHorseMode(inputAssets, {
+        supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
+      });
     }
     const modes = selectedEngine.modes;
     if (referenceInputStatus.hasAudio && modes.includes('a2v')) return 'a2v';

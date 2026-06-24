@@ -155,6 +155,11 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptingSource, /ModelDecisionPromptTabs/, 'decision prompting should delegate interactive tabs');
   assert.match(decisionPromptingSource, /How Seedance 2\.0 uses references|referencesTitle/, 'decision prompting should render the reference workflow section');
   assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
+  assert.match(
+    decisionPromptingSource,
+    /engineSlug === 'happy-horse-1-1'[\s\S]*Night market noodle stall chef[\s\S]*getHappyHorse11DemoPrompt/,
+    'Happy Horse 1.1 prompt lab should use the dedicated night-market demo copy'
+  );
   assert.match(decisionPromptTabsSource, /ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
   assert.match(decisionCopyButtonSource, /copyTextToClipboard/, 'decision copy button should use the clipboard helper fallback');
   assert.match(decisionCopyButtonSource, /useEffect\(\(\)\s*=>\s*\{\s*setCopied\(false\)/, 'decision copy button should reset copied state when copy text changes');

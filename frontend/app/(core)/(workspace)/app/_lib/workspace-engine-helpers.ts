@@ -1,5 +1,6 @@
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { isLumaRay32EngineId } from '@/lib/luma-agents';
+import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
 import { getLocalizedModeLabel } from '@/lib/ltx-localization';
 import { UNIFIED_SEEDANCE_ENGINE_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
@@ -131,7 +132,7 @@ export function isModeValue(value: unknown): value is Mode {
 }
 
 export function getEngineModeLabel(engineId: string | null | undefined, mode: Mode, locale?: string | null): string {
-  if (engineId === 'happy-horse-1-0' && mode === 'ref2v') {
+  if (isHappyHorseEngineId(engineId) && mode === 'ref2v') {
     return 'R2V';
   }
   return getLocalizedModeLabel(mode, locale);

@@ -28,8 +28,25 @@ export const HAPPY_HORSE_ENDPOINTS = {
   v2v: 'alibaba/happy-horse/video-edit',
 } as const;
 
+export const HAPPY_HORSE_1_1_ENDPOINTS = {
+  t2v: 'alibaba/happy-horse/v1.1/text-to-video',
+  i2v: 'alibaba/happy-horse/v1.1/image-to-video',
+  ref2v: 'alibaba/happy-horse/v1.1/reference-to-video',
+} as const;
+
 export const HAPPY_HORSE_DURATION_OPTIONS = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
 export const HAPPY_HORSE_ASPECT_RATIOS = ['16:9', '9:16', '1:1', '4:3', '3:4'] as const;
+export const HAPPY_HORSE_1_1_ASPECT_RATIOS = [
+  '16:9',
+  '9:16',
+  '1:1',
+  '4:3',
+  '3:4',
+  '21:9',
+  '9:21',
+  '5:4',
+  '4:5',
+] as const;
 
 export const SEEDANCE_2_TOKEN_DIMENSIONS = {
   '480p': {

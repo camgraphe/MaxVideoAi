@@ -3400,8 +3400,15 @@
       },
       "extend": {
         "value": false
+      },
+      "hdr": {
+        "value": true
+      },
+      "exr": {
+        "value": true
       }
-    }
+    },
+    "bestFor": "Direct Luma cinematic control with HDR, EXR, keyframes and video edit"
   },
   {
     "engineId": "luma-uni-1",
@@ -8056,9 +8063,9 @@
     "bestFor": "4K reference-guided delivery"
   },
   {
-    "engineId": "happy-horse-1-0",
-    "modelSlug": "happy-horse-1-0",
-    "marketingName": "Happy Horse 1.0",
+    "engineId": "happy-horse-1-1",
+    "modelSlug": "happy-horse-1-1",
+    "marketingName": "Happy Horse 1.1",
     "provider": "Alibaba",
     "brandId": "alibaba",
     "family": "happy-horse",
@@ -8066,13 +8073,14 @@
       "stage": "indexed",
       "showInNav": true,
       "publishedModelSlugs": [
+        "happy-horse-1-1",
         "happy-horse-1-0"
       ],
       "currentModelSlugs": [
-        "happy-horse-1-0"
+        "happy-horse-1-1"
       ]
     },
-    "versionLabel": "1.0",
+    "versionLabel": "1.1",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -8087,27 +8095,607 @@
       "compare": {
         "suggestOpponents": [
           "seedance-2-0",
-          "veo-3-1",
           "kling-3-pro",
-          "sora-2-pro"
+          "veo-3-1",
+          "sora-2-pro",
+          "happy-horse-1-0"
         ],
         "publishedPairs": [
           "seedance-2-0",
-          "veo-3-1",
           "kling-3-pro",
-          "sora-2-pro"
+          "veo-3-1",
+          "sora-2-pro",
+          "happy-horse-1-0"
         ],
         "includeInHub": true
       },
       "app": {
         "enabled": true,
-        "discoveryRank": 8,
+        "discoveryRank": 6,
         "variantGroup": "happy-horse",
-        "variantLabel": "1.0"
+        "variantLabel": "1.1"
       },
       "pricing": {
         "includeInEstimator": true,
-        "featuredScenario": "unified native-audio video"
+        "featuredScenario": "happy-horse-1-1-native-audio-video"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "happy-horse-1-1",
+      "label": "Happy Horse 1.1",
+      "provider": "Alibaba",
+      "version": "1.1",
+      "status": "live",
+      "latencyTier": "standard",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "720p",
+        "1080p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16",
+        "1:1",
+        "4:3",
+        "3:4",
+        "21:9",
+        "9:21",
+        "5:4",
+        "4:5"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 20,
+        "promptMaxChars": 2500,
+        "promptMaxCharsSource": "official"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "ref2v"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "description": "Used as the first frame for Happy Horse 1.1 image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (1-9)",
+            "description": "Reference subjects with character1, character2, and up to character9 in the prompt. Requires 1-9 JPEG, JPG, PNG, or WEBP references.",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either",
+            "slotLabelPattern": "character{n}"
+          }
+        ],
+        "optional": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "description": "Optional animation guidance for image-to-video.",
+            "modes": [
+              "i2v"
+            ]
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 3,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "modes": [
+              "t2v",
+              "ref2v"
+            ],
+            "values": [
+              "16:9",
+              "9:16",
+              "1:1",
+              "4:3",
+              "3:4",
+              "21:9",
+              "9:21",
+              "5:4",
+              "4:5"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "values": [
+              "720p",
+              "1080p"
+            ],
+            "default": "1080p"
+          },
+          {
+            "id": "seed",
+            "type": "number",
+            "label": "Seed",
+            "description": "Optional random seed for reproducible Happy Horse 1.1 generations. Accepted range: 0-2147483647.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "min": 0,
+            "max": 2147483647,
+            "step": 1
+          },
+          {
+            "id": "enable_safety_checker",
+            "type": "boolean",
+            "label": "Safety checker",
+            "description": "Enable provider input and output moderation.",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v"
+            ],
+            "default": true
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "bmp",
+            "webp"
+          ],
+          "maxImageSizeMB": 20,
+          "minImageSidePx": 300,
+          "minReferenceImageSidePx": 400,
+          "imageAspectRatioRange": "1:2.5 to 2.5:1"
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 14,
+          "byResolution": {
+            "720p": 14,
+            "1080p": 18
+          }
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.14,
+        "byResolution": {
+          "720p": 0.14,
+          "1080p": 0.18
+        },
+        "currency": "USD",
+        "notes": "Provider cost: $0.14/s for 720p and $0.18/s for 1080p on Happy Horse 1.1 text, image, and reference-to-video runs. MaxVideoAI display prices add platform margin before showing quotes."
+      },
+      "updatedAt": "2026-06-22T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "alibaba",
+        "modelSlug": "alibaba/happy-horse/v1.1/text-to-video"
+      },
+      "availability": "available",
+      "brandId": "alibaba",
+      "brandAssetPolicy": {
+        "logoAllowed": false,
+        "textOnly": true,
+        "usageNotes": "Use text-only Alibaba attribution until an approved logo asset and usage guidance are available."
+      },
+      "modeCaps": {
+        "t2v": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21",
+            "5:4",
+            "4:5"
+          ],
+          "audioToggle": false,
+          "notes": "Text-to-video with native synchronized audio and multilingual lip-sync."
+        },
+        "i2v": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "bmp",
+            "webp"
+          ],
+          "maxUploadMB": 20,
+          "audioToggle": false,
+          "notes": "Animate one start image with optional prompt guidance. Aspect ratio is inferred from the source image."
+        },
+        "ref2v": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21",
+            "5:4",
+            "4:5"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": false,
+          "notes": "Reference-to-video workflow with 1-9 image references and character1..character9 prompt anchors."
+        }
+      }
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "alibaba/happy-horse/v1.1/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21",
+            "5:4",
+            "4:5"
+          ],
+          "audioToggle": false,
+          "notes": "Text-to-video with native synchronized audio and multilingual lip-sync."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "alibaba/happy-horse/v1.1/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "bmp",
+            "webp"
+          ],
+          "maxUploadMB": 20,
+          "audioToggle": false,
+          "notes": "Animate one start image with optional prompt guidance. Aspect ratio is inferred from the source image."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "alibaba/happy-horse/v1.1/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "720p",
+            "1080p"
+          ],
+          "aspectRatio": [
+            "16:9",
+            "9:16",
+            "1:1",
+            "4:3",
+            "3:4",
+            "21:9",
+            "9:21",
+            "5:4",
+            "4:5"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 10,
+          "audioToggle": false,
+          "notes": "Reference-to-video workflow with 1-9 image references and character1..character9 prompt anchors."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    },
+    "bestFor": "Alibaba native-audio text, image and reference video"
+  },
+  {
+    "engineId": "happy-horse-1-0",
+    "modelSlug": "happy-horse-1-0",
+    "marketingName": "Happy Horse 1.0",
+    "provider": "Alibaba",
+    "brandId": "alibaba",
+    "family": "happy-horse",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "happy-horse-1-1",
+        "happy-horse-1-0"
+      ],
+      "currentModelSlugs": [
+        "happy-horse-1-1"
+      ]
+    },
+    "versionLabel": "1.0",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "isLegacy": true,
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "happy-horse-1-1",
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1"
+        ],
+        "publishedPairs": [
+          "happy-horse-1-1",
+          "seedance-2-0",
+          "kling-3-pro",
+          "veo-3-1"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 50,
+        "variantGroup": "happy-horse",
+        "variantLabel": "1.0 legacy"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "legacy happy-horse-video-edit"
       }
     },
     "surfacesSource": "explicit",
@@ -8693,7 +9281,8 @@
       "extend": {
         "value": false
       }
-    }
+    },
+    "bestFor": "Legacy Alibaba video edit route"
   },
   {
     "engineId": "seedance-1-5-pro",

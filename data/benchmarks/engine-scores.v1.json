@@ -154,6 +154,21 @@
       "last_updated": "2026-04-28"
     },
     {
+      "modelSlug": "happy-horse-1-1",
+      "fidelity": 8.4,
+      "visualQuality": 8.3,
+      "motion": 8.3,
+      "consistency": 8.2,
+      "anatomy": 8.2,
+      "textRendering": 7.0,
+      "lipsyncQuality": 9.0,
+      "sequencingQuality": 7.8,
+      "controllability": 8.3,
+      "speedStability": 6.8,
+      "pricing": 8.1,
+      "last_updated": "2026-06-22"
+    },
+    {
       "modelSlug": "seedance-1-5-pro",
       "fidelity": 7.8,
       "visualQuality": 8.0,

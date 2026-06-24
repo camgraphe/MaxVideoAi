@@ -29,6 +29,7 @@ const moduleNames = [
   'kling-3-standard.ts',
   'kling-3-4k.ts',
   'kling-o3.ts',
+  'happy-horse-1-1.ts',
   'happy-horse.ts',
   'seedance-1-5.ts',
   'seedance-2-standard.ts',

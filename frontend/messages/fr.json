@@ -512,11 +512,11 @@
               ]
             },
             {
-              "engineId": "happy-horse-1-0",
-              "name": "Happy Horse 1.0",
+              "engineId": "happy-horse-1-1",
+              "name": "Happy Horse 1.1",
               "provider": "Alibaba",
-              "bestFor": "Lip-sync unifié",
-              "fallbackPrice": "dès 0,70 $ / 5 s",
+              "bestFor": "Audio + références",
+              "fallbackPrice": "dès 0,91 $ / 5 s",
               "scores": [
                 {
                   "label": "Motion",
@@ -647,7 +647,7 @@
             "price": "4,72 $",
             "useCase": "Réalisme cinématographique",
             "cta": "Exemples & prompts",
-            "modelCta": "Specs & pricing",
+            "modelCta": "Specs et tarifs",
             "imageSrc": "/hero/seedance-2-0.jpg",
             "imageAlt": "Exemple vidéo IA Seedance 2.0 pour plans commerciaux cinématiques.",
             "examplesSlug": "seedance"
@@ -663,26 +663,10 @@
             "price": "4,37 $",
             "useCase": "Mouvements caméra",
             "cta": "Exemples & prompts",
-            "modelCta": "Specs & pricing",
+            "modelCta": "Specs et tarifs",
             "imageSrc": "/hero/kling-3-4k-hero.jpg",
             "imageAlt": "Exemple vidéo IA Kling 3 Pro pour mouvement caméra et scènes dynamiques.",
             "examplesSlug": "kling"
-          },
-          {
-            "id": "fallback-ltx",
-            "title": "LTX 2.3 Fast",
-            "engine": "LTX 2.3 Fast",
-            "engineId": "ltx-2-3-fast",
-            "modelSlug": "ltx-2-3-fast",
-            "mode": "Texte vers vidéo",
-            "duration": "10 s",
-            "price": "0,52 $",
-            "useCase": "Tests rapides",
-            "cta": "Exemples & prompts",
-            "modelCta": "Specs & pricing",
-            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
-            "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de tests.",
-            "examplesSlug": "ltx"
           },
           {
             "id": "fallback-veo",
@@ -701,6 +685,38 @@
             "examplesSlug": "veo"
           },
           {
+            "id": "fallback-happy-horse",
+            "title": "Happy Horse 1.1",
+            "engine": "Happy Horse 1.1",
+            "engineId": "happy-horse-1-1",
+            "modelSlug": "happy-horse-1-1",
+            "mode": "Texte/image/référence vers vidéo",
+            "duration": "10 s",
+            "price": "2,34 $",
+            "useCase": "Audio natif intégré",
+            "cta": "Exemples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
+            "imageAlt": "Exemple vidéo IA Happy Horse 1.1 pour audio natif intégré avec références.",
+            "examplesSlug": "happy-horse"
+          },
+          {
+            "id": "fallback-ltx",
+            "title": "LTX 2.3 Fast",
+            "engine": "LTX 2.3 Fast",
+            "engineId": "ltx-2-3-fast",
+            "modelSlug": "ltx-2-3-fast",
+            "mode": "Texte vers vidéo",
+            "duration": "10 s",
+            "price": "0,52 $",
+            "useCase": "Tests rapides",
+            "cta": "Exemples & prompts",
+            "modelCta": "Specs & pricing",
+            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
+            "imageAlt": "Exemple vidéo IA LTX 2.3 Fast pour génération rapide de tests.",
+            "examplesSlug": "ltx"
+          },
+          {
             "id": "fallback-wan",
             "title": "Wan 2.6",
             "engine": "Wan 2.6",
@@ -715,22 +731,6 @@
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Exemple vidéo IA Wan 2.6 pour workflows vidéo guidés.",
             "examplesSlug": "wan"
-          },
-          {
-            "id": "fallback-happy-horse",
-            "title": "Happy Horse 1.0",
-            "engine": "Happy Horse 1.0",
-            "engineId": "happy-horse-1-0",
-            "modelSlug": "happy-horse-1-0",
-            "mode": "Texte/image/référence vers vidéo",
-            "duration": "10 s",
-            "price": "1,82 $",
-            "useCase": "Audio natif intégré",
-            "cta": "Exemples & prompts",
-            "modelCta": "Specs & pricing",
-            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
-            "imageAlt": "Exemple vidéo IA Happy Horse 1.0 pour audio natif intégré avec références.",
-            "examplesSlug": "happy-horse"
           }
         ]
       },

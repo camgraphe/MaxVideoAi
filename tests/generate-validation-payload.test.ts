@@ -78,6 +78,26 @@ test('validation payload helper builds base payload and mode flags', () => {
   assert.equal(result.needsSourceVideoEdit, false);
 });
 
+test('validation payload helper includes provider seed and safety checker controls', () => {
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    engineId: 'happy-horse-1-1',
+    seed: 12345,
+    safetyChecker: false,
+    deps: {
+      validateRequestFn: (_engineId, _mode, payload) => {
+        assert.equal(payload.seed, 12345);
+        assert.equal(payload.enable_safety_checker, false);
+        return { ok: true };
+      },
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.payload.seed, 12345);
+  assert.equal(result.payload.enable_safety_checker, false);
+});
+
 test('validation payload helper includes loop for provider constraints', () => {
   const result = buildGenerateValidationPayload({
     ...baseParams,

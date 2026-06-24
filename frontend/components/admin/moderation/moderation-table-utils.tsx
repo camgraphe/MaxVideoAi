@@ -40,6 +40,7 @@ export function formatDate(value?: string | null) {
     return new Intl.DateTimeFormat('en-US', {
       dateStyle: 'short',
       timeStyle: 'medium',
+      timeZone: 'Europe/Paris',
     }).format(new Date(value));
   } catch {
     return value;

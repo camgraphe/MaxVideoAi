@@ -512,11 +512,11 @@
               ]
             },
             {
-              "engineId": "happy-horse-1-0",
-              "name": "Happy Horse 1.0",
+              "engineId": "happy-horse-1-1",
+              "name": "Happy Horse 1.1",
               "provider": "Alibaba",
-              "bestFor": "Lip-sync unificado",
-              "fallbackPrice": "desde 0,70 $ / 5 s",
+              "bestFor": "Audio + referencias",
+              "fallbackPrice": "desde 0,91 $ / 5 s",
               "scores": [
                 {
                   "label": "Movimiento",
@@ -669,22 +669,6 @@
             "examplesSlug": "kling"
           },
           {
-            "id": "fallback-ltx",
-            "title": "LTX 2.3 Fast",
-            "engine": "LTX 2.3 Fast",
-            "engineId": "ltx-2-3-fast",
-            "modelSlug": "ltx-2-3-fast",
-            "mode": "Texto a video",
-            "duration": "10 s",
-            "price": "0,52 US$",
-            "useCase": "Borradores rápidos",
-            "cta": "Ejemplos y prompts",
-            "modelCta": "Especificaciones y precios",
-            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
-            "imageAlt": "Ejemplo de video IA LTX 2.3 Fast para borradores rápidos.",
-            "examplesSlug": "ltx"
-          },
-          {
             "id": "fallback-veo",
             "title": "Veo 3.1",
             "engine": "Veo 3.1",
@@ -701,6 +685,38 @@
             "examplesSlug": "veo"
           },
           {
+            "id": "fallback-happy-horse",
+            "title": "Happy Horse 1.1",
+            "engine": "Happy Horse 1.1",
+            "engineId": "happy-horse-1-1",
+            "modelSlug": "happy-horse-1-1",
+            "mode": "Texto/imagen/referencia a video",
+            "duration": "10 s",
+            "price": "2,34 US$",
+            "useCase": "Flujos con audio nativo",
+            "cta": "Ejemplos y prompts",
+            "modelCta": "Especificaciones y precios",
+            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
+            "imageAlt": "Ejemplo de video IA Happy Horse 1.1 para flujos con audio nativo y referencias.",
+            "examplesSlug": "happy-horse"
+          },
+          {
+            "id": "fallback-ltx",
+            "title": "LTX 2.3 Fast",
+            "engine": "LTX 2.3 Fast",
+            "engineId": "ltx-2-3-fast",
+            "modelSlug": "ltx-2-3-fast",
+            "mode": "Texto a video",
+            "duration": "10 s",
+            "price": "0,52 US$",
+            "useCase": "Borradores rápidos",
+            "cta": "Ejemplos y prompts",
+            "modelCta": "Especificaciones y precios",
+            "imageSrc": "/hero/showcase-ltx-2-3-fast.jpg",
+            "imageAlt": "Ejemplo de video IA LTX 2.3 Fast para borradores rápidos.",
+            "examplesSlug": "ltx"
+          },
+          {
             "id": "fallback-wan",
             "title": "Wan 2.6",
             "engine": "Wan 2.6",
@@ -715,22 +731,6 @@
             "imageSrc": "/hero/wan-26.jpg",
             "imageAlt": "Ejemplo de video IA Wan 2.6 para flujos de video estructurados.",
             "examplesSlug": "wan"
-          },
-          {
-            "id": "fallback-happy-horse",
-            "title": "Happy Horse 1.0",
-            "engine": "Happy Horse 1.0",
-            "engineId": "happy-horse-1-0",
-            "modelSlug": "happy-horse-1-0",
-            "mode": "Texto/imagen/referencia a video",
-            "duration": "10 s",
-            "price": "1,82 US$",
-            "useCase": "Flujos con audio nativo",
-            "cta": "Ejemplos y prompts",
-            "modelCta": "Especificaciones y precios",
-            "imageSrc": "https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/1212fdd0-0299-4e07-8546-c8fc0925432d.webp",
-            "imageAlt": "Ejemplo de video IA Happy Horse 1.0 para flujos con audio nativo y referencias.",
-            "examplesSlug": "happy-horse"
           }
         ]
       },

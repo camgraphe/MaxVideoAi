@@ -28,6 +28,19 @@ test('fal proxy policy allows native Kling 3 4K endpoints', () => {
   assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/fal-ai/kling-video/v3/4k/image-to-video'), true);
 });
 
+test('fal proxy policy allows Happy Horse 1.1 endpoints', () => {
+  [
+    'alibaba/happy-horse/v1.1/text-to-video',
+    'alibaba/happy-horse/v1.1/image-to-video',
+    'alibaba/happy-horse/v1.1/reference-to-video',
+  ].forEach((endpoint) => {
+    assert.ok(FAL_PROXY_ALLOWED_ENDPOINTS.includes(endpoint));
+    assert.equal(isFalProxyTargetAllowed(`https://queue.fal.run/${endpoint}`), true);
+  });
+  assert.equal(FAL_PROXY_ALLOWED_ENDPOINTS.includes('alibaba/happy-horse/v1.1/video-edit'), false);
+  assert.equal(isFalProxyTargetAllowed('https://queue.fal.run/alibaba/happy-horse/v1.1/video-edit'), false);
+});
+
 test('fal proxy policy blocks non-Fal targets', () => {
   assert.equal(isFalProxyTargetAllowed('https://example.com/fal-ai/sora-2/text-to-video'), false);
   assert.equal(isFalProxyTargetAllowed('http://queue.fal.run/fal-ai/sora-2/text-to-video'), false);

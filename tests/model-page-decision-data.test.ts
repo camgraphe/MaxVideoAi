@@ -9,7 +9,11 @@ import {
 import { buildPricePerSecondRows } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts';
 import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
-import { normalizeMediaUrl } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
+import {
+  normalizeMediaUrl,
+  pickDemoMedia,
+  type FeaturedMedia,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 import { resolveSectionLabels } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-specs.ts';
 import { getImagePresetQuote, getPresetQuote } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
@@ -315,28 +319,40 @@ test('Luma Ray 2 templates keep legacy Ray 2 routes behind current Ray 3.2', () 
 });
 
 test('remaining video templates preserve Happy Horse, Hailuo, and Pika route intent', () => {
-  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
+  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
+  const happyHorseLegacy = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
   const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
   const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
   const frHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'fr' });
   const esPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'es' });
 
   assert.ok(happyHorse);
+  assert.ok(happyHorseLegacy);
   assert.ok(hailuo);
   assert.ok(pika);
   assert.ok(frHailuo);
   assert.ok(esPika);
 
-  assert.equal(happyHorse.hero.title, 'Happy Horse 1.0');
+  assert.equal(happyHorse.hero.title, 'Happy Horse 1.1');
   assert.match(happyHorse.hero.subtitle, /Native audio/);
-  assert.match(happyHorse.hero.subtitle, /R2V references/);
-  assert.equal(happyHorse.hero.primaryCta.href, '/app?engine=happy-horse-1-0');
+  assert.match(happyHorse.hero.subtitle, /reference-to-video/);
+  assert.equal(happyHorse.hero.primaryCta.href, '/app?engine=happy-horse-1-1');
   assert.equal(happyHorse.hero.quickLinks[2]?.href, '#prompting');
   assert.deepEqual(
     happyHorse.pricing.scenarios.map((scenario) => scenario.id),
     ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
   );
   assert.doesNotMatch(visibleDecisionText(happyHorse), /silent storyboard|budget motion drafts|stylized social loops/i);
+
+  assert.equal(happyHorseLegacy.hero.title, 'Happy Horse 1.0');
+  assert.match(happyHorseLegacy.hero.subtitle, /Legacy video-edit/);
+  assert.match(happyHorseLegacy.hero.subtitle, /Happy Horse 1\.1/);
+  assert.equal(happyHorseLegacy.hero.primaryCta.href, '/app?engine=happy-horse-1-0');
+  assert.deepEqual(
+    happyHorseLegacy.pricing.scenarios.map((scenario) => scenario.id),
+    ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']
+  );
+  assert.doesNotMatch(visibleDecisionText(happyHorseLegacy), /silent storyboard|budget motion drafts|stylized social loops/i);
 
   assert.equal(hailuo.hero.title, 'MiniMax Hailuo 02');
   assert.match(hailuo.hero.subtitle, /Budget motion drafts/);
@@ -796,6 +812,7 @@ test('second-wave model pricing scenarios reuse pricing page helper values', () 
     ['wan-2-6', ['5s-720p-audio', '10s-720p-audio', '10s-1080p-audio', 'max-duration']],
     ['luma-ray-2', ['5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
     ['luma-ray-2-flash', ['5s-540p', '5s-720p', '9s-720p', '9s-1080p', 'max-duration']],
+    ['happy-horse-1-1', ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']],
     ['happy-horse-1-0', ['5s-720p-audio', '10s-720p-audio', '15s-1080p-audio', 'max-duration']],
     ['minimax-hailuo-02-text', ['6s-512p', '10s-768p', 'max-duration']],
     ['pika-text-to-video', ['5s-720p', '10s-720p', '10s-1080p', 'max-duration']],
@@ -895,6 +912,22 @@ test('model page media helper rejects broken placeholder media URLs', () => {
   assert.equal(normalizeMediaUrl(' video '), null);
   assert.equal(normalizeMediaUrl('https://media.maxvideoai.com/thumb.webp'), 'https://media.maxvideoai.com/thumb.webp');
   assert.equal(normalizeMediaUrl('/hero/seedance-2-0.jpg'), '/hero/seedance-2-0.jpg');
+});
+
+test('model page demo media can reuse a verified fallback clip when no public job media is available', () => {
+  const fallback: FeaturedMedia = {
+    id: 'happy-horse-1-1-hero-fallback',
+    prompt: 'Happy Horse 1.1 demo clip from MaxVideoAI',
+    videoUrl: 'https://media.maxvideoai.com/renders/marketing/happy-horse-1-1.mp4',
+    posterUrl: '/assets/models/models-hero-horses-reference.webp',
+    durationSec: null,
+    hasAudio: true,
+    href: null,
+    label: 'Happy Horse 1.1',
+  };
+
+  assert.equal(pickDemoMedia([], fallback.id, null, fallback), null);
+  assert.deepEqual(pickDemoMedia([], fallback.id, null, fallback, { allowFallbackReuse: true }), fallback);
 });
 
 test('Seedance 2.0 schema can use decision metadata without a free price offer', () => {

@@ -200,6 +200,8 @@ export function AssetDropzoneSlot({
         accept={accept}
         className="sr-only"
         disabled={disabled}
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={(event) => {
           onInputChange(event, slotIndex);
         }}

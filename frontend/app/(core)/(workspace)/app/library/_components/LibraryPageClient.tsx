@@ -201,6 +201,8 @@ export function LibraryPageClient() {
                 type="file"
                 accept={activeKind === 'video' ? 'video/*' : activeKind === 'audio' ? 'audio/*' : 'image/*'}
                 className="sr-only"
+                aria-hidden="true"
+                tabIndex={-1}
                 onChange={handleImportChange}
               />
 

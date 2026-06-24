@@ -735,6 +735,34 @@ function getDemoTitle(copy: SoraCopy, modelName: string, locale: AppLocale, engi
 }
 
 function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
+  if (engineSlug === 'happy-horse-1-1') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Chef de stand de nouilles au marché de nuit',
+        action: 'Fait sauter les nouilles au wok puis dresse le bol après la pluie',
+        camera: 'Plan large néon, macro wok, dressage de côté, lent push-in',
+        style: 'Film food cinématographique, reflets de rue mouillée, vapeur et lanternes floues',
+        audio: "Sizzle du wok, souffle d'huile, pluie sur l'auvent, pas de dialogue",
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Chef en un puesto nocturno de fideos',
+        action: 'Saltea fideos en el wok y sirve el bol después de la lluvia',
+        camera: 'Plano amplio con neon, macro del wok, emplatado lateral, push-in lento',
+        style: 'Food film cinematográfico, reflejos de calle mojada, vapor y faroles desenfocados',
+        audio: 'Sizzle del wok, aceite, lluvia en el toldo, sin diálogo',
+      };
+    }
+    return {
+      subject: 'Night market noodle stall chef',
+      action: 'Flips noodles in a wok and plates the bowl after rain',
+      camera: 'Neon wide shot, macro wok, side plate-up, slow push-in',
+      style: 'Cinematic food film, wet street reflections, steam and lantern bokeh',
+      audio: 'Wok sizzle, oil whoosh, rain on the awning, no dialogue',
+    };
+  }
+
   if (engineSlug === 'happy-horse-1-0') {
     if (locale === 'fr') {
       return {
@@ -988,6 +1016,10 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
   }
 
   return getDemoSummary(locale);
+}
+
+function getHappyHorse11DemoPrompt() {
+  return 'Four-shot energetic studio food-film sequence in a small night market noodle stall after rain. Shot 1: neon reflections on wet pavement, a chef silhouette places a black wok over a blue gas flame, steam already rising. Shot 2: macro close-up of noodles flipping in the wok with orange sparks, camera locked, sizzling oil and quick whoosh. Shot 3: medium side shot as the chef slides the noodles into a ceramic bowl, steam curls across the lens, background lanterns soft and out of focus, no signs or readable text. Shot 4: slow push-in on the finished bowl on a stainless counter while rain taps the awning and steam fades into the neon light, no dialogue, no logos.';
 }
 
 function getVeo31DemoSummary(locale: AppLocale) {
@@ -2510,20 +2542,22 @@ export function ModelDecisionPromptingSection({
         ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKling3StandardDemoPrompt(locale))
       : isPikaTextRoute
         ? getPikaDemoPrompt(locale)
-        : isLumaRay2Route
-          ? getLumaRay2DemoPrompt(locale)
-        : isLumaFlashRoute
-          ? getLumaFlashDemoPrompt(locale)
-          : isVeoLiteRoute
-            ? getVeoLiteDemoPrompt(locale)
-          : (demoMedia?.prompt ??
-              [
-                `${labels.demoSubject}: ${demo.subject}`,
-                `${labels.demoAction}: ${demo.action}`,
-                `${labels.demoCamera}: ${demo.camera}`,
-                `${labels.demoStyle}: ${demo.style}`,
-                `${labels.demoAudio}: ${demo.audio}`,
-              ].join('\n'));
+      : isLumaRay2Route
+        ? getLumaRay2DemoPrompt(locale)
+      : isLumaFlashRoute
+        ? getLumaFlashDemoPrompt(locale)
+      : isVeoLiteRoute
+        ? getVeoLiteDemoPrompt(locale)
+      : engineSlug === 'happy-horse-1-1'
+        ? (demoMedia?.prompt ?? getHappyHorse11DemoPrompt())
+      : (demoMedia?.prompt ??
+          [
+            `${labels.demoSubject}: ${demo.subject}`,
+            `${labels.demoAction}: ${demo.action}`,
+            `${labels.demoCamera}: ${demo.camera}`,
+            `${labels.demoStyle}: ${demo.style}`,
+            `${labels.demoAudio}: ${demo.audio}`,
+          ].join('\n'));
   const demoDurationLabel = isHailuoDraftRoute
     ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
     : isSeedance15ProRoute

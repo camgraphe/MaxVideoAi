@@ -347,6 +347,163 @@ test('workspace generate payload resolves provider-specific options', () => {
   assert.deepEqual(result.payload.extraInputValues, { style: 'cinematic' });
 });
 
+test('workspace Happy Horse 1.1 controls and payload mirror the Fal schema by mode', () => {
+  const happyHorse = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
+  assert.ok(happyHorse);
+
+  const expectedDurations = [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+  const expectedRatios = ['16:9', '9:16', '1:1', '4:3', '3:4', '21:9', '9:21', '5:4', '4:5'];
+  const t2vCaps = getModeCaps(happyHorse, 't2v');
+  const i2vCaps = getModeCaps(happyHorse, 'i2v');
+  const ref2vCaps = getModeCaps(happyHorse, 'ref2v');
+
+  assert.deepEqual(t2vCaps?.duration && 'options' in t2vCaps.duration ? t2vCaps.duration.options : [], expectedDurations);
+  assert.deepEqual(ref2vCaps?.duration && 'options' in ref2vCaps.duration ? ref2vCaps.duration.options : [], expectedDurations);
+  assert.deepEqual(i2vCaps?.duration && 'options' in i2vCaps.duration ? i2vCaps.duration.options : [], expectedDurations);
+  assert.deepEqual(t2vCaps?.resolution, ['720p', '1080p']);
+  assert.deepEqual(ref2vCaps?.resolution, ['720p', '1080p']);
+  assert.deepEqual(i2vCaps?.resolution, ['720p', '1080p']);
+  assert.deepEqual(t2vCaps?.aspectRatio, expectedRatios);
+  assert.deepEqual(ref2vCaps?.aspectRatio, expectedRatios);
+  assert.equal(i2vCaps?.aspectRatio, undefined);
+
+  const generateSchema = summarizeWorkspaceInputSchema({
+    selectedEngine: happyHorse,
+    activeMode: 't2v',
+    allowsUnifiedVeoFirstLast: false,
+    isUnifiedHappyHorse: true,
+    isUnifiedSeedance: false,
+    uiLocale: 'en',
+  });
+  assert.deepEqual(
+    generateSchema.assetFields.map(({ field }) => field.id),
+    ['image_url', 'image_urls']
+  );
+
+  const ref2vForm = baseForm({
+    engineId: 'happy-horse-1-1',
+    mode: 'ref2v',
+    durationSec: 12,
+    durationOption: 12,
+    resolution: '1080p',
+    aspectRatio: '4:5',
+    seed: 12345,
+    safetyChecker: false,
+  });
+  const ref2vPayload = buildWorkspaceGeneratePayload({
+    selectedEngineId: 'happy-horse-1-1',
+    activeMode: 'ref2v',
+    submissionMode: 'ref2v',
+    form: ref2vForm,
+    trimmedPrompt: 'Use character1 and character2 in a creator-style product demo.',
+    trimmedNegativePrompt: '',
+    effectiveDurationSec: 12,
+    memberTier: 'pro',
+    paymentMode: 'wallet',
+    capability: ref2vCaps,
+    inputSchema: happyHorse.inputSchema,
+    supportsNegativePrompt: false,
+    supportsAudioToggle: false,
+    isSeedance: false,
+    supportsKlingV3Controls: false,
+    supportsKlingV3VoiceControl: false,
+    voiceIds: [],
+    voiceControlEnabled: false,
+    shotType: 'customize',
+    localKey: 'local-hh11-ref',
+    batchId: 'batch-hh11-ref',
+    iterationIndex: 0,
+    iterationCount: 1,
+    friendlyMessage: 'Take 1',
+    lumaContext: getLumaRay2GenerationContext({
+      selectedEngineId: 'happy-horse-1-1',
+      submissionMode: 'ref2v',
+      form: ref2vForm,
+    }),
+    inputsPayload: [
+      {
+        name: 'character-1.png',
+        type: 'image/png',
+        size: 1000,
+        kind: 'image',
+        slotId: 'image_urls',
+        url: 'https://cdn.example.com/character-1.png',
+      },
+    ],
+    referenceImageUrls: ['https://cdn.example.com/character-1.png'],
+    extraInputValues: {},
+  });
+
+  assert.equal(ref2vPayload.payload.durationOption, 12);
+  assert.equal(ref2vPayload.payload.resolution, '1080p');
+  assert.equal(ref2vPayload.payload.aspectRatio, '4:5');
+  assert.equal(ref2vPayload.payload.seed, 12345);
+  assert.equal(ref2vPayload.payload.safetyChecker, false);
+  assert.equal('fps' in ref2vPayload.payload, false);
+
+  const i2vForm = baseForm({
+    engineId: 'happy-horse-1-1',
+    mode: 'i2v',
+    durationSec: 3,
+    durationOption: 3,
+    resolution: '720p',
+    aspectRatio: 'source',
+    seed: 0,
+    safetyChecker: true,
+  });
+  const i2vPayload = buildWorkspaceGeneratePayload({
+    selectedEngineId: 'happy-horse-1-1',
+    activeMode: 'i2v',
+    submissionMode: 'i2v',
+    form: i2vForm,
+    trimmedPrompt: 'Animate the still image.',
+    trimmedNegativePrompt: '',
+    effectiveDurationSec: 3,
+    memberTier: 'pro',
+    paymentMode: 'wallet',
+    capability: i2vCaps,
+    inputSchema: happyHorse.inputSchema,
+    supportsNegativePrompt: false,
+    supportsAudioToggle: false,
+    isSeedance: false,
+    supportsKlingV3Controls: false,
+    supportsKlingV3VoiceControl: false,
+    voiceIds: [],
+    voiceControlEnabled: false,
+    shotType: 'customize',
+    localKey: 'local-hh11-i2v',
+    batchId: 'batch-hh11-i2v',
+    iterationIndex: 0,
+    iterationCount: 1,
+    friendlyMessage: 'Take 1',
+    lumaContext: getLumaRay2GenerationContext({
+      selectedEngineId: 'happy-horse-1-1',
+      submissionMode: 'i2v',
+      form: i2vForm,
+    }),
+    inputsPayload: [
+      {
+        name: 'start.png',
+        type: 'image/png',
+        size: 1000,
+        kind: 'image',
+        slotId: 'image_url',
+        url: 'https://cdn.example.com/start.png',
+      },
+    ],
+    primaryImageUrl: 'https://cdn.example.com/start.png',
+    referenceImageUrls: [],
+    extraInputValues: {},
+  });
+
+  assert.equal(i2vPayload.payload.durationOption, 3);
+  assert.equal(i2vPayload.payload.resolution, '720p');
+  assert.equal('aspectRatio' in i2vPayload.payload, false);
+  assert.equal(i2vPayload.payload.seed, 0);
+  assert.equal(i2vPayload.payload.safetyChecker, true);
+  assert.equal('fps' in i2vPayload.payload, false);
+});
+
 test('workspace initializes and sends mode-scoped Luma Ray 3.2 loop controls', () => {
   const ray32 = listFalEngines().find((entry) => entry.id === 'luma-ray-3-2')?.engine;
   assert.ok(ray32);

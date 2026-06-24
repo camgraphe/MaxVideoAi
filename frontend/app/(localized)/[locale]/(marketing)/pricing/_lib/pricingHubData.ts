@@ -28,14 +28,14 @@ const CENT_EPSILON = 1e-9;
 
 const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
-  'seedance-2-0-fast',
   'kling-3-pro',
   'kling-3-4k',
   'kling-3-standard',
   'veo-3-1',
-  'veo-3-1-lite',
   'veo-3-1-fast',
-  'happy-horse-1-0',
+  'veo-3-1-lite',
+  'happy-horse-1-1',
+  'seedance-2-0-fast',
   'ltx-2-3-fast',
   'ltx-2-3-pro',
   'wan-2-6',
@@ -43,6 +43,7 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'luma-ray-2',
   'luma-ray-2-flash',
   'luma-ray-3-2',
+  'happy-horse-1-0',
 ] as const;
 
 const PRICING_DISPLAY_FAMILY_ORDER = ['seedance', 'kling', 'veo', 'happy-horse', 'ltx', 'wan', 'hailuo', 'luma'] as const;

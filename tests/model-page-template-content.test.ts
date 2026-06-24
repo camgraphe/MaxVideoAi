@@ -35,6 +35,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'luma-ray-3-2',
   'luma-uni-1',
   'luma-uni-1-max',
+  'happy-horse-1-1',
   'happy-horse-1-0',
   'minimax-hailuo-02-text',
   'pika-text-to-video',
@@ -489,6 +490,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
   const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
   const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
+  const happyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
   const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
   const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
   const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
@@ -526,6 +528,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.ok(lumaFlash);
   assert.ok(luma);
   assert.ok(lumaFlash);
+  assert.ok(happyHorse11);
   assert.ok(happyHorse);
   assert.ok(hailuo);
   assert.ok(pika);
@@ -576,6 +579,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
     ['luma-ray-3-2', lumaRay32.meta.title],
     ['luma-uni-1', lumaUni.meta.title],
     ['luma-uni-1-max', lumaUniMax.meta.title],
+    ['happy-horse-1-1', happyHorse11.meta.title],
     ['happy-horse-1-0', happyHorse.meta.title],
     ['minimax-hailuo-02-text', hailuo.meta.title],
     ['pika-text-to-video', pika.meta.title],
@@ -602,7 +606,8 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.match(lumaRay32.meta.title, /Pricing|5s\/10s|Examples/i);
   assert.match(lumaUni.meta.title, /Image Pricing|References|Editing/i);
   assert.match(lumaUniMax.meta.title, /Pricing|2K Images|Editing/i);
-  assert.match(happyHorse.meta.title, /Pricing|Native Audio|R2V/i);
+  assert.match(happyHorse11.meta.title, /Pricing|Native Audio|Reference/i);
+  assert.match(happyHorse.meta.title, /Legacy|Video Edit/i);
   assert.match(hailuo.meta.title, /Pricing|Motion Drafts|Examples/i);
   assert.equal(pika.meta.title, 'Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses');
   assert.equal(
@@ -640,6 +645,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
   const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
   const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
+  const happyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
   const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
   const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
   const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
@@ -666,6 +672,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.ok(lumaRay32);
   assert.ok(lumaUni);
   assert.ok(lumaUniMax);
+  assert.ok(happyHorse11);
   assert.ok(happyHorse);
   assert.ok(hailuo);
   assert.ok(pika);
@@ -734,11 +741,17 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.doesNotMatch(visibleDecisionText(lumaRay32), /HDR export|EXR|video edit controls/i);
   assert.doesNotMatch(visibleDecisionText(lumaUni), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
   assert.doesNotMatch(visibleDecisionText(lumaUniMax), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
-  assert.match(visibleDecisionText(happyHorse), /native audio|lip-sync|R2V references|video edit/i);
+  assert.match(visibleDecisionText(happyHorse11), /native audio|lip-sync|reference-to-video|image-to-video/i);
+  assert.match(visibleDecisionText(happyHorse), /legacy|video edit|Happy Horse 1\.1/i);
+  assert.doesNotMatch(
+    visibleDecisionText(happyHorse11),
+    /silent storyboard|budget motion drafts|stylized social loops/i,
+    'Happy Horse 1.1 should stay current audio/reference focused'
+  );
   assert.doesNotMatch(
     visibleDecisionText(happyHorse),
     /silent storyboard|budget motion drafts|stylized social loops/i,
-    'Happy Horse should stay audio/reference/edit-route focused'
+    'Happy Horse 1.0 should stay legacy video-edit focused'
   );
   assert.match(visibleDecisionText(hailuo), /budget motion|physics|silent|512P|768P/i);
   assert.doesNotMatch(
@@ -798,6 +811,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const localizedLumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale });
     const localizedLumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale });
     const localizedLumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale });
+    const localizedHappyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale });
     const localizedHappyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale });
     const localizedHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale });
     const localizedPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale });
@@ -826,6 +840,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(localizedLumaRay32);
     assert.ok(localizedLumaUni);
     assert.ok(localizedLumaUniMax);
+    assert.ok(localizedHappyHorse11);
     assert.ok(localizedHappyHorse);
     assert.ok(localizedHailuo);
     assert.ok(localizedPika);
@@ -938,9 +953,14 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       `Luma Uni-1 Max ${locale} copy should stay image-only`
     );
     assert.doesNotMatch(
+      visibleDecisionText(localizedHappyHorse11),
+      /silent storyboard|storyboard silencieux|storyboard sin audio|budget motion drafts|brouillons mouvement économiques|borradores de movimiento económicos/i,
+      `Happy Horse 1.1 ${locale} copy should not cannibalize Hailuo draft positioning`
+    );
+    assert.doesNotMatch(
       visibleDecisionText(localizedHappyHorse),
       /silent storyboard|storyboard silencieux|storyboard sin audio|budget motion drafts|brouillons mouvement économiques|borradores de movimiento económicos/i,
-      `Happy Horse ${locale} copy should not cannibalize Hailuo draft positioning`
+      `Happy Horse 1.0 ${locale} copy should not cannibalize Hailuo draft positioning`
     );
     assert.doesNotMatch(
       visibleDecisionText(localizedHailuo),

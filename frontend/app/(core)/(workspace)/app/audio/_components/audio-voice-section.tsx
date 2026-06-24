@@ -71,6 +71,8 @@ export function AudioVoiceSection({
             type="file"
             accept="audio/*"
             className="sr-only"
+            aria-hidden="true"
+            tabIndex={-1}
             onChange={(event) => {
               void onFileSelect(event.target.files);
             }}
