@@ -24,6 +24,19 @@ const restorationHookPath = join(audioDir, '_hooks/useAudioWorkspaceRestoration.
 const workspaceSource = readFileSync(workspacePath, 'utf8');
 const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
 
+function getFileInputBlock(source: string, accept: string): string {
+  const acceptIndex = source.indexOf(`accept="${accept}"`);
+  assert.notEqual(acceptIndex, -1, `expected file input accepting ${accept}`);
+
+  const inputStart = source.lastIndexOf('<input', acceptIndex);
+  const inputEnd = source.indexOf('/>', acceptIndex);
+
+  assert.notEqual(inputStart, -1, `expected input start before ${accept}`);
+  assert.notEqual(inputEnd, -1, `expected input end after ${accept}`);
+
+  return source.slice(inputStart, inputEnd);
+}
+
 test('audio workspace delegates local controls, helpers, and contracts', () => {
   assert.ok(existsSync(controlsPath), 'audio control components should live in a route-local component module');
   assert.ok(existsSync(composerSurfacePath), 'audio composer surface should live in a route-local component module');
@@ -185,4 +198,18 @@ test('audio generation dock keeps icon-only controls accessible', () => {
 
   assert.match(generationDockSource, /aria-label="Audio generation options"/);
   assert.match(generationDockSource, /<ChevronDown className="h-4 w-4" aria-hidden/);
+});
+
+test('audio upload inputs stay hidden from keyboard traversal', () => {
+  const sourceVideoSectionSource = readFileSync(sourceVideoSectionPath, 'utf8');
+  const voiceSectionSource = readFileSync(voiceSectionPath, 'utf8');
+
+  for (const inputBlock of [
+    getFileInputBlock(sourceVideoSectionSource, 'video/*'),
+    getFileInputBlock(voiceSectionSource, 'audio/*'),
+  ]) {
+    assert.match(inputBlock, /type="file"/);
+    assert.match(inputBlock, /aria-hidden="true"/);
+    assert.match(inputBlock, /tabIndex=\{-1\}/);
+  }
 });

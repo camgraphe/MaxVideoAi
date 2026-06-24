@@ -328,6 +328,7 @@ export function Composer({
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
                 rows={6}
+                aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',

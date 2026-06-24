@@ -77,6 +77,8 @@ export function AudioSourceVideoSection({
         type="file"
         accept="video/*"
         className="sr-only"
+        aria-hidden="true"
+        tabIndex={-1}
         onChange={(event) => {
           void onFileSelect(event.target.files);
         }}
