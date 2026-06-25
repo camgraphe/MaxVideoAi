@@ -18,6 +18,7 @@ type EngineHeroCardProps = {
   activeLocale: AppLocale;
   compareCopy: ComparePageCopy;
   comparisonMetrics: CompareMetric[];
+  engineScoresBySlug: Record<string, number>;
   entry: EngineCatalogEntry;
   other: EngineCatalogEntry;
   options: SelectOption[];
@@ -30,6 +31,7 @@ function EngineHeroCard({
   activeLocale,
   compareCopy,
   comparisonMetrics,
+  engineScoresBySlug,
   entry,
   other,
   options,
@@ -74,6 +76,7 @@ function EngineHeroCard({
             value={entry.modelSlug}
             otherValue={other.modelSlug}
             side={side}
+            engineScores={engineScoresBySlug}
           />
           {strengths ? (
             <p className="max-w-[280px] text-xs leading-5 text-text-secondary">
@@ -93,6 +96,7 @@ type CompareEngineHeroCardsProps = {
   activeLocale: AppLocale;
   compareCopy: ComparePageCopy;
   comparisonMetrics: CompareMetric[];
+  engineScoresBySlug: Record<string, number>;
   left: EngineCatalogEntry;
   leftOverall: number | null;
   leftScoreStyle: CSSProperties;
@@ -107,6 +111,7 @@ export function CompareEngineHeroCards({
   activeLocale,
   compareCopy,
   comparisonMetrics,
+  engineScoresBySlug,
   left,
   leftOverall,
   leftScoreStyle,
@@ -123,6 +128,7 @@ export function CompareEngineHeroCards({
           activeLocale={activeLocale}
           compareCopy={compareCopy}
           comparisonMetrics={comparisonMetrics}
+          engineScoresBySlug={engineScoresBySlug}
           entry={left}
           options={resolvedLeftOptions}
           other={right}
@@ -134,6 +140,7 @@ export function CompareEngineHeroCards({
           activeLocale={activeLocale}
           compareCopy={compareCopy}
           comparisonMetrics={comparisonMetrics}
+          engineScoresBySlug={engineScoresBySlug}
           entry={right}
           options={resolvedRightOptions}
           other={left}

@@ -114,6 +114,7 @@ export default async function CompareDetailPage(
   right = routeData.right;
   const {
     criteriaCount,
+    engineScoresBySlug,
     hasPrelaunchEngine,
     leftIsPrelaunch,
     leftOverall,
@@ -274,6 +275,7 @@ export default async function CompareDetailPage(
       relatedLinks={relatedLinks}
       resolvedLeftOptions={resolvedLeftOptions}
       resolvedRightOptions={resolvedRightOptions}
+      engineScoresBySlug={engineScoresBySlug}
       right={right}
       rightAccent={rightAccent}
       rightCanGenerate={rightCanGenerate}

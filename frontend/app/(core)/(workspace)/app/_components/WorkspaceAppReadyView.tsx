@@ -51,7 +51,7 @@ export function WorkspaceAppReadyView({
   renderState,
   routeForm,
 }: WorkspaceAppReadyViewProps) {
-  const { engineMap, engines, showCenterGallery, uiLocale, workflowCopy, workspaceCopy } = app;
+  const { engineMap, engineScores, engines, showCenterGallery, uiLocale, workflowCopy, workspaceCopy } = app;
   const { loginRedirectTarget } = draft;
   const { notice, showNotice } = noticeState;
   const {
@@ -220,6 +220,7 @@ export function WorkspaceAppReadyView({
         handleEngineChange={handleEngineChange}
         handleModeChange={handleModeChange}
         disabledEngineReasons={klingO3DisabledEngineReasons}
+        engineScores={engineScores}
         renderGroups={renderGroups}
         compositeOverrideSummary={compositeOverrideSummary}
         setViewerTarget={setViewerTarget}

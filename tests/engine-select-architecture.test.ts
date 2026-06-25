@@ -58,8 +58,16 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(dropdownSource, /export function EngineSelectDropdown/);
   assert.match(dropdownSource, /createPortal/);
   assert.match(dropdownSource, /getModeDisplayOrder/);
+  assert.match(dropdownSource, /formatEngineSelectScore\(engineScores\?\.\[engine\.id\]\)/);
+  assert.match(dropdownSource, /Score \$\{value\}\/10/);
+  assert.doesNotMatch(dropdownSource, /formatEngineSelectScorePercent\(engineScores/);
+  assert.match(dropdownSource, /grid min-h-\[250px\] min-w-0/);
+  assert.match(dropdownSource, /overflow-x-auto overscroll-x-contain/);
+  assert.match(dropdownSource, /max-h-\[min\(36vh,300px\)\]/);
   assert.match(dropdownStateHookSource, /export function useEngineSelectDropdownState/);
   assert.match(dropdownStateHookSource, /document\.addEventListener\('mousedown'/);
+  assert.match(dropdownStateHookSource, /highlightedEngineIdRef/);
+  assert.match(dropdownStateHookSource, /visibleEngines\.findIndex\(\(candidate\) => candidate\.id === highlightedEngineIdRef\.current\)/);
   assert.match(registryHookSource, /export function useEngineSelectRegistry/);
   assert.match(registryHookSource, /ENGINE_LEGACY_STORAGE_KEY/);
   assert.match(modalSource, /export function BrowseEnginesModal/);

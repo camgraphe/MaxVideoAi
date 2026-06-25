@@ -15,7 +15,7 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { BrowseEnginesModal } from './engine-select/BrowseEnginesModal';
 import { EngineSelectDropdown } from './engine-select/EngineSelectDropdown';
-import { DEFAULT_ENGINE_SELECT_COPY, type EngineSelectCopy } from './engine-select/engine-select-copy';
+import { DEFAULT_ENGINE_SELECT_COPY, mergeEngineSelectCopy, type EngineSelectCopy } from './engine-select/engine-select-copy';
 import {
   DEFAULT_MODE_OPTIONS,
   ENGINE_VARIANT_LABEL_OVERRIDES,
@@ -36,6 +36,7 @@ export function EngineSelect({
   showBillingNote = true,
   modeLabelOverrides,
   disabledEngineReasons,
+  engineScores,
   showModeSelect = true,
   modeLayout = 'inline',
   variant = 'card',
@@ -43,7 +44,7 @@ export function EngineSelect({
   className,
 }: EngineSelectProps) {
   const { t, locale } = useI18n();
-  const copy = t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as EngineSelectCopy;
+  const copy = mergeEngineSelectCopy(t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as Partial<EngineSelectCopy>);
   const [open, setOpen] = useState(false);
   const [browseOpen, setBrowseOpen] = useState(false);
 
@@ -60,7 +61,7 @@ export function EngineSelect({
     showVariantSelector,
     variantEngines,
     visibleEngines,
-  } = useEngineSelectRegistry({ browseOpen, engineId, engines, open });
+  } = useEngineSelectRegistry({ browseOpen, engineId, engineScores, engines, open });
 
   const formatEngineShort = useCallback((engine: EngineCaps | null | undefined) => {
     if (!engine) return '';
@@ -312,8 +313,6 @@ export function EngineSelect({
               highlightedIndex={highlightedIndex}
               legacyToggleId={legacyToggleId}
               legacyToggleLabel={legacyToggleLabel}
-              locale={locale}
-              modeLabelOverrides={modeLabelOverrides}
               disabledEngineReasons={disabledEngineReasons}
               onBrowse={() => {
                 setOpen(false);
@@ -335,6 +334,7 @@ export function EngineSelect({
               position={position}
               registryMeta={registryMeta}
               selectedEngine={selectedEngine}
+              engineScores={engineScores}
               showLegacy={showLegacy}
               triggerId={triggerId}
               visibleEngines={visibleEngines}

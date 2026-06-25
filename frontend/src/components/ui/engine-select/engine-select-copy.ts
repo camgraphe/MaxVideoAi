@@ -4,6 +4,10 @@ export const DEFAULT_ENGINE_SELECT_COPY = {
   avgDuration: 'Avg {value}',
   choose: 'Choose engine',
   variant: 'Variant',
+  families: 'Families',
+  models: 'Models',
+  score: 'Score',
+  searchPlaceholder: 'Search engines',
   browse: 'Browse engines...',
   inputMode: 'Input mode',
   unsupportedMode: 'Not supported by this engine',
@@ -30,3 +34,18 @@ export const DEFAULT_ENGINE_SELECT_COPY = {
 } as const;
 
 export type EngineSelectCopy = typeof DEFAULT_ENGINE_SELECT_COPY;
+
+export function mergeEngineSelectCopy(rawCopy: Partial<EngineSelectCopy> | null | undefined): EngineSelectCopy {
+  return {
+    ...DEFAULT_ENGINE_SELECT_COPY,
+    ...(rawCopy ?? {}),
+    modal: {
+      ...DEFAULT_ENGINE_SELECT_COPY.modal,
+      ...(rawCopy?.modal ?? {}),
+    },
+    guides: {
+      ...DEFAULT_ENGINE_SELECT_COPY.guides,
+      ...(rawCopy?.guides ?? {}),
+    },
+  } as EngineSelectCopy;
+}

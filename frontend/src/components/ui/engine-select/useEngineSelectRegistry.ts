@@ -5,12 +5,14 @@ import {
   ENGINE_LEGACY_STORAGE_KEY,
   ensureEngineRegistryMeta,
   getCachedEngineRegistryMeta,
+  type EngineScoreMap,
 } from './engine-select-helpers';
 import type { EngineRegistryMeta } from './engine-select-types';
 
 type UseEngineSelectRegistryArgs = {
   browseOpen: boolean;
   engineId: string;
+  engineScores?: EngineScoreMap;
   engines: EngineCaps[];
   open: boolean;
 };
@@ -18,6 +20,7 @@ type UseEngineSelectRegistryArgs = {
 export function useEngineSelectRegistry({
   browseOpen,
   engineId,
+  engineScores,
   engines,
   open,
 }: UseEngineSelectRegistryArgs) {
@@ -50,9 +53,9 @@ export function useEngineSelectRegistry({
 
   const availableEngines = useMemo(() => {
     const sorted = engines.slice();
-    sorted.sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta));
+    sorted.sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta, undefined, engineScores));
     return sorted.filter((entry) => entry.availability !== 'paused');
-  }, [engines, registryMeta]);
+  }, [engineScores, engines, registryMeta]);
 
   const selectedEngine = useMemo(() => {
     const candidate = availableEngines.find((entry) => entry.id === engineId);
