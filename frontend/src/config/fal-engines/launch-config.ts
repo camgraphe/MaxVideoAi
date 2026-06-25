@@ -243,7 +243,7 @@ export function buildSeedance2MiniSurfaces(): PartialModelPublicationSurfaces {
     },
     compare: {
       suggestOpponents: ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1-fast'],
-      publishedPairs: ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1-fast'],
+      publishedPairs: ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1-fast', 'luma-ray-3-2'],
       includeInHub: true,
     },
     app: {

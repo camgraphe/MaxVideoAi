@@ -19,6 +19,8 @@
     { "left": "seedance-2-0-fast", "right": "dreamina-seedance-2-0-mini", "tags": ["fast", "value", "batch"] },
     { "left": "ltx-2-3-fast", "right": "dreamina-seedance-2-0-mini", "tags": ["fast", "social", "value"] },
     { "left": "dreamina-seedance-2-0-mini", "right": "veo-3-1-fast", "tags": ["value", "audio", "drafts"] },
+    { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2", "tags": ["value", "edit", "batch"] },
+    { "left": "luma-ray-3-2", "right": "veo-3-1-fast", "tags": ["cinematic", "fast", "v2v"] },
     { "left": "seedance-2-0", "right": "sora-2", "tags": ["audio", "quality", "general"] },
     { "left": "veo-3-1", "right": "kling-3-pro", "tags": ["audio", "ads", "quality"] },
     { "left": "ltx-2-3-pro", "right": "veo-3-1", "tags": ["audio", "ads", "quality"] },
@@ -33,6 +35,7 @@
       "id": "cinematic",
       "pairs": [
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
+        { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "seedance-1-5-pro", "right": "kling-3-pro" }
@@ -43,6 +46,7 @@
       "pairs": [
         { "left": "happy-horse-1-1", "right": "veo-3-1" },
         { "left": "happy-horse-1-1", "right": "veo-3-1-fast" },
+        { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "ltx-2-3-pro", "right": "veo-3-1" },
         { "left": "veo-3-1", "right": "kling-2-6-pro" },
@@ -53,6 +57,7 @@
       "id": "social",
       "pairs": [
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
+        { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0-fast" },
         { "left": "seedance-2-0-fast", "right": "veo-3-1-fast" },
         { "left": "seedance-2-0-fast", "right": "ltx-2-3-fast" },
@@ -66,6 +71,7 @@
       "pairs": [
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
+        { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
         { "left": "happy-horse-1-1", "right": "ltx-2-3-pro" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "dreamina-seedance-2-0-mini", "right": "seedance-2-0" },
@@ -110,6 +116,7 @@
       "id": "best-value",
       "pairs": [
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
+        { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
         { "left": "happy-horse-1-1", "right": "seedance-2-0-fast" },
         { "left": "seedance-2-0-fast", "right": "dreamina-seedance-2-0-mini" },
         { "left": "ltx-2-3-fast", "right": "dreamina-seedance-2-0-mini" },
@@ -146,6 +153,7 @@
       "pairs": [
         { "left": "happy-horse-1-1", "right": "veo-3-1" },
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
+        { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "dreamina-seedance-2-0-mini", "right": "seedance-2-0" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "veo-3-1" },
@@ -156,6 +164,8 @@
     {
       "id": "video-to-video",
       "pairs": [
+        { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
+        { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "happy-horse-1-0", "right": "sora-2-pro" },
         { "left": "dreamina-seedance-2-0-mini", "right": "veo-3-1-fast" },
         { "left": "wan-2-6", "right": "veo-3-1" },
@@ -170,7 +180,7 @@
     "sora-2-pro": ["sora-2", "veo-3-1", "kling-3-pro"],
     "seedance-2-0": ["veo-3-1", "kling-3-pro", "ltx-2-3-pro", "dreamina-seedance-2-0-mini"],
     "seedance-2-0-fast": ["dreamina-seedance-2-0-mini", "happy-horse-1-1", "veo-3-1-fast", "ltx-2-3-fast", "pika-text-to-video"],
-    "dreamina-seedance-2-0-mini": ["seedance-2-0", "seedance-2-0-fast", "happy-horse-1-1", "ltx-2-3-fast", "veo-3-1-fast"],
+    "dreamina-seedance-2-0-mini": ["seedance-2-0", "seedance-2-0-fast", "happy-horse-1-1", "luma-ray-3-2", "ltx-2-3-fast", "veo-3-1-fast"],
     "sora-2": ["seedance-2-0", "veo-3-1", "kling-3-pro"],
     "veo-3-1": ["seedance-2-0", "kling-3-pro", "sora-2"],
     "kling-3-pro": ["seedance-2-0", "veo-3-1", "sora-2"],
@@ -179,6 +189,7 @@
     "ltx-2-3-fast": ["dreamina-seedance-2-0-mini", "seedance-2-0-fast", "veo-3-1-fast", "ltx-2-fast"],
     "ltx-2-fast": ["seedance-2-0-fast", "veo-3-1-fast", "wan-2-5"],
     "pika-text-to-video": ["seedance-2-0-fast", "minimax-hailuo-02-text", "ltx-2-3-fast"],
-    "veo-3-1-fast": ["dreamina-seedance-2-0-mini", "happy-horse-1-1", "seedance-2-0-fast", "veo-3-1", "ltx-2-3-fast"]
+    "veo-3-1-fast": ["dreamina-seedance-2-0-mini", "luma-ray-3-2", "happy-horse-1-1", "seedance-2-0-fast", "veo-3-1", "ltx-2-3-fast"],
+    "luma-ray-3-2": ["seedance-2-0", "kling-3-pro", "veo-3-1", "veo-3-1-fast", "dreamina-seedance-2-0-mini", "luma-ray-2"]
   }
 }

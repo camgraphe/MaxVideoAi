@@ -2842,12 +2842,15 @@
           "seedance-2-0",
           "kling-3-pro",
           "veo-3-1",
+          "veo-3-1-fast",
           "luma-ray-2"
         ],
         "publishedPairs": [
           "seedance-2-0",
           "kling-3-pro",
           "veo-3-1",
+          "veo-3-1-fast",
+          "dreamina-seedance-2-0-mini",
           "luma-ray-2"
         ],
         "includeInHub": true
@@ -10859,7 +10862,8 @@
           "seedance-2-0",
           "seedance-2-0-fast",
           "ltx-2-3-fast",
-          "veo-3-1-fast"
+          "veo-3-1-fast",
+          "luma-ray-3-2"
         ],
         "includeInHub": true
       },

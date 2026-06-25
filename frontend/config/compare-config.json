@@ -18,7 +18,8 @@
     "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
     "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
     "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
-    "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"
+    "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+    "dreamina-seedance-2-0-mini-vs-luma-ray-3-2"
   ],
   "bestForPages": [
     {
@@ -27,7 +28,7 @@
       "description": "Best AI video models for turning a still image, style frame, or product shot into controlled motion.",
       "tier": 1,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "happy-horse-1-1-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "dreamina-seedance-2-0-mini-vs-luma-ray-3-2", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "luma-ray-3-2-vs-veo-3-1-fast"]
     },
     {
       "slug": "cinematic-realism",
@@ -91,7 +92,7 @@
       "description": "Best AI video models for product reveals, ecommerce visuals, packshots, demos, and clean product storytelling.",
       "tier": 2,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini", "ltx-2-3-pro", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "happy-horse-1-1-vs-ltx-2-3-pro"]
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "dreamina-seedance-2-0-mini-vs-luma-ray-3-2", "luma-ray-3-2-vs-veo-3-1-fast"]
     },
     {
       "slug": "lipsync-dialogue",
@@ -107,7 +108,7 @@
       "description": "Best AI video models for cheap iteration, rough concepts, timing tests, and fast creative exploration.",
       "tier": 2,
       "topPicks": ["ltx-2-3-fast", "seedance-2-0-fast", "dreamina-seedance-2-0-mini", "veo-3-1-fast", "kling-3-standard"],
-      "relatedComparisons": ["ltx-2-3-fast-vs-seedance-2-0-fast", "happy-horse-1-1-vs-seedance-2-0-fast", "seedance-2-0-fast-vs-veo-3-1-fast", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"]
+      "relatedComparisons": ["ltx-2-3-fast-vs-seedance-2-0-fast", "happy-horse-1-1-vs-seedance-2-0-fast", "dreamina-seedance-2-0-mini-vs-luma-ray-3-2", "seedance-2-0-fast-vs-veo-3-1-fast"]
     },
     {
       "slug": "stylized-anime",
@@ -177,11 +178,13 @@
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
       "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
-      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "dreamina-seedance-2-0-mini-vs-luma-ray-3-2"
     ],
     "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast": [
       "dreamina-seedance-2-0-mini-vs-seedance-2-0",
       "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
       "seedance-2-0-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
       "dreamina-seedance-2-0-mini-vs-veo-3-1-fast"
@@ -189,6 +192,7 @@
     "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast": [
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-seedance-2-0",
+      "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
       "ltx-2-3-fast-vs-ltx-2-3-pro",
       "dreamina-seedance-2-0-mini-vs-veo-3-1-fast"
     ],
@@ -196,6 +200,7 @@
       "dreamina-seedance-2-0-mini-vs-seedance-2-0",
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
       "veo-3-1-fast-vs-veo-3-1-lite"
     ],
@@ -204,6 +209,18 @@
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
       "happy-horse-1-1-vs-seedance-2-0",
       "happy-horse-1-1-vs-veo-3-1-fast"
+    ],
+    "dreamina-seedance-2-0-mini-vs-luma-ray-3-2": [
+      "dreamina-seedance-2-0-mini-vs-seedance-2-0",
+      "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+      "luma-ray-3-2-vs-seedance-2-0",
+      "luma-ray-3-2-vs-veo-3-1-fast"
+    ],
+    "luma-ray-3-2-vs-veo-3-1-fast": [
+      "luma-ray-3-2-vs-veo-3-1",
+      "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
+      "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
+      "seedance-2-0-fast-vs-veo-3-1-fast"
     ],
     "ltx-2-vs-sora-2": [
       "ltx-2-3-fast-vs-ltx-2-3-pro",

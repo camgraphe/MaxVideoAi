@@ -188,6 +188,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
     'seedance-2-0-fast',
     'ltx-2-3-fast',
     'veo-3-1-fast',
+    'luma-ray-3-2',
   ]);
   ['veo-3-1', 'kling-3-pro', 'sora-2', 'seedance-1-5-pro', 'seedance-2-0-fast'].forEach((slug) =>
     assert.ok(seedance.surfaces.compare.publishedPairs.includes(slug), `Seedance 2.0 missing published pair ${slug}`)
@@ -227,6 +228,7 @@ test('Seedance aliases, family routing, hub publication, and locale coverage are
     'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
     'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
     'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+    'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
   ].forEach((slug) => assert.ok(publishedComparisonSlugs.includes(slug), `Missing published comparison ${slug}`));
 
   const hubEngines = getHubEngines();

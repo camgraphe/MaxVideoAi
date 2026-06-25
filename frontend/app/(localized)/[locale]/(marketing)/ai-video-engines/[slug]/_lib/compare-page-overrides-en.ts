@@ -318,6 +318,100 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'dreamina-seedance-2-0-mini-vs-luma-ray-3-2': {
+      meta: {
+        title: 'Seedance 2.0 Mini vs Luma Ray 3.2: Batch Cost, Editing & Best Uses',
+        description:
+          'Compare Seedance 2.0 Mini and Luma Ray 3.2 for batch cost, audio, video editing, reframe workflows, scorecard ratings and best marketing use cases.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Seedance 2.0 Mini when the job needs lower-cost Dreamina Seedance batches, ecommerce variants, social hooks, video extension, source-video edits, and native audio tests at 480p or 720p. Use Luma Ray 3.2 when the job depends on Luma-style cinematic motion, Modify Video, Reframe, source-video preservation, guide frames, and 1080p visual control without native audio. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and production decision guidance instead of side-by-side videos.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Open Seedance 2.0 Mini model page',
+        },
+        {
+          href: '/models/luma-ray-3-2',
+          label: 'Open Luma Ray 3.2 model page',
+        },
+        {
+          href: '/ai-video-engines/luma-ray-3-2-vs-seedance-2-0',
+          label: 'Compare Luma Ray 3.2 vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Seedance Mini batch value and Luma Ray 3.2 video-control workflows.',
+        items: [
+          {
+            question: 'When should I choose Seedance 2.0 Mini?',
+            answer:
+              'Choose Mini for lower-cost batch variants, UGC hooks, product tests, video extension, source-video edits, and native audio experiments where 480p or 720p is acceptable.',
+          },
+          {
+            question: 'When is Luma Ray 3.2 the better fit?',
+            answer:
+              'Choose Luma Ray 3.2 for Modify Video, Reframe, guide-frame control, source-video preservation, cinematic motion, and 1080p visual tests where native audio is not required.',
+          },
+          {
+            question: 'Why is this page scorecard-only?',
+            answer:
+              'Mini comparison pages stay scorecard-only until curated Mini side-by-side renders are selected, so this page prioritizes specs, workflow positioning, and cost tradeoffs.',
+          },
+        ],
+      },
+    },
+    'luma-ray-3-2-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Luma Ray 3.2 vs Veo 3.1 Fast: Cinematic Drafts, Audio & Best Uses',
+        description:
+          'Compare Luma Ray 3.2 and Veo 3.1 Fast for cinematic motion, video-to-video control, reframe tools, native audio, speed, scorecard ratings and best use cases.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Luma Ray 3.2 when the creative problem is source-video control: Modify Video, Reframe, guide frames, cinematic motion preservation, and 1080p visual iteration without native audio. Use Veo 3.1 Fast when the brief needs a faster Veo-style draft, native audio options, higher delivery headroom, and premium short-form polish before moving into final production. This comparison is most useful for teams deciding whether the next pass should edit or reframe existing motion, or generate a more polished audio-ready Veo draft.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/luma-ray-3-2',
+          label: 'Open Luma Ray 3.2 model page',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Open Veo 3.1 Fast model page',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+          label: 'Compare Seedance Mini vs Luma Ray 3.2',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Luma video-control workflows and fast Veo production drafts.',
+        items: [
+          {
+            question: 'When should I choose Luma Ray 3.2 over Veo 3.1 Fast?',
+            answer:
+              'Choose Luma Ray 3.2 when source-video editing, reframe control, guide frames, and preserving or redirecting existing motion are more important than native audio.',
+          },
+          {
+            question: 'When is Veo 3.1 Fast better?',
+            answer:
+              'Choose Veo 3.1 Fast when you need a faster premium visual draft, native audio options, stronger final polish, or more delivery headroom than Luma Ray 3.2 provides.',
+          },
+          {
+            question: 'Which one is better for product or ad tests?',
+            answer:
+              'Luma Ray 3.2 is stronger when you already have source footage to modify or reframe. Veo 3.1 Fast is stronger for fresh cinematic drafts, audio-ready ad concepts, and high-polish short tests.',
+          },
+        ],
+      },
+    },
     'happy-horse-1-1-vs-kling-o3-pro': {
       meta: {
         title: 'Happy Horse 1.1 vs Kling O3 Pro: Audio, References & Best Uses',
