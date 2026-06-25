@@ -884,10 +884,10 @@
         "outputFormats": [
           "MP4"
         ],
-        "audioOutput": "Not supported (reference audio inputs only)",
-        "nativeAudioGeneration": "Not supported",
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
         "dualChannelAudio": null,
-        "lipSync": "Not supported",
+        "lipSync": "Supported",
         "pricePerSecond": null,
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",

@@ -10,6 +10,18 @@ export function parseFirstNumber(value: string) {
   return Number.isNaN(num) ? null : num;
 }
 
+export function parseMaxDurationNumber(value: string) {
+  const scopedValue = value
+    .replace(/\([^)]*(?:source|intake)[^)]*\)/gi, ' ')
+    .split(/[;,]/)
+    .filter((segment) => !/\b(?:source|intake)\b/i.test(segment))
+    .join(' ');
+  const values = Array.from(scopedValue.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec(?:ond)?s?)\b/gi))
+    .map((match) => Number(match[1]))
+    .filter((num) => !Number.isNaN(num));
+  return values.length ? Math.max(...values) : parseFirstNumber(value);
+}
+
 export function parseResolutionValue(value: string) {
   const normalized = value.toLowerCase();
   if (normalized.includes('4k')) return 2160;

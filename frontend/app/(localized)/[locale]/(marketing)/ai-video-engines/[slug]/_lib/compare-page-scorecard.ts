@@ -12,7 +12,7 @@ import {
   formatEngineName,
   formatTemplate,
   isPending,
-  parseFirstNumber,
+  parseMaxDurationNumber,
   parseResolutionValue,
   type EngineAccent,
   type OverallTone,
@@ -234,8 +234,8 @@ export function buildCompareSummaryRows({
       : null;
 
   const validatingLabel = compareCopy.faq?.validating ?? 'still being validated';
-  const durationLeft = parseFirstNumber(leftSpecs.maxDuration);
-  const durationRight = parseFirstNumber(rightSpecs.maxDuration);
+  const durationLeft = parseMaxDurationNumber(leftSpecs.maxDuration);
+  const durationRight = parseMaxDurationNumber(rightSpecs.maxDuration);
   const durationWinner =
     typeof durationLeft === 'number' && typeof durationRight === 'number'
       ? durationLeft === durationRight

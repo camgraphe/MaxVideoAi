@@ -25,6 +25,8 @@ import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import { extractMaxDuration } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts';
+import { parseMaxDurationNumber } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-score-utils.ts';
 
 const DEFAULT_MAXVIDEOAI_MARGIN_FACTOR = 1.3;
 
@@ -254,9 +256,11 @@ test('Seedance benchmark specs stay aligned with the live MaxVideoAI product sur
 
   const standard = benchmarkData.specs?.find((entry) => entry.modelSlug === 'seedance-2-0') ?? null;
   const fast = benchmarkData.specs?.find((entry) => entry.modelSlug === 'seedance-2-0-fast') ?? null;
+  const mini = benchmarkData.specs?.find((entry) => entry.modelSlug === 'dreamina-seedance-2-0-mini') ?? null;
 
   assert.ok(standard);
   assert.ok(fast);
+  assert.ok(mini);
 
   assert.equal(standard.keySpecs?.videoToVideo, 'Not supported');
   assert.equal(standard.keySpecs?.firstLastFrame, 'Supported (1 start image + optional end image in i2v)');
@@ -278,6 +282,15 @@ test('Seedance benchmark specs stay aligned with the live MaxVideoAI product sur
   assert.deepEqual(fast.keySpecs?.outputFormats, ['MP4']);
   assert.equal(fast.keySpecs?.pricePerSecond ?? null, null);
   assert.equal(fast.keySpecs?.releaseDate ?? null, null);
+
+  assert.equal(mini.keySpecs?.maxResolution, '480p / 720p');
+  assert.equal(mini.keySpecs?.maxDuration, '4-15s');
+  assert.equal(mini.keySpecs?.audioOutput, 'Supported');
+  assert.equal(mini.keySpecs?.nativeAudioGeneration, 'Supported');
+  assert.equal(mini.keySpecs?.lipSync, 'Supported');
+  assert.deepEqual(extractMaxDuration(String(mini.keySpecs?.maxDuration), null), { label: '15s', value: 15 });
+  assert.equal(parseMaxDurationNumber(String(mini.keySpecs?.maxDuration)), 15);
+  assert.deepEqual(extractMaxDuration('15s output (3-60s source for video edit)', null), { label: '15s', value: 15 });
 });
 
 test('Seedance 2 marketing copy distinguishes standard 4K from Fast 720p', () => {
