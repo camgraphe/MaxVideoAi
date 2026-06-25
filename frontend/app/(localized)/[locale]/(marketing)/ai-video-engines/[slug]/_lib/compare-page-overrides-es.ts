@@ -124,6 +124,170 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
+      heroIntro:
+        'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, audio nativo y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina es una comparacion de scorecard/specs por ahora; todavia no incluye videos comparativos de Mini.',
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Abrir la pagina del modelo Seedance 2.0',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Comparar Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre Seedance 2.0 flagship y la ruta Mini de menor coste.',
+        items: [
+          {
+            question: 'Cuando deberia elegir Seedance 2.0 Mini?',
+            answer:
+              'Elige Mini para batches de menor coste, variantes ecommerce, pruebas de hooks UGC, pases A/B de marketing y exploracion de prompts a volumen cuando 480p o 720p sea suficiente.',
+          },
+          {
+            question: 'Cuando sigue siendo mejor Seedance 2.0?',
+            answer:
+              'Elige Seedance 2.0 para hero shots finales, mayor pulido visual, workflows con audio nativo y trabajos donde la mejor salida Seedance importa mas que el coste por variante.',
+          },
+          {
+            question: 'Por que esta pagina Mini no tiene videos comparativos?',
+            answer:
+              'Las paginas Mini usan scorecards, specs y recomendaciones por ahora. Los videos lado a lado de Mini se agregaran cuando haya outputs curados.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Usa Seedance 2.0 Fast cuando la prioridad sea velocidad de borrador Seedance, checks de timing y una ruta rapida de vuelta al modelo flagship. Usa Seedance 2.0 Mini como la opcion de volumen batch de menor coste para variantes ecommerce o social, ediciones de video, extensiones y pruebas de marketing repetidas. Esta pagina es una comparacion de scorecard/specs por ahora, sin videos comparativos de Mini.',
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Fast',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0',
+          label: 'Comparar Seedance 2.0 vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre Fast orientado a velocidad de borrador y Mini orientado a valor batch.',
+        items: [
+          {
+            question: 'Mini reemplaza a Seedance 2.0 Fast?',
+            answer:
+              'No. Fast sigue siendo la opcion Seedance para velocidad de borrador. Mini es la ruta de valor y batch para variantes de menor coste y alta frecuencia, sobre todo cuando 480p/720p es suficiente.',
+          },
+          {
+            question: 'Cual conviene para variantes de marketing?',
+            answer:
+              'Mini queda posicionado para muchas variantes ecommerce, UGC y paid social de menor coste. Fast encaja mejor cuando importan mas el timing de borrador Seedance y una vuelta limpia a Seedance 2.0.',
+          },
+          {
+            question: 'Esta pagina incluye videos lado a lado?',
+            answer:
+              'Todavia no. Esta comparacion Mini usa actualmente solo scorecards, specs y ayuda de decision, por lo que no solicita ni muestra slots de video comparativo.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast': {
+      heroIntro:
+        'Usa LTX 2.3 Fast para exploracion LTX rapida, mas margen de resolucion y borradores creativos ligeros. Usa Seedance 2.0 Mini como la opcion Dreamina Seedance de menor coste en batches 480p/720p, variantes ecommerce, hooks UGC, edicion de video y pruebas de extension. Esta pagina es de scorecard/specs por ahora; no muestra videos comparativos de Mini todavia.',
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/ltx-2-3-fast',
+          label: 'Abrir la pagina del modelo LTX 2.3 Fast',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Comparar Seedance Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre borradores LTX rapidos y valor batch de Seedance Mini.',
+        items: [
+          {
+            question: 'Cuando deberia elegir LTX 2.3 Fast?',
+            answer:
+              'Elige LTX 2.3 Fast para exploracion visual rapida, pruebas de prompt estilo LTX y workflows donde su resolucion y comportamiento de borrador encajan mejor con el brief.',
+          },
+          {
+            question: 'Cuando deberia elegir Seedance 2.0 Mini?',
+            answer:
+              'Elige Mini para batches Seedance de menor coste, variantes de producto, pruebas social, hooks UGC, ediciones de video y extensiones cuando 480p/720p sea suficiente.',
+          },
+          {
+            question: 'Por que esta comparacion es scorecard-only?',
+            answer:
+              'Las paginas Mini usan primero scorecards, specs y recomendaciones. Los videos lado a lado se agregaran mas adelante cuando se elijan outputs Mini curados.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-veo-3-1-fast': {
+      heroIntro:
+        'Usa Seedance 2.0 Mini como la opcion batch 480p/720p de menor coste para variantes ecommerce, hooks UGC, ediciones de video y experimentos de marketing frecuentes. Usa Veo 3.1 Fast cuando la calidad Veo, workflows con audio, mayor resolucion de entrega y mejor pulido de borrador importan mas que el coste batch. Esta pagina Mini es solo scorecard/specs por ahora y no incluye videos comparativos.',
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Abrir la pagina del modelo Seedance 2.0 Mini',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Abrir la pagina del modelo Veo 3.1 Fast',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0',
+          label: 'Comparar Seedance 2.0 vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre valor Seedance Mini y flexibilidad de produccion Veo 3.1 Fast.',
+        items: [
+          {
+            question: 'Cuando deberia elegir Seedance 2.0 Mini sobre Veo 3.1 Fast?',
+            answer:
+              'Elige Mini cuando tu objetivo principal sea produccion batch de menor coste: muchas variantes ecommerce, hooks UGC, pruebas de marketing, ediciones de video o extensiones a 480p/720p.',
+          },
+          {
+            question: 'Cuando encaja mejor Veo 3.1 Fast?',
+            answer:
+              'Elige Veo 3.1 Fast cuando necesites calidad Veo, salida con audio, mejor pulido de borrador o mayor resolucion en lugar de la ruta de volumen mas barata.',
+          },
+          {
+            question: 'Hay videos comparativos de Mini aqui?',
+            answer:
+              'No. Esta pagina usa intencionalmente solo scorecards, specs y copy hasta que esten listos los videos Mini lado a lado.',
+          },
+        ],
+      },
+    },
     'veo-3-1-vs-veo-3-1-fast': {
       heroIntro:
         'Compara Veo 3.1 y Veo 3.1 Fast para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de text-to-video mas pulido, image-to-video, borradores mas rapidos y control sobre el audio nativo.',

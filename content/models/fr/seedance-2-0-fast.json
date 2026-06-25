@@ -5,11 +5,11 @@
     "title": "Seedance 2.0 Fast | Modèle vidéo IA rapide, specs et prix | MaxVideoAI",
     "description": "Utilisez Seedance 2.0 Fast sur MaxVideoAI pour des tests plus rapides, des itérations multimodales et des specs/prix visibles avant génération."
   },
-  "overview": "Seedance 2.0 Fast est le modèle vidéo IA Seedance rapide actuel pour des tests plus courts, du shot planning et des boucles de comparaison avant rendu final.",
+  "overview": "Seedance 2.0 Fast est le modèle vidéo IA Dreamina Seedance 2.0 Fast actuel pour des tests plus courts, du shot planning et des boucles de comparaison avant rendu final.",
   "pricingNotes": "Seedance 2.0 Fast suit une tarification fournisseur par tokens. MaxVideoAI ajoute sa marge et arrondit au centime supérieur ; Generate affiche le devis final avant validation.",
   "hero": {
     "title": "Seedance 2.0 Fast — modèle Seedance rapide actuel pour les tests et l'itération",
-    "intro": "Utilisez Seedance 2.0 Fast comme le modèle vidéo IA Seedance le plus rapide pour des tests plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
+    "intro": "Utilisez Seedance 2.0 Fast comme le modèle vidéo IA Dreamina Seedance 2.0 Fast le plus rapide pour des tests plus rapides, du shot planning, des checks de timing et des itérations A/B avant de passer les directions validées dans Seedance 2.0.",
     "badge": "Tier rapide · 3 workflows · 480p/720p · Auto ou 4-15 s · Audio natif",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0 Fast",
@@ -19,6 +19,10 @@
       {
         "label": "Voir Seedance 2.0 standard",
         "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Voir Seedance 2.0 Mini, route batch valeur",
+        "href": "/models/dreamina-seedance-2-0-mini"
       },
       {
         "label": "Préparer des références avec Seedream",
@@ -71,7 +75,7 @@
   "technicalOverview": [
     {
       "label": "Rôle dans la famille",
-      "body": "Variante rapide optimisée dans la famille Seedance 2 sur MaxVideoAI."
+      "body": "Variante rapide optimisée dans la famille Dreamina Seedance 2 sur MaxVideoAI."
     },
     {
       "label": "Entrées",
@@ -95,7 +99,7 @@
     },
     {
       "label": "Notes fournisseur / famille modèle",
-      "body": "Les notes fournisseur et famille modèle regroupent Fast dans la même famille vidéo IA Seedance, avec audio natif, rendu cinématographique et workflows multimodaux là où la route active les expose."
+      "body": "Les notes fournisseur et famille modèle regroupent Fast dans la même famille vidéo IA Dreamina Seedance 2.0, avec audio natif, rendu cinématographique et workflows multimodaux là où la route active les expose."
     }
   ],
   "promptStructure": {
@@ -115,6 +119,7 @@
     "title": "Notes de production",
     "items": [
       "Utilisez Fast pour itérer vite, puis Seedance 2.0 standard pour les versions finales les plus abouties.",
+      "Utilisez Seedance 2.0 Mini pour des variantes batch/valeur à coût réduit en e-commerce, marketing et UGC.",
       "Utilisez l'image de fin optionnelle en i2v quand vous voulez guider la dernière image pendant les versions de travail.",
       "Gardez des prompts tactiques : un moment fort, un mouvement, une raison de comparer.",
       "Servez-vous du compare hub pour le juger face à Veo 3.1 Fast et LTX 2.3 Fast.",
@@ -141,6 +146,10 @@
     {
       "q": "Qu'est-ce que Seedance 2.0 Fast ?",
       "a": "Seedance 2.0 Fast est l’option vidéo IA Seedance la plus rapide dans la famille Seedance 2, pensée pour produire des tests plus vite avant de faire monter les versions gagnantes dans Seedance 2.0 standard."
+    },
+    {
+      "q": "Seedance 2.0 Fast fait-il partie de Dreamina Seedance ?",
+      "a": "Oui. La documentation ByteDance et le nom produit Dreamina utilisent Dreamina Seedance 2.0 pour la famille modèle plus large. Seedance 2.0 Fast est la route plus rapide de cette famille sur MaxVideoAI."
     },
     {
       "q": "Combien coûte Seedance 2.0 Fast ?",
@@ -175,6 +184,7 @@
       "Même famille de modes||Text-to-video, image-to-video et reference-to-video restent disponibles dans la même pile Seedance 2",
       "Audio natif et références multimodales||Fast reste dans la même logique audio-native et multimodale que Seedance 2",
       "Prêt pour la comparaison||Se compare naturellement à Veo 3.1 Fast et LTX 2.3 Fast",
+      "Route batch Seedance 2.0 Mini||Utilisez Mini comme route batch/valeur à coût réduit pour e-commerce, marketing et UGC.",
       "Pensé pour l'escalade||Les essais gagnants passent ensuite dans Seedance 2.0 standard"
     ],
     "specTitle": "Spécifications et rôle",
@@ -182,7 +192,7 @@
     "specSections": [
       {
         "title": "Ce que Fast fait bien",
-        "intro": "Les notes fournisseur/famille modèle positionnent Fast comme la route la plus rapide dans la famille Seedance 2.",
+        "intro": "Les notes fournisseur/famille modèle positionnent Fast comme la route la plus rapide dans la famille Dreamina Seedance 2.",
         "items": [
           "Préparation des plans avant rendu final",
           "Tests A/B rapides sur le mouvement",
@@ -289,6 +299,13 @@
         "description": "Passez les essais gagnants en Seedance 2.0 standard quand vous voulez le rendu final le plus soigné.",
         "modelSlug": "seedance-2-0",
         "ctaLabel": "Voir Seedance 2.0 standard ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Mini",
+        "description": "Utilisez Mini comme route batch/valeur à coût réduit pour e-commerce, marketing et UGC.",
+        "modelSlug": "dreamina-seedance-2-0-mini",
+        "ctaLabel": "Voir la route batch Seedance 2.0 Mini ->"
       },
       {
         "brand": "google-veo",

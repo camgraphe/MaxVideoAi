@@ -94,6 +94,7 @@ export async function resolveGenerateBillingPreflight(params: {
   soraVariant?: string;
   isLumaRay2: boolean;
   loop: boolean;
+  hasVideoInput?: boolean;
   rawDurationOption: number | string | null;
   lumaDurationLabel: string | null;
   audioEnabled: boolean | undefined;
@@ -133,6 +134,7 @@ export async function resolveGenerateBillingPreflight(params: {
     mode: params.mode,
     membershipTier: params.membershipTier,
     loop: params.isLumaRay2 ? params.loop : undefined,
+    hasVideoInput: params.hasVideoInput,
     durationOption: params.lumaDurationLabel ?? params.rawDurationOption ?? null,
     currency: DISPLAY_CURRENCY,
     addons: pricingAddons,

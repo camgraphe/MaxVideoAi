@@ -1,0 +1,244 @@
+{
+  "marketingName": "Dreamina Seedance 2.0 Mini",
+  "versionLabel": "2.0 Mini",
+  "seo": {
+    "title": "Dreamina Seedance 2.0 Mini | vidéo IA moins chère, specs et prix | MaxVideoAI",
+    "description": "Utilisez Dreamina Seedance 2.0 Mini sur MaxVideoAI pour des lots vidéo IA 480p/720p à coût réduit, variantes ecommerce, hooks UGC, édition vidéo, prolongation et tests guidés par références."
+  },
+  "overview": "Dreamina Seedance 2.0 Mini est la route Seedance orientée coût-performance sur MaxVideoAI pour les lots à valeur élevée : variantes ecommerce, tests marketing, hooks UGC, références multimodales, édition vidéo et prolongation en clips 480p ou 720p de 4 à 15 secondes.",
+  "pricingNotes": "Dreamina Seedance 2.0 Mini utilise une tarification par tokens de génération. MaxVideoAI applique le prix affiché et montre le devis final avant soumission.",
+  "hero": {
+    "title": "Seedance 2.0 Mini — route Seedance à coût réduit pour variantes vidéo en lot",
+    "intro": "Utilisez Dreamina Seedance 2.0 Mini quand vous avez besoin d'une route valeur pour de nombreuses variantes vidéo 480p/720p avant de passer les plans héros à Seedance 2.0. Cette page documente specs, prompts, prix et scorecards pour la génération orientée batch.",
+    "badge": "Dreamina Seedance · 480p/720p · 4-15 s · 24 fps · références audio en entrée uniquement",
+    "ctaPrimary": {
+      "label": "Générer avec Seedance 2.0 Mini",
+      "href": "/app?engine=seedance-2-0-mini"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Voir Seedance 2.0 standard",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "Voir Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
+      },
+      {
+        "label": "Voir les exemples vidéo Seedance",
+        "href": "/examples/seedance"
+      },
+      {
+        "label": "Comparer Seedance 2.0 Mini vs Seedance 2.0",
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=dreamina-seedance-2-0-mini"
+      },
+      {
+        "label": "Comparer Seedance 2.0 Mini vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast?order=dreamina-seedance-2-0-mini"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Comparer Seedance 2.0 Mini vs Seedance 2.0 ->",
+    "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=dreamina-seedance-2-0-mini"
+  },
+  "bestUseCases": {
+    "title": "Meilleurs usages de Seedance 2.0 Mini",
+    "items": [
+      {
+        "title": "Lots ecommerce produit à coût réduit",
+        "icon": "product"
+      },
+      {
+        "title": "Hooks UGC, variantes marketing et tests social ads",
+        "icon": "ads"
+      },
+      {
+        "title": "Checks mouvement 480p/720p guidés par références",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Passes d'édition vidéo et de prolongation avant finition",
+        "icon": "repeat"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Vue technique",
+  "technicalOverview": [
+    {
+      "label": "Rôle",
+      "body": "Route coût-performance de la famille Dreamina Seedance 2."
+    },
+    {
+      "label": "ID modèle API",
+      "body": "dreamina-seedance-2-0-mini-260615"
+    },
+    {
+      "label": "Entrées",
+      "body": "Workflows text-to-video, image-to-video, reference-to-video, édition vidéo et prolongation avec références image, vidéo et audio prises en charge"
+    },
+    {
+      "label": "Durée et cadence",
+      "body": "4 à 15 secondes par génération à 24 fps"
+    },
+    {
+      "label": "Résolution",
+      "body": "Sortie 480p ou 720p"
+    },
+    {
+      "label": "Audio",
+      "body": "Les références audio sont une entrée uniquement pour guider le rythme ou le mood."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompter Seedance 2.0 Mini",
+    "quote": "[Objectif du lot] + [sujet ou produit] + [un beat d'action] + [rôle de référence] + [besoin d'édition vidéo ou prolongation] + [480p/720p] + [4-15 s].",
+    "description": "Gardez chaque prompt Mini focalisé sur une seule variante pour conserver des comparaisons lisibles.",
+    "steps": [
+      "Nommer l'objectif du lot",
+      "Décrire le produit, créateur ou scène",
+      "Choisir 480p ou 720p et une durée de 4 à 15 s",
+      "Donner un rôle à chaque référence multimodale",
+      "Passer les meilleurs plans à Seedance 2.0 quand la finition compte"
+    ]
+  },
+  "promptingTip": "Astuce : utilisez Mini pour l'exploration batch à coût réduit, variantes ecommerce, hooks UGC, édition vidéo et prolongation. Utilisez Seedance 2.0 pour les plans finaux polis, et Seedance 2.0 Fast quand la vitesse de brouillon prime.",
+  "tips": {
+    "title": "Notes de production",
+    "items": [
+      "Utilisez 480p pour les checks en volume et 720p quand la revue demande plus de détail.",
+      "Organisez les lots par produit, hook ou objectif d'édition.",
+      "Utilisez les références multimodales pour guider identité, forme produit, rythme caméra ou mood audio.",
+      "Utilisez édition vidéo et prolongation pour itérer à coût réduit sur une vidéo source avant la route finale.",
+      "Gardez Mini sur l'exploration batch/valeur avant le travail final/poli dans Seedance 2.0.",
+      "La génération affiche la route active et le devis final avant soumission."
+    ]
+  },
+  "demoTitle": "Prompt demo",
+  "prompts": [
+    {
+      "title": "Lot produit ecommerce",
+      "prompt": "Crée une variante de mouvement produit 16:9 de 8 secondes en 720p pour une enceinte noire mate sur un plan de travail, push-in lent, lumière du matin propre, référence image produit pour la forme."
+    },
+    {
+      "title": "Set de hooks UGC",
+      "prompt": "Génère un hook UGC vertical de 4 secondes en 480p : le créateur approche le flacon skincare de la caméra, beat salle de bain lumineux, mouvement handheld naturel, version A du lot."
+    },
+    {
+      "title": "Passe d'édition vidéo",
+      "prompt": "Utilise la vidéo source comme passe d'édition vidéo à coût réduit, garde sujet et cadrage produit stables, ajuste le rythme pour une coupe marketing, 8 secondes en 720p."
+    },
+    {
+      "title": "Test de prolongation",
+      "prompt": "Prolonge le court clip source en fin produit de 15 secondes en 720p avec dérive caméra douce et pose finale propre pour revue."
+    }
+  ],
+  "faqTitle": "FAQ – Seedance 2.0 Mini sur MaxVideoAI",
+  "faqs": [
+    {
+      "q": "À quoi sert surtout Seedance 2.0 Mini ?",
+      "a": "Seedance 2.0 Mini sert aux lots à coût réduit et orientés valeur : variantes ecommerce, tests marketing, hooks UGC, édition vidéo, prolongation et checks mouvement 480p/720p guidés par références."
+    },
+    {
+      "q": "Quelles résolution et durée Seedance 2.0 Mini prend-elle en charge ?",
+      "a": "La route Mini MaxVideoAI expose 480p ou 720p, des durées de 4 à 15 secondes et 24 fps."
+    },
+    {
+      "q": "Seedance 2.0 Mini accepte-t-elle des références audio ?",
+      "a": "Oui. Les références audio peuvent guider le rythme ou le mood comme entrée uniquement."
+    },
+    {
+      "q": "Quand utiliser Seedance 2.0 plutôt que Mini ?",
+      "a": "Utilisez Seedance 2.0 quand vous voulez la route Seedance finale, polie, au plafond plus élevé et avec audio natif. Utilisez Mini pour l'exploration batch/valeur avant cette étape."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Lots à coût réduit avant les rendus Seedance finaux",
+    "heroTrustLine": "Pay-as-you-go sur MaxVideoAI · prix affiché avant génération",
+    "heroHighlights": [
+      "Route batch/valeur à coût réduit||Mini vise le coût-performance quand de nombreuses variantes ecommerce, marketing ou UGC doivent être revues.",
+      "480p/720p et 4-15 s||Utilisez des formats compacts pour les checks en lot sans dépasser les limites Mini.",
+      "Références multimodales||Guidez produits, personnages, pacing et mood audio avec des références prises en charge.",
+      "Édition vidéo et prolongation||Testez des edits ou extensions de vidéos source avant de choisir la route Seedance finale."
+    ],
+    "heroSupportLine": "Utilisez Mini pour les lots valeur, Seedance 2.0 Fast pour les brouillons orientés vitesse et Seedance 2.0 pour le travail final poli.",
+    "specTitle": "Specs",
+    "specNote": "Les specs Mini restent limitées à la route MaxVideoAI et à la surface modèle Dreamina Seedance.",
+    "specSections": [
+      {
+        "title": "Modèle et limites",
+        "intro": "Dreamina Seedance 2.0 Mini fonctionne sur MaxVideoAI avec l'ID modèle API dreamina-seedance-2-0-mini-260615.",
+        "items": [
+          "Développeur : ByteDance",
+          "ID modèle : dreamina-seedance-2-0-mini-260615",
+          "480p ou 720p",
+          "4-15 s par génération",
+          "24 fps"
+        ]
+      },
+      {
+        "title": "Workflows",
+        "intro": "Mini est une route batch/valeur pour les workflows Seedance 2 pris en charge.",
+        "items": [
+          "Text-to-video et image-to-video",
+          "Reference-to-video multimodal",
+          "Édition vidéo",
+          "Prolongation",
+          "Références audio en entrée uniquement"
+        ]
+      }
+    ],
+    "promptingTitle": "Prompt Lab — Seedance 2.0 Mini",
+    "promptingGuideLabel": "Notes de workflow Seedance 2.0 Mini",
+    "promptingGuideUrl": "/models/dreamina-seedance-2-0-mini",
+    "promptingIntro": "Seedance 2.0 Mini fonctionne mieux avec des prompts où chaque rendu répond à une question de lot : angle produit, hook, comportement des références, passe d'édition vidéo ou prolongation.",
+    "promptingGlobalPrinciples": [
+      "Gardez un produit, hook ou objectif d'édition par rendu.",
+      "Utilisez 480p pour le volume et 720p pour la revue détaillée.",
+      "Donnez un rôle à chaque référence image, vidéo ou audio.",
+      "Utilisez les vidéos source pour les tests d'édition vidéo et de prolongation.",
+      "Passez le meilleur résultat à Seedance 2.0 quand la finition compte."
+    ],
+    "promptingEngineWhy": [
+      "Les prompts texte conviennent aux idées batch et hooks marketing à coût réduit.",
+      "Les références image stabilisent forme produit, tenue ou packaging.",
+      "Les références vidéo et vidéos source aident à tester pacing, edits et extensions.",
+      "Les références audio peuvent guider le rythme ou le mood comme entrée uniquement."
+    ],
+    "tipsTitle": "Forces et limites",
+    "strengths": [
+      "Itération batch/valeur à coût réduit",
+      "Bon fit pour variantes ecommerce, marketing et UGC",
+      "Références multimodales, édition vidéo et prolongation",
+      "Passage clair vers Seedance 2.0 pour la finition"
+    ],
+    "boundaries": [
+      "La résolution maximale est 720p.",
+      "Les références audio servent uniquement de guidage en entrée.",
+      "Gardez Mini sur le travail batch/valeur avant les rendus finaux Seedance 2.0.",
+      "Vérifiez le devis live dans Générer avant de passer les lots à l’échelle."
+    ],
+    "galleryTitle": "Exemples Seedance 2.0 Mini",
+    "galleryIntro": "Parcourez des motifs ecommerce, marketing, UGC, guidés par références, édition vidéo et prolongation pour Mini.",
+    "galleryAllCta": "Voir tous les exemples Seedance ->",
+    "recreateLabel": "Recréer cette variante Mini ->",
+    "demoTitle": "Prompt de démonstration — Seedance 2.0 Mini",
+    "demoPromptLabel": "Prompt",
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Passez les variantes Mini validées à Seedance 2.0 quand la finition, l'audio natif et la route Seedance la plus élevée comptent.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "Voir Seedance 2.0 standard ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Utilisez Fast quand la priorité est l'itération de brouillons plus rapide plutôt que la valeur batch à coût réduit.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "Voir Seedance 2.0 Fast ->"
+      }
+    ]
+  }
+}

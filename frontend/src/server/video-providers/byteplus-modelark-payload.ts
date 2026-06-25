@@ -1,7 +1,10 @@
 import type { AspectRatio, Mode, Resolution } from '@/types/engines';
 import {
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  BYTEPLUS_SEEDANCE_DURATION_OPTIONS,
   BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
+  BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS,
   BYTEPLUS_SEEDANCE_MODES,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
@@ -27,7 +30,7 @@ type BytePlusContentItem =
 export type BytePlusSeedanceFastPayload = {
   model: string;
   content: BytePlusContentItem[];
-  resolution: '480p' | '720p' | '1080p';
+  resolution: '480p' | '720p' | '1080p' | '4k';
   ratio: '21:9' | '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
   duration: number;
   generate_audio: boolean;
@@ -60,6 +63,7 @@ export function buildBytePlusSeedancePayload(params: {
   ratio?: string | null;
   generateAudio?: boolean;
   allowedResolutions?: Resolution[];
+  allowedDurationOptions?: readonly number[];
 }): BytePlusSeedancePayload {
   const prompt = params.prompt.trim();
   const duration = Math.trunc(params.durationSec);
@@ -70,6 +74,11 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
   const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
   const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
+  const allowedDurationOptions = params.allowedDurationOptions?.length
+    ? params.allowedDurationOptions
+    : params.modelId.trim() === BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID
+      ? BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS
+      : BYTEPLUS_SEEDANCE_DURATION_OPTIONS;
   const requestedResolution = (typeof params.resolution === 'string' && params.resolution.trim()
     ? params.resolution.trim()
     : '720p') as Resolution;
@@ -102,8 +111,10 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'VIDEO_URL_REQUIRED',
     });
   }
-  if (!Number.isFinite(duration) || duration < 5 || duration > 15) {
-    throw new BytePlusModelArkError('BytePlus Seedance duration must be between 5 and 15 seconds.', {
+  if (!Number.isFinite(duration) || !allowedDurationOptions.includes(duration as never)) {
+    const minDuration = allowedDurationOptions[0] ?? 5;
+    const maxDuration = allowedDurationOptions[allowedDurationOptions.length - 1] ?? 15;
+    throw new BytePlusModelArkError(`BytePlus Seedance duration must be between ${minDuration} and ${maxDuration} seconds.`, {
       code: 'BYTEPLUS_DURATION_UNSUPPORTED',
     });
   }

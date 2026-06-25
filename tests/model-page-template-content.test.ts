@@ -13,6 +13,7 @@ const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-1-5-pro',
   'seedance-2-0',
   'seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini',
   'ltx-2',
   'ltx-2-fast',
   'ltx-2-3-fast',
@@ -82,6 +83,7 @@ function assertNonEmptyString(value: string, label: string) {
 function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
   const contentPath = join(PROJECT_ROOT, 'content', 'models', locale, `${slug}.json`);
   return JSON.parse(readFileSync(contentPath, 'utf8')) as {
+    marketingName?: string;
     custom?: {
       specSections?: Array<Record<string, unknown>>;
     };
@@ -257,7 +259,7 @@ test('migrated template prompt links keep users on the Prompt Lab section', () =
   }
 });
 
-test('migrated template app links use the active engine id, not only the SEO slug', () => {
+test('migrated app-enabled template links use the active engine id, not only the SEO slug', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
     const expectedHref = `${engine.category === 'image' ? '/app/image' : '/app'}?engine=${engine.id}`;
@@ -265,6 +267,10 @@ test('migrated template app links use the active engine id, not only the SEO slu
     for (const locale of LOCALES) {
       const decision = buildModelDecisionData({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
+      if (!engine.surfaces.app.enabled) {
+        assert.doesNotMatch(decision.hero.primaryCta.href, /^\/app(?:\/image)?\?engine=/);
+        continue;
+      }
       assert.equal(decision.hero.primaryCta.href, expectedHref, `${slug}/${locale} primary CTA should use engine.id`);
     }
   }
@@ -540,7 +546,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
   assert.equal(seedance.meta.title, 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses');
   assert.equal(
     seedance.meta.description,
-    'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
+    'See Seedance 2.0 pricing, 4K output, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
   );
   assert.notEqual(seedanceFast.meta.title, seedance.meta.title);
   assert.notEqual(seedanceFast.meta.description, seedance.meta.description);
@@ -628,6 +634,7 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
 
 test('migrated template visible copy avoids route cannibalization claims', () => {
   const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const seedanceMini = buildModelDecisionData({ engine: getEngine('dreamina-seedance-2-0-mini'), locale: 'en' });
   const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
   const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
   const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
@@ -655,6 +662,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
 
   assert.ok(seedanceFast);
+  assert.ok(seedanceMini);
   assert.ok(seedance15);
   assert.ok(seedance);
   assert.ok(ltx2);
@@ -685,9 +693,15 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     visibleDecisionText(seedanceFast),
     /final-quality|native audio|polished ads|current (?:seedance )?production route/i
   );
-  assert.match(visibleDecisionText(seedance), /current Seedance production route/i);
+  assert.match(visibleDecisionText(seedance), /current (?:Dreamina )?Seedance production route/i);
   assert.match(visibleDecisionText(seedance), /native audio/i);
   assert.match(visibleDecisionText(seedance), /multi-shot/i);
+  assert.match(visibleDecisionText(seedanceMini), /lower-cost|batch|value/i);
+  assert.doesNotMatch(
+    visibleDecisionText(seedanceMini),
+    /1080p|flagship|replaces Seedance 2\.0|native audio output|audio output/i,
+    'Seedance 2.0 Mini should stay lower-cost batch/value positioned without production-route overclaims'
+  );
   assert.match(visibleDecisionText(seedance15), /older supported Seedance route|legacy-compatible/i);
   assert.match(visibleDecisionText(seedance15), /camera-fixed|seed/i);
   assert.doesNotMatch(
@@ -795,6 +809,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale });
     const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale });
     const localizedKling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale });
+    const localizedSeedanceMini = buildModelDecisionData({ engine: getEngine('dreamina-seedance-2-0-mini'), locale });
     const localizedKling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale });
     const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale });
     const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale });
@@ -824,6 +839,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.ok(veoFast);
     assert.ok(veoLite);
     assert.ok(localizedKling25);
+    assert.ok(localizedSeedanceMini);
     assert.ok(localizedKling26);
     assert.ok(kling);
     assert.ok(klingStandard);
@@ -852,6 +868,21 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.match(visibleDecisionText(veo), /4K/i, `Veo 3.1 ${locale} copy should mention 4K`);
     assert.match(visibleDecisionText(veoFast), /4K/i, `Veo 3.1 Fast ${locale} copy should mention 4K`);
     assert.doesNotMatch(visibleDecisionText(veoLite), /4K/i, `Veo 3.1 Lite ${locale} copy should not claim 4K`);
+    assert.doesNotMatch(
+      visibleDecisionText(localizedSeedanceMini),
+      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0|native audio output|audio output|sortie audio native|salida de audio nativa/i,
+      `Seedance 2.0 Mini ${locale} copy should not claim final-route, 1080p, replacement, or generated-audio-output capabilities`
+    );
+    assert.match(
+      visibleDecisionText(localizedSeedanceMini),
+      /480p/i,
+      `Seedance 2.0 Mini ${locale} copy should mention 480p`
+    );
+    assert.match(
+      visibleDecisionText(localizedSeedanceMini),
+      /720p/i,
+      `Seedance 2.0 Mini ${locale} copy should mention 720p`
+    );
     assert.doesNotMatch(
       visibleDecisionText(localizedKling25),
       /native audio|Audio on|Audio activ|Audio nativo|4K|Omni|voice IDs|Elements/i,
@@ -992,6 +1023,135 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
       /web grounding|grounding web|cheap fast batches|fast still drafts|brouillons image rapides|borradores rápidos de imagen/i,
       `Nano Banana Pro ${locale} copy should stay pro campaign-route focused`
     );
+  }
+});
+
+test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate', () => {
+  const requiredPatterns = {
+    en: /lower-cost|batch|value|video editing|extension/i,
+    fr: /coût réduit|lots?|valeur|édition vidéo|prolongation/i,
+    es: /menor coste|lotes?|valor|edición de video|extensión/i,
+  } as const;
+
+  for (const locale of LOCALES) {
+    const rawContent = readFileSync(join(PROJECT_ROOT, 'content', 'models', locale, 'dreamina-seedance-2-0-mini.json'), 'utf8');
+    const content = JSON.parse(rawContent) as {
+      overview?: string;
+      marketingName?: string;
+      hero?: { badge?: string; ctaPrimary?: { href?: string }; secondaryLinks?: Array<{ href?: string }> };
+      technicalOverview?: Array<{ label?: string; body?: string }>;
+      custom?: { specSections?: Array<{ items?: string[] }> };
+    };
+    const customerText = collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS).join(' ');
+    const miniSpecsText = collectCustomerFacingStrings(
+      {
+        overview: content.overview,
+        heroBadge: content.hero?.badge,
+        technicalOverview: content.technicalOverview,
+        specSections: content.custom?.specSections,
+      },
+      LOCALIZED_CONTENT_SKIP_KEYS
+    ).join(' ');
+
+    assert.equal(content.marketingName, 'Dreamina Seedance 2.0 Mini');
+    assert.equal(content.hero?.ctaPrimary?.href, '/app?engine=seedance-2-0-mini');
+    assert.ok(
+      content.hero?.secondaryLinks?.some((link) => link.href === '/models/seedance-2-0'),
+      `${locale} Mini content should cross-link to Seedance 2.0`
+    );
+    assert.ok(
+      content.hero?.secondaryLinks?.some((link) => link.href === '/models/seedance-2-0-fast'),
+      `${locale} Mini content should cross-link to Seedance 2.0 Fast`
+    );
+    assert.match(customerText, requiredPatterns[locale]);
+    assert.match(customerText, /480p/i);
+    assert.match(customerText, /720p/i);
+    assert.match(customerText, /4-15|4 à 15|4 a 15/i);
+    assert.match(customerText, /24fps|24 fps/i);
+    assert.match(customerText, /Dreamina Seedance/i);
+    assert.match(customerText, /ByteDance/i);
+    assert.doesNotMatch(customerText, /BytePlus|ModelArk/i);
+    assert.match(customerText, /dreamina-seedance-2-0-mini-260615/i);
+    assert.match(customerText, /audio references|références audio|referencias de audio/i);
+    assert.match(customerText, /input only|entrée uniquement|solo entrada/i);
+    assert.doesNotMatch(
+      rawContent,
+      /coming soon|BytePlus API|API access|API pending|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i
+    );
+    assert.doesNotMatch(
+      customerText,
+      /replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0/i
+    );
+    assert.doesNotMatch(
+      miniSpecsText,
+      /1080p|flagship|native audio output|audio output|sortie audio native|salida de audio nativa/i
+    );
+  }
+});
+
+test('existing Seedance content links to Mini only as a lower-cost batch value alternative', () => {
+  const requiredMiniPositioning = {
+    en: /lower-cost|batch|value/i,
+    fr: /coût réduit|batch|valeur|lots?/i,
+    es: /menor coste|batch|valor|lotes?/i,
+  } as const;
+  const requiredSeedancePositioning = {
+    en: /final|polished|high-ceiling|production/i,
+    fr: /final|polie|plafond|production/i,
+    es: /final|pulida|mayor techo|producción/i,
+  } as const;
+  const requiredFastPositioning = {
+    en: /faster draft|speed|draft/i,
+    fr: /brouillon plus rapide|vitesse|brouillon/i,
+    es: /borrador más rápido|velocidad|borrador/i,
+  } as const;
+
+  for (const locale of LOCALES) {
+    const seedance = readModelContentJson(locale, 'seedance-2-0');
+    const fast = readModelContentJson(locale, 'seedance-2-0-fast');
+    const seedanceRaw = JSON.stringify(seedance);
+    const fastRaw = JSON.stringify(fast);
+    const seedanceText = collectCustomerFacingStrings(seedance, LOCALIZED_CONTENT_SKIP_KEYS).join(' ');
+    const fastText = collectCustomerFacingStrings(fast, LOCALIZED_CONTENT_SKIP_KEYS).join(' ');
+    const seedanceMiniStrings = collectCustomerFacingStrings(seedance, LOCALIZED_CONTENT_SKIP_KEYS).filter((value) =>
+      /Mini/i.test(value)
+    );
+    const fastMiniStrings = collectCustomerFacingStrings(fast, LOCALIZED_CONTENT_SKIP_KEYS).filter((value) =>
+      /Mini/i.test(value)
+    );
+
+    assert.equal(seedance.marketingName, 'Seedance 2.0');
+    assert.equal(fast.marketingName, 'Seedance 2.0 Fast');
+    assert.match(seedanceText, /Dreamina Seedance 2\.0/i);
+    assert.match(fastText, /Dreamina Seedance 2\.0 Fast/i);
+    assert.doesNotMatch(seedanceRaw, /\/models\/dreamina-seedance-2-0"/);
+    assert.doesNotMatch(fastRaw, /\/models\/dreamina-seedance-2-0-fast"/);
+    assert.match(seedanceRaw, /"href":"\/models\/dreamina-seedance-2-0-mini"/);
+    assert.match(fastRaw, /"href":"\/models\/dreamina-seedance-2-0-mini"/);
+    assert.ok(
+      seedanceMiniStrings.some((value) => requiredMiniPositioning[locale].test(value)),
+      `${locale} Seedance 2.0 Mini cross-link copy should position Mini as lower-cost/batch/value`
+    );
+    assert.ok(
+      fastMiniStrings.some((value) => requiredMiniPositioning[locale].test(value)),
+      `${locale} Seedance 2.0 Fast Mini cross-link copy should position Mini as lower-cost/batch/value`
+    );
+    assert.match(seedanceText, requiredSeedancePositioning[locale]);
+    assert.match(fastText, requiredFastPositioning[locale]);
+    for (const value of seedanceMiniStrings) {
+      assert.doesNotMatch(
+        value,
+        /Mini.*(?:flagship|production|audio natif|audio nativo|native audio)/i,
+        `${locale} Seedance 2.0 should not frame Mini as production/audio-native in "${value}"`
+      );
+    }
+    for (const value of fastMiniStrings) {
+      assert.doesNotMatch(
+        value,
+        /Mini.*(?:faster draft|brouillon plus rapide|borrador más rápido|speed-first|vitesse|velocidad)/i,
+        `${locale} Seedance 2.0 Fast should not frame Mini as the faster draft route in "${value}"`
+      );
+    }
   }
 });
 

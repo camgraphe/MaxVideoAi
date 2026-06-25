@@ -142,8 +142,11 @@ export function summarizeWorkspaceInputSchema({
     }
     if (
       isUnifiedSeedance &&
+      activeMode === 't2v' &&
       (field.type === 'image' || field.type === 'video' || field.type === 'audio') &&
-      (field.modes.includes('i2v') || field.modes.includes('ref2v'))
+      (field.modes.includes('i2v') ||
+        field.modes.includes('ref2v') ||
+        field.modes.includes('v2v'))
     ) {
       return true;
     }

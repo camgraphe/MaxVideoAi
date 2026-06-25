@@ -3400,15 +3400,8 @@
       },
       "extend": {
         "value": false
-      },
-      "hdr": {
-        "value": true
-      },
-      "exr": {
-        "value": true
       }
-    },
-    "bestFor": "Direct Luma cinematic control with HDR, EXR, keyframes and video edit"
+    }
   },
   {
     "engineId": "luma-uni-1",
@@ -9297,11 +9290,13 @@
       "publishedModelSlugs": [
         "seedance-2-0",
         "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
         "seedance-2-0",
-        "seedance-2-0-fast"
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
       ]
     },
     "versionLabel": "v1.5 Pro",
@@ -9674,11 +9669,13 @@
       "publishedModelSlugs": [
         "seedance-2-0",
         "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
         "seedance-2-0",
-        "seedance-2-0-fast"
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
       ]
     },
     "versionLabel": "2.0",
@@ -9755,7 +9752,8 @@
       "resolutions": [
         "480p",
         "720p",
-        "1080p"
+        "1080p",
+        "4k"
       ],
       "aspectRatios": [
         "auto",
@@ -9771,7 +9769,7 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": true,
+      "extend": false,
       "motionControls": true,
       "keyframes": false,
       "params": {},
@@ -9861,7 +9859,8 @@
             "values": [
               "480p",
               "720p",
-              "1080p"
+              "1080p",
+              "4k"
             ],
             "default": "720p"
           },
@@ -9884,6 +9883,8 @@
             "description": "Optional motion or pacing references for ref2v. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
             "minCount": 0,
             "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
             "modes": [
               "ref2v"
             ],
@@ -9928,7 +9929,11 @@
         "currency": "USD",
         "tokenPricing": {
           "model": "fal_tokens",
-          "unitPriceUsdPer1kTokens": 0.014,
+          "unitPriceUsdPer1kTokens": 0.013461538461538462,
+          "unitPriceUsdPer1kTokensByResolution": {
+            "1080p": 0.014807692307692306,
+            "4k": 0.007692307692307692
+          },
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",
           "dimensions": {
@@ -10021,6 +10026,36 @@
                 "width": 1080,
                 "height": 1920
               }
+            },
+            "4k": {
+              "auto": {
+                "width": 3840,
+                "height": 2160
+              },
+              "21:9": {
+                "width": 4398,
+                "height": 1886
+              },
+              "16:9": {
+                "width": 3840,
+                "height": 2160
+              },
+              "4:3": {
+                "width": 3326,
+                "height": 2494
+              },
+              "1:1": {
+                "width": 2880,
+                "height": 2880
+              },
+              "3:4": {
+                "width": 2494,
+                "height": 3326
+              },
+              "9:16": {
+                "width": 2160,
+                "height": 3840
+              }
             }
           },
           "rounding": "ceil_cent"
@@ -10069,7 +10104,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -10081,7 +10117,7 @@
             "9:16"
           ],
           "audioToggle": true,
-          "notes": "4-15s or auto, 480p/720p/1080p, native audio on or off, with the wider Seedance 2 camera ratio set."
+          "notes": "4-15s or auto, 480p/720p/1080p/4K, native audio on or off, with the wider Seedance 2 camera ratio set."
         }
       },
       {
@@ -10112,7 +10148,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -10131,7 +10168,7 @@
           ],
           "maxUploadMB": 30,
           "audioToggle": true,
-          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p/1080p, with audio on or off."
+          "notes": "Start image plus optional end image, 4-15s or auto, 480p/720p/1080p/4K, with audio on or off."
         }
       },
       {
@@ -10162,7 +10199,8 @@
           "resolution": [
             "480p",
             "720p",
-            "1080p"
+            "1080p",
+            "4k"
           ],
           "aspectRatio": [
             "auto",
@@ -10196,7 +10234,7 @@
         "value": false
       },
       "extend": {
-        "value": true
+        "value": false
       }
     },
     "bestFor": "Flagship multi-shot video with native audio and references"
@@ -10214,11 +10252,13 @@
       "publishedModelSlugs": [
         "seedance-2-0",
         "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
         "seedance-2-0",
-        "seedance-2-0-fast"
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
       ]
     },
     "versionLabel": "2.0 Fast",
@@ -10429,6 +10469,8 @@
             "description": "Optional pacing or motion references for draft-speed ref2v runs. Supports up to 3 videos, 2 to 15 seconds combined, under 50 MB total.",
             "minCount": 0,
             "maxCount": 3,
+            "minDurationSec": 2,
+            "maxDurationSec": 15,
             "modes": [
               "ref2v"
             ],
@@ -10467,7 +10509,7 @@
         "currency": "USD",
         "tokenPricing": {
           "model": "fal_tokens",
-          "unitPriceUsdPer1kTokens": 0.0112,
+          "unitPriceUsdPer1kTokens": 0.010769230769230769,
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",
           "dimensions": {
@@ -10559,6 +10601,36 @@
               "9:16": {
                 "width": 1080,
                 "height": 1920
+              }
+            },
+            "4k": {
+              "auto": {
+                "width": 3840,
+                "height": 2160
+              },
+              "21:9": {
+                "width": 4398,
+                "height": 1886
+              },
+              "16:9": {
+                "width": 3840,
+                "height": 2160
+              },
+              "4:3": {
+                "width": 3326,
+                "height": 2494
+              },
+              "1:1": {
+                "width": 2880,
+                "height": 2880
+              },
+              "3:4": {
+                "width": 2494,
+                "height": 3326
+              },
+              "9:16": {
+                "width": 2160,
+                "height": 3840
               }
             }
           },
@@ -10738,10 +10810,10 @@
     "bestFor": "Fast Seedance drafts, reference tests, and shot planning"
   },
   {
-    "engineId": "seedance-2-0-fast-byteplus",
-    "modelSlug": "seedance-2-0-fast-byteplus",
-    "marketingName": "Seedance 2.0 Fast BytePlus",
-    "provider": "BytePlus ModelArk",
+    "engineId": "seedance-2-0-mini",
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "marketingName": "Dreamina Seedance 2.0 Mini",
+    "provider": "ByteDance",
     "brandId": "bytedance",
     "family": "seedance",
     "familyExamplesPage": {
@@ -10750,14 +10822,622 @@
       "publishedModelSlugs": [
         "seedance-2-0",
         "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
         "seedance-1-5-pro"
       ],
       "currentModelSlugs": [
         "seedance-2-0",
-        "seedance-2-0-fast"
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
       ]
     },
-    "versionLabel": "2.0 Fast BytePlus",
+    "versionLabel": "2.0 Mini",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": true,
+        "includeInFamilyCopy": true
+      },
+      "compare": {
+        "suggestOpponents": [
+          "seedance-2-0",
+          "seedance-2-0-fast",
+          "ltx-2-3-fast",
+          "veo-3-1-fast"
+        ],
+        "publishedPairs": [
+          "seedance-2-0",
+          "seedance-2-0-fast",
+          "ltx-2-3-fast",
+          "veo-3-1-fast"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 0,
+        "variantGroup": "seedance-2-0",
+        "variantLabel": "Mini"
+      },
+      "pricing": {
+        "includeInEstimator": true,
+        "featuredScenario": "seedance-2-family"
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "seedance-2-0-mini",
+      "label": "Dreamina Seedance 2.0 Mini",
+      "provider": "ByteDance",
+      "version": "2.0",
+      "variant": "Mini",
+      "status": "live",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v",
+        "extend"
+      ],
+      "maxDurationSec": 15,
+      "resolutions": [
+        "480p",
+        "720p"
+      ],
+      "aspectRatios": [
+        "auto",
+        "21:9",
+        "16:9",
+        "4:3",
+        "1:1",
+        "3:4",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": false,
+      "upscale4k": false,
+      "extend": true,
+      "motionControls": true,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 30,
+        "videoMaxMB": 50,
+        "audioMaxMB": 15,
+        "videoMaxDurationSec": 15
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt"
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Start image",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          }
+        ],
+        "optional": [
+          {
+            "id": "end_image_url",
+            "type": "image",
+            "label": "End image",
+            "description": "Optional last frame for start-to-end transitions in image-to-video.",
+            "modes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration (seconds)",
+            "values": [
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15"
+            ],
+            "default": "5",
+            "min": 4,
+            "max": 15
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "auto",
+              "21:9",
+              "16:9",
+              "4:3",
+              "1:1",
+              "3:4",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "480p",
+              "720p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "image_urls",
+            "type": "image",
+            "label": "Reference images (up to 9)",
+            "description": "Optional visual references for Reference to Video or Video Edit.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Required source video for video-to-video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "video_urls",
+            "type": "video",
+            "label": "Reference video clips (up to 3)",
+            "description": "Optional video references for Reference to Video.",
+            "modes": [
+              "ref2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "source": "either"
+          },
+          {
+            "id": "extension_source_videos",
+            "type": "video",
+            "label": "Source clips to extend (up to 3)",
+            "description": "Add one source clip to extend forward or backward, or 2-3 clips to stitch a transition.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 3,
+            "source": "either",
+            "slotLabelPattern": "Source clip {n}"
+          },
+          {
+            "id": "audio_urls",
+            "type": "audio",
+            "label": "Reference audio clips (up to 3)",
+            "description": "Optional audio references for pacing or soundtrack guidance.",
+            "modes": [
+              "ref2v",
+              "v2v"
+            ],
+            "minCount": 0,
+            "maxCount": 3,
+            "source": "either"
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "mov",
+            "mp3",
+            "wav"
+          ],
+          "maxImageSizeMB": 30,
+          "maxVideoSizeMB": 50,
+          "maxAudioSizeMB": 15
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "tokenPricing": {
+          "model": "fal_tokens",
+          "unitPriceUsdPer1kTokens": 0.006730769230769231,
+          "pricingSource": "byteplus_seedance_2_0_mini_flat_markup",
+          "framesPerSecond": 24,
+          "defaultAspectRatio": "16:9",
+          "dimensions": {
+            "480p": {
+              "auto": {
+                "width": 854,
+                "height": 480
+              },
+              "21:9": {
+                "width": 1120,
+                "height": 480
+              },
+              "16:9": {
+                "width": 854,
+                "height": 480
+              },
+              "4:3": {
+                "width": 640,
+                "height": 480
+              },
+              "1:1": {
+                "width": 480,
+                "height": 480
+              },
+              "3:4": {
+                "width": 480,
+                "height": 640
+              },
+              "9:16": {
+                "width": 480,
+                "height": 854
+              }
+            },
+            "720p": {
+              "auto": {
+                "width": 1280,
+                "height": 720
+              },
+              "21:9": {
+                "width": 1680,
+                "height": 720
+              },
+              "16:9": {
+                "width": 1280,
+                "height": 720
+              },
+              "4:3": {
+                "width": 960,
+                "height": 720
+              },
+              "1:1": {
+                "width": 720,
+                "height": 720
+              },
+              "3:4": {
+                "width": 720,
+                "height": 960
+              },
+              "9:16": {
+                "width": 720,
+                "height": 1280
+              }
+            }
+          },
+          "rounding": "ceil_cent"
+        }
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "currency": "USD",
+        "notes": "Seedance 2 Mini is billed from output tokens with one flat public MaxVideoAI rate across text, image, reference, source-video, and extend workflows."
+      },
+      "updatedAt": "2026-06-15T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "byteplus_modelark",
+        "modelSlug": "dreamina-seedance-2-0-mini-260615"
+      },
+      "availability": "available",
+      "brandId": "bytedance"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-mini/text-to-video",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "audioToggle": false,
+          "notes": "Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, and reference audio as input only."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-mini/image-to-video",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 30,
+          "audioToggle": false,
+          "notes": "Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, and reference audio as input only."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-mini/reference-to-video",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, and reference audio as input only."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-mini/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, and reference audio as input only."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "byteplus/dreamina-seedance-2.0-mini/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": 5
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": false,
+          "notes": "Dreamina Seedance Mini extends 1-3 source clips at 4-15s, 480p/720p, 24fps."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": false
+      },
+      "motionControls": {
+        "value": true
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": true
+      }
+    }
+  },
+  {
+    "engineId": "seedance-2-0-fast-byteplus",
+    "modelSlug": "seedance-2-0-fast-byteplus",
+    "marketingName": "Dreamina Seedance 2.0 Fast Direct",
+    "provider": "ByteDance",
+    "brandId": "bytedance",
+    "family": "seedance",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini",
+        "seedance-1-5-pro"
+      ],
+      "currentModelSlugs": [
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
+      ]
+    },
+    "versionLabel": "2.0 Fast Direct",
     "availability": "limited",
     "logoPolicy": "logoAllowed",
     "surfaces": {
@@ -10784,8 +11464,8 @@
     "surfacesSource": "explicit",
     "engine": {
       "id": "seedance-2-0-fast-byteplus",
-      "label": "Seedance 2.0 Fast BytePlus",
-      "provider": "BytePlus ModelArk",
+      "label": "Dreamina Seedance 2.0 Fast Direct",
+      "provider": "ByteDance",
       "version": "2.0",
       "variant": "Fast",
       "isLab": true,
@@ -10876,7 +11556,7 @@
         "currency": "USD",
         "tokenPricing": {
           "model": "fal_tokens",
-          "unitPriceUsdPer1kTokens": 0.0112,
+          "unitPriceUsdPer1kTokens": 0.010769230769230769,
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",
           "dimensions": {
@@ -10969,6 +11649,36 @@
                 "width": 1080,
                 "height": 1920
               }
+            },
+            "4k": {
+              "auto": {
+                "width": 3840,
+                "height": 2160
+              },
+              "21:9": {
+                "width": 4398,
+                "height": 1886
+              },
+              "16:9": {
+                "width": 3840,
+                "height": 2160
+              },
+              "4:3": {
+                "width": 3326,
+                "height": 2494
+              },
+              "1:1": {
+                "width": 2880,
+                "height": 2880
+              },
+              "3:4": {
+                "width": 2494,
+                "height": 3326
+              },
+              "9:16": {
+                "width": 2160,
+                "height": 3840
+              }
             }
           },
           "rounding": "ceil_cent"
@@ -10977,7 +11687,7 @@
       "pricing": {
         "unit": "USD/s",
         "currency": "USD",
-        "notes": "Admin-only BytePlus ModelArk V1a route. Public Seedance pricing remains unchanged while actual BytePlus cost is recorded separately."
+        "notes": "Admin-only direct Seedance route. Public Seedance pricing remains unchanged while actual provider cost is recorded separately."
       },
       "updatedAt": "2026-05-01T00:00:00Z",
       "ttlSec": 600,
@@ -11019,7 +11729,7 @@
             "16:9"
           ],
           "audioToggle": false,
-          "notes": "Admin-only BytePlus ModelArk V1a route: 720p, 16:9, 5-15s, silent output."
+          "notes": "Admin-only direct Seedance route: 720p, 16:9, 5-15s, silent output."
         }
       }
     ],
@@ -14848,7 +15558,7 @@
     "engineId": "seedream",
     "modelSlug": "seedream",
     "marketingName": "Seedream",
-    "provider": "BytePlus",
+    "provider": "ByteDance",
     "brandId": "bytedance",
     "family": "seedream",
     "familyExamplesPage": null,
@@ -14884,7 +15594,7 @@
     "engine": {
       "id": "seedream",
       "label": "Seedream",
-      "provider": "BytePlus",
+      "provider": "ByteDance",
       "version": "5.0 Lite",
       "status": "live",
       "latencyTier": "standard",
@@ -14965,7 +15675,7 @@
             "max": 15,
             "step": 1,
             "default": 1,
-            "description": "Request up to 15 generated images. Requests above one image enable BytePlus sequential_image_generation automatically."
+            "description": "Request up to 15 generated images. Requests above one image use sequential image generation automatically."
           },
           {
             "id": "aspect_ratio",
@@ -14983,7 +15693,7 @@
               "21:9"
             ],
             "default": "auto",
-            "description": "Choose auto, or map the selected Seedream resolution to a BytePlus recommended width and height."
+            "description": "Choose auto, or map the selected Seedream resolution to a recommended width and height."
           },
           {
             "id": "image_urls",
@@ -15011,7 +15721,7 @@
               "4K"
             ],
             "default": "2K",
-            "description": "BytePlus Seedream base output resolution. Pair with Ratio for exact recommended dimensions."
+            "description": "Seedream base output resolution. Pair with Ratio for exact recommended dimensions."
           },
           {
             "id": "output_format",
@@ -15031,7 +15741,7 @@
             "type": "boolean",
             "label": "AI watermark",
             "default": false,
-            "description": "Add BytePlus AI-generated watermark text to the image."
+            "description": "Add AI-generated watermark text to the image."
           }
         ],
         "constraints": {
@@ -15060,7 +15770,7 @@
         "unit": "image",
         "base": 0.035,
         "currency": "USD",
-        "notes": "BytePlus lists Seedream 5.0 Lite at $0.035 per successfully generated image; MaxVideoAI customer pricing may include platform margin."
+        "notes": "Seedream 5.0 Lite is billed per successfully generated image; MaxVideoAI customer pricing may include platform margin."
       },
       "updatedAt": "2026-05-11T00:00:00Z",
       "ttlSec": 600,

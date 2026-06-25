@@ -10,10 +10,15 @@ import {
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_FAST_ENGINE_ID,
   BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
+  BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS,
+  BYTEPLUS_SEEDANCE_MINI_RESOLUTIONS,
   BYTEPLUS_SEEDANCE_MODES,
   BYTEPLUS_SEEDANCE_RESOLUTIONS,
-  PUBLIC_SEEDANCE_ENGINE_ID,
-  PUBLIC_SEEDANCE_FAST_ENGINE_ID,
+  isPublicSeedanceEngine,
+  isPublicSeedanceFastEngine,
+  isPublicSeedanceMiniEngine,
+  withBytePlusVideoSourceFields,
 } from './byteplus-modelark-constants';
 import { BytePlusModelArkError } from './byteplus-modelark-error';
 import type { BytePlusSeedanceFastPayload } from './byteplus-modelark-payload';
@@ -33,10 +38,17 @@ export {
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_FAST_ENGINE_ID,
   BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS,
+  BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
+  BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS,
+  BYTEPLUS_SEEDANCE_MINI_RESOLUTIONS,
   BYTEPLUS_SEEDANCE_MODES,
   BYTEPLUS_SEEDANCE_RESOLUTIONS,
   PUBLIC_SEEDANCE_ENGINE_ID,
   PUBLIC_SEEDANCE_FAST_ENGINE_ID,
+  PUBLIC_SEEDANCE_MINI_ENGINE_ID,
+  isPublicSeedanceEngine,
+  isPublicSeedanceFastEngine,
+  isPublicSeedanceMiniEngine,
 } from './byteplus-modelark-constants';
 export { BytePlusModelArkError } from './byteplus-modelark-error';
 export {
@@ -79,24 +91,24 @@ function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
     return {
       ...field,
       label: 'Reference images (up to 9)',
-      description: 'Optional BytePlus visual references for Reference to Video or Video Edit.',
+      description: 'Optional visual references for Reference to Video or Video Edit.',
       modes: ['ref2v', 'v2v'],
     };
   }
   if (field.id === 'video_urls') {
     return {
       ...field,
-      label: 'Reference/source videos (up to 3)',
-      description: 'Use video files as BytePlus references, edit sources, or extension sources.',
-      modes: ['ref2v', 'v2v', 'extend'],
+      label: 'Reference video clips (up to 3)',
+      description: 'Optional video references for Reference to Video.',
+      modes: ['ref2v'],
     };
   }
   if (field.id === 'audio_urls') {
     return {
       ...field,
       label: 'Reference audio (up to 3)',
-      description: 'Optional BytePlus audio references for pacing or soundtrack guidance.',
-      modes: ['ref2v', 'v2v', 'extend'],
+      description: 'Optional audio references for pacing or soundtrack guidance.',
+      modes: ['ref2v', 'v2v'],
     };
   }
   return field;
@@ -105,10 +117,13 @@ function expandBytePlusFieldModes(field: EngineInputField): EngineInputField {
 function filterInputFieldsForModes(
   fields: EngineInputField[] | undefined,
   allowedModes: Mode[],
-  resolutions: Resolution[]
+  resolutions: Resolution[],
+  durationOptions: readonly number[],
+  options?: { includeBytePlusVideoSourceFields?: boolean }
 ): EngineInputField[] | undefined {
   if (!fields) return fields;
-  return fields
+  const sourceFields = options?.includeBytePlusVideoSourceFields ? withBytePlusVideoSourceFields(fields) : fields;
+  return sourceFields
     .map(expandBytePlusFieldModes)
     .filter((field) => !field.modes?.length || field.modes.some((mode) => allowedModes.includes(mode)))
     .map((field) => {
@@ -129,9 +144,9 @@ function filterInputFieldsForModes(
       if (field.id === 'duration' && field.type === 'enum') {
         return {
           ...field,
-          values: BYTEPLUS_SEEDANCE_DURATION_OPTIONS.map(String),
+          values: durationOptions.map(String),
           default: '5',
-          min: 5,
+          min: durationOptions[0] ?? 5,
           max: 15,
         };
       }
@@ -147,24 +162,12 @@ export function isBytePlusSeedanceFastEngine(engineId: string | null | undefined
   return engineId === BYTEPLUS_SEEDANCE_FAST_ENGINE_ID;
 }
 
-export function isPublicSeedanceEngine(engineId: string | null | undefined): boolean {
-  return engineId === PUBLIC_SEEDANCE_ENGINE_ID;
-}
-
-export function isPublicSeedanceFastEngine(engineId: string | null | undefined): boolean {
-  return engineId === PUBLIC_SEEDANCE_FAST_ENGINE_ID;
-}
-
 export function seedanceProviderOverride(): 'fal' | 'byteplus_modelark' {
-  return ENV.SEEDANCE_2_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER
-    ? BYTEPLUS_MODELARK_PROVIDER
-    : 'fal';
+  return ENV.SEEDANCE_2_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
 }
 
 export function seedanceFastProviderOverride(): 'fal' | 'byteplus_modelark' {
-  return ENV.SEEDANCE_FAST_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER
-    ? BYTEPLUS_MODELARK_PROVIDER
-    : 'fal';
+  return ENV.SEEDANCE_FAST_PROVIDER?.trim().toLowerCase() === BYTEPLUS_MODELARK_PROVIDER ? BYTEPLUS_MODELARK_PROVIDER : 'fal';
 }
 
 export function shouldRoutePublicSeedanceToBytePlus(engineId: string | null | undefined): boolean {
@@ -175,6 +178,10 @@ export function shouldRoutePublicSeedanceFastToBytePlus(engineId: string | null 
   return isPublicSeedanceFastEngine(engineId) && seedanceFastProviderOverride() === BYTEPLUS_MODELARK_PROVIDER;
 }
 
+export function shouldRoutePublicSeedanceMiniToBytePlus(engineId: string | null | undefined): boolean {
+  return isPublicSeedanceMiniEngine(engineId);
+}
+
 export function seedanceBytePlusAdminOnly(): boolean {
   return envFlagEnabled(ENV.SEEDANCE_2_BYTEPLUS_ADMIN_ONLY ?? 'true');
 }
@@ -183,17 +190,26 @@ export function seedanceFastBytePlusAdminOnly(): boolean {
   return envFlagEnabled(ENV.SEEDANCE_FAST_BYTEPLUS_ADMIN_ONLY ?? 'true');
 }
 
+export function seedanceMiniBytePlusAdminOnly(): boolean {
+  return envFlagEnabled(ENV.SEEDANCE_MINI_BYTEPLUS_ADMIN_ONLY ?? 'false');
+}
+
 export function isSeedanceBytePlusModeAllowed(mode: string | null | undefined): boolean {
-  const allowedModes = allowedBytePlusModes(ENV.SEEDANCE_2_BYTEPLUS_MODES);
-  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase() as Mode) : false;
+  return allowedBytePlusModes(ENV.SEEDANCE_2_BYTEPLUS_MODES).includes((mode ?? '').trim().toLowerCase() as Mode);
 }
 
 export function isSeedanceFastBytePlusModeAllowed(mode: string | null | undefined): boolean {
-  const allowedModes = allowedBytePlusModes(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
-  return allowedModes.length ? allowedModes.includes((mode ?? '').trim().toLowerCase() as Mode) : false;
+  return allowedBytePlusModes(ENV.SEEDANCE_FAST_BYTEPLUS_MODES).includes((mode ?? '').trim().toLowerCase() as Mode);
+}
+
+export function isSeedanceMiniBytePlusModeAllowed(mode: string | null | undefined): boolean {
+  return allowedBytePlusModes(ENV.SEEDANCE_MINI_BYTEPLUS_MODES).includes((mode ?? '').trim().toLowerCase() as Mode);
 }
 
 export function getBytePlusSeedanceAllowedModes(engineId: string | null | undefined): Mode[] {
+  if (isPublicSeedanceMiniEngine(engineId)) {
+    return allowedBytePlusModes(ENV.SEEDANCE_MINI_BYTEPLUS_MODES);
+  }
   if (isPublicSeedanceFastEngine(engineId) || isBytePlusSeedanceFastEngine(engineId)) {
     return allowedBytePlusModes(ENV.SEEDANCE_FAST_BYTEPLUS_MODES);
   }
@@ -204,7 +220,37 @@ export function getBytePlusSeedanceAllowedModes(engineId: string | null | undefi
 }
 
 export function getBytePlusSeedanceAllowedResolutions(engineId: string | null | undefined): Resolution[] {
+  if (isPublicSeedanceMiniEngine(engineId)) {
+    return BYTEPLUS_SEEDANCE_MINI_RESOLUTIONS;
+  }
   return isPublicSeedanceEngine(engineId) ? BYTEPLUS_SEEDANCE_RESOLUTIONS : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
+}
+
+export function getBytePlusSeedanceDurationOptions(engineId: string | null | undefined): readonly number[] {
+  return isPublicSeedanceMiniEngine(engineId)
+    ? BYTEPLUS_SEEDANCE_MINI_DURATION_OPTIONS
+    : BYTEPLUS_SEEDANCE_DURATION_OPTIONS;
+}
+
+export function isPublicSeedanceBytePlusEngine(engineId: string | null | undefined): boolean {
+  return (
+    shouldRoutePublicSeedanceToBytePlus(engineId) ||
+    shouldRoutePublicSeedanceFastToBytePlus(engineId) ||
+    shouldRoutePublicSeedanceMiniToBytePlus(engineId)
+  );
+}
+
+export function resolveBytePlusSeedanceModelId(
+  engineId: string | null | undefined,
+  config: ReturnType<typeof getBytePlusArkConfig>
+): string {
+  if (isPublicSeedanceMiniEngine(engineId)) {
+    return config.seedanceMiniModelId;
+  }
+  if (isPublicSeedanceEngine(engineId)) {
+    return config.seedanceModelId;
+  }
+  return config.seedanceFastModelId;
 }
 
 export function applyBytePlusSeedanceRuntimeOptions(
@@ -214,10 +260,10 @@ export function applyBytePlusSeedanceRuntimeOptions(
     allowedModes?: Mode[];
   }
 ): EngineCaps {
-  const provider =
-    options?.provider ??
-    (isPublicSeedanceEngine(engine.id)
-      ? seedanceProviderOverride()
+  const provider = options?.provider ?? (isPublicSeedanceEngine(engine.id)
+    ? seedanceProviderOverride()
+    : isPublicSeedanceMiniEngine(engine.id)
+      ? BYTEPLUS_MODELARK_PROVIDER
       : isPublicSeedanceFastEngine(engine.id) || isBytePlusSeedanceFastEngine(engine.id)
         ? seedanceFastProviderOverride()
         : 'fal');
@@ -229,6 +275,8 @@ export function applyBytePlusSeedanceRuntimeOptions(
     BYTEPLUS_SEEDANCE_MODES.includes(mode)
   );
   const resolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
+  const durationOptions = getBytePlusSeedanceDurationOptions(engine.id);
+  const supportsGeneratedAudio = !isPublicSeedanceMiniEngine(engine.id);
   const baseModeCaps = engine.modeCaps ?? {};
   const modeCaps = engine.modeCaps
     ? Object.fromEntries(
@@ -243,8 +291,8 @@ export function applyBytePlusSeedanceRuntimeOptions(
                   resolution: resolutions,
                   resolutionLocked: false,
                   aspectRatio: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
-                  duration: { options: [...BYTEPLUS_SEEDANCE_DURATION_OPTIONS], default: 5 },
-                  audioToggle: true,
+                  duration: { options: [...durationOptions], default: 5 },
+                  audioToggle: supportsGeneratedAudio,
                 }
               : caps,
           ];
@@ -254,21 +302,24 @@ export function applyBytePlusSeedanceRuntimeOptions(
 
   return {
     ...engine,
-    provider: 'BytePlus ModelArk',
+    provider: 'ByteDance',
     modes: allowedModes,
     maxDurationSec: 15,
     resolutions,
     aspectRatios: BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
     fps: [24],
-    audio: true,
+    audio: supportsGeneratedAudio,
+    extend: allowedModes.includes('extend'),
     motionControls: true,
     keyframes: allowedModes.includes('i2v'),
     modeCaps,
     inputSchema: engine.inputSchema
       ? {
           ...engine.inputSchema,
-          required: filterInputFieldsForModes(engine.inputSchema.required, allowedModes, resolutions),
-          optional: filterInputFieldsForModes(engine.inputSchema.optional, allowedModes, resolutions),
+          required: filterInputFieldsForModes(engine.inputSchema.required, allowedModes, resolutions, durationOptions),
+          optional: filterInputFieldsForModes(engine.inputSchema.optional, allowedModes, resolutions, durationOptions, {
+            includeBytePlusVideoSourceFields: true,
+          }),
         }
       : engine.inputSchema,
     providerMeta: {
@@ -285,6 +336,7 @@ export function getBytePlusArkConfig() {
     baseUrl: trimTrailingSlash(ENV.BYTEPLUS_ARK_BASE_URL ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL),
     seedanceModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MODEL_ID ?? BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
     seedanceFastModelId: ENV.BYTEPLUS_ARK_SEEDANCE_FAST_MODEL_ID ?? BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
+    seedanceMiniModelId: ENV.BYTEPLUS_ARK_SEEDANCE_MINI_MODEL_ID ?? BYTEPLUS_SEEDANCE_MINI_DEFAULT_MODEL_ID,
   };
 }
 

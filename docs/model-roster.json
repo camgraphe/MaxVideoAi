@@ -32,6 +32,22 @@
     }
   },
   {
+    "engineId": "seedance-2-0-mini",
+    "marketingName": "Dreamina Seedance 2.0 Mini",
+    "brandId": "bytedance",
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "family": "seedance",
+    "versionLabel": "2.0 Mini",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "seedance-1-5-pro",
     "marketingName": "Seedance 1.5 Pro",
     "brandId": "bytedance",

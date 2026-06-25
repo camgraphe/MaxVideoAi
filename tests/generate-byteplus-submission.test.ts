@@ -29,7 +29,6 @@ const baseParams = {
   userId: 'user_123',
   engineId: 'seedance-2-0',
   engineLabel: 'Seedance 2.0',
-  isPublicSeedanceBytePlus: true,
   prompt: 'A cinematic mountain shot',
   durationSec: 8,
   mode: 'ref2v' as const,
@@ -60,6 +59,7 @@ const baseParams = {
 test('generate route delegates BytePlus submission', () => {
   assert.ok(existsSync(helperPath), 'BytePlus submission should live in the generate route _lib folder');
   assert.match(routeSource, /from '\.\/_lib\/byteplus-submission'/);
+  assert.doesNotMatch(routeSource, /isPublicSeedanceBytePlus/);
   assert.doesNotMatch(routeSource, /buildBytePlusSeedancePayload/, 'BytePlus payload construction belongs in byteplus-submission.ts');
   assert.doesNotMatch(routeSource, /createSeedanceFastTask/, 'BytePlus task creation belongs in byteplus-submission.ts');
   assert.doesNotMatch(routeSource, /\[byteplus\] task submission failed/, 'BytePlus failure handling belongs in byteplus-submission.ts');
@@ -71,6 +71,7 @@ test('generate route delegates BytePlus submission', () => {
 test('BytePlus submission helper exposes the route contract', () => {
   assert.match(helperSource, /export type BytePlusSubmissionResult/, 'BytePlusSubmissionResult should be exported');
   assert.match(helperSource, /export async function submitBytePlusGenerateTask/, 'submitBytePlusGenerateTask should be exported');
+  assert.doesNotMatch(helperSource, /isPublicSeedanceBytePlus/);
 });
 
 test('BytePlus submission helper creates task, updates job, logs, and returns queued response', async () => {
@@ -118,6 +119,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     ratio: '16:9',
     generateAudio: true,
     allowedResolutions: ['720p', '1080p'],
+    allowedDurationOptions: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
   });
   assert.deepEqual(persistedProviderIds, ['provider_123']);
   assert.match(queries[0]?.sql ?? '', /UPDATE app_jobs/);
@@ -150,6 +152,45 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     heroRenderId: 'job_123',
     localKey: 'local_123',
   });
+});
+
+test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini', async () => {
+  const builtPayloads: Record<string, unknown>[] = [];
+
+  const result = await submitBytePlusGenerateTask({
+    ...baseParams,
+    engineId: 'seedance-2-0-mini',
+    engineLabel: 'Seedance 2.0 Mini',
+    durationSec: 4,
+    mode: 'v2v',
+    normalizedReferenceImages: [],
+    videoUrls: ['https://cdn.maxvideoai.com/source.mp4'],
+    audioEnabled: false,
+    deps: {
+      getBytePlusArkConfigFn: () =>
+        ({
+          seedanceModelId: 'model-public',
+          seedanceFastModelId: 'model-fast',
+          seedanceMiniModelId: 'model-mini',
+        }) as never,
+      buildBytePlusSeedancePayloadFn: (payload) => {
+        builtPayloads.push(payload);
+        return { ...payload, normalized: true };
+      },
+      getBytePlusModelArkClientFn: () => ({
+        createSeedanceFastTask: async () => ({ providerJobId: 'provider_mini', status: 'queued' }),
+      }),
+      getBytePlusSeedanceAllowedResolutionsFn: () => ['480p', '720p'] as never,
+      queryFn: async () => undefined,
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(builtPayloads[0]?.modelId, 'model-mini');
+  assert.equal(builtPayloads[0]?.durationSec, 4);
+  assert.equal(builtPayloads[0]?.mode, 'v2v');
+  assert.equal(builtPayloads[0]?.generateAudio, false);
+  assert.deepEqual(builtPayloads[0]?.allowedResolutions, ['480p', '720p']);
 });
 
 test('BytePlus submission helper marks failed tasks, rolls back payments, and returns provider error', async () => {

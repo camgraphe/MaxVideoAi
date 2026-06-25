@@ -52,6 +52,7 @@ export type PricingContext = {
   membershipTier?: string | null;
   currency?: string;
   loop?: boolean;
+  hasVideoInput?: boolean;
   durationOption?: number | string | null;
   referenceImageCount?: number;
   addons?: Record<string, boolean | number | undefined>;
@@ -215,6 +216,7 @@ export async function computePricingSnapshot(context: PricingContext): Promise<P
       durationSec,
       resolution,
       aspectRatio: context.aspectRatio,
+      billingInputType: context.hasVideoInput === true ? 'video_input' : context.hasVideoInput === false ? 'no_video_input' : undefined,
       rule,
       memberTier,
       memberTierDiscounts,

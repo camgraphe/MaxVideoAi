@@ -3,6 +3,7 @@ import type { RawFalEngineEntry } from './types';
 import {
   SEEDANCE_2_ENDPOINTS,
   SEEDANCE_2_LAUNCH_CONFIG,
+  SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
   buildSeedance2PricingDetails,
   buildSeedance2Surfaces,
 } from './launch-config';
@@ -132,7 +133,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
       maxAudioSizeMB: 15,
     },
   },
-  pricingDetails: buildSeedance2PricingDetails(0.0112),
+  pricingDetails: buildSeedance2PricingDetails(SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.fast),
   pricing: {
     unit: 'USD/s',
     currency: 'USD',

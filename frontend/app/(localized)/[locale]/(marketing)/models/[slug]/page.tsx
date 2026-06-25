@@ -136,6 +136,11 @@ async function renderMarketingModelPage({
   const canonicalUrl = canonicalRaw.replace(/\/+$/, '') || canonicalRaw;
   const localizedCanonicalUrl = canonicalUrl;
   const copy = buildSoraCopy(localizedContent, engine.modelSlug, locale);
+  const appPath = engine.category === 'image' ? '/app/image' : '/app';
+  const appGenerationEnabled = engine.surfaces.app.enabled;
+  const fallbackMarketingHref = copy.primaryCtaHref ?? localizedContent.hero?.ctaPrimary?.href ?? `/models/${engine.modelSlug}`;
+  const resolveGalleryCardHref = <T extends { recreateHref?: string | null }>(card: T): T =>
+    appGenerationEnabled ? card : { ...card, recreateHref: fallbackMarketingHref };
   const engineModes = engine.engine.modes ?? [];
   const hasVideoMode = engineModes.some((mode) => mode.endsWith('v'));
   const hasImageMode = engineModes.some((mode) => mode.endsWith('i'));
@@ -195,9 +200,10 @@ async function renderMarketingModelPage({
         engine.modelSlug,
         engine.id,
         backPath,
-        isImageEngine ? '/app/image' : '/app'
+        appPath
       )
-    );
+    )
+    .map((card) => resolveGalleryCardHref(card));
 
   const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
   const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
@@ -216,10 +222,13 @@ async function renderMarketingModelPage({
           engine.modelSlug,
           engine.id,
           backPath,
-          isImageEngine ? '/app/image' : '/app'
-        ),
+          appPath
+        )
       ];
     }
+  }
+  if (!appGenerationEnabled) {
+    galleryVideos = galleryVideos.map((card) => resolveGalleryCardHref(card));
   }
   if (engine.modelSlug === 'kling-2-5-turbo') {
     const isSixteenNine = (aspect?: string | null) => {
@@ -283,9 +292,11 @@ async function renderMarketingModelPage({
     demoMedia.prompt =
       '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
-  const galleryCtaHref = heroMedia?.id
-    ? `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
-    : `${isImageEngine ? '/app/image' : '/app'}?engine=${engine.id}`;
+  const galleryCtaHref = appGenerationEnabled
+    ? heroMedia?.id
+      ? `${appPath}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
+      : `${appPath}?engine=${engine.id}`
+    : fallbackMarketingHref;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPriceInSpecs = engine.id !== 'lumaRay2';
