@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { ENGINE_OPTIONS } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
+import {
+  CATALOG_BY_SLUG,
+  ENGINE_OPTIONS,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
 import { resolvePromptInheritedShowdowns } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
@@ -241,6 +244,14 @@ test('public comparison engine selector excludes disabled admin-only engines', (
   assert.doesNotMatch(serializedOptions, /byteplus|BytePlus/);
   assert.doesNotMatch(serializedOptions, /Fast Direct/);
   assert.equal(ENGINE_OPTIONS.some((option) => option.value === 'seedance-2-0-fast-byteplus'), false);
+  assert.equal(CATALOG_BY_SLUG.get('seedance-2-0-fast-byteplus')?.surfaces?.compare?.includeInHub, false);
+  ENGINE_OPTIONS.forEach((option) => {
+    assert.equal(
+      CATALOG_BY_SLUG.get(String(option.value))?.surfaces?.compare?.includeInHub,
+      true,
+      `${String(option.value)} should be a public compare hub engine`
+    );
+  });
 });
 
 test('Seedance 2.0 vs Fast comparison uses curated opposite-engine watch-page outputs', () => {

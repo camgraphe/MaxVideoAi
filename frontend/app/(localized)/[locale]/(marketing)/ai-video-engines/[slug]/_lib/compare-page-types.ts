@@ -55,6 +55,9 @@ export type EngineCatalogEntry = {
     app?: {
       enabled?: boolean;
     };
+    compare?: {
+      includeInHub?: boolean;
+    };
   };
 };
 
