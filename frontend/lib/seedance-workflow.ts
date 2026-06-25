@@ -6,13 +6,15 @@ type AssetEntry = { kind?: AssetKind | null } | null | undefined;
 export type SeedanceAssetMap = Record<string, AssetEntry[] | undefined>;
 export type SeedanceFieldBlockKey = 'clearReferences' | 'clearStartEnd' | null;
 
-export const UNIFIED_SEEDANCE_ENGINE_IDS = new Set(['seedance-2-0', 'seedance-2-0-fast']);
+export const UNIFIED_SEEDANCE_ENGINE_IDS = new Set(['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini']);
 export const SEEDANCE_START_END_FIELD_IDS = new Set(['image_url', 'input_image', 'image', 'end_image_url']);
 export const SEEDANCE_REFERENCE_IMAGE_FIELD_IDS = new Set(['image_urls']);
+export const SEEDANCE_SOURCE_VIDEO_FIELD_IDS = new Set(['video_url']);
 export const SEEDANCE_REFERENCE_VIDEO_FIELD_IDS = new Set(['video_urls']);
 export const SEEDANCE_REFERENCE_AUDIO_FIELD_IDS = new Set(['audio_urls']);
 export const SEEDANCE_REFERENCE_FIELD_IDS = new Set([
   ...SEEDANCE_REFERENCE_IMAGE_FIELD_IDS,
+  ...SEEDANCE_SOURCE_VIDEO_FIELD_IDS,
   ...SEEDANCE_REFERENCE_VIDEO_FIELD_IDS,
   ...SEEDANCE_REFERENCE_AUDIO_FIELD_IDS,
 ]);
@@ -32,6 +34,7 @@ export function getSeedanceAssetState(inputAssets: SeedanceAssetMap) {
     hasAssetKind(inputAssets.image, 'image');
   const hasEndImage = hasAssetKind(inputAssets.end_image_url, 'image');
   const hasReferenceImage = hasAssetKind(inputAssets.image_urls, 'image');
+  const hasSourceVideo = hasAssetKind(inputAssets.video_url, 'video');
   const hasReferenceVideo = hasAssetKind(inputAssets.video_urls, 'video');
   const hasReferenceAudio = hasAssetKind(inputAssets.audio_urls, 'audio');
 
@@ -40,15 +43,17 @@ export function getSeedanceAssetState(inputAssets: SeedanceAssetMap) {
     hasEndImage,
     hasStartOrEndImage: hasStartImage || hasEndImage,
     hasReferenceImage,
+    hasSourceVideo,
     hasReferenceVideo,
     hasReferenceAudio,
-    hasReferenceMedia: hasReferenceImage || hasReferenceVideo,
-    hasReferenceInputs: hasReferenceImage || hasReferenceVideo || hasReferenceAudio,
+    hasReferenceMedia: hasReferenceImage || hasSourceVideo || hasReferenceVideo,
+    hasReferenceInputs: hasReferenceImage || hasSourceVideo || hasReferenceVideo || hasReferenceAudio,
   };
 }
 
 export function getUnifiedSeedanceMode(inputAssets: SeedanceAssetMap): Mode {
   const state = getSeedanceAssetState(inputAssets);
+  if (state.hasSourceVideo) return 'v2v';
   if (state.hasReferenceImage) return 'ref2v';
   if (state.hasReferenceVideo && !state.hasReferenceAudio) return 'ref2v';
   if (state.hasReferenceInputs) return 'ref2v';

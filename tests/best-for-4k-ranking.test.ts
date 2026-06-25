@@ -31,11 +31,13 @@ function createPick(slug: string): RankedPick {
 test('4K best-for shortlist ranks Veo standard first and Veo Fast third', () => {
   assert.ok(fourKEntry, '4K best-for entry should exist');
   assert.deepEqual(fourKEntry.topPicks?.slice(0, 3), ['veo-3-1', 'kling-3-4k', 'veo-3-1-fast']);
+  assert.equal(fourKEntry.topPicks?.[3], 'seedance-2-0');
   assert.deepEqual(getPublishedRelatedComparisons(fourKEntry).slice(0, 3), [
     'kling-3-4k-vs-veo-3-1',
     'veo-3-1-vs-veo-3-1-fast',
     'ltx-2-3-pro-vs-veo-3-1',
   ]);
+  assert.ok(getPublishedRelatedComparisons(fourKEntry).includes('seedance-2-0-vs-veo-3-1'));
 });
 
 test('localized 4K best-for editorial content reflects the Veo 4K ranking', () => {
@@ -44,14 +46,17 @@ test('localized 4K best-for editorial content reflects the Veo 4K ranking', () =
     const veoIndex = source.indexOf('veo-3-1)');
     const klingIndex = source.indexOf('kling-3-4k)');
     const veoFastIndex = source.indexOf('veo-3-1-fast)');
+    const seedanceIndex = source.indexOf('seedance-2-0)');
     const ltxProIndex = source.indexOf('ltx-2-3-pro)');
 
     assert.ok(veoIndex > -1, `${locale} content should link to Veo 3.1`);
     assert.ok(klingIndex > -1, `${locale} content should link to Kling 3 4K`);
     assert.ok(veoFastIndex > -1, `${locale} content should link to Veo 3.1 Fast`);
+    assert.ok(seedanceIndex > -1, `${locale} content should link to Seedance 2.0`);
     assert.ok(veoIndex < klingIndex, `${locale} content should place Veo 3.1 before Kling 3 4K`);
     assert.ok(klingIndex < veoFastIndex, `${locale} content should place Kling 3 4K before Veo Fast`);
-    assert.ok(ltxProIndex === -1 || veoFastIndex < ltxProIndex, `${locale} content should keep LTX below the top three`);
+    assert.ok(veoFastIndex < seedanceIndex, `${locale} content should keep Seedance below the top three`);
+    assert.ok(ltxProIndex === -1 || seedanceIndex < ltxProIndex, `${locale} content should keep LTX below Seedance`);
   }
 });
 

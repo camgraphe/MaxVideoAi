@@ -23,6 +23,7 @@ const rootLayoutPath = join(root, 'frontend/app/layout.tsx');
 const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/page.tsx');
 const heroPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingHeroSection.tsx');
 const jsonLdPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingJsonLdScripts.tsx');
+const jsonLdLibPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricing-jsonld.ts');
 const videoMatrixPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingVideoMatrixSection.tsx');
 const popularChecksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingPopularChecksSection.tsx');
 const otherSurfacesPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pricing/_components/PricingOtherSurfacesSection.tsx');
@@ -40,6 +41,7 @@ const englishMessagesPath = join(root, 'frontend/messages/en.json');
 const rootLayoutSource = readFileSync(rootLayoutPath, 'utf8');
 const pageSource = readFileSync(pagePath, 'utf8');
 const heroSource = readFileSync(heroPath, 'utf8');
+const jsonLdLibSource = readFileSync(jsonLdLibPath, 'utf8');
 const videoMatrixSource = existsSync(videoMatrixPath) ? readFileSync(videoMatrixPath, 'utf8') : '';
 const popularChecksSource = existsSync(popularChecksPath) ? readFileSync(popularChecksPath, 'utf8') : '';
 const otherSurfacesSource = existsSync(otherSurfacesPath) ? readFileSync(otherSurfacesPath, 'utf8') : '';
@@ -59,6 +61,7 @@ const engineCatalog = JSON.parse(readFileSync(catalogPath, 'utf8')) as EngineCat
 test('pricing page delegates compact matrix sections and JSON-LD rendering', () => {
   assert.ok(existsSync(heroPath), 'pricing hero should live in a route-local component');
   assert.ok(existsSync(jsonLdPath), 'pricing JSON-LD scripts should live in a route-local component');
+  assert.ok(existsSync(jsonLdLibPath), 'pricing JSON-LD builders should live in a route-local lib module');
   assert.ok(existsSync(videoMatrixPath), 'video pricing matrix should live in a route-local component');
   assert.ok(existsSync(popularChecksPath), 'popular price checks should live in a route-local component');
   assert.ok(existsSync(otherSurfacesPath), 'image/audio/tool pricing should live in a route-local component');
@@ -76,7 +79,12 @@ test('pricing page delegates compact matrix sections and JSON-LD rendering', () 
   assert.match(pageSource, /from '\.\/_components\/PricingRefundsFaqSection'/);
   assert.match(pageSource, /locale=\{locale\}/);
   assert.match(pageSource, /from '\.\/_lib\/pricingHubData'/);
+  assert.match(pageSource, /from '\.\/_lib\/pricing-jsonld'/);
   assert.match(pageSource, /export default async function PricingPage/);
+  assert.match(jsonLdLibSource, /buildPricingBreadcrumbJsonLd/, 'pricing JSON-LD helper should own breadcrumb schema');
+  assert.match(jsonLdLibSource, /buildPricingServiceJsonLd/, 'pricing JSON-LD helper should own service schema');
+  assert.doesNotMatch(pageSource, /buildMarketingServiceJsonLd/, 'pricing route should not own service schema internals');
+  assert.doesNotMatch(pageSource, /'@type': 'BreadcrumbList'/, 'pricing route should not own breadcrumb schema internals');
 });
 
 test('pricing page does not regain calculator-first or long model-section ownership', () => {

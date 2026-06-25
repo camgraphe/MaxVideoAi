@@ -11,10 +11,10 @@ import {
 } from '@/server/user-facing-failure-messages';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
-  PUBLIC_SEEDANCE_ENGINE_ID,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   isBytePlusModelArkEnabled,
+  resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 import {
@@ -313,13 +313,17 @@ export async function runBytePlusPoll() {
       const costResolution = typeof core.resolution === 'string' ? core.resolution : '720p';
       const costAspectRatio = typeof core.aspectRatio === 'string' ? core.aspectRatio : job.aspect_ratio ?? '16:9';
       const totalTokens = task.usage?.totalTokens ?? expectedBytePlusTokens(job);
-      const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(job.engine_id);
-      const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
       const accounting = getBytePlusAccounting(job);
+      const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
+        job.engine_id,
+        accounting.byteplusBillingInputType,
+        costResolution
+      );
+      const providerCostUsd = Number(((totalTokens * unitPriceUsdPer1kTokens) / 1000).toFixed(6));
       const costBreakdown = {
         provider: BYTEPLUS_MODELARK_PROVIDER,
         provider_cost_source: 'byteplus_usage_tokens',
-        model: job.engine_id === PUBLIC_SEEDANCE_ENGINE_ID ? config.seedanceModelId : config.seedanceFastModelId,
+        model: resolveBytePlusSeedanceModelId(job.engine_id, config),
         mode: accounting.mode,
         input_type: accounting.inputType,
         byteplus_billing_input_type: accounting.byteplusBillingInputType,

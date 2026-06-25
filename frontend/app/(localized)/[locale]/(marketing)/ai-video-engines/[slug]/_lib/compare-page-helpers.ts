@@ -39,6 +39,7 @@ export {
   computePairScores,
   formatCapabilityValue,
   getFallbackCapabilityDifference,
+  parseMaxDurationNumber,
   parseFirstNumber,
   parseResolutionValue,
   pickCapabilityDifference,

@@ -1,0 +1,288 @@
+{
+  "marketingName": "Dreamina Seedance 2.0 Mini",
+  "versionLabel": "2.0 Mini",
+  "seo": {
+    "title": "Dreamina Seedance 2.0 Mini | Low-Cost AI Video, Specs & Pricing | MaxVideoAI",
+    "description": "Use Dreamina Seedance 2.0 Mini on MaxVideoAI for lower-cost 480p/720p AI video batches, ecommerce variants, UGC hooks, video editing, extension, and reference-guided tests."
+  },
+  "overview": "Dreamina Seedance 2.0 Mini is the cost-performance Seedance AI video route on MaxVideoAI for lower-cost batch/value work: ecommerce variants, marketing tests, UGC hooks, multimodal references, video editing, and extension in 4-15 second 480p or 720p clips.",
+  "pricingNotes": "Dreamina Seedance 2.0 Mini uses token-based generation pricing. MaxVideoAI applies the display price and shows the final quote before submission.",
+  "hero": {
+    "title": "Dreamina Seedance 2.0 Mini — lower-cost route for batch video variants",
+    "intro": "Use Dreamina Seedance 2.0 Mini when you need a value route for many 480p/720p video variants before committing hero shots to Seedance 2.0. This page tracks specs, prompts, pricing, and scorecards for batch-focused generation.",
+    "badge": "Dreamina Seedance · 480p/720p · 4-15s · 24fps · native audio and lip-sync",
+    "ctaPrimary": {
+      "label": "Generate with Seedance 2.0 Mini",
+      "href": "/app?engine=seedance-2-0-mini"
+    },
+    "secondaryLinks": [
+      {
+        "label": "See standard Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      },
+      {
+        "label": "See Seedance 2.0 Fast",
+        "href": "/models/seedance-2-0-fast"
+      },
+      {
+        "label": "View Seedance AI video examples",
+        "href": "/examples/seedance"
+      },
+      {
+        "label": "Compare Seedance 2.0 Mini vs Seedance 2.0",
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=dreamina-seedance-2-0-mini"
+      },
+      {
+        "label": "Compare Seedance 2.0 Mini vs Seedance 2.0 Fast",
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast?order=dreamina-seedance-2-0-mini"
+      }
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Seedance 2.0 Mini vs Seedance 2.0 ->",
+    "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=dreamina-seedance-2-0-mini"
+  },
+  "bestUseCases": {
+    "title": "Best use cases for Seedance 2.0 Mini",
+    "items": [
+      {
+        "title": "Lower-cost ecommerce product-motion batches",
+        "icon": "product"
+      },
+      {
+        "title": "UGC hooks, marketing variants, and social ad tests",
+        "icon": "ads"
+      },
+      {
+        "title": "Reference-guided 480p/720p motion checks",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Video editing and extension passes before final polish",
+        "icon": "repeat"
+      }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    {
+      "label": "Role",
+      "body": "Cost-performance route in the Dreamina Seedance 2 family."
+    },
+    {
+      "label": "API model id",
+      "body": "dreamina-seedance-2-0-mini-260615"
+    },
+    {
+      "label": "Inputs",
+      "body": "Text-to-video, image-to-video, reference-to-video, video editing, and extension workflows with supported image, video, and audio references"
+    },
+    {
+      "label": "Duration and frame rate",
+      "body": "4-15 seconds per generation at 24fps"
+    },
+    {
+      "label": "Resolution",
+      "body": "480p or 720p output"
+    },
+    {
+      "label": "Audio",
+      "body": "Native synchronized audio and lip-sync are supported; audio references can also guide rhythm or mood."
+    }
+  ],
+  "promptStructure": {
+    "title": "Prompting Seedance 2.0 Mini",
+    "quote": "[Batch goal] + [subject or product] + [one action beat] + [reference job] + [video editing or extension need] + [480p/720p] + [4-15s].",
+    "description": "Keep each Mini prompt focused on one variant so batch comparisons stay readable.",
+    "steps": [
+      "Name the batch purpose",
+      "Describe the product, creator, or scene",
+      "Set 480p or 720p and a 4-15s duration",
+      "Assign each multimodal reference one job",
+      "Move winning shots to Seedance 2.0 when final polish matters"
+    ]
+  },
+  "promptingTip": "Tip: use Mini for lower-cost batch exploration, ecommerce variants, UGC hooks, video editing, and extension. Use Seedance 2.0 for final polished shots, and Seedance 2.0 Fast when draft speed matters most.",
+  "tips": {
+    "title": "Production notes",
+    "items": [
+      "Use 480p for volume checks and 720p when reviewers need more detail.",
+      "Keep batches organized by one product, hook, or edit goal.",
+      "Use multimodal references to guide identity, product shape, camera rhythm, or audio mood.",
+      "Use video editing and extension for lower-cost source-video iteration before a final route.",
+      "Keep Mini positioned for batch/value exploration before Seedance 2.0 final/polished work.",
+      "Generate shows the active route and final quote before you submit."
+    ]
+  },
+  "demoTitle": "Prompt demo",
+  "prompts": [
+    {
+      "title": "Ecommerce product batch",
+      "prompt": "Create an 8 second 720p 16:9 product motion variant for a matte black speaker on a kitchen counter, slow push-in, clean morning light, use the product image reference for shape accuracy."
+    },
+    {
+      "title": "UGC hook set",
+      "prompt": "Generate a 4 second 480p vertical UGC hook: creator lifts the skincare bottle toward camera, one bright bathroom beat, natural handheld motion, batch version A for opening-frame comparison."
+    },
+    {
+      "title": "Video editing pass",
+      "prompt": "Use the source video as a lower-cost video editing pass, keep the subject and product framing stable, adjust pacing for a marketing cut, 8 seconds at 720p."
+    },
+    {
+      "title": "Extension test",
+      "prompt": "Extend the short source clip into a 15 second 720p product ending with a smooth camera drift and clean final pose for review."
+    }
+  ],
+  "faqTitle": "FAQ – Seedance 2.0 Mini on MaxVideoAI",
+  "faqs": [
+    {
+      "q": "What is Seedance 2.0 Mini best for?",
+      "a": "Seedance 2.0 Mini is best for lower-cost batch/value work such as ecommerce variants, marketing tests, UGC hooks, video editing, extension, and reference-guided 480p/720p motion checks."
+    },
+    {
+      "q": "What resolution and duration does Seedance 2.0 Mini support?",
+      "a": "The MaxVideoAI Mini route exposes 480p or 720p output, 4-15 second durations, and 24fps."
+    },
+    {
+      "q": "Does Seedance 2.0 Mini support audio and lip-sync?",
+      "a": "Yes. Mini supports native synchronized audio and lip-sync, and audio references can guide rhythm or mood."
+    },
+    {
+      "q": "When should I use Seedance 2.0 instead of Mini?",
+      "a": "Use Seedance 2.0 when you need the final, polished, higher-ceiling Seedance route with higher-resolution delivery and stronger production quality. Use Mini for batch/value exploration before that step."
+    }
+  ],
+  "custom": {
+    "whyTitle": "Lower-cost batches before final Seedance renders",
+    "heroTrustLine": "Pay-as-you-go on MaxVideoAI · Price shown before you generate",
+    "heroHighlights": [
+      "Lower-cost batch/value route||Mini is designed for cost-performance when many ecommerce, marketing, or UGC variants need review.",
+      "480p/720p and 4-15s||Use compact formats for batch checks without claiming higher resolution than Mini supports.",
+      "Multimodal references||Guide products, characters, pacing, and audio mood with supported reference inputs.",
+      "Video editing and extension||Run source-video edit or extension tests before choosing the final Seedance route."
+    ],
+    "heroSupportLine": "Use Mini for value batches, Seedance 2.0 Fast for speed-first drafts, and Seedance 2.0 for final polished work.",
+    "specTitle": "Specs",
+    "specNote": "Mini specs should stay scoped to the MaxVideoAI route and the Dreamina Seedance model surface.",
+    "specSections": [
+      {
+        "title": "Model and limits",
+        "intro": "Dreamina Seedance 2.0 Mini runs on MaxVideoAI with the API model id dreamina-seedance-2-0-mini-260615.",
+        "items": [
+          "Developer: ByteDance",
+          "Model id: dreamina-seedance-2-0-mini-260615",
+          "480p or 720p",
+          "4-15s per generation",
+          "24fps"
+        ]
+      },
+      {
+        "title": "Workflows",
+        "intro": "Mini is a batch/value route for supported Seedance 2 workflows.",
+        "items": [
+          "Text-to-video and image-to-video",
+          "Multimodal reference-to-video",
+          "Video editing",
+          "Extension",
+          "Native audio and lip-sync",
+          "Audio references for rhythm or mood"
+        ]
+      }
+    ],
+    "promptingTitle": "Prompt Lab — Seedance 2.0 Mini",
+    "promptingGuideLabel": "Seedance 2.0 Mini workflow notes",
+    "promptingGuideUrl": "/models/dreamina-seedance-2-0-mini",
+    "promptingIntro": "Seedance 2.0 Mini works best with prompts where each run answers one batch question: product angle, hook, reference behavior, video editing pass, or extension.",
+    "promptingGlobalPrinciples": [
+      "Keep one product, hook, or edit goal per run.",
+      "Use 480p for volume and 720p for review detail.",
+      "Assign each image, video, or audio reference one job.",
+      "Use source video inputs for video editing and extension tests.",
+      "Move the strongest result to Seedance 2.0 when final polish matters."
+    ],
+    "promptingEngineWhy": [
+      "Text prompts are best for batch ideation and low-cost marketing hooks.",
+      "Image references keep product shape, wardrobe, or packaging consistent.",
+      "Video references and source videos help test pacing, edits, and extensions.",
+      "Audio references can guide rhythm or mood, while native audio/lip-sync can be generated with the clip."
+    ],
+    "promptingTabNotes": {
+      "quick": "Text = one batch question from language only.",
+      "structured": "Refs = keep product, subject, or style stable.",
+      "pro": "Edit/Extend = use source clips for lower-cost revisions.",
+      "storyboard": "Compare = hold settings fixed and change one variable."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Text batch prompt",
+        "description": "Use this when you want a lower-cost read on framing, motion, hook, or audio direction from language alone.",
+        "copy": "Batch question:\n[What this run should prove: hook, camera, product angle, motion, or sound]\n\nSubject and action:\n[One readable subject + one visible action]\n\nCamera:\n[One move only: push-in / tracking / static / handheld]\n\nStyle:\n[Lighting, weather, palette, realism level]\n\nAudio setting:\n[Audio on for native ambience/dialogue, or audio off for visual-only review]\n\nRule:\nDo not test more than one major variable in the same Mini run."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Image and audio reference prompt",
+        "description": "Use this when Mini should keep a product, person, wardrobe, or mood stable across many variants.",
+        "copy": "Prompt intent:\n[What the generated clip should do]\n\nImage refs:\n@Image1 = [product / person / composition]\n@Image2 = [style / wardrobe / palette]\n\nAudio refs if attached:\n@Audio1 = [rhythm / ambience / dialogue texture]\n\nMotion:\n[One clear action or camera move]\n\nContinuity anchors:\n[What must not drift across variants]\n\nRule:\nEach reference gets one job. Do not upload competing references for the same role."
+      },
+      {
+        "id": "pro",
+        "label": "Edit/Extend",
+        "title": "Video editing or extension prompt",
+        "description": "Use this when a source clip already exists and Mini is testing a cheaper edit or continuation.",
+        "copy": "Source clip:\n[What already happens and what must stay continuous]\n\nRequested change:\n[Edit the look / adjust pacing / extend the ending]\n\nDo not change:\n[Subject identity, product shape, location, camera logic]\n\nNew beat:\n[One action, reveal, or final pose]\n\nAudio:\n[Keep off for visual review, or enable native audio for ambience/SFX/dialogue tests]\n\nRule:\nDescribe the next change, not an unrelated new scene."
+      },
+      {
+        "id": "storyboard",
+        "label": "Compare",
+        "title": "Batch comparison prompt",
+        "description": "Use this when Mini is producing several comparable options before a final Seedance 2.0 pass.",
+        "copy": "Fixed setup across all variants:\n[Subject, ratio, resolution, duration, references, and core action]\n\nVariant A:\n[Only one changed variable]\n\nVariant B:\n[One different variable]\n\nSuccess criteria:\n[What wins: clarity, product read, emotional hook, motion, or cost]\n\nHandoff note:\n[What should move to Seedance 2.0 if approved]\n\nRule:\nKeep duration and resolution fixed so cost and quality comparisons stay clean."
+      }
+    ],
+    "tipsTitle": "Strengths and boundaries",
+    "strengths": [
+      "Lower-cost batch/value iteration",
+      "Good fit for ecommerce, marketing, and UGC variants",
+      "Supports multimodal references, video editing, and extension",
+      "Clear handoff into Seedance 2.0 for final polish"
+    ],
+    "boundaries": [
+      "Maximum resolution is 720p.",
+      "Keep dialogue and lip-sync cues short enough for reviewable 4-15s clips.",
+      "Keep Mini positioning scoped to batch/value work before Seedance 2.0 finals.",
+      "Check the live quote in Generate before scaling batches."
+    ],
+    "galleryTitle": "Seedance 2.0 Mini examples",
+    "galleryIntro": "Review lower-cost ecommerce, marketing, UGC, reference-guided, video editing, and extension patterns for Mini.",
+    "galleryAllCta": "View all Seedance examples ->",
+    "recreateLabel": "Recreate this Mini variant ->",
+    "demoTitle": "Demo prompt — Seedance 2.0 Mini",
+    "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "8 second 720p 16:9 cinematic golden-hour city crosswalk scene. A father and his small daughter move through the crowd as a bus passes behind them and the street suddenly fills with upward motion.",
+      "Shot 1: medium-wide street-level view, normal city life around them, documentary push forward, warm rim light and long shadows.",
+      "Shot 2: smooth slow-motion push-in as the background reacts naturally; keep the father and child as the emotional focus, hands connected and faces realistic.",
+      "Shot 3: close medium on the child looking up with quiet awe, then the father smiles with relief. Warm sunlight flickers across the final frame.",
+      "Audio setting for this curated render: off. For new Mini renders, enable native audio if you want traffic ambience, footsteps, pass-by sound, or short dialogue. Constraints: no readable text, no logos, no subtitles, no UI."
+    ],
+    "relatedItems": [
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0",
+        "description": "Move approved Mini variants into Seedance 2.0 when final polish, higher-resolution delivery, and the highest Seedance route matter.",
+        "modelSlug": "seedance-2-0",
+        "ctaLabel": "See standard Seedance 2.0 ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Fast",
+        "description": "Use Fast when the priority is speed-first draft iteration rather than lower-cost batch value.",
+        "modelSlug": "seedance-2-0-fast",
+        "ctaLabel": "See Seedance 2.0 Fast ->"
+      }
+    ]
+  }
+}

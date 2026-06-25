@@ -40,7 +40,6 @@ export async function POST(req: NextRequest) {
   const {
     engine,
     isBytePlusV1a,
-    isPublicSeedanceBytePlus,
     jobId,
     mode,
     payment,
@@ -183,6 +182,11 @@ export async function POST(req: NextRequest) {
   }
   const effectiveDurationSec = sourceVideoDuration.durationSec;
   const effectiveDurationLabel = sourceVideoDuration.durationLabel ?? durationLabel;
+  const hasVideoInput =
+    videoUrls.length > 0 ||
+    Boolean(sourceInputVideoUrl) ||
+    mode === 'v2v' ||
+    mode === 'extend';
   metricState.durationSec = effectiveDurationSec;
   const validationPayloadResult = buildGenerateValidationPayload({
     engineId: engine.id,
@@ -233,6 +237,7 @@ export async function POST(req: NextRequest) {
     soraVariant: soraRequest?.variant,
     isLumaRay2,
     loop,
+    hasVideoInput,
     rawDurationOption,
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
     audioEnabled,
@@ -456,7 +461,6 @@ export async function POST(req: NextRequest) {
       userId,
       engineId: engine.id,
       engineLabel: engine.label,
-      isPublicSeedanceBytePlus,
       prompt,
       durationSec: effectiveDurationSec,
       mode,

@@ -28,6 +28,8 @@ const CENT_EPSILON = 1e-9;
 
 const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
+  'seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini',
   'kling-3-pro',
   'kling-3-4k',
   'kling-3-standard',
@@ -35,7 +37,6 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'veo-3-1-fast',
   'veo-3-1-lite',
   'happy-horse-1-1',
-  'seedance-2-0-fast',
   'ltx-2-3-fast',
   'ltx-2-3-pro',
   'wan-2-6',
@@ -567,7 +568,8 @@ function buildVideoLinks(entry: FalEngineEntry, locale: AppLocale): PricingHubLi
       href: buildLocalizedMarketingHref(locale, 'compare', `${entry.modelSlug}-vs-${compareSlug}`),
     });
   }
-  links.push({ label: copy.links.livePrice, href: `/app?engine=${encodeURIComponent(entry.modelSlug)}` });
+  const appEngineId = entry.engine.id || entry.id || entry.modelSlug;
+  links.push({ label: copy.links.livePrice, href: `/app?engine=${encodeURIComponent(appEngineId)}` });
   return links;
 }
 

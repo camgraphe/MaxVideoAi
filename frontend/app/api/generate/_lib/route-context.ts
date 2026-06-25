@@ -6,13 +6,17 @@ import { AdminAuthError, requireAdmin } from '@/server/admin';
 import { getConfiguredEngine, getConfiguredEngineIncludingHidden } from '@/server/engines';
 import {
   BYTEPLUS_MODELARK_PROVIDER,
+  getBytePlusSeedanceAllowedModes,
   isBytePlusModelArkEnabled,
   isBytePlusSeedanceFastEngine,
-  isSeedanceBytePlusModeAllowed,
-  isSeedanceFastBytePlusModeAllowed,
+  isPublicSeedanceEngine,
+  isPublicSeedanceFastEngine,
+  isPublicSeedanceMiniEngine,
   seedanceBytePlusAdminOnly,
   seedanceFastBytePlusAdminOnly,
+  seedanceMiniBytePlusAdminOnly,
   shouldRoutePublicSeedanceFastToBytePlus,
+  shouldRoutePublicSeedanceMiniToBytePlus,
   shouldRoutePublicSeedanceToBytePlus,
 } from '@/server/video-providers/byteplus-modelark';
 import {
@@ -31,7 +35,6 @@ import { isVideoMode } from './request-options';
 export type GenerateRouteContext = {
   engine: EngineCaps;
   isBytePlusV1a: boolean;
-  isPublicSeedanceBytePlus: boolean;
   jobId: string;
   mode: Mode;
   payment: { mode?: PaymentMode; paymentIntentId?: string | null };
@@ -73,10 +76,14 @@ export async function resolveGenerateRouteContext(params: {
       ? 't2v'
       : engine.modes[0] ?? 't2v';
 
-  const isPublicSeedanceBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
+  const isPublicSeedanceStandardBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
   const isPublicSeedanceFastBytePlus = shouldRoutePublicSeedanceFastToBytePlus(engine.id);
+  const isPublicSeedanceMiniBytePlus = shouldRoutePublicSeedanceMiniToBytePlus(engine.id);
   const isBytePlusV1a =
-    isBytePlusSeedanceFastEngine(engine.id) || isPublicSeedanceFastBytePlus || isPublicSeedanceBytePlus;
+    isBytePlusSeedanceFastEngine(engine.id) ||
+    isPublicSeedanceFastBytePlus ||
+    isPublicSeedanceMiniBytePlus ||
+    isPublicSeedanceStandardBytePlus;
 
   if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
     return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
@@ -121,7 +128,14 @@ export async function resolveGenerateRouteContext(params: {
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
 
   const bytePlusRequiresAdmin =
-    isBytePlusV1a && (isPublicSeedanceBytePlus ? seedanceBytePlusAdminOnly() : seedanceFastBytePlusAdminOnly());
+    isBytePlusV1a &&
+    (isPublicSeedanceEngine(engine.id)
+      ? seedanceBytePlusAdminOnly()
+      : isPublicSeedanceMiniEngine(engine.id)
+        ? seedanceMiniBytePlusAdminOnly()
+        : isPublicSeedanceFastEngine(engine.id) || isBytePlusSeedanceFastEngine(engine.id)
+          ? seedanceFastBytePlusAdminOnly()
+          : false);
   if (bytePlusRequiresAdmin) {
     try {
       await requireAdmin(req);
@@ -134,9 +148,7 @@ export async function resolveGenerateRouteContext(params: {
     }
   }
 
-  const bytePlusModeAllowed = isPublicSeedanceBytePlus
-    ? isSeedanceBytePlusModeAllowed(mode)
-    : isSeedanceFastBytePlusModeAllowed(mode);
+  const bytePlusModeAllowed = getBytePlusSeedanceAllowedModes(engine.id).includes(mode);
   if (isBytePlusV1a && !bytePlusModeAllowed) {
     return {
       ok: false,
@@ -158,7 +170,6 @@ export async function resolveGenerateRouteContext(params: {
     context: {
       engine,
       isBytePlusV1a,
-      isPublicSeedanceBytePlus,
       jobId,
       mode,
       payment,

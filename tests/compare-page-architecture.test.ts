@@ -138,6 +138,32 @@ const generateCardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_components/CompareGenerateCard.tsx',
   'utf8'
 );
+const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.json', 'utf8')) as {
+  scoreboardOnlyComparisons?: string[];
+  relatedComparisons?: Record<string, string[]>;
+  trophyComparisons?: string[];
+};
+const compareHubConfig = JSON.parse(readFileSync('frontend/config/compare-hub.json', 'utf8')) as {
+  useCaseBuckets?: Array<{ id: string; pairs?: Array<{ left: string; right: string }> }>;
+};
+
+const miniScoreboardOnlyComparisons = [
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0',
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
+  'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+  'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
+  'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+];
+
+const canonicalMiniCompareOverrideSlugs = [
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0',
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
+  'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+  'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
+  'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+];
 
 test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suffix', () => {
   const override = EN_COMPARE_PAGE_OVERRIDES['seedance-2-0-vs-seedance-2-0-fast'];
@@ -190,6 +216,58 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
   });
 
   assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+});
+
+test('Seedance 2.0 Mini comparisons are scoreboard-only and stay out of trophy quality pages', () => {
+  assert.deepEqual(compareConfig.scoreboardOnlyComparisons, miniScoreboardOnlyComparisons);
+  assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
+  assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
+  assert.ok(compareConfig.trophyComparisons?.every((slug) => !slug.includes('dreamina-seedance-2-0-mini')));
+
+  const bestQualityBucket = compareHubConfig.useCaseBuckets?.find((bucket) => bucket.id === 'best-quality');
+  assert.ok(bestQualityBucket);
+  assert.ok(
+    bestQualityBucket.pairs?.every((pair) => pair.left !== 'dreamina-seedance-2-0-mini' && pair.right !== 'dreamina-seedance-2-0-mini')
+  );
+
+  assert.deepEqual(compareConfig.relatedComparisons?.['dreamina-seedance-2-0-mini-vs-seedance-2-0'], [
+    'seedance-2-0-vs-seedance-2-0-fast',
+    'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+    'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
+    'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+    'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
+    'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+  ]);
+});
+
+test('Seedance 2.0 Mini localized compare overrides explain scorecard-only positioning', () => {
+  canonicalMiniCompareOverrideSlugs.forEach((slug) => {
+    assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug], `missing EN Mini override for ${slug}`);
+    assert.match(overrideFrSource, new RegExp(`'${slug}'`));
+    assert.match(overrideEsSource, new RegExp(`'${slug}'`));
+  });
+
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /flagship final-quality/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /scorecard and specs comparison/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0-fast']?.heroIntro ?? '', /lower-cost batch volume/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-ltx-2-3-fast']?.heroIntro ?? '', /480p\/720p batches/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-veo-3-1-fast']?.heroIntro ?? '', /does not include comparison videos/);
+  assert.match(overrideFrSource, /videos comparatives Mini ne sont pas encore incluses/);
+  assert.match(overrideEsSource, /todavia no incluye videos comparativos de Mini/);
+});
+
+test('scoreboard-only comparisons skip video showdown lookup before database requests', () => {
+  const gateIndex = showdownsSource.indexOf('SCOREBOARD_ONLY_COMPARISON_SET.has(canonicalSlug)');
+  const returnIndex = showdownsSource.indexOf('return [];', gateIndex);
+  const curatedIndex = showdownsSource.indexOf('const hasCuratedPairShowdowns');
+  const publicByIdsIndex = showdownsSource.indexOf('await getPublicVideosByIds');
+  const latestVideoIndex = showdownsSource.indexOf('getLatestPublicVideoByPromptAndEngine(template.prompt');
+
+  assert.ok(gateIndex > -1, 'showdowns should check SCOREBOARD_ONLY_COMPARISONS');
+  assert.ok(returnIndex > gateIndex, 'showdowns should return [] for scoreboard-only pairs');
+  assert.ok(returnIndex < curatedIndex, 'scoreboard-only return should happen before curated showdown hydration');
+  assert.ok(returnIndex < publicByIdsIndex, 'scoreboard-only return should happen before override video lookups');
+  assert.ok(returnIndex < latestVideoIndex, 'scoreboard-only return should happen before prompt/engine video lookups');
 });
 
 test('comparison detail page delegates copy, data, schema, and media responsibilities', () => {

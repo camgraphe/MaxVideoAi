@@ -6,8 +6,10 @@ import {
   BytePlusModelArkError,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
+  getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
   getBytePlusUserSafeErrorMessage,
+  resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
 import { rollbackPendingPayment } from './payment-rollback';
@@ -28,6 +30,8 @@ type BytePlusSubmissionDeps = {
   buildBytePlusSeedancePayloadFn?: typeof buildBytePlusSeedancePayload;
   getBytePlusModelArkClientFn?: typeof getBytePlusModelArkClient;
   getBytePlusSeedanceAllowedResolutionsFn?: typeof getBytePlusSeedanceAllowedResolutions;
+  getBytePlusSeedanceDurationOptionsFn?: typeof getBytePlusSeedanceDurationOptions;
+  resolveBytePlusSeedanceModelIdFn?: typeof resolveBytePlusSeedanceModelId;
   getBytePlusUserSafeErrorMessageFn?: typeof getBytePlusUserSafeErrorMessage;
   scrubBytePlusErrorFn?: typeof scrubBytePlusError;
   queryFn?: QueryFn;
@@ -52,7 +56,6 @@ export async function submitBytePlusGenerateTask(params: {
   userId: string;
   engineId: string;
   engineLabel: string;
-  isPublicSeedanceBytePlus: boolean;
   prompt: string;
   durationSec: number;
   mode: Mode;
@@ -86,6 +89,9 @@ export async function submitBytePlusGenerateTask(params: {
   const getBytePlusModelArkClientFn = deps.getBytePlusModelArkClientFn ?? getBytePlusModelArkClient;
   const getBytePlusSeedanceAllowedResolutionsFn =
     deps.getBytePlusSeedanceAllowedResolutionsFn ?? getBytePlusSeedanceAllowedResolutions;
+  const getBytePlusSeedanceDurationOptionsFn =
+    deps.getBytePlusSeedanceDurationOptionsFn ?? getBytePlusSeedanceDurationOptions;
+  const resolveBytePlusSeedanceModelIdFn = deps.resolveBytePlusSeedanceModelIdFn ?? resolveBytePlusSeedanceModelId;
   const getBytePlusUserSafeErrorMessageFn = deps.getBytePlusUserSafeErrorMessageFn ?? getBytePlusUserSafeErrorMessage;
   const scrubBytePlusErrorFn = deps.scrubBytePlusErrorFn ?? scrubBytePlusError;
   const queryFn = deps.queryFn ?? query;
@@ -95,8 +101,9 @@ export async function submitBytePlusGenerateTask(params: {
 
   try {
     const config = getBytePlusArkConfigFn();
+    const generateAudio = params.audioEnabled !== false;
     const payload = buildBytePlusSeedancePayloadFn({
-      modelId: params.isPublicSeedanceBytePlus ? config.seedanceModelId : config.seedanceFastModelId,
+      modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
       durationSec: params.durationSec,
       mode: toBytePlusMode(params.mode),
@@ -111,8 +118,9 @@ export async function submitBytePlusGenerateTask(params: {
           : undefined,
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
-      generateAudio: params.audioEnabled !== false,
+      generateAudio,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
+      allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
     });
     const providerTask = await getBytePlusModelArkClientFn().createSeedanceFastTask(payload);
     const providerJobId = providerTask.providerJobId;

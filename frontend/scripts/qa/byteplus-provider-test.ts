@@ -18,6 +18,10 @@ import {
   resolveBytePlusStorageCopyMaxAttempts,
   shouldRetryBytePlusStorageCopy,
 } from '../../server/byteplus-poll';
+import {
+  SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
+  buildSeedance2PricingDetails,
+} from '../../src/config/fal-engines/launch-config';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '../../src/lib/seedance-2-pricing';
 import type { EngineCaps } from '../../types/engines';
 
@@ -254,20 +258,12 @@ const baseSeedanceEngine = {
   updatedAt: '2026-05-02T00:00:00Z',
   ttlSec: 600,
   availability: 'available',
-  pricingDetails: {
-    currency: 'USD',
-    tokenPricing: {
-      model: 'fal_tokens',
-      unitPriceUsdPer1kTokens: 0.014,
-      framesPerSecond: 24,
-      defaultAspectRatio: '16:9',
-      dimensions: {
-        '480p': { '16:9': { width: 854, height: 480 } },
-        '720p': { '16:9': { width: 1280, height: 720 } },
-        '1080p': { '16:9': { width: 1920, height: 1080 } },
-      },
+  pricingDetails: buildSeedance2PricingDetails(SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard, {
+    unitPriceUsdPer1kTokensByResolution: {
+      '1080p': SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard1080p,
+      '4k': SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard4k,
     },
-  },
+  }),
   modeCaps: {
     t2v: { modes: ['t2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
     i2v: { modes: ['i2v'], resolution: ['480p', '720p'], aspectRatio: ['auto', '16:9'] },
@@ -281,18 +277,18 @@ const bytePlusStandardEngine = applyBytePlusSeedanceRuntimeOptions(baseSeedanceE
 });
 
 assert.deepEqual(bytePlusStandardEngine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
-assert.deepEqual(bytePlusStandardEngine.resolutions, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.resolutions, ['480p', '720p', '1080p', '4k']);
 assert.deepEqual(bytePlusStandardEngine.aspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
-assert.deepEqual(bytePlusStandardEngine.modeCaps?.ref2v?.resolution, ['480p', '720p', '1080p']);
-assert.deepEqual(bytePlusStandardEngine.modeCaps?.v2v?.resolution, ['480p', '720p', '1080p']);
-assert.deepEqual(bytePlusStandardEngine.modeCaps?.extend?.resolution, ['480p', '720p', '1080p']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.ref2v?.resolution, ['480p', '720p', '1080p', '4k']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.v2v?.resolution, ['480p', '720p', '1080p', '4k']);
+assert.deepEqual(bytePlusStandardEngine.modeCaps?.extend?.resolution, ['480p', '720p', '1080p', '4k']);
 assert.deepEqual(bytePlusStandardEngine.modeCaps?.t2v?.duration, {
   options: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
   default: 5,
 });
 assert.deepEqual(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values,
-  ['480p', '720p', '1080p']
+  ['480p', '720p', '1080p', '4k']
 );
 assert.deepEqual(
   bytePlusStandardEngine.inputSchema?.optional?.find((field) => field.id === 'duration')?.values,
@@ -389,7 +385,7 @@ assert.equal(
 
 assert.equal(
   getBytePlusUserSafeErrorMessage('The request failed because the input image may contain real person. Request id: abc'),
-  'The render service rejected one of the input images. Try an image without identifiable people or private content.'
+  'One of the input images was blocked by safety checks. Try an image without identifiable people or private content.'
 );
 
 assert.deepEqual(

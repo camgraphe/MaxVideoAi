@@ -11,7 +11,11 @@ import {
   type LumaRay32ReferencePricingBreakdown,
 } from '@/lib/luma-agents-pricing';
 import { calculateLumaRay2EditPrice, calculateLumaRay2Price, type LumaRay2EditWorkflow } from '@/lib/luma-ray2-pricing';
-import { computeSeedance2TokenQuote, roundUsdUpToCents } from '@/lib/seedance-2-pricing';
+import {
+  computeSeedance2TokenQuote,
+  roundUsdUpToCents,
+  type Seedance2BillingInputType,
+} from '@/lib/seedance-2-pricing';
 import type { GptImage2ImageSize } from '@/lib/image/gptImage2';
 import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import type { PricingRule } from '@/lib/pricing-rule-store';
@@ -380,6 +384,7 @@ export function buildSeedance2Snapshot(params: {
   durationSec: number;
   resolution: string;
   aspectRatio?: string | null;
+  billingInputType?: Seedance2BillingInputType;
   rule: PricingRule;
   memberTier: 'member' | 'plus' | 'pro';
   memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'];
@@ -391,6 +396,7 @@ export function buildSeedance2Snapshot(params: {
     durationSec: params.durationSec,
     resolution: params.resolution,
     aspectRatio: params.aspectRatio,
+    billingInputType: params.billingInputType,
   });
 
   const vendorShareCentsBase = roundUsdUpToCents(quote.vendorCostUsd);
@@ -445,7 +451,9 @@ export function buildSeedance2Snapshot(params: {
       provider_cost_usd_estimated: quote.vendorCostUsd,
       vendor_cost_usd: quote.vendorCostUsd,
       vendor_cost_per_second_usd: quote.vendorCostPerSecondUsd,
-      unit_price_usd_per_1k_tokens: params.pricingDetails.tokenPricing.unitPriceUsdPer1kTokens,
+      unit_price_usd_per_1k_tokens: quote.unitPriceUsdPer1kTokens,
+      byteplus_billing_input_type: params.billingInputType,
+      pricing_source: params.pricingDetails.tokenPricing.pricingSource,
       rounding: params.pricingDetails.tokenPricing.rounding ?? 'ceil_cent',
     },
   };

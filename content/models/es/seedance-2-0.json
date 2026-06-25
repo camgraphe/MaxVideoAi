@@ -5,12 +5,12 @@
     "title": "Seedance 2.0 | Modelo de video IA, precios, audio nativo y ejemplos | MaxVideoAI",
     "description": "Usa Seedance 2.0 en MaxVideoAI para video con continuidad entre tomas, audio nativo, precios actuales, capacidades clave y ejemplos del flujo Seedance actual."
   },
-  "overview": "Seedance 2.0 es el modelo actual de video IA de Seedance en MaxVideoAI para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
+  "overview": "Seedance 2.0 es el modelo actual de video IA Dreamina Seedance 2.0 en MaxVideoAI para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico.",
   "pricingNotes": "Seedance 2 usa precios del proveedor basados en tokens. MaxVideoAI muestra el precio aplicado y el total final antes de enviar la generación.",
   "hero": {
     "title": "Seedance 2.0 — modelo actual de Seedance para video con continuidad entre tomas y audio nativo",
-    "intro": "Seedance 2.0 es el modelo actual de video IA de Seedance para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar precios, capacidades clave, mejores usos y cuándo este flujo de video de Seedance encaja mejor que Fast o que versiones anteriores.",
-    "badge": "3 flujos · 480p/720p/1080p · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
+    "intro": "Seedance 2.0 es el modelo actual de video IA Dreamina Seedance 2.0 para video con continuidad entre tomas, audio nativo y flujos guiados por referencias cuando necesitas el flujo principal de Seedance para anuncios pulidos, lanzamientos y secuencias de marca con tono cinematográfico. Usa esta página para revisar precios, capacidades clave, mejores usos y cuándo este flujo de video de Seedance encaja mejor que Fast o que versiones anteriores.",
+    "badge": "3 flujos · 480p/720p/1080p/4K · Auto o 4-15 s · Audio nativo · 9 imágenes / 3 videos / 3 audios de referencia",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -27,6 +27,10 @@
       {
         "label": "Ver Seedance 2.0 Fast",
         "href": "/models/seedance-2-0-fast"
+      },
+      {
+        "label": "Ver Seedance 2.0 Mini, ruta de valor de menor coste",
+        "href": "/models/dreamina-seedance-2-0-mini"
       },
       {
         "label": "Comparar Seedance 2.0 vs Seedance 2.0 Fast",
@@ -83,7 +87,7 @@
   "technicalOverview": [
     {
       "label": "Rol",
-      "body": "El último modelo de video IA de Seedance de ByteDance, basado en una arquitectura multimodal unificada de audio y video."
+      "body": "El modelo de video IA Dreamina Seedance 2.0 de ByteDance, basado en una arquitectura multimodal unificada de audio y video."
     },
     {
       "label": "Entradas",
@@ -98,6 +102,10 @@
       "body": "Auto o 4-15 segundos por generación"
     },
     {
+      "label": "Resolución",
+      "body": "480p, 720p, 1080p y 4K en la ruta estándar Dreamina Seedance 2.0; Fast y Mini mantienen sus límites de menor resolución."
+    },
+    {
       "label": "Audio",
       "body": "Audio nativo activado por defecto y desactivable; MaxVideoAI muestra el presupuesto final antes de generar"
     },
@@ -107,7 +115,7 @@
     },
     {
       "label": "Fuentes",
-      "body": "Las notas provider/model-family describen text-to-video, image-to-video, reference-to-video y variantes Fast optimizadas dentro de la familia Seedance 2."
+      "body": "La documentación de ByteDance y el nombre de producto Dreamina presentan esta familia como Dreamina Seedance 2.0, con text-to-video, image-to-video, reference-to-video y variantes Fast optimizadas dentro de la familia Seedance 2."
     }
   ],
   "promptStructure": {
@@ -130,6 +138,7 @@
       "Usa referencias multimodales para fijar vestuario, props, ritmo y ambiente.",
       "Usa la imagen final opcional en i2v cuando quieras guiar el último frame.",
       "Usa Seedance 2.0 Fast para borradores más económicos antes de generar las versiones finales.",
+      "Usa Seedance 2.0 Mini solo cuando las variantes batch/valor de menor coste importen más que la ruta final y pulida de Seedance 2.0.",
       "Generate muestra el flujo activo y el precio final antes de enviar."
     ]
   },
@@ -163,8 +172,16 @@
       "a": "Seedance 2.0 funciona mejor para videos pulidos de Seedance, anuncios con continuidad entre tomas, secuencias de marca, escenas guiadas por audio y producciones con referencias donde la continuidad importa más que generar borradores rápido."
     },
     {
+      "q": "¿Seedance 2.0 también es Dreamina Seedance 2.0?",
+      "a": "Sí. La documentación de ByteDance y el nombre de producto Dreamina describen la familia API actual como Dreamina Seedance 2.0. En MaxVideoAI, esta página sigue siendo la ruta Seedance 2.0 estándar para renders finales."
+    },
+    {
       "q": "¿Seedance 2.0 incluye audio nativo?",
       "a": "Sí. Seedance 2.0 admite audio nativo, incluyendo diálogo, ambiente, música y efectos sonoros dentro del mismo flujo de generación."
+    },
+    {
+      "q": "¿Seedance 2.0 admite salida 4K?",
+      "a": "Sí. La ruta estándar Dreamina Seedance 2.0 admite salida 4K. Seedance 2.0 Fast y Seedance 2.0 Mini siguen limitados por debajo de 4K."
     },
     {
       "q": "¿En qué se diferencia Seedance 2.0 de Seedance 2.0 Fast?",
@@ -186,6 +203,7 @@
       "Precio y flujo actual||Usa Seedance 2.0 cuando quieras el flujo principal actual de Seedance y el precio final visible antes de generar.",
       "Audio nativo||Diálogo, ambiente, música y efectos sonoros pueden mantenerse dentro del mismo flujo de generación en lugar de tratarse como una capa aparte.",
       "Seedance 2.0 vs Seedance 2.0 Fast||Elige Seedance 2.0 para piezas finales con continuidad entre tomas, y Fast cuando la necesidad principal sea iterar borradores y comparar rutas.",
+      "Ruta de valor Seedance 2.0 Mini||Usa Mini como alternativa batch/valor de menor coste para variantes de ecommerce, marketing y UGC.",
       "Empieza con los ejemplos de video IA de Seedance||Abre primero la página de ejemplos si quieres ver patrones de salida, bases de prompts y ajustes antes de lanzar una producción real."
     ],
     "heroSupportLine": "Empieza con los ejemplos de video IA de Seedance, usa Seedance 2.0 para el flujo principal con audio nativo y continuidad entre tomas, y compáralo con Fast cuando necesites borradores más rápidos.",
@@ -194,7 +212,7 @@
     "specSections": [
       {
         "title": "Entradas multimodales",
-        "intro": "Las notas provider/model-family describen Seedance 2.0 como un modelo unificado de audio y video multimodal.",
+        "intro": "Las notas provider/model-family describen Dreamina Seedance 2.0 como un modelo unificado de audio y video multimodal.",
         "items": [
           "Instrucciones de texto + referencias multimodales",
           "Hasta 9 imágenes",
@@ -207,7 +225,7 @@
         "title": "Salida y estructura",
         "intro": "Las notas provider/model-family destacan control cinematográfico, audio nativo, física más creíble, cortes multi-shot y hasta 15 segundos por generación.",
         "items": [
-          "480p, 720p o 1080p",
+          "480p, 720p, 1080p o 4K en Seedance 2.0 estándar",
           "Auto o 4-15 s por generación",
           "Ratios: auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16",
           "Image-to-video con imagen final opcional",
@@ -309,6 +327,13 @@
         "description": "Usa la versión rápida de Seedance para borradores, revisiones de timing e iteraciones de concepto antes de llevar los finales a la versión estándar.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Comparar Seedance 2.0 vs Fast ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Mini",
+        "description": "Usa Mini como alternativa batch/valor de menor coste para variantes de ecommerce, marketing y UGC antes del trabajo estándar de Seedance 2.0.",
+        "modelSlug": "dreamina-seedance-2-0-mini",
+        "ctaLabel": "Ver la ruta de valor Seedance 2.0 Mini ->"
       },
       {
         "brand": "ltx",

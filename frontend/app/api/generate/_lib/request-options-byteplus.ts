@@ -1,5 +1,6 @@
 import {
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
+  getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
 } from '@/server/video-providers/byteplus-modelark';
 
@@ -27,12 +28,14 @@ export function normalizeBytePlusOptions(params: {
     }
   | RequestOptionsFailure {
   const normalizedDuration = Math.trunc(params.durationSec);
+  const allowedDurations = getBytePlusSeedanceDurationOptions(params.engineId);
   if (
     !Number.isFinite(params.durationSec) ||
     normalizedDuration !== params.durationSec ||
-    normalizedDuration < 5 ||
-    normalizedDuration > 15
+    !allowedDurations.includes(normalizedDuration as never)
   ) {
+    const minDuration = allowedDurations[0] ?? 5;
+    const maxDuration = allowedDurations[allowedDurations.length - 1] ?? 15;
     return {
       ok: false,
       status: 400,
@@ -43,7 +46,7 @@ export function normalizeBytePlusOptions(params: {
       body: {
         ok: false,
         error: 'BYTEPLUS_DURATION_UNSUPPORTED',
-        message: 'This Seedance route requires an integer duration from 5 to 15 seconds.',
+        message: `This Seedance route requires an integer duration from ${minDuration} to ${maxDuration} seconds.`,
       },
     };
   }

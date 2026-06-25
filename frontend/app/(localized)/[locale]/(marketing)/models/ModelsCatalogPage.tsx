@@ -1,14 +1,11 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
-import { localePathnames, type AppLocale } from '@/i18n/locales';
+import type { AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
-import { SITE_BASE_URL } from '@/lib/metadataUrls';
-import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
 import {
   MODELS_SLUG_MAP,
   getModelsScopeEnglishPath,
-  getModelsScopePath,
   getScopeDefaults,
   splitHeroAccentTitle,
   splitModelsHeroTitle,
@@ -21,6 +18,11 @@ import {
 } from './_lib/models-catalog-cards';
 import { buildModelsFaqItems } from './_lib/models-catalog-sections';
 import { buildModelsCatalogDecisionData } from './_lib/models-catalog-decision-data';
+import {
+  buildModelsCatalogBreadcrumbJsonLd,
+  buildModelsCatalogFaqJsonLd,
+  buildModelsCatalogItemListJsonLd,
+} from './_lib/models-catalog-jsonld';
 import { ModelsCatalogDecisionFaq } from './_components/ModelsCatalogDecisionFaq';
 import { ModelsCatalogGallerySection } from './_components/ModelsCatalogGallerySection';
 import { ModelsCatalogHero } from './_components/ModelsCatalogHero';
@@ -106,43 +108,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const { locale, dictionary } = await resolveDictionary();
   const activeLocale = locale as AppLocale;
   const scopeDefaults = getScopeDefaults(scope, activeLocale);
-  const breadcrumbLabels = getBreadcrumbLabels(activeLocale);
-  const localePrefix = localePathnames[activeLocale] ? `/${localePathnames[activeLocale]}` : '';
-  const modelsBasePath = `${localePrefix}/${MODELS_SLUG_MAP[activeLocale] ?? MODELS_SLUG_MAP.en ?? 'models'}`.replace(
-    /\/{2,}/g,
-    '/'
-  );
-  const modelsPath = `${localePrefix}${getModelsScopePath(scope, activeLocale)}`.replace(/\/{2,}/g, '/');
-  const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
-  const modelsUrl = `${SITE_BASE_URL}${modelsPath}`;
-  const modelsBaseUrl = `${SITE_BASE_URL}${modelsBasePath}`;
-  const breadcrumbItems = [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: breadcrumbLabels.home,
-      item: homeUrl,
-    },
-    {
-      '@type': 'ListItem',
-      position: 2,
-      name: breadcrumbLabels.models,
-      item: modelsBaseUrl,
-    },
-  ];
-  if (scope !== 'all' && scopeDefaults.breadcrumbCurrent) {
-    breadcrumbItems.push({
-      '@type': 'ListItem',
-      position: 3,
-      name: scopeDefaults.breadcrumbCurrent,
-      item: modelsUrl,
-    });
-  }
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: breadcrumbItems,
-  };
 
   const content = dictionary.models;
   const galleryCopy = (content.gallery ?? {}) as unknown as ModelsCatalogGalleryCopy;
@@ -188,29 +153,13 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           scope,
         });
 
-  const itemListJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    itemListElement: modelCards.map((card, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      name: card.label,
-      url: `${SITE_BASE_URL}${modelsBasePath}/${card.id}`,
-    })),
-  };
-
-  const faqJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: faqItems.map((item) => ({
-      '@type': 'Question',
-      name: item.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: item.answer,
-      },
-    })),
-  };
+  const breadcrumbJsonLd = buildModelsCatalogBreadcrumbJsonLd({
+    activeLocale,
+    breadcrumbCurrent: scopeDefaults.breadcrumbCurrent,
+    scope,
+  });
+  const itemListJsonLd = buildModelsCatalogItemListJsonLd({ activeLocale, modelCards, scope });
+  const faqJsonLd = buildModelsCatalogFaqJsonLd(faqItems);
 
   return (
     <main className="bg-bg text-text-primary">

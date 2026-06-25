@@ -117,9 +117,17 @@ export interface TokenVideoPricingDimensions {
   height: number;
 }
 
+export type TokenVideoPricingInputType = 'no_video_input' | 'video_input';
+
 export interface TokenVideoPricing {
   model: 'fal_tokens';
   unitPriceUsdPer1kTokens: number;
+  unitPriceUsdPer1kTokensByInputType?: Partial<Record<TokenVideoPricingInputType, number>>;
+  unitPriceUsdPer1kTokensByResolution?: Partial<Record<Resolution, number>>;
+  unitPriceUsdPer1kTokensByResolutionAndInputType?: Partial<
+    Record<Resolution, Partial<Record<TokenVideoPricingInputType, number>>>
+  >;
+  pricingSource?: string;
   framesPerSecond: number;
   defaultAspectRatio?: AspectRatio;
   dimensions: Partial<Record<Resolution, Partial<Record<AspectRatio, TokenVideoPricingDimensions>>>>;

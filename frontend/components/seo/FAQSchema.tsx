@@ -5,12 +5,8 @@ type FAQEntry = {
 
 const serializeJsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
 
-export function FAQSchema({ questions }: { questions: FAQEntry[] }) {
-  if (!Array.isArray(questions) || questions.length === 0) {
-    return null;
-  }
-
-  const payload = {
+export function buildFAQJsonLd(questions: FAQEntry[]) {
+  return {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
     mainEntity: questions.map((entry) => ({
@@ -22,6 +18,14 @@ export function FAQSchema({ questions }: { questions: FAQEntry[] }) {
       },
     })),
   };
+}
+
+export function FAQSchema({ questions }: { questions: FAQEntry[] }) {
+  if (!Array.isArray(questions) || questions.length === 0) {
+    return null;
+  }
+
+  const payload = buildFAQJsonLd(questions);
 
   return (
     <script

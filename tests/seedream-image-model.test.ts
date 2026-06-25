@@ -9,12 +9,12 @@ function getSeedreamEntry() {
   return entry;
 }
 
-test('Seedream 5.0 Lite is registered as a public BytePlus image model', () => {
+test('Seedream 5.0 Lite is registered as a public ByteDance image model', () => {
   const entry = getSeedreamEntry();
 
   assert.equal(entry.modelSlug, 'seedream');
   assert.equal(entry.marketingName, 'Seedream');
-  assert.equal(entry.provider, 'BytePlus');
+  assert.equal(entry.provider, 'ByteDance');
   assert.equal(entry.brandId, 'bytedance');
   assert.equal(entry.family, 'seedream');
   assert.equal(entry.type, 'image');
@@ -48,7 +48,7 @@ test('Seedream 5.0 Lite is registered as a public BytePlus image model', () => {
   assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.max, 15);
   assert.match(
     entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.description ?? '',
-    /sequential_image_generation/i
+    /sequential(?:_image_generation| image generation)/i
   );
   assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'image_urls')?.maxCount, 10);
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'output_format')?.values, [

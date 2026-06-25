@@ -377,8 +377,15 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2'],
-        publishedPairs: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2'],
+        suggestOpponents: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'veo-3-1-fast', 'luma-ray-2'],
+        publishedPairs: [
+          'seedance-2-0',
+          'kling-3-pro',
+          'veo-3-1',
+          'veo-3-1-fast',
+          'dreamina-seedance-2-0-mini',
+          'luma-ray-2',
+        ],
         includeInHub: true,
       },
       app: {

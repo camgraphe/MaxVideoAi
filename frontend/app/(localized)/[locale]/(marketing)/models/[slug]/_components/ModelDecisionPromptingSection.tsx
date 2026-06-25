@@ -959,6 +959,10 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
     };
   }
 
+  if (engineSlug === 'seedance-2-0-mini') {
+    return getSeedance20MiniDemoSummary(locale);
+  }
+
   if (engineSlug === 'wan-2-5') {
     if (locale === 'fr') {
       return {
@@ -1016,6 +1020,34 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
   }
 
   return getDemoSummary(locale);
+}
+
+function getSeedance20MiniDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Père et enfant dans un passage piéton urbain au golden hour',
+      action: 'Une vague de mouvement traverse la scène pendant que le bus passe derrière eux',
+      camera: 'Push-in documentaire puis close medium émotionnel',
+      style: 'Lumière chaude entre les immeubles, silhouettes en mouvement, réalisme cinéma',
+      audio: 'Rendu sélectionné sans audio; activez l’audio natif pour les nouveaux tests sonores',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Padre e hija en un cruce urbano al golden hour',
+      action: 'Una ola de movimiento atraviesa la escena mientras pasa un bus detrás',
+      camera: 'Push-in documental y luego close medium emocional',
+      style: 'Luz cálida entre edificios, siluetas en movimiento, realismo cinematográfico',
+      audio: 'Render seleccionado sin audio; activa audio nativo para nuevas pruebas sonoras',
+    };
+  }
+  return {
+    subject: 'Father and child in a golden-hour city crosswalk',
+    action: 'A wave of motion crosses the scene as a bus passes behind them',
+    camera: 'Documentary push-in, then an emotional close medium shot',
+    style: 'Warm light between buildings, moving silhouettes, cinematic realism',
+    audio: 'Selected render is audio off; enable native audio for new sound tests',
+  };
 }
 
 function getHappyHorse11DemoPrompt() {
@@ -2295,6 +2327,7 @@ export function ModelDecisionPromptingSection({
   const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
   const isSeedance20FastRoute = engineSlug === 'seedance-2-0-fast';
+  const isSeedance20MiniRoute = engineSlug === 'seedance-2-0-mini';
   const isSeedance15ProRoute = engineSlug === 'seedance-1-5-pro';
   const isLtx23FastRoute = engineSlug === 'ltx-2-3-fast';
   const isLtx23ProRoute = engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
@@ -2306,6 +2339,7 @@ export function ModelDecisionPromptingSection({
   const isKlingO34kRoute = engineSlug === 'kling-o3-4k';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getRouteDemoSummary(locale, engineSlug);
+  const seedance20MiniDemo = getSeedance20MiniDemoSummary(locale);
   const seedance15Demo = getSeedance15DemoSummary(locale);
   const hailuoDemo = getHailuoDemoSummary(locale);
   const pikaDemo = getPikaDemoSummary(locale);
@@ -2342,6 +2376,8 @@ export function ModelDecisionPromptingSection({
                   ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
                 : isLtx23ProRoute
                   ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
+                : isSeedance20MiniRoute
+                  ? { ...seedance20MiniDemo, output: seedance20MiniDemo.audio }
                     : isKlingO34kRoute
                       ? { ...klingO34kDemo, output: klingO34kDemo.audio }
                       : isKlingO3ProRoute
@@ -2528,6 +2564,8 @@ export function ModelDecisionPromptingSection({
         ? copy.demoPrompt.join('\n')
       : isVeoFastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isSeedance20MiniRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isKlingO34kRoute
         ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKlingO34kDemoPrompt())
       : isKlingO3ProRoute
@@ -2594,6 +2632,8 @@ export function ModelDecisionPromptingSection({
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isVeoLiteRoute
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+          : isSeedance20MiniRoute
+            ? (demoMedia ? getDuration(demoMedia, locale) : locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : getDuration(demoMedia, locale);
   const demoAspectLabel = isSilentPromptRoute ? (isPikaTextRoute ? '1:1' : '16:9') : getAspect(demoMedia);
   const demoModeLabel = isHailuoDraftRoute
@@ -2645,6 +2685,8 @@ export function ModelDecisionPromptingSection({
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo 3.1' : locale === 'es' ? 'Prompt Veo 3.1' : 'Veo 3.1 prompt'))
     : isVeoFastRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo Fast' : locale === 'es' ? 'Prompt Veo Fast' : 'Veo Fast prompt'))
+    : isSeedance20MiniRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Mini 720p' : locale === 'es' ? 'Prompt Mini 720p' : 'Mini 720p prompt'))
     : isPikaTextRoute
       ? 'Text-to-Video'
       : isLumaRay2Route
@@ -2698,6 +2740,8 @@ export function ModelDecisionPromptingSection({
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
       : isKlingO3StandardRoute
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
+      : isSeedance20MiniRoute
+        ? (demoMedia ? (demoMedia.hasAudio ? labels.audioOn : audioOffChipLabel) : labels.audioOn)
       : isKling34kRoute
         ? locale === 'fr'
           ? 'Audio off'
@@ -2721,6 +2765,12 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Borrador de movimiento Seedance 2.0 Fast'
           : 'Seedance 2.0 Fast motion draft render'
+    : isSeedance20MiniRoute
+      ? locale === 'fr'
+        ? 'Rendu Seedance 2.0 Mini dans un passage piéton urbain'
+        : locale === 'es'
+          ? 'Render Seedance 2.0 Mini en un cruce urbano'
+          : 'Seedance 2.0 Mini city crosswalk render'
     : isSeedance15ProRoute
       ? locale === 'fr'
         ? 'Rendu moto Seedance 1.5 Pro camera_fixed'

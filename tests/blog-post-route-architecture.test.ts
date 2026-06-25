@@ -76,6 +76,8 @@ test('blog article helper modules expose focused contracts', () => {
   assert.match(dataSource, /BLOG_NEXT_STEPS/, 'data helper should own blog next-step copy');
   assert.match(seoSource, /BreadcrumbList/, 'SEO helper should own breadcrumb schema');
   assert.match(seoSource, /'@type': 'Article'/, 'SEO helper should own article schema');
+  assert.match(seoSource, /resolveAbsoluteImageUrl/, 'SEO helper should normalize Article JSON-LD image URLs');
+  assert.match(seoSource, /publisherLogoUrl/, 'Article publisher logo should be emitted as an absolute URL');
   assert.match(seoSource, /buildSeoMetadata/, 'SEO helper should own metadata builder invocation');
 });
 

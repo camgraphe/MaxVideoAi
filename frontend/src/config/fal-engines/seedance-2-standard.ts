@@ -3,6 +3,7 @@ import type { RawFalEngineEntry } from './types';
 import {
   SEEDANCE_2_ENDPOINTS,
   SEEDANCE_2_LAUNCH_CONFIG,
+  SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
   buildSeedance2PricingDetails,
   buildSeedance2Surfaces,
 } from './launch-config';
@@ -18,7 +19,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2v', 'i2v', 'ref2v'],
   maxDurationSec: 15,
-  resolutions: ['480p', '720p', '1080p'],
+  resolutions: ['480p', '720p', '1080p', '4k'],
   aspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
   fps: [24],
   audio: true,
@@ -82,7 +83,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'resolution',
         type: 'enum',
         label: 'Resolution',
-        values: ['480p', '720p', '1080p'],
+        values: ['480p', '720p', '1080p', '4k'],
         default: '720p',
       },
       {
@@ -131,7 +132,12 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
       maxAudioSizeMB: 15,
     },
   },
-  pricingDetails: buildSeedance2PricingDetails(0.014),
+  pricingDetails: buildSeedance2PricingDetails(SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard, {
+    unitPriceUsdPer1kTokensByResolution: {
+      '1080p': SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard1080p,
+      '4k': SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.standard4k,
+    },
+  }),
   pricing: {
     unit: 'USD/s',
     currency: 'USD',
@@ -169,10 +175,10 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['t2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p', '1080p'],
+          resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           audioToggle: true,
-          notes: '4-15s or auto, 480p/720p/1080p, native audio on or off, with the wider Seedance 2 camera ratio set.',
+          notes: '4-15s or auto, 480p/720p/1080p/4K, native audio on or off, with the wider Seedance 2 camera ratio set.',
         },
       },
       {
@@ -181,12 +187,12 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['i2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p', '1080p'],
+          resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 30,
           audioToggle: true,
-          notes: 'Start image plus optional end image, 4-15s or auto, 480p/720p/1080p, with audio on or off.',
+          notes: 'Start image plus optional end image, 4-15s or auto, 480p/720p/1080p/4K, with audio on or off.',
         },
       },
       {
@@ -195,7 +201,7 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         ui: {
           modes: ['ref2v'],
           duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
-          resolution: ['480p', '720p', '1080p'],
+          resolution: ['480p', '720p', '1080p', '4k'],
           aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 30,
@@ -208,12 +214,12 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seo: {
       title: 'Seedance 2.0 — ByteDance AI Video with Native Audio and References',
       description:
-        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, director-level camera control, 480p/720p/1080p output, and text, image, and reference workflows.',
+        'Seedance 2.0 by ByteDance: cinematic AI video with native audio, realistic physics, director-level camera control, 480p/720p/1080p/4K output, and text, image, and reference workflows.',
       canonicalPath: '/models/seedance-2-0',
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p/1080p output, auto or 4-15 second durations, multimodal references, and native audio generation.',
+      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p/1080p/4K output, auto or 4-15 second durations, multimodal references, and native audio generation.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
       imagePath: '/hero/seedance-2-0.jpg',

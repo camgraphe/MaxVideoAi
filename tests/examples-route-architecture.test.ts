@@ -3,7 +3,9 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { getModelFamilyDefinition } from '../frontend/config/model-families.ts';
 import { getExampleModelLanding } from '../frontend/lib/examples/modelLanding.ts';
+import { getExampleFamilyCurrentModelSlugs, getExampleFamilyModelSlugs } from '../frontend/lib/model-families.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 const root = process.cwd();
@@ -142,14 +144,30 @@ test('Kling examples landing owns motion-focused CTR metadata without a site-nam
 test('Seedance examples landing owns use-case-focused SERP metadata', () => {
   const title = 'Seedance AI Video Examples, Prompts & Use Cases | MaxVideoAI';
   const description =
-    'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, 2.0 Fast, or 1.5 Pro.';
+    'Explore real Seedance video outputs, copy prompt ideas, compare model settings, and see when to use Seedance 2.0, Fast, Mini, or 1.5 Pro.';
   const landing = getExampleModelLanding('en', 'seedance');
+  const family = getModelFamilyDefinition('seedance');
 
   assert.ok(landing);
+  assert.ok(family);
   assert.equal(landing.metaTitle, title);
   assert.equal(landing.metaDescription, description);
   assert.doesNotMatch(landing.intro, /supported Seedance 1\.5 Pro setup for/i);
   assert.doesNotMatch(landing.intro, /Read more/i);
+  assert.equal(family.defaultModelSlug, 'seedance-2-0');
+  assert.deepEqual(family.routeAliases, ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
+  assert.deepEqual(getExampleFamilyModelSlugs('seedance'), [
+    'seedance-2-0',
+    'seedance-2-0-fast',
+    'dreamina-seedance-2-0-mini',
+    'seedance-1-5-pro',
+  ]);
+  assert.deepEqual(getExampleFamilyCurrentModelSlugs('seedance'), ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini']);
+  assert.match(landing.intro, /Seedance 2\.0 Mini/i);
+  assert.match(landing.intro, /lower-cost|batch|ecommerce|UGC|reference-guided/i);
+  assert.match(landing.summary, /Seedance 2\.0.*polished|final|high-ceiling/i);
+  assert.match(landing.summary, /Seedance 2\.0 Fast.*draft|faster/i);
+  assert.match(landing.summary, /Seedance 2\.0 Mini.*lower-cost|batch|value/i);
 
   const metadata = buildSeoMetadata({
     locale: 'en',

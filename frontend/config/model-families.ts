@@ -118,7 +118,7 @@ export const MODEL_FAMILIES = [
     navLabel: 'Seedance 2.0',
     brandId: 'bytedance',
     defaultModelSlug: 'seedance-2-0',
-    routeAliases: ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast'],
+    routeAliases: ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'],
     aliases: [
       'seedance-1-5',
       'seedance-v1-5-pro',
@@ -129,13 +129,17 @@ export const MODEL_FAMILIES = [
       'seedance-2.0-fast',
       'seedance-v2-fast',
       'seedance-v2.0-fast',
+      'seedance mini',
+      'seedance 2 mini',
+      'seedance 2.0 mini',
+      'dreamina seedance 2.0 mini',
     ],
     prefixes: ['seedance', 'fal-ai/bytedance/seedance', 'bytedance/seedance', 'bytedance/seedance-2.0'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'seedance-1-5-pro'],
-      currentModelSlugs: ['seedance-2-0', 'seedance-2-0-fast'],
+      publishedModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini', 'seedance-1-5-pro'],
+      currentModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'],
     },
   },
   {

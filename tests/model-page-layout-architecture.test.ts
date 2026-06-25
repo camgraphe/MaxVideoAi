@@ -21,6 +21,7 @@ const decisionPricingCardPath = join(root, 'frontend/app/(localized)/[locale]/(m
 const pageContentSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPageContentSections.tsx');
 const decisionCardsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCardsSection.tsx');
 const decisionPromptingSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx');
+const decisionDemoMediaPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionDemoMedia.client.tsx');
 const decisionPromptTabsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx');
 const decisionCopyButtonPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCopyButton.client.tsx');
 const decisionTipsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionTipsSection.tsx');
@@ -58,6 +59,8 @@ test('model page layout delegates prep link copy and schema payload composition'
   assert.match(schemaBuilderSource, /price:/, 'Product offers should include price');
   assert.match(schemaBuilderSource, /shippingDetails/, 'Product offers should include Merchant listings shipping details');
   assert.match(schemaBuilderSource, /hasMerchantReturnPolicy/, 'Product offers should include a Merchant listings return policy');
+  assert.match(schemaBuilderSource, /applicableCountry/, 'Product return policy should include the Google Merchant applicableCountry property');
+  assert.match(schemaBuilderSource, /returnPolicyCountry/, 'Product return policy should include the required returnPolicyCountry property');
   assert.match(schemaBuilderSource, /MerchantReturnNotPermitted/, 'Digital Product offers should mark returns as not permitted');
   assert.match(prepLinksSectionSource, /export type PrepLinksSection/, 'prep links section should export its contract');
 });
@@ -84,6 +87,7 @@ test('model page layout delegates template page ownership', () => {
     pageContentSectionsPath,
     decisionCardsSectionPath,
     decisionPromptingSectionPath,
+    decisionDemoMediaPath,
     decisionPromptTabsPath,
     decisionCopyButtonPath,
     decisionTipsSectionPath,
@@ -104,6 +108,7 @@ test('model page layout delegates template page ownership', () => {
   const pageContentSectionsSource = readSource(pageContentSectionsPath);
   const decisionCardsSource = readSource(decisionCardsSectionPath);
   const decisionPromptingSource = readSource(decisionPromptingSectionPath);
+  const decisionDemoMediaSource = readSource(decisionDemoMediaPath);
   const decisionPromptTabsSource = readSource(decisionPromptTabsPath);
   const decisionCopyButtonSource = readSource(decisionCopyButtonPath);
   const decisionTipsSource = readSource(decisionTipsSectionPath);
@@ -160,6 +165,10 @@ test('model page layout delegates template page ownership', () => {
     /engineSlug === 'happy-horse-1-1'[\s\S]*Night market noodle stall chef[\s\S]*getHappyHorse11DemoPrompt/,
     'Happy Horse 1.1 prompt lab should use the dedicated night-market demo copy'
   );
+  assert.match(decisionDemoMediaSource, /function getMediaAspectRatio/, 'demo media should derive a stable media frame ratio from the visible aspect label');
+  assert.match(decisionDemoMediaSource, /self-start/, 'demo media should opt out of grid stretch so the aspect ratio controls the poster height');
+  assert.match(decisionDemoMediaSource, /style=\{\{\s*aspectRatio:\s*mediaAspectRatio\s*\}\}/, 'demo media should reserve the poster/video aspect ratio before playback');
+  assert.match(decisionDemoMediaSource, /className="absolute inset-0 h-full w-full object-cover"/, 'demo media video should overlay the ratio-stable frame');
   assert.match(decisionPromptTabsSource, /ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
   assert.match(decisionCopyButtonSource, /copyTextToClipboard/, 'decision copy button should use the clipboard helper fallback');
   assert.match(decisionCopyButtonSource, /useEffect\(\(\)\s*=>\s*\{\s*setCopied\(false\)/, 'decision copy button should reset copied state when copy text changes');

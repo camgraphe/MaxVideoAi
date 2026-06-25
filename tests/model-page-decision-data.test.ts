@@ -56,9 +56,9 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.match(en.hero.subtitle, /Native audio/);
   assert.match(en.hero.subtitle, /multi-shot continuity/);
   assert.match(en.hero.subtitle, /reference-guided video/);
-  assert.deepEqual(en.hero.subtitleHighlights, ['Native audio', 'multi-shot continuity', 'reference-guided video']);
-  assert.deepEqual(fr.hero.subtitleHighlights, ['Audio natif', 'continuité multi-plans', 'vidéo guidée par références']);
-  assert.deepEqual(es.hero.subtitleHighlights, ['Audio nativo', 'continuidad entre tomas', 'video guiado por referencias']);
+  assert.deepEqual(en.hero.subtitleHighlights, ['Native audio', '4K-capable output', 'multi-shot continuity']);
+  assert.deepEqual(fr.hero.subtitleHighlights, ['Audio natif', 'sortie jusqu’en 4K', 'continuité multi-plans']);
+  assert.deepEqual(es.hero.subtitleHighlights, ['Audio nativo', 'salida hasta 4K', 'continuidad entre tomas']);
   assert.ok(en.hero.paragraph.split(/\s+/).filter(Boolean).length <= 55);
   assert.deepEqual(en.hero.primaryCta, {
     label: 'Generate with Seedance 2.0',
@@ -68,13 +68,21 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.equal(en.hero.secondaryCta.href, '/examples/seedance');
   assert.deepEqual(
     en.hero.quickLinks.map((link) => link.label),
-    ['Compare vs Fast', 'View pricing', 'Prompt examples']
+    ['Compare vs Fast', 'Compare vs Mini value route', 'View pricing', 'Prompt examples']
+  );
+  assert.deepEqual(
+    fr.hero.quickLinks.map((link) => link.label),
+    ['Comparer vs Fast', 'Comparer vs route Mini valeur', 'Voir les tarifs', 'Exemples de prompts']
+  );
+  assert.deepEqual(
+    es.hero.quickLinks.map((link) => link.label),
+    ['Comparar con Fast', 'Comparar con ruta Mini de valor', 'Ver precios', 'Ejemplos de prompts']
   );
   assert.deepEqual(
     en.pricing.scenarios.map((scenario) => scenario.id),
-    ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
+    ['5s-480p', '8s-720p', '10s-1080p', '5s-4k', 'audio-included', 'max-duration']
   );
-  assert.equal(en.hero.quickLinks[2]?.href, '#prompting');
+  assert.equal(en.hero.quickLinks[3]?.href, '#prompting');
   assert.equal(en.decisionCards[2]?.cta.href, '#prompting');
   assert.equal(fr.media.badges[0], 'Audio activé');
   assert.equal(es.media.badges[0], 'Audio activado');
@@ -107,7 +115,7 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
   assert.equal(en.meta.title, 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses');
   assert.equal(
     en.meta.description,
-    'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
+    'See Seedance 2.0 pricing, 4K output, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.'
   );
   assert.notEqual(fr.hero.subtitle, en.hero.subtitle);
   assert.notEqual(es.hero.subtitle, en.hero.subtitle);
@@ -144,10 +152,78 @@ test('Seedance 2.0 Fast returns draft-intent decision data distinct from Seedanc
     en.pricing.scenarios.map((scenario) => scenario.id),
     ['5s-480p', '8s-720p', '10s-720p', 'max-duration']
   );
+  assert.deepEqual(
+    en.hero.quickLinks.map((link) => link.label),
+    ['Compare vs 2.0', 'Compare vs Mini batch route', 'View pricing', 'Prompt examples']
+  );
+  assert.deepEqual(
+    fr.hero.quickLinks.map((link) => link.label),
+    ['Comparer vs 2.0', 'Comparer vs route Mini batch', 'Voir les tarifs', 'Exemples de prompts']
+  );
+  assert.deepEqual(
+    es.hero.quickLinks.map((link) => link.label),
+    ['Comparar con 2.0', 'Comparar con ruta Mini batch', 'Ver precios', 'Ejemplos de prompts']
+  );
   assert.match(fr.hero.subtitle, /brouillons rapides/);
   assert.deepEqual(fr.hero.subtitleHighlights, ['brouillons rapides', 'tests de rythme', 'variantes de mouvement']);
   assert.match(es.hero.subtitle, /borradores rápidos/);
   assert.deepEqual(es.hero.subtitleHighlights, ['borradores rápidos', 'pruebas de ritmo', 'variantes de movimiento']);
+});
+
+test('Seedance 2.0 Mini returns lower-cost batch decision data without overclaims', () => {
+  const mini = getEngine('dreamina-seedance-2-0-mini');
+  const standard = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
+  const fast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const en = buildModelDecisionData({ engine: mini, locale: 'en' });
+  const fr = buildModelDecisionData({ engine: mini, locale: 'fr' });
+  const es = buildModelDecisionData({ engine: mini, locale: 'es' });
+
+  assert.ok(standard);
+  assert.ok(fast);
+  assert.ok(en);
+  assert.ok(fr);
+  assert.ok(es);
+
+  assert.equal(en.hero.title, 'Seedance 2.0 Mini');
+  assert.equal(en.hero.primaryCta.label, 'Generate with Seedance 2.0 Mini');
+  assert.equal(en.hero.primaryCta.href, '/app?engine=seedance-2-0-mini');
+  assert.equal(en.hero.secondaryCta.href, '/examples/seedance');
+  assert.deepEqual(
+    en.hero.quickLinks.map((link) => link.href),
+    [
+      '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0',
+      '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+      '/pricing#dreamina-seedance-2-0-mini-pricing',
+      '#prompting',
+    ]
+  );
+  assert.deepEqual(
+    en.pricing.scenarios.map((scenario) => scenario.id),
+    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9', 'max-duration']
+  );
+  assert.equal(en.pricing.scenarios.find((scenario) => scenario.id === 'max-duration')?.value, '15s');
+
+  for (const decision of [en, fr, es]) {
+    const text = visibleDecisionText(decision);
+
+    assert.match(text, /lower-cost|cost-performance|value|batch|coût réduit|valeur|lot|menor coste|valor|lotes/i);
+    assert.match(text, /480p/i);
+    assert.match(text, /720p/i);
+    assert.match(text, /4-15|4 à 15|4 a 15/i);
+    assert.match(text, /multimodal|reference|référence|referencia/i);
+    assert.match(text, /video editing|édition vidéo|edición de video/i);
+    assert.match(text, /extension|extend|prolongation|extensión/i);
+    assert.match(text, /native audio|lip-sync|audio natif|lipsync|audio nativo/i);
+    assert.match(text, /ecommerce|e-commerce|marketing|UGC/i);
+    assert.doesNotMatch(text, /coming soon|BytePlus API|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i);
+    assert.doesNotMatch(
+      text,
+      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0/i
+    );
+  }
+
+  assert.match(visibleDecisionText(standard), /production route|final-quality|polished|native audio/i);
+  assert.match(visibleDecisionText(fast), /faster Seedance draft route|draft passes|timing tests/i);
 });
 
 test('Seedance 2.0 SEO metadata can omit the site-name suffix', () => {
@@ -706,18 +782,19 @@ test('Seedance 2.0 decision pricing scenarios reuse pricing page quotes', () => 
 
   assert.deepEqual(
     scenarios.map((scenario) => scenario.id),
-    ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
+    ['5s-480p', '8s-720p', '10s-1080p', '5s-4k', 'audio-included', 'max-duration']
   );
   assert.deepEqual(
     scenarios.map((scenario) => scenario.value),
-    ['$0.88', '$3.15', '$8.84', '$0 extra', '15s']
+    ['$0.85', '$3.03', '$9.36', '$9.73', '$0 extra', '15s']
   );
   assert.deepEqual(
     scenarios.map((scenario) => scenario.label),
-    ['Entry draft', 'Standard preview', 'Common production check', 'Audio', 'Max duration']
+    ['Entry draft', 'Standard preview', 'Common production check', 'Delivery render', 'Audio', 'Max duration']
   );
-  assert.match(scenarios[3]?.note ?? '', /Native audio included/);
-  assert.match(scenarios.at(-1)?.note ?? '', /1080p/);
+  assert.match(scenarios[3]?.note ?? '', /Native 4K/);
+  assert.match(scenarios[4]?.note ?? '', /Native audio included/);
+  assert.match(scenarios.at(-1)?.note ?? '', /4K/);
 });
 
 test('migrated model pricing scenarios return configured IDs and helper values', () => {

@@ -171,10 +171,18 @@ export function extractMaxResolution(value?: string | null, fallback?: string[])
 
 export function extractMaxDuration(value?: string | null, fallback?: number | null) {
   if (typeof value === 'string') {
-    const match = value.match(/(\d+(?:\.\d+)?)/);
-    if (match) {
-      const num = Number(match[1]);
-      if (!Number.isNaN(num)) return { label: `${num}s`, value: num };
+    const scopedValue = value
+      .replace(/\([^)]*(?:source|intake)[^)]*\)/gi, ' ')
+      .split(/[;,]/)
+      .filter((segment) => !/\b(?:source|intake)\b/i.test(segment))
+      .join(' ');
+    const matches = Array.from(scopedValue.matchAll(/(\d+(?:\.\d+)?)\s*(?:s|sec(?:ond)?s?)\b/gi));
+    const values = matches
+      .map((match) => Number(match[1]))
+      .filter((num) => !Number.isNaN(num));
+    if (values.length) {
+      const max = Math.max(...values);
+      return { label: `${Number.isInteger(max) ? max : max.toFixed(1)}s`, value: max };
     }
   }
   if (typeof fallback === 'number') {

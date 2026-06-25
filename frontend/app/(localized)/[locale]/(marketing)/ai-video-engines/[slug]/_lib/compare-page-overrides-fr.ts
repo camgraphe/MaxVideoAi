@@ -124,6 +124,457 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
+      heroIntro:
+        'Utilisez Seedance 2.0 pour la qualite finale flagship, le rendu Seedance le plus soigne, la livraison en plus haute resolution et les hero shots. Utilisez Seedance 2.0 Mini comme l option moins couteuse quand le cout, le volume batch, les variantes 480p/720p, les tests ecommerce, les hooks UGC et les experiences marketing frequentes comptent davantage. Cette page est une comparaison scorecard/specs pour l instant; les videos comparatives Mini ne sont pas encore incluses.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0',
+          label: 'Ouvrir la page modele Seedance 2.0',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Comparer Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre Seedance 2.0 flagship et la route Mini moins couteuse.',
+        items: [
+          {
+            question: 'Quand choisir Seedance 2.0 Mini ?',
+            answer:
+              'Choisissez Mini pour les batches moins couteux, les variantes ecommerce, les tests de hooks UGC, les passes A/B marketing et l exploration de prompts a volume quand 480p ou 720p suffit.',
+          },
+          {
+            question: 'Quand Seedance 2.0 reste-t-il le meilleur choix ?',
+            answer:
+              'Choisissez Seedance 2.0 pour les hero shots finaux, la meilleure finition visuelle, la livraison en plus haute resolution et les sorties ou la qualite Seedance prime sur le cout par variante.',
+          },
+          {
+            question: 'Pourquoi cette page Mini n a-t-elle pas de videos comparatives ?',
+            answer:
+              'Les pages Mini utilisent pour l instant scorecards, specs et recommandations. Les videos cote-a-cote Mini viendront apres selection de sorties dediees.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Utilisez Seedance 2.0 Fast quand la priorite est la vitesse de draft Seedance, les checks de timing et un passage rapide vers le modele flagship. Utilisez Seedance 2.0 Mini comme l option de volume batch moins couteux pour variantes ecommerce ou social, edits video, extensions et tests marketing repetes. Cette page est une comparaison scorecard/specs pour l instant, sans videos comparatives Mini.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Ouvrir la page modele Seedance 2.0 Fast',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0',
+          label: 'Comparer Seedance 2.0 vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre Fast oriente vitesse de draft et Mini oriente valeur batch.',
+        items: [
+          {
+            question: 'Mini remplace-t-il Seedance 2.0 Fast ?',
+            answer:
+              'Non. Fast reste le choix Seedance pour la vitesse de draft. Mini est la route valeur et batch pour des variantes moins couteuses a haute frequence, surtout quand 480p/720p suffit.',
+          },
+          {
+            question: 'Lequel choisir pour des variantes marketing ?',
+            answer:
+              'Mini est positionne pour de nombreuses variantes ecommerce, UGC et paid social moins couteuses. Fast convient mieux quand le timing de draft Seedance et le retour vers Seedance 2.0 comptent davantage.',
+          },
+          {
+            question: 'Cette page inclut-elle des videos cote-a-cote ?',
+            answer:
+              'Pas encore. Cette comparaison Mini utilise actuellement seulement scorecards, specs et aide a la decision, donc elle ne demande et n affiche aucun slot video comparatif.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast': {
+      heroIntro:
+        'Utilisez LTX 2.3 Fast pour l exploration LTX rapide, plus de marge sur la resolution et des drafts creatifs legers. Utilisez Seedance 2.0 Mini comme l option Dreamina Seedance moins couteuse en batches 480p/720p, variantes ecommerce, hooks UGC, edition video et tests d extension. Cette page est scorecard/specs pour l instant; les videos comparatives Mini ne sont pas affichees.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/ltx-2-3-fast',
+          label: 'Ouvrir la page modele LTX 2.3 Fast',
+        },
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Comparer Seedance Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre drafts LTX rapides et valeur batch Seedance Mini.',
+        items: [
+          {
+            question: 'Quand choisir LTX 2.3 Fast ?',
+            answer:
+              'Choisissez LTX 2.3 Fast pour l exploration visuelle rapide, les tests de prompt LTX et les workflows ou sa resolution et son comportement de draft correspondent mieux au brief.',
+          },
+          {
+            question: 'Quand choisir Seedance 2.0 Mini ?',
+            answer:
+              'Choisissez Mini pour les batches Seedance moins couteux, les variantes produit, les tests social, les hooks UGC, les edits video et les extensions quand 480p/720p suffit.',
+          },
+          {
+            question: 'Pourquoi cette comparaison est-elle scorecard-only ?',
+            answer:
+              'Les pages Mini utilisent d abord scorecards, specs et recommandations. Les videos cote-a-cote seront ajoutees plus tard apres selection de sorties Mini dediees.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-veo-3-1-fast': {
+      heroIntro:
+        'Utilisez Seedance 2.0 Mini comme l option batch 480p/720p moins couteuse pour variantes ecommerce, hooks UGC, edits video et experiences marketing frequentes. Utilisez Veo 3.1 Fast quand la qualite Veo, les workflows avec audio, une resolution de livraison plus elevee et une meilleure finition de draft comptent plus que le cout batch. Cette page Mini est scorecard/specs pour l instant et n inclut pas de videos comparatives.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Ouvrir la page modele Veo 3.1 Fast',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0',
+          label: 'Comparer Seedance 2.0 vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre valeur Seedance Mini et flexibilite de production Veo 3.1 Fast.',
+        items: [
+          {
+            question: 'Quand choisir Seedance 2.0 Mini plutot que Veo 3.1 Fast ?',
+            answer:
+              'Choisissez Mini si l objectif principal est la production batch moins couteuse: nombreuses variantes ecommerce, hooks UGC, tests marketing, edits video ou extensions en 480p/720p.',
+          },
+          {
+            question: 'Quand Veo 3.1 Fast est-il plus adapte ?',
+            answer:
+              'Choisissez Veo 3.1 Fast si vous avez besoin de qualite Veo, de sortie avec audio, d une meilleure finition de draft ou d une resolution plus elevee plutot que du volume le moins cher.',
+          },
+          {
+            question: 'Les videos comparatives Mini sont-elles disponibles ici ?',
+            answer:
+              'Non. Cette page utilise volontairement scorecards, specs et copy uniquement jusqu a ce que des videos Mini cote-a-cote soient pretes.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-luma-ray-3-2': {
+      heroIntro:
+        'Utilisez Seedance 2.0 Mini quand le job demande des batches Dreamina Seedance moins couteux, des variantes ecommerce, des hooks social, de l extension video, des edits depuis source video et des tests avec audio natif en 480p ou 720p. Utilisez Luma Ray 3.2 quand le job depend du mouvement cinematographique Luma, de Modify Video, Reframe, preservation de source video, guide frames et controle visuel 1080p sans audio natif. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/models/luma-ray-3-2',
+          label: 'Ouvrir la page modele Luma Ray 3.2',
+        },
+        {
+          href: '/ai-video-engines/luma-ray-3-2-vs-seedance-2-0',
+          label: 'Comparer Luma Ray 3.2 vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre valeur batch Seedance Mini et workflows de controle video Luma Ray 3.2.',
+        items: [
+          {
+            question: 'Quand choisir Seedance 2.0 Mini ?',
+            answer:
+              'Choisissez Mini pour des variantes batch moins couteuses, hooks UGC, tests produit, extension video, edits de source video et experiences avec audio natif quand 480p ou 720p suffit.',
+          },
+          {
+            question: 'Quand Luma Ray 3.2 est-il plus adapte ?',
+            answer:
+              'Choisissez Luma Ray 3.2 pour Modify Video, Reframe, guide frames, preservation de source video, mouvement cinematographique et tests visuels 1080p quand l audio natif n est pas necessaire.',
+          },
+          {
+            question: 'Pourquoi cette page est-elle scorecard-only ?',
+            answer:
+              'Les pages Mini restent scorecard-only jusqu a selection de renders Mini cote-a-cote, donc cette page priorise specs, positionnement workflow et compromis de cout.',
+          },
+        ],
+      },
+    },
+    'luma-ray-3-2-vs-veo-3-1-fast': {
+      heroIntro:
+        'Utilisez Luma Ray 3.2 quand le probleme creatif porte sur le controle de source video: Modify Video, Reframe, guide frames, preservation du mouvement cinematographique et iteration visuelle 1080p sans audio natif. Utilisez Veo 3.1 Fast quand le brief demande un draft plus rapide au rendu Veo, des options d audio natif, plus de marge de livraison et une finition short-form premium avant production finale. Cette comparaison aide a decider si la prochaine passe doit editer ou reframer un mouvement existant, ou generer un draft Veo plus soigne et audio-ready.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/luma-ray-3-2',
+          label: 'Ouvrir la page modele Luma Ray 3.2',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Ouvrir la page modele Veo 3.1 Fast',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+          label: 'Comparer Seedance Mini vs Luma Ray 3.2',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre controle video Luma et drafts de production Veo rapides.',
+        items: [
+          {
+            question: 'Quand choisir Luma Ray 3.2 plutot que Veo 3.1 Fast ?',
+            answer:
+              'Choisissez Luma Ray 3.2 quand l edition de source video, le reframe, les guide frames et la preservation ou redirection d un mouvement existant comptent plus que l audio natif.',
+          },
+          {
+            question: 'Quand Veo 3.1 Fast est-il meilleur ?',
+            answer:
+              'Choisissez Veo 3.1 Fast quand il faut un draft visuel premium plus rapide, des options d audio natif, une finition plus solide ou plus de marge de livraison que Luma Ray 3.2.',
+          },
+          {
+            question: 'Lequel convient mieux aux tests produit ou pub ?',
+            answer:
+              'Luma Ray 3.2 est plus fort si vous avez deja une source video a modifier ou reframer. Veo 3.1 Fast est plus fort pour de nouveaux drafts cinematographiques, concepts publicitaires audio-ready et tests courts tres soignes.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-kling-o3-pro': {
+      heroIntro:
+        'Utilisez Happy Horse 1.1 quand le brief tourne autour de l audio natif, du dialogue, du lip-sync multilingue, des personnages de reference et de workflows texte, image ou reference-to-video. Utilisez Kling O3 Pro quand le projet demande plus de controle omni, de transformation depuis une video source, de references visuelles et de continuite style Kling. Cette comparaison aide a choisir entre un workflow acteur audio-first et une route de production plus lourde basee sur references et video-to-video.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Ouvrir la page modele Happy Horse 1.1',
+        },
+        {
+          href: '/models/kling-o3-pro',
+          label: 'Ouvrir la page modele Kling O3 Pro',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-kling-3-pro',
+          label: 'Comparer Happy Horse vs Kling 3 Pro',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre generation Alibaba avec audio natif et controle de production Kling omni.',
+        items: [
+          {
+            question: 'Quand choisir Happy Horse 1.1 plutot que Kling O3 Pro ?',
+            answer:
+              'Choisissez Happy Horse 1.1 pour des personnages qui parlent, l audio synchronise natif, les tests de lip-sync et les references image quand l acteur et la voix sont le centre du rendu.',
+          },
+          {
+            question: 'Quand Kling O3 Pro est-il le meilleur choix ?',
+            answer:
+              'Choisissez Kling O3 Pro quand vous avez besoin de plus de controle sur source video, references ou transformation, et que le projet depend moins du dialogue natif.',
+          },
+          {
+            question: 'Les deux conviennent-ils aux videos avec references ?',
+            answer:
+              'Oui, mais pas avec le meme angle. Happy Horse 1.1 met l accent sur les images de reference et les personnages avec audio, tandis que Kling O3 Pro est plus adapte au controle omni et video-to-video.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-veo-3-1-fast': {
+      heroIntro:
+        'Utilisez Happy Horse 1.1 quand le clip a besoin d audio natif, de dialogue, de lip-sync et de personnages de reference controlables pour des scenes social ou UGC. Utilisez Veo 3.1 Fast quand vous voulez le rendu Veo, des cycles de draft plus rapides, plus de marge de resolution et des concepts courts plus soignes avant un workflow Veo final. Cette page separe une generation acteur audio-first d une route de draft visuelle premium plus rapide.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Ouvrir la page modele Happy Horse 1.1',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Ouvrir la page modele Veo 3.1 Fast',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-veo-3-1',
+          label: 'Comparer Happy Horse vs Veo 3.1',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre travail personnage avec audio natif et drafts Veo rapides.',
+        items: [
+          {
+            question: 'Quand Happy Horse 1.1 est-il meilleur que Veo 3.1 Fast ?',
+            answer:
+              'Choisissez Happy Horse 1.1 quand la performance parlee, l audio synchronise, le lip-sync et les personnages de reference comptent plus que la finition visuelle Veo.',
+          },
+          {
+            question: 'Quand utiliser Veo 3.1 Fast a la place ?',
+            answer:
+              'Utilisez Veo 3.1 Fast pour des drafts rapides et soignes, des concepts cinematographiques et des workflows ou la qualite visuelle Veo et la resolution priment sur le lip-sync.',
+          },
+          {
+            question: 'Lequel est le plus adapte aux pubs UGC ?',
+            answer:
+              'Happy Horse 1.1 est plus fort quand la pub UGC repose sur un sujet qui parle. Veo 3.1 Fast est plus fort pour les visuels produit premium, la finition de scene ou un draft Veo rapide.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-seedance-2-0-fast': {
+      heroIntro:
+        'Utilisez Happy Horse 1.1 quand le job depend de personnages parlants, d audio synchronise natif, de lip-sync et de references reutilisables. Utilisez Seedance 2.0 Fast quand vous avez besoin de drafts Seedance moins couteux, de checks de timing, d exploration de prompts et d un pont rapide vers Seedance 2.0. Cette comparaison aide a decider si le prochain test doit valider la performance et le dialogue ou simplement iterer plus vite la direction visuelle.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Ouvrir la page modele Happy Horse 1.1',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Ouvrir la page modele Seedance 2.0 Fast',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-seedance-2-0',
+          label: 'Comparer Happy Horse vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre runs Happy Horse audio-first et iteration Seedance rapide.',
+        items: [
+          {
+            question: 'Quand choisir Happy Horse 1.1 ?',
+            answer:
+              'Choisissez Happy Horse 1.1 quand le test demande audio natif, lip-sync, sujets parlants ou personnages de reference qui portent la scene.',
+          },
+          {
+            question: 'Quand choisir Seedance 2.0 Fast ?',
+            answer:
+              'Choisissez Seedance 2.0 Fast pour des tests de prompts Seedance moins couteux, du timing de draft, des storyboards et une iteration rapide avant Seedance 2.0.',
+          },
+          {
+            question: 'Lequel convient mieux au batch testing ?',
+            answer:
+              'Seedance 2.0 Fast est souvent plus adapte a beaucoup d iterations visuelles. Happy Horse 1.1 est meilleur quand chaque variante doit tester audio, dialogue ou reference personnage.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-happy-horse-1-1': {
+      heroIntro:
+        'Utilisez Seedance 2.0 Mini quand vous cherchez une route Dreamina Seedance moins couteuse pour batches ecommerce, variantes social, edits video, tests d extension et production frequente en 480p ou 720p. Utilisez Happy Horse 1.1 quand la scene depend d audio synchronise natif, de dialogue, de lip-sync et d un meilleur comportement de personnages parlants. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Ouvrir la page modele Seedance 2.0 Mini',
+        },
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Ouvrir la page modele Happy Horse 1.1',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Comparer Seedance Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre valeur batch Seedance Mini et sortie Happy Horse avec audio natif.',
+        items: [
+          {
+            question: 'Quand choisir Seedance 2.0 Mini ?',
+            answer:
+              'Choisissez Mini pour la production batch moins couteuse, variantes ecommerce, tests de hooks UGC, edits video, extensions et experiences a haute frequence quand 480p ou 720p suffit.',
+          },
+          {
+            question: 'Quand Happy Horse 1.1 est-il plus adapte ?',
+            answer:
+              'Choisissez Happy Horse 1.1 quand l audio natif, le lip-sync multilingue, les personnages parlants et les sujets de reference comptent plus que le cout par variante le plus bas.',
+          },
+          {
+            question: 'Pourquoi cette page Mini est-elle scorecard-only ?',
+            answer:
+              'Les pages Mini utilisent scorecards, specs et copy de decision jusqu a ce que des renders Mini cote-a-cote soient prets, donc cette page n affiche pas encore de videos comparatives.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-ltx-2-3-pro': {
+      heroIntro:
+        'Utilisez Happy Horse 1.1 quand l histoire depend d audio natif, de lip-sync, de dialogue et de personnages de reference dans des scenes marketing ou UGC courtes. Utilisez LTX 2.3 Pro quand le projet demande des clips plus longs, une livraison en plus haute resolution, de la marge 4K, des workflows d extension ou de retake et plus de finition production. Cette comparaison separe un modele acteur audio-first d un modele de production et edition plus flexible.',
+      primaryLinksTitle: 'Parcours recommande',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Ouvrir la page modele Happy Horse 1.1',
+        },
+        {
+          href: '/models/ltx-2-3-pro',
+          label: 'Ouvrir la page modele LTX 2.3 Pro',
+        },
+        {
+          href: '/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0',
+          label: 'Comparer LTX 2.3 Pro vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Reponses courtes pour choisir entre sortie personnage avec audio natif et controles de production LTX.',
+        items: [
+          {
+            question: 'Quand choisir Happy Horse 1.1 ?',
+            answer:
+              'Choisissez Happy Horse 1.1 pour l audio natif, le lip-sync, les scenes de dialogue courtes et les personnages de reference quand la performance est le signal principal.',
+          },
+          {
+            question: 'Quand choisir LTX 2.3 Pro ?',
+            answer:
+              'Choisissez LTX 2.3 Pro pour des clips plus longs, une livraison orientee 4K, des workflows extension ou retake et une finition production ou le controle visuel prime sur le lip-sync.',
+          },
+          {
+            question: 'Quel modele est meilleur pour des pubs produit ?',
+            answer:
+              'Happy Horse 1.1 est meilleur pour des pubs spokesperson ou UGC avec dialogue. LTX 2.3 Pro est meilleur pour un mouvement produit soigne, une finition haute resolution et une production plus editee.',
+          },
+        ],
+      },
+    },
     'veo-3-1-vs-veo-3-1-fast': {
       heroIntro:
         'Comparez Veo 3.1 et Veo 3.1 Fast pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de texte-to-video soigne, d image-to-video, de tests plus rapides et de controle sur l audio natif.',

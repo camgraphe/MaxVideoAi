@@ -1,12 +1,17 @@
 import {
   BYTEPLUS_SEEDANCE_ASPECT_RATIOS,
   PUBLIC_SEEDANCE_ENGINE_ID,
+  PUBLIC_SEEDANCE_MINI_ENGINE_ID,
 } from '@/server/video-providers/byteplus-modelark';
 import { isRecord } from './byteplus-record-utils';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 
 const BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0056;
 const BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS = 0.007;
+const BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.004;
+const BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0024;
+const BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0035;
+const BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS = 0.0021;
 
 const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; height: number }>> = {
   '480p': {
@@ -32,6 +37,14 @@ const BYTEPLUS_TOKEN_DIMENSIONS: Record<string, Record<string, { width: number; 
     '1:1': { width: 1080, height: 1080 },
     '3:4': { width: 1080, height: 1440 },
     '9:16': { width: 1080, height: 1920 },
+  },
+  '4k': {
+    '21:9': { width: 4398, height: 1886 },
+    '16:9': { width: 3840, height: 2160 },
+    '4:3': { width: 3326, height: 2494 },
+    '1:1': { width: 2880, height: 2880 },
+    '3:4': { width: 2494, height: 3326 },
+    '9:16': { width: 2160, height: 3840 },
   },
 };
 
@@ -87,12 +100,27 @@ export function getBytePlusAccounting(job: Pick<BytePlusPendingJob, 'settings_sn
     hasReferenceVideos,
     hasReferenceAudio,
     generateAudio: job.has_audio === true,
-    byteplusBillingInputType: hasReferenceVideos ? 'video_input' : 'no_video_input',
+    byteplusBillingInputType: hasReferenceVideos || mode === 'v2v' || mode === 'extend' ? 'video_input' : 'no_video_input',
   };
 }
 
-export function getBytePlusUnitPriceUsdPer1kTokens(engineId: string | null | undefined): number {
-  return engineId === PUBLIC_SEEDANCE_ENGINE_ID
-    ? BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS
-    : BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
+export function getBytePlusUnitPriceUsdPer1kTokens(
+  engineId: string | null | undefined,
+  billingInputType?: string | null,
+  resolution?: string | null
+): number {
+  if (engineId === PUBLIC_SEEDANCE_ENGINE_ID) {
+    if ((resolution ?? '').trim().toLowerCase() === '4k') {
+      return billingInputType === 'video_input'
+        ? BYTEPLUS_STANDARD_4K_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+        : BYTEPLUS_STANDARD_4K_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+    }
+    return BYTEPLUS_STANDARD_UNIT_PRICE_USD_PER_1K_TOKENS;
+  }
+  if (engineId === PUBLIC_SEEDANCE_MINI_ENGINE_ID) {
+    return billingInputType === 'video_input'
+      ? BYTEPLUS_MINI_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS
+      : BYTEPLUS_MINI_NO_VIDEO_INPUT_UNIT_PRICE_USD_PER_1K_TOKENS;
+  }
+  return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
 }

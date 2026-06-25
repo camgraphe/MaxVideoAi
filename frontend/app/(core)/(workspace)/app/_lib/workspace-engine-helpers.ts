@@ -234,7 +234,7 @@ export function buildComposerModeToggles({
             : selectedEngine.id === 'veo-3-1-lite'
               ? (['extend'] as const)
               : UNIFIED_SEEDANCE_ENGINE_IDS.has(selectedEngine.id)
-                ? ([] as const)
+                ? (['extend'] as const)
                 : isKlingO3EngineId(selectedEngine.id)
                   ? ([] as const)
                   : null;
