@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-06-09",
+  "last_updated": "2026-06-25",
   "specs": [
     {
       "modelSlug": "sora-2",
@@ -782,7 +782,9 @@
       "sources": [
         "https://fal.ai/seedance-2.0",
         "https://fal.ai/models/bytedance/seedance-2.0/text-to-video",
-        "https://seed.bytedance.com/en/seedance2_0"
+        "https://seed.bytedance.com/en/seedance2_0",
+        "https://docs.byteplus.com/en/docs/ModelArk/1520757",
+        "https://docs.byteplus.com/en/docs/ModelArk/2291680"
       ],
       "keySpecs": {
         "textToVideo": "Supported",
@@ -791,7 +793,7 @@
         "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
         "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
         "referenceVideo": "Ref2V: up to 3 video references",
-        "maxResolution": "1080p",
+        "maxResolution": "4K on the standard Dreamina Seedance 2.0 route",
         "maxDuration": "15s",
         "aspectRatios": [
           "Auto",
@@ -850,6 +852,46 @@
         "cameraMotionControls": "Advanced",
         "watermark": "No (MaxVideoAI)",
         "releaseDate": null
+      }
+    },
+    {
+      "modelSlug": "dreamina-seedance-2-0-mini",
+      "sources": [
+        "https://maxvideoai.com/models/dreamina-seedance-2-0-mini",
+        "Dreamina Seedance API model id: dreamina-seedance-2-0-mini-260615"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (video editing)",
+        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+        "referenceVideo": "Supported (up to 3 video references for references or extension)",
+        "maxResolution": "480p / 720p",
+        "maxDuration": "4-15s",
+        "aspectRatios": [
+          "Auto",
+          "21:9",
+          "16:9",
+          "4:3",
+          "1:1",
+          "3:4",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Not supported (reference audio inputs only)",
+        "nativeAudioGeneration": "Not supported",
+        "dualChannelAudio": null,
+        "lipSync": "Not supported",
+        "pricePerSecond": null,
+        "cameraMotionControls": "Advanced",
+        "watermark": "No (MaxVideoAI)",
+        "releaseDate": "Jun 2026"
       }
     },
     {

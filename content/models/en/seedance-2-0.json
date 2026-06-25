@@ -5,12 +5,12 @@
     "title": "Seedance 2.0 | AI Video Model, Pricing, Native Audio & Use Cases | MaxVideoAI",
     "description": "Use Seedance 2.0 on MaxVideoAI for multi-shot video, native audio, current pricing, key capabilities, and the best use cases for current Seedance workflows."
   },
-  "overview": "Seedance 2.0 is the current Seedance AI video model on MaxVideoAI for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences.",
+  "overview": "Seedance 2.0 is the current Dreamina Seedance 2.0 AI video model on MaxVideoAI for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences.",
   "pricingNotes": "Seedance 2 uses provider token pricing. MaxVideoAI applies the display price and shows the final quote before submission.",
   "hero": {
     "title": "Seedance 2.0 — current Seedance model for multi-shot video and native audio",
-    "intro": "Seedance 2.0 is the current Seedance AI video model for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences. Use this page to review pricing, key capabilities, best use cases, and when this Seedance video workflow is a better fit than Fast or older Seedance versions.",
-    "badge": "3 workflows · 480p/720p/1080p · Auto or 4-15s · Native audio · 9 image / 3 video / 3 audio refs",
+    "intro": "Seedance 2.0 is the current Dreamina Seedance 2.0 AI video model for multi-shot video, native audio, and reference-guided workflows when you need the main Seedance path for polished ads, launches, and cinematic branded sequences. Use this page to review pricing, key capabilities, best use cases, and when this Seedance video workflow is a better fit than Fast or older Seedance versions.",
+    "badge": "3 workflows · 480p/720p/1080p/4K · Auto or 4-15s · Native audio · 9 image / 3 video / 3 audio refs",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0",
       "href": "/app?engine=seedance-2-0"
@@ -27,6 +27,10 @@
       {
         "label": "See Seedance 2.0 Fast",
         "href": "/models/seedance-2-0-fast"
+      },
+      {
+        "label": "See Seedance 2.0 Mini value route",
+        "href": "/models/dreamina-seedance-2-0-mini"
       },
       {
         "label": "Compare Seedance 2.0 vs Seedance 2.0 Fast",
@@ -83,7 +87,7 @@
   "technicalOverview": [
     {
       "label": "Role",
-      "body": "ByteDance's latest Seedance AI video model with a unified multimodal audio-video architecture."
+      "body": "ByteDance's Dreamina Seedance 2.0 AI video model with a unified multimodal audio-video architecture."
     },
     {
       "label": "Inputs",
@@ -98,6 +102,10 @@
       "body": "Auto or 4-15 seconds per generation"
     },
     {
+      "label": "Resolution",
+      "body": "480p, 720p, 1080p, and 4K on the standard Dreamina Seedance 2.0 route; Fast and Mini stay on their lower-resolution caps."
+    },
+    {
       "label": "Audio",
       "body": "Native audio is on by default and can be disabled; MaxVideoAI shows the final quote before generation"
     },
@@ -107,7 +115,7 @@
     },
     {
       "label": "Notes",
-      "body": "Provider/model-family notes describe text-to-video, image-to-video, reference-to-video, and optimized fast variants inside the Seedance 2 family."
+      "body": "ByteDance documentation and Dreamina product naming refer to this family as Dreamina Seedance 2.0, with text-to-video, image-to-video, reference-to-video, and optimized fast variants inside the Seedance 2 family."
     }
   ],
   "promptStructure": {
@@ -131,6 +139,7 @@
       "Use Seedream 5.0 Lite when you want to create or clean a reference image before starting an image-to-video run.",
       "Use the optional end image in i2v when you need a guided last frame.",
       "Move to Seedance 2.0 Fast when you need cheaper draft passes before final renders.",
+      "Use Seedance 2.0 Mini only when lower-cost batch/value variants matter more than the final polished Seedance 2.0 route.",
       "Generate shows the active route and the final quote before you submit."
     ]
   },
@@ -164,8 +173,16 @@
       "a": "Seedance 2.0 is best for polished Seedance AI video workflows, multi-shot ads, branded sequences, audio-led scenes, and reference-guided production where continuity matters more than draft speed."
     },
     {
+      "q": "Is Seedance 2.0 also Dreamina Seedance 2.0?",
+      "a": "Yes. ByteDance documentation and Dreamina product naming describe the current API family as Dreamina Seedance 2.0. On MaxVideoAI, this page remains the standard Seedance 2.0 route for final-quality work."
+    },
+    {
       "q": "Does Seedance 2.0 include native audio?",
       "a": "Yes. Seedance 2.0 supports native audio, including dialogue, ambience, music, and sound effects inside the same generation workflow."
+    },
+    {
+      "q": "Does Seedance 2.0 support 4K output?",
+      "a": "Yes. The standard Dreamina Seedance 2.0 route supports 4K output. Seedance 2.0 Fast and Seedance 2.0 Mini remain capped below 4K."
     },
     {
       "q": "How is Seedance 2.0 different from Seedance 2.0 Fast?",
@@ -187,6 +204,7 @@
       "Pricing and current route||Use Seedance 2.0 when you want the main current Seedance path and need the final quoted price visible before generation.",
       "Native audio||Dialogue, ambience, music, and sound effects can stay inside the same generation flow instead of being treated as a separate afterthought.",
       "Seedance 2.0 vs Seedance 2.0 Fast||Choose Seedance 2.0 for stronger final-quality multi-shot work, and use Fast when the job is mainly draft iteration and route comparison.",
+      "Seedance 2.0 Mini value route||Use Mini as the lower-cost batch/value alternative for ecommerce, marketing, and UGC variants.",
       "Start with Seedance AI video examples||Open the examples page first if you want output patterns, prompt baselines, and settings before committing to a production run."
     ],
     "heroSupportLine": "Start with Seedance AI video examples, use Seedance 2.0 for the main current multi-shot and native-audio workflow, and compare it with Fast when you need quicker draft passes.",
@@ -195,7 +213,7 @@
     "specSections": [
       {
         "title": "Multimodal input stack",
-        "intro": "Provider/model-family notes describe Seedance 2.0 as a unified multimodal audio-video model.",
+        "intro": "Provider/model-family notes describe Dreamina Seedance 2.0 as a unified multimodal audio-video model.",
         "items": [
           "Text instructions + multimodal references",
           "Up to 9 image references",
@@ -208,7 +226,7 @@
         "title": "Output style and structure",
         "intro": "Provider/model-family notes highlight cinematic control, native audio, realistic physics, multi-shot cuts, and up to 15 seconds per generation.",
         "items": [
-          "480p, 720p or 1080p",
+          "480p, 720p, 1080p or 4K on Seedance 2.0 standard",
           "Auto or 4-15s per generation",
           "Aspect ratios: auto, 21:9, 16:9, 4:3, 1:1, 3:4, 9:16",
           "Image-to-video supports an optional end frame",
@@ -311,6 +329,13 @@
         "description": "Use the faster Seedance version for draft passes, quick timing checks, and early concept loops before you move finals into the standard version.",
         "modelSlug": "seedance-2-0-fast",
         "ctaLabel": "Compare Seedance 2.0 vs Fast ->"
+      },
+      {
+        "brand": "bytedance",
+        "title": "Seedance 2.0 Mini",
+        "description": "Use Mini as the lower-cost batch/value alternative for ecommerce, marketing, and UGC variants before standard Seedance 2.0 work.",
+        "modelSlug": "dreamina-seedance-2-0-mini",
+        "ctaLabel": "See Seedance 2.0 Mini value route ->"
       },
       {
         "brand": "ltx",

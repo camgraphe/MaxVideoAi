@@ -19,6 +19,7 @@ import { HAPPY_HORSE_FAL_ENGINE_REGISTRY } from './happy-horse';
 import { SEEDANCE_1_5_FAL_ENGINE_REGISTRY } from './seedance-1-5';
 import { SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY } from './seedance-2-standard';
 import { SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY } from './seedance-2-fast';
+import { SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY } from './seedance-2-mini';
 import { SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY } from './seedance-2-byteplus';
 import { WAN_2_5_FAL_ENGINE_REGISTRY } from './wan-2-5';
 import { WAN_2_6_FAL_ENGINE_REGISTRY } from './wan-2-6';
@@ -54,6 +55,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...SEEDANCE_1_5_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY,
+  ...SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY,
   ...SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY,
   ...WAN_2_5_FAL_ENGINE_REGISTRY,
   ...WAN_2_6_FAL_ENGINE_REGISTRY,

@@ -48,6 +48,7 @@ test('model page template config separates SEO intent from shared layout slots',
 test('template registry enables Seedance production and draft model templates', () => {
   const seedance = getModelPageTemplateConfig('seedance-2-0');
   const seedanceFast = getModelPageTemplateConfig('seedance-2-0-fast');
+  const seedanceMini = getModelPageTemplateConfig('dreamina-seedance-2-0-mini');
   const ltx2 = getModelPageTemplateConfig('ltx-2');
   const ltx2Fast = getModelPageTemplateConfig('ltx-2-fast');
   const ltxFast = getModelPageTemplateConfig('ltx-2-3-fast');
@@ -67,6 +68,7 @@ test('template registry enables Seedance production and draft model templates', 
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
+  assert.ok(seedanceMini);
   assert.ok(ltx2);
   assert.ok(ltx2Fast);
   assert.ok(ltxFast);
@@ -85,6 +87,7 @@ test('template registry enables Seedance production and draft model templates', 
   assert.ok(nanoPro);
   assert.equal(seedance.intent, 'production');
   assert.equal(seedanceFast.intent, 'draft');
+  assert.equal(seedanceMini.intent, 'draft');
   assert.equal(ltx2.intent, 'specialized');
   assert.equal(ltx2Fast.intent, 'draft');
   assert.equal(ltxFast.intent, 'draft');
@@ -103,6 +106,8 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(nanoPro.intent, 'specialized');
   assert.equal(seedance.hero.primaryCtaHref, '/app?engine=seedance-2-0');
   assert.equal(seedanceFast.hero.primaryCtaHref, '/app?engine=seedance-2-0-fast');
+  assert.equal(seedanceMini.hero.primaryCtaHref, '/app?engine=seedance-2-0-mini');
+  assert.equal(seedanceMini.hero.secondaryCtaHref, '/examples/seedance');
   assert.equal(ltx2.hero.primaryCtaHref, '/app?engine=ltx-2');
   assert.equal(ltx2Fast.hero.primaryCtaHref, '/app?engine=ltx-2-fast');
   assert.equal(ltxFast.hero.primaryCtaHref, '/app?engine=ltx-2-3-fast');
@@ -121,6 +126,7 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(nanoPro.hero.primaryCtaHref, '/app/image?engine=nano-banana-pro');
   assert.equal(seedance.pricing.anchorHref, '/pricing#seedance-2-0-pricing');
   assert.equal(seedanceFast.pricing.anchorHref, '/pricing#seedance-2-0-fast-pricing');
+  assert.equal(seedanceMini.pricing.anchorHref, '/pricing#dreamina-seedance-2-0-mini-pricing');
   assert.equal(ltx2.pricing.anchorHref, '/pricing#ltx-2-pricing');
   assert.equal(ltx2Fast.pricing.anchorHref, '/pricing#ltx-2-fast-pricing');
   assert.equal(ltxFast.pricing.anchorHref, '/pricing#ltx-2-3-fast-pricing');
@@ -139,11 +145,24 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(nanoPro.pricing.anchorHref, '/pricing#nano-banana-pro-pricing');
   assert.deepEqual(
     seedance.pricing.presets.map((preset) => preset.id),
-    ['5s-480p', '8s-720p', '10s-1080p', 'audio-included', 'max-duration']
+    ['5s-480p', '8s-720p', '10s-1080p', '5s-4k', 'audio-included', 'max-duration']
   );
   assert.deepEqual(
     seedanceFast.pricing.presets.map((preset) => preset.id),
     ['5s-480p', '8s-720p', '10s-720p', 'max-duration']
+  );
+  assert.deepEqual(
+    seedanceMini.pricing.presets.map((preset) => preset.id),
+    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9']
+  );
+  assert.deepEqual(
+    seedanceMini.hero.quickLinks.map((link) => link.href),
+    [
+      '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=dreamina-seedance-2-0-mini',
+      '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast?order=dreamina-seedance-2-0-mini',
+      '/pricing#dreamina-seedance-2-0-mini-pricing',
+      '#prompting',
+    ]
   );
   assert.deepEqual(
     ltx2.pricing.presets.map((preset) => preset.id),
@@ -210,6 +229,7 @@ test('template registry enables Seedance production and draft model templates', 
     ['2k-image', '4k-image', '4x-2k-image']
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
+    'dreamina-seedance-2-0-mini',
     'gpt-image-2',
     'happy-horse-1-0',
     'happy-horse-1-1',

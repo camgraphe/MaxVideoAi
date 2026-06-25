@@ -27,6 +27,7 @@ import { pikaTextToVideoTemplateConfig } from './model-page-templates/pika-text-
 import { seedance15ProTemplateConfig } from './model-page-templates/seedance-1-5-pro';
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
+import { seedance20MiniTemplateConfig } from './model-page-templates/seedance-2-0-mini';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
 import { sora2ProTemplateConfig } from './model-page-templates/sora-2-pro';
 import { sora2TemplateConfig } from './model-page-templates/sora-2';
@@ -65,6 +66,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [seedance15ProTemplateConfig.slug]: seedance15ProTemplateConfig,
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
+  [seedance20MiniTemplateConfig.slug]: seedance20MiniTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,
   [sora2TemplateConfig.slug]: sora2TemplateConfig,
   [sora2ProTemplateConfig.slug]: sora2ProTemplateConfig,

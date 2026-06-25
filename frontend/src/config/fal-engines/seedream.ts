@@ -9,7 +9,7 @@ import type { RawFalEngineEntry } from './types';
 const SEEDREAM_ENGINE: EngineCaps = {
   id: 'seedream',
   label: 'Seedream',
-  provider: 'BytePlus',
+  provider: 'ByteDance',
   version: '5.0 Lite',
   status: 'live',
   latencyTier: 'standard',
@@ -48,7 +48,7 @@ const SEEDREAM_ENGINE: EngineCaps = {
         step: 1,
         default: 1,
         description:
-          'Request up to 15 generated images. Requests above one image enable BytePlus sequential_image_generation automatically.',
+          'Request up to 15 generated images. Requests above one image use sequential image generation automatically.',
       },
       {
         id: 'aspect_ratio',
@@ -57,7 +57,7 @@ const SEEDREAM_ENGINE: EngineCaps = {
         values: [...SEEDREAM_ASPECT_RATIO_VALUES],
         default: 'auto',
         description:
-          'Choose auto, or map the selected Seedream resolution to a BytePlus recommended width and height.',
+          'Choose auto, or map the selected Seedream resolution to a recommended width and height.',
       },
       {
         id: 'image_urls',
@@ -77,7 +77,7 @@ const SEEDREAM_ENGINE: EngineCaps = {
         label: 'Image size',
         values: [...SEEDREAM_BASE_RESOLUTION_VALUES],
         default: '2K',
-        description: 'BytePlus Seedream base output resolution. Pair with Ratio for exact recommended dimensions.',
+        description: 'Seedream base output resolution. Pair with Ratio for exact recommended dimensions.',
       },
       {
         id: 'output_format',
@@ -94,7 +94,7 @@ const SEEDREAM_ENGINE: EngineCaps = {
         type: 'boolean',
         label: 'AI watermark',
         default: false,
-        description: 'Add BytePlus AI-generated watermark text to the image.',
+        description: 'Add AI-generated watermark text to the image.',
       },
     ],
     constraints: {
@@ -116,7 +116,7 @@ const SEEDREAM_ENGINE: EngineCaps = {
     base: 0.035,
     currency: 'USD',
     notes:
-      'BytePlus lists Seedream 5.0 Lite at $0.035 per successfully generated image; MaxVideoAI customer pricing may include platform margin.',
+      'Seedream 5.0 Lite is billed per successfully generated image; MaxVideoAI customer pricing may include platform margin.',
   },
   updatedAt: '2026-05-11T00:00:00Z',
   ttlSec: 600,
@@ -134,13 +134,13 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     modelSlug: 'seedream',
     marketingName: 'Seedream',
     cardTitle: 'Seedream 5.0 Lite',
-    provider: 'BytePlus',
+    provider: 'ByteDance',
     brandId: 'bytedance',
     family: 'seedream',
     versionLabel: '5.0 Lite',
     availability: 'available',
     logoPolicy: 'textOnly',
-    billingNote: 'Seedream 5.0 Lite is priced per successfully generated image through BytePlus ModelArk.',
+    billingNote: 'Seedream 5.0 Lite is priced per successfully generated image.',
     engine: SEEDREAM_ENGINE,
     modes: [
       {
@@ -175,7 +175,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'image',
     seoText:
-      'Seedream 5.0 Lite is a BytePlus image model for image generation, visual concept creation, product shots, character references, ad visuals, stylized scenes, and clean reference images for Seedance image-to-video workflows.',
+      'Seedream 5.0 Lite is a ByteDance image model for image generation, visual concept creation, product shots, character references, ad visuals, stylized scenes, and clean reference images for Seedance image-to-video workflows.',
     media: {
       videoUrl: '/assets/models/seedream-hero.webp',
       imagePath: '/assets/models/seedream-hero.webp',

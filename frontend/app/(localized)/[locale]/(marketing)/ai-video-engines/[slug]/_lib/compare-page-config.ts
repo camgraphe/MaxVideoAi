@@ -10,6 +10,8 @@ export const MODELS_SLUG_MAP = buildSlugMap('models');
 export const TROPHY_COMPARISONS = compareConfig.trophyComparisons as string[];
 export const RELATED_COMPARISONS =
   (compareConfig as { relatedComparisons?: Record<string, string[]> }).relatedComparisons ?? {};
+export const SCOREBOARD_ONLY_COMPARISONS =
+  (compareConfig as { scoreboardOnlyComparisons?: string[] }).scoreboardOnlyComparisons ?? [];
 export const EXCLUDED_ENGINE_SLUGS = new Set([
   'nano-banana',
   'nano-banana-pro',

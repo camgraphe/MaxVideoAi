@@ -71,17 +71,21 @@ type LocalizedCopyWithoutPricingScenarios = Omit<ModelDecisionData, 'pricing'> &
 const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
   en: {
     hero: {
-      eyebrow: 'BYTEDANCE CURRENT-GEN MODEL',
+      eyebrow: 'DREAMINA / BYTEDANCE CURRENT-GEN MODEL',
       title: 'Seedance 2.0',
       subtitle:
-        'Native audio, multi-shot continuity, and reference-guided video for polished ads, launches and cinematic branded content.',
-      subtitleHighlights: ['Native audio', 'multi-shot continuity', 'reference-guided video'],
+        'Native audio, 4K-capable output, multi-shot continuity, and reference-guided video for polished ads, launches and cinematic branded content.',
+      subtitleHighlights: ['Native audio', '4K-capable output', 'multi-shot continuity'],
       paragraph:
-        'Use Seedance 2.0 when you need the current Seedance production route: stronger continuity than older versions, native audio in the same generation flow, and multimodal references for text-to-video or image-to-video work.',
+        'Use Seedance 2.0 when you need the current Dreamina Seedance production route: stronger continuity than older versions, 480p/720p/1080p/4K output, native audio in the same generation flow, and multimodal references for text-to-video or image-to-video work.',
       primaryCta: { label: 'Generate with Seedance 2.0', href: '/app?engine=seedance-2-0' },
       secondaryCta: { label: 'View examples', href: examplesHref('en') },
       quickLinks: [
         { label: 'Compare vs Fast', href: compareHref('en', 'seedance-2-0', 'seedance-2-0-fast') },
+        {
+          label: 'Compare vs Mini value route',
+          href: compareHref('en', 'seedance-2-0', 'dreamina-seedance-2-0-mini', 'seedance-2-0'),
+        },
         { label: 'View pricing', href: pricingHref('en') },
         { label: 'Prompt examples', href: '#prompting' },
       ],
@@ -90,7 +94,7 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'Seedance 2.0 example',
       description: 'Native-audio cinematic sequence',
       renderLabel: 'View render',
-      badges: ['Audio on', '12s', '16:9'],
+      badges: ['Audio on', '15s', '4K option'],
       altContext: 'cinematic rooftop running scene',
     },
     features: [
@@ -101,7 +105,7 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
         tone: 'continuity',
       },
       { title: 'Reference-guided', body: 'Use supported references to guide the output.', tone: 'reference' },
-      { title: 'Max 1080p', body: 'Crisp output for most production needs.', tone: 'quality' },
+      { title: 'Up to 4K', body: 'Use 480p, 720p, 1080p, or 4K on the standard Dreamina Seedance route.', tone: 'quality' },
       { title: 'Max 15s', body: 'Up to 15 seconds per generation.', tone: 'duration' },
       { title: 'Pay-as-you-go', body: 'See exact live price before you generate.', tone: 'price' },
     ],
@@ -152,29 +156,33 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
     ],
     pricingCopy: {
       title: 'Seedance 2.0 pricing at a glance',
-      subtitle: 'Preset total prices - see the exact live price in the app before you generate.',
+      subtitle: 'Preset 720p, 1080p, and 4K totals - see the exact live price in the app before you generate.',
       footnote: 'All prices are MaxVideoAI display prices in USD credits for preset scenarios.',
       ctaLabel: 'View full pricing',
     },
     meta: {
       title: 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses',
       description:
-        'See Seedance 2.0 pricing, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.',
+        'See Seedance 2.0 pricing, 4K output, max video length, native audio, reference workflows and when to use it instead of Seedance Fast.',
     },
   },
   fr: {
     hero: {
-      eyebrow: 'MODÈLE BYTEDANCE DE GÉNÉRATION ACTUELLE',
+      eyebrow: 'MODÈLE DREAMINA / BYTEDANCE ACTUEL',
       title: 'Seedance 2.0',
       subtitle:
-        'Audio natif, continuité multi-plans et vidéo guidée par références pour des publicités, lancements et contenus de marque cinématographiques.',
-      subtitleHighlights: ['Audio natif', 'continuité multi-plans', 'vidéo guidée par références'],
+        'Audio natif, sortie jusqu’en 4K, continuité multi-plans et vidéo guidée par références pour des publicités, lancements et contenus de marque cinématographiques.',
+      subtitleHighlights: ['Audio natif', 'sortie jusqu’en 4K', 'continuité multi-plans'],
       paragraph:
-        "Utilisez Seedance 2.0 pour le workflow Seedance actuel : meilleure continuité que les versions précédentes, audio natif dans le même flux et références multimodales pour le text-to-video ou l’image-to-video.",
+        "Utilisez Seedance 2.0 pour le workflow Dreamina Seedance actuel : meilleure continuité que les versions précédentes, sortie 480p/720p/1080p/4K, audio natif dans le même flux et références multimodales pour le text-to-video ou l’image-to-video.",
       primaryCta: { label: 'Générer avec Seedance 2.0', href: '/app?engine=seedance-2-0' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr') },
       quickLinks: [
         { label: 'Comparer vs Fast', href: compareHref('fr', 'seedance-2-0', 'seedance-2-0-fast') },
+        {
+          label: 'Comparer vs route Mini valeur',
+          href: compareHref('fr', 'seedance-2-0', 'dreamina-seedance-2-0-mini', 'seedance-2-0'),
+        },
         { label: 'Voir les tarifs', href: pricingHref('fr') },
         { label: 'Exemples de prompts', href: '#prompting' },
       ],
@@ -183,14 +191,14 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'Exemple Seedance 2.0',
       description: 'Séquence cinématographique avec audio natif',
       renderLabel: 'Voir le rendu',
-      badges: ['Audio activé', '12 s', '16:9'],
+      badges: ['Audio activé', '15 s', 'Option 4K'],
       altContext: 'scène cinématographique de course sur un toit',
     },
     features: [
       { title: 'Audio natif', body: 'Dialogue, ambiance et SFX générés en synchro.', tone: 'audio' },
       { title: 'Continuité multi-plans', body: 'Gardez personnages, style et scène cohérents d’un plan à l’autre.', tone: 'continuity' },
       { title: 'Guidé par références', body: 'Guidez le rendu avec les références prises en charge.', tone: 'reference' },
-      { title: 'Max 1080p', body: 'Sortie nette pour la plupart des besoins de production.', tone: 'quality' },
+      { title: 'Jusqu’à 4K', body: 'Utilisez 480p, 720p, 1080p ou 4K sur la route Dreamina Seedance standard.', tone: 'quality' },
       { title: 'Max 15 s', body: 'Jusqu’à 15 secondes par génération.', tone: 'duration' },
       { title: 'Paiement à l’usage', body: 'Prix exact affiché avant génération.', tone: 'price' },
     ],
@@ -241,29 +249,33 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
     ],
     pricingCopy: {
       title: 'Prix Seedance 2.0 en un coup d’œil',
-      subtitle: 'Prix totaux par scénario — prix exact affiché dans l’app avant génération.',
+      subtitle: 'Prix totaux 720p, 1080p et 4K par scénario — prix exact affiché dans l’app avant génération.',
       footnote: 'Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.',
       ctaLabel: 'Voir tous les tarifs',
     },
     meta: {
       title: 'Seedance 2.0 : tarifs, audio natif et exemples | MaxVideoAI',
       description:
-        'Explorez prix, exemples, audio natif, vidéo multi-plans et workflows guidés par références. Comparez Seedance 2.0 vs Fast et les anciennes versions.',
+        'Explorez prix, sortie 4K, audio natif, vidéo multi-plans et workflows guidés par références. Comparez Seedance 2.0 vs Fast et les anciennes versions.',
     },
   },
   es: {
     hero: {
-      eyebrow: 'MODELO ACTUAL DE BYTEDANCE',
+      eyebrow: 'MODELO ACTUAL DREAMINA / BYTEDANCE',
       title: 'Seedance 2.0',
       subtitle:
-        'Audio nativo, continuidad entre tomas y video guiado por referencias para anuncios, lanzamientos y contenido de marca con acabado cinematográfico.',
-      subtitleHighlights: ['Audio nativo', 'continuidad entre tomas', 'video guiado por referencias'],
+        'Audio nativo, salida hasta 4K, continuidad entre tomas y video guiado por referencias para anuncios, lanzamientos y contenido de marca con acabado cinematográfico.',
+      subtitleHighlights: ['Audio nativo', 'salida hasta 4K', 'continuidad entre tomas'],
       paragraph:
-        'Usa Seedance 2.0 cuando necesites el flujo principal actual de Seedance: mejor continuidad que versiones anteriores, audio nativo en la misma generación y referencias multimodales para texto a video o imagen a video.',
+        'Usa Seedance 2.0 cuando necesites el flujo principal actual de Dreamina Seedance: mejor continuidad que versiones anteriores, salida 480p/720p/1080p/4K, audio nativo en la misma generación y referencias multimodales para texto a video o imagen a video.',
       primaryCta: { label: 'Generar con Seedance 2.0', href: '/app?engine=seedance-2-0' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es') },
       quickLinks: [
         { label: 'Comparar con Fast', href: compareHref('es', 'seedance-2-0', 'seedance-2-0-fast') },
+        {
+          label: 'Comparar con ruta Mini de valor',
+          href: compareHref('es', 'seedance-2-0', 'dreamina-seedance-2-0-mini', 'seedance-2-0'),
+        },
         { label: 'Ver precios', href: pricingHref('es') },
         { label: 'Ejemplos de prompts', href: '#prompting' },
       ],
@@ -272,14 +284,14 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
       caption: 'Ejemplo Seedance 2.0',
       description: 'Secuencia cinematográfica con audio nativo',
       renderLabel: 'Ver resultado',
-      badges: ['Audio activado', '12 s', '16:9'],
+      badges: ['Audio activado', '15 s', 'Opción 4K'],
       altContext: 'escena cinematográfica de carrera en una azotea',
     },
     features: [
       { title: 'Audio nativo', body: 'Diálogo, ambiente y efectos de sonido generados en sincronía.', tone: 'audio' },
       { title: 'Continuidad entre tomas', body: 'Mantiene personajes, estilo y escena coherentes.', tone: 'continuity' },
       { title: 'Guiado por referencias', body: 'Usa referencias compatibles para guiar el resultado.', tone: 'reference' },
-      { title: 'Max 1080p', body: 'Salida nítida para la mayoría de necesidades de producción.', tone: 'quality' },
+      { title: 'Hasta 4K', body: 'Usa 480p, 720p, 1080p o 4K en la ruta Dreamina Seedance estándar.', tone: 'quality' },
       { title: 'Max 15 s', body: 'Hasta 15 segundos por generación.', tone: 'duration' },
       { title: 'Pago por uso', body: 'Ve el precio exacto antes de generar.', tone: 'price' },
     ],
@@ -330,14 +342,14 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
     ],
     pricingCopy: {
       title: 'Precios de Seedance 2.0 de un vistazo',
-      subtitle: 'Precios totales por escenario. Consulta el precio exacto en la app antes de generar.',
+      subtitle: 'Precios totales 720p, 1080p y 4K por escenario. Consulta el precio exacto en la app antes de generar.',
       footnote: 'Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.',
       ctaLabel: 'Ver precios completos',
     },
     meta: {
       title: 'Seedance 2.0: precios, audio nativo y ejemplos | MaxVideoAI',
       description:
-        'Explora precios de Seedance 2.0, ejemplos, audio nativo, video con continuidad entre tomas y flujos guiados por referencias. Compara Seedance 2.0 vs Fast y versiones anteriores.',
+        'Explora precios de Seedance 2.0, salida 4K, audio nativo, video con continuidad entre tomas y flujos guiados por referencias. Compara Seedance 2.0 vs Fast y versiones anteriores.',
     },
   },
 };
@@ -345,16 +357,20 @@ const SEEDANCE_20_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> 
 const SEEDANCE_20_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
   en: {
     hero: {
-      eyebrow: 'BYTEDANCE FAST DRAFT ROUTE',
+      eyebrow: 'DREAMINA / BYTEDANCE FAST DRAFT ROUTE',
       title: 'Seedance 2.0 Fast',
       subtitle: 'Fast Seedance draft passes for timing tests, A/B motion checks, and quick reference-guided shot planning.',
       subtitleHighlights: ['draft passes', 'timing tests', 'A/B motion checks'],
       paragraph:
-        'Use Seedance 2.0 Fast as the faster Seedance draft route when you need rapid iteration before a final render: block timing, compare motion options, and test text, image, or reference inputs in shorter cycles.',
+        'Use Seedance 2.0 Fast as the faster Seedance draft route in the Dreamina Seedance family when you need rapid iteration before a final render: block timing, compare motion options, and test text, image, or reference inputs in shorter cycles.',
       primaryCta: { label: 'Draft with Seedance Fast', href: '/app?engine=seedance-2-0-fast' },
       secondaryCta: { label: 'View examples', href: examplesHref('en') },
       quickLinks: [
         { label: 'Compare vs 2.0', href: compareHref('en', 'seedance-2-0-fast', 'seedance-2-0') },
+        {
+          label: 'Compare vs Mini batch route',
+          href: compareHref('en', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast'),
+        },
         { label: 'View pricing', href: pricingHref('en', 'seedance-2-0-fast-pricing') },
         { label: 'Prompt examples', href: '#prompting' },
       ],
@@ -419,16 +435,20 @@ const SEEDANCE_20_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
   },
   fr: {
     hero: {
-      eyebrow: 'WORKFLOW BYTEDANCE FAST POUR BROUILLONS',
+      eyebrow: 'WORKFLOW DREAMINA / BYTEDANCE FAST POUR BROUILLONS',
       title: 'Seedance 2.0 Fast',
       subtitle: 'Des brouillons rapides Seedance pour tests de rythme, variantes de mouvement et planification de plans avec références.',
       subtitleHighlights: ['brouillons rapides', 'tests de rythme', 'variantes de mouvement'],
       paragraph:
-        'Utilisez Seedance 2.0 Fast comme workflow Seedance plus rapide pour itérer avant un rendu final : cadrer le timing, comparer des mouvements et tester textes, images ou références en cycles courts.',
+        'Utilisez Seedance 2.0 Fast comme workflow Dreamina Seedance plus rapide pour itérer avant un rendu final : cadrer le timing, comparer des mouvements et tester textes, images ou références en cycles courts.',
       primaryCta: { label: 'Créer un brouillon Seedance Fast', href: '/app?engine=seedance-2-0-fast' },
       secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr') },
       quickLinks: [
         { label: 'Comparer vs 2.0', href: compareHref('fr', 'seedance-2-0-fast', 'seedance-2-0') },
+        {
+          label: 'Comparer vs route Mini batch',
+          href: compareHref('fr', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast'),
+        },
         { label: 'Voir les tarifs', href: pricingHref('fr', 'seedance-2-0-fast-pricing') },
         { label: 'Exemples de prompts', href: '#prompting' },
       ],
@@ -487,16 +507,20 @@ const SEEDANCE_20_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
   },
   es: {
     hero: {
-      eyebrow: 'RUTA BYTEDANCE FAST PARA BORRADORES',
+      eyebrow: 'RUTA DREAMINA / BYTEDANCE FAST PARA BORRADORES',
       title: 'Seedance 2.0 Fast',
       subtitle: 'Ciclos de borradores rápidos de Seedance para pruebas de ritmo, variantes de movimiento y planificación con referencias.',
       subtitleHighlights: ['borradores rápidos', 'pruebas de ritmo', 'variantes de movimiento'],
       paragraph:
-        'Usa Seedance 2.0 Fast como la ruta más rápida de Seedance para iterar antes del render final: ajustar timing, comparar movimiento y probar texto, imagen o referencias en ciclos cortos.',
+        'Usa Seedance 2.0 Fast como la ruta más rápida de Dreamina Seedance para iterar antes del render final: ajustar timing, comparar movimiento y probar texto, imagen o referencias en ciclos cortos.',
       primaryCta: { label: 'Crear borrador con Seedance Fast', href: '/app?engine=seedance-2-0-fast' },
       secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es') },
       quickLinks: [
         { label: 'Comparar con 2.0', href: compareHref('es', 'seedance-2-0-fast', 'seedance-2-0') },
+        {
+          label: 'Comparar con ruta Mini batch',
+          href: compareHref('es', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast'),
+        },
         { label: 'Ver precios', href: pricingHref('es', 'seedance-2-0-fast-pricing') },
         { label: 'Ejemplos de prompts', href: '#prompting' },
       ],
@@ -551,6 +575,245 @@ const SEEDANCE_20_FAST_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       title: 'Seedance 2.0 Fast: precios de borradores e iteración | MaxVideoAI',
       description:
         'Usa Seedance 2.0 Fast para borradores rápidos, pruebas de ritmo, variantes de movimiento y planificación con referencias antes del render final.',
+    },
+  },
+};
+
+const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenarios> = {
+  en: {
+    hero: {
+      eyebrow: 'BYTEDANCE VALUE BATCH ROUTE',
+      title: 'Seedance 2.0 Mini',
+      subtitle:
+        'Lower-cost Seedance batches for 480p/720p variants, ecommerce/UGC tests, and reference-guided video editing or extension.',
+      subtitleHighlights: ['lower-cost Seedance batches', '480p/720p variants', 'reference-guided video editing'],
+      paragraph:
+        'Use Seedance 2.0 Mini when cost-performance matters more than final polish: batch ecommerce and marketing variants, UGC hooks, multimodal references, video editing, and extension in 4-15 second 480p or 720p runs.',
+      primaryCta: {
+        label: 'Generate with Seedance 2.0 Mini',
+        href: '/app?engine=seedance-2-0-mini',
+      },
+      secondaryCta: { label: 'View examples', href: examplesHref('en') },
+      quickLinks: [
+        { label: 'Compare vs 2.0', href: compareHref('en', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+        {
+          label: 'Compare vs Fast',
+          href: compareHref('en', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+        { label: 'View pricing', href: pricingHref('en', 'dreamina-seedance-2-0-mini-pricing') },
+        { label: 'Prompt examples', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Seedance 2.0 Mini example',
+      description: 'Value batch variant for campaign review',
+      renderLabel: 'View variant',
+      badges: ['Mini route', '480p/720p', '4-15s'],
+      altContext: 'Seedance 2.0 Mini ecommerce and UGC variant batch',
+    },
+    features: [
+      { title: 'Lower-cost batches', body: 'Create more ecommerce, marketing and UGC variants before choosing finalists.', tone: 'price' },
+      { title: '480p/720p output', body: 'Use 480p for volume checks or 720p when review detail matters.', tone: 'quality' },
+      { title: '4-15 seconds', body: 'Run short hooks, product loops and extension checks across the Mini duration range.', tone: 'duration' },
+      { title: 'Multimodal references', body: 'Guide identity, product framing, pacing and audio mood with supported references.', tone: 'reference' },
+      { title: 'Video editing and extension', body: 'Use source videos for edit or extension passes when the job is batch iteration.', tone: 'continuity' },
+      { title: 'Final handoff', body: 'Move the strongest shots to Seedance 2.0 when final polish and native audio matter.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'Mini or Seedance 2.0?',
+        body: 'Use Mini for lower-cost batch/value exploration. Move approved hero shots to Seedance 2.0 when the final needs more polish, higher ceiling and native audio.',
+        cta: { label: 'Compare Mini vs 2.0', href: compareHref('en', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+      },
+      {
+        title: 'Mini or Fast?',
+        body: 'Use Fast when speed is the draft priority. Use Mini when repeatable cost-performance across many variants matters more.',
+        cta: {
+          label: 'Compare Mini vs Fast',
+          href: compareHref('en', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+      },
+      {
+        title: 'Need prompt examples?',
+        body: 'Start with batch hooks, ecommerce product loops, reference-guided video editing and extension prompts.',
+        cta: { label: 'Open Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Text batch', body: 'Write one compact product or UGC hook, then vary camera, setting, ratio and duration.' },
+      { title: 'Image reference', body: 'Use images to keep product shape, wardrobe, packaging or brand details stable.' },
+      { title: 'Video editing', body: 'Use a source video when you need a lower-cost edit pass before committing to a final route.' },
+      { title: 'Extension', body: 'Extend short source clips for reviewable hooks, alternate endings or product motion tests.' },
+      { title: 'Audio references', body: 'Use audio references as input for rhythm or mood; Mini does not add a generated soundtrack claim.' },
+    ],
+    pricingCopy: {
+      title: 'Seedance 2.0 Mini value pricing',
+      subtitle: 'Preset Mini totals for 480p/720p 4-15s runs - see the exact live price in the app before you generate.',
+      footnote: 'All prices are MaxVideoAI display prices in USD credits for preset Mini scenarios.',
+      ctaLabel: 'View full pricing',
+    },
+    meta: {
+      title: 'Seedance 2.0 Mini: Low-Cost AI Video, Pricing & Best Uses',
+      description:
+        'Use Seedance 2.0 Mini for lower-cost 480p/720p video tests, batch ecommerce assets, UGC variants, and reference-guided motion before moving final hero shots to Seedance 2.0.',
+    },
+  },
+  fr: {
+    hero: {
+      eyebrow: 'ROUTE BYTEDANCE BATCH ORIENTÉE VALEUR',
+      title: 'Seedance 2.0 Mini',
+      subtitle:
+        'Lots Seedance à coût réduit pour variantes 480p/720p, tests ecommerce/UGC, édition vidéo guidée par références et prolongation.',
+      subtitleHighlights: ['Lots Seedance à coût réduit', 'variantes 480p/720p', 'édition vidéo guidée par références'],
+      paragraph:
+        'Utilisez Seedance 2.0 Mini quand le rapport coût-performance prime sur la finition finale : lots de variantes ecommerce et marketing, hooks UGC, références multimodales, édition vidéo et prolongation en 4 à 15 secondes à 480p ou 720p.',
+      primaryCta: {
+        label: 'Générer avec Seedance 2.0 Mini',
+        href: '/app?engine=seedance-2-0-mini',
+      },
+      secondaryCta: { label: 'Voir les exemples', href: examplesHref('fr') },
+      quickLinks: [
+        { label: 'Comparer vs 2.0', href: compareHref('fr', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+        {
+          label: 'Comparer vs Fast',
+          href: compareHref('fr', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+        { label: 'Voir les tarifs', href: pricingHref('fr', 'dreamina-seedance-2-0-mini-pricing') },
+        { label: 'Exemples de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Exemple Seedance 2.0 Mini',
+      description: 'Variante batch orientée valeur pour revue campagne',
+      renderLabel: 'Voir la variante',
+      badges: ['Route Mini', '480p/720p', '4-15 s'],
+      altContext: 'lot de variantes ecommerce et UGC Seedance 2.0 Mini',
+    },
+    features: [
+      { title: 'Lots à coût réduit', body: 'Créez plus de variantes ecommerce, marketing et UGC avant de choisir les finalistes.', tone: 'price' },
+      { title: 'Sortie 480p/720p', body: 'Utilisez 480p pour les checks en volume ou 720p quand la revue demande plus de détail.', tone: 'quality' },
+      { title: '4 à 15 secondes', body: 'Lancez hooks courts, boucles produit et tests de prolongation dans la plage Mini.', tone: 'duration' },
+      { title: 'Références multimodales', body: 'Guidez identité, cadrage produit, rythme et mood audio avec les références prises en charge.', tone: 'reference' },
+      { title: 'Édition vidéo et prolongation', body: 'Utilisez des vidéos source pour des passes edit ou extension quand le travail est itératif.', tone: 'continuity' },
+      { title: 'Passage final', body: 'Passez les meilleurs plans à Seedance 2.0 quand la finition et l’audio natif comptent.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: 'Mini ou Seedance 2.0 ?',
+        body: 'Utilisez Mini pour l’exploration batch à coût réduit et orientée valeur. Passez les plans héros validés à Seedance 2.0 pour plus de finition, de plafond qualité et d’audio natif.',
+        cta: { label: 'Comparer Mini vs 2.0', href: compareHref('fr', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+      },
+      {
+        title: 'Mini ou Fast ?',
+        body: 'Utilisez Fast quand la priorité est la vitesse de brouillon. Utilisez Mini quand le rapport coût-performance sur beaucoup de variantes compte davantage.',
+        cta: {
+          label: 'Comparer Mini vs Fast',
+          href: compareHref('fr', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+      },
+      {
+        title: 'Besoin d’exemples de prompts ?',
+        body: 'Commencez par des hooks en lot, boucles produit ecommerce, édition vidéo guidée par références et prompts de prolongation.',
+        cta: { label: 'Ouvrir le Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Lot texte', body: 'Rédigez un hook produit ou UGC compact, puis variez caméra, décor, ratio et durée.' },
+      { title: 'Référence image', body: 'Utilisez des images pour stabiliser forme produit, tenue, packaging ou détails de marque.' },
+      { title: 'Édition vidéo', body: 'Utilisez une vidéo source pour une passe edit à coût réduit avant la route finale.' },
+      { title: 'Prolongation', body: 'Prolongez des clips courts pour hooks à revoir, fins alternatives ou tests de mouvement produit.' },
+      { title: 'Références audio', body: 'Utilisez les références audio en entrée pour le rythme ou le mood; Mini ne promet pas de bande-son générée.' },
+    ],
+    pricingCopy: {
+      title: 'Prix valeur Seedance 2.0 Mini',
+      subtitle:
+        'Prix Mini par scénario 480p/720p de 4 à 15 s - prix exact affiché dans l’app avant génération.',
+      footnote: 'Tous les prix sont des prix MaxVideoAI affichés en crédits USD pour des scénarios Mini prédéfinis.',
+      ctaLabel: 'Voir tous les tarifs',
+    },
+    meta: {
+      title: 'Seedance 2.0 Mini : vidéo IA moins chère, prix et usages',
+      description:
+        'Utilisez Seedance 2.0 Mini pour tester des vidéos 480p/720p à coût réduit, variantes ecommerce, UGC et mouvement guidé par références avant de passer les plans héros à Seedance 2.0.',
+    },
+  },
+  es: {
+    hero: {
+      eyebrow: 'RUTA BYTEDANCE BATCH ORIENTADA A VALOR',
+      title: 'Seedance 2.0 Mini',
+      subtitle:
+        'Lotes Seedance de menor coste para variantes 480p/720p, pruebas ecommerce/UGC, edición de video con referencias y extensión.',
+      subtitleHighlights: ['Lotes Seedance de menor coste', 'variantes 480p/720p', 'edición de video con referencias'],
+      paragraph:
+        'Usa Seedance 2.0 Mini cuando el coste-rendimiento importe más que el acabado final: lotes ecommerce y marketing, hooks UGC, referencias multimodales, edición de video y extensión en renders de 4 a 15 segundos a 480p o 720p.',
+      primaryCta: {
+        label: 'Generar con Seedance 2.0 Mini',
+        href: '/app?engine=seedance-2-0-mini',
+      },
+      secondaryCta: { label: 'Ver ejemplos', href: examplesHref('es') },
+      quickLinks: [
+        { label: 'Comparar con 2.0', href: compareHref('es', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+        {
+          label: 'Comparar con Fast',
+          href: compareHref('es', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+        { label: 'Ver precios', href: pricingHref('es', 'dreamina-seedance-2-0-mini-pricing') },
+        { label: 'Ejemplos de prompts', href: '#prompting' },
+      ],
+    },
+    media: {
+      caption: 'Ejemplo Seedance 2.0 Mini',
+      description: 'Variante batch de valor para revisión de campaña',
+      renderLabel: 'Ver variante',
+      badges: ['Ruta Mini', '480p/720p', '4-15 s'],
+      altContext: 'lote de variantes ecommerce y UGC en Seedance 2.0 Mini',
+    },
+    features: [
+      { title: 'Lotes de menor coste', body: 'Crea más variantes ecommerce, marketing y UGC antes de elegir finalistas.', tone: 'price' },
+      { title: 'Salida 480p/720p', body: 'Usa 480p para checks de volumen o 720p cuando la revisión requiera más detalle.', tone: 'quality' },
+      { title: '4 a 15 segundos', body: 'Ejecuta hooks cortos, loops de producto y pruebas de extensión dentro del rango Mini.', tone: 'duration' },
+      { title: 'Referencias multimodales', body: 'Guía identidad, encuadre de producto, ritmo y mood de audio con referencias compatibles.', tone: 'reference' },
+      { title: 'Edición de video y extensión', body: 'Usa videos fuente para pasadas de edición o extensión cuando el trabajo sea iterativo.', tone: 'continuity' },
+      { title: 'Paso final', body: 'Mueve las mejores tomas a Seedance 2.0 cuando importen el acabado y el audio nativo.', tone: 'quality' },
+    ],
+    decisionCards: [
+      {
+        title: '¿Mini o Seedance 2.0?',
+        body: 'Usa Mini para exploración batch de menor coste y orientada a valor. Lleva las tomas hero aprobadas a Seedance 2.0 cuando el final necesite más pulido, mayor techo y audio nativo.',
+        cta: { label: 'Comparar Mini vs 2.0', href: compareHref('es', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
+      },
+      {
+        title: '¿Mini o Fast?',
+        body: 'Usa Fast cuando la prioridad sea la velocidad del borrador. Usa Mini cuando importe más el coste-rendimiento repetible en muchas variantes.',
+        cta: {
+          label: 'Comparar Mini vs Fast',
+          href: compareHref('es', 'dreamina-seedance-2-0-mini', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'),
+        },
+      },
+      {
+        title: '¿Necesitas ejemplos de prompts?',
+        body: 'Empieza con hooks batch, loops de producto ecommerce, edición de video con referencias y prompts de extensión.',
+        cta: { label: 'Abrir Prompt Lab', href: '#prompting' },
+      },
+    ],
+    referenceWorkflows: [
+      { title: 'Lote de texto', body: 'Escribe un hook compacto de producto o UGC y luego varía cámara, entorno, ratio y duración.' },
+      { title: 'Referencia de imagen', body: 'Usa imágenes para estabilizar forma de producto, vestuario, packaging o detalles de marca.' },
+      { title: 'Edición de video', body: 'Usa un video fuente para una pasada de edición de menor coste antes de la ruta final.' },
+      { title: 'Extensión', body: 'Extiende clips cortos para hooks revisables, finales alternativos o pruebas de movimiento de producto.' },
+      { title: 'Referencias de audio', body: 'Usa referencias de audio solo entrada para ritmo o mood; Mini no promete una banda sonora generada.' },
+    ],
+    pricingCopy: {
+      title: 'Precios de valor de Seedance 2.0 Mini',
+      subtitle:
+        'Totales Mini por escenario 480p/720p de 4 a 15 s - consulta el precio exacto en la app antes de generar.',
+      footnote: 'Todos los precios son precios MaxVideoAI mostrados en créditos USD para escenarios Mini predefinidos.',
+      ctaLabel: 'Ver precios completos',
+    },
+    meta: {
+      title: 'Seedance 2.0 Mini: video IA de bajo coste, precios y usos',
+      description:
+        'Usa Seedance 2.0 Mini para pruebas de video 480p/720p de menor coste, lotes ecommerce, variantes UGC y movimiento con referencias antes de pasar tomas hero a Seedance 2.0.',
     },
   },
 };
@@ -1388,6 +1651,7 @@ export const COPY_BY_MODEL_SLUG: Record<string, Record<AppLocale, LocalizedCopyW
   'kling-3-pro': KLING_3_PRO_COPY,
   'seedance-2-0': SEEDANCE_20_COPY,
   'seedance-2-0-fast': SEEDANCE_20_FAST_COPY,
+  'dreamina-seedance-2-0-mini': SEEDANCE_20_MINI_COPY,
   seedream: SEEDREAM_COPY,
   'ltx-2-3-fast': LTX_23_FAST_COPY,
 };

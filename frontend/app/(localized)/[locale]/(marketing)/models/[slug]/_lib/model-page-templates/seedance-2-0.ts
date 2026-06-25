@@ -39,8 +39,9 @@ export const seedance20TemplateConfig: ModelPageTemplateConfig = {
         noteKey: 'tenSeconds1080p',
         highlightKey: 'mostPopular',
       },
+      { id: '5s-4k', seconds: 5, resolution: '4k', labelKey: 'deliveryRender', noteKey: 'native4K' },
       { id: 'audio-included', fixedValueKey: 'audioExtraValue', labelKey: 'audio', noteKey: 'nativeAudioIncluded' },
-      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo1080p' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo4K' },
     ],
   },
   sections: {

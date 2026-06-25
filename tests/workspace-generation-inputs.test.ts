@@ -143,6 +143,59 @@ test('prepareGenerationInputs orders attachments and derives generation URL grou
   assert.deepEqual(result.extraInputValues, { style_strength: 0.72 });
 });
 
+test('prepareGenerationInputs sends Seedance Mini extension source clips as video inputs', () => {
+  const extensionSources = field('extension_source_videos', 'video', 'Source clips to extend (up to 3)');
+  const firstClip = asset({
+    id: 'extend_1',
+    fieldId: 'extension_source_videos',
+    kind: 'video',
+    url: 'https://cdn.example.com/extend-1.mp4',
+  });
+  const secondClip = asset({
+    id: 'extend_2',
+    fieldId: 'extension_source_videos',
+    kind: 'video',
+    url: 'https://cdn.example.com/extend-2.mp4',
+  });
+
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'seedance-2-0-mini',
+    activeMode: 'extend',
+    submissionMode: 'extend',
+    form: baseForm({ engineId: 'seedance-2-0-mini', mode: 'extend' }),
+    inputSchema: { required: [], optional: [extensionSources] },
+    inputSchemaSummary: {
+      assetFields: [{ field: extensionSources, required: true, role: 'generic' }],
+    },
+    extraInputFields: [],
+    inputAssets: {
+      extension_source_videos: [firstClip, secondClip],
+    },
+    primaryAssetFieldIds: new Set(),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: false,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assertReady(result);
+  assert.deepEqual(
+    result.inputsPayload?.map((input) => input.slotId),
+    ['extension_source_videos', 'extension_source_videos']
+  );
+  assert.deepEqual(result.referenceVideoUrls, [
+    'https://cdn.example.com/extend-1.mp4',
+    'https://cdn.example.com/extend-2.mp4',
+  ]);
+  assert.equal(result.primaryAttachment, null);
+  assert.deepEqual(result.referenceImageUrls, []);
+  assert.deepEqual(result.referenceAudioUrls, []);
+});
+
 test('prepareGenerationInputs preserves Happy Horse reference slot routing', () => {
   const imageUrls = field('image_urls', 'image', 'Happy Horse R2V refs');
   const referenceImageUrls = field('reference_image_urls', 'image', 'Happy Horse V2V refs');

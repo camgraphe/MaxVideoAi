@@ -2,7 +2,7 @@ import { getCompareShowdowns } from '@/config/compare-showdowns';
 import type { AppLocale } from '@/i18n/locales';
 import { isDatabaseConfigured } from '@/lib/db';
 import { getLatestPublicVideoByPromptAndEngine, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
-import { SHOWDOWN_OVERRIDES, SHOWDOWNS } from './compare-page-config';
+import { SCOREBOARD_ONLY_COMPARISONS, SHOWDOWN_OVERRIDES, SHOWDOWNS } from './compare-page-config';
 import {
   formatEngineName,
   hydrateShowdowns,
@@ -17,6 +17,8 @@ import type {
   ShowdownEntry,
   ShowdownSide,
 } from './compare-page-types';
+
+const SCOREBOARD_ONLY_COMPARISON_SET = new Set(SCOREBOARD_ONLY_COMPARISONS);
 
 function normalizePrompt(value?: string | null) {
   return (value ?? '').trim().toLowerCase();
@@ -65,6 +67,12 @@ export async function buildCompareShowdownSlots({
   shouldSwapDisplayOrder: boolean;
 }): Promise<CompareShowdownSlot[]> {
   const reversedShowdownSlug = reverseCompareSlug(canonicalSlug);
+  if (
+    SCOREBOARD_ONLY_COMPARISON_SET.has(canonicalSlug) ||
+    (reversedShowdownSlug != null && SCOREBOARD_ONLY_COMPARISON_SET.has(reversedShowdownSlug))
+  ) {
+    return [];
+  }
   const hasCuratedPairShowdowns = hasCuratedShowdowns(canonicalSlug) || hasCuratedShowdowns(reversedShowdownSlug);
   if ((requiresCuratedShowdowns(left) || requiresCuratedShowdowns(right)) && !hasCuratedPairShowdowns) {
     return [];

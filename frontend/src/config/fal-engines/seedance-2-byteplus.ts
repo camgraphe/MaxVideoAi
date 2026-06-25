@@ -3,13 +3,14 @@ import type { RawFalEngineEntry } from './types';
 import {
   BYTEPLUS_SEEDANCE_2_FAST_CAPS_ID,
   BYTEPLUS_SEEDANCE_2_FAST_MODEL_ID,
+  SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
   buildSeedance2PricingDetails,
 } from './launch-config';
 
 const SEEDANCE_2_0_FAST_BYTEPLUS_ENGINE: EngineCaps = {
   id: 'seedance-2-0-fast-byteplus',
-  label: 'Seedance 2.0 Fast BytePlus',
-  provider: 'BytePlus ModelArk',
+  label: 'Dreamina Seedance 2.0 Fast Direct',
+  provider: 'ByteDance',
   version: '2.0',
   variant: 'Fast',
   isLab: true,
@@ -72,11 +73,11 @@ const SEEDANCE_2_0_FAST_BYTEPLUS_ENGINE: EngineCaps = {
       },
     ],
   },
-  pricingDetails: buildSeedance2PricingDetails(0.0112),
+  pricingDetails: buildSeedance2PricingDetails(SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.fast),
   pricing: {
     unit: 'USD/s',
     currency: 'USD',
-    notes: 'Admin-only BytePlus ModelArk V1a route. Public Seedance pricing remains unchanged while actual BytePlus cost is recorded separately.',
+    notes: 'Admin-only direct Seedance route. Public Seedance pricing remains unchanged while actual provider cost is recorded separately.',
   },
   updatedAt: '2026-05-01T00:00:00Z',
   ttlSec: 600,
@@ -93,15 +94,15 @@ export const SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-2-0-fast-byteplus',
     modelSlug: 'seedance-2-0-fast-byteplus',
-    marketingName: 'Seedance 2.0 Fast BytePlus',
-    cardTitle: 'Seedance 2.0 Fast BytePlus',
-    provider: 'BytePlus ModelArk',
+    marketingName: 'Dreamina Seedance 2.0 Fast Direct',
+    cardTitle: 'Dreamina Seedance 2.0 Fast Direct',
+    provider: 'ByteDance',
     brandId: 'bytedance',
     family: 'seedance',
-    versionLabel: '2.0 Fast BytePlus',
+    versionLabel: '2.0 Fast Direct',
     availability: 'limited',
     logoPolicy: 'textOnly',
-    billingNote: 'Admin-only BytePlus ModelArk V1a test route. Public Seedance pricing remains unchanged.',
+    billingNote: 'Admin-only direct Seedance test route. Public Seedance pricing remains unchanged.',
     engine: SEEDANCE_2_0_FAST_BYTEPLUS_ENGINE,
     modes: [
       {
@@ -113,20 +114,20 @@ export const SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           resolution: ['720p'],
           aspectRatio: ['16:9'],
           audioToggle: false,
-          notes: 'Admin-only BytePlus ModelArk V1a route: 720p, 16:9, 5-15s, silent output.',
+          notes: 'Admin-only direct Seedance route: 720p, 16:9, 5-15s, silent output.',
         },
       },
     ],
     defaultFalModelId: BYTEPLUS_SEEDANCE_2_FAST_CAPS_ID,
     seo: {
-      title: 'Seedance 2.0 Fast BytePlus Admin Test',
-      description: 'Hidden admin-only BytePlus ModelArk Seedance 2.0 Fast V1a route.',
+      title: 'Dreamina Seedance 2.0 Fast Direct Admin Test',
+      description: 'Hidden admin-only direct Dreamina Seedance 2.0 Fast route.',
       canonicalPath: '/models/seedance-2-0-fast-byteplus',
     },
     type: 'text',
     prompts: [
       {
-        title: 'BytePlus V1a smoke test',
+        title: 'Direct Seedance smoke test',
         prompt: 'A clean cinematic five second product video, simple motion, no text overlays, 16:9.',
         mode: 't2v',
       },

@@ -267,10 +267,12 @@ export function useWorkspaceEngineModeState({
 
   const activeManualMode = useMemo<Mode | null>(() => {
     if (!selectedEngine) return null;
-    if (isUnifiedSeedance) return null;
-    if (isUnifiedKlingO3) return null;
-    if (referenceInputStatus.hasAudio && !isUnifiedSeedance) return null;
     const currentMode = form?.mode ?? null;
+    if (isUnifiedSeedance) {
+      return currentMode === 'extend' && isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
+    }
+    if (isUnifiedKlingO3) return null;
+    if (referenceInputStatus.hasAudio) return null;
     if (
       (currentMode === 'v2v' ||
         currentMode === 'reframe' ||

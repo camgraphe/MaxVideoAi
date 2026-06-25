@@ -214,6 +214,21 @@
       "last_updated": "2026-04-03"
     },
     {
+      "modelSlug": "dreamina-seedance-2-0-mini",
+      "fidelity": 7.6,
+      "visualQuality": 7.4,
+      "motion": 7.6,
+      "consistency": 7.0,
+      "anatomy": 7.3,
+      "textRendering": 6.4,
+      "lipsyncQuality": 6.8,
+      "sequencingQuality": 7.1,
+      "controllability": 7.7,
+      "speedStability": 7.8,
+      "pricing": 9.4,
+      "last_updated": "2026-06-16"
+    },
+    {
       "modelSlug": "wan-2-6",
       "fidelity": 5.3,
       "motion": 5.4,
