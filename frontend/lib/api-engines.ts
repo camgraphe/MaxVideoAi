@@ -29,15 +29,15 @@ export function useEngines(category: EngineCategory = 'video', options?: UseEngi
       try {
         const response = await fetch(`/api/engines${query}`, { credentials: 'include' });
         const data = (await response.json().catch(() => null)) as
-          | { engines?: EnginesResponse['engines']; error?: string }
+          | { engines?: EnginesResponse['engines']; engineScores?: EnginesResponse['engineScores']; error?: string }
           | null;
         if (!response.ok) {
           throw new Error(data?.error ?? `Engines request failed: ${response.status}`);
         }
-        return { engines: data?.engines ?? [] };
+        return { engines: data?.engines ?? [], engineScores: data?.engineScores ?? {} };
       } catch {
         const fallbackEngines = await loadFallbackEngines(category);
-        return { engines: fallbackEngines };
+        return { engines: fallbackEngines, engineScores: {} };
       }
     },
     {

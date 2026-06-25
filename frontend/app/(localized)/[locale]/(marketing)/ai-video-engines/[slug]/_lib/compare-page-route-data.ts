@@ -47,6 +47,11 @@ export async function buildCompareRouteData({
   ]);
   const leftOverall = computeOverall(leftScore);
   const rightOverall = computeOverall(rightScore);
+  const engineScoresBySlug = Object.fromEntries(
+    Array.from(scores.entries())
+      .map(([key, score]) => [key, computeOverall(score)] as const)
+      .filter((entry): entry is readonly [string, number] => entry[1] != null)
+  );
   const leftIsPrelaunch = isPrelaunchAvailability(hydratedLeft);
   const rightIsPrelaunch = isPrelaunchAvailability(hydratedRight);
 
@@ -59,6 +64,7 @@ export async function buildCompareRouteData({
     leftPricingDisplay,
     leftScore,
     leftSpecs,
+    engineScoresBySlug,
     pairHasKling3Native4k,
     pairHasNativeAudio,
     right: hydratedRight,

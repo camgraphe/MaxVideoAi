@@ -13,6 +13,7 @@ interface EngineSettingsBarProps {
   modeOptions?: Mode[];
   modeLabelOverrides?: Partial<Record<Mode, string>>;
   disabledEngineReasons?: Record<string, string>;
+  engineScores?: Record<string, number | null | undefined>;
   modeLabel?: string;
   showModeBadge?: boolean;
 }
@@ -26,6 +27,7 @@ export function EngineSettingsBar({
   modeOptions,
   modeLabelOverrides,
   disabledEngineReasons,
+  engineScores,
   modeLabel,
   showModeBadge = true,
 }: EngineSettingsBarProps) {
@@ -40,6 +42,7 @@ export function EngineSettingsBar({
         modeOptions={modeOptions}
         modeLabelOverrides={modeLabelOverrides}
         disabledEngineReasons={disabledEngineReasons}
+        engineScores={engineScores}
         showModeSelect={false}
         showBillingNote={false}
         variant="bar"

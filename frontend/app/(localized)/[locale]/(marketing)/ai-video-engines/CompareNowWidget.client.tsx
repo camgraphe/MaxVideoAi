@@ -1,13 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
 import clsx from 'clsx';
 import { Link } from '@/i18n/navigation';
-import { SelectMenu, type SelectOption } from '@/components/ui/SelectMenu';
-import { EngineIcon } from '@/components/ui/EngineIcon';
+import type { SelectOption } from '@/components/ui/SelectMenu';
 import { buildCanonicalCompareSlug } from '@/lib/compare-hub/data';
-import engineCatalog from '@/config/engine-catalog.json';
+import { CompareEngineFamilySelect } from './_components/CompareEngineFamilySelect.client';
 
 type CompareNowWidgetProps = {
   options: SelectOption[];
@@ -30,19 +28,6 @@ type CompareNowWidgetProps = {
 
 function resolveRawLabel(option: SelectOption): string {
   return typeof option.label === 'string' ? option.label : String(option.value);
-}
-
-function renderOptionLabel(option: SelectOption): ReactNode {
-  const label = resolveRawLabel(option);
-  const catalog = engineCatalog as Array<{ modelSlug: string; brandId?: string | null }>;
-  const brandId = catalog.find((entry) => entry.modelSlug === String(option.value))?.brandId ?? null;
-
-  return (
-    <span className="inline-flex min-w-0 items-center gap-2">
-      <EngineIcon engine={{ id: String(option.value), label, brandId: brandId ?? undefined }} size={18} className="shrink-0" />
-      <span className="truncate">{label}</span>
-    </span>
-  );
 }
 
 function modeChipLabel(mode: string, labels: CompareNowWidgetProps['labels']) {
@@ -87,24 +72,14 @@ export function CompareNowWidget({
   const [left, setLeft] = useState(defaultLeft);
   const [right, setRight] = useState(defaultRight);
 
-  const leftOptions = useMemo(
+  const engineScores = useMemo(
     () =>
-      options.map((option) => ({
-        ...option,
-        label: renderOptionLabel(option),
-        disabled: String(option.value) === String(right),
-      })),
-    [options, right]
-  );
-
-  const rightOptions = useMemo(
-    () =>
-      options.map((option) => ({
-        ...option,
-        label: renderOptionLabel(option),
-        disabled: String(option.value) === String(left),
-      })),
-    [left, options]
+      Object.fromEntries(
+        Object.entries(engineMetaBySlug)
+          .map(([slug, meta]) => [slug, meta.overall] as const)
+          .filter((entry): entry is readonly [string, number] => entry[1] != null)
+      ),
+    [engineMetaBySlug]
   );
 
   const slug = useMemo(() => buildCanonicalCompareSlug(left, right), [left, right]);
@@ -135,20 +110,14 @@ export function CompareNowWidget({
                 <div className="order-2 w-full max-w-[290px] lg:order-1">
                   <h3 className="text-lg font-semibold leading-tight text-text-primary sm:text-xl">{leftLabel}</h3>
                   <div className="mx-auto mt-3 max-w-[260px]">
-                    <SelectMenu
-                      options={leftOptions}
+                    <CompareEngineFamilySelect
+                      options={options}
                       value={left}
-                      searchable
+                      disabledValue={right}
                       searchPlaceholder={labels.searchPlaceholder}
-                      filterText={(option) => {
-                        const raw = options.find((entry) => String(entry.value) === String(option.value));
-                        return raw ? resolveRawLabel(raw) : String(option.value);
-                      }}
                       noResultsLabel={labels.noResults}
-                      menuPlacement="auto"
-                      menuClassName="min-w-[min(320px,calc(100vw-2rem))]"
-                      onChange={(value) => {
-                        const next = String(value);
+                      engineScores={engineScores}
+                      onChange={(next) => {
                         if (!next || next === right) return;
                         setLeft(next);
                       }}
@@ -192,20 +161,14 @@ export function CompareNowWidget({
                 <div className="order-2 w-full max-w-[290px]">
                   <h3 className="text-lg font-semibold leading-tight text-text-primary sm:text-xl">{rightLabel}</h3>
                   <div className="mx-auto mt-3 max-w-[260px]">
-                    <SelectMenu
-                      options={rightOptions}
+                    <CompareEngineFamilySelect
+                      options={options}
                       value={right}
-                      searchable
+                      disabledValue={left}
                       searchPlaceholder={labels.searchPlaceholder}
-                      filterText={(option) => {
-                        const raw = options.find((entry) => String(entry.value) === String(option.value));
-                        return raw ? resolveRawLabel(raw) : String(option.value);
-                      }}
                       noResultsLabel={labels.noResults}
-                      menuPlacement="auto"
-                      menuClassName="min-w-[min(320px,calc(100vw-2rem))]"
-                      onChange={(value) => {
-                        const next = String(value);
+                      engineScores={engineScores}
+                      onChange={(next) => {
                         if (!next || next === left) return;
                         setRight(next);
                       }}

@@ -1,5 +1,6 @@
 import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps, Mode, Resolution } from '@/types/engines';
+import { getModelFamilyDefinition } from '@/config/model-families';
 import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
 import { getLocalizedModeLabel, normalizeUiLocale } from '@/lib/ltx-localization';
 import type { EngineRegistryMeta } from './engine-select-types';
@@ -99,6 +100,32 @@ const ENGINE_MODE_LABEL_OVERRIDES: Record<string, Partial<Record<Mode, string>>>
   },
 };
 
+const FAMILY_LABEL_OVERRIDES: Record<string, string> = {
+  generic: 'Other',
+  'gpt-image': 'GPT Image',
+  'luma-uni': 'Luma Uni',
+  'nano-banana': 'Nano Banana',
+  seedream: 'Seedream',
+};
+
+export type EngineFamilyGroup = {
+  id: string;
+  label: string;
+  brandId?: string;
+  rank: number;
+  engines: EngineCaps[];
+};
+
+export type EngineScoreMap = Record<string, number | null | undefined>;
+
+type BuildEngineFamilyGroupsArgs = {
+  engines: EngineCaps[];
+  engineScores?: EngineScoreMap;
+  registryMeta: EngineRegistryMeta | null;
+  selectedEngineId?: string | null;
+  showLegacy?: boolean;
+};
+
 export function getModeLabel(
   engineId: string | undefined,
   value: Mode,
@@ -109,6 +136,24 @@ export function getModeLabel(
   if (custom) return custom;
   const engineOverrides = engineId ? ENGINE_MODE_LABEL_OVERRIDES[engineId] : undefined;
   return engineOverrides?.[value] ?? getLocalizedModeLabel(value, normalizeUiLocale(locale));
+}
+
+export function getCompactModeLabel(value: Mode): string {
+  const labels: Record<Mode, string> = {
+    a2v: 'A2V',
+    extend: 'EXT',
+    fl2v: 'FL',
+    i2i: 'IMG',
+    i2v: 'I2V',
+    ref2v: 'REF',
+    reframe: 'REFR',
+    retake: 'RET',
+    r2v: 'R2V',
+    t2i: 'IMG',
+    t2v: 'T',
+    v2v: 'V2V',
+  };
+  return labels[value] ?? value.toUpperCase();
 }
 
 export function getModeDisplayOrder(engineId: string | undefined, modes: Mode[]): Mode[] {
@@ -221,11 +266,128 @@ function getEngineDiscoveryRank(engineId: string, registryMeta: EngineRegistryMe
   return registryMeta?.meta.get(engineId)?.surfaces.app.discoveryRank ?? Number.MAX_SAFE_INTEGER;
 }
 
+function getEngineScoreValue(engine: EngineCaps, engineScores?: EngineScoreMap): number | null {
+  const value = engineScores?.[engine.id];
+  return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function compareEngineScores(a: EngineCaps, b: EngineCaps, engineScores?: EngineScoreMap): number {
+  const scoreA = getEngineScoreValue(a, engineScores);
+  const scoreB = getEngineScoreValue(b, engineScores);
+  if (scoreA == null && scoreB == null) return 0;
+  if (scoreA == null) return 1;
+  if (scoreB == null) return -1;
+  if (scoreA !== scoreB) return scoreB - scoreA;
+  return 0;
+}
+
+function toTitleCase(value: string): string {
+  return value
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function getFallbackFamilyId(engine: EngineCaps, meta: FalEngineEntry | undefined): string {
+  const raw =
+    meta?.family ??
+    meta?.brandId ??
+    engine.brandId ??
+    engine.providerMeta?.provider ??
+    engine.provider ??
+    engine.id.split('-')[0] ??
+    'generic';
+  return raw.trim().toLowerCase().replace(/\s+/g, '-');
+}
+
+function getFamilyLabel(familyId: string): string {
+  const family = getModelFamilyDefinition(familyId);
+  return family?.label ?? FAMILY_LABEL_OVERRIDES[familyId] ?? toTitleCase(familyId);
+}
+
+function getFamilyBrandId(familyId: string, firstEngine: EngineCaps, firstMeta: FalEngineEntry | undefined): string | undefined {
+  const family = getModelFamilyDefinition(familyId);
+  return family?.brandId ?? firstMeta?.brandId ?? firstEngine.brandId;
+}
+
+function getFamilyRank(familyId: string, engines: EngineCaps[], registryMeta: EngineRegistryMeta | null): number {
+  const rankedEntries = engines
+    .map((engine) => getEngineSelectFamilyRank(registryMeta?.meta.get(engine.id)))
+    .filter((rank) => rank !== Number.MAX_SAFE_INTEGER);
+  if (rankedEntries.length) return Math.min(...rankedEntries);
+
+  const syntheticRank = getEngineSelectFamilyRank({ family: familyId } as Pick<FalEngineEntry, 'family'>);
+  return syntheticRank;
+}
+
+export function buildEngineFamilyGroups({
+  engines,
+  engineScores,
+  registryMeta,
+  selectedEngineId = null,
+  showLegacy = false,
+}: BuildEngineFamilyGroupsArgs): EngineFamilyGroup[] {
+  const sortedEngines = engines
+    .filter((engine) => engine.availability !== 'paused')
+    .filter((engine) => {
+      const meta = registryMeta?.meta.get(engine.id);
+      if (!meta?.isLegacy) return true;
+      if (showLegacy) return true;
+      return engine.id === selectedEngineId;
+    })
+    .sort((a, b) => compareEnginesByDefaultPriority(a, b, registryMeta, undefined, engineScores));
+
+  const groupsById = new Map<string, EngineCaps[]>();
+  sortedEngines.forEach((engine) => {
+    const meta = registryMeta?.meta.get(engine.id);
+    const familyId = getFallbackFamilyId(engine, meta);
+    const group = groupsById.get(familyId) ?? [];
+    group.push(engine);
+    groupsById.set(familyId, group);
+  });
+
+  return Array.from(groupsById.entries())
+    .map(([familyId, groupEngines]) => {
+      const firstEngine = groupEngines[0];
+      const firstMeta = registryMeta?.meta.get(firstEngine.id);
+      return {
+        id: familyId,
+        label: getFamilyLabel(familyId),
+        brandId: getFamilyBrandId(familyId, firstEngine, firstMeta),
+        rank: getFamilyRank(familyId, groupEngines, registryMeta),
+        engines: groupEngines,
+      };
+    })
+    .sort((a, b) => {
+      if (a.rank !== b.rank) {
+        if (a.rank === Number.MAX_SAFE_INTEGER) return 1;
+        if (b.rank === Number.MAX_SAFE_INTEGER) return -1;
+        return a.rank - b.rank;
+      }
+      const discoveryA = getEngineDiscoveryRank(a.engines[0].id, registryMeta);
+      const discoveryB = getEngineDiscoveryRank(b.engines[0].id, registryMeta);
+      if (discoveryA !== discoveryB) return discoveryA - discoveryB;
+      return a.label.localeCompare(b.label);
+    });
+}
+
+export function formatEngineSelectScore(value: number | null | undefined): string | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return value.toFixed(1);
+}
+
+export function formatEngineSelectScorePercent(value: number | null | undefined): string | null {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return String(Math.round(value * 10));
+}
+
 export function compareEnginesByDefaultPriority(
   a: EngineCaps,
   b: EngineCaps,
   registryMeta: EngineRegistryMeta | null,
-  engineMeta?: Map<string, FalEngineEntry>
+  engineMeta?: Map<string, FalEngineEntry>,
+  engineScores?: EngineScoreMap
 ): number {
   const metaA = engineMeta?.get(a.id) ?? registryMeta?.meta.get(a.id);
   const metaB = engineMeta?.get(b.id) ?? registryMeta?.meta.get(b.id);
@@ -236,6 +398,8 @@ export function compareEnginesByDefaultPriority(
     if (familyRankB === Number.MAX_SAFE_INTEGER) return -1;
     return familyRankA - familyRankB;
   }
+  const scoreOrder = compareEngineScores(a, b, engineScores);
+  if (scoreOrder !== 0) return scoreOrder;
   const variantOrderA = ENGINE_VARIANT_SORT_ORDER.get(a.id);
   const variantOrderB = ENGINE_VARIANT_SORT_ORDER.get(b.id);
   if (variantOrderA != null || variantOrderB != null) {

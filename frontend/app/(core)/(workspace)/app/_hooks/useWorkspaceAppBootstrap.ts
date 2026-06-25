@@ -20,6 +20,7 @@ import {
 export function useWorkspaceAppBootstrap() {
   const { data, error: enginesError, isLoading } = useEngines();
   const engines = useMemo(() => data?.engines ?? [], [data]);
+  const engineScores = useMemo(() => data?.engineScores ?? {}, [data?.engineScores]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
   const { user, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
   const provider = useResultProvider();
@@ -81,6 +82,7 @@ export function useWorkspaceAppBootstrap() {
     authStatus,
     engineIdByLabel,
     engineMap,
+    engineScores,
     engines,
     enginesError,
     formatTakeLabel,

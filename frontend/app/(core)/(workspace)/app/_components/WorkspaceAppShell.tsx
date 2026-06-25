@@ -52,6 +52,7 @@ type WorkspaceAppShellProps = {
   handleEngineChange: (engineId: string) => void;
   handleModeChange: (mode: Mode) => void;
   disabledEngineReasons?: Record<string, string>;
+  engineScores?: Record<string, number>;
   renderGroups: PreviewDockProps['renderGroups'];
   compositeOverrideSummary: PreviewDockProps['compositeOverrideSummary'];
   setViewerTarget: PreviewDockProps['setViewerTarget'];
@@ -88,6 +89,7 @@ export function WorkspaceAppShell({
   handleEngineChange,
   handleModeChange,
   disabledEngineReasons,
+  engineScores,
   renderGroups,
   compositeOverrideSummary,
   setViewerTarget,
@@ -152,6 +154,7 @@ export function WorkspaceAppShell({
           onEngineChange={handleEngineChange}
           onModeChange={handleModeChange}
           disabledEngineReasons={disabledEngineReasons}
+          engineScores={engineScores}
           renderGroups={renderGroups}
           compositeOverrideSummary={compositeOverrideSummary}
           setViewerTarget={setViewerTarget}

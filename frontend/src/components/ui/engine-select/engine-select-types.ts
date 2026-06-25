@@ -16,6 +16,7 @@ export interface EngineSelectProps {
   showBillingNote?: boolean;
   modeLabelOverrides?: Partial<Record<Mode, string>>;
   disabledEngineReasons?: Record<string, string>;
+  engineScores?: Record<string, number | null | undefined>;
   showModeSelect?: boolean;
   modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';

@@ -25,6 +25,7 @@ type CompareDetailContentProps = {
   compareHubHref: string;
   comparisonMetrics: CompareMetric[];
   criteriaCount: number;
+  engineScoresBySlug: Record<string, number>;
   exposeSourcePrompt: boolean;
   faqItems: CompareFaqItem[];
   faqJsonLd: unknown;
@@ -70,6 +71,7 @@ export function CompareDetailContent({
   compareHubHref,
   comparisonMetrics,
   criteriaCount,
+  engineScoresBySlug,
   exposeSourcePrompt,
   faqItems,
   faqJsonLd,
@@ -134,6 +136,7 @@ export function CompareDetailContent({
             activeLocale={activeLocale}
             compareCopy={compareCopy}
             comparisonMetrics={comparisonMetrics}
+            engineScoresBySlug={engineScoresBySlug}
             left={left}
             leftOverall={leftOverall}
             leftScoreStyle={leftScoreStyle}

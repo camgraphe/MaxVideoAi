@@ -34,6 +34,18 @@ export function useEngineSelectDropdownState({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const visibleEnginesRef = useRef(visibleEngines);
+  const highlightedEngineIdRef = useRef<string | null>(null);
+
+  visibleEnginesRef.current = visibleEngines;
+
+  const setHighlightedIndexAndRemember = useCallback((nextValue: SetStateAction<number>) => {
+    setHighlightedIndex((previous) => {
+      const nextIndex = typeof nextValue === 'function' ? nextValue(previous) : nextValue;
+      highlightedEngineIdRef.current = nextIndex >= 0 ? visibleEnginesRef.current[nextIndex]?.id ?? null : null;
+      return nextIndex;
+    });
+  }, []);
 
   const updatePosition = useCallback(() => {
     if (!triggerRef.current) return;
@@ -51,7 +63,7 @@ export function useEngineSelectDropdownState({
       if (next) {
         updatePosition();
       } else {
-        setHighlightedIndex(-1);
+        setHighlightedIndexAndRemember(-1);
       }
       return next;
     });
@@ -77,10 +89,20 @@ export function useEngineSelectDropdownState({
     if (!open) return;
     if (!visibleEngines.length) {
       setHighlightedIndex(-1);
+      highlightedEngineIdRef.current = null;
+      return;
+    }
+    const currentHighlightedIndex = highlightedEngineIdRef.current
+      ? visibleEngines.findIndex((candidate) => candidate.id === highlightedEngineIdRef.current)
+      : -1;
+    if (currentHighlightedIndex >= 0) {
+      setHighlightedIndex(currentHighlightedIndex);
       return;
     }
     const currentIndex = visibleEngines.findIndex((candidate) => candidate.id === selectedEngineId);
-    setHighlightedIndex(currentIndex >= 0 ? currentIndex : 0);
+    const nextIndex = currentIndex >= 0 ? currentIndex : 0;
+    highlightedEngineIdRef.current = visibleEngines[nextIndex]?.id ?? null;
+    setHighlightedIndex(nextIndex);
   }, [open, visibleEngines, selectedEngineId]);
 
   useEffect(() => {
@@ -90,28 +112,31 @@ export function useEngineSelectDropdownState({
       if (triggerRef.current?.contains(target)) return;
       if (contentRef.current?.contains(target)) return;
       setOpen(false);
-      setHighlightedIndex(-1);
+      setHighlightedIndexAndRemember(-1);
     }
 
     function handleKey(event: KeyboardEvent) {
+      const target = event.target as HTMLElement | null;
+      const isTextEntryTarget = Boolean(target?.closest('input, textarea, [contenteditable="true"]'));
       if (event.key === 'Escape') {
         event.preventDefault();
         setOpen(false);
-        setHighlightedIndex(-1);
+        setHighlightedIndexAndRemember(-1);
         triggerRef.current?.focus();
         return;
       }
 
+      if (isTextEntryTarget) return;
       if (!visibleEngines.length) return;
 
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        setHighlightedIndex((previous) => (previous + 1 >= visibleEngines.length ? 0 : previous + 1));
+        setHighlightedIndexAndRemember((previous) => (previous + 1 >= visibleEngines.length ? 0 : previous + 1));
       }
 
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        setHighlightedIndex((previous) => (previous - 1 < 0 ? visibleEngines.length - 1 : previous - 1));
+        setHighlightedIndexAndRemember((previous) => (previous - 1 < 0 ? visibleEngines.length - 1 : previous - 1));
       }
 
       if (event.key === 'Enter' || event.key === ' ') {
@@ -119,7 +144,7 @@ export function useEngineSelectDropdownState({
           event.preventDefault();
           onEngineChange(visibleEngines[highlightedIndex].id);
           setOpen(false);
-          setHighlightedIndex(-1);
+          setHighlightedIndexAndRemember(-1);
           triggerRef.current?.focus();
         }
       }
@@ -133,7 +158,7 @@ export function useEngineSelectDropdownState({
       document.removeEventListener('touchstart', handlePointer);
       document.removeEventListener('keydown', handleKey);
     };
-  }, [highlightedIndex, onEngineChange, open, setOpen, visibleEngines]);
+  }, [highlightedIndex, onEngineChange, open, setHighlightedIndexAndRemember, setOpen, visibleEngines]);
 
   useEffect(() => {
     if (!open) return;
@@ -174,7 +199,7 @@ export function useEngineSelectDropdownState({
     itemRefs,
     portalElement,
     position,
-    setHighlightedIndex,
+    setHighlightedIndex: setHighlightedIndexAndRemember,
     toggleOpen,
     triggerRef,
   };

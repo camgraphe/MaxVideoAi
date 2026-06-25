@@ -250,6 +250,7 @@ export interface EngineCaps {
 
 export interface EnginesResponse {
   engines: EngineCaps[];
+  engineScores?: Record<string, number>;
 }
 
 export interface PreflightRequest {
