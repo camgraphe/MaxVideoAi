@@ -101,6 +101,14 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
   },
 };
 
+export const FEATURED_EXAMPLE_MEDIA: Record<string, string[]> = {
+  'dreamina-seedance-2-0-mini': [
+    'job_f2605150-0d2a-48ad-b1a9-bba8891d568b',
+    'job_f9e077a0-2568-464e-a4e6-962537320dec',
+    'job_2581d0af-23fc-46dd-a1df-049cac1824c1',
+  ],
+};
+
 export const PREP_LINK_VISUALS = {
   '/app/image': {
     imageSrc:

@@ -24,7 +24,10 @@ import {
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import {
+  FEATURED_EXAMPLE_MEDIA,
+  PREFERRED_MEDIA,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { extractMaxDuration } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts';
 import { parseMaxDurationNumber } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-score-utils.ts';
 
@@ -378,6 +381,11 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
     hero: 'job_d9481a70-db5c-4072-8ab7-adc82a8a5100',
     demo: 'job_d63d5269-6200-47d6-814d-9992b9a720be',
   });
+  assert.deepEqual(FEATURED_EXAMPLE_MEDIA['dreamina-seedance-2-0-mini'], [
+    'job_f2605150-0d2a-48ad-b1a9-bba8891d568b',
+    'job_f9e077a0-2568-464e-a4e6-962537320dec',
+    'job_2581d0af-23fc-46dd-a1df-049cac1824c1',
+  ]);
 });
 
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {

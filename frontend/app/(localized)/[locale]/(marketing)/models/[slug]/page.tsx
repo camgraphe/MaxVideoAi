@@ -31,7 +31,7 @@ import {
   type FeaturedMedia,
 } from './_lib/model-page-media';
 import { loadEngineKeySpecs } from './_lib/model-page-key-specs';
-import { PREFERRED_MEDIA } from './_lib/model-page-static';
+import { FEATURED_EXAMPLE_MEDIA, PREFERRED_MEDIA } from './_lib/model-page-static';
 import {
   DEFAULT_DETAIL_COPY,
   MODEL_OG_IMAGE_MAP,
@@ -204,6 +204,43 @@ async function renderMarketingModelPage({
       )
     )
     .map((card) => resolveGalleryCardHref(card));
+
+  const featuredExampleIds = FEATURED_EXAMPLE_MEDIA[engine.modelSlug] ?? [];
+  const missingFeaturedExamples = featuredExampleIds.filter((id) => !galleryVideos.some((video) => video.id === id));
+  if (featuredExampleIds.length) {
+    const existingFeaturedCards = new Map(galleryVideos.map((video) => [video.id, video]));
+    const fetchedFeaturedCards = new Map<string, (typeof galleryVideos)[number]>();
+    if (missingFeaturedExamples.length) {
+      const featuredMap = await getPublicVideosByIds(missingFeaturedExamples);
+      for (const video of featuredMap.values()) {
+        fetchedFeaturedCards.set(
+          video.id,
+          resolveGalleryCardHref(
+            toGalleryCard(
+              video,
+              engine.brandId,
+              localizedContent.marketingName ?? engine.marketingName,
+              engine.modelSlug,
+              engine.id,
+              backPath,
+              appPath
+            )
+          )
+        );
+      }
+    }
+    const featuredCards: typeof galleryVideos = [];
+    for (const id of featuredExampleIds) {
+      const card = existingFeaturedCards.get(id) ?? fetchedFeaturedCards.get(id);
+      if (card) featuredCards.push(card);
+    }
+    if (featuredCards.length) {
+      galleryVideos = [
+        ...featuredCards,
+        ...galleryVideos.filter((video) => !featuredExampleIds.includes(video.id)),
+      ];
+    }
+  }
 
   const preferredIds = PREFERRED_MEDIA[engine.modelSlug] ?? { hero: null, demo: null };
   const preferredList = [preferredIds.hero, preferredIds.demo].filter((id): id is string => Boolean(id));
