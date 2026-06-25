@@ -287,7 +287,7 @@ export function buildGenerateRequestOptions(params: {
     pricingResolution = bytePlusResult.resolution;
     effectiveResolution = bytePlusResult.resolution;
     aspectRatio = bytePlusResult.aspectRatio;
-    audioEnabled = engine.id === 'seedance-2-0-mini' ? false : audioEnabled ?? true;
+    audioEnabled = audioEnabled ?? true;
   }
 
   const rawNumFrames =

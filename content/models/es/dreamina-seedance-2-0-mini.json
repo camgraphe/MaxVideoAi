@@ -10,7 +10,7 @@
   "hero": {
     "title": "Dreamina Seedance 2.0 Mini — ruta de menor coste para variantes de video en lote",
     "intro": "Usa Dreamina Seedance 2.0 Mini cuando necesites una ruta de valor para muchas variantes de video 480p/720p antes de pasar tomas hero a Seedance 2.0. Esta página documenta specs, prompts, precios y scorecards para generación orientada a batch.",
-    "badge": "Dreamina Seedance · 480p/720p · 4-15 s · 24 fps · referencias de audio solo entrada",
+    "badge": "Dreamina Seedance · 480p/720p · 4-15 s · 24 fps · audio nativo y lip-sync",
     "ctaPrimary": {
       "label": "Generar con Seedance 2.0 Mini",
       "href": "/app?engine=seedance-2-0-mini"
@@ -87,7 +87,7 @@
     },
     {
       "label": "Audio",
-      "body": "Las referencias de audio son solo entrada para guiar ritmo o mood."
+      "body": "El audio sincronizado nativo y el lip-sync son compatibles; las referencias de audio también pueden guiar ritmo o mood."
     }
   ],
   "promptStructure": {
@@ -144,12 +144,12 @@
       "a": "La ruta Mini de MaxVideoAI expone salida 480p o 720p, duraciones de 4 a 15 segundos y 24 fps."
     },
     {
-      "q": "¿Seedance 2.0 Mini acepta referencias de audio?",
-      "a": "Sí. Las referencias de audio pueden guiar ritmo o mood como solo entrada."
+      "q": "¿Seedance 2.0 Mini soporta audio y lip-sync?",
+      "a": "Sí. Mini soporta audio sincronizado nativo y lip-sync, y las referencias de audio pueden guiar ritmo o mood."
     },
     {
       "q": "¿Cuándo debería usar Seedance 2.0 en vez de Mini?",
-      "a": "Usa Seedance 2.0 cuando necesites la ruta Seedance final, pulida, con mayor techo y audio nativo. Usa Mini para exploración batch/valor antes de ese paso."
+      "a": "Usa Seedance 2.0 cuando necesites la ruta Seedance final, pulida, con mayor techo, entrega de mayor resolución y calidad de producción más fuerte. Usa Mini para exploración batch/valor antes de ese paso."
     }
   ],
   "custom": {
@@ -184,7 +184,8 @@
           "Reference-to-video multimodal",
           "Edición de video",
           "Extensión",
-          "Referencias de audio solo entrada"
+          "Audio nativo y lip-sync",
+          "Referencias de audio para ritmo o mood"
         ]
       }
     ],
@@ -203,7 +204,7 @@
       "Los prompts de texto sirven para ideas batch y hooks marketing de menor coste.",
       "Las referencias de imagen estabilizan forma de producto, vestuario o packaging.",
       "Las referencias de video y videos fuente ayudan a probar pacing, edits y extensiones.",
-      "Las referencias de audio pueden guiar ritmo o mood como solo entrada."
+      "Las referencias de audio pueden guiar ritmo o mood, mientras el audio nativo/lip-sync puede generarse con el clip."
     ],
     "tipsTitle": "Fortalezas y límites",
     "strengths": [
@@ -214,7 +215,7 @@
     ],
     "boundaries": [
       "La resolución máxima es 720p.",
-      "Las referencias de audio sirven solo como guía de entrada.",
+      "Mantén diálogo y cues de lip-sync lo bastante cortos para clips revisables de 4 a 15 s.",
       "Mantén Mini enfocado en trabajo batch/valor antes de finales en Seedance 2.0.",
       "Revisa la cotización en vivo en Generar antes de escalar lotes."
     ],
@@ -224,11 +225,18 @@
     "recreateLabel": "Recrear esta variante Mini ->",
     "demoTitle": "Prompt de demostración — Seedance 2.0 Mini",
     "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "Escena cinematográfica de 8 segundos en 720p 16:9 en un andén de metro tras la lluvia. Una mujer joven con abrigo oscuro está cerca del borde mientras el último tren pasa rápido, moviendo su pelo y el abrigo con el viento.",
+      "Ella gira hacia cámara y dice: \"Sé hacia dónde vamos ahora.\" Mantén la frase natural, claramente sincronizada con lip-sync y emocionalmente contenida.",
+      "Cámara: tracking lateral lento paralelo al andén, encuadre medio-abierto con fuerte espacio negativo a la izquierda para texto del sitio.",
+      "Luz y movimiento: luz cálida de las ventanas del tren sobre sombras azules de estación, reflejos en suelo mojado, reacciones sutiles de viajeros, motion blur realista.",
+      "Audio: rumble profundo del tren, ráfaga de viento, ambiente lejano de estación, diálogo limpio y sincronizado, sin música. Restricciones: sin texto legible, logos, subtítulos, UI ni carteles de marca."
+    ],
     "relatedItems": [
       {
         "brand": "bytedance",
         "title": "Seedance 2.0",
-        "description": "Lleva variantes Mini aprobadas a Seedance 2.0 cuando importen el acabado, el audio nativo y la ruta Seedance más alta.",
+        "description": "Lleva variantes Mini aprobadas a Seedance 2.0 cuando importen el acabado, la entrega de mayor resolución y la ruta Seedance más alta.",
         "modelSlug": "seedance-2-0",
         "ctaLabel": "Ver Seedance 2.0 estándar ->"
       },

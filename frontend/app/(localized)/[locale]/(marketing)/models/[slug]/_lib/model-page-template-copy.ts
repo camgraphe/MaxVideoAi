@@ -585,10 +585,10 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       eyebrow: 'BYTEDANCE VALUE BATCH ROUTE',
       title: 'Seedance 2.0 Mini',
       subtitle:
-        'Lower-cost Seedance batches for 480p/720p variants, ecommerce/UGC tests, and reference-guided video editing or extension.',
-      subtitleHighlights: ['lower-cost Seedance batches', '480p/720p variants', 'reference-guided video editing'],
+        'Lower-cost Seedance batches for 480p/720p variants, ecommerce/UGC tests, native audio/lip-sync, and reference-guided video editing or extension.',
+      subtitleHighlights: ['lower-cost Seedance batches', '480p/720p variants', 'native audio/lip-sync'],
       paragraph:
-        'Use Seedance 2.0 Mini when cost-performance matters more than final polish: batch ecommerce and marketing variants, UGC hooks, multimodal references, video editing, and extension in 4-15 second 480p or 720p runs.',
+        'Use Seedance 2.0 Mini when cost-performance matters more than top-end resolution: batch ecommerce and marketing variants, UGC hooks, multimodal references, native audio/lip-sync, video editing, and extension in 4-15 second 480p or 720p runs.',
       primaryCta: {
         label: 'Generate with Seedance 2.0 Mini',
         href: '/app?engine=seedance-2-0-mini',
@@ -608,7 +608,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Seedance 2.0 Mini example',
       description: 'Value batch variant for campaign review',
       renderLabel: 'View variant',
-      badges: ['Mini route', '480p/720p', '4-15s'],
+      badges: ['Mini route', '480p/720p', 'Audio'],
       altContext: 'Seedance 2.0 Mini ecommerce and UGC variant batch',
     },
     features: [
@@ -617,12 +617,12 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: '4-15 seconds', body: 'Run short hooks, product loops and extension checks across the Mini duration range.', tone: 'duration' },
       { title: 'Multimodal references', body: 'Guide identity, product framing, pacing and audio mood with supported references.', tone: 'reference' },
       { title: 'Video editing and extension', body: 'Use source videos for edit or extension passes when the job is batch iteration.', tone: 'continuity' },
-      { title: 'Final handoff', body: 'Move the strongest shots to Seedance 2.0 when final polish and native audio matter.', tone: 'quality' },
+      { title: 'Native audio and lip-sync', body: 'Generate synchronized audio, short dialogue and lip-sync when the prompt needs sound.', tone: 'audio' },
     ],
     decisionCards: [
       {
         title: 'Mini or Seedance 2.0?',
-        body: 'Use Mini for lower-cost batch/value exploration. Move approved hero shots to Seedance 2.0 when the final needs more polish, higher ceiling and native audio.',
+        body: 'Use Mini for lower-cost batch/value exploration. Move approved hero shots to Seedance 2.0 when the final needs more polish, higher-resolution delivery and the higher Seedance ceiling.',
         cta: { label: 'Compare Mini vs 2.0', href: compareHref('en', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
       },
       {
@@ -644,7 +644,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: 'Image reference', body: 'Use images to keep product shape, wardrobe, packaging or brand details stable.' },
       { title: 'Video editing', body: 'Use a source video when you need a lower-cost edit pass before committing to a final route.' },
       { title: 'Extension', body: 'Extend short source clips for reviewable hooks, alternate endings or product motion tests.' },
-      { title: 'Audio references', body: 'Use audio references as input for rhythm or mood; Mini does not add a generated soundtrack claim.' },
+      { title: 'Audio and lip-sync', body: 'Use generated audio, short dialogue, lip-sync and optional audio references when sound matters.' },
     ],
     pricingCopy: {
       title: 'Seedance 2.0 Mini value pricing',
@@ -663,10 +663,10 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       eyebrow: 'ROUTE BYTEDANCE BATCH ORIENTÉE VALEUR',
       title: 'Seedance 2.0 Mini',
       subtitle:
-        'Lots Seedance à coût réduit pour variantes 480p/720p, tests ecommerce/UGC, édition vidéo guidée par références et prolongation.',
-      subtitleHighlights: ['Lots Seedance à coût réduit', 'variantes 480p/720p', 'édition vidéo guidée par références'],
+        'Lots Seedance à coût réduit pour variantes 480p/720p, tests ecommerce/UGC, audio natif/lipsync, édition vidéo guidée par références et prolongation.',
+      subtitleHighlights: ['Lots Seedance à coût réduit', 'variantes 480p/720p', 'audio natif/lipsync'],
       paragraph:
-        'Utilisez Seedance 2.0 Mini quand le rapport coût-performance prime sur la finition finale : lots de variantes ecommerce et marketing, hooks UGC, références multimodales, édition vidéo et prolongation en 4 à 15 secondes à 480p ou 720p.',
+        'Utilisez Seedance 2.0 Mini quand le rapport coût-performance prime sur la résolution maximale : lots de variantes ecommerce et marketing, hooks UGC, références multimodales, audio natif/lipsync, édition vidéo et prolongation en 4 à 15 secondes à 480p ou 720p.',
       primaryCta: {
         label: 'Générer avec Seedance 2.0 Mini',
         href: '/app?engine=seedance-2-0-mini',
@@ -686,7 +686,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Exemple Seedance 2.0 Mini',
       description: 'Variante batch orientée valeur pour revue campagne',
       renderLabel: 'Voir la variante',
-      badges: ['Route Mini', '480p/720p', '4-15 s'],
+      badges: ['Route Mini', '480p/720p', 'Audio'],
       altContext: 'lot de variantes ecommerce et UGC Seedance 2.0 Mini',
     },
     features: [
@@ -695,12 +695,12 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: '4 à 15 secondes', body: 'Lancez hooks courts, boucles produit et tests de prolongation dans la plage Mini.', tone: 'duration' },
       { title: 'Références multimodales', body: 'Guidez identité, cadrage produit, rythme et mood audio avec les références prises en charge.', tone: 'reference' },
       { title: 'Édition vidéo et prolongation', body: 'Utilisez des vidéos source pour des passes edit ou extension quand le travail est itératif.', tone: 'continuity' },
-      { title: 'Passage final', body: 'Passez les meilleurs plans à Seedance 2.0 quand la finition et l’audio natif comptent.', tone: 'quality' },
+      { title: 'Audio natif et lipsync', body: 'Générez audio synchronisé, répliques courtes et lipsync quand le prompt demande du son.', tone: 'audio' },
     ],
     decisionCards: [
       {
         title: 'Mini ou Seedance 2.0 ?',
-        body: 'Utilisez Mini pour l’exploration batch à coût réduit et orientée valeur. Passez les plans héros validés à Seedance 2.0 pour plus de finition, de plafond qualité et d’audio natif.',
+        body: 'Utilisez Mini pour l’exploration batch à coût réduit et orientée valeur. Passez les plans héros validés à Seedance 2.0 pour plus de finition, une livraison en plus haute résolution et le plafond Seedance supérieur.',
         cta: { label: 'Comparer Mini vs 2.0', href: compareHref('fr', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
       },
       {
@@ -722,7 +722,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: 'Référence image', body: 'Utilisez des images pour stabiliser forme produit, tenue, packaging ou détails de marque.' },
       { title: 'Édition vidéo', body: 'Utilisez une vidéo source pour une passe edit à coût réduit avant la route finale.' },
       { title: 'Prolongation', body: 'Prolongez des clips courts pour hooks à revoir, fins alternatives ou tests de mouvement produit.' },
-      { title: 'Références audio', body: 'Utilisez les références audio en entrée pour le rythme ou le mood; Mini ne promet pas de bande-son générée.' },
+      { title: 'Audio et lipsync', body: 'Utilisez audio généré, répliques courtes, lipsync et références audio optionnelles quand le son compte.' },
     ],
     pricingCopy: {
       title: 'Prix valeur Seedance 2.0 Mini',
@@ -742,10 +742,10 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       eyebrow: 'RUTA BYTEDANCE BATCH ORIENTADA A VALOR',
       title: 'Seedance 2.0 Mini',
       subtitle:
-        'Lotes Seedance de menor coste para variantes 480p/720p, pruebas ecommerce/UGC, edición de video con referencias y extensión.',
-      subtitleHighlights: ['Lotes Seedance de menor coste', 'variantes 480p/720p', 'edición de video con referencias'],
+        'Lotes Seedance de menor coste para variantes 480p/720p, pruebas ecommerce/UGC, audio nativo/lip-sync, edición de video con referencias y extensión.',
+      subtitleHighlights: ['Lotes Seedance de menor coste', 'variantes 480p/720p', 'audio nativo/lip-sync'],
       paragraph:
-        'Usa Seedance 2.0 Mini cuando el coste-rendimiento importe más que el acabado final: lotes ecommerce y marketing, hooks UGC, referencias multimodales, edición de video y extensión en renders de 4 a 15 segundos a 480p o 720p.',
+        'Usa Seedance 2.0 Mini cuando el coste-rendimiento importe más que la resolución máxima: lotes ecommerce y marketing, hooks UGC, referencias multimodales, audio nativo/lip-sync, edición de video y extensión en renders de 4 a 15 segundos a 480p o 720p.',
       primaryCta: {
         label: 'Generar con Seedance 2.0 Mini',
         href: '/app?engine=seedance-2-0-mini',
@@ -765,7 +765,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Ejemplo Seedance 2.0 Mini',
       description: 'Variante batch de valor para revisión de campaña',
       renderLabel: 'Ver variante',
-      badges: ['Ruta Mini', '480p/720p', '4-15 s'],
+      badges: ['Ruta Mini', '480p/720p', 'Audio'],
       altContext: 'lote de variantes ecommerce y UGC en Seedance 2.0 Mini',
     },
     features: [
@@ -774,12 +774,12 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: '4 a 15 segundos', body: 'Ejecuta hooks cortos, loops de producto y pruebas de extensión dentro del rango Mini.', tone: 'duration' },
       { title: 'Referencias multimodales', body: 'Guía identidad, encuadre de producto, ritmo y mood de audio con referencias compatibles.', tone: 'reference' },
       { title: 'Edición de video y extensión', body: 'Usa videos fuente para pasadas de edición o extensión cuando el trabajo sea iterativo.', tone: 'continuity' },
-      { title: 'Paso final', body: 'Mueve las mejores tomas a Seedance 2.0 cuando importen el acabado y el audio nativo.', tone: 'quality' },
+      { title: 'Audio nativo y lip-sync', body: 'Genera audio sincronizado, diálogo corto y lip-sync cuando el prompt necesita sonido.', tone: 'audio' },
     ],
     decisionCards: [
       {
         title: '¿Mini o Seedance 2.0?',
-        body: 'Usa Mini para exploración batch de menor coste y orientada a valor. Lleva las tomas hero aprobadas a Seedance 2.0 cuando el final necesite más pulido, mayor techo y audio nativo.',
+        body: 'Usa Mini para exploración batch de menor coste y orientada a valor. Lleva las tomas hero aprobadas a Seedance 2.0 cuando el final necesite más pulido, entrega de mayor resolución y el techo Seedance superior.',
         cta: { label: 'Comparar Mini vs 2.0', href: compareHref('es', 'dreamina-seedance-2-0-mini', 'seedance-2-0', 'dreamina-seedance-2-0-mini') },
       },
       {
@@ -801,7 +801,7 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       { title: 'Referencia de imagen', body: 'Usa imágenes para estabilizar forma de producto, vestuario, packaging o detalles de marca.' },
       { title: 'Edición de video', body: 'Usa un video fuente para una pasada de edición de menor coste antes de la ruta final.' },
       { title: 'Extensión', body: 'Extiende clips cortos para hooks revisables, finales alternativos o pruebas de movimiento de producto.' },
-      { title: 'Referencias de audio', body: 'Usa referencias de audio solo entrada para ritmo o mood; Mini no promete una banda sonora generada.' },
+      { title: 'Audio y lip-sync', body: 'Usa audio generado, diálogo corto, lip-sync y referencias de audio opcionales cuando el sonido importe.' },
     ],
     pricingCopy: {
       title: 'Precios de valor de Seedance 2.0 Mini',

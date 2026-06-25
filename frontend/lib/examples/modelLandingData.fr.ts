@@ -182,7 +182,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: 'Quel modèle vidéo IA Seedance faut-il utiliser pour les exemples et les tests de prompt ?',
         answer:
-          'Commencez par Seedance 2.0 Fast si vous voulez des brouillons plus rapides, utilisez Seedance 2.0 Mini pour des variantes e-commerce, accroches UGC et lots guidés par référence moins coûteux, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, l’audio natif et des sorties plus prêtes pour la production.',
+          'Commencez par Seedance 2.0 Fast si vous voulez des brouillons plus rapides, utilisez Seedance 2.0 Mini pour des variantes e-commerce, accroches UGC et lots guidés par référence moins coûteux, puis passez à Seedance 2.0 pour une meilleure qualité multi-plans, une livraison en plus haute résolution et des sorties plus prêtes pour la production.',
       },
       {
         question: 'Quels réglages influencent le plus le prix sur les flux vidéo Seedance ?',

@@ -9,7 +9,6 @@ import {
   getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
   getBytePlusUserSafeErrorMessage,
-  isPublicSeedanceMiniEngine,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -102,7 +101,7 @@ export async function submitBytePlusGenerateTask(params: {
 
   try {
     const config = getBytePlusArkConfigFn();
-    const generateAudio = isPublicSeedanceMiniEngine(params.engineId) ? false : params.audioEnabled !== false;
+    const generateAudio = params.audioEnabled !== false;
     const payload = buildBytePlusSeedancePayloadFn({
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,

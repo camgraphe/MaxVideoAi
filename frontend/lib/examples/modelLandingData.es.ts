@@ -182,7 +182,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: '¿Qué modelo de video IA de Seedance debería usar para ejemplos y pruebas de prompt?',
         answer:
-          'Empieza con Seedance 2.0 Fast cuando quieras borradores más rápidos, usa Seedance 2.0 Mini para variantes ecommerce, hooks UGC y lotes guiados por referencias de menor coste, y pasa a Seedance 2.0 cuando necesites mejor calidad multi-shot, audio nativo y salidas más listas para producción.',
+          'Empieza con Seedance 2.0 Fast cuando quieras borradores más rápidos, usa Seedance 2.0 Mini para variantes ecommerce, hooks UGC y lotes guiados por referencias de menor coste, y pasa a Seedance 2.0 cuando necesites mejor calidad multi-shot, entrega de mayor resolución y salidas más listas para producción.',
       },
       {
         question: '¿Qué ajustes afectan más al precio en los workflows de video de Seedance?',

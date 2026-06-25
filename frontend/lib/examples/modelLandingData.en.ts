@@ -182,7 +182,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
       {
         question: 'Which Seedance AI video model should I start with for examples and prompt testing?',
         answer:
-          'Start with Seedance 2.0 Fast when you want faster draft passes, use Seedance 2.0 Mini for lower-cost ecommerce variants, UGC hooks, and reference-guided batches, then move to Seedance 2.0 for stronger multi-shot quality, native audio, and more production-ready outputs.',
+          'Start with Seedance 2.0 Fast when you want faster draft passes, use Seedance 2.0 Mini for lower-cost ecommerce variants, UGC hooks, and reference-guided batches, then move to Seedance 2.0 for stronger multi-shot quality, higher-resolution delivery, and more production-ready outputs.',
       },
       {
         question: 'What settings affect Seedance video pricing most?',

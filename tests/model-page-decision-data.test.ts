@@ -199,8 +199,9 @@ test('Seedance 2.0 Mini returns lower-cost batch decision data without overclaim
   );
   assert.deepEqual(
     en.pricing.scenarios.map((scenario) => scenario.id),
-    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9']
+    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9', 'max-duration']
   );
+  assert.equal(en.pricing.scenarios.find((scenario) => scenario.id === 'max-duration')?.value, '15s');
 
   for (const decision of [en, fr, es]) {
     const text = visibleDecisionText(decision);
@@ -212,11 +213,12 @@ test('Seedance 2.0 Mini returns lower-cost batch decision data without overclaim
     assert.match(text, /multimodal|reference|référence|referencia/i);
     assert.match(text, /video editing|édition vidéo|edición de video/i);
     assert.match(text, /extension|extend|prolongation|extensión/i);
+    assert.match(text, /native audio|lip-sync|audio natif|lipsync|audio nativo/i);
     assert.match(text, /ecommerce|e-commerce|marketing|UGC/i);
     assert.doesNotMatch(text, /coming soon|BytePlus API|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i);
     assert.doesNotMatch(
       text,
-      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0|native audio output|audio output|sortie audio native|salida de audio nativa/i
+      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0/i
     );
   }
 

@@ -126,7 +126,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
       heroIntro:
-        'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, audio nativo y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina es una comparacion de scorecard/specs por ahora; todavia no incluye videos comparativos de Mini.',
+        'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, entrega de mayor resolucion y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina es una comparacion de scorecard/specs por ahora; todavia no incluye videos comparativos de Mini.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
       primaryLinks: [
         {
@@ -155,7 +155,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Cuando sigue siendo mejor Seedance 2.0?',
             answer:
-              'Elige Seedance 2.0 para hero shots finales, mayor pulido visual, workflows con audio nativo y trabajos donde la mejor salida Seedance importa mas que el coste por variante.',
+              'Elige Seedance 2.0 para hero shots finales, mayor pulido visual, entrega de mayor resolucion y trabajos donde la mejor salida Seedance importa mas que el coste por variante.',
           },
           {
             question: 'Por que esta pagina Mini no tiene videos comparativos?',

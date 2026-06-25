@@ -27,7 +27,7 @@ const SEEDANCE_2_0_MINI_ENGINE: EngineCaps = {
   resolutions: [...MINI_RESOLUTIONS],
   aspectRatios: [...SEEDANCE_2_MINI_ASPECT_RATIOS],
   fps: [24],
-  audio: false,
+  audio: true,
   upscale4k: false,
   extend: true,
   motionControls: true,
@@ -90,6 +90,12 @@ const SEEDANCE_2_0_MINI_ENGINE: EngineCaps = {
         label: 'Resolution',
         values: [...MINI_RESOLUTIONS],
         default: '720p',
+      },
+      {
+        id: 'generate_audio',
+        type: 'boolean',
+        label: 'Audio',
+        default: true,
       },
       {
         id: 'image_urls',
@@ -179,11 +185,11 @@ function miniMode(mode: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'): RawFalEngin
       aspectRatio: [...SEEDANCE_2_MINI_ASPECT_RATIOS],
       acceptsImageFormats: mode === 't2v' || mode === 'extend' ? undefined : ['jpg', 'jpeg', 'png', 'webp'],
       maxUploadMB: mode === 't2v' ? undefined : mode === 'i2v' ? 30 : 50,
-      audioToggle: false,
+      audioToggle: true,
       notes:
         mode === 'extend'
-          ? 'Dreamina Seedance Mini extends 1-3 source clips at 4-15s, 480p/720p, 24fps.'
-          : 'Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, and reference audio as input only.',
+          ? 'Dreamina Seedance Mini extends 1-3 source clips at 4-15s, 480p/720p, 24fps, with native audio on or off.'
+          : 'Dreamina Seedance Mini supports 4-15s, 480p/720p, 24fps, native audio/lip-sync, and multimodal references.',
     },
   };
 }
@@ -212,7 +218,7 @@ export const SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 Mini supports text, image, reference, video edit, and extension workflows with 4-15 second 480p/720p output at 24fps.',
+      'Seedance 2.0 Mini supports text, image, reference, video edit, and extension workflows with native audio, lip-sync, and 4-15 second 480p/720p output at 24fps.',
     prompts: [
       {
         title: 'Compact concept pass',

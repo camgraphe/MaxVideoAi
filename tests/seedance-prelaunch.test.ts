@@ -80,7 +80,7 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.deepEqual(mini.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
   assert.deepEqual(mini.engine.resolutions, ['480p', '720p']);
   assert.deepEqual(mini.engine.fps, [24]);
-  assert.equal(mini.engine.audio, false);
+  assert.equal(mini.engine.audio, true);
   assert.equal(targetCustomerUnitPriceUsdPer1kTokens(mini.engine.pricingDetails?.tokenPricing?.unitPriceUsdPer1kTokens), 0.00875);
   assert.equal(mini.engine.pricingDetails?.tokenPricing?.unitPriceUsdPer1kTokensByInputType, undefined);
   assert.equal(mini.engine.pricingDetails?.tokenPricing?.pricingSource, 'byteplus_seedance_2_0_mini_flat_markup');

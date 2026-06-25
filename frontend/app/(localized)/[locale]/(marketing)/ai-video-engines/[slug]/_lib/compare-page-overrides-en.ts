@@ -138,7 +138,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, native audio, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page is a scorecard and specs comparison for now; Mini comparison videos are not included yet.',
+        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page is a scorecard and specs comparison for now; Mini comparison videos are not included yet.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -167,7 +167,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'When is Seedance 2.0 still the better choice?',
             answer:
-              'Choose Seedance 2.0 for final-quality hero shots, stronger visual polish, native audio workflows, and work where the best Seedance output matters more than per-variant cost.',
+              'Choose Seedance 2.0 for final-quality hero shots, stronger visual polish, higher-resolution delivery, and work where the best Seedance output matters more than per-variant cost.',
           },
           {
             question: 'Why are there no comparison videos on this Mini page yet?',
@@ -279,7 +279,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 Mini as the lower-cost 480p/720p batch option for ecommerce variations, UGC hook tests, video edits, and high-frequency marketing experiments. Use Veo 3.1 Fast when Veo quality, audio-ready workflows, higher resolution delivery, and stronger final draft polish matter more than batch cost. This Mini page is scorecard/specs only for now and does not include comparison videos.',
+        'Use Seedance 2.0 Mini as the lower-cost 480p/720p batch option for ecommerce variations, UGC hook tests, video edits, native audio/lip-sync tests, and high-frequency marketing experiments. Use Veo 3.1 Fast when Veo quality, higher resolution delivery, and stronger final draft polish matter more than batch cost. This Mini page is scorecard/specs only for now and does not include comparison videos.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -308,7 +308,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'When is Veo 3.1 Fast the better fit?',
             answer:
-              'Choose Veo 3.1 Fast when you need Veo quality, audio-ready output, stronger final draft polish, or higher-resolution delivery instead of the cheapest high-volume route.',
+              'Choose Veo 3.1 Fast when you need Veo quality, stronger final draft polish, or higher-resolution delivery instead of the cheapest high-volume route.',
           },
           {
             question: 'Are Mini comparison videos available here?',

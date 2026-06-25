@@ -276,7 +276,7 @@ export function applyBytePlusSeedanceRuntimeOptions(
   );
   const resolutions = getBytePlusSeedanceAllowedResolutions(engine.id);
   const durationOptions = getBytePlusSeedanceDurationOptions(engine.id);
-  const supportsGeneratedAudio = !isPublicSeedanceMiniEngine(engine.id);
+  const supportsGeneratedAudio = true;
   const baseModeCaps = engine.modeCaps ?? {};
   const modeCaps = engine.modeCaps
     ? Object.fromEntries(

@@ -38,6 +38,7 @@ export const seedance20MiniTemplateConfig: ModelPageTemplateConfig = {
       { id: '8s-480p-9x16', seconds: 8, resolution: '480p', labelKey: 'motionDraft' },
       { id: '8s-720p-16x9', seconds: 8, resolution: '720p', labelKey: 'standardPreview', highlightKey: 'mostPopular' },
       { id: '15s-720p-16x9', seconds: 15, resolution: '720p', labelKey: 'referenceBatch', noteKey: 'upTo720p' },
+      { id: 'max-duration', fixedValueKey: 'maxDurationValue', labelKey: 'maxDuration', noteKey: 'upTo720p' },
     ],
   },
   sections: {

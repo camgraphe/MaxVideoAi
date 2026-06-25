@@ -699,7 +699,7 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   assert.match(visibleDecisionText(seedanceMini), /lower-cost|batch|value/i);
   assert.doesNotMatch(
     visibleDecisionText(seedanceMini),
-    /1080p|flagship|replaces Seedance 2\.0|native audio output|audio output/i,
+    /1080p|flagship|replaces Seedance 2\.0/i,
     'Seedance 2.0 Mini should stay lower-cost batch/value positioned without production-route overclaims'
   );
   assert.match(visibleDecisionText(seedance15), /older supported Seedance route|legacy-compatible/i);
@@ -870,8 +870,8 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
     assert.doesNotMatch(visibleDecisionText(veoLite), /4K/i, `Veo 3.1 Lite ${locale} copy should not claim 4K`);
     assert.doesNotMatch(
       visibleDecisionText(localizedSeedanceMini),
-      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0|native audio output|audio output|sortie audio native|salida de audio nativa/i,
-      `Seedance 2.0 Mini ${locale} copy should not claim final-route, 1080p, replacement, or generated-audio-output capabilities`
+      /1080p|flagship|replaces Seedance 2\.0|replace Seedance 2\.0|remplace Seedance 2\.0|reemplaza Seedance 2\.0/i,
+      `Seedance 2.0 Mini ${locale} copy should not claim final-route, 1080p, or replacement capabilities`
     );
     assert.match(
       visibleDecisionText(localizedSeedanceMini),
@@ -1072,8 +1072,7 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
     assert.match(customerText, /ByteDance/i);
     assert.doesNotMatch(customerText, /BytePlus|ModelArk/i);
     assert.match(customerText, /dreamina-seedance-2-0-mini-260615/i);
-    assert.match(customerText, /audio references|références audio|referencias de audio/i);
-    assert.match(customerText, /input only|entrée uniquement|solo entrada/i);
+    assert.match(customerText, /native audio|audio natif|audio nativo|lip-sync|lipsync/i);
     assert.doesNotMatch(
       rawContent,
       /coming soon|BytePlus API|API access|API pending|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i
@@ -1084,7 +1083,7 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
     );
     assert.doesNotMatch(
       miniSpecsText,
-      /1080p|flagship|native audio output|audio output|sortie audio native|salida de audio nativa/i
+      /1080p|flagship/i
     );
   }
 });
@@ -1141,8 +1140,8 @@ test('existing Seedance content links to Mini only as a lower-cost batch value a
     for (const value of seedanceMiniStrings) {
       assert.doesNotMatch(
         value,
-        /Mini.*(?:flagship|production|audio natif|audio nativo|native audio)/i,
-        `${locale} Seedance 2.0 should not frame Mini as production/audio-native in "${value}"`
+        /Mini.*(?:flagship|production)/i,
+        `${locale} Seedance 2.0 should not frame Mini as production-tier in "${value}"`
       );
     }
     for (const value of fastMiniStrings) {

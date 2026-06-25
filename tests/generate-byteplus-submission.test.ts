@@ -165,7 +165,7 @@ test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini
     mode: 'v2v',
     normalizedReferenceImages: [],
     videoUrls: ['https://cdn.maxvideoai.com/source.mp4'],
-    audioEnabled: false,
+    audioEnabled: true,
     deps: {
       getBytePlusArkConfigFn: () =>
         ({
@@ -189,7 +189,7 @@ test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini
   assert.equal(builtPayloads[0]?.modelId, 'model-mini');
   assert.equal(builtPayloads[0]?.durationSec, 4);
   assert.equal(builtPayloads[0]?.mode, 'v2v');
-  assert.equal(builtPayloads[0]?.generateAudio, false);
+  assert.equal(builtPayloads[0]?.generateAudio, true);
   assert.deepEqual(builtPayloads[0]?.allowedResolutions, ['480p', '720p']);
 });
 

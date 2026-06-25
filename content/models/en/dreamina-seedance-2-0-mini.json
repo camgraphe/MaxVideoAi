@@ -10,7 +10,7 @@
   "hero": {
     "title": "Dreamina Seedance 2.0 Mini — lower-cost route for batch video variants",
     "intro": "Use Dreamina Seedance 2.0 Mini when you need a value route for many 480p/720p video variants before committing hero shots to Seedance 2.0. This page tracks specs, prompts, pricing, and scorecards for batch-focused generation.",
-    "badge": "Dreamina Seedance · 480p/720p · 4-15s · 24fps · audio references input only",
+    "badge": "Dreamina Seedance · 480p/720p · 4-15s · 24fps · native audio and lip-sync",
     "ctaPrimary": {
       "label": "Generate with Seedance 2.0 Mini",
       "href": "/app?engine=seedance-2-0-mini"
@@ -87,7 +87,7 @@
     },
     {
       "label": "Audio",
-      "body": "Audio references are input only for rhythm or mood guidance."
+      "body": "Native synchronized audio and lip-sync are supported; audio references can also guide rhythm or mood."
     }
   ],
   "promptStructure": {
@@ -144,12 +144,12 @@
       "a": "The MaxVideoAI Mini route exposes 480p or 720p output, 4-15 second durations, and 24fps."
     },
     {
-      "q": "Does Seedance 2.0 Mini support audio references?",
-      "a": "Yes. Audio references can guide rhythm or mood as input only."
+      "q": "Does Seedance 2.0 Mini support audio and lip-sync?",
+      "a": "Yes. Mini supports native synchronized audio and lip-sync, and audio references can guide rhythm or mood."
     },
     {
       "q": "When should I use Seedance 2.0 instead of Mini?",
-      "a": "Use Seedance 2.0 when you need the final, polished, higher-ceiling Seedance route with native audio. Use Mini for batch/value exploration before that step."
+      "a": "Use Seedance 2.0 when you need the final, polished, higher-ceiling Seedance route with higher-resolution delivery and stronger production quality. Use Mini for batch/value exploration before that step."
     }
   ],
   "custom": {
@@ -184,7 +184,8 @@
           "Multimodal reference-to-video",
           "Video editing",
           "Extension",
-          "Audio references are input only"
+          "Native audio and lip-sync",
+          "Audio references for rhythm or mood"
         ]
       }
     ],
@@ -203,7 +204,7 @@
       "Text prompts are best for batch ideation and low-cost marketing hooks.",
       "Image references keep product shape, wardrobe, or packaging consistent.",
       "Video references and source videos help test pacing, edits, and extensions.",
-      "Audio references can guide rhythm or mood as input only."
+      "Audio references can guide rhythm or mood, while native audio/lip-sync can be generated with the clip."
     ],
     "tipsTitle": "Strengths and boundaries",
     "strengths": [
@@ -214,7 +215,7 @@
     ],
     "boundaries": [
       "Maximum resolution is 720p.",
-      "Treat audio references as input guidance only.",
+      "Keep dialogue and lip-sync cues short enough for reviewable 4-15s clips.",
       "Keep Mini positioning scoped to batch/value work before Seedance 2.0 finals.",
       "Check the live quote in Generate before scaling batches."
     ],
@@ -224,11 +225,18 @@
     "recreateLabel": "Recreate this Mini variant ->",
     "demoTitle": "Demo prompt — Seedance 2.0 Mini",
     "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "8 second 720p 16:9 cinematic metro-platform scene after rain. A young woman in a dark coat stands near the platform edge as the last train rushes past, wind moving her hair and coat.",
+      "She turns toward camera and says: \"I know where we go next.\" Keep the line natural, clearly lip-synced, and emotionally restrained.",
+      "Camera: slow lateral tracking shot parallel to the platform, medium-wide framing with strong negative space on the left for website text.",
+      "Lighting and motion: warm train-window light sweeps across cool blue station shadows, wet floor reflections, subtle commuter reactions, realistic motion blur.",
+      "Audio: deep train rumble, wind rush, distant station ambience, clean synced dialogue, no music. Constraints: no readable text, no logos, no subtitles, no UI, no brand signs."
+    ],
     "relatedItems": [
       {
         "brand": "bytedance",
         "title": "Seedance 2.0",
-        "description": "Move approved Mini variants into Seedance 2.0 when final polish, native audio, and the highest Seedance route matter.",
+        "description": "Move approved Mini variants into Seedance 2.0 when final polish, higher-resolution delivery, and the highest Seedance route matter.",
         "modelSlug": "seedance-2-0",
         "ctaLabel": "See standard Seedance 2.0 ->"
       },

@@ -108,6 +108,17 @@ test('BytePlus Mini runtime uses Mini caps and input-specific accounting rates',
     aspectRatio: '16:9',
   });
   assert.equal(options.ok, true);
+  const miniEntry = listFalEngines().find((entry) => entry.id === 'seedance-2-0-mini');
+  assert.ok(miniEntry);
+  assert.equal(miniEntry.engine.audio, true);
+  assert.equal(miniEntry.modes.every((mode) => mode.ui.audioToggle === true), true);
+  assert.equal(miniEntry.engine.inputSchema?.optional?.some((field) => field.id === 'generate_audio'), true);
+  const miniRuntimeEngine = applyBytePlusSeedanceRuntimeOptions(miniEntry.engine, {
+    provider: 'byteplus_modelark',
+    allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+  });
+  assert.equal(miniRuntimeEngine.audio, true);
+  assert.equal(miniRuntimeEngine.modeCaps ? Object.values(miniRuntimeEngine.modeCaps).every((caps) => caps?.audioToggle === true) : true, true);
 
   const payload = buildBytePlusSeedancePayload({
     modelId: 'dreamina-seedance-2-0-mini-260615',

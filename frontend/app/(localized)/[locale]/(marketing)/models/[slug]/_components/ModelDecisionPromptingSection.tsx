@@ -959,6 +959,10 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
     };
   }
 
+  if (engineSlug === 'seedance-2-0-mini') {
+    return getSeedance20MiniDemoSummary(locale);
+  }
+
   if (engineSlug === 'wan-2-5') {
     if (locale === 'fr') {
       return {
@@ -1016,6 +1020,34 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
   }
 
   return getDemoSummary(locale);
+}
+
+function getSeedance20MiniDemoSummary(locale: AppLocale) {
+  if (locale === 'fr') {
+    return {
+      subject: 'Jeune femme sur un quai de métro après la pluie',
+      action: 'Le train passe vite, elle se tourne et prononce une courte ligne',
+      camera: 'Tracking latéral 16:9 avec espace négatif pour le texte',
+      style: 'Reflets mouillés, lumière chaude de train et ombres bleues',
+      audio: 'Rumble du train, vent, ambiance station et lipsync sur la réplique',
+    };
+  }
+  if (locale === 'es') {
+    return {
+      subject: 'Mujer joven en un andén de metro tras la lluvia',
+      action: 'El tren pasa rápido, ella gira y dice una línea corta',
+      camera: 'Tracking lateral 16:9 con espacio negativo para texto',
+      style: 'Reflejos mojados, luz cálida del tren y sombras azules',
+      audio: 'Rumble del tren, viento, ambiente de estación y lip-sync en la frase',
+    };
+  }
+  return {
+    subject: 'Young woman on a rain-wet metro platform',
+    action: 'The train rushes past, then she turns and delivers one short line',
+    camera: '16:9 lateral tracking with negative space for page copy',
+    style: 'Wet reflections, warm train light, cool blue station shadows',
+    audio: 'Train rumble, wind, station ambience, and lip-synced dialogue',
+  };
 }
 
 function getHappyHorse11DemoPrompt() {
@@ -2295,6 +2327,7 @@ export function ModelDecisionPromptingSection({
   const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
   const isSeedance20FastRoute = engineSlug === 'seedance-2-0-fast';
+  const isSeedance20MiniRoute = engineSlug === 'seedance-2-0-mini';
   const isSeedance15ProRoute = engineSlug === 'seedance-1-5-pro';
   const isLtx23FastRoute = engineSlug === 'ltx-2-3-fast';
   const isLtx23ProRoute = engineSlug === 'ltx-2-3-pro' || engineSlug === 'ltx-2-3';
@@ -2306,6 +2339,7 @@ export function ModelDecisionPromptingSection({
   const isKlingO34kRoute = engineSlug === 'kling-o3-4k';
   const isSilentPromptRoute = isHailuoDraftRoute || isPikaTextRoute || isLumaRay2Route || isLumaFlashRoute;
   const standardDemo = getRouteDemoSummary(locale, engineSlug);
+  const seedance20MiniDemo = getSeedance20MiniDemoSummary(locale);
   const seedance15Demo = getSeedance15DemoSummary(locale);
   const hailuoDemo = getHailuoDemoSummary(locale);
   const pikaDemo = getPikaDemoSummary(locale);
@@ -2342,6 +2376,8 @@ export function ModelDecisionPromptingSection({
                   ? { ...ltx23FastDemo, output: ltx23FastDemo.audio }
                 : isLtx23ProRoute
                   ? { ...ltx23ProDemo, output: ltx23ProDemo.audio }
+                : isSeedance20MiniRoute
+                  ? { ...seedance20MiniDemo, output: seedance20MiniDemo.audio }
                     : isKlingO34kRoute
                       ? { ...klingO34kDemo, output: klingO34kDemo.audio }
                       : isKlingO3ProRoute
@@ -2528,6 +2564,8 @@ export function ModelDecisionPromptingSection({
         ? copy.demoPrompt.join('\n')
       : isVeoFastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isSeedance20MiniRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isKlingO34kRoute
         ? (copy.demoPrompt.length ? copy.demoPrompt.join('\n') : getKlingO34kDemoPrompt())
       : isKlingO3ProRoute
@@ -2594,6 +2632,8 @@ export function ModelDecisionPromptingSection({
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : isVeoLiteRoute
             ? (locale === 'fr' || locale === 'es' ? '8 s' : '8s')
+          : isSeedance20MiniRoute
+            ? (demoMedia ? getDuration(demoMedia, locale) : locale === 'fr' || locale === 'es' ? '8 s' : '8s')
           : getDuration(demoMedia, locale);
   const demoAspectLabel = isSilentPromptRoute ? (isPikaTextRoute ? '1:1' : '16:9') : getAspect(demoMedia);
   const demoModeLabel = isHailuoDraftRoute
@@ -2645,6 +2685,8 @@ export function ModelDecisionPromptingSection({
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo 3.1' : locale === 'es' ? 'Prompt Veo 3.1' : 'Veo 3.1 prompt'))
     : isVeoFastRoute
       ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Veo Fast' : locale === 'es' ? 'Prompt Veo Fast' : 'Veo Fast prompt'))
+    : isSeedance20MiniRoute
+      ? (copy.demoPromptLabel ?? (locale === 'fr' ? 'Prompt Mini 720p' : locale === 'es' ? 'Prompt Mini 720p' : 'Mini 720p prompt'))
     : isPikaTextRoute
       ? 'Text-to-Video'
       : isLumaRay2Route
@@ -2721,6 +2763,12 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Borrador de movimiento Seedance 2.0 Fast'
           : 'Seedance 2.0 Fast motion draft render'
+    : isSeedance20MiniRoute
+      ? locale === 'fr'
+        ? 'Rendu Seedance 2.0 Mini sur quai de métro après la pluie'
+        : locale === 'es'
+          ? 'Render Seedance 2.0 Mini en andén de metro tras la lluvia'
+          : 'Seedance 2.0 Mini rain-wet metro platform render'
     : isSeedance15ProRoute
       ? locale === 'fr'
         ? 'Rendu moto Seedance 1.5 Pro camera_fixed'

@@ -153,7 +153,7 @@ test('template registry enables Seedance production and draft model templates', 
   );
   assert.deepEqual(
     seedanceMini.pricing.presets.map((preset) => preset.id),
-    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9']
+    ['4s-480p-16x9', '8s-480p-9x16', '8s-720p-16x9', '15s-720p-16x9', 'max-duration']
   );
   assert.deepEqual(
     seedanceMini.hero.quickLinks.map((link) => link.href),

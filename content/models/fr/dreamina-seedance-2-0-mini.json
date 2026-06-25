@@ -10,7 +10,7 @@
   "hero": {
     "title": "Seedance 2.0 Mini — route Seedance à coût réduit pour variantes vidéo en lot",
     "intro": "Utilisez Dreamina Seedance 2.0 Mini quand vous avez besoin d'une route valeur pour de nombreuses variantes vidéo 480p/720p avant de passer les plans héros à Seedance 2.0. Cette page documente specs, prompts, prix et scorecards pour la génération orientée batch.",
-    "badge": "Dreamina Seedance · 480p/720p · 4-15 s · 24 fps · références audio en entrée uniquement",
+    "badge": "Dreamina Seedance · 480p/720p · 4-15 s · 24 fps · audio natif et lipsync",
     "ctaPrimary": {
       "label": "Générer avec Seedance 2.0 Mini",
       "href": "/app?engine=seedance-2-0-mini"
@@ -87,7 +87,7 @@
     },
     {
       "label": "Audio",
-      "body": "Les références audio sont une entrée uniquement pour guider le rythme ou le mood."
+      "body": "L'audio synchronisé natif et le lipsync sont pris en charge; les références audio peuvent aussi guider le rythme ou le mood."
     }
   ],
   "promptStructure": {
@@ -144,12 +144,12 @@
       "a": "La route Mini MaxVideoAI expose 480p ou 720p, des durées de 4 à 15 secondes et 24 fps."
     },
     {
-      "q": "Seedance 2.0 Mini accepte-t-elle des références audio ?",
-      "a": "Oui. Les références audio peuvent guider le rythme ou le mood comme entrée uniquement."
+      "q": "Seedance 2.0 Mini prend-elle en charge l'audio et le lipsync ?",
+      "a": "Oui. Mini prend en charge l'audio synchronisé natif et le lipsync, et les références audio peuvent guider le rythme ou le mood."
     },
     {
       "q": "Quand utiliser Seedance 2.0 plutôt que Mini ?",
-      "a": "Utilisez Seedance 2.0 quand vous voulez la route Seedance finale, polie, au plafond plus élevé et avec audio natif. Utilisez Mini pour l'exploration batch/valeur avant cette étape."
+      "a": "Utilisez Seedance 2.0 quand vous voulez la route Seedance finale, polie, au plafond plus élevé, avec livraison en plus haute résolution et une qualité production plus forte. Utilisez Mini pour l'exploration batch/valeur avant cette étape."
     }
   ],
   "custom": {
@@ -184,7 +184,8 @@
           "Reference-to-video multimodal",
           "Édition vidéo",
           "Prolongation",
-          "Références audio en entrée uniquement"
+          "Audio natif et lipsync",
+          "Références audio pour le rythme ou le mood"
         ]
       }
     ],
@@ -203,7 +204,7 @@
       "Les prompts texte conviennent aux idées batch et hooks marketing à coût réduit.",
       "Les références image stabilisent forme produit, tenue ou packaging.",
       "Les références vidéo et vidéos source aident à tester pacing, edits et extensions.",
-      "Les références audio peuvent guider le rythme ou le mood comme entrée uniquement."
+      "Les références audio peuvent guider le rythme ou le mood, tandis que l'audio natif/lipsync peut être généré avec le clip."
     ],
     "tipsTitle": "Forces et limites",
     "strengths": [
@@ -214,7 +215,7 @@
     ],
     "boundaries": [
       "La résolution maximale est 720p.",
-      "Les références audio servent uniquement de guidage en entrée.",
+      "Gardez les répliques et cues lipsync assez courts pour des clips de 4 à 15 s faciles à revoir.",
       "Gardez Mini sur le travail batch/valeur avant les rendus finaux Seedance 2.0.",
       "Vérifiez le devis live dans Générer avant de passer les lots à l’échelle."
     ],
@@ -224,11 +225,18 @@
     "recreateLabel": "Recréer cette variante Mini ->",
     "demoTitle": "Prompt de démonstration — Seedance 2.0 Mini",
     "demoPromptLabel": "Prompt",
+    "demoPrompt": [
+      "Scène cinématique de 8 secondes en 720p 16:9 sur un quai de métro après la pluie. Une jeune femme en manteau sombre reste près du bord pendant que le dernier train passe vite, le vent faisant bouger ses cheveux et son manteau.",
+      "Elle se tourne vers la caméra et dit : \"Je sais où on va maintenant.\" Garder la réplique naturelle, clairement synchronisée en lipsync et émotionnellement retenue.",
+      "Caméra : tracking latéral lent parallèle au quai, cadrage moyen-large avec fort espace négatif à gauche pour le texte du site.",
+      "Lumière et mouvement : lumière chaude des fenêtres du train sur ombres bleues de station, reflets au sol mouillé, réactions discrètes des passants, flou de mouvement réaliste.",
+      "Audio : rumble profond du train, souffle du vent, ambiance de station lointaine, dialogue propre et synchronisé, pas de musique. Contraintes : aucun texte lisible, logo, sous-titre, UI ou panneau de marque."
+    ],
     "relatedItems": [
       {
         "brand": "bytedance",
         "title": "Seedance 2.0",
-        "description": "Passez les variantes Mini validées à Seedance 2.0 quand la finition, l'audio natif et la route Seedance la plus élevée comptent.",
+        "description": "Passez les variantes Mini validées à Seedance 2.0 quand la finition, la livraison en plus haute résolution et la route Seedance la plus élevée comptent.",
         "modelSlug": "seedance-2-0",
         "ctaLabel": "Voir Seedance 2.0 standard ->"
       },
