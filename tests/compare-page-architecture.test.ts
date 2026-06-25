@@ -197,6 +197,16 @@ test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suff
     override?.heroIntro ?? '',
     /^Use Seedance 2\.0 when quality and consistency matter\. Use Seedance 2\.0 Fast when you want quicker, cheaper prompt tests and rapid iteration\./
   );
+  assert.equal(override?.quickVerdict?.title, 'Quick verdict');
+  assert.match(
+    override?.quickVerdict?.body ?? '',
+    /Seedance 2\.0 vs Seedance 2\.0 Fast is mainly a quality versus iteration-speed choice/
+  );
+  assert.match(
+    override?.quickVerdict?.body ?? '',
+    /final 1080p or 4K shots[\s\S]*cheaper 480p or 720p drafts/,
+    'Seedance 2.0 vs Fast should expose the direct snippet answer and resolution tradeoff'
+  );
   assert.match(
     JSON.stringify(override?.faq?.items ?? []),
     /Fast vs normal/i,

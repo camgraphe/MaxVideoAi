@@ -131,6 +131,7 @@ export function CompareDetailContent({
             compareHubHref={compareHubHref}
             heroIntroTemplate={heroIntroTemplate}
             left={left}
+            pageOverride={pageOverride}
             prelaunchNotice={prelaunchNotice}
             right={right}
           />
@@ -174,7 +175,6 @@ export function CompareDetailContent({
               summaryRows={summaryRows}
               winnerSummaryHeading={winnerSummaryHeading}
             />
-
             <CompareSpecsSection
               activeLocale={activeLocale}
               compareCopy={compareCopy}

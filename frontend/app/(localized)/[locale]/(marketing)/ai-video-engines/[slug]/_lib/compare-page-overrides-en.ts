@@ -92,6 +92,11 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       },
       heroIntro:
         'Use Seedance 2.0 when quality and consistency matter. Use Seedance 2.0 Fast when you want quicker, cheaper prompt tests and rapid iteration. Compare identical prompts, side-by-side outputs, pricing, speed, and quality tradeoffs before choosing the right Seedance workflow.',
+      quickVerdict: {
+        title: 'Quick verdict',
+        body:
+          'Seedance 2.0 vs Seedance 2.0 Fast is mainly a quality versus iteration-speed choice. Seedance 2.0 is better for final 1080p or 4K shots, stronger consistency, reference-driven work, native audio, and polished output. Seedance 2.0 Fast is better for cheaper 480p or 720p drafts, prompt testing, timing checks, and fast creative exploration before upgrading the best idea to the standard Seedance 2.0 route.',
+      },
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {

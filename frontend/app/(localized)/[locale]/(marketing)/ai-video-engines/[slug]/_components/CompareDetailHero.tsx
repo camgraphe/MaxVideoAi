@@ -2,6 +2,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { ComparePageCopy } from '../_lib/compare-page-copy';
 import { formatEngineName, formatTemplate } from '../_lib/compare-page-helpers';
+import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { EngineCatalogEntry } from '../_lib/compare-page-types';
 
 type CompareDetailHeroProps = {
@@ -9,6 +10,7 @@ type CompareDetailHeroProps = {
   compareHubHref: string;
   heroIntroTemplate: string;
   left: EngineCatalogEntry;
+  pageOverride?: ComparePageOverride | null;
   prelaunchNotice: { title: string; body: string } | null;
   right: EngineCatalogEntry;
 };
@@ -18,6 +20,7 @@ export function CompareDetailHero({
   compareHubHref,
   heroIntroTemplate,
   left,
+  pageOverride,
   prelaunchNotice,
   right,
 }: CompareDetailHeroProps) {
@@ -42,6 +45,14 @@ export function CompareDetailHero({
             right: formatEngineName(right),
           })}
         </p>
+        {pageOverride?.quickVerdict ? (
+          <div className="mx-auto mt-5 max-w-3xl rounded-lg border border-border-subtle bg-surface-panel/80 px-4 py-3 text-left shadow-sm">
+            <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+              {pageOverride.quickVerdict.title}
+            </p>
+            <p className="mt-2 text-sm leading-6 text-text-secondary">{pageOverride.quickVerdict.body}</p>
+          </div>
+        ) : null}
         {prelaunchNotice ? (
           <div className="mx-auto mt-4 max-w-3xl rounded-2xl border border-amber-300/70 bg-amber-50 px-4 py-3 text-left shadow-sm">
             <p className="text-xs font-semibold uppercase tracking-micro text-amber-900">{prelaunchNotice.title}</p>
