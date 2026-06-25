@@ -7,6 +7,15 @@ import { ExternalLink, Play } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
+function getMediaAspectRatio(aspectLabel: string) {
+  const match = aspectLabel.match(/(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)/);
+  if (!match) return '16 / 9';
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return '16 / 9';
+  return `${width} / ${height}`;
+}
+
 type ModelDecisionDemoMediaProps = {
   posterSrc: string | null;
   videoSrc: string | null;
@@ -30,6 +39,7 @@ export function ModelDecisionDemoMedia({
   const [isPlaying, setIsPlaying] = useState(false);
   const normalizedVideoSrc = (videoSrc ?? '').toLowerCase();
   const sourceType = normalizedVideoSrc.includes('.webm') ? 'video/webm' : 'video/mp4';
+  const mediaAspectRatio = getMediaAspectRatio(aspectLabel);
 
   const handlePlay = () => {
     if (!videoSrc) return;
@@ -40,11 +50,14 @@ export function ModelDecisionDemoMedia({
   };
 
   return (
-    <figure className="relative min-h-[230px] overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-[0_18px_48px_-30px_rgba(15,23,42,0.55)] dark:border-white/10">
+    <figure
+      className="relative w-full self-start overflow-hidden rounded-xl border border-slate-200 bg-slate-950 shadow-[0_18px_48px_-30px_rgba(15,23,42,0.55)] dark:border-white/10"
+      style={{ aspectRatio: mediaAspectRatio }}
+    >
       {isPlaying && videoSrc ? (
         <video
           ref={videoRef}
-          className="h-full min-h-[260px] w-full object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
           controls
           playsInline
           preload="metadata"
@@ -58,7 +71,7 @@ export function ModelDecisionDemoMedia({
       ) : posterSrc ? (
         <Image src={posterSrc} alt={alt} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 620px" quality={80} />
       ) : (
-        <div className="flex h-full min-h-[260px] items-center justify-center text-sm font-semibold text-white/70">{alt}</div>
+        <div className="flex h-full w-full items-center justify-center text-sm font-semibold text-white/70">{alt}</div>
       )}
 
       {!isPlaying ? (
