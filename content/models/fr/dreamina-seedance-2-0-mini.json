@@ -206,6 +206,42 @@
       "Les références vidéo et vidéos source aident à tester pacing, edits et extensions.",
       "Les références audio peuvent guider le rythme ou le mood, tandis que l'audio natif/lipsync peut être généré avec le clip."
     ],
+    "promptingTabNotes": {
+      "quick": "Texte = une question de lot depuis le langage seul.",
+      "structured": "Refs = stabiliser produit, sujet ou style.",
+      "pro": "Edit/Extend = utiliser des clips source pour des révisions moins coûteuses.",
+      "storyboard": "Comparer = garder les réglages fixes et changer une variable."
+    },
+    "promptingTabs": [
+      {
+        "id": "quick",
+        "label": "Texte",
+        "title": "Prompt texte en lot",
+        "description": "À utiliser pour lire à moindre coût un cadrage, un mouvement, un hook ou une direction audio depuis le texte seul.",
+        "copy": "Question du lot:\n[Ce que ce rendu doit prouver: hook, caméra, angle produit, mouvement ou son]\n\nSujet et action:\n[Un sujet lisible + une action visible]\n\nCaméra:\n[Un seul mouvement: push-in / tracking / statique / handheld]\n\nStyle:\n[Lumière, météo, palette, niveau de réalisme]\n\nRéglage audio:\n[Audio activé pour ambiance/dialogue natifs, ou audio désactivé pour revue visuelle]\n\nRègle:\nNe testez pas plus d'une variable majeure dans le même rendu Mini."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Prompt avec références image et audio",
+        "description": "À utiliser quand Mini doit garder produit, personne, tenue ou mood stable sur beaucoup de variantes.",
+        "copy": "Intention du prompt:\n[Ce que le clip généré doit faire]\n\nRéférences image:\n@Image1 = [produit / personne / composition]\n@Image2 = [style / tenue / palette]\n\nRéférences audio si attachées:\n@Audio1 = [rythme / ambiance / texture de dialogue]\n\nMouvement:\n[Une action ou un mouvement caméra clair]\n\nAncres de continuité:\n[Ce qui ne doit pas dériver entre variantes]\n\nRègle:\nChaque référence a un rôle. N'ajoutez pas des références concurrentes pour le même rôle."
+      },
+      {
+        "id": "pro",
+        "label": "Edit/Extend",
+        "title": "Prompt d'édition vidéo ou de prolongation",
+        "description": "À utiliser quand un clip source existe déjà et que Mini sert à tester un edit ou une suite moins coûteuse.",
+        "copy": "Clip source:\n[Ce qui se passe déjà et ce qui doit rester continu]\n\nChangement demandé:\n[Modifier le look / ajuster le pacing / prolonger la fin]\n\nNe pas changer:\n[Identité du sujet, forme produit, lieu, logique caméra]\n\nNouveau beat:\n[Une action, révélation ou pose finale]\n\nAudio:\n[Désactivé pour revue visuelle, ou natif activé pour ambiance/SFX/dialogue]\n\nRègle:\nDécrivez le prochain changement, pas une nouvelle scène sans rapport."
+      },
+      {
+        "id": "storyboard",
+        "label": "Comparer",
+        "title": "Prompt de comparaison batch",
+        "description": "À utiliser quand Mini produit plusieurs options comparables avant une passe finale Seedance 2.0.",
+        "copy": "Setup fixe sur toutes les variantes:\n[Sujet, ratio, résolution, durée, références et action centrale]\n\nVariante A:\n[Une seule variable changée]\n\nVariante B:\n[Une autre variable seulement]\n\nCritère gagnant:\n[Clarté, lecture produit, hook émotionnel, mouvement ou coût]\n\nNote de handoff:\n[Ce qui part dans Seedance 2.0 si validé]\n\nRègle:\nGardez durée et résolution fixes pour comparer coût et qualité proprement."
+      }
+    ],
     "tipsTitle": "Forces et limites",
     "strengths": [
       "Itération batch/valeur à coût réduit",
@@ -226,11 +262,11 @@
     "demoTitle": "Prompt de démonstration — Seedance 2.0 Mini",
     "demoPromptLabel": "Prompt",
     "demoPrompt": [
-      "Scène cinématique de 8 secondes en 720p 16:9 sur un quai de métro après la pluie. Une jeune femme en manteau sombre reste près du bord pendant que le dernier train passe vite, le vent faisant bouger ses cheveux et son manteau.",
-      "Elle se tourne vers la caméra et dit : \"Je sais où on va maintenant.\" Garder la réplique naturelle, clairement synchronisée en lipsync et émotionnellement retenue.",
-      "Caméra : tracking latéral lent parallèle au quai, cadrage moyen-large avec fort espace négatif à gauche pour le texte du site.",
-      "Lumière et mouvement : lumière chaude des fenêtres du train sur ombres bleues de station, reflets au sol mouillé, réactions discrètes des passants, flou de mouvement réaliste.",
-      "Audio : rumble profond du train, souffle du vent, ambiance de station lointaine, dialogue propre et synchronisé, pas de musique. Contraintes : aucun texte lisible, logo, sous-titre, UI ou panneau de marque."
+      "Scène cinématique de 8 secondes en 720p 16:9 dans un passage piéton urbain au golden hour. Un père et sa petite fille avancent dans la foule pendant qu'un bus passe derrière eux et que la rue se remplit soudain de mouvement ascendant.",
+      "Plan 1 : vue moyenne-large au niveau de la rue, vie urbaine normale autour d'eux, push documentaire, rim light chaude et longues ombres.",
+      "Plan 2 : push-in fluide en slow motion pendant que l'arrière-plan réagit naturellement; garder le père et l'enfant comme focus émotionnel, mains connectées et visages réalistes.",
+      "Plan 3 : close medium sur l'enfant qui regarde vers le haut avec émerveillement calme, puis le père sourit avec soulagement. La lumière chaude traverse le dernier frame.",
+      "Réglage audio de ce rendu sélectionné : désactivé. Pour de nouveaux rendus Mini, activez l'audio natif si vous voulez ambiance trafic, pas, son de passage ou dialogue court. Contraintes : aucun texte lisible, logo, sous-titre ou UI."
     ],
     "relatedItems": [
       {

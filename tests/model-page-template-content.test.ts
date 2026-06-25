@@ -1040,7 +1040,11 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
       marketingName?: string;
       hero?: { badge?: string; ctaPrimary?: { href?: string }; secondaryLinks?: Array<{ href?: string }> };
       technicalOverview?: Array<{ label?: string; body?: string }>;
-      custom?: { specSections?: Array<{ items?: string[] }> };
+      custom?: {
+        demoPrompt?: string[];
+        promptingTabs?: Array<{ id?: string; label?: string; title?: string; copy?: string }>;
+        specSections?: Array<{ items?: string[] }>;
+      };
     };
     const customerText = collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS).join(' ');
     const miniSpecsText = collectCustomerFacingStrings(
@@ -1073,6 +1077,11 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
     assert.doesNotMatch(customerText, /BytePlus|ModelArk/i);
     assert.match(customerText, /dreamina-seedance-2-0-mini-260615/i);
     assert.match(customerText, /native audio|audio natif|audio nativo|lip-sync|lipsync/i);
+    assert.deepEqual(
+      content.custom?.promptingTabs?.map((tab) => tab.id),
+      ['quick', 'structured', 'pro', 'storyboard']
+    );
+    assert.match(content.custom?.demoPrompt?.join(' ') ?? '', /crosswalk|passage piéton|cruce urbano/i);
     assert.doesNotMatch(
       rawContent,
       /coming soon|BytePlus API|API access|API pending|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i

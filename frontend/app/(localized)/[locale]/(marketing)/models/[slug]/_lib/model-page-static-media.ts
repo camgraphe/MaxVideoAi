@@ -67,6 +67,10 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_bdf3583a-264e-42ec-bfc2-cd866969374c',
     demo: 'job_cd3036e6-a6a3-4f4a-b139-0c7a31a918f2',
   },
+  'dreamina-seedance-2-0-mini': {
+    hero: 'job_d9481a70-db5c-4072-8ab7-adc82a8a5100',
+    demo: 'job_d63d5269-6200-47d6-814d-9992b9a720be',
+  },
   'ltx-2-3-pro': {
     hero: 'job_37043493-5971-46a9-96aa-ccf4cf09d0f0',
     demo: 'job_ff7bf5c5-44f2-4d8d-92a6-851ecc5a59ab',

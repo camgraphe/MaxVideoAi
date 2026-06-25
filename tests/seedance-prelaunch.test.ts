@@ -24,6 +24,7 @@ import {
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 
 const DEFAULT_MAXVIDEOAI_MARGIN_FACTOR = 1.3;
 
@@ -325,6 +326,10 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
   assert.doesNotMatch(compareSource, /getLatestVideoByPromptAndEngine/);
   assert.match(modelSource, /getPublicVideosByIds/);
   assert.match(homepageSource, /getPublicVideosByIds/);
+  assert.deepEqual(PREFERRED_MEDIA['dreamina-seedance-2-0-mini'], {
+    hero: 'job_d9481a70-db5c-4072-8ab7-adc82a8a5100',
+    demo: 'job_d63d5269-6200-47d6-814d-9992b9a720be',
+  });
 });
 
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {

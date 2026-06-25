@@ -1025,28 +1025,28 @@ function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
 function getSeedance20MiniDemoSummary(locale: AppLocale) {
   if (locale === 'fr') {
     return {
-      subject: 'Jeune femme sur un quai de métro après la pluie',
-      action: 'Le train passe vite, elle se tourne et prononce une courte ligne',
-      camera: 'Tracking latéral 16:9 avec espace négatif pour le texte',
-      style: 'Reflets mouillés, lumière chaude de train et ombres bleues',
-      audio: 'Rumble du train, vent, ambiance station et lipsync sur la réplique',
+      subject: 'Père et enfant dans un passage piéton urbain au golden hour',
+      action: 'Une vague de mouvement traverse la scène pendant que le bus passe derrière eux',
+      camera: 'Push-in documentaire puis close medium émotionnel',
+      style: 'Lumière chaude entre les immeubles, silhouettes en mouvement, réalisme cinéma',
+      audio: 'Rendu sélectionné sans audio; activez l’audio natif pour les nouveaux tests sonores',
     };
   }
   if (locale === 'es') {
     return {
-      subject: 'Mujer joven en un andén de metro tras la lluvia',
-      action: 'El tren pasa rápido, ella gira y dice una línea corta',
-      camera: 'Tracking lateral 16:9 con espacio negativo para texto',
-      style: 'Reflejos mojados, luz cálida del tren y sombras azules',
-      audio: 'Rumble del tren, viento, ambiente de estación y lip-sync en la frase',
+      subject: 'Padre e hija en un cruce urbano al golden hour',
+      action: 'Una ola de movimiento atraviesa la escena mientras pasa un bus detrás',
+      camera: 'Push-in documental y luego close medium emocional',
+      style: 'Luz cálida entre edificios, siluetas en movimiento, realismo cinematográfico',
+      audio: 'Render seleccionado sin audio; activa audio nativo para nuevas pruebas sonoras',
     };
   }
   return {
-    subject: 'Young woman on a rain-wet metro platform',
-    action: 'The train rushes past, then she turns and delivers one short line',
-    camera: '16:9 lateral tracking with negative space for page copy',
-    style: 'Wet reflections, warm train light, cool blue station shadows',
-    audio: 'Train rumble, wind, station ambience, and lip-synced dialogue',
+    subject: 'Father and child in a golden-hour city crosswalk',
+    action: 'A wave of motion crosses the scene as a bus passes behind them',
+    camera: 'Documentary push-in, then an emotional close medium shot',
+    style: 'Warm light between buildings, moving silhouettes, cinematic realism',
+    audio: 'Selected render is audio off; enable native audio for new sound tests',
   };
 }
 
@@ -2740,6 +2740,8 @@ export function ModelDecisionPromptingSection({
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
       : isKlingO3StandardRoute
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
+      : isSeedance20MiniRoute
+        ? (demoMedia ? (demoMedia.hasAudio ? labels.audioOn : audioOffChipLabel) : labels.audioOn)
       : isKling34kRoute
         ? locale === 'fr'
           ? 'Audio off'
@@ -2765,10 +2767,10 @@ export function ModelDecisionPromptingSection({
           : 'Seedance 2.0 Fast motion draft render'
     : isSeedance20MiniRoute
       ? locale === 'fr'
-        ? 'Rendu Seedance 2.0 Mini sur quai de métro après la pluie'
+        ? 'Rendu Seedance 2.0 Mini dans un passage piéton urbain'
         : locale === 'es'
-          ? 'Render Seedance 2.0 Mini en andén de metro tras la lluvia'
-          : 'Seedance 2.0 Mini rain-wet metro platform render'
+          ? 'Render Seedance 2.0 Mini en un cruce urbano'
+          : 'Seedance 2.0 Mini city crosswalk render'
     : isSeedance15ProRoute
       ? locale === 'fr'
         ? 'Rendu moto Seedance 1.5 Pro camera_fixed'

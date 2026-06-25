@@ -608,8 +608,8 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Seedance 2.0 Mini example',
       description: 'Value batch variant for campaign review',
       renderLabel: 'View variant',
-      badges: ['Mini route', '480p/720p', 'Audio'],
-      altContext: 'Seedance 2.0 Mini ecommerce and UGC variant batch',
+      badges: ['Mini route', '480p/720p', 'Audio capable'],
+      altContext: 'Seedance 2.0 Mini cinematic batch-value render',
     },
     features: [
       { title: 'Lower-cost batches', body: 'Create more ecommerce, marketing and UGC variants before choosing finalists.', tone: 'price' },
@@ -686,8 +686,8 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Exemple Seedance 2.0 Mini',
       description: 'Variante batch orientée valeur pour revue campagne',
       renderLabel: 'Voir la variante',
-      badges: ['Route Mini', '480p/720p', 'Audio'],
-      altContext: 'lot de variantes ecommerce et UGC Seedance 2.0 Mini',
+      badges: ['Route Mini', '480p/720p', 'Audio possible'],
+      altContext: 'rendu cinématique batch valeur Seedance 2.0 Mini',
     },
     features: [
       { title: 'Lots à coût réduit', body: 'Créez plus de variantes ecommerce, marketing et UGC avant de choisir les finalistes.', tone: 'price' },
@@ -765,8 +765,8 @@ const SEEDANCE_20_MINI_COPY: Record<AppLocale, LocalizedCopyWithoutPricingScenar
       caption: 'Ejemplo Seedance 2.0 Mini',
       description: 'Variante batch de valor para revisión de campaña',
       renderLabel: 'Ver variante',
-      badges: ['Ruta Mini', '480p/720p', 'Audio'],
-      altContext: 'lote de variantes ecommerce y UGC en Seedance 2.0 Mini',
+      badges: ['Ruta Mini', '480p/720p', 'Audio posible'],
+      altContext: 'render cinematográfico batch de valor en Seedance 2.0 Mini',
     },
     features: [
       { title: 'Lotes de menor coste', body: 'Crea más variantes ecommerce, marketing y UGC antes de elegir finalistas.', tone: 'price' },
