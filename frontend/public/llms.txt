@@ -27,16 +27,36 @@ Spec: https://llmstxt.org/
 * https://maxvideoai.com/models/pika-text-to-video
 * https://maxvideoai.com/models/minimax-hailuo-02-text
 * https://maxvideoai.com/models/seedance-2-0
+* https://maxvideoai.com/models/seedance-2-0-fast
+* https://maxvideoai.com/models/dreamina-seedance-2-0-mini
+* https://maxvideoai.com/models/happy-horse-1-1
+* https://maxvideoai.com/models/luma-ray-3-2
 * https://maxvideoai.com/models/ltx-2-3-pro
+
+## Priority comparisons
+
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-seedance-2-0
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-kling-3-pro
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-veo-3-1
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-kling-o3-pro
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-veo-3-1-fast
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-seedance-2-0-fast
+* https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-happy-horse-1-1
+* https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-ltx-2-3-pro
+* https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0
+* https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast
 
 ## Use-case guides
 
 * https://maxvideoai.com/ai-video-engines/best-for/ads
 * https://maxvideoai.com/ai-video-engines/best-for/ugc-ads
 * https://maxvideoai.com/ai-video-engines/best-for/product-videos
+* https://maxvideoai.com/ai-video-engines/best-for/lipsync-dialogue
+* https://maxvideoai.com/ai-video-engines/best-for/fast-drafts
 * https://maxvideoai.com/ai-video-engines/best-for/image-to-video
 * https://maxvideoai.com/ai-video-engines/best-for/character-reference
 * https://maxvideoai.com/ai-video-engines/best-for/cinematic-realism
+* https://maxvideoai.com/ai-video-engines/best-for/4k-video
 
 ## Policies
 

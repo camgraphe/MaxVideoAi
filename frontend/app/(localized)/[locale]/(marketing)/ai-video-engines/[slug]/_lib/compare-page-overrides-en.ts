@@ -318,6 +318,241 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'happy-horse-1-1-vs-kling-o3-pro': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Kling O3 Pro: Audio, References & Best Uses',
+        description:
+          'Compare Happy Horse 1.1 and Kling O3 Pro for native audio, lip-sync, reference control, video-to-video support, scorecard ratings and best production use cases.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Happy Horse 1.1 when the brief centers on native audio, dialogue, multilingual lip-sync, reference characters, and Alibaba-style text, image, or reference-to-video output. Use Kling O3 Pro when the project needs broader omni controls, source video transformation, stronger reference workflows, and Kling-style continuity. This comparison is designed for teams deciding between an audio-first actor workflow and a heavier reference or video-to-video production route.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Open Happy Horse 1.1 model page',
+        },
+        {
+          href: '/models/kling-o3-pro',
+          label: 'Open Kling O3 Pro model page',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-kling-3-pro',
+          label: 'Compare Happy Horse vs Kling 3 Pro',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Alibaba native-audio generation and Kling omni production control.',
+        items: [
+          {
+            question: 'When should I choose Happy Horse 1.1 over Kling O3 Pro?',
+            answer:
+              'Choose Happy Horse 1.1 for speaking characters, native synchronized audio, lip-sync tests, and reference-image workflows where the actor and voice behavior are the central requirement.',
+          },
+          {
+            question: 'When is Kling O3 Pro the better choice?',
+            answer:
+              'Choose Kling O3 Pro when you need broader source-video, reference, or transformation control and the project is less about native dialogue than controlled visual production.',
+          },
+          {
+            question: 'Are both good for reference-driven video?',
+            answer:
+              'Yes, but they emphasize different workflows. Happy Horse 1.1 focuses on reference images and audio-ready character output, while Kling O3 Pro is better for broader omni reference and video-to-video style control.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Veo 3.1 Fast: Audio, Speed & Best Uses',
+        description:
+          'Compare Happy Horse 1.1 and Veo 3.1 Fast for native audio, lip-sync, fast Veo drafts, resolution headroom, scorecard ratings and best production use cases.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Happy Horse 1.1 when the clip needs native audio, dialogue, lip-sync, and controllable reference characters for social or UGC-style scenes. Use Veo 3.1 Fast when you want the Veo look, quicker draft cycles, stronger delivery headroom, and polished short-form concepts before moving into a final Veo workflow. This page helps separate audio-first actor generation from a faster premium visual draft path.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Open Happy Horse 1.1 model page',
+        },
+        {
+          href: '/models/veo-3-1-fast',
+          label: 'Open Veo 3.1 Fast model page',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-veo-3-1',
+          label: 'Compare Happy Horse vs Veo 3.1',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between native-audio character work and fast Veo production drafts.',
+        items: [
+          {
+            question: 'When is Happy Horse 1.1 better than Veo 3.1 Fast?',
+            answer:
+              'Choose Happy Horse 1.1 when spoken performance, synchronized audio, lip-sync, and reference characters are more important than Veo-style final polish.',
+          },
+          {
+            question: 'When should I use Veo 3.1 Fast instead?',
+            answer:
+              'Use Veo 3.1 Fast for polished fast drafts, cinematic concepts, and workflows where Veo visual quality and resolution headroom matter more than a native lip-sync actor workflow.',
+          },
+          {
+            question: 'Which one is better for UGC ads?',
+            answer:
+              'Happy Horse 1.1 is stronger when the UGC ad depends on a speaking subject. Veo 3.1 Fast is stronger when the ad depends on premium product visuals, scene polish, or a quick Veo-style draft.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Seedance 2.0 Fast: Audio, Drafts & Best Uses',
+        description:
+          'Compare Happy Horse 1.1 and Seedance 2.0 Fast for native audio, lip-sync, fast Seedance drafts, cost control, scorecard ratings and best production use cases.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Happy Horse 1.1 when the job is driven by speaking characters, native synchronized audio, lip-sync, and reusable references. Use Seedance 2.0 Fast when you need cheaper Seedance draft passes, timing checks, prompt exploration, and a fast bridge back to the full Seedance 2.0 workflow. This comparison is useful when a team is deciding whether the next test should validate performance and dialogue or simply iterate visual direction faster.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Open Happy Horse 1.1 model page',
+        },
+        {
+          href: '/models/seedance-2-0-fast',
+          label: 'Open Seedance 2.0 Fast model page',
+        },
+        {
+          href: '/ai-video-engines/happy-horse-1-1-vs-seedance-2-0',
+          label: 'Compare Happy Horse vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between audio-first Happy Horse runs and fast Seedance iteration.',
+        items: [
+          {
+            question: 'When should I choose Happy Horse 1.1?',
+            answer:
+              'Choose Happy Horse 1.1 when the test needs native audio, lip-sync, speaking subjects, or reference characters that must carry the scene.',
+          },
+          {
+            question: 'When should I choose Seedance 2.0 Fast?',
+            answer:
+              'Choose Seedance 2.0 Fast for cheaper Seedance prompt tests, draft timing, storyboard exploration, and quick iteration before moving to the main Seedance 2.0 model.',
+          },
+          {
+            question: 'Which one is better for batch testing?',
+            answer:
+              'Seedance 2.0 Fast is usually the better fit for many visual draft iterations. Happy Horse 1.1 is better when each batch item must test audio, dialogue, or a character reference.',
+          },
+        ],
+      },
+    },
+    'dreamina-seedance-2-0-mini-vs-happy-horse-1-1': {
+      meta: {
+        title: 'Seedance 2.0 Mini vs Happy Horse 1.1: Batch Cost, Audio & Best Uses',
+        description:
+          'Compare Seedance 2.0 Mini and Happy Horse 1.1 for batch video cost, native audio, lip-sync, references, scorecard ratings and best marketing workflows.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Seedance 2.0 Mini when you need a lower-cost Dreamina Seedance route for ecommerce batches, social variants, video edits, extension tests, and high-frequency 480p or 720p production. Use Happy Horse 1.1 when the scene depends on native synchronized audio, dialogue, lip-sync, and stronger speaking-character behavior. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and decision guidance instead of side-by-side video renders.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/dreamina-seedance-2-0-mini',
+          label: 'Open Seedance 2.0 Mini model page',
+        },
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Open Happy Horse 1.1 model page',
+        },
+        {
+          href: '/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+          label: 'Compare Seedance Fast vs Mini',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Seedance Mini batch value and Happy Horse native-audio output.',
+        items: [
+          {
+            question: 'When should I choose Seedance 2.0 Mini?',
+            answer:
+              'Choose Mini for lower-cost batch production, ecommerce variants, UGC hook testing, video edits, extensions, and high-frequency experiments where 480p or 720p is enough.',
+          },
+          {
+            question: 'When is Happy Horse 1.1 the better fit?',
+            answer:
+              'Choose Happy Horse 1.1 when native audio, multilingual lip-sync, speaking characters, and reference subjects are more important than the lowest per-variant cost.',
+          },
+          {
+            question: 'Why is this Mini page scorecard-only?',
+            answer:
+              'Mini comparison pages use scorecards, specs, and decision copy until curated side-by-side Mini renders are ready, so this page does not show comparison videos yet.',
+          },
+        ],
+      },
+    },
+    'happy-horse-1-1-vs-ltx-2-3-pro': {
+      meta: {
+        title: 'Happy Horse 1.1 vs LTX 2.3 Pro: Audio, 4K, Editing & Best Uses',
+        description:
+          'Compare Happy Horse 1.1 and LTX 2.3 Pro for native audio, lip-sync, 4K delivery, longer clips, editing controls, scorecard ratings and best uses.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Happy Horse 1.1 when the story depends on native audio, lip-sync, dialogue, and reference characters in short marketing or UGC scenes. Use LTX 2.3 Pro when the project needs longer clips, higher-resolution delivery, 4K headroom, extension or retake workflows, and broader production finishing. This comparison helps separate an audio-first actor model from a more flexible production and editing model.',
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/happy-horse-1-1',
+          label: 'Open Happy Horse 1.1 model page',
+        },
+        {
+          href: '/models/ltx-2-3-pro',
+          label: 'Open LTX 2.3 Pro model page',
+        },
+        {
+          href: '/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0',
+          label: 'Compare LTX 2.3 Pro vs Seedance 2.0',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between native-audio character output and LTX production controls.',
+        items: [
+          {
+            question: 'When should I choose Happy Horse 1.1?',
+            answer:
+              'Choose Happy Horse 1.1 for native audio, lip-sync, short dialogue scenes, and reference-character work where performance is the main signal.',
+          },
+          {
+            question: 'When should I choose LTX 2.3 Pro?',
+            answer:
+              'Choose LTX 2.3 Pro for longer clips, 4K-oriented delivery, extension or retake workflows, and production finishing where visual control matters more than lip-sync.',
+          },
+          {
+            question: 'Which model is better for product ads?',
+            answer:
+              'Happy Horse 1.1 is better for spokesperson or UGC-style product ads with dialogue. LTX 2.3 Pro is better for polished product motion, higher-resolution finishing, and edit-heavy production.',
+          },
+        ],
+      },
+    },
     'veo-3-1-vs-veo-3-1-fast': {
       heroIntro:
         'Compare Veo 3.1 and Veo 3.1 Fast to choose the right current Veo 3 AI workflow for polished text-to-video, image-to-video, faster draft passes, and native-audio control.',

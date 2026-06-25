@@ -152,6 +152,7 @@ const miniScoreboardOnlyComparisons = [
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
   'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
   'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+  'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
 ];
 
 const canonicalMiniCompareOverrideSlugs = [
@@ -159,6 +160,7 @@ const canonicalMiniCompareOverrideSlugs = [
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
   'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
   'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+  'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
 ];
 
 test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suffix', () => {
@@ -231,6 +233,7 @@ test('Seedance 2.0 Mini comparisons are scoreboard-only and stay out of trophy q
     'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
     'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
     'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+    'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
   ]);
 });
 

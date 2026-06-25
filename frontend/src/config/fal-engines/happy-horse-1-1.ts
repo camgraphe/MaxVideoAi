@@ -213,8 +213,25 @@ export const HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: true,
       },
       compare: {
-        suggestOpponents: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'sora-2-pro', 'happy-horse-1-0'],
-        publishedPairs: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'sora-2-pro', 'happy-horse-1-0'],
+        suggestOpponents: [
+          'seedance-2-0',
+          'kling-3-pro',
+          'veo-3-1',
+          'kling-o3-pro',
+          'dreamina-seedance-2-0-mini',
+        ],
+        publishedPairs: [
+          'seedance-2-0',
+          'kling-3-pro',
+          'veo-3-1',
+          'sora-2-pro',
+          'happy-horse-1-0',
+          'kling-o3-pro',
+          'veo-3-1-fast',
+          'seedance-2-0-fast',
+          'dreamina-seedance-2-0-mini',
+          'ltx-2-3-pro',
+        ],
         includeInHub: true,
       },
       app: {

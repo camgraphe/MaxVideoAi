@@ -17,7 +17,8 @@
     "dreamina-seedance-2-0-mini-vs-seedance-2-0",
     "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
     "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
-    "dreamina-seedance-2-0-mini-vs-veo-3-1-fast"
+    "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
+    "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"
   ],
   "bestForPages": [
     {
@@ -25,8 +26,8 @@
       "title": "Best image-to-video AI generator",
       "description": "Best AI video models for turning a still image, style frame, or product shot into controlled motion.",
       "tier": 1,
-      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini", "luma-ray-3-2"],
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "happy-horse-1-1-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
       "slug": "cinematic-realism",
@@ -73,8 +74,8 @@
       "title": "Best AI video generator for ads",
       "description": "Best AI video models for product ads, ecommerce creative, paid social variants, and polished campaign assets.",
       "tier": 1,
-      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini"],
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "seedance-2-0-vs-veo-3-1"]
     },
     {
       "slug": "ugc-ads",
@@ -89,8 +90,8 @@
       "title": "Best AI video generator for product videos",
       "description": "Best AI video models for product reveals, ecommerce visuals, packshots, demos, and clean product storytelling.",
       "tier": 2,
-      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "ltx-2-3-pro", "luma-ray-3-2"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "ltx-2-3-pro-vs-seedance-2-0"]
+      "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1", "dreamina-seedance-2-0-mini", "ltx-2-3-pro", "luma-ray-3-2"],
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-3-pro", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1", "happy-horse-1-1-vs-ltx-2-3-pro"]
     },
     {
       "slug": "lipsync-dialogue",
@@ -98,15 +99,15 @@
       "description": "Best AI video models for speaking characters, short dialogue, native audio, voice control, and social narration.",
       "tier": 2,
       "topPicks": ["seedance-2-0", "kling-3-pro", "veo-3-1", "happy-horse-1-1"],
-      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-veo-3-1", "seedance-2-0-vs-veo-3-1"]
+      "relatedComparisons": ["happy-horse-1-1-vs-seedance-2-0", "happy-horse-1-1-vs-kling-o3-pro", "happy-horse-1-1-vs-veo-3-1-fast", "seedance-2-0-vs-veo-3-1"]
     },
     {
       "slug": "fast-drafts",
       "title": "Best AI video generator for fast drafts",
       "description": "Best AI video models for cheap iteration, rough concepts, timing tests, and fast creative exploration.",
       "tier": 2,
-      "topPicks": ["ltx-2-3-fast", "seedance-2-0-fast", "veo-3-1-fast", "kling-3-standard"],
-      "relatedComparisons": ["ltx-2-3-fast-vs-seedance-2-0-fast", "seedance-2-0-fast-vs-veo-3-1-fast", "kling-3-standard-vs-ltx-2-3-fast"]
+      "topPicks": ["ltx-2-3-fast", "seedance-2-0-fast", "dreamina-seedance-2-0-mini", "veo-3-1-fast", "kling-3-standard"],
+      "relatedComparisons": ["ltx-2-3-fast-vs-seedance-2-0-fast", "happy-horse-1-1-vs-seedance-2-0-fast", "seedance-2-0-fast-vs-veo-3-1-fast", "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"]
     },
     {
       "slug": "stylized-anime",
@@ -175,10 +176,12 @@
       "seedance-2-0-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
-      "dreamina-seedance-2-0-mini-vs-veo-3-1-fast"
+      "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1"
     ],
     "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast": [
       "dreamina-seedance-2-0-mini-vs-seedance-2-0",
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
       "seedance-2-0-vs-seedance-2-0-fast",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
       "dreamina-seedance-2-0-mini-vs-veo-3-1-fast"
@@ -192,8 +195,15 @@
     "dreamina-seedance-2-0-mini-vs-veo-3-1-fast": [
       "dreamina-seedance-2-0-mini-vs-seedance-2-0",
       "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
       "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
       "veo-3-1-fast-vs-veo-3-1-lite"
+    ],
+    "dreamina-seedance-2-0-mini-vs-happy-horse-1-1": [
+      "dreamina-seedance-2-0-mini-vs-seedance-2-0",
+      "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+      "happy-horse-1-1-vs-seedance-2-0",
+      "happy-horse-1-1-vs-veo-3-1-fast"
     ],
     "ltx-2-vs-sora-2": [
       "ltx-2-3-fast-vs-ltx-2-3-pro",
@@ -224,19 +234,43 @@
       "kling-3-4k-vs-sora-2-pro"
     ],
     "happy-horse-1-1-vs-seedance-2-0": [
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "happy-horse-1-1-vs-seedance-2-0-fast",
       "happy-horse-1-1-vs-veo-3-1",
       "happy-horse-1-1-vs-kling-3-pro",
       "seedance-2-0-vs-veo-3-1"
     ],
     "happy-horse-1-1-vs-veo-3-1": [
+      "happy-horse-1-1-vs-veo-3-1-fast",
       "happy-horse-1-1-vs-seedance-2-0",
       "happy-horse-1-1-vs-kling-3-pro",
       "sora-2-vs-veo-3-1"
     ],
     "happy-horse-1-1-vs-kling-3-pro": [
+      "happy-horse-1-1-vs-kling-o3-pro",
       "happy-horse-1-1-vs-seedance-2-0",
       "happy-horse-1-1-vs-veo-3-1",
       "kling-3-pro-vs-seedance-2-0"
+    ],
+    "happy-horse-1-1-vs-kling-o3-pro": [
+      "happy-horse-1-1-vs-kling-3-pro",
+      "happy-horse-1-1-vs-seedance-2-0",
+      "happy-horse-1-1-vs-veo-3-1"
+    ],
+    "happy-horse-1-1-vs-veo-3-1-fast": [
+      "happy-horse-1-1-vs-veo-3-1",
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "seedance-2-0-fast-vs-veo-3-1-fast"
+    ],
+    "happy-horse-1-1-vs-seedance-2-0-fast": [
+      "happy-horse-1-1-vs-seedance-2-0",
+      "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+      "seedance-2-0-vs-seedance-2-0-fast"
+    ],
+    "happy-horse-1-1-vs-ltx-2-3-pro": [
+      "happy-horse-1-1-vs-seedance-2-0",
+      "ltx-2-3-pro-vs-seedance-2-0",
+      "ltx-2-3-pro-vs-veo-3-1"
     ],
     "happy-horse-1-0-vs-sora-2-pro": [
       "happy-horse-1-1-vs-seedance-2-0",
