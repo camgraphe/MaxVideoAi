@@ -9,18 +9,19 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 const ABOUT_SLUG_MAP = buildSlugMap('about');
 const ABOUT_META: Record<AppLocale, { title: string; description: string }> = {
   en: {
-    title: 'About — MaxVideoAI',
-    description: 'Quiet, premium, precise. Independent AI video hub that routes the right engine for every shot.',
+    title: 'About MaxVideoAI: AI Video Model Routing',
+    description:
+      'Learn how MaxVideoAI routes prompts across AI video engines with price clarity, model-agnostic workflows, and production-focused controls.',
   },
   fr: {
-    title: 'À propos — MaxVideoAI',
+    title: 'À propos de MaxVideoAI : hub vidéo IA indépendant',
     description:
-      'Hub vidéo IA indépendant : précision, sobriété et transparence pour router le bon modèle à chaque plan.',
+      'Découvrez comment MaxVideoAI route les prompts vers les bons moteurs vidéo IA avec prix clair, workflows indépendants et contrôles de production.',
   },
   es: {
-    title: 'Acerca de — MaxVideoAI',
+    title: 'Acerca de MaxVideoAI: hub de modelos de video IA',
     description:
-      'Hub independiente de video con IA que dirige el motor adecuado para cada plano con precio antes de generar.',
+      'Descubre cómo MaxVideoAI enruta prompts hacia motores de video con IA con precios claros, flujos independientes y controles de producción.',
   },
 };
 

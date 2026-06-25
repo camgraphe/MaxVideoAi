@@ -14,17 +14,17 @@ import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
 const BLOG_SLUG_MAP = buildSlugMap('blog');
 const BLOG_META = {
   en: {
-    title: 'Blog — MaxVideoAI',
+    title: 'AI Video Workflows & Model Guides | MaxVideoAI',
     description:
       'Reference-first workflows, tool guides, model notes, and production learnings from teams building images and video with MaxVideoAI.',
   },
   fr: {
-    title: 'Blog MaxVideoAI (FR)',
+    title: 'Guides vidéo IA, modèles et workflows | MaxVideoAI',
     description:
       'Workflows orientés référence, guides d’outils, notes sur les modèles et retours de production d’équipes qui créent images et vidéos avec MaxVideoAI.',
   },
   es: {
-    title: 'Blog MaxVideoAI (ES)',
+    title: 'Guías de video IA, modelos y workflows | MaxVideoAI',
     description:
       'Workflows basados en referencias, guías de herramientas, notas sobre modelos y aprendizajes de producción de equipos que crean imágenes y video con MaxVideoAI.',
   },

@@ -1,4 +1,49 @@
-# robots.txt — SEO + AI friendly
+# robots.txt - SEO + AI friendly
+
+# AI search and answer crawlers are allowed on public marketing, docs,
+# examples, model, pricing, and blog pages. Private app/admin/API surfaces
+# remain blocked for these crawlers just as they are for general crawlers.
+User-agent: OAI-SearchBot
+User-agent: OAI-AdsBot
+User-agent: ChatGPT-User
+User-agent: GPTBot
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: ClaudeBot
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+Allow: /_next/static/
+Allow: /_next/image/
+Allow: /assets/
+Allow: /hero/
+Allow: /favicon.ico
+Allow: /api/legal/cookies/version
+Disallow: /api/
+Disallow: /admin/
+Disallow: /app
+Disallow: /generate
+Disallow: /dashboard
+Disallow: /jobs
+Disallow: /billing
+Disallow: /settings
+Disallow: /connect
+Disallow: /fr/app
+Disallow: /fr/generate
+Disallow: /fr/dashboard
+Disallow: /fr/jobs
+Disallow: /fr/billing
+Disallow: /fr/settings
+Disallow: /fr/connect
+Disallow: /es/app
+Disallow: /es/generate
+Disallow: /es/dashboard
+Disallow: /es/jobs
+Disallow: /es/billing
+Disallow: /es/settings
+Disallow: /es/connect
+Disallow: /draft
+Disallow: /test
+Disallow: /private/
 
 User-agent: *
 # Allow assets required for rendering

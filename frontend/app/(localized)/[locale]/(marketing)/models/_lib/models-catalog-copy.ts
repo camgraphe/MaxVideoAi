@@ -83,7 +83,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
     video: {
       metaTitle: 'AI Video Models: Specs, Limits & Pricing | MaxVideoAI',
       metaDescription:
-        'Compare AI video models by input support, max duration, resolution, and pricing before you render.',
+        'Compare AI video models by input support, duration, resolution, pricing, and workflow fit before choosing Sora, Veo, Kling, Seedance, Luma, or Pika.',
       heroTitle: 'AI Video Models (Specs, Limits, and Pricing)',
       heroSubhead: 'Review video-first model constraints, compare workflows, and shortlist the right engine before rendering.',
       heroBullets: [
@@ -180,7 +180,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
     video: {
       metaTitle: 'Modèles vidéo IA : specs, limites et prix | MaxVideoAI',
       metaDescription:
-        'Comparez les modèles vidéo IA par entrées supportées, durée max, résolution et prix avant rendu.',
+        'Comparez les modèles vidéo IA par entrées, durée, résolution, prix et fit workflow avant de choisir Sora, Veo, Kling, Seedance, Luma ou Pika.',
       heroTitle: 'Modèles vidéo IA (specs, limites et prix)',
       heroSubhead: 'Passez en revue les contraintes vidéo, comparez les workflows et retenez le bon modèle avant rendu.',
       heroBullets: [
@@ -277,7 +277,7 @@ const MODELS_SCOPE_DEFAULTS: Record<AppLocale, Record<ModelsPageScope, ScopePage
     video: {
       metaTitle: 'Modelos de video IA: especificaciones, límites y precios | MaxVideoAI',
       metaDescription:
-        'Compara modelos de video IA por entradas soportadas, duración máxima, resolución y precio antes de renderizar.',
+        'Compara modelos de video IA por entradas, duración, resolución, precio y ajuste de workflow antes de elegir Sora, Veo, Kling, Seedance, Luma o Pika.',
       heroTitle: 'Modelos de video IA (especificaciones, límites y precios)',
       heroSubhead: 'Revisa restricciones de video, compara flujos de trabajo y elige el modelo correcto antes de renderizar.',
       heroBullets: [

@@ -146,8 +146,8 @@ function assertRequiredProperties(record: JsonRecord, path: string) {
     }
 
     if (type === 'MerchantReturnPolicy') {
+      assert.ok(hasPresentProperty(record, 'applicableCountry'), `${path} MerchantReturnPolicy should include applicableCountry`);
       assert.ok(hasPresentProperty(record, 'returnPolicyCountry'), `${path} MerchantReturnPolicy should include returnPolicyCountry`);
-      assert.ok(!hasOwn(record, 'applicableCountry'), `${path} MerchantReturnPolicy should not use applicableCountry`);
     }
   }
 }

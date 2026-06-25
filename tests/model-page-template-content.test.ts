@@ -1068,9 +1068,10 @@ test('new Luma model product schemas emit priced offers without synthetic rating
     const returnPolicy = product.offers?.hasMerchantReturnPolicy as Record<string, unknown> | undefined;
     assert.ok(returnPolicy, `${slug} Product offer should include a return policy`);
     assert.equal(returnPolicy.returnPolicyCategory, 'https://schema.org/MerchantReturnNotPermitted');
+    assert.ok(Array.isArray(returnPolicy.applicableCountry), `${slug} Product return policy should include applicableCountry`);
+    assert.ok((returnPolicy.applicableCountry as string[]).includes('US'), `${slug} Product return policy should apply to US`);
     assert.ok(Array.isArray(returnPolicy.returnPolicyCountry), `${slug} Product return policy should include returnPolicyCountry`);
     assert.ok((returnPolicy.returnPolicyCountry as string[]).includes('US'), `${slug} Product return policy should cover US`);
-    assert.ok(!('applicableCountry' in returnPolicy), `${slug} Product return policy should not use applicableCountry`);
     assert.ok(!('review' in product), `${slug} should not invent reviews`);
     assert.ok(!('aggregateRating' in product), `${slug} should not invent aggregate ratings`);
   }
