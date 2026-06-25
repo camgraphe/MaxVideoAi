@@ -51,6 +51,11 @@ export type EngineCatalogEntry = {
   modes?: Array<{ mode: string; falModelId?: string }>;
   features?: Record<string, EngineCatalogFeature>;
   bestFor?: string;
+  surfaces?: {
+    app?: {
+      enabled?: boolean;
+    };
+  };
 };
 
 export type EngineScore = {
@@ -80,7 +85,6 @@ export type EngineKeySpecsEntry = {
   modelSlug?: string;
   engineId?: string;
   keySpecs?: Record<string, unknown>;
-  sources?: string[];
 };
 
 export type EngineKeySpecsFile = {

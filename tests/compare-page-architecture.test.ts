@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
+import { ENGINE_OPTIONS } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
 import { resolvePromptInheritedShowdowns } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
@@ -222,6 +223,14 @@ test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suff
   });
 
   assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+});
+
+test('public comparison engine selector excludes disabled admin-only engines', () => {
+  const serializedOptions = JSON.stringify(ENGINE_OPTIONS);
+
+  assert.doesNotMatch(serializedOptions, /byteplus|BytePlus/);
+  assert.doesNotMatch(serializedOptions, /Fast Direct/);
+  assert.equal(ENGINE_OPTIONS.some((option) => option.value === 'seedance-2-0-fast-byteplus'), false);
 });
 
 test('Seedance 2.0 vs Fast comparison uses curated opposite-engine watch-page outputs', () => {
