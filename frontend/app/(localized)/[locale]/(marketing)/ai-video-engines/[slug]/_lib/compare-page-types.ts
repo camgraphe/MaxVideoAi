@@ -111,7 +111,10 @@ export type CompareSpecValues = {
 export type ComparePricingDisplay = {
   headline: string;
   subline: string | null;
+  secondaryLines?: string[];
   prices: number[];
+  scoreLine?: string;
+  scorePrices?: number[];
 };
 
 export type ShowdownSide = {
@@ -125,7 +128,10 @@ export type ShowdownSide = {
 export type ShowdownEntry = {
   slotId?: string;
   title?: string;
+  aspectRatio?: string;
+  mode?: CompareShowdown['mode'];
   prompt?: string;
+  promptSourceSlug?: string;
   left: ShowdownSide;
   right: ShowdownSide;
 };

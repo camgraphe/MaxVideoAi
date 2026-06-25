@@ -45,6 +45,7 @@ Spec: https://llmstxt.org/
 * https://maxvideoai.com/ai-video-engines/happy-horse-1-1-vs-ltx-2-3-pro
 * https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-luma-ray-3-2
 * https://maxvideoai.com/ai-video-engines/luma-ray-3-2-vs-veo-3-1-fast
+* https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast
 * https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0
 * https://maxvideoai.com/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast
 

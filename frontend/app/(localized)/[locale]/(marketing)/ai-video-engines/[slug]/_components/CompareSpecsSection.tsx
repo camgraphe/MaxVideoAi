@@ -66,9 +66,9 @@ export function CompareSpecsSection({
                   supported: labels.supported,
                   notSupported: labels.notSupported,
                 })}
-                {'subline' in row && row.subline ? (
-                  <div className="mt-1 text-[10px] text-text-muted">{row.subline}</div>
-                ) : null}
+                {(row.sublines ?? (row.subline ? [row.subline] : [])).map((line) => (
+                  <div key={line} className="mt-1 text-[10px] text-text-muted">{line}</div>
+                ))}
               </div>
               <span className="text-center text-text-primary">{row.label}</span>
               <div className="rounded-md px-1 py-0.5 text-right text-text-secondary sm:px-2 sm:py-1">
@@ -77,9 +77,9 @@ export function CompareSpecsSection({
                   supported: labels.supported,
                   notSupported: labels.notSupported,
                 })}
-                {'rightSubline' in row && row.rightSubline ? (
-                  <div className="mt-1 text-[10px] text-text-muted">{row.rightSubline}</div>
-                ) : null}
+                {(row.rightSublines ?? (row.rightSubline ? [row.rightSubline] : [])).map((line) => (
+                  <div key={line} className="mt-1 text-[10px] text-text-muted">{line}</div>
+                ))}
               </div>
             </div>
           ))}

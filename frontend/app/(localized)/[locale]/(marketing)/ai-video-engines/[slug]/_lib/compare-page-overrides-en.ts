@@ -123,6 +123,16 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
               'Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper tests, timing checks, and early iteration.',
           },
           {
+            question: 'Seedance 2.0 Fast vs normal: what is the difference?',
+            answer:
+              '"Normal" usually means the standard Seedance 2.0 route. Use Fast for lower-cost 480p/720p draft passes and timing checks; use standard Seedance 2.0 when the shot needs stronger polish, 1080p or 4K delivery, and final-quality consistency.',
+          },
+          {
+            question: 'Do Seedance 2.0 and Fast support video edit and extend?',
+            answer:
+              'Yes. On MaxVideoAI, Seedance 2.0 and Seedance 2.0 Fast support video edit and extend workflows, plus text-to-video, image-to-video, and reference-to-video.',
+          },
+          {
             question: 'Is Seedance 2.0 better for polished Seedance video output?',
             answer:
               'Yes. Seedance 2.0 is the better fit when the goal is polished Seedance video output, while Fast is the better fit when the goal is to test ideas and compare workflows quickly.',
@@ -138,7 +148,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page is a scorecard and specs comparison for now; Mini comparison videos are not included yet.',
+        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page now includes matched side-by-side Mini vs Seedance 2.0 videos using the same prompts, plus scorecard, specs, and pricing context.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -170,9 +180,9 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
               'Choose Seedance 2.0 for final-quality hero shots, stronger visual polish, higher-resolution delivery, and work where the best Seedance output matters more than per-variant cost.',
           },
           {
-            question: 'Why are there no comparison videos on this Mini page yet?',
+            question: 'Are Mini comparison videos included here?',
             answer:
-              'Mini pages use scorecards, specs, and positioning for now. Side-by-side Mini comparison videos will be added after curated outputs are ready.',
+              'Yes. This Seedance family page uses curated side-by-side Mini and Seedance 2.0 outputs generated from the same prompts, so the video section is directly comparable.',
           },
         ],
       },
@@ -185,7 +195,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 Fast when the priority is quick Seedance draft speed, timing checks, and a fast bridge back to the flagship model. Use Seedance 2.0 Mini as the lower-cost batch volume option for many ecommerce or social variants, video edits, extensions, and repeated marketing tests. This page is a scorecard and specs comparison for now, without Mini comparison videos.',
+        'Use Seedance 2.0 Fast when the priority is quick Seedance draft speed, timing checks, and a fast bridge back to the flagship model. Use Seedance 2.0 Mini as the lower-cost batch volume option for many ecommerce or social variants, video edits, extensions, and repeated marketing tests. This page now includes matched side-by-side Mini vs Fast videos using the same prompts, plus scorecard, specs, and pricing context.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -219,7 +229,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Does this page include side-by-side videos?',
             answer:
-              'Not yet. This Mini comparison currently uses scorecards, specs, and decision copy only, so it does not request or show comparison video slots.',
+              'Yes. This Seedance family page uses curated side-by-side Mini and Fast outputs generated from the same prompts, so the video section is directly comparable.',
           },
         ],
       },

@@ -1,5 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
-import { computeMarketingPriceRange } from '@/lib/pricing-marketing';
+import { computeMarketingPricePoints, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
 import type { EngineCaps } from '@/types/engines';
 import type { ComparePricingDisplay, EngineCatalogEntry } from './compare-page-types';
@@ -29,6 +29,7 @@ export function resolveAudioOffPrice(entry: EngineCatalogEntry): string | null {
 
 const PRICING_SCORE_MIN = 0.03;
 const PRICING_SCORE_MAX = 1.0;
+const COMPARABLE_PRICING_RESOLUTIONS = ['720p', '1080p', '480p', '4k'];
 
 export function computePricingScore(prices: number[]): number | null {
   if (!prices.length) return null;
@@ -59,6 +60,44 @@ export function formatPriceLabel(label: string) {
 export function formatPriceLine(label: string | null, cents: number) {
   const value = `$${(cents / 100).toFixed(2)}/s`;
   return label ? `${formatPriceLabel(label)}: ${value}` : value;
+}
+
+function toPriceValue(cents: number) {
+  return Math.round(cents) / 100;
+}
+
+function sortPricePoints(points: MarketingPricePoint[]) {
+  return [...points].sort((a, b) => {
+    if (a.cents !== b.cents) return a.cents - b.cents;
+    const aOrder = parseResolutionLabel(a.resolution) ?? Number.MAX_SAFE_INTEGER;
+    const bOrder = parseResolutionLabel(b.resolution) ?? Number.MAX_SAFE_INTEGER;
+    return aOrder - bOrder;
+  });
+}
+
+function pickComparablePricePoint(points: MarketingPricePoint[]) {
+  const byResolution = new Map(points.map((point) => [point.resolution.toLowerCase(), point]));
+  for (const resolution of COMPARABLE_PRICING_RESOLUTIONS) {
+    const match = byResolution.get(resolution);
+    if (match) return match;
+  }
+  return sortPricePoints(points)[0] ?? null;
+}
+
+function buildPricingDisplayFromPoints(points: MarketingPricePoint[]): ComparePricingDisplay | null {
+  if (!points.length) return null;
+  const sorted = sortPricePoints(points);
+  const lines = sorted.map((point) => formatPriceLine(point.resolution, point.cents));
+  const comparablePoint = pickComparablePricePoint(points);
+
+  return {
+    headline: lines[0],
+    subline: lines[1] ?? null,
+    secondaryLines: lines.slice(1),
+    prices: sorted.map((point) => toPriceValue(point.cents)),
+    scoreLine: comparablePoint ? formatPriceLine(comparablePoint.resolution, comparablePoint.cents) : undefined,
+    scorePrices: comparablePoint ? [toPriceValue(comparablePoint.cents)] : undefined,
+  };
 }
 
 export function getPrelaunchPricingLabel(locale: AppLocale) {
@@ -107,20 +146,16 @@ export async function resolvePricingDisplay(
       headline: getPrelaunchPricingLabel(locale),
       subline: null,
       prices: [],
+      scorePrices: [],
     };
   }
 
   if (pricingEngine) {
-    const range = await computeMarketingPriceRange(pricingEngine, { durationSec: 5, memberTier: 'member' });
-    if (range) {
-      const headline = formatPriceLine(range.min.resolution, range.min.cents);
-      const prices = [range.min.cents / 100];
-      let subline: string | null = null;
-      if (range.max.cents !== range.min.cents || range.max.resolution !== range.min.resolution) {
-        subline = formatPriceLine(range.max.resolution, range.max.cents);
-        prices.push(range.max.cents / 100);
-      }
-      return { headline, subline, prices };
+    const display = buildPricingDisplayFromPoints(
+      await computeMarketingPricePoints(pricingEngine, { durationSec: 5, memberTier: 'member' })
+    );
+    if (display) {
+      return display;
     }
   }
   const perSecond = entry.engine?.pricingDetails?.perSecondCents;
@@ -148,6 +183,8 @@ export async function resolvePricingDisplay(
       headline,
       subline,
       prices: [minEntry.cents / 100, maxEntry.cents / 100],
+      scoreLine: formatPriceLine(minEntry.label, minEntry.cents),
+      scorePrices: [minEntry.cents / 100],
     };
   }
 
@@ -167,6 +204,8 @@ export async function resolvePricingDisplay(
       headline: formatPriceLine(null, baseCents),
       subline: audioOff,
       prices,
+      scoreLine: formatPriceLine(null, baseCents),
+      scorePrices: [baseCents / 100],
     };
   }
 
@@ -174,5 +213,6 @@ export async function resolvePricingDisplay(
     headline: 'Data pending',
     subline: null,
     prices: [],
+    scorePrices: [],
   };
 }

@@ -47,6 +47,7 @@ export function formatEngineMetaName(entry: EngineCatalogEntry): string {
 export function formatSpeedChip(entry: EngineCatalogEntry) {
   const avg = entry.engine?.avgDurationMs ?? null;
   if (avg == null) return 'Data pending';
+  if (avg > 30 * 60 * 1000) return 'Data pending';
   return `${Math.round(avg / 1000)}s avg`;
 }
 

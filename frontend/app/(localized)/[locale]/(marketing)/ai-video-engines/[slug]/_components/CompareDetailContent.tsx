@@ -9,10 +9,11 @@ import type { ComparePageOverride } from '../_lib/compare-page-overrides';
 import type { RelatedComparisonLink } from '../_lib/compare-page-related-links';
 import type { CompareMetric, CompareSummaryRow } from '../_lib/compare-page-scorecard';
 import type { CompareSpecRow } from '../_lib/compare-page-spec-rows';
-import type { CompareShowdownSlot, EngineCatalogEntry } from '../_lib/compare-page-types';
+import type { ComparePricingDisplay, CompareShowdownSlot, EngineCatalogEntry } from '../_lib/compare-page-types';
 import { CompareDetailHero } from './CompareDetailHero';
 import { CompareEngineHeroCards } from './CompareEngineHeroCards';
 import { CompareFaqSection } from './CompareFaqSection';
+import { ComparePricingQuickSection } from './ComparePricingQuickSection';
 import { CompareRelatedSection } from './CompareRelatedSection';
 import { CompareScorecardSection } from './CompareScorecardSection';
 import { CompareShowdownSection } from './CompareShowdownSection';
@@ -36,6 +37,7 @@ type CompareDetailContentProps = {
   leftCanGenerate: boolean;
   leftIsPrelaunch: boolean;
   leftOverall: number | null;
+  leftPricingDisplay: ComparePricingDisplay;
   leftScoreStyle: CSSProperties;
   localizedPromptNote: string;
   pageOverride?: ComparePageOverride | null;
@@ -49,6 +51,7 @@ type CompareDetailContentProps = {
   rightCanGenerate: boolean;
   rightIsPrelaunch: boolean;
   rightOverall: number | null;
+  rightPricingDisplay: ComparePricingDisplay;
   rightScoreStyle: CSSProperties;
   scorecardCriteriaLabel: string;
   scorecardProvisionalNote: string | null;
@@ -81,6 +84,7 @@ export function CompareDetailContent({
   leftCanGenerate,
   leftIsPrelaunch,
   leftOverall,
+  leftPricingDisplay,
   leftScoreStyle,
   localizedPromptNote,
   pageOverride,
@@ -94,6 +98,7 @@ export function CompareDetailContent({
   rightCanGenerate,
   rightIsPrelaunch,
   rightOverall,
+  rightPricingDisplay,
   rightScoreStyle,
   scorecardCriteriaLabel,
   scorecardProvisionalNote,
@@ -145,6 +150,13 @@ export function CompareDetailContent({
           />
 
           <section className="mx-auto max-w-[940px]">
+            <ComparePricingQuickSection
+              activeLocale={activeLocale}
+              left={left}
+              leftPricingDisplay={leftPricingDisplay}
+              right={right}
+              rightPricingDisplay={rightPricingDisplay}
+            />
             <CompareScorecardSection
               compareCopy={compareCopy}
               comparisonMetrics={comparisonMetrics}

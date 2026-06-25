@@ -1,9 +1,11 @@
+import type { Mode } from '@/types/engines';
+
 export type CompareShowdown = {
   id: string;
   title: string;
   whatItTests: string;
   aspectRatio: string;
-  mode: 't2v' | 'i2v' | 'v2v';
+  mode: Extract<Mode, 't2v' | 'i2v' | 'ref2v' | 'v2v'>;
   prompt: string;
 };
 

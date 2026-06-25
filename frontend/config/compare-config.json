@@ -14,8 +14,6 @@
     "kling-2-6-pro-vs-pika-text-to-video"
   ],
   "scoreboardOnlyComparisons": [
-    "dreamina-seedance-2-0-mini-vs-seedance-2-0",
-    "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
     "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
     "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
     "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
@@ -326,6 +324,129 @@
     }
   },
   "showdowns": {
+    "seedance-2-0-vs-seedance-2-0-fast": [
+      {
+        "slotId": "motion-physics",
+        "title": "Comedy Weather Reversal (16:9)",
+        "aspectRatio": "16:9",
+        "mode": "t2v",
+        "prompt": "Create a 15-second photorealistic live-action comedy short.\n\nA beautiful woman is trapped in a ridiculous battle against the weather.\n\nThe joke is simple:\nEvery time she dresses for the weather and goes outside, the weather immediately changes to the opposite condition.\n\nTone:\nFunny, relatable, visual comedy.\nPremium commercial cinematography.\nBright colors.\nExpressive acting.\nFast pacing but easy to understand.\nNo dialogue except the final line.\n\nCharacter:\nA stylish, attractive woman around 30 years old.\nVery expressive facial reactions.\nNatural beauty.\nRealistic live-action actress.\nNo animation.\n\nLocation:\nA suburban house with a large front window and a front door leading to a small covered porch.\nThe porch is important because it creates a clear transition between inside and outside.\n\nIMPORTANT CONTINUITY RULE:\n\nNever show the actress magically teleporting through the door.\n\nFor every exit sequence:\n\n- First show her inside opening the door.\n- Then cut to an exterior shot where she is standing on the covered porch with the open door behind her.\n- She then takes one step from the porch into the open street.\n\nThe weather change only happens after she leaves the porch and enters the open street.\n\nThis must be visually clear every time.\n\n────────────────────────\n\nPHASE 1 — SUNNY DAY → RAIN\n\nThe woman looks through the window.\n\nOutside:\nperfect blue sky,\nbeautiful sunshine,\npleasant weather.\n\nShe smiles.\n\nShe quickly changes into a light summer outfit:\nsummer dress,\nsunglasses,\nsmall handbag.\n\nShe opens the front door.\n\nCut to exterior porch shot.\n\nShe confidently steps into the street.\n\nThe instant her foot touches the open street:\n\nthe weather abruptly changes.\n\nHeavy rain begins.\n\nDark clouds appear.\n\nShe freezes.\n\nShe slowly looks upward.\n\nCompletely betrayed.\n\nAnnoyed and confused.\n\nShe turns around and goes back inside.\n\n────────────────────────\n\nPHASE 2 — RAIN → SUNSHINE\n\nNow she adapts.\n\nShe changes into full rain equipment:\n\nyellow raincoat,\nboots,\numbrella.\n\nShe checks the window.\n\nOutside it is still raining heavily.\n\nShe nods confidently.\n\nGood.\n\nThis time she is prepared.\n\nShe opens the front door.\n\nCut to exterior porch shot.\n\nShe steps into the street.\n\nInstantly:\n\nthe rain disappears.\n\nThe sky becomes perfectly blue.\n\nBright sunshine returns.\n\nEverything becomes warm and beautiful again.\n\nShe stands there holding an umbrella under a perfect summer sky.\n\nShe slowly realizes what happened.\n\nClose-up.\n\nAnger building.\n\nShe storms back inside.\n\n────────────────────────\n\nPHASE 3 — FINAL REVENGE\n\nNow she decides to beat the weather.\n\nShe opens her closet dramatically.\n\nInside hangs an absurdly oversized luxury fur coat.\n\nIt feels like a final boss costume.\n\nShe puts it on with complete confidence.\n\nShe checks the window.\n\nOutside:\nheavy rain again.\n\nShe smiles.\n\nThis time she thinks she has won.\n\nShe opens the front door.\n\nCut to exterior porch shot.\n\nShe steps into the street.\n\nInstantly:\n\nthe rain disappears again.\n\nPerfect sunshine returns.\n\nBut now she is ready.\n\nShe smiles proudly.\n\nShe opens the giant fur coat with dramatic flair.\n\nUnderneath:\n\na colorful swimsuit.\n\nShe raises both arms toward the sky.\n\nShe laughs triumphantly and shouts:\n\n\"AH AH!\"\n\nHold on her victory pose.\n\nBright sunshine.\n\nPerfect weather.\n\nEnd.\n\nCAMERA STYLE:\n\nUse clear visual storytelling.\n\nMix of:\n- medium shots\n- expressive close-ups\n- window shots\n- porch shots\n- reaction shots\n- final wide heroic shot\n\nPrioritize facial expressions.\n\nEvery weather change must be immediate and obvious.\n\nEvery exit must be easy to understand.\n\nAvoid:\nanimation,\ncartoon style,\nteleporting through doors,\nconfusing continuity,\nextra characters,\nfantasy effects,\nlightning ending,\nstorm ending,\nadditional dialogue.",
+        "left": {
+          "label": "Seedance 2.0",
+          "jobId": "job_d12164ca-1c6f-46da-9136-2255a136f124"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_528fe01f-e2ea-4cc0-850c-e98190a17473"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "title": "Reference Map Route Chase (16:9)",
+        "aspectRatio": "16:9",
+        "mode": "ref2v",
+        "prompt": "REFERENCE MAP:\nUse the provided \"ESCAPE ROUTE\" map as the exact route, pacing guide, and obstacle sequence. The small yellow hatchback physically travels through the world following the path shown in the map. Every marker on the map becomes a safe cinematic obstacle-course event.\n\nDuration: 15 seconds total.\nAspect: 16:9 cinematic action-comedy, bright daylight, realistic physics, playful movie-set energy, clear route-following, harmless stunt-show tone.\n\nCharacter:\nAn ordinary American guy in his 30s. Plain t-shirt, baseball cap, average suburban dad energy. Not an action hero. He looks confused but remains unharmed and safely inside the car.\n\nShot 1 (0-2s):\nA normal suburban driveway. The man stands beside his small yellow hatchback, gets a phone alert, shrugs, jumps in, and starts the car. Camera: medium locked shot with a quick cut to the car rolling forward. Audio: phone alert, seatbelt click, tires chirp.\n\nShot 2 (2-7s):\nLow chase camera behind the hatchback as it follows the first half of the route from the reference map. Safe obstacles escalate: traffic cones, foam road blocks, a sparkle-smoke burst, a shallow water-splash ramp, a soft prop bridge panel folding open, and rolling foam boulders. The car swerves cleanly around each marker with open road around it. Audio: tire squeaks, water splash, playful whooshes.\n\nShot 3 (7-12s):\nOverhead drone view reveals the car tracing the map route through the second half. Safe movie-set hazards continue: dust plume, studio fan mini-tornado, animatronic creature shadow passing over the road, shallow flood-wave splash, stage smoke, a camera-drone shadow, a model train crossing gate, and a soft fabric tunnel curtain opening just in time. Camera: one smooth overhead route-following move.\n\nShot 4 (12-15s):\nSide-tracking final stretch. The road ahead looks safe and the driver smiles for the first time. A giant foam billboard prop drops onto the road ahead of the car. He brakes safely one meter before it, eyes wide, stunned silence for a comic beat, then cut to black.\n\nContinuity:\nThe hatchback remains the same small yellow car. The driver remains confused, expressive, and safe. The car follows the reference map path clearly. Keep the route readable through camera position, road layout, and obstacle order.\n\nClean generation constraints:\nUse generic props, readable physical motion, family-safe stunt-show energy, stable car shape, stable road layout, and clean cinematic sound design.",
+        "left": {
+          "label": "Seedance 2.0",
+          "jobId": "job_5a365d86-98f8-495a-96b2-5737c88185b9"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_5bf86ec5-b464-4516-8163-6b11131df5b4"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "title": "Miniature Bedroom Skateboard Chase (16:9)",
+        "aspectRatio": "16:9",
+        "mode": "t2v",
+        "prompt": "On the floor of a children’s bedroom, a tiny girl rides a miniature skateboard at extreme speed, filmed from a very low tracking camera angle close to the ground. The world feels gigantic around her: towering colorful interlocking toy brick structures, oversized toys, furniture legs, books, toy trucks, and a giant plush teddy bear create a macro-scale environment.\n\nThe camera follows continuously in a smooth long-take shot with dynamic cinematic movement, using an ultra wide-angle lens, shallow depth of field, realistic motion blur, dramatic lighting, and highly detailed textures. The feeling is thrilling, fast-paced, and adventurous, like an amusement park ride mixed with a cinematic chase sequence.\n\nThe action escalates through three intense stages:\n\nStage 1:\nShe races through a narrow canyon formed by enormous colorful toy-brick buildings and toy structures, weaving rapidly between obstacles with precise skateboard movements. The camera stays low behind her, emphasizing speed and scale.\n\nStage 2:\nA giant toy ball suddenly rolls toward her down a narrow corridor. She crouches low and slides through the tiny gap between the moving ball and the wall while large toy blocks collapse nearby. She narrowly avoids the wheels of a moving miniature toy truck crossing her path.\n\nStage 3:\nShe bursts onto the pages of an open picture book, skating across the curved paper surface as the pages begin snapping shut behind her. She ducks under the swinging arm of a massive plush teddy bear and finally launches herself into the tiny opening of a toy box lid that is rapidly closing, disappearing into darkness at the last second.\n\nThe entire sequence is realistic yet whimsical, with intense momentum, cinematic suspense, environmental interaction, and macro-scale miniature perspective. Highly detailed children’s room environment, photorealistic textures, cinematic shadows, volumetric lighting, realistic physics, continuous camera motion, high energy, emotional thrill ride atmosphere.",
+        "left": {
+          "label": "Seedance 2.0",
+          "jobId": "job_638aae88-1368-43a2-8098-10686f9e941c"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_49f653bb-2ed2-425c-b0d2-f335d3d7f124"
+        }
+      }
+    ],
+    "dreamina-seedance-2-0-mini-vs-seedance-2-0": [
+      {
+        "slotId": "motion-physics",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_f2605150-0d2a-48ad-b1a9-bba8891d568b"
+        },
+        "right": {
+          "label": "Seedance 2.0",
+          "jobId": "job_d12164ca-1c6f-46da-9136-2255a136f124"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_f9e077a0-2568-464e-a4e6-962537320dec"
+        },
+        "right": {
+          "label": "Seedance 2.0",
+          "jobId": "job_5a365d86-98f8-495a-96b2-5737c88185b9"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_2581d0af-23fc-46dd-a1df-049cac1824c1"
+        },
+        "right": {
+          "label": "Seedance 2.0",
+          "jobId": "job_638aae88-1368-43a2-8098-10686f9e941c"
+        }
+      }
+    ],
+    "dreamina-seedance-2-0-mini-vs-seedance-2-0-fast": [
+      {
+        "slotId": "motion-physics",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_f2605150-0d2a-48ad-b1a9-bba8891d568b"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_528fe01f-e2ea-4cc0-850c-e98190a17473"
+        }
+      },
+      {
+        "slotId": "ugc-lipsync",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_f9e077a0-2568-464e-a4e6-962537320dec"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_5bf86ec5-b464-4516-8163-6b11131df5b4"
+        }
+      },
+      {
+        "slotId": "hands-text",
+        "promptSourceSlug": "seedance-2-0-vs-seedance-2-0-fast",
+        "left": {
+          "label": "Seedance 2.0 Mini",
+          "jobId": "job_2581d0af-23fc-46dd-a1df-049cac1824c1"
+        },
+        "right": {
+          "label": "Seedance 2.0 Fast",
+          "jobId": "job_49f653bb-2ed2-425c-b0d2-f335d3d7f124"
+        }
+      }
+    ],
     "sora-2-vs-veo-3-1": [
       {
         "slotId": "motion-physics",

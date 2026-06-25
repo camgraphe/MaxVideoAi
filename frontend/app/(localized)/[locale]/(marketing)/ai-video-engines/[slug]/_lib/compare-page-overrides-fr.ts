@@ -117,6 +117,16 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
               'Seedance 2.0 est le choix actuel le plus solide pour un rendu multi-shot soigne, l audio natif et des sorties a references plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux tests moins couteux, aux checks de timing et a l iteration initiale.',
           },
           {
+            question: 'Seedance 2.0 Fast vs normal : quelle difference ?',
+            answer:
+              '"Normal" designe generalement la route Seedance 2.0 standard. Utilisez Fast pour des drafts 480p/720p moins couteux et des checks de timing; utilisez Seedance 2.0 standard quand le plan a besoin de plus de finition, de 1080p ou de 4K, et d une coherence finale plus solide.',
+          },
+          {
+            question: 'Seedance 2.0 et Fast supportent-ils video edit et extend ?',
+            answer:
+              'Oui. Sur MaxVideoAI, Seedance 2.0 et Seedance 2.0 Fast supportent les workflows video edit et extend, en plus du text-to-video, image-to-video et reference-to-video.',
+          },
+          {
             question: 'Seedance 2.0 est-il meilleur pour une sortie video Seedance soignee ?',
             answer:
               'Oui. Seedance 2.0 convient mieux quand l objectif est une sortie video Seedance soignee, tandis que Fast convient mieux quand l objectif est de tester des idees et de comparer rapidement des workflows.',
@@ -126,7 +136,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
       heroIntro:
-        'Utilisez Seedance 2.0 pour la qualite finale flagship, le rendu Seedance le plus soigne, la livraison en plus haute resolution et les hero shots. Utilisez Seedance 2.0 Mini comme l option moins couteuse quand le cout, le volume batch, les variantes 480p/720p, les tests ecommerce, les hooks UGC et les experiences marketing frequentes comptent davantage. Cette page est une comparaison scorecard/specs pour l instant; les videos comparatives Mini ne sont pas encore incluses.',
+        'Utilisez Seedance 2.0 pour la qualite finale flagship, le rendu Seedance le plus soigne, la livraison en plus haute resolution et les hero shots. Utilisez Seedance 2.0 Mini comme l option moins couteuse quand le cout, le volume batch, les variantes 480p/720p, les tests ecommerce, les hooks UGC et les experiences marketing frequentes comptent davantage. Cette page inclut maintenant des videos cote-a-cote Mini vs Seedance 2.0 avec les memes prompts, plus scorecard, specs et contexte pricing.',
       primaryLinksTitle: 'Parcours recommande',
       primaryLinks: [
         {
@@ -158,16 +168,16 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
               'Choisissez Seedance 2.0 pour les hero shots finaux, la meilleure finition visuelle, la livraison en plus haute resolution et les sorties ou la qualite Seedance prime sur le cout par variante.',
           },
           {
-            question: 'Pourquoi cette page Mini n a-t-elle pas de videos comparatives ?',
+            question: 'Les videos comparatives Mini sont-elles incluses ici ?',
             answer:
-              'Les pages Mini utilisent pour l instant scorecards, specs et recommandations. Les videos cote-a-cote Mini viendront apres selection de sorties dediees.',
+              'Oui. Cette page Seedance family utilise des sorties Mini et Seedance 2.0 cote-a-cote generees avec les memes prompts, donc la section video est directement comparable.',
           },
         ],
       },
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast': {
       heroIntro:
-        'Utilisez Seedance 2.0 Fast quand la priorite est la vitesse de draft Seedance, les checks de timing et un passage rapide vers le modele flagship. Utilisez Seedance 2.0 Mini comme l option de volume batch moins couteux pour variantes ecommerce ou social, edits video, extensions et tests marketing repetes. Cette page est une comparaison scorecard/specs pour l instant, sans videos comparatives Mini.',
+        'Utilisez Seedance 2.0 Fast quand la priorite est la vitesse de draft Seedance, les checks de timing et un passage rapide vers le modele flagship. Utilisez Seedance 2.0 Mini comme l option de volume batch moins couteux pour variantes ecommerce ou social, edits video, extensions et tests marketing repetes. Cette page inclut maintenant des videos cote-a-cote Mini vs Fast avec les memes prompts, plus scorecard, specs et contexte pricing.',
       primaryLinksTitle: 'Parcours recommande',
       primaryLinks: [
         {
@@ -201,7 +211,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Cette page inclut-elle des videos cote-a-cote ?',
             answer:
-              'Pas encore. Cette comparaison Mini utilise actuellement seulement scorecards, specs et aide a la decision, donc elle ne demande et n affiche aucun slot video comparatif.',
+              'Oui. Cette page Seedance family utilise des sorties Mini et Fast cote-a-cote generees avec les memes prompts, donc la section video est directement comparable.',
           },
         ],
       },
