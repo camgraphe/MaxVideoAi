@@ -304,6 +304,8 @@ test('credits and refunds stay compact below pricing matrices', () => {
   assert.match(hubCopySource, /Credits, live quotes and refunds/);
   assert.match(hubCopySource, /Crédits, devis live et remboursements/);
   assert.match(hubCopySource, /Pay-as-you-go credits/);
+  assert.match(hubCopySource, /How pay-as-you-go credits work/);
+  assert.match(creditsRefundsSource, /href=\{card\.link\.href\}/);
   assert.match(hubCopySource, /Crédits à l’usage/);
   assert.match(hubCopySource, /Exact price before launch/);
   assert.match(hubCopySource, /Prix exact avant lancement/);

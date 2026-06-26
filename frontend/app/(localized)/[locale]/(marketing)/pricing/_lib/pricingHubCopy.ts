@@ -160,6 +160,10 @@ type PricingHubCopy = {
     cards: Array<{
       title: string;
       body: string;
+      link?: {
+        href: '/pay-as-you-go-ai-video-generator';
+        label: string;
+      };
     }>;
   };
 };
@@ -328,6 +332,10 @@ const en: PricingHubCopy = {
       {
         title: 'Pay-as-you-go credits',
         body: 'Use credits without a required subscription. Starter credits begin at $10, and you can top up when you need more generations.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'How pay-as-you-go credits work',
+        },
       },
       {
         title: 'Exact price before launch',
@@ -509,6 +517,10 @@ const fr: PricingHubCopy = {
       {
         title: 'Crédits à l’usage',
         body: 'Utilisez des crédits sans abonnement obligatoire. Les crédits de démarrage commencent à 10 $, et vous rechargez quand vous avez besoin de générer.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'Comprendre les crédits à l’usage',
+        },
       },
       {
         title: 'Prix exact avant lancement',
@@ -690,6 +702,10 @@ const es: PricingHubCopy = {
       {
         title: 'Créditos de pago por uso',
         body: 'Usa créditos sin suscripción obligatoria. Los créditos iniciales empiezan en $10 y puedes recargar cuando necesites más generaciones.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'Cómo funcionan los créditos por uso',
+        },
       },
       {
         title: 'Precio exacto antes de lanzar',

@@ -163,6 +163,17 @@ test('marketing footer preserves crawl equity for ranking comparison targets', (
   }
 });
 
+test('marketing footer links to the pay-as-you-go support page without promoting it to top nav', () => {
+  const productLinksBlock = marketingFooterSource.slice(
+    marketingFooterSource.indexOf('const productLinks'),
+    marketingFooterSource.indexOf('const companyLinks')
+  );
+
+  assert.match(productLinksBlock, /footer\.sections\.product\.items\.paygVideo/);
+  assert.match(productLinksBlock, /\/pay-as-you-go-ai-video-generator/);
+  assert.doesNotMatch(marketingNavSource, /pay-as-you-go-ai-video-generator/);
+});
+
 test('marketing nav keeps logged-out state after an explicit workspace logout intent', () => {
   assert.match(marketingNavSource, /import \{ consumeLogoutIntent, setLogoutIntent \} from '@\/lib\/logout-intent';/);
   assert.match(marketingNavSource, /const logoutIntentActive = consumeLogoutIntent\(\);/);

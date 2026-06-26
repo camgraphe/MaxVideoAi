@@ -13,6 +13,7 @@ interface EngineIconProps {
   className?: string;
   rounded?: 'full' | 'xl';
   framed?: boolean;
+  imageAlt?: string;
 }
 
 function computeFontSize(size: number) {
@@ -48,6 +49,7 @@ export function EngineIcon({
   className,
   rounded = 'xl',
   framed = true,
+  imageAlt,
 }: EngineIconProps) {
   const explicitLabel = label ?? engine?.label ?? 'Engine';
   const resolvedBrandMark = getPartnerBrandMark({
@@ -69,11 +71,12 @@ export function EngineIcon({
   const markScale = brandMark?.light.scale ?? brandMark?.dark.scale ?? 0.64;
   const markSize = computeMarkSize(size, markScale, framed);
   const hasDistinctDarkMark = Boolean(brandMark && brandMark.dark.src !== brandMark.light.src);
+  const useImageAlt = Boolean(brandMark && imageAlt);
 
   return (
     <div
-      aria-label={`${explicitLabel} engine`}
-      role="img"
+      aria-label={useImageAlt ? undefined : `${explicitLabel} engine`}
+      role={useImageAlt ? undefined : 'img'}
       className={clsx(
         'flex shrink-0 items-center justify-center overflow-hidden leading-none',
         framed &&
@@ -99,8 +102,8 @@ export function EngineIcon({
         <>
           <Image
             src={brandMark.light.src}
-            alt=""
-            aria-hidden="true"
+            alt={imageAlt ?? ''}
+            aria-hidden={imageAlt ? undefined : 'true'}
             className={clsx(
               'block select-none object-contain',
               hasDistinctDarkMark && 'dark:hidden',
@@ -120,8 +123,8 @@ export function EngineIcon({
           {hasDistinctDarkMark ? (
             <Image
               src={brandMark.dark.src}
-              alt=""
-              aria-hidden="true"
+              alt={imageAlt ?? ''}
+              aria-hidden={imageAlt ? undefined : 'true'}
               className="hidden select-none object-contain dark:block"
               width={markSize}
               height={markSize}

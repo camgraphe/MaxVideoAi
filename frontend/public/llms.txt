@@ -7,6 +7,7 @@ Spec: https://llmstxt.org/
 ## Canonical
 
 * https://maxvideoai.com/ - Product overview, value proposition, main navigation.
+* https://maxvideoai.com/pay-as-you-go-ai-video-generator - Pay-as-you-go AI video generation, no-subscription workflow, and price-before-generation guidance.
 * https://maxvideoai.com/pricing - Pricing and wallet/top-up model details.
 * https://maxvideoai.com/models - All supported video engines and comparisons.
 * https://maxvideoai.com/examples - Real outputs and showcase gallery.

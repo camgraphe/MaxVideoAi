@@ -56,12 +56,11 @@ export function MarketingFooter() {
     { slug: 'seedance-2-0', labelKey: 'footer.sections.engines.items.seedance2_0', fallback: 'Seedance 2.0' },
     { slug: 'kling-3-pro', labelKey: 'footer.sections.engines.items.kling3pro', fallback: 'Kling 3 Pro' },
     { slug: 'veo-3-1', labelKey: 'footer.sections.engines.items.veo3_1', fallback: 'Veo 3.1' },
-    { slug: 'veo-3-1-lite', labelKey: 'footer.sections.engines.items.veo3_1lite', fallback: 'Veo 3.1 Lite' },
+    { slug: 'happy-horse-1-1', labelKey: 'footer.sections.engines.items.happyHorse11', fallback: 'Happy Horse 1.1' },
+    { slug: 'dreamina-seedance-2-0-mini', labelKey: 'footer.sections.engines.items.seedance2mini', fallback: 'Seedance 2.0 Mini' },
     { slug: 'ltx-2-3-fast', labelKey: 'footer.sections.engines.items.ltx23fast', fallback: 'LTX 2.3 Fast' },
     { slug: 'ltx-2-3-pro', labelKey: 'footer.sections.engines.items.ltx23pro', fallback: 'LTX 2.3 Pro' },
     { slug: 'wan-2-6', labelKey: 'footer.sections.engines.items.wan2_6', fallback: 'Wan 2.6' },
-    { slug: 'pika-text-to-video', labelKey: 'footer.sections.engines.items.pikaTextToVideo', fallback: 'Pika Text to Video' },
-    { slug: 'sora-2-pro', labelKey: 'footer.sections.engines.items.sora2pro', fallback: 'Sora 2 Pro' },
   ];
   const engineLinks: FooterLink[] = engineItems
     .filter((item) => modelSlugSet.has(item.slug))
@@ -181,6 +180,11 @@ export function MarketingFooter() {
       href: { pathname: '/tools/character-builder' },
     },
     { key: 'pricing', label: labelFor('footer.sections.product.items.pricing', 'Pricing'), href: { pathname: '/pricing' } },
+    {
+      key: 'paygVideo',
+      label: labelFor('footer.sections.product.items.paygVideo', 'Pay-as-you-go AI video'),
+      href: { pathname: '/pay-as-you-go-ai-video-generator' },
+    },
     { key: 'models', label: labelFor('footer.sections.product.items.models', 'All models'), href: { pathname: '/models' } },
   ];
 

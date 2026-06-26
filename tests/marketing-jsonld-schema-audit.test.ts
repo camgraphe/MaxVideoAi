@@ -12,6 +12,11 @@ import {
 import { buildFAQJsonLd } from '../frontend/components/seo/FAQSchema.tsx';
 import { buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricing-jsonld.ts';
 import {
+  buildPayAsYouGoBreadcrumbJsonLd,
+  buildPayAsYouGoServiceJsonLd,
+  buildPayAsYouGoWebApplicationJsonLd,
+} from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-jsonld.ts';
+import {
   buildModelsCatalogBreadcrumbJsonLd,
   buildModelsCatalogFaqJsonLd,
   buildModelsCatalogItemListJsonLd,
@@ -335,6 +340,21 @@ function buildAuditedSchemaCases(): SchemaCase[] {
             answer: 'MaxVideoAI uses pay-as-you-go credits and shows estimated cost before generation.',
           },
         ]),
+      ],
+    },
+    {
+      surface: 'payg-ai-video-generator',
+      schemas: [
+        buildPayAsYouGoBreadcrumbJsonLd({
+          canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
+          locale: 'en',
+        }),
+        buildPayAsYouGoServiceJsonLd({
+          canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
+        }),
+        buildPayAsYouGoWebApplicationJsonLd({
+          canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
+        }),
       ],
     },
     {

@@ -10,6 +10,7 @@ const LLMS_PATH = path.join(ROOT, 'frontend/public/llms.txt');
 
 const REQUIRED_URLS = [
   'https://maxvideoai.com/',
+  'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
   'https://maxvideoai.com/pricing',
   'https://maxvideoai.com/models',
   'https://maxvideoai.com/examples',
