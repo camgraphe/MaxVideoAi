@@ -38,3 +38,32 @@ test('refund reasons classify storage preparation failures', () => {
   assert.equal(reason, 'Output could not be prepared for download.');
   assert.doesNotMatch(reason, forbidden);
 });
+
+test('Seedance recognizable-person failures explain reference-image limits', () => {
+  const message = toUserFacingFailureMessage(
+    'Seedance blocked a reference image because it may contain a recognizable person or private content.'
+  );
+  const reason = toUserFacingRefundReason(
+    'Seedance blocked a reference image because it may contain a recognizable person or private content.'
+  );
+
+  assert.equal(
+    message,
+    'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.'
+  );
+  assert.equal(reason, 'Reference image was blocked by Seedance safety checks.');
+  assert.doesNotMatch(message, forbidden);
+  assert.doesNotMatch(reason, forbidden);
+});
+
+test('Seedance start failures keep actionable customer guidance', () => {
+  const message = toUserFacingFailureMessage(
+    'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.'
+  );
+
+  assert.equal(
+    message,
+    'Seedance could not start this render. Remove recognizable people from reference images, reduce media complexity, or retry in a few moments.'
+  );
+  assert.doesNotMatch(message, forbidden);
+});

@@ -67,6 +67,17 @@ test('workspace video composer shows in-progress render banner from pending grou
   assert.match(surfaceSource, /bg-success-bg/);
 });
 
+test('workspace Seedance composer explains recognizable-person reference limits near upload placeholders', () => {
+  assert.equal(existsSync(composerSurfacePath), true);
+
+  const surfaceSource = readFileSync(composerSurfacePath, 'utf8');
+
+  assert.match(surfaceSource, /getSeedanceReferenceGuidance/);
+  assert.match(surfaceSource, /Seedance may reject recognizable people in reference images/);
+  assert.match(surfaceSource, /Seedream text-to-image/);
+  assert.match(surfaceSource, /guidance: isUnifiedSeedance[\s\S]*getSeedanceReferenceGuidance\(uiLocale\)/);
+});
+
 test('workspace treats Seedance 2.0 Mini as a unified Seedance workflow', () => {
   assert.equal(isUnifiedSeedanceEngineId('seedance-2-0-mini'), true);
 

@@ -385,7 +385,7 @@ assert.equal(
 
 assert.equal(
   getBytePlusUserSafeErrorMessage('The request failed because the input image may contain real person. Request id: abc'),
-  'One of the input images was blocked by safety checks. Try an image without identifiable people or private content.'
+  'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.'
 );
 
 assert.deepEqual(

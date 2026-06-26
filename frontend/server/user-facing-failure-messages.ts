@@ -1,8 +1,15 @@
 const DEFAULT_FAILURE_MESSAGE =
   'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
 const DEFAULT_REFUND_REASON = 'Render could not be completed.';
+const SEEDANCE_REFERENCE_FAILURE_MESSAGE =
+  'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.';
+const SEEDANCE_REFERENCE_REFUND_REASON = 'Reference image was blocked by Seedance safety checks.';
+const SEEDANCE_START_FAILURE_MESSAGE =
+  'Seedance could not start this render. Remove recognizable people from reference images, reduce media complexity, or retry in a few moments.';
+const SEEDANCE_START_REFUND_REASON = 'Seedance render could not start.';
 
 type FailureCategory = 'busy' | 'no_output' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
+type SeedanceSpecificFailure = 'reference_safety' | 'start';
 
 const PROVIDER_OR_INTERNAL_PATTERN =
   /\b(?:fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
@@ -122,6 +129,30 @@ function classifyFailure(message: string | null): FailureCategory | null {
   return null;
 }
 
+function classifySeedanceSpecificFailure(message: string | null): SeedanceSpecificFailure | null {
+  if (!message) return null;
+  const lower = message.toLowerCase();
+  if (!lower.includes('seedance')) return null;
+  if (containsAny(lower, ['could not start', 'start failed', 'request failed', 'sync failed'])) {
+    return 'start';
+  }
+  const hasRecognizablePersonSignal = containsAny(lower, [
+    'recognizable person',
+    'recognisable person',
+    'identifiable people',
+    'private content',
+    'private information',
+    'real person',
+  ]);
+  const hasBlockedImageSignal =
+    containsAny(lower, ['reference image', 'input image']) &&
+    containsAny(lower, ['blocked', 'safety', 'policy', 'sensitive']);
+  if (hasRecognizablePersonSignal || hasBlockedImageSignal) {
+    return 'reference_safety';
+  }
+  return null;
+}
+
 function messageForCategory(category: FailureCategory): string {
   switch (category) {
     case 'busy':
@@ -184,6 +215,9 @@ function normalizeDurationSec(value: number | string | null | undefined): number
 
 export function toUserFacingFailureMessage(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
+  const seedanceFailure = classifySeedanceSpecificFailure(normalized);
+  if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_FAILURE_MESSAGE;
+  if (seedanceFailure === 'start') return SEEDANCE_START_FAILURE_MESSAGE;
   const category = classifyFailure(normalized);
   if (category) return messageForCategory(category);
   if (normalized && canReuseMessage(normalized)) return normalized;
@@ -192,6 +226,9 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
 
 export function toUserFacingRefundReason(message: string | null | undefined): string {
   const normalized = normalizeMessage(message);
+  const seedanceFailure = classifySeedanceSpecificFailure(normalized);
+  if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_REFUND_REASON;
+  if (seedanceFailure === 'start') return SEEDANCE_START_REFUND_REASON;
   const category = classifyFailure(normalized);
   if (category) return refundReasonForCategory(category);
   if (normalized && canReuseMessage(normalized)) return normalized;

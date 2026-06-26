@@ -14,6 +14,11 @@ export type AssetSlotAttachment = {
 
 export type AssetFieldRole = 'primary' | 'reference' | 'frame' | 'generic';
 
+export type AssetFieldGuidance = {
+  label: string;
+  tooltip?: string;
+};
+
 export type AssetFieldConfig = {
   field: EngineInputField;
   required: boolean;
@@ -21,6 +26,7 @@ export type AssetFieldConfig = {
   headerAction?: ReactNode;
   disabled?: boolean;
   disabledReason?: string | null;
+  guidance?: AssetFieldGuidance | null;
 };
 
 export type AssetUploadMeta = {

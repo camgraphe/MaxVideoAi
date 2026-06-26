@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 
 const assetDropzonePath = join(root, 'frontend/components/AssetDropzone.tsx');
+const assetFieldGuidancePath = join(root, 'frontend/components/asset-dropzone/AssetFieldGuidance.tsx');
 const assetFieldTooltipPath = join(root, 'frontend/components/asset-dropzone/AssetFieldTooltip.tsx');
 const assetMediaPickerMenuPath = join(root, 'frontend/components/asset-dropzone/AssetMediaPickerMenu.tsx');
 const assetDropzoneSlotPath = join(root, 'frontend/components/asset-dropzone/AssetDropzoneSlot.tsx');
@@ -27,6 +28,7 @@ const quadPreviewTypesPath = join(root, 'frontend/components/quad-preview/quad-p
 test('shared media surfaces delegate slot, entry rendering, helper, and type ownership', () => {
   for (const path of [
     assetDropzonePath,
+    assetFieldGuidancePath,
     assetFieldTooltipPath,
     assetMediaPickerMenuPath,
     assetDropzoneSlotPath,
@@ -47,6 +49,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   }
 
   const assetDropzoneSource = readFileSync(assetDropzonePath, 'utf8');
+  const assetFieldGuidanceSource = readFileSync(assetFieldGuidancePath, 'utf8');
   const assetFieldTooltipSource = readFileSync(assetFieldTooltipPath, 'utf8');
   const assetMediaPickerMenuSource = readFileSync(assetMediaPickerMenuPath, 'utf8');
   const assetDropzoneSlotSource = readFileSync(assetDropzoneSlotPath, 'utf8');
@@ -63,6 +66,9 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.doesNotMatch(assetDropzoneSource, /function resolveSlotLabel|function readMediaDuration/, 'AssetDropzone should not own helper logic');
   assert.doesNotMatch(assetDropzoneSource, /AudioEqualizerBadge|Trash2|<audio|<video/, 'AssetDropzone should not own slot media rendering');
   assert.match(assetDropzoneSource, /<AssetFieldTooltip/, 'AssetDropzone should compose a field-level details tooltip');
+  assert.match(assetDropzoneSource, /<AssetFieldGuidance/, 'AssetDropzone should compose field-level guidance above placeholders');
+  assert.match(assetFieldGuidanceSource, /export function AssetFieldGuidance/, 'AssetFieldGuidance should own advisory copy rendering');
+  assert.match(assetFieldGuidanceSource, /<AssetFieldTooltip/, 'field guidance should use the shared tooltip affordance');
   assert.match(
     assetDropzoneSource,
     /const maxVideoDuration = field\.maxDurationSec \?\? limits\.videoMaxDurationSec;[\s\S]*assetCopy\.secondsMax\(maxVideoDuration\)/,
@@ -217,6 +223,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.match(quadPreviewTypesSource, /export interface QuadPreviewTile/, 'quad preview types should own public tile contracts');
 
   assert.ok(assetDropzoneSource.split('\n').length <= 460, 'AssetDropzone should stay below 460 lines');
+  assert.ok(assetFieldGuidanceSource.split('\n').length <= 80, 'AssetFieldGuidance should stay below 80 lines');
   assert.ok(assetFieldTooltipSource.split('\n').length <= 90, 'AssetFieldTooltip should stay below 90 lines');
   assert.ok(assetMediaPickerMenuSource.split('\n').length <= 100, 'AssetMediaPickerMenu should stay below 100 lines');
   assert.ok(assetDropzoneSlotSource.split('\n').length <= 380, 'AssetDropzoneSlot should stay below 380 lines');

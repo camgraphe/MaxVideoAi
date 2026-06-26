@@ -43,6 +43,7 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
 
 type ComposerProps = ComponentProps<typeof Composer>;
 type ShotType = 'customize' | 'intelligent';
+type SeedanceReferenceGuidance = { label: string; tooltip: string };
 type WorkflowCopy = {
   clearReferencesToUseStartEnd: string;
   clearStartEndToUseReferences: string;
@@ -140,6 +141,33 @@ function isStoryboardLaunchEngine(engineId: string): boolean {
 const LUMA_RAY32_MODIFY_ASSET_FIELD_IDS = new Set(['video_url', 'start_image_url', 'edit_keyframe_urls']);
 const LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS = new Set(['edit_keyframe_indexes']);
 const HDR_FIELD_ID = 'hdr';
+const SEEDANCE_REFERENCE_GUIDANCE_COPY = {
+  en: {
+    label: 'Seedance may reject recognizable people in reference images.',
+    tooltip:
+      'Use Seedream text-to-image to create consistent character references, or upload an illustrated/stylized reference and ask Seedance in the prompt to render it realistically.',
+  },
+  fr: {
+    label: 'Seedance peut refuser les personnes reconnaissables dans les images de référence.',
+    tooltip:
+      "Pour des personnages de référence, crée d'abord des images cohérentes avec Seedream text-to-image, ou importe un dessin/stylisé et demande à Seedance dans le prompt de le rendre réaliste.",
+  },
+  es: {
+    label: 'Seedance puede rechazar personas reconocibles en las imágenes de referencia.',
+    tooltip:
+      'Para personajes de referencia, crea primero imágenes coherentes con Seedream text-to-image, o sube una referencia ilustrada/estilizada y pide a Seedance en el prompt que la haga realista.',
+  },
+} as const;
+
+function getSeedanceReferenceGuidance(locale: string): SeedanceReferenceGuidance {
+  const language = locale.toLowerCase().split('-')[0];
+  if (language === 'fr' || language === 'es') return SEEDANCE_REFERENCE_GUIDANCE_COPY[language];
+  return SEEDANCE_REFERENCE_GUIDANCE_COPY.en;
+}
+
+function shouldShowSeedanceReferenceGuidance(field: EngineInputField): boolean {
+  return field.type === 'image';
+}
 
 function isTruthyExtraInputValue(value: unknown): boolean {
   if (typeof value === 'boolean') return value;
@@ -265,6 +293,9 @@ export function WorkspaceComposerSurface({
       const disabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
       return {
         ...entry,
+        guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
+          ? getSeedanceReferenceGuidance(uiLocale)
+          : entry.guidance,
         disabled: Boolean(disabledReason),
         disabledReason,
       };
@@ -281,6 +312,7 @@ export function WorkspaceComposerSurface({
     klingO3AssetState.hasAnyVideoInput,
     klingO3VideoToVideoSupported,
     showLumaRay32KeyframeEditor,
+    uiLocale,
     workflowCopy.clearReferencesToUseStartEnd,
     workflowCopy.clearStartEndToUseReferences,
   ]);

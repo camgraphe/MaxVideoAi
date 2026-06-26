@@ -12,7 +12,6 @@ import type { AssetSlotAttachment } from './asset-dropzone-types';
 import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
 
 type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
-
 type AssetDropzoneSlotProps = {
   accept: string;
   asset: AssetSlotAttachment | null;
