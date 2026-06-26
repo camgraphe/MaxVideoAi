@@ -4,6 +4,7 @@ import {
   AUDIO_LYRIA3_CLIP_MODEL_ID,
   AUDIO_LYRIA3_PRO_MAX_DURATION_SEC,
   AUDIO_LYRIA3_PRO_MODEL_ID,
+  type AudioLyria3Model,
   type AudioIntensity,
   type AudioMood,
 } from '@/lib/audio-generation';
@@ -53,8 +54,8 @@ export function isGoogleVertexLyria3DurationSupported(durationSec: number): bool
   return Number.isFinite(durationSec) && durationSec > 0 && durationSec <= AUDIO_LYRIA3_PRO_MAX_DURATION_SEC;
 }
 
-export function selectGoogleVertexLyria3Model(durationSec: number): string {
-  return durationSec <= AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC
+export function selectGoogleVertexLyria3Model(durationSec: number, musicModel?: AudioLyria3Model | null): string {
+  return (musicModel ?? (durationSec <= AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC ? 'clip' : 'pro')) === 'clip'
     ? AUDIO_LYRIA3_CLIP_MODEL_ID
     : AUDIO_LYRIA3_PRO_MODEL_ID;
 }
@@ -168,11 +169,21 @@ function buildPrompt(input: {
   durationSec: number;
   mood: AudioMood;
   intensity: AudioIntensity;
+  musicModel?: AudioLyria3Model | null;
+  musicBpm?: number | null;
   prompt?: string | null;
 }) {
   const base = buildMusicPrompt(input.mood, input.intensity, input.prompt);
+  const durationInstruction =
+    (input.musicModel ?? (input.durationSec <= AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC ? 'clip' : 'pro')) === 'clip'
+      ? 'Create one complete 30-second instrumental clip.'
+      : `Target duration around ${input.durationSec} seconds.`;
+  const bpmInstruction =
+    typeof input.musicBpm === 'number' && Number.isFinite(input.musicBpm)
+      ? `Use approximately ${Math.round(input.musicBpm)} BPM.`
+      : '';
   return limitProviderPrompt(
-    `${base} Instrumental only, no vocals, no lyrics, no speech. Clean cinematic mix. Target duration around ${input.durationSec} seconds.`
+    `${base} ${durationInstruction} ${bpmInstruction} Instrumental only, no vocals, no lyrics, no speech. Clean cinematic mix.`
   );
 }
 
@@ -180,6 +191,8 @@ export async function generateGoogleVertexLyria3Track(input: {
   durationSec: number;
   mood: AudioMood;
   intensity: AudioIntensity;
+  musicModel?: AudioLyria3Model | null;
+  musicBpm?: number | null;
   prompt?: string | null;
 }, deps: GoogleVertexLyriaDeps = {}): Promise<AudioProviderResult> {
   if (!isGoogleVertexLyria3DurationSupported(input.durationSec)) {
@@ -187,7 +200,7 @@ export async function generateGoogleVertexLyria3Track(input: {
   }
 
   const config = getConfig(deps.env);
-  const model = selectGoogleVertexLyria3Model(input.durationSec);
+  const model = selectGoogleVertexLyria3Model(input.durationSec, input.musicModel);
   const endpoint = `${config.apiBaseUrl.replace(/\/+$/, '')}/v1beta1/projects/${encodeURIComponent(
     config.projectId
   )}/locations/${encodeURIComponent(config.location)}/interactions`;

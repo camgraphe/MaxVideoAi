@@ -1,4 +1,4 @@
-import type { AudioIntensity, AudioMood } from '@/lib/audio-generation';
+import type { AudioIntensity, AudioLyria3Model, AudioMood } from '@/lib/audio-generation';
 import {
   generateGoogleVertexLyria3Track,
   GOOGLE_VERTEX_LYRIA3_PROVIDER_KEY,
@@ -28,6 +28,8 @@ export async function generateMusicTrack(input: {
   durationSec: number;
   mood: AudioMood;
   intensity: AudioIntensity;
+  musicModel?: AudioLyria3Model | null;
+  musicBpm?: number | null;
   prompt?: string | null;
 }, options?: {
   subscribe?: AudioProviderSubscribe;
@@ -47,7 +49,7 @@ export async function generateMusicTrack(input: {
     } catch (error) {
       lyriaFailure = {
         providerKey: GOOGLE_VERTEX_LYRIA3_PROVIDER_KEY,
-        model: selectGoogleVertexLyria3Model(input.durationSec),
+        model: selectGoogleVertexLyria3Model(input.durationSec, input.musicModel),
         message: error instanceof Error ? error.message : 'Unknown Google Vertex Lyria failure',
       };
       if (!ENABLE_AUDIO_PROVIDER_FALLBACK) {
@@ -58,7 +60,12 @@ export async function generateMusicTrack(input: {
 
   try {
     return await runAudioRoleWithFallback('music', (candidate) => {
-      const prompt = limitProviderPrompt(buildMusicPrompt(input.mood, input.intensity, input.prompt));
+      const basePrompt = buildMusicPrompt(input.mood, input.intensity, input.prompt);
+      const prompt = limitProviderPrompt(
+        typeof input.musicBpm === 'number' && Number.isFinite(input.musicBpm)
+          ? `${basePrompt} Use approximately ${Math.round(input.musicBpm)} BPM.`
+          : basePrompt
+      );
       if (candidate.key === 'minimax_music_2_6') {
         return {
           prompt: limitProviderPrompt(

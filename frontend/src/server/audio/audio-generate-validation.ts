@@ -3,6 +3,9 @@ import {
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
+  AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC,
+  AUDIO_LYRIA3_BPM_VALUES,
+  DEFAULT_AUDIO_LYRIA3_BPM,
   DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
   DEFAULT_SEED_AUDIO_PITCH,
   DEFAULT_SEED_AUDIO_SAMPLE_RATE,
@@ -11,6 +14,8 @@ import {
   DEFAULT_SEED_AUDIO_VOLUME,
   coerceAudioIntensity,
   coerceAudioLanguage,
+  coerceAudioLyria3Bpm,
+  coerceAudioLyria3Model,
   coerceAudioMood,
   coerceAudioPackId,
   coerceAudioVoiceDelivery,
@@ -27,6 +32,8 @@ import {
   type AudioGenerateRequestBody,
   type AudioIntensity,
   type AudioLanguage,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
@@ -46,6 +53,8 @@ type NormalizedAudioGenerateInput = {
   prompt: string | null;
   mood: AudioMood | null;
   intensity: AudioIntensity;
+  musicModel: AudioLyria3Model | null;
+  musicBpm: AudioLyria3Bpm | null;
   script: string | null;
   voiceSampleUrl: string | null;
   voiceGender: AudioVoiceGender | null;
@@ -168,6 +177,22 @@ function rejectSeedAudioOptionOnNonVoice(
   }
 }
 
+function rejectMusicOptionOnNonMusic(
+  packSupportsMusic: boolean,
+  value: unknown,
+  field: string,
+  code: string
+): void {
+  const hasValue = typeof value === 'string' ? value.trim().length > 0 : value !== null && value !== undefined;
+  if (!packSupportsMusic && hasValue) {
+    throw new AudioGenerationError('Music options are only supported on music-generating modes.', {
+      status: 400,
+      code,
+      field,
+    });
+  }
+}
+
 function normalizeSeedAudioRangeValue(params: {
   value: unknown;
   fallback: number;
@@ -246,6 +271,42 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       status: 400,
       code: 'audio_intensity_invalid',
       field: 'intensity',
+    });
+  }
+
+  const musicEnabledInput = normalizeOptionalBoolean(body.musicEnabled);
+  if (!packConfig.supportsMusicToggle && musicEnabledInput !== null) {
+    throw new AudioGenerationError('Music toggle is not supported for this mode.', {
+      status: 400,
+      code: 'music_toggle_not_supported',
+      field: 'musicEnabled',
+    });
+  }
+  const packSupportsMusic = pack === 'music_only' || packConfig.supportsMusicToggle;
+  const shouldGenerateMusic = pack === 'music_only' || (packConfig.supportsMusicToggle && (musicEnabledInput ?? packConfig.defaultMusicEnabled));
+  rejectMusicOptionOnNonMusic(packSupportsMusic, body.musicModel, 'musicModel', 'music_model_not_supported');
+  rejectMusicOptionOnNonMusic(packSupportsMusic, body.musicBpm, 'musicBpm', 'music_bpm_not_supported');
+
+  const musicModelValue = normalizeString(body.musicModel);
+  const musicModel = musicModelValue ? coerceAudioLyria3Model(musicModelValue) : null;
+  if (musicModelValue && !musicModel) {
+    throw new AudioGenerationError('Lyria music model is invalid.', {
+      status: 400,
+      code: 'music_model_invalid',
+      field: 'musicModel',
+    });
+  }
+
+  const musicBpm = shouldGenerateMusic
+    ? body.musicBpm == null
+      ? DEFAULT_AUDIO_LYRIA3_BPM
+      : coerceAudioLyria3Bpm(body.musicBpm)
+    : null;
+  if (shouldGenerateMusic && body.musicBpm != null && !musicBpm) {
+    throw new AudioGenerationError(`Music BPM must be one of ${AUDIO_LYRIA3_BPM_VALUES.join(', ')}.`, {
+      status: 400,
+      code: 'music_bpm_invalid',
+      field: 'musicBpm',
     });
   }
 
@@ -453,14 +514,6 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       })
     : null;
 
-  const musicEnabledInput = normalizeOptionalBoolean(body.musicEnabled);
-  if (!packConfig.supportsMusicToggle && musicEnabledInput !== null) {
-    throw new AudioGenerationError('Music toggle is not supported for this mode.', {
-      status: 400,
-      code: 'music_toggle_not_supported',
-      field: 'musicEnabled',
-    });
-  }
   const exportAudioFileInput = normalizeOptionalBoolean(body.exportAudioFile);
   if (!packConfig.supportsAudioExport && exportAudioFileInput !== null) {
     throw new AudioGenerationError('Audio export is not supported for this mode.', {
@@ -486,6 +539,13 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
       field: 'durationSec',
     });
   }
+  if (pack === 'music_only' && !sourceVideoUrl && !sourceJobId && musicModel === 'clip' && requestedDurationSec !== AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC) {
+    throw new AudioGenerationError('Lyria 3 Clip supports a fixed 30s standalone clip. Use Lyria 3 Pro for longer songs.', {
+      status: 400,
+      code: 'music_clip_duration_invalid',
+      field: 'durationSec',
+    });
+  }
 
   const locale = normalizeString(body.locale);
 
@@ -496,6 +556,8 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     prompt,
     mood,
     intensity: intensity ?? 'standard',
+    musicModel,
+    musicBpm,
     script,
     voiceSampleUrl,
     voiceGender,

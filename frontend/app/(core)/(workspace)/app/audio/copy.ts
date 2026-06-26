@@ -1,5 +1,7 @@
 import type {
   AudioLanguage,
+  AudioLyria3Bpm,
+  AudioLyria3Model,
   AudioMood,
   AudioOutputKind,
   AudioPackId,
@@ -81,8 +83,10 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     customizeStep: 'Customize',
     generateStep: 'Generate',
     chooseType: 'Choose the type of audio you want to create',
-    mood: 'Mood',
+    mood: 'Style preset',
     intensity: 'Intensity',
+    musicModel: 'Lyria model',
+    musicBpm: 'Tempo',
     duration: 'Duration',
     prompt: 'Audio Prompt',
     promptMusicPlaceholder: 'Describe the music: genre, pace, emotion, instruments, where it should sit in the edit.',
@@ -152,6 +156,17 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
       standard: 'Standard',
       intense: 'Intense',
     },
+    musicModels: {
+      clip: 'Lyria 3 Clip · fixed 30s',
+      pro: 'Lyria 3 Pro · duration control',
+    } satisfies Record<AudioLyria3Model, string>,
+    musicBpmValues: {
+      70: '70 BPM · slow',
+      90: '90 BPM · relaxed',
+      110: '110 BPM · medium',
+      130: '130 BPM · driving',
+      150: '150 BPM · fast',
+    } satisfies Record<AudioLyria3Bpm, string>,
     voiceGenders: {
       female: 'Female',
       male: 'Male',

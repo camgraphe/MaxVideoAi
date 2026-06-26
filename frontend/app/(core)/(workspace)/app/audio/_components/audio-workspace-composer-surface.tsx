@@ -6,6 +6,8 @@ import { Textarea } from '@/components/ui/Input';
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
   type AudioIntensity,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioPackId,
   type AudioSeedAudioOutputFormat,
@@ -54,7 +56,11 @@ interface AudioWorkspaceComposerSurfaceProps {
   modeOptions: Array<{ id: AudioPackId; label: string; description: string }>;
   mood: AudioMood;
   moodOptions: AudioOption[];
+  musicBpm: AudioLyria3Bpm;
+  musicBpmOptions: AudioOption[];
   musicEnabled: boolean;
+  musicModel: AudioLyria3Model;
+  musicModelOptions: AudioOption[];
   notice: string | null;
   onClearSourceVideo: () => void;
   onOpenGeneratedPicker: () => void;
@@ -65,6 +71,8 @@ interface AudioWorkspaceComposerSurfaceProps {
   setExportAudioFile: (value: boolean) => void;
   setIntensity: (value: AudioIntensity) => void;
   setManualDurationSec: (value: number) => void;
+  setMusicBpm: (value: AudioLyria3Bpm) => void;
+  setMusicModel: (value: AudioLyria3Model) => void;
   setMood: (value: AudioMood) => void;
   setMusicEnabled: (value: boolean) => void;
   setPrompt: (value: string) => void;
@@ -80,6 +88,8 @@ interface AudioWorkspaceComposerSurfaceProps {
   showIntensity: boolean;
   showManualDuration: boolean;
   showMood: boolean;
+  showMusicBpm: boolean;
+  showMusicModel: boolean;
   showMusicToggle: boolean;
   showSeedAudioVoice: boolean;
   showVoiceFields: boolean;
@@ -129,7 +139,11 @@ export function AudioWorkspaceComposerSurface({
   modeOptions,
   mood,
   moodOptions,
+  musicBpm,
+  musicBpmOptions,
   musicEnabled,
+  musicModel,
+  musicModelOptions,
   notice,
   onClearSourceVideo,
   onOpenGeneratedPicker,
@@ -140,6 +154,8 @@ export function AudioWorkspaceComposerSurface({
   setExportAudioFile,
   setIntensity,
   setManualDurationSec,
+  setMusicBpm,
+  setMusicModel,
   setMood,
   setMusicEnabled,
   setPrompt,
@@ -155,6 +171,8 @@ export function AudioWorkspaceComposerSurface({
   showIntensity,
   showManualDuration,
   showMood,
+  showMusicBpm,
+  showMusicModel,
   showMusicToggle,
   showSeedAudioVoice,
   showVoiceFields,
@@ -263,11 +281,17 @@ export function AudioWorkspaceComposerSurface({
             manualDurationSec={manualDurationSec}
             mood={mood}
             moodOptions={moodOptions}
+            musicBpm={musicBpm}
+            musicBpmOptions={musicBpmOptions}
             musicEnabled={musicEnabled}
+            musicModel={musicModel}
+            musicModelOptions={musicModelOptions}
             onExportAudioFileChange={setExportAudioFile}
             onIntensityChange={setIntensity}
             onManualDurationChange={setManualDurationSec}
+            onMusicBpmChange={setMusicBpm}
             onMoodChange={setMood}
+            onMusicModelChange={setMusicModel}
             onMusicEnabledChange={setMusicEnabled}
             onSeedAudioOutputFormatChange={setSeedAudioOutputFormat}
             onSeedAudioPitchChange={setSeedAudioPitch}
@@ -292,6 +316,8 @@ export function AudioWorkspaceComposerSurface({
             showIntensity={showIntensity}
             showManualDuration={showManualDuration}
             showMood={showMood}
+            showMusicBpm={showMusicBpm}
+            showMusicModel={showMusicModel}
             showMusicToggle={showMusicToggle}
             showSeedAudioVoice={showSeedAudioVoice}
             showVoiceFields={showVoiceFields}

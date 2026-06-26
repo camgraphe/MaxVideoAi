@@ -28,7 +28,7 @@ export const DEFAULT_VOICE_GENDER: AudioVoiceGender = 'female';
 export const DEFAULT_VOICE_PROFILE: AudioVoiceProfile = 'balanced';
 export const DEFAULT_VOICE_DELIVERY: AudioVoiceDelivery = 'cinematic';
 export const DEFAULT_LANGUAGE: AudioLanguage = 'auto';
-export const DEFAULT_MANUAL_DURATION_SEC = 8;
+export const DEFAULT_MANUAL_DURATION_SEC = 30;
 export const AUDIO_VOICE_GENDER_VALUES = ['female', 'male', 'neutral'] as const;
 
 export const AUDIO_MODE_META: Record<

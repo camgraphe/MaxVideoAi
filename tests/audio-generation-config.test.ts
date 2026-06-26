@@ -3,6 +3,8 @@ import test from 'node:test';
 
 import {
   AUDIO_MAX_DURATION_SEC,
+  AUDIO_LYRIA3_BPM_VALUES,
+  AUDIO_LYRIA3_MODEL_VALUES,
   AUDIO_MUSIC_DURATION_OPTIONS_SEC,
   AUDIO_PRICING_MARGIN_PERCENT,
   AUDIO_MIN_DURATION_SEC,
@@ -13,6 +15,8 @@ import {
   clampAudioDuration,
   coerceAudioIntensity,
   coerceAudioLanguage,
+  coerceAudioLyria3Bpm,
+  coerceAudioLyria3Model,
   coerceAudioMood,
   coerceAudioPackId,
   coerceAudioVoiceDelivery,
@@ -31,7 +35,9 @@ test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', 
   const pricing = buildAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
-    durationSec: 3,
+    durationSec: 30,
+    musicModel: 'clip',
+    musicBpm: 110,
   });
 
   assert.equal(pricing.vendorShareCents, 4);
@@ -48,6 +54,8 @@ test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', 
     pricingModel: 'audio_provider_cost_plus_margin',
     vendorCostCents: 4,
     marginPercent: 1.5,
+    musicModel: 'clip',
+    musicBpm: 110,
     musicEnabled: null,
     scriptBillingCharacters: undefined,
     vendorCostComponents: [
@@ -67,6 +75,7 @@ test('audio pricing uses Lyria 3 Pro song pricing for long music renders', () =>
     pack: 'music_only',
     mood: 'epic',
     durationSec: 180,
+    musicModel: 'pro',
   });
 
   assert.equal(pricing.vendorShareCents, 8);
@@ -117,6 +126,10 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(coerceAudioMood('cheerful'), null);
   assert.equal(coerceAudioIntensity(' intense '), 'intense');
   assert.equal(coerceAudioIntensity('loud'), null);
+  assert.equal(coerceAudioLyria3Model(' pro '), 'pro');
+  assert.equal(coerceAudioLyria3Model('full'), null);
+  assert.equal(coerceAudioLyria3Bpm('130'), 130);
+  assert.equal(coerceAudioLyria3Bpm('128'), null);
   assert.equal(coerceAudioVoiceProfile(' deep '), 'deep');
   assert.equal(coerceAudioVoiceProfile('hero'), null);
   assert.equal(coerceAudioVoiceGender(' male '), 'male');
@@ -141,6 +154,8 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(AUDIO_PROMPT_MAX_LENGTH, 2000);
   assert.equal(AUDIO_SCRIPT_MAX_LENGTH, 5000);
   assert.equal(AUDIO_MAX_DURATION_SEC, 184);
+  assert.deepEqual([...AUDIO_LYRIA3_MODEL_VALUES], ['clip', 'pro']);
+  assert.deepEqual([...AUDIO_LYRIA3_BPM_VALUES], [70, 90, 110, 130, 150]);
   assert.equal(AUDIO_PRICING_MARGIN_PERCENT, 1.5);
   assert.ok(AUDIO_MUSIC_DURATION_OPTIONS_SEC.includes(184));
 

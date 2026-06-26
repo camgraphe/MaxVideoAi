@@ -93,6 +93,8 @@ test('Google Vertex Lyria 3 client calls interactions and extracts audio output'
       durationSec: 120,
       mood: 'dreamy',
       intensity: 'standard',
+      musicModel: 'pro',
+      musicBpm: 130,
       prompt: 'Slow premium ambient product score.',
     },
     {
@@ -115,6 +117,7 @@ test('Google Vertex Lyria 3 client calls interactions and extracts audio output'
   assert.equal(input[0]?.type, 'text');
   assert.match(String(input[0]?.text), /Instrumental only/);
   assert.match(String(input[0]?.text), /120 seconds/);
+  assert.match(String(input[0]?.text), /130 BPM/);
   assert.equal(result.providerKey, 'google_vertex_lyria3');
   assert.equal(result.model, 'lyria-3-pro-preview');
   assert.equal(result.url, `data:audio/mpeg;base64,${Buffer.from('mp3-bytes').toString('base64')}`);
@@ -128,6 +131,8 @@ test('music renders prefer Google Vertex Lyria 3 when available', async () => {
       durationSec: 120,
       mood: 'dreamy',
       intensity: 'standard',
+      musicModel: 'pro',
+      musicBpm: 110,
       prompt: 'Slow premium ambient product score.',
     },
     {
@@ -159,6 +164,7 @@ test('music renders fall back to Fal when Google Vertex Lyria 3 fails', async ()
       durationSec: 45,
       mood: 'documentary',
       intensity: 'standard',
+      musicModel: 'pro',
       prompt: 'Elegant brand film underscore.',
     },
     {

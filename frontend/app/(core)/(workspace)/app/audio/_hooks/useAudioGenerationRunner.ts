@@ -5,6 +5,8 @@ import { runAudioGenerate } from '@/lib/api';
 import type {
   AudioIntensity,
   AudioLanguage,
+  AudioLyria3Bpm,
+  AudioLyria3Model,
   AudioMood,
   AudioPackId,
   AudioSeedAudioOutputFormat,
@@ -32,7 +34,9 @@ interface UseAudioGenerationRunnerParams {
   locale: string;
   manualDurationSec: number;
   mood: AudioMood;
+  musicBpm: AudioLyria3Bpm;
   musicEnabled: boolean;
+  musicModel: AudioLyria3Model;
   onGeneratedJobId: (jobId: string) => void;
   pack: AudioPackId;
   prompt: string;
@@ -51,6 +55,8 @@ interface UseAudioGenerationRunnerParams {
   showExportToggle: boolean;
   showIntensity: boolean;
   showMood: boolean;
+  showMusicBpm: boolean;
+  showMusicModel: boolean;
   showMusicToggle: boolean;
   showSeedAudioVoice: boolean;
   showVoiceFields: boolean;
@@ -70,7 +76,9 @@ export function useAudioGenerationRunner({
   locale,
   manualDurationSec,
   mood,
+  musicBpm,
   musicEnabled,
+  musicModel,
   onGeneratedJobId,
   pack,
   prompt,
@@ -89,6 +97,8 @@ export function useAudioGenerationRunner({
   showExportToggle,
   showIntensity,
   showMood,
+  showMusicBpm,
+  showMusicModel,
   showMusicToggle,
   showSeedAudioVoice,
   showVoiceFields,
@@ -118,6 +128,8 @@ export function useAudioGenerationRunner({
         prompt: !showVoiceFields ? prompt.trim() : undefined,
         mood: showMood ? mood : undefined,
         intensity: showIntensity ? intensity : undefined,
+        musicModel: showMusicModel ? musicModel : undefined,
+        musicBpm: showMusicBpm ? musicBpm : undefined,
         script: requiresScript ? script.trim() : undefined,
         voiceSampleUrl: showVoiceFields ? voiceSample?.url : undefined,
         voiceGender: showVoiceFields ? voiceGender : undefined,
@@ -192,7 +204,9 @@ export function useAudioGenerationRunner({
     locale,
     manualDurationSec,
     mood,
+    musicBpm,
     musicEnabled,
+    musicModel,
     onGeneratedJobId,
     pack,
     prompt,
@@ -211,6 +225,8 @@ export function useAudioGenerationRunner({
     showExportToggle,
     showIntensity,
     showMood,
+    showMusicBpm,
+    showMusicModel,
     showMusicToggle,
     showSeedAudioVoice,
     showVoiceFields,

@@ -41,6 +41,8 @@ test('audio validation allows voice-over-only without a source video', () => {
     prompt: null,
     mood: null,
     intensity: 'standard',
+    musicModel: null,
+    musicBpm: null,
     script: 'Trailer-ready narration.',
     voiceSampleUrl: 'https://example.com/voice.wav',
     voiceGender: 'female',
@@ -136,10 +138,33 @@ test('audio validation accepts longer standalone music durations', () => {
     prompt: 'Long cinematic ambient score with slow evolving pads.',
     mood: 'dreamy',
     intensity: 'subtle',
+    musicModel: 'pro',
+    musicBpm: 130,
     durationSec: 120,
   });
 
   assert.equal(input.durationSec, 120);
+  assert.equal(input.musicModel, 'pro');
+  assert.equal(input.musicBpm, 130);
+});
+
+test('audio validation rejects Lyria Clip as a variable standalone duration', () => {
+  assert.throws(
+    () =>
+      validateAudioGenerateRequest({
+        pack: 'music_only',
+        prompt: 'Short cinematic logo sting.',
+        mood: 'epic',
+        musicModel: 'clip',
+        durationSec: 15,
+      }),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'music_clip_duration_invalid');
+      assert.equal(error.field, 'durationSec');
+      return true;
+    }
+  );
 });
 
 test('audio validation rejects requested durations above provider-aligned limits instead of silently clamping', () => {
@@ -187,6 +212,8 @@ test('audio validation normalizes cinematic voice settings', () => {
     prompt: 'Optional sonic direction.',
     mood: 'dark',
     intensity: 'intense',
+    musicModel: null,
+    musicBpm: null,
     script: 'Trailer-ready narration.',
     voiceSampleUrl: 'https://example.com/voice.wav',
     voiceGender: 'female',

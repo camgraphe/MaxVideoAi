@@ -4234,8 +4234,10 @@
         "customizeStep": "Personnaliser",
         "generateStep": "Générer",
         "chooseType": "Choisis le type d’audio à créer",
-        "mood": "Ambiance",
+        "mood": "Style musical",
         "intensity": "Intensité",
+        "musicModel": "Modèle Lyria",
+        "musicBpm": "Tempo",
         "duration": "Durée",
         "prompt": "Prompt audio",
         "promptMusicPlaceholder": "Décris la musique : genre, rythme, émotion, instruments, et la place qu’elle doit prendre dans le montage.",
@@ -4304,6 +4306,17 @@
           "subtle": "Subtile",
           "standard": "Standard",
           "intense": "Intense"
+        },
+        "musicModels": {
+          "clip": "Lyria 3 Clip · 30s fixe",
+          "pro": "Lyria 3 Pro · durée contrôlée"
+        },
+        "musicBpmValues": {
+          "70": "70 BPM · lent",
+          "90": "90 BPM · posé",
+          "110": "110 BPM · médium",
+          "130": "130 BPM · dynamique",
+          "150": "150 BPM · rapide"
         },
         "voiceGenders": {
           "female": "Femme",

@@ -6,6 +6,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  GaugeCircle,
   Gauge,
   Headphones,
   Mic2,
@@ -18,14 +19,20 @@ import {
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
   coerceAudioIntensity,
+  coerceAudioLyria3Bpm,
+  coerceAudioLyria3Model,
   coerceAudioMood,
   coerceSeedAudioOutputFormat,
   coerceSeedAudioSampleRate,
   coerceSeedAudioVoice,
+  DEFAULT_AUDIO_LYRIA3_BPM,
+  DEFAULT_AUDIO_LYRIA3_MODEL,
   DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
   DEFAULT_SEED_AUDIO_SAMPLE_RATE,
   DEFAULT_SEED_AUDIO_VOICE,
   type AudioIntensity,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioPackId,
   type AudioSeedAudioOutputFormat,
@@ -56,11 +63,17 @@ export function AudioOptionsSection({
   manualDurationSec,
   mood,
   moodOptions,
+  musicBpm,
+  musicBpmOptions,
   musicEnabled,
+  musicModel,
+  musicModelOptions,
   onExportAudioFileChange,
   onIntensityChange,
   onManualDurationChange,
+  onMusicBpmChange,
   onMoodChange,
+  onMusicModelChange,
   onMusicEnabledChange,
   onSeedAudioOutputFormatChange,
   onSeedAudioPitchChange,
@@ -85,6 +98,8 @@ export function AudioOptionsSection({
   showIntensity,
   showManualDuration,
   showMood,
+  showMusicBpm,
+  showMusicModel,
   showMusicToggle,
   showSeedAudioVoice,
   showVoiceFields,
@@ -97,11 +112,17 @@ export function AudioOptionsSection({
   manualDurationSec: number;
   mood: AudioMood;
   moodOptions: AudioOption[];
+  musicBpm: AudioLyria3Bpm;
+  musicBpmOptions: AudioOption[];
   musicEnabled: boolean;
+  musicModel: AudioLyria3Model;
+  musicModelOptions: AudioOption[];
   onExportAudioFileChange: (next: boolean) => void;
   onIntensityChange: (next: AudioIntensity) => void;
   onManualDurationChange: (next: number) => void;
+  onMusicBpmChange: (next: AudioLyria3Bpm) => void;
   onMoodChange: (next: AudioMood) => void;
+  onMusicModelChange: (next: AudioLyria3Model) => void;
   onMusicEnabledChange: (next: boolean) => void;
   onSeedAudioOutputFormatChange: (next: AudioSeedAudioOutputFormat) => void;
   onSeedAudioPitchChange: (next: number) => void;
@@ -126,6 +147,8 @@ export function AudioOptionsSection({
   showIntensity: boolean;
   showManualDuration: boolean;
   showMood: boolean;
+  showMusicBpm: boolean;
+  showMusicModel: boolean;
   showMusicToggle: boolean;
   showSeedAudioVoice: boolean;
   showVoiceFields: boolean;
@@ -140,6 +163,24 @@ export function AudioOptionsSection({
             options={moodOptions}
             icon={Sparkles}
             onChange={(next) => onMoodChange(coerceAudioMood(next) ?? DEFAULT_MOOD)}
+          />
+        ) : null}
+        {showMusicModel ? (
+          <AudioSelectControl
+            label={copy.controls.musicModel}
+            value={musicModel}
+            options={musicModelOptions}
+            icon={Headphones}
+            onChange={(next) => onMusicModelChange(coerceAudioLyria3Model(String(next)) ?? DEFAULT_AUDIO_LYRIA3_MODEL)}
+          />
+        ) : null}
+        {showMusicBpm ? (
+          <AudioSelectControl
+            label={copy.controls.musicBpm}
+            value={musicBpm}
+            options={musicBpmOptions}
+            icon={GaugeCircle}
+            onChange={(next) => onMusicBpmChange(coerceAudioLyria3Bpm(next) ?? DEFAULT_AUDIO_LYRIA3_BPM)}
           />
         ) : null}
         {showSeedAudioVoice ? (

@@ -3,6 +3,8 @@ import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, t
 import {
   coerceAudioIntensity,
   coerceAudioLanguage,
+  coerceAudioLyria3Bpm,
+  coerceAudioLyria3Model,
   coerceAudioMood,
   coerceAudioPackId,
   coerceAudioVoiceDelivery,
@@ -12,6 +14,8 @@ import {
   coerceSeedAudioSampleRate,
   coerceSeedAudioVoice,
   DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
+  DEFAULT_AUDIO_LYRIA3_BPM,
+  DEFAULT_AUDIO_LYRIA3_MODEL,
   DEFAULT_SEED_AUDIO_PITCH,
   DEFAULT_SEED_AUDIO_SAMPLE_RATE,
   DEFAULT_SEED_AUDIO_SPEED,
@@ -20,6 +24,8 @@ import {
   getAudioPackConfig,
   type AudioIntensity,
   type AudioLanguage,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
@@ -63,7 +69,9 @@ type UseAudioWorkspaceRestorationArgs = {
   setIntensity: Dispatch<SetStateAction<AudioIntensity>>;
   setLanguage: Dispatch<SetStateAction<AudioLanguage>>;
   setManualDurationSec: Dispatch<SetStateAction<number>>;
+  setMusicBpm: Dispatch<SetStateAction<AudioLyria3Bpm>>;
   setMood: Dispatch<SetStateAction<AudioMood>>;
+  setMusicModel: Dispatch<SetStateAction<AudioLyria3Model>>;
   setMusicEnabled: Dispatch<SetStateAction<boolean>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setPack: Dispatch<SetStateAction<AudioPackId>>;
@@ -96,7 +104,9 @@ export function useAudioWorkspaceRestoration({
   setIntensity,
   setLanguage,
   setManualDurationSec,
+  setMusicBpm,
   setMood,
+  setMusicModel,
   setMusicEnabled,
   setNotice,
   setPack,
@@ -193,6 +203,8 @@ export function useAudioWorkspaceRestoration({
       setPrompt(detail.settingsSnapshot?.prompt ?? '');
       setMood(nextMood);
       setIntensity(nextIntensity);
+      setMusicModel(coerceAudioLyria3Model(detail.settingsSnapshot?.musicModel) ?? DEFAULT_AUDIO_LYRIA3_MODEL);
+      setMusicBpm(coerceAudioLyria3Bpm(detail.settingsSnapshot?.musicBpm) ?? DEFAULT_AUDIO_LYRIA3_BPM);
       setScript(detail.settingsSnapshot?.script ?? '');
       setVoiceGender(coerceAudioVoiceGender(detail.settingsSnapshot?.voiceGender) ?? DEFAULT_VOICE_GENDER);
       setVoiceProfile(coerceAudioVoiceProfile(detail.settingsSnapshot?.voiceProfile) ?? DEFAULT_VOICE_PROFILE);
@@ -275,7 +287,9 @@ export function useAudioWorkspaceRestoration({
       setIntensity,
       setLanguage,
       setManualDurationSec,
+      setMusicBpm,
       setMood,
+      setMusicModel,
       setMusicEnabled,
       setPack,
       setPrompt,

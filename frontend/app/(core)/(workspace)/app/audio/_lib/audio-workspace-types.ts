@@ -25,6 +25,8 @@ export type AudioJobSettingsSnapshot = {
   prompt?: string | null;
   mood?: string | null;
   intensity?: string | null;
+  musicModel?: string | null;
+  musicBpm?: number | null;
   durationSec?: number | null;
   script?: string | null;
   musicEnabled?: boolean | null;
