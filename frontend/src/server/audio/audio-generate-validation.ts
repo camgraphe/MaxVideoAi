@@ -3,6 +3,12 @@ import {
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
+  DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
+  DEFAULT_SEED_AUDIO_PITCH,
+  DEFAULT_SEED_AUDIO_SAMPLE_RATE,
+  DEFAULT_SEED_AUDIO_SPEED,
+  DEFAULT_SEED_AUDIO_VOICE,
+  DEFAULT_SEED_AUDIO_VOLUME,
   coerceAudioIntensity,
   coerceAudioLanguage,
   coerceAudioMood,
@@ -10,6 +16,9 @@ import {
   coerceAudioVoiceDelivery,
   coerceAudioVoiceGender,
   coerceAudioVoiceProfile,
+  coerceSeedAudioOutputFormat,
+  coerceSeedAudioSampleRate,
+  coerceSeedAudioVoice,
   estimateVoiceScriptDurationSec,
   formatAudioDurationLabel,
   getAudioPackConfig,
@@ -21,6 +30,9 @@ import {
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
+  type AudioSeedAudioOutputFormat,
+  type AudioSeedAudioSampleRate,
+  type AudioSeedAudioVoice,
   type AudioVoiceDelivery,
   type AudioVoiceGender,
   type AudioVoiceMode,
@@ -40,6 +52,12 @@ type NormalizedAudioGenerateInput = {
   voiceProfile: AudioVoiceProfile | null;
   voiceDelivery: AudioVoiceDelivery | null;
   language: AudioLanguage | null;
+  seedAudioVoice: AudioSeedAudioVoice | null;
+  seedAudioOutputFormat: AudioSeedAudioOutputFormat | null;
+  seedAudioSampleRate: AudioSeedAudioSampleRate | null;
+  seedAudioSpeed: number | null;
+  seedAudioVolume: number | null;
+  seedAudioPitch: number | null;
   durationSec: number | null;
   musicEnabled: boolean;
   exportAudioFile: boolean;
@@ -88,6 +106,15 @@ function normalizeOptionalInteger(value: unknown): number | null {
   return null;
 }
 
+function normalizeOptionalNumber(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  if (typeof value === 'string' && value.trim().length) {
+    const parsed = Number.parseFloat(value.trim());
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+
 function normalizeOptionalBoolean(value: unknown): boolean | null {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
@@ -123,6 +150,45 @@ function validateAudioDurationInRange(
     );
   }
   return Math.round(durationSec);
+}
+
+function rejectSeedAudioOptionOnNonVoice(
+  packIncludesVoice: boolean,
+  value: unknown,
+  field: string,
+  code: string
+): void {
+  const hasValue = typeof value === 'string' ? value.trim().length > 0 : value !== null && value !== undefined;
+  if (!packIncludesVoice && hasValue) {
+    throw new AudioGenerationError('Seed Audio options are only supported on voice modes.', {
+      status: 400,
+      code,
+      field,
+    });
+  }
+}
+
+function normalizeSeedAudioRangeValue(params: {
+  value: unknown;
+  fallback: number;
+  min: number;
+  max: number;
+  integer?: boolean;
+  field: string;
+  code: string;
+  label: string;
+}): number {
+  const normalized = normalizeOptionalNumber(params.value);
+  const value = normalized ?? params.fallback;
+  const resolved = params.integer ? Math.round(value) : value;
+  if (!Number.isFinite(resolved) || resolved < params.min || resolved > params.max) {
+    throw new AudioGenerationError(`${params.label} is invalid.`, {
+      status: 400,
+      code: params.code,
+      field: params.field,
+    });
+  }
+  return Number(resolved.toFixed(2));
 }
 
 export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): ValidatedAudioGenerateRequest {
@@ -274,6 +340,119 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     });
   }
 
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioVoice,
+    'seedAudioVoice',
+    'seed_audio_voice_not_supported'
+  );
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioOutputFormat,
+    'seedAudioOutputFormat',
+    'seed_audio_output_format_not_supported'
+  );
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioSampleRate,
+    'seedAudioSampleRate',
+    'seed_audio_sample_rate_not_supported'
+  );
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioSpeed,
+    'seedAudioSpeed',
+    'seed_audio_speed_not_supported'
+  );
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioVolume,
+    'seedAudioVolume',
+    'seed_audio_volume_not_supported'
+  );
+  rejectSeedAudioOptionOnNonVoice(
+    packConfig.includesVoice,
+    body.seedAudioPitch,
+    'seedAudioPitch',
+    'seed_audio_pitch_not_supported'
+  );
+
+  const seedAudioVoiceValue = normalizeString(body.seedAudioVoice);
+  const seedAudioVoice = packConfig.includesVoice
+    ? seedAudioVoiceValue
+      ? coerceSeedAudioVoice(seedAudioVoiceValue)
+      : DEFAULT_SEED_AUDIO_VOICE
+    : null;
+  if (seedAudioVoiceValue && !seedAudioVoice) {
+    throw new AudioGenerationError('Seed Audio voice is invalid.', {
+      status: 400,
+      code: 'seed_audio_voice_invalid',
+      field: 'seedAudioVoice',
+    });
+  }
+
+  const seedAudioOutputFormatValue = normalizeString(body.seedAudioOutputFormat);
+  const seedAudioOutputFormat = packConfig.includesVoice
+    ? seedAudioOutputFormatValue
+      ? coerceSeedAudioOutputFormat(seedAudioOutputFormatValue)
+      : DEFAULT_SEED_AUDIO_OUTPUT_FORMAT
+    : null;
+  if (seedAudioOutputFormatValue && !seedAudioOutputFormat) {
+    throw new AudioGenerationError('Seed Audio output format is invalid.', {
+      status: 400,
+      code: 'seed_audio_output_format_invalid',
+      field: 'seedAudioOutputFormat',
+    });
+  }
+
+  const seedAudioSampleRate = packConfig.includesVoice
+    ? body.seedAudioSampleRate == null
+      ? DEFAULT_SEED_AUDIO_SAMPLE_RATE
+      : coerceSeedAudioSampleRate(body.seedAudioSampleRate)
+    : null;
+  if (packConfig.includesVoice && body.seedAudioSampleRate != null && !seedAudioSampleRate) {
+    throw new AudioGenerationError('Seed Audio sample rate is invalid.', {
+      status: 400,
+      code: 'seed_audio_sample_rate_invalid',
+      field: 'seedAudioSampleRate',
+    });
+  }
+
+  const seedAudioSpeed = packConfig.includesVoice
+    ? normalizeSeedAudioRangeValue({
+        value: body.seedAudioSpeed,
+        fallback: DEFAULT_SEED_AUDIO_SPEED,
+        min: 0.5,
+        max: 2,
+        field: 'seedAudioSpeed',
+        code: 'seed_audio_speed_invalid',
+        label: 'Seed Audio speed',
+      })
+    : null;
+  const seedAudioVolume = packConfig.includesVoice
+    ? normalizeSeedAudioRangeValue({
+        value: body.seedAudioVolume,
+        fallback: DEFAULT_SEED_AUDIO_VOLUME,
+        min: 0.5,
+        max: 2,
+        field: 'seedAudioVolume',
+        code: 'seed_audio_volume_invalid',
+        label: 'Seed Audio volume',
+      })
+    : null;
+  const seedAudioPitch = packConfig.includesVoice
+    ? normalizeSeedAudioRangeValue({
+        value: body.seedAudioPitch,
+        fallback: DEFAULT_SEED_AUDIO_PITCH,
+        min: -12,
+        max: 12,
+        integer: true,
+        field: 'seedAudioPitch',
+        code: 'seed_audio_pitch_invalid',
+        label: 'Seed Audio pitch',
+      })
+    : null;
+
   const musicEnabledInput = normalizeOptionalBoolean(body.musicEnabled);
   if (!packConfig.supportsMusicToggle && musicEnabledInput !== null) {
     throw new AudioGenerationError('Music toggle is not supported for this mode.', {
@@ -323,6 +502,12 @@ export function validateAudioGenerateRequest(body: AudioGenerateRequestBody): Va
     voiceProfile,
     voiceDelivery,
     language,
+    seedAudioVoice,
+    seedAudioOutputFormat,
+    seedAudioSampleRate,
+    seedAudioSpeed,
+    seedAudioVolume,
+    seedAudioPitch,
     durationSec: requestedDurationSec,
     musicEnabled: packConfig.supportsMusicToggle ? musicEnabledInput ?? packConfig.defaultMusicEnabled : false,
     exportAudioFile: packConfig.supportsAudioExport ? exportAudioFileInput ?? false : false,

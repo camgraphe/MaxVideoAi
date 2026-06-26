@@ -21,7 +21,7 @@ import { uploadVideoFile } from '@/lib/client-video-upload';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { AudioJobDetail } from './audio-workspace-types';
 
-export const DEFAULT_PACK: AudioPackId = 'cinematic';
+export const DEFAULT_PACK: AudioPackId = 'music_only';
 export const DEFAULT_MOOD: AudioMood = 'epic';
 export const DEFAULT_INTENSITY: AudioIntensity = 'standard';
 export const DEFAULT_VOICE_GENDER: AudioVoiceGender = 'female';

@@ -4166,14 +4166,14 @@
       "auth": {
         "eyebrow": "Générer de l’audio",
         "title": "Créez un compte pour générer de l’audio",
-        "body": "Créez des bandes-son cinématiques, des pistes de musique de fond ou des voix off premium dans l’espace MaxVideoAI.",
+        "body": "Créez des pistes musicales, du sound design cinématique et des voix off Seed Audio dans l’espace MaxVideoAI.",
         "createAccount": "Créer un compte",
         "signIn": "Se connecter"
       },
       "hero": {
         "eyebrow": "Générer de l’audio",
-        "title": "Créer un audio",
-        "body": "Générez des voix réalistes ou des ambiances sonores avec un contrôle avancé.",
+        "title": "Créer de l’audio",
+        "body": "Générez de la musique, du sound design cinématique ou une voix off réaliste avec Seed Audio 1.0.",
         "history": "Historique"
       },
       "modes": {
@@ -4182,8 +4182,8 @@
           "description": "Musique de fond ou ambiance."
         },
         "voice_only": {
-          "label": "Voix off seule",
-          "description": "Narration uniquement."
+          "label": "Voix off",
+          "description": "Narration Seed Audio en fichier audio."
         },
         "cinematic": {
           "label": "Cinématique",
@@ -4199,7 +4199,7 @@
         "title": "Dernière sortie",
         "audioReady": "Rendu audio prêt",
         "emptyTitle": "Prêt pour l’audio",
-        "emptyBody": "Choisissez un mode puis lancez le rendu.",
+        "emptyBody": "Choisis un mode puis lance le rendu.",
         "processingLabel": "Traitement",
         "loadingMessage": "Chargement du rendu audio…",
         "processingMessage": "Traitement du rendu audio…",
@@ -4232,7 +4232,7 @@
         "configureStep": "Configurer",
         "customizeStep": "Personnaliser",
         "generateStep": "Générer",
-        "chooseType": "Choisissez le type d’audio à générer",
+        "chooseType": "Choisis le type d’audio à créer",
         "mood": "Ambiance",
         "intensity": "Intensité",
         "duration": "Durée",
@@ -4240,12 +4240,12 @@
         "promptMusicPlaceholder": "Décris la musique : genre, rythme, émotion, instruments, et la place qu’elle doit prendre dans le montage.",
         "promptCinematicPlaceholder": "Décris le sound design voulu : environnement, impacts, transitions, texture, et ce qui doit rester subtil.",
         "script": "Script de narration",
-        "scriptVoiceOnlyPlaceholder": "Rédige la voix off que tu veux générer.",
+        "scriptVoiceOnlyPlaceholder": "Rédige la voix off que Seed Audio doit générer.",
         "scriptCinematicPlaceholder": "Rédige la narration ou le dialogue à poser sur le mix audio cinématique.",
         "estimatedDuration": "~{seconds}s estimées",
         "voiceSample": "Extrait vocal",
         "uploadVoiceSample": "Importer un extrait vocal",
-        "uploadVoiceSampleHint": ".wav, .mp3 jusqu’à 50MB",
+        "uploadVoiceSampleHint": ".wav, .mp3, .pcm ou .ogg jusqu’à 10MB",
         "uploadSample": "Importer un extrait",
         "cloneEnabled": "Clonage de voix activé",
         "defaultVoice": "Voix par défaut",
@@ -4253,6 +4253,43 @@
         "voice": "Voix",
         "delivery": "Interprétation",
         "language": "Langue",
+        "seedAudioVoice": "Voix Seed Audio",
+        "seedAudioOutputFormat": "Format",
+        "seedAudioSampleRate": "Sample rate",
+        "seedAudioSpeed": "Vitesse",
+        "seedAudioVolume": "Volume",
+        "seedAudioPitch": "Pitch",
+        "seedAudioSampleTitle": "Sample vocal",
+        "seedAudioSamplePending": "Sample audio à générer",
+        "seedAudioVoices": {
+          "default": "Default",
+          "vivi_mixed_en_zh_ja_es_id": "Vivi",
+          "mindy_en_es_id_pt_zh": "Mindy",
+          "kian_en_zh": "Kian",
+          "cedric_en_zh": "Cedric",
+          "sophie_en_zh": "Sophie",
+          "jean_en_zh": "Jean",
+          "magnus_en_zh": "Magnus",
+          "mabel_en_zh": "Mabel",
+          "nadia_en_zh": "Nadia",
+          "opal_en_zh": "Opal",
+          "pearl_en_zh": "Pearl",
+          "quentin_en_zh": "Quentin",
+          "corinne_mixed_en_zh": "Corinne",
+          "esther_mixed_en_zh": "Esther",
+          "lyla_mixed_en_zh": "Lyla",
+          "tracy_es_zh": "Tracy",
+          "sandy_es_mixed_en_zh": "Sandy",
+          "felix_zh": "Felix",
+          "celeste_zh": "Celeste",
+          "monkey_king_zh": "Monkey King"
+        },
+        "seedAudioOutputFormats": {
+          "mp3": "MP3",
+          "wav": "WAV",
+          "pcm": "PCM",
+          "ogg_opus": "OGG Opus"
+        },
         "moods": {
           "epic": "Épique",
           "tense": "Tendu",
@@ -4303,12 +4340,12 @@
           "title": "Options avancées",
           "description": "Affinez les paramètres de génération audio"
         },
-        "selectedVoice": "Femme · Naturelle · FR",
-        "chooseVoice": "Choisir une voix",
+        "selectedVoice": "Voix preset Seed Audio",
+        "chooseVoice": "Voix preset",
         "providerStack": "Pile de modèles",
         "providerStackDescription": "{provider} prépare la base audio, puis MaxVideoAI masterise le rendu final selon la sortie choisie.",
         "providers": {
-          "voice": "Gemini 3.1 Flash TTS",
+          "voice": "Seed Audio 1.0",
           "music": "MiniMax Music 2.6",
           "sfx": "Mirelo SFX + MMAudio",
           "mix": "Mastering FFmpeg"
@@ -4365,11 +4402,12 @@
         "voiceUploadFailed": "Échec de l’import du sample voix.",
         "renderComplete": "Rendu audio terminé.",
         "generationFailed": "La génération audio a échoué.",
+        "generatingInProgress": "Générations en cours ({count})…",
         "processing": {
           "soundDesign": "Génération du sound design cinématique…",
           "musicTrack": "Génération de la piste musicale…",
           "musicBed": "Génération du bed musical…",
-          "clonedVoice": "Génération de la voix clonée…",
+          "clonedVoice": "Génération de la voix off de référence…",
           "voice": "Génération de la voix off…",
           "masterAudio": "Mastering du fichier audio…",
           "finalMix": "Mix de la bande-son finale…",

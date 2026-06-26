@@ -1002,7 +1002,7 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     {
       id: 'audio-voice-only',
       anchorId: 'audio-voice-over-pricing',
-      mode: `${copy.audioModes.voiceOnly} · Gemini 3.1 Flash TTS`,
+      mode: `${copy.audioModes.voiceOnly} · Seed Audio 1.0`,
       thirtySeconds: audioPrice(locale, 'voice_only', 30),
       sixtySeconds: audioPrice(locale, 'voice_only', 60),
       oneTwentySeconds: audioPrice(locale, 'voice_only', 120),
@@ -1022,7 +1022,7 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     {
       id: 'audio-cinematic-voice',
       anchorId: 'audio-cinematic-voice-pricing',
-      mode: `${copy.audioModes.cinematicVoice} · Mirelo SFX + Gemini 3.1 Flash TTS`,
+      mode: `${copy.audioModes.cinematicVoice} · Mirelo SFX + Seed Audio 1.0`,
       thirtySeconds: audioPrice(locale, 'cinematic_voice', 30),
       sixtySeconds: audioPrice(locale, 'cinematic_voice', 60),
       oneTwentySeconds: audioPrice(locale, 'cinematic_voice', 120),
@@ -1031,7 +1031,7 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     },
     {
       id: 'audio-voice-clone',
-      anchorId: 'minimax-voice-clone-pricing',
+      anchorId: 'seed-audio-reference-voice-pricing',
       mode: copy.audioModes.voiceClone,
       thirtySeconds: audioPrice(locale, 'voice_only', 30, 'clone'),
       sixtySeconds: audioPrice(locale, 'voice_only', 60, 'clone'),

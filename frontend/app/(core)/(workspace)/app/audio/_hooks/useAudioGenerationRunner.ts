@@ -7,6 +7,9 @@ import type {
   AudioLanguage,
   AudioMood,
   AudioPackId,
+  AudioSeedAudioOutputFormat,
+  AudioSeedAudioSampleRate,
+  AudioSeedAudioVoice,
   AudioVoiceDelivery,
   AudioVoiceGender,
   AudioVoiceProfile,
@@ -15,6 +18,7 @@ import { resolveUiErrorMessage } from '../_lib/audio-workspace-helpers';
 import type {
   ActiveAudioJobState,
   AudioResultState,
+  PendingAudioGeneration,
   SourceVideoState,
 } from '../_lib/audio-workspace-types';
 import type { AudioWorkspaceCopy } from '../copy';
@@ -34,14 +38,21 @@ interface UseAudioGenerationRunnerParams {
   prompt: string;
   requiresScript: boolean;
   script: string;
+  seedAudioOutputFormat: AudioSeedAudioOutputFormat;
+  seedAudioPitch: number;
+  seedAudioSampleRate: AudioSeedAudioSampleRate;
+  seedAudioSpeed: number;
+  seedAudioVoice: AudioSeedAudioVoice;
+  seedAudioVolume: number;
   setActiveJob: Dispatch<SetStateAction<ActiveAudioJobState | null>>;
-  setIsGenerating: Dispatch<SetStateAction<boolean>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
+  setPendingAudioGenerations: Dispatch<SetStateAction<PendingAudioGeneration[]>>;
   setResult: Dispatch<SetStateAction<AudioResultState | null>>;
   showExportToggle: boolean;
   showIntensity: boolean;
   showMood: boolean;
   showMusicToggle: boolean;
+  showSeedAudioVoice: boolean;
   showVoiceFields: boolean;
   sourceVideo: SourceVideoState | null;
   voiceDelivery: AudioVoiceDelivery;
@@ -65,14 +76,21 @@ export function useAudioGenerationRunner({
   prompt,
   requiresScript,
   script,
+  seedAudioOutputFormat,
+  seedAudioPitch,
+  seedAudioSampleRate,
+  seedAudioSpeed,
+  seedAudioVoice,
+  seedAudioVolume,
   setActiveJob,
-  setIsGenerating,
   setNotice,
+  setPendingAudioGenerations,
   setResult,
   showExportToggle,
   showIntensity,
   showMood,
   showMusicToggle,
+  showSeedAudioVoice,
   showVoiceFields,
   sourceVideo,
   voiceDelivery,
@@ -82,7 +100,15 @@ export function useAudioGenerationRunner({
 }: UseAudioGenerationRunnerParams) {
   return useCallback(async () => {
     if (!canGenerate) return;
-    setIsGenerating(true);
+    const pendingId = `aud_pending_${crypto.randomUUID()}`;
+    setPendingAudioGenerations((previous) => [
+      {
+        id: pendingId,
+        label: copy.modes[pack]?.label ?? pack,
+        startedAt: Date.now(),
+      },
+      ...previous,
+    ]);
     setNotice(null);
     try {
       const response = await runAudioGenerate({
@@ -98,6 +124,12 @@ export function useAudioGenerationRunner({
         voiceProfile: showVoiceFields ? voiceProfile : undefined,
         voiceDelivery: showVoiceFields ? voiceDelivery : undefined,
         language: showVoiceFields ? language : undefined,
+        seedAudioVoice: showSeedAudioVoice ? seedAudioVoice : undefined,
+        seedAudioOutputFormat: showVoiceFields ? seedAudioOutputFormat : undefined,
+        seedAudioSampleRate: showVoiceFields ? seedAudioSampleRate : undefined,
+        seedAudioSpeed: showVoiceFields ? seedAudioSpeed : undefined,
+        seedAudioVolume: showVoiceFields ? seedAudioVolume : undefined,
+        seedAudioPitch: showVoiceFields ? seedAudioPitch : undefined,
         durationSec: pack === 'music_only' && !sourceVideo?.url ? manualDurationSec : undefined,
         musicEnabled: showMusicToggle ? musicEnabled : undefined,
         exportAudioFile: showExportToggle ? exportAudioFile : undefined,
@@ -121,18 +153,39 @@ export function useAudioGenerationRunner({
         thumbUrl: response.thumbUrl,
         outputKind: response.outputKind,
       });
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('jobs:status', {
+            detail: {
+              ok: true,
+              jobId: response.jobId,
+              status: response.status,
+              progress: response.progress,
+              videoUrl: response.videoUrl,
+              audioUrl: response.audioUrl ?? null,
+              thumbUrl: response.thumbUrl,
+              pricing: response.pricing,
+              finalPriceCents: response.pricing.totalCents,
+              currency: response.pricing.currency,
+              paymentStatus: response.paymentStatus,
+              message: copy.messages.processing.complete,
+            },
+          })
+        );
+      }
       onGeneratedJobId(response.jobId);
       setNotice(copy.messages.renderComplete);
     } catch (error) {
       setNotice(resolveUiErrorMessage(error, copy.messages.generationFailed));
     } finally {
-      setIsGenerating(false);
+      setPendingAudioGenerations((previous) => previous.filter((entry) => entry.id !== pendingId));
     }
   }, [
     canGenerate,
     copy.messages.generationFailed,
     copy.messages.processing.complete,
     copy.messages.renderComplete,
+    copy.modes,
     exportAudioFile,
     intensity,
     language,
@@ -145,14 +198,21 @@ export function useAudioGenerationRunner({
     prompt,
     requiresScript,
     script,
+    seedAudioOutputFormat,
+    seedAudioPitch,
+    seedAudioSampleRate,
+    seedAudioSpeed,
+    seedAudioVoice,
+    seedAudioVolume,
     setActiveJob,
-    setIsGenerating,
     setNotice,
+    setPendingAudioGenerations,
     setResult,
     showExportToggle,
     showIntensity,
     showMood,
     showMusicToggle,
+    showSeedAudioVoice,
     showVoiceFields,
     sourceVideo?.jobId,
     sourceVideo?.url,

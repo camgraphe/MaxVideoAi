@@ -35,6 +35,11 @@ export const AUDIO_PROVIDER_ROSTER: Record<AudioPipelineRole, AudioProviderCandi
       model: 'fal-ai/lyria2',
     },
     {
+      key: 'elevenlabs_music',
+      label: 'ElevenLabs Music',
+      model: 'fal-ai/elevenlabs/music',
+    },
+    {
       key: 'stable_audio_25_music',
       label: 'Stable Audio 2.5',
       model: 'fal-ai/stable-audio-25/text-to-audio',
@@ -47,26 +52,16 @@ export const AUDIO_PROVIDER_ROSTER: Record<AudioPipelineRole, AudioProviderCandi
   ],
   tts: [
     {
-      key: 'gemini_3_1_flash_tts',
-      label: 'Gemini 3.1 Flash TTS',
-      model: 'fal-ai/gemini-3.1-flash-tts',
-    },
-    {
-      key: 'minimax_speech_2_8_hd',
-      label: 'MiniMax Speech 2.8 HD',
-      model: 'fal-ai/minimax/speech-2.8-hd',
-    },
-    {
-      key: 'minimax_speech_02_hd',
-      label: 'MiniMax Speech-02 HD',
-      model: 'fal-ai/minimax/speech-02-hd',
+      key: 'seed_audio_1_0',
+      label: 'Seed Audio 1.0',
+      model: 'bytedance/seed-audio-1.0',
     },
   ],
   voiceClone: [
     {
-      key: 'minimax_voice_clone',
-      label: 'MiniMax Voice Clone',
-      model: 'fal-ai/minimax/voice-clone',
+      key: 'seed_audio_1_0_reference',
+      label: 'Seed Audio 1.0 Reference Voice',
+      model: 'bytedance/seed-audio-1.0',
     },
   ],
 };

@@ -8,6 +8,7 @@ import {
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
+  AUDIO_SEED_AUDIO_VOICE_VALUES,
   buildAudioPricingSnapshot,
   clampAudioDuration,
   coerceAudioIntensity,
@@ -17,6 +18,8 @@ import {
   coerceAudioVoiceDelivery,
   coerceAudioVoiceGender,
   coerceAudioVoiceProfile,
+  coerceSeedAudioVoice,
+  DEFAULT_SEED_AUDIO_VOICE,
   estimateVoiceScriptDurationSec,
   formatAudioDurationLabel,
   normalizeAudioDuration,
@@ -24,7 +27,7 @@ import {
   resolveAudioVoiceMode,
 } from '../frontend/src/lib/audio-generation';
 
-test('audio pricing applies provider cost plus 60 percent margin for short music renders', () => {
+test('audio pricing charges 2.5x provider cost for short music renders', () => {
   const pricing = buildAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
@@ -32,11 +35,11 @@ test('audio pricing applies provider cost plus 60 percent margin for short music
   });
 
   assert.equal(pricing.vendorShareCents, 15);
-  assert.equal(pricing.platformFeeCents, 9);
-  assert.equal(pricing.totalCents, 24);
+  assert.equal(pricing.platformFeeCents, 23);
+  assert.equal(pricing.totalCents, 38);
   assert.equal(pricing.base.amountCents, 15);
-  assert.equal(pricing.margin.amountCents, 9);
-  assert.equal(pricing.margin.percentApplied, 0.6);
+  assert.equal(pricing.margin.amountCents, 23);
+  assert.equal(pricing.margin.percentApplied, 1.5);
   assert.deepEqual(pricing.meta, {
     surface: 'audio',
     pack: 'music_only',
@@ -44,7 +47,7 @@ test('audio pricing applies provider cost plus 60 percent margin for short music
     voiceMode: null,
     pricingModel: 'audio_provider_cost_plus_margin',
     vendorCostCents: 15,
-    marginPercent: 0.6,
+    marginPercent: 1.5,
     musicEnabled: null,
     scriptBillingCharacters: undefined,
     vendorCostComponents: [
@@ -67,8 +70,8 @@ test('audio pricing scales long music renders by started 30 second blocks', () =
   });
 
   assert.equal(pricing.vendorShareCents, 120);
-  assert.equal(pricing.platformFeeCents, 72);
-  assert.equal(pricing.totalCents, 192);
+  assert.equal(pricing.platformFeeCents, 180);
+  assert.equal(pricing.totalCents, 300);
   assert.deepEqual(pricing.meta.vendorCostComponents, [
     {
       type: 'music_stable_audio_25',
@@ -89,11 +92,21 @@ test('audio pricing uses voice clone request and preview costs', () => {
     script: 'Short cloned narration.',
   });
 
-  assert.equal(pricing.vendorShareCents, 180);
-  assert.equal(pricing.totalCents, 288);
-  assert.equal(pricing.base.amountCents, 150);
-  assert.deepEqual(pricing.addons, [{ type: 'voice_clone_preview_minimax', amountCents: 30 }]);
-  assert.equal(pricing.margin.amountCents, 108);
+  assert.equal(pricing.vendorShareCents, 3);
+  assert.equal(pricing.totalCents, 8);
+  assert.equal(pricing.base.amountCents, 3);
+  assert.deepEqual(pricing.addons, []);
+  assert.equal(pricing.margin.amountCents, 5);
+  assert.deepEqual(pricing.meta.vendorCostComponents, [
+    {
+      type: 'voice_seed_audio_1_0',
+      label: 'Seed Audio 1.0',
+      model: 'bytedance/seed-audio-1.0',
+      unit: 'minute',
+      units: 0.33,
+      amountCents: 3,
+    },
+  ]);
 });
 
 test('audio helpers normalize packs, moods, voice mode, output kind, and duration bounds', () => {
@@ -113,6 +126,9 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(coerceAudioVoiceDelivery('dramatic'), null);
   assert.equal(coerceAudioLanguage(' french '), 'french');
   assert.equal(coerceAudioLanguage('italian'), null);
+  assert.equal(coerceSeedAudioVoice(' default '), 'default');
+  assert.equal(DEFAULT_SEED_AUDIO_VOICE, 'default');
+  assert.equal(AUDIO_SEED_AUDIO_VOICE_VALUES[0], 'default');
 
   assert.equal(resolveAudioVoiceMode({ pack: 'music_only', voiceSampleUrl: 'https://example.com/voice.wav' }), null);
   assert.equal(resolveAudioVoiceMode({ pack: 'voice_only', voiceSampleUrl: null }), 'standard');
@@ -126,7 +142,7 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(AUDIO_PROMPT_MAX_LENGTH, 2000);
   assert.equal(AUDIO_SCRIPT_MAX_LENGTH, 5000);
   assert.equal(AUDIO_MAX_DURATION_SEC, 190);
-  assert.equal(AUDIO_PRICING_MARGIN_PERCENT, 0.6);
+  assert.equal(AUDIO_PRICING_MARGIN_PERCENT, 1.5);
   assert.ok(AUDIO_MUSIC_DURATION_OPTIONS_SEC.includes(190));
 
   assert.equal(clampAudioDuration(Number.NaN), AUDIO_MIN_DURATION_SEC);
@@ -151,9 +167,9 @@ test('audio pricing does not cap voice script estimates at the music duration li
 
   assert.equal(estimatedDuration, 400);
   assert.equal(pricing.base.seconds, 400);
-  assert.equal(pricing.vendorShareCents, 75);
-  assert.equal(pricing.margin.amountCents, 45);
-  assert.equal(pricing.totalCents, 120);
+  assert.equal(pricing.vendorShareCents, 50);
+  assert.equal(pricing.margin.amountCents, 75);
+  assert.equal(pricing.totalCents, 125);
 });
 
 test('audio pricing includes sound design and optional music for cinematic renders', () => {
@@ -171,14 +187,14 @@ test('audio pricing includes sound design and optional music for cinematic rende
   });
 
   assert.equal(withMusic.vendorShareCents, 50);
-  assert.equal(withMusic.margin.amountCents, 30);
-  assert.equal(withMusic.totalCents, 80);
+  assert.equal(withMusic.margin.amountCents, 75);
+  assert.equal(withMusic.totalCents, 125);
   assert.equal(withoutMusic.vendorShareCents, 30);
-  assert.equal(withoutMusic.margin.amountCents, 18);
-  assert.equal(withoutMusic.totalCents, 48);
+  assert.equal(withoutMusic.margin.amountCents, 45);
+  assert.equal(withoutMusic.totalCents, 75);
 });
 
-test('audio pricing rounds fractional 60 percent margins up to the next cent', () => {
+test('audio pricing rounds fractional 150 percent margins up to the next cent', () => {
   const pricing = buildAudioPricingSnapshot({
     pack: 'cinematic',
     mood: 'tense',
@@ -187,6 +203,6 @@ test('audio pricing rounds fractional 60 percent margins up to the next cent', (
   });
 
   assert.equal(pricing.vendorShareCents, 3);
-  assert.equal(pricing.margin.amountCents, 2);
-  assert.equal(pricing.totalCents, 5);
+  assert.equal(pricing.margin.amountCents, 5);
+  assert.equal(pricing.totalCents, 8);
 });

@@ -3,6 +3,8 @@ import type {
   AudioMood,
   AudioOutputKind,
   AudioPackId,
+  AudioSeedAudioOutputFormat,
+  AudioSeedAudioVoice,
   AudioVoiceDelivery,
   AudioVoiceGender,
   AudioVoiceProfile,
@@ -12,14 +14,14 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
   auth: {
     eyebrow: 'Generate Audio',
     title: 'Create an account to generate audio',
-    body: 'Build cinematic soundtracks, background music tracks, or premium voice overs inside the MaxVideoAI workspace.',
+    body: 'Build music tracks, cinematic sound design, and Seed Audio voice overs inside the MaxVideoAI workspace.',
     createAccount: 'Create account',
     signIn: 'Sign in',
   },
   hero: {
     eyebrow: 'Generate Audio',
     title: 'Create Audio',
-    body: 'Generate realistic voices or soundscapes with advanced control.',
+    body: 'Generate music, cinematic sound design, or realistic voice over with Seed Audio 1.0.',
     history: 'History',
   },
   modes: {
@@ -28,8 +30,8 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
       description: 'Background music or ambience.',
     },
     voice_only: {
-      label: 'Voice Over Only',
-      description: 'Narration only.',
+      label: 'Voice Over',
+      description: 'Seed Audio narration as an audio file.',
     },
     cinematic: {
       label: 'Cinematic',
@@ -86,12 +88,12 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     promptMusicPlaceholder: 'Describe the music: genre, pace, emotion, instruments, where it should sit in the edit.',
     promptCinematicPlaceholder: 'Describe the sound design you want: environment, impacts, transitions, texture, and what must stay subtle.',
     script: 'Narration Script',
-    scriptVoiceOnlyPlaceholder: 'Write the voice over you want to render.',
+    scriptVoiceOnlyPlaceholder: 'Write the voice over you want Seed Audio to render.',
     scriptCinematicPlaceholder: 'Write the narration or dialogue that should sit on top of the cinematic audio mix.',
     estimatedDuration: '~{seconds}s estimated',
     voiceSample: 'Voice sample',
     uploadVoiceSample: 'Upload voice sample',
-    uploadVoiceSampleHint: '.wav, .mp3 up to 50MB',
+    uploadVoiceSampleHint: '.wav, .mp3, .pcm, or .ogg up to 10MB',
     uploadSample: 'Upload sample',
     cloneEnabled: 'Voice clone enabled',
     defaultVoice: 'Default voice',
@@ -99,6 +101,43 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     voice: 'Voice',
     delivery: 'Delivery',
     language: 'Language',
+    seedAudioVoice: 'Seed Audio voice',
+    seedAudioOutputFormat: 'Format',
+    seedAudioSampleRate: 'Sample rate',
+    seedAudioSpeed: 'Speed',
+    seedAudioVolume: 'Volume',
+    seedAudioPitch: 'Pitch',
+    seedAudioSampleTitle: 'Voice sample',
+    seedAudioSamplePending: 'Sample audio pending',
+    seedAudioVoices: {
+      default: 'Default',
+      vivi_mixed_en_zh_ja_es_id: 'Vivi',
+      mindy_en_es_id_pt_zh: 'Mindy',
+      kian_en_zh: 'Kian',
+      cedric_en_zh: 'Cedric',
+      sophie_en_zh: 'Sophie',
+      jean_en_zh: 'Jean',
+      magnus_en_zh: 'Magnus',
+      mabel_en_zh: 'Mabel',
+      nadia_en_zh: 'Nadia',
+      opal_en_zh: 'Opal',
+      pearl_en_zh: 'Pearl',
+      quentin_en_zh: 'Quentin',
+      corinne_mixed_en_zh: 'Corinne',
+      esther_mixed_en_zh: 'Esther',
+      lyla_mixed_en_zh: 'Lyla',
+      tracy_es_zh: 'Tracy',
+      sandy_es_mixed_en_zh: 'Sandy',
+      felix_zh: 'Felix',
+      celeste_zh: 'Celeste',
+      monkey_king_zh: 'Monkey King',
+    } satisfies Record<AudioSeedAudioVoice, string>,
+    seedAudioOutputFormats: {
+      mp3: 'MP3',
+      wav: 'WAV',
+      pcm: 'PCM',
+      ogg_opus: 'OGG Opus',
+    } satisfies Record<AudioSeedAudioOutputFormat, string>,
     moods: {
       epic: 'Epic',
       tense: 'Tense',
@@ -149,12 +188,12 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
       title: 'Advanced Options',
       description: 'Fine-tune your audio generation settings',
     },
-    selectedVoice: 'Emma · Natural · EN',
-    chooseVoice: 'Choose a voice',
+    selectedVoice: 'Seed Audio preset voice',
+    chooseVoice: 'Preset voice',
     providerStack: 'Model stack',
     providerStackDescription: '{provider} prepares the base track, then MaxVideoAI masters the final render for your selected output.',
     providers: {
-      voice: 'Gemini 3.1 Flash TTS',
+      voice: 'Seed Audio 1.0',
       music: 'MiniMax Music 2.6',
       sfx: 'Mirelo SFX + MMAudio',
       mix: 'FFmpeg mastering',
@@ -211,11 +250,12 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     voiceUploadFailed: 'Voice sample upload failed.',
     renderComplete: 'Audio render complete.',
     generationFailed: 'Audio generation failed.',
+    generatingInProgress: 'Generating in progress ({count})…',
     processing: {
       soundDesign: 'Generating cinematic sound design…',
       musicTrack: 'Generating music track…',
       musicBed: 'Generating music bed…',
-      clonedVoice: 'Generating cloned voice over…',
+      clonedVoice: 'Generating reference voice over…',
       voice: 'Generating voice over…',
       masterAudio: 'Mastering audio file…',
       finalMix: 'Mixing final soundtrack…',
@@ -243,6 +283,7 @@ export function translateAudioProcessingMessage(copy: AudioWorkspaceCopy, messag
     case 'Generating music bed…':
       return copy.messages.processing.musicBed;
     case 'Generating cloned voice over…':
+    case 'Generating reference voice over…':
       return copy.messages.processing.clonedVoice;
     case 'Generating voice over…':
       return copy.messages.processing.voice;
@@ -289,6 +330,7 @@ export function formatAudioPackLabel(copy: AudioWorkspaceCopy, pack: string | nu
     case 'Music Only':
       return copy.modes.music_only.label;
     case 'Voice Over Only':
+    case 'Voice Over':
       return copy.modes.voice_only.label;
     default:
       return null;

@@ -25,12 +25,14 @@ test('audio validation allows voice-over-only without a source video', () => {
     pack: 'voice_only',
     script: '  Trailer-ready narration.  ',
     voiceSampleUrl: ' https://example.com/voice.wav ',
-    voiceGender: ' male ',
-    voiceProfile: ' warm ',
-    voiceDelivery: ' trailer ',
-    language: ' french ',
+    seedAudioVoice: ' pearl_en_zh ',
+    seedAudioOutputFormat: ' wav ',
+    seedAudioSampleRate: '44100',
+    seedAudioSpeed: '1.25',
+    seedAudioVolume: '0.8',
+    seedAudioPitch: '-3',
     locale: ' fr-FR ',
-  });
+  } as any);
 
   assert.deepEqual(input, {
     sourceJobId: null,
@@ -41,10 +43,16 @@ test('audio validation allows voice-over-only without a source video', () => {
     intensity: 'standard',
     script: 'Trailer-ready narration.',
     voiceSampleUrl: 'https://example.com/voice.wav',
-    voiceGender: 'male',
-    voiceProfile: 'warm',
-    voiceDelivery: 'trailer',
-    language: 'french',
+    voiceGender: 'female',
+    voiceProfile: 'balanced',
+    voiceDelivery: 'cinematic',
+    language: 'auto',
+    seedAudioVoice: 'pearl_en_zh',
+    seedAudioOutputFormat: 'wav',
+    seedAudioSampleRate: 44100,
+    seedAudioSpeed: 1.25,
+    seedAudioVolume: 0.8,
+    seedAudioPitch: -3,
     durationSec: null,
     musicEnabled: false,
     exportAudioFile: false,
@@ -52,6 +60,25 @@ test('audio validation allows voice-over-only without a source video', () => {
     voiceMode: 'clone',
     outputKind: 'audio',
   });
+});
+
+test('audio validation rejects Seed Audio options on non-voice modes', () => {
+  assert.throws(
+    () =>
+      validateAudioGenerateRequest({
+        pack: 'music_only',
+        prompt: 'Dreamy music bed.',
+        mood: 'dreamy',
+        durationSec: 8,
+        seedAudioVoice: 'pearl_en_zh',
+      } as any),
+    (error: unknown) => {
+      assert.ok(error instanceof AudioGenerationError);
+      assert.equal(error.code, 'seed_audio_voice_not_supported');
+      assert.equal(error.field, 'seedAudioVoice');
+      return true;
+    }
+  );
 });
 
 test('audio validation requires a script for voice modes that include narration', () => {
@@ -166,6 +193,12 @@ test('audio validation normalizes cinematic voice settings', () => {
     voiceProfile: 'deep',
     voiceDelivery: 'intimate',
     language: 'english',
+    seedAudioVoice: 'default',
+    seedAudioOutputFormat: 'mp3',
+    seedAudioSampleRate: 24000,
+    seedAudioSpeed: 1,
+    seedAudioVolume: 1,
+    seedAudioPitch: 0,
     durationSec: null,
     musicEnabled: false,
     exportAudioFile: true,

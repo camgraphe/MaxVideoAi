@@ -9,13 +9,19 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { ButtonLink } from '@/components/ui/Button';
 import {
   AUDIO_INTENSITY_VALUES,
-  AUDIO_LANGUAGE_VALUES,
   AUDIO_MUSIC_DURATION_OPTIONS_SEC,
   AUDIO_MOOD_VALUES,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
-  AUDIO_VOICE_DELIVERY_VALUES,
-  AUDIO_VOICE_PROFILE_VALUES,
+  AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES,
+  AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES,
+  AUDIO_SEED_AUDIO_VOICE_VALUES,
+  DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
+  DEFAULT_SEED_AUDIO_PITCH,
+  DEFAULT_SEED_AUDIO_SAMPLE_RATE,
+  DEFAULT_SEED_AUDIO_SPEED,
+  DEFAULT_SEED_AUDIO_VOICE,
+  DEFAULT_SEED_AUDIO_VOLUME,
   buildAudioPricingSnapshot,
   estimateVoiceScriptDurationSec,
   formatAudioDurationLabel,
@@ -25,6 +31,9 @@ import {
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
+  type AudioSeedAudioOutputFormat,
+  type AudioSeedAudioSampleRate,
+  type AudioSeedAudioVoice,
   type AudioVoiceDelivery,
   type AudioVoiceGender,
   type AudioVoiceProfile,
@@ -38,7 +47,6 @@ import { useAudioGeneratedVideos } from './_hooks/useAudioGeneratedVideos';
 import { useAudioSourceMediaHandlers } from './_hooks/useAudioSourceMediaHandlers';
 import { useAudioWorkspaceRestoration } from './_hooks/useAudioWorkspaceRestoration';
 import {
-  AUDIO_VOICE_GENDER_VALUES,
   DEFAULT_INTENSITY,
   DEFAULT_LANGUAGE,
   DEFAULT_MANUAL_DURATION_SEC,
@@ -53,6 +61,7 @@ import {
 import type {
   ActiveAudioJobState,
   AudioResultState,
+  PendingAudioGeneration,
   SourceVideoState,
 } from './_lib/audio-workspace-types';
 import {
@@ -61,6 +70,10 @@ import {
   formatAudioOutputKind,
   type AudioWorkspaceCopy,
 } from './copy';
+
+const SEED_AUDIO_SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
+const SEED_AUDIO_VOLUME_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2] as const;
+const SEED_AUDIO_PITCH_OPTIONS = [-12, -6, -3, 0, 3, 6, 12] as const;
 
 export default function AudioWorkspace() {
   const searchParams = useSearchParams();
@@ -82,6 +95,12 @@ export default function AudioWorkspace() {
   const [voiceProfile, setVoiceProfile] = useState<AudioVoiceProfile>(DEFAULT_VOICE_PROFILE);
   const [voiceDelivery, setVoiceDelivery] = useState<AudioVoiceDelivery>(DEFAULT_VOICE_DELIVERY);
   const [language, setLanguage] = useState<AudioLanguage>(DEFAULT_LANGUAGE);
+  const [seedAudioVoice, setSeedAudioVoice] = useState<AudioSeedAudioVoice>(DEFAULT_SEED_AUDIO_VOICE);
+  const [seedAudioOutputFormat, setSeedAudioOutputFormat] = useState<AudioSeedAudioOutputFormat>(DEFAULT_SEED_AUDIO_OUTPUT_FORMAT);
+  const [seedAudioSampleRate, setSeedAudioSampleRate] = useState<AudioSeedAudioSampleRate>(DEFAULT_SEED_AUDIO_SAMPLE_RATE);
+  const [seedAudioSpeed, setSeedAudioSpeed] = useState<number>(DEFAULT_SEED_AUDIO_SPEED);
+  const [seedAudioVolume, setSeedAudioVolume] = useState<number>(DEFAULT_SEED_AUDIO_VOLUME);
+  const [seedAudioPitch, setSeedAudioPitch] = useState<number>(DEFAULT_SEED_AUDIO_PITCH);
   const [manualDurationSec, setManualDurationSec] = useState<number>(DEFAULT_MANUAL_DURATION_SEC);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [exportAudioFile, setExportAudioFile] = useState(false);
@@ -90,7 +109,7 @@ export default function AudioWorkspace() {
   const [notice, setNotice] = useState<string | null>(null);
   const [isUploadingSource, setIsUploadingSource] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [pendingAudioGenerations, setPendingAudioGenerations] = useState<PendingAudioGeneration[]>([]);
   const [result, setResult] = useState<AudioResultState | null>(null);
   const [activeJob, setActiveJob] = useState<ActiveAudioJobState | null>(null);
   const [generatedPickerOpen, setGeneratedPickerOpen] = useState(false);
@@ -122,6 +141,12 @@ export default function AudioWorkspace() {
     setPrompt,
     setResult,
     setScript,
+    setSeedAudioOutputFormat,
+    setSeedAudioPitch,
+    setSeedAudioSampleRate,
+    setSeedAudioSpeed,
+    setSeedAudioVoice,
+    setSeedAudioVolume,
     setSourceVideo,
     setVoiceDelivery,
     setVoiceGender,
@@ -133,7 +158,7 @@ export default function AudioWorkspace() {
   const showMood = packConfig.requiresMood;
   const showIntensity = pack !== 'voice_only';
   const showVoiceFields = packConfig.includesVoice;
-  const showVoiceGender = showVoiceFields && !voiceSample;
+  const showSeedAudioVoice = showVoiceFields && !voiceSample;
   const showMusicToggle = packConfig.supportsMusicToggle;
   const showExportToggle = packConfig.supportsAudioExport;
   const showManualDuration = pack === 'music_only' && !sourceVideo?.url;
@@ -155,37 +180,53 @@ export default function AudioWorkspace() {
       })),
     [copy]
   );
-  const voiceGenderOptions = useMemo(
+  const seedAudioVoiceOptions = useMemo(
     () =>
-      AUDIO_VOICE_GENDER_VALUES.map((value) => ({
+      AUDIO_SEED_AUDIO_VOICE_VALUES.map((value) => ({
         value,
-        label: copy.controls.voiceGenders[value],
+        label: copy.controls.seedAudioVoices[value],
       })),
     [copy]
   );
-  const voiceProfileOptions = useMemo(
+  const seedAudioOutputFormatOptions = useMemo(
     () =>
-      AUDIO_VOICE_PROFILE_VALUES.map((value) => ({
+      AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES.map((value) => ({
         value,
-        label: copy.controls.voiceProfiles[value],
+        label: copy.controls.seedAudioOutputFormats[value],
       })),
     [copy]
   );
-  const voiceDeliveryOptions = useMemo(
+  const seedAudioSampleRateOptions = useMemo(
     () =>
-      AUDIO_VOICE_DELIVERY_VALUES.map((value) => ({
+      AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES.map((value) => ({
         value,
-        label: copy.controls.voiceDeliveries[value],
+        label: value >= 1000 ? `${value / 1000} kHz` : `${value} Hz`,
       })),
-    [copy]
+    []
   );
-  const languageOptions = useMemo(
+  const seedAudioSpeedOptions = useMemo(
     () =>
-      AUDIO_LANGUAGE_VALUES.map((value) => ({
+      SEED_AUDIO_SPEED_OPTIONS.map((value) => ({
         value,
-        label: copy.controls.languages[value],
+        label: `${value}x`,
       })),
-    [copy]
+    []
+  );
+  const seedAudioVolumeOptions = useMemo(
+    () =>
+      SEED_AUDIO_VOLUME_OPTIONS.map((value) => ({
+        value,
+        label: `${Math.round(value * 100)}%`,
+      })),
+    []
+  );
+  const seedAudioPitchOptions = useMemo(
+    () =>
+      SEED_AUDIO_PITCH_OPTIONS.map((value) => ({
+        value,
+        label: value === 0 ? '0 st' : `${value > 0 ? '+' : ''}${value} st`,
+      })),
+    []
   );
   const durationOptions = useMemo(() => {
     const values = [...AUDIO_MUSIC_DURATION_OPTIONS_SEC] as number[];
@@ -243,7 +284,6 @@ export default function AudioWorkspace() {
 
   const canGenerate =
     Boolean(user) &&
-    !isGenerating &&
     (!sourceVideoRequired || Boolean(sourceVideo?.url)) &&
     (pack !== 'music_only' || Boolean(sourceVideo?.url) || manualDurationSec >= 3) &&
     (!packConfig.requiresScript || script.trim().length > 0) &&
@@ -287,14 +327,21 @@ export default function AudioWorkspace() {
     prompt,
     requiresScript: packConfig.requiresScript,
     script,
+    seedAudioOutputFormat,
+    seedAudioPitch,
+    seedAudioSampleRate,
+    seedAudioSpeed,
+    seedAudioVoice,
+    seedAudioVolume,
     setActiveJob,
-    setIsGenerating,
     setNotice,
+    setPendingAudioGenerations,
     setResult,
     showExportToggle,
     showIntensity,
     showMood,
     showMusicToggle,
+    showSeedAudioVoice,
     showVoiceFields,
     sourceVideo,
     voiceDelivery,
@@ -327,17 +374,24 @@ export default function AudioWorkspace() {
     : sourceVideoRequired && !sourceVideo?.url
       ? copy.pricing.missingSourceVideo
       : quote
-        ? formatCopy(copy.pricing.summary, {
-            output: formatAudioOutputKind(copy, currentOutputKind),
-            duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
-          })
+        ? pack === 'voice_only'
+          ? formatAudioOutputKind(copy, currentOutputKind)
+          : formatCopy(copy.pricing.summary, {
+              output: formatAudioOutputKind(copy, currentOutputKind),
+              duration: estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-',
+            })
         : copy.pricing.missingOptions;
   const activeProgress =
     activeJob?.status === 'running' || activeJob?.status === 'pending'
       ? activeJob.progress
       : null;
-  const dockDurationLabel = estimatedDurationSec ? formatAudioDurationLabel(estimatedDurationSec) : '-';
+  const displayDurationSec = pack === 'voice_only' ? null : estimatedDurationSec;
+  const dockDurationLabel = displayDurationSec ? formatAudioDurationLabel(displayDurationSec) : null;
   const dockPriceLabel = quote ? formatCurrency(quote.totalCents, quote.currency, locale) : '-';
+  const inProgressMessage =
+    pendingAudioGenerations.length > 0
+      ? formatCopy(copy.messages.generatingInProgress, { count: pendingAudioGenerations.length })
+      : null;
 
   if (authLoading) {
     return <div className="flex-1" />;
@@ -379,7 +433,6 @@ export default function AudioWorkspace() {
           dockDurationLabel={dockDurationLabel}
           dockPriceLabel={dockPriceLabel}
           durationOptions={durationOptions}
-          estimatedDurationSec={estimatedDurationSec}
           exportAudioFile={exportAudioFile}
           generationHint={generationHint}
           handleGenerate={handleGenerate}
@@ -387,11 +440,9 @@ export default function AudioWorkspace() {
           handleSelectLatestJob={handleSelectLatestJob}
           intensity={intensity}
           intensityOptions={intensityOptions}
-          isGenerating={isGenerating}
+          inProgressMessage={inProgressMessage}
           isUploadingSource={isUploadingSource}
           isUploadingVoice={isUploadingVoice}
-          language={language}
-          languageOptions={languageOptions}
           manualDurationSec={manualDurationSec}
           modeOptions={modeOptions}
           mood={mood}
@@ -406,33 +457,41 @@ export default function AudioWorkspace() {
           resultJobId={result?.jobId ?? null}
           setExportAudioFile={setExportAudioFile}
           setIntensity={setIntensity}
-          setLanguage={setLanguage}
           setManualDurationSec={setManualDurationSec}
           setMood={setMood}
           setMusicEnabled={setMusicEnabled}
           setPrompt={setPrompt}
           setScript={setScript}
-          setVoiceDelivery={setVoiceDelivery}
-          setVoiceGender={setVoiceGender}
-          setVoiceProfile={setVoiceProfile}
+          setSeedAudioOutputFormat={setSeedAudioOutputFormat}
+          setSeedAudioPitch={setSeedAudioPitch}
+          setSeedAudioSampleRate={setSeedAudioSampleRate}
+          setSeedAudioSpeed={setSeedAudioSpeed}
+          setSeedAudioVoice={setSeedAudioVoice}
+          setSeedAudioVolume={setSeedAudioVolume}
           setVoiceSample={setVoiceSample}
           showExportToggle={showExportToggle}
           showIntensity={showIntensity}
           showManualDuration={showManualDuration}
           showMood={showMood}
           showMusicToggle={showMusicToggle}
+          showSeedAudioVoice={showSeedAudioVoice}
           showVoiceFields={showVoiceFields}
-          showVoiceGender={showVoiceGender}
           sourceInputRef={sourceInputRef}
           sourceVideo={sourceVideo}
           sourceVideoRequired={sourceVideoRequired}
-          voiceDelivery={voiceDelivery}
-          voiceDeliveryOptions={voiceDeliveryOptions}
-          voiceGender={voiceGender}
-          voiceGenderOptions={voiceGenderOptions}
           voiceInputRef={voiceInputRef}
-          voiceProfile={voiceProfile}
-          voiceProfileOptions={voiceProfileOptions}
+          seedAudioOutputFormat={seedAudioOutputFormat}
+          seedAudioOutputFormatOptions={seedAudioOutputFormatOptions}
+          seedAudioPitch={seedAudioPitch}
+          seedAudioPitchOptions={seedAudioPitchOptions}
+          seedAudioSampleRate={seedAudioSampleRate}
+          seedAudioSampleRateOptions={seedAudioSampleRateOptions}
+          seedAudioSpeed={seedAudioSpeed}
+          seedAudioSpeedOptions={seedAudioSpeedOptions}
+          seedAudioVoice={seedAudioVoice}
+          seedAudioVoiceOptions={seedAudioVoiceOptions}
+          seedAudioVolume={seedAudioVolume}
+          seedAudioVolumeOptions={seedAudioVolumeOptions}
           voiceSample={voiceSample}
         />
       </div>

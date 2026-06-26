@@ -8,9 +8,10 @@ function orderMusicProvidersForDuration(durationSec: number): AudioProviderCandi
   if (durationSec <= 20) return AUDIO_PROVIDER_ROSTER.music;
   const priority = new Map([
     ['stable_audio_25_music', 0],
-    ['ace_step', 1],
-    ['minimax_music_2_6', 2],
-    ['google_lyria2', 3],
+    ['elevenlabs_music', 1],
+    ['ace_step', 2],
+    ['minimax_music_2_6', 3],
+    ['google_lyria2', 4],
   ]);
   return [...AUDIO_PROVIDER_ROSTER.music].sort((a, b) => (priority.get(a.key) ?? 10) - (priority.get(b.key) ?? 10));
 }
@@ -40,6 +41,16 @@ export async function generateMusicTrack(input: {
       return {
         prompt: limitProviderPrompt(`${prompt} Instrumental only. Keep the score cinematic and non-vocal.`),
         negative_prompt: 'vocals, singing, speech, dialogue, harsh percussion, distortion, clipping',
+      };
+    }
+    if (candidate.key === 'elevenlabs_music') {
+      return {
+        prompt: limitProviderPrompt(
+          `${prompt} Instrumental cinematic background music, no vocals, no lyrics, clean mix, duration around ${input.durationSec} seconds.`
+        ),
+        music_length_ms: Math.round(input.durationSec * 1000),
+        force_instrumental: true,
+        output_format: 'mp3_44100_128',
       };
     }
     if (candidate.key === 'stable_audio_25_music') {

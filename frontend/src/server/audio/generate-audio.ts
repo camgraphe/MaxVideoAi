@@ -131,6 +131,12 @@ export async function generateAudioRun(params: {
     voiceProfile: normalized.voiceProfile,
     voiceDelivery: normalized.voiceDelivery,
     language: normalized.language,
+    seedAudioVoice: normalized.seedAudioVoice,
+    seedAudioOutputFormat: normalized.seedAudioOutputFormat,
+    seedAudioSampleRate: normalized.seedAudioSampleRate,
+    seedAudioSpeed: normalized.seedAudioSpeed,
+    seedAudioVolume: normalized.seedAudioVolume,
+    seedAudioPitch: normalized.seedAudioPitch,
     outputKind: normalized.outputKind,
     sourceJobId: sourceJob?.job_id ?? null,
     sourceVideoUrl,
@@ -207,7 +213,7 @@ export async function generateAudioRun(params: {
         progress: normalized.pack === 'voice_only' ? 56 : 62,
         message:
           normalized.voiceMode === 'clone'
-            ? 'Generating cloned voice over…'
+            ? 'Generating reference voice over…'
             : 'Generating voice over…',
       });
       voiceTrack =
@@ -219,6 +225,11 @@ export async function generateAudioRun(params: {
               language: normalized.language,
               voiceProfile: normalized.voiceProfile ?? 'balanced',
               voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
+              seedAudioOutputFormat: normalized.seedAudioOutputFormat,
+              seedAudioSampleRate: normalized.seedAudioSampleRate,
+              seedAudioSpeed: normalized.seedAudioSpeed,
+              seedAudioVolume: normalized.seedAudioVolume,
+              seedAudioPitch: normalized.seedAudioPitch,
             })
           : await generateStandardVoiceTrack({
               script: normalized.script,
@@ -227,6 +238,12 @@ export async function generateAudioRun(params: {
               voiceGender: normalized.voiceGender ?? 'female',
               voiceProfile: normalized.voiceProfile ?? 'balanced',
               voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
+              seedAudioVoice: normalized.seedAudioVoice,
+              seedAudioOutputFormat: normalized.seedAudioOutputFormat,
+              seedAudioSampleRate: normalized.seedAudioSampleRate,
+              seedAudioSpeed: normalized.seedAudioSpeed,
+              seedAudioVolume: normalized.seedAudioVolume,
+              seedAudioPitch: normalized.seedAudioPitch,
             });
 
       if (!voiceTrack.url) {

@@ -33,6 +33,12 @@ export type AudioJobSettingsSnapshot = {
   voiceProfile?: string | null;
   voiceDelivery?: string | null;
   language?: string | null;
+  seedAudioVoice?: string | null;
+  seedAudioOutputFormat?: string | null;
+  seedAudioSampleRate?: number | null;
+  seedAudioSpeed?: number | null;
+  seedAudioVolume?: number | null;
+  seedAudioPitch?: number | null;
   outputKind?: AudioOutputKind | null;
   sourceJobId?: string | null;
   sourceVideoUrl?: string | null;
@@ -76,4 +82,10 @@ export type AudioResultState = {
   audioUrl: string | null;
   thumbUrl: string | null;
   outputKind: AudioOutputKind;
+};
+
+export type PendingAudioGeneration = {
+  id: string;
+  label: string;
+  startedAt: number;
 };

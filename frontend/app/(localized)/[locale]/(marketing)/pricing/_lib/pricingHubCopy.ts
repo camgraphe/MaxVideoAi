@@ -302,10 +302,10 @@ const en: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Music Only',
-    voiceOnly: 'Voice Over Only',
+    voiceOnly: 'Voice Over',
     cinematic: 'Cinematic',
     cinematicVoice: 'Cinematic + Voice',
-    voiceClone: 'MiniMax Voice Clone',
+    voiceClone: 'Seed Audio reference voice',
   },
   tools: {
     characterBuilderDraft: 'Character Builder Draft',
@@ -483,10 +483,10 @@ const fr: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Musique seule',
-    voiceOnly: 'Voix off seule',
+    voiceOnly: 'Voix off',
     cinematic: 'Cinématique',
     cinematicVoice: 'Cinématique + voix',
-    voiceClone: 'Clone voix MiniMax',
+    voiceClone: 'Voix de référence Seed Audio',
   },
   tools: {
     characterBuilderDraft: 'Character Builder brouillon',
@@ -664,10 +664,10 @@ const es: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Solo música',
-    voiceOnly: 'Solo voz en off',
+    voiceOnly: 'Voz en off',
     cinematic: 'Cinemático',
     cinematicVoice: 'Cinemático + voz',
-    voiceClone: 'Clon de voz MiniMax',
+    voiceClone: 'Voz de referencia Seed Audio',
   },
   tools: {
     characterBuilderDraft: 'Character Builder borrador',
