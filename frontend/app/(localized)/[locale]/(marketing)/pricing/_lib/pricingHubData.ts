@@ -992,7 +992,7 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
     {
       id: 'audio-music-only',
       anchorId: 'audio-music-only-pricing',
-      mode: `${copy.audioModes.musicOnly} · MiniMax Music 2.6 / Stable Audio 2.5`,
+      mode: `${copy.audioModes.musicOnly} · Google Lyria 3`,
       thirtySeconds: audioPrice(locale, 'music_only', 30),
       sixtySeconds: audioPrice(locale, 'music_only', 60),
       oneTwentySeconds: audioPrice(locale, 'music_only', 120),

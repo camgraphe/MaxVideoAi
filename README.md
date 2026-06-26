@@ -191,6 +191,9 @@ The application expects the following environment variables (scoped per Vercel e
 | Variable | Scope | Purpose |
 | --- | --- | --- |
 | `FAL_KEY` / `FAL_API_KEY` | Server | Fal.ai API key injected into the edge proxy. Prefer `FAL_KEY` on Vercel. |
+| `GOOGLE_VERTEX_PROJECT_ID` / `GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON` | Server | Google Vertex AI project and service account used by direct Google providers such as Veo and Lyria 3. |
+| `GOOGLE_VERTEX_LYRIA_ENABLED` | Server (optional) | Enables Google Vertex Lyria 3 as the primary `generate audio` music provider when Vertex credentials are configured. Set to `0` to force Fal music providers. |
+| `GOOGLE_VERTEX_LYRIA_LOCATION` | Server (optional) | Vertex location for Lyria 3 interactions. Defaults to `global`. |
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase Auth project URL used by the browser. |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase Auth anon key. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server (optional) | Service role key for backend operations. |

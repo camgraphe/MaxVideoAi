@@ -21,7 +21,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
   hero: {
     eyebrow: 'Generate Audio',
     title: 'Create Audio',
-    body: 'Generate music, cinematic sound design, or realistic voice over with Seed Audio 1.0.',
+    body: 'Generate music with Google Lyria 3, cinematic sound design, or realistic voice over with Seed Audio 1.0.',
     history: 'History',
   },
   modes: {
@@ -194,7 +194,7 @@ export const DEFAULT_AUDIO_WORKSPACE_COPY = {
     providerStackDescription: '{provider} prepares the base track, then MaxVideoAI masters the final render for your selected output.',
     providers: {
       voice: 'Seed Audio 1.0',
-      music: 'MiniMax Music 2.6',
+      music: 'Google Lyria 3',
       sfx: 'Mirelo SFX + MMAudio',
       mix: 'FFmpeg mastering',
     },

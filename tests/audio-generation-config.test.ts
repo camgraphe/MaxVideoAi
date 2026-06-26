@@ -27,18 +27,18 @@ import {
   resolveAudioVoiceMode,
 } from '../frontend/src/lib/audio-generation';
 
-test('audio pricing charges 2.5x provider cost for short music renders', () => {
+test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', () => {
   const pricing = buildAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
     durationSec: 3,
   });
 
-  assert.equal(pricing.vendorShareCents, 15);
-  assert.equal(pricing.platformFeeCents, 23);
-  assert.equal(pricing.totalCents, 38);
-  assert.equal(pricing.base.amountCents, 15);
-  assert.equal(pricing.margin.amountCents, 23);
+  assert.equal(pricing.vendorShareCents, 4);
+  assert.equal(pricing.platformFeeCents, 6);
+  assert.equal(pricing.totalCents, 10);
+  assert.equal(pricing.base.amountCents, 4);
+  assert.equal(pricing.margin.amountCents, 6);
   assert.equal(pricing.margin.percentApplied, 1.5);
   assert.deepEqual(pricing.meta, {
     surface: 'audio',
@@ -46,40 +46,39 @@ test('audio pricing charges 2.5x provider cost for short music renders', () => {
     mood: 'epic',
     voiceMode: null,
     pricingModel: 'audio_provider_cost_plus_margin',
-    vendorCostCents: 15,
+    vendorCostCents: 4,
     marginPercent: 1.5,
     musicEnabled: null,
     scriptBillingCharacters: undefined,
     vendorCostComponents: [
       {
-        type: 'music_minimax_music_2_6',
-        label: 'MiniMax Music 2.6',
-        model: 'fal-ai/minimax-music/v2.6',
-        unit: 'audio',
-        amountCents: 15,
+        type: 'music_google_lyria3_clip',
+        label: 'Google Lyria 3 Clip',
+        model: 'lyria-3-clip-preview',
+        unit: '30_sec_clip',
+        amountCents: 4,
       },
     ],
   });
 });
 
-test('audio pricing scales long music renders by started 30 second blocks', () => {
+test('audio pricing uses Lyria 3 Pro song pricing for long music renders', () => {
   const pricing = buildAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
     durationSec: 180,
   });
 
-  assert.equal(pricing.vendorShareCents, 120);
-  assert.equal(pricing.platformFeeCents, 180);
-  assert.equal(pricing.totalCents, 300);
+  assert.equal(pricing.vendorShareCents, 8);
+  assert.equal(pricing.platformFeeCents, 12);
+  assert.equal(pricing.totalCents, 20);
   assert.deepEqual(pricing.meta.vendorCostComponents, [
     {
-      type: 'music_stable_audio_25',
-      label: 'Stable Audio 2.5',
-      model: 'fal-ai/stable-audio-25/text-to-audio',
-      unit: '30_sec_block',
-      units: 6,
-      amountCents: 120,
+      type: 'music_google_lyria3_pro',
+      label: 'Google Lyria 3 Pro',
+      model: 'lyria-3-pro-preview',
+      unit: 'song',
+      amountCents: 8,
     },
   ]);
 });
@@ -141,16 +140,16 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(estimateVoiceScriptDurationSec('This is a short narration sample for pricing.'), AUDIO_MIN_DURATION_SEC);
   assert.equal(AUDIO_PROMPT_MAX_LENGTH, 2000);
   assert.equal(AUDIO_SCRIPT_MAX_LENGTH, 5000);
-  assert.equal(AUDIO_MAX_DURATION_SEC, 190);
+  assert.equal(AUDIO_MAX_DURATION_SEC, 184);
   assert.equal(AUDIO_PRICING_MARGIN_PERCENT, 1.5);
-  assert.ok(AUDIO_MUSIC_DURATION_OPTIONS_SEC.includes(190));
+  assert.ok(AUDIO_MUSIC_DURATION_OPTIONS_SEC.includes(184));
 
   assert.equal(clampAudioDuration(Number.NaN), AUDIO_MIN_DURATION_SEC);
   assert.equal(clampAudioDuration(1), AUDIO_MIN_DURATION_SEC);
   assert.equal(clampAudioDuration(24), 24);
   assert.equal(clampAudioDuration(240), AUDIO_MAX_DURATION_SEC);
   assert.equal(normalizeAudioDuration(240), 240);
-  assert.equal(formatAudioDurationLabel(190), '3m10s');
+  assert.equal(formatAudioDurationLabel(184), '3m04s');
   assert.equal(formatAudioDurationLabel(120), '2m');
   assert.equal(clampAudioDuration(7.6), 8);
 });
@@ -186,9 +185,9 @@ test('audio pricing includes sound design and optional music for cinematic rende
     musicEnabled: false,
   });
 
-  assert.equal(withMusic.vendorShareCents, 50);
-  assert.equal(withMusic.margin.amountCents, 75);
-  assert.equal(withMusic.totalCents, 125);
+  assert.equal(withMusic.vendorShareCents, 34);
+  assert.equal(withMusic.margin.amountCents, 51);
+  assert.equal(withMusic.totalCents, 85);
   assert.equal(withoutMusic.vendorShareCents, 30);
   assert.equal(withoutMusic.margin.amountCents, 45);
   assert.equal(withoutMusic.totalCents, 75);

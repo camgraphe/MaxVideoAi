@@ -2,14 +2,17 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export const AUDIO_SURFACE = 'audio' as const;
 export const AUDIO_MIN_DURATION_SEC = 3;
-export const AUDIO_MAX_DURATION_SEC = 190;
+export const AUDIO_MAX_DURATION_SEC = 184;
 export const AUDIO_PROMPT_MAX_LENGTH = 2000;
 export const AUDIO_SCRIPT_MAX_LENGTH = 5000;
 export const AUDIO_VOICE_ESTIMATE_WORDS_PER_MINUTE = 150;
-export const AUDIO_MUSIC_DURATION_OPTIONS_SEC = [3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 120, 180, 190] as const;
+export const AUDIO_MUSIC_DURATION_OPTIONS_SEC = [3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 120, 180, 184] as const;
 export const AUDIO_PRICING_MARGIN_PERCENT = 1.5;
-export const AUDIO_LONG_MUSIC_BILLING_BLOCK_SEC = 30;
 export const AUDIO_SEED_AUDIO_MODEL_ID = 'bytedance/seed-audio-1.0';
+export const AUDIO_LYRIA3_CLIP_MODEL_ID = 'lyria-3-clip-preview';
+export const AUDIO_LYRIA3_PRO_MODEL_ID = 'lyria-3-pro-preview';
+export const AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC = 30;
+export const AUDIO_LYRIA3_PRO_MAX_DURATION_SEC = 184;
 
 export const AUDIO_SEED_AUDIO_VOICE_VALUES = [
   'default',
@@ -49,8 +52,8 @@ export const DEFAULT_SEED_AUDIO_SPEED = 1;
 export const DEFAULT_SEED_AUDIO_VOLUME = 1;
 export const DEFAULT_SEED_AUDIO_PITCH = 0;
 
-const AUDIO_PRICE_MINIMAX_MUSIC_2_6_CENTS_PER_AUDIO = 15;
-const AUDIO_PRICE_STABLE_AUDIO_25_CENTS_PER_AUDIO = 20;
+const AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO = 4;
+const AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO = 8;
 const AUDIO_PRICE_MIRELO_SFX_CENTS_PER_SECOND = 1;
 const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 7.5;
 
@@ -304,23 +307,21 @@ function countAudioBillingCharacters(script?: string | null, fallbackDurationSec
 }
 
 function buildMusicVendorCostComponent(durationSec: number) {
-  if (durationSec <= 20) {
+  if (durationSec <= AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC) {
     return {
-      type: 'music_minimax_music_2_6',
-      label: 'MiniMax Music 2.6',
-      model: 'fal-ai/minimax-music/v2.6',
-      unit: 'audio',
-      amountCents: AUDIO_PRICE_MINIMAX_MUSIC_2_6_CENTS_PER_AUDIO,
+      type: 'music_google_lyria3_clip',
+      label: 'Google Lyria 3 Clip',
+      model: AUDIO_LYRIA3_CLIP_MODEL_ID,
+      unit: '30_sec_clip',
+      amountCents: AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO,
     };
   }
-  const billingBlocks = Math.max(1, Math.ceil(durationSec / AUDIO_LONG_MUSIC_BILLING_BLOCK_SEC));
   return {
-    type: 'music_stable_audio_25',
-    label: 'Stable Audio 2.5',
-    model: 'fal-ai/stable-audio-25/text-to-audio',
-    unit: '30_sec_block',
-    units: billingBlocks,
-    amountCents: billingBlocks * AUDIO_PRICE_STABLE_AUDIO_25_CENTS_PER_AUDIO,
+    type: 'music_google_lyria3_pro',
+    label: 'Google Lyria 3 Pro',
+    model: AUDIO_LYRIA3_PRO_MODEL_ID,
+    unit: 'song',
+    amountCents: AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO,
   };
 }
 

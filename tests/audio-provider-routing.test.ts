@@ -4,11 +4,31 @@ import test from 'node:test';
 import {
   AudioProviderError,
   generateClonedVoiceTrack,
+  generateGoogleVertexLyria3Track,
   generateMusicTrack,
   generateStandardVoiceTrack,
   getAudioProviderRoster,
+  isGoogleVertexLyria3Configured,
   runAudioRoleWithFallback,
 } from '../frontend/src/server/audio/providers';
+
+test('Google Vertex Lyria 3 is configured from existing Vertex credentials', () => {
+  assert.equal(
+    isGoogleVertexLyria3Configured({
+      GOOGLE_VERTEX_PROJECT_ID: 'demo-project',
+      GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"svc@example.com","private_key":"unused"}',
+    }),
+    true
+  );
+  assert.equal(
+    isGoogleVertexLyria3Configured({
+      GOOGLE_VERTEX_PROJECT_ID: 'demo-project',
+      GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"svc@example.com","private_key":"unused"}',
+      GOOGLE_VERTEX_LYRIA_ENABLED: '0',
+    }),
+    false
+  );
+});
 
 test('audio provider routing keeps recent-first order for every role', () => {
   assert.deepEqual(
@@ -42,6 +62,126 @@ test('audio provider routing does not expose beatoven for music', () => {
   );
 });
 
+test('Google Vertex Lyria 3 client calls interactions and extracts audio output', async () => {
+  const seen: Array<{ url: string; body: Record<string, unknown>; headers: Record<string, string> }> = [];
+  const fetchFn: typeof fetch = async (url, init) => {
+    seen.push({
+      url: String(url),
+      body: JSON.parse(String(init?.body ?? '{}')) as Record<string, unknown>,
+      headers: init?.headers as Record<string, string>,
+    });
+    return new Response(
+      JSON.stringify({
+        id: 'interaction_123',
+        status: 'completed',
+        outputs: [
+          { type: 'text', text: 'TITLE' },
+          {
+            type: 'audio',
+            mime_type: 'audio/mpeg',
+            data: Buffer.from('mp3-bytes').toString('base64'),
+          },
+        ],
+        model: 'lyria-3-pro-preview',
+      }),
+      { status: 200, headers: { 'content-type': 'application/json' } }
+    );
+  };
+
+  const result = await generateGoogleVertexLyria3Track(
+    {
+      durationSec: 120,
+      mood: 'dreamy',
+      intensity: 'standard',
+      prompt: 'Slow premium ambient product score.',
+    },
+    {
+      env: {
+        GOOGLE_VERTEX_PROJECT_ID: 'demo-project',
+        GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON: '{"client_email":"svc@example.com","private_key":"unused"}',
+      },
+      fetchFn,
+      getAccessTokenFn: async () => 'test-token',
+    }
+  );
+
+  assert.equal(
+    seen[0]?.url,
+    'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions'
+  );
+  assert.equal(seen[0]?.headers.authorization, 'Bearer test-token');
+  assert.equal(seen[0]?.body.model, 'lyria-3-pro-preview');
+  const input = seen[0]?.body.input as Array<Record<string, unknown>>;
+  assert.equal(input[0]?.type, 'text');
+  assert.match(String(input[0]?.text), /Instrumental only/);
+  assert.match(String(input[0]?.text), /120 seconds/);
+  assert.equal(result.providerKey, 'google_vertex_lyria3');
+  assert.equal(result.model, 'lyria-3-pro-preview');
+  assert.equal(result.url, `data:audio/mpeg;base64,${Buffer.from('mp3-bytes').toString('base64')}`);
+  assert.equal(result.requestId, 'interaction_123');
+});
+
+test('music renders prefer Google Vertex Lyria 3 when available', async () => {
+  const googleCalls: number[] = [];
+  const result = await generateMusicTrack(
+    {
+      durationSec: 120,
+      mood: 'dreamy',
+      intensity: 'standard',
+      prompt: 'Slow premium ambient product score.',
+    },
+    {
+      generateGoogleVertexLyria3TrackFn: async (input) => {
+        googleCalls.push(input.durationSec);
+        return {
+          url: 'data:audio/mpeg;base64,bHlyaWE=',
+          providerKey: 'google_vertex_lyria3',
+          providerLabel: 'Google Lyria 3',
+          model: 'lyria-3-pro-preview',
+          requestId: 'interaction_music',
+        };
+      },
+      subscribe: async () => {
+        throw new Error('Fal should not be called when Vertex succeeds.');
+      },
+    }
+  );
+
+  assert.deepEqual(googleCalls, [120]);
+  assert.equal(result.providerKey, 'google_vertex_lyria3');
+  assert.equal(result.model, 'lyria-3-pro-preview');
+});
+
+test('music renders fall back to Fal when Google Vertex Lyria 3 fails', async () => {
+  const calls: string[] = [];
+  const result = await generateMusicTrack(
+    {
+      durationSec: 45,
+      mood: 'documentary',
+      intensity: 'standard',
+      prompt: 'Elegant brand film underscore.',
+    },
+    {
+      generateGoogleVertexLyria3TrackFn: async () => {
+        calls.push('google_vertex_lyria3');
+        throw new Error('Vertex quota unavailable');
+      },
+      subscribe: async (model) => {
+        calls.push(model);
+        return {
+          data: {
+            audio_url: 'https://example.com/fallback-music.wav',
+          },
+          requestId: 'req_fallback_music',
+        };
+      },
+    }
+  );
+
+  assert.deepEqual(calls, ['google_vertex_lyria3', 'fal-ai/stable-audio-25/text-to-audio']);
+  assert.equal(result.providerKey, 'stable_audio_25_music');
+});
+
 test('long music renders prioritize providers with explicit duration controls', async () => {
   const calls: Array<{ model: string; input: Record<string, unknown> }> = [];
   const result = await generateMusicTrack(
@@ -52,6 +192,7 @@ test('long music renders prioritize providers with explicit duration controls', 
       prompt: 'Slow premium ambient product score.',
     },
     {
+      preferLyria3: false,
       subscribe: async (model, input) => {
         calls.push({ model, input });
         return {
@@ -79,6 +220,7 @@ test('short music renders keep the recent-first music roster', async () => {
       prompt: 'Short cinematic logo sting.',
     },
     {
+      preferLyria3: false,
       subscribe: async (model) => {
         calls.push(model);
         return {
@@ -104,6 +246,7 @@ test('music routing can fall back to ElevenLabs Music with fal API controls', as
       prompt: 'Elegant brand film underscore.',
     },
     {
+      preferLyria3: false,
       subscribe: async (model, input) => {
         calls.push({ model, input });
         if (model !== 'fal-ai/elevenlabs/music') {
@@ -135,6 +278,7 @@ test('music provider prompts stay within the fal prompt limit after style guidan
       prompt: 'a'.repeat(2000),
     },
     {
+      preferLyria3: false,
       subscribe: async (model, input) => {
         calls.push({ model, input });
         return {

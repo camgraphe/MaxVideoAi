@@ -4174,7 +4174,7 @@
       "hero": {
         "eyebrow": "Générer de l’audio",
         "title": "Créer de l’audio",
-        "body": "Générez de la musique, du sound design cinématique ou une voix off réaliste avec Seed Audio 1.0.",
+        "body": "Générez de la musique avec Google Lyria 3, du sound design cinématique ou une voix off réaliste avec Seed Audio 1.0.",
         "history": "Historique"
       },
       "modes": {
@@ -4347,7 +4347,7 @@
         "providerStackDescription": "{provider} prépare la base audio, puis MaxVideoAI masterise le rendu final selon la sortie choisie.",
         "providers": {
           "voice": "Seed Audio 1.0",
-          "music": "MiniMax Music 2.6",
+          "music": "Google Lyria 3",
           "sfx": "Mirelo SFX + MMAudio",
           "mix": "Mastering FFmpeg"
         }

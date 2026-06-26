@@ -155,7 +155,7 @@ test('audio validation rejects requested durations above provider-aligned limits
       assert.ok(error instanceof AudioGenerationError);
       assert.equal(error.code, 'audio_duration_invalid');
       assert.equal(error.field, 'durationSec');
-      assert.match(error.message, /3m10s/);
+      assert.match(error.message, /3m04s/);
       return true;
     }
   );
