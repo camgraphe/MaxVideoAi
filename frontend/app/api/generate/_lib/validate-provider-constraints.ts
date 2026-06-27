@@ -1,4 +1,8 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
+import {
+  isKlingMultiPromptEngine,
+  KLING_MULTI_PROMPT_SCENE_MAX_CHARS,
+} from '../../../../src/lib/kling-provider-limits';
 import type { ValidationResult } from './validate-types';
 
 function isTenSecondDuration(value: unknown): boolean {
@@ -17,6 +21,26 @@ export function validateProviderSpecificConstraints(params: {
   normalizedMode: Mode;
   payload: Record<string, unknown>;
 }): ValidationResult {
+  if (isKlingMultiPromptEngine(params.engineId) && Array.isArray(params.payload['multi_prompt'])) {
+    const multiPrompt = params.payload['multi_prompt'];
+    for (let index = 0; index < multiPrompt.length; index += 1) {
+      const entry = multiPrompt[index];
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) continue;
+      const prompt = (entry as { prompt?: unknown }).prompt;
+      if (typeof prompt !== 'string' || prompt.length <= KLING_MULTI_PROMPT_SCENE_MAX_CHARS) continue;
+      return {
+        ok: false,
+        error: {
+          code: 'ENGINE_CONSTRAINT',
+          field: `multi_prompt[${index}].prompt`,
+          message: `Kling multi-prompt scene prompts must be at most ${KLING_MULTI_PROMPT_SCENE_MAX_CHARS} characters.`,
+          allowed: [KLING_MULTI_PROMPT_SCENE_MAX_CHARS],
+          value: prompt.length,
+        },
+      };
+    }
+  }
+
   if (params.engineId === 'minimax-hailuo-02-text' && params.normalizedMode === 'i2v') {
     const endImageUrl =
       typeof params.payload['end_image_url'] === 'string' && params.payload['end_image_url'].trim().length

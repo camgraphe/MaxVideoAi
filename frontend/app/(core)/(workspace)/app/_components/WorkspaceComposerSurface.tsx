@@ -33,6 +33,7 @@ import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
+import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prompt-state';
 import { LumaRay32KeyframeEditor } from './LumaRay32KeyframeEditor';
 import { StoryboardLaunchModal } from './StoryboardLaunchModal';
 
@@ -484,6 +485,7 @@ export function WorkspaceComposerSurface({
                 totalDurationSec: multiPromptTotalSec,
                 minDurationSec: MULTI_PROMPT_MIN_SEC,
                 maxDurationSec: MULTI_PROMPT_MAX_SEC,
+                maxPromptChars: KLING_MULTI_PROMPT_SCENE_MAX_CHARS,
                 onToggle: setMultiPromptEnabled,
                 onAddScene: handleMultiPromptAddScene,
                 onRemoveScene: handleMultiPromptRemoveScene,

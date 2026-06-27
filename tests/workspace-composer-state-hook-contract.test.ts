@@ -16,11 +16,17 @@ test('workspace composer mode and settings state is owned by a route-local hook'
     process.cwd(),
     'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts'
   );
+  const multiPromptStatePath = path.join(
+    process.cwd(),
+    'frontend/app/(core)/(workspace)/app/_lib/workspace-multi-prompt-state.ts'
+  );
   assert.equal(fs.existsSync(hookPath), true);
   assert.equal(fs.existsSync(engineModeHookPath), true);
+  assert.equal(fs.existsSync(multiPromptStatePath), true);
 
   const hookSource = fs.readFileSync(hookPath, 'utf8');
   const engineModeHookSource = fs.readFileSync(engineModeHookPath, 'utf8');
+  const multiPromptStateSource = fs.readFileSync(multiPromptStatePath, 'utf8');
 
   assert.match(appSource, /import \{ useWorkspaceComposerState \} from '\.\/_hooks\/useWorkspaceComposerState';/);
   assert.match(appSource, /useWorkspaceComposerState\(\{/);
@@ -34,7 +40,7 @@ test('workspace composer mode and settings state is owned by a route-local hook'
 
   assert.match(hookSource, /export function useWorkspaceComposerState/);
   assert.match(hookSource, /useWorkspaceEngineModeState/);
-  assert.match(hookSource, /const multiPromptTotalSec = useMemo/);
+  assert.match(hookSource, /getWorkspaceMultiPromptState/);
   assert.match(hookSource, /const handleDurationChange = useCallback/);
   assert.match(hookSource, /const handleResolutionChange = useCallback/);
 
@@ -42,6 +48,9 @@ test('workspace composer mode and settings state is owned by a route-local hook'
   assert.doesNotMatch(hookSource, /const audioWorkflowUnsupported =/);
   assert.doesNotMatch(hookSource, /getUnifiedSeedanceMode/);
   assert.doesNotMatch(hookSource, /getUnifiedHappyHorseMode/);
+
+  assert.match(multiPromptStateSource, /export function getWorkspaceMultiPromptState/);
+  assert.match(multiPromptStateSource, /KLING_MULTI_PROMPT_SCENE_MAX_CHARS/);
 
   assert.match(engineModeHookSource, /export function useWorkspaceEngineModeState/);
   assert.match(engineModeHookSource, /const implicitMode = useMemo<Mode>/);

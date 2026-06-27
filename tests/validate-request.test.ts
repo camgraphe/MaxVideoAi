@@ -142,6 +142,25 @@ test('Veo 3.1 Fast T2V supports text prompts', () => {
   assert.deepEqual(valid, OK);
 });
 
+test('Kling multi-prompt scenes use the provider 512 character scene limit', () => {
+  const valid = validateRequest('kling-3-pro', 't2v', {
+    multi_prompt: [{ prompt: 'x'.repeat(512), duration: 5 }],
+    duration: 5,
+    aspect_ratio: '16:9',
+  });
+  assert.deepEqual(valid, OK);
+
+  const invalid = validateRequest('kling-3-pro', 't2v', {
+    multi_prompt: [{ prompt: 'x'.repeat(513), duration: 5 }],
+    duration: 5,
+    aspect_ratio: '16:9',
+  });
+  assert.equal(invalid.ok, false);
+  assert.equal(invalid.error?.field, 'multi_prompt[0].prompt');
+  assert.deepEqual(invalid.error?.allowed, [512]);
+  assert.equal(invalid.error?.value, 513);
+});
+
 test('Veo 3.1 Fast I2V requires image_url', () => {
   const invalid = validateRequest('veo-3-1-fast', 'i2v', {
     prompt: 'Animate this still',
