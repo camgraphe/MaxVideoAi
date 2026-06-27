@@ -63,7 +63,7 @@ export const DEFAULT_SEED_AUDIO_PITCH = 0;
 const AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO = 4;
 const AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO = 8;
 const AUDIO_PRICE_MIRELO_SFX_CENTS_PER_SECOND = 1;
-const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 7.5;
+const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 
 export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];

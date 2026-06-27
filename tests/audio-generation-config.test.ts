@@ -100,11 +100,11 @@ test('audio pricing uses voice clone request and preview costs', () => {
     script: 'Short cloned narration.',
   });
 
-  assert.equal(pricing.vendorShareCents, 3);
-  assert.equal(pricing.totalCents, 8);
-  assert.equal(pricing.base.amountCents, 3);
+  assert.equal(pricing.vendorShareCents, 7);
+  assert.equal(pricing.totalCents, 18);
+  assert.equal(pricing.base.amountCents, 7);
   assert.deepEqual(pricing.addons, []);
-  assert.equal(pricing.margin.amountCents, 5);
+  assert.equal(pricing.margin.amountCents, 11);
   assert.deepEqual(pricing.meta.vendorCostComponents, [
     {
       type: 'voice_seed_audio_1_0',
@@ -112,7 +112,7 @@ test('audio pricing uses voice clone request and preview costs', () => {
       model: 'bytedance/seed-audio-1.0',
       unit: 'minute',
       units: 0.33,
-      amountCents: 3,
+      amountCents: 7,
     },
   ]);
 });
@@ -181,9 +181,9 @@ test('audio pricing does not cap voice script estimates at the music duration li
 
   assert.equal(estimatedDuration, 400);
   assert.equal(pricing.base.seconds, 400);
-  assert.equal(pricing.vendorShareCents, 50);
-  assert.equal(pricing.margin.amountCents, 75);
-  assert.equal(pricing.totalCents, 125);
+  assert.equal(pricing.vendorShareCents, 125);
+  assert.equal(pricing.margin.amountCents, 188);
+  assert.equal(pricing.totalCents, 313);
 });
 
 test('audio pricing includes sound design and optional music for cinematic renders', () => {
