@@ -396,12 +396,22 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'kling-o3-pro', 'kling-o3-4k']
+    [
+      'seedance-2-0',
+      'seedance-2-0-fast',
+      'ltx-2-3-fast',
+      'veo-3-1',
+      'gemini-omni-flash',
+      'veo-3-1-lite',
+      'kling-o3-pro',
+      'kling-o3-4k',
+    ]
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
       'seedance-2-0-vs-veo-3-1',
+      'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
       'seedance-2-0-vs-seedance-2-0-fast',
@@ -430,6 +440,7 @@ test('Header model menu promotes Seedance Fast while keeping the Veo family expa
     'seedance-2-0-fast',
     'ltx-2-3-fast',
     'veo-3-1',
+    'gemini-omni-flash',
     'veo-3-1-lite',
     'kling-o3-pro',
     'kling-o3-4k',
@@ -483,13 +494,25 @@ test('Examples family current model groups do not classify new delivery models a
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
 });
 
-test('Engine select uses the same family priority as the examples hub', () => {
-  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
-  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling'];
+test('Engine select keeps its app-specific family priority stable', () => {
+  const expectedPriority = [
+    'seedance',
+    'kling',
+    'veo',
+    'happy-horse',
+    'luma',
+    'sora',
+    'ltx',
+    'wan',
+    'pika',
+    'hailuo',
+  ];
+  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, expectedPriority);
+  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling', 'luma', 'pika', 'hailuo'];
   const sorted = families
     .slice()
     .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));
-  assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
+  assert.deepEqual(sorted, expectedPriority);
 });
 
 test('Homepage admin hero pricing labels preserve per-second suffixes', () => {

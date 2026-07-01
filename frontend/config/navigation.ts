@@ -87,6 +87,7 @@ const MODEL_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-0-fast', label: 'Seedance 2.0 Fast' },
   { slug: 'ltx-2-3-fast', label: 'LTX 2.3 Fast' },
   { slug: 'veo-3-1', label: 'Veo 3.1' },
+  { slug: 'gemini-omni-flash', label: 'Gemini Omni Flash' },
   { slug: 'veo-3-1-lite', label: 'Veo 3.1 Lite' },
   { slug: 'kling-o3-pro', label: 'Kling 3.0 Omni Pro' },
   { slug: 'kling-o3-4k', label: 'Kling 3.0 Omni 4K' },
@@ -115,6 +116,7 @@ const FOOTER_EXAMPLES_MENU: LabeledSlug[] = FOOTER_EXAMPLE_FAMILIES
 
 const COMPARE_MENU: LabeledSlug[] = [
   { slug: 'seedance-2-0-vs-veo-3-1', label: 'Seedance 2.0 vs Veo 3.1' },
+  { slug: 'gemini-omni-flash-vs-veo-3-1', label: 'Gemini Omni Flash vs Veo 3.1' },
   { slug: 'kling-3-pro-vs-kling-o3-pro', label: 'Kling 3 Pro vs Kling 3.0 Omni Pro' },
   { slug: 'ltx-2-3-pro-vs-veo-3-1', label: 'LTX 2.3 Pro vs Veo 3.1' },
   { slug: 'seedance-2-0-vs-seedance-2-0-fast', label: 'Seedance 2.0 vs Fast' },

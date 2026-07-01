@@ -4,6 +4,8 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
+import scoresFile from '../data/benchmarks/engine-scores.v1.json' with { type: 'json' };
+import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
@@ -19,6 +21,19 @@ const OMNI_COMPARE_SLUGS = [
   'gemini-omni-flash-vs-veo-3-1-fast',
   'gemini-omni-flash-vs-sora-2',
   'gemini-omni-flash-vs-seedance-2-0',
+] as const;
+const SCORE_FIELDS = [
+  'fidelity',
+  'visualQuality',
+  'motion',
+  'anatomy',
+  'textRendering',
+  'consistency',
+  'lipsyncQuality',
+  'sequencingQuality',
+  'controllability',
+  'speedStability',
+  'pricing',
 ] as const;
 
 function readModelContent(locale: (typeof LOCALES)[number]) {
@@ -82,4 +97,26 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.ok(ES_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG], 'missing ES Omni vs Veo override');
   assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.heroIntro ?? '', /scorecard\/specs page/);
   assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.quickVerdict?.body ?? '', /first\/last-frame|extend/i);
+});
+
+test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () => {
+  const score = scoresFile.scores.find((entry) => entry.modelSlug === 'gemini-omni-flash');
+  assert.ok(score, 'Gemini Omni Flash should have a benchmark score row for compare scorecards');
+  for (const field of SCORE_FIELDS) {
+    assert.equal(typeof (score as Record<string, unknown>)[field], 'number', `gemini-omni-flash.${field} should be scored`);
+  }
+  assert.equal(score.controllability, 9);
+  assert.equal(score.pricing, 8.4);
+
+  assert.ok(MARKETING_MODEL_SLUGS.includes('gemini-omni-flash'));
+  assert.ok(MARKETING_NAV_MODELS.some((item) => item.key === 'gemini-omni-flash'));
+  assert.ok(MARKETING_NAV_COMPARE.some((item) => item.key === PRIMARY_COMPARE_SLUG));
+  assert.ok(
+    MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') > MARKETING_MODEL_SLUGS.indexOf('veo-3-1'),
+    'Gemini Omni Flash should sit inside the Google/Veo model cluster'
+  );
+  assert.ok(
+    MARKETING_MODEL_SLUGS.indexOf('gemini-omni-flash') < MARKETING_MODEL_SLUGS.indexOf('veo-3-1-lite'),
+    'Gemini Omni Flash should be promoted before the Lite variant'
+  );
 });

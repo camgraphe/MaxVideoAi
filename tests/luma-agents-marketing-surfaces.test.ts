@@ -151,7 +151,10 @@ test('Luma Ray 2 routes stay indexable but move behind current Ray 3.2 discovery
   assert.equal(ray32.surfaces.app.enabled, true);
   assert.equal(ray2.surfaces.app.enabled, true);
   assert.equal(ray2Flash.surfaces.app.enabled, true);
-  assert.equal((ENGINE_SELECT_FAMILY_PRIORITY as readonly string[]).includes('luma'), false);
+  const engineSelectFamilyPriority = ENGINE_SELECT_FAMILY_PRIORITY as readonly string[];
+  assert.equal(engineSelectFamilyPriority.includes('luma'), true);
+  assert.ok(engineSelectFamilyPriority.indexOf('luma') > engineSelectFamilyPriority.indexOf('happy-horse'));
+  assert.ok(engineSelectFamilyPriority.indexOf('luma') < engineSelectFamilyPriority.indexOf('sora'));
 });
 
 test('Luma catalog placement exposes Ray 3.2 without dethroning current leaders', () => {
