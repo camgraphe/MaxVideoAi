@@ -1,4 +1,5 @@
 import type { Mode } from '@/types/engines';
+import { isGoogleVertexOmniEngine, isGoogleVertexOmniModeSupported } from './google-vertex-omni/model-map';
 import { isGoogleVertexVeoEngine, isGoogleVertexVeoModeSupported } from './google-vertex-veo/model-map';
 import { isKlingDirectEngine, isKlingDirectModeSupported } from './kling-direct/model-map';
 import {
@@ -24,7 +25,11 @@ type RoutingEnv = Partial<Record<
   | 'GOOGLE_VERTEX_VEO_PUBLIC_EXTEND_ROUTING_ENABLED'
   | 'GOOGLE_VERTEX_VEO_FALLBACK_TO_FAL_ENABLED'
   | 'GOOGLE_VERTEX_VEO_INPUT_GCS_URI'
-  | 'GOOGLE_VERTEX_VEO_ADMIN_ONLY',
+  | 'GOOGLE_VERTEX_VEO_ADMIN_ONLY'
+  | 'GOOGLE_VERTEX_OMNI_ENABLED'
+  | 'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED'
+  | 'GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED'
+  | 'GOOGLE_VERTEX_OMNI_ADMIN_ONLY',
   string | undefined
 >>;
 
@@ -45,6 +50,12 @@ export type VideoProviderRoutingPlan =
   | {
       kind: 'google_vertex_veo_primary';
       primaryProvider: 'google_vertex_veo_direct';
+      fallbackProvider: 'fal';
+      fallbackEnabled: boolean;
+    }
+  | {
+      kind: 'google_vertex_omni_primary';
+      primaryProvider: 'google_vertex_omni_direct';
       fallbackProvider: 'fal';
       fallbackEnabled: boolean;
     }
@@ -75,6 +86,23 @@ export function resolveVideoProviderRoutingPlan(params: {
   env?: RoutingEnv;
 }): VideoProviderRoutingPlan {
   const falOnly: VideoProviderRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  if (isGoogleVertexOmniEngine(params.engineId)) {
+    if (!isGoogleVertexOmniModeSupported(params.engineId, params.mode)) return falOnly;
+    if (!flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_ENABLED'))) return falOnly;
+
+    const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED'));
+    const adminOnly = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_ADMIN_ONLY') ?? 'true');
+    if (adminOnly && !params.isAdmin) return falOnly;
+    if (!publicRoutingEnabled && !params.isAdmin) return falOnly;
+
+    return {
+      kind: 'google_vertex_omni_primary',
+      primaryProvider: 'google_vertex_omni_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED')),
+    };
+  }
+
   if (isGoogleVertexVeoEngine(params.engineId)) {
     if (!isGoogleVertexVeoModeSupported(params.engineId, params.mode)) return falOnly;
     if (!flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_VEO_ENABLED'))) return falOnly;
