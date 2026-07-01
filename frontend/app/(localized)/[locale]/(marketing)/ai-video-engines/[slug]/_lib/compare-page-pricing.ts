@@ -108,7 +108,7 @@ export function getPrelaunchPricingLabel(locale: AppLocale) {
 
 export function isPrelaunchAvailability(entry: EngineCatalogEntry) {
   const availability = String(entry.availability ?? '').toLowerCase();
-  return availability === 'waitlist' || availability === 'limited';
+  return availability === 'waitlist';
 }
 
 export function getPrelaunchCompareNotice(locale: AppLocale) {

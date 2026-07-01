@@ -3,11 +3,13 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
 import scoresFile from '../data/benchmarks/engine-scores.v1.json' with { type: 'json' };
 import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
 import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
 import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
@@ -97,6 +99,13 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
   assert.ok(ES_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG], 'missing ES Omni vs Veo override');
   assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.heroIntro ?? '', /scorecard\/specs page/);
   assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.quickVerdict?.body ?? '', /first\/last-frame|extend/i);
+});
+
+test('Gemini Omni Flash limited preview is not labeled as pre-launch on compare pages', () => {
+  const entry = engineCatalog.find((candidate) => candidate.modelSlug === 'gemini-omni-flash');
+  assert.ok(entry, 'Gemini Omni Flash catalog entry should exist');
+  assert.equal(entry.availability, 'limited');
+  assert.equal(isPrelaunchAvailability(entry), false);
 });
 
 test('Gemini Omni Flash has benchmark scores and a promoted model-nav link', () => {
