@@ -79,25 +79,6 @@ export function resolveGeminiOmniUnifiedMode({
   return supportsMode(engine, 't2v') ? 't2v' : engine.modes[0] ?? 't2v';
 }
 
-export function getGeminiOmniModeDisabledReason(
-  mode: Mode,
-  state: GeminiOmniWorkflowState
-): string | null {
-  if (state.hasSourceVideo) {
-    return mode === 'v2v' ? null : GEMINI_OMNI_SOURCE_VIDEO_ACTIVE_MESSAGE;
-  }
-  if (state.hasReferenceImages) {
-    return mode === 'ref2v' ? null : GEMINI_OMNI_REFERENCE_IMAGES_ACTIVE_MESSAGE;
-  }
-  if (state.hasSourceImage) {
-    return mode === 'i2v' ? null : GEMINI_OMNI_SOURCE_IMAGE_ACTIVE_MESSAGE;
-  }
-  if (state.hasPreviousInteraction) {
-    return mode === 'retake' ? null : GEMINI_OMNI_REFINE_ACTIVE_MESSAGE;
-  }
-  return null;
-}
-
 export function getGeminiOmniAssetFieldDisabledReason(
   fieldId: string,
   state: GeminiOmniWorkflowState

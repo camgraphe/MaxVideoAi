@@ -2,8 +2,7 @@
 
 import { useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { Camera, Film, History, Images, RotateCcw, Volume2, WandSparkles } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { Camera, Film, History, Volume2 } from 'lucide-react';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
 import { Button } from '@/components/ui/Button';
@@ -11,7 +10,6 @@ import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/typ
 import {
   getGeminiOmniAssetFieldDisabledReason,
   getGeminiOmniAssetState,
-  getGeminiOmniModeDisabledReason,
   hasGeminiOmniPreviousInteraction,
 } from '../../_lib/gemini-omni-unified-workflow';
 import type { ReferenceAsset } from '../../_lib/workspace-assets';
@@ -26,18 +24,11 @@ export const OMNI_CUSTOM_FIELD_IDS = new Set([
   'prompt_edit_instruction',
 ]);
 
-type OmniModeOption = {
-  mode: Mode;
-  label: string;
-  icon: LucideIcon;
-};
-
 type OmniStudioPanelProps = {
   engine: EngineCaps;
   caps?: EngineModeUiCaps;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState | null>>;
-  activeMode: Mode;
   submissionMode: Mode;
   assetFields: AssetFieldConfig[];
   extraFields: WorkspaceInputFieldEntry[];
@@ -46,17 +37,8 @@ type OmniStudioPanelProps = {
   onAssetRemove: (field: EngineInputField, index: number) => void;
   onOpenLibrary: (field: EngineInputField, slotIndex: number) => void;
   onNotice: (message: string) => void;
-  onModeToggle: (mode: Mode | null) => void;
   disabledReason?: string | null;
 };
-
-const OMNI_MODE_OPTIONS: OmniModeOption[] = [
-  { mode: 't2v', label: 'Text', icon: WandSparkles },
-  { mode: 'i2v', label: 'Image', icon: Images },
-  { mode: 'ref2v', label: 'Refs', icon: Camera },
-  { mode: 'v2v', label: 'Video', icon: Film },
-  { mode: 'retake', label: 'Refine', icon: RotateCcw },
-];
 
 function fieldAppliesToMode(field: EngineInputField, mode: Mode): boolean {
   return !field.modes || field.modes.includes(mode);
@@ -80,7 +62,6 @@ export function OmniStudioPanel({
   caps,
   form,
   setForm,
-  activeMode,
   submissionMode,
   assetFields,
   extraFields,
@@ -89,13 +70,8 @@ export function OmniStudioPanel({
   onAssetRemove,
   onOpenLibrary,
   onNotice,
-  onModeToggle,
   disabledReason = null,
 }: OmniStudioPanelProps) {
-  const visibleModes = useMemo(
-    () => OMNI_MODE_OPTIONS.filter((option) => engine.modes.includes(option.mode)),
-    [engine.modes]
-  );
   const omniAssetState = useMemo(() => getGeminiOmniAssetState(inputAssets), [inputAssets]);
   const omniWorkflowState = useMemo(
     () => ({
@@ -111,6 +87,14 @@ export function OmniStudioPanel({
   const previousInteractionField = fieldById(extraFields, 'previous_interaction_id');
   const storeField = fieldById(extraFields, 'store_interaction');
   const storeInteraction = form.extraInputValues.store_interaction !== false;
+  const showPreviousInteractionField =
+    previousInteractionField &&
+    submissionMode === 'retake' &&
+    fieldAppliesToMode(previousInteractionField, submissionMode);
+  const showEditField =
+    editField &&
+    (omniAssetState.hasSourceVideo || omniWorkflowState.hasPreviousInteraction) &&
+    fieldAppliesToMode(editField, submissionMode);
 
   const writeExtraValue = (key: string, value: string | boolean | undefined) => {
     setForm((current) => {
@@ -125,36 +109,10 @@ export function OmniStudioPanel({
     });
   };
 
-  const handleModeClick = (mode: Mode) => {
-    onModeToggle(mode === 't2v' ? null : mode);
-  };
-
   return (
     <section className="space-y-4 rounded-[24px] border border-border/60 bg-surface-2/70 p-4 dark:border-white/[0.08] dark:bg-white/[0.035]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {visibleModes.map((option) => {
-            const Icon = option.icon;
-            const selected = activeMode === option.mode || submissionMode === option.mode;
-            const modeDisabledReason = getGeminiOmniModeDisabledReason(option.mode, omniWorkflowState);
-            return (
-              <Button
-                key={option.mode}
-                type="button"
-                variant={selected ? 'primary' : 'outline'}
-                size="sm"
-                onClick={() => handleModeClick(option.mode)}
-                disabled={Boolean(modeDisabledReason)}
-                title={modeDisabledReason ?? option.label}
-                className="h-10 rounded-2xl px-4 text-[12px] font-semibold disabled:opacity-45"
-              >
-                <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
-                {option.label}
-              </Button>
-            );
-          })}
-        </div>
-        {storeField ? (
+      {storeField ? (
+        <div className="flex justify-end">
           <Button
             type="button"
             size="sm"
@@ -166,8 +124,8 @@ export function OmniStudioPanel({
             <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             Store
           </Button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       {visibleAssetFields.length ? (
         <div className="grid gap-3 lg:grid-cols-2">
@@ -197,7 +155,7 @@ export function OmniStudioPanel({
       ) : null}
 
       <div className="grid gap-3 lg:grid-cols-2">
-        {previousInteractionField && fieldAppliesToMode(previousInteractionField, submissionMode) ? (
+        {showPreviousInteractionField ? (
           <label className="flex flex-col gap-1.5 lg:col-span-2">
             <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">
               {previousInteractionField.label}
@@ -237,7 +195,7 @@ export function OmniStudioPanel({
             />
           </label>
         ) : null}
-        {editField && fieldAppliesToMode(editField, submissionMode) ? (
+        {showEditField ? (
           <label className="flex flex-col gap-1.5 lg:col-span-2">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-micro text-text-muted">
               <Film className="h-3.5 w-3.5" aria-hidden="true" />

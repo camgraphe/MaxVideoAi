@@ -528,7 +528,6 @@ export function WorkspaceComposerSurface({
                 caps={capability}
                 form={form}
                 setForm={setForm}
-                activeMode={activeMode}
                 submissionMode={submissionMode}
                 assetFields={inputSchemaSummary.assetFields}
                 extraFields={omniExtraFields}
@@ -537,7 +536,6 @@ export function WorkspaceComposerSurface({
                 onAssetRemove={handleAssetRemove}
                 onOpenLibrary={handleOpenAssetLibrary}
                 onNotice={showNotice}
-                onModeToggle={handleComposerModeToggle}
                 disabledReason={guestUploadLockedReason}
               />
             ) : null}

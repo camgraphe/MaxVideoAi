@@ -5,7 +5,6 @@ import test from 'node:test';
 
 import {
   getGeminiOmniAssetFieldDisabledReason,
-  getGeminiOmniModeDisabledReason,
   resolveGeminiOmniUnifiedMode,
 } from '../frontend/app/(core)/(workspace)/app/_lib/gemini-omni-unified-workflow.ts';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema.ts';
@@ -59,9 +58,11 @@ test('Gemini Omni Studio owns Omni assets and hides duplicate generic controls',
 test('Gemini Omni Studio exposes expected controls and uses shared asset primitives', () => {
   const source = readFileSync(omniPanelPath, 'utf8');
   assert.match(source, /AssetDropzone/, 'Omni media slots should reuse AssetDropzone');
-  assert.match(source, /WandSparkles|Images|Film|RotateCcw/, 'task controls should use lucide icons');
-  assert.match(source, /getGeminiOmniModeDisabledReason/, 'Omni mode buttons should gray incompatible workflows');
+  assert.doesNotMatch(source, /OMNI_MODE_OPTIONS/, 'Omni workflow buttons should not be rendered manually');
+  assert.doesNotMatch(source, /onModeToggle/, 'Omni workflow should route from assets instead of manual buttons');
   assert.match(source, /getGeminiOmniAssetFieldDisabledReason/, 'Omni media slots should gray incompatible inputs');
+  assert.match(source, /omniAssetState\.hasSourceVideo/, 'video edit settings should depend on a source video');
+  assert.match(source, /showEditField/, 'video edit settings should be conditionally rendered');
   assert.match(source, /prompt_audio_direction/);
   assert.match(source, /prompt_camera_direction/);
   assert.match(source, /prompt_edit_instruction/);
@@ -119,15 +120,13 @@ test('Gemini Omni unified schema keeps media slots visible from text and refine 
   assert.ok(refineSchema.secondaryFields.some(({ field }) => field.id === 'previous_interaction_id'));
 });
 
-test('Gemini Omni incompatible modes and asset fields return disabled reasons', () => {
+test('Gemini Omni incompatible asset fields return disabled reasons', () => {
   const videoState = {
     hasSourceImage: false,
     hasReferenceImages: false,
     hasSourceVideo: true,
     hasPreviousInteraction: false,
   };
-  assert.equal(getGeminiOmniModeDisabledReason('v2v', videoState), null);
-  assert.match(getGeminiOmniModeDisabledReason('i2v', videoState) ?? '', /Source video controls/);
   assert.equal(getGeminiOmniAssetFieldDisabledReason('video_url', videoState), null);
   assert.match(getGeminiOmniAssetFieldDisabledReason('image_url', videoState) ?? '', /Source video controls/);
 
@@ -137,7 +136,5 @@ test('Gemini Omni incompatible modes and asset fields return disabled reasons', 
     hasSourceVideo: false,
     hasPreviousInteraction: true,
   };
-  assert.equal(getGeminiOmniModeDisabledReason('retake', refineState), null);
-  assert.match(getGeminiOmniModeDisabledReason('t2v', refineState) ?? '', /previous interaction id/i);
   assert.match(getGeminiOmniAssetFieldDisabledReason('reference_images', refineState) ?? '', /previous interaction id/i);
 });
