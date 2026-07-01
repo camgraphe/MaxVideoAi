@@ -2,7 +2,10 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { test } from 'node:test';
 
+import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
+
 const tokensSource = readFileSync('frontend/src/styles/tokens.css', 'utf8');
+const themeTokensSource = readFileSync('frontend/lib/theme-tokens.ts', 'utf8');
 const globalsSource = readFileSync('frontend/app/globals.css', 'utf8');
 const homeSource = [
   readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
@@ -38,6 +41,21 @@ test('dark mode uses the reference deep navy palette without changing light toke
 
   assert.doesNotMatch(darkTokenBlock, /--bg: #0A111E;/);
   assert.doesNotMatch(darkTokenBlock, /--surface-glass-80: #111A2C;/);
+});
+
+test('engine brand ids used by catalog have theme tokens in light and dark modes', () => {
+  const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const brandIds = [...new Set(engineCatalog.map((entry) => entry.brandId).filter(Boolean))].sort();
+
+  for (const brandId of brandIds) {
+    const escaped = escapeRegExp(brandId);
+    assert.match(lightTokenBlock, new RegExp(`--engine-${escaped}-bg: #[0-9A-Fa-f]{6};`));
+    assert.match(lightTokenBlock, new RegExp(`--engine-${escaped}-ink: #[0-9A-Fa-f]{6};`));
+    assert.match(darkTokenBlock, new RegExp(`--engine-${escaped}-bg: #[0-9A-Fa-f]{6};`));
+    assert.match(darkTokenBlock, new RegExp(`--engine-${escaped}-ink: #[0-9A-Fa-f]{6};`));
+    assert.match(themeTokensSource, new RegExp(`key: 'engine-${escaped}-bg'`));
+    assert.match(themeTokensSource, new RegExp(`key: 'engine-${escaped}-ink'`));
+  }
 });
 
 test('global dark background adds reference-style depth while light remains plain token background', () => {
