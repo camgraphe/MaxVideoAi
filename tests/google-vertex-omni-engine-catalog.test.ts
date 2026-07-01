@@ -18,6 +18,10 @@ test('Gemini Omni Flash is exposed as a Vertex-backed Google video engine', () =
   assert.deepEqual(entry.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'retake']);
   assert.deepEqual(entry.engine.aspectRatios, ['16:9', '9:16']);
   assert.deepEqual(entry.engine.resolutions, ['720p']);
+  assert.equal(entry.engine.pricingDetails?.perSecondCents?.default, 10);
+  assert.equal(entry.engine.pricingDetails?.perSecondCents?.byResolution?.['720p'], 10);
+  assert.equal(entry.engine.pricing?.base, 0.1);
+  assert.equal(entry.pricingHint?.amountCents, 100);
 });
 
 test('Gemini Omni Flash catalog keeps Veo/Fal-only controls out of the schema', () => {

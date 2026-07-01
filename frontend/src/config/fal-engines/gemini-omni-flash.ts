@@ -148,21 +148,21 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
   pricingDetails: {
     currency: 'USD',
     perSecondCents: {
-      default: 12,
+      default: 10,
       byResolution: {
-        '720p': 12,
+        '720p': 10,
       },
     },
     maxDurationSec: 10,
   },
   pricing: {
     unit: 'USD/s',
-    base: 0.12,
+    base: 0.1,
     byResolution: {
-      '720p': 0.12,
+      '720p': 0.1,
     },
     currency: 'USD',
-    notes: 'Temporary MaxVideoAI preview estimate for Gemini Omni Flash while Google direct Omni video pricing is finalized.',
+    notes: 'Competitive MaxVideoAI preview estimate aligned near Fal.ai public Gemini Omni Flash rates.',
   },
   updatedAt: '2026-06-30T00:00:00Z',
   ttlSec: 600,
@@ -309,7 +309,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     ],
     pricingHint: {
       currency: 'USD',
-      amountCents: 120,
+      amountCents: 100,
       durationSeconds: 10,
       resolution: '720p',
       label: 'Preview estimate',
