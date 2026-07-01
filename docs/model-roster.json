@@ -160,6 +160,22 @@
     }
   },
   {
+    "engineId": "gemini-omni-flash",
+    "marketingName": "Gemini Omni Flash",
+    "brandId": "google-gemini",
+    "modelSlug": "gemini-omni-flash",
+    "family": "gemini",
+    "versionLabel": "Preview",
+    "availability": "limited",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "veo-3-1",
     "marketingName": "Google Veo 3.1",
     "brandId": "google-veo",

@@ -70,6 +70,22 @@ test('Gemini Omni Flash response normalizes completed Interactions video output'
   });
 });
 
+test('Gemini Omni Flash response accepts SDK output_video data payloads', () => {
+  const normalized = normalizeGoogleVertexOmniInteraction({
+    id: 'v1_omni_sdk',
+    status: 'completed',
+    output_video: {
+      data: 'b21uaS1tcDQtYnl0ZXM=',
+      mime_type: 'video/mp4',
+    },
+  });
+
+  assert.equal(normalized.providerJobId, 'v1_omni_sdk');
+  assert.equal(normalized.status, 'completed');
+  assert.equal(normalized.videoUrl, null);
+  assert.equal(normalized.message, null);
+});
+
 test('Gemini Omni Flash direct submission stores the Interactions id and provider', async () => {
   const queries: Array<{ sql: string; params?: unknown[] }> = [];
   const metrics: Array<{ kind: string; event?: unknown }> = [];
@@ -143,6 +159,69 @@ test('Gemini Omni Flash direct submission stores the Interactions id and provide
   assert.equal(jobUpdate.params?.[2], 'google_vertex_omni_direct');
   assert.equal(jobUpdate.params?.[3], 'v1_omni_123');
   assert.equal(metrics[0]?.kind, 'accepted');
+});
+
+test('Gemini Omni Flash unsupported direct input fails without Fal when fallback is disabled', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const metrics: Array<{ kind: string; event?: unknown }> = [];
+  let falCalls = 0;
+
+  const result = await submitGoogleVertexOmniGenerateTask({
+    jobId: 'job_omni_unsupported',
+    userId: 'user_123',
+    engineId: 'gemini-omni-flash',
+    engineLabel: 'Gemini Omni Flash',
+    mode: 't2v',
+    prompt: 'A product launch video',
+    negativePrompt: 'blurry',
+    durationSec: 8,
+    aspectRatio: '16:9',
+    audioEnabled: true,
+    placeholderThumb: '/assets/frames/thumb-16x9.svg',
+    pricing: { amountCents: 99, currency: 'USD' },
+    paymentStatus: 'paid_wallet',
+    pendingReceipt: null,
+    paymentMode: 'wallet',
+    walletChargeReserved: false,
+    fallbackToFalEnabled: false,
+    falPayload: {
+      engineId: 'gemini-omni-flash',
+      prompt: 'A product launch video',
+      mode: 't2v',
+      durationSec: 8,
+      aspectRatio: '16:9',
+      audio: true,
+    },
+    falInputSummary: { hasImage: false, hasVideo: false, hasAudio: false, referenceImageCount: 0 },
+    isLumaRay2: false,
+    batchId: null,
+    groupId: null,
+    iterationIndex: null,
+    iterationCount: null,
+    renderIds: null,
+    heroRenderId: null,
+    localKey: null,
+    logMetricFn: (kind, event) => {
+      metrics.push({ kind, event });
+    },
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        return [] as never;
+      },
+      submitFalGenerateTaskFn: async () => {
+        falCalls += 1;
+        throw new Error('Fal fallback should not run');
+      },
+    },
+  });
+
+  assert.equal(result.ok, false);
+  assert.equal(result.status, 400);
+  assert.equal(result.body.error, 'negative_prompt_not_supported');
+  assert.equal(falCalls, 0);
+  assert.ok(queries.some((entry) => /SET status = 'failed'/.test(entry.sql)));
+  assert.equal(metrics[0]?.kind, 'rejected');
 });
 
 test('Gemini Omni Flash poll copies Interactions video output before marking the job completed', async () => {

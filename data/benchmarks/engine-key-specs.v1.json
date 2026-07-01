@@ -184,6 +184,41 @@
       }
     },
     {
+      "modelSlug": "gemini-omni-flash",
+      "sources": [
+        "https://maxvideoai.com/models/gemini-omni-flash",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-flash-preview",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/models/interactions-api",
+        "https://ai.google.dev/gemini-api/docs/omni"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (short source-video edit and conversational refine)",
+        "firstLastFrame": "Not supported in current Omni route",
+        "referenceImageStyle": "Supported (up to 10 reference images)",
+        "referenceVideo": "Supported (short source video for edit; previous interaction id for refine)",
+        "maxResolution": "720p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Prompt-directed only",
+        "cameraMotionControls": "Prompt-based sound, camera and edit directions",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Google preview: Jun 30 2026"
+      }
+    },
+    {
       "modelSlug": "ltx-2",
       "sources": [
         "https://maxvideoai.com/models/ltx-2",

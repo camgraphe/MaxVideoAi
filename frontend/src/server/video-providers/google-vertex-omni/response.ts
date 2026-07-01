@@ -37,6 +37,10 @@ function extractUsage(raw: unknown): NormalizedVideoProviderTask['usage'] {
 function contentBlocks(raw: unknown): Record<string, unknown>[] {
   const record = asRecord(raw);
   const candidates: unknown[] = [];
+  const outputVideo = asRecord(record?.output_video) ?? asRecord(record?.outputVideo);
+  if (outputVideo) {
+    candidates.push({ type: 'video', ...outputVideo });
+  }
   if (Array.isArray(record?.steps)) {
     for (const step of record.steps) {
       const stepRecord = asRecord(step);

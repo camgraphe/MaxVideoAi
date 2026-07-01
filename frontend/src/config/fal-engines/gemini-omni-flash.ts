@@ -324,7 +324,8 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         includeInFamilyCopy: false,
       },
       compare: {
-        suggestOpponents: ['veo-3-1-fast', 'veo-3-1-lite', 'ltx-2-3-pro', 'sora-2'],
+        suggestOpponents: ['veo-3-1', 'veo-3-1-fast', 'sora-2', 'seedance-2-0'],
+        publishedPairs: ['veo-3-1', 'veo-3-1-fast', 'sora-2', 'seedance-2-0'],
         includeInHub: true,
       },
       app: {

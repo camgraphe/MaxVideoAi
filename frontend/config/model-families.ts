@@ -82,6 +82,22 @@ export const MODEL_FAMILIES = [
     },
   },
   {
+    id: 'gemini',
+    label: 'Gemini',
+    navLabel: 'Gemini Omni Flash',
+    brandId: 'google-gemini',
+    defaultModelSlug: 'gemini-omni-flash',
+    routeAliases: ['gemini-omni-flash'],
+    aliases: ['google-omni-flash', 'omni-flash', 'gemini-omni', 'gemini-omni-flash-preview'],
+    prefixes: ['gemini-omni', 'google-omni'],
+    examplesPage: {
+      stage: 'hidden',
+      showInNav: false,
+      publishedModelSlugs: [],
+      currentModelSlugs: ['gemini-omni-flash'],
+    },
+  },
+  {
     id: 'luma',
     label: 'Luma Ray',
     navLabel: 'Ray 3.2',

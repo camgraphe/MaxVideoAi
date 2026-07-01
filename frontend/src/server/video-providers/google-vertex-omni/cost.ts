@@ -1,6 +1,6 @@
 import type { ProviderCostEstimate, ProviderCostInput } from '../types';
 
-export function estimateGoogleVertexOmniCost(_input: ProviderCostInput): ProviderCostEstimate {
+export function estimateGoogleVertexOmniCost({}: ProviderCostInput): ProviderCostEstimate {
   return {
     providerCostUnits: null,
     providerCostUsd: null,

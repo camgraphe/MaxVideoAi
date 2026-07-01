@@ -30,4 +30,10 @@ test('route context helper exposes the expected guard contract', () => {
   assert.match(helperSource, /requireAdmin/);
   assert.match(helperSource, /randomUUID/);
   assert.match(helperSource, /isVideoMode/);
+  assert.match(helperSource, /isGoogleVertexOmniEngine/);
+
+  const directProviderAdminGuard = helperSource.match(/if \(\s*!\s*isBytePlusV1a[\s\S]*?\)\s*\{/)?.[0] ?? '';
+  assert.match(directProviderAdminGuard, /isGoogleVertexOmniEngine\(engine\.id\)/);
+  assert.match(helperSource, /GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED/);
+  assert.match(helperSource, /isGoogleVertexOmniEngine\(engine\.id\)[\s\S]*providerRoutingPlan\.primaryProvider === 'fal'/);
 });

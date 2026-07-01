@@ -3,6 +3,7 @@
     { "left": "happy-horse-1-1", "right": "seedance-2-0", "tags": ["audio", "unified", "quality"] },
     { "left": "happy-horse-1-1", "right": "kling-3-pro", "tags": ["lipsync", "reference", "quality"] },
     { "left": "happy-horse-1-1", "right": "veo-3-1", "tags": ["audio", "cinematic", "quality"] },
+    { "left": "gemini-omni-flash", "right": "veo-3-1", "tags": ["google", "omni", "edit"] },
     { "left": "happy-horse-1-1", "right": "kling-o3-pro", "tags": ["audio", "reference", "omni"] },
     { "left": "happy-horse-1-1", "right": "veo-3-1-fast", "tags": ["audio", "fast", "quality"] },
     { "left": "happy-horse-1-1", "right": "seedance-2-0-fast", "tags": ["audio", "fast", "drafts"] },
@@ -143,6 +144,7 @@
       "pairs": [
         { "left": "happy-horse-1-1", "right": "seedance-2-0" },
         { "left": "happy-horse-1-1", "right": "kling-o3-pro" },
+        { "left": "gemini-omni-flash", "right": "veo-3-1" },
         { "left": "seedance-2-0", "right": "kling-3-pro" },
         { "left": "seedance-2-0", "right": "veo-3-1" },
         { "left": "wan-2-6", "right": "kling-2-6-pro" }
@@ -152,6 +154,7 @@
       "id": "image-to-video",
       "pairs": [
         { "left": "happy-horse-1-1", "right": "veo-3-1" },
+        { "left": "gemini-omni-flash", "right": "veo-3-1" },
         { "left": "dreamina-seedance-2-0-mini", "right": "happy-horse-1-1" },
         { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
         { "left": "dreamina-seedance-2-0-mini", "right": "seedance-2-0" },
@@ -166,6 +169,7 @@
       "pairs": [
         { "left": "dreamina-seedance-2-0-mini", "right": "luma-ray-3-2" },
         { "left": "luma-ray-3-2", "right": "veo-3-1-fast" },
+        { "left": "gemini-omni-flash", "right": "veo-3-1" },
         { "left": "happy-horse-1-0", "right": "sora-2-pro" },
         { "left": "dreamina-seedance-2-0-mini", "right": "veo-3-1-fast" },
         { "left": "wan-2-6", "right": "veo-3-1" },
@@ -182,7 +186,8 @@
     "seedance-2-0-fast": ["dreamina-seedance-2-0-mini", "happy-horse-1-1", "veo-3-1-fast", "ltx-2-3-fast", "pika-text-to-video"],
     "dreamina-seedance-2-0-mini": ["seedance-2-0", "seedance-2-0-fast", "happy-horse-1-1", "luma-ray-3-2", "ltx-2-3-fast", "veo-3-1-fast"],
     "sora-2": ["seedance-2-0", "veo-3-1", "kling-3-pro"],
-    "veo-3-1": ["seedance-2-0", "kling-3-pro", "sora-2"],
+    "veo-3-1": ["gemini-omni-flash", "seedance-2-0", "kling-3-pro", "sora-2"],
+    "gemini-omni-flash": ["veo-3-1", "veo-3-1-fast", "sora-2", "seedance-2-0"],
     "kling-3-pro": ["seedance-2-0", "veo-3-1", "sora-2"],
     "wan-2-6": ["seedance-2-0", "veo-3-1", "ltx-2-3-fast"],
     "ltx-2-3-pro": ["seedance-2-0", "veo-3-1", "happy-horse-1-1", "ltx-2-3-fast"],

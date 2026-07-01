@@ -277,6 +277,40 @@ export async function submitGoogleVertexOmniGenerateTask(params: {
     falPayload: params.falPayload,
   });
   if (!support.supported) {
+    if (!params.fallbackToFalEnabled) {
+      const message = userSafeGoogleVertexOmniMessage('unsupported_params');
+      console.warn('[google-vertex-omni] unsupported direct request failed without fallback', {
+        jobId: params.jobId,
+        engineId: params.engineId,
+        mode: params.mode,
+        reason: support.reason,
+      });
+      await markJobFailedBeforeFallback({
+        jobId: params.jobId,
+        engineLabel: params.engineLabel,
+        durationSec: params.durationSec,
+        message,
+        pendingReceipt: params.pendingReceipt,
+        paymentMode: params.paymentMode,
+        walletChargeReserved: params.walletChargeReserved,
+        queryFn,
+        rollbackPendingPaymentFn,
+      });
+      params.logMetricFn('rejected', {
+        jobId: params.jobId,
+        errorCode: support.reason,
+        meta: { provider: GOOGLE_VERTEX_OMNI_PROVIDER, errorClass: 'unsupported_params' },
+      });
+      return {
+        ok: false,
+        status: 400,
+        body: {
+          ok: false,
+          error: support.reason,
+          message,
+        },
+      };
+    }
     console.info('[google-vertex-omni] routing unsupported direct request to Fal', {
       jobId: params.jobId,
       engineId: params.engineId,

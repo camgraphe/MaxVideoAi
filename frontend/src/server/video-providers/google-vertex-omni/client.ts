@@ -1,4 +1,5 @@
 import { createSign } from 'node:crypto';
+import { GoogleVertexOmniError } from './errors';
 
 type GoogleServiceAccount = {
   client_email: string;
@@ -148,6 +149,25 @@ function interactionId(value: string): string {
   return value.replace(/^\/+/, '').replace(/^interactions\//, '');
 }
 
+function asRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === 'object' && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+function httpErrorMessage(action: string, status: number, payload: unknown): string {
+  const record = asRecord(payload);
+  const nestedError = asRecord(record?.error);
+  const providerMessage = nestedError?.message ?? record?.message;
+  const suffix = typeof providerMessage === 'string' && providerMessage.trim() ? `: ${providerMessage.trim()}` : '.';
+  return `Google Vertex Omni ${action} failed (${status})${suffix}`;
+}
+
+function throwHttpError(action: string, response: Response, payload: unknown): never {
+  throw new GoogleVertexOmniError(httpErrorMessage(action, response.status, payload), {
+    status: response.status,
+    raw: payload,
+  });
+}
+
 export class GoogleVertexOmniClient {
   private config: GoogleVertexOmniClientConfig;
 
@@ -184,7 +204,7 @@ export class GoogleVertexOmniClient {
     });
     const json = (await response.json().catch(() => null)) as unknown;
     if (!response.ok) {
-      throw new Error(`Google Vertex Omni interaction request failed (${response.status}).`);
+      throwHttpError('interaction request', response, json);
     }
     return json as GoogleVertexOmniInteraction;
   }
@@ -199,7 +219,7 @@ export class GoogleVertexOmniClient {
     });
     const json = (await response.json().catch(() => null)) as unknown;
     if (!response.ok) {
-      throw new Error(`Google Vertex Omni interaction fetch failed (${response.status}).`);
+      throwHttpError('interaction fetch', response, json);
     }
     return json as GoogleVertexOmniInteraction;
   }

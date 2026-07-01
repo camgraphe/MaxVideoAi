@@ -662,6 +662,85 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'gemini-omni-flash-vs-veo-3-1': {
+      meta: {
+        title: 'Gemini Omni Flash vs Veo 3.1: Google Video Specs & Best Uses',
+        description:
+          'Compare Gemini Omni Flash and Veo 3.1 for stateful editing, references, source-video edits, first/last-frame, extend, 720p limits and Google video pricing.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Gemini Omni Flash when the Google video job needs stateful follow-up editing, larger image reference stacks, short source-video edits, or prompt-directed sound in a 720p preview route. Use Veo 3.1 when you need the mature Veo workflow for first/last-frame control, extend, stronger delivery resolution choices, and a more established production path. This is a scorecard/specs page until curated Omni comparison videos exist.',
+      quickVerdict: {
+        title: 'Quick verdict',
+        body:
+          'Gemini Omni Flash vs Veo 3.1 is mainly an interaction model choice. Omni Flash is the better fit for conversational refine, previous interaction id workflows, reference-to-video with more stills, and short source-video edits. Veo 3.1 is the safer default for polished first-pass Veo delivery, first/last-frame, extend, and higher-resolution output paths.',
+      },
+      topCards: [
+        {
+          title: 'Choose Omni Flash for refine',
+          body:
+            'Omni Flash is built around Google Interactions, so the previous interaction id and store/refine flow are central product controls in MaxVideoAI.',
+        },
+        {
+          title: 'Choose Veo 3.1 for delivery',
+          body:
+            'Veo 3.1 remains the stronger default when the brief needs first/last-frame, extend, more mature Veo routing, or higher-resolution finishing.',
+        },
+        {
+          title: 'Reference strategy',
+          body:
+            'Omni Flash can use larger reference image stacks. Veo 3.1 remains better when the goal is a controlled cinematic Veo clip rather than iterative editing.',
+        },
+        {
+          title: 'Launch stage',
+          body:
+            'Omni Flash is exposed as limited preview. Veo 3.1 is the better established Google video route on MaxVideoAI today.',
+        },
+      ],
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/gemini-omni-flash',
+          label: 'Open Gemini Omni Flash model page',
+        },
+        {
+          href: '/models/veo-3-1',
+          label: 'Open Veo 3.1 model page',
+        },
+        {
+          href: '/pricing#gemini-omni-flash-pricing',
+          label: 'Check Omni Flash pricing',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Google Omni interaction workflows and the main Veo production route.',
+        items: [
+          {
+            question: 'Is Gemini Omni Flash better than Veo 3.1?',
+            answer:
+              'Not generally. Gemini Omni Flash is better for stateful refine, previous interaction id workflows, larger reference stacks and source-video edits. Veo 3.1 remains better for mature Veo delivery controls, first/last-frame, extend and higher-resolution paths.',
+          },
+          {
+            question: 'Which one should I use for reference-to-video?',
+            answer:
+              'Use Omni Flash when you need a larger reference stack or plan to refine the same interaction. Use Veo 3.1 when the goal is a polished Veo render with a more established cinematic output path.',
+          },
+          {
+            question: 'Which one supports first/last-frame and extend?',
+            answer:
+              'Veo 3.1 is the page to use for first/last-frame and extend. The current Gemini Omni Flash preview route on MaxVideoAI does not expose those controls.',
+          },
+          {
+            question: 'Why is Omni Flash listed as preview?',
+            answer:
+              'Google documents Gemini Omni Flash as a preview model. MaxVideoAI keeps public routing gated and labels pricing/specs as preview until quota and SKU behavior are stable.',
+          },
+        ],
+      },
+    },
     'veo-3-1-vs-veo-3-1-fast': {
       heroIntro:
         'Compare Veo 3.1 and Veo 3.1 Fast to choose the right current Veo 3 AI workflow for polished text-to-video, image-to-video, faster draft passes, and native-audio control.',

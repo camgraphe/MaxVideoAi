@@ -3,7 +3,7 @@ import type { VideoProviderAdapter } from '../types';
 import { estimateGoogleVertexOmniCost } from './cost';
 import { getGoogleVertexOmniClient } from './client';
 import { classifyGoogleVertexOmniError } from './errors';
-import { GOOGLE_VERTEX_OMNI_PROVIDER, resolveGoogleVertexOmniModelRoute } from './model-map';
+import { GOOGLE_VERTEX_OMNI_PROVIDER } from './model-map';
 import { buildGoogleVertexOmniPayload } from './payload';
 import { normalizeGoogleVertexOmniInteraction } from './response';
 

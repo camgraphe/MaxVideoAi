@@ -1,4 +1,5 @@
 import type { ModelPageTemplateConfig } from './model-page-template-types';
+import { geminiOmniFlashTemplateConfig } from './model-page-templates/gemini-omni-flash';
 import { gptImage2TemplateConfig } from './model-page-templates/gpt-image-2';
 import { happyHorse10TemplateConfig } from './model-page-templates/happy-horse-1-0';
 import { happyHorse11TemplateConfig } from './model-page-templates/happy-horse-1-1';
@@ -38,6 +39,7 @@ import { wan25TemplateConfig } from './model-page-templates/wan-2-5';
 import { wan26TemplateConfig } from './model-page-templates/wan-2-6';
 
 const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
+  [geminiOmniFlashTemplateConfig.slug]: geminiOmniFlashTemplateConfig,
   [gptImage2TemplateConfig.slug]: gptImage2TemplateConfig,
   [happyHorse10TemplateConfig.slug]: happyHorse10TemplateConfig,
   [happyHorse11TemplateConfig.slug]: happyHorse11TemplateConfig,
