@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { buildGoogleVertexOmniPayload } from '../frontend/src/server/video-providers/google-vertex-omni/payload';
 
-test('Omni text-to-video payload uses Interactions video_config task and URL response format', async () => {
+test('Omni text-to-video payload uses Interactions video_config task and video response format', async () => {
   const payload = await buildGoogleVertexOmniPayload({
     engineId: 'gemini-omni-flash',
     mode: 't2v',
@@ -19,13 +19,10 @@ test('Omni text-to-video payload uses Interactions video_config task and URL res
   });
 
   assert.equal(payload.model, 'gemini-omni-flash-preview');
-  assert.equal(payload.response_format, 'url');
+  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '16:9' });
   assert.equal(payload.background, true);
   assert.equal(payload.store, true);
-  assert.deepEqual(payload.generation_config.video_config, {
-    task: 'text_to_video',
-    aspect_ratio: '16:9',
-  });
+  assert.deepEqual(payload.generation_config.video_config, { task: 'text_to_video' });
   assert.match(JSON.stringify(payload.input), /soft cafe ambience/);
 });
 
@@ -46,7 +43,7 @@ test('Omni reference-to-video payload forwards reference images and camera direc
   });
 
   assert.equal(payload.generation_config.video_config.task, 'reference_to_video');
-  assert.equal(payload.generation_config.video_config.aspect_ratio, '9:16');
+  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '9:16' });
   assert.match(JSON.stringify(payload.input), /ref-a\.png/);
   assert.match(JSON.stringify(payload.input), /slow pedestal up/);
 });
@@ -67,7 +64,7 @@ test('Omni retake payload preserves previous interaction id', async () => {
   });
 
   assert.equal(payload.previous_interaction_id, 'interactions/abc123');
-  assert.equal(payload.generation_config.video_config.task, 'video_edit');
+  assert.equal(payload.generation_config.video_config.task, 'edit');
 });
 
 test('Omni payload rejects unsupported negative prompt and seed before provider call', async () => {

@@ -8,7 +8,7 @@ import {
   type GoogleVertexOmniMediaInput,
 } from './media-input';
 
-type GoogleVertexOmniTask = 'text_to_video' | 'image_to_video' | 'reference_to_video' | 'video_edit';
+type GoogleVertexOmniTask = 'text_to_video' | 'image_to_video' | 'reference_to_video' | 'edit';
 
 export type GoogleVertexOmniPayload = {
   model: string;
@@ -16,10 +16,12 @@ export type GoogleVertexOmniPayload = {
   generation_config: {
     video_config: {
       task: GoogleVertexOmniTask;
-      aspect_ratio: '16:9' | '9:16';
     };
   };
-  response_format: 'url';
+  response_format: {
+    type: 'video';
+    aspect_ratio: '16:9' | '9:16';
+  };
   background: true;
   store: boolean;
   previous_interaction_id?: string;
@@ -38,8 +40,8 @@ const OMNI_TASK_BY_MODE: Record<GoogleVertexOmniMode, GoogleVertexOmniTask> = {
   t2v: 'text_to_video',
   i2v: 'image_to_video',
   ref2v: 'reference_to_video',
-  v2v: 'video_edit',
-  retake: 'video_edit',
+  v2v: 'edit',
+  retake: 'edit',
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -150,10 +152,12 @@ export async function buildGoogleVertexOmniPayload(
     generation_config: {
       video_config: {
         task,
-        aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
       },
     },
-    response_format: 'url',
+    response_format: {
+      type: 'video',
+      aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
+    },
     background: true,
     store: booleanFromExtra(extra, 'store_interaction', 'storeInteraction') ?? false,
   };

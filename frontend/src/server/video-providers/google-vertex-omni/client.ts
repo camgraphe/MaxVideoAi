@@ -11,7 +11,7 @@ export type GoogleVertexOmniInteractionRequest = {
   model: string;
   input: unknown[];
   generation_config?: Record<string, unknown>;
-  response_format?: 'url';
+  response_format?: Record<string, unknown>;
   background?: boolean;
   store?: boolean;
   previous_interaction_id?: string;

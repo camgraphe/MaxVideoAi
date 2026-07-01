@@ -3,6 +3,7 @@ import { PIKA_FAL_ENGINE_REGISTRY } from './pika';
 import { VEO_3_1_FAL_ENGINE_REGISTRY } from './veo-3-1';
 import { VEO_3_1_FAST_FAL_ENGINE_REGISTRY } from './veo-3-1-fast';
 import { VEO_3_1_LITE_FAL_ENGINE_REGISTRY } from './veo-3-1-lite';
+import { GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY } from './gemini-omni-flash';
 import { LUMA_RAY_2_FAL_ENGINE_REGISTRY } from './luma-ray-2';
 import { LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY } from './luma-ray-2-flash';
 import { LUMA_RAY_3_2_FAL_ENGINE_REGISTRY } from './luma-ray-3-2';
@@ -39,6 +40,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...VEO_3_1_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_FAST_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_LITE_FAL_ENGINE_REGISTRY,
+  ...GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_3_2_FAL_ENGINE_REGISTRY,
