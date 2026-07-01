@@ -164,7 +164,7 @@
     "marketingName": "Gemini Omni Flash",
     "brandId": "google-gemini",
     "modelSlug": "gemini-omni-flash",
-    "family": "gemini",
+    "family": "veo",
     "versionLabel": "Preview",
     "availability": "limited",
     "logoPolicy": "textOnly",

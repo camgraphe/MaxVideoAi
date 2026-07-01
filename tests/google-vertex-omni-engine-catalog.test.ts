@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import { getModelFamilyDefinition } from '../frontend/config/model-families';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { getBaseEngines } from '../frontend/src/lib/engines';
 import { summarizeWorkspaceInputSchema } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-input-schema';
@@ -11,7 +12,7 @@ test('Gemini Omni Flash is exposed as a Vertex-backed Google video engine', () =
   const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
   assert.ok(entry, 'Gemini Omni Flash catalog entry should exist');
   assert.equal(entry.provider, 'Google');
-  assert.equal(entry.family, 'gemini');
+  assert.equal(entry.family, 'veo');
   assert.equal(entry.defaultFalModelId, 'gemini-omni-flash-preview');
   assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_omni');
   assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-omni-flash-preview');
@@ -22,6 +23,17 @@ test('Gemini Omni Flash is exposed as a Vertex-backed Google video engine', () =
   assert.equal(entry.engine.pricingDetails?.perSecondCents?.byResolution?.['720p'], 10);
   assert.equal(entry.engine.pricing?.base, 0.1);
   assert.equal(entry.pricingHint?.amountCents, 100);
+});
+
+test('Gemini Omni Flash shares the Veo model family instead of creating a Gemini family', () => {
+  const veoFamily = getModelFamilyDefinition('veo');
+  assert.ok(veoFamily, 'Veo family should exist');
+  assert.equal(getModelFamilyDefinition('gemini'), null);
+  assert.ok(veoFamily.routeAliases?.includes('gemini-omni-flash'));
+  assert.ok(veoFamily.aliases?.includes('gemini-omni-flash-preview'));
+  assert.ok(veoFamily.aliases?.includes('omni-flash'));
+  assert.ok(veoFamily.prefixes?.includes('gemini-omni'));
+  assert.equal(veoFamily.examplesPage?.publishedModelSlugs?.includes('gemini-omni-flash'), false);
 });
 
 test('Gemini Omni Flash catalog keeps Veo/Fal-only controls out of the schema', () => {

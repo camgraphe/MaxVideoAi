@@ -1826,14 +1826,16 @@
     "marketingName": "Gemini Omni Flash",
     "provider": "Google",
     "brandId": "google-gemini",
-    "family": "gemini",
+    "family": "veo",
     "familyExamplesPage": {
-      "stage": "hidden",
-      "showInNav": false,
-      "publishedModelSlugs": [],
-      "currentModelSlugs": [
-        "gemini-omni-flash"
-      ]
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ],
+      "currentModelSlugs": []
     },
     "versionLabel": "Preview",
     "availability": "limited",

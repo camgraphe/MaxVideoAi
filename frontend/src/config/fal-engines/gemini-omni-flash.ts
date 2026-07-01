@@ -182,7 +182,7 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     cardTitle: 'Gemini Omni Flash - conversational video generation',
     provider: 'Google',
     brandId: 'google-gemini',
-    family: 'gemini',
+    family: 'veo',
     versionLabel: 'Preview',
     availability: 'limited',
     logoPolicy: 'textOnly',
