@@ -177,6 +177,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
     isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
     isUnifiedSeedance: composer.isUnifiedSeedance,
+    isUnifiedGeminiOmni: composer.isUnifiedGeminiOmni,
     uiLocale: app.uiLocale,
     authChecked: draft.authChecked,
     authLoading: app.authLoading,

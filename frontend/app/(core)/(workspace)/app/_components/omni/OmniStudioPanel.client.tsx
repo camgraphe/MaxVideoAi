@@ -8,6 +8,12 @@ import { AssetDropzone } from '@/components/AssetDropzone';
 import type { AssetFieldConfig, AssetUploadMeta } from '@/components/Composer';
 import { Button } from '@/components/ui/Button';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps, Mode } from '@/types/engines';
+import {
+  getGeminiOmniAssetFieldDisabledReason,
+  getGeminiOmniAssetState,
+  getGeminiOmniModeDisabledReason,
+  hasGeminiOmniPreviousInteraction,
+} from '../../_lib/gemini-omni-unified-workflow';
 import type { ReferenceAsset } from '../../_lib/workspace-assets';
 import type { FormState } from '../../_lib/workspace-form-state';
 import type { WorkspaceInputFieldEntry } from '../../_lib/workspace-input-schema';
@@ -90,10 +96,15 @@ export function OmniStudioPanel({
     () => OMNI_MODE_OPTIONS.filter((option) => engine.modes.includes(option.mode)),
     [engine.modes]
   );
-  const visibleAssetFields = useMemo(
-    () => assetFields.filter((entry) => fieldAppliesToMode(entry.field, submissionMode)),
-    [assetFields, submissionMode]
+  const omniAssetState = useMemo(() => getGeminiOmniAssetState(inputAssets), [inputAssets]);
+  const omniWorkflowState = useMemo(
+    () => ({
+      ...omniAssetState,
+      hasPreviousInteraction: hasGeminiOmniPreviousInteraction(form.extraInputValues.previous_interaction_id),
+    }),
+    [form.extraInputValues.previous_interaction_id, omniAssetState]
   );
+  const visibleAssetFields = assetFields;
   const audioField = fieldById(extraFields, 'prompt_audio_direction');
   const cameraField = fieldById(extraFields, 'prompt_camera_direction');
   const editField = fieldById(extraFields, 'prompt_edit_instruction');
@@ -125,6 +136,7 @@ export function OmniStudioPanel({
           {visibleModes.map((option) => {
             const Icon = option.icon;
             const selected = activeMode === option.mode || submissionMode === option.mode;
+            const modeDisabledReason = getGeminiOmniModeDisabledReason(option.mode, omniWorkflowState);
             return (
               <Button
                 key={option.mode}
@@ -132,8 +144,9 @@ export function OmniStudioPanel({
                 variant={selected ? 'primary' : 'outline'}
                 size="sm"
                 onClick={() => handleModeClick(option.mode)}
-                title={option.label}
-                className="h-10 rounded-2xl px-4 text-[12px] font-semibold"
+                disabled={Boolean(modeDisabledReason)}
+                title={modeDisabledReason ?? option.label}
+                className="h-10 rounded-2xl px-4 text-[12px] font-semibold disabled:opacity-45"
               >
                 <Icon className="mr-2 h-4 w-4" aria-hidden="true" />
                 {option.label}
@@ -158,24 +171,28 @@ export function OmniStudioPanel({
 
       {visibleAssetFields.length ? (
         <div className="grid gap-3 lg:grid-cols-2">
-          {visibleAssetFields.map((entry) => (
-            <AssetDropzone
-              key={entry.field.id}
-              engine={engine}
-              caps={caps}
-              field={entry.field}
-              required={entry.required}
-              role={entry.role}
-              assets={inputAssets[entry.field.id] ?? []}
-              density="compact"
-              onSelect={onAssetAdd}
-              onRemove={onAssetRemove}
-              onOpenLibrary={onOpenLibrary}
-              onError={onNotice}
-              disabled={entry.disabled || Boolean(disabledReason)}
-              disabledReason={entry.disabledReason ?? disabledReason}
-            />
-          ))}
+          {visibleAssetFields.map((entry) => {
+            const workflowDisabledReason = getGeminiOmniAssetFieldDisabledReason(entry.field.id, omniWorkflowState);
+            const resolvedDisabledReason = entry.disabledReason ?? workflowDisabledReason ?? disabledReason;
+            return (
+              <AssetDropzone
+                key={entry.field.id}
+                engine={engine}
+                caps={caps}
+                field={entry.field}
+                required={entry.required}
+                role={entry.role}
+                assets={inputAssets[entry.field.id] ?? []}
+                density="compact"
+                onSelect={onAssetAdd}
+                onRemove={onAssetRemove}
+                onOpenLibrary={onOpenLibrary}
+                onError={onNotice}
+                disabled={entry.disabled || Boolean(resolvedDisabledReason)}
+                disabledReason={resolvedDisabledReason}
+              />
+            );
+          })}
         </div>
       ) : null}
 

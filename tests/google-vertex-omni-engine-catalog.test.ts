@@ -65,6 +65,7 @@ test('Gemini Omni Flash workspace schema preserves Omni extra controls for paylo
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: true,
     uiLocale: 'en',
   });
   const extraFields = [...summary.promotedFields, ...summary.secondaryFields];

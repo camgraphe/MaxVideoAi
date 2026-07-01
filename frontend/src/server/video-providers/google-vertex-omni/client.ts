@@ -80,7 +80,7 @@ function readEnv(env: GoogleVertexOmniEnv, primary: keyof GoogleVertexOmniEnv, f
   return (env[primary] ?? env[fallback] ?? '').trim();
 }
 
-function getConfig(env: GoogleVertexOmniEnv = process.env): GoogleVertexOmniClientConfig {
+function getConfig(env: GoogleVertexOmniEnv = process.env as GoogleVertexOmniEnv): GoogleVertexOmniClientConfig {
   const projectId = readEnv(env, 'GOOGLE_VERTEX_OMNI_PROJECT_ID', 'GOOGLE_VERTEX_PROJECT_ID');
   if (!projectId) {
     throw new Error('GOOGLE_VERTEX_OMNI_PROJECT_ID or GOOGLE_VERTEX_PROJECT_ID is missing.');

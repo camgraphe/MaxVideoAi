@@ -5,6 +5,7 @@ import type {
 } from '@/components/Composer';
 import { localizeLtxField } from '@/lib/ltx-localization';
 import type { EngineCaps, EngineInputField, Mode } from '@/types/engines';
+import { isGeminiOmniUnifiedAssetField } from './gemini-omni-unified-workflow';
 import { isKlingO3EngineId } from './kling-o3-unified-workflow';
 import {
   normalizeFieldId,
@@ -101,6 +102,7 @@ export function summarizeWorkspaceInputSchema({
   allowsUnifiedVeoFirstLast,
   isUnifiedHappyHorse,
   isUnifiedSeedance,
+  isUnifiedGeminiOmni,
   uiLocale,
 }: {
   selectedEngine: EngineCaps | null;
@@ -108,6 +110,7 @@ export function summarizeWorkspaceInputSchema({
   allowsUnifiedVeoFirstLast: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedSeedance: boolean;
+  isUnifiedGeminiOmni: boolean;
   uiLocale: string;
 }): WorkspaceInputSchemaSummary {
   const schema = selectedEngine?.inputSchema;
@@ -155,6 +158,13 @@ export function summarizeWorkspaceInputSchema({
       activeMode === 't2v' &&
       (field.type === 'image' || field.type === 'video') &&
       (field.modes.includes('i2v') || field.modes.includes('ref2v') || field.modes.includes('v2v'))
+    ) {
+      return true;
+    }
+    if (
+      isUnifiedGeminiOmni &&
+      (field.type === 'image' || field.type === 'video') &&
+      isGeminiOmniUnifiedAssetField(field.id)
     ) {
       return true;
     }
