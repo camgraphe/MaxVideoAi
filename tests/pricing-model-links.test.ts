@@ -47,3 +47,12 @@ test('pricing image matrix links the rendered engine identity to its model page'
   assert.match(source, /row\.modelHref \?/);
   assert.match(source, /href=\{row\.modelHref\}/);
 });
+
+test('every exposed video pricing row has at least one exact visible price', () => {
+  const rows = buildPricingHubData('en').video.rows;
+  const missingExactPrice = rows
+    .filter((row) => !Object.values(row.quotes).some((quote) => quote.status === 'exact'))
+    .map((row) => row.anchorId);
+
+  assert.deepEqual(missingExactPrice, []);
+});

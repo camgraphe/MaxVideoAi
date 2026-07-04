@@ -92,6 +92,34 @@ test('extra input helper validates and normalizes schema-driven values', () => {
   });
 });
 
+test('extra input helper treats empty enum values as freeform directives', () => {
+  const result = validateExtraInputValues({
+    engine: {
+      inputSchema: {
+        optional: [
+          {
+            id: 'prompt_audio_direction',
+            type: 'enum',
+            label: 'Sound direction',
+            values: [],
+          },
+        ],
+      },
+    },
+    mode: 't2v',
+    rawExtraInputValues: {
+      prompt_audio_direction: '  soft rain ambience  ',
+    },
+  });
+
+  assert.deepEqual(result, {
+    ok: true,
+    values: {
+      prompt_audio_direction: 'soft rain ambience',
+    },
+  });
+});
+
 test('extra input helper validates boolean advanced fields', () => {
   const result = validateExtraInputValues({
     engine: engineWithExtraFields,

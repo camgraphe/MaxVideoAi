@@ -1,0 +1,168 @@
+{
+  "marketingName": "Gemini Omni Flash",
+  "versionLabel": "Preview",
+  "seo": {
+    "title": "Gemini Omni Flash | Google Omni Video, Specs & Pricing | MaxVideoAI",
+    "description": "Use Gemini Omni Flash on MaxVideoAI for 720p text-to-video, image-to-video, reference-to-video, video editing and conversational refine workflows.",
+    "image": "/hero/veo-3-1-hero.jpg"
+  },
+  "overview": "Gemini Omni Flash is Google's preview Omni video model in MaxVideoAI for 720p clips up to 10 seconds, with text, image, reference-image, source-video edit and previous-interaction refine workflows.",
+  "pricingNotes": "Gemini Omni Flash is a preview Google route. MaxVideoAI shows the exact customer quote before generation; the 720p preview route is currently displayed at $0.13/s.",
+  "hero": {
+    "title": "Gemini Omni Flash - Google Omni video generation and conversational editing",
+    "intro": "Generate from text, animate a source image, guide a video with multiple references, edit a short source clip, or refine a previous Omni result with its interaction id.",
+    "badge": "720p · up to 10s · Text, image, references, video edit & refine",
+    "ctaPrimary": {
+      "label": "Generate with Gemini Omni Flash",
+      "href": "/app?engine=gemini-omni-flash"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Compare Gemini Omni Flash vs Veo 3.1",
+        "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
+      },
+      {
+        "label": "Check Gemini Omni Flash pricing",
+        "href": "/pricing#gemini-omni-flash-pricing"
+      },
+      {
+        "label": "Open Veo 3.1 model page",
+        "href": "/models/veo-3-1"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      { "title": "Conversational shot refinement", "icon": "repeat2" },
+      { "title": "Reference-guided product videos", "icon": "product" },
+      { "title": "Short source-video edits", "icon": "scissors" },
+      { "title": "Social 16:9 and 9:16 tests", "icon": "smartphone" },
+      { "title": "Sound-directed drafts", "icon": "audio" }
+    ]
+  },
+  "technicalOverviewTitle": "Technical overview",
+  "technicalOverview": [
+    { "label": "Workflows", "body": "Text-to-video, image-to-video, reference-to-video, video edit and conversational refine" },
+    { "label": "Duration", "body": "Up to 10 seconds per current preview generation" },
+    { "label": "Resolution", "body": "720p output" },
+    { "label": "Aspect ratios", "body": "16:9 landscape and 9:16 portrait" },
+    { "label": "Inputs", "body": "Text prompt, one source image, up to 10 reference images, short source video, or previous interaction id" },
+    { "label": "Audio", "body": "Native sound generation is directed through prompt guidance" },
+    { "label": "Unsupported", "body": "No negative prompt, seed, first/last frame, extend, non-video output or 4K path in the current Omni preview route" }
+  ],
+  "promptStructure": {
+    "title": "Prompt mini-guide",
+    "quote": "Subject + action + source/reference rule + camera direction + sound direction + what must stay stable.",
+    "description": "Gemini Omni Flash works best when the main visual brief is concise and sound, camera and edit directions are separated.",
+    "steps": [
+      "Start with one subject and one visual action.",
+      "State whether the run is text, image, reference, source-video edit or refine.",
+      "Name what must stay stable from the source or reference assets.",
+      "Add camera movement and framing.",
+      "Add ambience, music, speech or SFX direction.",
+      "Use 16:9 or 9:16 and keep the shot within 10 seconds."
+    ]
+  },
+  "tips": {
+    "title": "Tips and limits",
+    "items": [
+      "Keep Store interaction enabled when a result may need a follow-up refine pass.",
+      "Use reference-to-video when product identity, wardrobe or style must stay consistent.",
+      "For source-video edits, describe what stays before describing what changes.",
+      "Use sound direction as a short director note, not a long soundtrack script.",
+      "Choose Veo 3.1 instead when you need first/last-frame, extend or higher-resolution delivery."
+    ]
+  },
+  "compareLink": {
+    "label": "Compare Gemini Omni Flash vs Veo 3.1 ->",
+    "href": "/ai-video-engines/gemini-omni-flash-vs-veo-3-1"
+  },
+  "prompts": [
+    {
+      "title": "Conversational product refine",
+      "prompt": "A premium coffee machine on a marble counter, slow dolly in, warm morning light, preserve product shape, subtle cafe ambience. Follow-up edit: tighten the product reveal and make the steam more visible."
+    },
+    {
+      "title": "Reference-led launch shot",
+      "prompt": "Use the reference images to preserve the sneaker silhouette and colorway. Create a 9:16 launch clip with a clean studio turntable move, soft fabric foley and a short rising music bed."
+    },
+    {
+      "title": "Source-video edit",
+      "prompt": "Keep the original camera move and timing from the source clip. Change the room into a bright editorial showroom, preserve the subject motion, add soft room tone and no subtitles."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Is Gemini Omni Flash available through Vertex AI on MaxVideoAI?",
+      "a": "Yes. MaxVideoAI implements Gemini Omni Flash as a Google Vertex / Agent Platform Interactions route when the preview route is enabled for the account."
+    },
+    {
+      "q": "What is Gemini Omni Flash best for?",
+      "a": "Use it for 720p short videos where text, image references, source-video edits and follow-up conversational refine matter more than 4K delivery or first/last-frame control."
+    },
+    {
+      "q": "How is it different from Veo 3.1?",
+      "a": "Omni Flash is better positioned for stateful interaction and broader reference/edit workflows. Veo 3.1 remains the stronger page to evaluate first/last-frame, extend and higher-resolution Veo delivery paths."
+    },
+    {
+      "q": "Can Gemini Omni Flash generate audio?",
+      "a": "Yes. Sound is directed through prompt guidance for ambience, music, speech or SFX, subject to the current preview route."
+    },
+    {
+      "q": "Does Gemini Omni Flash support 4K or 1080p?",
+      "a": "No. The current MaxVideoAI Omni preview route is documented and exposed as 720p output."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Google Gemini Omni Video Preview",
+    "heroSupportLine": "Best for stateful refine, reference-guided shots and short source-video edits.",
+    "heroSpecChips": [
+      { "label": "720p", "icon": "resolution" },
+      { "label": "Up to 10s", "icon": "duration" },
+      { "label": "Text->Video", "icon": "textToVideo" },
+      { "label": "Image/refs", "icon": "imageToVideo" },
+      { "label": "Native sound", "icon": "audio" }
+    ],
+    "demoTitle": "Gemini Omni Flash demo prompt",
+    "demoPromptLabel": "10s 16:9 prompt with native sound",
+    "demoPrompt": [
+      "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.",
+      "Sound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"",
+      "Camera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight."
+    ],
+    "specTitle": "Gemini Omni Flash specs",
+    "specNote": "Specs describe the MaxVideoAI preview route for Gemini Omni Flash through Google Vertex Interactions.",
+    "specSections": [
+      {
+        "title": "Supported routes",
+        "intro": "Gemini Omni Flash is exposed as a multimodal video route rather than a Veo-style long-running prediction route.",
+        "items": [
+          "Text-to-video from a prompt.",
+          "Image-to-video from one source image.",
+          "Reference-to-video with up to 10 reference images.",
+          "Video edit from a short source video.",
+          "Conversational refine using a previous interaction id.",
+          "16:9 and 9:16 output.",
+          "720p output up to 10 seconds.",
+          "Prompt-directed sound generation."
+        ]
+      },
+      {
+        "title": "Boundaries",
+        "items": [
+          "No negative prompt or seed controls.",
+          "No first/last-frame workflow.",
+          "No extend workflow.",
+          "No 1080p or 4K output in the current preview route.",
+          "No public provider implementation guide on this marketing page."
+        ]
+      }
+    ],
+    "galleryTitle": "Gemini Omni Flash examples",
+    "galleryIntro": "Approved MaxVideoAI renders now show Gemini Omni Flash handling character performance, camera direction and native audio in 16:9.",
+    "recreateLabel": "Recreate this shot",
+    "finalPara1": "Gemini Omni Flash is the Google Omni route to test when stateful editing and references matter more than traditional Veo delivery controls.",
+    "finalButton": "Generate with Gemini Omni Flash"
+  }
+}

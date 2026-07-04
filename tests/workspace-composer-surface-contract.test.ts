@@ -111,6 +111,7 @@ test('workspace exposes Seedance 2.0 Mini source-video fields in the unified com
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: true,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 
@@ -135,6 +136,7 @@ test('workspace exposes Seedance 2.0 source-video fields for Standard and Fast c
       allowsUnifiedVeoFirstLast: false,
       isUnifiedHappyHorse: false,
       isUnifiedSeedance: true,
+      isUnifiedGeminiOmni: false,
       uiLocale: 'en',
     });
     const assetIds = schema.assetFields.map(({ field }) => field.id);
@@ -149,6 +151,7 @@ test('workspace exposes Seedance 2.0 source-video fields for Standard and Fast c
       allowsUnifiedVeoFirstLast: false,
       isUnifiedHappyHorse: false,
       isUnifiedSeedance: true,
+      isUnifiedGeminiOmni: false,
       uiLocale: 'en',
     });
 
@@ -166,6 +169,7 @@ test('workspace exposes only source clips in the Seedance 2.0 Mini extension sch
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: true,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 

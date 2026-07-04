@@ -419,7 +419,7 @@ export function PricingVideoMatrixSection({ locale, video }: { locale: AppLocale
 
       <div className="flex flex-col">
       <div id="full-video-pricing-table" className="order-2 scroll-mt-24 overflow-x-auto md:order-1">
-        <table className="min-w-[1220px] border-separate border-spacing-0 text-left text-sm">
+        <table className="min-w-[1460px] border-separate border-spacing-0 text-left text-sm">
           <thead className="sticky top-0 z-20 bg-surface">
             <tr className="text-xs font-semibold text-text-muted">
               <th className="sticky left-0 z-30 w-[250px] border-b border-hairline bg-surface px-3 py-2.5">

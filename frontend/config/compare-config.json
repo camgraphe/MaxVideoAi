@@ -17,7 +17,11 @@
     "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
     "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
     "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
-    "dreamina-seedance-2-0-mini-vs-luma-ray-3-2"
+    "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
+    "gemini-omni-flash-vs-veo-3-1",
+    "gemini-omni-flash-vs-veo-3-1-fast",
+    "gemini-omni-flash-vs-sora-2",
+    "gemini-omni-flash-vs-seedance-2-0"
   ],
   "bestForPages": [
     {
@@ -118,6 +122,28 @@
     }
   ],
   "relatedComparisons": {
+    "gemini-omni-flash-vs-veo-3-1": [
+      "gemini-omni-flash-vs-veo-3-1-fast",
+      "gemini-omni-flash-vs-sora-2",
+      "gemini-omni-flash-vs-seedance-2-0",
+      "sora-2-vs-veo-3-1",
+      "seedance-2-0-vs-veo-3-1"
+    ],
+    "gemini-omni-flash-vs-veo-3-1-fast": [
+      "gemini-omni-flash-vs-veo-3-1",
+      "dreamina-seedance-2-0-mini-vs-veo-3-1-fast",
+      "seedance-2-0-fast-vs-veo-3-1-fast"
+    ],
+    "gemini-omni-flash-vs-sora-2": [
+      "gemini-omni-flash-vs-veo-3-1",
+      "sora-2-vs-veo-3-1",
+      "seedance-2-0-vs-sora-2"
+    ],
+    "gemini-omni-flash-vs-seedance-2-0": [
+      "gemini-omni-flash-vs-veo-3-1",
+      "seedance-2-0-vs-veo-3-1",
+      "seedance-2-0-vs-sora-2"
+    ],
     "sora-2-vs-veo-3-1": [
       "kling-2-6-pro-vs-sora-2",
       "kling-2-6-pro-vs-veo-3-1",

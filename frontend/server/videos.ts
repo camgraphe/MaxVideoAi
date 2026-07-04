@@ -24,6 +24,7 @@ export type { GalleryVideo } from './videos-normalization';
 export { mergeUniqueGalleryVideos } from './videos-examples';
 
 export type GalleryTab = 'starter' | 'latest' | 'trending';
+function shouldSkipBuildTimeMarketingVideoQueries() { return process.env.NEXT_PHASE === 'phase-production-build'; }
 
 const imageThumbFallbackSelect = (jobAlias: string) => `
              SELECT COALESCE(NULLIF(jo.thumb_url, ''), NULLIF(jo.url, ''), NULLIF(jo.storage_url, ''))
@@ -120,6 +121,7 @@ export async function getSeoVideosByIds(videoIds: string[]): Promise<Map<string,
 }
 
 export async function getPublicVideosByIds(videoIds: string[]): Promise<Map<string, GalleryVideo>> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return new Map();
   if (!videoIds.length) {
     return new Map();
   }
@@ -165,6 +167,7 @@ export async function getLatestPublicVideoByPromptAndEngine(
   prompt: string,
   engineId: string
 ): Promise<GalleryVideo | null> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return null;
   const rows = await query<VideoRow>(
     `
       ${BASE_SELECT}
@@ -233,6 +236,7 @@ async function listPlaylistVideosWithOptions({
 }
 
 export async function listPlaylistVideos(slug: string, limit: number): Promise<GalleryVideo[]> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
   return listPlaylistVideosWithOptions({ slug, limit });
 }
 
@@ -267,6 +271,7 @@ async function listTrending(limit: number): Promise<GalleryVideo[]> {
 }
 
 export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<GalleryVideo[]> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
   if (tab === 'starter') {
     const playlist = await listPlaylistVideos(getStarterPlaylistSlug(), limit);
     if (playlist.length) {
@@ -281,6 +286,7 @@ export async function listGalleryVideos(tab: GalleryTab, limit = 24): Promise<Ga
 }
 
 export async function listStarterPlaylistVideos(limit: number): Promise<GalleryVideo[]> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
   return listPlaylistVideos(getStarterPlaylistSlug(), limit);
 }
 
@@ -339,6 +345,7 @@ export async function listExampleFamilyPage(
   options: Omit<ListExamplesPageOptions, 'engineGroup'>
 ): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0 } = options;
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
   const merged = await loadExampleFamilyFeed(familyId, { includeFamilyPlaylist: true });
   const sorted = sortVideosByPreference(merged, sort);
   return paginateGalleryVideos(sorted, limit, offset);
@@ -346,6 +353,7 @@ export async function listExampleFamilyPage(
 
 export async function listExamplesPage(options: ListExamplesPageOptions): Promise<ListExamplesPageResult> {
   const { sort, limit = 150, offset = 0, engineGroup } = options;
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return { items: [], total: 0, limit, offset, hasMore: false };
   const hubSlug = getExamplesHubPlaylistSlug();
   if (!hubSlug) {
     return { items: [], total: 0, limit, offset, hasMore: false };
@@ -379,6 +387,7 @@ export async function listExamples(sort: ExampleSort, limit = 150): Promise<Gall
 }
 
 export async function getPlaylistExamples(limit = 60): Promise<GalleryVideo[]> {
+  if (shouldSkipBuildTimeMarketingVideoQueries()) return [];
   const hubSlug = getExamplesHubPlaylistSlug();
   if (!hubSlug) return [];
   return listPlaylistVideos(hubSlug, limit);

@@ -27,6 +27,7 @@ const ignoredDirectories = new Set([
   '.next',
   '.tmp',
   '.vercel',
+  '.worktrees',
   'build',
   'dist',
   'node_modules',

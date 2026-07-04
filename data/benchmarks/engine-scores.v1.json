@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-06-09",
+  "last_updated": "2026-07-01",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -32,6 +32,21 @@
       "controllability": 8.3,
       "speedStability": 7.4,
       "pricing": 7.4
+    },
+    {
+      "modelSlug": "gemini-omni-flash",
+      "fidelity": 8.7,
+      "visualQuality": 8.2,
+      "motion": 8.0,
+      "consistency": 7.7,
+      "anatomy": 8.0,
+      "textRendering": 7.4,
+      "lipsyncQuality": 8.9,
+      "sequencingQuality": 7.8,
+      "controllability": 9.0,
+      "speedStability": 7.1,
+      "pricing": 8.4,
+      "last_updated": "2026-07-01"
     },
     {
       "modelSlug": "kling-2-6-pro",

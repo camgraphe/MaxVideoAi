@@ -153,7 +153,8 @@ export function resolveSourceVideoDurationSec(params: {
     typeof params.maxDurationSec === 'number' && Number.isFinite(params.maxDurationSec)
       ? Math.max(1, Math.floor(params.maxDurationSec))
       : null;
-  if (params.mode !== 'reframe') {
+  const isSourceVideoMode = params.mode === 'v2v' || params.mode === 'reframe' || params.mode === 'extend';
+  if (!isSourceVideoMode) {
     return {
       durationSec: fallbackDurationSec,
       durationLabel: undefined,
@@ -170,11 +171,12 @@ export function resolveSourceVideoDurationSec(params: {
     return attachment.url?.trim() === sourceUrl;
   });
   const sourceDurationSec = positiveDuration(sourceAttachment?.durationSec);
-  const durationSec = sourceDurationSec ? Math.max(1, Math.ceil(sourceDurationSec)) : fallbackDurationSec;
+  const shouldUseSourceDuration = params.mode === 'reframe';
+  const durationSec = shouldUseSourceDuration && sourceDurationSec ? Math.max(1, Math.ceil(sourceDurationSec)) : fallbackDurationSec;
 
   return {
     durationSec,
-    durationLabel: `${durationSec}s`,
+    durationLabel: shouldUseSourceDuration ? `${durationSec}s` : undefined,
     sourceDurationSec,
     maxDurationSec,
     exceedsMax: Boolean(sourceDurationSec && maxDurationSec && sourceDurationSec > maxDurationSec),

@@ -37,15 +37,7 @@ export async function POST(req: NextRequest) {
   if (!routeContext.ok) {
     return NextResponse.json(routeContext.body, { status: routeContext.status });
   }
-  const {
-    engine,
-    isBytePlusV1a,
-    jobId,
-    mode,
-    payment,
-    providerKey,
-    providerRoutingPlan,
-  } = routeContext.context;
+  const { engine, isBytePlusV1a, jobId, mode, payment, providerKey, providerRoutingPlan } = routeContext.context;
   metricState.engineId = engine.id;
   metricState.engineLabel = engine.label;
   metricState.jobId = jobId;

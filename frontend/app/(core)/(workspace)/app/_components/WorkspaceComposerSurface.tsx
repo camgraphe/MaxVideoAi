@@ -35,6 +35,7 @@ import {
 } from '../_lib/workspace-input-helpers';
 import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prompt-state';
 import { LumaRay32KeyframeEditor } from './LumaRay32KeyframeEditor';
+import { OmniStudioPanel, OMNI_CUSTOM_FIELD_IDS } from './omni/OmniStudioPanel.client';
 import { StoryboardLaunchModal } from './StoryboardLaunchModal';
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
@@ -265,6 +266,7 @@ export function WorkspaceComposerSurface({
   const klingO3VideoReferenceDisabledReason =
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
+  const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
   const hdrFieldEntry = useMemo(
     () =>
       inputSchemaSummary.secondaryFields.find(({ field }) => field.id === HDR_FIELD_ID) ??
@@ -301,6 +303,7 @@ export function WorkspaceComposerSurface({
         disabledReason,
       };
     }).filter((entry) => {
+      if (showOmniStudioPanel) return false;
       if (!showLumaRay32KeyframeEditor) return true;
       return !LUMA_RAY32_MODIFY_ASSET_FIELD_IDS.has(entry.field.id);
     });
@@ -313,20 +316,27 @@ export function WorkspaceComposerSurface({
     klingO3AssetState.hasAnyVideoInput,
     klingO3VideoToVideoSupported,
     showLumaRay32KeyframeEditor,
+    showOmniStudioPanel,
     uiLocale,
     workflowCopy.clearReferencesToUseStartEnd,
     workflowCopy.clearStartEndToUseReferences,
   ]);
 
+  const omniExtraFields = useMemo(
+    () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
+    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
+  );
   const advancedFields = useMemo(() => {
-    const shouldHideInlineField = (field: EngineInputField) => Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id);
+    const shouldHideInlineField = (field: EngineInputField) =>
+      Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id) ||
+      (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id));
     if (!showLumaRay32KeyframeEditor) {
       return inputSchemaSummary.secondaryFields.filter(({ field }) => !shouldHideInlineField(field));
     }
     return inputSchemaSummary.secondaryFields.filter(
       ({ field }) => !LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS.has(field.id) && !shouldHideInlineField(field)
     );
-  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor]);
+  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showOmniStudioPanel]);
 
   const handleExtraInputValueChange = useCallback(
     (field: EngineInputField, value: unknown) => {
@@ -504,6 +514,23 @@ export function WorkspaceComposerSurface({
                 form={form}
                 setForm={setForm}
                 assetFields={inputSchemaSummary.assetFields}
+                inputAssets={inputAssets}
+                onAssetAdd={handleAssetAdd}
+                onAssetRemove={handleAssetRemove}
+                onOpenLibrary={handleOpenAssetLibrary}
+                onNotice={showNotice}
+                disabledReason={guestUploadLockedReason}
+              />
+            ) : null}
+            {showOmniStudioPanel ? (
+              <OmniStudioPanel
+                engine={selectedEngine}
+                caps={capability}
+                form={form}
+                setForm={setForm}
+                submissionMode={submissionMode}
+                assetFields={inputSchemaSummary.assetFields}
+                extraFields={omniExtraFields}
                 inputAssets={inputAssets}
                 onAssetAdd={handleAssetAdd}
                 onAssetRemove={handleAssetRemove}

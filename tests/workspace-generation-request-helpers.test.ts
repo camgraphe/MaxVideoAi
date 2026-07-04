@@ -373,6 +373,7 @@ test('workspace Happy Horse 1.1 controls and payload mirror the Fal schema by mo
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: true,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
   assert.deepEqual(
@@ -582,6 +583,7 @@ test('workspace unifies Luma Ray 3.2 text and image generation under Generate Vi
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 
@@ -643,6 +645,7 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 
@@ -658,6 +661,7 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 
@@ -672,6 +676,7 @@ test('workspace treats Kling 3.0 Omni as one unified inferred composer', () => {
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: false,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 

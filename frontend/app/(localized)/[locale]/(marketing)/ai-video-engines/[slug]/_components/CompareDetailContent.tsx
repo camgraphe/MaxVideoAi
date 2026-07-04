@@ -137,7 +137,6 @@ export function CompareDetailContent({
             prelaunchNotice={prelaunchNotice}
             right={right}
           />
-
           <CompareEngineHeroCards
             activeLocale={activeLocale}
             compareCopy={compareCopy}
@@ -189,7 +188,6 @@ export function CompareDetailContent({
               specRows={specRows}
             />
           </section>
-
           <CompareShowdownSection
             activeLocale={activeLocale}
             compareCopy={compareCopy}
@@ -206,9 +204,7 @@ export function CompareDetailContent({
             showdownSubtitle={showdownSubtitle}
             slug={slug}
           />
-
           <CompareRelatedSection compareCopy={compareCopy} relatedLinks={relatedLinks} />
-
           <CompareFaqSection
             breadcrumbJsonLd={breadcrumbJsonLd}
             compareCopy={compareCopy}

@@ -64,6 +64,8 @@
   --on-brand: #FFFFFF;
   --engine-google-veo-bg: #CDE7FF;
   --engine-google-veo-ink: #1F2633;
+  --engine-google-gemini-bg: #D9E7FF;
+  --engine-google-gemini-ink: #1F2633;
   --engine-openai-bg: #E4D7FF;
   --engine-openai-ink: #1F2633;
   --engine-pika-bg: #FADCE6;
@@ -264,6 +266,8 @@
   --on-brand: #030712;
   --engine-google-veo-bg: #1F3B5C;
   --engine-google-veo-ink: #EAF2FF;
+  --engine-google-gemini-bg: #26395F;
+  --engine-google-gemini-ink: #EAF2FF;
   --engine-openai-bg: #332546;
   --engine-openai-ink: #F1E9FF;
   --engine-pika-bg: #4A2A37;

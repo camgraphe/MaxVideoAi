@@ -230,6 +230,7 @@ test('template registry enables Seedance production and draft model templates', 
   );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
     'dreamina-seedance-2-0-mini',
+    'gemini-omni-flash',
     'gpt-image-2',
     'happy-horse-1-0',
     'happy-horse-1-1',

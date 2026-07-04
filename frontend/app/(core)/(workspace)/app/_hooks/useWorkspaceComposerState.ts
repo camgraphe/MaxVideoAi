@@ -60,6 +60,7 @@ type UseWorkspaceComposerStateResult = {
   isUnifiedSeedance: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedKlingO3: boolean;
+  isUnifiedGeminiOmni: boolean;
   klingO3UnsupportedVideoReason: string | null;
   klingO3DisabledEngineReasons: Record<string, string>;
   multiPromptTotalSec: number;
@@ -144,6 +145,7 @@ export function useWorkspaceComposerState({
     isUnifiedSeedance,
     isUnifiedHappyHorse,
     isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
     klingO3UnsupportedVideoReason,
     klingO3DisabledEngineReasons,
     referenceInputStatus,
@@ -389,6 +391,7 @@ export function useWorkspaceComposerState({
     isUnifiedSeedance,
     isUnifiedHappyHorse,
     isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
     klingO3UnsupportedVideoReason,
     klingO3DisabledEngineReasons,
     multiPromptTotalSec,
