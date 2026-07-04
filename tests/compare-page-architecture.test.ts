@@ -177,6 +177,13 @@ const miniScoreboardOnlyComparisons = [
   'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
 ];
 
+const geminiScoreboardOnlyComparisons = [
+  'gemini-omni-flash-vs-veo-3-1',
+  'gemini-omni-flash-vs-veo-3-1-fast',
+  'gemini-omni-flash-vs-sora-2',
+  'gemini-omni-flash-vs-seedance-2-0',
+];
+
 const canonicalMiniCompareOverrideSlugs = [
   'dreamina-seedance-2-0-mini-vs-seedance-2-0',
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
@@ -315,14 +322,20 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
   assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
 });
 
-test('Seedance family comparisons use video showdowns while non-family Mini pages stay scoreboard-only', () => {
-  assert.deepEqual(compareConfig.scoreboardOnlyComparisons, miniScoreboardOnlyComparisons);
+test('Seedance family comparisons use video showdowns while Mini and Gemini pages stay scoreboard-only', () => {
+  assert.deepEqual(compareConfig.scoreboardOnlyComparisons, [
+    ...miniScoreboardOnlyComparisons,
+    ...geminiScoreboardOnlyComparisons,
+  ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
   assert.ok(compareConfig.trophyComparisons?.every((slug) => !slug.includes('dreamina-seedance-2-0-mini')));
   seedanceFamilyShowdownComparisons.forEach((slug) => {
     assert.ok(!compareConfig.scoreboardOnlyComparisons?.includes(slug), `${slug} should not be scoreboard-only`);
     assert.equal(compareConfig.showdowns?.[slug]?.length, 3, `${slug} should have three curated video showdowns`);
+  });
+  geminiScoreboardOnlyComparisons.forEach((slug) => {
+    assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} should stay scorecard-only until curated outputs exist`);
   });
 
   const bestQualityBucket = compareHubConfig.useCaseBuckets?.find((bucket) => bucket.id === 'best-quality');
