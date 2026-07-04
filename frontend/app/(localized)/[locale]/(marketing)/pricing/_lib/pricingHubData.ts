@@ -35,6 +35,7 @@ const PRICING_DISPLAY_MODEL_ORDER = [
   'kling-3-standard',
   'veo-3-1',
   'veo-3-1-fast',
+  'gemini-omni-flash',
   'veo-3-1-lite',
   'happy-horse-1-1',
   'ltx-2-3-fast',
@@ -83,7 +84,9 @@ export type ImagePriceScenario = {
 };
 
 export const VIDEO_PRICE_PRESETS = [
+  { id: 'entry-route', label: 'Entry route', subLabel: 'Native', resolution: '720p', durationSec: null, audio: false },
   { id: '5s-720p', label: '5s 720p', subLabel: 'Draft', resolution: '720p', durationSec: 5, audio: false },
+  { id: '10s-720p', label: '10s 720p', subLabel: 'Preview', resolution: '720p', durationSec: 10, audio: false },
   { id: '8s-1080p', label: '8s 1080p', subLabel: 'Premium', resolution: '1080p', durationSec: 8, audio: false },
   { id: '10s-1080p', label: '10s 1080p', subLabel: 'Standard', resolution: '1080p', durationSec: 10, audio: false },
   {
@@ -245,7 +248,7 @@ function anchorFromSlug(slug: string) {
 }
 
 function isPublicMarketingEntry(entry: FalEngineEntry) {
-  if (entry.availability !== 'available') return false;
+  if (entry.availability !== 'available' && entry.availability !== 'limited') return false;
   const surfaces = entry.surfaces;
   return Boolean(
     surfaces.pricing.includeInEstimator ||
@@ -336,6 +339,24 @@ function chooseFourKDuration(entry: FalEngineEntry) {
   return maxDurationSec > 0 ? maxDurationSec : null;
 }
 
+function chooseEntryDuration(entry: FalEngineEntry) {
+  const options = collectDurationOptions(entry);
+  const preferred = [10, 8, 5, 6, 12, 15, 4];
+  const exactPreferred = preferred.find((duration) => options.includes(duration));
+  if (exactPreferred != null) return exactPreferred;
+  if (options.length) return options[0] ?? null;
+  const maxDurationSec = getEngineMaxDurationSec(entry);
+  return maxDurationSec > 0 ? Math.min(maxDurationSec, 10) : null;
+}
+
+function chooseEntryResolution(engine: EngineCaps) {
+  const resolutions = engine.resolutions.map(String);
+  const preferred = ['720p', '768p', '1080p', '480p', '540p', '512p', '4k'];
+  const normalized = new Map(resolutions.map((resolution) => [resolution.toLowerCase(), resolution]));
+  const exactPreferred = preferred.map((resolution) => normalized.get(resolution)).find(Boolean);
+  return exactPreferred ?? resolutions[0] ?? '720p';
+}
+
 function resolveResolutionSupport(engine: EngineCaps, requestedResolution: string, locale: AppLocale) {
   const copy = getPricingHubCopy(locale);
   const normalizedRequested = requestedResolution.toLowerCase();
@@ -362,7 +383,10 @@ function resolveResolutionSupport(engine: EngineCaps, requestedResolution: strin
 }
 
 function formatResolutionLabel(resolution: string) {
-  return resolution.toLowerCase() === '4k' ? '4K' : resolution;
+  const normalized = resolution.toLowerCase();
+  if (normalized === '4k') return '4K';
+  if (/^\d+p$/.test(normalized)) return normalized;
+  return resolution;
 }
 
 function readResolutionRate(pricingDetails: EnginePricingDetails | undefined, resolution?: string) {
@@ -480,6 +504,7 @@ function supportsAudioOff(engine: EngineCaps) {
 }
 
 function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPriceScenario) {
+  if (preset.id === 'entry-route') return chooseEntryDuration(entry);
   if (preset.id === '4k-route') return chooseFourKDuration(entry);
   return preset.durationSec;
 }
@@ -487,7 +512,10 @@ function resolvePresetDuration(entry: FalEngineEntry, preset: VideoPriceScenario
 export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario, locale: AppLocale): PresetQuote {
   const copy = getPricingHubCopy(locale);
   const engine = entry.engine;
-  const resolution = resolveResolutionSupport(engine, preset.resolution, locale);
+  const resolution =
+    preset.id === 'entry-route'
+      ? { supported: true, resolution: chooseEntryResolution(engine), note: null as string | null }
+      : resolveResolutionSupport(engine, preset.resolution, locale);
   const currency = engine.pricingDetails?.currency ?? engine.pricing?.currency ?? FALLBACK_CURRENCY;
   const audioMode: AudioRateMode = preset.audio ? 'default' : supportsAudioOff(engine) ? 'audio_off' : 'default';
   const canExactAudio = preset.audio ? engine.audio : true;
@@ -519,7 +547,11 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
       amountCents: exactCents ?? undefined,
       display: formatPrice(locale, exactCents, currency),
       note:
-        preset.id === '4k-route'
+        preset.id === 'entry-route'
+          ? `${formatCompactSeconds(locale, duration.durationSec)} ${formatResolutionLabel(resolution.resolution)}${
+              !preset.audio && engine.audio && !supportsAudioOff(engine) ? ` · ${copy.quote.audioIncluded}` : ''
+            }`
+          : preset.id === '4k-route'
           ? copy.quote.fourKNote(duration.durationSec)
           : !preset.audio && engine.audio && !supportsAudioOff(engine)
             ? copy.quote.audioIncluded

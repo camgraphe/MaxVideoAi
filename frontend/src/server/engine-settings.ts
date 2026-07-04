@@ -19,6 +19,10 @@ type EngineSettingsUpsert = {
 
 let ensureSeedPromise: Promise<void> | null = null;
 
+function isProductionBuildPhase() {
+  return process.env.NEXT_PHASE === 'phase-production-build';
+}
+
 function normalizeOptions(engine: EngineCaps): Record<string, unknown> {
   return {
     label: engine.label,
@@ -70,6 +74,7 @@ function shouldRefreshEngineOptions(engine: EngineCaps, current?: EngineSettings
 }
 
 export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsRecord>> {
+  if (isProductionBuildPhase()) return new Map();
   if (!process.env.DATABASE_URL) return new Map();
   const rows = await query<EngineSettingsRecord>(
     `SELECT engine_id, options, pricing, updated_at, updated_by FROM engine_settings`
@@ -78,6 +83,7 @@ export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsR
 }
 
 export async function listEnginePricingOverrides(): Promise<Record<string, EnginePricingDetails>> {
+  if (isProductionBuildPhase()) return {};
   if (!process.env.DATABASE_URL) return {};
   const settings = await fetchEngineSettings();
   const overrides: Record<string, EnginePricingDetails> = {};

@@ -34,7 +34,7 @@ test('Gemini Omni client calls the Vertex Interactions API with bearer auth', as
     model: 'gemini-omni-flash-preview',
     input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
     generation_config: { video_config: { task: 'text_to_video', aspect_ratio: '16:9' } },
-    response_format: { type: 'video', aspect_ratio: '16:9' },
+    response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
     background: true,
     store: true,
   });
@@ -69,6 +69,42 @@ test('Gemini Omni client fetches stored interactions by id', async () => {
   assert.equal(urls[0], 'https://aiplatform.googleapis.com/v1beta1/projects/demo-project/locations/global/interactions/abc123');
 });
 
+test('Gemini Omni client times out suspended polling requests', async () => {
+  const client = new GoogleVertexOmniClient({
+    projectId: 'demo-project',
+    location: 'global',
+    apiBaseUrl: 'https://aiplatform.googleapis.com',
+    serviceAccount: {
+      client_email: 'svc@example.com',
+      private_key: 'unused-in-test',
+    },
+    getAccessTokenFn: async () => 'test-token',
+    pollTimeoutMs: 5,
+    fetchFn: async (_url, init) => {
+      const signal = init?.signal;
+      await new Promise((_resolve, reject) => {
+        signal?.addEventListener('abort', () => {
+          const error = new Error('aborted');
+          error.name = 'AbortError';
+          reject(error);
+        });
+      });
+      return new Response(JSON.stringify({ status: 'RUNNING' }), { status: 200 });
+    },
+  });
+
+  await assert.rejects(
+    () => client.fetchInteraction('abc123'),
+    (error) => {
+      assert.ok(error instanceof GoogleVertexOmniError);
+      const normalized = classifyGoogleVertexOmniError(error);
+      assert.equal(normalized.errorClass, 'timeout');
+      assert.equal(normalized.code, 'GOOGLE_VERTEX_OMNI_TIMEOUT');
+      return true;
+    }
+  );
+});
+
 test('Gemini Omni client preserves HTTP status and payload for fallback classification', async () => {
   const client = new GoogleVertexOmniClient({
     projectId: 'demo-project',
@@ -98,7 +134,7 @@ test('Gemini Omni client preserves HTTP status and payload for fallback classifi
         model: 'gemini-omni-flash-preview',
         input: [{ role: 'user', content: [{ type: 'text', text: 'Generate a cinematic product shot' }] }],
         generation_config: { video_config: { task: 'text_to_video' } },
-        response_format: { type: 'video', aspect_ratio: '16:9' },
+        response_format: { type: 'video', aspect_ratio: '16:9', delivery: 'uri' },
         background: true,
       }),
     (error) => {

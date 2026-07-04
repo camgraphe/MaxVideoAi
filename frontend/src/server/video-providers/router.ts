@@ -90,8 +90,9 @@ export function resolveVideoProviderRoutingPlan(params: {
     if (!isGoogleVertexOmniModeSupported(params.engineId, params.mode)) return falOnly;
     if (!flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_ENABLED'))) return falOnly;
 
-    const publicRoutingEnabled = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED'));
-    const adminOnly = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_ADMIN_ONLY') ?? 'true');
+    const omniPublicRoutingValue = readEnv(params.env, 'GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED');
+    const publicRoutingEnabled = omniPublicRoutingValue == null ? true : flagEnabled(omniPublicRoutingValue);
+    const adminOnly = flagEnabled(readEnv(params.env, 'GOOGLE_VERTEX_OMNI_ADMIN_ONLY') ?? 'false');
     if (adminOnly && !params.isAdmin) return falOnly;
     if (!publicRoutingEnabled && !params.isAdmin) return falOnly;
 

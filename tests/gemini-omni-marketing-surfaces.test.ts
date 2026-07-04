@@ -9,6 +9,8 @@ import scoresFile from '../data/benchmarks/engine-scores.v1.json' with { type: '
 import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
 import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
@@ -57,12 +59,23 @@ test('Gemini Omni Flash has localized model content with non-cannibalizing inter
     assert.match(raw, /10\s*(?:s|seconds|secondes|segundos)/i);
     assert.match(raw, /previous interaction id/i);
     assert.match(raw, /reference/i);
+    assert.match(raw, /Golden-hour rooftop/i);
+    assert.match(raw, /Sound direction/i);
+    assert.match(raw, /Camera direction/i);
+    assert.doesNotMatch(raw, /will be published after approved|seront publies apres validation|se publicaran despues/i);
     assert.doesNotMatch(raw, /fal\.ai|\bFal\b|\bFAL\b/);
     assert.doesNotMatch(raw, /Vertex implementation tutorial/i);
     for (const href of expectedLinks[locale]) {
       assert.match(raw, new RegExp(href.replaceAll('.', '\\.').replaceAll('?', '\\?')));
     }
   }
+});
+
+test('Gemini Omni Flash model page uses approved hero and demo render IDs', () => {
+  assert.deepEqual(PREFERRED_MEDIA['gemini-omni-flash'], {
+    hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
+    demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+  });
 });
 
 test('Gemini Omni Flash aliases canonicalize to the public model slug', () => {
@@ -84,6 +97,32 @@ test('Gemini Omni Flash decision template exposes app, pricing, specs and Veo co
     assert.ok(decision.hero.quickLinks.some((link) => link.href === '#specs'));
     assert.match(JSON.stringify(decision), /Veo 3\.1/);
     assert.doesNotMatch(JSON.stringify(decision), /fal\.ai|\bFal\b|\bFAL\b/);
+  }
+});
+
+test('Gemini Omni Flash is exposed on the pricing matrix with a visible 10s 720p price', () => {
+  const expectedModelHrefs = {
+    en: '/models/gemini-omni-flash',
+    fr: '/fr/modeles/gemini-omni-flash',
+    es: '/es/modelos/gemini-omni-flash',
+  };
+
+  for (const locale of LOCALES) {
+    const row = buildPricingHubData(locale).video.rows.find((candidate) => candidate.anchorId === 'gemini-omni-flash-pricing');
+    assert.ok(row, `${locale} pricing row should include Gemini Omni Flash`);
+    assert.equal(row.engineName, 'Gemini Omni Flash');
+    assert.equal(row.family, 'veo');
+    assert.equal(row.modelHref, expectedModelHrefs[locale]);
+    assert.ok(row.links.some((link) => link.href === '/app?engine=gemini-omni-flash'));
+
+    const previewQuote = row.quotes['10s-720p'];
+    assert.equal(previewQuote.status, 'exact');
+    assert.equal(previewQuote.amountCents, 130);
+    assert.match(previewQuote.rateDisplay ?? '', /0[,.]13/);
+
+    const standard1080Quote = row.quotes['10s-1080p'];
+    assert.equal(standard1080Quote.status, 'unsupported');
+    assert.match(standard1080Quote.note ?? '', /720p/i);
   }
 });
 

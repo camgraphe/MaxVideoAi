@@ -12,7 +12,11 @@ export type GoogleVertexOmniInteractionRequest = {
   model: string;
   input: unknown[];
   generation_config?: Record<string, unknown>;
-  response_format?: Record<string, unknown>;
+  response_format?: {
+    type?: string;
+    aspect_ratio?: string;
+    delivery?: string;
+  };
   background?: boolean;
   store?: boolean;
   previous_interaction_id?: string;
@@ -37,6 +41,9 @@ export type GoogleVertexOmniClientConfig = {
   apiBaseUrl: string;
   fetchFn?: typeof fetch;
   getAccessTokenFn?: (serviceAccount: GoogleServiceAccount) => Promise<string>;
+  submitTimeoutMs?: number;
+  pollTimeoutMs?: number;
+  downloadTimeoutMs?: number;
 };
 
 type GoogleVertexOmniEnv = Partial<Record<
@@ -44,6 +51,9 @@ type GoogleVertexOmniEnv = Partial<Record<
   | 'GOOGLE_VERTEX_OMNI_LOCATION'
   | 'GOOGLE_VERTEX_OMNI_API_BASE_URL'
   | 'GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON'
+  | 'GOOGLE_VERTEX_OMNI_SUBMIT_TIMEOUT_MS'
+  | 'GOOGLE_VERTEX_OMNI_POLL_TIMEOUT_MS'
+  | 'GOOGLE_VERTEX_OMNI_DOWNLOAD_TIMEOUT_MS'
   | 'GOOGLE_VERTEX_PROJECT_ID'
   | 'GOOGLE_VERTEX_LOCATION'
   | 'GOOGLE_VERTEX_API_BASE_URL'
@@ -52,6 +62,11 @@ type GoogleVertexOmniEnv = Partial<Record<
 >>;
 
 let cachedToken: { accessToken: string; expiresAtMs: number } | null = null;
+
+const DEFAULT_SUBMIT_TIMEOUT_MS = 90_000;
+const DEFAULT_POLL_TIMEOUT_MS = 45_000;
+const DEFAULT_DOWNLOAD_TIMEOUT_MS = 90_000;
+const GOOGLE_OAUTH_TIMEOUT_MS = 30_000;
 
 function base64Url(input: Buffer | string): string {
   return Buffer.from(input).toString('base64url');
@@ -80,6 +95,11 @@ function readEnv(env: GoogleVertexOmniEnv, primary: keyof GoogleVertexOmniEnv, f
   return (env[primary] ?? env[fallback] ?? '').trim();
 }
 
+function positiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.trunc(parsed) : fallback;
+}
+
 function getConfig(env: GoogleVertexOmniEnv = process.env as GoogleVertexOmniEnv): GoogleVertexOmniClientConfig {
   const projectId = readEnv(env, 'GOOGLE_VERTEX_OMNI_PROJECT_ID', 'GOOGLE_VERTEX_PROJECT_ID');
   if (!projectId) {
@@ -95,7 +115,16 @@ function getConfig(env: GoogleVertexOmniEnv = process.env as GoogleVertexOmniEnv
     serviceAccount: parseServiceAccount(
       env.GOOGLE_VERTEX_OMNI_SERVICE_ACCOUNT_JSON ?? env.GOOGLE_VERTEX_SERVICE_ACCOUNT_JSON
     ),
+    submitTimeoutMs: positiveInt(env.GOOGLE_VERTEX_OMNI_SUBMIT_TIMEOUT_MS, DEFAULT_SUBMIT_TIMEOUT_MS),
+    pollTimeoutMs: positiveInt(env.GOOGLE_VERTEX_OMNI_POLL_TIMEOUT_MS, DEFAULT_POLL_TIMEOUT_MS),
+    downloadTimeoutMs: positiveInt(env.GOOGLE_VERTEX_OMNI_DOWNLOAD_TIMEOUT_MS, DEFAULT_DOWNLOAD_TIMEOUT_MS),
   };
+}
+
+function timeoutSignal(timeoutMs: number): { signal: AbortSignal; clear: () => void } {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  return { signal: controller.signal, clear: () => clearTimeout(timer) };
 }
 
 function buildJwt(serviceAccount: GoogleServiceAccount): string {
@@ -123,14 +152,32 @@ async function getAccessToken(serviceAccount: GoogleServiceAccount): Promise<str
   }
 
   const tokenUri = serviceAccount.token_uri || 'https://oauth2.googleapis.com/token';
-  const response = await fetch(tokenUri, {
-    method: 'POST',
-    headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-      assertion: buildJwt(serviceAccount),
-    }),
-  });
+  const timeout = timeoutSignal(GOOGLE_OAUTH_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(tokenUri, {
+      method: 'POST',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+        assertion: buildJwt(serviceAccount),
+      }),
+      signal: timeout.signal,
+    });
+  } catch (error) {
+    const isAbort = error instanceof Error && error.name === 'AbortError';
+    throw new GoogleVertexOmniError(
+      isAbort ? 'Google OAuth token request timed out.' : 'Google OAuth token request failed.',
+      {
+        code: isAbort ? 'GOOGLE_VERTEX_OMNI_TOKEN_TIMEOUT' : 'GOOGLE_VERTEX_OMNI_TOKEN_NETWORK_ERROR',
+        errorClass: isAbort ? 'timeout' : 'provider_unavailable',
+        raw: error,
+        cause: error,
+      }
+    );
+  } finally {
+    timeout.clear();
+  }
   const json = (await response.json().catch(() => null)) as Record<string, unknown> | null;
   if (!response.ok) {
     const code = typeof json?.error === 'string' ? json.error : response.statusText;
@@ -168,11 +215,99 @@ function throwHttpError(action: string, response: Response, payload: unknown): n
   });
 }
 
+async function requestJson(params: {
+  fetchFn: typeof fetch;
+  url: string;
+  method: 'GET' | 'POST';
+  token: string;
+  action: string;
+  body?: unknown;
+  timeoutMs: number;
+}): Promise<unknown> {
+  const timeout = timeoutSignal(params.timeoutMs);
+  try {
+    const response = await params.fetchFn(params.url, {
+      method: params.method,
+      headers: {
+        authorization: `Bearer ${params.token}`,
+        'content-type': 'application/json',
+      },
+      body: params.body === undefined ? undefined : JSON.stringify(params.body),
+      signal: timeout.signal,
+    });
+    const json = (await response.json().catch(() => null)) as unknown;
+    if (!response.ok) {
+      throwHttpError(params.action, response, json);
+    }
+    return json;
+  } catch (error) {
+    if (error instanceof GoogleVertexOmniError) throw error;
+    const isAbort = error instanceof Error && error.name === 'AbortError';
+    throw new GoogleVertexOmniError(
+      isAbort ? `Google Vertex Omni ${params.action} timed out.` : `Google Vertex Omni ${params.action} network error.`,
+      {
+        code: isAbort ? 'GOOGLE_VERTEX_OMNI_TIMEOUT' : 'GOOGLE_VERTEX_OMNI_NETWORK_ERROR',
+        errorClass: isAbort ? 'timeout' : 'provider_unavailable',
+        raw: error,
+        cause: error,
+      }
+    );
+  } finally {
+    timeout.clear();
+  }
+}
+
+async function requestBuffer(params: {
+  fetchFn: typeof fetch;
+  url: string;
+  token: string;
+  action: string;
+  timeoutMs: number;
+}): Promise<{ data: Buffer; mime: string }> {
+  const timeout = timeoutSignal(params.timeoutMs);
+  try {
+    const response = await params.fetchFn(params.url, {
+      headers: { authorization: `Bearer ${params.token}` },
+      signal: timeout.signal,
+    });
+    if (!response.ok) {
+      throw new GoogleVertexOmniError(`Google Vertex Omni ${params.action} failed (${response.status}).`, {
+        status: response.status,
+        errorClass: response.status >= 500 ? 'provider_unavailable' : 'provider_error',
+      });
+    }
+    return {
+      data: Buffer.from(await response.arrayBuffer()),
+      mime: response.headers.get('content-type') || 'video/mp4',
+    };
+  } catch (error) {
+    if (error instanceof GoogleVertexOmniError) throw error;
+    const isAbort = error instanceof Error && error.name === 'AbortError';
+    throw new GoogleVertexOmniError(
+      isAbort ? `Google Vertex Omni ${params.action} timed out.` : `Google Vertex Omni ${params.action} network error.`,
+      {
+        code: isAbort ? 'GOOGLE_VERTEX_OMNI_TIMEOUT' : 'GOOGLE_VERTEX_OMNI_NETWORK_ERROR',
+        errorClass: isAbort ? 'timeout' : 'provider_unavailable',
+        raw: error,
+        cause: error,
+      }
+    );
+  } finally {
+    timeout.clear();
+  }
+}
+
 export class GoogleVertexOmniClient {
   private config: GoogleVertexOmniClientConfig;
+  private submitTimeoutMs: number;
+  private pollTimeoutMs: number;
+  private downloadTimeoutMs: number;
 
   constructor(config: GoogleVertexOmniClientConfig = getConfig()) {
     this.config = config;
+    this.submitTimeoutMs = config.submitTimeoutMs ?? DEFAULT_SUBMIT_TIMEOUT_MS;
+    this.pollTimeoutMs = config.pollTimeoutMs ?? DEFAULT_POLL_TIMEOUT_MS;
+    this.downloadTimeoutMs = config.downloadTimeoutMs ?? DEFAULT_DOWNLOAD_TIMEOUT_MS;
   }
 
   private fetchFn(): typeof fetch {
@@ -194,33 +329,27 @@ export class GoogleVertexOmniClient {
   }
 
   async createInteraction(request: GoogleVertexOmniInteractionRequest): Promise<GoogleVertexOmniInteraction> {
-    const response = await this.fetchFn()(this.interactionsUrl(), {
+    const json = await requestJson({
+      fetchFn: this.fetchFn(),
+      url: this.interactionsUrl(),
       method: 'POST',
-      headers: {
-        authorization: `Bearer ${await this.token()}`,
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(request),
+      token: await this.token(),
+      body: request,
+      action: 'interaction request',
+      timeoutMs: this.submitTimeoutMs,
     });
-    const json = (await response.json().catch(() => null)) as unknown;
-    if (!response.ok) {
-      throwHttpError('interaction request', response, json);
-    }
     return json as GoogleVertexOmniInteraction;
   }
 
   async fetchInteraction(nameOrId: string): Promise<GoogleVertexOmniInteraction> {
-    const response = await this.fetchFn()(`${this.interactionsUrl()}/${encodeURIComponent(interactionId(nameOrId))}`, {
+    const json = await requestJson({
+      fetchFn: this.fetchFn(),
+      url: `${this.interactionsUrl()}/${encodeURIComponent(interactionId(nameOrId))}`,
       method: 'GET',
-      headers: {
-        authorization: `Bearer ${await this.token()}`,
-        'content-type': 'application/json',
-      },
+      token: await this.token(),
+      action: 'interaction fetch',
+      timeoutMs: this.pollTimeoutMs,
     });
-    const json = (await response.json().catch(() => null)) as unknown;
-    if (!response.ok) {
-      throwHttpError('interaction fetch', response, json);
-    }
     return json as GoogleVertexOmniInteraction;
   }
 
@@ -232,28 +361,22 @@ export class GoogleVertexOmniClient {
       const url = `https://storage.googleapis.com/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(
         objectName
       )}?alt=media`;
-      const response = await this.fetchFn()(url, {
-        headers: { authorization: `Bearer ${await this.token()}` },
+      return requestBuffer({
+        fetchFn: this.fetchFn(),
+        url,
+        token: await this.token(),
+        action: 'GCS output download',
+        timeoutMs: this.downloadTimeoutMs,
       });
-      if (!response.ok) {
-        throw new Error(`Google Vertex Omni GCS output download failed (${response.status}).`);
-      }
-      return {
-        data: Buffer.from(await response.arrayBuffer()),
-        mime: response.headers.get('content-type') || 'video/mp4',
-      };
     }
 
-    const response = await this.fetchFn()(uri, {
-      headers: { authorization: `Bearer ${await this.token()}` },
+    return requestBuffer({
+      fetchFn: this.fetchFn(),
+      url: uri,
+      token: await this.token(),
+      action: 'output download',
+      timeoutMs: this.downloadTimeoutMs,
     });
-    if (!response.ok) {
-      throw new Error(`Google Vertex Omni output download failed (${response.status}).`);
-    }
-    return {
-      data: Buffer.from(await response.arrayBuffer()),
-      mime: response.headers.get('content-type') || 'video/mp4',
-    };
   }
 }
 

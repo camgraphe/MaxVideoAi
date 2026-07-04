@@ -35,7 +35,24 @@ test('Gemini Omni Flash support rejects unsupported Veo-only controls', () => {
   assert.equal(resolveGoogleVertexOmniSupport({ ...base, seed: 123 }).reason, 'seed_not_supported');
 });
 
-test('Gemini Omni Flash routing is admin-only by default and gated independently from Veo', () => {
+test('Gemini Omni Flash routing is public when enabled and can be explicitly gated', () => {
+  assert.deepEqual(
+    resolveVideoProviderRoutingPlan({
+      engineId: 'gemini-omni-flash',
+      mode: 't2v',
+      isAdmin: false,
+      env: {
+        GOOGLE_VERTEX_OMNI_ENABLED: 'true',
+      },
+    }),
+    {
+      kind: 'google_vertex_omni_primary',
+      primaryProvider: 'google_vertex_omni_direct',
+      fallbackProvider: 'fal',
+      fallbackEnabled: false,
+    }
+  );
+
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'gemini-omni-flash',

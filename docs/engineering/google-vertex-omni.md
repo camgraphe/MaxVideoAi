@@ -14,19 +14,20 @@ The route supports text-to-video, image-to-video, reference-to-video, short sour
 
 ## Rollout Flags
 
-Keep public routing disabled until quota, moderation behavior, storage, and pricing have been smoke-tested in production.
+When the route is enabled, Gemini Omni Flash is available to regular users by default. Use the gating flags below only for a temporary admin-only preview or rollback.
 
 ```txt
 GOOGLE_VERTEX_OMNI_ENABLED=false
-GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=false
-GOOGLE_VERTEX_OMNI_ADMIN_ONLY=true
+GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=true
+GOOGLE_VERTEX_OMNI_ADMIN_ONLY=false
 GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED=false
 ```
 
 Routing behavior:
 
 - `GOOGLE_VERTEX_OMNI_ENABLED=false`: disables the direct route.
-- `GOOGLE_VERTEX_OMNI_ADMIN_ONLY=true`: lets admins test when public routing is off.
+- `GOOGLE_VERTEX_OMNI_ENABLED=true`: enables the direct route for users unless a restriction flag below is set.
+- `GOOGLE_VERTEX_OMNI_ADMIN_ONLY=true`: restricts the route to admins.
 - `GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=false`: prevents non-admin traffic from using the route.
 - `GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED=false`: no fallback should be assumed for Omni unless a compatible fallback is explicitly validated.
 
@@ -66,6 +67,10 @@ The payload builder maps app modes to documented Interactions tasks:
 - `v2v` -> `edit`
 - `retake` -> `edit` with `previous_interaction_id`
 
+Media blocks should use the documented Interactions content fields only, such as `type`, `uri`, `data`, and `mime_type`.
+Do not add internal media role fields to the JSON body. Image roles are expressed in the prompt text with Google Omni tags such as `<FIRST_FRAME>` and `<IMAGE_REF_N>`.
+The video response format requests `delivery: "uri"` to reduce large response payload risk, while polling must still handle inline base64 data because Google does not guarantee URI delivery on later `GET /interactions/{id}` calls.
+
 Do not add negative prompt, seed, first/last-frame, extend, or 4K controls unless Google changes the Omni docs and the payload contract tests are updated.
 
 ## Polling
@@ -85,6 +90,12 @@ Poller responsibilities:
 - Download `gs://` or URI video output through the Google client.
 - Copy the final video into MaxVideoAI storage.
 - Complete the `app_jobs` row and update the latest `provider_attempts` snapshot.
+
+## Pricing And Cost Estimate
+
+Google Cloud lists Gemini Omni Flash video output at `$0.10/s`. MaxVideoAI customer pricing is configured separately in the engine catalog and currently displays `$0.13/s` for the 720p preview route.
+
+The provider cost estimator records `google_vertex_omni_public_video_pricing_estimate` with `provider_cost_units` equal to output seconds and `provider_cost_usd` equal to seconds x `$0.10`. Text input/output token costs are not included in this estimate unless Google starts returning an authoritative usage cost signal.
 
 ## Workspace UI
 

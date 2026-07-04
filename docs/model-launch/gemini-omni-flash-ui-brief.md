@@ -25,8 +25,9 @@ Why this direction:
 
 ## UI Requirements
 
-- Mode selector with concise icon buttons for Generate, Image, References, Edit, and Refine.
-- Source slots for one image, up to 10 references, one short source video, and previous interaction id.
+- Route the workflow from user inputs instead of showing provider-specific mode buttons.
+- Keep source slots for one image, up to 10 references, one short source video, and previous interaction id visible in the Omni panel.
+- Disable incompatible source slots after the user adds an image, references, a source video, or a previous interaction id.
 - Store interaction toggle so refine workflows are intentional.
 - Dedicated text areas for sound direction, camera direction, and edit instruction.
 - Validation states for missing image, reference images, source video, or previous interaction id.
@@ -55,6 +56,8 @@ Why this direction:
 - Switching to Gemini Omni Flash shows the Omni panel.
 - Switching away hides the panel.
 - Generic asset dropzones are not duplicated when the Omni panel owns the active source slot.
+- Adding an image, references, a video, or previous interaction id changes the submitted Omni mode automatically.
+- Incompatible source slots are disabled rather than exposed as separate mode buttons.
 - Omni custom fields survive schema normalization and submission.
 - Retake/refine cannot submit without a previous interaction id.
 - Source-video edit cannot submit without a source video.

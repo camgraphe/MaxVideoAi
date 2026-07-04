@@ -21,6 +21,7 @@ export type GoogleVertexOmniPayload = {
   response_format: {
     type: 'video';
     aspect_ratio: '16:9' | '9:16';
+    delivery: 'uri';
   };
   background: true;
   store: boolean;
@@ -79,7 +80,13 @@ function appendPromptDirective(lines: string[], label: string, value: string | n
 }
 
 function buildPromptText(params: { prompt: string; mode: Mode | string; extra: Record<string, unknown> }): string {
-  const lines = [params.prompt.trim()];
+  const prompt = params.prompt.trim();
+  const lines =
+    params.mode === 'i2v'
+      ? [`[# Sources <FIRST_FRAME>@Image1] ${prompt}`, 'Use Image1 as the starting frame.']
+      : params.mode === 'ref2v'
+        ? [prompt, 'Use the given image(s) as references for video generation. The images should not be used as literal initial frames.']
+        : [prompt];
   appendPromptDirective(lines, 'Camera direction', stringFromExtra(params.extra, 'prompt_camera_direction', 'promptCameraDirection'));
   appendPromptDirective(lines, 'Sound direction', stringFromExtra(params.extra, 'prompt_audio_direction', 'promptAudioDirection'));
   appendPromptDirective(lines, 'Edit instruction', stringFromExtra(params.extra, 'prompt_edit_instruction', 'promptEditInstruction'));
@@ -157,9 +164,10 @@ export async function buildGoogleVertexOmniPayload(
     response_format: {
       type: 'video',
       aspect_ratio: normalizeAspectRatio(params.aspectRatio ?? params.falPayload.aspectRatio ?? '16:9'),
+      delivery: 'uri',
     },
     background: true,
-    store: booleanFromExtra(extra, 'store_interaction', 'storeInteraction') ?? false,
+    store: booleanFromExtra(extra, 'store_interaction', 'storeInteraction') ?? true,
   };
 
   if (previousInteractionId) {

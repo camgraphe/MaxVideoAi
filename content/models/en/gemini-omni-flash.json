@@ -7,7 +7,7 @@
     "image": "/hero/veo-3-1-hero.jpg"
   },
   "overview": "Gemini Omni Flash is Google's preview Omni video model in MaxVideoAI for 720p clips up to 10 seconds, with text, image, reference-image, source-video edit and previous-interaction refine workflows.",
-  "pricingNotes": "Gemini Omni Flash is a preview Google route. MaxVideoAI shows the exact customer quote before generation and may update displayed pricing as provider SKUs stabilize.",
+  "pricingNotes": "Gemini Omni Flash is a preview Google route. MaxVideoAI shows the exact customer quote before generation; the 720p preview route is currently displayed at $0.13/s.",
   "hero": {
     "title": "Gemini Omni Flash - Google Omni video generation and conversational editing",
     "intro": "Generate from text, animate a source image, guide a video with multiple references, edit a short source clip, or refine a previous Omni result with its interaction id.",
@@ -124,6 +124,13 @@
       { "label": "Image/refs", "icon": "imageToVideo" },
       { "label": "Native sound", "icon": "audio" }
     ],
+    "demoTitle": "Gemini Omni Flash demo prompt",
+    "demoPromptLabel": "10s 16:9 prompt with native sound",
+    "demoPrompt": [
+      "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.",
+      "Sound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"",
+      "Camera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight."
+    ],
     "specTitle": "Gemini Omni Flash specs",
     "specNote": "Specs describe the MaxVideoAI preview route for Gemini Omni Flash through Google Vertex Interactions.",
     "specSections": [
@@ -153,7 +160,7 @@
       }
     ],
     "galleryTitle": "Gemini Omni Flash examples",
-    "galleryIntro": "Real MaxVideoAI examples will be published after approved Omni outputs exist.",
+    "galleryIntro": "Approved MaxVideoAI renders now show Gemini Omni Flash handling character performance, camera direction and native audio in 16:9.",
     "recreateLabel": "Recreate this shot",
     "finalPara1": "Gemini Omni Flash is the Google Omni route to test when stateful editing and references matter more than traditional Veo delivery controls.",
     "finalButton": "Generate with Gemini Omni Flash"

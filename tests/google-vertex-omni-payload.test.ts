@@ -19,7 +19,7 @@ test('Omni text-to-video payload uses Interactions video_config task and video r
   });
 
   assert.equal(payload.model, 'gemini-omni-flash-preview');
-  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '16:9' });
+  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '16:9', delivery: 'uri' });
   assert.equal(payload.background, true);
   assert.equal(payload.store, true);
   assert.deepEqual(payload.generation_config.video_config, { task: 'text_to_video' });
@@ -43,9 +43,61 @@ test('Omni reference-to-video payload forwards reference images and camera direc
   });
 
   assert.equal(payload.generation_config.video_config.task, 'reference_to_video');
-  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '9:16' });
+  assert.deepEqual(payload.response_format, { type: 'video', aspect_ratio: '9:16', delivery: 'uri' });
+  assert.deepEqual(
+    payload.input.filter((item) => item.type === 'image'),
+    [
+      { type: 'image', uri: 'https://cdn.maxvideoai.com/ref-a.png' },
+      { type: 'image', uri: 'https://cdn.maxvideoai.com/ref-b.png' },
+    ]
+  );
+  assert.doesNotMatch(JSON.stringify(payload.input), /"role"/);
+  assert.match(JSON.stringify(payload.input), /Use the given image\(s\) as references/);
   assert.match(JSON.stringify(payload.input), /ref-a\.png/);
   assert.match(JSON.stringify(payload.input), /slow pedestal up/);
+});
+
+test('Omni image-to-video payload tags the source image in the prompt', async () => {
+  const payload = await buildGoogleVertexOmniPayload({
+    engineId: 'gemini-omni-flash',
+    mode: 'i2v',
+    prompt: 'A cinematic reveal of a glass perfume bottle on wet stone',
+    aspectRatio: '16:9',
+    falPayload: {
+      engineId: 'gemini-omni-flash',
+      prompt: 'A cinematic reveal of a glass perfume bottle on wet stone',
+      mode: 'i2v',
+      aspectRatio: '16:9',
+      imageUrl: 'https://cdn.maxvideoai.com/source.png',
+    },
+  });
+
+  assert.deepEqual(
+    payload.input.filter((item) => item.type === 'image'),
+    [{ type: 'image', uri: 'https://cdn.maxvideoai.com/source.png' }]
+  );
+  assert.equal(payload.store, true);
+  assert.doesNotMatch(JSON.stringify(payload.input), /"role"/);
+  assert.match(JSON.stringify(payload.input), /<FIRST_FRAME>/);
+  assert.match(JSON.stringify(payload.input), /Use Image1 as the starting frame/);
+});
+
+test('Omni payload allows callers to opt out of stored interactions', async () => {
+  const payload = await buildGoogleVertexOmniPayload({
+    engineId: 'gemini-omni-flash',
+    mode: 't2v',
+    prompt: 'A cinematic warehouse robot demonstration',
+    aspectRatio: '16:9',
+    falPayload: {
+      engineId: 'gemini-omni-flash',
+      prompt: 'A cinematic warehouse robot demonstration',
+      mode: 't2v',
+      aspectRatio: '16:9',
+      extraInputValues: { store_interaction: false },
+    },
+  });
+
+  assert.equal(payload.store, false);
 });
 
 test('Omni retake payload preserves previous interaction id', async () => {

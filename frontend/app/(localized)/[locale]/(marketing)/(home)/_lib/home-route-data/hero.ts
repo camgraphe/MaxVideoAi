@@ -17,6 +17,8 @@ import {
 import { formatCurrency, formatStartingPrice, formatVideoTime, resolveModeLabel } from './formatting';
 import type { HomepageExampleFamily, RedesignContent } from './types';
 
+const IS_PRODUCTION_BUILD = process.env.NEXT_PHASE === 'phase-production-build';
+
 type HeroEngineLinks = {
   name: string;
   modeLabel: string | null;
@@ -111,6 +113,7 @@ function extractMode(video: GalleryVideo): Mode | 'unknown' {
 }
 
 export async function loadProgrammedHomepageHeroSlots(): Promise<HomepageSlotWithVideo[]> {
+  if (IS_PRODUCTION_BUILD) return [];
   try {
     const slots = await getHomepageSlotsCached();
     return slots.hero;
@@ -121,6 +124,7 @@ export async function loadProgrammedHomepageHeroSlots(): Promise<HomepageSlotWit
 }
 
 export async function loadSuccessfulGenerationCount(): Promise<number | null> {
+  if (IS_PRODUCTION_BUILD) return null;
   try {
     return await getSuccessfulGenerationCountCached();
   } catch (error) {

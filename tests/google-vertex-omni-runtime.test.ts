@@ -273,8 +273,72 @@ test('Gemini Omni Flash poll copies Interactions video output before marking the
   const completedUpdate = queries.find((entry) => /SET status = 'completed'/.test(entry.sql));
   assert.ok(completedUpdate, 'completed app_jobs update should run');
   assert.equal(completedUpdate.params?.[1], 'https://cdn.maxvideoai.com/renders/job_omni_123.mp4');
-  assert.match(String(completedUpdate.params?.[3]), /google_vertex_omni_preview_unpriced/);
+  const costBreakdown = JSON.parse(String(completedUpdate.params?.[3]));
+  assert.equal(costBreakdown.provider_cost_source, 'google_vertex_omni_public_video_pricing_estimate');
+  assert.equal(costBreakdown.provider_cost_units, 8);
+  assert.equal(costBreakdown.provider_cost_usd, 0.8);
   assert.match(JSON.stringify(outputs[0]), /cdn\.maxvideoai\.com/);
+
+  const attemptUpdate = queries.find((entry) => /UPDATE provider_attempts/.test(entry.sql) && /provider_cost_usd/.test(entry.sql));
+  assert.ok(attemptUpdate, 'provider_attempts should store estimated Google Omni provider cost');
+  assert.equal(attemptUpdate.params?.[3], 8);
+  assert.equal(attemptUpdate.params?.[4], 0.8);
+});
+
+test('Gemini Omni Flash poll copies inline Interactions video data before marking the job completed', async () => {
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
+  const uploads: Array<{ data: Buffer; mime: string; fileName?: string | null }> = [];
+  const inlineInteraction = {
+    id: 'v1_omni_inline',
+    status: 'completed',
+    output_video: {
+      data: Buffer.from('omni-inline-mp4-bytes').toString('base64'),
+      mime_type: 'video/mp4',
+    },
+  };
+
+  const response = await runGoogleVertexOmniPoll({
+    deps: {
+      queryFn: async (sql, params) => {
+        queries.push({ sql, params });
+        if (/FROM app_jobs/.test(sql) && /provider = \$1/.test(sql)) {
+          return [{ ...baseJob, provider_job_id: 'v1_omni_inline' }] as never;
+        }
+        if (/FROM provider_attempts/.test(sql)) {
+          return [{ id: 43, attempt_index: 1 }] as never;
+        }
+        if (/UPDATE app_jobs/.test(sql) && /RETURNING job_id/.test(sql)) {
+          return [{ job_id: 'job_omni_123' }] as never;
+        }
+        return [] as never;
+      },
+      getGoogleVertexOmniClientFn: () => ({
+        createInteraction: async () => {
+          throw new Error('not used');
+        },
+        fetchInteraction: async () => inlineInteraction,
+        downloadOutputUri: async () => {
+          throw new Error('inline data should not be downloaded by URI');
+        },
+      }),
+      isStorageConfiguredFn: () => true,
+      uploadFileBufferFn: async (payload) => {
+        uploads.push({ data: payload.data, mime: payload.mime, fileName: payload.fileName });
+        return { key: 'renders/user_123/job_omni_123.mp4', url: 'https://cdn.maxvideoai.com/renders/job_omni_123.mp4' };
+      },
+      ensureJobThumbnailFn: async () => 'https://cdn.maxvideoai.com/renders/job_omni_123-thumb.jpg',
+      upsertLegacyJobOutputsFn: async () => {},
+      generateAndPersistJobPreviewVideoFn: async () => null,
+      generateAndPersistJobKeyframesFn: async () => [],
+    },
+  });
+
+  const body = await response.json();
+  assert.equal(body.updates, 1);
+  assert.equal(uploads[0]?.data.toString(), 'omni-inline-mp4-bytes');
+  assert.equal(uploads[0]?.mime, 'video/mp4');
+  assert.equal(uploads[0]?.fileName, 'job_omni_123-google-omni.mp4');
+  assert.ok(queries.some((entry) => /SET status = 'completed'/.test(entry.sql)));
 });
 
 test('Gemini Omni Flash polling is isolated and exposed through a cron route', () => {

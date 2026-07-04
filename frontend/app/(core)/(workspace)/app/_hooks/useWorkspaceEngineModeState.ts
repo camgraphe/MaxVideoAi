@@ -19,8 +19,6 @@ import {
   resolveKlingO3UnifiedMode,
 } from '../_lib/kling-o3-unified-workflow';
 import {
-  getGeminiOmniAssetState,
-  hasGeminiOmniPreviousInteraction,
   isGeminiOmniEngineId,
   resolveGeminiOmniUnifiedMode,
 } from '../_lib/gemini-omni-unified-workflow';
@@ -173,7 +171,6 @@ export function useWorkspaceEngineModeState({
   const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
   const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
   const isUnifiedGeminiOmni = isGeminiOmniEngineId(selectedEngine?.id);
-  const geminiOmniAssetState = useMemo(() => getGeminiOmniAssetState(inputAssets), [inputAssets]);
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
     [engines, inputAssets, klingElements]
@@ -290,24 +287,7 @@ export function useWorkspaceEngineModeState({
       return currentMode === 'extend' && isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
     }
     if (isUnifiedKlingO3) return null;
-    if (isUnifiedGeminiOmni) {
-      const hasMediaInput =
-        geminiOmniAssetState.hasSourceImage ||
-        geminiOmniAssetState.hasReferenceImages ||
-        geminiOmniAssetState.hasSourceVideo;
-      if (hasMediaInput) return null;
-      if (currentMode === 'retake') {
-        return isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
-      }
-      if (
-        (currentMode === 'i2v' || currentMode === 'ref2v' || currentMode === 'v2v') &&
-        !hasGeminiOmniPreviousInteraction(form?.extraInputValues.previous_interaction_id) &&
-        isWorkspaceModeAvailable(selectedEngine, currentMode)
-      ) {
-        return currentMode;
-      }
-      return null;
-    }
+    if (isUnifiedGeminiOmni) return null;
     if (referenceInputStatus.hasAudio) return null;
     if (
       (currentMode === 'v2v' ||
@@ -321,11 +301,7 @@ export function useWorkspaceEngineModeState({
     }
     return null;
   }, [
-    form?.extraInputValues.previous_interaction_id,
     form?.mode,
-    geminiOmniAssetState.hasReferenceImages,
-    geminiOmniAssetState.hasSourceImage,
-    geminiOmniAssetState.hasSourceVideo,
     isUnifiedGeminiOmni,
     isUnifiedKlingO3,
     isUnifiedSeedance,

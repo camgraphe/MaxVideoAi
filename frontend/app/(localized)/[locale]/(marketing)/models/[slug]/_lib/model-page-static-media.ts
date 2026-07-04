@@ -19,6 +19,10 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_a424b7be-5f70-491b-b70e-6cbbbe223d21',
     demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
   },
+  'gemini-omni-flash': {
+    hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
+    demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+  },
   'pika-text-to-video': {
     hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',
     demo: 'job_f5992c71-a197-482f-8d0f-028f261ed27b',

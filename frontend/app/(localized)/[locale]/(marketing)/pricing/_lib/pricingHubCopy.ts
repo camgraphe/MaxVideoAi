@@ -224,7 +224,9 @@ const en: PricingHubCopy = {
     tableHeaders: { engine: 'Engine', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Video', image: 'Image', audio: 'Audio', tools: 'Tools & Upscale' },
     presetSubLabels: {
+      'entry-route': 'Native',
       '5s-720p': 'Draft',
+      '10s-720p': 'Preview',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
       '10s-1080p-audio': 'Narrative',
@@ -409,7 +411,9 @@ const fr: PricingHubCopy = {
     tableHeaders: { engine: 'Moteur', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Vidéo', image: 'Image', audio: 'Audio', tools: 'Outils & upscale' },
     presetSubLabels: {
+      'entry-route': 'Natif',
       '5s-720p': 'Brouillon',
+      '10s-720p': 'Aperçu',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
       '10s-1080p-audio': 'Narratif',
@@ -594,7 +598,9 @@ const es: PricingHubCopy = {
     tableHeaders: { engine: 'Motor', caps: 'Caps', actions: 'Acciones' },
     tabs: { video: 'Video', image: 'Imagen', audio: 'Audio', tools: 'Herramientas & upscale' },
     presetSubLabels: {
+      'entry-route': 'Nativa',
       '5s-720p': 'Borrador',
+      '10s-720p': 'Vista previa',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Estándar',
       '10s-1080p-audio': 'Narrativo',

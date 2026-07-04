@@ -53,6 +53,13 @@ test('Gemini Omni Flash catalog keeps Veo/Fal-only controls out of the schema', 
   assert.equal(allFieldIds.includes('prompt_audio_direction'), true);
   assert.equal(allFieldIds.includes('prompt_camera_direction'), true);
   assert.equal(allFieldIds.includes('prompt_edit_instruction'), true);
+  const fieldById = new Map([...(engine.inputSchema?.required ?? []), ...(engine.inputSchema?.optional ?? [])].map((field) => [field.id, field]));
+  assert.equal(fieldById.get('prompt_audio_direction')?.type, 'enum');
+  assert.deepEqual(fieldById.get('prompt_audio_direction')?.values, []);
+  assert.equal(fieldById.get('prompt_camera_direction')?.type, 'enum');
+  assert.deepEqual(fieldById.get('prompt_camera_direction')?.values, []);
+  assert.equal(fieldById.get('prompt_edit_instruction')?.type, 'enum');
+  assert.deepEqual(fieldById.get('prompt_edit_instruction')?.values, []);
 });
 
 test('Gemini Omni Flash workspace schema preserves Omni extra controls for payload building', () => {

@@ -15,6 +15,7 @@ const root = process.cwd();
 const composerSurfacePath = join(root, 'frontend/app/(core)/(workspace)/app/_components/WorkspaceComposerSurface.tsx');
 const appClientPath = join(root, 'frontend/app/(core)/(workspace)/app/AppClient.tsx');
 const omniPanelPath = join(root, 'frontend/app/(core)/(workspace)/app/_components/omni/OmniStudioPanel.client.tsx');
+const engineModeHookPath = join(root, 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspaceEngineModeState.ts');
 
 function getGeminiOmniEngine() {
   const entry = listFalEngines().find((candidate) => candidate.id === 'gemini-omni-flash');
@@ -93,6 +94,20 @@ test('Gemini Omni unified workflow routes from media assets and refine state', (
     resolveGeminiOmniUnifiedMode({ engine, inputAssets: {}, previousInteractionId: 'interactions/abc123' }),
     'retake'
   );
+});
+
+test('Gemini Omni engine mode ignores stale stored manual modes', () => {
+  const source = readFileSync(engineModeHookPath, 'utf8');
+  const activeManualModeSource = source.slice(
+    source.indexOf('const activeManualMode = useMemo<Mode | null>'),
+    source.indexOf('const activeMode: Mode')
+  );
+  const geminiGuardIndex = activeManualModeSource.indexOf('if (isUnifiedGeminiOmni) return null;');
+  const referenceManualModeIndex = activeManualModeSource.indexOf("currentMode === 'ref2v'");
+
+  assert.match(activeManualModeSource, /if \(isUnifiedGeminiOmni\) return null;/);
+  assert.ok(geminiGuardIndex > -1 && referenceManualModeIndex > -1);
+  assert.ok(geminiGuardIndex < referenceManualModeIndex, 'Gemini Omni must bypass stored ref2v before generic manual modes');
 });
 
 test('Gemini Omni unified schema keeps media slots visible from text and refine modes', () => {

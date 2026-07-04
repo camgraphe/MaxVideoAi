@@ -4,12 +4,10 @@ export type GoogleVertexOmniMediaInput =
   | {
       type: 'image';
       uri: string;
-      role?: 'source' | 'reference';
     }
   | {
       type: 'video';
       uri: string;
-      role?: 'source';
     };
 
 function cleanUrl(value: unknown): string | null {
@@ -18,17 +16,17 @@ function cleanUrl(value: unknown): string | null {
 
 export function buildOmniSourceImageInput(falPayload: GeneratePayload): GoogleVertexOmniMediaInput | null {
   const uri = cleanUrl(falPayload.imageUrl);
-  return uri ? { type: 'image', uri, role: 'source' } : null;
+  return uri ? { type: 'image', uri } : null;
 }
 
 export function buildOmniReferenceImageInputs(falPayload: GeneratePayload): GoogleVertexOmniMediaInput[] {
   return (falPayload.referenceImages ?? [])
     .map(cleanUrl)
     .filter((uri): uri is string => Boolean(uri))
-    .map((uri) => ({ type: 'image', uri, role: 'reference' }));
+    .map((uri) => ({ type: 'image', uri }));
 }
 
 export function buildOmniSourceVideoInput(falPayload: GeneratePayload): GoogleVertexOmniMediaInput | null {
   const uri = cleanUrl(falPayload.videoUrl);
-  return uri ? { type: 'video', uri, role: 'source' } : null;
+  return uri ? { type: 'video', uri } : null;
 }
