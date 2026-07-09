@@ -1,7 +1,10 @@
+'use client';
+
 import clsx from 'clsx';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
 
@@ -40,17 +43,37 @@ export function WorkspaceTopUpModal({
   onSelectPresetAmount,
   onCustomAmountChange,
 }: WorkspaceTopUpModalProps) {
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal<HTMLFormElement>({
+    onClose,
+    closeDisabled: isTopUpLoading,
+  });
+
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
-      <div className="absolute inset-0" role="presentation" onClick={onClose} />
+      <div
+        className="absolute inset-0"
+        aria-hidden="true"
+        onClick={isTopUpLoading ? undefined : onClose}
+      />
       <form
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="workspace-topup-title"
+        aria-describedby="workspace-topup-description"
+        tabIndex={-1}
+        onKeyDown={onDialogKeyDown}
         className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"
         onSubmit={onSubmit}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-text-primary">Wallet balance too low</h2>
-            <p className="mt-2 text-sm text-text-secondary">{modal.message}</p>
+            <h2 id="workspace-topup-title" className="text-base font-semibold text-text-primary">
+              Wallet balance too low
+            </h2>
+            <p id="workspace-topup-description" className="mt-2 text-sm text-text-secondary">
+              {modal.message}
+            </p>
             {modal.amountLabel && (
               <p className="mt-2 text-sm font-medium text-text-primary">
                 Suggested top-up: {modal.amountLabel}
@@ -119,6 +142,7 @@ export function WorkspaceTopUpModal({
             variant="outline"
             size="sm"
             onClick={onClose}
+            disabled={isTopUpLoading}
             className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
             aria-label={copy.close}
           >
@@ -126,13 +150,21 @@ export function WorkspaceTopUpModal({
           </Button>
         </div>
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="px-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            disabled={isTopUpLoading}
+            className="px-4"
+          >
             {copy.maybeLater}
           </Button>
           <Button
             type="submit"
             size="sm"
             disabled={isTopUpLoading}
+            data-modal-initial-focus="true"
             className={clsx('px-4', !isTopUpLoading && 'hover:brightness-105')}
           >
             {isTopUpLoading ? copy.submitting : copy.submit}

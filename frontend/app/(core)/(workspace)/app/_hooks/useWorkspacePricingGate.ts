@@ -160,17 +160,6 @@ export function useWorkspacePricingGate({
   }, [authChecked, setMemberTier]);
 
   useEffect(() => {
-    if (!topUpModal) return undefined;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        closeTopUpModal();
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [topUpModal, closeTopUpModal]);
-
-  useEffect(() => {
     if (!form || !selectedEngine || !authChecked) return;
     let canceled = false;
 

@@ -58,6 +58,11 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /authFetch\('\/api\/wallet'/);
   assert.match(hookSource, /const handleConfirmTopUp = useCallback/);
   assert.match(hookSource, /const showComposerError = useCallback/);
+  assert.doesNotMatch(
+    hookSource,
+    /window\.addEventListener\('keydown'/,
+    'modal keyboard behavior should live in the modal accessibility hook'
+  );
 
   assert.match(topUpModalSource, /export function WorkspaceTopUpModal/);
   assert.match(topUpModalSource, /Wallet balance too low/);

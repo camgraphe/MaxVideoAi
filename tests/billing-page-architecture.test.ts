@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const pagePath = 'frontend/app/(core)/billing/page.tsx';
 const clientPath = 'frontend/app/(core)/billing/_components/BillingClient.tsx';
+const authGatePath = 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx';
 const walletPanelPath = 'frontend/app/(core)/billing/_components/WalletTopupPanel.tsx';
 const receiptsPanelPath = 'frontend/app/(core)/billing/_components/ReceiptsPanel.tsx';
 const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
@@ -17,10 +18,12 @@ const copyPath = 'frontend/app/(core)/billing/_lib/billing-copy.ts';
 const intentPath = 'frontend/app/(core)/billing/_lib/billing-intent.ts';
 const typesPath = 'frontend/app/(core)/billing/_lib/billing-types.ts';
 const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
+const accessibleModalHookPath = 'frontend/components/ui/useAccessibleModal.ts';
 
 test('billing page delegates client billing behavior to route-local modules', () => {
   for (const file of [
     clientPath,
+    authGatePath,
     walletPanelPath,
     receiptsPanelPath,
     expressCheckoutPath,
@@ -34,6 +37,7 @@ test('billing page delegates client billing behavior to route-local modules', ()
     intentPath,
     typesPath,
     utilsPath,
+    accessibleModalHookPath,
   ]) {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
@@ -82,6 +86,8 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
 });
 
 test('billing feature modules own their explicit responsibilities', () => {
+  const authGateSource = readFileSync(authGatePath, 'utf8');
+  const accessibleModalHookSource = readFileSync(accessibleModalHookPath, 'utf8');
   const intentSource = readFileSync(intentPath, 'utf8');
   const clientSource = readFileSync(clientPath, 'utf8');
   const walletPanelSource = readFileSync(walletPanelPath, 'utf8');
@@ -95,6 +101,9 @@ test('billing feature modules own their explicit responsibilities', () => {
   const topupSelectionHookSource = readFileSync(topupSelectionHookPath, 'utf8');
   const copySource = readFileSync(copyPath, 'utf8');
   const utilsSource = readFileSync(utilsPath, 'utf8');
+
+  assert.match(accessibleModalHookSource, /export function useAccessibleModal/);
+  assert.match(authGateSource, /from '@\/components\/ui\/useAccessibleModal';/);
 
   assert.match(walletPanelSource, /export function WalletTopupPanel/);
   assert.match(walletPanelSource, /<WalletExpressCheckout/);
