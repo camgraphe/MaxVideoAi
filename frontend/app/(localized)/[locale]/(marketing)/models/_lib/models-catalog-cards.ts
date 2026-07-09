@@ -68,6 +68,8 @@ const DECISION_DESCRIPTION_OVERRIDES: Record<string, string> = {
   'happy-horse-1-0': 'Legacy Alibaba route for source-video edit workflows and older Happy Horse jobs.',
   'gpt-image-2': 'Best for text-heavy stills, product photography, controlled edits, and reference images.',
   seedream: 'Best for clean reference images, product visuals, and Seedance-ready stills.',
+  'seedream-5-0-pro': 'Best for professional stills, dense infographics, and 4K campaign-ready images.',
+  'nano-banana-lite': 'Best for fast 1K image drafts, social visuals, and local reference edits.',
   'nano-banana-2': 'Best for grounded stills, wide-format edits, and image references for video workflows.',
   'nano-banana-pro': 'Best for campaign stills, typography-focused edits, and polished product visuals.',
 };
@@ -126,6 +128,8 @@ const MODELS_CATALOG_PRIORITY_ORDER = [
   'happy-horse-1-0',
   'gpt-image-2',
   'seedream',
+  'seedream-5-0-pro',
+  'nano-banana-lite',
   'nano-banana-2',
   'nano-banana-pro',
   'nano-banana',
@@ -278,9 +282,15 @@ export async function buildModelsCatalogCards({
     const capabilities = capabilityKeywordsList
       .filter((cap) => cap !== 'Lip sync' && cap !== 'Audio')
       .slice(0, 5) as string[];
-    const compareDisabled = ['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2', 'seedream'].includes(
-      engine.modelSlug
-    );
+    const compareDisabled = [
+      'nano-banana',
+      'nano-banana-lite',
+      'nano-banana-pro',
+      'nano-banana-2',
+      'gpt-image-2',
+      'seedream',
+      'seedream-5-0-pro',
+    ].includes(engine.modelSlug);
     const bestForFallback = catalogEntry?.bestFor ? sanitizeDescription(catalogEntry.bestFor) : engineType;
     const generatedDescription =
       DECISION_DESCRIPTION_OVERRIDES[engine.modelSlug] ??

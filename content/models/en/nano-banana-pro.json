@@ -2,13 +2,13 @@
   "marketingName": "Nano Banana Pro",
   "versionLabel": "Pro",
   "seo": {
-    "title": "Nano Banana Pro – 4K Text-to-Image & Editing | MaxVideoAI",
-    "description": "Generate 2K and 4K stills with Nano Banana Pro. High-fidelity 2K/4K output, multi-image references, and commercial workflow controls directly in MaxVideoAI.",
+    "title": "Nano Banana Pro - 1K/2K/4K Text-to-Image & Editing | MaxVideoAI",
+    "description": "Generate 1K, 2K, and 4K stills with Nano Banana Pro. High-fidelity output, multi-image references, and commercial workflow controls directly in MaxVideoAI.",
     "image": "https://media.maxvideoai.com/marketing/marketing/5977bed2-7e9a-489c-a437-3232c99bc078.png"
   },
-  "overview": "Nano Banana Pro is the premium upgrade for brands that need legible text, consistent characters, and export-ready stills. Draft 2K explorations, then flip to 4K when the frame is locked—all inside the MaxVideoAI image lab.",
+  "overview": "Nano Banana Pro is the premium upgrade for brands that need legible text, consistent characters, and export-ready stills. Draft 1K or 2K explorations, then flip to 4K when the frame is locked—all inside the MaxVideoAI image lab.",
   "hero": {
-    "title": "Nano Banana Pro – 4K Text-to-Image & Editing",
+    "title": "Nano Banana Pro - 1K/2K/4K Text-to-Image & Editing",
     "intro": "Studio-grade still generation and semantic edits — built for campaign assets and clean typography.",
     "badge": "Text → Image · Image → Image · 2K / 4K",
     "ctaPrimary": {
@@ -153,7 +153,7 @@
       }
     ],
     "whyTitle": "Why Nano Banana Pro is powerful",
-    "heroDesc1": "Generate 2K or 4K stills with laser-sharp text and tone, right next to your video engines.",
+    "heroDesc1": "Generate 1K, 2K, or 4K stills with laser-sharp text and tone, right next to your video engines.",
     "heroDesc2": "One wallet, one prompt lab, and full logging inside MaxVideoAI.",
     "heroHighlights": [
       "Readable text and layouts||Built for marketing assets where typography actually needs to hold up.",
@@ -162,7 +162,7 @@
       "Follows detailed briefs better||Handles multi-part art direction with fewer random surprises."
     ],
     "whatTitle": "How Nano Banana Pro works here",
-    "whatIntro1": "Choose Generate or Edit, set num_images (1–8), pick your aspect ratio, and decide whether you need 2K or 4K outputs.",
+    "whatIntro1": "Choose Generate or Edit, set num_images (1–8), pick your aspect ratio, and decide whether you need 1K, 2K, or 4K outputs.",
     "whatIntro2": "Lock your prompt structure, add references if needed, preview the live price chip, and hit Generate.",
     "whatFlowTitle": "Workflow",
     "whatFlowSteps": [
@@ -170,7 +170,7 @@
       "Pick Text → Image or Image → Image",
       "Set batch size and (optionally) seed for consistency",
       "Add references or upload brand stills if you’re editing",
-      "Review the price chip ($0.20 per image, $0.39 at 4K) and run"
+      "Review the price chip ($0.15 per 1K/2K image, $0.30 at 4K) and run"
     ],
     "galleryTitle": "Nano Banana Pro examples",
     "galleryIntro": "Recent 2K/4K stills and edits crafted for campaign boards and product reveals.",
@@ -187,7 +187,7 @@
     ],
     "boundaries": [
       "Still images only (no motion).",
-      "4K outputs are $0.39/image (2K is $0.20/image).",
+      "4K outputs are $0.30/image (1K/2K are $0.15/image).",
       "Batch runs are 1–8 images at a time.",
       "Reference/image limits depend on the active MaxVideoAI route and UI caps."
     ],
@@ -240,6 +240,24 @@
         "copy": "Brand brief:\n[Goal + audience + format.]\n\nSubject + materials:\n[Details + textures.]\n\nLayout + hierarchy:\n[Grid, spacing, focal point.]\n\nTypography:\n[Font vibe + hierarchy + exact copy.]\n\nReferences (optional):\n[Ref A controls style; Ref B controls product.]\n\nEdits (if needed):\n[Change list + keep list.]"
       }
     ],
-    "promptingGuideLabel": "Learn more"
+    "promptingGuideLabel": "Learn more",
+    "relatedTitle": "Nano Banana family",
+    "relatedSubtitle": "Use the Google image model that matches the delivery need, not a video benchmark score.",
+    "relatedItems": [
+      {
+        "brand": "Google",
+        "title": "Nano Banana Lite",
+        "modelSlug": "nano-banana-lite",
+        "description": "Use Lite for fast, inexpensive 1K ideation before moving the chosen direction to Pro.",
+        "ctaLabel": "Open Nano Banana Lite"
+      },
+      {
+        "brand": "Google",
+        "title": "Nano Banana 2",
+        "modelSlug": "nano-banana-2",
+        "description": "Use Nano Banana 2 for grounded image generation, broader ratios, and flexible 0.5K to 4K stills.",
+        "ctaLabel": "Open Nano Banana 2"
+      }
+    ]
   }
 }

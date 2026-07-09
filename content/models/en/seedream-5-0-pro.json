@@ -1,0 +1,146 @@
+{
+  "marketingName": "Seedream 5.0 Pro",
+  "versionLabel": "5.0 Pro",
+  "seo": {
+    "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
+    "description": "Create professional still images, dense infographics, visual edits, and 4K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
+  },
+  "overview": "Seedream 5.0 Pro is the professional ByteDance image route in MaxVideoAI. Use it for dense infographics, advanced edits, multilingual visual layouts, cinematic stills, and polished reference frames before animation.",
+  "pricingNotes": "Seedream 5.0 Pro is exposed as a single-image professional output route. MaxVideoAI shows the exact live quote before generation.",
+  "hero": {
+    "title": "Seedream 5.0 Pro - professional image production",
+    "intro": "Use Seedream Pro for high-detail stills, structured infographics, controlled edits, and 4K campaign-ready images.",
+    "badge": "Text -> Image · Image -> Image · 2K / 4K",
+    "ctaPrimary": {
+      "label": "Launch Seedream Pro",
+      "href": "/app/image?engine=seedream-5-0-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Open Seedream Lite",
+        "href": "/models/seedream"
+      },
+      {
+        "label": "Animate with Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      }
+    ]
+  },
+  "bestUseCases": {
+    "title": "Best use cases",
+    "items": [
+      {
+        "title": "High-density infographics and visual explainers",
+        "icon": "layout"
+      },
+      {
+        "title": "Professional campaign stills",
+        "icon": "product"
+      },
+      {
+        "title": "Complex image edits with multiple references",
+        "icon": "layers"
+      },
+      {
+        "title": "4K reference frames before animation",
+        "icon": "imageToVideo"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Production notes",
+    "items": [
+      "Use Pro when the page needs hierarchy, labels, text, or a dense composition.",
+      "Keep the brief structured: subject, layout, visual hierarchy, text elements, and lighting.",
+      "Use Seedream Lite for fast batches; Pro is exposed as one professional image per request.",
+      "Prepare the approved still before sending it to Seedance for motion."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Clean-energy city infographic",
+      "prompt": "Create a cinematic high-density infographic about a clean-energy city district, layered map view, legible labels, data callouts, glass UI overlays, premium editorial lighting."
+    },
+    {
+      "title": "Campaign production edit",
+      "prompt": "Transform these references into one cohesive campaign visual: preserve product shape, merge the architectural backdrop, add dramatic rim light, and keep all typography clean."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "How is Seedream 5.0 Pro different from Seedream 5.0 Lite?",
+      "a": "Use Pro for professional finals, dense infographics, complex edits, and 4K campaign stills. Use Lite for faster image sets and reference preparation."
+    },
+    {
+      "q": "Does Seedream 5.0 Pro support batch output?",
+      "a": "No. MaxVideoAI exposes Seedream 5.0 Pro as one generated image per request to match the direct provider route."
+    }
+  ],
+  "custom": {
+    "heroEyebrow": "Seedream 5.0 Pro Image Model",
+    "heroSupportLine": "Best for professional still images, dense layouts, and 4K visual production.",
+    "heroSpecChips": [
+      { "label": "Text->Image", "icon": "textToVideo" },
+      { "label": "Image->Image", "icon": "imageToVideo" },
+      { "label": "2K/4K", "icon": "resolution" },
+      { "label": "Single-image Pro output" }
+    ],
+    "whyTitle": "Why use Seedream Pro",
+    "heroDesc1": "Seedream 5.0 Pro is the ByteDance route for visual work that needs hierarchy, labels, polished composition, and professional finish.",
+    "heroDesc2": "It complements Seedream Lite: Lite is for fast sets and reference prep; Pro is for the image you want to present or animate.",
+    "heroHighlights": [
+      "Professional composition||Use Pro for dense infographics, campaign images, and visual explainers.",
+      "Controlled editing||Bring multiple references into one polished image with precise preserve/change instructions.",
+      "4K-ready stills||Generate final source frames before Seedance animation."
+    ],
+    "specSections": [
+      {
+        "title": "Seedream Pro options",
+        "items": [
+          "Direct BytePlus ModelArk model: seedream-5-0-pro-260628.",
+          "Resolution options: 2K and 4K.",
+          "Modes: text-to-image and image-to-image.",
+          "Reference input supports up to 10 images.",
+          "Batch/sequential image generation is not exposed for Pro."
+        ]
+      }
+    ],
+    "promptingTitle": "How to prompt Seedream Pro",
+    "promptingIntro": "Write it like an art-director brief: visual goal, composition, hierarchy, copy/text constraints, materials, and lighting.",
+    "strengths": [
+      "Use for infographics, text-heavy visuals, and complex layouts.",
+      "Describe hierarchy and label placement explicitly.",
+      "Use references with clear roles: subject, style, background, or typography."
+    ],
+    "boundaries": [
+      "Still images only.",
+      "One generated image per request.",
+      "Use Seedream Lite for batch image sets.",
+      "Seedance still evaluates any image before video generation."
+    ],
+    "relatedTitle": "Seedream family",
+    "relatedSubtitle": "Use Lite for speed and image sets; use Pro for the polished image.",
+    "relatedItems": [
+      {
+        "brand": "ByteDance",
+        "title": "Seedream 5.0 Lite",
+        "modelSlug": "seedream",
+        "description": "Use for faster reference frames, batch image sets, and source prep before Seedance.",
+        "ctaLabel": "Open Seedream Lite"
+      },
+      {
+        "brand": "ByteDance",
+        "title": "Seedance 2.0",
+        "modelSlug": "seedance-2-0",
+        "description": "Animate approved Seedream stills into video once the source frame is ready.",
+        "ctaLabel": "Open Seedance 2.0"
+      }
+    ],
+    "safetyTitle": "Safety and likeness",
+    "safetyRules": [
+      "No sexual content or content involving minors.",
+      "No hateful, harassing, or graphic-violence requests.",
+      "Do not impersonate real people or public figures without consent."
+    ]
+  }
+}

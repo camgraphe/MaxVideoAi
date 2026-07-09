@@ -333,7 +333,7 @@ export function MarketingModelPageLayout({
     (templateConfig?.sections.compare ?? true) &&
     !isImageEngine &&
     (relatedItems.length > 0 || compareEngines.length > 0);
-  const hasCompareSection = Boolean(focusVsConfig) || hasCompareGrid;
+  const hasCompareSection = !isImageEngine && (Boolean(focusVsConfig) || hasCompareGrid);
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
   const compareAnchorId = 'compare';

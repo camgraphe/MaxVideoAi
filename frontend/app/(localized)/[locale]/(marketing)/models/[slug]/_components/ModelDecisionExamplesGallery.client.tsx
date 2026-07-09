@@ -26,7 +26,8 @@ export type DecisionExampleFilterId =
   | 'character'
   | 'batch'
   | 'ui'
-  | 'mask';
+  | 'mask'
+  | 'infographic';
 
 export type DecisionExampleFilter = {
   id: DecisionExampleFilterId;

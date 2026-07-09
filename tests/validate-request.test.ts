@@ -1111,8 +1111,8 @@ test('Nano Banana 2 registry exposes image mappings and schema caps', () => {
   const nanoBanana2 = registry.find((entry) => entry.id === 'nano-banana-2');
 
   assert.ok(nanoBanana2);
-  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 't2i')?.falModelId, 'fal-ai/nano-banana-2');
-  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 'i2i')?.falModelId, 'fal-ai/nano-banana-2/edit');
+  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 't2i')?.falModelId, 'gemini-3.1-flash-image');
+  assert.equal(nanoBanana2?.modes.find((mode) => mode.mode === 'i2i')?.falModelId, 'gemini-3.1-flash-image');
   assert.deepEqual(nanoBanana2?.engine.resolutions, ['0.5k', '1k', '2k', '4k']);
   assert.ok(nanoBanana2?.engine.aspectRatios.includes('4:1'));
   assert.ok(nanoBanana2?.engine.aspectRatios.includes('8:1'));

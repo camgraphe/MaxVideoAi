@@ -117,6 +117,39 @@ test('enables Seedream sequential image generation for batch requests', () => {
   assert.equal(payload.stream, true);
 });
 
+test('keeps Seedream Pro single-image requests off streaming and sequential generation', () => {
+  const payload = buildBytePlusSeedreamPayload({
+    modelId: 'seedream-5-0-pro-260628',
+    prompt: 'Create a professional high-density event infographic',
+    mode: 't2i',
+    numImages: 1,
+    size: '4K',
+    aspectRatio: '16:9',
+    responseFormat: 'url',
+  });
+
+  assert.equal(payload.model, 'seedream-5-0-pro-260628');
+  assert.equal(payload.size, '5504x3040');
+  assert.equal(payload.stream, undefined);
+  assert.equal(payload.sequential_image_generation, undefined);
+  assert.equal(payload.sequential_image_generation_options, undefined);
+});
+
+test('rejects Seedream Pro batch requests because Pro does not support sequential generation', () => {
+  assert.throws(
+    () =>
+      buildBytePlusSeedreamPayload({
+        modelId: 'seedream-5-0-pro-260628',
+        prompt: 'Create multiple professional finals',
+        mode: 't2i',
+        numImages: 2,
+        size: '2K',
+        responseFormat: 'url',
+      }),
+    /Seedream 5\.0 Pro supports one generated image/i
+  );
+});
+
 test('rejects Seedream batch requests above the provider image-set limit', () => {
   assert.throws(
     () =>
