@@ -180,6 +180,62 @@ function isSilentVideoDecisionEngine(engineSlug?: string) {
 
 function getDecisionExampleFilters(locale: AppLocale, isImageEngine: boolean, engineSlug?: string): DecisionExampleFilter[] {
   if (isImageEngine) {
+    if (engineSlug === 'nano-banana-lite') {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'campaign', label: 'Drafts 1K' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Références' },
+          { id: 'batch', label: 'Variantes' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'campaign', label: 'Drafts 1K' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'reference', label: 'Referencias' },
+          { id: 'batch', label: 'Variantes' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'campaign', label: '1K drafts' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'reference', label: 'References' },
+        { id: 'batch', label: 'Variants' },
+      ];
+    }
+
+    if (engineSlug === 'seedream-5-0-pro') {
+      if (locale === 'fr') {
+        return [
+          { id: 'all', label: 'Tous' },
+          { id: 'infographic', label: 'Infographie' },
+          { id: 'campaign', label: 'Campagne' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'final', label: 'Frame final' },
+        ];
+      }
+      if (locale === 'es') {
+        return [
+          { id: 'all', label: 'Todo' },
+          { id: 'infographic', label: 'Infografia' },
+          { id: 'campaign', label: 'Campaña' },
+          { id: 'edit', label: 'Edit' },
+          { id: 'final', label: 'Frame final' },
+        ];
+      }
+      return [
+        { id: 'all', label: 'All' },
+        { id: 'infographic', label: 'Infographic' },
+        { id: 'campaign', label: 'Campaign' },
+        { id: 'edit', label: 'Edit' },
+        { id: 'final', label: 'Final frame' },
+      ];
+    }
+
     if (engineSlug === 'seedream') {
       if (locale === 'fr') {
         return [
@@ -1044,10 +1100,18 @@ function buildImageFallbackExampleItems({
     copy.recreateLabel ??
     (locale === 'fr' ? 'Recréer ce still →' : locale === 'es' ? 'Recrear este still →' : 'Recreate this still →');
   const isNanoBanana2 = engineSlug === 'nano-banana-2';
+  const isNanoBananaLite = engineSlug === 'nano-banana-lite';
   const isNanoBanana = engineSlug === 'nano-banana';
+  const isSeedreamPro = engineSlug === 'seedream-5-0-pro';
   const isSeedream = engineSlug === 'seedream';
   const isGptImage2 = engineSlug === 'gpt-image-2';
   const fallbackPosters: Record<string, Record<string, string>> = {
+    'seedream-5-0-pro': {
+      infographic: '/assets/model-examples/seedream-5-0-pro/hero.webp',
+      campaign: '/assets/model-examples/seedream-5-0-pro/campaign.webp',
+      edit: '/assets/model-examples/seedream-5-0-pro/edit.webp',
+      final: '/assets/model-examples/seedream-5-0-pro/final.webp',
+    },
     seedream: {
       product: '/assets/model-examples/seedream/product.webp',
       character: '/assets/model-examples/seedream/character.webp',
@@ -1067,6 +1131,12 @@ function buildImageFallbackExampleItems({
       typography: '/assets/model-examples/nano-banana/typography.webp',
       reference: '/assets/model-examples/nano-banana/reference.webp',
       final: '/assets/model-examples/nano-banana/final.webp',
+    },
+    'nano-banana-lite': {
+      campaign: '/assets/model-examples/nano-banana-lite/hero.webp',
+      edit: '/assets/model-examples/nano-banana-lite/edit.webp',
+      reference: '/assets/model-examples/nano-banana-lite/reference.webp',
+      batch: '/assets/model-examples/nano-banana-lite/batch.webp',
     },
     'nano-banana-2': {
       grounded: '/assets/model-examples/nano-banana-2/grounded.webp',
@@ -1094,7 +1164,49 @@ function buildImageFallbackExampleItems({
     },
   };
   const resolvePoster = (tag: string) => fallbackPosters[engineSlug]?.[tag] ?? fallbackImageUrl ?? '';
-  const examples = isSeedream
+  const examples = isNanoBananaLite
+    ? locale === 'fr'
+      ? [
+          ['campaign', 'Concept street 1K', 'Draft 1K', '1K', 'Concept Nano Banana Lite dynamique pour exploration sociale rapide'],
+          ['edit', 'Edit veste local', 'Edit', '1K edit', 'Edit Nano Banana Lite qui transforme la tenue tout en gardant pose et sujet'],
+          ['reference', 'Remix de références', 'Références', '14 refs max', 'Remix Nano Banana Lite guidé par portrait, matière et ambiance'],
+          ['batch', 'Board de variantes', 'Variantes', '4 drafts', 'Board Nano Banana Lite de quatre directions visuelles rapides'],
+        ]
+      : locale === 'es'
+        ? [
+            ['campaign', 'Concepto street 1K', 'Draft 1K', '1K', 'Concepto Nano Banana Lite dinámico para exploración social rápida'],
+            ['edit', 'Edit local de chaqueta', 'Edit', '1K edit', 'Edit Nano Banana Lite que transforma la ropa manteniendo pose y sujeto'],
+            ['reference', 'Remix de referencias', 'Referencias', '14 refs max', 'Remix Nano Banana Lite guiado por retrato, material y ambiente'],
+            ['batch', 'Board de variantes', 'Variantes', '4 drafts', 'Board Nano Banana Lite con cuatro direcciones visuales rápidas'],
+          ]
+        : [
+            ['campaign', 'Fast street concept', '1K draft', '1K', 'Nano Banana Lite dynamic street concept for rapid social exploration'],
+            ['edit', 'Local jacket edit', 'Edit', '1K edit', 'Nano Banana Lite edit changing the jacket while preserving pose and subject'],
+            ['reference', 'Reference remix portrait', 'References', '14 refs max', 'Nano Banana Lite remix guided by portrait, material, and mood references'],
+            ['batch', 'Variant concept board', 'Variants', '4 drafts', 'Nano Banana Lite four-direction visual exploration board'],
+          ]
+    : isSeedreamPro
+    ? locale === 'fr'
+      ? [
+          ['infographic', 'Infographie ville énergie', 'Infographie', '4K', 'Infographie Seedream 5.0 Pro dense sur un district énergie propre'],
+          ['campaign', 'Still campagne cinématique', 'Campagne', '4K', 'Still campagne Seedream 5.0 Pro avec composition commerciale premium'],
+          ['edit', 'Composite multi-références', 'Edit', '10 refs max', 'Composite Seedream 5.0 Pro fusionnant sujet, décor, matière et mood'],
+          ['final', 'Frame prêt vidéo', 'Frame final', '4K', 'Frame Seedream 5.0 Pro prêt à servir de source pour animation Seedance'],
+        ]
+      : locale === 'es'
+        ? [
+            ['infographic', 'Infografía ciudad energía', 'Infografía', '4K', 'Infografía Seedream 5.0 Pro densa sobre un distrito de energía limpia'],
+            ['campaign', 'Still de campaña cinematográfico', 'Campaña', '4K', 'Still Seedream 5.0 Pro con composición comercial premium'],
+            ['edit', 'Composite multi-referencia', 'Edit', '10 refs max', 'Composite Seedream 5.0 Pro que une sujeto, entorno, material y mood'],
+            ['final', 'Frame listo para video', 'Frame final', '4K', 'Frame Seedream 5.0 Pro listo como fuente para animación Seedance'],
+          ]
+        : [
+            ['infographic', 'Clean-energy city infographic', 'Infographic', '4K', 'Seedream 5.0 Pro dense clean-energy district infographic'],
+            ['campaign', 'Cinematic campaign still', 'Campaign', '4K', 'Seedream 5.0 Pro premium commercial campaign composition'],
+            ['edit', 'Multi-reference composite', 'Edit', '10 refs max', 'Seedream 5.0 Pro composite merging subject, setting, material, and mood references'],
+            ['final', 'Video-ready keyframe', 'Final frame', '4K', 'Seedream 5.0 Pro source frame prepared for Seedance animation'],
+          ]
+    : isSeedream
     ? locale === 'fr'
       ? [
           ['product', 'Still produit de référence', 'Produit · 2K', '2K', 'Still produit Seedream préparé comme référence propre'],

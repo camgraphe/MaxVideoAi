@@ -16,6 +16,7 @@ const imageGenerateRoutePath = join(root, 'frontend/app/api/images/generate/rout
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
+const directProviderExecutionPath = join(root, 'frontend/src/server/images/image-direct-provider-execution.ts');
 const bytePlusSeedreamExecutionPath = join(root, 'frontend/src/server/images/byteplus-seedream-execution.ts');
 const bytePlusSeedreamPayloadPath = join(root, 'frontend/src/server/images/byteplus-seedream-payload.ts');
 const bytePlusSeedreamClientPath = join(root, 'frontend/src/server/images/byteplus-seedream-client.ts');
@@ -46,6 +47,7 @@ const imageGenerateRouteSource = readFileSync(imageGenerateRoutePath, 'utf8');
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
+const directProviderExecutionSource = readFileSync(directProviderExecutionPath, 'utf8');
 const bytePlusSeedreamExecutionSource = readFileSync(bytePlusSeedreamExecutionPath, 'utf8');
 const lumaAgentsImageExecutionSource = readFileSync(lumaAgentsImageExecutionPath, 'utf8');
 const lumaAgentsImagePayloadSource = readFileSync(lumaAgentsImagePayloadPath, 'utf8');
@@ -72,6 +74,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(initialJobPath), 'atomic initial image job creation should live in a focused module');
   assert.ok(existsSync(errorPath), 'image generation execution error should live in a focused module');
   assert.ok(existsSync(providerPayloadPath), 'provider payload parsing should live in a focused module');
+  assert.ok(existsSync(directProviderExecutionPath), 'direct image provider routing should live in a focused module');
   assert.ok(existsSync(bytePlusSeedreamExecutionPath), 'BytePlus Seedream execution should live in a focused module');
   assert.ok(existsSync(bytePlusSeedreamPayloadPath), 'BytePlus Seedream payload building should live in a focused module');
   assert.ok(existsSync(bytePlusSeedreamClientPath), 'BytePlus Seedream HTTP calls should live in a focused module');
@@ -92,7 +95,7 @@ test('image generation executor delegates focused server helpers', () => {
   assert.match(executorSource, /from '\.\/image-initial-job'/);
   assert.match(executorSource, /from '\.\/image-generation-error'/);
   assert.match(executorSource, /from '\.\/image-provider-payload'/);
-  assert.match(executorSource, /from '\.\/byteplus-seedream-execution'/);
+  assert.match(executorSource, /from '\.\/image-direct-provider-execution'/);
   assert.match(executorSource, /from '\.\/luma-agents-execution'/);
   assert.match(executorSource, /from '\.\/image-generation-completion'/);
   assert.match(executorSource, /from '\.\/image-generation-failure'/);
@@ -206,6 +209,8 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(providerPayloadSource, /export function buildCharacterReferencePrompt/);
   assert.match(providerPayloadSource, /export function extractImages/);
   assert.match(providerPayloadSource, /export function parseRequestId/);
+  assert.match(directProviderExecutionSource, /executeGoogleGeminiImageGeneration/);
+  assert.match(directProviderExecutionSource, /executeBytePlusSeedreamGeneration/);
   assert.match(bytePlusSeedreamExecutionSource, /callBytePlusSeedream/);
   assert.match(bytePlusSeedreamExecutionSource, /buildBytePlusSeedreamPayload/);
   assert.match(bytePlusSeedreamExecutionSource, /extractBytePlusSeedreamImages/);

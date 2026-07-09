@@ -73,6 +73,10 @@ export const ENV = {
     'dreamina-seedance-2-0-mini-260615'
   ),
   BYTEPLUS_ARK_SEEDREAM_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDREAM_MODEL_ID', 'seedream-5-0-260128'),
+  BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID: getOptionalEnv(
+    'BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID',
+    'seedream-5-0-pro-260628'
+  ),
   BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
   SEEDANCE_2_PROVIDER: getOptionalEnv('SEEDANCE_2_PROVIDER', 'fal'),
   SEEDANCE_2_BYTEPLUS_ADMIN_ONLY: getOptionalEnv('SEEDANCE_2_BYTEPLUS_ADMIN_ONLY', 'true'),
@@ -113,6 +117,14 @@ export const ENV = {
     'false'
   ),
   GOOGLE_VERTEX_VEO_INPUT_GCS_URI: getOptionalEnv('GOOGLE_VERTEX_VEO_INPUT_GCS_URI'),
+  GOOGLE_GEMINI_IMAGE_API_KEY: getOptionalEnv('GOOGLE_GEMINI_IMAGE_API_KEY'),
+  GEMINI_API_KEY: getOptionalEnv('GEMINI_API_KEY'),
+  GOOGLE_AI_API_KEY: getOptionalEnv('GOOGLE_AI_API_KEY'),
+  GOOGLE_GEMINI_IMAGE_BASE_URL: getOptionalEnv(
+    'GOOGLE_GEMINI_IMAGE_BASE_URL',
+    'https://generativelanguage.googleapis.com/v1beta'
+  ),
+  GOOGLE_GEMINI_IMAGE_TIMEOUT_MS: getOptionalEnv('GOOGLE_GEMINI_IMAGE_TIMEOUT_MS', '120000'),
   RESULT_PROVIDER:
     getOptionalEnv('NEXT_PUBLIC_RESULT_PROVIDER') ??
     getOptionalEnv('RESULT_PROVIDER'),

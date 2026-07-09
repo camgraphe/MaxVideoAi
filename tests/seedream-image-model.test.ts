@@ -9,6 +9,12 @@ function getSeedreamEntry() {
   return entry;
 }
 
+function getSeedreamProEntry() {
+  const entry = listFalEngines().find((candidate) => candidate.id === 'seedream-5-0-pro');
+  assert.ok(entry, 'seedream-5-0-pro should be registered');
+  return entry;
+}
+
 test('Seedream 5.0 Lite is registered as a public ByteDance image model', () => {
   const entry = getSeedreamEntry();
 
@@ -75,4 +81,28 @@ test('Seedream copy links to Seedance without unsafe acceptance claims', () => {
   assert.match(searchable, /Seedance 2\.0/);
   assert.match(searchable, /reference image/i);
   assert.doesNotMatch(searchable, /guaranteed compatibility|review-free|bypass|always accepted|no moderation/i);
+});
+
+test('Seedream 5.0 Pro is registered with direct BytePlus Pro-only options', () => {
+  const entry = getSeedreamProEntry();
+
+  assert.equal(entry.modelSlug, 'seedream-5-0-pro');
+  assert.equal(entry.marketingName, 'Seedream 5.0 Pro');
+  assert.equal(entry.provider, 'ByteDance');
+  assert.equal(entry.brandId, 'bytedance');
+  assert.equal(entry.family, 'seedream');
+  assert.equal(entry.type, 'image');
+  assert.equal(entry.category, 'image');
+  assert.deepEqual(entry.engine.modes, ['t2i', 'i2i']);
+  assert.equal(entry.engine.providerMeta?.provider, 'byteplus_modelark');
+  assert.equal(entry.engine.providerMeta?.modelSlug, 'seedream-5-0-pro-260628');
+  assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
+    '2K',
+    '4K',
+  ]);
+  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'num_images')?.max, 1);
+  assert.equal(entry.engine.inputSchema?.optional?.find((field) => field.id === 'image_urls')?.maxCount, 10);
+  assert.equal(entry.surfaces.app.enabled, true);
+  assert.equal(entry.surfaces.modelPage.indexable, true);
+  assert.equal(entry.surfaces.compare.includeInHub, false);
 });

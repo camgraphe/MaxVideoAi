@@ -1,0 +1,57 @@
+{
+  "marketingName": "Seedream 5.0 Pro",
+  "versionLabel": "5.0 Pro",
+  "seo": {
+    "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
+    "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 4K avec Seedream 5.0 Pro dans MaxVideoAI."
+  },
+  "overview": "Seedream 5.0 Pro est la route image professionnelle ByteDance dans MaxVideoAI. Utilisez-le pour les infographies denses, edits avancés, layouts multilingues, images cinématiques et frames propres avant animation.",
+  "pricingNotes": "Seedream 5.0 Pro est exposé comme une sortie professionnelle à image unique. MaxVideoAI affiche le devis exact avant génération.",
+  "hero": {
+    "title": "Seedream 5.0 Pro - production image professionnelle",
+    "intro": "Utilisez Seedream Pro pour les stills détaillés, infographies structurées, edits contrôlés et images 4K prêtes campagne.",
+    "badge": "Texte -> Image · Image -> Image · 2K / 4K",
+    "ctaPrimary": {
+      "label": "Lancer Seedream Pro",
+      "href": "/app/image?engine=seedream-5-0-pro"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ouvrir Seedream Lite",
+        "href": "/models/seedream"
+      },
+      {
+        "label": "Animer avec Seedance 2.0",
+        "href": "/models/seedance-2-0"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Notes de production",
+    "items": [
+      "Utilisez Pro quand la composition doit gérer hiérarchie, labels, texte ou détails denses.",
+      "Structurez le brief: sujet, layout, hiérarchie visuelle, textes, matières et lumière.",
+      "Utilisez Seedream Lite pour les batches rapides; Pro sort une image professionnelle par requête."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Infographie ville énergie",
+      "prompt": "Crée une infographie cinématique dense sur un quartier d'énergie propre, carte en couches, labels lisibles, callouts de données, overlays UI en verre, lumière éditoriale premium."
+    },
+    {
+      "title": "Edit campagne",
+      "prompt": "Transforme ces références en visuel de campagne cohérent: préserve la forme produit, fusionne le décor architectural, ajoute un rim light dramatique et garde une typographie propre."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Quelle différence entre Seedream 5.0 Pro et Lite ?",
+      "a": "Utilisez Pro pour les finales professionnelles, infographies denses, edits complexes et stills 4K. Utilisez Lite pour les sets rapides et la préparation de références."
+    },
+    {
+      "q": "Seedream 5.0 Pro supporte-t-il les batches ?",
+      "a": "Non. MaxVideoAI expose Seedream 5.0 Pro comme une image générée par requête, conformément à la route provider directe."
+    }
+  ]
+}

@@ -12,7 +12,7 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
   region: 'global',
   modes: ['t2i', 'i2i'],
   maxDurationSec: 8,
-  resolutions: ['2k', '4k'],
+  resolutions: ['1k', '2k', '4k'],
   aspectRatios: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
   fps: [1],
   audio: false,
@@ -52,16 +52,16 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
         modes: ['i2i'],
         requiredInModes: ['i2i'],
         minCount: 1,
-        maxCount: 4,
+        maxCount: 14,
         source: 'either',
       },
       {
         id: 'resolution',
         type: 'enum',
         label: 'Resolution',
-        values: ['2k', '4k'],
+        values: ['1k', '2k', '4k'],
         default: '2k',
-        description: '2K render at base price; 4K doubles the per-image cost.',
+        description: '1K/2K render at base price; 4K doubles the per-image cost.',
       },
       {
         id: 'aspect_ratio',
@@ -84,6 +84,27 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
         type: 'number',
         label: 'Seed',
         description: 'Lock randomness to iterate on the same framing.',
+      },
+      {
+        id: 'output_format',
+        type: 'enum',
+        label: 'Output format',
+        values: ['jpeg', 'png', 'webp'],
+        default: 'jpeg',
+      },
+      {
+        id: 'enable_web_search',
+        type: 'boolean',
+        label: 'Enable web search',
+        default: false,
+        description: 'Ground factual or current visual details with Google Search.',
+      },
+      {
+        id: 'thinking_level',
+        type: 'enum',
+        label: 'Thinking level',
+        values: ['minimal', 'high'],
+        default: 'high',
       },
     ],
     constraints: {
@@ -119,8 +140,8 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
   updatedAt: '2025-03-05T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
-    provider: 'fal.ai',
-    modelSlug: 'fal-ai/nano-banana-pro',
+    provider: 'google_gemini_image',
+    modelSlug: 'gemini-3-pro-image',
   },
   availability: 'available',
   brandId: 'google',
@@ -144,7 +165,7 @@ export const NANO_BANANA_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     modes: [
       {
         mode: 't2i',
-        falModelId: 'fal-ai/nano-banana-pro',
+        falModelId: 'gemini-3-pro-image',
         ui: {
           modes: ['t2i'],
           aspectRatio: ['9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
@@ -154,18 +175,18 @@ export const NANO_BANANA_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'i2i',
-        falModelId: 'fal-ai/nano-banana-pro/edit',
+        falModelId: 'gemini-3-pro-image',
         ui: {
           modes: ['i2i'],
           aspectRatio: ['auto', '9:16', '16:9', '1:1', '4:5', '5:4', '4:3', '3:4', '3:2', '2:3', '21:9'],
           resolution: ['1k', '2k', '4k'],
           acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
           maxUploadMB: 25,
-          notes: 'Upload 1–4 references; the provider handles up to 14 sources without manual masks.',
+          notes: 'Upload references for object, character, and style control. Provider supports up to 14 sources.',
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/nano-banana-pro',
+    defaultFalModelId: 'gemini-3-pro-image',
     seo: {
       title: 'Nano Banana Pro – 4K Text-to-Image & Editing | MaxVideoAI',
       description:

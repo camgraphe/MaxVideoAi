@@ -26,7 +26,7 @@ export const nanoBananaProTemplateConfig: ModelPageTemplateConfig = {
     examples: true,
     prompting: true,
     tips: true,
-    compare: true,
+    compare: false,
     specs: true,
     safety: true,
     faq: true,

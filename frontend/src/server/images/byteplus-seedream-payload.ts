@@ -20,6 +20,10 @@ export type BytePlusSeedreamPayload = {
 const SEEDREAM_MAX_REFERENCE_IMAGES = 10;
 const SEEDREAM_MAX_IMAGE_SET_IMAGES = 15;
 
+function isSeedreamProModel(modelId: string): boolean {
+  return /seedream-5-0-pro/i.test(modelId);
+}
+
 function uniqueNonEmptyUrls(values: Array<string | null | undefined> | undefined): string[] {
   return Array.from(
     new Set(
@@ -75,6 +79,13 @@ export function buildBytePlusSeedreamPayload(params: {
     });
   }
   const outputImageCount = Math.max(1, Math.round(params.numImages));
+  if (isSeedreamProModel(model) && outputImageCount > 1) {
+    throw new BytePlusSeedreamError('Seedream 5.0 Pro supports one generated image per request.', {
+      code: 'IMAGE_COUNT_LIMIT',
+      status: 400,
+      detail: { max: 1 },
+    });
+  }
   if (outputImageCount > SEEDREAM_MAX_IMAGE_SET_IMAGES) {
     throw new BytePlusSeedreamError('Seedream image sets support up to 15 generated images.', {
       code: 'IMAGE_COUNT_LIMIT',

@@ -225,6 +225,13 @@
     "relatedItems": [
       {
         "brand": "bytedance",
+        "title": "Seedream 5.0 Pro",
+        "description": "Move selected stills to the Pro image route when the job needs one polished 2K or 4K final, dense layout, or complex visual edit.",
+        "modelSlug": "seedream-5-0-pro",
+        "ctaLabel": "Open Seedream 5.0 Pro ->"
+      },
+      {
+        "brand": "bytedance",
         "title": "Seedance 2.0",
         "description": "Animate a selected Seedream still with the standard Seedance route when you need a more polished image-to-video result.",
         "modelSlug": "seedance-2-0",

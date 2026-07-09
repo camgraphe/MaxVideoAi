@@ -1,0 +1,57 @@
+{
+  "marketingName": "Nano Banana Lite",
+  "versionLabel": "Lite",
+  "seo": {
+    "title": "Nano Banana Lite - génération image Google 1K rapide | MaxVideoAI",
+    "description": "Générez des images 1K rapides et des edits locaux avec Nano Banana Lite dans MaxVideoAI, via le provider Google direct."
+  },
+  "overview": "Nano Banana Lite est le modèle Google Nano Banana le plus rapide pour les images 1K. Utilisez-le pour les brouillons visuels, concepts sociaux, edits locaux et explorations rapides avant de passer à Nano Banana 2 ou Pro.",
+  "pricingNotes": "Nano Banana Lite est facturé par image 1K. MaxVideoAI affiche le devis exact avant génération.",
+  "hero": {
+    "title": "Nano Banana Lite - génération image 1K rapide",
+    "intro": "Utilisez la route Google Lite directe pour créer des brouillons image, edits locaux et variations créatives rapides.",
+    "badge": "Texte -> Image · Image -> Image · 1K seulement",
+    "ctaPrimary": {
+      "label": "Lancer Nano Banana Lite",
+      "href": "/app/image?engine=nano-banana-lite"
+    },
+    "secondaryLinks": [
+      {
+        "label": "Ouvrir Nano Banana 2",
+        "href": "/models/nano-banana-2"
+      },
+      {
+        "label": "Ouvrir Nano Banana Pro",
+        "href": "/models/nano-banana-pro"
+      }
+    ]
+  },
+  "tips": {
+    "title": "Conseils et limites",
+    "items": [
+      "Utilisez Lite quand la vitesse compte plus que le rendu 2K ou 4K.",
+      "N'activez pas le grounding Search ici; utilisez Nano Banana 2 ou Pro pour les briefs ancrés dans le web.",
+      "Ajoutez des références pour préserver un sujet, un produit, une pose ou une palette."
+    ]
+  },
+  "prompts": [
+    {
+      "title": "Image street dynamique",
+      "prompt": "Image éditoriale 1K de mode urbaine de nuit, pluie réfléchissante, néons cyan et ambre, caméra basse dynamique, lumière magazine."
+    },
+    {
+      "title": "Edit local avec référence",
+      "prompt": "Garde le sujet, la pose et le cadrage de cette référence, remplace la veste par une coque technique rouge brillante et transforme le fond en ville à l'heure bleue."
+    }
+  ],
+  "faqs": [
+    {
+      "q": "Quelle résolution Nano Banana Lite supporte-t-il ?",
+      "a": "Nano Banana Lite supporte uniquement la sortie image 1K. Utilisez Nano Banana 2 ou Nano Banana Pro pour la 2K et la 4K."
+    },
+    {
+      "q": "Nano Banana Lite supporte-t-il le grounding Search ?",
+      "a": "Non. Lite est fait pour la génération et l'édition rapides. Utilisez Nano Banana 2 ou Pro si le prompt doit utiliser Google Search."
+    }
+  ]
+}

@@ -10,10 +10,12 @@ export const MODELS_BASE_PATH_MAP = buildSlugMap('models');
 export const COMPARE_BASE_PATH_MAP = buildSlugMap('compare');
 export const COMPARE_EXCLUDED_SLUGS = new Set([
   'nano-banana',
+  'nano-banana-lite',
   'nano-banana-pro',
   'nano-banana-2',
   'gpt-image-2',
   'seedream',
+  'seedream-5-0-pro',
   'luma-uni-1',
   'luma-uni-1-max',
 ]);

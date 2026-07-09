@@ -22,6 +22,7 @@ import { ltx2TemplateConfig } from './model-page-templates/ltx-2';
 import { ltx2FastTemplateConfig } from './model-page-templates/ltx-2-fast';
 import { minimaxHailuo02TemplateConfig } from './model-page-templates/minimax-hailuo-02-text';
 import { nanoBanana2TemplateConfig } from './model-page-templates/nano-banana-2';
+import { nanoBananaLiteTemplateConfig } from './model-page-templates/nano-banana-lite';
 import { nanoBananaProTemplateConfig } from './model-page-templates/nano-banana-pro';
 import { nanoBananaTemplateConfig } from './model-page-templates/nano-banana';
 import { pikaTextToVideoTemplateConfig } from './model-page-templates/pika-text-to-video';
@@ -29,6 +30,7 @@ import { seedance15ProTemplateConfig } from './model-page-templates/seedance-1-5
 import { seedance20TemplateConfig } from './model-page-templates/seedance-2-0';
 import { seedance20FastTemplateConfig } from './model-page-templates/seedance-2-0-fast';
 import { seedance20MiniTemplateConfig } from './model-page-templates/seedance-2-0-mini';
+import { seedream50ProTemplateConfig } from './model-page-templates/seedream-5-0-pro';
 import { seedreamTemplateConfig } from './model-page-templates/seedream';
 import { sora2ProTemplateConfig } from './model-page-templates/sora-2-pro';
 import { sora2TemplateConfig } from './model-page-templates/sora-2';
@@ -62,6 +64,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [ltx23ProTemplateConfig.slug]: ltx23ProTemplateConfig,
   [minimaxHailuo02TemplateConfig.slug]: minimaxHailuo02TemplateConfig,
   [nanoBananaTemplateConfig.slug]: nanoBananaTemplateConfig,
+  [nanoBananaLiteTemplateConfig.slug]: nanoBananaLiteTemplateConfig,
   [nanoBanana2TemplateConfig.slug]: nanoBanana2TemplateConfig,
   [nanoBananaProTemplateConfig.slug]: nanoBananaProTemplateConfig,
   [pikaTextToVideoTemplateConfig.slug]: pikaTextToVideoTemplateConfig,
@@ -69,6 +72,7 @@ const MODEL_PAGE_TEMPLATE_REGISTRY: Record<string, ModelPageTemplateConfig> = {
   [seedance20TemplateConfig.slug]: seedance20TemplateConfig,
   [seedance20FastTemplateConfig.slug]: seedance20FastTemplateConfig,
   [seedance20MiniTemplateConfig.slug]: seedance20MiniTemplateConfig,
+  [seedream50ProTemplateConfig.slug]: seedream50ProTemplateConfig,
   [seedreamTemplateConfig.slug]: seedreamTemplateConfig,
   [sora2TemplateConfig.slug]: sora2TemplateConfig,
   [sora2ProTemplateConfig.slug]: sora2ProTemplateConfig,
