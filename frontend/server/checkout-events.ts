@@ -4,6 +4,9 @@ export type CheckoutInteractionMode = 'hosted' | 'express_checkout';
 
 export type CheckoutInteractionEventName =
   | 'hosted_checkout_requested'
+  | 'hosted_checkout_captcha_required'
+  | 'hosted_checkout_rate_limited'
+  | 'hosted_checkout_failed'
   | 'hosted_checkout_redirecting'
   | 'hosted_checkout_cancelled_return'
   | 'hosted_checkout_success_return'
@@ -19,6 +22,9 @@ export type CheckoutInteractionEventName =
 
 const CHECKOUT_EVENT_NAMES = new Set<string>([
   'hosted_checkout_requested',
+  'hosted_checkout_captcha_required',
+  'hosted_checkout_rate_limited',
+  'hosted_checkout_failed',
   'hosted_checkout_redirecting',
   'hosted_checkout_cancelled_return',
   'hosted_checkout_success_return',

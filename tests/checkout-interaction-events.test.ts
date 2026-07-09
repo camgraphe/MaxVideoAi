@@ -1,7 +1,24 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { normalizeCheckoutInteractionEventPayload } from '../frontend/server/checkout-events';
 import { classifyCheckoutAbandonmentSignal } from '../frontend/server/checkout-report';
+
+const hostedCheckoutEventNames = [
+  'hosted_checkout_requested',
+  'hosted_checkout_captcha_required',
+  'hosted_checkout_rate_limited',
+  'hosted_checkout_failed',
+  'hosted_checkout_redirecting',
+] as const;
+
+assert.deepEqual(
+  hostedCheckoutEventNames.filter((eventName) => (
+    normalizeCheckoutInteractionEventPayload({ eventName, mode: 'hosted' })?.eventName === eventName
+  )),
+  hostedCheckoutEventNames,
+  'every hosted checkout hook event must pass the server event normalizer'
+);
 
 assert.equal(
   classifyCheckoutAbandonmentSignal([
