@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import type { ChangeEvent, FormEvent } from 'react';
+import { TurnstileChallenge } from '@/components/ui/TurnstileChallenge';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
@@ -10,8 +11,15 @@ import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
 
 type WorkspaceTopUpCopy = {
   title: string;
+  balanceLowTitle: string;
+  suggestedTopUp: string;
   otherAmountLabel: string;
   minLabel: string;
+  captchaPrompt: string;
+  captchaComplete: string;
+  captchaError: string;
+  rateLimited: string;
+  startError: string;
   close: string;
   maybeLater: string;
   submit: string;
@@ -25,11 +33,18 @@ type WorkspaceTopUpModalProps = {
   topUpAmount: number;
   isTopUpLoading: boolean;
   topUpError: string | null;
+  checkoutCaptchaError: boolean;
+  checkoutCaptchaRequired: boolean;
+  checkoutCaptchaToken: string | null;
+  onCheckoutCaptchaError: () => void;
+  onCheckoutCaptchaToken: (token: string | null) => void;
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSelectPresetAmount: (value: number) => void;
   onCustomAmountChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 export function WorkspaceTopUpModal({
   modal,
@@ -38,6 +53,11 @@ export function WorkspaceTopUpModal({
   topUpAmount,
   isTopUpLoading,
   topUpError,
+  checkoutCaptchaError,
+  checkoutCaptchaRequired,
+  checkoutCaptchaToken,
+  onCheckoutCaptchaError,
+  onCheckoutCaptchaToken,
   onClose,
   onSubmit,
   onSelectPresetAmount,
@@ -69,16 +89,16 @@ export function WorkspaceTopUpModal({
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h2 id="workspace-topup-title" className="text-base font-semibold text-text-primary">
-              Wallet balance too low
+              {copy.balanceLowTitle}
             </h2>
             <p id="workspace-topup-description" className="mt-2 text-sm text-text-secondary">
               {modal.message}
             </p>
-            {modal.amountLabel && (
+            {modal.amountLabel ? (
               <p className="mt-2 text-sm font-medium text-text-primary">
-                Suggested top-up: {modal.amountLabel}
+                {copy.suggestedTopUp.replace('{amount}', modal.amountLabel)}
               </p>
-            )}
+            ) : null}
             <div className="mt-4">
               <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.title}</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -134,6 +154,27 @@ export function WorkspaceTopUpModal({
                   </span>
                 </div>
               </div>
+              {checkoutCaptchaRequired ? (
+                <div className="mt-3 rounded-input border border-border bg-bg p-3">
+                  <p className="text-sm font-semibold text-text-primary">{copy.captchaPrompt}</p>
+                  {TURNSTILE_SITE_KEY ? (
+                    <div className="mt-3">
+                      <TurnstileChallenge
+                        siteKey={TURNSTILE_SITE_KEY}
+                        onToken={onCheckoutCaptchaToken}
+                        onError={onCheckoutCaptchaError}
+                      />
+                    </div>
+                  ) : null}
+                  <p className={`mt-2 text-xs ${checkoutCaptchaError ? 'text-state-warning' : checkoutCaptchaToken ? 'text-success' : 'text-text-secondary'}`}>
+                    {checkoutCaptchaError
+                      ? copy.captchaError
+                      : checkoutCaptchaToken
+                        ? copy.captchaComplete
+                        : copy.captchaPrompt}
+                  </p>
+                </div>
+              ) : null}
               {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}
             </div>
           </div>

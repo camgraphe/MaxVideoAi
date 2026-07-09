@@ -55,7 +55,14 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(hookSource, /export function useWorkspacePricingGate/);
   assert.match(hookSource, /runPreflight/);
   assert.match(hookSource, /authFetch\('\/api\/member-status'\)/);
-  assert.match(hookSource, /authFetch\('\/api\/wallet'/);
+  assert.match(hookSource, /useHostedWalletCheckout\(\{/);
+  assert.match(hookSource, /getSufficientTopUpAmountCents/);
+  assert.match(hookSource, /returnTarget: '\/app'/);
+  assert.match(hookSource, /currency: 'USD'/);
+  assert.match(hookSource, /dispatchGaEvent\('topup_started'/);
+  assert.match(hookSource, /dispatchGaEvent\('topup_failed'/);
+  assert.doesNotMatch(hookSource, /authFetch\('\/api\/wallet',\s*\{/);
+  assert.doesNotMatch(hookSource, /window\.location\.href/);
   assert.match(hookSource, /const handleConfirmTopUp = useCallback/);
   assert.match(hookSource, /const showComposerError = useCallback/);
   assert.doesNotMatch(
@@ -65,7 +72,8 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   );
 
   assert.match(topUpModalSource, /export function WorkspaceTopUpModal/);
-  assert.match(topUpModalSource, /Wallet balance too low/);
+  assert.match(topUpModalSource, /TurnstileChallenge/);
+  assert.doesNotMatch(topUpModalSource, />Wallet balance too low</);
   assert.match(topUpModalSource, /custom-topup/);
 
   assert.match(authGateModalSource, /export function WorkspaceAuthGateModal/);

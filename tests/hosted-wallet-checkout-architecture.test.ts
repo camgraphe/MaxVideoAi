@@ -8,6 +8,7 @@ const sharedTurnstilePath = 'frontend/components/ui/TurnstileChallenge.tsx';
 const billingEventFacadePath = 'frontend/app/(core)/billing/_lib/checkout-interaction-events.ts';
 const billingTurnstileFacadePath = 'frontend/app/(core)/billing/_components/TurnstileChallenge.tsx';
 const billingClientPath = 'frontend/app/(core)/billing/_components/BillingClient.tsx';
+const workspacePricingPath = 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate.ts';
 
 test('hosted wallet checkout behavior has stable shared owners', () => {
   for (const file of [sharedHookPath, sharedEventsPath, sharedTurnstilePath]) {
@@ -17,6 +18,7 @@ test('hosted wallet checkout behavior has stable shared owners', () => {
   const eventFacadeSource = readFileSync(billingEventFacadePath, 'utf8');
   const turnstileFacadeSource = readFileSync(billingTurnstileFacadePath, 'utf8');
   const billingClientSource = readFileSync(billingClientPath, 'utf8');
+  const workspacePricingSource = readFileSync(workspacePricingPath, 'utf8');
   assert.match(hookSource, /requestHostedWalletCheckout/);
   assert.match(hookSource, /hosted_checkout_requested/);
   assert.match(hookSource, /hosted_checkout_captcha_required/);
@@ -28,4 +30,6 @@ test('hosted wallet checkout behavior has stable shared owners', () => {
   assert.match(turnstileFacadeSource, /export \{ TurnstileChallenge \}/);
   assert.match(billingClientSource, /useHostedWalletCheckout/);
   assert.doesNotMatch(billingClientSource, /fetch\('\/api\/wallet'/);
+  assert.match(workspacePricingSource, /useHostedWalletCheckout/);
+  assert.doesNotMatch(workspacePricingSource, /authFetch\('\/api\/wallet',\s*\{/);
 });

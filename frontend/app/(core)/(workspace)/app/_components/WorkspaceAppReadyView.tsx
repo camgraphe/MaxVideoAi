@@ -160,8 +160,13 @@ export function WorkspaceAppReadyView({
   } = inputSchema;
   const {
     authModalOpen,
+    checkoutCaptchaError,
+    checkoutCaptchaRequired,
+    checkoutCaptchaToken,
     closeTopUpModal,
     currency,
+    handleCheckoutCaptchaError,
+    handleCheckoutCaptchaToken,
     handleCustomAmountChange,
     handleSelectPresetAmount,
     handleTopUpSubmit,
@@ -312,10 +317,15 @@ export function WorkspaceAppReadyView({
         onRefreshJob={handleRefreshJob}
         topUpModal={topUpModal}
         topUpCopy={workspaceCopy.topUp}
-        currency={currency}
+        currency="USD"
         topUpAmount={topUpAmount}
         isTopUpLoading={isTopUpLoading}
         topUpError={topUpError}
+        checkoutCaptchaError={checkoutCaptchaError}
+        checkoutCaptchaRequired={checkoutCaptchaRequired}
+        checkoutCaptchaToken={checkoutCaptchaToken}
+        onCheckoutCaptchaError={handleCheckoutCaptchaError}
+        onCheckoutCaptchaToken={handleCheckoutCaptchaToken}
         onCloseTopUp={closeTopUpModal}
         onTopUpSubmit={handleTopUpSubmit}
         onSelectPresetAmount={handleSelectPresetAmount}
