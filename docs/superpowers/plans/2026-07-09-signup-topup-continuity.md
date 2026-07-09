@@ -25,6 +25,7 @@
 ## File Map
 
 - Create `frontend/app/(core)/billing/_lib/billing-intent.ts`: pure validated URL contract.
+- Create `frontend/app/(core)/billing/_lib/billing-selection.ts`: pure preset/custom hydration state.
 - Modify `frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts`: hydrate preset or custom selection from an initial amount.
 - Modify `frontend/app/(core)/billing/_components/BillingClient.tsx`: parse intent and build the auth return target.
 - Modify `frontend/app/(core)/login/_lib/login-helpers.ts`: persist Google auth mode and resolve its completion event.
@@ -171,6 +172,8 @@ git commit -m "feat: add billing intent URL contract"
 ### Task 2: Hydrate billing selection and carry it into authentication
 
 **Files:**
+- Create: `frontend/app/(core)/billing/_lib/billing-selection.ts`
+- Create: `tests/billing-topup-selection.test.ts`
 - Create: `tests/billing-intent-integration.test.ts`
 - Modify: `frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts`
 - Modify: `frontend/app/(core)/billing/_components/BillingClient.tsx`
@@ -178,9 +181,40 @@ git commit -m "feat: add billing intent URL contract"
 
 **Interfaces:**
 - Consumes: `parseBillingIntent()` and `buildBillingIntentTarget()` from Task 1.
-- Produces: `initialTopupCents?: number` option on `useBillingTopupSelection` and a canonical `loginRedirectTarget` based on the current selection.
+- Produces: `createInitialTopupSelection(amountCents)`, an `initialTopupCents?: number` option on `useBillingTopupSelection`, and a canonical `loginRedirectTarget` based on the current selection.
 
 - [ ] **Step 1: Write the failing billing integration contract**
+
+Create `tests/billing-topup-selection.test.ts` first so hydration behavior, including custom amounts, is tested independently of React:
+
+```ts
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { createInitialTopupSelection } from '../frontend/app/(core)/billing/_lib/billing-selection';
+
+test('preset billing hydration selects the tier without opening custom state', () => {
+  assert.deepEqual(createInitialTopupSelection(2500), {
+    selectedTopupCents: 2500,
+    customAmountInput: '',
+  });
+});
+
+test('custom billing hydration preserves the exact dollar input', () => {
+  assert.deepEqual(createInitialTopupSelection(1234), {
+    selectedTopupCents: 1234,
+    customAmountInput: '12.34',
+  });
+});
+
+test('invalid billing hydration falls back to the first tier', () => {
+  for (const value of [undefined, Number.NaN, 999, 10.5]) {
+    assert.deepEqual(createInitialTopupSelection(value), {
+      selectedTopupCents: 1000,
+      customAmountInput: '',
+    });
+  }
+});
+```
 
 Create `tests/billing-intent-integration.test.ts`:
 
@@ -200,7 +234,7 @@ test('billing hydrates selection from the validated URL intent', () => {
   assert.match(clientSource, /parseBillingIntent\(searchParams\)/);
   assert.match(clientSource, /initialTopupCents:\s*billingIntent\.amountCents/);
   assert.match(selectionSource, /initialTopupCents\?: number/);
-  assert.match(selectionSource, /setSelectedTopupCents\(normalizedInitialTopupCents\)/);
+  assert.match(selectionSource, /setSelectedTopupCents\(initialSelection\.selectedTopupCents\)/);
 });
 
 test('billing auth gate carries the current amount in a canonical return target', () => {
@@ -235,20 +269,60 @@ assert.match(clientSource, /from '\.\.\/_lib\/billing-intent';/);
 - [ ] **Step 2: Run integration tests and verify RED**
 
 ```bash
-./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/billing-topup-selection.test.ts tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts
 ```
 
-Expected: FAIL because `BillingClient` does not use the new intent and the selection hook has no initial option.
+Expected: FAIL because `billing-selection.ts` does not exist, `BillingClient` does not use the new intent, and the selection hook has no initial option.
 
-- [ ] **Step 3: Add initial amount hydration to the selection hook**
+- [ ] **Step 3: Implement the pure initial-selection behavior**
+
+Create `frontend/app/(core)/billing/_lib/billing-selection.ts`:
+
+```ts
+import { USD_TOPUP_TIERS } from '@/config/topupTiers';
+
+export type InitialTopupSelection = {
+  selectedTopupCents: number;
+  customAmountInput: string;
+};
+
+const DEFAULT_TOPUP_CENTS = USD_TOPUP_TIERS[0]?.amountCents ?? 1000;
+
+function formatCustomAmountInput(amountCents: number): string {
+  return Number.isInteger(amountCents / 100)
+    ? String(amountCents / 100)
+    : (amountCents / 100).toFixed(2);
+}
+
+export function createInitialTopupSelection(
+  amountCents: number | undefined
+): InitialTopupSelection {
+  const selectedTopupCents =
+    Number.isSafeInteger(amountCents) && Number(amountCents) >= DEFAULT_TOPUP_CENTS
+      ? Number(amountCents)
+      : DEFAULT_TOPUP_CENTS;
+  const isPreset = USD_TOPUP_TIERS.some(
+    (entry) => entry.amountCents === selectedTopupCents
+  );
+  return {
+    selectedTopupCents,
+    customAmountInput: isPreset ? '' : formatCustomAmountInput(selectedTopupCents),
+  };
+}
+```
+
+Run only the new behavior test. Expected: 3 tests pass.
+
+- [ ] **Step 4: Consume the tested hydration behavior in the selection hook**
 
 Update imports in `useBillingTopupSelection.ts`:
 
 ```ts
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createInitialTopupSelection } from '../_lib/billing-selection';
 ```
 
-Extend the option type and add normalization helpers above the hook:
+Extend the option type:
 
 ```ts
 type UseBillingTopupSelectionOptions = {
@@ -256,18 +330,6 @@ type UseBillingTopupSelectionOptions = {
   formatUsdAmount: (amountCents: number) => string;
   initialTopupCents?: number;
 };
-
-function normalizeInitialTopupCents(value: number | undefined): number {
-  return Number.isSafeInteger(value) && Number(value) >= 1000
-    ? Number(value)
-    : USD_TOPUP_TIERS[0]?.amountCents ?? 1000;
-}
-
-function formatCustomAmountInput(amountCents: number): string {
-  return Number.isInteger(amountCents / 100)
-    ? String(amountCents / 100)
-    : (amountCents / 100).toFixed(2);
-}
 ```
 
 Change the hook signature and initial state:
@@ -278,34 +340,26 @@ export function useBillingTopupSelection({
   formatUsdAmount,
   initialTopupCents,
 }: UseBillingTopupSelectionOptions) {
-  const normalizedInitialTopupCents = useMemo(
-    () => normalizeInitialTopupCents(initialTopupCents),
+  const initialSelection = useMemo(
+    () => createInitialTopupSelection(initialTopupCents),
     [initialTopupCents]
   );
-  const initialIsPreset = USD_TOPUP_TIERS.some(
-    (entry) => entry.amountCents === normalizedInitialTopupCents
-  );
-  const [customAmountInput, setCustomAmountInput] = useState(
-    initialIsPreset ? '' : formatCustomAmountInput(normalizedInitialTopupCents)
-  );
+  const [customAmountInput, setCustomAmountInput] = useState(initialSelection.customAmountInput);
   const [customEditorOpen, setCustomEditorOpen] = useState(false);
-  const [selectedTopupCents, setSelectedTopupCents] = useState(normalizedInitialTopupCents);
+  const [selectedTopupCents, setSelectedTopupCents] = useState(initialSelection.selectedTopupCents);
 ```
 
 Add this effect after the refs/state declarations:
 
 ```ts
   useEffect(() => {
-    const isPreset = USD_TOPUP_TIERS.some(
-      (entry) => entry.amountCents === normalizedInitialTopupCents
-    );
-    setSelectedTopupCents(normalizedInitialTopupCents);
-    setCustomAmountInput(isPreset ? '' : formatCustomAmountInput(normalizedInitialTopupCents));
+    setSelectedTopupCents(initialSelection.selectedTopupCents);
+    setCustomAmountInput(initialSelection.customAmountInput);
     setCustomEditorOpen(false);
-  }, [normalizedInitialTopupCents]);
+  }, [initialSelection]);
 ```
 
-- [ ] **Step 4: Wire URL intent and the current selection into BillingClient**
+- [ ] **Step 5: Wire URL intent and the current selection into BillingClient**
 
 Replace the navigation import:
 
@@ -349,19 +403,19 @@ After the selection hook call, create the current return target:
   );
 ```
 
-- [ ] **Step 5: Run focused tests and type-check**
+- [ ] **Step 6: Run focused tests and type-check**
 
 ```bash
-./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/billing-intent.test.ts tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/billing-intent.test.ts tests/billing-topup-selection.test.ts tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts
 cd frontend && ./node_modules/.bin/tsc --noEmit
 ```
 
 Expected: focused tests pass and TypeScript exits 0.
 
-- [ ] **Step 6: Commit billing hydration**
+- [ ] **Step 7: Commit billing hydration**
 
 ```bash
-git add tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts 'frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts' 'frontend/app/(core)/billing/_components/BillingClient.tsx'
+git add tests/billing-topup-selection.test.ts tests/billing-intent-integration.test.ts tests/billing-page-architecture.test.ts 'frontend/app/(core)/billing/_lib/billing-selection.ts' 'frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts' 'frontend/app/(core)/billing/_components/BillingClient.tsx'
 git commit -m "fix: preserve billing amount through auth gate"
 ```
 
@@ -674,6 +728,7 @@ git commit -m "fix: classify Google auth completion intent"
 
 **Files:**
 - Create: `frontend/components/ui/useAccessibleModal.ts`
+- Create: `tests/modal-focus-cycle.test.ts`
 - Create: `tests/modal-accessibility-contract.test.ts`
 - Modify: `frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx`
 - Modify: `frontend/app/(core)/(workspace)/app/_components/WorkspaceAuthGateModal.tsx`
@@ -683,10 +738,51 @@ git commit -m "fix: classify Google auth completion intent"
 - Modify: `tests/workspace-pricing-gate-hook-contract.test.ts`
 
 **Interfaces:**
-- Produces: `useAccessibleModal<T extends HTMLElement>({ onClose, closeDisabled? })` returning `dialogRef` and `onDialogKeyDown`.
+- Produces: `resolveModalTabTarget(input)` for tested wrap decisions and `useAccessibleModal<T extends HTMLElement>({ onClose, closeDisabled? })` returning `dialogRef` and `onDialogKeyDown`.
 - Consumed by: three route-local modal components.
 
 - [ ] **Step 1: Write the failing modal accessibility contract**
+
+Create `tests/modal-focus-cycle.test.ts` so the keyboard wrap rules are behavior-tested without adding a DOM-test dependency:
+
+```ts
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import { resolveModalTabTarget } from '../frontend/components/ui/useAccessibleModal';
+
+test('modal tab cycle wraps forward and backward at the edges', () => {
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: 2, focusableCount: 3, shiftKey: false, activeInside: true }),
+    0
+  );
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: 0, focusableCount: 3, shiftKey: true, activeInside: true }),
+    2
+  );
+});
+
+test('modal tab cycle enters from outside in the requested direction', () => {
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: -1, focusableCount: 3, shiftKey: false, activeInside: false }),
+    0
+  );
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: -1, focusableCount: 3, shiftKey: true, activeInside: false }),
+    2
+  );
+});
+
+test('modal tab cycle stays native in the middle and targets the dialog when empty', () => {
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: 1, focusableCount: 3, shiftKey: false, activeInside: true }),
+    null
+  );
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: -1, focusableCount: 0, shiftKey: false, activeInside: false }),
+    -1
+  );
+});
+```
 
 Create `tests/modal-accessibility-contract.test.ts`:
 
@@ -754,7 +850,7 @@ assert.match(authGateSource, /from '@\/components\/ui\/useAccessibleModal';/);
 - [ ] **Step 2: Run modal tests and verify RED**
 
 ```bash
-./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/modal-focus-cycle.test.ts tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts
 ```
 
 Expected: FAIL because `useAccessibleModal.ts` does not exist and the modals lack the shared behavior.
@@ -786,6 +882,26 @@ type UseAccessibleModalOptions = {
   onClose: () => void;
   closeDisabled?: boolean;
 };
+
+type ResolveModalTabTargetInput = {
+  activeIndex: number;
+  focusableCount: number;
+  shiftKey: boolean;
+  activeInside: boolean;
+};
+
+export function resolveModalTabTarget({
+  activeIndex,
+  focusableCount,
+  shiftKey,
+  activeInside,
+}: ResolveModalTabTargetInput): number | null {
+  if (focusableCount <= 0) return -1;
+  if (!activeInside) return shiftKey ? focusableCount - 1 : 0;
+  if (shiftKey && activeIndex === 0) return focusableCount - 1;
+  if (!shiftKey && activeIndex === focusableCount - 1) return 0;
+  return null;
+}
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)).filter(
@@ -840,22 +956,21 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
       const dialog = dialogRef.current;
       if (!dialog) return;
       const focusable = getFocusableElements(dialog);
-      if (!focusable.length) {
-        event.preventDefault();
+      const active = document.activeElement;
+      const activeIndex = focusable.findIndex((element) => element === active);
+      const targetIndex = resolveModalTabTarget({
+        activeIndex,
+        focusableCount: focusable.length,
+        shiftKey: event.shiftKey,
+        activeInside: dialog.contains(active),
+      });
+      if (targetIndex === null) return;
+      event.preventDefault();
+      if (targetIndex === -1) {
         dialog.focus();
         return;
       }
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      const active = document.activeElement;
-      if (event.shiftKey && (active === first || !dialog.contains(active))) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && (active === last || !dialog.contains(active))) {
-        event.preventDefault();
-        first.focus();
-      }
+      focusable[targetIndex]?.focus();
     },
     [closeDisabled]
   );
@@ -986,7 +1101,7 @@ Delete this effect from `useWorkspacePricingGate.ts`:
 - [ ] **Step 8: Run modal contracts, workspace contracts, and type-check**
 
 ```bash
-./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts tests/workspace-composer-generation-split-contract.test.ts
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/modal-focus-cycle.test.ts tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts tests/workspace-composer-generation-split-contract.test.ts
 cd frontend && ./node_modules/.bin/tsc --noEmit
 ```
 
@@ -995,7 +1110,7 @@ Expected: all selected tests pass and TypeScript exits 0.
 - [ ] **Step 9: Commit accessible conversion modals**
 
 ```bash
-git add frontend/components/ui/useAccessibleModal.ts tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx' 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAuthGateModal.tsx' 'frontend/app/(core)/(workspace)/app/_components/WorkspaceTopUpModal.tsx' 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate.ts'
+git add frontend/components/ui/useAccessibleModal.ts tests/modal-focus-cycle.test.ts tests/modal-accessibility-contract.test.ts tests/billing-page-architecture.test.ts tests/workspace-pricing-gate-hook-contract.test.ts 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx' 'frontend/app/(core)/(workspace)/app/_components/WorkspaceAuthGateModal.tsx' 'frontend/app/(core)/(workspace)/app/_components/WorkspaceTopUpModal.tsx' 'frontend/app/(core)/(workspace)/app/_hooks/useWorkspacePricingGate.ts'
 git commit -m "fix: make conversion modals accessible"
 ```
 
