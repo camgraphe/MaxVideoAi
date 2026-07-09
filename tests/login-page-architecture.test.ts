@@ -124,3 +124,13 @@ test('login helper modules expose the expected route contract', () => {
     assert.match(helpersSource, new RegExp(`export function ${helperName}\\(`), `${helperName} should be exported`);
   }
 });
+
+test('authenticated redirect resolves the consumed Google auth mode', () => {
+  assert.match(authenticatedRedirectHookSource, /resolveGoogleAuthCompletionEvent\(pendingMode\)/);
+  assert.doesNotMatch(authenticatedRedirectHookSource, /persistPendingAnalyticsEvent\('login_completed'/);
+});
+
+test('hash session resolves the consumed Google auth mode', () => {
+  assert.match(authHashSessionHookSource, /resolveGoogleAuthCompletionEvent\(pendingMode\)/);
+  assert.doesNotMatch(authHashSessionHookSource, /persistPendingAnalyticsEvent\('login_completed'/);
+});

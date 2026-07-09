@@ -2,7 +2,10 @@ import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
 import { writeLastKnownUserId } from '@/lib/last-known';
 import { supabase } from '@/lib/supabaseClient';
-import { consumePendingGoogleLogin } from '../_lib/login-helpers';
+import {
+  consumePendingGoogleLogin,
+  resolveGoogleAuthCompletionEvent,
+} from '../_lib/login-helpers';
 
 type UseLoginAuthHashSessionOptions = {
   setError: Dispatch<SetStateAction<string | null>>;
@@ -50,11 +53,16 @@ export function useLoginAuthHashSession({
           if (userId) {
             writeLastKnownUserId(userId);
           }
-          if (consumePendingGoogleLogin()) {
-            persistPendingAnalyticsEvent('login_completed', {
+          const pendingMode = consumePendingGoogleLogin();
+          if (pendingMode) {
+            const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
+            persistPendingAnalyticsEvent(eventName, {
               route_family: 'auth',
               auth_surface: 'login',
               method: 'google',
+              ...(eventName === 'sign_up_completed'
+                ? { email_confirmation_required: false }
+                : {}),
             });
           }
         }
