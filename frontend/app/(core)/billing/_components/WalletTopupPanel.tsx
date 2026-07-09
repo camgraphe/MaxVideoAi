@@ -36,7 +36,7 @@ type WalletTopupPanelProps = {
   handleCurrencyChange: (event: ChangeEvent<HTMLSelectElement>) => void;
   handleExpressTopupFailed: (amountCents: number, reason?: string) => void;
   handleExpressTopupStarted: (amountCents: number) => void;
-  handleTopUp: (amountCents: number) => void;
+  handleTopUp: () => void;
   isTopupStarting: boolean;
   locale: string;
   normalizedChargeCurrency: string;
@@ -229,7 +229,7 @@ export function WalletTopupPanel({
             type="button"
             size="lg"
             disabled={isTopupStarting}
-            onClick={() => handleTopUp(selectedTopupCents)}
+            onClick={handleTopUp}
             className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto sm:px-5"
           >
             {copy.wallet.checkoutCta.replace('{amount}', selectedTopupAmountLabel)}

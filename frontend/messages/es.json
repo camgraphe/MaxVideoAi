@@ -3753,7 +3753,8 @@
       },
       "toasts": {
         "success": "Pago realizado con éxito. Fondos añadidos a tu billetera.",
-        "cancelled": "Checkout cerrado. No se aplicó ningún cargo."
+        "cancelled": "Checkout cerrado. No se aplicó ningún cargo.",
+        "returnToWorkspace": "Volver al espacio de vídeo"
       },
       "errors": {
         "loadReceipts": "No pudimos cargar tu historial de pagos. Actualiza la página o contacta con soporte.",

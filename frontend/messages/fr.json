@@ -3761,7 +3761,8 @@
       },
       "toasts": {
         "success": "Paiement réussi. Fonds ajoutés à votre portefeuille.",
-        "cancelled": "Checkout fermé. Aucun débit appliqué."
+        "cancelled": "Checkout fermé. Aucun débit appliqué.",
+        "returnToWorkspace": "Retourner à l’espace vidéo"
       },
       "errors": {
         "loadReceipts": "Impossible de charger votre historique de paiement. Actualisez la page ou contactez le support.",

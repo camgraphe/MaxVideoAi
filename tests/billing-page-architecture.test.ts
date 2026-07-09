@@ -19,6 +19,8 @@ const intentPath = 'frontend/app/(core)/billing/_lib/billing-intent.ts';
 const typesPath = 'frontend/app/(core)/billing/_lib/billing-types.ts';
 const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
 const accessibleModalHookPath = 'frontend/components/ui/useAccessibleModal.ts';
+const hostedCheckoutHookPath = 'frontend/hooks/useHostedWalletCheckout.ts';
+const checkoutReturnNoticePath = 'frontend/app/(core)/billing/_components/BillingCheckoutReturnNotice.tsx';
 
 test('billing page delegates client billing behavior to route-local modules', () => {
   for (const file of [
@@ -38,6 +40,8 @@ test('billing page delegates client billing behavior to route-local modules', ()
     typesPath,
     utilsPath,
     accessibleModalHookPath,
+    hostedCheckoutHookPath,
+    checkoutReturnNoticePath,
   ]) {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
@@ -66,6 +70,8 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /useBillingTopupQuotes\(\{/);
   assert.match(clientSource, /useBillingTopupAnalytics\(topupQuotes\)/);
   assert.match(clientSource, /useBillingTopupSelection\(\{/);
+  assert.match(clientSource, /useHostedWalletCheckout\(\{/);
+  assert.match(clientSource, /<BillingCheckoutReturnNotice/);
 
   assert.doesNotMatch(clientSource, /function WalletExpressCheckout/);
   assert.doesNotMatch(clientSource, /function TurnstileChallenge/);
@@ -83,6 +89,8 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.doesNotMatch(clientSource, /userCurrencyOverrideRef/);
   assert.doesNotMatch(clientSource, /parseAmountToCents/);
   assert.doesNotMatch(clientSource, /USD_TOPUP_TIERS/);
+  assert.doesNotMatch(clientSource, /fetch\('\/api\/wallet'/);
+  assert.doesNotMatch(clientSource, /const \[checkoutCaptchaRequired, setCheckoutCaptchaRequired\]/);
 });
 
 test('billing feature modules own their explicit responsibilities', () => {
