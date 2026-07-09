@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { resolveModalTabTarget } from '../frontend/components/ui/useAccessibleModal';
+import {
+  resolveModalFocusRecoveryTarget,
+  resolveModalTabTarget,
+} from '../frontend/components/ui/useAccessibleModal';
 
 test('modal tab cycle wraps forward and backward at the edges', () => {
   assert.equal(
@@ -43,5 +46,27 @@ test('modal tab cycle stays native in the middle and targets the dialog when emp
   assert.equal(
     resolveModalTabTarget({ activeIndex: -1, focusableCount: 0, shiftKey: false, activeInside: false }),
     -1
+  );
+});
+
+test('modal focus recovery chooses the first enabled control or dialog when closing disables', () => {
+  assert.equal(
+    resolveModalFocusRecoveryTarget({ activeIndex: -1, closeDisabled: true, focusableCount: 2 }),
+    0
+  );
+  assert.equal(
+    resolveModalFocusRecoveryTarget({ activeIndex: -1, closeDisabled: true, focusableCount: 0 }),
+    -1
+  );
+});
+
+test('modal focus recovery leaves enabled in-dialog focus and enabled closing state alone', () => {
+  assert.equal(
+    resolveModalFocusRecoveryTarget({ activeIndex: 1, closeDisabled: true, focusableCount: 2 }),
+    null
+  );
+  assert.equal(
+    resolveModalFocusRecoveryTarget({ activeIndex: -1, closeDisabled: false, focusableCount: 2 }),
+    null
   );
 });

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createInitialTopupSelection } from '../frontend/app/(core)/billing/_lib/billing-selection';
+import { parseAmountToCents } from '../frontend/app/(core)/billing/_lib/billing-utils';
 
 test('preset billing hydration selects the tier without opening custom state', () => {
   assert.deepEqual(createInitialTopupSelection(2500), {
@@ -21,6 +22,14 @@ test('large safe-integer billing hydration preserves exact cents in the display 
     selectedTopupCents: 9007199254740990,
     customAmountInput: '90071992547409.90',
   });
+});
+
+test('large safe-integer billing hydration round-trips through the custom input parser', () => {
+  const initialSelection = createInitialTopupSelection(9007199254740990);
+  const reparsedCents = parseAmountToCents(initialSelection.customAmountInput);
+
+  assert.equal(reparsedCents, 9007199254740990);
+  assert.deepEqual(createInitialTopupSelection(reparsedCents ?? undefined), initialSelection);
 });
 
 test('invalid billing hydration falls back to the first tier', () => {

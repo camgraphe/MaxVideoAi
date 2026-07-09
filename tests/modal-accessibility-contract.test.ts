@@ -19,6 +19,19 @@ test('shared modal behavior owns focus, Escape, and scroll cleanup', () => {
   assert.match(source, /data-modal-initial-focus/);
 });
 
+test('shared modal recovers focus when closeDisabled changes without targeting disabled controls', () => {
+  const source = readFileSync(hookPath, 'utf8');
+  assert.match(
+    source,
+    /useEffect\(\(\) => \{\s*const dialog = dialogRef\.current;[\s\S]*?resolveModalFocusRecoveryTarget\([\s\S]*?\}, \[closeDisabled\]\);/
+  );
+  assert.match(source, /const preferred = focusable\.find\([\s\S]*data-modal-initial-focus/);
+  assert.doesNotMatch(
+    source,
+    /dialog\.querySelector<HTMLElement>\('\[data-modal-initial-focus="true"\]'\)/
+  );
+});
+
 test('conversion modals expose named modal semantics and shared keyboard behavior', () => {
   for (const path of modalPaths) {
     const source = readFileSync(path, 'utf8');

@@ -28,6 +28,12 @@ type ResolveModalTabTargetInput = {
   activeInside: boolean;
 };
 
+type ResolveModalFocusRecoveryTargetInput = {
+  activeIndex: number;
+  closeDisabled: boolean;
+  focusableCount: number;
+};
+
 export function resolveModalTabTarget({
   activeIndex,
   focusableCount,
@@ -39,6 +45,15 @@ export function resolveModalTabTarget({
   if (shiftKey && activeIndex === 0) return focusableCount - 1;
   if (!shiftKey && activeIndex === focusableCount - 1) return 0;
   return null;
+}
+
+export function resolveModalFocusRecoveryTarget({
+  activeIndex,
+  closeDisabled,
+  focusableCount,
+}: ResolveModalFocusRecoveryTargetInput): number | null {
+  if (!closeDisabled || activeIndex >= 0) return null;
+  return focusableCount > 0 ? 0 : -1;
 }
 
 function getFocusableElements(container: HTMLElement): HTMLElement[] {
@@ -66,8 +81,11 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
     const focusTimer = window.setTimeout(() => {
       const dialog = dialogRef.current;
       if (!dialog) return;
-      const preferred = dialog.querySelector<HTMLElement>('[data-modal-initial-focus="true"]');
-      const target = preferred ?? getFocusableElements(dialog)[0] ?? dialog;
+      const focusable = getFocusableElements(dialog);
+      const preferred = focusable.find(
+        (element) => element.getAttribute('data-modal-initial-focus') === 'true'
+      );
+      const target = preferred ?? focusable[0] ?? dialog;
       target.focus();
     }, 0);
 
@@ -79,6 +97,25 @@ export function useAccessibleModal<T extends HTMLElement = HTMLDivElement>({
       }
     };
   }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const focusable = getFocusableElements(dialog);
+    const active = document.activeElement;
+    const activeIndex = focusable.findIndex((element) => element === active);
+    const targetIndex = resolveModalFocusRecoveryTarget({
+      activeIndex,
+      closeDisabled,
+      focusableCount: focusable.length,
+    });
+    if (targetIndex === null) return;
+    if (targetIndex === -1) {
+      dialog.focus();
+      return;
+    }
+    focusable[targetIndex]?.focus();
+  }, [closeDisabled]);
 
   const onDialogKeyDown = useCallback(
     (event: ReactKeyboardEvent<T>) => {
