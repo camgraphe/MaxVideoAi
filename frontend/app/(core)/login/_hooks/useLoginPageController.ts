@@ -341,7 +341,7 @@ export function useLoginPageController() {
     if (data?.url) {
       if (typeof window !== 'undefined') {
         persistNextTarget(safeNext);
-        markPendingGoogleLogin();
+        markPendingGoogleLogin(mode === 'signup' ? 'signup' : 'signin');
       }
       window.location.href = data.url;
       return;

@@ -104,6 +104,9 @@ test('login helper modules expose the expected route contract', () => {
   assert.match(copySource, /export type AuthMode =/, 'copy module should export the auth mode type');
   assert.match(copySource, /export type Locale =/, 'copy module should export the locale type derived from auth copy');
   assert.match(copySource, /export type AuthCopy =/, 'copy module should export the auth copy shape for UI props');
+  assert.match(helpersSource, /export function resolveGoogleAuthCompletionEvent\(/);
+  assert.match(controllerSource, /markPendingGoogleLogin\(mode === 'signup' \? 'signup' : 'signin'\)/);
+  assert.match(oauthCodeExchangeHookSource, /resolveGoogleAuthCompletionEvent\(pendingMode\)/);
   assert.match(authSurfaceSource, /export function LoginAuthSurface/, 'auth surface component should export the login form shell');
   assert.match(authSurfaceSource, /function GoogleIcon\(/, 'auth surface component should own the inline Google icon');
   assert.match(authSurfaceSource, /formatTemplate\(authCopy\.terms\.age/, 'auth surface component should own localized legal text rendering');
