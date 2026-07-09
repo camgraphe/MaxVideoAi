@@ -266,8 +266,7 @@ export function useLoginPageController() {
         method: 'password',
         email_confirmation_required: false,
       });
-      const target = sanitizeNextPath('/generate');
-      completeAuthenticatedRedirect(target, data.session.user?.id ?? data.user?.id ?? null);
+      completeAuthenticatedRedirect(safeNextPath, data.session.user?.id ?? data.user?.id ?? null);
     } else {
       setStatusTone('success');
       setStatus('Check your inbox to confirm your email.');
