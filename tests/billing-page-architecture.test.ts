@@ -14,6 +14,7 @@ const analyticsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupAna
 const quotesHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupQuotes.ts';
 const topupSelectionHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts';
 const copyPath = 'frontend/app/(core)/billing/_lib/billing-copy.ts';
+const intentPath = 'frontend/app/(core)/billing/_lib/billing-intent.ts';
 const typesPath = 'frontend/app/(core)/billing/_lib/billing-types.ts';
 const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
 
@@ -30,6 +31,7 @@ test('billing page delegates client billing behavior to route-local modules', ()
     quotesHookPath,
     topupSelectionHookPath,
     copyPath,
+    intentPath,
     typesPath,
     utilsPath,
   ]) {
@@ -80,6 +82,8 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
 });
 
 test('billing feature modules own their explicit responsibilities', () => {
+  const intentSource = readFileSync(intentPath, 'utf8');
+  const clientSource = readFileSync(clientPath, 'utf8');
   const walletPanelSource = readFileSync(walletPanelPath, 'utf8');
   const receiptsPanelSource = readFileSync(receiptsPanelPath, 'utf8');
   const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
@@ -120,5 +124,8 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(topupSelectionHookSource, /parseAmountToCents/);
   assert.match(topupSelectionHookSource, /USD_TOPUP_TIERS/);
   assert.match(copySource, /export const DEFAULT_BILLING_COPY/);
+  assert.match(intentSource, /export function parseBillingIntent/);
+  assert.match(intentSource, /export function buildBillingIntentTarget/);
+  assert.match(clientSource, /from '\.\.\/_lib\/billing-intent';/);
   assert.match(utilsSource, /export function parseAmountToCents/);
 });

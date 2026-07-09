@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import deepmerge from 'deepmerge';
-import { usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { CURRENCY_LOCALE } from '@/lib/intl';
@@ -22,6 +22,7 @@ import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
 import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
+import { buildBillingIntentTarget, parseBillingIntent } from '../_lib/billing-intent';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
@@ -31,6 +32,7 @@ type LegacyCheckoutStripe = Stripe & {
 };
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
+const EMPTY_SEARCH_PARAMS = new URLSearchParams();
 
 export function BillingClient() {
   const { locale, t } = useI18n();
@@ -45,7 +47,8 @@ export function BillingClient() {
     if (!PUBLISHABLE_KEY) return null;
     return loadStripe(PUBLISHABLE_KEY, { locale });
   }, [locale]);
-  const pathname = usePathname();
+  const searchParams = useSearchParams() ?? EMPTY_SEARCH_PARAMS;
+  const billingIntent = useMemo(() => parseBillingIntent(searchParams), [searchParams]);
   const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -57,7 +60,6 @@ export function BillingClient() {
   const [checkoutCaptchaError, setCheckoutCaptchaError] = useState<string | null>(null);
 
   const [toast, setToast] = useState<string | null>(null);
-  const loginRedirectTarget = pathname || '/billing';
   const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
 
   const formatMoney = (amountCents: number, currency: string) => {
@@ -128,7 +130,16 @@ export function BillingClient() {
   } = useBillingTopupSelection({
     copy,
     formatUsdAmount,
+    initialTopupCents: billingIntent.amountCents,
   });
+  const loginRedirectTarget = useMemo(
+    () =>
+      buildBillingIntentTarget({
+        amountCents: selectedTopupCents,
+        currency: 'USD',
+      }),
+    [selectedTopupCents]
+  );
   const { topupQuotes, quoteLoading, quoteError } = useBillingTopupQuotes({
     authLoading,
     session,
