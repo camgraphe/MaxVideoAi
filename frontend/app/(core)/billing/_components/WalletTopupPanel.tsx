@@ -15,6 +15,7 @@ type WalletTopupPanelProps = {
   applyCustomAmount: () => void;
   checkoutCaptchaError: string | null;
   checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
   copy: BillingCopy;
   currencyLoading: boolean;
@@ -61,6 +62,7 @@ export function WalletTopupPanel({
   applyCustomAmount,
   checkoutCaptchaError,
   checkoutCaptchaRequired,
+  checkoutCaptchaResetGeneration,
   checkoutCaptchaToken,
   copy,
   currencyLoading,
@@ -250,6 +252,7 @@ export function WalletTopupPanel({
                 siteKey={turnstileSiteKey}
                 onToken={handleCheckoutCaptchaToken}
                 onError={handleCheckoutCaptchaError}
+                resetGeneration={checkoutCaptchaResetGeneration}
               />
             </div>
           ) : null}

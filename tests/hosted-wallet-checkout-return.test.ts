@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  beginHostedWalletCheckoutAttempt,
   clearPendingWalletCheckoutReturn,
   consumePendingWalletCheckoutReturn,
   persistPendingWalletCheckoutReturn,
@@ -38,4 +39,12 @@ test('pending checkout return tolerates unavailable storage and can be cleared',
   assert.equal(persistPendingWalletCheckoutReturn('/app', { storage: throwingStorage, now: 1_000 }), false);
   assert.equal(consumePendingWalletCheckoutReturn({ storage: throwingStorage, now: 1_000 }), null);
   assert.doesNotThrow(() => clearPendingWalletCheckoutReturn({ storage: throwingStorage }));
+});
+
+test('a new Billing hosted attempt clears abandoned Workspace return context before success', () => {
+  const storage = createStorage();
+  assert.equal(persistPendingWalletCheckoutReturn('/app', { storage, now: 1_000 }), true);
+  beginHostedWalletCheckoutAttempt({ storage });
+
+  assert.equal(consumePendingWalletCheckoutReturn({ storage, now: 2_000 }), null);
 });

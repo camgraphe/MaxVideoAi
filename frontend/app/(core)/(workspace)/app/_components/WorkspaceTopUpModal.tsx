@@ -35,6 +35,7 @@ type WorkspaceTopUpModalProps = {
   topUpError: string | null;
   checkoutCaptchaError: boolean;
   checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
   onCheckoutCaptchaError: () => void;
   onCheckoutCaptchaToken: (token: string | null) => void;
@@ -55,6 +56,7 @@ export function WorkspaceTopUpModal({
   topUpError,
   checkoutCaptchaError,
   checkoutCaptchaRequired,
+  checkoutCaptchaResetGeneration,
   checkoutCaptchaToken,
   onCheckoutCaptchaError,
   onCheckoutCaptchaToken,
@@ -163,6 +165,7 @@ export function WorkspaceTopUpModal({
                         siteKey={TURNSTILE_SITE_KEY}
                         onToken={onCheckoutCaptchaToken}
                         onError={onCheckoutCaptchaError}
+                        resetGeneration={checkoutCaptchaResetGeneration}
                       />
                     </div>
                   ) : null}

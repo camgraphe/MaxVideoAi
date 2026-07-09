@@ -28,7 +28,70 @@ export type HostedWalletCheckoutResult =
       checkoutAttemptId: number | null;
     };
 
+export type HostedCheckoutChallengeState = {
+  captchaRequired: boolean;
+  captchaToken: string | null;
+  captchaError: boolean;
+  resetGeneration: number;
+};
+
+export type HostedCheckoutChallengeAction =
+  | { type: 'reset' }
+  | { type: 'captcha_required' }
+  | { type: 'captcha_token_changed'; token: string | null }
+  | { type: 'captcha_error' }
+  | { type: 'checkout_not_redirected'; submittedCaptchaToken: string | null };
+
 const MIN_TOPUP_CENTS = 1000;
+
+export function createHostedCheckoutChallengeState(): HostedCheckoutChallengeState {
+  return {
+    captchaRequired: false,
+    captchaToken: null,
+    captchaError: false,
+    resetGeneration: 0,
+  };
+}
+
+export function hostedCheckoutChallengeReducer(
+  state: HostedCheckoutChallengeState,
+  action: HostedCheckoutChallengeAction
+): HostedCheckoutChallengeState {
+  switch (action.type) {
+    case 'reset':
+      return {
+        ...createHostedCheckoutChallengeState(),
+        resetGeneration: state.resetGeneration + 1,
+      };
+    case 'captcha_required':
+      return {
+        captchaRequired: true,
+        captchaToken: null,
+        captchaError: false,
+        resetGeneration: state.resetGeneration + 1,
+      };
+    case 'captcha_token_changed':
+      return {
+        ...state,
+        captchaToken: action.token,
+        captchaError: action.token ? false : state.captchaError,
+      };
+    case 'captcha_error':
+      return {
+        ...state,
+        captchaToken: null,
+        captchaError: true,
+      };
+    case 'checkout_not_redirected':
+      if (!action.submittedCaptchaToken) return state;
+      return {
+        captchaRequired: true,
+        captchaToken: null,
+        captchaError: false,
+        resetGeneration: state.resetGeneration + 1,
+      };
+  }
+}
 
 export function createHostedCheckoutSubmissionGuard() {
   let active = false;

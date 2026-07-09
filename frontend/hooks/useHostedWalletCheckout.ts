@@ -1,16 +1,19 @@
 'use client';
 
 import { loadStripe, type Stripe } from '@stripe/stripe-js';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { recordCheckoutInteractionEvent, type CheckoutInteractionSource } from '@/lib/analytics/checkout-interaction-events';
 import {
+  beginHostedWalletCheckoutAttempt,
   clearPendingWalletCheckoutReturn,
   persistPendingWalletCheckoutReturn,
   type WalletCheckoutReturnTarget,
 } from '@/lib/wallet/checkout-return';
 import {
+  createHostedCheckoutChallengeState,
   createHostedCheckoutSubmissionGuard,
+  hostedCheckoutChallengeReducer,
   requestHostedWalletCheckout,
   type HostedWalletCheckoutFailureReason,
 } from '@/lib/wallet/hosted-checkout';
@@ -56,9 +59,11 @@ export function useHostedWalletCheckout({
   onRateLimited,
 }: UseHostedWalletCheckoutOptions) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [captchaRequired, setCaptchaRequired] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const [captchaError, setCaptchaError] = useState(false);
+  const [challengeState, dispatchChallenge] = useReducer(
+    hostedCheckoutChallengeReducer,
+    undefined,
+    createHostedCheckoutChallengeState
+  );
   const [failureReason, setFailureReason] = useState<HostedWalletCheckoutFailureReason | null>(null);
   const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(null);
   const submissionGuardRef = useRef(createHostedCheckoutSubmissionGuard());
@@ -73,9 +78,7 @@ export function useHostedWalletCheckout({
   const stripePromise = suppliedStripePromise === undefined ? internalStripePromise : suppliedStripePromise;
 
   const resetCheckout = useCallback(() => {
-    setCaptchaRequired(false);
-    setCaptchaToken(null);
-    setCaptchaError(false);
+    dispatchChallenge({ type: 'reset' });
     setFailureReason(null);
     setRetryAfterSeconds(null);
   }, []);
@@ -85,23 +88,19 @@ export function useHostedWalletCheckout({
   }, [amountCents, currency, resetCheckout]);
 
   const requireCaptcha = useCallback(() => {
-    setCaptchaRequired(true);
-    setCaptchaToken(null);
-    setCaptchaError(false);
+    dispatchChallenge({ type: 'captcha_required' });
   }, []);
 
   const handleCaptchaToken = useCallback((token: string | null) => {
-    setCaptchaToken(token);
-    if (token) setCaptchaError(false);
+    dispatchChallenge({ type: 'captcha_token_changed', token });
   }, []);
 
   const handleCaptchaError = useCallback(() => {
-    setCaptchaToken(null);
-    setCaptchaError(true);
+    dispatchChallenge({ type: 'captcha_error' });
   }, []);
 
   const reportFailure = useCallback((reason: HostedWalletCheckoutFailureReason, checkoutAttemptId: number | null) => {
-    if (returnTarget) clearPendingWalletCheckoutReturn();
+    clearPendingWalletCheckoutReturn();
     setFailureReason(reason);
     recordCheckoutInteractionEvent({
       amountCents,
@@ -112,10 +111,11 @@ export function useHostedWalletCheckout({
       metadata: { currency, failureCategory: reason },
     });
     onFailed({ amountCents, currency, reason });
-  }, [amountCents, currency, onFailed, returnTarget, source]);
+  }, [amountCents, currency, onFailed, source]);
 
   const startCheckout = useCallback(async () => {
     if (!submissionGuardRef.current.tryStart()) return;
+    beginHostedWalletCheckoutAttempt();
     setIsSubmitting(true);
     setFailureReason(null);
     setRetryAfterSeconds(null);
@@ -126,6 +126,7 @@ export function useHostedWalletCheckout({
       source,
       metadata: { currency, locale },
     });
+    const submittedCaptchaToken = challengeState.captchaToken;
 
     try {
       const result = await requestHostedWalletCheckout({
@@ -133,7 +134,7 @@ export function useHostedWalletCheckout({
         currency,
         locale,
         accessToken,
-        captchaToken: captchaToken ?? undefined,
+        captchaToken: submittedCaptchaToken ?? undefined,
       });
 
       if (result.kind === 'captcha_required') {
@@ -149,6 +150,7 @@ export function useHostedWalletCheckout({
       }
 
       if (result.kind === 'rate_limited') {
+        dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
         setRetryAfterSeconds(result.retryAfterSeconds);
         recordCheckoutInteractionEvent({
           amountCents,
@@ -162,13 +164,11 @@ export function useHostedWalletCheckout({
       }
 
       if (result.kind === 'failed') {
+        dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
         reportFailure(result.reason, result.checkoutAttemptId);
         return;
       }
 
-      setCaptchaRequired(false);
-      setCaptchaToken(null);
-      setCaptchaError(false);
       onStarted({ amountCents, currency });
       recordCheckoutInteractionEvent({
         amountCents,
@@ -185,18 +185,26 @@ export function useHostedWalletCheckout({
 
       if (result.url) {
         if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
+        dispatchChallenge({ type: 'reset' });
         window.location.href = result.url;
         return;
       }
 
       if (result.sessionId && stripePromise) {
-        if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
         const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
-        const redirectResult = await stripe?.redirectToCheckout?.({ sessionId: result.sessionId });
-        if (redirectResult && !redirectResult.error) return;
+        if (stripe?.redirectToCheckout) {
+          if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
+          const redirectResult = await stripe.redirectToCheckout({ sessionId: result.sessionId });
+          if (redirectResult && !redirectResult.error) return;
+        }
       }
+      dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
       reportFailure('stripe', result.checkoutAttemptId);
     } catch {
+      dispatchChallenge({
+        type: 'checkout_not_redirected',
+        submittedCaptchaToken,
+      });
       reportFailure('stripe', null);
     } finally {
       submissionGuardRef.current.finish();
@@ -205,7 +213,7 @@ export function useHostedWalletCheckout({
   }, [
     accessToken,
     amountCents,
-    captchaToken,
+    challengeState.captchaToken,
     currency,
     locale,
     onRateLimited,
@@ -218,9 +226,10 @@ export function useHostedWalletCheckout({
   ]);
 
   return {
-    captchaError,
-    captchaRequired,
-    captchaToken,
+    captchaError: challengeState.captchaError,
+    captchaRequired: challengeState.captchaRequired,
+    captchaResetGeneration: challengeState.resetGeneration,
+    captchaToken: challengeState.captchaToken,
     failureReason,
     handleCaptchaError,
     handleCaptchaToken,

@@ -25,10 +25,12 @@ export function TurnstileChallenge({
   siteKey,
   onToken,
   onError,
+  resetGeneration,
 }: {
   siteKey: string;
   onToken: (token: string | null) => void;
   onError: () => void;
+  resetGeneration: number;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
@@ -74,7 +76,7 @@ export function TurnstileChallenge({
       cancelled = true;
       if (widgetId && window.turnstile?.remove) window.turnstile.remove(widgetId);
     };
-  }, [onError, onToken, siteKey]);
+  }, [onError, onToken, resetGeneration, siteKey]);
 
   return <div ref={containerRef} className="min-h-[65px]" />;
 }

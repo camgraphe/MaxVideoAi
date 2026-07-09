@@ -162,6 +162,7 @@ export function WorkspaceAppReadyView({
     authModalOpen,
     checkoutCaptchaError,
     checkoutCaptchaRequired,
+    checkoutCaptchaResetGeneration,
     checkoutCaptchaToken,
     closeTopUpModal,
     currency,
@@ -323,6 +324,7 @@ export function WorkspaceAppReadyView({
         topUpError={topUpError}
         checkoutCaptchaError={checkoutCaptchaError}
         checkoutCaptchaRequired={checkoutCaptchaRequired}
+        checkoutCaptchaResetGeneration={checkoutCaptchaResetGeneration}
         checkoutCaptchaToken={checkoutCaptchaToken}
         onCheckoutCaptchaError={handleCheckoutCaptchaError}
         onCheckoutCaptchaToken={handleCheckoutCaptchaToken}

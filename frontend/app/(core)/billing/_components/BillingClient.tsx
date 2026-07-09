@@ -220,6 +220,7 @@ export function BillingClient() {
       setAuthModalOpen(true);
       return;
     }
+    setToast(null);
     void hostedCheckout.startCheckout();
   }
 
@@ -287,6 +288,7 @@ export function BillingClient() {
                 applyCustomAmount={applyCustomAmount}
                 checkoutCaptchaError={hostedCheckout.captchaError ? copy.wallet.captchaError : null}
                 checkoutCaptchaRequired={hostedCheckout.captchaRequired}
+                checkoutCaptchaResetGeneration={hostedCheckout.captchaResetGeneration}
                 checkoutCaptchaToken={hostedCheckout.captchaToken}
                 copy={copy}
                 currencyLoading={currencyLoading}

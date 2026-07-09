@@ -49,6 +49,10 @@ export function clearPendingWalletCheckoutReturn(options: Pick<StorageOptions, '
   }
 }
 
+export function beginHostedWalletCheckoutAttempt(options: Pick<StorageOptions, 'storage'> = {}): void {
+  clearPendingWalletCheckoutReturn(options);
+}
+
 export function consumePendingWalletCheckoutReturn(
   options: StorageOptions = {}
 ): WalletCheckoutReturnTarget | null {

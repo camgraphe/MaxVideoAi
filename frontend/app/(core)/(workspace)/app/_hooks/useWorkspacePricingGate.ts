@@ -5,8 +5,8 @@ import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
 import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
 import type { EngineCaps, Mode, PreflightRequest, PreflightResponse } from '@/types/engines';
-import { formatRateLimitMessage } from '../../../billing/_lib/rate-limit-message';
 import type { WorkspaceCopy } from '../_lib/workspace-copy';
 import type { FormState } from '../_lib/workspace-form-state';
 import { DEBOUNCE_MS } from '../_lib/workspace-client-helpers';
@@ -50,6 +50,7 @@ type UseWorkspacePricingGateResult = {
   topUpError: string | null;
   checkoutCaptchaError: boolean;
   checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
   authModalOpen: boolean;
   showComposerError: (message: string) => void;
@@ -128,6 +129,7 @@ export function useWorkspacePricingGate({
   const {
     captchaError: checkoutCaptchaError,
     captchaRequired: checkoutCaptchaRequired,
+    captchaResetGeneration: checkoutCaptchaResetGeneration,
     captchaToken: checkoutCaptchaToken,
     handleCaptchaError: handleCheckoutCaptchaError,
     handleCaptchaToken: handleCheckoutCaptchaToken,
@@ -177,6 +179,7 @@ export function useWorkspacePricingGate({
 
   const handleConfirmTopUp = useCallback(() => {
     if (!topUpModal) return;
+    setTopUpError(null);
     void startCheckout();
   }, [startCheckout, topUpModal]);
 
@@ -290,6 +293,7 @@ export function useWorkspacePricingGate({
       topUpError,
       checkoutCaptchaError,
       checkoutCaptchaRequired,
+      checkoutCaptchaResetGeneration,
       checkoutCaptchaToken,
       authModalOpen,
       showComposerError,
@@ -309,6 +313,7 @@ export function useWorkspacePricingGate({
       currency,
       checkoutCaptchaError,
       checkoutCaptchaRequired,
+      checkoutCaptchaResetGeneration,
       checkoutCaptchaToken,
       handleCustomAmountChange,
       handleCheckoutCaptchaError,

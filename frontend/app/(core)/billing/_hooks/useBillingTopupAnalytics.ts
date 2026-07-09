@@ -97,7 +97,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
       void dispatchGaEvent('topup_started', payload);
       void dispatchGaEvent('topup_checkout_opened', payload);
     },
-    [buildTopupAnalyticsPayload, dispatchGaEvent]
+    [buildTopupAnalyticsPayload]
   );
 
   const triggerTopupFailed = useCallback(
@@ -108,7 +108,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
       }
       void dispatchGaEvent('topup_failed', payload);
     },
-    [buildTopupAnalyticsPayload, dispatchGaEvent]
+    [buildTopupAnalyticsPayload]
   );
 
   const triggerTopupCancelled = useCallback(
@@ -121,7 +121,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
         }
       });
     },
-    [buildTopupAnalyticsPayload, clearPendingTopupCancelled, dispatchGaEvent, persistPendingTopupCancelled]
+    [buildTopupAnalyticsPayload, clearPendingTopupCancelled, persistPendingTopupCancelled]
   );
 
   const replayPendingTopupCancelled = useCallback(() => {
@@ -142,7 +142,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
         clearPendingTopupCancelled();
       }
     });
-  }, [clearPendingTopupCancelled, dispatchGaEvent]);
+  }, [clearPendingTopupCancelled]);
 
   return {
     replayPendingTopupCancelled,

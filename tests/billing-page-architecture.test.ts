@@ -71,6 +71,12 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /useBillingTopupAnalytics\(topupQuotes\)/);
   assert.match(clientSource, /useBillingTopupSelection\(\{/);
   assert.match(clientSource, /useHostedWalletCheckout\(\{/);
+  assert.match(
+    clientSource,
+    /function handleTopUp\(\) \{[\s\S]*?setToast\(null\);[\s\S]*?hostedCheckout\.startCheckout\(\);/,
+    'a new Billing hosted attempt should clear its visible hosted-checkout toast'
+  );
+  assert.match(clientSource, /checkoutCaptchaResetGeneration=\{hostedCheckout\.captchaResetGeneration\}/);
   assert.match(clientSource, /<BillingCheckoutReturnNotice/);
 
   assert.doesNotMatch(clientSource, /function WalletExpressCheckout/);

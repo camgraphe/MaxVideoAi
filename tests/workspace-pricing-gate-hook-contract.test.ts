@@ -64,6 +64,12 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.doesNotMatch(hookSource, /authFetch\('\/api\/wallet',\s*\{/);
   assert.doesNotMatch(hookSource, /window\.location\.href/);
   assert.match(hookSource, /const handleConfirmTopUp = useCallback/);
+  assert.match(
+    hookSource,
+    /const handleConfirmTopUp = useCallback\(\(\) => \{[\s\S]*?setTopUpError\(null\);[\s\S]*?startCheckout\(\);/,
+    'a new Workspace hosted attempt should clear its route-owned visible error'
+  );
+  assert.match(hookSource, /captchaResetGeneration/);
   assert.match(hookSource, /const showComposerError = useCallback/);
   assert.doesNotMatch(
     hookSource,
@@ -73,6 +79,7 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
 
   assert.match(topUpModalSource, /export function WorkspaceTopUpModal/);
   assert.match(topUpModalSource, /TurnstileChallenge/);
+  assert.match(topUpModalSource, /resetGeneration=\{checkoutCaptchaResetGeneration\}/);
   assert.doesNotMatch(topUpModalSource, />Wallet balance too low</);
   assert.match(topUpModalSource, /custom-topup/);
 

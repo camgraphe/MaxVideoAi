@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  createHostedCheckoutChallengeState,
   createHostedCheckoutSubmissionGuard,
+  hostedCheckoutChallengeReducer,
   requestHostedWalletCheckout,
   type HostedWalletCheckoutInput,
 } from '../frontend/lib/wallet/hosted-checkout';
@@ -109,4 +111,47 @@ test('hosted wallet submission guard rejects a duplicate until the active attemp
   assert.equal(guard.tryStart(), false);
   guard.finish();
   assert.equal(guard.tryStart(), true);
+});
+
+test('403 then solved captcha then 429 consumes the token and remounts for a fresh solve', () => {
+  let state = hostedCheckoutChallengeReducer(createHostedCheckoutChallengeState(), { type: 'captcha_required' });
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_token_changed', token: 'captcha-used-by-429' });
+  const solvedGeneration = state.resetGeneration;
+  state = hostedCheckoutChallengeReducer(state, {
+    type: 'checkout_not_redirected',
+    submittedCaptchaToken: 'captcha-used-by-429',
+  });
+
+  assert.equal(state.captchaRequired, true);
+  assert.equal(state.captchaToken, null);
+  assert.equal(state.captchaError, false);
+  assert.equal(state.resetGeneration, solvedGeneration + 1);
+
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_token_changed', token: 'captcha-fresh-after-429' });
+  assert.equal(state.captchaToken, 'captcha-fresh-after-429');
+});
+
+test('403 then solved captcha then failure requires a fresh token for the retry', () => {
+  let state = hostedCheckoutChallengeReducer(createHostedCheckoutChallengeState(), { type: 'captcha_required' });
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_token_changed', token: 'captcha-used-by-failure' });
+  state = hostedCheckoutChallengeReducer(state, {
+    type: 'checkout_not_redirected',
+    submittedCaptchaToken: 'captcha-used-by-failure',
+  });
+  assert.equal(state.captchaToken, null);
+  assert.equal(state.captchaRequired, true);
+
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_token_changed', token: 'captcha-fresh-after-failure' });
+  assert.equal(state.captchaToken, 'captcha-fresh-after-failure');
+});
+
+test('a repeated captcha-required response clears a solved token and remounts the challenge', () => {
+  let state = hostedCheckoutChallengeReducer(createHostedCheckoutChallengeState(), { type: 'captcha_required' });
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_token_changed', token: 'rejected-captcha' });
+  const solvedGeneration = state.resetGeneration;
+  state = hostedCheckoutChallengeReducer(state, { type: 'captcha_required' });
+
+  assert.equal(state.captchaRequired, true);
+  assert.equal(state.captchaToken, null);
+  assert.equal(state.resetGeneration, solvedGeneration + 1);
 });
