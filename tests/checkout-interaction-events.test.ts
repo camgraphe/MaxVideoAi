@@ -63,9 +63,10 @@ assert.match(stripeWebhookSource, /handleChargeFailed/);
 assert.match(stripeWebhookSource, /handlePaymentIntentFailed/);
 assert.match(stripeWebhookSource, /expireCheckoutSessionForFailedCards/);
 
-const billingClientSource = readFileSync('frontend/app/(core)/billing/_components/BillingClient.tsx', 'utf8');
-assert.match(billingClientSource, /hosted_checkout_requested/);
-assert.match(billingClientSource, /hosted_checkout_redirecting/);
+const hostedCheckoutHookSource = readFileSync('frontend/hooks/useHostedWalletCheckout.ts', 'utf8');
+assert.match(hostedCheckoutHookSource, /hosted_checkout_requested/);
+assert.match(hostedCheckoutHookSource, /hosted_checkout_redirecting/);
+assert.match(hostedCheckoutHookSource, /hosted_checkout_failed/);
 
 const expressCheckoutSource = readFileSync('frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx', 'utf8');
 assert.match(expressCheckoutSource, /express_checkout_ready/);
