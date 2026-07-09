@@ -24,6 +24,17 @@ test('modal tab cycle enters from outside in the requested direction', () => {
   );
 });
 
+test('modal tab cycle stays contained when the active control becomes disabled', () => {
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: -1, focusableCount: 3, shiftKey: false, activeInside: true }),
+    0
+  );
+  assert.equal(
+    resolveModalTabTarget({ activeIndex: -1, focusableCount: 3, shiftKey: true, activeInside: true }),
+    2
+  );
+});
+
 test('modal tab cycle stays native in the middle and targets the dialog when empty', () => {
   assert.equal(
     resolveModalTabTarget({ activeIndex: 1, focusableCount: 3, shiftKey: false, activeInside: true }),

@@ -35,7 +35,7 @@ export function resolveModalTabTarget({
   activeInside,
 }: ResolveModalTabTargetInput): number | null {
   if (focusableCount <= 0) return -1;
-  if (!activeInside) return shiftKey ? focusableCount - 1 : 0;
+  if (!activeInside || activeIndex === -1) return shiftKey ? focusableCount - 1 : 0;
   if (shiftKey && activeIndex === 0) return focusableCount - 1;
   if (!shiftKey && activeIndex === focusableCount - 1) return 0;
   return null;

@@ -8,9 +8,11 @@ export type InitialTopupSelection = {
 const DEFAULT_TOPUP_CENTS = USD_TOPUP_TIERS[0]?.amountCents ?? 1000;
 
 function formatCustomAmountInput(amountCents: number): string {
-  return Number.isInteger(amountCents / 100)
-    ? String(amountCents / 100)
-    : (amountCents / 100).toFixed(2);
+  const dollarAmount = Math.floor(amountCents / 100);
+  const centRemainder = amountCents % 100;
+  return centRemainder === 0
+    ? String(dollarAmount)
+    : `${dollarAmount}.${String(centRemainder).padStart(2, '0')}`;
 }
 
 export function createInitialTopupSelection(

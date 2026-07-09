@@ -16,6 +16,13 @@ test('custom billing hydration preserves the exact dollar input', () => {
   });
 });
 
+test('large safe-integer billing hydration preserves exact cents in the display input', () => {
+  assert.deepEqual(createInitialTopupSelection(9007199254740990), {
+    selectedTopupCents: 9007199254740990,
+    customAmountInput: '90071992547409.90',
+  });
+});
+
 test('invalid billing hydration falls back to the first tier', () => {
   for (const value of [undefined, Number.NaN, 999, 10.5]) {
     assert.deepEqual(createInitialTopupSelection(value), {

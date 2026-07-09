@@ -3,6 +3,7 @@ import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
 import { writeLastKnownUserId } from '@/lib/last-known';
 import { supabase } from '@/lib/supabaseClient';
 import {
+  clearPendingGoogleLogin,
   consumePendingGoogleLogin,
   resolveGoogleAuthCompletionEvent,
 } from '../_lib/login-helpers';
@@ -29,6 +30,7 @@ export function useLoginAuthHashSession({
     const refreshToken =
       params.get('refresh_token') ?? params.get('refreshToken') ?? params.get('refresh-token');
     if (!accessToken || !refreshToken) {
+      clearPendingGoogleLogin();
       window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
       return;
     }
@@ -42,32 +44,37 @@ export function useLoginAuthHashSession({
         refresh_token: refreshToken,
       })
       .then(({ data, error }) => {
-        if (cancelled) return;
         if (error) {
+          clearPendingGoogleLogin();
+          if (cancelled) return;
           setError(error.message ?? 'Unable to complete sign-in.');
           setStatus(null);
           return;
         }
-        if (data.session) {
-          const userId = data.session.user?.id ?? null;
-          if (userId) {
-            writeLastKnownUserId(userId);
-          }
-          const pendingMode = consumePendingGoogleLogin();
-          if (pendingMode) {
-            const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
-            persistPendingAnalyticsEvent(eventName, {
-              route_family: 'auth',
-              auth_surface: 'login',
-              method: 'google',
-              ...(eventName === 'sign_up_completed'
-                ? { email_confirmation_required: false }
-                : {}),
-            });
-          }
+        if (!data.session) {
+          clearPendingGoogleLogin();
+          return;
+        }
+        if (cancelled) return;
+        const userId = data.session.user?.id ?? null;
+        if (userId) {
+          writeLastKnownUserId(userId);
+        }
+        const pendingMode = consumePendingGoogleLogin();
+        if (pendingMode) {
+          const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
+          persistPendingAnalyticsEvent(eventName, {
+            route_family: 'auth',
+            auth_surface: 'login',
+            method: 'google',
+            ...(eventName === 'sign_up_completed'
+              ? { email_confirmation_required: false }
+              : {}),
+          });
         }
       })
       .catch((err) => {
+        clearPendingGoogleLogin();
         if (cancelled) return;
         setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
         setStatus(null);
