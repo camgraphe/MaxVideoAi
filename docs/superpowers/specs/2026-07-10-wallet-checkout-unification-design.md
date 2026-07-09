@@ -69,14 +69,14 @@ Its input is explicit:
 ```ts
 type HostedWalletCheckoutInput = {
   amountCents: number;
-  currency: 'USD';
+  currency: string;
   locale: string;
-  accessToken: string;
+  accessToken: string | null;
   captchaToken?: string;
 };
 ```
 
-The request continues to target `POST /api/wallet` and sends the existing authenticated headers and JSON fields. Amount validation remains authoritative on the server. The client validates only enough to prevent malformed local requests.
+The request continues to target `POST /api/wallet` and sends the existing authenticated headers and JSON fields. Currency is a normalized three-letter settlement-currency code: Billing preserves its detected or selected currency, while Workspace explicitly supplies `USD`. A missing access token omits the bearer header and retains same-origin credentials so the endpoint can use its existing cookie authentication fallback. Amount and enabled-currency validation remain authoritative on the server. The client validates only enough to prevent malformed local requests.
 
 The client returns a discriminated result instead of throwing for expected endpoint outcomes:
 
@@ -86,14 +86,14 @@ type HostedWalletCheckoutResult =
       kind: 'ready';
       url: string | null;
       sessionId: string | null;
-      checkoutAttemptId: string | null;
+      checkoutAttemptId: number | null;
     }
   | { kind: 'captcha_required' }
   | { kind: 'rate_limited'; retryAfterSeconds: number | null }
   | {
       kind: 'failed';
       reason: 'authentication' | 'validation' | 'network' | 'stripe' | 'unknown';
-      checkoutAttemptId: string | null;
+      checkoutAttemptId: number | null;
     };
 ```
 
@@ -112,7 +112,7 @@ Add `frontend/hooks/useHostedWalletCheckout.ts`. It owns:
 - the existing Stripe.js redirect fallback for a returned session ID;
 - reset behavior when the selected amount or currency changes.
 
-The hook receives the current amount, USD currency, locale, access token, and callbacks for interaction analytics, route-specific top-up analytics, and normalized failures. Route components map those failures to their localized copy. The hook does not import route-local translation files or quote models.
+The hook receives the current amount, normalized settlement currency, locale, optional access token, and callbacks for interaction analytics, route-specific top-up analytics, and normalized failures. Route components map those failures to their localized copy. The hook does not import route-local translation files or quote models.
 
 Submitting while `isSubmitting` is true is a no-op. A `captcha_required` result exposes the challenge without closing the current surface. Solving the challenge stores the token; the user then confirms the same checkout action again. Changing amount or closing the surface clears transient captcha and error state.
 
