@@ -145,3 +145,38 @@
 ### Concerns
 
 - The repository-wide TypeScript check remains blocked by the three unrelated Studio errors listed above; the nullable manifest contract introduced no additional diagnostics in server or Remotion consumers.
+
+## Fix Pass 4: Public Positioning Boundary
+
+### Commit
+
+`bf758637` (`fix: guard public timeline positioning`)
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-positioning.ts`
+- `tests/maxvideoai-editor-timeline-interaction.test.ts`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Finding Fixed
+
+1. Added `commitTimelinePositionWithoutOverlap` at the positioning helper boundary. Both `positionWorkspaceTimelineItem` candidate paths and the multi-item candidate path in `positionWorkspaceTimelineItems` now return the original item array whenever normalization or direct positioning would leave any same-track overlap. Delegating branches inherit the same gate, including `moveWorkspaceTimelineSelectionWithMode` when its anchor is absent from `itemIds`.
+2. Audited the exports in `timeline-positioning.ts` and re-exports in `workspace-timeline-editing.ts`. The two re-exported candidate-producing positioning APIs are now guarded. `retargetTimelineSelectionItems` remains an internal selected-item transformation used before full-timeline insertion validation and does not itself commit a timeline candidate.
+3. Updated the focused architecture contract's successful linked-positioning example from an occupied `4s` target to a free `16s` target. The contract continues to prove linked video/audio movement while no longer requiring an overlapping final video track.
+
+### TDD Evidence
+
+- RED: direct `positionWorkspaceTimelineItem` positioning normalized `linked-audio` from `8s` to `4s` over `audio-blocker` and returned the overlapping candidate.
+- RED: `moveWorkspaceTimelineSelectionWithMode` reached the same unguarded helper through the anchor-absent branch and committed the same overlap.
+- GREEN: both regressions now return the original reference from an initially valid timeline and assert that the returned timeline remains overlap-free.
+
+### Verification
+
+- PASS: `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-timeline-interaction.test.ts tests/maxvideoai-editor-timeline-selection.test.ts tests/maxvideoai-editor-timeline-export.test.ts tests/maxvideoai-editor-project-media-timeline.test.ts tests/maxvideoai-editor-sequence-api-persistence.test.ts tests/timeline-export-server-contract.test.ts` (68 passed, 0 failed).
+- PASS: focused architecture contract `MaxVideoAI editor timeline editing supports drag ordering and cut splits` (1 passed, 0 failed).
+- PASS: `git diff --check`.
+- PRE-EXISTING: `frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json` still reports only the unrelated errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
+
+### Concerns
+
+- The repository-wide TypeScript check remains blocked by the three unrelated Studio errors listed above; this positioning fix introduced no additional TypeScript diagnostics.
