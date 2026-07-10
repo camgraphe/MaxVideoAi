@@ -108,8 +108,11 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
           )}
         </div>
         {pricingEstimate ? (
-          <p className={chatStyles.chatPricing} title={pricingEstimate.error}>
-            {pricingEstimate.label}
+          <p className={chatStyles.chatPricing}>
+            <span>{pricingEstimate.label}</span>
+            {pricingEstimate.error ? (
+              <span className={chatStyles.chatPricingDetail}>{pricingEstimate.error}</span>
+            ) : null}
           </p>
         ) : null}
         <div className={chatStyles.chatUtilityBar}>

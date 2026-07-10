@@ -9,6 +9,7 @@ import type {
   WorkspacePricingEstimate,
   WorkspaceShotSettings,
   WorkspaceShotValidation,
+  WorkspaceOutputCount,
   WorkspaceWorkflowType,
 } from './workspace-types';
 import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
@@ -54,11 +55,18 @@ function estimateAudioPricing(settings: WorkspaceShotSettings, prompt: string): 
   return readyWorkspacePricingEstimate(pricing.totalCents, pricing.currency, pricing);
 }
 
-function estimateAnglePricing(settings: WorkspaceShotSettings): WorkspacePricingEstimate {
+function resolvedOutputCount(outputCount: WorkspaceOutputCount): number {
+  return Math.max(1, typeof outputCount === 'number' ? outputCount : outputCount.max);
+}
+
+export function buildWorkspaceAnglePricingEstimate(
+  settings: WorkspaceShotSettings,
+  outputCount: WorkspaceOutputCount
+): WorkspacePricingEstimate {
   const isQwen = settings.modelId === 'angle-qwen-multiple-angles';
-  const multi = settings.toolSettings?.angle?.generateBestAngles === true;
-  if (isQwen) return readyWorkspacePricingEstimate(multi ? 40 : 7);
-  return readyWorkspacePricingEstimate(multi ? 24 : 4);
+  const count = resolvedOutputCount(outputCount);
+  if (count === 1) return readyWorkspacePricingEstimate(isQwen ? 7 : 4);
+  return readyWorkspacePricingEstimate((isQwen ? 10 : 6) * count);
 }
 
 export function buildWorkspaceToolPricingEstimate({
@@ -88,7 +96,7 @@ export function buildWorkspaceToolPricingEstimate({
     return unavailableWorkspacePricingEstimate('Studio chat pricing is unavailable until chat media context generation is implemented.');
   }
   if (settings.toolKind === 'character-builder') return estimateCharacterBuilderPricing(settings);
-  if (settings.toolKind === 'angle') return estimateAnglePricing(settings);
+  if (settings.toolKind === 'angle') return buildWorkspaceAnglePricingEstimate(settings, policy.outputCount);
   if (settings.family === 'upscale') {
     return unavailableWorkspacePricingEstimate(
       'Upscale pricing requires source metadata and server pricing context.'
