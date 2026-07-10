@@ -69,11 +69,11 @@ test('video and image composers opt into one responsive workspace density contra
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
-test('workspace mobile settings keep legible intrinsic controls inside the local scroller', () => {
-  assert.match(coreSettingsSource, /compact \? 'min-w-\[96px\] flex-none sm:min-w-0'/);
-  assert.match(imageSettingsSource, /compact \? 'min-w-\[96px\] flex-none sm:min-w-0'/);
-  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-\[96px\] gap-1\.5 px-2 text-\[11px\]/);
-  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-\[96px\] gap-1\.5 px-2 text-\[11px\]/);
+test('workspace mobile settings keep intrinsic controls inside the local scroller without reserved chevron width', () => {
+  assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-none'/);
+  assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-none'/);
+  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-0 gap-1\.5 px-2 text-\[11px\]/);
+  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-0 gap-1\.5 px-2 text-\[11px\]/);
   assert.match(coreSettingsSource, /hideChevron=\{compact\}/);
   assert.match(imageSettingsSource, /hideChevron=\{compact\}/);
   assert.match(coreSettingsSource, /formatCompactResolutionLabel/);

@@ -68,6 +68,12 @@ Required fidelity surfaces:
   - Fix: added a workspace-only 12px left inset while preserving the zero right inset and Generate position.
   - Post-fix measurement: footer-to-first-control gap is 12px; footer-to-Generate right gap remains 0px.
 
+### Iteration 5 — mobile intrinsic control widths
+
+- [P2] Compact controls still reserved a 96px mobile minimum after their chevrons were removed.
+  - Fix: removed the mobile-only minimum width from video and image settings while retaining non-shrinking intrinsic controls inside the local scroller.
+  - Post-fix measurement: computed minimum width is 0px; 8s is 62px, 720p is 78px, and 16:9 is 73px, matching desktop intrinsic sizing.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.

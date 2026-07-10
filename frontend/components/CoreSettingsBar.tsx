@@ -218,7 +218,7 @@ function InlineSelectControl({
 }) {
   if (!options.length) return null;
   return (
-    <div className={clsx(compact ? 'min-w-[96px] flex-none sm:min-w-0' : 'min-w-0', className)}>
+    <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', className)}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
@@ -230,7 +230,7 @@ function InlineSelectControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-[96px] gap-1.5 px-2 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
+          compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
         portal={compact}
