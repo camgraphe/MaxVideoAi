@@ -63,7 +63,11 @@ export function validateShotConnections(params: {
     connectedInputs: params.connectedInputs,
     fallbackWorkflowType: params.settings.workflowType,
   });
-  const supportedInputs = new Set(policy.inputConnectors.map((connector) => connector.kind));
+  const supportedInputs = new Set(
+    policy.inputConnectors
+      .filter((connector) => !connector.disabledReason)
+      .map((connector) => connector.kind)
+  );
   const missingInputs = policy.missingInputs;
   const incompatibleInputs = Array.from(connected).filter((kind) => !inputSupportedBy(kind, supportedInputs));
   const compatibleInputs = Array.from(connected).filter((kind) => inputSupportedBy(kind, supportedInputs));
@@ -85,6 +89,7 @@ export function validateShotConnections(params: {
     canGenerate:
       !familyMismatch &&
       !outputKindMismatch &&
+      policy.canGenerate &&
       missingInputs.length === 0 &&
       incompatibleInputs.length === 0 &&
       capability.workflows.includes(resolvedWorkflowType),

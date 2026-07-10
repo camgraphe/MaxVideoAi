@@ -14,6 +14,7 @@ import { getWorkspaceV1BlockContract } from './workspace-v1-block-matrix';
 import {
   connectedSatisfiesRequirement,
   getWorkspaceShotInputConnectors,
+  inputSupportedBy,
   inputConnectorsFromKinds,
   normalizeConnectedInputKind,
 } from './model-input-connectors';
@@ -243,14 +244,16 @@ function normalizedConnector({
   mode,
   required,
   settings,
+  unsupportedReason,
 }: {
   connected: Set<WorkspaceEdgeKind>;
   connector: WorkspaceInputConnector;
   mode: WorkspaceBlockMode;
   required: boolean;
   settings: WorkspaceShotSettings;
+  unsupportedReason?: string;
 }): WorkspaceInputConnector {
-  const disabledReason = disabledReasonForControl(connector.kind, settings, connected);
+  const disabledReason = disabledReasonForControl(connector.kind, settings, connected) ?? unsupportedReason;
   const requiredInModes = new Set(connector.requiredInModes ?? []);
   if (required) requiredInModes.add(mode);
   return {
@@ -268,6 +271,17 @@ function normalizedConnector({
   };
 }
 
+function unsupportedInputReason(
+  capability: WorkspaceModelCapability | null,
+  kind: WorkspaceEdgeKind
+): string | undefined {
+  if (!capability) return undefined;
+  const supportedInputs = new Set([...capability.required_inputs, ...capability.optional_inputs]);
+  return inputSupportedBy(kind, supportedInputs)
+    ? undefined
+    : `Selected model does not support ${edgeLabel(kind)} input.`;
+}
+
 function mergeConnectors(
   capability: WorkspaceModelCapability | null,
   requiredInputs: WorkspaceEdgeKind[],
@@ -277,6 +291,23 @@ function mergeConnectors(
   settings: WorkspaceShotSettings
 ): WorkspaceInputConnector[] {
   const byKind = new Map<WorkspaceEdgeKind, WorkspaceInputConnector>();
+  const contract = v1BlockContractFor(settings);
+  if (contract) {
+    const contractInputs = Array.from(new Set([...requiredInputs, ...optionalInputs]));
+    for (const kind of contractInputs) {
+      const current = getWorkspaceShotInputConnectors(capability).find((connector) => connector.kind === kind);
+      byKind.set(kind, normalizedConnector({
+        connected,
+        connector: current ?? connectorForKind(kind, requiredInputs.includes(kind), mode),
+        mode,
+        required: requiredInputs.includes(kind),
+        settings,
+        unsupportedReason: unsupportedInputReason(capability, kind),
+      }));
+    }
+    return Array.from(byKind.values());
+  }
+
   for (const connector of getWorkspaceShotInputConnectors(capability)) {
     byKind.set(connector.kind, normalizedConnector({
       connected,
@@ -381,7 +412,11 @@ function pricingRelevantFieldsForPolicy(
   outputMediaKind: WorkspaceOutputMediaKind
 ): WorkspacePolicyControlField[] {
   const contract = v1BlockContractFor(settings);
-  if (contract) return contract.pricingRelevantFields;
+  if (contract) {
+    return capability?.pricing_relevant_fields?.length
+      ? contract.pricingRelevantFields.filter((field) => capability.pricing_relevant_fields?.includes(field))
+      : contract.pricingRelevantFields;
+  }
   if (settings.family === 'chat') return [];
   if (capability?.pricing_relevant_fields) return capability.pricing_relevant_fields;
   const fields = new Set<WorkspacePolicyControlField>(['model']);
@@ -414,7 +449,13 @@ export function resolveWorkspaceBlockPolicy({
   const inputConnectors = mergeConnectors(capability, requiredInputs, optionalInputs, mode, connected, settings);
   const missingInputs = requiredInputs.filter((kind) => !connectedSatisfiesRequirement(connected, kind));
   const outputMediaKind = outputMediaKindForPolicy(settings, capability);
-  const disabledReason = disabledReasonForMissingInputs(missingInputs);
+  const selectedModelCompatible = !capability || getWorkspaceBlockCompatibleCapabilities({
+    settings,
+    capabilities: [capability],
+  }).length > 0;
+  const disabledReason = selectedModelCompatible
+    ? disabledReasonForMissingInputs(missingInputs)
+    : 'Selected model is not compatible with this block.';
   const controls = inputConnectors.map<WorkspaceResolvedControl>((connector) => {
     const reason = connector.disabledReason;
     return {
@@ -442,6 +483,6 @@ export function resolveWorkspaceBlockPolicy({
     controlFields: controlFieldsForPolicy(settings, capability, outputMediaKind),
     pricingRelevantFields: pricingRelevantFieldsForPolicy(settings, capability, outputMediaKind),
     disabledReason,
-    canGenerate: missingInputs.length === 0,
+    canGenerate: selectedModelCompatible && missingInputs.length === 0,
   };
 }

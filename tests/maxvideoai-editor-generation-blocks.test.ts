@@ -593,6 +593,66 @@ test('Studio block capability policy separates generate and modify image/video i
   );
 });
 
+test('modify video validation rejects stale non-allowlisted video-to-video models', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const modifyVideo = getWorkspaceBlockPreset('modify-video')?.defaultShot;
+  const staleCapability = capabilities.find((capability) => capability.id === 'happy-horse-1-0');
+  assert.ok(modifyVideo);
+  assert.ok(staleCapability?.workflows.includes('video_to_video'));
+
+  const validation = validateShotConnections({
+    settings: { ...modifyVideo, modelId: staleCapability.id },
+    connectedInputs: ['prompt', 'video_reference'],
+    capabilities,
+  });
+
+  assert.equal(validation.canGenerate, false);
+});
+
+test('Studio V1 input connectors disable inputs unsupported by the selected real engine', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const capability = capabilities.find((candidate) => candidate.id === 'luma-ray-3-2');
+  assert.ok(generateVideo);
+  assert.ok(capability);
+  assert.equal(capability.optional_inputs.includes('audio'), false);
+
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    connectedInputs: ['prompt', 'audio'],
+  });
+  const validation = validateShotConnections({
+    settings: { ...generateVideo, modelId: capability.id },
+    connectedInputs: ['prompt', 'audio'],
+    capabilities,
+  });
+
+  assert.match(policy.inputConnectors.find((connector) => connector.kind === 'audio')?.disabledReason ?? '', /does not support/i);
+  assert.deepEqual(validation.incompatibleInputs, ['audio']);
+  assert.equal(validation.canGenerate, false);
+});
+
+test('Studio V1 pricing fields are limited by the selected real engine capability', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const capability = capabilities.find((candidate) => candidate.id === 'luma-ray-3-2');
+  assert.ok(generateVideo);
+  assert.ok(capability);
+
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    connectedInputs: ['prompt'],
+  });
+  const contract = getWorkspaceV1BlockContract('generate-video');
+
+  assert.deepEqual(
+    policy.pricingRelevantFields,
+    contract.pricingRelevantFields.filter((field) => capability.pricing_relevant_fields?.includes(field))
+  );
+});
+
 test('Studio block capability policy defines a normalized per-preset capability matrix', () => {
   const matrix: PolicyMatrixExpectation[] = [
     {
