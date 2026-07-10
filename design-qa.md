@@ -74,6 +74,12 @@ Required fidelity surfaces:
   - Fix: removed the mobile-only minimum width from video and image settings while retaining non-shrinking intrinsic controls inside the local scroller.
   - Post-fix measurement: computed minimum width is 0px; 8s is 62px, 720p is 78px, and 16:9 is 73px, matching desktop intrinsic sizing.
 
+### Iteration 6 — dropdown readability
+
+- [P2] Portaled setting menus calculated a wider content width but still applied the compact trigger width, making duration choices difficult to scan.
+  - Fix: applied the calculated menu width, added a viewport-bounded 128px portal minimum, and standardized thin low-contrast scrollbars for SelectMenu lists.
+  - Post-fix measurement: the duration trigger remains 62px while its menu is 128px; the list reports `scrollbar-width: thin` and a 45% slate scrollbar color.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.

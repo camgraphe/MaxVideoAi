@@ -47,3 +47,12 @@ test('SelectMenu can retain disabled option explanations', () => {
 test('SelectMenu vertically centers rich trigger and option labels', () => {
   assert.match(selectMenuSource, /<span className="flex min-w-0 flex-1 items-center">/);
 });
+
+test('portaled SelectMenu can outgrow a compact trigger and uses subtle scrollbars', () => {
+  assert.match(selectMenuSource, /width: menuWidth/);
+  assert.doesNotMatch(selectMenuSource, /width: triggerWidth/);
+  assert.match(selectMenuSource, /fixed min-w-\[8rem\] max-w-\[calc\(100vw-1\.5rem\)\]/);
+  assert.match(selectMenuSource, /\[scrollbar-width:thin\]/);
+  assert.match(selectMenuSource, /\[&::-webkit-scrollbar\]:w-1\.5/);
+  assert.match(selectMenuSource, /\[&::-webkit-scrollbar-thumb\]:rounded-full/);
+});

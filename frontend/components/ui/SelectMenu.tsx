@@ -157,8 +157,8 @@ export function SelectMenu({
       const left = Math.min(Math.max(rect.left, viewportPadding), maxLeft);
       const nextStyle: CSSProperties =
         resolvedPlacement === 'top'
-          ? { bottom: window.innerHeight - rect.top + 8, left, top: undefined, width: triggerWidth }
-          : { bottom: undefined, left, top: rect.bottom + 8, width: triggerWidth };
+          ? { bottom: window.innerHeight - rect.top + 8, left, top: undefined, width: menuWidth }
+          : { bottom: undefined, left, top: rect.bottom + 8, width: menuWidth };
 
       setPortalStyle((current) =>
         current?.bottom === nextStyle.bottom &&
@@ -323,7 +323,7 @@ export function SelectMenu({
             ref={menuRef}
             className={clsx(
               'z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
-              portal ? 'fixed' : 'absolute left-0',
+              portal ? 'fixed min-w-[8rem] max-w-[calc(100vw-1.5rem)]' : 'absolute left-0',
               !portal && (resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'),
               menuClassName
             )}
@@ -345,7 +345,7 @@ export function SelectMenu({
               role="listbox"
               aria-labelledby={triggerId}
               className={clsx(
-                'space-y-1 overflow-y-auto overflow-x-hidden text-[12px]',
+                'space-y-1 overflow-y-auto overflow-x-hidden text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
                 searchable ? 'max-h-56 pr-1' : 'max-h-60'
               )}
             >
