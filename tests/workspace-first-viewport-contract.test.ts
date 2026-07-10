@@ -10,6 +10,14 @@ const imageSurfaceSource = readFileSync(
   'frontend/app/(core)/(workspace)/app/image/_components/ImageWorkspaceComposerSurface.tsx',
   'utf8'
 );
+const videoShellSource = readFileSync(
+  'frontend/app/(core)/(workspace)/app/_components/WorkspaceAppShell.tsx',
+  'utf8'
+);
+const workspaceChromeSource = readFileSync(
+  'frontend/app/(core)/(workspace)/app/_components/WorkspaceChrome.tsx',
+  'utf8'
+);
 const composerSource = readFileSync('frontend/components/Composer.tsx', 'utf8');
 const composerTypesSource = readFileSync('frontend/components/composer/composer-types.ts', 'utf8');
 const videoComposerSource = readFileSync(
@@ -52,4 +60,12 @@ test('video composer limits calm upload locks to the winning guest-auth reason',
     videoComposerSource,
     /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/
   );
+});
+
+test('workspace density never changes route order by authentication state', () => {
+  assert.ok(videoShellSource.indexOf('<WorkspacePreviewDock') < videoShellSource.indexOf('{composerSurface}'));
+  assert.ok(imageSurfaceSource.indexOf('<ImageCompositePreviewDock') < imageSurfaceSource.indexOf('<form'));
+  assert.doesNotMatch(videoShellSource, /authStatus|session|user/);
+  assert.doesNotMatch(imageSurfaceSource, /authStatus/);
+  assert.match(workspaceChromeSource, /p-4 lg:p-7/);
 });
