@@ -24,6 +24,10 @@ import {
   synchronizeGeneratedOutputNodeProjectMediaFolder,
   workspaceAssetFromOutputNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media';
+import {
+  workspaceAssetRecordFromLibraryAsset,
+  workspaceLibraryAssetFromUploadedAsset,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -115,6 +119,30 @@ test('project media metadata helpers reject malformed and non-positive resolutio
       `${dimensions} must not be presented as a measured resolution`
     );
   }
+});
+
+test('project media import defers valid-looking library metadata until hydration', () => {
+  const libraryAsset = workspaceLibraryAssetFromUploadedAsset(
+    {
+      id: 'library-video-1',
+      url: 'https://example.com/library-video.mp4',
+      kind: 'video',
+      mime: 'video/mp4',
+      durationSec: 12,
+      width: 1920,
+      height: 1080,
+    },
+    'video'
+  );
+  assert.ok(libraryAsset);
+  assert.equal(libraryAsset.durationSec, 12);
+  assert.equal(libraryAsset.dimensions, '1920x1080');
+
+  const projectAsset = workspaceAssetRecordFromLibraryAsset(libraryAsset);
+
+  assert.equal(projectAsset.durationSec, undefined);
+  assert.equal(projectAsset.dimensions, undefined);
+  assert.equal(workspaceProjectMediaNeedsMetadata(projectAsset), true);
 });
 
 test('ready generated output nodes become typed project media assets', () => {

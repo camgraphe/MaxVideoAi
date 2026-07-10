@@ -337,7 +337,5 @@ export function workspaceAssetRecordFromLibraryAsset(asset: WorkspaceLibraryAsse
     subtitle: asset.meta,
     url: asset.url ?? asset.thumbUrl,
     thumbUrl: asset.thumbUrl,
-    durationSec: asset.durationSec,
-    dimensions: asset.dimensions,
   };
 }
