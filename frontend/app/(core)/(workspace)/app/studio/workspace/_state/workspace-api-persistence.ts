@@ -471,7 +471,9 @@ function normalizePersistedProjectAsset(value: unknown): WorkspaceAssetRecord | 
     subtitle: typeof record.subtitle === 'string' && record.subtitle.trim() ? record.subtitle : kind,
     folderId: typeof record.folderId === 'string' && record.folderId.trim() ? record.folderId : null,
     url: typeof record.url === 'string' ? record.url : undefined,
+    audioUrl: typeof record.audioUrl === 'string' ? record.audioUrl : undefined,
     thumbUrl: typeof record.thumbUrl === 'string' ? record.thumbUrl : undefined,
+    hasAudio: typeof record.hasAudio === 'boolean' ? record.hasAudio : undefined,
     durationSec: typeof record.durationSec === 'number' && Number.isFinite(record.durationSec) ? record.durationSec : undefined,
     dimensions: typeof record.dimensions === 'string' ? record.dimensions : undefined,
   };

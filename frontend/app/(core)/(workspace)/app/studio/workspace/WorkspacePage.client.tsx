@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { useStudioThemeMode } from '../_hooks/useStudioThemeMode';
 import { localizeStudioTemplateSummary, resolveStudioCopy } from '../_lib/studio-copy';
@@ -25,6 +25,7 @@ import { useWorkspaceTimelineTrackActions } from './_hooks/useWorkspaceTimelineT
 import { useWorkspaceTimelinePlayback } from './_hooks/useWorkspaceTimelinePlayback';
 import { useWorkspaceTimelineSelectionSync } from './_hooks/useWorkspaceTimelineSelectionSync';
 import { getWorkspaceModelCapabilities } from './_lib/workspace-capabilities';
+import { upsertWorkspaceProjectAsset } from './_lib/workspace-generated-media';
 import type { WorkspaceAssetRecord, WorkspaceProjectMediaFolder, WorkspaceProjectSettings, WorkspaceTemplateId, WorkspaceTimelineAudioTrack, WorkspaceTimelineItem, WorkspaceTimelineTrack, WorkspaceTimelineVideoTrack } from './_lib/workspace-types';
 import { WORKSPACE_TEMPLATE_SUMMARIES, createStarterWorkspaceTemplate } from './_lib/workspace-templates';
 import { DEFAULT_WORKSPACE_PROJECT_SETTINGS } from './_lib/workspace-project-settings';
@@ -85,6 +86,9 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     setSelectedNodeId,
   } = canvasGraph;
   const [projectAssets, setProjectAssets] = useState<WorkspaceAssetRecord[]>([]);
+  const handleGeneratedProjectAsset = useCallback((asset: WorkspaceAssetRecord) => {
+    setProjectAssets((current) => upsertWorkspaceProjectAsset(current, asset));
+  }, []);
   const [projectMediaFolders, setProjectMediaFolders] = useState<WorkspaceProjectMediaFolder[]>([]);
   const [sequences, setSequences] = useState<WorkspaceSequenceRecord[]>([defaultSequence]);
   const [activeSequenceId, setActiveSequenceId] = useState(DEFAULT_WORKSPACE_SEQUENCE_ID);
@@ -324,6 +328,7 @@ export default function WorkspacePage({ projectId }: WorkspacePageProps) {
     lockedTimelineTracks,
     mockMode,
     nodes,
+    onGeneratedProjectAsset: handleGeneratedProjectAsset,
     playheadSec: timelinePlayback.playheadSec,
     pricingEstimates,
     redoCanvas: canvasHistoryController.redoCanvas,

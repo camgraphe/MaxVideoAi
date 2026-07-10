@@ -26,7 +26,7 @@ export function workspaceOutputTimelineDuration(output: WorkspaceOutputMetadata)
 }
 
 export function workspaceAssetHasTimelineAudio(asset: WorkspaceAssetRecord): boolean {
-  return asset.kind === 'video';
+  return asset.kind === 'video' && (asset.hasAudio ?? true);
 }
 
 export function buildWorkspaceTimelineItemsForAsset(params: {
@@ -100,7 +100,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
       linkedGroupId: baseId,
       linkedGroupKind: 'video-audio',
       mediaKind: 'audio',
-      mediaUrl,
+      mediaUrl: params.asset.audioUrl ?? mediaUrl,
       thumbnailUrl: null,
     },
   ];
@@ -114,6 +114,8 @@ export function buildWorkspaceTimelineItemsForOutput(params: {
   startSec: number;
   idSeed?: string;
 }): WorkspaceTimelineItem[] {
+  if (params.output.kind === 'text') return [];
+
   const idSuffix = params.idSeed ?? Date.now().toString(36);
   const baseId = `timeline-${params.outputNodeId}-${idSuffix}`;
   const durationSec = workspaceOutputTimelineDuration(params.output);

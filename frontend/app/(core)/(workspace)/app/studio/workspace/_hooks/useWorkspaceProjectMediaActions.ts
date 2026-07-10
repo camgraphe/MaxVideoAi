@@ -8,6 +8,10 @@ import {
   workspaceProjectMediaUploadKindForFile,
 } from '../_lib/workspace-project-media-upload';
 import { resolveProjectAssetTimelineInsert } from '../_lib/workspace-project-media-timeline';
+import {
+  upsertWorkspaceProjectAsset,
+  workspaceAssetFromOutputNode,
+} from '../_lib/workspace-generated-media';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
@@ -346,9 +350,10 @@ export function useWorkspaceProjectMediaActions({
           };
         })
       );
+      setProjectAssets((current) => current.filter((asset) => asset.id !== `asset-${nodeId}`));
       setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: generatedClipProjectMediaTitle(node, studioCanvasNodeCopy) }));
     },
-    [nodes, setNodes, setNotice, studioCanvasNodeCopy, studioNotices]
+    [nodes, setNodes, setNotice, setProjectAssets, studioCanvasNodeCopy, studioNotices]
   );
 
   const handleDeleteGeneratedClips = useCallback(
@@ -383,9 +388,11 @@ export function useWorkspaceProjectMediaActions({
           };
         })
       );
+      const generatedAssetIds = new Set(nodesToDelete.map((node) => `asset-${node.id}`));
+      setProjectAssets((current) => current.filter((asset) => !generatedAssetIds.has(asset.id)));
       setNotice(formatNotice(studioNotices.generatedClipRemoved, { title: label }));
     },
-    [nodes, setNodes, setNotice, studioCanvasNodeCopy, studioCommonCopy, studioNotices]
+    [nodes, setNodes, setNotice, setProjectAssets, studioCanvasNodeCopy, studioCommonCopy, studioNotices]
   );
 
   const handleCreateProjectMediaFolder = useCallback((requestedName?: string) => {
@@ -559,12 +566,25 @@ export function useWorkspaceProjectMediaActions({
           },
         };
       }));
+      const generatedAsset = workspaceAssetFromOutputNode({
+        ...node,
+        data: {
+          ...node.data,
+          output: {
+            ...node.data.output,
+            projectMediaFolderId: folderId,
+          },
+        },
+      });
+      if (generatedAsset) {
+        setProjectAssets((current) => upsertWorkspaceProjectAsset(current, generatedAsset));
+      }
       setNotice(formatNotice(studioNotices.generatedClipMovedToFolder, {
         title,
         [STUDIO_PROJECT_MEDIA_FOLDER_TOKEN]: folderName,
       }));
     },
-    [nodes, projectMediaFolders, setNodes, setNotice, studioCanvasNodeCopy, studioNotices]
+    [nodes, projectMediaFolders, setNodes, setNotice, setProjectAssets, studioCanvasNodeCopy, studioNotices]
   );
 
   const handleDropProjectAssetToTimeline = useCallback(

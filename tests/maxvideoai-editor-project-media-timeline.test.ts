@@ -17,6 +17,7 @@ import {
   mediaSubtitleForAsset,
   mediaSubtitleForGeneratedNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController';
+import { workspaceAssetFromOutputNode } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -77,6 +78,89 @@ function generatedVideoNode(overrides: Partial<WorkspaceGraphNode> = {}): Worksp
     ...overrides,
   };
 }
+
+test('ready generated output nodes become typed project media assets', () => {
+  const asset = workspaceAssetFromOutputNode({
+    id: 'output-video-1',
+    type: 'output',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'output',
+      title: 'Generated Output',
+      subtitle: 'Video',
+      output: {
+        kind: 'video',
+        modelId: 'seedance-2-0',
+        modelLabel: 'Seedance 2.0',
+        workflowType: 'text_to_video',
+        durationSec: 7,
+        aspectRatio: '16:9',
+        resolution: '1080p',
+        pricing: null,
+        status: 'ready',
+        createdAt: '2026-07-10T00:00:00.000Z',
+        sourceShotId: 'shot-1',
+        url: 'https://example.com/video.mp4',
+        audioUrl: null,
+        thumbUrl: 'https://example.com/thumb.jpg',
+        hasAudio: false,
+        jobId: 'job-1',
+      },
+    },
+  } as WorkspaceGraphNode);
+
+  assert.equal(asset?.kind, 'video');
+  assert.equal(asset?.url, 'https://example.com/video.mp4');
+  assert.equal(asset?.thumbUrl, 'https://example.com/thumb.jpg');
+});
+
+test('generated video project assets preserve their dedicated linked audio on the timeline', () => {
+  const asset = workspaceAssetFromOutputNode({
+    id: 'output-video-audio-1',
+    type: 'output',
+    position: { x: 0, y: 0 },
+    data: {
+      kind: 'output',
+      title: 'Generated Video With Audio',
+      output: {
+        kind: 'video',
+        modelId: 'seedance-2-0',
+        modelLabel: 'Seedance 2.0',
+        workflowType: 'text_to_video',
+        durationSec: 7,
+        pricing: null,
+        status: 'ready',
+        createdAt: '2026-07-10T00:00:00.000Z',
+        sourceShotId: 'shot-1',
+        url: 'https://example.com/video.mp4',
+        audioUrl: 'https://example.com/video-audio.mp3',
+        thumbUrl: 'https://example.com/thumb.jpg',
+        hasAudio: true,
+      },
+    },
+  } as WorkspaceGraphNode);
+  assert.ok(asset);
+
+  const result = resolveProjectAssetTimelineInsert({
+    assetId: asset.id,
+    projectAssets: [asset],
+    currentItems: [],
+    startSec: 0,
+    lockedTimelineTracks: [],
+    allowInsertIntoClip: false,
+    idSeed: 'generated-audio',
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.deepEqual(
+    result.items.map((item) => [item.track, item.mediaKind, item.mediaUrl]),
+    [
+      ['video', 'video', 'https://example.com/video.mp4'],
+      ['audio', 'audio', 'https://example.com/video-audio.mp3'],
+    ]
+  );
+});
 
 test('project media drag payload preserves asset timeline duration and preview metadata', () => {
   const payload = projectMediaTimelineDragPayloadForAsset(imageAsset({

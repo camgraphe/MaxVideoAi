@@ -255,6 +255,22 @@ test('Studio generation block output handles match the generated media type', ()
   }
 });
 
+test('Studio generation promotes ready outputs through the project-media asset callback', () => {
+  const generationActionsSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGenerationActions.ts'),
+    'utf8'
+  );
+  const workspaceSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/WorkspacePage.client.tsx'),
+    'utf8'
+  );
+
+  assert.match(generationActionsSource, /workspaceAssetFromOutputNode/, 'ready output nodes should use the typed project-media converter');
+  assert.match(generationActionsSource, /onGeneratedProjectAsset\(generatedAsset\)/, 'ready generated assets should be promoted through the page callback');
+  assert.match(workspaceSource, /upsertWorkspaceProjectAsset/, 'workspace should deduplicate generated project asset ids');
+  assert.match(workspaceSource, /onGeneratedProjectAsset: handleGeneratedProjectAsset/, 'workspace should wire generated output promotion into the canvas controller');
+});
+
 test('Studio graph normalization migrates stale generated block source handles to typed media outputs', () => {
   const angleShot = getWorkspaceBlockPreset('angle')?.defaultShot;
   const musicShot = getWorkspaceBlockPreset('audio-music')?.defaultShot;

@@ -57,6 +57,7 @@ export function isPlayableImageUrl(url?: string | null): boolean {
 }
 
 export function playableOutputTimelineUrl(output: WorkspaceOutputMetadata): string | null {
+  if (output.kind === 'text') return null;
   if (output.kind === 'audio') {
     const audioUrl = output.audioUrl ?? output.url ?? null;
     return isPlayableAudioUrl(audioUrl) ? audioUrl : null;
@@ -84,6 +85,7 @@ export function generatedOutputSourceHandle(output?: WorkspaceOutputMetadata | n
 export function outputSourceHandleForKind(kind?: WorkspaceOutputMetadata['kind'] | WorkspaceShotSettings['outputKind'] | null): WorkspaceEdgeKind {
   if (kind === 'image') return 'reference';
   if (kind === 'audio') return 'audio';
+  if (kind === 'text') return 'prompt';
   return GENERATED_OUTPUT_SOURCE_HANDLE;
 }
 

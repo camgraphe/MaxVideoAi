@@ -11,6 +11,7 @@ import { useWorkspaceRenderNodes } from './useWorkspaceRenderNodes';
 import type {
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
+  WorkspaceAssetRecord,
   WorkspaceModelCapability,
   WorkspacePricingEstimate,
   WorkspaceTemplateId,
@@ -43,6 +44,7 @@ type UseWorkspaceCanvasControllerParams = {
   lockedTimelineTracks: WorkspaceTimelineTrack[];
   mockMode: boolean;
   nodes: WorkspaceGraphNode[];
+  onGeneratedProjectAsset: (asset: WorkspaceAssetRecord) => void;
   playheadSec: number;
   pricingEstimates: Record<string, WorkspacePricingEstimate>;
   redoCanvas: () => void;
@@ -84,6 +86,7 @@ export function useWorkspaceCanvasController({
   lockedTimelineTracks,
   mockMode,
   nodes,
+  onGeneratedProjectAsset,
   playheadSec,
   pricingEstimates,
   redoCanvas,
@@ -164,6 +167,7 @@ export function useWorkspaceCanvasController({
     edges,
     mockMode,
     nodes,
+    onGeneratedProjectAsset,
     patchShot,
     setActiveEditorSurface,
     setEdges,

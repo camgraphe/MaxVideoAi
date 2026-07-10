@@ -7,7 +7,9 @@ import {
   outputNodeSubtitle,
 } from '../_lib/workspace-graph-helpers';
 import { createPendingWorkspaceOutput, submitWorkspaceShotGeneration } from '../_lib/workspace-generation';
+import { workspaceAssetFromOutputNode } from '../_lib/workspace-generated-media';
 import type {
+  WorkspaceAssetRecord,
   WorkspaceChatMessage,
   WorkspaceGraphEdge,
   WorkspaceGraphNode,
@@ -37,6 +39,7 @@ type UseWorkspaceGenerationActionsParams = {
   edges: WorkspaceGraphEdge[];
   mockMode: boolean;
   nodes: WorkspaceGraphNode[];
+  onGeneratedProjectAsset: (asset: WorkspaceAssetRecord) => void;
   patchShot: (nodeId: string, patch: Partial<WorkspaceShotSettings>) => void;
   setActiveEditorSurface: Dispatch<SetStateAction<WorkspaceEditorSurface>>;
   setEdges: Dispatch<SetStateAction<WorkspaceGraphEdge[]>>;
@@ -57,6 +60,7 @@ export function useWorkspaceGenerationActions({
   edges,
   mockMode,
   nodes,
+  onGeneratedProjectAsset,
   patchShot,
   setActiveEditorSurface,
   setEdges,
@@ -112,7 +116,10 @@ export function useWorkspaceGenerationActions({
               ...existingOutputNode.data,
               ...pendingOutputTitleData,
               subtitle: outputNodeSubtitle(pendingOutput.output, studioNotices),
-              output: pendingOutput.output,
+              output: {
+                ...pendingOutput.output,
+                projectMediaFolderId: existingOutputNode.data.output?.projectMediaFolderId ?? null,
+              },
             },
           }
         : {
@@ -160,6 +167,24 @@ export function useWorkspaceGenerationActions({
           generationMode: mockMode ? 'mock' : 'real',
           canvasNodeCopy: studioCanvasNodeCopy,
         });
+        const finalOutputTitleData = shotNode.data.shot
+          ? workspaceOutputNodeTitleDataForShot(shotNode)
+          : {
+              title: pendingOutputNode.data.title,
+              generatedCopy: pendingOutputNode.data.generatedCopy,
+            };
+        const readyOutputNode: WorkspaceGraphNode = {
+          ...pendingOutputNode,
+          data: {
+            ...pendingOutputNode.data,
+            ...finalOutputTitleData,
+            subtitle: outputNodeSubtitle(result.output, studioNotices),
+            output: {
+              ...result.output,
+              projectMediaFolderId: existingOutputNode?.data.output?.projectMediaFolderId ?? null,
+            },
+          },
+        };
         setNodes((current) =>
           current.map((node) => {
             if (node.id === nodeId && node.data.shot) {
@@ -181,25 +206,13 @@ export function useWorkspaceGenerationActions({
               };
             }
             if (node.id === pendingOutputNode.id) {
-              const finalOutputTitleData = shotNode.data.shot
-                ? workspaceOutputNodeTitleDataForShot(shotNode)
-                : {
-                    title: node.data.title,
-                    generatedCopy: node.data.generatedCopy,
-                  };
-              return {
-                ...node,
-                data: {
-                  ...node.data,
-                  ...finalOutputTitleData,
-                  subtitle: outputNodeSubtitle(result.output, studioNotices),
-                  output: result.output,
-                },
-              };
+              return readyOutputNode;
             }
             return node;
           })
         );
+        const generatedAsset = workspaceAssetFromOutputNode(readyOutputNode);
+        if (generatedAsset) onGeneratedProjectAsset(generatedAsset);
         setActiveEditorSurface('canvas');
         setSelectedNodeId(pendingOutputNode.id);
         setNotice(
@@ -251,6 +264,7 @@ export function useWorkspaceGenerationActions({
       edges,
       mockMode,
       nodes,
+      onGeneratedProjectAsset,
       patchShot,
       setActiveEditorSurface,
       setEdges,

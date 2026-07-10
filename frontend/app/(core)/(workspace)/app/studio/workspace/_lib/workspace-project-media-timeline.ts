@@ -37,6 +37,13 @@ function formatNotice(value: string, replacements: Record<string, string | numbe
   );
 }
 
+function projectAssetCanInsertIntoTimeline(asset: WorkspaceAssetRecord): boolean {
+  if (asset.kind === 'video') return isPlayableVideoUrl(asset.url);
+  if (asset.kind === 'audio') return isPlayableAudioUrl(asset.url);
+  if (asset.kind === 'image' || asset.kind === 'logo') return isPlayableImageUrl(asset.url ?? asset.thumbUrl ?? null);
+  return false;
+}
+
 export function resolveProjectAssetTimelineInsert(params: {
   allowInsertIntoClip: boolean;
   assetId: string;
@@ -56,12 +63,7 @@ export function resolveProjectAssetTimelineInsert(params: {
     return { ok: false, notice: notices.projectMediaAssetNotFound };
   }
 
-  const assetUrl = asset.url ?? asset.thumbUrl ?? null;
-  const canInsertAsset =
-    (asset.kind === 'video' && isPlayableVideoUrl(asset.url)) ||
-    (asset.kind === 'audio' && isPlayableAudioUrl(asset.url)) ||
-    ((asset.kind === 'image' || asset.kind === 'logo') && isPlayableImageUrl(assetUrl));
-  if (!canInsertAsset) {
+  if (!projectAssetCanInsertIntoTimeline(asset)) {
     return {
       ok: false,
       notice: formatNotice(notices.projectMediaNotPlayable, { filename: asset.filename }),

@@ -233,7 +233,9 @@ export type WorkspaceAssetRecord = {
   subtitle: string;
   folderId?: string | null;
   url?: string;
+  audioUrl?: string;
   thumbUrl?: string;
+  hasAudio?: boolean;
   durationSec?: number;
   dimensions?: string;
 };
@@ -275,7 +277,7 @@ export type WorkspaceShotSettings = {
 };
 
 export type WorkspaceOutputMetadata = {
-  kind: 'video' | 'image' | 'audio';
+  kind: 'video' | 'image' | 'audio' | 'text';
   modelId: string;
   modelLabel: string;
   workflowType: WorkspaceWorkflowType;
