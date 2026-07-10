@@ -4768,7 +4768,7 @@ test('MaxVideoAI editor library assets map to media node records', async () => {
   const mapped = workspaceAssetRecordFromLibraryAsset(imageAssets[0]);
   assert.equal(mapped.kind, 'image');
   assert.equal(mapped.filename, imageAssets[0].name);
-  assert.equal(mapped.subtitle, imageAssets[0].meta);
+  assert.equal(mapped.subtitle, 'Image');
   assert.equal(mapped.thumbUrl, imageAssets[0].thumbUrl);
 
   assert.equal(workspaceLibraryKindForNodeKind('asset-image'), 'image');
@@ -5050,10 +5050,12 @@ test('studio asset picker defers multi-select import until its primary action', 
   assert.match(runtimeModalsSource, /onSelectAsset\(\.\.\.args\);\s*assetPickerLibrary\.resetSelection\(\)/, 'canvas asset picker imports should clear selection');
 });
 
-test('project media library plain clicks replace the selection', () => {
+test('project media library delegates selection transitions to the shared helper', () => {
   const projectMediaModalSource = source(projectMediaLibraryModalPath);
 
-  assert.match(projectMediaModalSource, /const isRangeSelection = event\.shiftKey && Boolean\(lastSelectedAssetId\)/);
-  assert.match(projectMediaModalSource, /const isToggleSelection = event\.metaKey \|\| event\.ctrlKey/);
-  assert.match(projectMediaModalSource, /if \(!isRangeSelection && !isToggleSelection\) return \[asset\.id\];/);
+  assert.match(projectMediaModalSource, /selectWorkspaceAsset/);
+  assert.match(projectMediaModalSource, /resetWorkspaceAssetSelection/);
+  assert.match(projectMediaModalSource, /const mode = event\.shiftKey \? 'range' : event\.metaKey \|\| event\.ctrlKey \? 'toggle' : 'replace'/);
+  assert.doesNotMatch(projectMediaModalSource, /const isRangeSelection/);
+  assert.doesNotMatch(projectMediaModalSource, /const isToggleSelection/);
 });

@@ -26,7 +26,6 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media';
 import {
   workspaceAssetRecordFromLibraryAsset,
-  workspaceLibraryAssetFromUploadedAsset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets';
 import {
   resetWorkspaceAssetSelection,
@@ -166,24 +165,19 @@ test('project media metadata helpers reject malformed and non-positive resolutio
 });
 
 test('project media import defers valid-looking library metadata until hydration', () => {
-  const libraryAsset = workspaceLibraryAssetFromUploadedAsset(
-    {
-      id: 'library-video-1',
-      url: 'https://example.com/library-video.mp4',
-      kind: 'video',
-      mime: 'video/mp4',
-      durationSec: 12,
-      width: 1920,
-      height: 1080,
-    },
-    'video'
-  );
-  assert.ok(libraryAsset);
-  assert.equal(libraryAsset.durationSec, 12);
-  assert.equal(libraryAsset.dimensions, '1920x1080');
+  const libraryAsset = {
+    id: 'library-image-1',
+    name: 'library-image.png',
+    kind: 'image' as const,
+    meta: 'Image · 1920x1080',
+    url: 'https://example.com/library-image.png',
+    durationSec: 12,
+    dimensions: '1920x1080',
+  };
 
   const projectAsset = workspaceAssetRecordFromLibraryAsset(libraryAsset);
 
+  assert.equal(projectAsset.subtitle, 'Image');
   assert.equal(projectAsset.durationSec, undefined);
   assert.equal(projectAsset.dimensions, undefined);
   assert.equal(workspaceProjectMediaNeedsMetadata(projectAsset), true);

@@ -334,7 +334,7 @@ export function workspaceAssetRecordFromLibraryAsset(asset: WorkspaceLibraryAsse
     id: asset.id,
     kind: asset.kind,
     filename: asset.name,
-    subtitle: asset.meta,
+    subtitle: asset.kind === 'video' ? 'Video' : asset.kind === 'audio' ? 'Audio' : asset.kind === 'text' ? 'Text' : 'Image',
     url: asset.url ?? asset.thumbUrl,
     thumbUrl: asset.thumbUrl,
   };

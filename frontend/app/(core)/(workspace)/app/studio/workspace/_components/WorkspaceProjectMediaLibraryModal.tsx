@@ -16,6 +16,10 @@ import {
   uploadWorkspaceProjectMediaFile,
   workspaceProjectMediaUploadKindForFile,
 } from '../_lib/workspace-project-media-upload';
+import {
+  resetWorkspaceAssetSelection,
+  selectWorkspaceAsset,
+} from '../_lib/workspace-asset-selection';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceLibraryKindFilter = 'all' | WorkspaceLibraryKind;
@@ -70,30 +74,26 @@ export function WorkspaceProjectMediaLibraryModal({
 }: WorkspaceProjectMediaLibraryModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
-  const [lastSelectedAssetId, setLastSelectedAssetId] = useState<string | null>(null);
+  const [selection, setSelection] = useState(resetWorkspaceAssetSelection);
   const uploadInputRef = useRef<HTMLInputElement | null>(null);
   const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
   const selectedAssets = useMemo(
-    () => selectedAssetIds.map((assetId) => assetById.get(assetId)).filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset)),
-    [assetById, selectedAssetIds]
+    () => selection.selectedAssetIds.map((assetId) => assetById.get(assetId)).filter((asset): asset is WorkspaceLibraryAsset => Boolean(asset)),
+    [assetById, selection.selectedAssetIds]
   );
 
   useEffect(() => {
     if (!isOpen) {
-      setSelectedAssetIds([]);
-      setLastSelectedAssetId(null);
+      setSelection(resetWorkspaceAssetSelection());
     }
   }, [isOpen]);
 
   useEffect(() => {
-    setSelectedAssetIds([]);
-    setLastSelectedAssetId(null);
+    setSelection(resetWorkspaceAssetSelection());
   }, [mediaKindFilter, source]);
 
   const closeAndResetSelection = useCallback(() => {
-    setSelectedAssetIds([]);
-    setLastSelectedAssetId(null);
+    setSelection(resetWorkspaceAssetSelection());
     onClose();
   }, [onClose]);
 
@@ -103,39 +103,21 @@ export function WorkspaceProjectMediaLibraryModal({
       event: MouseEvent<HTMLButtonElement>,
       visibleAssets: WorkspaceLibraryAsset[]
     ) => {
-      const isRangeSelection = event.shiftKey && Boolean(lastSelectedAssetId);
-      const isToggleSelection = event.metaKey || event.ctrlKey;
-      setSelectedAssetIds((current) => {
-        if (!isRangeSelection && !isToggleSelection) return [asset.id];
-
-        if (isRangeSelection && lastSelectedAssetId) {
-          const next = new Set(current);
-          const visibleIds = visibleAssets.map((visibleAsset) => visibleAsset.id);
-          const startIndex = visibleIds.indexOf(lastSelectedAssetId);
-          const endIndex = visibleIds.indexOf(asset.id);
-          if (startIndex !== -1 && endIndex !== -1) {
-            const [start, end] = startIndex < endIndex ? [startIndex, endIndex] : [endIndex, startIndex];
-            visibleIds.slice(start, end + 1).forEach((assetId) => next.add(assetId));
-            return Array.from(next);
-          }
-          if (!isToggleSelection) return [asset.id];
-        }
-
-        const next = new Set(current);
-        if (next.has(asset.id)) next.delete(asset.id);
-        else next.add(asset.id);
-        return Array.from(next);
-      });
-      setLastSelectedAssetId(asset.id);
+      const mode = event.shiftKey ? 'range' : event.metaKey || event.ctrlKey ? 'toggle' : 'replace';
+      setSelection((current) => selectWorkspaceAsset({
+        assetIds: visibleAssets.map((visibleAsset) => visibleAsset.id),
+        selection: current,
+        assetId: asset.id,
+        mode,
+      }));
     },
-    [lastSelectedAssetId]
+    []
   );
 
   const handleImportSelectedAssets = useCallback(() => {
     if (!selectedAssets.length) return;
     onSelectAssets(selectedAssets);
-    setSelectedAssetIds([]);
-    setLastSelectedAssetId(null);
+    setSelection(resetWorkspaceAssetSelection());
   }, [onSelectAssets, selectedAssets]);
 
   const handleUploadChange = useCallback(
@@ -204,7 +186,7 @@ export function WorkspaceProjectMediaLibraryModal({
           sourceOptions={sourceOptions}
           sourceLabels={sourceLabels}
           onSourceChange={onSourceChange}
-          selectedAssetIds={selectedAssetIds}
+          selectedAssetIds={selection.selectedAssetIds}
           onToggleAssetSelection={handleToggleAssetSelection}
           mediaKindFilter={mediaKindFilter}
           onMediaKindFilterChange={onMediaKindFilterChange}
