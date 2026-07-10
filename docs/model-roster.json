@@ -112,6 +112,22 @@
     }
   },
   {
+    "engineId": "seedream-5-0-pro",
+    "marketingName": "Seedream 5.0 Pro",
+    "brandId": "bytedance",
+    "modelSlug": "seedream-5-0-pro",
+    "family": "seedream",
+    "versionLabel": "5.0 Pro",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
     "engineId": "nano-banana",
     "marketingName": "Nano Banana (Image Generation)",
     "brandId": "google",
@@ -134,6 +150,22 @@
     "modelSlug": "nano-banana-2",
     "family": "nano-banana",
     "versionLabel": "2",
+    "availability": "available",
+    "logoPolicy": "logoAllowed",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      }
+    }
+  },
+  {
+    "engineId": "nano-banana-lite",
+    "marketingName": "Nano Banana Lite",
+    "brandId": "google",
+    "modelSlug": "nano-banana-lite",
+    "family": "nano-banana",
+    "versionLabel": "Lite",
     "availability": "available",
     "logoPolicy": "logoAllowed",
     "surfaces": {
