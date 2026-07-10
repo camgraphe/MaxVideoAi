@@ -19,9 +19,15 @@ This conversion-repair lot includes:
 - a denser mobile presentation of the existing engine selector and variant controls;
 - a compact mobile preview treatment that keeps the current preview-first mental model;
 - a denser video-composer presentation on mobile;
+- a restrained desktop density pass that preserves the current vertical Workspace order;
+- one compact Pro / 4K / Standard variant selector beside the engine selector;
+- a discreet Browse engines action in place of the current full-width secondary button;
+- an aspect-ratio-safe viewer that prioritizes 16:9 and contains other formats without crop or stretch;
 - one prompt-header row containing the dynamic character count, Multi-prompt action, and Storyboard action when those actions are available;
+- one desktop row containing all core settings and Generate without wrapping;
+- neutral guest upload placeholders without the aggressive Unavailable badge;
 - one price presentation, inside the Generate button only;
-- responsive behavior that preserves the current desktop Workspace hierarchy;
+- responsive behavior that preserves the current desktop Workspace hierarchy and asset-field order;
 - focused architecture, component, responsive, and visual-regression coverage.
 
 ## Out of Scope
@@ -32,7 +38,8 @@ This conversion-repair lot includes:
 - Changes to engine selection, mode inference, prompt persistence, draft hydration, authentication, wallet preflight, top-up, checkout, generation submission, polling, or asset uploads.
 - Changes to pricing calculations, model catalog data, character limits, or supported settings.
 - Changes to public URLs, localized slugs, canonical URLs, hreflang, JSON-LD, sitemaps, redirects, or route groups.
-- A desktop redesign, a new global state layer, or a new modal.
+- A desktop split-view redesign, a new global state layer, or a new modal.
+- Removing, hiding, tabbing, or reordering Start frame, End frame, negative-prompt, or advanced-setting fields.
 - Adding a second estimated-price label, credit estimate, or price chip outside the Generate button.
 
 ## Selected Visual Target
@@ -49,11 +56,26 @@ The selected direction is the compact preview-first mobile mockup, refined as fo
 - the primary action is a wide `Generate {formattedPrice}` button;
 - the price appears nowhere else in this surface.
 
-The final visual reference is the approved Image Gen result `exec-ec897e31-e4be-4404-a505-8f562287b964.png`, generated from the current `/app` captures at 390 × 844 and 1440 × 1024. It is a hierarchy and density target, not permission to replace dynamic product data with the mock values shown in the image.
+The approved desktop companion preserves the current vertical order and adds:
+
+- an engine selector and compact variant selector on one row;
+- a discreet Browse engines text action;
+- the current large preview above the composer;
+- all five core settings and Generate on one non-wrapping row;
+- Start frame and End frame placeholders below that row;
+- no Unavailable badge or orange warning treatment for the guest upload lock;
+- one subtle `Sign in to upload` prompt per locked placeholder.
+
+The final visual references are:
+
+- mobile: `exec-ec897e31-e4be-4404-a505-8f562287b964.png`;
+- desktop: `exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png`.
+
+They were generated from current `/app` captures at 390 × 844 and 1440 × 1024. They are hierarchy and density targets, not permission to replace dynamic product data with the mock values shown in the images.
 
 ## Chosen Approach
 
-Keep one authentication-neutral DOM hierarchy and introduce a route-controlled compact mobile density.
+Keep one authentication-neutral DOM hierarchy and introduce route-controlled responsive density for mobile and desktop.
 
 The Workspace continues to render, in order:
 
@@ -63,9 +85,9 @@ The Workspace continues to render, in order:
 4. the composer;
 5. the existing mobile latest-renders rail outside the main content.
 
-The conversion improvement comes from reducing avoidable vertical space, not from moving guests into a separate layout or changing the order after login. Desktop retains the current spacing and hierarchy. The compact treatment applies at the existing non-desktop Workspace breakpoint and must remain stable when authentication state changes.
+The conversion improvement comes from reducing avoidable vertical space, not from moving guests into a separate layout or changing the order after login. Desktop retains the current hierarchy and vertical order while receiving tighter engine, composer, and action-row treatment. The responsive presentation must remain stable when authentication state changes.
 
-This approach is preferred over placing the composer before the preview because it preserves the current sample-led Workspace model and avoids a visible reflow for existing users. It is preferred over a sticky duplicate Generate action because the real prompt, settings, price, and action remain one coherent form. It is preferred over Create/Preview tabs because tabs would hide useful context and introduce new interaction state.
+This approach is preferred over placing the composer before the preview because it preserves the current sample-led Workspace model and avoids a visible reflow for existing users. It is preferred over a desktop preview/composer split because that composition would crowd the real asset placeholders and diverge from the established workflow. It is preferred over a sticky duplicate Generate action because the real prompt, settings, price, and action remain one coherent form. It is preferred over Create/Preview tabs because tabs would hide useful context and introduce new interaction state.
 
 ## Responsive Layout
 
@@ -86,13 +108,20 @@ At that viewport:
 
 The target is not a brittle guarantee that every engine configuration fits completely above the fold. Engines with additional workflow notices, validation errors, promoted actions, asset requirements, or unusually long localized labels may require scrolling. The invariant is that default guest and standard authenticated entry states are materially denser and that no required information is hidden or duplicated.
 
-### Desktop preservation
+### Desktop refinement
 
 At the existing desktop breakpoint:
 
-- the current sidebar, main preview, composer, and latest-renders rail proportions remain intact;
+- the current sidebar, main preview, composer, asset placeholders, and latest-renders rail stay in their current vertical and horizontal regions;
+- the engine selector and one Pro / 4K / Standard variant selector share one compact row;
+- Browse engines is a discreet secondary text action rather than a full-width button;
 - the current preview sizing logic and 50-viewport-height cap remain unchanged unless visual QA exposes a regression caused by the mobile classes;
-- full desktop labels, spacing, and control density remain the default;
+- the default media stage prioritizes 16:9, while portrait, square, and other media use contain behavior with neutral empty space instead of crop, stretch, or forced fill;
+- Prompt count, Multi-prompt, and Storyboard share one aligned header row;
+- 5s, 1080p, 16:9, Audio, 1x, and Generate share one horizontal action row at 1440 × 1024;
+- at narrower desktop widths, that action row remains single-line inside a contained overflow region or uses narrower control widths; it must not make the page overflow horizontally;
+- Start frame and End frame remain immediately below the action row;
+- guest-locked placeholders omit the Unavailable badge and aggressive warning color while retaining one `Sign in to upload` affordance;
 - no authenticated or guest branch changes the layout order.
 
 ## Component Boundaries
@@ -103,9 +132,13 @@ At the existing desktop breakpoint:
 
 `WorkspacePreviewDock.tsx` remains the route-local owner of the engine-settings composition around `CompositePreviewDock`. It may select a compact mobile presentation through explicit presentation props, but it must not own authentication or generation state.
 
+The shared engine selector may expose an explicit compact variant-control presentation. The variant values and engine-mode handlers remain derived from the current engine contract; the UI must not create a second mode state.
+
 `WorkspaceComposerSurface.tsx` remains the video-route owner of composer composition. It opts the shared `Composer` into the compact Workspace mobile treatment rather than duplicating the composer.
 
 The shared `Composer` and preview primitives may accept narrowly scoped presentation props or responsive class changes. Those changes must preserve their default behavior for image, audio, and other consumers.
+
+Asset-field components may distinguish the guest authentication lock from genuine engine unavailability for presentation only. Required-field semantics, upload handlers, disabled behavior, and authenticated states remain unchanged.
 
 No server module, database module, payment module, or route handler is added to the client dependency graph.
 
@@ -136,6 +169,30 @@ The existing formatted price remains the single source of displayed price truth.
 - Member discount messaging remains governed by the current preflight response and is not replaced by a duplicate estimate.
 - No separate `Estimated price`, credit conversion, or amount summary is added beside or above the button.
 - Generate continues to call the existing `startRender` handler exactly once.
+
+On desktop, the core-setting controls and Generate remain one logical row. The row must not wrap at the 1440 × 1024 target. A contained horizontal overflow fallback is acceptable at narrower desktop widths, but a second settings line is not.
+
+## Viewer Aspect-Ratio Contract
+
+The preview remains primarily optimized for 16:9 output.
+
+- A 16:9 group fills the intended 16:9 media stage without distortion.
+- Portrait, square, and other supported aspect ratios are centered with contain behavior.
+- Media must never be stretched to 16:9 or cropped merely to fill the stage.
+- Neutral letterboxing is acceptable and preferable to content loss.
+- Preview controls, guided-sample navigation, modal opening, download, autoplay, mute, loop, and ready-state behavior remain unchanged.
+- The implementation derives aspect behavior from existing group/item metadata or natural media dimensions; it does not add a user-facing aspect toggle to the viewer.
+
+## Guest Asset-Placeholder Contract
+
+Guest upload locks remain functional but use calmer presentation.
+
+- Start frame and End frame remain visible, sized, and ordered as today.
+- The word `Unavailable` is not shown for the guest authentication lock.
+- Orange warning styling is not used merely because the visitor is logged out.
+- One subtle `Sign in to upload` affordance is sufficient for each locked field.
+- Genuine engine or workflow unavailability may retain its existing distinct disabled explanation where applicable.
+- Authentication, upload, library, field validation, and required-asset behavior remain unchanged.
 
 ## Authentication and Funnel Continuity
 
@@ -183,15 +240,20 @@ Required automated coverage:
 2. The video Workspace opts into the compact mobile composer treatment while other shared-composer consumers retain the default.
 3. The prompt header renders the dynamic count and the available Multi-prompt and Storyboard actions in one compact header owner without duplicating the count.
 4. The formatted price is rendered only in the Generate button for the selected Workspace treatment.
-5. Existing generation, auth-gate, draft, pricing, wallet-preflight, preview, and Workspace architecture contracts remain green.
-6. TypeScript, lint, exposure lint, full validation, production build, and `git diff --check` pass.
+5. The compact variant selector exposes the existing Pro, 4K, and Standard modes without creating duplicate mode state.
+6. The desktop core controls and Generate use a non-wrapping row at the target breakpoint.
+7. The preview uses aspect-safe contain behavior for non-16:9 media without changing preview interactions.
+8. Guest asset locks omit the Unavailable badge and aggressive warning styling while preserving disabled behavior and the sign-in affordance.
+9. Existing generation, auth-gate, draft, pricing, wallet-preflight, preview, asset, and Workspace architecture contracts remain green.
+10. TypeScript, lint, exposure lint, full validation, production build, and `git diff --check` pass.
 
 Manual and visual coverage:
 
 - capture the current and implemented guest Workspace at 390 × 844 using the approved Playwright browser workflow;
 - compare the implementation and approved mockup in the same visual QA input;
 - verify engine selection, sample navigation, prompt editing, Multi-prompt, Storyboard, core settings, Generate-to-auth-gate, and no horizontal page overflow;
-- capture 1440 × 1024 and verify that desktop hierarchy and the latest-renders rail did not regress;
+- capture 1440 × 1024 and verify the compact variant selector, discreet Browse engines action, non-wrapping settings/action row, retained asset placeholders, and unchanged latest-renders rail;
+- open representative 16:9, portrait, and square previews and verify contain behavior without crop or stretch;
 - verify the primary action remains reachable with default data after the page settles;
 - record all findings in `design-qa.md` and require `final result: passed` before handoff.
 
@@ -203,8 +265,13 @@ Manual and visual coverage:
 - Prompt count, Multi-prompt, and Storyboard share one header row at the target Kling state.
 - The prompt limit remains dynamic per engine.
 - The price appears exactly once, inside the Generate button.
+- The desktop engine row uses one compact Pro / 4K / Standard selector and one discreet Browse engines action.
+- Desktop core settings and Generate remain on one row at 1440 × 1024.
+- Non-16:9 previews are contained without crop or stretch.
+- Guest Start/End-frame placeholders keep the sign-in affordance without the Unavailable badge or aggressive warning treatment.
+- Start frame, End frame, negative prompt, and advanced settings remain in their existing order.
 - Generate preserves the existing authentication, pricing, wallet, top-up, and generation behavior.
 - The document has no horizontal overflow at the target viewport.
-- Desktop presentation remains functionally and visually stable.
+- Desktop presentation remains functionally stable and retains its current vertical hierarchy.
 - No public route, SEO output, payment endpoint, database contract, or localization route is changed.
 - Automated verification passes and `design-qa.md` ends with `final result: passed`.
