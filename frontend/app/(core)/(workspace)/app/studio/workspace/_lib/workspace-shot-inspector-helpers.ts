@@ -1,6 +1,7 @@
 import type {
   WorkspaceEdgeKind,
   WorkspaceModelCapability,
+  WorkspacePolicyControlField,
   WorkspaceShotSettings,
 } from './workspace-types';
 import { getWorkspaceBlockCompatibleCapabilities } from './models/workspace-block-capability-policy';
@@ -54,4 +55,25 @@ export function toolPanelSectionsForShot(settings: WorkspaceShotSettings): Works
     sections.push('generic-generation');
   }
   return sections;
+}
+
+export function isWorkspaceToolControlField(field: WorkspacePolicyControlField): boolean {
+  return field === 'outputCount' ||
+    field.startsWith('character') ||
+    field.startsWith('angle') ||
+    field.startsWith('upscale') ||
+    field === 'audioMood' ||
+    field === 'audioIntensity' ||
+    field === 'audioMusicEnabled' ||
+    field === 'voiceGender' ||
+    field === 'voiceProfile' ||
+    field === 'voiceDelivery' ||
+    field === 'outputFormat' ||
+    field.startsWith('tool.');
+}
+
+export function genericWorkspaceShotControlFields(
+  fields: WorkspacePolicyControlField[]
+): WorkspacePolicyControlField[] {
+  return fields.filter((field) => field !== 'model' && !field.startsWith('chat') && !isWorkspaceToolControlField(field));
 }

@@ -6,21 +6,23 @@ import inspectorStyles from '../_styles/inspector.module.css';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
-export function FieldLabel({ children }: { children: ReactNode }) {
-  return <label className={styles.settingsLabel}>{children}</label>;
+export function FieldLabel({ children, title }: { children: ReactNode; title?: string }) {
+  return <label className={styles.settingsLabel} title={title}>{children}</label>;
 }
 
 export function SelectControl({
   value,
   onChange,
   children,
+  disabled,
 }: {
   value: string | number;
   onChange: (value: string) => void;
   children: ReactNode;
+  disabled?: boolean;
 }) {
   return (
-    <select className={styles.settingsInput} value={value} onChange={(event) => onChange(event.currentTarget.value)}>
+    <select className={styles.settingsInput} value={value} disabled={disabled} onChange={(event) => onChange(event.currentTarget.value)}>
       {children}
     </select>
   );
@@ -32,12 +34,14 @@ export function NumberControl({
   min,
   max,
   step = 1,
+  disabled,
 }: {
   value: number;
   onChange: (value: number) => void;
   min?: number;
   max?: number;
   step?: number;
+  disabled?: boolean;
 }) {
   return (
     <input
@@ -47,6 +51,7 @@ export function NumberControl({
       min={min}
       max={max}
       step={step}
+      disabled={disabled}
       onChange={(event) => onChange(Number(event.currentTarget.value))}
     />
   );

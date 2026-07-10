@@ -6,7 +6,6 @@ import shotStyles from '../../_styles/canvas-shot-controls.module.css';
 import type {
   WorkspaceGraphNode,
   WorkspaceModelCapability,
-  WorkspaceRenderOption,
   WorkspaceShotSettings,
 } from '../../_lib/workspace-types';
 import {
@@ -14,6 +13,8 @@ import {
   isToolOnlyPreset,
   toolPanelSectionsForShot,
 } from '../../_lib/workspace-shot-inspector-helpers';
+import { resolveWorkspaceBlockPolicy } from '../../_lib/models/workspace-block-capability-policy';
+import { WorkspaceControlField } from './WorkspaceControlField';
 import {
   DEFAULT_STUDIO_COPY,
   localizeStudioEdgeKindLabel,
@@ -49,35 +50,6 @@ function patchForModelSelection(
   };
 }
 
-function renderOptionToggle({
-  copy,
-  enabled,
-  option,
-  onToggle,
-}: {
-  copy: typeof DEFAULT_STUDIO_COPY.canvas.nodes;
-  enabled: boolean;
-  option: WorkspaceRenderOption;
-  onToggle: () => void;
-}) {
-  if (option.control === 'included') {
-    return (
-      <div key={option.id} className={styles.shotToggleRow}>
-        <span>{option.label}</span>
-        <strong>{copy.included}</strong>
-      </div>
-    );
-  }
-  return (
-    <div key={option.id} className={styles.shotToggleRow}>
-      <span>{option.label}</span>
-      <button type="button" className={`${styles.shotToggleButton} ${enabled ? styles.shotToggleButtonActive : ''} nodrag`} onClick={onToggle}>
-        {enabled ? copy.on : copy.off}
-      </button>
-    </div>
-  );
-}
-
 export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
   const shot = data.shot;
   if (!shot) return null;
@@ -93,15 +65,13 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
     ? compatibleCapabilitiesForShot(shot, modelCapabilities, connectedInputs)
     : selectedCapability ? [selectedCapability] : [];
   const sections = toolPanelSectionsForShot(shot);
-  const hideModelSelect = !sections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
-  const renderOptions = selectedCapability?.render_options ?? [];
-  const audioRenderOption = renderOptions.find((option) => option.id === 'audio') ?? null;
-  const lipSyncRenderOption = renderOptions.find((option) => option.id === 'lip_sync') ?? null;
-  const durations = selectedCapability?.supported_durations.length ? selectedCapability.supported_durations : [5, 7, 8, 10];
-  const ratios = selectedCapability?.supported_aspect_ratios.length ? selectedCapability.supported_aspect_ratios : ['16:9', '9:16', '1:1'];
-  const resolutions = selectedCapability?.supported_resolutions.length ? selectedCapability.supported_resolutions : ['720p', '1080p'];
-  const fpsValues = selectedCapability?.supported_fps.length ? selectedCapability.supported_fps : [24, 30];
-  const canGenerate = validation?.canGenerate ?? shot.status !== 'incompatible';
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: shot,
+    capability: selectedCapability,
+    connectedInputs,
+  });
+  const hideModelSelect = !policy.controlFields.includes('model') || !sections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
+  const canGenerate = validation?.canGenerate ?? policy.canGenerate;
   const estimatedCost = data.pricingEstimate?.label ?? copy.estimating;
   const patchShot = (patch: Partial<WorkspaceShotSettings>) => data.onPatchShot?.(nodeId, patch);
   const recommendedModels = (validation?.recommendedModels ?? [])
@@ -150,72 +120,16 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
       )}
 
       <div className={styles.shotSettingsGrid}>
-        {shot.outputKind === 'video' || shot.family === 'audio' ? (
-          <label className={styles.shotControlField}>
-            <span>{copy.duration}</span>
-            <select className={`${styles.shotSelect} nodrag nowheel`} value={shot.durationSec} onChange={(event) => patchShot({ durationSec: Number(event.currentTarget.value) })}>
-              {durations.map((duration) => <option key={duration} value={duration}>{duration}s</option>)}
-            </select>
-          </label>
-        ) : null}
-        {shot.outputKind === 'video' || shot.outputKind === 'image' ? (
-          <label className={styles.shotControlField}>
-            <span>{copy.aspect}</span>
-            <select className={`${styles.shotSelect} nodrag nowheel`} value={shot.aspectRatio} onChange={(event) => patchShot({ aspectRatio: event.currentTarget.value as WorkspaceShotSettings['aspectRatio'] })}>
-              {ratios.map((ratio) => <option key={ratio} value={ratio}>{ratio}</option>)}
-            </select>
-          </label>
-        ) : null}
-        {shot.outputKind === 'video' || shot.outputKind === 'image' || shot.family === 'upscale' ? (
-          <label className={styles.shotControlField}>
-            <span>{copy.resolution}</span>
-            <select className={`${styles.shotSelect} nodrag nowheel`} value={shot.resolution} onChange={(event) => patchShot({ resolution: event.currentTarget.value as WorkspaceShotSettings['resolution'] })}>
-              {resolutions.map((resolution) => <option key={resolution} value={resolution}>{resolution}</option>)}
-            </select>
-          </label>
-        ) : null}
-        {shot.outputKind === 'video' ? (
-          <label className={styles.shotControlField}>
-            <span>{copy.fps}</span>
-            <select className={`${styles.shotSelect} nodrag nowheel`} value={shot.fps} onChange={(event) => patchShot({ fps: Number(event.currentTarget.value) })}>
-              {fpsValues.map((fps) => <option key={fps} value={fps}>{fps}</option>)}
-            </select>
-          </label>
-        ) : null}
-      </div>
-
-      {shot.family !== 'audio' && !shot.toolKind ? (
-        <label className={`${styles.shotControlField} ${styles.shotReferenceControl}`}>
-          <span>{copy.referenceStrength}</span>
-          <input
-            className={`${styles.shotRange} nodrag nowheel`}
-            type="range"
-            min={0}
-            max={1}
-            step={0.05}
-            value={shot.referenceStrength}
-            onChange={(event) => patchShot({ referenceStrength: Number(event.currentTarget.value) })}
+        {policy.controlFields.filter((field) => field !== 'model').map((field) => (
+          <WorkspaceControlField
+            key={field}
+            field={field}
+            shot={shot}
+            capability={selectedCapability}
+            onPatchShot={patchShot}
           />
-          <strong>{Math.round(shot.referenceStrength * 100)}%</strong>
-        </label>
-      ) : null}
-
-      {audioRenderOption || lipSyncRenderOption ? (
-        <div className={styles.shotToggleGrid}>
-          {audioRenderOption ? renderOptionToggle({
-            copy,
-            enabled: shot.audioEnabled,
-            option: audioRenderOption,
-            onToggle: () => patchShot({ audioEnabled: !shot.audioEnabled }),
-          }) : null}
-          {lipSyncRenderOption ? renderOptionToggle({
-            copy,
-            enabled: shot.lipSyncEnabled,
-            option: lipSyncRenderOption,
-            onToggle: () => patchShot({ lipSyncEnabled: !shot.lipSyncEnabled }),
-          }) : null}
-        </div>
-      ) : null}
+        ))}
+      </div>
 
       <div className={styles.shotActionRow}>
         <button

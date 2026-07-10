@@ -2057,6 +2057,17 @@ test('shot inspector renders specialized mini-tool sections from real tool optio
   assert.match(toolSectionsSource, /renderAudioSection/);
 });
 
+test('Studio shot node controls render from policy control fields instead of hardcoded generic controls', () => {
+  const source = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'),
+    'utf8'
+  );
+
+  assert.match(source, /resolveWorkspaceBlockPolicy|policy\.controlFields|controlFields/);
+  assert.match(source, /WorkspaceControlField/);
+  assert.doesNotMatch(source, /shot\.family !== 'audio' && !shot\.toolKind/);
+});
+
 test('Angle node replaces the generic generate placeholder with an inline 3D picker', () => {
   const nodeTypesSource = readFileSync(
     join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-types.tsx'),
