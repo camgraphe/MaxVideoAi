@@ -5043,3 +5043,11 @@ test('studio asset picker defers multi-select import until its primary action', 
   assert.match(graphActionsSource, /handleImportLibraryAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
   assert.match(graphActionsSource, /setAssetPickerNodeId\(null\)/);
 });
+
+test('project media library plain clicks replace the selection', () => {
+  const projectMediaModalSource = source(projectMediaLibraryModalPath);
+
+  assert.match(projectMediaModalSource, /const isRangeSelection = event\.shiftKey && Boolean\(lastSelectedAssetId\)/);
+  assert.match(projectMediaModalSource, /const isToggleSelection = event\.metaKey \|\| event\.ctrlKey/);
+  assert.match(projectMediaModalSource, /if \(!isRangeSelection && !isToggleSelection\) return \[asset\.id\];/);
+});

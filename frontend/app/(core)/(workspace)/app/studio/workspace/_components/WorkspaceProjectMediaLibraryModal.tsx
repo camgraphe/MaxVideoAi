@@ -103,8 +103,12 @@ export function WorkspaceProjectMediaLibraryModal({
       event: MouseEvent<HTMLButtonElement>,
       visibleAssets: WorkspaceLibraryAsset[]
     ) => {
+      const isRangeSelection = event.shiftKey && Boolean(lastSelectedAssetId);
+      const isToggleSelection = event.metaKey || event.ctrlKey;
       setSelectedAssetIds((current) => {
-        if (event.shiftKey && lastSelectedAssetId) {
+        if (!isRangeSelection && !isToggleSelection) return [asset.id];
+
+        if (isRangeSelection && lastSelectedAssetId) {
           const next = new Set(current);
           const visibleIds = visibleAssets.map((visibleAsset) => visibleAsset.id);
           const startIndex = visibleIds.indexOf(lastSelectedAssetId);
@@ -114,8 +118,9 @@ export function WorkspaceProjectMediaLibraryModal({
             visibleIds.slice(start, end + 1).forEach((assetId) => next.add(assetId));
             return Array.from(next);
           }
+          if (!isToggleSelection) return [asset.id];
         }
-        if (!event.metaKey && !event.ctrlKey) return [asset.id];
+
         const next = new Set(current);
         if (next.has(asset.id)) next.delete(asset.id);
         else next.add(asset.id);
