@@ -38,3 +38,11 @@ test('composite preview dock responsibilities are split into focused helpers', (
   assert.match(utilsSource, /export function resolvePrimaryMediaUrl/);
   assert.match(utilsSource, /export function resolvePreviewItemStatus/);
 });
+
+test('video preview tiles contain every aspect without crop or stretch', () => {
+  const tileSource = fs.readFileSync(tilePath, 'utf8');
+
+  assert.match(tileSource, /const mediaFitClass = 'object-contain';/);
+  assert.doesNotMatch(tileSource, /object-cover|scale-\[1\.02\]/);
+  assert.match(tileSource, /aspectRatio: '16 \/ 9'/);
+});

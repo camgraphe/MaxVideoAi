@@ -16,3 +16,8 @@ test('image composite main preview uses stable media urls during polling refresh
     'the small image selector can keep using thumbnails'
   );
 });
+
+test('image composite main preview preserves its aspect-safe rendering', () => {
+  assert.match(source, /resolveCssAspectRatio/);
+  assert.match(source, /object-contain/);
+});
