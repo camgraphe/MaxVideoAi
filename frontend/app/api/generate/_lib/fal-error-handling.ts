@@ -20,6 +20,7 @@ const FAL_ERROR_FIELDS = [
   'error_message',
   'errorMessage',
   'message',
+  'msg',
   'detail',
   'error',
   'reason',

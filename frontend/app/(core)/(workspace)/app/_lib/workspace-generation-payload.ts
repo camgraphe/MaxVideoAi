@@ -1,5 +1,5 @@
 import type { runGenerate } from '@/lib/api';
-import { toLumaRay2DurationLabel, type LumaRay2DurationLabel } from '@/lib/luma-ray2';
+import { toLumaRay2DurationLabel } from '@/lib/luma-ray2';
 import type { EngineCaps, EngineModeUiCaps, Mode } from '@/types/engines';
 import type {
   GenerationAttachmentPayload,
@@ -76,18 +76,14 @@ export function buildWorkspaceGeneratePayload(
     options.lumaContext.isLumaRay2GenerateWorkflow && options.lumaContext.lumaDuration
       ? options.lumaContext.lumaDuration.seconds
       : options.effectiveDurationSec;
-  const durationOptionLabel: LumaRay2DurationLabel | undefined =
-    typeof options.form.durationOption === 'string'
-      ? (['5s', '9s'].includes(options.form.durationOption)
-          ? (options.form.durationOption as LumaRay2DurationLabel)
-          : undefined)
-      : undefined;
   const resolvedDurationLabel =
     options.lumaContext.isLumaRay2GenerateWorkflow && options.lumaContext.lumaDuration
       ? options.lumaContext.lumaDuration.label
-      : toLumaRay2DurationLabel(options.effectiveDurationSec, durationOptionLabel) ??
-        durationOptionLabel ??
-        options.effectiveDurationSec;
+      : options.selectedEngineId === 'luma-ray-3-2'
+        ? toLumaRay2DurationLabel(options.effectiveDurationSec) ??
+          options.form.durationOption ??
+          options.effectiveDurationSec
+        : options.form.durationOption ?? options.effectiveDurationSec;
   const shouldSendDuration = !options.capability || Boolean(options.capability.duration || options.capability.frames);
   const shouldSendResolution = !options.capability || (options.capability.resolution?.length ?? 0) > 0;
   const resolvedResolution =

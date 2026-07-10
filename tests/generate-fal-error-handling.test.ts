@@ -114,3 +114,19 @@ test('Fal provider message extraction and deferral behavior stays intact', async
     FalTimeoutError
   );
 });
+
+test('Fal provider message extraction prefers validation messages over error types', () => {
+  assert.equal(
+    extractFalProviderMessage({
+      detail: [
+        {
+          type: 'literal_error',
+          loc: ['body', 'duration'],
+          msg: "Input should be '4', '5', '6', '7', '8', '9', '10', '11' or '12'",
+          input: '5s',
+        },
+      ],
+    }),
+    "Input should be '4', '5', '6', '7', '8', '9', '10', '11' or '12'"
+  );
+});

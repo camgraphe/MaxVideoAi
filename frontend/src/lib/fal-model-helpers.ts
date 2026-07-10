@@ -36,7 +36,12 @@ export function normalizeFalDurationValueForModel(
   modelSlug: string,
   duration: number | string
 ): number | string {
-  if (STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) || engineId.startsWith('seedance-2-0') || engineId === 'wan-2-6') {
+  if (
+    STRING_ENUM_DURATION_MODEL_PATTERN.test(modelSlug) ||
+    engineId === 'seedance-1-5-pro' ||
+    engineId.startsWith('seedance-2-0') ||
+    engineId === 'wan-2-6'
+  ) {
     return normalizeStringEnumDurationValue(duration);
   }
 
