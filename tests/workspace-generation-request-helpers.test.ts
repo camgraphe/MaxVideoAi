@@ -347,6 +347,59 @@ test('workspace generate payload resolves provider-specific options', () => {
   assert.deepEqual(result.payload.extraInputValues, { style: 'cinematic' });
 });
 
+test('workspace keeps Seedance 1.5 duration values free of Luma suffixes', () => {
+  const form = baseForm({
+    engineId: 'seedance-1-5-pro',
+    mode: 'i2v',
+    durationSec: 5,
+    durationOption: 5,
+  });
+  const capability: EngineModeUiCaps = {
+    modes: ['i2v'],
+    duration: { options: [4, 5, 6, 7, 8, 9, 10, 11, 12], default: 5 },
+    resolution: ['480p', '720p', '1080p'],
+    aspectRatio: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+    fps: [24],
+    audioToggle: true,
+  };
+
+  const result = buildWorkspaceGeneratePayload({
+    selectedEngineId: 'seedance-1-5-pro',
+    activeMode: 'i2v',
+    submissionMode: 'i2v',
+    form,
+    trimmedPrompt: 'The woman seen from behind is walking',
+    trimmedNegativePrompt: '',
+    effectiveDurationSec: 5,
+    memberTier: 'member',
+    paymentMode: 'wallet',
+    capability,
+    supportsNegativePrompt: false,
+    supportsAudioToggle: true,
+    isSeedance: true,
+    supportsKlingV3Controls: false,
+    supportsKlingV3VoiceControl: false,
+    voiceIds: [],
+    voiceControlEnabled: false,
+    shotType: 'customize',
+    localKey: 'local-seedance-15',
+    batchId: 'batch-seedance-15',
+    iterationIndex: 0,
+    iterationCount: 1,
+    friendlyMessage: 'Take 1',
+    lumaContext: getLumaRay2GenerationContext({
+      selectedEngineId: 'seedance-1-5-pro',
+      submissionMode: 'i2v',
+      form,
+    }),
+    inputsPayload: [],
+    referenceImageUrls: [],
+    extraInputValues: {},
+  });
+
+  assert.equal(result.payload.durationOption, 5);
+});
+
 test('workspace Happy Horse 1.1 controls and payload mirror the Fal schema by mode', () => {
   const happyHorse = listFalEngines().find((entry) => entry.id === 'happy-horse-1-1')?.engine;
   assert.ok(happyHorse);

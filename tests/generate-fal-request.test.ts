@@ -219,6 +219,25 @@ test('Fal request helper uses first frame URL for first-last-frame payloads', ()
   assert.equal(result.falInputSummary.hasLastFrame, true);
 });
 
+test('Fal request body normalizes legacy Seedance 1.5 duration suffixes', () => {
+  const result = buildFalGenerationRequest(
+    {
+      engineId: 'seedance-1-5-pro',
+      prompt: 'The woman seen from behind is walking',
+      mode: 'i2v',
+      durationSec: 5,
+      durationOption: '5s',
+      resolution: '720p',
+      aspectRatio: '9:16',
+      audio: false,
+      imageUrl: 'https://cdn.maxvideoai.com/start.png',
+    },
+    'fal-ai/bytedance/seedance/v1.5/pro/image-to-video'
+  );
+
+  assert.equal(result.requestBody.duration, '5');
+});
+
 test('Fal request body routes Veo 3.1 Fast reference-to-video with image_urls only', () => {
   const payload = {
     engineId: 'veo-3-1-fast',
