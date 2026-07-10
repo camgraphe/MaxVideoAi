@@ -1402,6 +1402,23 @@ test('canvas keyboard shortcuts undo and redo canvas actions without stealing ed
   assertNoEditorClientErrors(errors);
 });
 
+test('canvas inspector shortcut stays scoped to the canvas surface', async ({ page }) => {
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+  await page.locator('.react-flow__node').first().click();
+
+  await page.locator('[data-timeline-track="video-1"]').click({ position: { x: 8, y: 8 } });
+  await expect(page.locator('[data-active-editor-surface="timeline"]')).toBeVisible();
+  await page.keyboard.press('i');
+  await expect(page.locator('[data-timeline-in-marker="true"]')).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toHaveCount(0);
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.locator('[data-active-editor-surface="canvas"]')).toBeVisible();
+  await page.keyboard.press('i');
+  await expect(page.getByRole('complementary', { name: 'Node settings' })).toBeVisible();
+});
+
 test('viewer mode can create and switch between multiple sequences', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

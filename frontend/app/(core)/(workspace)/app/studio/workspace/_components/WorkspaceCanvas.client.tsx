@@ -40,6 +40,7 @@ import {
   type WorkspaceHandleDropDirection,
 } from '../_lib/workspace-handle-drop';
 import { createWorkspaceGraphClipboardSnapshot } from '../_lib/workspace-graph-clipboard';
+import { shouldHandleCanvasKeyboardShortcut } from '../_lib/workspace-canvas-shortcuts';
 import { inferWorkspaceEdgeKind, WORKSPACE_EDGE_COLORS } from '../_lib/workspace-templates';
 import { CanvasHandleDropPreview, type HandleDropPreview } from './canvas/CanvasHandleDropPreview';
 import {
@@ -89,7 +90,7 @@ type WorkspaceCanvasProps = {
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
   onCopySelectedNodes: (nodeIds: string[]) => void;
-  onPasteCopiedNodes: () => void;
+  onPasteCopiedNodes: (center: XYPosition) => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
   onAutoCenterNodeConsumed: () => void;
   onCanvasInteraction: () => void;
@@ -200,6 +201,14 @@ function isCanvasCommandTarget(target: EventTarget | null): boolean {
   return isEditableCanvasShortcutTarget(target) || isCanvasDialogTarget(target) || isCanvasDialogTarget(document.activeElement);
 }
 
+function ownsCanvasKeyboardShortcut(event: KeyboardEvent, isCanvasActive: boolean): boolean {
+  return shouldHandleCanvasKeyboardShortcut({
+    isBlockedTarget: isCanvasCommandTarget(event.target),
+    isCanvasActive,
+    isDefaultPrevented: event.defaultPrevented,
+  });
+}
+
 function canvasShortcutLetter(event: KeyboardEvent): string {
   const key = event.key.toLowerCase();
   if (/^[a-z]$/.test(key)) return key;
@@ -298,6 +307,11 @@ function WorkspaceCanvasInner({
     }),
     []
   );
+  const canvasCenterFlowPosition = useCallback(() => {
+    const rect = canvasShellRef.current?.getBoundingClientRect();
+    if (!rect) return reactFlow.screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    return reactFlow.screenToFlowPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+  }, [reactFlow]);
 
   canvasShortcutStateRef.current = {
     canRedo: canRedoCanvas,
@@ -363,9 +377,9 @@ function WorkspaceCanvasInner({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key.toLowerCase() !== 'i') return;
-      if (isCanvasCommandTarget(event.target)) return;
+      if (!ownsCanvasKeyboardShortcut(event, canvasShortcutStateRef.current.isActive)) return;
       const selectedNodeId = selectedNodeIdRef.current;
       if (!selectedNodeId) return;
       event.preventDefault();
@@ -387,8 +401,7 @@ function WorkspaceCanvasInner({
         onRedo,
         onUndo,
       } = canvasShortcutStateRef.current;
-      if (!isActive) return;
-      if (isCanvasCommandTarget(event.target)) return;
+      if (!ownsCanvasKeyboardShortcut(event, isActive)) return;
       const shortcut = canvasHistoryShortcut(event);
       if (!shortcut) return;
 
@@ -413,10 +426,9 @@ function WorkspaceCanvasInner({
       pendingGraphPasteTimerRef.current = null;
     };
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.defaultPrevented || event.altKey || (!event.metaKey && !event.ctrlKey)) return;
-      if (isCanvasCommandTarget(event.target)) return;
+      if (event.altKey || (!event.metaKey && !event.ctrlKey)) return;
       const { isActive, onPasteCopiedNodes: pasteCopiedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
-      if (!isActive) return;
+      if (!ownsCanvasKeyboardShortcut(event, isActive)) return;
       const key = canvasShortcutLetter(event);
       if (key === 'c' && copiedNodeIds.length) {
         return;
@@ -425,7 +437,7 @@ function WorkspaceCanvasInner({
       clearPendingGraphPaste();
       pendingGraphPasteTimerRef.current = window.setTimeout(() => {
         pendingGraphPasteTimerRef.current = null;
-        pasteCopiedNodes();
+        pasteCopiedNodes(canvasCenterFlowPosition());
       }, 80);
     };
     const handlePaste = () => {
@@ -439,7 +451,7 @@ function WorkspaceCanvasInner({
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('paste', handlePaste, true);
     };
-  }, []);
+  }, [canvasCenterFlowPosition]);
 
   useEffect(() => {
     const handleCopy = (event: ClipboardEvent) => {

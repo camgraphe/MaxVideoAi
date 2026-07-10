@@ -8,7 +8,12 @@ import {
   findGeneratedOutputNodeForShot,
   outputNodeSubtitle,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-helpers';
-import { duplicateWorkspaceGraphSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard';
+import {
+  createWorkspaceGraphClipboardSnapshot,
+  duplicateWorkspaceGraphSelection,
+  pasteWorkspaceGraphClipboardSnapshot,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard';
+import { shouldHandleCanvasKeyboardShortcut } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-shortcuts';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import { createStarterWorkspaceTemplate } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 
@@ -104,5 +109,53 @@ test('canvas clipboard duplicates selected graph nodes and keeps internal edges 
     result.nodes.map((node) => node.position),
     [{ x: 48, y: 48 }, { x: 348, y: 48 }],
     'duplicates should keep their selected nodes\' relative positions'
+  );
+});
+
+test('canvas clipboard paste centers an offscreen selection in the supplied flow viewport center', () => {
+  const snapshot = createWorkspaceGraphClipboardSnapshot({
+    nodes: [
+      graphNode('prompt-offscreen', 'text-prompt', 8_000, -4_000),
+      graphNode('shot-offscreen', 'shot', 8_300, -3_800),
+    ],
+    edges: [graphEdge('edge-internal', 'prompt-offscreen', 'shot-offscreen', 'prompt')],
+    selectedNodeIds: ['prompt-offscreen', 'shot-offscreen'],
+  });
+  const result = pasteWorkspaceGraphClipboardSnapshot({
+    currentEdges: [],
+    currentNodes: [],
+    idSeed: 'viewport-center',
+    center: { x: 120, y: 240 },
+    snapshot,
+  });
+
+  assert.equal(result.edges.length, 1, 'the internal connector should be preserved');
+  assert.deepEqual(
+    result.nodes.map((node) => node.position),
+    [{ x: -30, y: 140 }, { x: 270, y: 340 }],
+    'the copied group should center in the supplied flow viewport without changing relative positions'
+  );
+  assert.equal(result.edges[0].source, 'prompt-offscreen-copy-viewport-center');
+  assert.equal(result.edges[0].target, 'shot-offscreen-copy-viewport-center');
+});
+
+test('canvas keyboard shortcuts leave a stale selection alone when the timeline owns focus', () => {
+  assert.equal(
+    shouldHandleCanvasKeyboardShortcut({
+      isCanvasActive: false,
+      isDefaultPrevented: false,
+      isBlockedTarget: false,
+    }),
+    false,
+    'timeline focus must prevent the canvas inspector from opening for a stale canvas selection'
+  );
+  assert.equal(
+    shouldHandleCanvasKeyboardShortcut({
+      isCanvasActive: true,
+      isDefaultPrevented: false,
+      isBlockedTarget: false,
+    }),
+    true,
+    'canvas focus should retain the inspector shortcut'
   );
 });

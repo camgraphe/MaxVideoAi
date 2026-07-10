@@ -16,6 +16,7 @@ type PasteWorkspaceGraphClipboardParams = {
   currentEdges: WorkspaceGraphEdge[];
   snapshot: WorkspaceGraphClipboardSnapshot | null;
   idSeed: string;
+  center?: { x: number; y: number };
   offset?: { x: number; y: number };
 };
 
@@ -94,6 +95,17 @@ function graphClipboardIdSeed(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function graphSelectionCenter(nodes: WorkspaceGraphNode[]): { x: number; y: number } {
+  const left = Math.min(...nodes.map((node) => node.position.x));
+  const right = Math.max(...nodes.map((node) => node.position.x));
+  const top = Math.min(...nodes.map((node) => node.position.y));
+  const bottom = Math.max(...nodes.map((node) => node.position.y));
+  return {
+    x: (left + right) / 2,
+    y: (top + bottom) / 2,
+  };
+}
+
 export function createWorkspaceGraphClipboardSnapshot({
   edges,
   nodes,
@@ -117,6 +129,7 @@ export function createWorkspaceGraphClipboardSnapshot({
 }
 
 export function pasteWorkspaceGraphClipboardSnapshot({
+  center,
   currentEdges,
   currentNodes,
   idSeed,
@@ -131,6 +144,11 @@ export function pasteWorkspaceGraphClipboardSnapshot({
     };
   }
 
+  const selectionCenter = center ? graphSelectionCenter(snapshot.nodes) : null;
+  const pasteOffset = selectionCenter
+    ? { x: center.x - selectionCenter.x, y: center.y - selectionCenter.y }
+    : offset;
+
   const usedNodeIds = new Set(currentNodes.map((node) => node.id));
   const usedEdgeIds = new Set(currentEdges.map((edge) => edge.id));
   const nodeIdMap = new Map<string, string>();
@@ -141,8 +159,8 @@ export function pasteWorkspaceGraphClipboardSnapshot({
       ...clipboardNode(node),
       id: pastedNodeId,
       position: {
-        x: node.position.x + offset.x,
-        y: node.position.y + offset.y,
+        x: node.position.x + pasteOffset.x,
+        y: node.position.y + pasteOffset.y,
       },
       selected: true,
     };

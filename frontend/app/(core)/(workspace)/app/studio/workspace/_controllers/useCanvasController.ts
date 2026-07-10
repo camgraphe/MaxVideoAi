@@ -54,7 +54,7 @@ type UseCanvasControllerOptions = {
   canvasShellRef: RefObject<HTMLElement | null>;
   copy: StudioCopy['canvas']['nodes'];
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
-  onCanvasGraphPaste: () => void;
+  onCanvasGraphPaste: (center: XYPosition) => void;
   onCanvasInteraction: () => void;
   onCanvasTextPaste: (request: WorkspaceCanvasTextPasteRequest) => void;
   onCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
@@ -143,7 +143,7 @@ export function useCanvasController({
       if (types.includes(WORKSPACE_GRAPH_CLIPBOARD_TYPE) || text === WORKSPACE_GRAPH_CLIPBOARD_TEXT) {
         event.preventDefault();
         onCanvasInteraction();
-        onCanvasGraphPaste();
+        onCanvasGraphPaste(canvasCenterFlowPosition());
         return;
       }
       if (!files.length && !text) return;

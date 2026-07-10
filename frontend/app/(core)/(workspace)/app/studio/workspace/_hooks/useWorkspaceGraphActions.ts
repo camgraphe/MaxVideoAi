@@ -6,6 +6,7 @@ import {
   type Connection,
   type EdgeChange,
   type NodeChange,
+  type XYPosition,
 } from '@xyflow/react';
 import type {
   WorkspaceHandleDropRequest,
@@ -128,7 +129,7 @@ export function useWorkspaceGraphActions({
   handleCreateNodeFromHandleDrop: (request: WorkspaceHandleDropRequest) => void;
   handleCreateNodeFromPaletteDrop: (request: WorkspacePaletteDropRequest) => void;
   handleCopySelectedNodes: (selectedNodeIds: string[]) => void;
-  handlePasteCanvasClipboard: () => void;
+  handlePasteCanvasClipboard: (center: XYPosition) => void;
   handleOpenAssetLibrary: (nodeId: string) => void;
   handleSelectLibraryAsset: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
   handleImportLibraryAssets: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
@@ -153,7 +154,7 @@ export function useWorkspaceGraphActions({
     [edges, nodes]
   );
 
-  const handlePasteCanvasClipboard = useCallback(() => {
+  const handlePasteCanvasClipboard = useCallback((center: XYPosition) => {
     const snapshot = graphClipboardRef.current;
     if (!snapshot) return;
     let pastedNodeIds: string[] = [];
@@ -162,6 +163,7 @@ export function useWorkspaceGraphActions({
       const result = pasteWorkspaceGraphClipboardSnapshot({
         currentEdges,
         currentNodes,
+        center,
         idSeed: createWorkspaceClipboardPasteSeed(),
         snapshot,
       });
