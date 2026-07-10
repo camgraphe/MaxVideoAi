@@ -128,3 +128,62 @@ The full Task 10 helper/architecture command still reports the same three unrela
 ### Fix Commit
 
 `826e1485 fix: scope Studio canvas shortcuts and paste`
+
+## Final Fix Pass: Native Paste Ownership
+
+### Changes
+
+- Threaded `isShortcutActive` into `useCanvasController` as native paste ownership state.
+- Added `shouldHandleCanvasPaste` to the shared canvas shortcut ownership helper.
+- Gated graph, text, and file native paste before any `onCanvasInteraction` or canvas mutation.
+- Added a body-target clipboard regression for timeline-owned graph/text paste and one canvas-owned graph paste.
+
+### RED Evidence
+
+```sh
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-graph-helpers.test.ts
+```
+
+The native-paste ownership test failed because `shouldHandleCanvasPaste` did not exist.
+
+### GREEN Evidence
+
+```sh
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-graph-helpers.test.ts
+```
+
+Result: 7 passing, 0 failing.
+
+```sh
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+PLAYWRIGHT_EDITOR_SKIP_WEB_SERVER=1 PLAYWRIGHT_EDITOR_PORT=3100 \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-smoke.spec.ts \
+  --grep 'canvas inspector shortcut stays scoped to the canvas surface|native body paste stays with the active editor surface' \
+  --reporter=list
+```
+
+Result: exit 0. Timeline-owned body-target graph and text paste do not change the canvas; canvas-owned graph paste adds exactly one node.
+
+Additional checks:
+
+```sh
+./frontend/node_modules/.bin/eslint \
+  'app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx' \
+  'app/(core)/(workspace)/app/studio/workspace/_controllers/useCanvasController.ts' \
+  'app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-shortcuts.ts'
+/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node scripts/check-public-exposure.mjs
+git diff --check
+```
+
+Result: passed.
+
+The Task 10 helper/architecture command still has the same three unrelated baseline architecture failures documented above; all Task 10 helper tests pass.
+
+### Fix Commit
+
+`b8702d04 fix: scope Studio native canvas paste`
