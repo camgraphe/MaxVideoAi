@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import { cookies } from 'next/headers';
 import type { ReactNode } from 'react';
 import { Analytics as VercelAnalytics } from '@vercel/analytics/react';
 import { AnalyticsScripts } from '@/components/analytics/AnalyticsScripts';
@@ -11,6 +12,8 @@ import { SessionWatchdog } from '@/components/auth/SessionWatchdog';
 import { SWRFocusResync } from '@/components/swr/SWRFocusResync';
 import { SWRProvider } from '@/components/swr/SWRProvider';
 import { I18nProvider } from '@/lib/i18n/I18nProvider';
+import { defaultLocale, locales, type AppLocale } from '@/i18n/locales';
+import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { LocaleSync } from '@/components/i18n/LocaleSync';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
@@ -41,7 +44,12 @@ export const viewport: Viewport = {
 };
 
 export default async function CoreLayout({ children }: { children: ReactNode }) {
-  const { locale, dictionary, fallback } = await resolveDictionary();
+  const cookieStore = await cookies();
+  const locale = [cookieStore.get(LOCALE_COOKIE)?.value, cookieStore.get('NEXT_LOCALE')?.value].find(
+    (candidate): candidate is AppLocale =>
+      typeof candidate === 'string' && (locales as readonly string[]).includes(candidate)
+  ) ?? defaultLocale;
+  const { dictionary, fallback } = await resolveDictionary({ locale });
 
   const homeUrl = `${NORMALIZED_SITE_URL}/`;
   const logoUrl = `${NORMALIZED_SITE_URL}/favicon-512.png`;

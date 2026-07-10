@@ -72,7 +72,7 @@ export function ImageCompositePreviewDock({
   const { t } = useI18n();
   const title = t('workspace.generate.preview.title', 'Composite Preview');
   const empty = t('workspace.generate.preview.empty', 'Select a take to preview');
-  const copyLabel = t('workspace.image.preview.copyLink', 'Copy link');
+  const copyLabel = t('workspace.image.preview.copy', 'Copy link');
   const copiedLabel = t('workspace.image.preview.copied', 'Copied');
   const downloadLabel = t('workspace.image.preview.download', 'Download');
   const editImageLabel = t('workspace.image.preview.editImage', 'Edit this image');

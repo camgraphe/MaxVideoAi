@@ -393,14 +393,14 @@ export function CompositePreviewDock({
               </div>
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center rounded-card bg-surface-glass-80 text-sm text-text-secondary">
-                Select a take to preview
+                {copy.empty}
               </div>
             )}
 
             {showGroupError ? (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-surface-on-media-dark-65 px-6 text-center text-on-inverse">
-                <span className="text-sm font-semibold uppercase tracking-micro">Preview unavailable</span>
-                <span className="mt-2 text-xs text-on-media-85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
+                <span className="text-sm font-semibold uppercase tracking-micro">{copy.errorTitle}</span>
+                <span className="mt-2 text-xs text-on-media-85">{group?.errorMsg ?? copy.errorBody}</span>
               </div>
             ) : null}
             {guidedNavigation && group ? (

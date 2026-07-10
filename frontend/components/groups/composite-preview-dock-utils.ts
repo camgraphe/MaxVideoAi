@@ -21,6 +21,8 @@ export const DEFAULT_PREVIEW_COPY = {
     next: 'Next sample',
     badge: 'Starter sample {current}/{total}',
   },
+  errorTitle: 'Preview unavailable',
+  errorBody: 'Generation failed. Please retry.',
   placeholder: '—',
 } as const;
 

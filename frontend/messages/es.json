@@ -3130,6 +3130,14 @@
       "badges": {
         "live": "LIVE",
         "toolsBeta": "BETA"
+      },
+      "newModel": {
+        "label": "Nuevo modelo",
+        "name": "Seedance 2.0",
+        "quality1": "Movimiento cinematográfico",
+        "quality2": "Continuidad entre planos",
+        "quality3": "Flujo de audio nativo",
+        "cta": "Probar ahora"
       }
     },
     "languageToggle": {
@@ -3276,7 +3284,7 @@
         "guided": {
           "previous": "Muestra anterior",
           "next": "Muestra siguiente",
-          "badge": "Sample {current}/{total}"
+          "badge": "Muestra {current}/{total}"
         },
         "controls": {
           "play": {
@@ -3301,12 +3309,18 @@
             "label": "Abrir en modal",
             "aria": "Abrir la vista previa en una ventana"
           },
+          "download": {
+            "label": "Descargar",
+            "aria": "Descargar la vista previa"
+          },
           "openTake": {
             "label": "Abrir",
             "aria": "Abrir esta toma"
           },
           "copyPrompt": "Copiar prompt"
         },
+        "errorTitle": "Vista previa no disponible",
+        "errorBody": "El render falló. Inténtalo de nuevo.",
         "placeholder": "—"
       },
       "galleryRail": {
@@ -3786,6 +3800,8 @@
         "download": "Descargar",
         "copy": "Copiar enlace",
         "copied": "Copiado",
+        "editImage": "Editar esta imagen",
+        "openModal": "Abrir en una ventana",
         "cta": "Generar imagen"
       },
       "engine": {
@@ -3809,14 +3825,41 @@
           "singular": "imagen",
           "plural": "imágenes"
         },
+        "aspectRatioLabel": "Relación de aspecto",
+        "aspectRatioHint": "Elige un formato que se adapte a tu encuadre.",
+        "aspectRatioAutoNote": "Auto permite que el modelo decida el recorte final.",
         "resolutionLabel": "Resolución",
         "resolutionHint": "Itera en 1K/2K y pasa a 4K para el final (el precio se ajusta automáticamente).",
         "resolutionLockedLabel": "Resolución bloqueada por este motor.",
+        "seedLabel": "Semilla",
+        "seedPlaceholder": "Opcional",
+        "outputFormatLabel": "Formato de salida",
+        "outputFormatHint": "Elige el tipo de archivo de las imágenes finales.",
+        "qualityLabel": "Calidad",
+        "qualityHint": "Controla la fidelidad del modelo y el costo cuando está disponible.",
+        "customWidthLabel": "Ancho",
+        "customHeightLabel": "Alto",
+        "maskUrlLabel": "URL de máscara",
+        "maskUrlPlaceholder": "URL pública opcional de la máscara",
+        "enableWebSearchLabel": "Búsqueda web",
+        "enableWebSearchHint": "Usa contexto web actual cuando el modelo lo permita.",
+        "thinkingLevelLabel": "Nivel de razonamiento",
+        "thinkingLevelHint": "Aumenta la profundidad de razonamiento cuando el modelo lo permita.",
+        "limitGenerationsLabel": "Limitar generaciones",
+        "limitGenerationsHint": "Reduce las generaciones exploratorias adicionales cuando esté disponible.",
+        "watermarkLabel": "Marca de agua de IA",
+        "watermarkHint": "Añade la marca de agua del proveedor cuando esté disponible.",
+        "toggleEnabled": "Activado",
+        "toggleDisabled": "Desactivado",
         "estimatedCost": "Costo estimado: {amount}",
         "referenceLabel": "Imágenes de referencia",
         "referenceHelper": "Opcional · hasta {count} imágenes",
         "referenceNote": "Arrastra y suelta, pega, sube desde tu dispositivo o abre la biblioteca. Obligatorio en modo Edición.",
         "referenceButton": "Biblioteca",
+        "characterButton": "Personajes",
+        "characterNote": "Elige personajes generados como referencias de identidad.",
+        "characterHiddenNotice": "Los personajes seleccionados se guardan y se reutilizan al volver a un motor compatible.",
+        "characterLimitNotice": "Solo se usarán las primeras {count} referencias de personaje con este motor.",
         "referenceSlotLabel": "Ranura {index}",
         "referenceSlotHint": "Suelta una imagen, súbela o elige una de tu biblioteca.",
         "referenceSlotNameFallback": "Imagen",
@@ -3844,6 +3887,7 @@
       },
       "errors": {
         "onlyImages": "Solo se aceptan archivos de imagen.",
+        "unsupportedFormat": "Este motor admite los formatos: {formats}.",
         "uploadFailed": "No se pudo subir la imagen. Intenta de nuevo.",
         "fileTooLarge": "La imagen supera el límite de {maxMB} MB. Comprime o elige un archivo más ligero.",
         "unauthorized": "Sesión expirada — inicia sesión de nuevo y reintenta la carga.",
@@ -3853,6 +3897,7 @@
       },
       "messages": {
         "success": "Se generaron {count} imagen(es).",
+        "generatingInProgress": "Generación en curso ({count})…",
         "savedToLibrary": "Guardado en la biblioteca.",
         "removedFromLibrary": "Quitado de la biblioteca."
       },
@@ -3865,12 +3910,17 @@
         "button": "Biblioteca",
         "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
         "overlay": "Usar esta imagen",
+        "unsupported": "Formato no compatible",
+        "supportedFormats": "Formatos compatibles: {formats}",
         "assetFallback": "Recurso",
         "tabs": {
           "all": "Todas",
           "upload": "Imágenes subidas",
           "generated": "Imágenes generadas",
-          "storyboard": "Recursos storyboard"
+          "storyboard": "Recursos storyboard",
+          "character": "Personajes",
+          "angle": "Ángulos",
+          "upscale": "Ampliaciones"
         },
         "modal": {
           "title": "Seleccionar desde la biblioteca",
@@ -3878,10 +3928,30 @@
           "close": "Cerrar",
           "error": "No se pudieron cargar los recursos. Intenta de nuevo.",
           "empty": "Aún no guardaste recursos. Súbelos desde el compositor o desde esta página.",
+          "emptyCompatible": "Aún no hay recursos compatibles con este motor.",
           "emptyUploads": "Aún no hay imágenes subidas. Sube imágenes desde el compositor o desde la página de Biblioteca.",
           "emptyGenerated": "Aún no hay imágenes generadas guardadas. Guarda una imagen generada para verla aquí.",
-          "emptyStoryboard": "Aún no hay storyboards guardados. Guarda una imagen storyboard para verla aquí."
+          "emptyStoryboard": "Aún no hay storyboards guardados. Guarda una imagen storyboard para verla aquí.",
+          "emptyCharacter": "Aún no hay personajes guardados. Genera uno primero en el creador de personajes.",
+          "emptyAngle": "Aún no hay imágenes de ángulo guardadas. Genera una primero en la herramienta Ángulo.",
+          "emptyUpscale": "Aún no hay ampliaciones guardadas. Guarda primero un resultado ampliado."
         }
+      },
+      "characterPicker": {
+        "title": "Seleccionar personajes",
+        "description": "Elige resultados del creador de personajes. Los personajes seleccionados se añadirán como referencias de identidad.",
+        "selected": "Seleccionado",
+        "select": "Seleccionar",
+        "done": "Listo",
+        "empty": "Aún no hay referencias de personajes. Genera una primero en el creador de personajes.",
+        "limitLabel": "Hasta {count} referencia(s) de personaje"
+      },
+      "authGate": {
+        "title": "Crea una cuenta para generar",
+        "body": "Puedes explorar el espacio de imágenes, pero necesitas una cuenta para iniciar una generación real.",
+        "primary": "Crear cuenta",
+        "secondary": "Iniciar sesión",
+        "close": "Quizá más tarde"
       }
     },
     "library": {

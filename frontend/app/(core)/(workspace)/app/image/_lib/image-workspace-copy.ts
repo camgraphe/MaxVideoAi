@@ -12,6 +12,8 @@ export interface ImageWorkspaceCopy {
     download: string;
     copy: string;
     copied: string;
+    editImage: string;
+    openModal: string;
     cta: string;
   };
   engine: {
@@ -179,6 +181,8 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
     download: 'Download',
     copy: 'Copy link',
     copied: 'Copied',
+    editImage: 'Edit this image',
+    openModal: 'Open modal',
     cta: 'Generate image',
   },
   engine: {
