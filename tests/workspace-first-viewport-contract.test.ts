@@ -85,7 +85,7 @@ test('workspace solo assets stretch while workspace-only vertical density expose
   assert.match(assetDropzoneSource, /const shouldLimitSoloWidth = isSoloField && displaySlots\.length === 1 && !workspaceDensity/);
   assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
   assert.match(composerSource, /workspaceDensity \? 'space-y-2' : 'space-y-4'/);
-  assert.match(composerSource, /compactPrompt \? 'h-10 min-h-0[\s\S]*sm:h-12/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[164px\][\s\S]*resize-y/);
   assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
   assert.match(composerSource, /workspaceDensity \? 'space-y-2 border-t[\s\S]*pt-2/);
   assert.match(composerSource, /workspaceDensity \? 'flex-nowrap gap-2 pb-1 pt-2'/);
@@ -102,12 +102,12 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
   assert.match(composerTypesSource, /compactPrompt\?: boolean/);
   assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
-  assert.match(composerSource, /rows=\{compactPrompt \? 2 : workspaceDensity \? 5 : 6\}/);
-  assert.match(composerSource, /min-h-\[88px\][\s\S]*sm:h-10 sm:min-h-0/);
-  assert.match(composerSource, /sm:h-10 sm:min-h-0/);
+  assert.match(composerSource, /rows=\{workspaceDensity \? 7 : compactPrompt \? 2 : 6\}/);
+  assert.match(composerSource, /min-h-\[164px\]/);
+  assert.doesNotMatch(composerSource, /sm:h-10 sm:min-h-0/);
   assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
   assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
-  assert.match(composerSource, /lg:h-10 lg:py-0/);
+  assert.match(composerSource, /h-10 gap-3[\s\S]*lg:min-w-\[176px\]/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);

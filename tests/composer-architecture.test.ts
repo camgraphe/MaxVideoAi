@@ -48,5 +48,9 @@ test('composer workspace density is opt-in and keeps price inside Generate', () 
   assert.match(composerSource, /density = 'default'/);
   assert.match(composerSource, /data-composer-density=\{density\}/);
   assert.match(composerSource, /workspaceDensity[\s\S]*'p-4 md:p-5'/);
+  assert.match(composerSource, /rows=\{workspaceDensity \? 7 : compactPrompt \? 2 : 6\}/);
+  assert.match(composerSource, /min-h-\[164px\]/);
+  assert.match(composerSource, /lg:min-w-\[176px\]/);
+  assert.match(composerSource, /workspaceDensity \? 'px-3' : 'px-3\.5'/);
   assert.equal(composerSource.match(/\{formattedPrice\}/g)?.length, 1);
 });

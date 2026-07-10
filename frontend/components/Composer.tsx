@@ -108,7 +108,6 @@ export function Composer({
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
-
   const formattedPrice = useMemo(() => {
     if (price == null) return null;
     try {
@@ -117,7 +116,6 @@ export function Composer({
       return `${currency} ${price.toFixed(2)}`;
     }
   }, [price, currency]);
-
   const memberDiscount = preflight?.pricing?.discount;
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = promptField?.description;
@@ -340,12 +338,12 @@ export function Composer({
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={compactPrompt ? 2 : workspaceDensity ? 5 : 6}
+                rows={workspaceDensity ? 7 : compactPrompt ? 2 : 6}
                 aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   workspaceDensity
-                    ? compactPrompt ? 'h-10 min-h-0 w-full border-0 bg-transparent px-4 pb-1 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-12' : 'min-h-[88px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-10 sm:min-h-0'
+                    ? 'min-h-[164px] w-full resize-y border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32'
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
@@ -385,11 +383,13 @@ export function Composer({
                         size="md"
                         disabled={isGenerateDisabled}
                         className={clsx(
-                          'relative w-full justify-between gap-4 overflow-hidden rounded-[24px] px-5 py-3 text-left',
+                          'relative w-full justify-between overflow-hidden rounded-[24px] text-left',
                           'transform-gpu transition-transform duration-200 ease-out',
                           'border border-brand shadow-card',
                           'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                          workspaceDensity ? compactPrompt ? 'h-10 py-0 lg:w-auto lg:min-w-[200px]' : 'lg:h-10 lg:py-0 lg:w-auto lg:min-w-[200px]' : 'min-w-[220px]',
+                          workspaceDensity
+                            ? 'h-10 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                            : 'min-w-[220px] gap-4 px-5 py-3',
                           isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
                           isGenerateDisabled ? '' : 'active:scale-[0.97]',
                           formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
@@ -400,7 +400,8 @@ export function Composer({
                         {formattedPrice ? (
                           <span
                             className={clsx(
-                              'relative z-10 inline-flex items-center rounded-full px-3.5 py-1 text-sm font-semibold normal-case backdrop-blur',
+                              'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                              workspaceDensity ? 'px-3' : 'px-3.5',
                               isGenerateDisabled
                                 ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
                                 : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
