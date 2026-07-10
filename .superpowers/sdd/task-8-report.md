@@ -25,7 +25,7 @@
 
 ## Commit
 
-Pending commit creation.
+`d51af7d0` (`fix: harden Studio timeline viewer editing`)
 
 ## Concerns
 
