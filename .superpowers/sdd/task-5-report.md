@@ -108,3 +108,24 @@ None.
 ### Concerns
 
 - None.
+
+## Fix pass 5
+
+### Changed files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing.ts`
+- `tests/maxvideoai-editor-v1-pricing.test.ts`
+
+### Verification
+
+- `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-v1-pricing.test.ts tests/maxvideoai-editor-generation-blocks.test.ts`: passed, 62 tests passed, 0 failed.
+- `git diff --check`: passed.
+
+### Commit
+
+- `b2ea9617abd29cb001969ed8d2ca1991ef825285 fix: estimate Studio Storyboard pricing`
+
+### Concerns
+
+- None.
