@@ -23,4 +23,13 @@ export function formatResolutionList(
   return resolutions.map((resolution) => formatResolutionLabel(engineId, resolution));
 }
 
+export function formatCompactResolutionLabel(resolution: string): string {
+  const trimmed = resolution.trim();
+  const normalized = trimmed.toLowerCase();
+  if (normalized.startsWith('720p')) return '720p';
+  if (normalized.startsWith('1080p')) return '1080p';
+  if (normalized.startsWith('4k')) return '4K';
+  return trimmed;
+}
+
 export const SORA2_PRO_DISPLAY_RESOLUTION = SORA2_PRO_RESOLUTION_LABEL;

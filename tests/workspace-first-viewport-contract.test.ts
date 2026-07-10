@@ -70,10 +70,16 @@ test('video and image composers opt into one responsive workspace density contra
 });
 
 test('workspace mobile settings keep legible intrinsic controls inside the local scroller', () => {
-  assert.match(coreSettingsSource, /compact \? 'min-w-\[112px\] flex-none sm:min-w-0'/);
-  assert.match(imageSettingsSource, /compact \? 'min-w-\[112px\] flex-none sm:min-w-0'/);
-  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-\[112px\] gap-2 px-2\.5 text-\[11px\]/);
-  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-\[112px\] gap-2 px-2\.5 text-\[11px\]/);
+  assert.match(coreSettingsSource, /compact \? 'min-w-\[96px\] flex-none sm:min-w-0'/);
+  assert.match(imageSettingsSource, /compact \? 'min-w-\[96px\] flex-none sm:min-w-0'/);
+  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-\[96px\] gap-1\.5 px-2 text-\[11px\]/);
+  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-\[96px\] gap-1\.5 px-2 text-\[11px\]/);
+  assert.match(coreSettingsSource, /hideChevron=\{compact\}/);
+  assert.match(imageSettingsSource, /hideChevron=\{compact\}/);
+  assert.match(coreSettingsSource, /formatCompactResolutionLabel/);
+  assert.match(imageSettingsSource, /formatCompactResolutionLabel/);
+  assert.match(coreSettingsSource, /flex-nowrap gap-1\.5/);
+  assert.match(imageSettingsSource, /flex-nowrap gap-1\.5/);
   assert.doesNotMatch(coreSettingsSource, /compact \? 'min-w-0 flex-1/);
   assert.doesNotMatch(imageSettingsSource, /compact \? 'min-w-0 flex-1/);
   assert.match(composerSource, /overflow-x-auto[\s\S]*\[scrollbar-width:none\][\s\S]*\[&::-webkit-scrollbar\]:hidden/);

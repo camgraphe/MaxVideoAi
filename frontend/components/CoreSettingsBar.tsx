@@ -6,7 +6,7 @@ import type { EngineCaps, EngineModeUiCaps as CapabilityCaps, Mode } from '@/typ
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
-import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
   density?: 'default' | 'workspace';
@@ -189,10 +189,11 @@ function ControlIcon({ kind }: { kind: CoreControlKind }) {
   );
 }
 
-function createInlineLabel(kind: CoreControlKind, label: string) {
+function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean) {
+  const showIcon = !compact || !['resolution', 'iterations', 'fps'].includes(kind);
   return (
-    <span className="inline-flex items-center gap-2">
-      <ControlIcon kind={kind} />
+    <span className={clsx('inline-flex items-center', compact ? 'gap-1.5' : 'gap-2')}>
+      {showIcon ? <ControlIcon kind={kind} /> : null}
       <span className="truncate">{label}</span>
     </span>
   );
@@ -217,11 +218,11 @@ function InlineSelectControl({
 }) {
   if (!options.length) return null;
   return (
-    <div className={clsx(compact ? 'min-w-[112px] flex-none sm:min-w-0' : 'min-w-0', className)}>
+    <div className={clsx(compact ? 'min-w-[96px] flex-none sm:min-w-0' : 'min-w-0', className)}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label)),
+          label: createInlineLabel(kind, String(option.label), compact),
         }))}
         value={value}
         onChange={onChange}
@@ -229,10 +230,11 @@ function InlineSelectControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-[112px] gap-2 px-2.5 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
+          compact ? 'h-9 !min-w-[96px] gap-1.5 px-2 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
         portal={compact}
+        hideChevron={compact}
       />
     </div>
   );
@@ -354,7 +356,9 @@ export function CoreSettingsBar({
     if (formattedResolution !== optionKey) {
       label = formattedResolution;
     }
-    if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
+    if (workspaceDensity) {
+      label = formatCompactResolutionLabel(label);
+    } else if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
       label = `${label} ${resolutionCopy.proSuffix}`;
     }
     return { value: option, label };
@@ -403,8 +407,8 @@ export function CoreSettingsBar({
       <div
         data-settings-density={density}
         className={clsx(
-          'flex items-center gap-2',
-          workspaceDensity ? 'w-max min-w-full flex-nowrap' : 'flex-wrap'
+          'flex items-center',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
         {durationManaged ? (

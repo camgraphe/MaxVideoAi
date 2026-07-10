@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import { SelectMenu } from '@/components/ui/SelectMenu';
+import { formatCompactResolutionLabel } from '@/lib/resolution-labels';
 
 type ControlOption = {
   value: string | number | boolean;
@@ -113,10 +114,11 @@ function ControlIcon({ kind }: { kind: InlineControlKind }) {
   );
 }
 
-function createInlineLabel(kind: InlineControlKind, label: string) {
+function createInlineLabel(kind: InlineControlKind, label: string, compact: boolean) {
+  const showIcon = !compact || !['images', 'resolution', 'format'].includes(kind);
   return (
-    <span className="inline-flex items-center gap-2">
-      <ControlIcon kind={kind} />
+    <span className={clsx('inline-flex items-center', compact ? 'gap-1.5' : 'gap-2')}>
+      {showIcon ? <ControlIcon kind={kind} /> : null}
       <span className="truncate">{label}</span>
     </span>
   );
@@ -139,11 +141,17 @@ function InlineControl({
 }) {
   if (!options.length) return null;
   return (
-    <div className={compact ? 'min-w-[112px] flex-none sm:min-w-0' : 'min-w-0'}>
+    <div className={compact ? 'min-w-[96px] flex-none sm:min-w-0' : 'min-w-0'}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label)),
+          label: createInlineLabel(
+            kind,
+            compact && kind === 'resolution'
+              ? formatCompactResolutionLabel(String(option.label))
+              : String(option.label),
+            compact,
+          ),
         }))}
         value={value}
         onChange={onChange}
@@ -151,11 +159,12 @@ function InlineControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-[112px] gap-2 px-2.5 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
+          compact ? 'h-9 !min-w-[96px] gap-1.5 px-2 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
         )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
         portal={compact}
+        hideChevron={compact}
       />
     </div>
   );
@@ -176,8 +185,8 @@ export function ImageSettingsBar({
       <div
         data-settings-density={density}
         className={clsx(
-          'flex items-center gap-2',
-          workspaceDensity ? 'w-max min-w-full flex-nowrap' : 'flex-wrap'
+          'flex items-center',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
         )}
       >
         {numImages ? (
