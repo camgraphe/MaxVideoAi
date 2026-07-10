@@ -244,10 +244,7 @@ export function EngineSelect({
               <button
                 type="button"
                 onClick={() => setBrowseOpen(true)}
-                className={clsx(
-                  'ml-auto inline-flex items-center gap-1.5 min-h-9 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isCompact && '-my-1.5'
-                )}
+                className="ml-auto inline-flex items-center gap-1.5 min-h-9 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <span>{copy.browseCompact}</span>
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden />

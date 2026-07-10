@@ -255,7 +255,7 @@ export function ImageCompositePreviewDock({
               <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{empty}</div>
             )}
           </div>
-          <div className={clsx('flex w-full', workspaceDensity ? 'mt-1' : 'mt-3')}>
+          <div className={clsx('flex w-full', workspaceDensity ? 'mt-0' : 'mt-3')}>
             <div className={clsx(
               'flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
               workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'

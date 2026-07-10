@@ -198,7 +198,7 @@ export function ImageWorkspaceComposerSurface({
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-1">
       <ImageCompositePreviewDock
         density="workspace"
         entry={compositePreviewEntry}

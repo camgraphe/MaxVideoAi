@@ -2,14 +2,14 @@
 
 ## Scope, state, and final captures
 
-The final implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the whole-branch keyboard, accessibility, and stage-geometry review fixes. Captures use settled starter media and live composer data. The final video captures replace the earlier remediation views because the stage geometry changed materially; the settled image captures remain valid because that preview implementation did not change.
+The final implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the whole-branch keyboard, accessibility, stage-geometry, and hit-target review fixes. All four captures use the final overlap-safe layout with settled starter media and live composer data.
 
 | Route | Viewport and state | Source target | Final implementation |
 | --- | --- | --- | --- |
-| `/app` | 390 × 844; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-final-fix.png` — SHA-256 `a480c9420cffb54940621c5e42c8cfcd91c975a5e1b96947dc1f4feb380ff44c` |
-| `/app` | 1440 × 1024; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-final-fix.png` — SHA-256 `f8a52675032ddf5895606ba43f4241742ec8d96951f85b38afafe0498f747064` |
-| `/app/image` | 390 × 844; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png` | `output/playwright/workspace-image-mobile-remediation.png` |
-| `/app/image` | 1440 × 1024; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png` | `output/playwright/workspace-image-desktop-remediation.png` |
+| `/app` | 390 × 844; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-overlap-fix.png` — SHA-256 `a76a5d5cf277600b6ceb4d90e5433c98d51acc6f8d947ac7e3e4ff013e3d42b7` |
+| `/app` | 1440 × 1024; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-overlap-fix.png` — SHA-256 `708179c88915fe6f2cf63225b6b7d33c87733629c37eeb4f33f36b97866189b6` |
+| `/app/image` | 390 × 844; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png` | `output/playwright/workspace-image-mobile-overlap-fix.png` — SHA-256 `8daf7e2a7453b0d872300b29abb2afb3d515c33cc2035478a2383e7bd0b9e9dc` |
+| `/app/image` | 1440 × 1024; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png` | `output/playwright/workspace-image-desktop-overlap-fix.png` — SHA-256 `ed58b1bb56c1882e9a710fff6a23edd259b60e0535493375970211f6d7e59976` |
 
 Every source and implementation full view was opened together in the same comparison input. Focused source and implementation crops were also opened together after their dimensions and hashes were verified.
 
@@ -18,8 +18,8 @@ Every source and implementation full view was opened together in the same compar
 | Target | Engine and viewer | Composer and actions | Asset area and first viewport |
 | --- | --- | --- | --- |
 | Video mobile | The stacked engine/variant header, Browse link, contained warrior frame, sample badge, and compact toolbar preserve the source hierarchy. | Prompt metadata and promoted actions stay legible. Settings remain one intrinsic-width row in a local scroller, with a full-width Generate row immediately below. | Start/End guest locks retain their paired layout and `Sign in to upload` copy. The document itself has no horizontal overflow. |
-| Video desktop | Engine/variant controls, Browse placement, navigation affordances, toolbar, shell rail, and starter cards align with the source structure. The final branch review intentionally replaces the independently sized wide frame with a centered exact-16:9 stage derived from the existing height budget. | Prompt, settings, and Generate occupy the compact source-like rhythm; settings and Generate share one desktop row. | Paired Start/End fields, Negative prompt, and Advanced settings are present. Advanced spans y=985.44–1021.44 inside the 1024px target. |
-| Image mobile | The engine header, contained camera image, and five-action toolbar follow the reference composition without cropping or stretching the media. | Prompt, intrinsic settings, and the full-width Generate button retain clear hierarchy. Local settings overflow does not leak to the page. | Reference images spans the available card width, Characters stays aligned, the add target and remaining-slot copy are visible, and Advanced spans y=804.25–840.25. |
+| Video desktop | Engine/variant controls, independently flowing Browse target, navigation affordances, toolbar, shell rail, and starter cards align with the source structure. The final branch review replaces the independently sized wide frame with a centered exact-16:9 stage derived from the overlap-safe height budget. | Prompt, settings, and Generate occupy the compact source-like rhythm; settings and Generate share one desktop row. | Paired Start/End fields, Negative prompt, and Advanced settings are present. Advanced spans y=985.0625–1021.0625 inside the 1024px target. |
+| Image mobile | The engine header, independent Browse target, contained camera image, and five-action toolbar follow the reference composition without cropping or stretching the media. | Prompt, intrinsic settings, and the full-width Generate button retain clear hierarchy. Local settings overflow does not leak to the page. | Reference images spans the available card width, Characters stays aligned, the add target and remaining-slot copy are visible, and Advanced spans y=798–834. |
 | Image desktop | Engine/variant controls, contained camera image, toolbar, navigation, promotion, and sample rail preserve the existing product shell and source proportions. | Prompt, settings, and Generate remain one compact desktop action surface. | Reference images uses 850px inside the 884px composer rather than the shared 640px solo cap. Advanced spans y=894–930 within the target. |
 
 The final full-view comparison found no remaining P0, P1, or P2 mismatch. Differences are limited to P3 live-data variation such as current prompt/price text and media-frame timing.
@@ -73,13 +73,15 @@ The implementation crop dimensions and hashes differ from their 1440×1024 and 3
 
 ## Measured geometry and overflow
 
-- Both mobile routes report `document.documentElement.scrollWidth === document.documentElement.clientWidth === 390`.
+- Both mobile routes report equal document client/scroll widths (378/378 in headed Chrome, where the visible scrollbar consumes 12px of the 390px viewport).
 - Video mobile settings: 330px client width, 675px scroll width, and 345px maximum scroll. Image mobile settings: 330px client width, 528px scroll width, and 198px maximum scroll.
 - Short mobile controls retain a 112px minimum. `1080p • Full HD • Pro` measures 195.14px and `Horizontal 16:9` measures 161.66px; labels and icons do not collide.
 - Mobile Generate spans x=30–360 (330px) on both routes.
 - Image Reference images spans x=29–361 (332px) on mobile and 850px inside the 884px desktop composer.
-- At 1440×1024 the final video stage is 583×327.9375px (`1.7777777777777777`, exactly 16/9). Its live media box is the same size with computed `object-fit: contain`. Browser containment geometry is 583×327.9375 for 16:9, 184.46484375×327.9375 for 9:16, and 327.9375×327.9375 for 1:1.
-- The compact Browse target measures 36px high at both target viewports while retaining the prior 24px layout footprint. Video desktop Advanced spans y=985.44–1021.44; image desktop spans y=894.5–930.5; settled image mobile spans y=798–834.
+- At 1440×1024 the final video stage is 561×315.5625px (`1.7777777777777777`, exactly 16/9). Its live media box uses computed `object-fit: contain`. Browser containment geometry is 561×315.5625 for 16:9, 177.50390625×315.5625 for 9:16, and 315.5625×315.5625 for 1:1. The mobile stage is 344×193.5px at the same exact ratio.
+- Compact Browse owns an independent 36px flow/hit box with no negative vertical margins. At desktop it spans y=163.5–199.5; at mobile y=167.5–203.5. Engine and variant controls end exactly at Browse top without positive-area intersection, and preview begins 5px after Browse bottom.
+- `elementFromPoint` at Browse top+0.5 and bottom−0.5 resolves Browse. Top−0.5 resolves the adjacent Pro/Lite variant, bottom+0.5 resolves the header gap, and preview top+0.5 resolves the preview—not Browse.
+- Video desktop Advanced spans y=985.0625–1021.0625; image desktop spans y=894.5–930.5; settled image mobile spans y=798–834.
 - Final live checks found no document-level horizontal overflow: desktop client/scroll widths were 1428/1428 in the headed browser and mobile client/scroll widths were 378/378 after accounting for the visible browser scrollbar.
 
 ## Primary interaction and behavior checks
@@ -129,7 +131,9 @@ A fresh direct `/app/image` run completed without console errors or warnings att
 8. Final full-view and focused comparisons contain no P0/P1/P2 issue. Remaining P3 variation is limited to live starter data, quote values, prompt copy, and media-frame timing.
 9. Whole-branch review then found the shared portaled selector could retain document-wide Enter/Space ownership after focus departure, lacked stable trigger/listbox ownership, and sized the workspace video stage with independent width and height.
 10. Focused RED contracts drove focus-in dismissal, target-scoped key handling, stable ARIA ids, disabled variant explanations, and a height-budget-derived workspace width that leaves CSS aspect ratio authoritative.
-11. Live verification found the restored 36px Browse target initially pushed desktop Advanced below the target viewport. A second RED contract drove compact-only negative margins that preserve a 36px hit target with the old 24px layout footprint.
-12. Fresh video captures and exact browser measurements confirm the final 16:9 geometry, contained portrait/square projections, Tab → competing control → Space behavior, 36px Browse target, visible Advanced controls, and zero document overflow. No P0/P1/P2 remains.
+11. Live verification found the restored 36px Browse target initially pushed desktop Advanced below the target viewport. An interim fix used compact negative margins to retain density.
+12. Re-review correctly rejected that workaround because the 36px interactive rectangle overlapped the variant row above and preview boundary below, creating a boundary-tap risk.
+13. New RED contracts forbade negative Browse margins and assigned density recovery to non-interactive workspace space: 12px from the video height budget, plus 4px preview-toolbar and 8px preview-composer safe gaps on the image route.
+14. Exact `getBoundingClientRect`, intersection, and `elementFromPoint` checks at desktop/mobile prove Browse owns an independent 36px target, adjacent regions own their boundary pixels, stages remain contained/exact, Advanced remains visible where required, and documents do not overflow. No P0/P1/P2 remains.
 
 final result: passed

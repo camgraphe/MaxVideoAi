@@ -100,14 +100,14 @@ test('workspace variant trigger overrides the shared select minimum width', () =
   );
 });
 
-test('workspace compact engine controls preserve Browse target size and disabled variant explanations', () => {
+test('workspace compact engine controls preserve an independent Browse target and disabled variant explanations', () => {
   const variantControlSource = readFileSync(variantControlPath, 'utf8');
   assert.match(engineSelectSource, /ml-auto inline-flex items-center gap-1\.5 min-h-9/);
   assert.doesNotMatch(engineSelectSource, /isCompact \? 'min-h-6'/);
-  assert.match(
+  assert.doesNotMatch(
     engineSelectSource,
-    /isCompact && '-my-1\.5'/,
-    'the 36px compact target must keep the prior 24px layout footprint'
+    /-my-/,
+    'the 36px Browse hit target must own independent flow space without overlapping adjacent controls'
   );
   assert.match(variantControlSource, /title: disabledEngineReasons\?\.\[entry\.id\]/);
   assert.match(variantControlSource, /disabled: Boolean\(disabledEngineReasons\?\.\[entry\.id\]\)/);

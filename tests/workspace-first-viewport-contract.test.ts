@@ -115,7 +115,7 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(compositePreviewSource, /window\.innerWidth < 640 \? 0\.25 : 0\.32/);
   assert.match(
     compositePreviewSource,
-    /const workspaceHeightBudget = Math\.min\(viewportHeight \* workspaceHeightRatio, 340\)/
+    /const workspaceHeightBudget = Math\.max\(1, Math\.min\(viewportHeight \* workspaceHeightRatio, 340\) - 12\)/
   );
   assert.match(
     compositePreviewSource,
@@ -133,12 +133,13 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
   assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);
   assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
-  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-0' : 'mt-3'/);
   assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(
     imageCompositePreviewSource,
     /workspaceDensity \? 'max-h-\[220px\] sm:max-h-\[330px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/
   );
+  assert.match(imageSurfaceSource, /<div className="flex flex-col gap-1">/);
 });
 
 test('video composer limits calm upload locks to the winning guest-auth reason', () => {

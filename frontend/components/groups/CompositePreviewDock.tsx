@@ -130,7 +130,7 @@ export function CompositePreviewDock({
         const maxWidth = 960;
         const availableWidth = parent.clientWidth;
         const workspaceHeightRatio = window.innerWidth < 640 ? 0.25 : 0.32;
-        const workspaceHeightBudget = Math.min(viewportHeight * workspaceHeightRatio, 340);
+        const workspaceHeightBudget = Math.max(1, Math.min(viewportHeight * workspaceHeightRatio, 340) - 12);
         const width = workspaceDensity
           ? Math.min(availableWidth, maxWidth, (workspaceHeightBudget * 16) / 9)
           : Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
