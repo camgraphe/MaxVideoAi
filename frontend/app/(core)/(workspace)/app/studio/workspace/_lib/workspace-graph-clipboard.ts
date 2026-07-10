@@ -145,7 +145,7 @@ export function pasteWorkspaceGraphClipboardSnapshot({
   }
 
   const selectionCenter = center ? graphSelectionCenter(snapshot.nodes) : null;
-  const pasteOffset = selectionCenter
+  const pasteOffset = center && selectionCenter
     ? { x: center.x - selectionCenter.x, y: center.y - selectionCenter.y }
     : offset;
 

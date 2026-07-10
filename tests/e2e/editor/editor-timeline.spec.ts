@@ -1267,6 +1267,9 @@ test('timeline end trim caps video duration and mirrors linked audio duration', 
   await openFreshEditorWorkspace(page);
   await switchEditorFocus(page, 'Viewer');
 
+  await expect(page.locator('[data-timeline-item="timeline-output-02"]')).toHaveAttribute('data-linked-group', 'timeline-output-02');
+  await expect(page.locator('[data-timeline-item="timeline-output-02-audio"]')).toHaveAttribute('data-linked-group', 'timeline-output-02');
+
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).duration).toBe(PRODUCT_FIXTURE_SHOT_02_DURATION_SEC);
   await dragTimelineClipEnd(page, 'timeline-output-02', -68);
 

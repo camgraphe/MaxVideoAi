@@ -123,7 +123,7 @@ export function useWorkspaceShotPricing({
 
   const pricingRequests = useMemo<WorkspaceAnyPricingRequest[]>(() => {
     return nodes
-      .flatMap((node) => {
+      .flatMap<WorkspaceAnyPricingRequest>((node): WorkspaceAnyPricingRequest[] => {
         if (node.data.kind === 'chat') {
           const estimate = unavailableWorkspacePricingEstimate('Studio chat pricing is unavailable.');
           return [{
@@ -183,8 +183,7 @@ export function useWorkspaceShotPricing({
           request,
           key: pricingRequestKey(request),
         }];
-      })
-      .filter((request): request is WorkspaceAnyPricingRequest => Boolean(request));
+      });
   }, [capabilities, edges, memberTier, nodes]);
 
   useEffect(() => {

@@ -32,7 +32,10 @@ function formatConnectorDescription(label: string, required: boolean, capacityLa
   return capacityLabel ? `${requiredLabel} · ${capacityLabel}` : requiredLabel;
 }
 
-function connectorCapacity(handle: WorkspaceEdgeKind, connectors: WorkspaceInputConnector[]): Pick<WorkspaceInputConnector, 'capacityLabel' | 'remainingCount'> {
+function connectorCapacity(
+  handle: WorkspaceEdgeKind,
+  connectors: WorkspaceInputConnector[]
+): { capacityLabel: string | null; remainingCount: number | undefined } {
   const connector = connectors.find((candidate) => candidate.kind === handle);
   return {
     capacityLabel: connector?.capacityLabel ?? null,

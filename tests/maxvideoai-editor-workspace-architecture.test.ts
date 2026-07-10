@@ -151,6 +151,7 @@ const nodeTypesPath = join(workspaceDir, '_components/nodes/workspace-node-types
 const nodeFramePath = join(workspaceDir, '_components/nodes/workspace-node-frame.tsx');
 const shotInputDockPath = join(workspaceDir, '_components/nodes/workspace-shot-input-dock.tsx');
 const shotNodeControlsPath = join(workspaceDir, '_components/nodes/workspace-shot-node-controls.tsx');
+const workspaceControlFieldPath = join(workspaceDir, '_components/nodes/WorkspaceControlField.tsx');
 const nodeMediaPreviewPath = join(workspaceDir, '_components/nodes/workspace-node-media-preview.tsx');
 const edgeTypesPath = join(workspaceDir, '_components/edges/workspace-smart-edge.tsx');
 const typesPath = join(workspaceDir, '_lib/workspace-types.ts');
@@ -1147,6 +1148,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   const nodeFrameSource = source(nodeFramePath);
   const shotInputDockSource = source(shotInputDockPath);
   const shotNodeControlsSource = source(shotNodeControlsPath);
+  const workspaceControlFieldSource = source(workspaceControlFieldPath);
   const nodeMediaPreviewSource = source(nodeMediaPreviewPath);
   const settingsSource = source(settingsPath);
   const shotNodeInspectorSource = source(shotNodeInspectorPath);
@@ -1407,13 +1409,13 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(shotNodeControlsSource, /onPatchShot/, 'inline shot controls should patch generation settings directly from the canvas node');
   assert.match(shotNodeControlsSource, /modelCapabilities/, 'inline shot controls should receive compatible model choices from rendered node data');
   assert.match(shotNodeControlsSource, /shot\.modelId/, 'inline shot controls should expose the model selection');
-  assert.match(shotNodeControlsSource, /shot\.durationSec/, 'inline shot controls should expose generation duration');
-  assert.match(shotNodeControlsSource, /shot\.aspectRatio/, 'inline shot controls should expose aspect ratio');
-  assert.match(shotNodeControlsSource, /shot\.resolution/, 'inline shot controls should expose output resolution');
-  assert.match(shotNodeControlsSource, /shot\.fps/, 'inline shot controls should expose frame rate');
-  assert.match(shotNodeControlsSource, /shot\.referenceStrength/, 'inline shot controls should expose reference strength');
-  assert.match(shotNodeControlsSource, /audioEnabled/, 'inline shot controls should expose audio generation toggles when available');
-  assert.match(shotNodeControlsSource, /lipSyncEnabled/, 'inline shot controls should expose lip sync toggles when available');
+  assert.match(workspaceControlFieldSource, /shot\.durationSec/, 'policy control fields should expose generation duration');
+  assert.match(workspaceControlFieldSource, /shot\.aspectRatio/, 'policy control fields should expose aspect ratio');
+  assert.match(workspaceControlFieldSource, /shot\.resolution/, 'policy control fields should expose output resolution');
+  assert.match(workspaceControlFieldSource, /shot\.fps/, 'policy control fields should expose frame rate');
+  assert.match(workspaceControlFieldSource, /shot\.referenceStrength/, 'policy control fields should expose reference strength');
+  assert.match(workspaceControlFieldSource, /audioEnabled/, 'policy control fields should expose audio generation toggles when available');
+  assert.match(workspaceControlFieldSource, /lipSyncEnabled/, 'policy control fields should expose lip sync toggles when available');
   assert.match(shotNodeControlsSource, /canvas-shot-controls\.module\.css/, 'inline shot controls should import focused shot control styles');
   assert.match(shotNodeControlsSource, /data-shot-node-grammar/, 'shot nodes should expose a stable compact node grammar for browser assertions');
   assert.match(shotNodeControlsSource, /shotGenerateLabel/, 'shot generate buttons should keep the action label in a constrained label slot');
@@ -2018,7 +2020,8 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(exportControllerSource, /humanizeTimelineExportError/, 'export controller should translate server worker failures into user-facing export messages');
   assert.match(exportControllerSource, /MISSING_TIMELINE_EXPORT_ECS_/, 'export controller should explain missing ECS worker configuration');
   assert.match(exportControllerSource, /if \(job\) setActiveExportJob\(job\)/, 'export controller should keep failed server jobs visible after create failures');
-  assert.match(exportControllerSource, /activeExportJob && isTerminalExportJob\(activeExportJob\)/, 'export retries after terminal jobs should use a fresh idempotency key');
+  assert.match(exportControllerSource, /!activeExportJob \|\| !isTerminalExportJob\(activeExportJob\)/, 'export retries should detect terminal jobs before rotating the export session');
+  assert.match(exportControllerSource, /setExportIdempotencyKey\(createClientExportIdempotencyKey\(\)\)/, 'export retries after terminal jobs should use a fresh idempotency key and estimate');
   assert.match(exportDialogSource, /copy\.queuedServerWorker/, 'export dialog should explain queued jobs are claimed by the Fargate worker through localized copy');
   assert.match(exportDialogSource, /exportJobStatusLabel/, 'export dialog should show user-facing server export statuses');
   assert.match(exportDialogSource, /copy\.retryExport/, 'export dialog should expose an explicit retry label after failed jobs through localized copy');
@@ -2161,7 +2164,7 @@ test('MaxVideoAI editor owns graph, node, generation, and capability contracts',
   assert.match(timelineClipInspectorSource, /function ProjectMediaAssetInspector/, 'timeline inspector should include a project media asset inspector');
   assert.match(timelineClipInspectorSource, /if \(selectedAsset\)[\s\S]*<ProjectMediaAssetInspector/, 'project media asset selection should drive the viewer inspector before timeline clips');
   assert.match(timelineClipInspectorSource, /onRenameProjectAsset\(asset\.id/, 'project media asset inspector should rename the selected asset');
-  assert.match(timelineClipInspectorSource, /asset\.durationSec[\s\S]*asset\.dimensions[\s\S]*asset\.kind/, 'project media asset inspector should expose file duration, resolution, and type');
+  assert.match(timelineClipInspectorSource, /asset\.durationSec[\s\S]*workspaceProjectMediaResolutionLabel\(asset\)[\s\S]*asset\.kind/, 'project media asset inspector should expose file duration, measured resolution, and type');
   assert.match(timelineClipInspectorSource, /if \(selectedSequence\)[\s\S]*<SequenceInspector/, 'project media sequence selection should drive the viewer inspector even when a timeline clip remains selected');
   assert.match(timelineProjectSidebarSource, /onInspectProjectAsset\(assetId\)/, 'project media sidebar should request asset inspection when an asset card is selected');
   assert.match(timelineClipInspectorSource, /copy\.clipInspector/, 'timeline clip inspector should render a focused empty state through localized copy');
@@ -3177,6 +3180,7 @@ test('MaxVideoAI editor pricing preflight mirrors generate video parameters', as
   };
   const capability = {
     modes: ['t2v', 'i2v', 'v2v'],
+    workflows: ['text_to_video', 'image_to_video', 'video_to_video'],
     render_options: [{ id: 'audio', label: 'Audio', control: 'toggle', defaultEnabled: false }],
   } as WorkspaceModelCapability;
 
@@ -3213,12 +3217,16 @@ test('MaxVideoAI editor pricing preflight mirrors generate video parameters', as
   );
 
   const videoRequest = buildWorkspaceShotPreflightRequest({
-    settings,
+    settings: {
+      ...settings,
+      presetId: 'modify-video',
+      workflowType: 'video_to_video',
+    },
     connectedInputs: ['prompt', 'video_reference'],
     capability,
     memberTier: 'Member',
   });
-  assert.equal(videoRequest.mode, 'v2v', 'video references should route pricing to the video-to-video engine mode');
+  assert.equal(videoRequest.mode, 'v2v', 'Modify Video pricing should route a video source to the video-to-video engine mode');
 
   assert.equal(
     formatWorkspacePricingEstimate({ ok: true, total: 123, currency: 'USD' }).label,

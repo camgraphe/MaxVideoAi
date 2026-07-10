@@ -79,6 +79,24 @@ Use this map before adding new code. If a change does not fit one of these owner
 
 When a feature crosses surfaces, split it by owner. For example, a generated video output used in the timeline should have canvas output metadata in node code, Project media card behavior in the media controller/sidebar, and insertion rules in timeline helpers.
 
+## Studio V1 Capability Rules
+
+- Block presets define user intent.
+- Engine capabilities define what each selected model supports.
+- The V1 block matrix defines which workflows a block may expose.
+- Node UI, inspector UI, pricing, and request payloads must derive from the same policy result.
+- Adding an engine requires a test showing that it appears in the right block lists and is absent from incompatible block lists.
+- Adding a block requires payload, pricing, output media, and connector tests.
+
+Capability ownership is split across `workspace-block-presets.ts`, the model capability registry,
+`workspace-v1-block-matrix.ts`, and `workspace-block-capability-policy.ts`. UI surfaces consume the
+resolved policy; they do not maintain independent allowlists. Generation routing and pricing adapters
+must consume the same selected capability and normalized block settings used by the node and inspector.
+
+The active sequence owns timeline and export state. Canvas nodes own generation inputs and typed outputs.
+Project media owns imported, generated, and completed-export assets. Moving media between those surfaces
+must use the existing typed asset/output and timeline insertion contracts rather than duplicating state.
+
 ## Additive Change Checklist
 
 Every Studio change should answer these questions before implementation:

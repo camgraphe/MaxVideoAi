@@ -188,7 +188,7 @@ export function getWorkspaceV1BlockContractForSettings(
   if (settings.presetId) return getWorkspaceV1BlockContract(settings.presetId);
 
   const matchingContracts = Object.values(WORKSPACE_V1_BLOCK_MATRIX).filter((contract) => (
-    contract.workflows.includes(settings.workflowType) &&
+    (contract.workflows as readonly WorkspaceWorkflowType[]).includes(settings.workflowType) &&
     (!settings.family || contract.family === settings.family) &&
     (!settings.outputKind || contract.outputKind === settings.outputKind) &&
     (!settings.toolKind || contract.presetId === settings.toolKind)

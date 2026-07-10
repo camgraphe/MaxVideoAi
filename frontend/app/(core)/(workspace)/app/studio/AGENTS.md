@@ -56,6 +56,19 @@ Prefer adding new behavior by extending contracts and pure helpers instead of gr
 - Server MP4 export requires a job worker, storage, billing/idempotency, and completed artifact URL. Local manifest or EDL export is a different feature.
 - Keep the editor CSS isolated in `maxvideoai-editor.module.css`.
 
+## Studio V1 Capability Rules
+
+- Block presets define user intent.
+- Engine capabilities define what each selected model supports.
+- The V1 block matrix defines which workflows a block may expose.
+- Node UI, inspector UI, pricing, and request payloads must derive from the same policy result.
+- Adding an engine requires a test showing that it appears in the right block lists and is absent from incompatible block lists.
+- Adding a block requires payload, pricing, output media, and connector tests.
+
+Keep preset intent in `workspace-block-presets.ts`, engine facts in the model capability registry,
+block/workflow compatibility in `workspace-v1-block-matrix.ts`, and the shared resolved decision in
+`workspace-block-capability-policy.ts`. Do not add surface-local compatibility or pricing allowlists.
+
 ## Contracts And Tests
 
 Architecture tests are part of the product contract. Update them when changing responsibilities:
