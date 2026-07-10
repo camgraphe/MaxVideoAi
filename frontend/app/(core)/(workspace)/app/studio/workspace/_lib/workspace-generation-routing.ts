@@ -3,6 +3,7 @@ import { buildStoryboardPrompt } from '@/components/tools/storyboard/_lib/storyb
 import { getAbsoluteStoryboardTemplateUrl, getStoryboardLengthPreset, getStoryboardOutputConfig } from '@/components/tools/storyboard/_lib/storyboard-templates';
 import type { AngleToolEngineId } from '@/types/tools-angle';
 import type { AudioPackId } from '@/lib/audio-generation';
+import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { UpscaleToolEngineId } from '@/types/tools-upscale';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type {
@@ -343,35 +344,46 @@ async function submitCharacterBuilderGeneration(params: WorkspaceGenerationRoute
   };
 }
 
-async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
-  const settings = params.settings.toolSettings?.storyboard;
-  const lengthPreset = getStoryboardLengthPreset(settings?.lengthPreset ?? 'medium');
-  const orientation = settings?.orientation ?? 'landscape';
-  const tier = settings?.tier ?? '4k';
+export function buildWorkspaceStoryboardGenerationRequest({
+  settings,
+  prompt,
+  referenceImages,
+  origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+  jobId = `storyboard_${crypto.randomUUID()}`,
+}: {
+  settings: WorkspaceShotSettings;
+  prompt: string;
+  referenceImages: string[];
+  origin?: string;
+  jobId?: string;
+}): ImageGenerationRequest {
+  const storyboardSettings = settings.toolSettings?.storyboard;
+  const lengthPreset = getStoryboardLengthPreset(storyboardSettings?.lengthPreset ?? 'medium');
+  const orientation = storyboardSettings?.orientation ?? 'landscape';
+  const tier = storyboardSettings?.tier ?? '4k';
+  const frameCount = storyboardSettings?.frameCount ?? lengthPreset.frameCount;
+  const durationSec = storyboardSettings?.durationSec ?? lengthPreset.durationSec;
+  const targetModel = storyboardSettings?.targetModel ?? 'seedance';
   const outputConfig = getStoryboardOutputConfig(tier, orientation);
-  const referenceImages = referenceImagesFor(params);
-  const templateUrl = typeof window !== 'undefined'
-    ? getAbsoluteStoryboardTemplateUrl(settings?.frameCount ?? lengthPreset.frameCount, orientation, window.location.origin)
-    : getAbsoluteStoryboardTemplateUrl(settings?.frameCount ?? lengthPreset.frameCount, orientation, 'http://localhost:3000');
-  const imageUrls = [templateUrl, ...referenceImages];
-  const prompt = buildStoryboardPrompt({
-    subject: params.prompt,
-    action: params.prompt,
-    style: 'cinema',
-    targetModel: settings?.targetModel ?? 'seedance',
-    orientation,
-    durationSec: settings?.durationSec ?? lengthPreset.durationSec,
-    frameCount: settings?.frameCount ?? lengthPreset.frameCount,
-    templateReference: true,
-    referenceImageCount: referenceImages.length,
-  });
-  const result = await runImageGeneration({
-    jobId: `storyboard_${crypto.randomUUID()}`,
+  const templateUrl = getAbsoluteStoryboardTemplateUrl(frameCount, orientation, origin);
+
+  return {
+    jobId,
     engineId: 'gpt-image-2',
     mode: 'i2i',
-    prompt,
+    prompt: buildStoryboardPrompt({
+      subject: prompt,
+      action: prompt,
+      style: 'cinema',
+      targetModel,
+      orientation,
+      durationSec,
+      frameCount,
+      templateReference: true,
+      referenceImageCount: referenceImages.length,
+    }),
     numImages: 1,
-    imageUrls,
+    imageUrls: [templateUrl, ...referenceImages],
     resolution: outputConfig.resolution,
     customImageSize: outputConfig.customImageSize,
     quality: outputConfig.quality,
@@ -380,10 +392,19 @@ async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams
     metadata: {
       storyboard: {
         role: 'board',
-        targetModel: settings?.targetModel ?? 'seedance',
+        targetModel,
       },
     },
-  });
+  };
+}
+
+async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
+  const referenceImages = referenceImagesFor(params);
+  const result = await runImageGeneration(buildWorkspaceStoryboardGenerationRequest({
+    settings: params.settings,
+    prompt: params.prompt,
+    referenceImages,
+  }));
   const image = result.images[0] ?? null;
   if (!image?.url) {
     throw new Error('Storyboard generation returned no image output.');
@@ -394,8 +415,10 @@ async function submitStoryboardGeneration(params: WorkspaceGenerationRouteParams
     modelId: result.engineId ?? params.settings.modelId,
     modelLabel: result.engineLabel ?? params.capability?.label ?? params.settings.modelId,
     workflowType: params.resolvedWorkflowType,
-    durationSec: settings?.durationSec ?? lengthPreset.durationSec,
-    aspectRatio: orientation === 'portrait' ? '9:16' : '16:9',
+    durationSec: params.settings.toolSettings?.storyboard?.durationSec ?? getStoryboardLengthPreset(
+      params.settings.toolSettings?.storyboard?.lengthPreset ?? 'medium'
+    ).durationSec,
+    aspectRatio: params.settings.toolSettings?.storyboard?.orientation === 'portrait' ? '9:16' : '16:9',
     resolution: params.settings.resolution,
     pricing: result.pricing ?? null,
     status: 'ready',
