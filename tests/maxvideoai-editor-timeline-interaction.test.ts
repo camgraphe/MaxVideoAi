@@ -15,6 +15,7 @@ import {
 import { timelineTrackHasOverlap } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions';
 import { deleteTimelineGapAndRipple } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing';
 import { moveLinkedTimelineSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-linked-audio';
+import { positionWorkspaceTimelineItem } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-positioning';
 import {
   deleteWorkspaceTimelineGap,
   deleteWorkspaceTimelineItems,
@@ -143,6 +144,33 @@ test('timeline reorder reverts when normalized linked audio would overlap', () =
   const items = linkedReorderCollisionItems();
 
   const result = reorderWorkspaceTimelineItem(items, 'linked-video', 'video-a');
+
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
+  assert.equal(result, items);
+  assert.equal(timelineTrackHasOverlap(result), false);
+});
+
+test('public timeline positioning reverts when normalized linked audio would overlap', () => {
+  const items = linkedReorderCollisionItems();
+
+  const result = positionWorkspaceTimelineItem(items, 'linked-video', 0);
+
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
+  assert.equal(result, items);
+  assert.equal(timelineTrackHasOverlap(result), false);
+});
+
+test('selection move with an absent anchor selection reverts linked normalization overlap', () => {
+  const items = linkedReorderCollisionItems();
+
+  const result = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['video-a'],
+    anchorItemId: 'linked-video',
+    nextStartSec: 0,
+    mode: 'insert',
+    idSeed: 'anchor-absent-linked-overlap',
+  });
 
   assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
   assert.equal(result, items);

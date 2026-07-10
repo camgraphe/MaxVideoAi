@@ -1,6 +1,9 @@
 import { isWorkspaceTimelineAudioTrack, isWorkspaceTimelineVideoTrack } from '../workspace-timeline-tracks';
 import type { WorkspaceTimelineItem, WorkspaceTimelineTrack } from '../workspace-types';
-import { timelineRangeOverlapsItem } from './timeline-collisions';
+import {
+  timelineRangeOverlapsItem,
+  timelineTrackHasOverlap,
+} from './timeline-collisions';
 import {
   snapTimelineValue,
   workspaceTimelineItemEndSec as itemEndSec,
@@ -14,6 +17,13 @@ import {
   timelineSelectionKeyForItem,
   timelineSelectionKeysForItemIds,
 } from './timeline-selection-groups';
+
+function commitTimelinePositionWithoutOverlap(
+  originalItems: WorkspaceTimelineItem[],
+  candidateItems: WorkspaceTimelineItem[]
+): WorkspaceTimelineItem[] {
+  return timelineTrackHasOverlap(candidateItems) ? originalItems : candidateItems;
+}
 
 export function positionWorkspaceTimelineItem(
   items: WorkspaceTimelineItem[],
@@ -62,17 +72,23 @@ export function positionWorkspaceTimelineItem(
       track: targetTrack,
     });
     const remainingItems = items.filter((candidate) => candidate.id !== trackAnchorItem.id && candidate.track !== targetTrack);
-    return normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems]);
+    return commitTimelinePositionWithoutOverlap(
+      items,
+      normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems])
+    );
   }
 
-  return items.map((candidate) => {
-    if (!groupItems.some((groupItem) => groupItem.id === candidate.id)) return candidate;
-    return {
-      ...candidate,
-      track: candidate.id === trackAnchorItem.id ? targetTrack : candidate.track,
-      startSec: snapTimelineValue(Math.max(0, candidate.startSec + startDeltaSec)),
-    };
-  });
+  return commitTimelinePositionWithoutOverlap(
+    items,
+    items.map((candidate) => {
+      if (!groupItems.some((groupItem) => groupItem.id === candidate.id)) return candidate;
+      return {
+        ...candidate,
+        track: candidate.id === trackAnchorItem.id ? targetTrack : candidate.track,
+        startSec: snapTimelineValue(Math.max(0, candidate.startSec + startDeltaSec)),
+      };
+    })
+  );
 }
 
 function constrainTimelineSelectionDelta(
@@ -139,13 +155,16 @@ export function positionWorkspaceTimelineItems(
   const safeDeltaSec = constrainTimelineSelectionDelta(items, selectedKeys, selectedItems, requestedDeltaSec);
   if (safeDeltaSec === 0) return items;
 
-  return items.map((candidate) => {
-    if (!selectedKeys.has(timelineSelectionKeyForItem(candidate))) return candidate;
-    return {
-      ...candidate,
-      startSec: snapTimelineValue(candidate.startSec + safeDeltaSec),
-    };
-  });
+  return commitTimelinePositionWithoutOverlap(
+    items,
+    items.map((candidate) => {
+      if (!selectedKeys.has(timelineSelectionKeyForItem(candidate))) return candidate;
+      return {
+        ...candidate,
+        startSec: snapTimelineValue(candidate.startSec + safeDeltaSec),
+      };
+    })
+  );
 }
 
 export function retargetTimelineSelectionItems(

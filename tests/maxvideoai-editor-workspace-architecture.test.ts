@@ -3558,14 +3558,14 @@ test('MaxVideoAI editor timeline editing supports drag ordering and cut splits',
     'start trim should advance linked source in-points while keeping the group on the sequence line'
   );
 
-  const positioned = positionWorkspaceTimelineItem(items, 'clip-a', 4);
+  const positioned = positionWorkspaceTimelineItem(items, 'clip-a', 16);
   assert.deepEqual(
     positioned.filter((item) => item.linkedGroupId === 'group-a').map((item) => [item.id, item.startSec, item.durationSec]),
     [
-      ['clip-a', 4, 8],
-      ['clip-a-audio', 4, 8],
+      ['clip-a', 16, 8],
+      ['clip-a-audio', 16, 8],
     ],
-    'pointer move should reposition linked video and audio together'
+    'pointer move should reposition linked video and audio together in an unoccupied range'
   );
 
   const multiPositioned = positionWorkspaceTimelineItems(items, ['clip-a', 'clip-b'], 'clip-a', 2);
