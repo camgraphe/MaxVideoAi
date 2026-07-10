@@ -37,6 +37,7 @@ import {
   buildVideoSettingsFormState,
   buildVideoSettingsSnapshotFromSharedVideo,
   buildVideoSettingsSnapshotFromTile,
+  canApplySharedVideoSettings,
   resolveVideoSettingsSnapshot,
   type VideoJobPayload,
 } from '../_lib/workspace-video-settings';
@@ -239,10 +240,16 @@ export function useWorkspaceVideoSettings({
   );
 
   useEffect(() => {
+    if (!canApplySharedVideoSettings(sharedVideoSettings, engines.length)) return;
     if (!sharedVideoSettings) return;
     applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
-  }, [applyVideoSettingsSnapshot, hydrateVideoSettingsFromJob, sharedVideoSettings]);
+  }, [
+    applyVideoSettingsSnapshot,
+    engines.length,
+    hydrateVideoSettingsFromJob,
+    sharedVideoSettings,
+  ]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;

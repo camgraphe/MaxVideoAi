@@ -39,6 +39,9 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(hookSource, /const applyVideoSettingsFromTile = useCallback/);
   assert.match(hookSource, /buildVideoSettingsSnapshotFromSharedVideo/);
   assert.match(hookSource, /buildRequestedJobPreview/);
+  assert.match(hookSource, /canApplySharedVideoSettings\(sharedVideoSettings, engines\.length\)/);
+  assert.match(hookSource, /if \(!canApplySharedVideoSettings/);
+  assert.match(hookSource, /engines\.length/);
 
   assert.match(settingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(jobMediaSource, /export function buildVideoJobMediaPatch/);

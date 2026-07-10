@@ -43,6 +43,13 @@ export type VideoSettingsSnapshotOptions = {
   createFallbackKlingElement: () => KlingElementState;
 };
 
+export function canApplySharedVideoSettings(
+  sharedVideoSettings: unknown,
+  engineCount: number
+): boolean {
+  return Boolean(sharedVideoSettings) && engineCount > 0;
+}
+
 export type ResolvedVideoSettingsSnapshot = {
   engine: EngineCaps;
   mode: Mode;

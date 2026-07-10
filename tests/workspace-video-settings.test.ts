@@ -6,6 +6,7 @@ import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/work
 import {
   buildVideoSettingsFormState,
   buildVideoSettingsSnapshotFromTile,
+  canApplySharedVideoSettings,
   resolveVideoSettingsSnapshot,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
 
@@ -58,6 +59,13 @@ function previousForm(): FormState {
     extraInputValues: {},
   };
 }
+
+test('shared video settings wait for a non-empty engine catalog', () => {
+  const sharedVideo = { id: 'job_123' };
+  assert.equal(canApplySharedVideoSettings(sharedVideo, 0), false);
+  assert.equal(canApplySharedVideoSettings(sharedVideo, 1), true);
+  assert.equal(canApplySharedVideoSettings(null, 1), false);
+});
 
 test('guest sample duration replaces the previous duration option', () => {
   const engine = seedanceEngine();
