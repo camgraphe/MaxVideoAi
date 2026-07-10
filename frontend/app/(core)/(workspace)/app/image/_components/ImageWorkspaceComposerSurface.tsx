@@ -231,6 +231,8 @@ export function ImageWorkspaceComposerSurface({
               modeLayout="stacked"
               showBillingNote={false}
               variant="bar"
+              controlPresentation="workspace"
+              density="compact"
               className="min-w-0 flex-1"
             />
           </div>

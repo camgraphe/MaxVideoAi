@@ -12,6 +12,7 @@ const modalPath = join(root, 'frontend/src/components/ui/engine-select/BrowseEng
 const helpersPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-helpers.ts');
 const copyPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-copy.ts');
 const typesPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-types.ts');
+const variantControlPath = join(root, 'frontend/src/components/ui/engine-select/EngineVariantControl.tsx');
 
 const engineSelectSource = readFileSync(engineSelectPath, 'utf8');
 const dropdownSource = readFileSync(dropdownPath, 'utf8');
@@ -77,4 +78,15 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(copySource, /export const DEFAULT_ENGINE_SELECT_COPY/);
   assert.match(typesSource, /export interface EngineSelectProps/);
   assert.match(typesSource, /export type EngineRegistryMeta/);
+});
+
+test('engine select delegates variant presentation to a focused component', () => {
+  assert.ok(existsSync(variantControlPath));
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  assert.match(engineSelectSource, /from '.\/engine-select\/EngineVariantControl'/);
+  assert.match(engineSelectSource, /<EngineVariantControl/);
+  assert.match(variantControlSource, /export function EngineVariantControl/);
+  assert.match(variantControlSource, /<SelectMenu/);
+  assert.match(typesSource, /EngineSelectControlPresentation = 'default' \| 'workspace'/);
+  assert.match(typesSource, /controlPresentation\?: EngineSelectControlPresentation/);
 });

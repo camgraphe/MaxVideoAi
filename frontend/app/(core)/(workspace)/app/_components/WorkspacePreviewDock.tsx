@@ -87,6 +87,8 @@ export function WorkspacePreviewDock({
           engineScores={engineScores}
           modeLabel={getEngineModeLabel(selectedEngineId, activeMode, modeLabelLocale)}
           showModeBadge={false}
+          controlPresentation="workspace"
+          density="compact"
         />
       }
       onOpenModal={(nextGroup) => {

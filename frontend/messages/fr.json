@@ -3368,6 +3368,7 @@
         "choose": "Choisir un modèle",
         "variant": "Variante",
         "browse": "Explorer les modèles…",
+        "browseCompact": "Explorer les modèles",
         "inputMode": "Mode d’entrée",
         "unsupportedMode": "Mode non pris en charge par ce modèle",
         "modal": {

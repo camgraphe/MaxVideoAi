@@ -9,6 +9,7 @@ export const DEFAULT_ENGINE_SELECT_COPY = {
   score: 'Score',
   searchPlaceholder: 'Search engines',
   browse: 'Browse engines...',
+  browseCompact: 'Browse engines',
   inputMode: 'Input mode',
   unsupportedMode: 'Not supported by this engine',
   modal: {

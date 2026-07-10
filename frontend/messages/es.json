@@ -3360,6 +3360,7 @@
         "choose": "Elegir modelo",
         "variant": "Variante",
         "browse": "Explorar motores...",
+        "browseCompact": "Explorar motores",
         "inputMode": "Modo de entrada",
         "unsupportedMode": "No compatible con este motor",
         "modal": {

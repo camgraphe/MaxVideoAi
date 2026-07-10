@@ -3333,6 +3333,7 @@
         "choose": "Choose engine",
         "variant": "Variant",
         "browse": "Browse engines...",
+        "browseCompact": "Browse engines",
         "inputMode": "Input mode",
         "unsupportedMode": "Not supported by this engine",
         "modal": {

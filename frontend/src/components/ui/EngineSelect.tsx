@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import { ExternalLink } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -15,6 +16,7 @@ import { EngineIcon } from '@/components/ui/EngineIcon';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { BrowseEnginesModal } from './engine-select/BrowseEnginesModal';
 import { EngineSelectDropdown } from './engine-select/EngineSelectDropdown';
+import { EngineVariantControl } from './engine-select/EngineVariantControl';
 import { DEFAULT_ENGINE_SELECT_COPY, mergeEngineSelectCopy, type EngineSelectCopy } from './engine-select/engine-select-copy';
 import {
   DEFAULT_MODE_OPTIONS,
@@ -41,6 +43,7 @@ export function EngineSelect({
   modeLayout = 'inline',
   variant = 'card',
   density = 'default',
+  controlPresentation = 'default',
   className,
 }: EngineSelectProps) {
   const { t, locale } = useI18n();
@@ -147,6 +150,57 @@ export function EngineSelect({
     className
   );
 
+  const engineTrigger = (
+    <button
+      id={triggerId}
+      ref={triggerRef}
+      type="button"
+      onClick={toggleOpen}
+      onKeyDown={handleTriggerKeyDown}
+      className={clsx(
+        'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
+      )}
+      aria-haspopup="listbox"
+      aria-expanded={open}
+    >
+      <div className="flex min-w-0 items-center gap-4">
+        <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
+        <div className="min-w-0">
+          <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
+            {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
+          </p>
+          <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
+            {selectedEngine.provider}
+            {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
+          </p>
+        </div>
+      </div>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 20 20"
+        className={clsx('h-5 w-5 text-text-muted transition-transform', open && 'rotate-180')}
+        fill="none"
+      >
+        <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+
+  const variantControl = showVariantSelector ? (
+    <EngineVariantControl
+      bar={isBarVariant}
+      compact={isCompact}
+      disabledEngineReasons={disabledEngineReasons}
+      getLabel={getVariantLabel}
+      label={copy.variant}
+      onChange={onEngineChange}
+      presentation={controlPresentation}
+      selectedEngineId={selectedEngine.id}
+      variants={variantEngines}
+    />
+  ) : null;
+
   const content = (
     <>
       {!isBarVariant && (
@@ -178,94 +232,48 @@ export function EngineSelect({
         )}
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
-          <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
-            {copy.choose}
-          </label>
-          <div className={clsx('flex min-w-0 flex-col 2xl:flex-row 2xl:items-stretch', isCompact ? 'gap-1.5' : 'gap-2')}>
-            <button
-              id={triggerId}
-              ref={triggerRef}
-              type="button"
-              onClick={toggleOpen}
-              onKeyDown={handleTriggerKeyDown}
-              className={clsx(
-                'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
-              )}
-              aria-haspopup="listbox"
-              aria-expanded={open}
-            >
-              <div className="flex min-w-0 items-center gap-4">
-                <EngineIcon engine={selectedEngine} size={isBarVariant ? 24 : 32} className="shrink-0" />
-                <div className="min-w-0">
-                  <p className={clsx('truncate font-medium', isBarVariant ? 'text-[13px]' : '')}>
-                    {selectedMeta?.marketingName ?? formatEngineShort(selectedEngine)}
-                  </p>
-                  <p className={clsx('truncate text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
-                    {selectedEngine.provider}
-                    {selectedMeta?.versionLabel || selectedEngine.version ? ` - ${selectedMeta?.versionLabel ?? selectedEngine.version ?? ''}` : ''}
-                  </p>
+          {controlPresentation === 'workspace' ? (
+            <div className={clsx('flex min-w-0 flex-col', isCompact ? 'gap-1.5' : 'gap-2')}>
+              <div className="flex items-end gap-2">
+                <div className="min-w-0 flex-1">
+                  <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
+                    {copy.choose}
+                  </label>
+                  {engineTrigger}
                 </div>
+                {variantControl}
               </div>
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                className={clsx('h-5 w-5 text-text-muted transition-transform', open && 'rotate-180')}
-                fill="none"
+              <button
+                type="button"
+                onClick={() => setBrowseOpen(true)}
+                className="ml-auto inline-flex min-h-9 items-center gap-1.5 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <path d="m6 8 4 4 4-4" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-            <button
-              type="button"
-              onClick={() => setBrowseOpen(true)}
-              className={clsx(
-                'min-w-0 rounded-input border border-border bg-surface font-medium text-brand transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                isBarVariant
-                  ? 'w-full px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px] 2xl:w-auto 2xl:max-w-[45%]'
-                  : 'px-4 py-3 text-sm'
-              )}
-            >
-              <span className="truncate">{copy.browse}</span>
-            </button>
-          </div>
-
-          {showVariantSelector && (
-            <div className={clsx(isBarVariant ? (isCompact ? 'space-y-0.5' : 'space-y-1') : 'space-y-2')}>
-              <span className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[11px]')}>
-                {copy.variant}
-              </span>
-              <div className={clsx('flex flex-wrap', isCompact ? 'gap-1.5' : 'gap-2')}>
-                {variantEngines.map((entry) => {
-                  const active = entry.id === selectedEngine.id;
-                  const disabledReason = disabledEngineReasons?.[entry.id];
-                  const disabled = Boolean(disabledReason);
-                  return (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => {
-                        if (disabled) return;
-                        onEngineChange(entry.id);
-                      }}
-                      disabled={disabled}
-                      title={disabledReason}
-                      className={clsx(
-                        'rounded-pill border px-3 py-1 font-semibold uppercase tracking-micro transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg',
-                        isBarVariant ? 'text-[10px]' : 'text-[12px]',
-                        active
-                          ? 'border-brand bg-brand text-on-brand'
-                          : disabled
-                            ? 'cursor-not-allowed border-border bg-surface text-text-muted/60 opacity-70'
-                            : 'border-border bg-surface text-text-secondary hover:border-border-hover hover:bg-surface-2'
-                      )}
-                    >
-                      {getVariantLabel(entry)}
-                    </button>
-                  );
-                })}
-              </div>
+                <span>{copy.browseCompact}</span>
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              </button>
             </div>
+          ) : (
+            <>
+              <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
+                {copy.choose}
+              </label>
+              <div className={clsx('flex min-w-0 flex-col 2xl:flex-row 2xl:items-stretch', isCompact ? 'gap-1.5' : 'gap-2')}>
+                {engineTrigger}
+                <button
+                  type="button"
+                  onClick={() => setBrowseOpen(true)}
+                  className={clsx(
+                    'min-w-0 rounded-input border border-border bg-surface font-medium text-brand transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    isBarVariant
+                      ? 'w-full px-2.5 py-1.5 text-[11px] sm:px-3 sm:py-2 sm:text-[12px] 2xl:w-auto 2xl:max-w-[45%]'
+                      : 'px-4 py-3 text-sm'
+                  )}
+                >
+                  <span className="truncate">{copy.browse}</span>
+                </button>
+              </div>
+              {variantControl}
+            </>
           )}
 
           {showModeVariantSelector && (
