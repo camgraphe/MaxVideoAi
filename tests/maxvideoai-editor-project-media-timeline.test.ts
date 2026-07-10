@@ -28,6 +28,10 @@ import {
   workspaceAssetRecordFromLibraryAsset,
   workspaceLibraryAssetFromUploadedAsset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets';
+import {
+  resetWorkspaceAssetSelection,
+  selectWorkspaceAsset,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-asset-selection';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -88,6 +92,46 @@ function generatedVideoNode(overrides: Partial<WorkspaceGraphNode> = {}): Worksp
     ...overrides,
   };
 }
+
+test('workspace asset selection transitions replace, toggle, range-select, and reset state', () => {
+  const assetIds = ['asset-a', 'asset-b', 'asset-c', 'asset-d'];
+  const selected = selectWorkspaceAsset({
+    assetIds,
+    selection: resetWorkspaceAssetSelection(),
+    assetId: 'asset-b',
+    mode: 'replace',
+  });
+  assert.deepEqual(selected, {
+    selectedAssetIds: ['asset-b'],
+    selectionAnchorId: 'asset-b',
+  });
+
+  const toggled = selectWorkspaceAsset({
+    assetIds,
+    selection: selected,
+    assetId: 'asset-d',
+    mode: 'toggle',
+  });
+  assert.deepEqual(toggled, {
+    selectedAssetIds: ['asset-b', 'asset-d'],
+    selectionAnchorId: 'asset-d',
+  });
+
+  const ranged = selectWorkspaceAsset({
+    assetIds,
+    selection: toggled,
+    assetId: 'asset-a',
+    mode: 'range',
+  });
+  assert.deepEqual(ranged, {
+    selectedAssetIds: ['asset-b', 'asset-d', 'asset-a', 'asset-c'],
+    selectionAnchorId: 'asset-a',
+  });
+  assert.deepEqual(resetWorkspaceAssetSelection(), {
+    selectedAssetIds: [],
+    selectionAnchorId: null,
+  });
+});
 
 test('project media metadata helpers do not invent resolution for unknown videos', () => {
   const asset = {

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import type { ComponentProps } from 'react';
 import type { WorkspaceEditorAssetLibraryState } from '../_hooks/useWorkspaceEditorAssetLibrary';
 import type { WorkspaceGraphNode } from '../_lib/workspace-types';
@@ -78,6 +79,20 @@ export function WorkspaceRuntimeModals({
   onSelectProjectMediaAsset,
   onSelectProjectMediaAssets,
 }: WorkspaceRuntimeModalsProps) {
+  useEffect(() => {
+    assetPickerLibrary.resetSelection();
+  }, [assetPickerLibrary.resetSelection, assetPickerNode?.id]);
+
+  const handleAssetPickerClose = () => {
+    assetPickerLibrary.resetSelection();
+    onAssetPickerClose();
+  };
+
+  const handleSelectAsset = (...args: Parameters<typeof onSelectAsset>) => {
+    onSelectAsset(...args);
+    assetPickerLibrary.resetSelection();
+  };
+
   return (
     <>
       <WorkspaceExportDialog
@@ -117,9 +132,9 @@ export function WorkspaceRuntimeModals({
         sourceLabels={assetPickerLibrary.sourceLabels}
         searchQuery={assetPickerLibrary.searchQuery}
         selectedAssetIds={assetPickerLibrary.selectedAssetIds}
-        onClose={onAssetPickerClose}
+        onClose={handleAssetPickerClose}
         onLoadMore={assetPickerLibrary.loadMore}
-        onImportAssets={onSelectAsset}
+        onImportAssets={handleSelectAsset}
         onSearchQueryChange={assetPickerLibrary.setSearchQuery}
         onSourceChange={assetPickerLibrary.setSource}
         onToggleAssetSelection={assetPickerLibrary.toggleAssetSelection}

@@ -18,6 +18,11 @@ import {
   type WorkspaceUserLibraryPage,
 } from '../_lib/workspace-library-assets';
 import type { StudioCopy } from '../../_lib/studio-copy';
+import {
+  resetWorkspaceAssetSelection,
+  selectWorkspaceAsset,
+  type WorkspaceAssetSelectionMode,
+} from '../_lib/workspace-asset-selection';
 
 type WorkspaceLibraryKindFilter = 'all' | WorkspaceLibraryKind;
 export type WorkspaceAssetLibraryMediaKindFilter = WorkspaceLibraryKindFilter;
@@ -166,6 +171,9 @@ export function useWorkspaceEditorAssetLibrary(
 
   useEffect(() => {
     if (!isEnabled) {
+      const resetSelection = resetWorkspaceAssetSelection();
+      setSelectedAssetIds(resetSelection.selectedAssetIds);
+      setSelectionAnchorId(resetSelection.selectionAnchorId);
       setUserAssets([]);
       setNextCursor(null);
       setHasMore(false);
@@ -297,22 +305,21 @@ export function useWorkspaceEditorAssetLibrary(
   const assets = userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : [];
 
   const toggleAssetSelection = useCallback((assetId: string, mode: 'replace' | 'toggle' | 'range') => {
-    setSelectedAssetIds((currentIds) => {
-      if (mode === 'replace') return [assetId];
-      if (mode === 'toggle') {
-        return currentIds.includes(assetId)
-          ? currentIds.filter((currentId) => currentId !== assetId)
-          : [...currentIds, assetId];
-      }
-      const assetIds = assets.map((asset) => asset.id);
-      const anchorIndex = selectionAnchorId ? assetIds.indexOf(selectionAnchorId) : -1;
-      const targetIndex = assetIds.indexOf(assetId);
-      if (anchorIndex === -1 || targetIndex === -1) return [assetId];
-      const [start, end] = anchorIndex < targetIndex ? [anchorIndex, targetIndex] : [targetIndex, anchorIndex];
-      return Array.from(new Set([...currentIds, ...assetIds.slice(start, end + 1)]));
+    const nextSelection = selectWorkspaceAsset({
+      assetIds: assets.map((asset) => asset.id),
+      selection: { selectedAssetIds, selectionAnchorId },
+      assetId,
+      mode,
     });
-    setSelectionAnchorId(assetId);
-  }, [assets, selectionAnchorId]);
+    setSelectedAssetIds(nextSelection.selectedAssetIds);
+    setSelectionAnchorId(nextSelection.selectionAnchorId);
+  }, [assets, selectedAssetIds, selectionAnchorId]);
+
+  const resetSelection = useCallback(() => {
+    const selection = resetWorkspaceAssetSelection();
+    setSelectedAssetIds(selection.selectedAssetIds);
+    setSelectionAnchorId(selection.selectionAnchorId);
+  }, []);
 
   useEffect(() => {
     const availableAssetIds = new Set(assets.map((asset) => asset.id));
@@ -345,6 +352,7 @@ export function useWorkspaceEditorAssetLibrary(
     setSearchQuery,
     selectedAssetIds,
     toggleAssetSelection,
+    resetSelection,
     canFilterKind,
     source: activeSource,
     setSource,
@@ -365,5 +373,6 @@ export type WorkspaceEditorAssetLibraryState = ReturnType<typeof useWorkspaceEdi
   loadMore: () => Promise<void>;
   setMediaKindFilter: (kind: WorkspaceAssetLibraryMediaKindFilter) => void;
   setSearchQuery: (query: string) => void;
-  toggleAssetSelection: (assetId: string, mode: 'replace' | 'toggle' | 'range') => void;
+  toggleAssetSelection: (assetId: string, mode: WorkspaceAssetSelectionMode) => void;
+  resetSelection: () => void;
 };

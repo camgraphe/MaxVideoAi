@@ -5033,6 +5033,8 @@ test('studio asset picker defers multi-select import until its primary action', 
   const assetLibraryModalSource = source(assetLibraryModalPath);
   const inspectorSource = source(join(workspaceDir, '_components/TimelineClipInspector.tsx'));
   const graphActionsSource = source(join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts'));
+  const runtimeModalsSource = source(runtimeModalsPath);
+  const editorAssetLibraryHookSource = source(editorAssetLibraryHookPath);
 
   assert.match(inspectorSource, /workspaceProjectMediaResolutionLabel/);
   assert.doesNotMatch(inspectorSource, /const resolutionLabel = asset\.dimensions/);
@@ -5042,6 +5044,10 @@ test('studio asset picker defers multi-select import until its primary action', 
   assert.doesNotMatch(assetLibraryModalSource, /selectOnToggle/);
   assert.match(graphActionsSource, /handleImportLibraryAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
   assert.match(graphActionsSource, /setAssetPickerNodeId\(null\)/);
+  assert.match(editorAssetLibraryHookSource, /resetSelection/, 'canvas asset library should expose a selection reset API');
+  assert.match(runtimeModalsSource, /assetPickerNode\?\.id/, 'canvas asset picker should clear selection for every target node change');
+  assert.match(runtimeModalsSource, /assetPickerLibrary\.resetSelection\(\);\s*onAssetPickerClose\(\)/, 'canvas asset picker close should clear selection');
+  assert.match(runtimeModalsSource, /onSelectAsset\(\.\.\.args\);\s*assetPickerLibrary\.resetSelection\(\)/, 'canvas asset picker imports should clear selection');
 });
 
 test('project media library plain clicks replace the selection', () => {
