@@ -198,8 +198,9 @@ export function ImageWorkspaceComposerSurface({
   watermark,
 }: ImageWorkspaceComposerSurfaceProps) {
   return (
-    <div className="stack-gap-lg">
+    <div className="flex flex-col gap-3">
       <ImageCompositePreviewDock
+        density="workspace"
         entry={compositePreviewEntry}
         selectedIndex={selectedPreviewImageIndex}
         onSelectIndex={setSelectedPreviewImageIndex}
@@ -260,6 +261,7 @@ export function ImageWorkspaceComposerSurface({
 
         <Composer
           density="workspace"
+          compactPrompt
           engine={selectedEngineCaps}
           prompt={prompt}
           onPromptChange={setPrompt}

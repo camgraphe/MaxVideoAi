@@ -29,6 +29,7 @@ export type ImageCompositePreviewEntry = {
 };
 
 interface ImageCompositePreviewDockProps {
+  density?: 'default' | 'workspace';
   entry: ImageCompositePreviewEntry | null;
   selectedIndex: number;
   onSelectIndex: (index: number) => void;
@@ -50,6 +51,7 @@ const ICON_BUTTON_BASE =
   'flex h-9 w-9 items-center justify-center rounded-lg border border-surface-on-media-25 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:translate-y-px';
 
 export function ImageCompositePreviewDock({
+  density = 'default',
   entry,
   selectedIndex,
   onSelectIndex,
@@ -66,6 +68,7 @@ export function ImageCompositePreviewDock({
   engineSettings,
   showTitle = true,
 }: ImageCompositePreviewDockProps) {
+  const workspaceDensity = density === 'workspace';
   const { t } = useI18n();
   const title = t('workspace.generate.preview.title', 'Composite Preview');
   const empty = t('workspace.generate.preview.empty', 'Select a take to preview');
@@ -212,7 +215,7 @@ export function ImageCompositePreviewDock({
 
   return (
     <section className="overflow-hidden rounded-card border border-border bg-surface-glass-80 shadow-card">
-      <header className="border-b border-hairline px-4 py-3">
+      <header className={clsx('border-b border-hairline px-4', workspaceDensity ? 'py-1' : 'py-3')}>
         {engineSettings ? (
           <>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -231,10 +234,13 @@ export function ImageCompositePreviewDock({
         )}
       </header>
 
-      <div className="px-4 py-4">
+      <div className={workspaceDensity ? 'px-0 py-2' : 'px-4 py-4'}>
         <div className="flex flex-col items-center">
           <div
-            className="relative w-full overflow-hidden rounded-card border border-surface-on-media-25 bg-placeholder max-h-[320px] sm:max-h-[420px]"
+            className={clsx(
+              'relative w-full overflow-hidden rounded-card border border-surface-on-media-25 bg-placeholder',
+              workspaceDensity ? 'max-h-[220px] sm:max-h-[330px]' : 'max-h-[320px] sm:max-h-[420px]'
+            )}
             style={{ aspectRatio: aspectRatioCss ?? '1 / 1' }}
           >
             {selected ? (
@@ -249,7 +255,7 @@ export function ImageCompositePreviewDock({
               <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{empty}</div>
             )}
           </div>
-          <div className="mt-3 flex w-full">
+          <div className={clsx('flex w-full', workspaceDensity ? 'mt-2' : 'mt-3')}>
             <div className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm">
               {toolbar}
             </div>

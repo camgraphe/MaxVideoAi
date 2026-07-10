@@ -24,7 +24,7 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
-  density = 'default',
+  density = 'default', compactPrompt = false,
   engine,
   caps,
   prompt,
@@ -233,7 +233,7 @@ export function Composer({
       )}
     >
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
               <div className="flex flex-wrap gap-2">
@@ -340,12 +340,12 @@ export function Composer({
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={6}
+                rows={compactPrompt ? 3 : workspaceDensity ? 5 : 6}
                 aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   workspaceDensity
-                    ? 'min-h-[132px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:min-h-[148px]'
+                    ? compactPrompt ? 'min-h-[64px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:min-h-[76px]' : 'min-h-[104px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-16 sm:min-h-0'
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
@@ -355,7 +355,7 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className="border-t border-border/65 px-4 py-3 dark:border-white/[0.06]">
+              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-0 py-2' : 'px-4 py-3')}>
                 <div className={workspaceDensity
                   ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
@@ -389,7 +389,7 @@ export function Composer({
                           'transform-gpu transition-transform duration-200 ease-out',
                           'border border-brand shadow-card',
                           'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                          workspaceDensity ? 'lg:w-auto lg:min-w-[200px]' : 'min-w-[220px]',
+                          workspaceDensity ? 'lg:h-10 lg:py-0 lg:w-auto lg:min-w-[200px]' : 'min-w-[220px]',
                           isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
                           isGenerateDisabled ? '' : 'active:scale-[0.97]',
                           formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
@@ -434,8 +434,7 @@ export function Composer({
               )}
             >
               {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason, disabledPresentation }) => (
-                <AssetDropzone
-                  key={field.id}
+                <AssetDropzone key={field.id} density={workspaceDensity ? 'compact' : 'default'}
                   engine={engine}
                   caps={caps}
                   field={field}

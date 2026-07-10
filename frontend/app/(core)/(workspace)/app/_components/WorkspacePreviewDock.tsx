@@ -68,6 +68,7 @@ export function WorkspacePreviewDock({
 }) {
   return (
     <CompositePreviewDock
+      density="workspace"
       group={group}
       isLoading={isLoading}
       autoPlayRequestId={autoPlayRequestId}

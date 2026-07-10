@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import type { ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 import type { PreviewCopy } from './composite-preview-dock-utils';
@@ -8,6 +9,7 @@ export function CompositePreviewDockHeader({
   controls,
   copy,
   copyPrompt,
+  density = 'default',
   engineSettings,
   groupItemCount,
   onCopyPrompt,
@@ -16,6 +18,7 @@ export function CompositePreviewDockHeader({
   controls: PreviewCopy['controls'];
   copy: PreviewCopy;
   copyPrompt?: string | null;
+  density?: 'default' | 'workspace';
   engineSettings?: ReactNode;
   groupItemCount?: number | null;
   onCopyPrompt?: () => void;
@@ -45,7 +48,7 @@ export function CompositePreviewDockHeader({
     ) : null;
 
   return (
-    <header className="border-b border-hairline px-4 py-3">
+    <header className={clsx('border-b border-hairline px-4', density === 'workspace' ? 'py-1' : 'py-3')}>
       {engineSettings ? (
         <>
           <div className="flex flex-wrap items-start justify-between gap-4">

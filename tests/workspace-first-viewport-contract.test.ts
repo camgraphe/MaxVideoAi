@@ -26,6 +26,18 @@ const videoComposerSource = readFileSync(
 );
 const coreSettingsSource = readFileSync('frontend/components/CoreSettingsBar.tsx', 'utf8');
 const imageSettingsSource = readFileSync('frontend/components/ImageSettingsBar.tsx', 'utf8');
+const compositePreviewSource = readFileSync(
+  'frontend/components/groups/CompositePreviewDock.tsx',
+  'utf8'
+);
+const compositePreviewHeaderSource = readFileSync(
+  'frontend/components/groups/CompositePreviewDockHeader.tsx',
+  'utf8'
+);
+const imageCompositePreviewSource = readFileSync(
+  'frontend/components/groups/ImageCompositePreviewDock.tsx',
+  'utf8'
+);
 const appClientSource = readFileSync('frontend/app/(core)/(workspace)/app/AppClient.tsx', 'utf8');
 const imageWorkspaceSource = readFileSync(
   'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx',
@@ -47,12 +59,43 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*density="workspace"/);
   assert.match(coreSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
   assert.match(imageSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
+  assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-1 sm:flex-none'/);
+  assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-1 sm:flex-none'/);
+  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-0 gap-1 px-1\.5 text-\[10px\]/);
+  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-0 gap-1 px-1\.5 text-\[10px\]/);
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.match(composerSource, /workspaceDensity[\s\S]*overflow-x-auto/);
   assert.match(composerSource, /workspaceDensity[\s\S]*lg:flex-row[\s\S]*lg:flex-nowrap/);
   assert.match(composerSource, /workspaceDensity[\s\S]*w-full lg:w-auto/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
+});
+
+test('workspace preview and image prompt density stay opt-in without changing shared defaults', () => {
+  assert.match(videoPreviewSource, /<CompositePreviewDock[\s\S]*density="workspace"/);
+  assert.match(imageSurfaceSource, /<ImageCompositePreviewDock[\s\S]*density="workspace"/);
+  assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
+  assert.match(composerTypesSource, /compactPrompt\?: boolean/);
+  assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
+  assert.match(composerSource, /rows=\{compactPrompt \? 3 : workspaceDensity \? 5 : 6\}/);
+  assert.match(composerSource, /min-h-\[104px\][\s\S]*sm:h-16 sm:min-h-0/);
+  assert.match(composerSource, /sm:h-16 sm:min-h-0/);
+  assert.match(composerSource, /density=\{workspaceDensity \? 'compact' : 'default'\}/);
+  assert.match(composerSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-3'/);
+  assert.match(composerSource, /lg:h-10 lg:py-0/);
+  assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-4'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-2' : 'mt-3'/);
+  assert.match(compositePreviewSource, /window\.innerWidth < 640 \? 0\.25 : 0\.32/);
+  assert.match(compositePreviewHeaderSource, /density\?: 'default' \| 'workspace'/);
+  assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
+  assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-4'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-2' : 'mt-3'/);
+  assert.match(
+    imageCompositePreviewSource,
+    /workspaceDensity \? 'max-h-\[220px\] sm:max-h-\[330px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/
+  );
 });
 
 test('video composer limits calm upload locks to the winning guest-auth reason', () => {
@@ -67,5 +110,5 @@ test('workspace density never changes route order by authentication state', () =
   assert.ok(imageSurfaceSource.indexOf('<ImageCompositePreviewDock') < imageSurfaceSource.indexOf('<form'));
   assert.doesNotMatch(videoShellSource, /authStatus|session|user/);
   assert.doesNotMatch(imageSurfaceSource, /authStatus/);
-  assert.match(workspaceChromeSource, /p-4 lg:p-7/);
+  assert.match(workspaceChromeSource, /p-4 lg:px-7 lg:py-2/);
 });

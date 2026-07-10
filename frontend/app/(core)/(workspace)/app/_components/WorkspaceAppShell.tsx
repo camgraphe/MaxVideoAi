@@ -126,7 +126,7 @@ export function WorkspaceAppShell({
           {notice}
         </div>
       )}
-      <div className="stack-gap-lg">
+      <div className="flex flex-col gap-2 sm:gap-3">
         <WorkspaceCenterGallery
           show={showCenterGallery}
           groups={normalizedPendingGroups}

@@ -50,10 +50,8 @@ export function EngineSelect({
   const copy = mergeEngineSelectCopy(t('workspace.generate.engineSelect', DEFAULT_ENGINE_SELECT_COPY) as Partial<EngineSelectCopy>);
   const [open, setOpen] = useState(false);
   const [browseOpen, setBrowseOpen] = useState(false);
-
   const triggerId = useId();
   const legacyToggleId = useId();
-
   const {
     hasLegacyEngines,
     registryMeta,
@@ -233,7 +231,7 @@ export function EngineSelect({
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
           {controlPresentation === 'workspace' ? (
-            <div className={clsx('flex min-w-0 flex-col', isCompact ? 'gap-1.5' : 'gap-2')}>
+            <div className={clsx('flex min-w-0 flex-col', isCompact ? 'gap-0' : 'gap-2')}>
               <div className="flex items-end gap-2">
                 <div className="min-w-0 flex-1">
                   <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
@@ -246,7 +244,10 @@ export function EngineSelect({
               <button
                 type="button"
                 onClick={() => setBrowseOpen(true)}
-                className="ml-auto inline-flex min-h-9 items-center gap-1.5 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className={clsx(
+                  'ml-auto inline-flex items-center gap-1.5 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  isCompact ? 'min-h-6' : 'min-h-9'
+                )}
               >
                 <span>{copy.browseCompact}</span>
                 <ExternalLink className="h-3.5 w-3.5" aria-hidden />
@@ -419,7 +420,6 @@ export function EngineSelect({
       </div>
     );
   }
-
   return (
     <Card ref={containerRef} className={containerClassName}>
       {content}
