@@ -1,13 +1,13 @@
-# Workspace First-Viewport Conversion Design
+# Video and Image Workspace First-Viewport Conversion Design
 
 ## Objective
 
-Make the video Workspace immediately understandable and actionable on a 390 × 844 mobile viewport while preserving the same product experience before and after authentication.
+Make the video and image Workspaces immediately understandable and actionable on a 390 × 844 mobile viewport while preserving the same product experience before and after authentication.
 
 The primary success scenario is:
 
-1. A visitor opens `/app` on mobile.
-2. The visitor can identify the selected engine, inspect the starter preview, read or edit the prompt, understand the core settings, see the exact price, and reach Generate without encountering a different guest-only layout.
+1. A visitor opens `/app` or `/app/image` on mobile.
+2. The visitor can identify the selected engine and variant, inspect the starter preview, read or edit the prompt, understand the route-appropriate core settings, see the exact price, and reach Generate without encountering a different guest-only layout.
 3. The visitor selects Generate and the existing authentication gate opens.
 4. After authentication, the visitor returns to the same Workspace structure with the existing draft-continuity behavior.
 5. The same Generate action continues through the existing pricing, wallet-preflight, top-up, and generation pipeline.
@@ -18,7 +18,7 @@ This conversion-repair lot includes:
 
 - a denser mobile presentation of the existing engine selector and variant controls;
 - a compact mobile preview treatment that keeps the current preview-first mental model;
-- a denser video-composer presentation on mobile;
+- denser video- and image-composer presentations on mobile;
 - a restrained desktop density pass that preserves the current vertical Workspace order;
 - one compact Pro / 4K / Standard variant selector beside the engine selector;
 - a discreet Browse engines action in place of the current full-width secondary button;
@@ -28,6 +28,7 @@ This conversion-repair lot includes:
 - neutral guest upload placeholders without the aggressive Unavailable badge;
 - one price presentation, inside the Generate button only;
 - responsive behavior that preserves the current desktop Workspace hierarchy and asset-field order;
+- equivalent density and control-alignment improvements for `/app/image`, while preserving its image-specific preview actions, reference-images area, and advanced settings;
 - focused architecture, component, responsive, and visual-regression coverage.
 
 ## Out of Scope
@@ -37,6 +38,7 @@ This conversion-repair lot includes:
 - Removing starter samples, preview navigation, playback controls, the latest-renders rail, or the mobile gallery rail.
 - Changes to engine selection, mode inference, prompt persistence, draft hydration, authentication, wallet preflight, top-up, checkout, generation submission, polling, or asset uploads.
 - Changes to pricing calculations, model catalog data, character limits, or supported settings.
+- Changes to image estimation, image generation, image history, image library persistence, or image-reference orchestration.
 - Changes to public URLs, localized slugs, canonical URLs, hreflang, JSON-LD, sitemaps, redirects, or route groups.
 - A desktop split-view redesign, a new global state layer, or a new modal.
 - Removing, hiding, tabbing, or reordering Start frame, End frame, negative-prompt, or advanced-setting fields.
@@ -68,14 +70,16 @@ The approved desktop companion preserves the current vertical order and adds:
 
 The final visual references are:
 
-- mobile: `exec-ec897e31-e4be-4404-a505-8f562287b964.png`;
-- desktop: `exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png`.
+- video mobile: `exec-ec897e31-e4be-4404-a505-8f562287b964.png`;
+- video desktop: `exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png`;
+- image mobile: `exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png`;
+- image desktop: `exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png`.
 
 They were generated from current `/app` captures at 390 × 844 and 1440 × 1024. They are hierarchy and density targets, not permission to replace dynamic product data with the mock values shown in the images.
 
 ## Chosen Approach
 
-Keep one authentication-neutral DOM hierarchy and introduce route-controlled responsive density for mobile and desktop.
+Keep one authentication-neutral DOM hierarchy per Workspace and introduce route-controlled responsive density for mobile and desktop through shared presentation contracts.
 
 The Workspace continues to render, in order:
 
@@ -84,6 +88,15 @@ The Workspace continues to render, in order:
 3. engine selection and the composite preview;
 4. the composer;
 5. the existing mobile latest-renders rail outside the main content.
+
+The image Workspace keeps its equivalent route order:
+
+1. engine selection and image preview;
+2. status messaging when present;
+3. prompt, image settings, and Generate;
+4. reference images;
+5. image advanced settings;
+6. the existing image latest-renders rail.
 
 The conversion improvement comes from reducing avoidable vertical space, not from moving guests into a separate layout or changing the order after login. Desktop retains the current hierarchy and vertical order while receiving tighter engine, composer, and action-row treatment. The responsive presentation must remain stable when authentication state changes.
 
@@ -108,6 +121,15 @@ At that viewport:
 
 The target is not a brittle guarantee that every engine configuration fits completely above the fold. Engines with additional workflow notices, validation errors, promoted actions, asset requirements, or unusually long localized labels may require scrolling. The invariant is that default guest and standard authenticated entry states are materially denser and that no required information is hidden or duplicated.
 
+For `/app/image` at the same mobile target:
+
+- Seedream and its variant selector share the compact engine row;
+- Browse engines uses the same discreet secondary treatment;
+- the image preview remains before the composer and contains square, portrait, landscape, and custom outputs without crop or stretch;
+- image count, aspect, resolution, format, quality, and style controls use one contained compact row when present;
+- Generate images is full-width below that row and displays the estimated price once;
+- Reference images and Advanced settings remain below the composer in their current order.
+
 ### Desktop refinement
 
 At the existing desktop breakpoint:
@@ -124,6 +146,14 @@ At the existing desktop breakpoint:
 - guest-locked placeholders omit the Unavailable badge and aggressive warning color while retaining one `Sign in to upload` affordance;
 - no authenticated or guest branch changes the layout order.
 
+For `/app/image` on desktop:
+
+- the current vertical engine → preview → composer → references → advanced-settings order remains;
+- Seedream and its Lite/Pro variant selector share the same compact engine-row contract as video;
+- all currently visible image settings and Generate images share one non-wrapping row at 1440 × 1024;
+- Reference images remains immediately below the composer and retains Characters and slot-count behavior;
+- the image preview keeps its existing aspect-aware stage and actions.
+
 ## Component Boundaries
 
 `AppClient.tsx` remains a route-level orchestrator and does not receive new layout JSX.
@@ -136,9 +166,17 @@ The shared engine selector may expose an explicit compact variant-control presen
 
 `WorkspaceComposerSurface.tsx` remains the video-route owner of composer composition. It opts the shared `Composer` into the compact Workspace mobile treatment rather than duplicating the composer.
 
+`ImageWorkspace.tsx` remains the image route orchestrator. It does not receive new inline layout helpers.
+
+`image/_components/ImageWorkspaceComposerSurface.tsx` remains the owner of image preview, engine-control composition, image settings, shared composer configuration, and the image form. It opts into the same shared compact engine and composer contracts while keeping image-only controls and copy.
+
+`ImageSettingsBar.tsx` remains the image-specific settings owner and may expose a compact, non-wrapping presentation contract parallel to `CoreSettingsBar`.
+
 The shared `Composer` and preview primitives may accept narrowly scoped presentation props or responsive class changes. Those changes must preserve their default behavior for image, audio, and other consumers.
 
 Asset-field components may distinguish the guest authentication lock from genuine engine unavailability for presentation only. Required-field semantics, upload handlers, disabled behavior, and authenticated states remain unchanged.
+
+The shared density props must be opt-in. Other `Composer`, `EngineSelect`, `CoreSettingsBar`, and `ImageSettingsBar` consumers retain their current default presentation.
 
 No server module, database module, payment module, or route handler is added to the client dependency graph.
 
@@ -169,8 +207,11 @@ The existing formatted price remains the single source of displayed price truth.
 - Member discount messaging remains governed by the current preflight response and is not replaced by a duplicate estimate.
 - No separate `Estimated price`, credit conversion, or amount summary is added beside or above the button.
 - Generate continues to call the existing `startRender` handler exactly once.
+- Generate images continues to call the existing image `handleRun` path exactly once.
 
 On desktop, the core-setting controls and Generate remain one logical row. The row must not wrap at the 1440 × 1024 target. A contained horizontal overflow fallback is acceptable at narrower desktop widths, but a second settings line is not.
+
+The same single-price rule applies to Generate images: the image estimate is formatted once inside the button, with no adjacent estimate or credits duplicate.
 
 ## Viewer Aspect-Ratio Contract
 
@@ -182,6 +223,7 @@ The preview remains primarily optimized for 16:9 output.
 - Neutral letterboxing is acceptable and preferable to content loss.
 - Preview controls, guided-sample navigation, modal opening, download, autoplay, mute, loop, and ready-state behavior remain unchanged.
 - The implementation derives aspect behavior from existing group/item metadata or natural media dimensions; it does not add a user-facing aspect toggle to the viewer.
+- `ImageCompositePreviewDock` keeps its current entry-derived CSS aspect ratio and `object-contain` behavior; the lot must not regress it while compacting the surrounding engine controls.
 
 ## Guest Asset-Placeholder Contract
 
@@ -202,9 +244,11 @@ The layout is independent of authentication state.
 - Generate without a valid session continues to open `WorkspaceAuthGateModal`.
 - Login and signup targets continue to use the current sanitized Workspace return target.
 - Existing draft storage and prompt hydration remain authoritative.
+- Existing image-composer persistence and query hydration remain authoritative on `/app/image`.
 - No automatic generation occurs after login.
 - After authentication, pricing and wallet checks continue through the existing hooks.
 - Insufficient funds continue to open the existing top-up flow from the preceding checkout-unification lot.
+- Image generation continues to use its current authentication and estimation flow; this lot does not route image generation through the video wallet-preflight hook.
 
 ## Accessibility
 
@@ -222,6 +266,7 @@ This lot changes only responsive client presentation inside the existing Workspa
 It preserves:
 
 - `/app` and all existing query parameters;
+- `/app/image` and all existing image-workspace query parameters;
 - `/login`, `/billing`, and the current authentication return contract;
 - all public and localized marketing routes;
 - canonical, hreflang, JSON-LD, robots, and sitemap behavior;
@@ -244,8 +289,11 @@ Required automated coverage:
 6. The desktop core controls and Generate use a non-wrapping row at the target breakpoint.
 7. The preview uses aspect-safe contain behavior for non-16:9 media without changing preview interactions.
 8. Guest asset locks omit the Unavailable badge and aggressive warning styling while preserving disabled behavior and the sign-in affordance.
-9. Existing generation, auth-gate, draft, pricing, wallet-preflight, preview, asset, and Workspace architecture contracts remain green.
-10. TypeScript, lint, exposure lint, full validation, production build, and `git diff --check` pass.
+9. The image Workspace opts into compact engine and composer density without moving image orchestration into `ImageWorkspace.tsx`.
+10. Image settings and Generate images stay on one desktop row and use a contained compact mobile row.
+11. Image preview containment, references, Characters action, persistence, pricing estimate, auth gate, history, and advanced settings remain intact.
+12. Existing generation, auth-gate, draft, pricing, wallet-preflight, preview, asset, and Workspace architecture contracts remain green.
+13. TypeScript, lint, exposure lint, full validation, production build, and `git diff --check` pass.
 
 Manual and visual coverage:
 
@@ -254,6 +302,7 @@ Manual and visual coverage:
 - verify engine selection, sample navigation, prompt editing, Multi-prompt, Storyboard, core settings, Generate-to-auth-gate, and no horizontal page overflow;
 - capture 1440 × 1024 and verify the compact variant selector, discreet Browse engines action, non-wrapping settings/action row, retained asset placeholders, and unchanged latest-renders rail;
 - open representative 16:9, portrait, and square previews and verify contain behavior without crop or stretch;
+- repeat mobile and desktop captures on `/app/image`, including a non-16:9 image, reference-images access, Characters, image settings, Generate-to-auth-gate, and Advanced settings;
 - verify the primary action remains reachable with default data after the page settles;
 - record all findings in `design-qa.md` and require `final result: passed` before handoff.
 
@@ -270,6 +319,10 @@ Manual and visual coverage:
 - Non-16:9 previews are contained without crop or stretch.
 - Guest Start/End-frame placeholders keep the sign-in affordance without the Unavailable badge or aggressive warning treatment.
 - Start frame, End frame, negative prompt, and advanced settings remain in their existing order.
+- Generate Image uses the same compact engine/variant/Browse hierarchy without receiving video-only controls.
+- Image settings and Generate images share one desktop row, while mobile controls remain contained without page overflow.
+- Image preview, Reference images, Characters, and Advanced settings retain their current behavior and order.
+- Image price appears exactly once inside Generate images.
 - Generate preserves the existing authentication, pricing, wallet, top-up, and generation behavior.
 - The document has no horizontal overflow at the target viewport.
 - Desktop presentation remains functionally stable and retains its current vertical hierarchy.
