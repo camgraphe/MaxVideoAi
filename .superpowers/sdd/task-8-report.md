@@ -109,3 +109,39 @@
 ### Concerns
 
 - The repository-wide TypeScript check remains blocked by the three unrelated Studio errors listed above; this fix pass introduced no additional TypeScript diagnostics.
+
+## Fix Pass 3: Reorder Safety And Render Provenance
+
+### Commit
+
+`97dc46f5` (`fix: guard timeline reorders and render provenance`)
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render.ts`
+- `tests/maxvideoai-editor-timeline-interaction.test.ts`
+- `tests/maxvideoai-editor-timeline-export.test.ts`
+
+### Findings Fixed
+
+1. Consolidated timeline candidate commits behind `commitTimelineEditWithoutOverlap`. Insert, directional move, explicit reorder, ripple delete, positioned drag, and insert-mode drag paths now return the original items whenever the candidate has any same-track overlap. Directional and reorder regressions start overlap-free and prove normalized linked audio cannot collide with independent audio.
+2. Changed `WorkspaceTimelineRenderClip.sourceDurationSec` to `number | null`. Unknown source duration now serializes as `null`, while `durationSec` and `sourceEndSec` continue to carry the usable edit window for Remotion. Measured source duration remains exact. Server renderer and Remotion share the updated manifest type and require no provenance fallback because playback uses edit duration/source window fields.
+
+### TDD Evidence
+
+- RED: directional move normalized linked audio from `8s` to `4s` on top of independent audio and returned the overlapping candidate.
+- RED: explicit reorder produced the same linked-audio collision and committed it.
+- RED: render manifest converted an unknown `6s` edit duration into known `sourceDurationSec: 6`.
+- GREEN: both move paths now return the original array, and manifest build plus JSON serialization preserve `sourceDurationSec: null` while retaining `durationSec: 6`.
+
+### Verification
+
+- PASS: full Task 8 and server-render suite: `tests/maxvideoai-editor-timeline-interaction.test.ts`, `tests/maxvideoai-editor-timeline-selection.test.ts`, `tests/maxvideoai-editor-timeline-export.test.ts`, `tests/maxvideoai-editor-project-media-timeline.test.ts`, `tests/maxvideoai-editor-sequence-api-persistence.test.ts`, and `tests/timeline-export-server-contract.test.ts` (66 passed, 0 failed).
+- PASS: focused architecture contract `MaxVideoAI editor timeline editing supports drag ordering and cut splits` (1 passed, 0 failed).
+- PASS: `git diff --check`.
+- PRE-EXISTING: frontend TypeScript check still reports only the unrelated errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
+
+### Concerns
+
+- The repository-wide TypeScript check remains blocked by the three unrelated Studio errors listed above; the nullable manifest contract introduced no additional diagnostics in server or Remotion consumers.
