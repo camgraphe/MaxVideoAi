@@ -7,8 +7,10 @@ import type {
   WorkspaceOutputMediaKind,
   WorkspacePolicyControlField,
   WorkspaceShotSettings,
+  WorkspaceWorkflowType,
 } from '../workspace-types';
 import { edgeLabel } from '../workspace-templates';
+import { getWorkspaceV1BlockContract } from './workspace-v1-block-matrix';
 import {
   connectedSatisfiesRequirement,
   getWorkspaceShotInputConnectors,
@@ -66,6 +68,10 @@ function isGenerateVideo(settings: WorkspaceShotSettings): boolean {
   return presetId(settings) === 'generate-video' ||
     settings.workflowType === 'text_to_video' ||
     settings.workflowType === 'image_to_video';
+}
+
+function v1BlockContractFor(settings: WorkspaceShotSettings) {
+  return settings.presetId ? getWorkspaceV1BlockContract(settings.presetId) : null;
 }
 
 function isSingleEngineTool(settings: WorkspaceShotSettings): string | null {
@@ -156,8 +162,23 @@ function inferBlockMode(
 function requiredInputsForMode(
   settings: WorkspaceShotSettings,
   capability: WorkspaceModelCapability | null,
-  mode: WorkspaceBlockMode
+  mode: WorkspaceBlockMode,
+  connected: Set<WorkspaceEdgeKind>
 ): WorkspaceEdgeKind[] {
+  const contract = v1BlockContractFor(settings);
+  if (contract) {
+    const workflowForMode: Partial<Record<WorkspaceBlockMode, WorkspaceWorkflowType>> = {
+      'text-to-video': connected.has('character') ? 'character_to_video' : 'text_to_video',
+      'image-to-video': 'image_to_video',
+      'reference-to-video': 'storyboard_to_video',
+      'first-last-video': 'image_to_video',
+      'video-edit': 'video_to_video',
+      'text-to-image': 'text_to_image',
+      'image-edit': 'image_to_image',
+    };
+    const workflow = workflowForMode[mode] ?? settings.workflowType;
+    if (contract.workflows.includes(workflow)) return contract.requiredInputsByWorkflow[workflow] ?? [];
+  }
   if (mode === 'image-edit') return ['prompt', 'reference'];
   if (mode === 'video-edit' || mode === 'video-reframe') return ['prompt', 'video_reference'];
   if (mode === 'image-to-video') return ['prompt', 'start_image'];
@@ -167,7 +188,18 @@ function requiredInputsForMode(
   return capability?.required_inputs ?? [];
 }
 
-function minimumOptionalInputsForMode(settings: WorkspaceShotSettings, mode: WorkspaceBlockMode): WorkspaceEdgeKind[] {
+function minimumOptionalInputsForMode(
+  settings: WorkspaceShotSettings,
+  mode: WorkspaceBlockMode,
+  requiredInputs: WorkspaceEdgeKind[]
+): WorkspaceEdgeKind[] {
+  const contract = v1BlockContractFor(settings);
+  if (contract) {
+    return Array.from(new Set([
+      ...contract.optionalInputs,
+      ...contract.workflows.flatMap((workflow) => contract.requiredInputsByWorkflow[workflow] ?? []),
+    ])).filter((kind) => !requiredInputs.includes(kind));
+  }
   const id = presetId(settings);
   if (id === 'generate-video') return ['start_image', 'reference', 'style', 'camera'];
   if (id === 'modify-video') return ['motion_reference', 'previous_shot', 'continuity', 'style'];
@@ -303,6 +335,12 @@ function controlFieldsForPolicy(
   capability: WorkspaceModelCapability | null,
   outputMediaKind: WorkspaceOutputMediaKind
 ): WorkspacePolicyControlField[] {
+  const contract = v1BlockContractFor(settings);
+  if (contract) {
+    return capability?.control_fields?.length
+      ? contract.visibleControls.filter((field) => capability.control_fields?.includes(field))
+      : contract.visibleControls;
+  }
   if (settings.family === 'chat') return capability?.control_fields?.length
     ? capability.control_fields
     : ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'];
@@ -340,6 +378,8 @@ function pricingRelevantFieldsForPolicy(
   capability: WorkspaceModelCapability | null,
   outputMediaKind: WorkspaceOutputMediaKind
 ): WorkspacePolicyControlField[] {
+  const contract = v1BlockContractFor(settings);
+  if (contract) return contract.pricingRelevantFields;
   if (settings.family === 'chat') return [];
   if (capability?.pricing_relevant_fields) return capability.pricing_relevant_fields;
   const fields = new Set<WorkspacePolicyControlField>(['model']);
@@ -364,10 +404,10 @@ export function resolveWorkspaceBlockPolicy({
 }): WorkspaceBlockPolicyResult {
   const connected = connectedSet(connectedInputs);
   const mode = inferBlockMode(settings, connected);
-  const requiredInputs = requiredInputsForMode(settings, capability, mode);
+  const requiredInputs = requiredInputsForMode(settings, capability, mode, connected);
   const optionalInputs = Array.from(new Set([
     ...(capability?.optional_inputs ?? []),
-    ...minimumOptionalInputsForMode(settings, mode),
+    ...minimumOptionalInputsForMode(settings, mode, requiredInputs),
   ])).filter((kind) => !requiredInputs.includes(kind));
   const inputConnectors = mergeConnectors(capability, requiredInputs, optionalInputs, mode, connected, settings);
   const missingInputs = requiredInputs.filter((kind) => !connectedSatisfiesRequirement(connected, kind));

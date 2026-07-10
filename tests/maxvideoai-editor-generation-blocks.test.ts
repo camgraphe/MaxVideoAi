@@ -57,6 +57,7 @@ import {
   getWorkspaceBlockCompatibleCapabilities,
   resolveWorkspaceBlockPolicy,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy';
+import { getWorkspaceV1BlockContract } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-v1-block-matrix';
 import type {
   WorkspaceEdgeKind,
   WorkspaceGenerationFamily,
@@ -163,6 +164,23 @@ test('Studio canvas exposes generation block presets for every requested workflo
   assert.equal(getWorkspaceBlockPreset('modify-image')?.defaultShot?.workflowType, 'image_to_image');
   assert.equal(getWorkspaceBlockPreset('audio-music')?.outputKind, 'audio');
   assert.equal(getWorkspaceBlockPreset('chat-box')?.family, 'chat');
+});
+
+test('Studio block policy derives storyboard controls and pricing from its V1 contract', () => {
+  const settings = defaultShotForPreset('storyboard');
+  const capability = getWorkspaceModelCapabilities().find((candidate) => candidate.id === settings.modelId) ?? null;
+  const contract = getWorkspaceV1BlockContract('storyboard');
+  assert.ok(capability);
+
+  const policy = resolveWorkspaceBlockPolicy({
+    settings,
+    capability,
+    connectedInputs: ['prompt'],
+  });
+
+  assert.deepEqual(policy.optionalInputs, contract.optionalInputs);
+  assert.deepEqual(policy.controlFields, contract.visibleControls);
+  assert.deepEqual(policy.pricingRelevantFields, contract.pricingRelevantFields);
 });
 
 test('Studio specialized tool presets route to product tools instead of generic video models', () => {
@@ -813,8 +831,8 @@ test('Studio block capability policy defines a normalized per-preset capability 
     if (expectation.presetId === 'chat-box') {
       assert.deepEqual(
         missingPolicy.inputConnectors.map((connector) => connector.kind),
-        ['prompt'],
-        'chat should only expose text prompt context until binary media context is implemented'
+        ['prompt', 'style', 'camera', 'dialogue', 'narration'],
+        'chat should expose its V1 text-context connectors'
       );
     }
     for (const kind of [...expectation.requiredInputs, ...expectation.optionalInputs]) {

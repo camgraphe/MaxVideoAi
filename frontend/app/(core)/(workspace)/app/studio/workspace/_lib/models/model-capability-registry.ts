@@ -2,6 +2,7 @@ import { getBaseEnginesByCategory } from '@/lib/engines';
 import type { AspectRatio, EngineCaps, Resolution } from '@/types/engines';
 import type {
   WorkspaceEdgeKind,
+  WorkspaceGenerationPresetId,
   WorkspaceModelCapability,
   WorkspaceOutputCount,
   WorkspacePolicyControlField,
@@ -17,6 +18,7 @@ import {
 } from './model-input-connectors';
 import { hasFieldId, hasFieldType, hasMode } from './model-engine-fields';
 import { resolveWorkspaceRenderOptions } from './model-pricing-adapter';
+import { getWorkspaceV1BlockContract } from './workspace-v1-block-matrix';
 
 function workflowTypesFor(engine: EngineCaps): WorkspaceWorkflowType[] {
   const workflows: WorkspaceWorkflowType[] = [];
@@ -199,16 +201,16 @@ function buildCapability(engine: EngineCaps): WorkspaceModelCapability {
 
 function virtualCapability(input: {
   id: string;
+  presetId: WorkspaceGenerationPresetId;
   label: string;
   family: WorkspaceModelCapability['family'];
   outputKind: WorkspaceModelCapability['outputKind'];
   workflow: WorkspaceWorkflowType;
   requiredInputs: WorkspaceEdgeKind[];
   optionalInputs: WorkspaceEdgeKind[];
-  controlFields?: WorkspacePolicyControlField[];
   outputCount?: WorkspaceOutputCount;
-  pricingRelevantFields?: WorkspacePolicyControlField[];
 }): WorkspaceModelCapability {
+  const v1BlockContract = getWorkspaceV1BlockContract(input.presetId);
   const inputConnectors = inputConnectorsFromKinds(input.requiredInputs, input.optionalInputs);
   const supportedInputs = new Set([...input.requiredInputs, ...input.optionalInputs]);
   const renderOptions: WorkspaceModelCapability['render_options'] = input.family === 'audio'
@@ -219,16 +221,8 @@ function virtualCapability(input: {
         defaultEnabled: true,
       }]
     : [];
-  const controlFields = input.controlFields ?? controlFieldsForCapability({
-    family: input.family,
-    outputKind: input.outputKind,
-    renderOptions,
-  });
-  const pricingRelevantFields = input.pricingRelevantFields ?? pricingRelevantFieldsForCapability({
-    family: input.family,
-    outputKind: input.outputKind,
-    renderOptions,
-  });
+  const controlFields = v1BlockContract.visibleControls;
+  const pricingRelevantFields = v1BlockContract.pricingRelevantFields;
   return {
     id: input.id,
     label: input.label,
@@ -284,61 +278,57 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
   return [
     virtualCapability({
       id: 'audio-music-only',
+      presetId: 'audio-music',
       label: 'Music generator',
       family: 'audio',
       outputKind: 'audio',
       workflow: 'music_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['style'],
-      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'audioMusicEnabled'],
-      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-voice-only',
+      presetId: 'audio-voiceover',
       label: 'Voice-over generator',
       family: 'audio',
       outputKind: 'audio',
       workflow: 'voiceover_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['voiceover', 'dialogue', 'narration'],
-      controlFields: ['model', 'durationSec', 'voiceGender', 'voiceProfile', 'voiceDelivery', 'audioLanguage'],
-      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-sfx-only',
+      presetId: 'audio-sfx',
       label: 'SFX generator',
       family: 'audio',
       outputKind: 'audio',
       workflow: 'sfx_generation',
       requiredInputs: ['prompt'],
       optionalInputs: ['video_reference', 'motion_reference'],
-      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity'],
-      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-cinematic',
+      presetId: 'audio-sound-design',
       label: 'Cinematic sound design',
       family: 'audio',
       outputKind: 'audio',
       workflow: 'cinematic_audio',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt', 'music', 'sfx'],
-      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'audioMusicEnabled'],
-      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'audio-cinematic-voice',
+      presetId: 'audio-sound-design-voice',
       label: 'Cinematic sound design + voice',
       family: 'audio',
       outputKind: 'audio',
       workflow: 'cinematic_voiceover',
       requiredInputs: ['video_reference', 'prompt'],
       optionalInputs: ['music', 'sfx', 'voiceover', 'dialogue', 'narration'],
-      controlFields: ['model', 'durationSec', 'audioMood', 'audioIntensity', 'voiceGender', 'voiceProfile', 'voiceDelivery', 'audioLanguage'],
-      pricingRelevantFields: ['model', 'durationSec'],
     }),
     virtualCapability({
       id: 'character-builder-tool',
+      presetId: 'character-builder',
       label: 'Character Builder',
       family: 'image',
       outputKind: 'image',
@@ -346,20 +336,10 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       requiredInputs: [],
       optionalInputs: ['prompt', 'reference', 'style'],
       outputCount: { min: 1, max: 4 },
-      controlFields: [
-        'model',
-        'outputCount',
-        'characterOutputMode',
-        'characterConsistencyMode',
-        'characterQualityMode',
-        'characterFormatMode',
-        'characterReferenceStrength',
-        'characterTraits',
-      ],
-      pricingRelevantFields: ['model', 'outputCount', 'characterQualityMode', 'characterFormatMode'],
     }),
     virtualCapability({
       id: 'storyboard-gpt-image-2',
+      presetId: 'storyboard',
       label: 'Storyboard generator',
       family: 'image',
       outputKind: 'image',
@@ -369,6 +349,7 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
     }),
     virtualCapability({
       id: 'angle-flux-multiple-angles',
+      presetId: 'angle',
       label: 'FLUX Multiple Angles',
       family: 'image',
       outputKind: 'image',
@@ -376,11 +357,10 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
       outputCount: { min: 1, max: 4 },
-      controlFields: ['model', 'outputCount', 'angleRotation', 'angleTilt', 'angleZoom', 'angleSafeMode', 'angleBestAngles'],
-      pricingRelevantFields: ['model', 'outputCount'],
     }),
     virtualCapability({
       id: 'angle-qwen-multiple-angles',
+      presetId: 'angle',
       label: 'Qwen Multiple Angles',
       family: 'image',
       outputKind: 'image',
@@ -388,96 +368,86 @@ function getVirtualWorkspaceCapabilities(): WorkspaceModelCapability[] {
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
       outputCount: { min: 1, max: 4 },
-      controlFields: ['model', 'outputCount', 'angleRotation', 'angleTilt', 'angleZoom', 'angleSafeMode', 'angleBestAngles'],
-      pricingRelevantFields: ['model', 'outputCount'],
     }),
     virtualCapability({
       id: 'upscale-image-seedvr',
+      presetId: 'upscale-image',
       label: 'SeedVR image upscale',
       family: 'upscale',
       outputKind: 'image',
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-image-topaz',
+      presetId: 'upscale-image',
       label: 'Topaz image upscale',
       family: 'upscale',
       outputKind: 'image',
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-image-recraft-crisp',
+      presetId: 'upscale-image',
       label: 'Recraft Crisp image upscale',
       family: 'upscale',
       outputKind: 'image',
       workflow: 'image_upscale',
       requiredInputs: ['reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-seedvr',
+      presetId: 'upscale-video',
       label: 'SeedVR video upscale',
       family: 'upscale',
       outputKind: 'video',
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-flashvsr',
+      presetId: 'upscale-video',
       label: 'FlashVSR video upscale',
       family: 'upscale',
       outputKind: 'video',
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'upscale-video-topaz',
+      presetId: 'upscale-video',
       label: 'Topaz video upscale',
       family: 'upscale',
       outputKind: 'video',
       workflow: 'video_upscale',
       requiredInputs: ['video_reference'],
       optionalInputs: ['prompt'],
-      controlFields: ['model', 'durationSec', 'resolution', 'upscaleMode', 'upscaleFactor', 'outputFormat'],
-      pricingRelevantFields: ['model', 'durationSec', 'resolution', 'upscaleFactor'],
     }),
     virtualCapability({
       id: 'studio-chat-openai',
+      presetId: 'chat-box',
       label: 'OpenAI chat',
       family: 'chat',
       outputKind: 'text',
       workflow: 'chat_completion',
       requiredInputs: ['prompt'],
       optionalInputs: [],
-      controlFields: ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'],
-      pricingRelevantFields: [],
     }),
     virtualCapability({
       id: 'studio-chat-gemini',
+      presetId: 'chat-box',
       label: 'Gemini chat',
       family: 'chat',
       outputKind: 'text',
       workflow: 'chat_completion',
       requiredInputs: ['prompt'],
       optionalInputs: [],
-      controlFields: ['chatProvider', 'chatModel', 'chatSystemPrompt', 'chatMessage'],
-      pricingRelevantFields: [],
     }),
   ];
 }
