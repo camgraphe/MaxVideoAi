@@ -234,7 +234,7 @@ export function ImageCompositePreviewDock({
         )}
       </header>
 
-      <div className={workspaceDensity ? 'px-0 py-2' : 'px-4 py-4'}>
+      <div className={workspaceDensity ? 'px-0 py-0' : 'px-4 py-4'}>
         <div className="flex flex-col items-center">
           <div
             className={clsx(
@@ -255,8 +255,11 @@ export function ImageCompositePreviewDock({
               <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{empty}</div>
             )}
           </div>
-          <div className={clsx('flex w-full', workspaceDensity ? 'mt-2' : 'mt-3')}>
-            <div className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm">
+          <div className={clsx('flex w-full', workspaceDensity ? 'mt-1' : 'mt-3')}>
+            <div className={clsx(
+              'flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
+              workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'
+            )}>
               {toolbar}
             </div>
           </div>

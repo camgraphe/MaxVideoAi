@@ -139,7 +139,7 @@ function InlineControl({
 }) {
   if (!options.length) return null;
   return (
-    <div className={compact ? 'min-w-0 flex-1 sm:flex-none' : 'min-w-0'}>
+    <div className={compact ? 'min-w-[112px] flex-none sm:min-w-0' : 'min-w-0'}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
@@ -151,7 +151,7 @@ function InlineControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-0 gap-1 px-1.5 text-[10px] sm:gap-2 sm:px-2.5 sm:text-[11px]' : 'h-10 px-3 text-[12px]'
+          compact ? 'h-9 !min-w-[112px] gap-2 px-2.5 text-[11px] sm:!min-w-0' : 'h-10 px-3 text-[12px]'
         )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
@@ -176,8 +176,8 @@ export function ImageSettingsBar({
       <div
         data-settings-density={density}
         className={clsx(
-          'flex items-center',
-          workspaceDensity ? 'w-full min-w-full flex-nowrap gap-1.5 sm:w-max sm:gap-2' : 'flex-wrap gap-2'
+          'flex items-center gap-2',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap' : 'flex-wrap'
         )}
       >
         {numImages ? (

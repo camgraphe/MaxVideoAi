@@ -33,7 +33,7 @@ interface AssetDropzoneProps {
   role?: AssetFieldRole;
   assets: (AssetSlotAttachment | null)[];
   headerAction?: ReactNode;
-  density?: 'default' | 'compact';
+  density?: 'default' | 'compact' | 'workspace';
   onSelect?: (field: EngineInputField, file: File, slotIndex: number, meta?: AssetUploadMeta) => void;
   onRemove?: (field: EngineInputField, index: number) => void;
   onError?: (message: string) => void;
@@ -327,7 +327,8 @@ export function AssetDropzone({
   const remainingSlotCount = isCollectionField ? Math.max(0, maxCount - filledAssetCount) : 0;
   const tooltipId = `asset-field-${engine.id}-${field.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
   const compactCollectionLayout = isCollectionField && displaySlots.length > 1;
-  const compactDensity = density === 'compact';
+  const compactDensity = density !== 'default';
+  const workspaceDensity = density === 'workspace';
   const multiSlotGridClass = isCollectionField
     ? compactCollectionLayout
       ? 'grid-cols-2'
@@ -341,7 +342,7 @@ export function AssetDropzone({
         : displaySlots.length <= 1
           ? 'grid-cols-1'
           : 'grid-cols-1 sm:grid-cols-2';
-  const shouldLimitSoloWidth = isSoloField && displaySlots.length === 1;
+  const shouldLimitSoloWidth = isSoloField && displaySlots.length === 1 && !workspaceDensity;
 
   return (
     <div
@@ -405,6 +406,7 @@ export function AssetDropzone({
                 canOpenLibrary={canOpenLibrary}
                 compactDensity={compactDensity}
                 compactCollectionLayout={compactCollectionLayout}
+                workspaceDensity={workspaceDensity}
                 disabled={disabled}
                 disabledReason={disabledReason}
                 displaySlotCount={displaySlots.length}

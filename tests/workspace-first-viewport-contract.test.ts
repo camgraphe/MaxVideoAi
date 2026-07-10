@@ -26,6 +26,8 @@ const videoComposerSource = readFileSync(
 );
 const coreSettingsSource = readFileSync('frontend/components/CoreSettingsBar.tsx', 'utf8');
 const imageSettingsSource = readFileSync('frontend/components/ImageSettingsBar.tsx', 'utf8');
+const assetDropzoneSource = readFileSync('frontend/components/AssetDropzone.tsx', 'utf8');
+const assetDropzoneSlotSource = readFileSync('frontend/components/asset-dropzone/AssetDropzoneSlot.tsx', 'utf8');
 const compositePreviewSource = readFileSync(
   'frontend/components/groups/CompositePreviewDock.tsx',
   'utf8'
@@ -59,10 +61,6 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*density="workspace"/);
   assert.match(coreSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
   assert.match(imageSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
-  assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-1 sm:flex-none'/);
-  assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-1 sm:flex-none'/);
-  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-0 gap-1 px-1\.5 text-\[10px\]/);
-  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-0 gap-1 px-1\.5 text-\[10px\]/);
   assert.match(coreSettingsSource, /portal=\{compact\}/);
   assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.match(composerSource, /workspaceDensity[\s\S]*overflow-x-auto/);
@@ -71,27 +69,56 @@ test('video and image composers opt into one responsive workspace density contra
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
+test('workspace mobile settings keep legible intrinsic controls inside the local scroller', () => {
+  assert.match(coreSettingsSource, /compact \? 'min-w-\[112px\] flex-none sm:min-w-0'/);
+  assert.match(imageSettingsSource, /compact \? 'min-w-\[112px\] flex-none sm:min-w-0'/);
+  assert.match(coreSettingsSource, /compact \? 'h-9 !min-w-\[112px\] gap-2 px-2\.5 text-\[11px\]/);
+  assert.match(imageSettingsSource, /compact \? 'h-9 !min-w-\[112px\] gap-2 px-2\.5 text-\[11px\]/);
+  assert.doesNotMatch(coreSettingsSource, /compact \? 'min-w-0 flex-1/);
+  assert.doesNotMatch(imageSettingsSource, /compact \? 'min-w-0 flex-1/);
+  assert.match(composerSource, /overflow-x-auto[\s\S]*\[scrollbar-width:none\][\s\S]*\[&::-webkit-scrollbar\]:hidden/);
+});
+
+test('workspace solo assets stretch while workspace-only vertical density exposes advanced controls', () => {
+  assert.match(assetDropzoneSource, /density\?: 'default' \| 'compact' \| 'workspace'/);
+  assert.match(assetDropzoneSource, /const workspaceDensity = density === 'workspace'/);
+  assert.match(assetDropzoneSource, /const shouldLimitSoloWidth = isSoloField && displaySlots\.length === 1 && !workspaceDensity/);
+  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
+  assert.match(composerSource, /workspaceDensity \? 'space-y-2' : 'space-y-4'/);
+  assert.match(composerSource, /compactPrompt \? 'h-10 min-h-0[\s\S]*sm:h-12/);
+  assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
+  assert.match(composerSource, /workspaceDensity \? 'space-y-2 border-t[\s\S]*pt-2/);
+  assert.match(composerSource, /workspaceDensity \? 'flex-nowrap gap-2 pb-1 pt-2'/);
+  assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
+  assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
+  assert.match(assetDropzoneSlotSource, /'min-h-\[42px\] rounded-\[12px\] border-0 bg-transparent'/);
+  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot[\s\S]*'h-10 w-10'/);
+  assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot \? 'gap-2'/);
+});
+
 test('workspace preview and image prompt density stay opt-in without changing shared defaults', () => {
   assert.match(videoPreviewSource, /<CompositePreviewDock[\s\S]*density="workspace"/);
   assert.match(imageSurfaceSource, /<ImageCompositePreviewDock[\s\S]*density="workspace"/);
   assert.match(imageSurfaceSource, /<Composer[\s\S]*compactPrompt/);
   assert.match(composerTypesSource, /compactPrompt\?: boolean/);
   assert.match(composerSource, /hidden=\{workspaceDensity && !visibleModeToggles/);
-  assert.match(composerSource, /rows=\{compactPrompt \? 3 : workspaceDensity \? 5 : 6\}/);
-  assert.match(composerSource, /min-h-\[104px\][\s\S]*sm:h-16 sm:min-h-0/);
-  assert.match(composerSource, /sm:h-16 sm:min-h-0/);
-  assert.match(composerSource, /density=\{workspaceDensity \? 'compact' : 'default'\}/);
-  assert.match(composerSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-3'/);
+  assert.match(composerSource, /rows=\{compactPrompt \? 2 : workspaceDensity \? 5 : 6\}/);
+  assert.match(composerSource, /min-h-\[88px\][\s\S]*sm:h-10 sm:min-h-0/);
+  assert.match(composerSource, /sm:h-10 sm:min-h-0/);
+  assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
+  assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
   assert.match(composerSource, /lg:h-10 lg:py-0/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
-  assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-4'/);
-  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-2' : 'mt-3'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
+  assert.match(compositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(compositePreviewSource, /window\.innerWidth < 640 \? 0\.25 : 0\.32/);
   assert.match(compositePreviewHeaderSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
   assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);
-  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-0 py-2' : 'px-4 py-4'/);
-  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-2' : 'mt-3'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
+  assert.match(imageCompositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(
     imageCompositePreviewSource,
     /workspaceDensity \? 'max-h-\[220px\] sm:max-h-\[330px\]' : 'max-h-\[320px\] sm:max-h-\[420px\]'/

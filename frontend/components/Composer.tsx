@@ -229,10 +229,10 @@ export function Composer({
       data-composer-density={density}
       className={clsx(
         'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
-        workspaceDensity ? 'p-3 sm:p-4' : 'p-4 md:p-5'
+        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
       )}
     >
-      <div className="space-y-4">
+      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
         <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
@@ -287,7 +287,7 @@ export function Composer({
             >
             <div className={clsx(
               'flex items-start justify-between px-4',
-              workspaceDensity ? 'flex-nowrap gap-2 pb-1.5 pt-3' : 'flex-wrap gap-3 pb-2 pt-4'
+              workspaceDensity ? 'flex-nowrap gap-2 pb-1 pt-2' : 'flex-wrap gap-3 pb-2 pt-4'
             )}>
               <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
                 <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</span>
@@ -340,12 +340,12 @@ export function Composer({
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={compactPrompt ? 3 : workspaceDensity ? 5 : 6}
+                rows={compactPrompt ? 2 : workspaceDensity ? 5 : 6}
                 aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
                   workspaceDensity
-                    ? compactPrompt ? 'min-h-[64px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:min-h-[76px]' : 'min-h-[104px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-16 sm:min-h-0'
+                    ? compactPrompt ? 'h-10 min-h-0 w-full border-0 bg-transparent px-4 pb-1 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-12' : 'min-h-[88px] w-full border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32 sm:h-10 sm:min-h-0'
                     : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
@@ -355,14 +355,14 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-0 py-2' : 'px-4 py-3')}>
+              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-0 py-1' : 'px-4 py-3')}>
                 <div className={workspaceDensity
                   ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
                   {settingsBar ? (
                     <div className={clsx(
                       'min-w-0 flex-1',
-                      workspaceDensity && 'w-full overflow-x-auto overscroll-x-contain'
+                      workspaceDensity && 'w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
                     )}>
                       {settingsBar}
                     </div>
@@ -389,7 +389,7 @@ export function Composer({
                           'transform-gpu transition-transform duration-200 ease-out',
                           'border border-brand shadow-card',
                           'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                          workspaceDensity ? 'lg:h-10 lg:py-0 lg:w-auto lg:min-w-[200px]' : 'min-w-[220px]',
+                          workspaceDensity ? compactPrompt ? 'h-10 py-0 lg:w-auto lg:min-w-[200px]' : 'lg:h-10 lg:py-0 lg:w-auto lg:min-w-[200px]' : 'min-w-[220px]',
                           isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
                           isGenerateDisabled ? '' : 'active:scale-[0.97]',
                           formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
@@ -434,7 +434,7 @@ export function Composer({
               )}
             >
               {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason, disabledPresentation }) => (
-                <AssetDropzone key={field.id} density={workspaceDensity ? 'compact' : 'default'}
+                <AssetDropzone key={field.id} density={workspaceDensity ? 'workspace' : 'default'}
                   engine={engine}
                   caps={caps}
                   field={field}
@@ -479,12 +479,12 @@ export function Composer({
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
               placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
-              className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
+              className={clsx('w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35', workspaceDensity ? 'h-9' : 'h-11')}
             />
           </div>
         ) : null}
 
-        {extraFields ? <div className="space-y-4 border-t border-border/65 pt-4 dark:border-white/[0.06]">{extraFields}</div> : null}
+        {extraFields ? <div className={workspaceDensity ? 'space-y-2 border-t border-border/65 pt-2 dark:border-white/[0.06]' : 'space-y-4 border-t border-border/65 pt-4 dark:border-white/[0.06]'}>{extraFields}</div> : null}
       </div>
       {messages && messages.length > 0 ? (
         <ul className="mt-4 space-y-1 text-xs text-text-muted">

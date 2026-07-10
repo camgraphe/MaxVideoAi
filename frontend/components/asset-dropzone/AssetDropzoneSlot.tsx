@@ -10,7 +10,6 @@ import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
 import { AssetMediaPickerMenu } from './AssetMediaPickerMenu';
 import type { AssetSlotAttachment } from './asset-dropzone-types';
 import { useExclusiveMediaPicker } from './useExclusiveMediaPicker';
-
 type AssetDropzoneCopy = ReturnType<typeof getLocalizedAssetDropzoneCopy>;
 type AssetDropzoneSlotProps = {
   accept: string;
@@ -19,6 +18,7 @@ type AssetDropzoneSlotProps = {
   canOpenLibrary: boolean;
   compactDensity: boolean;
   compactCollectionLayout: boolean;
+  workspaceDensity: boolean;
   disabled: boolean;
   disabledReason: string | null;
   displaySlotCount: number;
@@ -39,7 +39,6 @@ type AssetDropzoneSlotProps = {
   onRemoveSlot: (slotIndex: number) => void;
   onSelectFileSlot: (slotIndex: number) => void;
 };
-
 export function AssetDropzoneSlot({
   accept,
   asset,
@@ -47,6 +46,7 @@ export function AssetDropzoneSlot({
   canOpenLibrary,
   compactDensity,
   compactCollectionLayout,
+  workspaceDensity,
   disabled,
   disabledReason,
   displaySlotCount,
@@ -97,7 +97,6 @@ export function AssetDropzoneSlot({
     closePicker();
     onOpenLibrarySlot(slotIndex);
   };
-
   const openMediaPicker = () => {
     if (disabled) {
       onDisabledAttempt();
@@ -105,7 +104,6 @@ export function AssetDropzoneSlot({
     }
     openPicker();
   };
-
   const triggerSelection = () => {
     if (disabled && !asset) {
       onDisabledAttempt();
@@ -142,7 +140,9 @@ export function AssetDropzoneSlot({
               ? 'min-h-[144px] rounded-[14px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
               : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
           : flattenSlotSurface
-            ? compactDensity
+            ? workspaceDensity
+              ? 'min-h-[42px] rounded-[12px] border-0 bg-transparent'
+              : compactDensity
               ? 'min-h-[54px] rounded-[12px] border-0 bg-transparent'
               : 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
             : compactDensity
@@ -313,7 +313,7 @@ export function AssetDropzoneSlot({
             isCompactCollectionAddTile
               ? 'items-center justify-center px-3 py-3'
               : 'flex-col items-center justify-center px-4 text-center',
-            !isCompactCollectionAddTile && (isCollectionAddTile ? 'gap-3 py-4' : 'gap-4')
+            !isCompactCollectionAddTile && (workspaceDensity && isLockedEmptySlot ? 'gap-2' : isCollectionAddTile ? 'gap-3 py-4' : 'gap-4')
           )}
         >
           {isCollectionAddTile && !compactCollectionLayout ? (
@@ -324,7 +324,7 @@ export function AssetDropzoneSlot({
           <div
             className={clsx(
               'flex shrink-0 items-center justify-center rounded-full border text-text-secondary',
-              isCompactCollectionAddTile ? 'h-11 w-11' : 'h-12 w-12',
+              workspaceDensity && isLockedEmptySlot ? 'h-10 w-10' : isCompactCollectionAddTile ? 'h-11 w-11' : 'h-12 w-12',
               isLockedEmptySlot
                 ? 'border-border/80 bg-surface text-text-muted dark:border-white/12 dark:bg-white/[0.04] dark:text-white/58'
                 : 'border-border/75 bg-surface-2/80 dark:border-brand/25 dark:bg-brand/15 dark:text-brand'
