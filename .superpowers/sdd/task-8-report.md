@@ -71,3 +71,41 @@
 ### Concerns
 
 - Browser execution of the new gap-ghost assertion still requires an authenticated editor E2E environment. The test compiles and reaches the shared workspace opener, but this local run was redirected before fixture setup completed.
+
+## Fix Pass 2: Linked Project Media And Duration Provenance
+
+### Commit
+
+`737404d2` (`fix: reject linked inserts and preserve provenance`)
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-insert.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers.ts`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+- `tests/maxvideoai-editor-sequence-api-persistence.test.ts`
+
+### Findings Fixed
+
+1. Added a fail-closed overlap gate to every `insertWorkspaceTimelineItems` result mode. Insert, overwrite, and replace candidates now revert to the original timeline if any prepared linked member would produce a same-track overlap. `resolveProjectAssetTimelineInsert` also treats a reverted or overlapping candidate as an API-level insertion failure and exposes no candidate items to commit.
+2. Removed edit-duration fallback assignment from `retimeNewItems` and `normalizeTimelineMediaUrls`. Unknown imported duration remains absent through project-media insertion, media normalization, JSON persistence/reload, and unmeasured hydration. Once metadata measures `9.25s`, hydration writes that exact value to linked video and audio provenance.
+
+### TDD Evidence
+
+- RED: linked project-media insertion returned `ok: true` when video space was free but its automatic audio member overlapped an existing audio clip.
+- RED: insertion converted unknown source duration into `6s` for both linked members.
+- RED: persisted workspace reload converted an unknown `6s` edit duration into known source provenance.
+- GREEN: all three regressions pass after the insertion gate and provenance fallback removals.
+
+### Verification
+
+- PASS: `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-timeline-interaction.test.ts tests/maxvideoai-editor-timeline-selection.test.ts tests/maxvideoai-editor-timeline-export.test.ts tests/maxvideoai-editor-project-media-timeline.test.ts tests/maxvideoai-editor-sequence-api-persistence.test.ts` (50 passed, 0 failed).
+- PASS: focused architecture contract `MaxVideoAI editor timeline editing supports drag ordering and cut splits` (1 passed, 0 failed).
+- PASS: `git diff --check`.
+- PRE-EXISTING: frontend TypeScript check still reports only the unrelated errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
+
+### Concerns
+
+- The repository-wide TypeScript check remains blocked by the three unrelated Studio errors listed above; this fix pass introduced no additional TypeScript diagnostics.
