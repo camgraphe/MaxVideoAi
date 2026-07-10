@@ -45,6 +45,10 @@ type CompletedTimelineExportJob = {
   outputUrl: string | null;
 };
 
+export function workspaceTimelineExportArtifactUrl(job: CompletedTimelineExportJob): string | null {
+  return job.status === 'completed' && job.outputUrl ? job.outputUrl : null;
+}
+
 export type WorkspaceTimelineExportReadinessCheck = {
   id: 'media' | 'timeline' | 'range' | 'audio';
   label: string;
@@ -227,7 +231,8 @@ export function workspaceProjectAssetFromCompletedTimelineExport(
   manifest: WorkspaceTimelineRenderManifest,
   serverExportLabel: string = DEFAULT_STUDIO_COPY.notices.completedServerExportSubtitle
 ): WorkspaceAssetRecord | null {
-  if (job.status !== 'completed' || !job.outputUrl) return null;
+  const outputUrl = workspaceTimelineExportArtifactUrl(job);
+  if (!outputUrl) return null;
 
   const rangeLabel = manifest.exportRange.mode === 'in-out' ? 'in-out' : 'sequence';
   const filename = `${safeExportFilenamePrefix(`${manifest.projectName}-${rangeLabel}-export`)}.mp4`;
@@ -243,7 +248,7 @@ export function workspaceProjectAssetFromCompletedTimelineExport(
       projectSettings?.aspectRatio,
       projectSettings?.fps ? `${projectSettings.fps} fps` : null,
     ].filter(Boolean).join(' • '),
-    url: job.outputUrl,
+    url: outputUrl,
     durationSec: manifest.exportRange.durationSec,
     dimensions: projectSettings ? workspaceProjectDimensionsLabel(projectSettings) : undefined,
   };

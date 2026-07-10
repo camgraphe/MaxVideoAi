@@ -43,11 +43,18 @@ export function normalizeTimelineExportClientJob(value: unknown): TimelineExport
   const safeStatus: TimelineExportClientJobStatus =
     status === 'rendering' || status === 'completed' || status === 'failed' || status === 'canceled' ? status : 'queued';
   const progress = Number(record.progress ?? 0);
-  const outputUrl = typeof record.output_url === 'string'
-    ? record.output_url
-    : typeof record.outputUrl === 'string'
-      ? record.outputUrl
-      : null;
+  const artifact = record.artifact && typeof record.artifact === 'object'
+    ? record.artifact as Record<string, unknown>
+    : null;
+  const outputUrl = safeStatus === 'completed'
+    ? typeof artifact?.outputUrl === 'string'
+      ? artifact.outputUrl
+      : typeof record.output_url === 'string'
+        ? record.output_url
+        : typeof record.outputUrl === 'string'
+          ? record.outputUrl
+          : null
+    : null;
   return {
     id: record.id,
     status: safeStatus,

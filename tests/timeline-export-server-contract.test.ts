@@ -9,6 +9,7 @@ import {
 } from '../frontend/src/server/timeline-exports/pricing';
 
 const root = process.cwd();
+const contractsPath = join(root, 'frontend/src/server/timeline-exports/contracts.ts');
 const schemaPath = join(root, 'frontend/src/server/timeline-exports/schema.ts');
 const repositoryPath = join(root, 'frontend/src/server/timeline-exports/repository.ts');
 const billingPath = join(root, 'frontend/src/server/timeline-exports/billing.ts');
@@ -20,6 +21,14 @@ const compositionPath = join(root, 'frontend/src/remotion/timeline-export/Timeli
 const operationsGuidePath = join(root, 'docs/engineering/maxvideoai-editor-server-render.md');
 const workerDockerfilePath = join(root, 'Dockerfile.timeline-worker');
 const envExamplePath = join(root, 'frontend/.env.local.example');
+
+test('timeline export API contract exposes job status and artifact separately', () => {
+  const contractSource = readFileSync(contractsPath, 'utf8');
+  assert.match(contractSource, /TimelineExportStatus = 'queued' \| 'rendering' \| 'completed' \| 'failed' \| 'canceled'/);
+  assert.match(contractSource, /TimelineExportArtifact/);
+  assert.match(contractSource, /outputUrl/);
+  assert.match(contractSource, /progress/);
+});
 
 test('timeline server export grants two free exports before paid pricing', () => {
   assert.equal(MAX_FREE_TIMELINE_SERVER_EXPORTS, 2);

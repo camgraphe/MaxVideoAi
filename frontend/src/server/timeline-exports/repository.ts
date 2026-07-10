@@ -1,5 +1,10 @@
 import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
-import type { TimelineExportBillingKind, TimelineExportBillingStatus, TimelineExportStatus } from './contracts';
+import type {
+  TimelineExportBillingKind,
+  TimelineExportBillingStatus,
+  TimelineExportJobResponse,
+  TimelineExportStatus,
+} from './contracts';
 import { ensureTimelineExportSchema } from './schema';
 
 export type TimelineExportJobRecord = {
@@ -27,6 +32,31 @@ export type TimelineExportJobRecord = {
   created_at: string;
   updated_at: string;
 };
+
+function nullableTimelineExportSize(value: string | number | null): number | null {
+  if (value === null) return null;
+  const size = Number(value);
+  return Number.isFinite(size) ? size : null;
+}
+
+export function timelineExportJobResponse(job: TimelineExportJobRecord): TimelineExportJobResponse {
+  const outputUrl = job.status === 'completed' ? job.output_url : null;
+
+  return {
+    id: job.id,
+    status: job.status,
+    progress: job.progress,
+    message: job.message,
+    artifact: outputUrl
+      ? {
+        outputUrl,
+        outputAssetId: job.output_asset_id,
+        sizeBytes: nullableTimelineExportSize(job.output_size_bytes),
+        mimeType: job.output_mime_type,
+      }
+      : null,
+  };
+}
 
 export function timelineExportIdFromIdempotencyKey(idempotencyKey: string): string {
   const safeKey = idempotencyKey.replace(/[^a-zA-Z0-9._-]/g, '').slice(0, 80);

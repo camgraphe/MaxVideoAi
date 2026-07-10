@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  workspaceTimelineExportArtifactUrl,
   workspaceProjectAssetFromCompletedTimelineExport,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 import {
@@ -82,6 +83,21 @@ test('unfinished timeline export does not create a project media asset', () => {
   }, readyManifest);
 
   assert.equal(asset, null);
+});
+
+test('timeline export artifact is available only after completion', () => {
+  const outputUrl = 'https://cdn.maxvideoai.test/exports/export-123.mp4';
+
+  assert.equal(workspaceTimelineExportArtifactUrl({
+    id: 'export-123',
+    status: 'rendering',
+    outputUrl,
+  }), null);
+  assert.equal(workspaceTimelineExportArtifactUrl({
+    id: 'export-123',
+    status: 'completed',
+    outputUrl,
+  }), outputUrl);
 });
 
 test('timeline render manifest carries native source composition for sequence-scale renders', () => {
@@ -319,4 +335,30 @@ test('timeline render manifest warns when visual clips have unknown source dimen
     [['missing_dimensions', 'warning', 'unknown-source-video']],
     'visual clips without source dimensions should be visible export warnings instead of silent full-frame fallbacks'
   );
+});
+
+test('export readiness warns on missing source dimensions without inventing 1080p', () => {
+  const manifest = buildWorkspaceTimelineRenderManifest({
+    items: [{
+      id: 'clip-unknown-dimensions',
+      outputNodeId: 'project-asset-unknown-dimensions',
+      track: 'video',
+      title: 'Unknown dimensions',
+      durationSec: 4,
+      startSec: 0,
+      sourceStartSec: 0,
+      sourceDurationSec: 4,
+      mediaKind: 'video',
+      mediaUrl: '/media/unknown-dimensions.mp4',
+      sourceWidth: null,
+      sourceHeight: null,
+    }] as unknown as WorkspaceTimelineItem[],
+    nodes: [],
+    projectName: 'Test export',
+    projectSettings: { aspectRatio: '16:9', resolution: '1080p', fps: 24 },
+    rangeMode: 'sequence',
+  });
+
+  assert.ok(manifest.issues.some((issue) => issue.code === 'missing_dimensions' && issue.severity === 'warning'));
+  assert.equal(manifest.tracks[0]?.clips[0]?.composition, null);
 });

@@ -5,6 +5,7 @@ import editorStyles from '../maxvideoai-editor.module.css';
 import styles from '../_styles/export.module.css';
 import {
   workspaceTimelineExportQualityPresetOptions,
+  workspaceTimelineExportArtifactUrl,
   workspaceTimelineExportReadinessChecks,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
@@ -112,6 +113,7 @@ export function WorkspaceExportDialog({
   const readinessChecks = workspaceTimelineExportReadinessChecks(manifest, copy);
   const hasBlockingChecks = readinessChecks.some((check) => check.status === 'blocking');
   const isServerJobActive = activeExportJob?.status === 'queued' || activeExportJob?.status === 'rendering';
+  const completedArtifactUrl = activeExportJob ? workspaceTimelineExportArtifactUrl(activeExportJob) : null;
   const exportPriceLabel = exportEstimate
     ? exportEstimate.billingKind === 'free'
       ? formatCopyValue(copy.freeExport, {
@@ -291,8 +293,8 @@ export function WorkspaceExportDialog({
                 <span style={{ width: `${activeExportJob.progress}%` }} />
               </div>
             ) : null}
-            {activeExportJob?.outputUrl ? (
-              <a className={styles.exportDownloadLink} href={activeExportJob.outputUrl} target="_blank" rel="noreferrer">
+            {completedArtifactUrl ? (
+              <a className={styles.exportDownloadLink} href={completedArtifactUrl} target="_blank" rel="noreferrer">
                 {copy.downloadMp4}
               </a>
             ) : null}

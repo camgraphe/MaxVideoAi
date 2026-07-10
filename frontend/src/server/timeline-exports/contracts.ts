@@ -1,6 +1,25 @@
 import type { WorkspaceTimelineExportQualityPreset } from '../../../app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 
 export type TimelineExportStatus = 'queued' | 'rendering' | 'completed' | 'failed' | 'canceled';
+
+export type TimelineExportArtifact = {
+  outputUrl: string;
+  outputAssetId: string | null;
+  sizeBytes: number | null;
+  mimeType: string | null;
+};
+
+export type TimelineExportJobStatus = {
+  id: string;
+  status: TimelineExportStatus;
+  progress: number;
+  message: string | null;
+};
+
+export type TimelineExportJobResponse = TimelineExportJobStatus & {
+  artifact: TimelineExportArtifact | null;
+};
+
 export type TimelineExportBillingKind = 'free' | 'paid';
 export type TimelineExportBillingStatus =
   | 'free_reserved'

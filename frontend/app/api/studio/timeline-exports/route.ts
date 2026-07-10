@@ -4,7 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { createTimelineExportJobWithReservation, releaseFailedTimelineExportBilling } from '@/server/timeline-exports/billing';
 import { assertTimelineExportWorkerLauncherConfigured, launchTimelineExportWorkerTask } from '@/server/timeline-exports/ecs-runner';
-import { failTimelineExportJob, readTimelineExportJobByIdempotencyKey } from '@/server/timeline-exports/repository';
+import {
+  failTimelineExportJob,
+  readTimelineExportJobByIdempotencyKey,
+  timelineExportJobResponse,
+} from '@/server/timeline-exports/repository';
 import {
   parseTimelineExportRequest,
   resolveTimelineExportFps,
@@ -88,7 +92,7 @@ export async function POST(req: NextRequest) {
     if (!result.reused && result.job.status === 'queued') {
       try {
         const workerLaunch = await launchTimelineExportWorkerTask({ exportId: result.job.id });
-        return json({ ok: true, export: result.job, billing: result.billing, reused: false, workerLaunch });
+        return json({ ok: true, export: timelineExportJobResponse(result.job), billing: result.billing, reused: false, workerLaunch });
       } catch (workerError) {
         const workerMessage = workerError instanceof Error ? workerError.message : 'TIMELINE_EXPORT_WORKER_LAUNCH_FAILED';
         const billingStatus = await markWorkerLaunchFailed({
@@ -103,7 +107,7 @@ export async function POST(req: NextRequest) {
             ok: false,
             error: 'TIMELINE_EXPORT_WORKER_LAUNCH_FAILED',
             message: workerMessage,
-            export: { ...result.job, status: 'failed', message: workerMessage, billing_status: billingStatus },
+            export: timelineExportJobResponse({ ...result.job, status: 'failed', message: workerMessage, billing_status: billingStatus }),
             billing: result.billing ? { ...result.billing, billingStatus } : null,
             reused: false,
           },
@@ -111,7 +115,7 @@ export async function POST(req: NextRequest) {
         );
       }
     }
-    return json({ ok: true, export: result.job, billing: result.billing, reused: result.reused, workerLaunch: { status: 'reused' } });
+    return json({ ok: true, export: timelineExportJobResponse(result.job), billing: result.billing, reused: result.reused, workerLaunch: { status: 'reused' } });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'EXPORT_CREATE_FAILED';
     const status = message === 'INSUFFICIENT_WALLET_BALANCE' ? 402 : 400;
