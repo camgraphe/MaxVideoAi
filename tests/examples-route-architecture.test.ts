@@ -96,10 +96,10 @@ test('examples route delegates URL, filter, and gallery helper logic', () => {
   assert.ok(lineCount <= 400, `examples page should stay below 400 lines after route extraction, got ${lineCount}`);
 });
 
-test('examples hub owns clone-focused CTR metadata without a site-name suffix', () => {
-  const title = 'AI Video Examples You Can Clone: Prompts, Models & Pricing';
+test('examples hub metadata sends visitors to detail pages for recorded costs', () => {
+  const title = 'AI Video Examples: Prompts, Models & Recorded Costs';
   const description =
-    'Browse real AI video examples with prompts, model settings, duration and pricing. Clone a shot into your workspace and render with Kling, Seedance, LTX or Veo.';
+    'Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.';
 
   assert.equal(enMessages.gallery?.meta?.title, title);
   assert.equal(enMessages.gallery?.meta?.description, description);
@@ -307,6 +307,7 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(pageViewSource, /ExamplesEngineFilterNav/, 'page view should compose engine filter nav');
   assert.match(pageViewSource, /ExamplesMainVideoFeature/, 'page view should compose the main video feature');
   assert.match(pageViewSource, /ExamplesGallerySection/, 'page view should compose the gallery section');
+  assert.match(pageViewSource, /detailsCtaLabel=\{galleryUiCopy\.detailsCta\}/);
   assert.match(pageViewSource, /ExamplesJsonLdScripts/, 'page view should compose JSON-LD scripts');
   assert.match(engineFilterNavSource, /export function ExamplesEngineFilterNav/, 'engine filter nav should be exported');
   assert.match(engineFilterNavSource, /sticky top-16 z-\[35\]/, 'engine filter nav should own sticky filter markup');
@@ -326,6 +327,7 @@ test('examples route components own nav and JSON-LD rendering', () => {
   assert.match(routeSectionsSource, /export function ExamplesFaqSection/, 'FAQ section should be exported');
   assert.match(routeSectionsSource, /Aller plus loin/, 'next steps section should own localized heading fallback');
   assert.match(routeSectionsSource, /<ExamplesGalleryGrid/, 'gallery section should own gallery grid rendering');
+  assert.match(routeSectionsSource, /detailsCtaLabel=\{detailsCtaLabel\}/);
   assert.match(routeSectionsSource, /rel="prev"/, 'pagination nav should own previous link markup');
   assert.match(routeSectionsSource, /rel="next"/, 'pagination nav should own next link markup');
   assert.match(routeSectionsSource, /<details key=\{item\.question\}/, 'FAQ section should own FAQ disclosure markup');

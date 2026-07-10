@@ -2348,7 +2348,7 @@
     "hero": {
       "title": "AI video examples you can clone.",
       "subtitle": "Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.",
-      "body": "Browse AI video examples with prompts, format, duration, and pricing shown per clip. Use this hub to review text-to-video AI, image-to-video AI, and selected video-to-video AI workflows by brand, then open model pages for exact specs, limits, and pricing. Brand pages can include multiple models and modes."
+      "body": "Open any example to inspect its prompt, settings and recorded render cost, then recreate it in your workspace."
     },
     "items": [
       {
@@ -3019,10 +3019,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "AI Video Examples You Can Clone: Prompts, Models & Pricing",
-      "description": "Browse real AI video examples with prompts, model settings, duration and pricing. Clone a shot into your workspace and render with Kling, Seedance, LTX or Veo.",
+      "title": "AI Video Examples: Prompts, Models & Recorded Costs",
+      "description": "Browse real AI video examples, then open a video to inspect its prompt, settings, duration and recorded render cost before recreating it.",
       "title_engine": "AI Video Examples — {engineName} | MaxVideoAI",
-      "description_engine": "Browse {engineName} examples with prompts, duration, audio info, and pricing shown per clip. Pages may include multiple {engineName} models and modes."
+      "description_engine": "Browse {engineName} examples, then open a video to inspect its prompt, duration, audio settings and recorded render cost."
     }
   },
   "workspace": {

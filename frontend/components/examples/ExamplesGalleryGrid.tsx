@@ -4,6 +4,7 @@ export type { ExampleGalleryVideo } from './ExamplesGalleryGrid.client';
 
 export function ExamplesGalleryGrid({
   initialExamples,
+  detailsCtaLabel = 'View settings & price',
   loadMoreLabel = 'Load more examples',
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
@@ -17,6 +18,7 @@ export function ExamplesGalleryGrid({
   locale,
 }: {
   initialExamples: ExampleGalleryVideo[];
+  detailsCtaLabel?: string;
   loadMoreLabel?: string;
   loadingLabel?: string;
   noPreviewLabel?: string;
@@ -31,6 +33,7 @@ export function ExamplesGalleryGrid({
 }) {
   return (
     <ExamplesGalleryGridClient
+      detailsCtaLabel={detailsCtaLabel}
       initialExamples={initialExamples}
       loadMoreLabel={loadMoreLabel}
       loadingLabel={loadingLabel}

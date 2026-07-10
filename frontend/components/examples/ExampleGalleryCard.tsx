@@ -19,26 +19,26 @@ import mediaStyles from './examples-media.module.css';
 type ExampleGalleryCardProps = {
   altText: string;
   audioAvailableLabel: string;
+  detailsCtaLabel: string;
   enableInlineVideo: boolean;
   enableTallCardLayout: boolean;
   forceExclusivePlay: boolean;
   isFirst: boolean;
   locale: string;
   noPreviewLabel: string;
-  showRecreateLink: boolean;
   video: ExampleGalleryVideo;
 };
 
 export function ExampleGalleryCard({
   altText,
   audioAvailableLabel,
+  detailsCtaLabel,
   enableInlineVideo,
   enableTallCardLayout,
   forceExclusivePlay,
   isFirst,
   locale,
   noPreviewLabel,
-  showRecreateLink,
   video,
 }: ExampleGalleryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -107,8 +107,6 @@ export function ExampleGalleryCard({
   const posterSrc = video.rawPosterUrl ?? null;
   const watchAnchorText = buildWatchAnchorText(locale, video);
   const playingLabel = locale === 'fr' ? 'Lecture' : locale === 'es' ? 'En reproducción' : 'Playing';
-  const recreateLabel =
-    locale === 'fr' ? 'Recréer ce plan' : locale === 'es' ? 'Recrear esta toma' : 'Recreate this shot';
   const durationLabel = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
 
   return (
@@ -118,7 +116,7 @@ export function ExampleGalleryCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={video.href} className="absolute inset-0 z-0" aria-label={altText} prefetch={false}>
+      <Link href={video.href} className="absolute inset-0 z-0" aria-label={watchAnchorText} prefetch={false}>
         <span className="sr-only">{watchAnchorText}</span>
       </Link>
       <div className="pointer-events-none relative z-10">
@@ -133,7 +131,6 @@ export function ExampleGalleryCard({
                   playsInline
                   poster={posterSrc ?? undefined}
                   data-examples-card
-                  aria-label={altText}
                   className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-[1.02]"
                 >
                   <source src={inlineVideoUrl} type="video/mp4" />
@@ -178,17 +175,12 @@ export function ExampleGalleryCard({
           <p className="text-[10px] text-text-secondary sm:text-[11px]">
             {video.aspectRatio ?? 'Auto'} · {durationLabel} {videoReady ? `· ${playingLabel}` : ''}
           </p>
-          {showRecreateLink && video.recreateHref ? (
-            <div className="pt-1">
-              <Link
-                href={video.recreateHref}
-                prefetch={false}
-                className="pointer-events-auto text-[11px] font-semibold text-brand transition hover:text-brand-hover"
-              >
-                {recreateLabel} →
-              </Link>
-            </div>
-          ) : null}
+          <p
+            aria-hidden="true"
+            className="pt-0.5 text-[11px] font-semibold text-brand transition group-hover:text-brand-hover"
+          >
+            {detailsCtaLabel} →
+          </p>
         </div>
       </div>
     </div>

@@ -183,6 +183,7 @@ export type Dictionary = {
     hero: {
       title: string;
       subtitle: string;
+      body?: string;
     };
     items: Array<{
       title: string;

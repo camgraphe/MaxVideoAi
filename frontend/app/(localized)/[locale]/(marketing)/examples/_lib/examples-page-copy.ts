@@ -28,6 +28,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
           loading: 'Chargement…',
           noPreview: 'Aucun aperçu',
           audioAvailable: 'Audio disponible à la lecture',
+          detailsCta: 'Voir réglages et prix',
         }
       : locale === 'es'
         ? {
@@ -38,6 +39,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
             loading: 'Cargando…',
             noPreview: 'Sin vista previa',
             audioAvailable: 'Audio disponible al reproducir',
+            detailsCta: 'Ver ajustes y precio',
           }
         : {
             prev: 'Previous',
@@ -47,6 +49,7 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
             loading: 'Loading…',
             noPreview: 'No preview',
             audioAvailable: 'Audio available on playback',
+            detailsCta: 'View settings & price',
           };
 
   return {
@@ -60,12 +63,12 @@ export function getExamplesGalleryUiCopy(locale: AppLocale, pagination: Paginati
 
 export function getExamplesLongDescription(locale: AppLocale) {
   if (locale === 'fr') {
-    return 'Parcourez des exemples vidéo IA par famille de modèles, avec prompt, réglages, durée et prix par clip. Comparez les workflows texte-vers-vidéo, image-vers-vidéo et certains flux vidéo-vers-vidéo, puis ouvrez les fiches modèles pour les specs, limites et détails de mode.';
+    return 'Parcourez des exemples vidéo IA par famille de modèles. Ouvrez un exemple pour consulter son prompt, ses réglages, sa durée et le coût enregistré du rendu, puis recréez-le dans votre studio.';
   }
   if (locale === 'es') {
-    return 'Explora ejemplos de video IA por modelo, con prompt, ajustes, duración y precio por clip. Usa esta página para comparar flujos de texto a video, imagen a video y algunos casos de video a video, y abre las fichas de modelo para ver especificaciones, límites y detalles de cada modo.';
+    return 'Explora ejemplos de video IA por modelo. Abre un ejemplo para consultar su prompt, ajustes, duración y coste registrado del render, y después recréalo en tu espacio de trabajo.';
   }
-  return 'Browse AI video examples by model, including prompt, settings, duration, and price per clip. Use this hub to compare text-to-video AI, image-to-video AI, and selected video-to-video AI patterns across brands, then open model pages for specs, limits, and mode details.';
+  return 'Browse AI video examples by model. Open any example to inspect its prompt, settings, duration, and recorded render cost, then recreate it in your workspace.';
 }
 
 export function getKlingExamplesSectionTitles(locale: AppLocale, isKlingLanding: boolean) {
@@ -382,8 +385,8 @@ export function getExamplesMainVideoCopy(locale: AppLocale) {
   if (locale === 'fr') {
     return {
       preview: 'Aperçu',
-      openExample: "Ouvrir l'exemple",
-      openWatchPage: 'Ouvrir la page vidéo',
+      openExample: 'Voir réglages et prix',
+      openWatchPage: 'Ouvrir les détails de la vidéo',
       audioOn: 'Audio activé',
       fullPrompt: 'Prompt complet',
     };
@@ -391,16 +394,16 @@ export function getExamplesMainVideoCopy(locale: AppLocale) {
   if (locale === 'es') {
     return {
       preview: 'Vista previa',
-      openExample: 'Abrir ejemplo',
-      openWatchPage: 'Abrir la página del video',
+      openExample: 'Ver ajustes y precio',
+      openWatchPage: 'Abrir los detalles del video',
       audioOn: 'Audio activado',
       fullPrompt: 'Prompt completo',
     };
   }
   return {
     preview: 'Preview',
-    openExample: 'Open example',
-    openWatchPage: 'Open watch page',
+    openExample: 'View settings & price',
+    openWatchPage: 'Open video details',
     audioOn: 'Audio on',
     fullPrompt: 'Full prompt',
   };

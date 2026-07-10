@@ -2383,7 +2383,7 @@
     "hero": {
       "title": "Exemples de vidéo IA que vous pouvez cloner.",
       "subtitle": "Survolez pour lire en boucle, cliquez pour agrandir.\nChaque clip prévisualise le mouvement et le style que vous pouvez recréer dans MaxVideoAI.",
-      "body": "Parcourez des exemples vidéo IA avec prompt, format, durée et prix affichés par clip. Utilisez ce hub pour passer en revue des flux texte-vers-vidéo IA, image-vers-vidéo IA et certains flux vidéo-vers-vidéo IA par marque, puis ouvrez les pages modèles pour les caractéristiques, limites et prix exacts. Une page de marque peut inclure plusieurs modèles et modes."
+      "body": "Ouvrez un exemple pour consulter son prompt, ses réglages et le coût enregistré du rendu, puis recréez-le dans votre studio."
     },
     "items": [
       {
@@ -3054,10 +3054,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Exemples vidéo IA + prix affichés | MaxVideoAI",
-      "description": "Explorez des exemples réels avec prompts, durée, audio et prix par clip. Dupliquez un plan dans votre studio en quelques secondes.",
+      "title": "Exemples vidéo IA : prompts, modèles et coûts enregistrés",
+      "description": "Parcourez des exemples vidéo IA, puis ouvrez une vidéo pour consulter son prompt, ses réglages, sa durée et le coût enregistré avant de la recréer.",
       "title_engine": "Exemples vidéo IA — {engineName} | MaxVideoAI",
-      "description_engine": "Découvrez des exemples {engineName} avec prompts, durée, audio et prix affichés par clip. Ces pages peuvent inclure plusieurs modèles et modes {engineName}."
+      "description_engine": "Parcourez des exemples {engineName}, puis ouvrez une vidéo pour consulter son prompt, sa durée, ses réglages audio et le coût enregistré."
     }
   },
   "workspace": {

@@ -10,7 +10,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     strengthsLimits:
       'Sora suele destacar por su coherencia cinematográfica y por un movimiento más pulido. Los límites dependen del modo y del contexto de render.',
     pricingNotes:
-      'El precio cambia según la duración, la resolución y las opciones activas. Revisa el precio por clip antes de escalar.',
+      'El precio cambia según la duración, la resolución y las opciones activas. Abre un ejemplo para revisar su coste registrado antes de escalar.',
     faq: [
       {
         question: '¿Qué prompts funcionan mejor en Sora?',
@@ -161,7 +161,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   seedance: {
     metaTitle: 'Ejemplos de video IA Seedance, prompts y ajustes | MaxVideoAI',
     metaDescription:
-      'Revisa ejemplos de video IA de Seedance con prompts, ajustes y precio por clip para Seedance 2.0, Fast, Mini y el flujo Seedance 1.5 Pro aún compatible en MaxVideoAI.',
+      'Revisa ejemplos de video IA de Seedance con prompts y ajustes, y abre una ficha para ver el coste registrado para Seedance 2.0, Fast, Mini y el flujo Seedance 1.5 Pro aún compatible en MaxVideoAI.',
     heroTitle: 'Ejemplos de video IA Seedance, prompts y ajustes',
     subtitle: 'Ejemplos de video IA Seedance, prompts, ajustes y salidas para workflows Seedance actuales y versiones anteriores aún compatibles.',
     intro:

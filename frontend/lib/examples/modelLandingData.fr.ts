@@ -10,7 +10,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     strengthsLimits:
       'Sora est souvent très solide sur les plans cinématiques et la cohérence visuelle. Les limites dépendent ensuite du mode utilisé et du contexte de rendu.',
     pricingNotes:
-      'Le coût varie selon la durée, la résolution et les options activées. Vérifiez le prix par clip avant de lancer plusieurs variantes.',
+      'Le coût varie selon la durée, la résolution et les options activées. Ouvrez un exemple pour vérifier son coût enregistré avant de lancer plusieurs variantes.',
     faq: [
       {
         question: 'Quels prompts fonctionnent le mieux avec Sora ?',
@@ -29,7 +29,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   veo: {
     metaTitle: 'Exemples Veo 3.1, prompts, reglages et image-vers-video | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples Veo 3.1, prompts, reglages, schemas image-vers-video et prix par clip pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
+      'Parcourez des exemples Veo 3.1, prompts, réglages et schémas image-vers-vidéo, puis ouvrez une fiche pour voir le coût enregistré pour Veo 3.1, Veo 3.1 Fast et Veo 3.1 Lite sur MaxVideoAI.',
     heroTitle: 'Exemples Veo 3.1, prompts, reglages et schemas image-vers-video',
     subtitle: 'Exemples Veo 3.1, prompts, reglages et schemas image-vers-video sur la famille Veo actuelle.',
     intro:
@@ -161,7 +161,7 @@ export const FR_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   seedance: {
     metaTitle: 'Exemples vidéo IA Seedance, prompts et réglages | MaxVideoAI',
     metaDescription:
-      'Parcourez des exemples vidéo IA Seedance avec prompts, réglages et prix par clip pour Seedance 2.0, Fast, Mini et le flux Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
+      'Parcourez des exemples vidéo IA Seedance avec prompts et réglages, puis ouvrez une fiche pour voir le coût enregistré pour Seedance 2.0, Fast, Mini et le flux Seedance 1.5 Pro encore pris en charge sur MaxVideoAI.',
     heroTitle: 'Exemples vidéo IA Seedance, prompts et réglages',
     subtitle: 'Exemples vidéo IA Seedance, prompts, réglages et sorties pour les flux Seedance actuels et les versions encore prises en charge.',
     intro:

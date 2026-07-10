@@ -2375,7 +2375,7 @@
     "hero": {
       "title": "Ejemplos de video IA que puedes reutilizar.",
       "subtitle": "Pasa el cursor para reproducir en bucle, haz clic para ampliar. Cada clip muestra el movimiento y el estilo que puedes recrear en MaxVideoAI.",
-      "body": "Explora ejemplos de video IA con prompts, formato, duración y precio por clip. Usa esta página para comparar flujos de texto a video, imagen a video y algunos casos de video a video por modelo, y abre las fichas de modelo para ver especificaciones, límites y detalles de cada modo."
+      "body": "Abre un ejemplo para consultar su prompt, ajustes y el coste registrado del render, y después recréalo en tu espacio de trabajo."
     },
     "items": [
       {
@@ -3046,10 +3046,10 @@
   },
   "gallery": {
     "meta": {
-      "title": "Ejemplos de video IA + precios visibles | MaxVideoAI",
-      "description": "Explora ejemplos reales con prompts, duración, info de audio y precios por clip. Clona cualquier toma en tu workspace en segundos.",
+      "title": "Ejemplos de video IA: prompts, modelos y costes registrados",
+      "description": "Explora ejemplos de video IA y abre un video para consultar su prompt, ajustes, duración y coste registrado antes de recrearlo.",
       "title_engine": "Ejemplos de video IA — {engineName} | MaxVideoAI",
-      "description_engine": "Explora ejemplos de {engineName} con prompts, duración, info de audio y precios por clip. Estas páginas pueden incluir varios modelos y modos de {engineName}."
+      "description_engine": "Explora ejemplos de {engineName} y abre un video para consultar su prompt, duración, ajustes de audio y coste registrado."
     }
   },
   "workspace": {

@@ -78,6 +78,7 @@ type ExamplesModelLandingCardsSectionProps = {
 
 type ExamplesGallerySectionProps = {
   audioAvailableLabel: string;
+  detailsCtaLabel: string;
   engineFilter: string | null;
   initialDesktopBatch: number;
   initialExamples: ExampleGalleryVideo[];
@@ -227,6 +228,7 @@ export function ExamplesModelLandingCardsSection({ sections }: ExamplesModelLand
 
 export function ExamplesGallerySection({
   audioAvailableLabel,
+  detailsCtaLabel,
   engineFilter,
   initialDesktopBatch,
   initialExamples,
@@ -245,6 +247,7 @@ export function ExamplesGallerySection({
   return (
     <section className="overflow-hidden rounded-[12px] border border-hairline bg-surface/80 shadow-card">
       <ExamplesGalleryGrid
+        detailsCtaLabel={detailsCtaLabel}
         initialExamples={initialExamples}
         loadMoreLabel={loadMoreLabel}
         loadingLabel={loadingLabel}

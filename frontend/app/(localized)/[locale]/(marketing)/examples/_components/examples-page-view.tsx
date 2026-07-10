@@ -39,6 +39,7 @@ type ExamplesPageViewProps = {
   faqJsonLd: unknown;
   galleryUiCopy: {
     audioAvailable: string;
+    detailsCta: string;
     loading: string;
     noPreview: string;
   };
@@ -218,6 +219,7 @@ export function ExamplesPageView({
 
           <ExamplesGallerySection
             audioAvailableLabel={galleryUiCopy.audioAvailable}
+            detailsCtaLabel={galleryUiCopy.detailsCta}
             engineFilter={selectedEngine?.toLowerCase() ?? null}
             initialDesktopBatch={initialDesktopBatch}
             initialExamples={initialExamples}

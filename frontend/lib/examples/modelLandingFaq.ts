@@ -15,7 +15,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: 'Is pricing shown for each example?',
-        answer: 'Pricing is shown per clip so you can compare cost before running similar renders.',
+        answer: 'Open an example to see its recorded render cost and settings before recreating it.',
       },
       {
         question: 'Why can two runs differ with the same prompt?',
@@ -44,7 +44,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: 'Le prix est-il affiché pour chaque exemple ?',
-        answer: 'Oui. Un prix par clip est affiché pour comparer les coûts avant de relancer.',
+        answer: 'Ouvrez un exemple pour voir le coût enregistré du rendu et ses réglages avant de le recréer.',
       },
       {
         question: 'Pourquoi un même prompt donne-t-il deux résultats différents ?',
@@ -73,7 +73,7 @@ const HUB_FAQ_BY_LOCALE: Record<AppLocale, { title: string; items: ExampleFaqIte
       },
       {
         question: '¿Se muestra el precio por ejemplo?',
-        answer: 'Sí. El precio por clip se muestra para comparar el precio antes de generar.',
+        answer: 'Abre un ejemplo para ver el coste registrado del render y sus ajustes antes de recrearlo.',
       },
       {
         question: '¿Por qué dos resultados cambian con el mismo prompt?',

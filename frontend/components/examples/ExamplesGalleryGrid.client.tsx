@@ -19,6 +19,7 @@ export type { ExampleGalleryVideo } from '@/components/examples/examples-gallery
 
 export default function ExamplesGalleryGridClient({
   initialExamples,
+  detailsCtaLabel = 'View settings & price',
   loadMoreLabel = 'Load more examples',
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
@@ -32,6 +33,7 @@ export default function ExamplesGalleryGridClient({
   locale,
 }: {
   initialExamples: ExampleGalleryVideo[];
+  detailsCtaLabel?: string;
   loadMoreLabel?: string;
   loadingLabel?: string;
   noPreviewLabel?: string;
@@ -142,7 +144,7 @@ export default function ExamplesGalleryGridClient({
               forceExclusivePlay={false}
               enableTallCardLayout={false}
               enableInlineVideo={false}
-              showRecreateLink={false}
+              detailsCtaLabel={detailsCtaLabel}
               noPreviewLabel={noPreviewLabel}
               audioAvailableLabel={audioAvailableLabel}
               locale={locale}
@@ -162,7 +164,7 @@ export default function ExamplesGalleryGridClient({
                   forceExclusivePlay={false}
                   enableTallCardLayout={shouldUseTallCardLayout}
                   enableInlineVideo
-                  showRecreateLink
+                  detailsCtaLabel={detailsCtaLabel}
                   noPreviewLabel={noPreviewLabel}
                   audioAvailableLabel={audioAvailableLabel}
                   locale={locale}

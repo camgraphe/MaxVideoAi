@@ -4,6 +4,7 @@ export const examples: Dictionary['examples'] = {
     hero: {
       title: 'Engine showcases.',
       subtitle: 'Hover to loop, click to expand. Each clip previews the motion and style you can route in MaxVideo AI.',
+      body: 'Open any example to inspect its prompt, settings and recorded render cost, then recreate it in your workspace.',
     },
     items: [
       {

@@ -13,12 +13,12 @@ export function buildWatchAnchorText(locale: string, video: ExampleGalleryVideo)
   const ratio = video.aspectRatio ?? 'Auto';
   const duration = locale === 'es' ? `${video.durationSec} s` : `${video.durationSec}s`;
   if (locale === 'fr') {
-    return `Voir l'exemple video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+    return `Voir les réglages et le prix de l'exemple vidéo ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
   }
   if (locale === 'es') {
-    return `Ver ejemplo de video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
+    return `Ver los ajustes y el precio del ejemplo de video ${video.engineLabel} - ${video.prompt} - ${ratio} - ${duration}`;
   }
-  return `Watch ${video.engineLabel} video example - ${video.prompt} - ${ratio} - ${duration}`;
+  return `View settings and price for ${video.engineLabel} video example - ${video.prompt} - ${ratio} - ${duration}`;
 }
 
 export function dedupeExamples(videos: ExampleGalleryVideo[]) {
