@@ -46,6 +46,13 @@
   line-height: 1.38;
 }
 
+.chatPricing {
+  margin: 0;
+  color: var(--studio-text-muted);
+  font-size: 9px;
+  line-height: 1.3;
+}
+
 .chatMessageAssistant {
   border-color: color-mix(in srgb, var(--node-accent) 28%, var(--studio-border));
   background: color-mix(in srgb, var(--node-accent) 10%, var(--studio-bg));

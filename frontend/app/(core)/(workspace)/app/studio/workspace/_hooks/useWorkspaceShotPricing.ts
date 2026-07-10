@@ -7,6 +7,7 @@ import {
   errorWorkspacePricingEstimate,
   formatWorkspacePricingEstimate,
   loadingWorkspacePricingEstimate,
+  unavailableWorkspacePricingEstimate,
 } from '../_lib/workspace-pricing';
 import { buildWorkspaceToolPricingEstimate } from '../_lib/workspace-tool-pricing';
 import type {
@@ -105,10 +106,18 @@ export function useWorkspaceShotPricing({
 
   const pricingRequests = useMemo<WorkspaceAnyPricingRequest[]>(() => {
     return nodes
-      .filter((node) => node.data.kind === 'shot' && node.data.shot)
-      .map((node) => {
+      .flatMap((node) => {
+        if (node.data.kind === 'chat') {
+          const estimate = unavailableWorkspacePricingEstimate('Studio chat pricing is unavailable.');
+          return [{
+            kind: 'local' as const,
+            nodeId: node.id,
+            estimate,
+            key: JSON.stringify({ status: estimate.status, label: estimate.label, error: estimate.error }),
+          }];
+        }
+        if (node.data.kind !== 'shot' || !node.data.shot) return [];
         const settings = node.data.shot;
-        if (!settings) return null;
         const connectedInputs = connectedInputKinds(node.id, edges);
         const validation = validateShotConnections({
           settings,
@@ -122,7 +131,7 @@ export function useWorkspaceShotPricing({
           connectedInputs,
         });
         if (toolEstimate) {
-          return {
+          return [{
             kind: 'local' as const,
             nodeId: node.id,
             estimate: toolEstimate,
@@ -134,7 +143,7 @@ export function useWorkspaceShotPricing({
               settings,
               connectedInputs,
             }),
-          };
+          }];
         }
         const request = buildWorkspaceShotPreflightRequest({
           settings,
@@ -142,12 +151,12 @@ export function useWorkspaceShotPricing({
           capability: validation.capability,
           memberTier,
         });
-        return {
+        return [{
           kind: 'preflight' as const,
           nodeId: node.id,
           request,
           key: pricingRequestKey(request),
-        };
+        }];
       })
       .filter((request): request is WorkspaceAnyPricingRequest => Boolean(request));
   }, [capabilities, edges, memberTier, nodes]);

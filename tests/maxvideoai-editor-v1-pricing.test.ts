@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import { getWorkspaceBlockPreset } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-block-presets';
@@ -9,7 +11,6 @@ import {
   unavailableWorkspacePricingEstimate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing';
 import { buildWorkspaceToolPricingEstimate } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-pricing';
-import type { WorkspaceShotSettings } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 
 function defaultShot(presetId: Parameters<typeof getWorkspaceBlockPreset>[0]) {
   const preset = getWorkspaceBlockPreset(presetId);
@@ -55,31 +56,40 @@ test('character builder can price from scratch because reference is optional', (
 });
 
 test('chat pricing is explicitly unavailable without blocking chat send', () => {
-  const settings: WorkspaceShotSettings = {
-    durationSec: 1,
-    aspectRatio: '16:9',
-    resolution: '1080p',
-    fps: 24,
-    seed: null,
-    audioEnabled: false,
-    lipSyncEnabled: false,
-    referenceStrength: 0.65,
-    outputName: 'Chat response',
-    status: 'draft',
-    presetId: 'chat-box',
-    family: 'chat',
-    outputKind: 'text',
-    modelId: 'studio-chat-openai',
-    workflowType: 'chat_completion',
-  };
-  const validation = validateShotConnections({ settings, connectedInputs: ['prompt'] });
-  const estimate = buildWorkspaceToolPricingEstimate({
-    settings,
+  const hookSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts'), 'utf8');
+  const renderNodesSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceRenderNodes.ts'), 'utf8');
+  const chatNodeSource = readFileSync(join(process.cwd(), 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-chat-node.tsx'), 'utf8');
+
+  assert.match(hookSource, /node\.data\.kind === 'chat'[\s\S]*unavailableWorkspacePricingEstimate/);
+  assert.match(renderNodesSource, /node\.data\.kind === 'chat'[\s\S]*pricingEstimate: pricingEstimates\[node\.id\]/);
+  assert.match(chatNodeSource, /pricingEstimate\.label/);
+  assert.match(chatNodeSource, /disabled=\{!canSend\}/);
+});
+
+test('upscale pricing varies by resolution and upscale factor', () => {
+  const settings = defaultShot('upscale-image');
+  const validation = validateShotConnections({ settings, connectedInputs: ['reference'] });
+  const estimate = (patch: Partial<typeof settings>) => buildWorkspaceToolPricingEstimate({
+    settings: { ...settings, ...patch },
     validation,
-    prompt: 'Improve this shot plan.',
-    connectedInputs: ['prompt'],
+    prompt: '',
+    connectedInputs: ['reference'],
   });
 
-  assert.equal(estimate?.status, 'error');
-  assert.match(estimate?.error ?? '', /chat/i);
+  const lowResolution = estimate({
+    resolution: '720p',
+    toolSettings: { upscale: { mode: 'target', upscaleFactor: 2, outputFormat: 'png' } },
+  });
+  const highResolution = estimate({
+    resolution: '4k',
+    toolSettings: { upscale: { mode: 'target', upscaleFactor: 2, outputFormat: 'png' } },
+  });
+  const largerFactor = estimate({
+    resolution: '720p',
+    toolSettings: { upscale: { mode: 'factor', upscaleFactor: 4, outputFormat: 'png' } },
+  });
+
+  assert.equal(lowResolution?.status, 'ready');
+  assert.notEqual(lowResolution?.totalCents, highResolution?.totalCents);
+  assert.notEqual(lowResolution?.totalCents, largerFactor?.totalCents);
 });

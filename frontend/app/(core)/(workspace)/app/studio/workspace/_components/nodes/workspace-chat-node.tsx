@@ -32,6 +32,7 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
   const isChatbot = chat?.mode === 'chatbot';
   const isRunning = chat?.status === 'running';
   const canSend = Boolean(draft.trim()) && !isRunning;
+  const pricingEstimate = props.data.pricingEstimate;
   const botName = chat?.botName?.trim() || copy?.chatbotDefaultName || 'Studio assistant';
   const model = resolveStudioChatModel(chat?.provider ?? 'openai', chat?.modelId);
   const assistantLabel = isChatbot ? botName : model.label;
@@ -106,6 +107,11 @@ export function ChatNode(props: NodeProps<WorkspaceGraphNode>) {
             <p className={chatStyles.chatEmpty}>{copy?.emptyChat ?? 'Start a conversation from this block.'}</p>
           )}
         </div>
+        {pricingEstimate ? (
+          <p className={chatStyles.chatPricing} title={pricingEstimate.error}>
+            {pricingEstimate.label}
+          </p>
+        ) : null}
         <div className={chatStyles.chatUtilityBar}>
           <button
             type="button"

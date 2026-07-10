@@ -23,6 +23,12 @@ export { blockedWorkspacePricingEstimate } from './workspace-pricing';
 
 const CHARACTER_DRAFT_CENTS = 8;
 const CHARACTER_FINAL_CENTS = 15;
+const UPSCALE_RESOLUTION_MULTIPLIERS: Partial<Record<WorkspaceShotSettings['resolution'], number>> = {
+  '720p': 0.75,
+  '1080p': 1,
+  '1440p': 1.5,
+  '4k': 2,
+};
 
 function audioPackForWorkflowType(workflowType: WorkspaceWorkflowType): AudioPackId {
   if (workflowType === 'cinematic_audio') return 'cinematic';
@@ -70,7 +76,11 @@ function estimateUpscalePricing(settings: WorkspaceShotSettings): WorkspacePrici
     'upscale-video-flashvsr': 18,
     'upscale-video-topaz': 80,
   };
-  return readyWorkspacePricingEstimate(centsByModel[settings.modelId] ?? 4);
+  const resolutionMultiplier = UPSCALE_RESOLUTION_MULTIPLIERS[settings.resolution] ?? 1;
+  const upscaleFactor = settings.toolSettings?.upscale?.upscaleFactor ?? 2;
+  const factorMultiplier = upscaleFactor === 4 ? 2 : 1;
+  const totalCents = Math.max(1, Math.round((centsByModel[settings.modelId] ?? 4) * resolutionMultiplier * factorMultiplier));
+  return readyWorkspacePricingEstimate(totalCents);
 }
 
 export function buildWorkspaceToolPricingEstimate({
