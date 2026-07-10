@@ -9,6 +9,7 @@ import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
+import { AssetFieldDisabledBadge, AssetFieldDisabledNotice } from '@/components/asset-dropzone/AssetFieldDisabledState';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   buildAssetFieldTooltipLines,
@@ -18,9 +19,9 @@ import {
   resolveSlotLabel,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
-import type { AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
+import type { AssetDisabledPresentation, AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
-export type { AssetFieldConfig, AssetFieldGuidance, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
+export type { AssetDisabledPresentation, AssetFieldConfig, AssetFieldGuidance, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
 interface AssetDropzoneProps {
   engine: EngineCaps;
@@ -42,6 +43,7 @@ interface AssetDropzoneProps {
   guidance?: AssetFieldGuidanceCopy | null;
   disabled?: boolean;
   disabledReason?: string | null;
+  disabledPresentation?: AssetDisabledPresentation;
 }
 
 export function AssetDropzone({
@@ -64,6 +66,7 @@ export function AssetDropzone({
   guidance,
   disabled = false,
   disabledReason = null,
+  disabledPresentation = 'default',
 }: AssetDropzoneProps) {
   const { locale } = useI18n();
   const assetCopy = useMemo(() => getLocalizedAssetDropzoneCopy(normalizeUiLocale(locale)), [locale]);
@@ -323,8 +326,6 @@ export function AssetDropzone({
     displaySlots[0].asset?.kind !== 'audio';
   const remainingSlotCount = isCollectionField ? Math.max(0, maxCount - filledAssetCount) : 0;
   const tooltipId = `asset-field-${engine.id}-${field.id}`.replace(/[^a-zA-Z0-9_-]/g, '-');
-  const isSourceVideoDisabledState = disabledReason?.toLowerCase().includes('source video');
-  const disabledStatusLabel = isSourceVideoDisabledState ? 'Source video active' : 'Unavailable';
   const compactCollectionLayout = isCollectionField && displaySlots.length > 1;
   const compactDensity = density === 'compact';
   const multiSlotGridClass = isCollectionField
@@ -354,7 +355,7 @@ export function AssetDropzone({
         className={clsx(
           'flex w-full flex-col rounded-input border border-dashed border-border bg-surface-glass-80 text-text-secondary dark:border-white/[0.07] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.018))] dark:text-white/68',
           fullBleedSingleAsset ? 'relative min-h-[260px] overflow-hidden' : compactDensity ? 'gap-2 p-2.5' : 'gap-4 p-4',
-          disabled && disabledReason && 'border-warning-border/70 bg-warning-bg/30 dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.045]'
+          disabled && disabledReason && disabledPresentation !== 'auth-lock' && 'border-warning-border/70 bg-warning-bg/30 dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.045]'
         )}
       >
         <div
@@ -377,23 +378,12 @@ export function AssetDropzone({
               details={detailsTooltipLines}
               fullBleedSingleAsset={fullBleedSingleAsset}
             />
-            {disabled && disabledReason ? (
-              <span className="shrink-0 rounded-full border border-warning-border bg-warning-bg px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-warning dark:border-[#f6c667]/30 dark:bg-[#f6c667]/10 dark:text-[#f6c667]">
-                {disabledStatusLabel}
-              </span>
-            ) : null}
+            <AssetFieldDisabledBadge disabled={disabled} presentation={disabledPresentation} reason={disabledReason} />
           </div>
           {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
         </div>
         <AssetFieldGuidance tooltipId={`${tooltipId}-guidance`} guidance={guidance} fullBleedSingleAsset={fullBleedSingleAsset} />
-        {disabled && disabledReason && !isSourceVideoDisabledState ? (
-          <div
-            role="note"
-            className="rounded-input border border-warning-border bg-warning-bg px-3 py-2 text-left text-[11px] font-medium leading-4 text-warning dark:border-[#f6c667]/25 dark:bg-[#f6c667]/[0.06] dark:text-white/76"
-          >
-            {disabledReason}
-          </div>
-        ) : null}
+        <AssetFieldDisabledNotice disabled={disabled} presentation={disabledPresentation} reason={disabledReason} />
 
         <div
           className={clsx(

@@ -46,3 +46,10 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(composerSource, /workspaceDensity[\s\S]*w-full lg:w-auto/);
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
+
+test('video composer limits calm upload locks to the winning guest-auth reason', () => {
+  assert.match(
+    videoComposerSource,
+    /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/
+  );
+});

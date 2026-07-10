@@ -433,7 +433,7 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason }) => (
+              {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason, disabledPresentation }) => (
                 <AssetDropzone
                   key={field.id}
                   engine={engine}
@@ -447,7 +447,7 @@ export function Composer({
                   headerAction={headerAction}
                   guidance={guidance}
                   disabled={disabled}
-                  disabledReason={disabledReason}
+                  disabledReason={disabledReason} disabledPresentation={disabledPresentation}
                   onSelect={onAssetAdd}
                   onRemove={onAssetRemove}
                   onError={onNotice}

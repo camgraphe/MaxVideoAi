@@ -301,6 +301,8 @@ export function WorkspaceComposerSurface({
           : entry.guidance,
         disabled: Boolean(disabledReason),
         disabledReason,
+        disabledPresentation:
+          disabledReason && disabledReason === guestUploadLockedReason ? 'auth-lock' as const : 'default' as const,
       };
     }).filter((entry) => {
       if (showOmniStudioPanel) return false;

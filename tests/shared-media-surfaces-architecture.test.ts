@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 
 const assetDropzonePath = join(root, 'frontend/components/AssetDropzone.tsx');
+const assetDisabledStatePath = join(root, 'frontend/components/asset-dropzone/AssetFieldDisabledState.tsx');
 const assetFieldGuidancePath = join(root, 'frontend/components/asset-dropzone/AssetFieldGuidance.tsx');
 const assetFieldTooltipPath = join(root, 'frontend/components/asset-dropzone/AssetFieldTooltip.tsx');
 const assetMediaPickerMenuPath = join(root, 'frontend/components/asset-dropzone/AssetMediaPickerMenu.tsx');
@@ -28,6 +29,7 @@ const quadPreviewTypesPath = join(root, 'frontend/components/quad-preview/quad-p
 test('shared media surfaces delegate slot, entry rendering, helper, and type ownership', () => {
   for (const path of [
     assetDropzonePath,
+    assetDisabledStatePath,
     assetFieldGuidancePath,
     assetFieldTooltipPath,
     assetMediaPickerMenuPath,
@@ -49,6 +51,7 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   }
 
   const assetDropzoneSource = readFileSync(assetDropzonePath, 'utf8');
+  const assetDisabledStateSource = readFileSync(assetDisabledStatePath, 'utf8');
   const assetFieldGuidanceSource = readFileSync(assetFieldGuidancePath, 'utf8');
   const assetFieldTooltipSource = readFileSync(assetFieldTooltipPath, 'utf8');
   const assetMediaPickerMenuSource = readFileSync(assetMediaPickerMenuPath, 'utf8');
@@ -67,6 +70,11 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
   assert.doesNotMatch(assetDropzoneSource, /AudioEqualizerBadge|Trash2|<audio|<video/, 'AssetDropzone should not own slot media rendering');
   assert.match(assetDropzoneSource, /<AssetFieldTooltip/, 'AssetDropzone should compose a field-level details tooltip');
   assert.match(assetDropzoneSource, /<AssetFieldGuidance/, 'AssetDropzone should compose field-level guidance above placeholders');
+  assert.match(assetDropzoneSource, /<AssetFieldDisabledBadge/, 'AssetDropzone should compose a focused disabled badge');
+  assert.match(assetDropzoneSource, /<AssetFieldDisabledNotice/, 'AssetDropzone should compose a focused disabled notice');
+  assert.match(assetDisabledStateSource, /presentation === 'auth-lock'/);
+  assert.match(assetDisabledStateSource, /presentation !== 'auth-lock'/);
+  assert.match(assetDisabledStateSource, /Unavailable/);
   assert.match(assetFieldGuidanceSource, /export function AssetFieldGuidance/, 'AssetFieldGuidance should own advisory copy rendering');
   assert.match(assetFieldGuidanceSource, /<AssetFieldTooltip/, 'field guidance should use the shared tooltip affordance');
   assert.match(
@@ -79,14 +87,15 @@ test('shared media surfaces delegate slot, entry rendering, helper, and type own
     /const visibleHelperText = field\.type === 'video'[\s\S]*helperLines\.join\(' · '\)/,
     'video helper copy should render visibly instead of living only inside the tooltip'
   );
+  assert.match(assetDisabledStateSource, /isSourceVideoDisabledReason/, 'focused disabled state should detect source-video reasons');
   assert.match(
-    assetDropzoneSource,
-    /const isSourceVideoDisabledState = disabledReason\?\.toLowerCase\(\)\.includes\('source video'\);[\s\S]*const disabledStatusLabel = isSourceVideoDisabledState[\s\S]*Source video active[\s\S]*Unavailable/,
+    assetDisabledStateSource,
+    /Source video active[\s\S]*Unavailable/,
     'disabled asset fields should show a specific source-video status instead of relying on greyed styling'
   );
   assert.match(
-    assetDropzoneSource,
-    /disabled && disabledReason && !isSourceVideoDisabledState/,
+    assetDisabledStateSource,
+    /isSourceVideoDisabledReason\(reason\)/,
     'source-video conflicts should keep only the Source video active badge visible'
   );
   assert.doesNotMatch(

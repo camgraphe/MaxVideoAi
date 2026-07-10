@@ -49,6 +49,11 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.match(surfaceSource, /getLocalizedModeLabel/);
   assert.match(surfaceSource, /<Composer[\s\S]*density="workspace"/);
   assert.match(surfaceSource, /<CoreSettingsBar[\s\S]*density="workspace"/);
+  assert.match(
+    surfaceSource,
+    /disabledPresentation:\s*disabledReason && disabledReason === guestUploadLockedReason\s*\? 'auth-lock'/,
+    'only the winning guest upload-lock reason should opt into the calm auth-lock presentation'
+  );
 });
 
 test('workspace video composer shows in-progress render banner from pending groups', () => {
