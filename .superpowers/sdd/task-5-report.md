@@ -66,3 +66,23 @@ None.
 ### Concerns
 
 - None.
+
+## Fix pass 3
+
+### Changed files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx`
+- `tests/maxvideoai-editor-generation-blocks.test.ts`
+
+### Verification
+
+- `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-v1-pricing.test.ts tests/maxvideoai-editor-generation-blocks.test.ts`: passed, 59 tests passed, 0 failed.
+- `git diff --check`: passed.
+
+### Commit
+
+- `046c76c92e1329b6db769f726a60e42145caf7c7 fix: expose Studio pricing errors`
+
+### Concerns
+
+- None.
