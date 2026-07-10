@@ -51,3 +51,47 @@ Result: pass.
 
 - The required focused suite is not fully green because of the two unrelated existing architecture failures above.
 - The broader Studio TypeScript check is not fully green because of the three unrelated existing type errors above.
+
+## Fix pass
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryBrowser.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryModal.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceRuntimeModals.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-metadata.ts`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 39 passed, 2 failed. The new malformed/non-positive resolution test and asset-library hook-to-runtime/browser wiring contract pass. The two remaining failures are unchanged and unrelated: `MaxVideoAI editor owns graph, node, generation, and capability contracts` expects `shot.durationSec`, and `MaxVideoAI editor pricing preflight mirrors generate video parameters` throws `includes` in `model-input-connectors.ts`.
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json
+```
+
+Result: still fails on the three known unrelated errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`89eac389b1721153fe0b3870fe48fc5687525d7e` - `fix: wire Studio asset library state`
+
+### Concerns
+
+- The existing Project media modal retains its local selection state; this fix wires the Task 7 hook state through the asset-picker runtime flow within the permitted write scope.
+- The focused suite remains blocked only by the two unrelated existing architecture failures noted above.
