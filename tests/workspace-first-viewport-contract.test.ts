@@ -39,6 +39,8 @@ test('video and image composers opt into one responsive workspace density contra
   assert.match(imageSurfaceSource, /<ImageSettingsBar[\s\S]*density="workspace"/);
   assert.match(coreSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
   assert.match(imageSettingsSource, /workspaceDensity[\s\S]*flex-nowrap/);
+  assert.match(coreSettingsSource, /portal=\{compact\}/);
+  assert.match(imageSettingsSource, /portal=\{compact\}/);
   assert.match(composerSource, /workspaceDensity[\s\S]*overflow-x-auto/);
   assert.match(composerSource, /workspaceDensity[\s\S]*lg:flex-row[\s\S]*lg:flex-nowrap/);
   assert.match(composerSource, /workspaceDensity[\s\S]*w-full lg:w-auto/);

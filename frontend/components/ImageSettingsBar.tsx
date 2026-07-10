@@ -155,6 +155,7 @@ function InlineControl({
         )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
+        portal={compact}
       />
     </div>
   );

@@ -232,6 +232,7 @@ function InlineSelectControl({
           compact ? 'h-9 px-2.5 text-[11px]' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
+        portal={compact}
       />
     </div>
   );
