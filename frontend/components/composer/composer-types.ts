@@ -34,6 +34,7 @@ export type ComposerPromotedAction = {
 };
 
 export interface ComposerProps {
+  density?: 'default' | 'workspace';
   engine: EngineCaps;
   caps?: CapabilityCaps;
   prompt: string;

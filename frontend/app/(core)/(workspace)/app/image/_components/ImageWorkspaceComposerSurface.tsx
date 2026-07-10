@@ -259,6 +259,7 @@ export function ImageWorkspaceComposerSurface({
         ) : null}
 
         <Composer
+          density="workspace"
           engine={selectedEngineCaps}
           prompt={prompt}
           onPromptChange={setPrompt}
@@ -287,6 +288,7 @@ export function ImageWorkspaceComposerSurface({
           onNotice={setError}
           settingsBar={
             <ImageSettingsBar
+              density="workspace"
               numImages={
                 showNumImagesControl
                   ? {

@@ -9,6 +9,7 @@ import { SelectMenu } from '@/components/ui/SelectMenu';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
+  density?: 'default' | 'workspace';
   engine: EngineCaps;
   mode: Mode;
   caps?: CapabilityCaps;
@@ -204,6 +205,7 @@ function InlineSelectControl({
   onChange,
   disabled,
   className,
+  compact = false,
 }: {
   kind: CoreControlKind;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
@@ -211,6 +213,7 @@ function InlineSelectControl({
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
   className?: string;
+  compact?: boolean;
 }) {
   if (!options.length) return null;
   return (
@@ -224,7 +227,10 @@ function InlineSelectControl({
         onChange={onChange}
         disabled={disabled}
         className="min-w-0"
-        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]"
+        buttonClassName={clsx(
+          'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
+          compact ? 'h-9 px-2.5 text-[11px]' : 'h-10 px-3 text-[12px]'
+        )}
         menuPlacement="top"
       />
     </div>
@@ -232,6 +238,7 @@ function InlineSelectControl({
 }
 
 export function CoreSettingsBar({
+  density = 'default',
   engine,
   mode,
   caps,
@@ -260,6 +267,7 @@ export function CoreSettingsBar({
   durationManagedLabel,
 }: CoreSettingsBarProps) {
   const { t } = useI18n();
+  const workspaceDensity = density === 'workspace';
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
@@ -391,10 +399,19 @@ export function CoreSettingsBar({
 
   return (
     <div className="min-w-0 flex-1 space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        data-settings-density={density}
+        className={clsx(
+          'flex items-center gap-2',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap' : 'flex-wrap'
+        )}
+      >
         {durationManaged ? (
           <div
-            className="inline-flex min-h-[40px] items-center rounded-full border border-dashed border-border bg-surface-glass-60 px-3 text-[11px] font-semibold uppercase tracking-micro text-text-muted"
+            className={clsx(
+              'inline-flex items-center rounded-full border border-dashed border-border bg-surface-glass-60 font-semibold uppercase tracking-micro text-text-muted',
+              workspaceDensity ? 'h-9 px-2.5 text-[11px]' : 'min-h-[40px] px-3 text-[11px]'
+            )}
             title={resolvedDurationManagedLabel}
           >
             {resolvedDurationManagedLabel}
@@ -404,6 +421,7 @@ export function CoreSettingsBar({
             kind="duration"
             options={durationOptions}
             value={durationValue}
+            compact={workspaceDensity}
             onChange={(value) => {
               if (frameOptions && frameOptions.length) {
                 onNumFramesChange?.(Number(value));
@@ -417,6 +435,7 @@ export function CoreSettingsBar({
             kind="duration"
             options={durationRangeOptions}
             value={durationSec}
+            compact={workspaceDensity}
             onChange={(value) => onDurationChange(Number(value))}
           />
         ) : null}
@@ -426,6 +445,7 @@ export function CoreSettingsBar({
             kind="resolution"
             options={resolutionOptionsList}
             value={resolution}
+            compact={workspaceDensity}
             onChange={(value) => onResolutionChange(String(value))}
             disabled={resolutionLocked}
           />
@@ -436,6 +456,7 @@ export function CoreSettingsBar({
             kind="hdr"
             options={hdrOptions}
             value={Boolean(hdrEnabled)}
+            compact={workspaceDensity}
             onChange={(value) => onHdrChange?.(value === true || value === 'true' || value === 1)}
             disabled={typeof onHdrChange !== 'function'}
           />
@@ -446,6 +467,7 @@ export function CoreSettingsBar({
             kind="aspect"
             options={aspectOptionsList}
             value={aspectRatio}
+            compact={workspaceDensity}
             onChange={(value) => onAspectRatioChange(String(value))}
           />
         ) : null}
@@ -455,6 +477,7 @@ export function CoreSettingsBar({
             kind="fps"
             options={fpsOptionsList}
             value={fps}
+            compact={workspaceDensity}
             onChange={(value) => onFpsChange(Number(value))}
           />
         ) : null}
@@ -464,6 +487,7 @@ export function CoreSettingsBar({
             kind="audio"
             options={audioOptions}
             value={audioValue}
+            compact={workspaceDensity}
             onChange={(value) => {
               if (audioSelectLocked || typeof onAudioChange !== 'function') return;
               onAudioChange(Boolean(value));
@@ -477,6 +501,7 @@ export function CoreSettingsBar({
             kind="iterations"
             options={iterationOptions}
             value={iterations}
+            compact={workspaceDensity}
             onChange={(value) => onIterationsChange(Number(value))}
           />
         ) : null}

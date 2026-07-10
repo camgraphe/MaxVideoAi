@@ -459,6 +459,7 @@ export function WorkspaceComposerSurface({
         </p>
       ) : null}
       <Composer
+        density="workspace"
         engine={selectedEngine}
         prompt={prompt}
         onPromptChange={setPrompt}
@@ -623,6 +624,7 @@ export function WorkspaceComposerSurface({
         }
         settingsBar={
           <CoreSettingsBar
+            density="workspace"
             engine={selectedEngine}
             mode={submissionMode}
             caps={capability}

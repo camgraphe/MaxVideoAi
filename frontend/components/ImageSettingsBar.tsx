@@ -10,6 +10,7 @@ type ControlOption = {
 };
 
 interface ImageSettingsBarProps {
+  density?: 'default' | 'workspace';
   numImages?: {
     value: number;
     options: ControlOption[];
@@ -127,12 +128,14 @@ function InlineControl({
   value,
   onChange,
   disabled,
+  compact = false,
 }: {
   kind: InlineControlKind;
   options: ControlOption[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
+  compact?: boolean;
 }) {
   if (!options.length) return null;
   return (
@@ -146,7 +149,10 @@ function InlineControl({
         onChange={onChange}
         disabled={disabled}
         className="min-w-0"
-        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]"
+        buttonClassName={clsx(
+          'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
+          compact ? 'h-9 px-2.5 text-[11px]' : 'h-10 px-3 text-[12px]'
+        )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
       />
@@ -154,15 +160,31 @@ function InlineControl({
   );
 }
 
-export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFormat, quality, style }: ImageSettingsBarProps) {
+export function ImageSettingsBar({
+  density = 'default',
+  numImages,
+  aspectRatio,
+  resolution,
+  outputFormat,
+  quality,
+  style,
+}: ImageSettingsBarProps) {
+  const workspaceDensity = density === 'workspace';
   return (
     <div className="min-w-0 flex-1">
-      <div className={clsx('flex flex-wrap items-center gap-2')}>
+      <div
+        data-settings-density={density}
+        className={clsx(
+          'flex items-center gap-2',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap' : 'flex-wrap'
+        )}
+      >
         {numImages ? (
           <InlineControl
             kind="images"
             options={numImages.options}
             value={numImages.value}
+            compact={workspaceDensity}
             onChange={(value) => numImages.onChange(Number(value))}
           />
         ) : null}
@@ -171,6 +193,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="aspect"
             options={aspectRatio.options}
             value={aspectRatio.value}
+            compact={workspaceDensity}
             onChange={(value) => aspectRatio.onChange(String(value))}
           />
         ) : null}
@@ -179,6 +202,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="resolution"
             options={resolution.options}
             value={resolution.value}
+            compact={workspaceDensity}
             onChange={(value) => resolution.onChange(String(value))}
             disabled={resolution.disabled}
           />
@@ -188,6 +212,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="quality"
             options={quality.options}
             value={quality.value}
+            compact={workspaceDensity}
             onChange={(value) => quality.onChange(String(value))}
           />
         ) : null}
@@ -196,6 +221,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="style"
             options={style.options}
             value={style.value}
+            compact={workspaceDensity}
             onChange={(value) => style.onChange(String(value))}
           />
         ) : null}
@@ -204,6 +230,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="format"
             options={outputFormat.options}
             value={outputFormat.value}
+            compact={workspaceDensity}
             onChange={(value) => outputFormat.onChange(String(value))}
           />
         ) : null}

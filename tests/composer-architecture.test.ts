@@ -42,3 +42,11 @@ test('composer prompt textarea uses the configured prompt label as its accessibl
 
   assert.match(textareaBlock, /aria-label=\{promptLabel\}/);
 });
+
+test('composer workspace density is opt-in and keeps price inside Generate', () => {
+  assert.match(composerTypesSource, /density\?: 'default' \| 'workspace'/);
+  assert.match(composerSource, /density = 'default'/);
+  assert.match(composerSource, /data-composer-density=\{density\}/);
+  assert.match(composerSource, /workspaceDensity[\s\S]*'p-4 md:p-5'/);
+  assert.equal(composerSource.match(/\{formattedPrice\}/g)?.length, 1);
+});

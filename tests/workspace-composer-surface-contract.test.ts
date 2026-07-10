@@ -47,6 +47,8 @@ test('workspace composer and settings surface is owned by a route-local componen
   assert.match(surfaceSource, /getSeedanceFieldBlockKey/);
   assert.match(surfaceSource, /MULTI_PROMPT_MIN_SEC/);
   assert.match(surfaceSource, /getLocalizedModeLabel/);
+  assert.match(surfaceSource, /<Composer[\s\S]*density="workspace"/);
+  assert.match(surfaceSource, /<CoreSettingsBar[\s\S]*density="workspace"/);
 });
 
 test('workspace video composer shows in-progress render banner from pending groups', () => {
