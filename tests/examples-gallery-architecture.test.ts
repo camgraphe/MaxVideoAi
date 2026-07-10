@@ -33,7 +33,12 @@ test('examples gallery delegates card rendering, helpers, column state, and type
   assert.match(typesSource, /export type ExampleGalleryVideo|export type ExampleSort/, 'types module should own public gallery contracts');
   assert.match(gridSource, /detailsCtaLabel=\{detailsCtaLabel\}/, 'grid should pass the detail affordance to every card');
   assert.match(cardSource, /aria-label=\{watchAnchorText\}/, 'the full-card watch link should own the descriptive accessible name');
-  assert.match(cardSource, /aria-hidden="true"/, 'the visual detail affordance should not duplicate the link name');
+  assert.match(
+    cardSource,
+    /<video[^>]*aria-hidden="true"[^>]*>/,
+    'the muted control-less inline preview should be hidden from the accessibility tree'
+  );
+  assert.match(cardSource, /<p[^>]*aria-hidden="true"/, 'the visual detail affordance should not duplicate the link name');
   assert.doesNotMatch(cardSource, /aria-label=\{altText\}/, 'image alt text should not replace the link action name');
   assert.doesNotMatch(cardSource, /recreateHref|showRecreateLink/, 'gallery cards should route through the watch page before recreation');
   assert.match(helpersSource, /View settings and price for/, 'watch-link names should describe the detail destination');

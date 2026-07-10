@@ -37,7 +37,7 @@ import {
   buildVideoSettingsFormState,
   buildVideoSettingsSnapshotFromSharedVideo,
   buildVideoSettingsSnapshotFromTile,
-  canApplySharedVideoSettings,
+  claimSharedVideoHydration,
   resolveVideoSettingsSnapshot,
   type VideoJobPayload,
 } from '../_lib/workspace-video-settings';
@@ -126,6 +126,7 @@ export function useWorkspaceVideoSettings({
   const hydratedJobRef = useRef<string | null>(null);
   const restoredPreviewJobRef = useRef<string | null>(null);
   const appliedStoryboardHandoffRef = useRef<string | null>(null);
+  const appliedSharedVideoIdRef = useRef<string | null>(null);
 
   const applyVideoSettingsSnapshot = useCallback(
     (snapshot: unknown) => {
@@ -240,8 +241,13 @@ export function useWorkspaceVideoSettings({
   );
 
   useEffect(() => {
-    if (!canApplySharedVideoSettings(sharedVideoSettings, engines.length)) return;
-    if (!sharedVideoSettings) return;
+    const hydrationClaim = claimSharedVideoHydration(
+      appliedSharedVideoIdRef.current,
+      sharedVideoSettings?.id,
+      engines.length
+    );
+    appliedSharedVideoIdRef.current = hydrationClaim.nextAppliedVideoId;
+    if (!hydrationClaim.shouldApply || !sharedVideoSettings) return;
     applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));
     void hydrateVideoSettingsFromJob(sharedVideoSettings.id);
   }, [

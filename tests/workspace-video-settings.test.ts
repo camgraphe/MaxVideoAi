@@ -6,7 +6,7 @@ import type { FormState } from '../frontend/app/(core)/(workspace)/app/_lib/work
 import {
   buildVideoSettingsFormState,
   buildVideoSettingsSnapshotFromTile,
-  canApplySharedVideoSettings,
+  claimSharedVideoHydration,
   resolveVideoSettingsSnapshot,
 } from '../frontend/app/(core)/(workspace)/app/_lib/workspace-video-settings';
 
@@ -60,11 +60,52 @@ function previousForm(): FormState {
   };
 }
 
-test('shared video settings wait for a non-empty engine catalog', () => {
-  const sharedVideo = { id: 'job_123' };
-  assert.equal(canApplySharedVideoSettings(sharedVideo, 0), false);
-  assert.equal(canApplySharedVideoSettings(sharedVideo, 1), true);
-  assert.equal(canApplySharedVideoSettings(null, 1), false);
+test('shared video hydration waits for engines and claims the same id only once across revalidation', () => {
+  let appliedVideoId: string | null = null;
+  let prompt = '';
+  let snapshotApplications = 0;
+  let jobHydrations = 0;
+
+  const runHydrationEffect = (sharedVideoId: string | null, engineCount: number) => {
+    const claim = claimSharedVideoHydration(appliedVideoId, sharedVideoId, engineCount);
+    appliedVideoId = claim.nextAppliedVideoId;
+    if (!claim.shouldApply) return;
+    snapshotApplications += 1;
+    jobHydrations += 1;
+    prompt = `snapshot:${sharedVideoId}`;
+  };
+
+  runHydrationEffect('job_123', 0);
+  assert.equal(snapshotApplications, 0);
+  assert.equal(jobHydrations, 0);
+
+  runHydrationEffect('job_123', 1);
+  assert.equal(snapshotApplications, 1);
+  assert.equal(jobHydrations, 1);
+  assert.equal(prompt, 'snapshot:job_123');
+
+  prompt = 'visitor edit after recreation';
+  runHydrationEffect('job_123', 1);
+  assert.equal(snapshotApplications, 1);
+  assert.equal(jobHydrations, 1);
+  assert.equal(prompt, 'visitor edit after recreation');
+});
+
+test('shared video hydration resets for a changed or cleared shared video id', () => {
+  const first = claimSharedVideoHydration(null, 'job_123', 1);
+  assert.deepEqual(first, { nextAppliedVideoId: 'job_123', shouldApply: true });
+
+  const changedWhileWaiting = claimSharedVideoHydration(first.nextAppliedVideoId, 'job_456', 0);
+  assert.deepEqual(changedWhileWaiting, { nextAppliedVideoId: null, shouldApply: false });
+
+  const changedReady = claimSharedVideoHydration(changedWhileWaiting.nextAppliedVideoId, 'job_456', 1);
+  assert.deepEqual(changedReady, { nextAppliedVideoId: 'job_456', shouldApply: true });
+
+  const cleared = claimSharedVideoHydration(changedReady.nextAppliedVideoId, null, 1);
+  assert.deepEqual(cleared, { nextAppliedVideoId: null, shouldApply: false });
+
+  const reappliedAfterClear = claimSharedVideoHydration(cleared.nextAppliedVideoId, 'job_456', 1);
+  assert.deepEqual(reappliedAfterClear, { nextAppliedVideoId: 'job_456', shouldApply: true });
 });
 
 test('guest sample duration replaces the previous duration option', () => {

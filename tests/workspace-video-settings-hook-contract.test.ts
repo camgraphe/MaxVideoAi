@@ -39,9 +39,24 @@ test('workspace video settings hydration is owned by a route-local hook', () => 
   assert.match(hookSource, /const applyVideoSettingsFromTile = useCallback/);
   assert.match(hookSource, /buildVideoSettingsSnapshotFromSharedVideo/);
   assert.match(hookSource, /buildRequestedJobPreview/);
-  assert.match(hookSource, /canApplySharedVideoSettings\(sharedVideoSettings, engines\.length\)/);
-  assert.match(hookSource, /if \(!canApplySharedVideoSettings/);
-  assert.match(hookSource, /engines\.length/);
+  assert.match(hookSource, /const appliedSharedVideoIdRef = useRef<string \| null>\(null\)/);
+  assert.match(hookSource, /claimSharedVideoHydration\(/);
+  assert.match(hookSource, /appliedSharedVideoIdRef\.current = hydrationClaim\.nextAppliedVideoId/);
+
+  const hydrationGuardIndex = hookSource.indexOf('if (!hydrationClaim.shouldApply || !sharedVideoSettings) return;');
+  const snapshotApplicationIndex = hookSource.indexOf(
+    'applyVideoSettingsSnapshot(buildVideoSettingsSnapshotFromSharedVideo(sharedVideoSettings));'
+  );
+  const jobHydrationIndex = hookSource.indexOf('void hydrateVideoSettingsFromJob(sharedVideoSettings.id);');
+  assert.ok(hydrationGuardIndex >= 0, 'shared-video hydration should use the one-shot claim guard');
+  assert.ok(
+    hydrationGuardIndex < snapshotApplicationIndex,
+    'the one-shot claim must guard snapshot application'
+  );
+  assert.ok(
+    hydrationGuardIndex < jobHydrationIndex,
+    'the one-shot claim must guard job hydration'
+  );
 
   assert.match(settingsSource, /from '\.\/workspace-video-job-media'/);
   assert.match(jobMediaSource, /export function buildVideoJobMediaPatch/);

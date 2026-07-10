@@ -17,6 +17,14 @@ test('watch surfaces identify historical job cost as recorded render cost', () =
   assert.doesNotMatch(contentSource, /label: 'Estimated price'/);
 });
 
+test('watch prompt breakdown omits recorded render cost when the job has no stored cost', () => {
+  assert.match(
+    contentSource,
+    /\.\.\.\(costLabel \? \[\{ label: 'Recorded render cost', value: costLabel \}\] : \[\]\)/
+  );
+  assert.doesNotMatch(contentSource, /Shown before render/);
+});
+
 test('localized recorded-cost labels do not imply a live or estimated quote', () => {
   const expected = {
     en: 'Recorded render cost',

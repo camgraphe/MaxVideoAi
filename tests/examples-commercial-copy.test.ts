@@ -58,7 +58,11 @@ test('gallery affordance and accessible watch names describe settings and price'
 
   assert.match(cardSource, /aria-label=\{watchAnchorText\}/);
   assert.match(cardSource, /detailsCtaLabel/);
-  assert.match(cardSource, /aria-hidden/);
+  assert.match(
+    cardSource,
+    /<video[^>]*aria-hidden="true"[^>]*>/,
+    'the control-less inline preview should be decorative beside the named watch link'
+  );
   assert.doesNotMatch(cardSource, /aria-label=\{altText\}/);
   assert.doesNotMatch(cardSource, /recreateHref|recreateLabel|showRecreateLink/);
 });

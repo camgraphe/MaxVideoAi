@@ -95,7 +95,7 @@ export function VideoWatchContent({ page }: { page: WatchPageData }) {
     { label: 'Workflow', value: workflowLabel },
     { label: 'Camera', value: cameraHighlights.length ? cameraHighlights.join(', ') : humanizeTag(signals.primaryIntent) },
     { label: 'Output', value: [durationLabel, aspectLabel, resolutionLabel].filter(Boolean).join(' · ') },
-    { label: 'Recorded render cost', value: costLabel ?? 'Shown before render' },
+    ...(costLabel ? [{ label: 'Recorded render cost', value: costLabel }] : []),
     { label: 'Audio', value: audioLabel },
     { label: 'Constraints', value: signals.negativePrompt ?? signals.capabilityTags.slice(0, 3).map(humanizeTag).join(', ') },
   ].filter((row) => row.value);

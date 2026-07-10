@@ -43,11 +43,19 @@ export type VideoSettingsSnapshotOptions = {
   createFallbackKlingElement: () => KlingElementState;
 };
 
-export function canApplySharedVideoSettings(
-  sharedVideoSettings: unknown,
+export function claimSharedVideoHydration(
+  appliedVideoId: string | null,
+  sharedVideoId: string | null | undefined,
   engineCount: number
-): boolean {
-  return Boolean(sharedVideoSettings) && engineCount > 0;
+): { nextAppliedVideoId: string | null; shouldApply: boolean } {
+  const nextVideoId = sharedVideoId || null;
+  if (appliedVideoId === nextVideoId) {
+    return { nextAppliedVideoId: appliedVideoId, shouldApply: false };
+  }
+  if (!nextVideoId || engineCount <= 0) {
+    return { nextAppliedVideoId: null, shouldApply: false };
+  }
+  return { nextAppliedVideoId: nextVideoId, shouldApply: true };
 }
 
 export type ResolvedVideoSettingsSnapshot = {
