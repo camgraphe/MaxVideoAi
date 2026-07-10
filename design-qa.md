@@ -1,57 +1,127 @@
 # Workspace density visual QA
 
-## Scope and final captures
+## Scope, state, and final captures
 
-The implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the independent-review remediation.
+The final implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the independent-review remediation in `4d581ece`. Captures use settled starter media and live composer data.
 
-| Route | Viewport | Source target | Final implementation |
+| Route | Viewport and state | Source target | Final implementation |
 | --- | --- | --- | --- |
-| `/app` | 390 × 844 | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-remediation.png` |
-| `/app` | 1440 × 1024 | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-remediation.png` |
-| `/app/image` | 390 × 844 | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png` | `output/playwright/workspace-image-mobile-remediation.png` |
-| `/app/image` | 1440 × 1024 | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png` | `output/playwright/workspace-image-desktop-remediation.png` |
+| `/app` | 390 × 844; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-remediation.png` |
+| `/app` | 1440 × 1024; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-remediation.png` |
+| `/app/image` | 390 × 844; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png` | `output/playwright/workspace-image-mobile-remediation.png` |
+| `/app/image` | 1440 × 1024; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png` | `output/playwright/workspace-image-desktop-remediation.png` |
 
-Video captures use Kling 3 Pro / Pro and the curated warrior sample. Image captures use Seedream 5.0 Lite and the curated camera-rig sample. The full views were reviewed alongside the corresponding sources.
+Every source and implementation full view was opened together in the same comparison input. Focused source and implementation crops were also opened together after their dimensions and hashes were verified.
 
-## Measured browser evidence
+## Full-view comparison evidence
 
-- Both mobile routes report `documentElement.scrollWidth === documentElement.clientWidth === 390`; there is no document-level horizontal overflow.
-- Video mobile settings use a 330px local scroller for 675px of intrinsic content (`max scrollLeft = 345`). Image mobile uses 330px for 528px (`max scrollLeft = 198`).
-- Mobile triggers no longer use equal-flex compression: short controls retain a 112px minimum and long labels retain their intrinsic width (`1080p • Full HD • Pro` = 195.14px; `Horizontal 16:9` = 161.66px). The initial visible labels are readable and do not collide.
-- Mobile Generate stays on the row below settings and spans x=30–360 (330px) on both routes.
-- Image Reference images spans x=29–361 (332px) on mobile. At 1440px it is 850px wide inside the 884px composer, using the complete available inner width instead of the shared 640px solo cap.
-- Video desktop Advanced settings spans y=985–1021 at 1440×1024. Image desktop spans y=894–930. Image mobile spans y=804.25–840.25 at 390×844. The source-visible Advanced control is therefore present in each required target viewport.
-- Desktop settings and Generate remain on one row. Guest upload locks remain paired, calm, and labeled `Sign in to upload`.
+| Target | Engine and viewer | Composer and actions | Asset area and first viewport |
+| --- | --- | --- | --- |
+| Video mobile | The stacked engine/variant header, Browse link, contained warrior frame, sample badge, and compact toolbar preserve the source hierarchy. | Prompt metadata and promoted actions stay legible. Settings remain one intrinsic-width row in a local scroller, with a full-width Generate row immediately below. | Start/End guest locks retain their paired layout and `Sign in to upload` copy. The document itself has no horizontal overflow. |
+| Video desktop | Engine/variant controls, Browse placement, wide contained preview, navigation affordances, toolbar, shell rail, and starter cards align with the source structure. | Prompt, settings, and Generate occupy the compact source-like rhythm; settings and Generate share one desktop row. | Paired Start/End fields, Negative prompt, and Advanced settings are present. Advanced spans y=985–1021 inside the 1024px target. |
+| Image mobile | The engine header, contained camera image, and five-action toolbar follow the reference composition without cropping or stretching the media. | Prompt, intrinsic settings, and the full-width Generate button retain clear hierarchy. Local settings overflow does not leak to the page. | Reference images spans the available card width, Characters stays aligned, the add target and remaining-slot copy are visible, and Advanced spans y=804.25–840.25. |
+| Image desktop | Engine/variant controls, contained camera image, toolbar, navigation, promotion, and sample rail preserve the existing product shell and source proportions. | Prompt, settings, and Generate remain one compact desktop action surface. | Reference images uses 850px inside the 884px composer rather than the shared 640px solo cap. Advanced spans y=894–930 within the target. |
+
+The final full-view comparison found no remaining P0, P1, or P2 mismatch. Differences are limited to P3 live-data variation such as current prompt/price text and media-frame timing.
 
 ## Focused-region evidence
 
-Genuine source/implementation region crops are in `output/playwright/crops-remediation/`:
+Genuine source/implementation region crops are stored in `output/playwright/crops-remediation/`:
 
-| Pair | Source dimensions / SHA-256 | Implementation dimensions / SHA-256 |
+| Pair | Source crop | Implementation crop |
 | --- | --- | --- |
-| Video desktop composer | 900×458 / `661ca93486ef5d9a7720074b0f577eaa1806f250640aa27adce4b92dd8c66405` | 876×454 / `b4e5aa859e4ccb4082df9cfde848d347bd6f11e6c236bbf75459e3ca4f929cef` |
-| Image desktop composer/reference | 900×458 / `5afcead61af7950e5d78e9fbe0b3852b6046f352d8b5c5c394655f2cc577c0d6` | 884×359 / `3c93e5bde1bd883ac8d542f34ab57fd01c0c0e9f9f7a6eecad0fa8e4a1b8b4c3` |
-| Video mobile composer/action | 790×744 / `4c34ba1804b3a1ec564e73bced89d9aeee84eb19910a3180c96d76fb00b3862c` | 358×386 / `55ec8e1a485c35f0cb40c762b75630279cbd905be4db404f79aeb1e4d21d59b2` |
-| Image mobile composer/reference | 800×864 / `cfd15fde08e236c687ff691b13a178afdb351dfeb5ea179605a5110f69af5715` | 358×393 / `3fee163363f7a8062ebd8f418466654d427194722153fda2b77458a2194af4b7` |
+| Video desktop composer, upload locks, Negative prompt, Advanced | `source-video-desktop-composer.png` — 900×458 — SHA-256 `661ca93486ef5d9a7720074b0f577eaa1806f250640aa27adce4b92dd8c66405` | `impl-video-desktop-composer.png` — 876×454 — SHA-256 `b4e5aa859e4ccb4082df9cfde848d347bd6f11e6c236bbf75459e3ca4f929cef` |
+| Image desktop composer, Generate, Reference images, Advanced | `source-image-desktop-composer.png` — 900×458 — SHA-256 `5afcead61af7950e5d78e9fbe0b3852b6046f352d8b5c5c394655f2cc577c0d6` | `impl-image-desktop-composer.png` — 884×359 — SHA-256 `3c93e5bde1bd883ac8d542f34ab57fd01c0c0e9f9f7a6eecad0fa8e4a1b8b4c3` |
+| Video mobile prompt, settings, Generate, upload locks | `source-video-mobile-composer.png` — 790×744 — SHA-256 `4c34ba1804b3a1ec564e73bced89d9aeee84eb19910a3180c96d76fb00b3862c` | `impl-video-mobile-composer.png` — 358×386 — SHA-256 `55ec8e1a485c35f0cb40c762b75630279cbd905be4db404f79aeb1e4d21d59b2` |
+| Image mobile prompt, settings, Generate, Reference images, Advanced | `source-image-mobile-composer.png` — 800×864 — SHA-256 `cfd15fde08e236c687ff691b13a178afdb351dfeb5ea179605a5110f69af5715` | `impl-image-mobile-composer.png` — 358×393 — SHA-256 `3fee163363f7a8062ebd8f418466654d427194722153fda2b77458a2194af4b7` |
 
-The implementation crop dimensions and hashes differ from the full 1440×1024 / 390×844 screenshots, proving they are cropped regions rather than duplicate full captures. Each pair was opened together and reviewed. No P0/P1/P2 mismatch remains.
+The implementation crop dimensions and hashes differ from their 1440×1024 and 390×844 full screenshots. They are true focused regions, not duplicate full captures. Same-input inspection confirms the corrected action, upload, Reference images, and Advanced boundaries.
 
-## Interaction and behavior checks
+## Fidelity review
 
-- Previous authorized coverage remains valid: engine/Browse menus, variant selection, multi-prompt, Storyboard, Generate auth gate, asset/library/Characters flows, and Advanced settings were exercised.
-- Workspace menus remain body-portaled, viewport-clamped, reposition with the nested horizontal scroller, close on outside click and Escape, and support ArrowDown/Enter selection.
-- Locked resolution remains natively disabled. Guest/auth ordering and defaults are unchanged. One composer price is rendered.
+### Fonts and typography
+
+- The existing product font stack is preserved; no replacement typeface was introduced.
+- Uppercase engine, prompt, asset, Negative prompt, and Advanced micro-labels retain the source hierarchy, tracking, and muted color.
+- Trigger labels use an 11px workspace treatment with enough intrinsic width to remain legible. Prompt copy, helper text, CTA labels, and price pills retain their established weights and contrast.
+- Long mobile labels remain complete in their control and scroll into view instead of colliding with adjacent icons or text.
+
+### Spacing and layout rhythm
+
+- Workspace-only preview, toolbar, prompt, settings, asset, and extra-field spacing was tightened while shared/default component density remains unchanged.
+- Desktop keeps the compact prompt/settings/Generate rhythm and exposes Advanced inside the target viewport.
+- Mobile preserves one settings row and one Generate row. Horizontal movement is contained by the settings scroller and does not alter document width.
+- Asset headings, dashed boundaries, lock circles, helper copy, dividers, and card padding maintain consistent alignment across video and image surfaces.
+
+### Colors, tokens, borders, and radii
+
+- Existing surface, border, placeholder, muted-text, brand, warning, disabled, and on-media tokens are retained.
+- The dark Generate CTA, white price pill, calm guest-lock treatment, dashed asset boundary, and subtle workspace cards match the established system.
+- Existing card/input radii and hairline dividers are preserved; no new visual language or one-off color palette was added.
+
+### Image quality and containment
+
+- Final captures use the real curated warrior and camera-rig media rather than placeholders or recreated assets.
+- Video and image previews preserve the full subject and source framing through contained rendering. No visible crop, stretch, or aspect distortion remains.
+- Starter thumbnails and the main selected media stay crisp at both target sizes; toolbar and overlay controls do not obscure the primary subject.
+
+### Copy and content
+
+- Primary labels retain the source intent: Choose engine, Variant, Browse engines, Prompt, Multi-prompt, Storyboard, Generate, Reference images, Characters, Negative prompt, and Advanced settings.
+- Guest upload fields say `Sign in to upload`; the rejected `Unavailable` treatment does not appear.
+- One price is rendered in the composer. Live quote, sample metadata, and prompt wording may differ from the static source frame and are classified as data variation rather than visual drift.
+
+## Measured geometry and overflow
+
+- Both mobile routes report `document.documentElement.scrollWidth === document.documentElement.clientWidth === 390`.
+- Video mobile settings: 330px client width, 675px scroll width, and 345px maximum scroll. Image mobile settings: 330px client width, 528px scroll width, and 198px maximum scroll.
+- Short mobile controls retain a 112px minimum. `1080p • Full HD • Pro` measures 195.14px and `Horizontal 16:9` measures 161.66px; labels and icons do not collide.
+- Mobile Generate spans x=30–360 (330px) on both routes.
+- Image Reference images spans x=29–361 (332px) on mobile and 850px inside the 884px desktop composer.
+- Video desktop Advanced spans y=985–1021; image desktop spans y=894–930; image mobile spans y=804.25–840.25.
+
+## Primary interaction and behavior checks
+
+### Video workspace
+
+- Opened and closed the engine selector and Browse surface; selected Pro, 4K, and Standard variants.
+- Enabled Multi-prompt, edited scene 1, added scene 2, disabled Multi-prompt, and edited the regular prompt.
+- Opened and closed Storyboard.
+- Selected 9:16, 1:1, and 16:9 settings while preview media remained contained.
+- Confirmed the locked resolution control remained natively disabled and did not open programmatically.
+- Guest Generate opened the current auth gate; closing with `Maybe later` returned focus to Generate.
+- Confirmed Start/End locks display `Sign in to upload`, Advanced exposes seed/lock/shot controls, and exactly one composer price is displayed.
+
+### Image workspace
+
+- Opened and closed the engine selector and Browse surface; selected Lite and Pro variants.
+- Selected image count 2, Square 1:1, 4K, and PNG; confirmed the Pro resolution lock remained disabled as expected.
+- Edited the prompt and confirmed Generate opened the current auth gate.
+- Opened References and its media picker; invoked device upload with an invalid local non-image to verify validation without an external upload; opened Library.
+- Opened Characters and confirmed its empty state.
+- Expanded Advanced settings and confirmed the AI-watermark control; exactly one composer price is displayed.
+
+### Menus, keyboard, portal, and overflow behavior
+
+- Workspace settings menus render in the document body, remain viewport-visible, and reposition/clamp when the nested horizontal scroller moves.
+- Outside click and Escape close an open menu.
+- ArrowDown/ArrowDown/Enter keyboard selection changed the image aspect to Square 1:1.
+- Mobile settings scroll locally in one row, Generate remains below, and neither route introduces document-level horizontal overflow.
+- Guest/auth route ordering and default settings remain unchanged by the workspace-only density contract.
 
 ## Console result
 
-No uncaught runtime exception or remediation-specific console error appeared. The guest `/app` run retains the pre-existing `/api/user/exports/summary` 401 and Stripe local-HTTP warnings. The fresh `/app/image` run has no redesign-specific warning.
+A fresh direct `/app/image` run completed without console errors or warnings attributable to the redesign. The guest `/app` run retained the pre-existing unauthenticated `/api/user/exports/summary` 401 and Stripe local-HTTP warnings. No uncaught runtime exception or remediation-specific console error appeared. A navigation-aborted preflight observed during an earlier rapid multi-route session recovered and did not reproduce in the fresh direct-route run.
 
-## Findings and comparison history
+## Findings and complete comparison history
 
-1. Initial comparison found first-viewport density drift and drove the opt-in workspace preview/composer density contract.
-2. A second comparison found the shared select minimum and drove the original compact action-row work.
-3. Independent review reopened QA with three P2s: equal-flex mobile label collisions; a 640px desktop reference cap plus hidden Advanced settings; and duplicate full screenshots presented as focused crops.
-4. TDD remediation replaced equal-flex controls with intrinsic workspace controls inside a local scroller, excluded workspace solo assets from the shared 640px cap, compacted workspace-only preview/toolbar and composer vertical rhythm, and regenerated verified region crops.
-5. Fresh full-view and same-input focused comparisons show no remaining P0/P1/P2 issue. P3 differences are limited to live sample data, price values, and media-frame timing.
+1. The initial full/source comparison was blocked by P1/P2 first-viewport density drift: preview docks pushed primary composer content down and the image mobile primary path did not match the target rhythm.
+2. A first TDD pass introduced opt-in workspace preview, header, prompt, settings, action, and asset density while retaining shared defaults.
+3. A second comparison found the shared 140px select minimum forcing mobile partial overflow. A red contract drove workspace-specific trigger sizing and action-row changes.
+4. Independent review rejected that version with three P2s: equal-flex mobile controls caused label/icon collisions; desktop Reference images retained a 640px solo cap and Advanced fell below the video target; two implementation focus artifacts were duplicate full screenshots rather than crops.
+5. Remediation began with new failing contracts for intrinsic mobile controls/local scrolling, workspace solo-asset width, source-visible vertical density, and compact workspace preview/toolbars.
+6. The implementation replaced equal-flex compression with intrinsic controls inside a local scroller, excluded only workspace solo assets from the shared cap, compacted workspace-only vertical rhythm, and preserved portals, keyboard behavior, defaults, and shared density.
+7. Fresh settled captures at all four exact viewports produced the geometry above. Genuine focused crops were regenerated, dimension/hash verified, and opened with their source counterparts.
+8. Final full-view and focused comparisons contain no P0/P1/P2 issue. Remaining P3 variation is limited to live starter data, quote values, prompt copy, and media-frame timing.
 
 final result: passed
