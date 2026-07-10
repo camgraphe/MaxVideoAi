@@ -68,6 +68,7 @@ export function WorkspacePreviewDock({
 }) {
   return (
     <CompositePreviewDock
+      density="workspace"
       group={group}
       isLoading={isLoading}
       autoPlayRequestId={autoPlayRequestId}
@@ -87,6 +88,8 @@ export function WorkspacePreviewDock({
           engineScores={engineScores}
           modeLabel={getEngineModeLabel(selectedEngineId, activeMode, modeLabelLocale)}
           showModeBadge={false}
+          controlPresentation="workspace"
+          density="compact"
         />
       }
       onOpenModal={(nextGroup) => {

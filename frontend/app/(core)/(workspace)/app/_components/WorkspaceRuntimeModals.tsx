@@ -35,6 +35,12 @@ export function WorkspaceRuntimeModals({
   topUpAmount,
   isTopUpLoading,
   topUpError,
+  checkoutCaptchaError,
+  checkoutCaptchaRequired,
+  checkoutCaptchaResetGeneration,
+  checkoutCaptchaToken,
+  onCheckoutCaptchaError,
+  onCheckoutCaptchaToken,
   onCloseTopUp,
   onTopUpSubmit,
   onSelectPresetAmount,
@@ -67,6 +73,12 @@ export function WorkspaceRuntimeModals({
   topUpAmount: number;
   isTopUpLoading: boolean;
   topUpError: string | null;
+  checkoutCaptchaError: boolean;
+  checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
+  checkoutCaptchaToken: string | null;
+  onCheckoutCaptchaError: () => void;
+  onCheckoutCaptchaToken: (token: string | null) => void;
   onCloseTopUp: () => void;
   onTopUpSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSelectPresetAmount: (value: number) => void;
@@ -107,6 +119,12 @@ export function WorkspaceRuntimeModals({
           topUpAmount={topUpAmount}
           isTopUpLoading={isTopUpLoading}
           topUpError={topUpError}
+          checkoutCaptchaError={checkoutCaptchaError}
+          checkoutCaptchaRequired={checkoutCaptchaRequired}
+          checkoutCaptchaResetGeneration={checkoutCaptchaResetGeneration}
+          checkoutCaptchaToken={checkoutCaptchaToken}
+          onCheckoutCaptchaError={onCheckoutCaptchaError}
+          onCheckoutCaptchaToken={onCheckoutCaptchaToken}
           onClose={onCloseTopUp}
           onSubmit={onTopUpSubmit}
           onSelectPresetAmount={onSelectPresetAmount}

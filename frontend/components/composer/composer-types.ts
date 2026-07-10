@@ -34,6 +34,8 @@ export type ComposerPromotedAction = {
 };
 
 export interface ComposerProps {
+  density?: 'default' | 'workspace';
+  compactPrompt?: boolean;
   engine: EngineCaps;
   caps?: CapabilityCaps;
   prompt: string;
@@ -63,6 +65,7 @@ export interface ComposerProps {
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
+  generateControl?: ReactNode;
   modeToggles?: ComposerModeToggle[];
   activeManualMode?: Mode | null;
   onModeToggle?: (mode: Mode | null) => void;

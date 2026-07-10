@@ -1,14 +1,16 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 
 export type SelectOption = {
   value: string | number | boolean;
   label: string | ReactNode;
   disabled?: boolean;
+  title?: string;
 };
 
 interface SelectMenuProps {
@@ -21,6 +23,7 @@ interface SelectMenuProps {
   buttonClassName?: string;
   menuClassName?: string;
   menuPlacement?: 'auto' | 'bottom' | 'top';
+  portal?: boolean;
   searchable?: boolean;
   searchPlaceholder?: string;
   filterText?: (option: SelectOption) => string;
@@ -44,6 +47,10 @@ function findFirstEnabled(options: SelectOption[]): number {
   return options.findIndex((option) => !option.disabled);
 }
 
+function OptionalPortal({ children, enabled }: { children: ReactNode; enabled: boolean }) {
+  return enabled ? createPortal(children, document.body) : children;
+}
+
 export function SelectMenu({
   options,
   value,
@@ -54,6 +61,7 @@ export function SelectMenu({
   buttonClassName,
   menuClassName,
   menuPlacement = 'bottom',
+  portal = false,
   searchable = false,
   searchPlaceholder = 'Search...',
   filterText,
@@ -65,9 +73,12 @@ export function SelectMenu({
   const [resolvedPlacement, setResolvedPlacement] = useState<'bottom' | 'top'>(
     menuPlacement === 'top' ? 'top' : 'bottom'
   );
+  const [portalStyle, setPortalStyle] = useState<CSSProperties | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const triggerId = useId();
+  const listboxId = useId();
 
   const selectedIndex = useMemo(
     () => options.findIndex((option) => String(option.value) === String(value)),
@@ -129,6 +140,45 @@ export function SelectMenu({
     };
   }, [menuPlacement, open, filteredOptions.length]);
 
+  useLayoutEffect(() => {
+    if (!open || !portal) return;
+
+    const updatePortalPosition = () => {
+      const container = containerRef.current;
+      const menu = menuRef.current;
+      if (!container || !menu) return;
+
+      const rect = container.getBoundingClientRect();
+      const viewportPadding = 12;
+      const availableWidth = Math.max(0, window.innerWidth - viewportPadding * 2);
+      const triggerWidth = Math.min(rect.width, availableWidth);
+      const menuWidth = Math.min(Math.max(triggerWidth, menu.offsetWidth), availableWidth);
+      const maxLeft = Math.max(viewportPadding, window.innerWidth - viewportPadding - menuWidth);
+      const left = Math.min(Math.max(rect.left, viewportPadding), maxLeft);
+      const nextStyle: CSSProperties =
+        resolvedPlacement === 'top'
+          ? { bottom: window.innerHeight - rect.top + 8, left, top: undefined, width: menuWidth }
+          : { bottom: undefined, left, top: rect.bottom + 8, width: menuWidth };
+
+      setPortalStyle((current) =>
+        current?.bottom === nextStyle.bottom &&
+        current?.left === nextStyle.left &&
+        current?.top === nextStyle.top &&
+        current?.width === nextStyle.width
+          ? current
+          : nextStyle
+      );
+    };
+
+    updatePortalPosition();
+    window.addEventListener('resize', updatePortalPosition);
+    window.addEventListener('scroll', updatePortalPosition, true);
+    return () => {
+      window.removeEventListener('resize', updatePortalPosition);
+      window.removeEventListener('scroll', updatePortalPosition, true);
+    };
+  }, [open, portal, portalStyle?.width, resolvedPlacement]);
+
   useEffect(() => {
     if (!open || !searchable) return;
     setQuery('');
@@ -147,11 +197,14 @@ export function SelectMenu({
     if (!open) return;
     const handleClick = (event: MouseEvent) => {
       const target = event.target as Node;
-      if (!containerRef.current?.contains(target)) {
+      if (!containerRef.current?.contains(target) && !menuRef.current?.contains(target)) {
         setOpen(false);
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as Node;
+      const isWithinSelect = containerRef.current?.contains(target) || menuRef.current?.contains(target);
+      if (!isWithinSelect) return;
       const targetTag = (event.target as HTMLElement | null)?.tagName;
       const isTypingTarget = targetTag === 'INPUT' || targetTag === 'TEXTAREA';
       if (event.key === 'Escape') {
@@ -187,11 +240,18 @@ export function SelectMenu({
         setOpen(false);
       }
     };
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target as Node;
+      if (containerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn);
     return () => {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn);
     };
   }, [filteredOptions, highlightedIndex, onChange, open, selectedFilteredIndex]);
 
@@ -223,6 +283,7 @@ export function SelectMenu({
   return (
     <div ref={containerRef} className={clsx('relative', className)}>
       <Button
+        id={triggerId}
         type="button"
         size="sm"
         variant="outline"
@@ -234,9 +295,10 @@ export function SelectMenu({
         className={clsx(BUTTON_BASE, disabled && 'cursor-not-allowed opacity-60', buttonClassName)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={listboxId}
         aria-disabled={disabled}
       >
-        <span className="min-w-0 flex-1">
+        <span className="flex min-w-0 flex-1 items-center">
           {typeof selectedLabel === 'string' ? <span className="truncate">{selectedLabel}</span> : selectedLabel}
         </span>
         {!hideChevron ? (
@@ -256,78 +318,85 @@ export function SelectMenu({
         ) : null}
       </Button>
       {open ? (
-        <div
-          ref={menuRef}
-          className={clsx(
-            'absolute left-0 z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
-            resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2',
-            menuClassName
-          )}
-        >
-          {searchable ? (
-            <div className="px-1 pb-1">
-              <input
-                type="text"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder={searchPlaceholder}
-                className="w-full rounded-input border border-hairline bg-bg px-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
-              />
-            </div>
-          ) : null}
-          <ul
-            role="listbox"
+        <OptionalPortal enabled={portal}>
+          <div
+            ref={menuRef}
             className={clsx(
-              'space-y-1 overflow-y-auto overflow-x-hidden text-[12px]',
-              searchable ? 'max-h-56 pr-1' : 'max-h-60'
+              'z-[80] w-full overflow-hidden rounded-card border border-border bg-surface p-1 shadow-card dark:border-white/10 dark:bg-[#121a25] dark:shadow-[0_18px_38px_rgba(0,0,0,0.42)]',
+              portal ? 'fixed min-w-[8rem] max-w-[calc(100vw-1.5rem)]' : 'absolute left-0',
+              !portal && (resolvedPlacement === 'top' ? 'bottom-full mb-2' : 'mt-2'),
+              menuClassName
             )}
+            style={portal ? portalStyle ?? { left: 0, top: 0, visibility: 'hidden', width: 0 } : undefined}
           >
-            {filteredOptions.map((option, index) => {
-              const isSelected = String(option.value) === String(value);
-              const isHighlighted = index === highlightedIndex;
-              return (
-                <li key={`${String(option.value)}-${index}`}>
-                  <Button
-                    ref={(node) => {
-                      optionRefs.current[index] = node;
-                    }}
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    role="option"
-                    aria-selected={isSelected}
-                    disabled={option.disabled}
-                    onMouseEnter={() => setHighlightedIndex(index)}
-                    onClick={() => {
-                      if (option.disabled) return;
-                      onChange(option.value);
-                      setOpen(false);
-                    }}
-                    className={clsx(
-                      'min-h-0 h-auto w-full justify-between overflow-hidden rounded-input px-3 py-2 text-left',
-                      option.disabled
-                        ? 'cursor-not-allowed text-text-muted/60 dark:text-white/25'
-                        : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white',
-                      isSelected && !option.disabled && 'bg-surface-2 text-text-primary dark:bg-white/[0.12] dark:text-white',
-                      isHighlighted && !option.disabled && !isSelected && 'bg-surface-2 dark:bg-white/[0.08]'
-                    )}
-                  >
-                    <span className="min-w-0 flex-1">
-                      {typeof option.label === 'string' ? (
-                        <span className="truncate">{option.label}</span>
-                      ) : (
-                        option.label
+            {searchable ? (
+              <div className="px-1 pb-1">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  placeholder={searchPlaceholder}
+                  className="w-full rounded-input border border-hairline bg-bg px-2 py-1 text-[12px] text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/10 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
+                />
+              </div>
+            ) : null}
+            <ul
+              id={listboxId}
+              role="listbox"
+              aria-labelledby={triggerId}
+              className={clsx(
+                'space-y-1 overflow-y-auto overflow-x-hidden text-[12px] [scrollbar-width:thin] [scrollbar-color:rgba(148,163,184,0.45)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-300/70 dark:[&::-webkit-scrollbar-thumb]:bg-white/20',
+                searchable ? 'max-h-56 pr-1' : 'max-h-60'
+              )}
+            >
+              {filteredOptions.map((option, index) => {
+                const isSelected = String(option.value) === String(value);
+                const isHighlighted = index === highlightedIndex;
+                return (
+                  <li key={`${String(option.value)}-${index}`}>
+                    <Button
+                      ref={(node) => {
+                        optionRefs.current[index] = node;
+                      }}
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      role="option"
+                      aria-selected={isSelected}
+                      title={option.title}
+                      disabled={option.disabled}
+                      onMouseEnter={() => setHighlightedIndex(index)}
+                      onClick={() => {
+                        if (option.disabled) return;
+                        onChange(option.value);
+                        setOpen(false);
+                      }}
+                      className={clsx(
+                        'min-h-0 h-auto w-full justify-between overflow-hidden rounded-input px-3 py-2 text-left',
+                        option.disabled
+                          ? 'cursor-not-allowed text-text-muted/60 dark:text-white/25'
+                          : 'text-text-secondary hover:bg-surface-2 hover:text-text-primary dark:text-white/70 dark:hover:bg-white/[0.08] dark:hover:text-white',
+                        isSelected && !option.disabled && 'bg-surface-2 text-text-primary dark:bg-white/[0.12] dark:text-white',
+                        isHighlighted && !option.disabled && !isSelected && 'bg-surface-2 dark:bg-white/[0.08]'
                       )}
-                    </span>
-                  </Button>
-                </li>
-              );
-            })}
-          </ul>
-          {searchable && filteredOptions.length === 0 ? (
-            <div className="px-3 py-2 text-[12px] text-text-muted">{noResultsLabel}</div>
-          ) : null}
-        </div>
+                    >
+                      <span className="flex min-w-0 flex-1 items-center">
+                        {typeof option.label === 'string' ? (
+                          <span className="truncate">{option.label}</span>
+                        ) : (
+                          option.label
+                        )}
+                      </span>
+                    </Button>
+                  </li>
+                );
+              })}
+            </ul>
+            {searchable && filteredOptions.length === 0 ? (
+              <div className="px-3 py-2 text-[12px] text-text-muted">{noResultsLabel}</div>
+            ) : null}
+          </div>
+        </OptionalPortal>
       ) : null}
     </div>
   );

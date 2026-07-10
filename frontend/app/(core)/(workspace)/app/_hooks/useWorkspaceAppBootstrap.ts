@@ -22,7 +22,7 @@ export function useWorkspaceAppBootstrap() {
   const engines = useMemo(() => data?.engines ?? [], [data]);
   const engineScores = useMemo(() => data?.engineScores ?? {}, [data?.engineScores]);
   const { data: latestJobsPages, mutate: mutateLatestJobs } = useInfiniteJobs(24, { type: 'video' });
-  const { user, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
+  const { user, session, loading: authLoading, authStatus } = useRequireAuth({ redirectIfLoggedOut: false });
   const provider = useResultProvider();
   const showCenterGallery = CLIENT_ENV.WORKSPACE_CENTER_GALLERY === 'true';
   const { t, locale } = useI18n();
@@ -90,6 +90,7 @@ export function useWorkspaceAppBootstrap() {
     mutateLatestJobs,
     provider,
     recentJobs,
+    session,
     showCenterGallery,
     uiLocale,
     user,

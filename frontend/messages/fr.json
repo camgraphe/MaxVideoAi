@@ -3138,6 +3138,14 @@
       "badges": {
         "live": "LIVE",
         "toolsBeta": "BÊTA"
+      },
+      "newModel": {
+        "label": "Nouveau modèle",
+        "name": "Seedance 2.0",
+        "quality1": "Mouvement cinématique",
+        "quality2": "Continuité multi-plan",
+        "quality3": "Workflow audio natif",
+        "cta": "Essayer"
       }
     },
     "languageToggle": {
@@ -3160,9 +3168,16 @@
       },
       "topUp": {
         "title": "Ajouter des crédits",
+        "balanceLowTitle": "Solde du portefeuille insuffisant",
+        "suggestedTopUp": "Recharge suggérée : {amount}",
         "presetsLabel": "Ajouter des crédits",
         "otherAmountLabel": "Autre montant",
         "minLabel": "Min {amount}",
+        "captchaPrompt": "Vérification de sécurité requise avant le Checkout.",
+        "captchaComplete": "Vérification terminée. Continuez vers le paiement.",
+        "captchaError": "Vérification de sécurité indisponible. Réessayez.",
+        "rateLimited": "Trop de tentatives de paiement. Réessayez dans {time}.",
+        "startError": "Impossible de démarrer le paiement. Réessayez.",
         "close": "Fermer",
         "maybeLater": "Plus tard",
         "submit": "Ajouter des fonds",
@@ -3277,7 +3292,7 @@
         "guided": {
           "previous": "Exemple précédent",
           "next": "Exemple suivant",
-          "badge": "Sample {current}/{total}"
+          "badge": "Exemple {current}/{total}"
         },
         "controls": {
           "play": {
@@ -3302,12 +3317,18 @@
             "label": "Ouvrir dans une fenêtre",
             "aria": "Ouvrir l’aperçu dans une fenêtre"
           },
+          "download": {
+            "label": "Télécharger",
+            "aria": "Télécharger l’aperçu"
+          },
           "openTake": {
             "label": "Ouvrir",
             "aria": "Ouvrir cette prise"
           },
           "copyPrompt": "Copier le prompt"
         },
+        "errorTitle": "Aperçu indisponible",
+        "errorBody": "Le rendu a échoué. Merci de réessayer.",
         "placeholder": "—"
       },
       "galleryRail": {
@@ -3361,6 +3382,7 @@
         "choose": "Choisir un modèle",
         "variant": "Variante",
         "browse": "Explorer les modèles…",
+        "browseCompact": "Explorer les modèles",
         "inputMode": "Mode d’entrée",
         "unsupportedMode": "Mode non pris en charge par ce modèle",
         "modal": {
@@ -3761,7 +3783,8 @@
       },
       "toasts": {
         "success": "Paiement réussi. Fonds ajoutés à votre portefeuille.",
-        "cancelled": "Checkout fermé. Aucun débit appliqué."
+        "cancelled": "Checkout fermé. Aucun débit appliqué.",
+        "returnToWorkspace": "Retourner à l’espace vidéo"
       },
       "errors": {
         "loadReceipts": "Impossible de charger votre historique de paiement. Actualisez la page ou contactez le support.",
@@ -3785,6 +3808,8 @@
         "download": "Télécharger",
         "copy": "Copier le lien",
         "copied": "Copié",
+        "editImage": "Modifier cette image",
+        "openModal": "Ouvrir dans une fenêtre",
         "cta": "Générer une image"
       },
       "engine": {
@@ -3808,14 +3833,41 @@
           "singular": "image",
           "plural": "images"
         },
+        "aspectRatioLabel": "Format",
+        "aspectRatioHint": "Choisissez un format adapté à votre cadrage.",
+        "aspectRatioAutoNote": "Auto laisse le modèle déterminer le cadrage final.",
         "resolutionLabel": "Résolution",
         "resolutionHint": "Prévisualisez en 1K/2K puis passez en 4K pour le final (prix mis à jour automatiquement).",
         "resolutionLockedLabel": "Résolution verrouillée par ce modèle.",
+        "seedLabel": "Seed",
+        "seedPlaceholder": "Optionnelle",
+        "outputFormatLabel": "Format de sortie",
+        "outputFormatHint": "Choisissez le type de fichier des images finales.",
+        "qualityLabel": "Qualité",
+        "qualityHint": "Ajuste la fidélité du modèle et le coût lorsque cette option est disponible.",
+        "customWidthLabel": "Largeur",
+        "customHeightLabel": "Hauteur",
+        "maskUrlLabel": "URL du masque",
+        "maskUrlPlaceholder": "URL publique facultative du masque",
+        "enableWebSearchLabel": "Recherche web",
+        "enableWebSearchHint": "Utilisez le contexte web actuel lorsque le modèle le permet.",
+        "thinkingLevelLabel": "Niveau de raisonnement",
+        "thinkingLevelHint": "Augmentez la profondeur de raisonnement lorsque le modèle le permet.",
+        "limitGenerationsLabel": "Limiter les générations",
+        "limitGenerationsHint": "Réduisez les générations exploratoires supplémentaires lorsque cette option est disponible.",
+        "watermarkLabel": "Filigrane IA",
+        "watermarkHint": "Ajoutez le filigrane du fournisseur lorsque cette option est disponible.",
+        "toggleEnabled": "Activé",
+        "toggleDisabled": "Désactivé",
         "estimatedCost": "Coût estimé : {amount}",
         "referenceLabel": "Images de référence",
         "referenceHelper": "Optionnel · jusqu’à {count} images",
         "referenceNote": "Glissez-déposez, collez, importez depuis votre appareil ou ouvrez votre Bibliothèque. Requis pour le mode Édition.",
         "referenceButton": "Bibliothèque",
+        "characterButton": "Personnages",
+        "characterNote": "Choisissez des personnages générés comme références d’identité.",
+        "characterHiddenNotice": "Les personnages sélectionnés sont enregistrés et seront réutilisés lorsque vous reviendrez à un modèle compatible.",
+        "characterLimitNotice": "Seules les {count} premières références de personnage seront utilisées avec ce modèle.",
         "referenceSlotLabel": "Emplacement {index}",
         "referenceSlotHint": "Déposez une image, importez, collez ou choisissez-la dans votre bibliothèque.",
         "referenceSlotNameFallback": "Image",
@@ -3843,6 +3895,7 @@
       },
       "errors": {
         "onlyImages": "Seuls les fichiers image sont pris en charge.",
+        "unsupportedFormat": "Ce modèle accepte les formats suivants : {formats}.",
         "uploadFailed": "Impossible de téléverser cette image. Réessayez.",
         "fileTooLarge": "L’image dépasse la limite de {maxMB} Mo. Compressez-la ou choisissez un fichier plus léger.",
         "unauthorized": "Session expirée — reconnectez-vous puis retentez le téléversement.",
@@ -3852,6 +3905,7 @@
       },
       "messages": {
         "success": "Génération terminée : {count} image(s).",
+        "generatingInProgress": "Génération en cours ({count})…",
         "savedToLibrary": "Enregistré dans la bibliothèque.",
         "removedFromLibrary": "Retiré de la bibliothèque."
       },
@@ -3864,12 +3918,17 @@
         "button": "Bibliothèque",
         "empty": "Aucune ressource enregistrée. Importez des références depuis le générateur ou via cette page.",
         "overlay": "Utiliser cette image",
+        "unsupported": "Format non pris en charge",
+        "supportedFormats": "Formats pris en charge : {formats}",
         "assetFallback": "Ressource",
         "tabs": {
           "all": "Toutes",
           "upload": "Images chargées",
           "generated": "Images générées",
-          "storyboard": "Assets storyboard"
+          "storyboard": "Assets storyboard",
+          "character": "Personnages",
+          "angle": "Angles",
+          "upscale": "Agrandissements"
         },
         "modal": {
           "title": "Choisir dans la bibliothèque",
@@ -3877,10 +3936,30 @@
           "close": "Fermer",
           "error": "Impossible de charger les ressources. Réessayez.",
           "empty": "Aucune ressource enregistrée. Importez des références depuis le générateur ou via cette page.",
+          "emptyCompatible": "Aucune ressource compatible avec ce modèle pour l’instant.",
           "emptyUploads": "Aucune image chargée pour l’instant. Importez des références depuis le générateur ou via cette page.",
           "emptyGenerated": "Aucune image générée enregistrée pour l’instant. Enregistrez une image générée pour la voir ici.",
-          "emptyStoryboard": "Aucun storyboard enregistré pour l’instant. Enregistrez une image storyboard pour la voir ici."
+          "emptyStoryboard": "Aucun storyboard enregistré pour l’instant. Enregistrez une image storyboard pour la voir ici.",
+          "emptyCharacter": "Aucun personnage enregistré pour l’instant. Générez-en un dans le créateur de personnages.",
+          "emptyAngle": "Aucune image d’angle enregistrée pour l’instant. Générez-en une dans l’outil Angle.",
+          "emptyUpscale": "Aucun agrandissement enregistré pour l’instant. Enregistrez d’abord un résultat agrandi."
         }
+      },
+      "characterPicker": {
+        "title": "Sélectionner des personnages",
+        "description": "Choisissez parmi les résultats du créateur de personnages. Les personnages sélectionnés seront ajoutés comme références d’identité.",
+        "selected": "Sélectionné",
+        "select": "Sélectionner",
+        "done": "Terminé",
+        "empty": "Aucune référence de personnage pour l’instant. Générez-en une dans le créateur de personnages.",
+        "limitLabel": "Jusqu’à {count} référence(s) de personnage"
+      },
+      "authGate": {
+        "title": "Créez un compte pour générer",
+        "body": "Vous pouvez explorer l’espace image, mais lancer une véritable génération nécessite un compte.",
+        "primary": "Créer un compte",
+        "secondary": "Se connecter",
+        "close": "Plus tard"
       }
     },
     "library": {

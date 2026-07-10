@@ -3103,6 +3103,14 @@
       "badges": {
         "live": "LIVE",
         "toolsBeta": "BETA"
+      },
+      "newModel": {
+        "label": "New model",
+        "name": "Seedance 2.0",
+        "quality1": "Cinematic motion",
+        "quality2": "Multi-shot continuity",
+        "quality3": "Native audio workflow",
+        "cta": "Try now"
       }
     },
     "languageToggle": {
@@ -3125,9 +3133,16 @@
       },
       "topUp": {
         "title": "Add credits",
+        "balanceLowTitle": "Wallet balance too low",
+        "suggestedTopUp": "Suggested top-up: {amount}",
         "presetsLabel": "Add credits",
         "otherAmountLabel": "Other amount",
         "minLabel": "Min {amount}",
+        "captchaPrompt": "Security check required before Checkout.",
+        "captchaComplete": "Security check complete. Continue to payment.",
+        "captchaError": "Security check unavailable. Try again.",
+        "rateLimited": "Too many payment attempts. Try again in {time}.",
+        "startError": "Unable to start payment. Try again.",
         "close": "Close",
         "maybeLater": "Maybe later",
         "submit": "Add funds",
@@ -3267,12 +3282,18 @@
             "label": "Open modal",
             "aria": "Open preview in modal"
           },
+          "download": {
+            "label": "Download",
+            "aria": "Download preview"
+          },
           "openTake": {
             "label": "Open",
             "aria": "Open this take"
           },
           "copyPrompt": "Copy prompt"
         },
+        "errorTitle": "Preview unavailable",
+        "errorBody": "Generation failed. Please retry.",
         "placeholder": "—"
       },
       "galleryRail": {
@@ -3326,6 +3347,7 @@
         "choose": "Choose engine",
         "variant": "Variant",
         "browse": "Browse engines...",
+        "browseCompact": "Browse engines",
         "inputMode": "Input mode",
         "unsupportedMode": "Not supported by this engine",
         "modal": {
@@ -3441,6 +3463,8 @@
         "download": "Download",
         "copy": "Copy link",
         "copied": "Copied",
+        "editImage": "Edit this image",
+        "openModal": "Open modal",
         "cta": "Generate image"
       },
       "engine": {
@@ -3464,14 +3488,41 @@
           "singular": "image",
           "plural": "images"
         },
+        "aspectRatioLabel": "Aspect ratio",
+        "aspectRatioHint": "Choose a preset to match your frame.",
+        "aspectRatioAutoNote": "Auto lets the model decide the final crop.",
         "resolutionLabel": "Resolution",
         "resolutionHint": "Draft in 1K/2K, then switch to 4K for finals (pricing updates automatically).",
         "resolutionLockedLabel": "Resolution locked by this engine.",
+        "seedLabel": "Seed",
+        "seedPlaceholder": "Optional",
+        "outputFormatLabel": "Output format",
+        "outputFormatHint": "Choose the file type for the final images.",
+        "qualityLabel": "Quality",
+        "qualityHint": "Controls model fidelity and cost when supported.",
+        "customWidthLabel": "Width",
+        "customHeightLabel": "Height",
+        "maskUrlLabel": "Mask URL",
+        "maskUrlPlaceholder": "Optional public mask image URL",
+        "enableWebSearchLabel": "Web search",
+        "enableWebSearchHint": "Ground the request with current web context when supported.",
+        "thinkingLevelLabel": "Thinking level",
+        "thinkingLevelHint": "Increase reasoning depth when the engine supports it.",
+        "limitGenerationsLabel": "Limit generations",
+        "limitGenerationsHint": "Reduce extra exploratory generations when supported.",
+        "watermarkLabel": "AI watermark",
+        "watermarkHint": "Add the provider watermark when supported.",
+        "toggleEnabled": "Enabled",
+        "toggleDisabled": "Disabled",
         "estimatedCost": "Estimated cost: {amount}",
         "referenceLabel": "Reference images",
         "referenceHelper": "Optional · up to {count} images",
         "referenceNote": "Drag & drop, paste, upload from your device, or pull from your Library. These references are required for Edit mode.",
         "referenceButton": "Library",
+        "characterButton": "Characters",
+        "characterNote": "Pick generated characters to use as identity anchors.",
+        "characterHiddenNotice": "Selected characters are saved and will be reused when you switch back to a compatible engine.",
+        "characterLimitNotice": "Only the first {count} character reference{suffix} will be used with this engine.",
         "referenceSlotLabel": "Slot {index}",
         "referenceSlotHint": "Drop image, click to upload, paste, or choose from your library.",
         "referenceSlotNameFallback": "Image",
@@ -3499,6 +3550,7 @@
       },
       "errors": {
         "onlyImages": "Only image files are supported.",
+        "unsupportedFormat": "This engine accepts {formats}.",
         "uploadFailed": "Unable to upload the selected image. Try again.",
         "fileTooLarge": "Image exceeds {maxMB} MB. Compress it or choose a smaller file.",
         "unauthorized": "Session expired — please sign in again and retry the upload.",
@@ -3508,6 +3560,7 @@
       },
       "messages": {
         "success": "Generated {count} image{suffix}.",
+        "generatingInProgress": "Generating in progress ({count})…",
         "savedToLibrary": "Saved to Library.",
         "removedFromLibrary": "Removed from Library."
       },
@@ -3520,12 +3573,17 @@
         "button": "Library",
         "empty": "No assets saved yet. Upload images from the composer or the Library page.",
         "overlay": "Use this image",
+        "unsupported": "Unsupported format",
+        "supportedFormats": "Supported formats: {formats}",
         "assetFallback": "Asset",
         "tabs": {
           "all": "All images",
           "upload": "Uploaded images",
           "generated": "Generated images",
-          "storyboard": "Storyboard assets"
+          "storyboard": "Storyboard assets",
+          "character": "Character assets",
+          "angle": "Angle assets",
+          "upscale": "Upscale assets"
         },
         "modal": {
           "title": "Select from library",
@@ -3533,10 +3591,30 @@
           "close": "Close",
           "error": "Unable to load assets. Please retry.",
           "empty": "No assets saved yet. Upload images from the composer or the Library page.",
+          "emptyCompatible": "No compatible assets for this model yet.",
           "emptyUploads": "No uploaded images yet. Upload images from the composer or the Library page.",
           "emptyGenerated": "No generated images saved yet. Save a generated image to see it here.",
-          "emptyStoryboard": "No storyboard assets saved yet. Save a storyboard image to see it here."
+          "emptyStoryboard": "No storyboard assets saved yet. Save a storyboard image to see it here.",
+          "emptyCharacter": "No character assets saved yet. Generate one in Character Builder first.",
+          "emptyAngle": "No angle assets saved yet. Generate one in the Angle tool first.",
+          "emptyUpscale": "No upscale assets saved yet. Save an upscale result first."
         }
+      },
+      "characterPicker": {
+        "title": "Select characters",
+        "description": "Choose from your Character Builder outputs. Selected characters are added as identity references.",
+        "selected": "Selected",
+        "select": "Select",
+        "done": "Done",
+        "empty": "No character references yet. Generate one in the Character Builder first.",
+        "limitLabel": "Up to {count} character reference{suffix}"
+      },
+      "authGate": {
+        "title": "Create an account to render",
+        "body": "You can explore the image workspace, but starting a real image generation requires an account.",
+        "primary": "Create account",
+        "secondary": "Sign in",
+        "close": "Maybe later"
       }
     },
     "jobs": {
@@ -3838,7 +3916,8 @@
       },
       "toasts": {
         "success": "Payment successful. Funds added to your wallet.",
-        "cancelled": "Checkout closed. No charge made."
+        "cancelled": "Checkout closed. No charge made.",
+        "returnToWorkspace": "Return to the video workspace"
       },
       "errors": {
         "loadReceipts": "We couldn’t load your payment history. Refresh the page or contact support.",

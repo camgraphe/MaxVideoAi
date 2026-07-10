@@ -6,9 +6,10 @@ import type { EngineCaps, EngineModeUiCaps as CapabilityCaps, Mode } from '@/typ
 import { DEFAULT_CONTROLS_COPY, mergeControlsCopy } from '@/components/SettingsControls';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { SelectMenu } from '@/components/ui/SelectMenu';
-import { formatResolutionLabel } from '@/lib/resolution-labels';
+import { formatCompactResolutionLabel, formatResolutionLabel } from '@/lib/resolution-labels';
 
 interface CoreSettingsBarProps {
+  density?: 'default' | 'workspace';
   engine: EngineCaps;
   mode: Mode;
   caps?: CapabilityCaps;
@@ -188,11 +189,12 @@ function ControlIcon({ kind }: { kind: CoreControlKind }) {
   );
 }
 
-function createInlineLabel(kind: CoreControlKind, label: string) {
+function createInlineLabel(kind: CoreControlKind, label: string, compact: boolean) {
+  const showIcon = !compact || !['iterations', 'fps'].includes(kind);
   return (
-    <span className="inline-flex items-center gap-2">
-      <ControlIcon kind={kind} />
-      <span className="truncate">{label}</span>
+    <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
+      {showIcon ? <ControlIcon kind={kind} /> : null}
+      <span className="block truncate leading-none">{label}</span>
     </span>
   );
 }
@@ -204,6 +206,8 @@ function InlineSelectControl({
   onChange,
   disabled,
   className,
+  compact = false,
+  action = false,
 }: {
   kind: CoreControlKind;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
@@ -211,27 +215,65 @@ function InlineSelectControl({
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
   className?: string;
+  compact?: boolean;
+  action?: boolean;
 }) {
   if (!options.length) return null;
   return (
-    <div className={clsx('min-w-0', className)}>
+    <div className={clsx(compact ? 'min-w-0 flex-none' : 'min-w-0', className)}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label)),
+          label: createInlineLabel(kind, String(option.label), compact),
         }))}
         value={value}
         onChange={onChange}
         disabled={disabled}
         className="min-w-0"
-        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]"
+        buttonClassName={clsx(
+          'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
+          action
+            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
+            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+        )}
         menuPlacement="top"
+        portal={compact}
+        hideChevron={compact}
       />
     </div>
   );
 }
 
+const ITERATION_OPTIONS = [1, 2, 3, 4].map((value) => ({
+  value,
+  label: `${value}x`,
+}));
+
+export function CoreIterationsControl({
+  density = 'default',
+  iterations = 1,
+  onIterationsChange,
+  action = false,
+}: {
+  density?: 'default' | 'workspace';
+  iterations?: number;
+  onIterationsChange: (value: number) => void;
+  action?: boolean;
+}) {
+  return (
+    <InlineSelectControl
+      kind="iterations"
+      options={ITERATION_OPTIONS}
+      value={iterations}
+      compact={density === 'workspace' || action}
+      action={action}
+      onChange={(value) => onIterationsChange(Number(value))}
+    />
+  );
+}
+
 export function CoreSettingsBar({
+  density = 'default',
   engine,
   mode,
   caps,
@@ -260,19 +302,11 @@ export function CoreSettingsBar({
   durationManagedLabel,
 }: CoreSettingsBarProps) {
   const { t } = useI18n();
+  const workspaceDensity = density === 'workspace';
   const localizedControls = t('workspace.generate.controls', DEFAULT_CONTROLS_COPY) as
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
   const controlsCopy = useMemo(() => mergeControlsCopy(localizedControls), [localizedControls]);
-  const iterationOptions = useMemo(
-    () =>
-      [1, 2, 3, 4].map((value) => ({
-        value,
-        label: `${value}x`,
-      })),
-    []
-  );
-
   const frameOptions = useMemo(() => (caps?.frames && caps.frames.length ? caps.frames : null), [caps?.frames]);
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
@@ -345,7 +379,9 @@ export function CoreSettingsBar({
     if (formattedResolution !== optionKey) {
       label = formattedResolution;
     }
-    if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
+    if (workspaceDensity) {
+      label = formatCompactResolutionLabel(label);
+    } else if (engine.id.includes('pro') && resolutionCopy.proSuffix) {
       label = `${label} ${resolutionCopy.proSuffix}`;
     }
     return { value: option, label };
@@ -391,10 +427,19 @@ export function CoreSettingsBar({
 
   return (
     <div className="min-w-0 flex-1 space-y-2">
-      <div className="flex flex-wrap items-center gap-2">
+      <div
+        data-settings-density={density}
+        className={clsx(
+          'flex items-center',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
+        )}
+      >
         {durationManaged ? (
           <div
-            className="inline-flex min-h-[40px] items-center rounded-full border border-dashed border-border bg-surface-glass-60 px-3 text-[11px] font-semibold uppercase tracking-micro text-text-muted"
+            className={clsx(
+              'inline-flex items-center rounded-full border border-dashed border-border bg-surface-glass-60 font-semibold uppercase tracking-micro text-text-muted',
+              workspaceDensity ? 'h-9 px-2.5 text-[11px]' : 'min-h-[40px] px-3 text-[11px]'
+            )}
             title={resolvedDurationManagedLabel}
           >
             {resolvedDurationManagedLabel}
@@ -404,6 +449,7 @@ export function CoreSettingsBar({
             kind="duration"
             options={durationOptions}
             value={durationValue}
+            compact={workspaceDensity}
             onChange={(value) => {
               if (frameOptions && frameOptions.length) {
                 onNumFramesChange?.(Number(value));
@@ -417,6 +463,7 @@ export function CoreSettingsBar({
             kind="duration"
             options={durationRangeOptions}
             value={durationSec}
+            compact={workspaceDensity}
             onChange={(value) => onDurationChange(Number(value))}
           />
         ) : null}
@@ -426,6 +473,7 @@ export function CoreSettingsBar({
             kind="resolution"
             options={resolutionOptionsList}
             value={resolution}
+            compact={workspaceDensity}
             onChange={(value) => onResolutionChange(String(value))}
             disabled={resolutionLocked}
           />
@@ -436,6 +484,7 @@ export function CoreSettingsBar({
             kind="hdr"
             options={hdrOptions}
             value={Boolean(hdrEnabled)}
+            compact={workspaceDensity}
             onChange={(value) => onHdrChange?.(value === true || value === 'true' || value === 1)}
             disabled={typeof onHdrChange !== 'function'}
           />
@@ -446,6 +495,7 @@ export function CoreSettingsBar({
             kind="aspect"
             options={aspectOptionsList}
             value={aspectRatio}
+            compact={workspaceDensity}
             onChange={(value) => onAspectRatioChange(String(value))}
           />
         ) : null}
@@ -455,6 +505,7 @@ export function CoreSettingsBar({
             kind="fps"
             options={fpsOptionsList}
             value={fps}
+            compact={workspaceDensity}
             onChange={(value) => onFpsChange(Number(value))}
           />
         ) : null}
@@ -464,6 +515,7 @@ export function CoreSettingsBar({
             kind="audio"
             options={audioOptions}
             value={audioValue}
+            compact={workspaceDensity}
             onChange={(value) => {
               if (audioSelectLocked || typeof onAudioChange !== 'function') return;
               onAudioChange(Boolean(value));
@@ -473,11 +525,10 @@ export function CoreSettingsBar({
         ) : null}
 
         {onIterationsChange ? (
-          <InlineSelectControl
-            kind="iterations"
-            options={iterationOptions}
-            value={iterations}
-            onChange={(value) => onIterationsChange(Number(value))}
+          <CoreIterationsControl
+            density={density}
+            iterations={iterations}
+            onIterationsChange={onIterationsChange}
           />
         ) : null}
       </div>

@@ -5,11 +5,9 @@ import Image from 'next/image';
 import type { VideoItem } from '@/types/video-groups';
 import { ProcessingOverlay } from '@/components/groups/ProcessingOverlay';
 import { AudioEqualizerBadge } from '@/components/ui/AudioEqualizerBadge';
-import { parseAspectRatio } from '@/lib/aspect';
 import {
   getInlinePreviewUrl,
   isVideo,
-  resolveAspectHint,
   resolvePreviewItemHasAudio,
   resolvePreviewItemStatus,
 } from './composite-preview-dock-utils';
@@ -50,12 +48,7 @@ export function CompositePreviewDockTile({
   tileCount,
 }: CompositePreviewDockTileProps) {
   const video = isVideo(item);
-  const aspectHint = resolveAspectHint(item);
-  const parsedAspect = parseAspectRatio(aspectHint?.replace('/', ':') ?? null);
-  const aspectRatio = parsedAspect ? parsedAspect.width / parsedAspect.height : null;
-  const isSixteenByNine = aspectRatio ? Math.abs(aspectRatio - 16 / 9) < 0.02 : item.aspect === '16:9';
-  const shouldZoom = isSixteenByNine;
-  const mediaFitClass = shouldZoom ? 'object-cover scale-[1.02]' : 'object-contain';
+  const mediaFitClass = 'object-contain';
   const itemStatus = resolvePreviewItemStatus(item);
   const shouldPlayVideo = isPlaying && itemKey === activeVideoKey;
   const inlinePreviewUrl = shouldPlayVideo ? getInlinePreviewUrl(item) : undefined;
@@ -84,7 +77,6 @@ export function CompositePreviewDockTile({
                 className={clsx(
                   'pointer-events-none z-10 transition-opacity duration-150',
                   mediaFitClass,
-                  shouldZoom ? 'transition-transform' : null,
                   shouldPlayVideo && isVideoReady ? 'opacity-0' : 'opacity-100'
                 )}
               />
@@ -95,11 +87,7 @@ export function CompositePreviewDockTile({
                 data-preview-video="active"
                 src={inlinePreviewUrl}
                 poster={item.thumb}
-                className={clsx(
-                  'relative z-0 h-full w-full',
-                  mediaFitClass,
-                  shouldZoom ? 'transition-transform duration-150' : null
-                )}
+                className={clsx('relative z-0 h-full w-full', mediaFitClass)}
                 muted={isMuted}
                 playsInline
                 autoPlay
@@ -116,7 +104,7 @@ export function CompositePreviewDockTile({
             alt=""
             fill
             sizes="(max-width: 1024px) 100vw, calc(100vw - 420px)"
-            className={clsx('pointer-events-none', mediaFitClass, shouldZoom ? 'transition-transform' : null)}
+            className={clsx('pointer-events-none', mediaFitClass)}
             onLoadingComplete={() => markReady(itemKey)}
           />
         ) : (

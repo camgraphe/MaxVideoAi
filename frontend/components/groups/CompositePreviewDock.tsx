@@ -24,6 +24,7 @@ import {
 } from './composite-preview-dock-utils';
 
 export interface CompositePreviewDockProps {
+  density?: 'default' | 'workspace';
   group: VideoGroup | null;
   isLoading?: boolean;
   onOpenModal?: (group: VideoGroup) => void;
@@ -43,6 +44,7 @@ export interface CompositePreviewDockProps {
 }
 
 export function CompositePreviewDock({
+  density = 'default',
   group,
   isLoading = false,
   onOpenModal,
@@ -53,6 +55,7 @@ export function CompositePreviewDock({
   autoPlayRequestId = 0,
   guidedNavigation = null,
 }: CompositePreviewDockProps) {
+  const workspaceDensity = density === 'workspace';
   const { t } = useI18n();
   const copy = t('workspace.generate.preview', DEFAULT_PREVIEW_COPY) as PreviewCopy;
   const [isPlaying, setIsPlaying] = useState(false);
@@ -126,10 +129,13 @@ export function CompositePreviewDock({
         const maxHeight = viewportHeight * 0.5;
         const maxWidth = 960;
         const availableWidth = parent.clientWidth;
-        const width = Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
-        const height = Math.max(1, (width * 9) / 16);
+        const workspaceHeightRatio = window.innerWidth < 640 ? 0.25 : 0.32;
+        const workspaceHeightBudget = Math.max(1, Math.min(viewportHeight * workspaceHeightRatio, 340) - 12);
+        const width = workspaceDensity
+          ? Math.min(availableWidth, maxWidth, (workspaceHeightBudget * 16) / 9)
+          : Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
         const widthPx = `${Math.round(width)}px`;
-        const heightPx = `${Math.round(height)}px`;
+        const heightPx = workspaceDensity ? '' : `${Math.round((width * 9) / 16)}px`;
         if (target.style.width !== widthPx) target.style.width = widthPx;
         if (target.style.height !== heightPx) target.style.height = heightPx;
         if (toolbar.style.width !== widthPx) toolbar.style.width = widthPx;
@@ -150,7 +156,7 @@ export function CompositePreviewDock({
         observer.disconnect();
       }
     };
-  }, []);
+  }, [workspaceDensity]);
 
   const slots = useMemo(() => {
     return resolveCompositePreviewSlots(group);
@@ -314,16 +320,18 @@ export function CompositePreviewDock({
         controls={controls}
         copy={copy}
         copyPrompt={copyPrompt}
+        density={density}
         engineSettings={engineSettings}
         groupItemCount={group?.items.length ?? null}
         onCopyPrompt={onCopyPrompt}
         showTitle={showTitle}
       />
 
-      <div className="px-4 py-4">
+      <div className={workspaceDensity ? 'px-0 py-0' : 'px-4 py-4'}>
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
+            data-workspace-preview-media={workspaceDensity ? '' : undefined}
             className={clsx(
               'relative w-full max-w-[960px] rounded-card bg-placeholder',
               isSingleLayout ? 'overflow-hidden p-0' : 'border border-surface-on-media-25 p-[8px]'
@@ -386,14 +394,14 @@ export function CompositePreviewDock({
               </div>
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center rounded-card bg-surface-glass-80 text-sm text-text-secondary">
-                Select a take to preview
+                {copy.empty}
               </div>
             )}
 
             {showGroupError ? (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-card bg-surface-on-media-dark-65 px-6 text-center text-on-inverse">
-                <span className="text-sm font-semibold uppercase tracking-micro">Preview unavailable</span>
-                <span className="mt-2 text-xs text-on-media-85">{group?.errorMsg ?? 'Generation failed. Please retry.'}</span>
+                <span className="text-sm font-semibold uppercase tracking-micro">{copy.errorTitle}</span>
+                <span className="mt-2 text-xs text-on-media-85">{group?.errorMsg ?? copy.errorBody}</span>
               </div>
             ) : null}
             {guidedNavigation && group ? (
@@ -444,10 +452,14 @@ export function CompositePreviewDock({
               </>
             ) : null}
           </div>
-          <div className="mt-3 flex w-full max-w-[960px]">
+          <div className={clsx('flex w-full max-w-[960px] justify-center', workspaceDensity ? 'mt-1' : 'mt-3')}>
             <div
               ref={toolbarRef}
-              className="flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 px-3 py-2 shadow-sm"
+              data-workspace-preview-toolbar={workspaceDensity ? '' : undefined}
+              className={clsx(
+                'mx-auto flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
+                workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'
+              )}
             >
               <CompositePreviewDockToolbar
                 controls={controls}

@@ -144,6 +144,8 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(composerSurfaceSource, /<ImageSettingsBar\b/);
   assert.match(composerSurfaceSource, /<ImageAdvancedSettings\b/);
   assert.match(composerSurfaceSource, /<EngineSelect\b/);
+  assert.match(composerSurfaceSource, /<Composer[\s\S]*density="workspace"/);
+  assert.match(composerSurfaceSource, /<ImageSettingsBar[\s\S]*density="workspace"/);
 
   assert.match(composerPersistenceHookSource, /export function useImageComposerPersistence/);
   assert.match(composerPersistenceHookSource, /parsePersistedImageComposerState/);

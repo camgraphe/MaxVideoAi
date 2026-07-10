@@ -2,6 +2,7 @@
 
 import type { EngineCaps, Mode } from '@/types/engines';
 import { EngineSelect } from '@/components/ui/EngineSelect';
+import type { EngineSelectControlPresentation } from '@/components/ui/engine-select/engine-select-types';
 import { Chip } from '@/components/ui/Chip';
 
 interface EngineSettingsBarProps {
@@ -16,6 +17,8 @@ interface EngineSettingsBarProps {
   engineScores?: Record<string, number | null | undefined>;
   modeLabel?: string;
   showModeBadge?: boolean;
+  controlPresentation?: EngineSelectControlPresentation;
+  density?: 'default' | 'compact';
 }
 
 export function EngineSettingsBar({
@@ -30,6 +33,8 @@ export function EngineSettingsBar({
   engineScores,
   modeLabel,
   showModeBadge = true,
+  controlPresentation,
+  density,
 }: EngineSettingsBarProps) {
   return (
     <div className="flex min-w-0 flex-1 flex-wrap items-center gap-4">
@@ -46,6 +51,8 @@ export function EngineSettingsBar({
         showModeSelect={false}
         showBillingNote={false}
         variant="bar"
+        controlPresentation={controlPresentation}
+        density={density}
         className="min-w-0 flex-1"
       />
       {showModeBadge && modeLabel ? (

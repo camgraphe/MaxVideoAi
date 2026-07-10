@@ -9,6 +9,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
+import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
@@ -24,6 +25,7 @@ export type {
 } from '@/components/composer/composer-types';
 
 export function Composer({
+  density = 'default', compactPrompt = false,
   engine,
   caps,
   prompt,
@@ -52,6 +54,7 @@ export function Composer({
   onOpenLibrary,
   onAssetUrlSelect,
   settingsBar,
+  generateControl,
   modeToggles,
   activeManualMode,
   onModeToggle,
@@ -65,6 +68,7 @@ export function Composer({
   generateLoadingLabel,
 }: ComposerProps) {
   const { t } = useI18n();
+  const workspaceDensity = density === 'workspace';
   const composerCopy = useMemo<ComposerCopy>(() => {
     const localized = t('workspace.generate.composer', DEFAULT_COMPOSER_COPY) as Partial<ComposerCopy> | undefined;
     if (!localized) {
@@ -106,7 +110,6 @@ export function Composer({
   const [isButtonAnimating, setIsButtonAnimating] = useState(false);
   const [isPulseVisible, setIsPulseVisible] = useState(false);
   const animationTimeoutRef = useRef<number | null>(null);
-
   const formattedPrice = useMemo(() => {
     if (price == null) return null;
     try {
@@ -115,7 +118,6 @@ export function Composer({
       return `${currency} ${price.toFixed(2)}`;
     }
   }, [price, currency]);
-
   const memberDiscount = preflight?.pricing?.discount;
   const promptLabel = promptField?.label ?? 'Prompt';
   const promptDescription = promptField?.description;
@@ -151,20 +153,9 @@ export function Composer({
       return assetFields;
     }
 
-    const order = new Map<string, number>([
-      ['image_url', 0],
-      ['video_url', 0],
-      ['end_image_url', 1],
-      ['image_urls', 2],
-      ['reference_image_urls', 3],
-      ['video_urls', 4],
-      ['audio_urls', 5],
-      ['audio_url', 6],
-    ]);
-
     return [...assetFields].sort((left, right) => {
-      const leftRank = order.get(left.field.id) ?? 99;
-      const rightRank = order.get(right.field.id) ?? 99;
+      const leftRank = getWorkspaceAssetFieldRank(engine.id, left.field.id);
+      const rightRank = getWorkspaceAssetFieldRank(engine.id, right.field.id);
       if (leftRank !== rightRank) {
         return leftRank - rightRank;
       }
@@ -175,12 +166,9 @@ export function Composer({
     engine.id.startsWith('ltx-2-3') ||
     engine.id.startsWith('seedance-2-0') ||
     isHappyHorseEngineId(engine.id);
-  const assetFieldLayoutClass = useMemo(() => {
-    if (!useLtxAssetGridLayout) {
-      return 'flex flex-wrap gap-4';
-    }
-    return 'grid gap-4 md:grid-cols-2';
-  }, [useLtxAssetGridLayout]);
+  const assetFieldLayoutClass = workspaceDensity
+    ? getWorkspaceAssetGridClass(orderedAssetFields.length)
+    : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
   const promptPlaceholderValue = hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
@@ -218,15 +206,20 @@ export function Composer({
     setIsPulseVisible(false);
     setIsButtonAnimating(false);
   }, [isLoading]);
-
   const resolvedGenerateLabel = isLoading
     ? generateLoadingLabel ?? composerCopy.button.loading
     : generateLabel ?? composerCopy.button.idle;
 
   return (
-    <Card className="overflow-visible border-border/85 p-4 md:p-5 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]">
-      <div className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+    <Card
+      data-composer-density={density}
+      className={clsx(
+        'overflow-visible border-border/85 dark:border-white/8 dark:bg-[linear-gradient(180deg,rgba(22,32,43,0.96),rgba(16,23,31,0.98))] dark:shadow-[0_24px_56px_rgba(0,0,0,0.30)]',
+        workspaceDensity ? 'p-3 sm:px-4 sm:py-2' : 'p-4 md:p-5'
+      )}
+    >
+      <div className={workspaceDensity ? 'space-y-2' : 'space-y-4'}>
+        <div hidden={workspaceDensity && !visibleModeToggles && !promptDescription && !workflowNotice && !error} className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 flex-1 space-y-3">
             {visibleModeToggles ? (
               <div className="flex flex-wrap gap-2">
@@ -278,8 +271,11 @@ export function Composer({
                 promptTooLong ? 'border-error-border' : 'border-border'
               )}
             >
-            <div className="flex flex-wrap items-start justify-between gap-3 px-4 pb-2 pt-4">
-              <div className="flex items-center gap-2 pt-1">
+            <div className={clsx(
+              'flex items-start justify-between px-4',
+              workspaceDensity ? 'flex-nowrap gap-2 pb-1 pt-2' : 'flex-wrap gap-3 pb-2 pt-4'
+            )}>
+              <div className={clsx('flex items-center gap-2 pt-1', workspaceDensity && 'shrink-0')}>
                 <span className="text-[11px] font-semibold uppercase tracking-micro text-text-muted">{promptLabel}</span>
                 {typeof promptMaxChars === 'number' ? (
                   <div className={clsx('text-[12px]', promptTooLong ? 'text-error' : 'text-text-muted')}>
@@ -287,7 +283,10 @@ export function Composer({
                   </div>
                 ) : null}
               </div>
-              <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className={clsx(
+                'flex items-center justify-end',
+                workspaceDensity ? 'min-w-0 gap-1.5' : 'flex-wrap gap-2'
+              )}>
                 {multiPrompt ? (
                   <Button
                     type="button"
@@ -327,11 +326,13 @@ export function Composer({
                 value={prompt}
                 onChange={(event) => onPromptChange(event.currentTarget.value)}
                 placeholder={promptPlaceholderValue}
-                rows={6}
+                rows={workspaceDensity ? 7 : compactPrompt ? 2 : 6}
                 aria-label={promptLabel}
                 aria-invalid={promptTooLong || undefined}
                 className={clsx(
-                  'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
+                  workspaceDensity
+                    ? 'min-h-[164px] w-full resize-y border-0 bg-transparent px-4 pb-3 pt-0 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32'
+                    : 'min-h-[180px] w-full border-0 bg-transparent px-5 pb-4 pt-0 text-sm leading-6 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-0 dark:text-white dark:placeholder:text-white/32',
                   promptTooLong ? 'focus-visible:ring-error' : ''
                 )}
                 ref={textareaRef}
@@ -340,11 +341,23 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className="border-t border-border/65 px-4 py-3 dark:border-white/[0.06]">
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                  {settingsBar ? <div className="min-w-0 flex-1">{settingsBar}</div> : null}
+              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
+                <div className={workspaceDensity
+                  ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
+                  : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
+                  {settingsBar ? (
+                    <div className={clsx(
+                      'min-w-0 flex-1',
+                      workspaceDensity && 'w-full overflow-x-auto overscroll-x-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+                    )}>
+                      {settingsBar}
+                    </div>
+                  ) : null}
                   {onGenerate ? (
-                    <div className="flex shrink-0 flex-col gap-2 lg:items-end">
+                    <div className={clsx(
+                      'flex shrink-0 flex-col gap-2',
+                      workspaceDensity ? 'w-full lg:w-auto' : 'lg:items-end'
+                    )}>
                       {memberDiscount && memberDiscount.amountCents > 0 ? (
                         <span className="text-[11px] text-text-muted">
                           {composerCopy.memberLabel.replace(
@@ -353,42 +366,49 @@ export function Composer({
                           )}
                         </span>
                       ) : null}
-                      <Button
-                        type="button"
-                        size="md"
-                        disabled={isGenerateDisabled}
-                        className={clsx(
-                          'relative w-full min-w-[220px] justify-between gap-4 overflow-hidden rounded-[24px] px-5 py-3 text-left',
-                          'transform-gpu transition-transform duration-200 ease-out',
-                          'border border-brand shadow-card',
-                          'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                          isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
-                          isGenerateDisabled ? '' : 'active:scale-[0.97]',
-                          formattedPrice ? 'sm:min-w-[260px]' : ''
-                        )}
-                        onClick={handleGenerateClick}
-                      >
-                        <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
-                        {formattedPrice ? (
-                          <span
-                            className={clsx(
-                              'relative z-10 inline-flex items-center rounded-full px-3.5 py-1 text-sm font-semibold normal-case backdrop-blur',
-                              isGenerateDisabled
-                                ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
-                                : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
-                            )}
-                          >
-                            {formattedPrice}
-                          </span>
-                        ) : null}
-                        <span
-                          aria-hidden
+                      <div className="flex w-full items-center gap-2 lg:w-auto">
+                        {generateControl}
+                        <Button
+                          type="button"
+                          size="md"
+                          disabled={isGenerateDisabled}
                           className={clsx(
-                            'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                            isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                            'relative w-full justify-between overflow-hidden rounded-[24px] text-left',
+                            'transform-gpu transition-transform duration-200 ease-out',
+                            'border border-brand shadow-card',
+                            'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
+                            workspaceDensity
+                              ? 'h-10 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                              : 'min-w-[220px] gap-4 px-5 py-3',
+                            isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                            isGenerateDisabled ? '' : 'active:scale-[0.97]',
+                            formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
                           )}
-                        />
-                      </Button>
+                          onClick={handleGenerateClick}
+                        >
+                          <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
+                          {formattedPrice ? (
+                            <span
+                              className={clsx(
+                                'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                                workspaceDensity ? 'px-3' : 'px-3.5',
+                                isGenerateDisabled
+                                  ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
+                                  : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
+                              )}
+                            >
+                              {formattedPrice}
+                            </span>
+                          ) : null}
+                          <span
+                            aria-hidden
+                            className={clsx(
+                              'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
+                              isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                            )}
+                          />
+                        </Button>
+                      </div>
                     </div>
                   ) : null}
                 </div>
@@ -405,21 +425,20 @@ export function Composer({
                 assetFieldLayoutClass
               )}
             >
-              {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason }) => (
-                <AssetDropzone
-                  key={field.id}
+              {orderedAssetFields.map(({ field, required, role, headerAction, guidance, disabled, disabledReason, disabledPresentation }) => (
+                <AssetDropzone key={field.id} density={workspaceDensity ? 'workspace' : 'default'}
                   engine={engine}
                   caps={caps}
                   field={field}
                   required={required}
                   isSoloField={orderedAssetFields.length === 1}
-                  className={field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
+                  className={!workspaceDensity && field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
                   role={role}
                   assets={assets[field.id] ?? []}
                   headerAction={headerAction}
                   guidance={guidance}
                   disabled={disabled}
-                  disabledReason={disabledReason}
+                  disabledReason={disabledReason} disabledPresentation={disabledPresentation}
                   onSelect={onAssetAdd}
                   onRemove={onAssetRemove}
                   onError={onNotice}
@@ -452,12 +471,12 @@ export function Composer({
               value={negativePrompt ?? ''}
               onChange={(event) => onNegativePromptChange?.(event.currentTarget.value)}
               placeholder={negativePromptDescription ?? composerCopy.negativePrompt.placeholder}
-              className="h-11 w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35"
+              className={clsx('w-full rounded-input border border-border bg-surface px-4 text-sm leading-5 text-text-primary placeholder:text-text-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:border-white/8 dark:bg-white/[0.04] dark:text-white dark:placeholder:text-white/35', workspaceDensity ? 'h-9' : 'h-11')}
             />
           </div>
         ) : null}
 
-        {extraFields ? <div className="space-y-4 border-t border-border/65 pt-4 dark:border-white/[0.06]">{extraFields}</div> : null}
+        {extraFields ? <div className={workspaceDensity ? 'space-y-2 border-t border-border/65 pt-2 dark:border-white/[0.06]' : 'space-y-4 border-t border-border/65 pt-4 dark:border-white/[0.06]'}>{extraFields}</div> : null}
       </div>
       {messages && messages.length > 0 ? (
         <ul className="mt-4 space-y-1 text-xs text-text-muted">

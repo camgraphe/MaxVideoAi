@@ -1,7 +1,24 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import { normalizeCheckoutInteractionEventPayload } from '../frontend/server/checkout-events';
 import { classifyCheckoutAbandonmentSignal } from '../frontend/server/checkout-report';
+
+const hostedCheckoutEventNames = [
+  'hosted_checkout_requested',
+  'hosted_checkout_captcha_required',
+  'hosted_checkout_rate_limited',
+  'hosted_checkout_failed',
+  'hosted_checkout_redirecting',
+] as const;
+
+assert.deepEqual(
+  hostedCheckoutEventNames.filter((eventName) => (
+    normalizeCheckoutInteractionEventPayload({ eventName, mode: 'hosted' })?.eventName === eventName
+  )),
+  hostedCheckoutEventNames,
+  'every hosted checkout hook event must pass the server event normalizer'
+);
 
 assert.equal(
   classifyCheckoutAbandonmentSignal([
@@ -63,9 +80,10 @@ assert.match(stripeWebhookSource, /handleChargeFailed/);
 assert.match(stripeWebhookSource, /handlePaymentIntentFailed/);
 assert.match(stripeWebhookSource, /expireCheckoutSessionForFailedCards/);
 
-const billingClientSource = readFileSync('frontend/app/(core)/billing/_components/BillingClient.tsx', 'utf8');
-assert.match(billingClientSource, /hosted_checkout_requested/);
-assert.match(billingClientSource, /hosted_checkout_redirecting/);
+const hostedCheckoutHookSource = readFileSync('frontend/hooks/useHostedWalletCheckout.ts', 'utf8');
+assert.match(hostedCheckoutHookSource, /hosted_checkout_requested/);
+assert.match(hostedCheckoutHookSource, /hosted_checkout_redirecting/);
+assert.match(hostedCheckoutHookSource, /hosted_checkout_failed/);
 
 const expressCheckoutSource = readFileSync('frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx', 'utf8');
 assert.match(expressCheckoutSource, /express_checkout_ready/);

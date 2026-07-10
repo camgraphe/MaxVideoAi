@@ -12,6 +12,7 @@ const modalPath = join(root, 'frontend/src/components/ui/engine-select/BrowseEng
 const helpersPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-helpers.ts');
 const copyPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-copy.ts');
 const typesPath = join(root, 'frontend/src/components/ui/engine-select/engine-select-types.ts');
+const variantControlPath = join(root, 'frontend/src/components/ui/engine-select/EngineVariantControl.tsx');
 
 const engineSelectSource = readFileSync(engineSelectPath, 'utf8');
 const dropdownSource = readFileSync(dropdownPath, 'utf8');
@@ -77,4 +78,49 @@ test('engine select modules expose the expected contracts', () => {
   assert.match(copySource, /export const DEFAULT_ENGINE_SELECT_COPY/);
   assert.match(typesSource, /export interface EngineSelectProps/);
   assert.match(typesSource, /export type EngineRegistryMeta/);
+});
+
+test('engine select delegates variant presentation to a focused component', () => {
+  assert.ok(existsSync(variantControlPath));
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  assert.match(engineSelectSource, /from '.\/engine-select\/EngineVariantControl'/);
+  assert.match(engineSelectSource, /<EngineVariantControl/);
+  assert.match(variantControlSource, /export function EngineVariantControl/);
+  assert.match(variantControlSource, /<SelectMenu/);
+  assert.match(typesSource, /EngineSelectControlPresentation = 'default' \| 'workspace'/);
+  assert.match(typesSource, /controlPresentation\?: EngineSelectControlPresentation/);
+});
+
+test('workspace variant trigger is compact and does not spend width on a chevron', () => {
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  assert.match(
+    variantControlSource,
+    /buttonClassName="!min-w-0 /,
+    'workspace variant trigger must override the shared minimum width'
+  );
+  assert.match(variantControlSource, /w-\[92px\].*sm:w-\[124px\]/s);
+  assert.match(variantControlSource, /h-\[42px\]/);
+  assert.match(variantControlSource, /hideChevron/);
+});
+
+test('workspace engine and variant controls stay together without a Browse row', () => {
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  const workspaceBranch = engineSelectSource.match(
+    /controlPresentation === 'workspace' \? \([\s\S]*?\n\s*\) : \(/,
+  )?.[0] ?? '';
+
+  assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3/);
+  assert.match(workspaceBranch, /<div className="min-w-0 flex-1 overflow-hidden sm:w-\[320px\] sm:flex-none">/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace' && 'w-full min-w-0'/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-\[42px\] w-full/);
+  assert.doesNotMatch(workspaceBranch, /copy\.browseCompact|ExternalLink/);
+  assert.match(engineSelectSource, /copy\.browse/);
+  assert.match(engineSelectSource, /BrowseEnginesModal/);
+  assert.doesNotMatch(
+    workspaceBranch,
+    /setBrowseOpen\(true\)/,
+    'the workspace branch should not reserve a second Browse action row',
+  );
+  assert.match(variantControlSource, /title: disabledEngineReasons\?\.\[entry\.id\]/);
+  assert.match(variantControlSource, /disabled: Boolean\(disabledEngineReasons\?\.\[entry\.id\]\)/);
 });

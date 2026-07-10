@@ -23,7 +23,7 @@ export function WorkspaceChrome({
         <div className="flex min-w-0 flex-1">
           <AppSidebar />
           <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-            <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-5 lg:p-7">
+            <main className="flex min-w-0 flex-1 flex-col gap-[var(--stack-gap-lg)] p-4 lg:px-7 lg:py-2">
               {children}
             </main>
           </div>

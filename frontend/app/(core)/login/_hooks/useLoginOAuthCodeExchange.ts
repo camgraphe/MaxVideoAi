@@ -12,6 +12,7 @@ import {
   clearPendingGoogleLogin,
   consumePendingGoogleLogin,
   detectLocale,
+  resolveGoogleAuthCompletionEvent,
   sanitizeNextPath,
 } from '../_lib/login-helpers';
 
@@ -29,14 +30,18 @@ type UseLoginOAuthCodeExchangeOptions = {
   setStatusTone: Dispatch<SetStateAction<'info' | 'success'>>;
 };
 
-function persistGoogleLoginCompleted() {
-  if (consumePendingGoogleLogin()) {
-    persistPendingAnalyticsEvent('login_completed', {
-      route_family: 'auth',
-      auth_surface: 'login',
-      method: 'google',
-    });
-  }
+function persistGoogleAuthCompleted() {
+  const pendingMode = consumePendingGoogleLogin();
+  if (!pendingMode) return;
+  const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
+  persistPendingAnalyticsEvent(eventName, {
+    route_family: 'auth',
+    auth_surface: 'login',
+    method: 'google',
+    ...(eventName === 'sign_up_completed'
+      ? { email_confirmation_required: false }
+      : {}),
+  });
 }
 
 export function useLoginOAuthCodeExchange({
@@ -94,7 +99,7 @@ export function useLoginOAuthCodeExchange({
     const cancelAuthCookieFallback = startOAuthCookieRedirectFallback({
       isCancelled: () => cancelled || authNavigationStartedRef.current,
       onAuthenticatedCookie: () => {
-        persistGoogleLoginCompleted();
+        persistGoogleAuthCompleted();
         completeAuthenticatedRedirect(target);
       },
     });
@@ -114,7 +119,7 @@ export function useLoginOAuthCodeExchange({
           setError(localizedCopy.oauthCallbackError);
           return;
         }
-        persistGoogleLoginCompleted();
+        persistGoogleAuthCompleted();
         completeAuthenticatedRedirect(target, data.session.user?.id ?? null);
       })
       .catch(async (err) => {

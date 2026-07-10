@@ -314,7 +314,9 @@ export function buildVideoSettingsFormState(
     engineId: engine.id,
     mode,
     durationSec: typeof formValues.durationSec === 'number' ? formValues.durationSec : previous?.durationSec ?? 4,
-    durationOption: formValues.durationOption ?? previous?.durationOption ?? undefined,
+    durationOption:
+      formValues.durationOption ??
+      (typeof formValues.durationSec === 'number' ? formValues.durationSec : previous?.durationOption ?? undefined),
     numFrames: formValues.numFrames ?? previous?.numFrames ?? undefined,
     resolution: formValues.resolution ?? previous?.resolution ?? (engine.resolutions[0] ?? '1080p'),
     aspectRatio: formValues.aspectRatio ?? previous?.aspectRatio ?? (engine.aspectRatios[0] ?? '16:9'),

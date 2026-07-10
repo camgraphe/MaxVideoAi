@@ -6,6 +6,8 @@ export type EngineRegistryMeta = {
   meta: Map<string, FalEngineEntry>;
 };
 
+export type EngineSelectControlPresentation = 'default' | 'workspace';
+
 export interface EngineSelectProps {
   engines: EngineCaps[];
   engineId: string;
@@ -21,6 +23,7 @@ export interface EngineSelectProps {
   modeLayout?: 'inline' | 'stacked';
   variant?: 'card' | 'bar';
   density?: 'default' | 'compact';
+  controlPresentation?: EngineSelectControlPresentation;
   className?: string;
 }
 

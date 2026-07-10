@@ -5,6 +5,9 @@ export const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '
 export const PENDING_GOOGLE_LOGIN_STORAGE_KEY = 'mvai.pending-google-login.v1';
 export const PENDING_GOOGLE_LOGIN_TTL_MS = 10 * 60 * 1000;
 
+export type PendingGoogleAuthMode = 'signup' | 'signin';
+export type GoogleAuthCompletionEvent = 'sign_up_completed' | 'login_completed';
+
 export function detectLocale(): Locale {
   if (typeof document !== 'undefined') {
     const attr = document.documentElement.lang?.slice(0, 2).toLowerCase();
@@ -47,12 +50,15 @@ export function buildAuthCallbackRedirect(origin: string, nextPath: string): str
   return `${base}/auth/callback?next=${encodeURIComponent(sanitizeNextPath(nextPath))}`;
 }
 
-export function markPendingGoogleLogin() {
+export function markPendingGoogleLogin(
+  mode: PendingGoogleAuthMode,
+  now = Date.now()
+) {
   if (typeof window === 'undefined') return;
   try {
     window.sessionStorage.setItem(
       PENDING_GOOGLE_LOGIN_STORAGE_KEY,
-      JSON.stringify({ createdAt: Date.now() })
+      JSON.stringify({ createdAt: now, mode })
     );
   } catch {
     // ignore storage failures
@@ -68,16 +74,29 @@ export function clearPendingGoogleLogin() {
   }
 }
 
-export function consumePendingGoogleLogin(): boolean {
-  if (typeof window === 'undefined') return false;
+export function consumePendingGoogleLogin(
+  now = Date.now()
+): PendingGoogleAuthMode | null {
+  if (typeof window === 'undefined') return null;
   try {
     const raw = window.sessionStorage.getItem(PENDING_GOOGLE_LOGIN_STORAGE_KEY);
     window.sessionStorage.removeItem(PENDING_GOOGLE_LOGIN_STORAGE_KEY);
-    if (!raw) return false;
-    const parsed = JSON.parse(raw) as { createdAt?: number } | null;
-    if (!parsed || typeof parsed.createdAt !== 'number') return false;
-    return Date.now() - parsed.createdAt <= PENDING_GOOGLE_LOGIN_TTL_MS;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as {
+      createdAt?: number;
+      mode?: PendingGoogleAuthMode;
+    } | null;
+    if (!parsed || typeof parsed.createdAt !== 'number') return null;
+    if (now - parsed.createdAt > PENDING_GOOGLE_LOGIN_TTL_MS) return null;
+    if (parsed.mode == null) return 'signin';
+    return parsed.mode === 'signup' || parsed.mode === 'signin' ? parsed.mode : null;
   } catch {
-    return false;
+    return null;
   }
+}
+
+export function resolveGoogleAuthCompletionEvent(
+  mode: PendingGoogleAuthMode
+): GoogleAuthCompletionEvent {
+  return mode === 'signup' ? 'sign_up_completed' : 'login_completed';
 }

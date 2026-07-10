@@ -38,3 +38,21 @@ test('composite preview dock responsibilities are split into focused helpers', (
   assert.match(utilsSource, /export function resolvePrimaryMediaUrl/);
   assert.match(utilsSource, /export function resolvePreviewItemStatus/);
 });
+
+test('video preview tiles contain every aspect without crop or stretch', () => {
+  const tileSource = fs.readFileSync(tilePath, 'utf8');
+
+  assert.match(tileSource, /const mediaFitClass = 'object-contain';/);
+  assert.doesNotMatch(tileSource, /object-cover|scale-\[1\.02\]/);
+  assert.match(tileSource, /aspectRatio: '16 \/ 9'/);
+});
+
+test('video toolbar is centered at the measured preview width', () => {
+  const dockSource = fs.readFileSync(dockPath, 'utf8');
+
+  assert.match(dockSource, /toolbar\.style\.width = widthPx/);
+  assert.match(dockSource, /data-workspace-preview-media/);
+  assert.match(dockSource, /data-workspace-preview-toolbar/);
+  assert.match(dockSource, /flex w-full max-w-\[960px\] justify-center/);
+  assert.match(dockSource, /ref=\{toolbarRef\}[\s\S]*?mx-auto flex w-full/s);
+});

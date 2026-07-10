@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import { SelectMenu } from '@/components/ui/SelectMenu';
+import { formatCompactResolutionLabel } from '@/lib/resolution-labels';
 
 type ControlOption = {
   value: string | number | boolean;
@@ -10,6 +11,7 @@ type ControlOption = {
 };
 
 interface ImageSettingsBarProps {
+  density?: 'default' | 'workspace';
   numImages?: {
     value: number;
     options: ControlOption[];
@@ -112,11 +114,12 @@ function ControlIcon({ kind }: { kind: InlineControlKind }) {
   );
 }
 
-function createInlineLabel(kind: InlineControlKind, label: string) {
+function createInlineLabel(kind: InlineControlKind, label: string, compact: boolean) {
+  const showIcon = !compact || !['images', 'format'].includes(kind);
   return (
-    <span className="inline-flex items-center gap-2">
-      <ControlIcon kind={kind} />
-      <span className="truncate">{label}</span>
+    <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
+      {showIcon ? <ControlIcon kind={kind} /> : null}
+      <span className="block truncate leading-none">{label}</span>
     </span>
   );
 }
@@ -127,42 +130,98 @@ function InlineControl({
   value,
   onChange,
   disabled,
+  compact = false,
+  action = false,
 }: {
   kind: InlineControlKind;
   options: ControlOption[];
   value: string | number | boolean;
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
+  compact?: boolean;
+  action?: boolean;
 }) {
   if (!options.length) return null;
   return (
-    <div className="min-w-0">
+    <div className={compact ? 'min-w-0 flex-none' : 'min-w-0'}>
       <SelectMenu
         options={options.map((option) => ({
           ...option,
-          label: createInlineLabel(kind, String(option.label)),
+          label: createInlineLabel(
+            kind,
+            compact && kind === 'resolution'
+              ? formatCompactResolutionLabel(String(option.label))
+              : String(option.label),
+            compact,
+          ),
         }))}
         value={value}
         onChange={onChange}
         disabled={disabled}
         className="min-w-0"
-        buttonClassName="min-h-0 h-10 rounded-full border-border bg-surface px-3 py-0 text-[12px] font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]"
+        buttonClassName={clsx(
+          'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
+          action
+            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
+            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+        )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
+        portal={compact}
+        hideChevron={compact}
       />
     </div>
   );
 }
 
-export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFormat, quality, style }: ImageSettingsBarProps) {
+export function ImageCountControl({
+  value,
+  options,
+  onChange,
+  action = false,
+}: {
+  value: number;
+  options: ControlOption[];
+  onChange: (value: number) => void;
+  action?: boolean;
+}) {
+  return (
+    <InlineControl
+      kind="images"
+      options={options}
+      value={value}
+      compact
+      action={action}
+      onChange={(nextValue) => onChange(Number(nextValue))}
+    />
+  );
+}
+
+export function ImageSettingsBar({
+  density = 'default',
+  numImages,
+  aspectRatio,
+  resolution,
+  outputFormat,
+  quality,
+  style,
+}: ImageSettingsBarProps) {
+  const workspaceDensity = density === 'workspace';
   return (
     <div className="min-w-0 flex-1">
-      <div className={clsx('flex flex-wrap items-center gap-2')}>
+      <div
+        data-settings-density={density}
+        className={clsx(
+          'flex items-center',
+          workspaceDensity ? 'w-max min-w-full flex-nowrap gap-1.5' : 'flex-wrap gap-2'
+        )}
+      >
         {numImages ? (
           <InlineControl
             kind="images"
             options={numImages.options}
             value={numImages.value}
+            compact={workspaceDensity}
             onChange={(value) => numImages.onChange(Number(value))}
           />
         ) : null}
@@ -171,6 +230,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="aspect"
             options={aspectRatio.options}
             value={aspectRatio.value}
+            compact={workspaceDensity}
             onChange={(value) => aspectRatio.onChange(String(value))}
           />
         ) : null}
@@ -179,6 +239,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="resolution"
             options={resolution.options}
             value={resolution.value}
+            compact={workspaceDensity}
             onChange={(value) => resolution.onChange(String(value))}
             disabled={resolution.disabled}
           />
@@ -188,6 +249,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="quality"
             options={quality.options}
             value={quality.value}
+            compact={workspaceDensity}
             onChange={(value) => quality.onChange(String(value))}
           />
         ) : null}
@@ -196,6 +258,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="style"
             options={style.options}
             value={style.value}
+            compact={workspaceDensity}
             onChange={(value) => style.onChange(String(value))}
           />
         ) : null}
@@ -204,6 +267,7 @@ export function ImageSettingsBar({ numImages, aspectRatio, resolution, outputFor
             kind="format"
             options={outputFormat.options}
             value={outputFormat.value}
+            compact={workspaceDensity}
             onChange={(value) => outputFormat.onChange(String(value))}
           />
         ) : null}

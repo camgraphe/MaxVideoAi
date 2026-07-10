@@ -13,6 +13,7 @@ export type AssetSlotAttachment = {
 };
 
 export type AssetFieldRole = 'primary' | 'reference' | 'frame' | 'generic';
+export type AssetDisabledPresentation = 'default' | 'auth-lock';
 
 export type AssetFieldGuidance = {
   label: string;
@@ -26,6 +27,7 @@ export type AssetFieldConfig = {
   headerAction?: ReactNode;
   disabled?: boolean;
   disabledReason?: string | null;
+  disabledPresentation?: AssetDisabledPresentation;
   guidance?: AssetFieldGuidance | null;
 };
 

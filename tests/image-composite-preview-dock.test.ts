@@ -16,3 +16,19 @@ test('image composite main preview uses stable media urls during polling refresh
     'the small image selector can keep using thumbnails'
   );
 });
+
+test('image composite main preview preserves its aspect-safe rendering', () => {
+  assert.match(source, /resolveCssAspectRatio/);
+  assert.match(source, /object-contain/);
+});
+
+test('image toolbar shares the media center without collapsing below its actions', () => {
+  assert.match(source, /const previewRef = useRef<HTMLDivElement \| null>\(null\)/);
+  assert.match(source, /const toolbarRef = useRef<HTMLDivElement \| null>\(null\)/);
+  assert.match(source, /new ResizeObserver/);
+  assert.match(source, /const toolbarWidth = Math\.min\(parent\.clientWidth, Math\.max\(width, 244\)\)/);
+  assert.match(source, /toolbar\.style\.width = `\$\{Math\.round\(toolbarWidth\)\}px`/);
+  assert.match(source, /data-workspace-preview-media/);
+  assert.match(source, /data-workspace-preview-toolbar/);
+  assert.match(source, /ref=\{toolbarRef\}[\s\S]*?mx-auto flex w-full/s);
+});
