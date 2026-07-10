@@ -181,3 +181,67 @@ Final static checks after the linked-drag fix:
 - Fixture success does not validate real Supabase auth, provider generation, billing, persistence,
   object storage, or the server MP4 export worker. These constraints are documented in the V1 QA guide.
 - Generated `output/audits/` artifacts were removed and not committed.
+
+## Final Review Fix: Localized Startup Selectors
+
+The final review found that the QA guide claimed EN/FR/ES selector support while the shared
+`openFreshEditorWorkspace` startup path still required English-only product, mode, timeline, and cookie
+labels. The fixture can genuinely exercise server-side localization: setting `NEXT_LOCALE` before
+navigation renders the French and Spanish Studio dictionaries.
+
+RED evidence used real browser locale cookies:
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS=true PLAYWRIGHT_EDITOR_PORT=3130 \
+PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next dev --hostname localhost --port 3130' \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-v1-user-flows.spec.ts --grep 'fresh editor startup accepts'
+```
+
+Result: `2 failed`. French rendered `Editeur MaxVideoAI`, `Canevas`, and `Visionneuse`; Spanish rendered
+`Editor MaxVideoAI`, `Lienzo`, and `Visor`. Both failed at the helper's English-only
+`MaxVideoAI Editor` startup assertion before reaching the other English-only checks.
+
+GREEN implementation adds anchored, explicit EN/FR/ES patterns for the visible product name, Canvas,
+Viewer, video-timeline region, and reject-cookie button. The assertions retain role/label semantics and
+visibility checks; no hidden-duplicate `.first()` fallback was added. The V1 flow spec now uses a real
+`NEXT_LOCALE` context cookie to run distinct French and Spanish startup cases, while its existing creator
+and editor flows remain English-fixture coverage.
+
+Focused GREEN rerun:
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS=true PLAYWRIGHT_EDITOR_PORT=3131 \
+PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next dev --hostname localhost --port 3131' \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-v1-user-flows.spec.ts --grep 'fresh editor startup accepts'
+```
+
+Result: `2 passed` in 23.3 seconds.
+
+Final V1 rerun used one persistent local Next server to avoid the runner terminating a Playwright-managed
+web server between tests:
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS=true PLAYWRIGHT_EDITOR_SKIP_WEB_SERVER=1 PLAYWRIGHT_EDITOR_PORT=3136 \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-v1-user-flows.spec.ts
+```
+
+Result: `4 passed`: French startup, Spanish startup, English creator flow, and English editor flow.
+
+Affected smoke coverage was also run against that persistent server. It returned `31 passed, 8 failed`.
+The failures are outside this helper change: stale expected project-media duration (`8` versus measured
+`21.033`), project-card interaction/notice expectations, two Viewer-track waits while Canvas remained
+active, and a canvas style expectation. The localized startup assertions and all four V1 flows passed.
+
+Final static checks:
+
+- `./frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json`: passed with no diagnostics.
+- `cd frontend && ./node_modules/.bin/eslint app pages components lib src middleware.ts --ext .js,.jsx,.ts,.tsx`:
+  `0` errors and the two existing hook-dependency warnings in `WorkspaceAssetLibraryBrowser.tsx:111` and
+  `WorkspaceRuntimeModals.tsx:86`.
+- `git diff --check`: rerun after this report append; passed with no output.

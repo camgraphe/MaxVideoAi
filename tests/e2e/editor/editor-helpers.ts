@@ -30,6 +30,14 @@ export type TimelineClipFullState = TimelineClipState & {
   track: string;
 };
 
+const EDITOR_STARTUP_LABELS = {
+  productName: /^(?:MaxVideoAI Editor|Editeur MaxVideoAI|Editor MaxVideoAI)$/,
+  canvas: /^(?:Canvas|Canevas|Lienzo)$/,
+  viewer: /^(?:Viewer|Visionneuse|Visor)$/,
+  videoTimeline: /^(?:Video timeline|Timeline vidéo|Línea de tiempo de video)$/,
+  rejectCookies: /^(?:Reject all|Tout refuser|Rechazar todo)$/,
+};
+
 export function trackEditorClientErrors(page: Page): EditorClientErrors {
   const errors = trackClientErrors(page) as EditorClientErrors;
   errors.consoleResourceErrors = [];
@@ -199,12 +207,12 @@ export async function openEditorWorkspace(page: Page): Promise<void> {
   await mockEditorHeaderAccountApi(page);
   await mockEditorStudioPersistenceApi(page);
   await page.goto('/app/studio/workspace', { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('header').getByText('MaxVideoAI Editor')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Canvas', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Viewer', exact: true })).toBeVisible();
-  await expect(page.getByLabel('Video timeline')).toBeVisible();
+  await expect(page.locator('header').getByText(EDITOR_STARTUP_LABELS.productName)).toBeVisible();
+  await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.canvas })).toBeVisible();
+  await expect(page.getByRole('button', { name: EDITOR_STARTUP_LABELS.viewer })).toBeVisible();
+  await expect(page.getByLabel(EDITOR_STARTUP_LABELS.videoTimeline)).toBeVisible();
   await page.waitForLoadState('networkidle', { timeout: 5_000 }).catch(() => undefined);
-  const rejectCookies = page.getByRole('button', { name: 'Reject all' });
+  const rejectCookies = page.getByRole('button', { name: EDITOR_STARTUP_LABELS.rejectCookies });
   await rejectCookies.waitFor({ state: 'visible', timeout: 2_000 }).catch(() => undefined);
   if (await rejectCookies.isVisible().catch(() => false)) {
     await rejectCookies.click();

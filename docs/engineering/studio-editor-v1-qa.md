@@ -98,8 +98,11 @@ PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/
 `editor-helpers.ts` clears editor local storage, opens the fixture workspace, and mocks account, wallet,
 Studio persistence, template, sequence, and export-estimate APIs. The V1 simulations intentionally use
 the fixture's compatible `shot-02`, ready `output-02`, linked `timeline-output-02` video/audio pair, and
-active sequence. Selectors are scoped to stable data attributes or named visible regions and tolerate the
-supported English, French, and Spanish labels.
+active sequence. English creator and editor flows exercise the full fixture workflow. Separate French and
+Spanish startup flows set `NEXT_LOCALE` before navigation and verify the visible editor product name,
+Canvas/Viewer controls, video-timeline region, and cookie-dismissal control through exact supported
+role/name patterns. This localized coverage is limited to startup; it does not claim that every later
+creator/editor interaction has a localized browser simulation.
 
 The fixture proves editor orchestration and client behavior. It does not prove real Supabase sessions,
 provider generation, billing reservation, durable database writes, object-storage access, or server MP4

@@ -13,6 +13,9 @@ import {
 
 const clientErrorsByPage = new WeakMap<Page, EditorClientErrors>();
 
+const editorBaseUrl = process.env.PLAYWRIGHT_EDITOR_BASE_URL
+  ?? `http://${process.env.PLAYWRIGHT_EDITOR_HOST ?? 'localhost'}:${process.env.PLAYWRIGHT_EDITOR_PORT ?? process.env.PORT ?? 3000}`;
+
 test.beforeEach(async ({ page }) => {
   clientErrorsByPage.set(page, trackEditorClientErrors(page));
 });
@@ -22,6 +25,20 @@ test.afterEach(async ({ page }) => {
   expect(errors).toBeDefined();
   if (errors) assertNoEditorClientErrors(errors);
 });
+
+for (const locale of ['fr', 'es'] as const) {
+  test(`fresh editor startup accepts ${locale} labels`, async ({ page }) => {
+    await page.context().addCookies([
+      {
+        name: 'NEXT_LOCALE',
+        value: locale,
+        url: editorBaseUrl,
+      },
+    ]);
+
+    await openFreshEditorWorkspace(page);
+  });
+}
 
 async function switchWorkspaceMode(page: Page, mode: 'canvas' | 'viewer'): Promise<void> {
   const modeButtons = page.locator('header').locator('button[aria-pressed]');
