@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import clsx from 'clsx';
-import type { ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { Copy, Download, ExternalLink, Minus, Pencil, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
@@ -94,6 +94,45 @@ export function ImageCompositePreviewDock({
     height: selected?.height ?? null,
     fallback: '1 / 1',
   });
+  const previewRef = useRef<HTMLDivElement | null>(null);
+  const toolbarRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const preview = previewRef.current;
+    const toolbar = toolbarRef.current;
+    const parent = preview?.parentElement;
+    if (!preview || !toolbar || !parent) return;
+
+    let frame = 0;
+    const updatePreviewSize = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const [rawWidth, rawHeight] = String(aspectRatioCss ?? '1 / 1')
+          .split('/')
+          .map((part) => Number(part.trim()));
+        const ratio = Number.isFinite(rawWidth) && Number.isFinite(rawHeight) && rawWidth > 0 && rawHeight > 0
+          ? rawWidth / rawHeight
+          : 1;
+        const maxHeight = workspaceDensity ? (window.innerWidth < 640 ? 220 : 330) : 420;
+        const width = workspaceDensity
+          ? Math.min(parent.clientWidth, maxHeight * ratio)
+          : parent.clientWidth;
+        const widthPx = `${Math.round(width)}px`;
+        if (preview.style.width !== widthPx) preview.style.width = widthPx;
+        if (toolbar.style.width !== widthPx) toolbar.style.width = widthPx;
+      });
+    };
+
+    updatePreviewSize();
+    window.addEventListener('resize', updatePreviewSize);
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updatePreviewSize);
+    observer?.observe(parent);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', updatePreviewSize);
+      observer?.disconnect();
+    };
+  }, [aspectRatioCss, workspaceDensity]);
 
   const canOpenModal = Boolean(entry && images.length && onOpenModal);
   const canDownload = Boolean(selectedActionUrl && onDownload);
@@ -109,7 +148,7 @@ export function ImageCompositePreviewDock({
     </div>
   ) : null;
 
-  const toolbar = (
+  const toolbarContent = (
     <div className="flex flex-wrap items-center justify-center gap-2">
       <span title={editImageLabel}>
         <Button
@@ -237,6 +276,8 @@ export function ImageCompositePreviewDock({
       <div className={workspaceDensity ? 'px-0 py-0' : 'px-4 py-4'}>
         <div className="flex flex-col items-center">
           <div
+            ref={previewRef}
+            data-workspace-preview-media={workspaceDensity ? '' : undefined}
             className={clsx(
               'relative w-full overflow-hidden rounded-card border border-surface-on-media-25 bg-placeholder',
               workspaceDensity ? 'max-h-[220px] sm:max-h-[330px]' : 'max-h-[320px] sm:max-h-[420px]'
@@ -255,12 +296,16 @@ export function ImageCompositePreviewDock({
               <div className="flex h-full w-full items-center justify-center text-xs text-text-muted">{empty}</div>
             )}
           </div>
-          <div className={clsx('flex w-full', workspaceDensity ? 'mt-0' : 'mt-3')}>
-            <div className={clsx(
-              'flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
+          <div className={clsx('flex w-full justify-center', workspaceDensity ? 'mt-0' : 'mt-3')}>
+            <div
+              ref={toolbarRef}
+              data-workspace-preview-toolbar={workspaceDensity ? '' : undefined}
+              className={clsx(
+              'mx-auto flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
               workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'
-            )}>
-              {toolbar}
+            )}
+            >
+              {toolbarContent}
             </div>
           </div>
         </div>

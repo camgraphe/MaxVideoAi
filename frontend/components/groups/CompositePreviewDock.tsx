@@ -331,6 +331,7 @@ export function CompositePreviewDock({
         <div className="flex flex-col items-center">
           <div
             ref={previewRef}
+            data-workspace-preview-media={workspaceDensity ? '' : undefined}
             className={clsx(
               'relative w-full max-w-[960px] rounded-card bg-placeholder',
               isSingleLayout ? 'overflow-hidden p-0' : 'border border-surface-on-media-25 p-[8px]'
@@ -451,11 +452,12 @@ export function CompositePreviewDock({
               </>
             ) : null}
           </div>
-          <div className={clsx('flex w-full max-w-[960px]', workspaceDensity ? 'mt-1' : 'mt-3')}>
+          <div className={clsx('flex w-full max-w-[960px] justify-center', workspaceDensity ? 'mt-1' : 'mt-3')}>
             <div
               ref={toolbarRef}
+              data-workspace-preview-toolbar={workspaceDensity ? '' : undefined}
               className={clsx(
-                'flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
+                'mx-auto flex w-full items-center justify-center rounded-card border border-surface-on-media-25 bg-surface-glass-80 shadow-sm',
                 workspaceDensity ? 'px-3 py-0' : 'px-3 py-2'
               )}
             >

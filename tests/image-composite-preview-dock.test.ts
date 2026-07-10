@@ -21,3 +21,13 @@ test('image composite main preview preserves its aspect-safe rendering', () => {
   assert.match(source, /resolveCssAspectRatio/);
   assert.match(source, /object-contain/);
 });
+
+test('image toolbar tracks and centers on the rendered image stage', () => {
+  assert.match(source, /const previewRef = useRef<HTMLDivElement \| null>\(null\)/);
+  assert.match(source, /const toolbarRef = useRef<HTMLDivElement \| null>\(null\)/);
+  assert.match(source, /new ResizeObserver/);
+  assert.match(source, /toolbar\.style\.width = widthPx/);
+  assert.match(source, /data-workspace-preview-media/);
+  assert.match(source, /data-workspace-preview-toolbar/);
+  assert.match(source, /ref=\{toolbarRef\}[\s\S]*?mx-auto flex w-full/s);
+});
