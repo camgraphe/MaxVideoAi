@@ -349,12 +349,14 @@ export function buildWorkspaceShotGenerateRequest(params: {
   prompt: string;
   connectedInputs: readonly WorkspaceEdgeKind[];
   referenceImages: string[];
+  startImageUrl?: string;
+  endImageUrl?: string;
   videoReferences: string[];
   audioReferences: string[];
   shotNodeId: string;
   outputName: string;
 }): WorkspaceShotGenerateRequest {
-  const primaryImageUrl = params.referenceImages[0];
+  const primaryImageUrl = params.startImageUrl ?? params.referenceImages[0];
   const primaryAudioUrl = params.audioReferences[0];
   const audioEnabled = workspaceAudioEnabledForRequest(params.settings, params.capability);
   const intent = resolveWorkspaceGenerationIntent({
@@ -383,6 +385,7 @@ export function buildWorkspaceShotGenerateRequest(params: {
     ...(typeof params.settings.seed === 'number' ? { seed: params.settings.seed } : {}),
     ...(typeof audioEnabled === 'boolean' ? { audio: audioEnabled } : {}),
     ...(primaryImageUrl ? { imageUrl: primaryImageUrl, referenceImages: params.referenceImages } : {}),
+    ...(intent.generationMode === 'fl2v' && params.endImageUrl ? { endImageUrl: params.endImageUrl } : {}),
     ...(primaryAudioUrl ? { audioUrl: primaryAudioUrl } : {}),
     ...(params.videoReferences.length || params.audioReferences.length
       ? {

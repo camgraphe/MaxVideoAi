@@ -749,6 +749,46 @@ test('Generate Video request routing follows the policy workflow for storyboard,
   }), /not compatible/i);
 });
 
+test('Generate Video first-last requests preserve the connected end image in the payload', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const sourceCapability = capabilities.find((capability) => capability.id === 'seedance-2-0');
+  assert.ok(generateVideo);
+  assert.ok(sourceCapability);
+
+  const capability = {
+    ...sourceCapability,
+    id: 'test-first-last-payload-video',
+    modes: ['i2v', 'fl2v'] as const,
+    workflows: ['image_to_video'] as const,
+    text_to_video: false,
+    image_to_video: true,
+    video_to_video: false,
+    storyboard_to_video: false,
+    character_to_video: false,
+  };
+  const startImageUrl = 'https://example.com/first-frame.png';
+  const endImageUrl = 'https://example.com/last-frame.png';
+
+  const request = buildWorkspaceShotGenerateRequest({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    prompt: 'Transition from the first frame to the last frame.',
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+    referenceImages: [startImageUrl, endImageUrl],
+    startImageUrl,
+    endImageUrl,
+    videoReferences: [],
+    audioReferences: [],
+    shotNodeId: 'first-last-payload-shot',
+    outputName: 'First last payload shot',
+  });
+
+  assert.equal(request.mode, 'fl2v');
+  assert.equal(request.imageUrl, startImageUrl);
+  assert.equal(request.endImageUrl, endImageUrl);
+});
+
 test('Generate Video does not route a storyboard-only model for a plain prompt', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;

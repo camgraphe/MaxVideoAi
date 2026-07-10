@@ -95,6 +95,10 @@ function referenceImagesFor(params: WorkspaceGenerationRouteParams): string[] {
   ]);
 }
 
+function imageReferenceUrlFor(params: WorkspaceGenerationRouteParams, kind: 'start_image' | 'end_image'): string | undefined {
+  return mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, [kind])[0];
+}
+
 function styleImagesFor(params: WorkspaceGenerationRouteParams): string[] {
   return mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, ['style']);
 }
@@ -122,6 +126,8 @@ function audioReferencesFor(params: WorkspaceGenerationRouteParams): string[] {
 
 async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
   const referenceImages = referenceImagesFor(params);
+  const startImageUrl = imageReferenceUrlFor(params, 'start_image');
+  const endImageUrl = imageReferenceUrlFor(params, 'end_image');
   const videoReferences = videoReferencesFor(params);
   const audioReferences = audioReferencesFor(params);
   const result = (await runGenerate(buildWorkspaceShotGenerateRequest({
@@ -130,6 +136,8 @@ async function submitVideoGeneration(params: WorkspaceGenerationRouteParams): Pr
     prompt: params.prompt,
     connectedInputs: params.connectedInputs,
     referenceImages,
+    startImageUrl,
+    endImageUrl,
     videoReferences,
     audioReferences,
     shotNodeId: params.shotNode.id,
