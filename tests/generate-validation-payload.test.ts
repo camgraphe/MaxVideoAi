@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { deriveGenerationAttachmentReferences } from '../frontend/app/api/generate/_lib/attachment-references';
 import { buildGenerateValidationPayload } from '../frontend/app/api/generate/_lib/validation-payload';
 
 const root = process.cwd();
@@ -174,6 +175,30 @@ test('validation payload helper rejects missing first and last frames', () => {
   assert.equal(result.ok, false);
   assert.equal(result.metric?.errorCode, 'IMAGE_URL_REQUIRED');
   assert.deepEqual(result.body, { ok: false, error: 'Both first and last frames are required for this engine mode' });
+});
+
+test('Studio first-last end image becomes an API last-frame payload', () => {
+  const references = deriveGenerationAttachmentReferences({
+    engineId: 'veo-3-1',
+    mode: 'fl2v',
+    imageUrl: 'https://cdn.maxvideoai.com/studio-first-frame.png',
+    endImageUrl: 'https://cdn.maxvideoai.com/studio-last-frame.png',
+    attachments: [],
+  });
+  const result = buildGenerateValidationPayload({
+    ...baseParams,
+    engineId: 'veo-3-1',
+    mode: 'fl2v',
+    resolvedFirstFrameUrl: references.resolvedFirstFrameUrl,
+    lastFrameUrl: references.lastFrameUrl,
+    deps: {
+      validateRequestFn: () => ({ ok: true }),
+    },
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.payload.first_frame_url, 'https://cdn.maxvideoai.com/studio-first-frame.png');
+  assert.equal(result.payload.last_frame_url, 'https://cdn.maxvideoai.com/studio-last-frame.png');
 });
 
 test('validation payload helper converts engine constraint errors to route responses', () => {

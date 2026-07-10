@@ -11,6 +11,7 @@ type AttachmentReferenceParams = {
   image_url?: unknown;
   referenceImages?: unknown;
   reference_images?: unknown;
+  endImageUrl?: unknown;
   rawAudioUrl?: string | null;
 };
 
@@ -64,7 +65,8 @@ export function deriveGenerationAttachmentReferences(params: AttachmentReference
   const firstFrameUrl =
     params.attachments.find((attachment) => attachment.slotId === 'first_frame_url')?.url?.trim() ?? undefined;
   const lastFrameUrl =
-    params.attachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ?? undefined;
+    params.attachments.find((attachment) => attachment.slotId === 'last_frame_url')?.url?.trim() ??
+    trimString(params.endImageUrl);
   const attachmentPrimaryImageUrl =
     params.attachments.find((attachment) => {
       if (attachment.kind !== 'image' || typeof attachment.url !== 'string') return false;
