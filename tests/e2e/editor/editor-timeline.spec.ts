@@ -661,8 +661,8 @@ test('timeline context menu unlinks video audio pairs and links selected clips',
   await page.getByRole('menuitem', { name: 'Link selected clips', exact: true }).click();
 
   await dragTimelineClip(page, 'timeline-output-02', -204);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_TWO_SECOND_DRAG_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_DRAGGED_START_SEC);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
   await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
@@ -896,7 +896,7 @@ test('timeline end trim expands into a gap without pulling later clips', async (
   assertNoEditorClientErrors(errors);
 });
 
-test('insert-mode timeline drag resolves occupied drops to clip boundaries by default', async ({ page }) => {
+test('linked insert-mode timeline drag reverts occupied drops by default', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 
   await openFreshEditorWorkspace(page);
@@ -904,9 +904,9 @@ test('insert-mode timeline drag resolves occupied drops to clip boundaries by de
 
   await dragTimelineClip(page, 'timeline-output-02', -204);
 
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(8);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(PRODUCT_FIXTURE_SHOT_02_START_SEC);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).start).toBe(0);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-01')).duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
   await expect.poll(async () => {
     const states = await timelineClipStates(page);
@@ -1028,19 +1028,24 @@ test('dragging linked audio keeps the video clip visible during preview', async 
   expect(audioBox).not.toBeNull();
   if (!audioBox) return;
 
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  const targetStartSec = PRODUCT_FIXTURE_SHOT_02_START_SEC + 2;
   const startX = audioBox.x + Math.min(Math.max(audioBox.width / 2, 24), audioBox.width - 8);
   const startY = audioBox.y + audioBox.height / 2;
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(startX - 204, startY, { steps: 8 });
+  await page.mouse.move(startX + pixelsPerSecond * 2, startY, { steps: 8 });
 
   await expect(videoClip).toBeVisible();
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
+  await expect(audioClip).toBeVisible();
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(targetStartSec);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(targetStartSec);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
   await page.mouse.up();
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(0);
-  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(0);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(targetStartSec);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(targetStartSec);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
   await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
 
@@ -1055,8 +1060,17 @@ test('timeline prevents linked audio overlap when dragging the video partner', a
 
   const originalVideoStart = (await timelineClipState(page, 'timeline-output-02')).start;
   const originalAudioStart = (await timelineClipState(page, 'timeline-output-02-audio')).start;
+  const blocker = await timelineClipState(page, 'timeline-output-01');
+  expect(blocker.start).toBe(0);
+  expect(blocker.duration).toBe(PRODUCT_FIXTURE_SHOT_01_DURATION_SEC);
+  await expect(page.locator('[data-timeline-item="timeline-output-02"]')).toHaveAttribute('data-linked-group', 'timeline-output-02');
+  await expect(page.locator('[data-timeline-item="timeline-output-02-audio"]')).toHaveAttribute('data-linked-group', 'timeline-output-02');
+
   await dragTimelineClip(page, 'timeline-output-02', -204);
 
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(originalVideoStart);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(originalAudioStart);
+  await dragTimelineClip(page, 'timeline-output-02-audio', -204);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(originalVideoStart);
   await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(originalAudioStart);
   await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);

@@ -119,6 +119,52 @@ test('production linked video drag reverts when only its audio peer would overla
   assert.equal(timelineTrackHasOverlap(result), false);
 });
 
+test('production linked drag reverts symmetrically when either member targets occupied video', () => {
+  const items = [
+    videoClip({ id: 'video-blocker', startSec: 0, durationSec: 5, track: 'video' }),
+    videoClip({ id: 'linked-video', linkedGroupId: 'linked-group', startSec: 5, durationSec: 8, track: 'video' }),
+    audioClip({ id: 'linked-audio', linkedGroupId: 'linked-group', startSec: 5, durationSec: 8, track: 'audio' }),
+  ];
+
+  for (const anchorItemId of ['linked-video', 'linked-audio']) {
+    const result = moveWorkspaceTimelineSelectionWithMode({
+      items,
+      itemIds: [anchorItemId],
+      anchorItemId,
+      nextStartSec: 0,
+      mode: 'insert',
+      idSeed: `occupied-${anchorItemId}`,
+    });
+
+    assert.equal(result, items, `${anchorItemId} origin must keep the last committed linked state`);
+    assert.equal(timelineTrackHasOverlap(result), false);
+  }
+});
+
+test('explicit splice mode can split an occupied clip for a linked package without overlap', () => {
+  const items = [
+    videoClip({ id: 'video-blocker', startSec: 0, durationSec: 5, track: 'video' }),
+    videoClip({ id: 'linked-video', linkedGroupId: 'linked-group', startSec: 5, durationSec: 8, track: 'video' }),
+    audioClip({ id: 'linked-audio', linkedGroupId: 'linked-group', startSec: 5, durationSec: 8, track: 'audio' }),
+  ];
+
+  const result = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['linked-video'],
+    anchorItemId: 'linked-video',
+    nextStartSec: 1,
+    mode: 'insert',
+    idSeed: 'explicit-splice',
+    allowInsertIntoClip: true,
+  });
+
+  assert.equal(result.find((item) => item.id === 'linked-video')?.startSec, 1);
+  assert.equal(result.find((item) => item.id === 'linked-audio')?.startSec, 1);
+  assert.equal(result.find((item) => item.id === 'video-blocker')?.durationSec, 1);
+  assert.ok(result.some((item) => item.id.startsWith('video-blocker-tail-') && item.startSec === 9 && item.durationSec === 4));
+  assert.equal(timelineTrackHasOverlap(result), false);
+});
+
 function linkedReorderCollisionItems(): WorkspaceTimelineItem[] {
   return [
     videoClip({ id: 'video-a', startSec: 0, durationSec: 4, linkedGroupId: null }),

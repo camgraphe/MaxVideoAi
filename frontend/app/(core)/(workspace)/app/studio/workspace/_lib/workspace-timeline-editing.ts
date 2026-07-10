@@ -534,11 +534,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
         targetTrack: params.nextTrack,
       })
     : null;
-  if (
-    linkedMoveValidation &&
-    !linkedMoveValidation.ok &&
-    linkedMoveValidation.collidingItemIds.some((itemId) => itemId !== anchorItem.id)
-  ) {
+  if (linkedMoveValidation && !linkedMoveValidation.ok && !params.allowInsertIntoClip) {
     return params.items;
   }
 
