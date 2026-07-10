@@ -2,10 +2,11 @@
 
 ## Status
 
-Task 12 implementation and documentation are committed, but Studio V1 is **not complete** because two
-core timeline Playwright simulations fail deterministically. The new creator/editor V1 simulations pass.
+Task 12 automated V1 acceptance is complete. The two deterministic linked-drag blockers are resolved,
+and the final responsive, timeline, creator, and editor Playwright gate passes in full.
 
 Implementation commit: `430fa9c3` (`docs: define Studio V1 QA contract`)
+Linked-drag resolution commit: `a8859e7a` (`fix: enforce symmetric linked timeline moves`)
 
 ## Changed Files
 
@@ -16,8 +17,10 @@ Implementation commit: `430fa9c3` (`docs: define Studio V1 QA contract`)
 - `frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceShotPricing.ts`
 - `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-v1-block-matrix.ts`
 - `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing.ts`
 - `tests/e2e/editor/editor-timeline.spec.ts`
 - `tests/e2e/editor/editor-v1-user-flows.spec.ts`
+- `tests/maxvideoai-editor-timeline-interaction.test.ts`
 - `tests/maxvideoai-editor-workspace-architecture.test.ts`
 - `.superpowers/sdd/task-12-report.md`
 
@@ -98,19 +101,83 @@ PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/
 Result: `45 passed, 2 failed` in 2.8 minutes. All seven responsive tests and both new V1 user flows
 passed. A targeted rerun of the two failures returned `2 failed`, confirming they are deterministic.
 
+## Linked Drag Blocker Resolution
+
+Binding contract: linked video/audio moves are atomic and symmetric; ordinary preview and commit cannot
+create same-track overlap; invalid targets keep the last committed state; free-space targets preview and
+commit both members; explicit Insert into clip remains the opt-in splice operation.
+
+RED evidence:
+
+- The original targeted browser run returned `2 failed`: the audio-origin drag expected start `0` but
+  remained at `5`, while the video-origin drag expected a revert to `5` but committed at `0`.
+- Fixture inspection showed `timeline-output-01` occupies video `[0, 5)`, and the linked
+  `timeline-output-02` / `timeline-output-02-audio` pair occupies `[5, 13)`. Therefore both `-204`
+  leftward drags targeted the same occupied video range; the former test's expected commit was invalid.
+- A new pure symmetric regression test failed before the production fix for the video anchor: the pair
+  moved to `0` and the blocker moved to `8` instead of preserving the input array.
+- After an initially broad guard, the full browser gate returned `44 passed, 3 failed`: two stale
+  displacement expectations and the intentional splice flow. A new pure splice regression reproduced
+  the latter by returning linked start `5` instead of `1`.
+
+Root cause: `moveLinkedTimelineSelection` correctly reported the occupied target, including item/track,
+linked group, candidate start, and colliding blocker. The production wrapper
+`moveWorkspaceTimelineSelectionWithMode` discarded that invalid result when the colliding ID matched the
+drag anchor, then continued into insert-mode displacement. This made a video-origin invalid drop commit
+while the equivalent audio-origin path reverted. The wrapper now rejects every invalid linked move for
+normal drag/preview and permits collision-based splitting only when `allowInsertIntoClip` is explicitly
+enabled. The browser fixture test now moves the audio-origin pair right by two seconds into free space and
+asserts aligned, overlap-free preview and commit. The occupied-target test performs both video-origin and
+audio-origin drags and asserts exact reversion.
+
+GREEN evidence:
+
+```bash
+PATH=/opt/homebrew/Cellar/node/23.9.0/bin:$PATH \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-timeline-interaction.test.ts
+```
+
+Result: `23 passed, 0 failed` in 256.4 ms.
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS=true PLAYWRIGHT_EDITOR_PORT=3124 \
+PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next dev --hostname localhost --port 3124' \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-timeline.spec.ts \
+  --grep 'dragging linked audio keeps the video clip visible during preview|timeline prevents linked audio overlap when dragging the video partner|timeline context menu unlinks|linked insert-mode timeline drag reverts|insert into clip tool allows splice'
+```
+
+Targeted result: `5 passed` in 37.0 seconds, with every test using `trackEditorClientErrors` and
+`assertNoEditorClientErrors`.
+
+Final Task 12 browser gate:
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+NEXT_PUBLIC_VISITOR_WORKSPACE_ACCESS=true PLAYWRIGHT_EDITOR_PORT=3125 \
+PLAYWRIGHT_EDITOR_WEB_SERVER_COMMAND='cd frontend && /Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node node_modules/next/dist/bin/next dev --hostname localhost --port 3125' \
+./frontend/node_modules/.bin/playwright test -c playwright.editor.config.ts \
+  tests/e2e/editor/editor-timeline.spec.ts \
+  tests/e2e/editor/editor-responsive.spec.ts \
+  tests/e2e/editor/editor-v1-user-flows.spec.ts
+```
+
+Result: `47 passed, 0 failed` in 2.6 minutes. This includes seven responsive tests, 38 timeline tests,
+and both V1 creator/editor flows. Client page errors and React console errors are tracked by the flows.
+
+Final static checks after the linked-drag fix:
+
+- `PATH=/opt/homebrew/Cellar/node/23.9.0/bin:$PATH ./frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json`: passed with no diagnostics. The first invocation without this explicit runtime did not start (`node: not found`, exit `127`).
+- `cd frontend && PATH=/opt/homebrew/Cellar/node/23.9.0/bin:$PATH ./node_modules/.bin/eslint 'app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing.ts'`: passed with no output.
+- `PATH=/opt/homebrew/Cellar/node/23.9.0/bin:$PATH npm run lint:exposure`: `Public exposure check passed.`
+- `git diff --check`: passed with no output.
+
 ## Blockers And Concerns
 
-- `dragging linked audio keeps the video clip visible during preview`: expected linked video/audio start
-  `0`, received video start `5` while the drag remained active.
-- `timeline prevents linked audio overlap when dragging the video partner`: expected the linked pair to
-  revert to start `5`, received video start `0` after commit.
-- Failure artifacts are in
-  `test-results/editor-timeline-dragging-l-209aa-clip-visible-during-preview/` and
-  `test-results/editor-timeline-timeline-p-17b1b--dragging-the-video-partner/`; they are generated and not
-  committed.
-- The two tests encode conflicting outcomes for equivalent leftward movement of the same linked pair.
-  This report does not classify them as unrelated or waive them; V1 remains blocked pending an explicit
-  linked-drag product contract and aligned implementation/tests.
+- No automated Task 12 V1 blocker remains. Generated Playwright failure artifacts and untracked audit
+  documents are not part of the commit.
 - Fixture success does not validate real Supabase auth, provider generation, billing, persistence,
   object storage, or the server MP4 export worker. These constraints are documented in the V1 QA guide.
 - Generated `output/audits/` artifacts were removed and not committed.
