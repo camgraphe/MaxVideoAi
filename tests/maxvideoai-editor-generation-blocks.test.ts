@@ -138,6 +138,20 @@ function defaultShotForPreset(presetId: WorkspaceGenerationPresetId): WorkspaceS
   return shot;
 }
 
+test('every Studio V1 generation preset selects a compatible default model', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  for (const preset of WORKSPACE_BLOCK_PRESETS.filter((candidate) => candidate.defaultShot)) {
+    const compatible = getWorkspaceBlockCompatibleCapabilities({
+      settings: preset.defaultShot!,
+      capabilities,
+    });
+    assert.ok(
+      compatible.some((capability) => capability.id === preset.defaultShot!.modelId),
+      `${preset.id} default model ${preset.defaultShot!.modelId} must be compatible`
+    );
+  }
+});
+
 test('Studio canvas exposes generation block presets for every requested workflow', () => {
   const presetIds = WORKSPACE_BLOCK_PRESETS.map((preset) => preset.id);
   for (const id of [

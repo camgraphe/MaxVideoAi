@@ -99,6 +99,16 @@ export function getWorkspaceBlockCompatibleCapabilities({
     ));
   }
 
+  const v1BlockContract = v1BlockContractFor(settings);
+  if (v1BlockContract) {
+    return capabilities.filter((capability) => (
+      capability.family === v1BlockContract.family &&
+      capability.outputKind === v1BlockContract.outputKind &&
+      v1BlockContract.workflows.some((workflow) => capability.workflows.includes(workflow)) &&
+      (!v1BlockContract.compatibleModelIds || v1BlockContract.compatibleModelIds.includes(capability.id))
+    ));
+  }
+
   if (isModifyImage(settings)) {
     return capabilities.filter((capability) => (
       capability.family === 'image' &&
@@ -116,12 +126,10 @@ export function getWorkspaceBlockCompatibleCapabilities({
   }
 
   if (isModifyVideo(settings)) {
-    const compatibleModelIds = v1BlockContractFor(settings)?.compatibleModelIds;
     return capabilities.filter((capability) => (
       capability.family === 'video' &&
       capability.outputKind === 'video' &&
-      capability.workflows.includes('video_to_video') &&
-      (!compatibleModelIds || compatibleModelIds.includes(capability.id))
+      capability.workflows.includes('video_to_video')
     ));
   }
 
