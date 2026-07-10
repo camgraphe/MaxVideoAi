@@ -6,10 +6,12 @@ import { getWorkspaceModelCapability } from '../frontend/app/(core)/(workspace)/
 import { buildWorkspaceShotGenerateRequest } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
 import {
   audioPackForWorkflow,
+  buildWorkspaceAudioGenerationRequest,
   buildWorkspaceStoryboardGenerationRequest,
   resolveWorkspaceGenerationRoute,
   upscaleEngineIdForStudioModel,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-routing';
+import { WORKSPACE_V1_BLOCK_MATRIX } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-v1-block-matrix';
 import {
   buildWorkspaceAngleToolRequest,
   buildWorkspaceAudioGenerateRequest,
@@ -36,6 +38,31 @@ function capabilityFor(settings: WorkspaceShotSettings) {
   assert.ok(capability, `${settings.modelId} should resolve to a model capability`);
   return capability;
 }
+
+const V1_PAYLOAD_PRESET_IDS = [
+  'generate-video',
+  'modify-video',
+  'generate-image',
+  'modify-image',
+  'audio-music',
+  'audio-voiceover',
+  'audio-sfx',
+  'audio-sound-design',
+  'audio-sound-design-voice',
+  'angle',
+  'character-builder',
+  'storyboard',
+  'upscale-image',
+  'upscale-video',
+  'chat-box',
+] as const satisfies readonly WorkspaceGenerationPresetId[];
+
+test('every V1 block matrix preset has a payload coverage case', () => {
+  assert.deepEqual(
+    Object.keys(WORKSPACE_V1_BLOCK_MATRIX).sort(),
+    [...V1_PAYLOAD_PRESET_IDS].sort()
+  );
+});
 
 test('V1 block presets resolve to their dedicated generation routes', () => {
   assert.equal(resolveWorkspaceGenerationRoute(shot('generate-video')), 'video');
@@ -86,6 +113,7 @@ test('video generation request preserves mode, render controls, and connected me
   assert.equal(request.resolution, '4k');
   assert.equal(request.fps, 30);
   assert.equal(request.seed, 42);
+  assert.equal(request.audio, true);
   assert.equal(request.imageUrl, 'https://example.com/product.png');
   assert.deepEqual(request.referenceImages, [
     'https://example.com/product.png',
@@ -96,6 +124,32 @@ test('video generation request preserves mode, render controls, and connected me
     ['video', 'https://example.com/motion.mp4'],
     ['audio', 'https://example.com/music.mp3'],
   ]);
+});
+
+test('image generation request stays text-only and preserves selected controls', () => {
+  const settings = {
+    ...shot('generate-image'),
+    aspectRatio: '9:16' as const,
+    resolution: '4k' as const,
+    seed: 19,
+  };
+  const request = buildWorkspaceImageGenerationRequest({
+    settings,
+    prompt: 'A premium skincare product on reflective blue glass.',
+    referenceImages: [],
+    policy: resolveWorkspaceBlockPolicy({
+      settings,
+      capability: capabilityFor(settings),
+      connectedInputs: ['prompt'],
+    }),
+  });
+
+  assert.equal(request.mode, 't2i');
+  assert.equal(request.engineId, 'seedream');
+  assert.equal(request.aspectRatio, '9:16');
+  assert.equal(request.resolution, '4k');
+  assert.equal(request.seed, 19);
+  assert.equal(request.imageUrls, undefined);
 });
 
 test('modify video request keeps the source video on the V1 video route', () => {
@@ -140,16 +194,59 @@ test('image modify request uses source images and policy-supported controls', ()
   assert.deepEqual(request.imageUrls, ['https://example.com/person.png']);
 });
 
-test('audio V1 workflows map to their packs and source-video requirements', () => {
+test('music-only audio route excludes a connected source video', () => {
   const music = shot('audio-music');
-  const musicRequest = buildWorkspaceAudioGenerateRequest({
+  const musicRequest = buildWorkspaceAudioGenerationRequest({
     settings: music,
-    pack: audioPackForWorkflow(music.workflowType),
     prompt: 'Minimal electronic score with a clean final resolve.',
+    videoReferences: ['https://example.com/ignored-source.mp4'],
   });
   assert.equal(musicRequest.pack, 'music_only');
   assert.equal(musicRequest.sourceVideoUrl, undefined);
+});
 
+test('voiceover audio payload includes script and voice controls', () => {
+  const settings = {
+    ...shot('audio-voiceover'),
+    toolSettings: {
+      audio: {
+        voiceGender: 'female' as const,
+        voiceProfile: 'narrator' as const,
+        voiceDelivery: 'warm' as const,
+        language: 'french' as const,
+      },
+    },
+  };
+  const request = buildWorkspaceAudioGenerateRequest({
+    settings,
+    pack: audioPackForWorkflow(settings.workflowType),
+    prompt: 'Une narration chaleureuse pour le lancement du produit.',
+    sourceVideoUrl: 'https://example.com/ignored-source.mp4',
+  });
+
+  assert.equal(request.pack, 'voice_only');
+  assert.equal(request.sourceVideoUrl, undefined);
+  assert.equal(request.script, 'Une narration chaleureuse pour le lancement du produit.');
+  assert.equal(request.voiceGender, 'female');
+  assert.equal(request.voiceProfile, 'narrator');
+  assert.equal(request.voiceDelivery, 'warm');
+  assert.equal(request.language, 'french');
+});
+
+test('SFX audio payload uses the standalone SFX pack', () => {
+  const request = buildWorkspaceAudioGenerateRequest({
+    settings: shot('audio-sfx'),
+    pack: audioPackForWorkflow(shot('audio-sfx').workflowType),
+    prompt: 'A crisp camera shutter with a subtle mechanical tail.',
+    sourceVideoUrl: 'https://example.com/ignored-source.mp4',
+  });
+
+  assert.equal(request.pack, 'sfx_only');
+  assert.equal(request.sourceVideoUrl, undefined);
+  assert.equal(request.prompt, 'A crisp camera shutter with a subtle mechanical tail.');
+});
+
+test('sound design audio payload preserves its required source video', () => {
   const soundDesign = shot('audio-sound-design');
   const soundDesignRequest = buildWorkspaceAudioGenerateRequest({
     settings: soundDesign,
@@ -159,6 +256,38 @@ test('audio V1 workflows map to their packs and source-video requirements', () =
   });
   assert.equal(soundDesignRequest.pack, 'cinematic');
   assert.equal(soundDesignRequest.sourceVideoUrl, 'https://example.com/source.mp4');
+});
+
+test('sound design voice payload preserves source video, narration, and music toggle', () => {
+  const settings = {
+    ...shot('audio-sound-design-voice'),
+    toolSettings: {
+      audio: {
+        mood: 'tense' as const,
+        intensity: 'intense' as const,
+        musicEnabled: false,
+        voiceGender: 'male' as const,
+        voiceProfile: 'narrator' as const,
+        voiceDelivery: 'dramatic' as const,
+        language: 'english' as const,
+      },
+    },
+  };
+  const request = buildWorkspaceAudioGenerateRequest({
+    settings,
+    pack: audioPackForWorkflow(settings.workflowType),
+    prompt: 'A dramatic product reveal with a confident voice-over.',
+    sourceVideoUrl: 'https://example.com/source.mp4',
+  });
+
+  assert.equal(request.pack, 'cinematic_voice');
+  assert.equal(request.sourceVideoUrl, 'https://example.com/source.mp4');
+  assert.equal(request.script, 'A dramatic product reveal with a confident voice-over.');
+  assert.equal(request.musicEnabled, false);
+  assert.equal(request.voiceGender, 'male');
+  assert.equal(request.voiceProfile, 'narrator');
+  assert.equal(request.voiceDelivery, 'dramatic');
+  assert.equal(request.language, 'english');
 });
 
 test('angle request preserves camera controls and safe mode', () => {

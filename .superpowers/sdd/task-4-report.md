@@ -24,3 +24,21 @@ PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependenci
 ## Concerns
 
 None.
+
+## Fix after task review
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation-routing.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-requests.ts`
+- `tests/maxvideoai-editor-v1-request-payloads.test.ts`
+
+### Test Evidence
+
+```sh
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-v1-request-payloads.test.ts tests/maxvideoai-editor-generation-blocks.test.ts
+```
+
+Result: 68 tests passed, 0 failed, 0 cancelled, 0 skipped, 0 todo.
+
+`git diff --check` passed.

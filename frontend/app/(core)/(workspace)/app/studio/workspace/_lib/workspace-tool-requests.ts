@@ -262,7 +262,7 @@ export function buildWorkspaceAudioGenerateRequest({
   const audioSettings = settings.toolSettings?.audio;
   const trimmedPrompt = prompt.trim();
   const request: AudioGenerateRequestBody = {
-    ...(optionalString(sourceVideoUrl) ? { sourceVideoUrl: optionalString(sourceVideoUrl) } : {}),
+    ...(config.requiresVideo && optionalString(sourceVideoUrl) ? { sourceVideoUrl: optionalString(sourceVideoUrl) } : {}),
     pack,
     ...(pack === 'voice_only' ? {} : trimmedPrompt ? { prompt: trimmedPrompt } : {}),
     ...(config.requiresMood ? { mood: audioSettings?.mood ?? 'epic' } : {}),

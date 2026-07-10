@@ -2,7 +2,7 @@ import { runAngleTool, runAudioGenerate, runCharacterBuilderTool, runGenerate, r
 import { buildStoryboardPrompt } from '@/components/tools/storyboard/_lib/storyboard-prompt';
 import { getAbsoluteStoryboardTemplateUrl, getStoryboardLengthPreset, getStoryboardOutputConfig } from '@/components/tools/storyboard/_lib/storyboard-templates';
 import type { AngleToolEngineId } from '@/types/tools-angle';
-import type { AudioPackId } from '@/lib/audio-generation';
+import { getAudioPackConfig, type AudioGenerateRequestBody, type AudioPackId } from '@/lib/audio-generation';
 import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { UpscaleToolEngineId } from '@/types/tools-upscale';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
@@ -276,14 +276,29 @@ export function audioPackForWorkflow(workflowType: WorkspaceWorkflowType): Audio
   return 'music_only';
 }
 
-async function submitAudioGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
-  const pack = audioPackForWorkflow(params.settings.workflowType);
-  const videoReferences = videoReferencesFor(params);
-  const result = await runAudioGenerate(buildWorkspaceAudioGenerateRequest({
-    settings: params.settings,
+export function buildWorkspaceAudioGenerationRequest({
+  settings,
+  prompt,
+  videoReferences,
+}: {
+  settings: WorkspaceShotSettings;
+  prompt: string;
+  videoReferences: string[];
+}): AudioGenerateRequestBody {
+  const pack = audioPackForWorkflow(settings.workflowType);
+  return buildWorkspaceAudioGenerateRequest({
+    settings,
     pack,
+    prompt,
+    sourceVideoUrl: getAudioPackConfig(pack).requiresVideo ? videoReferences[0] : undefined,
+  });
+}
+
+async function submitAudioGeneration(params: WorkspaceGenerationRouteParams): Promise<WorkspaceOutputMetadata> {
+  const result = await runAudioGenerate(buildWorkspaceAudioGenerationRequest({
+    settings: params.settings,
     prompt: params.prompt,
-    sourceVideoUrl: videoReferences[0],
+    videoReferences: videoReferencesFor(params),
   }));
   const audioUrl = result.audioUrl ?? (result.outputKind === 'audio' ? result.videoUrl : null);
   const mediaUrl = result.outputKind === 'video' ? result.videoUrl : audioUrl;
