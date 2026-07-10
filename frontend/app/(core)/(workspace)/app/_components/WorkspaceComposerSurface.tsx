@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import dynamic from 'next/dynamic';
 import { Composer, type ComposerPromotedAction, type MultiPromptScene } from '@/components/Composer';
-import { CoreSettingsBar } from '@/components/CoreSettingsBar';
+import { CoreIterationsControl, CoreSettingsBar } from '@/components/CoreSettingsBar';
 import { SettingsControls } from '@/components/SettingsControls';
 import type { KlingElementState, KlingElementsBuilderProps } from '@/components/KlingElementsBuilder';
 import { Button } from '@/components/ui/Button';
@@ -630,8 +630,6 @@ export function WorkspaceComposerSurface({
             engine={selectedEngine}
             mode={submissionMode}
             caps={capability}
-            iterations={form.iterations}
-            onIterationsChange={handleIterationsChange}
             durationSec={durationSec}
             durationOption={form.durationOption ?? null}
             onDurationChange={handleDurationChange}
@@ -653,6 +651,14 @@ export function WorkspaceComposerSurface({
             onHdrChange={handleHdrChange}
             durationManaged={multiPromptActive}
             durationManagedLabel={durationManagedLabel}
+          />
+        }
+        generateControl={
+          <CoreIterationsControl
+            density="workspace"
+            iterations={form.iterations}
+            onIterationsChange={handleIterationsChange}
+            action
           />
         }
       />

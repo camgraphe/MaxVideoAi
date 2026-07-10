@@ -131,6 +131,7 @@ function InlineControl({
   onChange,
   disabled,
   compact = false,
+  action = false,
 }: {
   kind: InlineControlKind;
   options: ControlOption[];
@@ -138,6 +139,7 @@ function InlineControl({
   onChange: (value: string | number | boolean) => void;
   disabled?: boolean;
   compact?: boolean;
+  action?: boolean;
 }) {
   if (!options.length) return null;
   return (
@@ -159,7 +161,9 @@ function InlineControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+          action
+            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
+            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
         )}
         menuClassName="min-w-[12rem]"
         menuPlacement="top"
@@ -167,6 +171,29 @@ function InlineControl({
         hideChevron={compact}
       />
     </div>
+  );
+}
+
+export function ImageCountControl({
+  value,
+  options,
+  onChange,
+  action = false,
+}: {
+  value: number;
+  options: ControlOption[];
+  onChange: (value: number) => void;
+  action?: boolean;
+}) {
+  return (
+    <InlineControl
+      kind="images"
+      options={options}
+      value={value}
+      compact
+      action={action}
+      onChange={(nextValue) => onChange(Number(nextValue))}
+    />
   );
 }
 

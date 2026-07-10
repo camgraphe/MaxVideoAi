@@ -65,6 +65,7 @@ export interface ComposerProps {
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   onAssetUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   settingsBar?: ReactNode;
+  generateControl?: ReactNode;
   modeToggles?: ComposerModeToggle[];
   activeManualMode?: Mode | null;
   onModeToggle?: (mode: Mode | null) => void;

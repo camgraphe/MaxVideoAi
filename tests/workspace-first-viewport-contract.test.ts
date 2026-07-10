@@ -69,6 +69,15 @@ test('video and image composers opt into one responsive workspace density contra
   assert.doesNotMatch(composerSource, /Estimated price|Estimated credits/);
 });
 
+test('workspace quantity controls sit beside the generate action', () => {
+  assert.match(composerTypesSource, /generateControl\?: ReactNode/);
+  assert.match(composerSource, /<div className="flex w-full items-center gap-2 lg:w-auto">[\s\S]*\{generateControl\}[\s\S]*<Button/);
+  assert.match(videoComposerSource, /generateControl=\{[\s\S]*<CoreIterationsControl[\s\S]*iterations=\{form\.iterations\}/);
+  assert.match(imageSurfaceSource, /generateControl=\{[\s\S]*<ImageCountControl[\s\S]*value=\{numImages\}/);
+  assert.match(coreSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
+  assert.match(imageSettingsSource, /action\s*\?\s*'h-11[\s\S]*!bg-\[image:var\(--brand-gradient\)\]/);
+});
+
 test('workspace mobile settings keep intrinsic controls inside the local scroller without reserved chevron width', () => {
   assert.match(coreSettingsSource, /compact \? 'min-w-0 flex-none'/);
   assert.match(imageSettingsSource, /compact \? 'min-w-0 flex-none'/);

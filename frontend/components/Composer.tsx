@@ -54,6 +54,7 @@ export function Composer({
   onOpenLibrary,
   onAssetUrlSelect,
   settingsBar,
+  generateControl,
   modeToggles,
   activeManualMode,
   onModeToggle,
@@ -365,46 +366,49 @@ export function Composer({
                           )}
                         </span>
                       ) : null}
-                      <Button
-                        type="button"
-                        size="md"
-                        disabled={isGenerateDisabled}
-                        className={clsx(
-                          'relative w-full justify-between overflow-hidden rounded-[24px] text-left',
-                          'transform-gpu transition-transform duration-200 ease-out',
-                          'border border-brand shadow-card',
-                          'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
-                          workspaceDensity
-                            ? 'h-10 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
-                            : 'min-w-[220px] gap-4 px-5 py-3',
-                          isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
-                          isGenerateDisabled ? '' : 'active:scale-[0.97]',
-                          formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
-                        )}
-                        onClick={handleGenerateClick}
-                      >
-                        <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
-                        {formattedPrice ? (
-                          <span
-                            className={clsx(
-                              'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
-                              workspaceDensity ? 'px-3' : 'px-3.5',
-                              isGenerateDisabled
-                                ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
-                                : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
-                            )}
-                          >
-                            {formattedPrice}
-                          </span>
-                        ) : null}
-                        <span
-                          aria-hidden
+                      <div className="flex w-full items-center gap-2 lg:w-auto">
+                        {generateControl}
+                        <Button
+                          type="button"
+                          size="md"
+                          disabled={isGenerateDisabled}
                           className={clsx(
-                            'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
-                            isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                            'relative w-full justify-between overflow-hidden rounded-[24px] text-left',
+                            'transform-gpu transition-transform duration-200 ease-out',
+                            'border border-brand shadow-card',
+                            'disabled:border-border disabled:bg-surface disabled:text-text-muted disabled:shadow-none',
+                            workspaceDensity
+                              ? 'h-10 gap-3 px-4 py-0 lg:w-auto lg:min-w-[176px]'
+                              : 'min-w-[220px] gap-4 px-5 py-3',
+                            isButtonAnimating && !isGenerateDisabled ? 'animate-button-pop' : '',
+                            isGenerateDisabled ? '' : 'active:scale-[0.97]',
+                            formattedPrice && !workspaceDensity ? 'sm:min-w-[260px]' : ''
                           )}
-                        />
-                      </Button>
+                          onClick={handleGenerateClick}
+                        >
+                          <span className="relative z-10 text-sm font-semibold uppercase tracking-micro">{resolvedGenerateLabel}</span>
+                          {formattedPrice ? (
+                            <span
+                              className={clsx(
+                                'relative z-10 inline-flex items-center rounded-full py-1 text-sm font-semibold normal-case backdrop-blur',
+                                workspaceDensity ? 'px-3' : 'px-3.5',
+                                isGenerateDisabled
+                                  ? 'border border-border/80 bg-surface-2 text-text-secondary shadow-none'
+                                  : 'border border-white/25 bg-surface text-text-primary shadow-[0_8px_18px_rgba(15,23,42,0.12)]'
+                              )}
+                            >
+                              {formattedPrice}
+                            </span>
+                          ) : null}
+                          <span
+                            aria-hidden
+                            className={clsx(
+                              'pointer-events-none absolute inset-0 rounded-[24px] bg-surface-on-media-20 opacity-0 transition-opacity duration-200 ease-out',
+                              isPulseVisible && !isGenerateDisabled ? 'opacity-100' : ''
+                            )}
+                          />
+                        </Button>
+                      </div>
                     </div>
                   ) : null}
                 </div>

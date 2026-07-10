@@ -5,7 +5,7 @@ import type { EngineCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import { Composer, type AssetFieldConfig, type ComposerAttachment } from '@/components/Composer';
 import { ImageAdvancedSettings } from '@/components/ImageAdvancedSettings';
-import { ImageSettingsBar } from '@/components/ImageSettingsBar';
+import { ImageCountControl, ImageSettingsBar } from '@/components/ImageSettingsBar';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import { ImageCompositePreviewDock, type ImageCompositePreviewEntry } from '@/components/groups/ImageCompositePreviewDock';
 import { GPT_IMAGE_2_SIZE_CONSTRAINTS } from '@/lib/image/gptImage2';
@@ -291,15 +291,6 @@ export function ImageWorkspaceComposerSurface({
           settingsBar={
             <ImageSettingsBar
               density="workspace"
-              numImages={
-                showNumImagesControl
-                  ? {
-                      value: numImages,
-                      options: imageCountOptions,
-                      onChange: setNumImagesPreset,
-                    }
-                  : undefined
-              }
               aspectRatio={
                 showAspectRatioControl
                   ? {
@@ -347,6 +338,16 @@ export function ImageWorkspaceComposerSurface({
                   : undefined
               }
             />
+          }
+          generateControl={
+            showNumImagesControl ? (
+              <ImageCountControl
+                action
+                value={numImages}
+                options={imageCountOptions}
+                onChange={setNumImagesPreset}
+              />
+            ) : undefined
           }
           onGenerate={() => {
             void handleRun();

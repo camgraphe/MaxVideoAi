@@ -86,6 +86,12 @@ Required fidelity surfaces:
   - Fix: applied the same 12px horizontal inset to the settings row and Generate action on video and image workspaces.
   - Post-fix measurement: the settings row begins 12px from the footer edge and the Generate action ends 12px from the opposite edge.
 
+### Iteration 8 — quantity action grouping
+
+- [P2] The iteration count was visually grouped with media settings even though it changes the cost and number of outputs for the primary action.
+  - Fix: moved the video iteration count and image output count into a dark secondary action immediately before Generate.
+  - Post-fix measurement: quantity and Generate controls share a 44px height, an 8px gap, and one baseline on both generation workspaces.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.

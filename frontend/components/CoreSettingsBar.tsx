@@ -207,6 +207,7 @@ function InlineSelectControl({
   disabled,
   className,
   compact = false,
+  action = false,
 }: {
   kind: CoreControlKind;
   options: { value: string | number | boolean; label: string; disabled?: boolean }[];
@@ -215,6 +216,7 @@ function InlineSelectControl({
   disabled?: boolean;
   className?: string;
   compact?: boolean;
+  action?: boolean;
 }) {
   if (!options.length) return null;
   return (
@@ -230,13 +232,43 @@ function InlineSelectControl({
         className="min-w-0"
         buttonClassName={clsx(
           'min-h-0 rounded-full border-border bg-surface py-0 font-medium shadow-none dark:border-white/10 dark:bg-white/[0.07] dark:text-white/92 dark:hover:border-white/16 dark:hover:bg-white/[0.1]',
-          compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
+          action
+            ? 'h-11 !min-w-0 gap-1.5 border-brand !bg-[image:var(--brand-gradient)] px-3 text-[11px] !text-on-brand shadow-card'
+            : compact ? 'h-9 !min-w-0 gap-1.5 px-2 text-[11px]' : 'h-10 px-3 text-[12px]'
         )}
         menuPlacement="top"
         portal={compact}
         hideChevron={compact}
       />
     </div>
+  );
+}
+
+const ITERATION_OPTIONS = [1, 2, 3, 4].map((value) => ({
+  value,
+  label: `${value}x`,
+}));
+
+export function CoreIterationsControl({
+  density = 'default',
+  iterations = 1,
+  onIterationsChange,
+  action = false,
+}: {
+  density?: 'default' | 'workspace';
+  iterations?: number;
+  onIterationsChange: (value: number) => void;
+  action?: boolean;
+}) {
+  return (
+    <InlineSelectControl
+      kind="iterations"
+      options={ITERATION_OPTIONS}
+      value={iterations}
+      compact={density === 'workspace' || action}
+      action={action}
+      onChange={(value) => onIterationsChange(Number(value))}
+    />
   );
 }
 
@@ -275,15 +307,6 @@ export function CoreSettingsBar({
     | Partial<typeof DEFAULT_CONTROLS_COPY>
     | undefined;
   const controlsCopy = useMemo(() => mergeControlsCopy(localizedControls), [localizedControls]);
-  const iterationOptions = useMemo(
-    () =>
-      [1, 2, 3, 4].map((value) => ({
-        value,
-        label: `${value}x`,
-      })),
-    []
-  );
-
   const frameOptions = useMemo(() => (caps?.frames && caps.frames.length ? caps.frames : null), [caps?.frames]);
   const enumeratedDurationOptions = useMemo(() => {
     if (!caps?.duration) return null;
@@ -502,12 +525,10 @@ export function CoreSettingsBar({
         ) : null}
 
         {onIterationsChange ? (
-          <InlineSelectControl
-            kind="iterations"
-            options={iterationOptions}
-            value={iterations}
-            compact={workspaceDensity}
-            onChange={(value) => onIterationsChange(Number(value))}
+          <CoreIterationsControl
+            density={density}
+            iterations={iterations}
+            onIterationsChange={onIterationsChange}
           />
         ) : null}
       </div>
