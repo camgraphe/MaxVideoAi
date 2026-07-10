@@ -34,7 +34,7 @@ export function EngineVariantControl(props: Props) {
           value={selectedEngineId}
           onChange={(value) => onChange(String(value))}
           className="min-w-0"
-          buttonClassName="min-h-0 h-[42px] rounded-input border-border bg-surface px-3 py-0 text-[11px] font-semibold uppercase tracking-micro shadow-sm"
+          buttonClassName="!min-w-0 min-h-0 h-[42px] rounded-input border-border bg-surface px-3 py-0 text-[11px] font-semibold uppercase tracking-micro shadow-sm"
         />
       </div>
     );

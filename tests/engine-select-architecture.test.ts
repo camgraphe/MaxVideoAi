@@ -90,3 +90,12 @@ test('engine select delegates variant presentation to a focused component', () =
   assert.match(typesSource, /EngineSelectControlPresentation = 'default' \| 'workspace'/);
   assert.match(typesSource, /controlPresentation\?: EngineSelectControlPresentation/);
 });
+
+test('workspace variant trigger overrides the shared select minimum width', () => {
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  assert.match(
+    variantControlSource,
+    /buttonClassName="!min-w-0 /,
+    'workspace variant trigger must fit its 112px and 136px wrappers'
+  );
+});
