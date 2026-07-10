@@ -53,6 +53,7 @@ import {
   compatibleCapabilitiesForShot,
   isToolOnlyPreset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers';
+import { buildWorkspaceShotGenerateRequest } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generation';
 import {
   getWorkspaceBlockCompatibleCapabilities,
   resolveWorkspaceBlockPolicy,
@@ -648,6 +649,136 @@ test('Generate Video validation rejects storyboard-only models without a referen
   });
 
   assert.equal(validation.canGenerate, false);
+});
+
+test('Generate Video request routing follows the policy workflow for storyboard, character, and first-last inputs', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const sourceCapability = capabilities.find((capability) => capability.id === 'seedance-2-0');
+  assert.ok(generateVideo);
+  assert.ok(sourceCapability);
+
+  const capability = {
+    ...sourceCapability,
+    id: 'test-mode-aware-video',
+    modes: ['i2v', 'r2v', 'fl2v'] as const,
+    workflows: ['image_to_video', 'storyboard_to_video', 'character_to_video'] as const,
+    text_to_video: false,
+    image_to_video: true,
+    video_to_video: false,
+    storyboard_to_video: true,
+    character_to_video: true,
+  };
+  const requestFor = (connectedInputs: WorkspaceEdgeKind[]) => buildWorkspaceShotGenerateRequest({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    prompt: 'A product film shot.',
+    connectedInputs,
+    referenceImages: [],
+    videoReferences: [],
+    audioReferences: [],
+    shotNodeId: 'mode-aware-shot',
+    outputName: 'Mode aware shot',
+  });
+
+  const storyboardPolicy = resolveWorkspaceBlockPolicy({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    connectedInputs: ['prompt', 'reference'],
+  });
+  const storyboardValidation = validateShotConnections({
+    settings: { ...generateVideo, modelId: capability.id },
+    connectedInputs: ['prompt', 'reference'],
+    capabilities: [...capabilities, capability],
+  });
+  assert.equal(storyboardPolicy.mode, 'reference-to-video');
+  assert.equal(storyboardPolicy.resolvedWorkflowType, 'storyboard_to_video');
+  assert.equal(storyboardValidation.resolvedWorkflowType, 'storyboard_to_video');
+  assert.equal(requestFor(['prompt', 'reference']).mode, 'r2v');
+
+  const characterPolicy = resolveWorkspaceBlockPolicy({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    connectedInputs: ['prompt', 'character'],
+  });
+  const characterValidation = validateShotConnections({
+    settings: { ...generateVideo, modelId: capability.id },
+    connectedInputs: ['prompt', 'character'],
+    capabilities: [...capabilities, capability],
+  });
+  assert.equal(characterPolicy.mode, 'text-to-video');
+  assert.equal(characterPolicy.resolvedWorkflowType, 'character_to_video');
+  assert.equal(characterValidation.resolvedWorkflowType, 'character_to_video');
+  assert.equal(requestFor(['prompt', 'character']).mode, 'i2v');
+
+  const firstLastPolicy = resolveWorkspaceBlockPolicy({
+    settings: { ...generateVideo, modelId: capability.id },
+    capability,
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+  });
+  const firstLastValidation = validateShotConnections({
+    settings: { ...generateVideo, modelId: capability.id },
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+    capabilities: [...capabilities, capability],
+  });
+  assert.equal(firstLastPolicy.mode, 'first-last-video');
+  assert.equal(firstLastPolicy.resolvedWorkflowType, 'image_to_video');
+  assert.equal(firstLastValidation.resolvedWorkflowType, 'image_to_video');
+  assert.equal(requestFor(['prompt', 'start_image', 'end_image']).mode, 'fl2v');
+
+  const firstLastFallbackCapability = {
+    ...capability,
+    id: 'test-first-last-fallback-video',
+    modes: ['i2v', 'r2v'] as const,
+  };
+  assert.equal(getWorkspaceBlockCompatibleCapabilities({
+    settings: { ...generateVideo, modelId: firstLastFallbackCapability.id },
+    capabilities: [firstLastFallbackCapability],
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+  }).length, 0);
+  assert.throws(() => buildWorkspaceShotGenerateRequest({
+    settings: { ...generateVideo, modelId: firstLastFallbackCapability.id },
+    capability: firstLastFallbackCapability,
+    prompt: 'A first and last frame request.',
+    connectedInputs: ['prompt', 'start_image', 'end_image'],
+    referenceImages: [],
+    videoReferences: [],
+    audioReferences: [],
+    shotNodeId: 'first-last-fallback-shot',
+    outputName: 'First last fallback shot',
+  }), /not compatible/i);
+});
+
+test('Generate Video does not route a storyboard-only model for a plain prompt', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const sourceCapability = capabilities.find((capability) => capability.id === 'seedance-2-0');
+  assert.ok(generateVideo);
+  assert.ok(sourceCapability);
+
+  const storyboardOnlyCapability = {
+    ...sourceCapability,
+    id: 'test-storyboard-only-request',
+    modes: ['r2v'] as const,
+    workflows: ['storyboard_to_video'] as const,
+    text_to_video: false,
+    image_to_video: false,
+    video_to_video: false,
+    storyboard_to_video: true,
+    character_to_video: false,
+  };
+
+  assert.throws(() => buildWorkspaceShotGenerateRequest({
+    settings: { ...generateVideo, modelId: storyboardOnlyCapability.id },
+    capability: storyboardOnlyCapability,
+    prompt: 'A plain text request.',
+    connectedInputs: ['prompt'],
+    referenceImages: [],
+    videoReferences: [],
+    audioReferences: [],
+    shotNodeId: 'storyboard-only-shot',
+    outputName: 'Storyboard only shot',
+  }), /not compatible/i);
 });
 
 test('legacy modify video shots without preset ids retain the V1 model allowlist', () => {

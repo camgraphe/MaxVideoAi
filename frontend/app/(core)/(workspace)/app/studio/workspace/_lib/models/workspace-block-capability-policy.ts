@@ -17,6 +17,7 @@ import {
   inputSupportedBy,
   inputConnectorsFromKinds,
   normalizeConnectedInputKind,
+  resolveWorkspaceGenerationIntent,
 } from './model-input-connectors';
 
 export type { WorkspaceBlockMode } from '../workspace-types';
@@ -43,6 +44,7 @@ export type WorkspaceBlockPolicyResult = {
   missingInputs: WorkspaceEdgeKind[];
   outputMediaKind: WorkspaceOutputMediaKind;
   outputCount: WorkspaceOutputCount;
+  resolvedWorkflowType: WorkspaceWorkflowType;
   controlFields: WorkspacePolicyControlField[];
   pricingRelevantFields: WorkspacePolicyControlField[];
   disabledReason?: string;
@@ -81,33 +83,6 @@ function isSingleEngineTool(settings: WorkspaceShotSettings): string | null {
   return null;
 }
 
-function workflowForMode(
-  mode: WorkspaceBlockMode,
-  connected: Set<WorkspaceEdgeKind>,
-  fallbackWorkflow: WorkspaceWorkflowType
-): WorkspaceWorkflowType {
-  const workflowForMode: Partial<Record<WorkspaceBlockMode, WorkspaceWorkflowType>> = {
-    'text-to-video': connected.has('character') ? 'character_to_video' : 'text_to_video',
-    'image-to-video': 'image_to_video',
-    'reference-to-video': 'storyboard_to_video',
-    'first-last-video': 'image_to_video',
-    'video-edit': 'video_to_video',
-    'text-to-image': 'text_to_image',
-    'image-edit': 'image_to_image',
-  };
-  return workflowForMode[mode] ?? fallbackWorkflow;
-}
-
-function workflowImpliedByConnectedInputs(
-  settings: WorkspaceShotSettings,
-  connected: Set<WorkspaceEdgeKind>
-): WorkspaceWorkflowType | null {
-  const contract = v1BlockContractFor(settings);
-  if (!contract) return null;
-  const workflow = workflowForMode(inferBlockMode(settings, connected), connected, settings.workflowType);
-  return contract.workflows.includes(workflow) ? workflow : null;
-}
-
 export function getWorkspaceBlockCompatibleCapabilities({
   settings,
   capabilities,
@@ -130,15 +105,16 @@ export function getWorkspaceBlockCompatibleCapabilities({
 
   const v1BlockContract = v1BlockContractFor(settings);
   if (v1BlockContract) {
-    const workflow = workflowImpliedByConnectedInputs(settings, connectedSet(connectedInputs));
-    return capabilities.filter((capability) => (
+    return capabilities.filter((capability) => {
+      const intent = resolveWorkspaceGenerationIntent({ settings, connectedInputs, capability });
+      return (
       capability.family === v1BlockContract.family &&
       capability.outputKind === v1BlockContract.outputKind &&
-      (workflow
-        ? capability.workflows.includes(workflow)
-        : v1BlockContract.workflows.some((workflow) => capability.workflows.includes(workflow))) &&
+      capability.workflows.includes(intent.workflowType) &&
+      intent.canRoute &&
       (!v1BlockContract.compatibleModelIds || v1BlockContract.compatibleModelIds.includes(capability.id))
-    ));
+      );
+    });
   }
 
   if (isModifyImage(settings)) {
@@ -184,34 +160,15 @@ function connectedSet(connectedInputs: WorkspaceEdgeKind[]): Set<WorkspaceEdgeKi
   return new Set(connectedInputs.map(normalizeConnectedInputKind));
 }
 
-function inferBlockMode(
-  settings: WorkspaceShotSettings,
-  connected: Set<WorkspaceEdgeKind>
-): WorkspaceBlockMode {
-  if (settings.family === 'chat') return 'chat';
-  if (settings.toolKind) return isModifyVideo(settings) ? 'video-edit' : 'tool';
-  if (isModifyImage(settings)) return 'image-edit';
-  if (isModifyVideo(settings)) return 'video-edit';
-  if (isGenerateImage(settings)) return 'text-to-image';
-  if (isGenerateVideo(settings)) {
-    if (connected.has('end_image')) return 'first-last-video';
-    if (connected.has('reference')) return 'reference-to-video';
-    if (connected.has('start_image')) return 'image-to-video';
-    return 'text-to-video';
-  }
-  return 'tool';
-}
-
 function requiredInputsForMode(
   settings: WorkspaceShotSettings,
   capability: WorkspaceModelCapability | null,
   mode: WorkspaceBlockMode,
-  connected: Set<WorkspaceEdgeKind>
+  resolvedWorkflowType: WorkspaceWorkflowType
 ): WorkspaceEdgeKind[] {
   const contract = v1BlockContractFor(settings);
   if (contract) {
-    const workflow = workflowForMode(mode, connected, settings.workflowType);
-    if (contract.workflows.includes(workflow)) return contract.requiredInputsByWorkflow[workflow] ?? [];
+    if (contract.workflows.includes(resolvedWorkflowType)) return contract.requiredInputsByWorkflow[resolvedWorkflowType] ?? [];
   }
   if (mode === 'image-edit') return ['prompt', 'reference'];
   if (mode === 'video-edit' || mode === 'video-reframe') return ['prompt', 'video_reference'];
@@ -471,8 +428,9 @@ export function resolveWorkspaceBlockPolicy({
   connectedInputs: WorkspaceEdgeKind[];
 }): WorkspaceBlockPolicyResult {
   const connected = connectedSet(connectedInputs);
-  const mode = inferBlockMode(settings, connected);
-  const requiredInputs = requiredInputsForMode(settings, capability, mode, connected);
+  const intent = resolveWorkspaceGenerationIntent({ settings, connectedInputs, capability });
+  const mode = intent.blockMode;
+  const requiredInputs = requiredInputsForMode(settings, capability, mode, intent.workflowType);
   const optionalInputs = Array.from(new Set([
     ...(capability?.optional_inputs ?? []),
     ...minimumOptionalInputsForMode(settings, mode, requiredInputs),
@@ -512,6 +470,7 @@ export function resolveWorkspaceBlockPolicy({
     missingInputs,
     outputMediaKind,
     outputCount: outputCountForPolicy(settings, capability),
+    resolvedWorkflowType: intent.workflowType,
     controlFields: controlFieldsForPolicy(settings, capability, outputMediaKind),
     pricingRelevantFields: pricingRelevantFieldsForPolicy(settings, capability, outputMediaKind),
     disabledReason,

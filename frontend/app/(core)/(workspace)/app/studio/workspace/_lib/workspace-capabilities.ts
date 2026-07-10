@@ -3,7 +3,7 @@ import { getWorkspaceModelCapabilities, getWorkspaceModelCapability } from './mo
 import {
   inputSupportedBy,
   normalizeConnectedInputKind,
-  resolveWorkspaceWorkflowType,
+  resolveWorkspaceGenerationIntent,
 } from './models/model-input-connectors';
 import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
 
@@ -14,24 +14,11 @@ export {
   isWorkspaceConnectionCompatible,
   normalizeConnectedInputKind,
   resolveWorkspaceGenerationMode,
+  resolveWorkspaceGenerationIntent,
   resolveWorkspaceWorkflowType,
   workspaceConnectionCapacity,
 } from './models/model-input-connectors';
 export { resolveWorkspaceRenderOptions, workspaceAudioEnabledForRequest } from './models/model-pricing-adapter';
-
-function workflowFromPolicy(
-  policyMode: ReturnType<typeof resolveWorkspaceBlockPolicy>['mode'],
-  params: {
-    capability: WorkspaceModelCapability;
-    connectedInputs: WorkspaceEdgeKind[];
-    fallbackWorkflowType: WorkspaceWorkflowType;
-  }
-): WorkspaceWorkflowType {
-  if (policyMode === 'image-edit') return 'image_to_image';
-  if (policyMode === 'text-to-image') return 'text_to_image';
-  if (policyMode === 'video-edit' || policyMode === 'video-reframe') return 'video_to_video';
-  return resolveWorkspaceWorkflowType(params);
-}
 
 export function validateShotConnections(params: {
   settings: WorkspaceShotSettings;
@@ -58,11 +45,12 @@ export function validateShotConnections(params: {
     capability,
     connectedInputs: params.connectedInputs,
   });
-  const resolvedWorkflowType = workflowFromPolicy(policy.mode, {
+  const intent = resolveWorkspaceGenerationIntent({
+    settings: params.settings,
     capability,
     connectedInputs: params.connectedInputs,
-    fallbackWorkflowType: params.settings.workflowType,
   });
+  const resolvedWorkflowType = intent.workflowType;
   const supportedInputs = new Set(
     policy.inputConnectors
       .filter((connector) => !connector.disabledReason)
@@ -92,6 +80,7 @@ export function validateShotConnections(params: {
       policy.canGenerate &&
       missingInputs.length === 0 &&
       incompatibleInputs.length === 0 &&
+      intent.canRoute &&
       capability.workflows.includes(resolvedWorkflowType),
   };
 }

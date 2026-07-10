@@ -8,10 +8,9 @@ import type {
   WorkspaceShotSettings,
 } from './workspace-types';
 import {
-  resolveWorkspaceGenerationMode,
-  resolveWorkspaceWorkflowType,
   workspaceAudioEnabledForRequest,
 } from './workspace-capabilities';
+import { resolveWorkspaceGenerationIntent } from './models/model-input-connectors';
 import { outputSourceHandleForKind } from '../_state/workspace-normalizers';
 import { WORKSPACE_EDGE_COLORS, createWorkspaceEdge } from './workspace-templates';
 import {
@@ -235,11 +234,11 @@ export function createPendingWorkspaceOutput(params: {
   outputNodeId?: string;
   notices?: StudioCopy['notices'];
 }): WorkspaceGenerationResult {
-  const resolvedWorkflowType = resolveWorkspaceWorkflowType({
+  const resolvedWorkflowType = resolveWorkspaceGenerationIntent({
+    settings: params.settings,
     capability: params.capability,
     connectedInputs: connectedInputKinds(params.edges, params.shotNode.id),
-    fallbackWorkflowType: params.settings.workflowType,
-  });
+  }).workflowType;
   const outputKind = outputKindForSettings(params.settings, params.capability);
   const output: WorkspaceOutputMetadata = {
     kind: outputKind,
@@ -293,11 +292,11 @@ export function createMockWorkspaceOutput(params: {
   const sourceImage =
     mediaUrlsFromKinds(params.nodes, params.edges, params.shotNode.id, ['start_image', 'product', 'reference', 'style', 'logo'])[0] ??
     '/assets/placeholders/thumb-16x9.png';
-  const resolvedWorkflowType = resolveWorkspaceWorkflowType({
+  const resolvedWorkflowType = resolveWorkspaceGenerationIntent({
+    settings: params.settings,
     capability: params.capability,
     connectedInputs: connectedInputKinds(params.edges, params.shotNode.id),
-    fallbackWorkflowType: params.settings.workflowType,
-  });
+  }).workflowType;
   const outputKind = outputKindForSettings(params.settings, params.capability);
   const outputUrl =
     outputKind === 'video'
@@ -358,14 +357,18 @@ export function buildWorkspaceShotGenerateRequest(params: {
   const primaryImageUrl = params.referenceImages[0];
   const primaryAudioUrl = params.audioReferences[0];
   const audioEnabled = workspaceAudioEnabledForRequest(params.settings, params.capability);
+  const intent = resolveWorkspaceGenerationIntent({
+    settings: params.settings,
+    connectedInputs: params.connectedInputs,
+    capability: params.capability,
+  });
+  if (!intent.canRoute) {
+    throw new Error(`Selected model is not compatible with the ${intent.workflowType} workflow.`);
+  }
   const request: WorkspaceShotGenerateRequest = {
     engineId: params.settings.modelId,
     prompt: params.prompt,
-    mode: resolveWorkspaceGenerationMode({
-      settings: params.settings,
-      connectedInputs: [...params.connectedInputs],
-      capability: params.capability,
-    }),
+    mode: intent.generationMode,
     durationSec: params.settings.durationSec,
     durationOption: params.settings.durationSec,
     aspectRatio: params.settings.aspectRatio,
@@ -440,11 +443,11 @@ export async function submitWorkspaceShotGeneration(params: {
   }
 
   const connectedInputs = connectedInputKinds(params.edges, shotNode.id);
-  const resolvedWorkflowType = resolveWorkspaceWorkflowType({
+  const resolvedWorkflowType = resolveWorkspaceGenerationIntent({
+    settings: generationInputs.settings,
     capability: params.capability,
     connectedInputs,
-    fallbackWorkflowType: generationInputs.settings.workflowType,
-  });
+  }).workflowType;
   try {
     const { submitWorkspaceGenerationByFamily } = await import('./workspace-generation-routing');
     const output = await submitWorkspaceGenerationByFamily({

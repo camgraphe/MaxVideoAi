@@ -10,6 +10,7 @@ import type {
 } from '../workspace-types';
 import { edgeLabel } from '../workspace-templates';
 import { hasFieldId, hasFieldType, hasMode } from './model-engine-fields';
+import { getWorkspaceV1BlockContractForSettings } from './workspace-v1-block-matrix';
 
 export const ALL_INPUT_KINDS: WorkspaceEdgeKind[] = [
   'reference',
@@ -502,6 +503,64 @@ function hasVideoInput(connected: Set<WorkspaceEdgeKind>): boolean {
   );
 }
 
+function presetId(settings: WorkspaceShotSettings): string {
+  return settings.presetId ?? settings.workflowType;
+}
+
+function isModifyImage(settings: WorkspaceShotSettings): boolean {
+  return presetId(settings) === 'modify-image' || settings.workflowType === 'image_to_image';
+}
+
+function isGenerateImage(settings: WorkspaceShotSettings): boolean {
+  return presetId(settings) === 'generate-image' || settings.workflowType === 'text_to_image';
+}
+
+function isModifyVideo(settings: WorkspaceShotSettings): boolean {
+  return presetId(settings) === 'modify-video' || settings.workflowType === 'video_to_video';
+}
+
+function isGenerateVideo(settings: WorkspaceShotSettings): boolean {
+  return presetId(settings) === 'generate-video' ||
+    settings.workflowType === 'text_to_video' ||
+    settings.workflowType === 'image_to_video';
+}
+
+export function inferWorkspaceBlockMode(
+  settings: WorkspaceShotSettings,
+  connectedInputs: readonly WorkspaceEdgeKind[]
+): WorkspaceBlockMode {
+  const connected = new Set(connectedInputs.map(normalizeConnectedInputKind));
+  if (settings.family === 'chat') return 'chat';
+  if (settings.toolKind) return isModifyVideo(settings) ? 'video-edit' : 'tool';
+  if (isModifyImage(settings)) return 'image-edit';
+  if (isModifyVideo(settings)) return 'video-edit';
+  if (isGenerateImage(settings)) return 'text-to-image';
+  if (isGenerateVideo(settings)) {
+    if (connected.has('end_image')) return 'first-last-video';
+    if (connected.has('reference')) return 'reference-to-video';
+    if (connected.has('start_image')) return 'image-to-video';
+    return 'text-to-video';
+  }
+  return 'tool';
+}
+
+function workflowForBlockMode(
+  mode: WorkspaceBlockMode,
+  connected: Set<WorkspaceEdgeKind>,
+  fallbackWorkflowType: WorkspaceWorkflowType
+): WorkspaceWorkflowType {
+  const workflows: Partial<Record<WorkspaceBlockMode, WorkspaceWorkflowType>> = {
+    'text-to-video': connected.has('character') ? 'character_to_video' : 'text_to_video',
+    'image-to-video': 'image_to_video',
+    'reference-to-video': 'storyboard_to_video',
+    'first-last-video': 'image_to_video',
+    'video-edit': 'video_to_video',
+    'text-to-image': 'text_to_image',
+    'image-edit': 'image_to_image',
+  };
+  return workflows[mode] ?? fallbackWorkflowType;
+}
+
 function isFixedToolWorkflow(workflow: WorkspaceWorkflowType): boolean {
   return workflow === 'character_builder' || workflow === 'storyboard_generation' || workflow === 'angle_generation';
 }
@@ -526,7 +585,7 @@ export function inputSupportedBy(kind: WorkspaceEdgeKind, supportedInputs: Set<W
   return false;
 }
 
-export function resolveWorkspaceWorkflowType(params: {
+function resolveGenericWorkspaceWorkflowType(params: {
   capability: WorkspaceModelCapability | null;
   connectedInputs: WorkspaceEdgeKind[];
   fallbackWorkflowType: WorkspaceWorkflowType;
@@ -548,7 +607,7 @@ export function resolveWorkspaceWorkflowType(params: {
   return capability?.workflows[0] ?? params.fallbackWorkflowType;
 }
 
-export function resolveWorkspaceGenerationMode(params: {
+function resolveGenericWorkspaceGenerationMode(params: {
   settings: WorkspaceShotSettings;
   connectedInputs: WorkspaceEdgeKind[];
   capability: WorkspaceModelCapability | null;
@@ -580,6 +639,84 @@ export function resolveWorkspaceGenerationMode(params: {
   if (params.settings.workflowType === 'video_to_video' && capability?.modes.includes('v2v')) return 'v2v';
   if (params.settings.workflowType === 'storyboard_to_video' && capability?.modes.includes('r2v')) return 'r2v';
   return capability?.modes.find((mode) => mode === 't2v') ?? capability?.modes[0] ?? 't2v';
+}
+
+function generationModeForV1VideoBlock(
+  mode: WorkspaceBlockMode,
+  workflowType: WorkspaceWorkflowType,
+  capability: WorkspaceModelCapability | null
+): Mode | null {
+  const modes = capability?.modes ?? [];
+  if (workflowType === 'character_to_video') {
+    return modes.find((candidate) => candidate === 'i2v' || candidate === 'ref2v' || candidate === 'r2v') ?? null;
+  }
+  if (mode === 'text-to-video') return modes.includes('t2v') ? 't2v' : null;
+  if (mode === 'image-to-video') {
+    return modes.find((candidate) => candidate === 'i2v' || candidate === 'ref2v' || candidate === 'r2v') ?? null;
+  }
+  if (mode === 'reference-to-video') {
+    return modes.find((candidate) => candidate === 'r2v' || candidate === 'ref2v') ?? null;
+  }
+  if (mode === 'first-last-video') return modes.includes('fl2v') ? 'fl2v' : null;
+  if (mode === 'video-edit') {
+    return modes.find((candidate) => candidate === 'v2v' || candidate === 'extend' || candidate === 'retake' || candidate === 'reframe') ?? null;
+  }
+  return null;
+}
+
+export type WorkspaceGenerationIntent = {
+  blockMode: WorkspaceBlockMode;
+  workflowType: WorkspaceWorkflowType;
+  generationMode: Mode;
+  canRoute: boolean;
+};
+
+export function resolveWorkspaceGenerationIntent(params: {
+  settings: WorkspaceShotSettings;
+  connectedInputs: readonly WorkspaceEdgeKind[];
+  capability: WorkspaceModelCapability | null;
+}): WorkspaceGenerationIntent {
+  const connected = new Set(params.connectedInputs.map(normalizeConnectedInputKind));
+  const blockMode = inferWorkspaceBlockMode(params.settings, params.connectedInputs);
+  const contract = getWorkspaceV1BlockContractForSettings(params.settings);
+  const blockWorkflow = workflowForBlockMode(blockMode, connected, params.settings.workflowType);
+  const workflowType = contract?.workflows.includes(blockWorkflow)
+    ? blockWorkflow
+    : resolveGenericWorkspaceWorkflowType({
+        capability: params.capability,
+        connectedInputs: [...params.connectedInputs],
+        fallbackWorkflowType: params.settings.workflowType,
+      });
+  const v1VideoMode = contract?.family === 'video'
+    ? generationModeForV1VideoBlock(blockMode, workflowType, params.capability)
+    : null;
+  const generationMode = v1VideoMode ?? resolveGenericWorkspaceGenerationMode({
+    ...params,
+    connectedInputs: [...params.connectedInputs],
+  });
+  const canRoute = contract?.family !== 'video' || !params.capability || (
+    params.capability.workflows.includes(workflowType) &&
+    v1VideoMode !== null &&
+    params.capability.modes.includes(generationMode)
+  );
+
+  return { blockMode, workflowType, generationMode, canRoute };
+}
+
+export function resolveWorkspaceWorkflowType(params: {
+  capability: WorkspaceModelCapability | null;
+  connectedInputs: WorkspaceEdgeKind[];
+  fallbackWorkflowType: WorkspaceWorkflowType;
+}): WorkspaceWorkflowType {
+  return resolveGenericWorkspaceWorkflowType(params);
+}
+
+export function resolveWorkspaceGenerationMode(params: {
+  settings: WorkspaceShotSettings;
+  connectedInputs: WorkspaceEdgeKind[];
+  capability: WorkspaceModelCapability | null;
+}): Mode {
+  return resolveWorkspaceGenerationIntent(params).generationMode;
 }
 
 export function getWorkspaceShotInputConnectors(capability: WorkspaceModelCapability | null): WorkspaceInputConnector[] {
