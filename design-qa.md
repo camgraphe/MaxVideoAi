@@ -12,6 +12,7 @@
   - `output/qa-workspace-compaction/video-seedance-mobile-390.png`
   - `output/qa-workspace-compaction/image-mobile-390-final.png`
   - `output/qa-workspace-compaction/video-seedance-desktop-grid-viewport-final.png`
+  - Live Browser capture at 1463×1074 after the final quantity and guest-duration fixes (Generate action and asset grid focused states).
 - Full-view/focused comparisons:
   - `output/qa-workspace-compaction/comparison-video-mobile.png`
   - `output/qa-workspace-compaction/comparison-image-mobile.png`
@@ -92,10 +93,19 @@ Required fidelity surfaces:
   - Fix: moved the video iteration count and image output count into a dark secondary action immediately before Generate.
   - Post-fix measurement: quantity and Generate controls share a 44px height, an 8px gap, and one baseline on both generation workspaces.
 
+### Iteration 9 — example settings continuity
+
+- [P1] A guest example supplied a new duration but no explicit duration option, so the previous duration option could remain selected.
+  - Fix: when a recalled example supplies a duration, use it as the duration option input before engine-specific normalization.
+  - Post-fix evidence: the regression pipeline now resolves an 8s form followed by a 12s guest sample to 12s; a connected 15s sample applied 15s, 720p, 9:16, audio on, and its prompt in Browser QA.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.
 - Compact resolution/aspect listbox opening with ArrowDown and closing with Escape.
+- Quantity listbox opening beside Generate with 1x, 2x, 3x, and 4x options.
+- Connected example recall from 5s to 15s, including resolution, ratio, audio, and prompt continuity.
+- Guest example duration recall through the no-auth payload and engine-normalization regression path.
 - Generate price remains visible once in EN, FR, and ES.
 - Image preview actions remain enabled for a ready result and aligned under 9:16 media.
 - Browser console errors checked: none.
@@ -104,7 +114,7 @@ Required fidelity surfaces:
 
 - Focused workspace contracts and helper tests: passed (27 tests).
 - Full project validation suite: `pnpm test:validate` passed with exit code 0.
-- Annotation follow-up validation: all 1,566 project tests passed with 0 failures.
+- Final project validation suite passed with 0 failures after the guest-duration regression test was added.
 - Frontend lint: `npm --prefix frontend run lint` passed.
 - Exposure lint: `npm run lint:exposure` passed.
 - TypeScript: `pnpm --prefix frontend exec tsc --noEmit` passed.
