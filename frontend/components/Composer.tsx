@@ -9,6 +9,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
+import { getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
@@ -175,12 +176,9 @@ export function Composer({
     engine.id.startsWith('ltx-2-3') ||
     engine.id.startsWith('seedance-2-0') ||
     isHappyHorseEngineId(engine.id);
-  const assetFieldLayoutClass = useMemo(() => {
-    if (!useLtxAssetGridLayout) {
-      return 'flex flex-wrap gap-4';
-    }
-    return 'grid gap-4 md:grid-cols-2';
-  }, [useLtxAssetGridLayout]);
+  const assetFieldLayoutClass = workspaceDensity
+    ? getWorkspaceAssetGridClass(orderedAssetFields.length)
+    : useLtxAssetGridLayout ? 'grid gap-4 md:grid-cols-2' : 'flex flex-wrap gap-4';
   const promptPlaceholderValue = hasReferenceImage
     ? promptPlaceholderWithAsset ?? composerCopy.prompt.placeholderWithImage ?? promptPlaceholder ?? composerCopy.prompt.placeholder
     : promptPlaceholder ?? composerCopy.prompt.placeholder;
@@ -441,7 +439,7 @@ export function Composer({
                   field={field}
                   required={required}
                   isSoloField={orderedAssetFields.length === 1}
-                  className={field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
+                  className={!workspaceDensity && field.maxCount && field.maxCount > 1 ? 'md:col-span-2' : undefined}
                   role={role}
                   assets={assets[field.id] ?? []}
                   headerAction={headerAction}

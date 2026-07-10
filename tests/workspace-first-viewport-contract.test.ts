@@ -90,6 +90,8 @@ test('workspace solo assets stretch while workspace-only vertical density expose
   assert.match(assetDropzoneSource, /const workspaceDensity = density === 'workspace'/);
   assert.match(assetDropzoneSource, /const shouldLimitSoloWidth = isSoloField && displaySlots\.length === 1 && !workspaceDensity/);
   assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
+  assert.match(composerSource, /getWorkspaceAssetGridClass\(orderedAssetFields\.length\)/);
+  assert.match(composerSource, /!workspaceDensity && field\.maxCount/);
   assert.match(composerSource, /workspaceDensity \? 'space-y-2' : 'space-y-4'/);
   assert.match(composerSource, /workspaceDensity[\s\S]*min-h-\[164px\][\s\S]*resize-y/);
   assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
@@ -97,7 +99,9 @@ test('workspace solo assets stretch while workspace-only vertical density expose
   assert.match(composerSource, /workspaceDensity \? 'flex-nowrap gap-2 pb-1 pt-2'/);
   assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
   assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
-  assert.match(assetDropzoneSlotSource, /'min-h-\[42px\] rounded-\[12px\] border-0 bg-transparent'/);
+  assert.match(assetDropzoneSource, /workspaceDensity && 'h-full min-h-\[150px\]'/);
+  assert.match(assetDropzoneSource, /workspaceDensity && 'h-full'/);
+  assert.match(assetDropzoneSlotSource, /'min-h-\[96px\] h-full rounded-\[12px\] border-0 bg-transparent'/);
   assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot[\s\S]*'h-10 w-10'/);
   assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot \? 'gap-2'/);
 });

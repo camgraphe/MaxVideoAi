@@ -141,7 +141,7 @@ export function AssetDropzoneSlot({
               : 'min-h-[228px] rounded-[20px] border border-border/60 bg-surface dark:border-white/8 dark:bg-white/[0.05]'
           : flattenSlotSurface
             ? workspaceDensity
-              ? 'min-h-[42px] rounded-[12px] border-0 bg-transparent'
+              ? 'min-h-[96px] h-full rounded-[12px] border-0 bg-transparent'
               : compactDensity
               ? 'min-h-[54px] rounded-[12px] border-0 bg-transparent'
               : 'min-h-[132px] rounded-[18px] border-0 bg-transparent'
