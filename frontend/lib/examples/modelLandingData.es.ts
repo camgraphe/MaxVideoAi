@@ -29,7 +29,7 @@ export const ES_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   veo: {
     metaTitle: 'Ejemplos de Veo 3.1, prompts, ajustes e image-to-video | MaxVideoAI',
     metaDescription:
-      'Consulta ejemplos de Veo 3.1, prompts, ajustes, patrones image-to-video y precios por clip para Veo 3.1, Veo 3.1 Fast y Veo 3.1 Lite en MaxVideoAI.',
+      'Consulta ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video, y abre la ficha de un video para ver el coste registrado del render en MaxVideoAI.',
     heroTitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video',
     subtitle: 'Ejemplos de Veo 3.1, prompts, ajustes y patrones image-to-video en la familia Veo actual.',
     intro:

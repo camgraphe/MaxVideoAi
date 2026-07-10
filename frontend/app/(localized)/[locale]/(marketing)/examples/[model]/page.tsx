@@ -101,7 +101,7 @@ export async function generateMetadata(
   const title = modelLanding?.metaTitle ?? `${modelLabel} AI Video Examples | MaxVideoAI`;
   const description =
     modelLanding?.metaDescription ??
-    `Explore ${modelLabel} examples with prompts, settings, and per-clip pricing on MaxVideoAI.`;
+    `Explore ${modelLabel} examples with prompts and settings, then open a video detail page to see its recorded render cost on MaxVideoAI.`;
   const heroResult = await listExampleFamilyPage(canonical, {
     sort: DEFAULT_SORT,
     limit: EXAMPLES_HERO_SELECTION_LIMIT,

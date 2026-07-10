@@ -83,10 +83,10 @@ function buildGenericLocalizedModelData(
 
   return {
     subtitle: `${label} examples across the full family, with reusable prompts, settings, and pricing signals.`,
-    intro: `Use this page to review ${label} examples before launching new renders. ${variantsSentence} Compare motion, framing, and duration, then open an example to see its recorded render cost, then open the related model pages for mode-specific specs and limits.`,
+    intro: `Use this page to review ${label} examples before launching new renders. ${variantsSentence} Compare motion, framing, and duration, then open an example to see its recorded render cost. Use the related model pages for mode-specific specs and limits.`,
     promptPatterns: `${label} examples usually work best when prompts separate subject, camera movement, environment, and timing. Start with short clips, then iterate on framing and motion once the baseline looks right.`,
     strengthsLimits: `This gallery helps you compare how the ${label} family handles motion, composition, and consistency. Capabilities still vary by model and mode, so confirm the exact workflow on the related model pages before scaling production.`,
-    pricingNotes: `Per-clip pricing changes by model, duration, resolution, and mode. Keep a stable brief so you can compare cost and quality across the ${label} family.`,
+    pricingNotes: `Recorded render costs vary by model, duration, resolution, and mode. Open example detail pages to compare cost and quality across the ${label} family with a stable brief.`,
     faq: [
       {
         question: `When should I use the ${label} examples page?`,

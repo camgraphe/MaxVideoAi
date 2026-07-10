@@ -17,8 +17,13 @@ const pageSource = readFileSync(
   join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/page.tsx'),
   'utf8'
 );
+const modelPageSource = readFileSync(
+  join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/[model]/page.tsx'),
+  'utf8'
+);
 const modelLandingSources = [
   'frontend/lib/examples/modelLanding.ts',
+  'frontend/lib/examples/modelLandingData.en.ts',
   'frontend/lib/examples/modelLandingData.fr.ts',
   'frontend/lib/examples/modelLandingData.es.ts',
 ].map((path) => readFileSync(join(root, path), 'utf8')).join('\n');
@@ -70,8 +75,19 @@ test('localized Examples copy sends visitors to the detail page for recorded cos
 });
 
 test('Examples source no longer claims gallery cards display price per clip', () => {
-  const falseClaim = /pricing shown per clip|price per clip|prix par clip|precio por clip/i;
+  const falseClaim =
+    /(?:visible\s+)?per[-\s]+clip\s+(?:price|prices|pricing)|(?:price|prices|pricing)\s+(?:shown\s+)?per[-\s]+clip|prix\s+par\s+clip|precios?\s+por\s+clip/i;
+  for (const unsupportedClaim of [
+    'visible per-clip pricing',
+    'per-clip pricing',
+    'per-clip price',
+    'pricing shown per clip',
+    'precios por clip',
+  ]) {
+    assert.match(unsupportedClaim, falseClaim);
+  }
   assert.doesNotMatch(pageSource, falseClaim);
+  assert.doesNotMatch(modelPageSource, falseClaim);
   assert.doesNotMatch(modelLandingSources, falseClaim);
 
   for (const locale of ['en', 'fr', 'es'] as const) {

@@ -10,7 +10,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     strengthsLimits:
       'Sora generally excels in cinematic coherence and polished motion. Limits vary by mode and queue conditions, so keep test runs short before scaling to longer variants.',
     pricingNotes:
-      'Pricing depends on duration, resolution, and add-ons. Use the visible per-clip pricing to compare Sora runs against other engines before batch generation.',
+      'Pricing depends on duration, resolution, and add-ons. Open an example to inspect its recorded render cost before comparing Sora runs with other engines or starting batch generation.',
     faq: [
       {
         question: 'What prompts work best for Sora examples?',
@@ -29,7 +29,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
   veo: {
     metaTitle: 'Veo 3.1 Examples, Prompts, Settings & Image-to-Video | MaxVideoAI',
     metaDescription:
-      'Browse Veo 3.1 examples, prompts, settings, image-to-video patterns, and per-clip pricing for Veo 3.1, Veo 3.1 Fast, and Veo 3.1 Lite on MaxVideoAI.',
+      'Browse Veo 3.1 examples, prompts, settings, and image-to-video patterns, then open a video detail page to see its recorded render cost on MaxVideoAI.',
     heroTitle: 'Veo 3.1 examples, prompts, settings and image-to-video patterns',
     subtitle: 'Veo 3.1 examples, prompts, settings, and image-to-video patterns across the current Veo family.',
     intro:
@@ -41,7 +41,7 @@ export const EN_MODEL_DATA: Partial<Record<CanonicalExampleModelSlug, LocalizedM
     strengthsLimits:
       'Veo is strong on controllable framing and consistent movement in short text-to-video and image-to-video runs. Capability details still vary by mode, so verify available options before large jobs.',
     pricingNotes:
-      'Per-clip price changes with duration, resolution, and audio behavior. Keep a stable preset to compare Veo outputs across multiple briefs.',
+      'Open a video detail page to see its recorded render cost, which reflects duration, resolution, and audio behavior. Keep a stable preset to compare Veo outputs across multiple briefs.',
     faq: [
       {
         question: 'How should I use Veo 3 for image-to-video?',
