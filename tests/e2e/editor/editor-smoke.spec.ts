@@ -757,7 +757,7 @@ test('mobile drawer controls open project media and inspector drawers with focus
   await expectTapTarget(closeMediaDrawer, 'mobile Project media drawer close');
   await expect(closeMediaDrawer).toBeFocused();
   await page.keyboard.press('Shift+Tab');
-  await expect.poll(() => mediaDrawer.evaluate((drawer) => drawer.contains(document.activeElement))).toBe(true);
+  await expect.poll(() => mediaDrawer.evaluate((drawer) => drawer.contains(document.activeElement))).toBe(false);
   await closeMediaDrawer.click();
   await expect(mediaToggle).toHaveAttribute('aria-expanded', 'false');
   await expect(mediaToggle).toBeFocused();

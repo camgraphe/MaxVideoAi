@@ -302,7 +302,10 @@ export function useWorkspaceEditorAssetLibrary(
     fallbackAssets.length > 0 &&
     Boolean(error) &&
     error !== copy.signInToAccessLibrary;
-  const assets = userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : [];
+  const assets = useMemo(
+    () => (userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : []),
+    [fallbackAssets, shouldUseFallback, userAssets]
+  );
 
   const toggleAssetSelection = useCallback((assetId: string, mode: 'replace' | 'toggle' | 'range') => {
     const nextSelection = selectWorkspaceAsset({
@@ -323,7 +326,10 @@ export function useWorkspaceEditorAssetLibrary(
 
   useEffect(() => {
     const availableAssetIds = new Set(assets.map((asset) => asset.id));
-    setSelectedAssetIds((currentIds) => currentIds.filter((assetId) => availableAssetIds.has(assetId)));
+    setSelectedAssetIds((currentIds) => {
+      const nextIds = currentIds.filter((assetId) => availableAssetIds.has(assetId));
+      return nextIds.length === currentIds.length ? currentIds : nextIds;
+    });
   }, [assets]);
 
   const status: WorkspaceAssetLibraryStatus = !isEnabled
