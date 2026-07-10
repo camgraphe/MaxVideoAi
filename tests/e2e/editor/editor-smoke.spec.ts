@@ -395,6 +395,29 @@ async function pasteTextOnCanvas(page: Page, text: string): Promise<void> {
   }, text);
 }
 
+async function copyCanvasGraphSelection(page: Page): Promise<void> {
+  await page.locator('.react-flow').evaluate((element) => {
+    element.dispatchEvent(new ClipboardEvent('copy', {
+      bubbles: true,
+      cancelable: true,
+      clipboardData: new DataTransfer(),
+    }));
+  });
+}
+
+async function pasteClipboardOnDocumentBody(page: Page, payload: { text: string; type?: string }): Promise<void> {
+  await page.evaluate(({ text, type }) => {
+    const clipboardData = new DataTransfer();
+    clipboardData.setData('text/plain', text);
+    if (type) clipboardData.setData(type, '1');
+    document.body.dispatchEvent(new ClipboardEvent('paste', {
+      bubbles: true,
+      cancelable: true,
+      clipboardData,
+    }));
+  }, payload);
+}
+
 async function canvasMarqueeBoundsForNodes(page: Page, nodeIds: string[]): Promise<CanvasMarqueeBounds | null> {
   const pane = page.locator('.react-flow__pane');
   await expect(pane).toBeVisible();
@@ -2352,6 +2375,37 @@ test('canvas paste creates a prompt block from plain text', async ({ page }) => 
   await expect.poll(() => canvasNodeCount(page)).toBe(beforeCount + 1);
   await expect(page.locator('.react-flow__node textarea').last()).toHaveValue('Pasted launch scene: close-up product turn with moody light.');
   assertNoEditorClientErrors(errors);
+});
+
+test('native body paste stays with the active editor surface', async ({ page }) => {
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Canvas');
+
+  const initialNodeCount = await canvasNodeCount(page);
+  await page.locator('.react-flow__node').first().click();
+  await copyCanvasGraphSelection(page);
+
+  await page.locator('[data-timeline-track="video-1"]').click({ position: { x: 8, y: 8 } });
+  await expect(page.locator('[data-active-editor-surface="timeline"]')).toBeVisible();
+  await pasteClipboardOnDocumentBody(page, {
+    text: 'MaxVideoAI canvas graph selection',
+    type: 'application/x-maxvideoai-canvas-graph',
+  });
+  await page.waitForTimeout(100);
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+  await expect(page.locator('[data-active-editor-surface="timeline"]')).toBeVisible();
+
+  await pasteClipboardOnDocumentBody(page, { text: 'Timeline-owned body paste must stay external.' });
+  await page.waitForTimeout(100);
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount);
+
+  await page.locator('.react-flow__pane').click({ position: { x: 24, y: 24 } });
+  await expect(page.locator('[data-active-editor-surface="canvas"]')).toBeVisible();
+  await pasteClipboardOnDocumentBody(page, {
+    text: 'MaxVideoAI canvas graph selection',
+    type: 'application/x-maxvideoai-canvas-graph',
+  });
+  await expect.poll(() => canvasNodeCount(page)).toBe(initialNodeCount + 1);
 });
 
 test('canvas paste creates an image source block from a compatible image file', async ({ page }) => {

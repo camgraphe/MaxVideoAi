@@ -27,6 +27,7 @@ import type {
   WorkspaceGraphNode,
   WorkspaceNodeKind,
 } from '../_lib/workspace-types';
+import { shouldHandleCanvasPaste } from '../_lib/workspace-canvas-shortcuts';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 export const WORKSPACE_GRAPH_CLIPBOARD_TYPE = 'application/x-maxvideoai-canvas-graph';
@@ -53,6 +54,7 @@ export type WorkspaceCanvasTextPasteRequest = {
 type UseCanvasControllerOptions = {
   canvasShellRef: RefObject<HTMLElement | null>;
   copy: StudioCopy['canvas']['nodes'];
+  isCanvasShortcutActive: boolean;
   onCanvasFileDrop: (request: WorkspaceCanvasFileDropRequest) => void;
   onCanvasGraphPaste: (center: XYPosition) => void;
   onCanvasInteraction: () => void;
@@ -75,6 +77,7 @@ function isEditablePasteTarget(target: EventTarget | null): boolean {
 export function useCanvasController({
   canvasShellRef,
   copy,
+  isCanvasShortcutActive,
   onCanvasFileDrop,
   onCanvasGraphPaste,
   onCanvasInteraction,
@@ -125,7 +128,10 @@ export function useCanvasController({
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
-      if (isEditablePasteTarget(event.target) || isEditablePasteTarget(document.activeElement)) return;
+      if (!shouldHandleCanvasPaste({
+        isBlockedTarget: isEditablePasteTarget(event.target) || isEditablePasteTarget(document.activeElement),
+        isCanvasActive: isCanvasShortcutActive,
+      })) return;
       const target = event.target instanceof Element ? event.target : null;
       const activeElement = document.activeElement;
       const isNeutralDocumentPaste =
@@ -171,7 +177,7 @@ export function useCanvasController({
     return () => {
       window.removeEventListener('paste', handlePaste);
     };
-  }, [canvasCenterFlowPosition, canvasShellRef, onCanvasFileDrop, onCanvasGraphPaste, onCanvasInteraction, onCanvasTextPaste]);
+  }, [canvasCenterFlowPosition, canvasShellRef, isCanvasShortcutActive, onCanvasFileDrop, onCanvasGraphPaste, onCanvasInteraction, onCanvasTextPaste]);
 
   const isPaletteDragging = paletteInteractionMode === 'drag';
   const isPalettePlacementArmed = paletteInteractionMode === 'placement';

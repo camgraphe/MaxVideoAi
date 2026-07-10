@@ -340,6 +340,7 @@ function WorkspaceCanvasInner({
   } = useCanvasController({
     canvasShellRef,
     copy: copy.nodes,
+    isCanvasShortcutActive: isShortcutActive,
     onCanvasFileDrop,
     onCanvasGraphPaste: onPasteCopiedNodes,
     onCanvasInteraction,

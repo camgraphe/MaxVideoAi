@@ -13,7 +13,10 @@ import {
   duplicateWorkspaceGraphSelection,
   pasteWorkspaceGraphClipboardSnapshot,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard';
-import { shouldHandleCanvasKeyboardShortcut } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-shortcuts';
+import {
+  shouldHandleCanvasKeyboardShortcut,
+  shouldHandleCanvasPaste,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-canvas-shortcuts';
 import type { WorkspaceGraphEdge, WorkspaceGraphNode } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import { createStarterWorkspaceTemplate } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
 
@@ -157,5 +160,23 @@ test('canvas keyboard shortcuts leave a stale selection alone when the timeline 
     }),
     true,
     'canvas focus should retain the inspector shortcut'
+  );
+});
+
+test('native canvas paste respects active surface ownership before handling graph or text clipboard data', () => {
+  assert.equal(
+    shouldHandleCanvasPaste({ isBlockedTarget: false, isCanvasActive: false }),
+    false,
+    'timeline-owned body paste must not invoke canvas graph or text paste handling'
+  );
+  assert.equal(
+    shouldHandleCanvasPaste({ isBlockedTarget: false, isCanvasActive: true }),
+    true,
+    'canvas-owned body paste should be handled once by the native paste listener'
+  );
+  assert.equal(
+    shouldHandleCanvasPaste({ isBlockedTarget: true, isCanvasActive: true }),
+    false,
+    'editable and dialog targets must retain their native paste behavior'
   );
 });
