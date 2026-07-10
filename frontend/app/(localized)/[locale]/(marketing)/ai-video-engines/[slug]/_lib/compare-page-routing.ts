@@ -1,7 +1,19 @@
 import type { AppLocale } from '@/i18n/locales';
 import { localePathnames } from '@/i18n/locales';
 import { canonicalizeFalModelSlug } from '@/config/falEngines';
-import { CATALOG_BY_SLUG, EXCLUDED_ENGINE_SLUGS, MODELS_SLUG_MAP } from './compare-page-config';
+import {
+  CATALOG_BY_SLUG,
+  COMPARE_SLUG_MAP,
+  EXCLUDED_ENGINE_SLUGS,
+  MODELS_SLUG_MAP,
+} from './compare-page-config';
+
+const LEGACY_COMPARE_REPLACEMENTS: Record<string, { slug: string; orderAliases: Record<string, string> }> = {
+  'happy-horse-1-0-vs-sora-2-pro': {
+    slug: 'happy-horse-1-1-vs-sora-2-pro',
+    orderAliases: { 'happy-horse-1-0': 'happy-horse-1-1' },
+  },
+};
 
 export function reverseCompareSlug(slug: string) {
   const parts = slug.split('-vs-');
@@ -53,6 +65,20 @@ export function resolveExcludedCompareRedirect({
   const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
   const modelsBase = MODELS_SLUG_MAP[locale] ?? MODELS_SLUG_MAP.en ?? 'models';
   return `${localePrefix}/${modelsBase}/${preferred}`.replace(/\/{2,}/g, '/');
+}
+
+export function resolveLegacyCompareRedirect({ slug, order, locale }: {
+  slug: string;
+  order?: string | null;
+  locale: AppLocale;
+}) {
+  const replacement = LEGACY_COMPARE_REPLACEMENTS[slug];
+  if (!replacement) return null;
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const compareBase = COMPARE_SLUG_MAP[locale] ?? COMPARE_SLUG_MAP.en ?? 'ai-video-engines';
+  const targetOrder = order ? replacement.orderAliases[order] ?? order : null;
+  const query = targetOrder ? `?order=${encodeURIComponent(targetOrder)}` : '';
+  return `${localePrefix}/${compareBase}/${replacement.slug}${query}`.replace(/\/{2,}/g, '/');
 }
 
 export function buildGenerateHref(engineSlug: string, prompt?: string | null, aspectRatio?: string | null, mode?: string | null) {

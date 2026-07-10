@@ -3,35 +3,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execSync } from 'node:child_process';
+import {
+  addComparisonHubUrls,
+  addComparisonUrls,
+  getPublishedComparisonSlugs,
+  getPublishedComparisonSlugsForModels,
+} from './indexnow-url-selection.mjs';
 
 const SITE = (process.env.SITE || 'https://maxvideoai.com').replace(/\/+$/, '');
 const INDEXNOW_PROXY = process.env.INDEXNOW_PROXY || `${SITE}/api/indexnow`;
 const BEFORE = process.env.GITHUB_EVENT_BEFORE || '';
 const AFTER = process.env.GITHUB_SHA || 'HEAD';
 const DRY_RUN = process.argv.includes('--dry-run');
-const MAX_URLS = Number.parseInt(process.env.INDEXNOW_MAX_URLS || '200', 10);
 
 const REPO_ROOT = process.cwd();
-const COMPARE_CONFIG_PATH = path.join(REPO_ROOT, 'frontend/config/compare-config.json');
-const COMPARE_HUB_PATH = path.join(REPO_ROOT, 'frontend/config/compare-hub.json');
 const ENGINE_CATALOG_PATH = path.join(REPO_ROOT, 'frontend/config/engine-catalog.json');
+const MODEL_ROSTER_PATH = path.join(REPO_ROOT, 'frontend/config/model-roster.json');
 
 function toAbsoluteUrl(pathname) {
   if (!pathname || pathname === '/') return SITE;
   return `${SITE}${pathname.startsWith('/') ? pathname : `/${pathname}`}`;
-}
-
-function canonicalCompareSlug(slug) {
-  if (typeof slug !== 'string' || !slug.includes('-vs-')) return null;
-  const [left, right] = slug.split('-vs-');
-  if (!left || !right) return null;
-  const canonical = [left.trim(), right.trim()].sort((a, b) => a.localeCompare(b));
-  return `${canonical[0]}-vs-${canonical[1]}`;
-}
-
-function canonicalCompareSlugFromPair(left, right) {
-  if (!left || !right) return null;
-  return canonicalCompareSlug(`${left}-vs-${right}`);
 }
 
 function readJson(filePath, fallback = {}) {
@@ -60,68 +51,6 @@ function safeGitChangedFiles(before, after) {
       .map((line) => line.trim())
       .filter(Boolean);
   }
-}
-
-function collectAllComparisonSlugs() {
-  const slugs = new Set();
-  const compareConfig = readJson(COMPARE_CONFIG_PATH, {});
-  const compareHub = readJson(COMPARE_HUB_PATH, {});
-
-  const addSlug = (slug) => {
-    const normalized = canonicalCompareSlug(slug);
-    if (normalized) slugs.add(normalized);
-  };
-
-  const addPair = (left, right) => {
-    const normalized = canonicalCompareSlugFromPair(left, right);
-    if (normalized) slugs.add(normalized);
-  };
-
-  (compareConfig.trophyComparisons || []).forEach(addSlug);
-  Object.keys(compareConfig.relatedComparisons || {}).forEach(addSlug);
-  Object.values(compareConfig.relatedComparisons || {}).forEach((list) => (list || []).forEach(addSlug));
-  Object.keys(compareConfig.showdowns || {}).forEach(addSlug);
-
-  (compareHub.popularComparisons || []).forEach((entry) => addPair(entry?.left, entry?.right));
-  (compareHub.useCaseBuckets || []).forEach((bucket) =>
-    (bucket?.pairs || []).forEach((entry) => addPair(entry?.left, entry?.right))
-  );
-
-  return slugs;
-}
-
-function collectCatalogComparisonSlugsForModels(changedModelSlugs) {
-  const slugs = new Set();
-  const catalog = readJson(ENGINE_CATALOG_PATH, []);
-  const excluded = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2']);
-  const eligibleStatuses = new Set(['live', 'early_access']);
-
-  const eligibleModels = (Array.isArray(catalog) ? catalog : [])
-    .filter((entry) => {
-      const slug = entry?.modelSlug;
-      const status = String(entry?.engine?.status || '').toLowerCase();
-      return Boolean(slug) && !excluded.has(slug) && eligibleStatuses.has(status);
-    })
-    .map((entry) => entry.modelSlug);
-
-  const eligibleSet = new Set(eligibleModels);
-  const changedEligible = Array.from(changedModelSlugs).filter((slug) => eligibleSet.has(slug));
-
-  changedEligible.forEach((changedSlug) => {
-    eligibleModels.forEach((otherSlug) => {
-      if (otherSlug === changedSlug) return;
-      const canonical = canonicalCompareSlugFromPair(changedSlug, otherSlug);
-      if (canonical) slugs.add(canonical);
-    });
-  });
-
-  return slugs;
-}
-
-function addCompareUrlsForSlug(urls, comparisonSlug) {
-  urls.add(toAbsoluteUrl(`/ai-video-engines/${comparisonSlug}`));
-  urls.add(toAbsoluteUrl(`/fr/comparatif/${comparisonSlug}`));
-  urls.add(toAbsoluteUrl(`/es/comparativa/${comparisonSlug}`));
 }
 
 function addModelUrl(urls, locale, slug) {
@@ -166,14 +95,21 @@ function collectUrlsFromChangedFiles(changedFiles) {
   ]);
 
   const changedModelSlugs = new Set();
-  let compareConfigTouched = false;
+  const indexableModelSlugs = new Set(
+    readJson(MODEL_ROSTER_PATH, [])
+      .filter((entry) => entry?.modelSlug && entry?.surfaces?.modelPage?.includeInSitemap !== false)
+      .map((entry) => entry.modelSlug)
+  );
+  let comparisonPublicationTouched = false;
 
   changedFiles.forEach((filePath) => {
     const modelMatch = filePath.match(/^content\/models\/(en|fr|es)\/([a-z0-9-]+)\.json$/);
     if (modelMatch) {
       const [, locale, slug] = modelMatch;
       changedModelSlugs.add(slug);
-      addModelUrl(urls, locale, slug);
+      if (indexableModelSlugs.has(slug)) {
+        addModelUrl(urls, locale, slug);
+      }
       return;
     }
 
@@ -206,14 +142,16 @@ function collectUrlsFromChangedFiles(changedFiles) {
       return;
     }
 
-    if (filePath === 'frontend/config/compare-config.json' || filePath === 'frontend/config/compare-hub.json') {
-      compareConfigTouched = true;
+    if (
+      filePath === 'frontend/config/engine-catalog.json' ||
+      filePath === 'frontend/config/compare-config.json' ||
+      filePath === 'frontend/config/compare-hub.json'
+    ) {
+      comparisonPublicationTouched = true;
     }
 
     if (filePath.startsWith('frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/')) {
-      urls.add(toAbsoluteUrl('/ai-video-engines'));
-      urls.add(toAbsoluteUrl('/fr/ai-video-engines'));
-      urls.add(toAbsoluteUrl('/es/ai-video-engines'));
+      addComparisonHubUrls(urls, SITE);
     }
 
     if (
@@ -230,20 +168,14 @@ function collectUrlsFromChangedFiles(changedFiles) {
     }
   });
 
-  const comparisonSlugs = collectAllComparisonSlugs();
-  const catalogDerivedComparisonSlugs = collectCatalogComparisonSlugsForModels(changedModelSlugs);
-  if (compareConfigTouched) {
+  const engineCatalog = readJson(ENGINE_CATALOG_PATH, []);
+  if (comparisonPublicationTouched) {
     addBestForHubUrls(urls);
-    comparisonSlugs.forEach((slug) => addCompareUrlsForSlug(urls, slug));
+    getPublishedComparisonSlugs(engineCatalog).forEach((slug) => addComparisonUrls(urls, SITE, slug));
   } else if (changedModelSlugs.size > 0) {
-    const slugsToNotify =
-      catalogDerivedComparisonSlugs.size > 0 ? catalogDerivedComparisonSlugs : comparisonSlugs;
-    slugsToNotify.forEach((slug) => {
-      const [left, right] = slug.split('-vs-');
-      if (changedModelSlugs.has(left) || changedModelSlugs.has(right)) {
-        addCompareUrlsForSlug(urls, slug);
-      }
-    });
+    getPublishedComparisonSlugsForModels(engineCatalog, changedModelSlugs).forEach((slug) =>
+      addComparisonUrls(urls, SITE, slug)
+    );
   }
 
   return Array.from(urls).sort((a, b) => a.localeCompare(b));
@@ -280,18 +212,14 @@ async function main() {
   process.stdout.write(`[indexnow] changed_files=${changedFiles.length}\n`);
 
   const urls = collectUrlsFromChangedFiles(changedFiles);
-  const limitedUrls = urls.slice(0, Number.isFinite(MAX_URLS) && MAX_URLS > 0 ? MAX_URLS : 200);
-  if (urls.length > limitedUrls.length) {
-    process.stdout.write(`[indexnow] truncating url list ${urls.length} -> ${limitedUrls.length}\n`);
-  }
 
   if (DRY_RUN) {
-    process.stdout.write(`[indexnow] dry-run urls=${limitedUrls.length}\n`);
-    limitedUrls.forEach((url) => process.stdout.write(`${url}\n`));
+    process.stdout.write(`[indexnow] dry-run urls=${urls.length}\n`);
+    urls.forEach((url) => process.stdout.write(`${url}\n`));
     return;
   }
 
-  await submitUrls(limitedUrls);
+  await submitUrls(urls);
 }
 
 await main();

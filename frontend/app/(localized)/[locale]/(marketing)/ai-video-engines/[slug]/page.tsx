@@ -32,6 +32,7 @@ import {
   isEngineGeneratable,
   resolveEngines,
   resolveExcludedCompareRedirect,
+  resolveLegacyCompareRedirect,
 } from './_lib/compare-page-helpers';
 
 export const dynamicParams = true;
@@ -74,14 +75,10 @@ export default async function CompareDetailPage(
     notFound();
   }
   const requestedOrder = typeof searchParams?.order === 'string' ? searchParams.order : null;
-  const excludedRedirect = resolveExcludedCompareRedirect({
-    slug: canonicalInfo.canonicalSlug,
-    order: requestedOrder,
-    locale: activeLocale,
-  });
-  if (excludedRedirect) {
-    redirect(excludedRedirect);
-  }
+  const excludedRedirect = resolveExcludedCompareRedirect({ slug: canonicalInfo.canonicalSlug, order: requestedOrder, locale: activeLocale });
+  if (excludedRedirect) redirect(excludedRedirect);
+  const legacyRedirect = resolveLegacyCompareRedirect({ slug: canonicalInfo.canonicalSlug, order: requestedOrder, locale: activeLocale });
+  if (legacyRedirect) permanentRedirect(legacyRedirect);
   const resolved = resolveEngines(canonicalInfo.canonicalSlug);
   if (!resolved) {
     notFound();

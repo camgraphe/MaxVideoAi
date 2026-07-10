@@ -72,6 +72,7 @@ const nextConfig = {
   transpilePackages: ['@maxvideoai/pricing'],
   images: {
     qualities: [52, 70, 72, 75, 80],
+    minimumCacheTTL: 604800,
     localPatterns: [
       { pathname: '/assets/**' },
       { pathname: '/brand/**' },
@@ -178,7 +179,7 @@ const nextConfig = {
       },
       {
         source: '/models/google-veo-3',
-        destination: '/models/veo-3',
+        destination: '/models/veo-3-1',
         permanent: true,
       },
       {
