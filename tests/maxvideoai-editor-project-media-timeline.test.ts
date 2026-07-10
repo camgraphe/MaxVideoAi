@@ -18,7 +18,10 @@ import {
   mediaSubtitleForAsset,
   mediaSubtitleForGeneratedNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController';
-import { workspaceAssetFromOutputNode } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media';
+import {
+  synchronizeGeneratedOutputNodeProjectMediaFolder,
+  workspaceAssetFromOutputNode,
+} from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import type {
   WorkspaceAssetRecord,
@@ -113,6 +116,25 @@ test('ready generated output nodes become typed project media assets', () => {
   assert.equal(asset?.kind, 'video');
   assert.equal(asset?.url, 'https://example.com/video.mp4');
   assert.equal(asset?.thumbUrl, 'https://example.com/thumb.jpg');
+});
+
+test('moving a persisted generated asset synchronizes its output node folder', () => {
+  const generatedNode = generatedVideoNode();
+  const importedAssetId = 'imported-video-1';
+
+  const movedNodes = synchronizeGeneratedOutputNodeProjectMediaFolder(
+    [generatedNode],
+    workspaceAssetFromOutputNode(generatedNode)?.id ?? '',
+    'folder-deliverables'
+  );
+  const importedAssetMoveNodes = synchronizeGeneratedOutputNodeProjectMediaFolder(
+    [generatedNode],
+    importedAssetId,
+    'folder-imports'
+  );
+
+  assert.equal(movedNodes[0].data.output?.projectMediaFolderId, 'folder-deliverables');
+  assert.equal(importedAssetMoveNodes[0], generatedNode);
 });
 
 test('generated video project assets preserve their dedicated linked audio on the timeline', () => {

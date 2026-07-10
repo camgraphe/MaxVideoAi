@@ -4,6 +4,31 @@ export function generatedNodeProjectAssetId(nodeId: string): string {
   return `asset-${nodeId}`;
 }
 
+export function synchronizeGeneratedOutputNodeProjectMediaFolder(
+  nodes: WorkspaceGraphNode[],
+  assetId: string,
+  folderId: string | null
+): WorkspaceGraphNode[] {
+  return nodes.map((node) => {
+    if (
+      node.data.kind !== 'output' ||
+      !node.data.output ||
+      generatedNodeProjectAssetId(node.id) !== assetId
+    ) return node;
+
+    return {
+      ...node,
+      data: {
+        ...node.data,
+        output: {
+          ...node.data.output,
+          projectMediaFolderId: folderId,
+        },
+      },
+    };
+  });
+}
+
 function generatedAssetExtension(kind: WorkspaceAssetRecord['kind']): string {
   if (kind === 'video') return 'mp4';
   if (kind === 'audio') return 'mp3';

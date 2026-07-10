@@ -9,6 +9,7 @@ import {
 } from '../_lib/workspace-project-media-upload';
 import { resolveProjectAssetTimelineInsert } from '../_lib/workspace-project-media-timeline';
 import {
+  synchronizeGeneratedOutputNodeProjectMediaFolder,
   upsertWorkspaceProjectAsset,
   workspaceAssetFromOutputNode,
 } from '../_lib/workspace-generated-media';
@@ -534,12 +535,13 @@ export function useWorkspaceProjectMediaActions({
       setProjectAssets((current) => current.map((candidate) => (
         candidate.id === assetId ? { ...candidate, folderId } : candidate
       )));
+      setNodes((current) => synchronizeGeneratedOutputNodeProjectMediaFolder(current, assetId, folderId));
       setNotice(formatNotice(studioNotices.projectAssetMovedToFolder, {
         filename: asset.filename,
         [STUDIO_PROJECT_MEDIA_FOLDER_TOKEN]: folderName,
       }));
     },
-    [projectAssets, projectMediaFolders, setNotice, setProjectAssets, studioNotices]
+    [projectAssets, projectMediaFolders, setNodes, setNotice, setProjectAssets, studioNotices]
   );
 
   const handleMoveGeneratedClipToFolder = useCallback(
