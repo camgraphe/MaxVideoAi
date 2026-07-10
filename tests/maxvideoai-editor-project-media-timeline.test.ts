@@ -3,6 +3,7 @@ import test from 'node:test';
 import { TIMELINE_NODE_DRAG_TYPE } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-external-drop';
 import {
   applyProjectMediaTimelineDragPayload,
+  projectMediaTimelineKindForGeneratedNode,
   projectMediaTimelineDragPayloadForAsset,
   projectMediaTimelineDragPayloadForGeneratedNode,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-drag';
@@ -226,6 +227,28 @@ test('project media drag payload only exposes completed generated media', () => 
   }));
 
   assert.equal(placeholderPayload, null);
+});
+
+test('project media drag payload excludes generated text outputs', () => {
+  const textOutputNode = generatedVideoNode({
+    data: {
+      kind: 'output',
+      title: 'Generated Copy',
+      output: {
+        kind: 'text',
+        modelId: 'gpt-4.1',
+        modelLabel: 'GPT-4.1',
+        workflowType: 'chat',
+        status: 'ready',
+        createdAt: '2026-01-01T00:00:00.000Z',
+        sourceShotId: 'shot-1',
+        url: '/media/generated.txt',
+      },
+    },
+  });
+
+  assert.equal(projectMediaTimelineKindForGeneratedNode(textOutputNode), null);
+  assert.equal(projectMediaTimelineDragPayloadForGeneratedNode(textOutputNode), null);
 });
 
 test('project media timeline resolver places compatible media on the requested track', () => {

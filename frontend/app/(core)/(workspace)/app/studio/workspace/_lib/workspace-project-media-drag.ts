@@ -52,6 +52,7 @@ export function projectMediaTimelineKindForAsset(asset: WorkspaceAssetRecord): P
 export function projectMediaTimelineKindForGeneratedNode(node: WorkspaceGraphNode): ProjectMediaTimelineDragPayload['mediaKind'] | null {
   const output = node.data.output;
   if (!output || output.status === 'placeholder' || output.status === 'processing' || output.status === 'failed') return null;
+  if (output.kind === 'text') return null;
   if (output.kind === 'audio') return output.url ? 'audio' : null;
   if (output.kind === 'image') return output.url || output.thumbUrl ? 'image' : null;
   return output.url ? 'video' : null;

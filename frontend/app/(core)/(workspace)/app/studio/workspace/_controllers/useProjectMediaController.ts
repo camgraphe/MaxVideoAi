@@ -25,6 +25,7 @@ import {
   deriveWorkspaceMediaDimensions,
   parseWorkspaceMediaDimensions,
 } from '../_lib/workspace-clip-composition';
+import { generatedNodeProjectAssetId } from '../_lib/workspace-generated-media';
 import { clearTimelineNodeDragPayload } from '../_lib/timeline/timeline-external-drop';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
@@ -133,8 +134,16 @@ function isProjectMediaMultiSelectionGesture(gesture?: ProjectMediaSelectionGest
   return Boolean(gesture?.ctrlKey || gesture?.metaKey || gesture?.shiftKey);
 }
 
-function generatedClipNodes(nodes: WorkspaceGraphNode[]): WorkspaceGraphNode[] {
-  return nodes.filter((node) => node.data.kind === 'output' && Boolean(node.data.output));
+function generatedClipNodes(
+  nodes: WorkspaceGraphNode[],
+  projectAssets: WorkspaceAssetRecord[]
+): WorkspaceGraphNode[] {
+  const persistedAssetIds = new Set(projectAssets.map((asset) => asset.id));
+  return nodes.filter((node) => (
+    node.data.kind === 'output'
+    && Boolean(node.data.output)
+    && !persistedAssetIds.has(generatedNodeProjectAssetId(node.id))
+  ));
 }
 
 function mediaCardKindForAsset(asset: WorkspaceAssetRecord): 'audio' | 'image' | 'video' {
@@ -261,7 +270,7 @@ export function useProjectMediaController({
   onRenameProjectMediaFolder,
   onSelectSequence,
 }: UseProjectMediaControllerArgs) {
-  const generatedNodes = useMemo(() => generatedClipNodes(nodes), [nodes]);
+  const generatedNodes = useMemo(() => generatedClipNodes(nodes, projectAssets), [nodes, projectAssets]);
   const [selectedMediaItems, setSelectedMediaItems] = useState<ProjectMediaSelectionItem[]>([]);
   const [selectionAnchorKey, setSelectionAnchorKey] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<ProjectMediaContextMenu | null>(null);

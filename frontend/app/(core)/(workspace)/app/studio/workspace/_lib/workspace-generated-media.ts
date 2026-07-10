@@ -1,5 +1,9 @@
 import type { WorkspaceAssetRecord, WorkspaceGraphNode } from './workspace-types';
 
+export function generatedNodeProjectAssetId(nodeId: string): string {
+  return `asset-${nodeId}`;
+}
+
 function generatedAssetExtension(kind: WorkspaceAssetRecord['kind']): string {
   if (kind === 'video') return 'mp4';
   if (kind === 'audio') return 'mp3';
@@ -13,7 +17,7 @@ export function workspaceAssetFromOutputNode(node: WorkspaceGraphNode): Workspac
 
   const kind: WorkspaceAssetRecord['kind'] = output.kind;
   return {
-    id: `asset-${node.id}`,
+    id: generatedNodeProjectAssetId(node.id),
     kind,
     filename: `${node.data.title || 'Generated output'}.${generatedAssetExtension(kind)}`,
     subtitle: [output.modelLabel, output.durationSec ? `${output.durationSec}s` : null, output.aspectRatio]

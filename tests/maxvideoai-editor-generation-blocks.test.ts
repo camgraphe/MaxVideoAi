@@ -271,6 +271,25 @@ test('Studio generation promotes ready outputs through the project-media asset c
   assert.match(workspaceSource, /onGeneratedProjectAsset: handleGeneratedProjectAsset/, 'workspace should wire generated output promotion into the canvas controller');
 });
 
+test('Project media hides generated nodes after their persisted asset is available', () => {
+  const projectMediaControllerSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useProjectMediaController.ts'),
+    'utf8'
+  );
+
+  assert.match(projectMediaControllerSource, /generatedNodeProjectAssetId/, 'controller should share the generated asset id contract');
+  assert.match(
+    projectMediaControllerSource,
+    /!persistedAssetIds\.has\(generatedNodeProjectAssetId\(node\.id\)\)/,
+    'persisted generated assets should be authoritative in Project media'
+  );
+  assert.match(
+    projectMediaControllerSource,
+    /generatedClipNodes\(nodes, projectAssets\)/,
+    'all generated-node Project media views and counts should use the deduplicated collection'
+  );
+});
+
 test('Studio graph normalization migrates stale generated block source handles to typed media outputs', () => {
   const angleShot = getWorkspaceBlockPreset('angle')?.defaultShot;
   const musicShot = getWorkspaceBlockPreset('audio-music')?.defaultShot;
