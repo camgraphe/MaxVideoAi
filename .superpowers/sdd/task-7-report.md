@@ -164,3 +164,35 @@ Result: pass.
 ### Concerns
 
 - The focused suite remains blocked by the same two unrelated existing architecture failures above.
+
+## Fix pass 4
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets.ts`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 42 passed, 2 failed. The new valid-but-unverified library metadata regression passes: library-card metadata remains available, while imported Project media omits `durationSec` and `dimensions` and requires hydration. The two remaining failures are unchanged and unrelated: the shot-control duration source assertion and pricing preflight's `includes` error in `model-input-connectors.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`0a50ba24970eaf9aa15b9524a3dd33823e86cc9c` - `fix: defer unverified project media metadata`
+
+### Concerns
+
+- The focused suite remains blocked only by the two unrelated existing architecture failures above.
