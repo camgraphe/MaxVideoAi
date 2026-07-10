@@ -1192,8 +1192,21 @@ test('Studio shot generate button uses the full action row after status badge re
 
   assert.match(controlsStyles, /\.shotActionRow\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.doesNotMatch(controlsStyles, /grid-template-columns:\s*minmax\(54px,\s*0\.42fr\)/);
-  assert.match(nodeControlsSource, /shotGeneratePrice[\s\S]*title=\{estimatedCost\}/);
+  assert.match(nodeControlsSource, /shotGeneratePrice[\s\S]*title=\{pricingDetail\}/);
   assert.match(controlsStyles, /\.shotGeneratePrice\s*\{[\s\S]*min-width:\s*0[\s\S]*max-width:\s*96px[\s\S]*text-overflow:\s*ellipsis/);
+});
+
+test('Studio shot-node pricing errors remain available beyond the compact price label', () => {
+  const nodeControlsSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'),
+    'utf8'
+  );
+
+  assert.match(nodeControlsSource, /const pricingDetail = data\.pricingEstimate\?\.error \?\? estimatedCost/);
+  assert.match(nodeControlsSource, /title=\{pricingDetail\}/);
+  assert.match(nodeControlsSource, /aria-label=\{pricingDetail\}/);
+  assert.match(nodeControlsSource, /const statusDetail = data\.pricingEstimate\?\.error[\s\S]*data\.pricingEstimate\.error[\s\S]*: validationText/);
+  assert.match(nodeControlsSource, /<small title=\{statusDetail\}>\{statusDetail\}<\/small>/);
 });
 
 test('Studio rendered shot nodes derive input docks and target handles from block policy', () => {

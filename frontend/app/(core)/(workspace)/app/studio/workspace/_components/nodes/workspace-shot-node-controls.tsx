@@ -73,6 +73,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
   const hideModelSelect = !policy.controlFields.includes('model') || !sections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
   const canGenerate = validation?.canGenerate ?? policy.canGenerate;
   const estimatedCost = data.pricingEstimate?.label ?? copy.estimating;
+  const pricingDetail = data.pricingEstimate?.error ?? estimatedCost;
   const patchShot = (patch: Partial<WorkspaceShotSettings>) => data.onPatchShot?.(nodeId, patch);
   const recommendedModels = (validation?.recommendedModels ?? [])
     .filter((capability) => compatibleCapabilities.some((candidate) => candidate.id === capability.id))
@@ -87,6 +88,9 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
     : incompatibleInputs.length
       ? formatCopyValue(copy.unsupportedInputs, { inputs: incompatibleInputs.map(edgeLabel).join(', ') })
       : copy.connectedInputsMatch;
+  const statusDetail = data.pricingEstimate?.error
+    ? `${validationText}. ${data.pricingEstimate.error}`
+    : validationText;
 
   return (
     <div className={styles.shotControlPanel} data-shot-node-grammar="primary-settings generate-status">
@@ -146,8 +150,8 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
           <strong
             className={styles.shotGeneratePrice}
             data-shot-generate-price="true"
-            title={estimatedCost}
-            aria-label={estimatedCost}
+            title={pricingDetail}
+            aria-label={pricingDetail}
           >
             {estimatedCost}
           </strong>
@@ -157,7 +161,7 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
       <div className={`${styles.shotValidationLine} ${canGenerate ? styles.shotValidationReady : styles.shotValidationWarning}`}>
         {canGenerate ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
         <span>{canGenerate ? copy.readyToGenerate : copy.needsAttention}</span>
-        <small>{validationText}</small>
+        <small title={statusDetail}>{statusDetail}</small>
       </div>
     </div>
   );
