@@ -104,8 +104,9 @@ The workspace engine control renders exactly one visible row:
 ### Image
 
 - The image preview keeps its entry-derived aspect ratio and `object-contain` rendering.
-- The image action toolbar is constrained to the same rendered preview width.
-- Its centered alignment remains correct for square, portrait, landscape, and custom dimensions.
+- The image action toolbar shares the rendered preview's center axis.
+- It may expand to a 244px minimum width, bounded by the preview parent, so five actions remain on one line under narrow portrait media.
+- Its centered alignment remains correct for square, portrait, landscape, and custom dimensions without forcing a tall multi-row action stack.
 - Edit, add/remove library, download, copy, modal, and variant navigation behavior remain unchanged.
 
 The shared invariant is that media and its action bar read as one visual unit.
@@ -270,7 +271,7 @@ The lot is complete when:
 
 1. no visible workspace Browse link or residual space remains;
 2. engine and variant stay on one aligned row down to 320px;
-3. preview tools center on the actual video/image stage width;
+3. preview tools center on the actual video/image stage, with the image toolbar retaining a compact one-row action width;
 4. standard workspace prompts show seven full lines;
 5. compact settings omit chevrons and redundant resolution suffixes;
 6. Generate is slightly smaller while preserving one readable price;

@@ -98,7 +98,7 @@ test('workspace variant trigger is compact and does not spend width on a chevron
     /buttonClassName="!min-w-0 /,
     'workspace variant trigger must override the shared minimum width'
   );
-  assert.match(variantControlSource, /w-\[104px\].*sm:w-\[124px\]/s);
+  assert.match(variantControlSource, /w-\[92px\].*sm:w-\[124px\]/s);
   assert.match(variantControlSource, /h-\[42px\]/);
   assert.match(variantControlSource, /hideChevron/);
 });
@@ -109,9 +109,10 @@ test('workspace engine and variant controls stay together without a Browse row',
     /controlPresentation === 'workspace' \? \([\s\S]*?\n\s*\) : \(/,
   )?.[0] ?? '';
 
-  assert.match(workspaceBranch, /flex min-w-0 flex-nowrap items-end gap-3/);
-  assert.match(workspaceBranch, /<div className="min-w-0 flex-1">/);
-  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-\[42px\]/);
+  assert.match(workspaceBranch, /flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3/);
+  assert.match(workspaceBranch, /<div className="min-w-0 flex-1 overflow-hidden sm:w-\[320px\] sm:flex-none">/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace' && 'w-full min-w-0'/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-\[42px\] w-full/);
   assert.doesNotMatch(workspaceBranch, /copy\.browseCompact|ExternalLink/);
   assert.match(engineSelectSource, /copy\.browse/);
   assert.match(engineSelectSource, /BrowseEnginesModal/);

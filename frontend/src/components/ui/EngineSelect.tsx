@@ -158,7 +158,7 @@ export function EngineSelect({
         'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
         isBarVariant
           ? controlPresentation === 'workspace'
-            ? 'h-[42px] px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
+            ? 'h-[42px] w-full px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
             : 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]'
           : 'px-4 py-3 text-sm'
       )}
@@ -225,6 +225,7 @@ export function EngineSelect({
       <div
         className={clsx(
           'flex flex-wrap',
+          controlPresentation === 'workspace' && 'w-full min-w-0',
           isBarVariant
             ? isStackedMode
               ? clsx('w-full items-start gap-2', isCompact ? 'sm:gap-3' : 'sm:gap-4')
@@ -234,8 +235,8 @@ export function EngineSelect({
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
           {controlPresentation === 'workspace' ? (
-            <div className="flex min-w-0 flex-nowrap items-end gap-3">
-              <div className="min-w-0 flex-1">
+            <div className="flex w-full max-w-full min-w-0 flex-nowrap items-end gap-2 sm:gap-3">
+              <div className="min-w-0 flex-1 overflow-hidden sm:w-[320px] sm:flex-none">
                 <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
                   {copy.choose}
                 </label>

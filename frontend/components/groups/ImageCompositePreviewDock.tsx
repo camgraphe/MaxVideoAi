@@ -117,9 +117,12 @@ export function ImageCompositePreviewDock({
         const width = workspaceDensity
           ? Math.min(parent.clientWidth, maxHeight * ratio)
           : parent.clientWidth;
+        const toolbarWidth = Math.min(parent.clientWidth, Math.max(width, 244));
         const widthPx = `${Math.round(width)}px`;
         if (preview.style.width !== widthPx) preview.style.width = widthPx;
-        if (toolbar.style.width !== widthPx) toolbar.style.width = widthPx;
+        if (toolbar.style.width !== `${Math.round(toolbarWidth)}px`) {
+          toolbar.style.width = `${Math.round(toolbarWidth)}px`;
+        }
       });
     };
 

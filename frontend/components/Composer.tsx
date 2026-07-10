@@ -9,7 +9,7 @@ import { CURRENCY_LOCALE } from '@/lib/intl';
 import { AssetDropzone } from '@/components/AssetDropzone';
 import { ComposerMultiPromptEditor } from '@/components/composer/ComposerMultiPromptEditor';
 import { ComposerPromotedActionIcon } from '@/components/composer/ComposerPromotedActionIcon';
-import { getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
+import { getWorkspaceAssetFieldRank, getWorkspaceAssetGridClass } from '@/components/composer/composer-layout';
 import { DEFAULT_COMPOSER_COPY, type ComposerCopy } from '@/components/composer/composer-copy';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { isHappyHorseEngineId } from '@/lib/happy-horse-workflow';
@@ -152,20 +152,9 @@ export function Composer({
       return assetFields;
     }
 
-    const order = new Map<string, number>([
-      ['image_url', 0],
-      ['video_url', 0],
-      ['end_image_url', 1],
-      ['image_urls', 2],
-      ['reference_image_urls', 3],
-      ['video_urls', 4],
-      ['audio_urls', 5],
-      ['audio_url', 6],
-    ]);
-
     return [...assetFields].sort((left, right) => {
-      const leftRank = order.get(left.field.id) ?? 99;
-      const rightRank = order.get(right.field.id) ?? 99;
+      const leftRank = getWorkspaceAssetFieldRank(engine.id, left.field.id);
+      const rightRank = getWorkspaceAssetFieldRank(engine.id, right.field.id);
       if (leftRank !== rightRank) {
         return leftRank - rightRank;
       }
