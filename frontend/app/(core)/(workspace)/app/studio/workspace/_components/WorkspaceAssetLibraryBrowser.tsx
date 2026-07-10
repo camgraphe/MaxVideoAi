@@ -37,11 +37,14 @@ type WorkspaceAssetLibraryBrowserProps = {
   onLoadMore?: () => void;
   onSelectAsset?: (asset: WorkspaceLibraryAsset) => void;
   selectedAssetIds?: readonly string[];
+  selectOnToggle?: boolean;
   onToggleAssetSelection?: (
     asset: WorkspaceLibraryAsset,
     event: MouseEvent<HTMLButtonElement>,
     visibleAssets: WorkspaceLibraryAsset[]
   ) => void;
+  searchQuery?: string;
+  onSearchQueryChange?: (query: string) => void;
   headerActions?: ReactNode;
   searchPlaceholder?: string;
   emptyLabel?: string;
@@ -86,18 +89,26 @@ export function WorkspaceAssetLibraryBrowser({
   onLoadMore,
   onSelectAsset,
   selectedAssetIds = [],
+  selectOnToggle = false,
   onToggleAssetSelection,
+  searchQuery: controlledSearchQuery,
+  onSearchQueryChange,
   headerActions,
   searchPlaceholder,
   emptyLabel,
   emptySearchLabel,
 }: WorkspaceAssetLibraryBrowserProps) {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const searchQuery = controlledSearchQuery ?? localSearchQuery;
   const selectedAssetIdSet = useMemo(() => new Set(selectedAssetIds), [selectedAssetIds]);
 
   useEffect(() => {
-    setSearchQuery('');
-  }, [mediaKindFilter, source]);
+    if (controlledSearchQuery === undefined) {
+      setLocalSearchQuery('');
+    } else {
+      onSearchQueryChange?.('');
+    }
+  }, [mediaKindFilter, onSearchQueryChange, source]);
 
   const filteredAssets = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -141,7 +152,11 @@ export function WorkspaceAssetLibraryBrowser({
         <input
           type="search"
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.currentTarget.value)}
+          onChange={(event) => {
+            const nextQuery = event.currentTarget.value;
+            if (controlledSearchQuery === undefined) setLocalSearchQuery(nextQuery);
+            onSearchQueryChange?.(nextQuery);
+          }}
           placeholder={searchPlaceholder ?? copy.searchPlaceholder}
         />
       </label>
@@ -220,6 +235,7 @@ export function WorkspaceAssetLibraryBrowser({
                   onClick={(event) => {
                     if (onToggleAssetSelection) {
                       onToggleAssetSelection(asset, event, filteredAssets);
+                      if (selectOnToggle) onSelectAsset?.(asset);
                       return;
                     }
                     onSelectAsset?.(asset);

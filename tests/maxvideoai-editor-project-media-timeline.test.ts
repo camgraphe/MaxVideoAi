@@ -98,6 +98,25 @@ test('project media metadata helpers do not invent resolution for unknown videos
   assert.equal(workspaceProjectMediaResolutionLabel(asset), null);
 });
 
+test('project media metadata helpers reject malformed and non-positive resolutions', () => {
+  for (const dimensions of ['0x0', '00x00', '-1920x1080', 'not-a-resolution']) {
+    const asset = {
+      id: `asset-${dimensions}`,
+      kind: 'video',
+      filename: 'unverified.mp4',
+      subtitle: 'Video',
+      url: 'https://example.com/unverified.mp4',
+      dimensions,
+    } as WorkspaceAssetRecord;
+
+    assert.equal(
+      workspaceProjectMediaResolutionLabel(asset),
+      null,
+      `${dimensions} must not be presented as a measured resolution`
+    );
+  }
+});
+
 test('ready generated output nodes become typed project media assets', () => {
   const asset = workspaceAssetFromOutputNode({
     id: 'output-video-1',

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, MouseEvent } from 'react';
 import { Upload, X } from 'lucide-react';
 import { authFetch } from '@/lib/authFetch';
 import { prepareImageFileForUpload } from '@/lib/client-image-upload';
@@ -33,10 +33,14 @@ type WorkspaceAssetLibraryModalProps = {
   source: WorkspaceLibrarySource;
   sourceOptions: readonly WorkspaceLibrarySource[];
   sourceLabels: Record<WorkspaceLibrarySource, string>;
+  searchQuery: string;
+  selectedAssetIds: readonly string[];
   onClose: () => void;
   onLoadMore: () => void;
   onSelectAsset: (nodeId: string, asset: WorkspaceLibraryAsset) => void;
+  onSearchQueryChange: (query: string) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
+  onToggleAssetSelection: (assetId: string, mode: 'replace' | 'toggle' | 'range') => void;
 };
 
 function formatCopyValue(value: string, replacements: Record<string, string | number>): string {
@@ -65,10 +69,14 @@ export function WorkspaceAssetLibraryModal({
   source,
   sourceOptions,
   sourceLabels,
+  searchQuery,
+  selectedAssetIds,
   onClose,
   onLoadMore,
   onSelectAsset,
+  onSearchQueryChange,
   onSourceChange,
+  onToggleAssetSelection,
 }: WorkspaceAssetLibraryModalProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -122,6 +130,12 @@ export function WorkspaceAssetLibraryModal({
 
   if (!node) return null;
   const typeLabel = assetTypeLabel(node.data.kind, copy);
+  const handleToggleAssetSelection = (
+    asset: WorkspaceLibraryAsset,
+    event: MouseEvent<HTMLButtonElement>
+  ) => {
+    onToggleAssetSelection(asset.id, event.shiftKey ? 'range' : event.metaKey || event.ctrlKey ? 'toggle' : 'replace');
+  };
 
   return (
     <div
@@ -163,6 +177,11 @@ export function WorkspaceAssetLibraryModal({
           isLoadingMore={isLoadingMore}
           onLoadMore={onLoadMore}
           onSelectAsset={(asset) => onSelectAsset(node.id, asset)}
+          selectedAssetIds={selectedAssetIds}
+          selectOnToggle
+          onToggleAssetSelection={handleToggleAssetSelection}
+          searchQuery={searchQuery}
+          onSearchQueryChange={onSearchQueryChange}
           headerActions={
             uploadEndpoint ? (
               <button

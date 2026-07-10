@@ -5007,7 +5007,9 @@ test('studio editor asset library hook owns pagination and project media kind fi
 
 test('studio asset library browser renders optional media kind filters and load more control', () => {
   const assetLibraryBrowserSource = source(assetLibraryBrowserPath);
+  const assetLibraryModalSource = source(assetLibraryModalPath);
   const projectMediaModalSource = source(join(workspaceDir, '_components/WorkspaceProjectMediaLibraryModal.tsx'));
+  const runtimeModalsSource = source(runtimeModalsPath);
 
   assert.match(assetLibraryBrowserSource, /mediaKindFilter\?:/);
   assert.match(assetLibraryBrowserSource, /copy\.mediaKindFilters/);
@@ -5015,4 +5017,14 @@ test('studio asset library browser renders optional media kind filters and load 
   assert.match(assetLibraryBrowserSource, /copy\.loadingMore/);
   assert.match(assetLibraryBrowserSource, /copy\.searchLoadedItemsHint/);
   assert.match(projectMediaModalSource, /onMediaKindFilterChange=\{onMediaKindFilterChange\}/);
+  assert.match(assetLibraryBrowserSource, /searchQuery\?: string/);
+  assert.match(assetLibraryBrowserSource, /onSearchQueryChange\?: \(query: string\) => void/);
+  assert.match(assetLibraryBrowserSource, /searchQuery: controlledSearchQuery/);
+  assert.match(assetLibraryModalSource, /selectedAssetIds/);
+  assert.match(assetLibraryModalSource, /onToggleAssetSelection/);
+  assert.match(assetLibraryModalSource, /searchQuery/);
+  assert.match(assetLibraryModalSource, /onSearchQueryChange/);
+  assert.match(runtimeModalsSource, /searchQuery=\{assetPickerLibrary\.searchQuery\}/);
+  assert.match(runtimeModalsSource, /selectedAssetIds=\{assetPickerLibrary\.selectedAssetIds\}/);
+  assert.match(runtimeModalsSource, /onToggleAssetSelection=\{assetPickerLibrary\.toggleAssetSelection\}/);
 });

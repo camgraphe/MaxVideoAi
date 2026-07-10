@@ -116,10 +116,14 @@ export function WorkspaceRuntimeModals({
         source={assetPickerLibrary.source}
         sourceOptions={assetPickerLibrary.sourceOptions}
         sourceLabels={assetPickerLibrary.sourceLabels}
+        searchQuery={assetPickerLibrary.searchQuery}
+        selectedAssetIds={assetPickerLibrary.selectedAssetIds}
         onClose={onAssetPickerClose}
         onLoadMore={assetPickerLibrary.loadMore}
         onSelectAsset={onSelectAsset}
+        onSearchQueryChange={assetPickerLibrary.setSearchQuery}
         onSourceChange={assetPickerLibrary.setSource}
+        onToggleAssetSelection={assetPickerLibrary.toggleAssetSelection}
       />
       <WorkspaceProjectMediaLibraryModal
         copy={assetLibraryCopy}

@@ -60,9 +60,11 @@ export function workspaceProjectMediaNeedsMetadata(asset: WorkspaceAssetRecord):
 }
 
 export function workspaceProjectMediaResolutionLabel(asset: WorkspaceAssetRecord): string | null {
+  if (!asset.dimensions || !/^\d{1,5}\s*[x×]\s*\d{1,5}$/.test(asset.dimensions.trim())) {
+    return null;
+  }
   const dimensions = parseWorkspaceMediaDimensions(asset.dimensions);
-  if (dimensions) return `${dimensions.width}x${dimensions.height}`;
-  return asset.dimensions?.trim() || null;
+  return dimensions ? `${dimensions.width}x${dimensions.height}` : null;
 }
 
 export function workspaceAssetNeedsMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
