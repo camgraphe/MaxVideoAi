@@ -60,10 +60,6 @@ export function shouldMarkTrackingNoindex(req: NextRequest, pathname: string, is
   if (isAdminRoute) {
     return false;
   }
-  const trackingSource = req.nextUrl.searchParams.get('utm_source')?.toLowerCase();
-  if (trackingSource === 'startupfa.me') {
-    return false;
-  }
   if (!hasTrackingParams(req.nextUrl.searchParams)) {
     return false;
   }

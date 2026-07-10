@@ -7,6 +7,11 @@ import {
   ENGINE_OPTIONS,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
 import { resolvePromptInheritedShowdowns } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
+import * as compareRouting from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts';
+import {
+  getCanonicalCompareSlug,
+  resolveLegacyCompareRedirect,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-routing.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 const routePath = 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx';
@@ -75,6 +80,52 @@ const metadataSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-metadata.ts',
   'utf8'
 );
+
+test('comparison routing exposes a focused legacy replacement resolver', () => {
+  assert.equal(
+    typeof (compareRouting as Record<string, unknown>).resolveLegacyCompareRedirect,
+    'function',
+  );
+});
+
+test('legacy Happy Horse 1.0 vs Sora comparison redirects to the published 1.1 replacement', () => {
+  assert.equal(
+    resolveLegacyCompareRedirect({
+      slug: 'happy-horse-1-0-vs-sora-2-pro',
+      locale: 'en',
+    }),
+    '/ai-video-engines/happy-horse-1-1-vs-sora-2-pro',
+  );
+  assert.equal(
+    resolveLegacyCompareRedirect({
+      slug: 'happy-horse-1-0-vs-sora-2-pro',
+      order: 'happy-horse-1-0',
+      locale: 'es',
+    }),
+    '/es/comparativa/happy-horse-1-1-vs-sora-2-pro?order=happy-horse-1-1',
+  );
+  assert.equal(
+    resolveLegacyCompareRedirect({
+      slug: 'happy-horse-1-0-vs-seedance-2-0',
+      locale: 'fr',
+    }),
+    null,
+  );
+  const reversed = getCanonicalCompareSlug('sora-2-pro-vs-happy-horse-1-0');
+  assert.equal(
+    resolveLegacyCompareRedirect({
+      slug: reversed?.canonicalSlug ?? '',
+      order: 'sora-2-pro',
+      locale: 'fr',
+    }),
+    '/fr/comparatif/happy-horse-1-1-vs-sora-2-pro?order=sora-2-pro',
+  );
+});
+
+test('comparison detail page applies legacy replacements as permanent redirects', () => {
+  assert.match(pageSource, /resolveLegacyCompareRedirect/);
+  assert.match(pageSource, /legacyRedirect[\s\S]*permanentRedirect\(legacyRedirect\)/);
+});
 const scorecardSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-scorecard.ts',
   'utf8'

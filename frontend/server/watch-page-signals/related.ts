@@ -1,4 +1,5 @@
 import type { SeoWatchVideoConfig } from '@/config/video-seo-watchlist';
+import { buildVideoWatchPath } from '@/lib/video-seo-canonical';
 import type { GalleryVideo } from '@/server/videos';
 import type { CandidateRow, WatchPageDerivedSignals, WatchPageRelatedLink } from './types';
 
@@ -10,6 +11,7 @@ export function toWatchPageRelatedCandidate(params: {
   const { entry, video, signals } = params;
   return {
     id: entry.id,
+    canonicalSlug: signals.canonicalSlug,
     title: signals.title,
     subtitle: signals.intro,
     engineLabel: signals.engineLabel,
@@ -68,7 +70,7 @@ export function pickRelatedWatchPages(params: {
 
       return {
         id: candidate.id,
-        href: `/video/${encodeURIComponent(candidate.id)}`,
+        href: buildVideoWatchPath(candidate.id, candidate.canonicalSlug),
         title: candidate.title,
         subtitle: candidate.subtitle,
         engineLabel: candidate.engineLabel,

@@ -2,7 +2,7 @@
 
 # AI search and answer crawlers are allowed on public marketing, docs,
 # examples, model, pricing, and blog pages. Private app/admin/API surfaces
-# remain blocked for these crawlers just as they are for general crawlers.
+# remain blocked for named AI crawlers.
 User-agent: OAI-SearchBot
 User-agent: OAI-AdsBot
 User-agent: ChatGPT-User
@@ -19,7 +19,7 @@ Allow: /hero/
 Allow: /favicon.ico
 Allow: /api/legal/cookies/version
 Disallow: /api/
-Disallow: /admin/
+Disallow: /admin
 Disallow: /app
 Disallow: /generate
 Disallow: /dashboard
@@ -54,24 +54,22 @@ Allow: /hero/
 Allow: /favicon.ico
 Allow: /api/legal/cookies/version
 
-# Sensitive areas
+# Sensitive and authenticated areas. /app is intentionally crawlable because
+# it returns noindex metadata and an X-Robots-Tag for every query variant.
 Disallow: /api/
-Disallow: /admin/
-Disallow: /app
+Disallow: /admin
 Disallow: /generate
 Disallow: /dashboard
 Disallow: /jobs
 Disallow: /billing
 Disallow: /settings
 Disallow: /connect
-Disallow: /fr/app
 Disallow: /fr/generate
 Disallow: /fr/dashboard
 Disallow: /fr/jobs
 Disallow: /fr/billing
 Disallow: /fr/settings
 Disallow: /fr/connect
-Disallow: /es/app
 Disallow: /es/generate
 Disallow: /es/dashboard
 Disallow: /es/jobs

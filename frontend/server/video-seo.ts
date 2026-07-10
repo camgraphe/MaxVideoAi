@@ -239,7 +239,7 @@ export async function getVideoWatchPageDataById(id: string): Promise<VideoWatchP
     video,
     signals,
     related: pickRelatedWatchPages({
-      currentId: id,
+      currentId: resolvedId,
       currentSignals: signals,
       candidates: candidateRows,
       limit: 4,

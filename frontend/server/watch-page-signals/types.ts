@@ -129,6 +129,7 @@ export type WatchPageDerivedSignals = {
 
 export type CandidateRow = {
   id: string;
+  canonicalSlug: string | null;
   title: string;
   subtitle: string;
   engineLabel: string;
