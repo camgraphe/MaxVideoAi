@@ -25,6 +25,11 @@ type PasteWorkspaceGraphClipboardResult = {
   pastedNodeIds: string[];
 };
 
+type DuplicateWorkspaceGraphSelectionParams = WorkspaceGraphClipboardParams & {
+  idSeed?: string;
+  offset?: { x: number; y: number };
+};
+
 const DEFAULT_PASTE_OFFSET = { x: 36, y: 36 };
 
 const RENDER_ONLY_NODE_DATA_KEYS = new Set<keyof WorkspaceNodeData>([
@@ -83,6 +88,10 @@ function uniqueGraphId(baseId: string, usedIds: Set<string>): string {
   }
   usedIds.add(nextId);
   return nextId;
+}
+
+function graphClipboardIdSeed(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
 export function createWorkspaceGraphClipboardSnapshot({
@@ -163,4 +172,20 @@ export function pasteWorkspaceGraphClipboardSnapshot({
     ],
     pastedNodeIds: pastedNodes.map((node) => node.id),
   };
+}
+
+export function duplicateWorkspaceGraphSelection({
+  edges,
+  idSeed = graphClipboardIdSeed(),
+  nodes,
+  offset,
+  selectedNodeIds,
+}: DuplicateWorkspaceGraphSelectionParams): PasteWorkspaceGraphClipboardResult {
+  return pasteWorkspaceGraphClipboardSnapshot({
+    currentEdges: [],
+    currentNodes: [],
+    idSeed,
+    offset,
+    snapshot: createWorkspaceGraphClipboardSnapshot({ edges, nodes, selectedNodeIds }),
+  });
 }

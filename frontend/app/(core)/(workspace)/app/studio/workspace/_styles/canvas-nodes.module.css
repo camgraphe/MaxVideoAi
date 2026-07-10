@@ -479,6 +479,12 @@
   touch-action: none;
 }
 
+.graphHandle::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+
 .graphHandle::after {
   content: "";
   position: absolute;

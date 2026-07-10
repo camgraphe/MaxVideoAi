@@ -389,6 +389,16 @@ test('canvas clipboard duplicates selected graph nodes and their internal edges'
   );
 });
 
+test('canvas handle drop and clipboard behavior stay in focused helpers', () => {
+  const canvasSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceCanvas.client.tsx'),
+    'utf8'
+  );
+  assert.match(canvasSource, /workspace-handle-drop/);
+  assert.match(canvasSource, /workspace-graph-clipboard/);
+  assert.doesNotMatch(canvasSource, /navigator\.clipboard\.writeText\(JSON\.stringify/);
+});
+
 test('timeline playhead visibility follows the unbuffered viewport window', async () => {
   const { isTimelinePlayheadVisibleInViewport } = await import(
     '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-playhead-visibility'

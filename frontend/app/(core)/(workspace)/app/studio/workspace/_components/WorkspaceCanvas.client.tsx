@@ -39,6 +39,7 @@ import {
   resolveWorkspaceHandleDropDraft,
   type WorkspaceHandleDropDirection,
 } from '../_lib/workspace-handle-drop';
+import { createWorkspaceGraphClipboardSnapshot } from '../_lib/workspace-graph-clipboard';
 import { inferWorkspaceEdgeKind, WORKSPACE_EDGE_COLORS } from '../_lib/workspace-templates';
 import { CanvasHandleDropPreview, type HandleDropPreview } from './canvas/CanvasHandleDropPreview';
 import {
@@ -189,6 +190,14 @@ function isEditableCanvasShortcutTarget(target: EventTarget | null): boolean {
     current = current.parentElement;
   }
   return false;
+}
+
+function isCanvasDialogTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && Boolean(target.closest('[role="dialog"], [aria-modal="true"]'));
+}
+
+function isCanvasCommandTarget(target: EventTarget | null): boolean {
+  return isEditableCanvasShortcutTarget(target) || isCanvasDialogTarget(target) || isCanvasDialogTarget(document.activeElement);
 }
 
 function canvasShortcutLetter(event: KeyboardEvent): string {
@@ -356,7 +365,7 @@ function WorkspaceCanvasInner({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
       if (event.key.toLowerCase() !== 'i') return;
-      if (isEditableCanvasShortcutTarget(event.target)) return;
+      if (isCanvasCommandTarget(event.target)) return;
       const selectedNodeId = selectedNodeIdRef.current;
       if (!selectedNodeId) return;
       event.preventDefault();
@@ -379,7 +388,7 @@ function WorkspaceCanvasInner({
         onUndo,
       } = canvasShortcutStateRef.current;
       if (!isActive) return;
-      if (isEditableCanvasShortcutTarget(event.target)) return;
+      if (isCanvasCommandTarget(event.target)) return;
       const shortcut = canvasHistoryShortcut(event);
       if (!shortcut) return;
 
@@ -405,12 +414,11 @@ function WorkspaceCanvasInner({
     };
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.altKey || (!event.metaKey && !event.ctrlKey)) return;
-      if (isEditableCanvasShortcutTarget(event.target)) return;
-      const { isActive, onCopySelectedNodes: copySelectedNodes, onPasteCopiedNodes: pasteCopiedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
+      if (isCanvasCommandTarget(event.target)) return;
+      const { isActive, onPasteCopiedNodes: pasteCopiedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
       if (!isActive) return;
       const key = canvasShortcutLetter(event);
       if (key === 'c' && copiedNodeIds.length) {
-        copySelectedNodes(copiedNodeIds);
         return;
       }
       if (key !== 'v') return;
@@ -437,7 +445,7 @@ function WorkspaceCanvasInner({
     const handleCopy = (event: ClipboardEvent) => {
       const { isActive, onCopySelectedNodes: copySelectedNodes, selectedNodeIds: copiedNodeIds } = canvasClipboardStateRef.current;
       if (!isActive || !copiedNodeIds.length) return;
-      if (isEditableCanvasShortcutTarget(event.target)) return;
+      if (isCanvasCommandTarget(event.target)) return;
       const target = event.target instanceof Element ? event.target : null;
       const activeElement = document.activeElement;
       const isNeutralDocumentCopy =
@@ -449,6 +457,12 @@ function WorkspaceCanvasInner({
       if (target && !canvasShellRef.current?.contains(target) && !isNeutralDocumentCopy) return;
       const clipboardData = event.clipboardData;
       if (!clipboardData) return;
+      const snapshot = createWorkspaceGraphClipboardSnapshot({
+        edges,
+        nodes,
+        selectedNodeIds: copiedNodeIds,
+      });
+      if (!snapshot) return;
       clipboardData.setData(WORKSPACE_GRAPH_CLIPBOARD_TYPE, '1');
       clipboardData.setData('text/plain', WORKSPACE_GRAPH_CLIPBOARD_TEXT);
       event.preventDefault();
@@ -459,7 +473,7 @@ function WorkspaceCanvasInner({
     return () => {
       window.removeEventListener('copy', handleCopy);
     };
-  }, []);
+  }, [edges, nodes]);
 
   useEffect(() => {
     const canvasShell = canvasShellRef.current;
@@ -643,8 +657,22 @@ function WorkspaceCanvasInner({
         copy={copy}
         selectionTool={selectionTool}
         selectedNodeCount={selectedNodeIds.length}
-        onDeleteSelectedNodes={handleDeleteSelectedNodes}
-        onSelectionToolChange={setSelectionTool}
+        onDeleteSelectedNodes={() => {
+          onCanvasInteraction();
+          handleDeleteSelectedNodes();
+        }}
+        onSelectionToolChange={(tool) => {
+          onCanvasInteraction();
+          setSelectionTool(tool);
+        }}
+        onRedo={() => {
+          onCanvasInteraction();
+          toolbar.onRedo();
+        }}
+        onUndo={() => {
+          onCanvasInteraction();
+          toolbar.onUndo();
+        }}
       />
       <CanvasNavigatorPanel {...canvasNavigator} copy={copy} />
       {nodes.length === 0 ? (

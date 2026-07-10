@@ -8,7 +8,29 @@ import {
   findGeneratedOutputNodeForShot,
   outputNodeSubtitle,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-helpers';
+import { duplicateWorkspaceGraphSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-graph-clipboard';
+import type { WorkspaceGraphEdge, WorkspaceGraphNode } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-types';
 import { createStarterWorkspaceTemplate } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-templates';
+
+function graphNode(id: string, kind: string, x: number, y: number): WorkspaceGraphNode {
+  return {
+    id,
+    type: kind,
+    position: { x, y },
+    data: { kind, title: id },
+  } as WorkspaceGraphNode;
+}
+
+function graphEdge(id: string, source: string, target: string, kind: string): WorkspaceGraphEdge {
+  return {
+    id,
+    source,
+    target,
+    sourceHandle: kind,
+    targetHandle: kind,
+    data: { kind },
+  } as WorkspaceGraphEdge;
+}
 
 test('workspace graph helpers derive graph selection and connected inputs from templates', () => {
   const template = createStarterWorkspaceTemplate('product-ad');
@@ -56,5 +78,31 @@ test('workspace graph helpers keep output subtitles centralized', () => {
       sourceShotId: 'shot-01',
     }),
     '8s · 16:9'
+  );
+});
+
+test('canvas clipboard duplicates selected graph nodes and keeps internal edges only', () => {
+  const result = duplicateWorkspaceGraphSelection({
+    nodes: [
+      graphNode('prompt-1', 'text-prompt', 0, 0),
+      graphNode('shot-1', 'shot', 300, 0),
+      graphNode('shot-2', 'shot', 600, 0),
+    ],
+    edges: [
+      graphEdge('edge-internal', 'prompt-1', 'shot-1', 'prompt'),
+      graphEdge('edge-external', 'shot-1', 'shot-2', 'generated_output'),
+    ],
+    selectedNodeIds: ['prompt-1', 'shot-1'],
+    offset: { x: 48, y: 48 },
+  });
+
+  assert.equal(result.nodes.length, 2);
+  assert.equal(result.edges.length, 1);
+  assert.ok(result.edges[0].source !== 'prompt-1');
+  assert.ok(result.edges[0].target !== 'shot-1');
+  assert.deepEqual(
+    result.nodes.map((node) => node.position),
+    [{ x: 48, y: 48 }, { x: 348, y: 48 }],
+    'duplicates should keep their selected nodes\' relative positions'
   );
 });

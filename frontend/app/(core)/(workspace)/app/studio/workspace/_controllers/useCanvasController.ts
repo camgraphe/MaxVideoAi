@@ -69,7 +69,7 @@ function targetNodeIdFromEventTarget(target: EventTarget | null): string | null 
 
 function isEditablePasteTarget(target: EventTarget | null): boolean {
   if (!(target instanceof Element)) return false;
-  return Boolean(target.closest('input, textarea, select, [contenteditable="true"], audio, video'));
+  return Boolean(target.closest('input, textarea, select, [contenteditable="true"], audio, video, [role="dialog"], [aria-modal="true"]'));
 }
 
 export function useCanvasController({
@@ -125,7 +125,7 @@ export function useCanvasController({
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
-      if (isEditablePasteTarget(event.target)) return;
+      if (isEditablePasteTarget(event.target) || isEditablePasteTarget(document.activeElement)) return;
       const target = event.target instanceof Element ? event.target : null;
       const activeElement = document.activeElement;
       const isNeutralDocumentPaste =
