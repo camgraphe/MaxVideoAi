@@ -265,6 +265,37 @@ function lineCount(sourceText: string): number {
   return sourceText.split(/\r?\n/).length;
 }
 
+test('Studio responsive shell keeps Project media and inspector accessible without compressing the primary surface', () => {
+  const layoutSource = source(workspaceEditorLayoutPath);
+  const controlsSource = source(workspaceMobilePanelControlsPath);
+  const frameSource = source(workspaceMobilePanelFramePath);
+  const shellSource = source(shellStylesPath);
+
+  assert.match(layoutSource, /WorkspaceMobilePanelControls/);
+  assert.match(controlsSource, /aria-controls/);
+  assert.match(controlsSource, /aria-expanded/);
+  assert.match(controlsSource, /studio-project-media-panel/);
+  assert.match(controlsSource, /studio-inspector-panel/);
+  assert.match(
+    shellSource,
+    /@media \(max-width:\s*1120px\)[\s\S]*\.editorBody[\s\S]*grid-template-columns:\s*1fr/,
+    'tablet layout should preserve the primary surface by moving both side panels into drawers'
+  );
+  assert.match(
+    shellSource,
+    /@media \(max-width:\s*1120px\)[\s\S]*\.projectMediaPanelSlot[\s\S]*visibility:\s*hidden/,
+    'closed responsive panels should be absent from keyboard and accessibility navigation'
+  );
+  assert.match(
+    shellSource,
+    /\.mobilePanelOpen[\s\S]*visibility:\s*visible/,
+    'the active responsive panel should become visible'
+  );
+  assert.doesNotMatch(layoutSource, /aria-modal=/, 'responsive drawers should remain non-modal panels');
+  assert.doesNotMatch(layoutSource, /handlePanelKeyDown/, 'non-modal responsive panels should not trap Tab focus');
+  assert.match(frameSource, /event\.key !== 'Escape'/, 'responsive panel frames should close on Escape');
+});
+
 test('program snapshots only fall back to image-safe preview URLs', async () => {
   const {
     isProgramSnapshotImageUrl,
@@ -700,8 +731,8 @@ test('MaxVideoAI editor workspace is an isolated authenticated app route', () =>
   assert.match(shellStyleSource, /\.mobilePanelBackdrop/, 'shell CSS should own the mobile panel backdrop');
   assert.match(shellStyleSource, /\.projectMediaPanelSlot/, 'shell CSS should own the project media responsive slot');
   assert.match(shellStyleSource, /\.inspectorPanelSlot/, 'shell CSS should own the inspector responsive slot');
-  assert.match(shellStyleSource, /@media \(max-width:\s*900px\)[\s\S]*\.editorBody[\s\S]*grid-template-columns:\s*1fr/, 'mobile workspace should keep the central editor as a single-column primary surface');
-  assert.match(shellStyleSource, /@media \(max-width:\s*900px\)[\s\S]*\.mobilePanelOpen[\s\S]*pointer-events:\s*auto/, 'mobile panels should open as overlays instead of compressing the editor columns');
+  assert.match(shellStyleSource, /@media \(max-width:\s*1120px\)[\s\S]*\.editorBody[\s\S]*grid-template-columns:\s*1fr/, 'tablet and mobile workspaces should keep the central editor as a single-column primary surface');
+  assert.match(shellStyleSource, /@media \(max-width:\s*1120px\)[\s\S]*\.mobilePanelOpen[\s\S]*pointer-events:\s*auto/, 'tablet and mobile panels should open as overlays instead of compressing the editor columns');
   assert.doesNotMatch(inspectorStyleSource, /@media \(max-width:\s*980px\)[\s\S]*display:\s*none/, 'mobile inspector should remain available through the responsive drawer instead of disappearing');
   assert.match(studioSessionStyleSource, /\.studioWalletPill/, 'Studio session CSS should own wallet header styles');
   assert.match(studioSessionStyleSource, /\.studioSessionPill/, 'Studio session CSS should own account session styles');

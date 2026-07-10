@@ -245,11 +245,9 @@ export function WorkspaceEditorLayout({
             ref={mobilePanels.projectMediaPanelRef}
             id="studio-project-media-panel"
             className={`${styles.projectMediaPanelSlot} ${mobilePanels.activePanel === 'media' ? styles.mobilePanelOpen : ''}`}
-            role={mobilePanels.activePanel === 'media' ? 'dialog' : undefined}
-            aria-modal={mobilePanels.activePanel === 'media' ? true : undefined}
-            aria-label={mobilePanels.activePanel === 'media' ? studioCopy.viewer.projectMedia.title : undefined}
+            role="region"
+            aria-label={studioCopy.viewer.projectMedia.title}
             tabIndex={mobilePanels.activePanel === 'media' ? -1 : undefined}
-            onKeyDown={mobilePanels.activePanel === 'media' ? mobilePanels.handlePanelKeyDown : undefined}
           >
             <WorkspaceMobilePanelFrame
               closeLabel={closeProjectMediaDrawerLabel}
@@ -353,11 +351,9 @@ export function WorkspaceEditorLayout({
             id="studio-inspector-panel"
             className={`${styles.inspectorPanelSlot} ${styles.canvasInspectorSlot} ${mobilePanels.activePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
             aria-hidden={!shouldShowCanvasInspector}
-            role={mobilePanels.activePanel === 'inspector' ? 'dialog' : undefined}
-            aria-modal={mobilePanels.activePanel === 'inspector' ? true : undefined}
-            aria-label={mobilePanels.activePanel === 'inspector' ? mobileInspectorLabel : undefined}
+            role="region"
+            aria-label={mobileInspectorLabel}
             tabIndex={mobilePanels.activePanel === 'inspector' ? -1 : undefined}
-            onKeyDown={mobilePanels.activePanel === 'inspector' ? mobilePanels.handlePanelKeyDown : undefined}
           >
             <WorkspaceMobilePanelFrame
               closeLabel={closeInspectorDrawerLabel}
@@ -379,11 +375,9 @@ export function WorkspaceEditorLayout({
             ref={mobilePanels.inspectorPanelRef}
             id="studio-inspector-panel"
             className={`${styles.inspectorPanelSlot} ${mobilePanels.activePanel === 'inspector' ? styles.mobilePanelOpen : ''}`}
-            role={mobilePanels.activePanel === 'inspector' ? 'dialog' : undefined}
-            aria-modal={mobilePanels.activePanel === 'inspector' ? true : undefined}
-            aria-label={mobilePanels.activePanel === 'inspector' ? mobileInspectorLabel : undefined}
+            role="region"
+            aria-label={mobileInspectorLabel}
             tabIndex={mobilePanels.activePanel === 'inspector' ? -1 : undefined}
-            onKeyDown={mobilePanels.activePanel === 'inspector' ? mobilePanels.handlePanelKeyDown : undefined}
           >
             <WorkspaceMobilePanelFrame
               closeLabel={closeInspectorDrawerLabel}

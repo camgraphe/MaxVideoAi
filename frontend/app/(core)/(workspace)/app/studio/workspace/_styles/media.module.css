@@ -711,7 +711,7 @@
   line-height: 1.35;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .timelineProjectSidebar {
     display: flex;
     height: 100%;
@@ -735,7 +735,7 @@
 
   .projectMediaKindFilterButton,
   .projectMediaBackButton {
-    min-height: 38px;
+    min-height: 40px;
   }
 
   .projectMediaControls,
@@ -767,8 +767,8 @@
   }
 
   .projectMediaMoreButton {
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     right: 3px;
     bottom: 3px;
   }

@@ -342,7 +342,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .settingsPanel {
     height: 100%;
     overflow: hidden;
@@ -369,13 +369,13 @@
   }
 
   .timelineInspectorResetButton {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
 
   .toggleRow button {
     min-width: 56px;
-    min-height: 32px;
+    min-height: 40px;
   }
 
   .timelineInspectorControlRow {

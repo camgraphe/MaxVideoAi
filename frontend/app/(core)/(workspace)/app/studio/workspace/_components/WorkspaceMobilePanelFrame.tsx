@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import baseStyles from '../maxvideoai-editor.module.css';
 import shellStyles from '../_styles/shell.module.css';
 
@@ -20,8 +20,15 @@ export function WorkspaceMobilePanelFrame({
   title,
   onClose,
 }: WorkspaceMobilePanelFrameProps) {
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    event.stopPropagation();
+    onClose();
+  };
+
   return (
-    <div className={styles.mobilePanelChrome}>
+    <div className={styles.mobilePanelChrome} onKeyDown={handleKeyDown}>
       <button
         type="button"
         className={styles.mobilePanelCloseButton}

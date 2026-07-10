@@ -479,7 +479,7 @@
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .editorShell {
     height: 100dvh;
     --timeline-panel-fallback-height: clamp(220px, 34dvh, 300px);
@@ -532,6 +532,7 @@
   .editorBody {
     grid-template-columns: 1fr;
     overflow: hidden;
+    padding-top: 58px;
   }
 
   .viewerFocus .editorBody {
@@ -548,8 +549,8 @@
 
   .mobilePanelRail {
     position: absolute;
+    top: 8px;
     left: 12px;
-    bottom: 12px;
     z-index: 135;
     display: flex;
     max-width: calc(100vw - 24px);
@@ -580,6 +581,13 @@
     white-space: nowrap;
   }
 
+  .mobilePanelButton span,
+  .mobilePanelButtonActive span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .mobilePanelButton:hover,
   .mobilePanelButton:focus-visible {
     background: var(--studio-control-bg-hover);
@@ -607,12 +615,13 @@
   .projectMediaPanelSlot,
   .inspectorPanelSlot {
     position: absolute;
-    top: 10px;
+    top: 58px;
     bottom: 10px;
     z-index: 130;
     width: min(400px, calc(100vw - 24px));
     opacity: 0;
     pointer-events: none;
+    visibility: hidden;
     transition:
       opacity 160ms ease,
       transform 180ms ease;
@@ -638,6 +647,7 @@
     opacity: 1;
     pointer-events: auto;
     transform: translateX(0);
+    visibility: visible;
   }
 
   .mobilePanelChrome {
@@ -717,6 +727,27 @@
 
   .canvasInspectorSlot {
     opacity: 1;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobilePanelRail {
+    right: 8px;
+    left: 8px;
+  }
+
+  .mobilePanelButton,
+  .mobilePanelButtonActive {
+    min-width: 0;
+    flex: 1 1 0;
+    padding-inline: 9px;
+  }
+
+  .projectMediaPanelSlot,
+  .inspectorPanelSlot {
+    right: 8px;
+    left: 8px;
+    width: auto;
   }
 }
 

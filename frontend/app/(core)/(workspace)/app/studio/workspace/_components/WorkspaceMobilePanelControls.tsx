@@ -36,7 +36,7 @@ export function WorkspaceMobilePanelControls({
           aria-expanded={activePanel === 'media'}
           onClick={(event) => onTogglePanel('media', event.currentTarget)}
         >
-          <PanelLeftOpen size={15} />
+          <PanelLeftOpen size={16} aria-hidden="true" />
           <span>{mediaLabel}</span>
         </button>
       ) : null}
@@ -48,7 +48,7 @@ export function WorkspaceMobilePanelControls({
           aria-expanded={activePanel === 'inspector'}
           onClick={(event) => onTogglePanel('inspector', event.currentTarget)}
         >
-          <PanelRightOpen size={15} />
+          <PanelRightOpen size={16} aria-hidden="true" />
           <span>{inspectorLabel}</span>
         </button>
       ) : null}

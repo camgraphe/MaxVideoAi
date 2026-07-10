@@ -560,15 +560,14 @@
   font-size: 11px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .timelinePanel { --timeline-track-label-width: 118px; --timeline-track-lane-padding-x: 8px; }
-  .timelineViewport { scrollbar-width: none; }
-  .timelineViewport::-webkit-scrollbar { width: 0; height: 0; }
+  .timelineViewport { overscroll-behavior-x: contain; touch-action: pan-x pan-y; }
   .timelineRuler { height: 28px; }
   .timelineRulerToolSlot { gap: 4px; padding: 0 8px; }
-  .timelineRulerToolButton { width: 34px; height: 34px; }
-  .trackIconButton { width: 28px; height: 28px; }
-  .trackLabel { gap: 5px; padding: 0 8px; font-size: 10px; }
+  .timelineRulerToolButton { width: 40px; height: 40px; }
+  .trackIconButton { width: 36px; height: 36px; }
+  .trackLabel { gap: 5px; padding: 0 8px; font-size: 11px; }
   .trackLabelControls { width: 64px; gap: 4px; padding-right: 16px; }
   .trackLane { padding-inline: var(--timeline-track-lane-padding-x); }
   .timelinePanel :global([class*="timelineTopbar"]) { height: auto; min-height: 52px; grid-template-columns: auto minmax(max-content, 1fr); overflow-x: auto; overscroll-behavior-x: contain; padding: 6px 8px; scrollbar-width: none; }
