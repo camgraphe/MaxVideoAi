@@ -130,7 +130,8 @@ export function useWorkspaceGraphActions({
   handleCopySelectedNodes: (selectedNodeIds: string[]) => void;
   handlePasteCanvasClipboard: () => void;
   handleOpenAssetLibrary: (nodeId: string) => void;
-  handleSelectLibraryAsset: (nodeId: string, asset: WorkspaceLibraryAsset) => void;
+  handleSelectLibraryAsset: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
+  handleImportLibraryAssets: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
   isValidConnection: (connection: Connection | WorkspaceGraphEdge) => boolean;
   onConnect: (connection: Connection) => void;
   onEdgesChange: (changes: EdgeChange<WorkspaceGraphEdge>[]) => void;
@@ -240,31 +241,52 @@ export function useWorkspaceGraphActions({
     [setActiveEditorSurface, setAssetPickerNodeId, setSelectedNodeId]
   );
 
-  const handleSelectLibraryAsset = useCallback(
-    (nodeId: string, asset: WorkspaceLibraryAsset) => {
-      const assetRecord = workspaceAssetRecordFromLibraryAsset(asset);
+  const handleImportLibraryAssets = useCallback(
+    (nodeId: string, assets: WorkspaceLibraryAsset[]) => {
+      if (!assets.length) return;
       commitCanvasGraph(({ nodes: currentNodes, edges: currentEdges }) => ({
         edges: currentEdges,
-        nodes: currentNodes.map((node) =>
+        nodes: currentNodes.flatMap((node) =>
           node.id === nodeId
-            ? {
+            ? [
+              {
                 ...node,
                 data: {
                   ...node.data,
                   generatedCopy: clearWorkspaceGeneratedCopyReferences(node.data.generatedCopy, ['subtitle']),
-                  subtitle: asset.name,
-                  asset: assetRecord,
+                  subtitle: assets[0].name,
+                  asset: workspaceAssetRecordFromLibraryAsset(assets[0]),
                 },
-              }
-            : node
+              },
+              ...assets.slice(1).map((asset, index) => {
+                const importedNode = createAdHocWorkspaceNode(
+                  node.data.kind,
+                  currentNodes.length + index,
+                  defaultModelId,
+                  studioNotices,
+                  { x: node.position.x + 240 * (index + 1), y: node.position.y },
+                  undefined,
+                  studioCanvasNodeCopy
+                );
+                return {
+                  ...importedNode,
+                  data: {
+                    ...importedNode.data,
+                    subtitle: asset.name,
+                    asset: workspaceAssetRecordFromLibraryAsset(asset),
+                  },
+                };
+              }),
+            ]
+            : [node]
         ),
       }));
       setActiveEditorSurface('canvas');
       setSelectedNodeId(nodeId);
       setAssetPickerNodeId(null);
-      setNotice(formatNotice(studioNotices.assetAttachedToMediaBlock, { name: asset.name }));
+      setNotice(formatNotice(studioNotices.assetAttachedToMediaBlock, { name: assets[0].name }));
     },
-    [commitCanvasGraph, setActiveEditorSurface, setAssetPickerNodeId, setNotice, setSelectedNodeId, studioNotices.assetAttachedToMediaBlock]
+    [commitCanvasGraph, defaultModelId, setActiveEditorSurface, setAssetPickerNodeId, setNotice, setSelectedNodeId, studioCanvasNodeCopy, studioNotices]
   );
 
   const onNodesChange = useCallback(
@@ -438,7 +460,8 @@ export function useWorkspaceGraphActions({
     handleCopySelectedNodes,
     handlePasteCanvasClipboard,
     handleOpenAssetLibrary,
-    handleSelectLibraryAsset,
+    handleSelectLibraryAsset: handleImportLibraryAssets,
+    handleImportLibraryAssets,
     isValidConnection,
     onConnect,
     onEdgesChange,

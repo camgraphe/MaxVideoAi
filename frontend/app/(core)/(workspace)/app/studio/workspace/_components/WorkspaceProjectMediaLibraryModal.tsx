@@ -104,8 +104,8 @@ export function WorkspaceProjectMediaLibraryModal({
       visibleAssets: WorkspaceLibraryAsset[]
     ) => {
       setSelectedAssetIds((current) => {
-        const next = new Set(current);
         if (event.shiftKey && lastSelectedAssetId) {
+          const next = new Set(current);
           const visibleIds = visibleAssets.map((visibleAsset) => visibleAsset.id);
           const startIndex = visibleIds.indexOf(lastSelectedAssetId);
           const endIndex = visibleIds.indexOf(asset.id);
@@ -115,6 +115,8 @@ export function WorkspaceProjectMediaLibraryModal({
             return Array.from(next);
           }
         }
+        if (!event.metaKey && !event.ctrlKey) return [asset.id];
+        const next = new Set(current);
         if (next.has(asset.id)) next.delete(asset.id);
         else next.add(asset.id);
         return Array.from(next);

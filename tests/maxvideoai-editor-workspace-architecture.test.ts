@@ -5028,3 +5028,18 @@ test('studio asset library browser renders optional media kind filters and load 
   assert.match(runtimeModalsSource, /selectedAssetIds=\{assetPickerLibrary\.selectedAssetIds\}/);
   assert.match(runtimeModalsSource, /onToggleAssetSelection=\{assetPickerLibrary\.toggleAssetSelection\}/);
 });
+
+test('studio asset picker defers multi-select import until its primary action', () => {
+  const assetLibraryModalSource = source(assetLibraryModalPath);
+  const inspectorSource = source(join(workspaceDir, '_components/TimelineClipInspector.tsx'));
+  const graphActionsSource = source(join(workspaceDir, '_hooks/useWorkspaceGraphActions.ts'));
+
+  assert.match(inspectorSource, /workspaceProjectMediaResolutionLabel/);
+  assert.doesNotMatch(inspectorSource, /const resolutionLabel = asset\.dimensions/);
+  assert.match(inspectorSource, /resolutionLabel \? \(/);
+  assert.match(assetLibraryModalSource, /onImportAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
+  assert.match(assetLibraryModalSource, /onImportAssets\(node\.id, selectedAssets\)/);
+  assert.doesNotMatch(assetLibraryModalSource, /selectOnToggle/);
+  assert.match(graphActionsSource, /handleImportLibraryAssets: \(nodeId: string, assets: WorkspaceLibraryAsset\[\]\) => void/);
+  assert.match(graphActionsSource, /setAssetPickerNodeId\(null\)/);
+});

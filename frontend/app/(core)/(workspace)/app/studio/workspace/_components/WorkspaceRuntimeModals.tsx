@@ -9,7 +9,6 @@ import { WorkspaceProjectMediaLibraryModal } from './WorkspaceProjectMediaLibrar
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceExportDialogProps = ComponentProps<typeof WorkspaceExportDialog>;
-type WorkspaceAssetLibraryModalProps = ComponentProps<typeof WorkspaceAssetLibraryModal>;
 type WorkspaceProjectMediaLibraryModalProps = ComponentProps<typeof WorkspaceProjectMediaLibraryModal>;
 
 type WorkspaceRuntimeModalsProps = {
@@ -41,7 +40,7 @@ type WorkspaceRuntimeModalsProps = {
   onProjectMediaPickerClose: () => void;
   onQualityPresetChange: WorkspaceExportDialogProps['onQualityPresetChange'];
   onRangeModeChange: WorkspaceExportDialogProps['onRangeModeChange'];
-  onSelectAsset: WorkspaceAssetLibraryModalProps['onSelectAsset'];
+  onSelectAsset: ComponentProps<typeof WorkspaceAssetLibraryModal>['onImportAssets'];
   onSelectProjectMediaAsset: WorkspaceProjectMediaLibraryModalProps['onSelectAsset'];
   onSelectProjectMediaAssets: WorkspaceProjectMediaLibraryModalProps['onSelectAssets'];
 };
@@ -120,7 +119,7 @@ export function WorkspaceRuntimeModals({
         selectedAssetIds={assetPickerLibrary.selectedAssetIds}
         onClose={onAssetPickerClose}
         onLoadMore={assetPickerLibrary.loadMore}
-        onSelectAsset={onSelectAsset}
+        onImportAssets={onSelectAsset}
         onSearchQueryChange={assetPickerLibrary.setSearchQuery}
         onSourceChange={assetPickerLibrary.setSource}
         onToggleAssetSelection={assetPickerLibrary.toggleAssetSelection}

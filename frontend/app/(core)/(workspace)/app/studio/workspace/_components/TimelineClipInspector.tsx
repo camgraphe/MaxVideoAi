@@ -30,6 +30,7 @@ import {
   localizeWorkspaceTimelineItemTitle,
 } from '../_lib/workspace-generated-copy';
 import { resolveWorkspaceClipFitHeightScale } from '../_lib/workspace-clip-composition';
+import { workspaceProjectMediaResolutionLabel } from '../_lib/workspace-project-media-metadata';
 
 const styles = { ...baseStyles, ...inspectorStyles };
 
@@ -256,7 +257,7 @@ function ProjectMediaAssetInspector({
     typeof asset.durationSec === 'number' && asset.durationSec > 0
       ? formatWorkspaceTimecode(asset.durationSec, projectFps)
       : copy.unknown;
-  const resolutionLabel = asset.dimensions ?? copy.unknown;
+  const resolutionLabel = workspaceProjectMediaResolutionLabel(asset);
 
   return (
     <aside className={styles.settingsPanel} aria-label={copy.assetSettings}>
@@ -278,8 +279,12 @@ function ProjectMediaAssetInspector({
         <div className={styles.infoGrid} data-project-media-asset-details="true" aria-label={copy.assetDetails}>
           <span>{copy.duration}</span>
           <strong>{durationLabel}</strong>
-          <span>{copy.resolution}</span>
-          <strong>{resolutionLabel}</strong>
+          {resolutionLabel ? (
+            <>
+              <span>{copy.resolution}</span>
+              <strong>{resolutionLabel}</strong>
+            </>
+          ) : null}
           <span>{copy.type}</span>
           <strong>{asset.kind}</strong>
         </div>

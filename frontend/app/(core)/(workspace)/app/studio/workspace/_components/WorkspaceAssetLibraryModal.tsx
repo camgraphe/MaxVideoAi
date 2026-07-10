@@ -37,7 +37,7 @@ type WorkspaceAssetLibraryModalProps = {
   selectedAssetIds: readonly string[];
   onClose: () => void;
   onLoadMore: () => void;
-  onSelectAsset: (nodeId: string, asset: WorkspaceLibraryAsset) => void;
+  onImportAssets: (nodeId: string, assets: WorkspaceLibraryAsset[]) => void;
   onSearchQueryChange: (query: string) => void;
   onSourceChange: (source: WorkspaceLibrarySource) => void;
   onToggleAssetSelection: (assetId: string, mode: 'replace' | 'toggle' | 'range') => void;
@@ -73,7 +73,7 @@ export function WorkspaceAssetLibraryModal({
   selectedAssetIds,
   onClose,
   onLoadMore,
-  onSelectAsset,
+  onImportAssets,
   onSearchQueryChange,
   onSourceChange,
   onToggleAssetSelection,
@@ -118,14 +118,14 @@ export function WorkspaceAssetLibraryModal({
         }
 
         onSourceChange('upload');
-        onSelectAsset(node.id, uploadedAsset);
+        onImportAssets(node.id, [uploadedAsset]);
       } catch {
         setUploadError(fallback);
       } finally {
         setIsUploading(false);
       }
     },
-    [copy.uploadFailed, node, onSelectAsset, onSourceChange, uploadEndpoint, uploadKind]
+    [copy.uploadFailed, node, onImportAssets, onSourceChange, uploadEndpoint, uploadKind]
   );
 
   if (!node) return null;
@@ -135,6 +135,11 @@ export function WorkspaceAssetLibraryModal({
     event: MouseEvent<HTMLButtonElement>
   ) => {
     onToggleAssetSelection(asset.id, event.shiftKey ? 'range' : event.metaKey || event.ctrlKey ? 'toggle' : 'replace');
+  };
+  const selectedAssets = assets.filter((asset) => selectedAssetIds.includes(asset.id));
+  const handleImportSelectedAssets = () => {
+    if (!selectedAssets.length) return;
+    onImportAssets(node.id, selectedAssets);
   };
 
   return (
@@ -176,15 +181,22 @@ export function WorkspaceAssetLibraryModal({
           hasMore={hasMore}
           isLoadingMore={isLoadingMore}
           onLoadMore={onLoadMore}
-          onSelectAsset={(asset) => onSelectAsset(node.id, asset)}
           selectedAssetIds={selectedAssetIds}
-          selectOnToggle
           onToggleAssetSelection={handleToggleAssetSelection}
           searchQuery={searchQuery}
           onSearchQueryChange={onSearchQueryChange}
           headerActions={
-            uploadEndpoint ? (
+            <>
               <button
+                type="button"
+                className={styles.assetLibraryImportSelectedButton}
+                disabled={!selectedAssets.length}
+                onClick={handleImportSelectedAssets}
+              >
+                {selectedAssets.length ? `${copy.importSelected} (${selectedAssets.length})` : copy.importSelected}
+              </button>
+              {uploadEndpoint ? (
+                <button
                 type="button"
                 className={styles.assetLibraryUploadButton}
                 disabled={isUploading}
@@ -192,8 +204,9 @@ export function WorkspaceAssetLibraryModal({
               >
                 <Upload size={14} />
                 {isUploading ? copy.uploading : copy.upload}
-              </button>
-            ) : null
+                </button>
+              ) : null}
+            </>
           }
         />
       </section>
