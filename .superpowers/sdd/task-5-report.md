@@ -46,3 +46,23 @@ None.
 ### Concerns
 
 - None.
+
+## Fix pass 2
+
+### Changed files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-pricing.ts`
+- `tests/maxvideoai-editor-v1-pricing.test.ts`
+
+### Verification
+
+- `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-v1-pricing.test.ts tests/maxvideoai-editor-generation-blocks.test.ts`: passed, 58 tests passed, 0 failed.
+- `git diff --check`: passed.
+
+### Commit
+
+- `b5f76a44a1268ec60619c03304170a3994a45c04 fix: make Studio upscale pricing server-derived`
+
+### Concerns
+
+- None.
