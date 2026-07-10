@@ -1029,6 +1029,24 @@ test('dragging linked audio keeps the video clip visible during preview', async 
   assertNoEditorClientErrors(errors);
 });
 
+test('timeline prevents linked audio overlap when dragging the video partner', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const originalVideoStart = (await timelineClipState(page, 'timeline-output-02')).start;
+  const originalAudioStart = (await timelineClipState(page, 'timeline-output-02-audio')).start;
+  await dragTimelineClip(page, 'timeline-output-02', -204);
+
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02')).start).toBe(originalVideoStart);
+  await expect.poll(async () => (await timelineClipState(page, 'timeline-output-02-audio')).start).toBe(originalAudioStart);
+  await expect.poll(async () => hasTimelineOverlap(page, 'video')).toBe(false);
+  await expect.poll(async () => hasTimelineOverlap(page, 'audio')).toBe(false);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('timeline drag preview can move right into free space after an occupied clip', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

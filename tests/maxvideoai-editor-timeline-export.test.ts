@@ -7,6 +7,7 @@ import {
   buildWorkspaceTimelineRenderManifest,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 import {
+  buildWorkspaceClipComposition,
   resolveWorkspaceClipFitHeightScale,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-clip-composition';
 import type {
@@ -38,6 +39,21 @@ const readyManifest: WorkspaceTimelineRenderManifest = {
   tracks: [],
   issues: [],
 };
+
+test('viewer composition keeps source dimensions separate from sequence dimensions', () => {
+  const composition = buildWorkspaceClipComposition({
+    sourceWidth: 1280,
+    sourceHeight: 720,
+    sequenceWidth: 1920,
+    sequenceHeight: 1080,
+    transform: { scale: 1, x: 0, y: 0, rotation: 0, opacity: 1 },
+  });
+
+  assert.equal(composition.renderWidth, 1280);
+  assert.equal(composition.renderHeight, 720);
+  assert.equal(composition.sequenceWidth, 1920);
+  assert.equal(composition.sequenceHeight, 1080);
+});
 
 test('completed timeline export becomes a reusable project media video asset', () => {
   const asset = workspaceProjectAssetFromCompletedTimelineExport({

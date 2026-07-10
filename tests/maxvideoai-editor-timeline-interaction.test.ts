@@ -13,6 +13,8 @@ import {
   type TimelineInteractionState,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-interaction';
 import { timelineTrackHasOverlap } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions';
+import { deleteTimelineGapAndRipple } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-gap-editing';
+import { moveLinkedTimelineSelection } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-linked-audio';
 import {
   deleteWorkspaceTimelineGap,
   deleteWorkspaceTimelineItems,
@@ -63,6 +65,47 @@ function interaction(overrides: Partial<TimelineInteractionState> = {}): Timelin
     ...overrides,
   };
 }
+
+function videoClip(overrides: Partial<WorkspaceTimelineItem>): WorkspaceTimelineItem {
+  return timelineItem({ mediaKind: 'video', track: 'video', ...overrides });
+}
+
+function audioClip(overrides: Partial<WorkspaceTimelineItem>): WorkspaceTimelineItem {
+  return timelineItem({ mediaKind: 'audio', track: 'audio', ...overrides });
+}
+
+test('linked audio cannot be dragged into an occupied audio range through a video drag', () => {
+  const result = moveLinkedTimelineSelection({
+    items: [
+      videoClip({ id: 'video-a', linkedGroupId: 'group-a', startSec: 10, durationSec: 5, track: 'video' }),
+      audioClip({ id: 'audio-a', linkedGroupId: 'group-a', startSec: 10, durationSec: 5, track: 'audio' }),
+      audioClip({ id: 'audio-b', startSec: 14, durationSec: 5, track: 'audio' }),
+    ],
+    selectedItemId: 'video-a',
+    deltaSec: 4,
+    targetTrack: 'video',
+  });
+
+  assert.equal(result.ok, false);
+  assert.match(result.reason, /overlap/i);
+});
+
+test('gap delete ripples all timeline tracks after the selected empty range', () => {
+  const result = deleteTimelineGapAndRipple({
+    items: [
+      videoClip({ id: 'video-a', startSec: 0, durationSec: 5, track: 'video' }),
+      videoClip({ id: 'video-b', startSec: 10, durationSec: 5, track: 'video' }),
+      audioClip({ id: 'audio-a', startSec: 10, durationSec: 5, track: 'audio' }),
+    ],
+    gap: { startSec: 5, endSec: 10, track: 'video' },
+  });
+
+  assert.deepEqual(result.items.map((item) => [item.id, item.startSec]), [
+    ['video-a', 0],
+    ['video-b', 5],
+    ['audio-a', 5],
+  ]);
+});
 
 test('timeline interaction helpers snap moves to nearby cut boundaries', () => {
   const active = timelineItem({ id: 'clip-a', startSec: 0, durationSec: 4 });
@@ -259,7 +302,7 @@ test('timeline ripple end expansion clamps to the nearest same-track blocker', (
   assert.ok(clipA && clipB && clipA.startSec + clipA.durationSec <= clipB.startSec);
 });
 
-test('timeline gap deletion ripples the clicked track without shifting unrelated tracks', () => {
+test('timeline gap deletion uses the clicked track to select a gap and ripples all tracks', () => {
   const items = [
     timelineItem({ id: 'video-a', outputNodeId: 'video-a', startSec: 0, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
     timelineItem({ id: 'video-b', outputNodeId: 'video-b', startSec: 10, durationSec: 4, linkedGroupId: null, linkedGroupKind: null }),
@@ -293,7 +336,7 @@ test('timeline gap deletion ripples the clicked track without shifting unrelated
       ['video-a', 'video', 0],
       ['video-b', 'video', 4],
       ['audio-a', 'audio', 0],
-      ['audio-b', 'audio', 10],
+      ['audio-b', 'audio', 4],
     ]
   );
 });
@@ -481,6 +524,6 @@ test('timeline locked-track guard reports only tracks changed by an edit', () =>
   ];
   const nextItems = deleteWorkspaceTimelineGap(items, { startSec: 4, endSec: 10, track: 'video' });
 
-  assert.equal(timelineEditTouchesLockedTracks(items, nextItems, ['audio']), false);
+  assert.equal(timelineEditTouchesLockedTracks(items, nextItems, ['audio']), true);
   assert.equal(timelineEditTouchesLockedTracks(items, nextItems, ['video']), true);
 });

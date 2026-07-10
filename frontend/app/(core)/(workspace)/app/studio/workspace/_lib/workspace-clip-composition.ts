@@ -50,6 +50,17 @@ export type WorkspaceTimelineClipComposition = {
   opacity: number;
 };
 
+export type WorkspaceClipComposition = {
+  currentScale: number;
+  exportTransform: WorkspaceTimelineClipTransform;
+  fillScale: number;
+  fitScale: number;
+  renderHeight: number;
+  renderWidth: number;
+  sequenceHeight: number;
+  sequenceWidth: number;
+};
+
 function positivePixel(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) return null;
   return Math.round(value);
@@ -72,6 +83,33 @@ function roundCompositionPixel(value: number): number {
 
 function roundScale(value: number): number {
   return Math.round(value * 1000) / 1000;
+}
+
+export function buildWorkspaceClipComposition(params: {
+  sequenceHeight: number;
+  sequenceWidth: number;
+  sourceHeight: number;
+  sourceWidth: number;
+  transform: { opacity: number; rotation: number; scale: number; x: number; y: number };
+}): WorkspaceClipComposition {
+  const fitScale = Math.min(params.sequenceWidth / params.sourceWidth, params.sequenceHeight / params.sourceHeight);
+  const fillScale = Math.max(params.sequenceWidth / params.sourceWidth, params.sequenceHeight / params.sourceHeight);
+  return {
+    currentScale: params.transform.scale,
+    exportTransform: {
+      opacity: params.transform.opacity,
+      positionX: params.transform.x,
+      positionY: params.transform.y,
+      rotation: params.transform.rotation,
+      scale: params.transform.scale,
+    },
+    fillScale: roundScale(fillScale),
+    fitScale: roundScale(fitScale),
+    renderHeight: params.sourceHeight,
+    renderWidth: params.sourceWidth,
+    sequenceHeight: params.sequenceHeight,
+    sequenceWidth: params.sequenceWidth,
+  };
 }
 
 function aspectParts(value?: AspectRatio | null): [number, number] | null {
@@ -144,21 +182,34 @@ export function resolveWorkspaceClipComposition(params: {
 
   const sequenceDimensions = workspaceProjectDimensions(params.projectSettings ?? DEFAULT_WORKSPACE_PROJECT_SETTINGS);
   const transform = params.item.transform ?? DEFAULT_CLIP_TRANSFORM;
-  const left = sequenceDimensions.width / 2 + (transform.positionX / 100) * sequenceDimensions.width;
-  const top = sequenceDimensions.height / 2 + (transform.positionY / 100) * sequenceDimensions.height;
+  const composition = buildWorkspaceClipComposition({
+    sourceHeight: sourceDimensions.height,
+    sourceWidth: sourceDimensions.width,
+    sequenceHeight: sequenceDimensions.height,
+    sequenceWidth: sequenceDimensions.width,
+    transform: {
+      opacity: transform.opacity,
+      rotation: transform.rotation,
+      scale: transform.scale,
+      x: transform.positionX,
+      y: transform.positionY,
+    },
+  });
+  const left = sequenceDimensions.width / 2 + (composition.exportTransform.positionX / 100) * sequenceDimensions.width;
+  const top = sequenceDimensions.height / 2 + (composition.exportTransform.positionY / 100) * sequenceDimensions.height;
 
   return {
     sequenceWidth: sequenceDimensions.width,
     sequenceHeight: sequenceDimensions.height,
-    sourceWidth: sourceDimensions.width,
-    sourceHeight: sourceDimensions.height,
-    width: sourceDimensions.width,
-    height: sourceDimensions.height,
+    sourceWidth: composition.renderWidth,
+    sourceHeight: composition.renderHeight,
+    width: composition.renderWidth,
+    height: composition.renderHeight,
     left: roundCompositionPixel(left),
     top: roundCompositionPixel(top),
-    scale: transform.scale,
-    rotation: transform.rotation,
-    opacity: transform.opacity,
+    scale: composition.currentScale,
+    rotation: composition.exportTransform.rotation,
+    opacity: composition.exportTransform.opacity,
   };
 }
 

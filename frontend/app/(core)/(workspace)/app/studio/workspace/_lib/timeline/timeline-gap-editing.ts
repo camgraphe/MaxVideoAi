@@ -15,6 +15,12 @@ export type WorkspaceTimelineGapSelection = {
   track?: WorkspaceTimelineTrack;
 };
 
+export type TimelineGapRippleResult = {
+  items: WorkspaceTimelineItem[];
+  ok: boolean;
+  reason: string | null;
+};
+
 function itemContainsTimelineSecond(item: WorkspaceTimelineItem, seconds: number): boolean {
   return item.startSec <= seconds && itemEndSec(item) > seconds;
 }
@@ -65,24 +71,37 @@ export function deleteWorkspaceTimelineGap(
   items: WorkspaceTimelineItem[],
   gap: WorkspaceTimelineGapSelection
 ): WorkspaceTimelineItem[] {
+  return deleteTimelineGapAndRipple({ items, gap }).items;
+}
+
+export function deleteTimelineGapAndRipple(params: {
+  gap: WorkspaceTimelineGapSelection;
+  items: WorkspaceTimelineItem[];
+}): TimelineGapRippleResult {
+  const { gap, items } = params;
   const startSec = snapTimelineValue(Math.max(0, Math.min(gap.startSec, gap.endSec)));
   const endSec = snapTimelineValue(Math.max(gap.startSec, gap.endSec));
   const durationSec = snapTimelineValue(endSec - startSec);
-  if (durationSec <= 0) return items;
+  if (durationSec <= 0) return { items, ok: false, reason: 'The selected timeline gap has no duration.' };
   const scopedItems = gapScopedTimelineItems(items, gap.track);
-  if (!scopedItems.length) return items;
-  if (scopedItems.some((item) => timelineRangeOverlapsItem(item, startSec, endSec))) return items;
+  if (!scopedItems.length) return { items, ok: false, reason: 'The selected track has no timeline items.' };
+  if (scopedItems.some((item) => timelineRangeOverlapsItem(item, startSec, endSec))) {
+    return { items, ok: false, reason: 'The selected range is not an empty timeline gap.' };
+  }
 
   let changed = false;
   const shiftedItems = items.map((item) => {
-    if ((gap.track && item.track !== gap.track) || item.startSec < endSec) return item;
+    if (item.startSec < endSec) return item;
     changed = true;
     return {
       ...item,
       startSec: snapTimelineValue(Math.max(0, item.startSec - durationSec)),
     };
   });
-  if (!changed) return items;
+  if (!changed) return { items, ok: false, reason: 'No timeline clips occur after the selected gap.' };
   const syncedItems = syncLinkedAudioWithVideo(shiftedItems);
-  return timelineEditIntroducesOverlap(items, syncedItems) ? items : syncedItems;
+  if (timelineEditIntroducesOverlap(items, syncedItems)) {
+    return { items, ok: false, reason: 'Removing this gap would overlap timeline clips.' };
+  }
+  return { items: syncedItems, ok: true, reason: null };
 }
