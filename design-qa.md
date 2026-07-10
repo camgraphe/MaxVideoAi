@@ -80,6 +80,12 @@ Required fidelity surfaces:
   - Fix: applied the calculated menu width, added a viewport-bounded 128px portal minimum, and standardized thin low-contrast scrollbars for SelectMenu lists.
   - Post-fix measurement: the duration trigger remains 62px while its menu is 128px; the list reports `scrollbar-width: thin` and a 45% slate scrollbar color.
 
+### Iteration 7 — generate action alignment
+
+- [P2] The workspace footer used a 12px left inset but no right inset, leaving the Generate action flush against the prompt edge.
+  - Fix: applied the same 12px horizontal inset to the settings row and Generate action on video and image workspaces.
+  - Post-fix measurement: the settings row begins 12px from the footer edge and the Generate action ends 12px from the opposite edge.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.

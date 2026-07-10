@@ -340,7 +340,7 @@ export function Composer({
             )}
 
             {(settingsBar || onGenerate) ? (
-              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'py-1 pl-3 pr-0' : 'px-4 py-3')}>
+              <div className={clsx('border-t border-border/65 dark:border-white/[0.06]', workspaceDensity ? 'px-3 py-1' : 'px-4 py-3')}>
                 <div className={workspaceDensity
                   ? 'flex flex-col gap-3 lg:flex-row lg:flex-nowrap lg:items-center'
                   : 'flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between'}>
