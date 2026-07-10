@@ -18,6 +18,7 @@ import { moveLinkedTimelineSelection } from '../frontend/app/(core)/(workspace)/
 import {
   deleteWorkspaceTimelineGap,
   deleteWorkspaceTimelineItems,
+  moveWorkspaceTimelineSelectionWithMode,
   resizeWorkspaceTimelineItem,
   timelineEditTouchesLockedTracks,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
@@ -75,19 +76,44 @@ function audioClip(overrides: Partial<WorkspaceTimelineItem>): WorkspaceTimeline
 }
 
 test('linked audio cannot be dragged into an occupied audio range through a video drag', () => {
+  const items = [
+    videoClip({ id: 'video-a', linkedGroupId: 'group-a', startSec: 0, durationSec: 5, track: 'video' }),
+    audioClip({ id: 'audio-a', linkedGroupId: 'group-a', startSec: 0, durationSec: 5, track: 'audio' }),
+    audioClip({ id: 'audio-b', startSec: 8, durationSec: 5, track: 'audio' }),
+  ];
   const result = moveLinkedTimelineSelection({
-    items: [
-      videoClip({ id: 'video-a', linkedGroupId: 'group-a', startSec: 10, durationSec: 5, track: 'video' }),
-      audioClip({ id: 'audio-a', linkedGroupId: 'group-a', startSec: 10, durationSec: 5, track: 'audio' }),
-      audioClip({ id: 'audio-b', startSec: 14, durationSec: 5, track: 'audio' }),
-    ],
+    items,
     selectedItemId: 'video-a',
-    deltaSec: 4,
+    deltaSec: 6,
     targetTrack: 'video',
   });
 
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
   assert.equal(result.ok, false);
   assert.match(result.reason, /overlap/i);
+  assert.deepEqual(result.collidingItemIds, ['audio-a'], 'only the linked audio member should hit occupied media');
+  assert.equal(result.items, items);
+});
+
+test('production linked video drag reverts when only its audio peer would overlap', () => {
+  const items = [
+    videoClip({ id: 'video-a', linkedGroupId: 'group-a', startSec: 0, durationSec: 5, track: 'video' }),
+    audioClip({ id: 'audio-a', linkedGroupId: 'group-a', startSec: 0, durationSec: 5, track: 'audio' }),
+    audioClip({ id: 'audio-b', startSec: 8, durationSec: 5, track: 'audio' }),
+  ];
+
+  const result = moveWorkspaceTimelineSelectionWithMode({
+    items,
+    itemIds: ['video-a'],
+    anchorItemId: 'video-a',
+    nextStartSec: 6,
+    mode: 'insert',
+    idSeed: 'audio-peer-overlap',
+  });
+
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
+  assert.equal(result, items, 'invalid linked drops must return the last committed timeline');
+  assert.equal(timelineTrackHasOverlap(result), false);
 });
 
 test('gap delete ripples all timeline tracks after the selected empty range', () => {

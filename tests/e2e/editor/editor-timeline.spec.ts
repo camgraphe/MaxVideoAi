@@ -772,6 +772,24 @@ test('clicking empty timeline space clears a multi-selection', async ({ page }) 
   assertNoEditorClientErrors(errors);
 });
 
+test('timeline gap ghost renders only on the clicked track', async ({ page }) => {
+  const errors = trackEditorClientErrors(page);
+
+  await openFreshEditorWorkspace(page);
+  await switchEditorFocus(page, 'Viewer');
+
+  const pixelsPerSecond = await timelinePixelsPerSecond(page);
+  await dragTimelineClip(page, 'timeline-output-02', pixelsPerSecond * 2);
+  await clickTimelineTrackAtSecond(page, 'video', 6);
+
+  const selectedGaps = page.locator('[data-timeline-gap-selection="true"]');
+  await expect(selectedGaps).toHaveCount(1);
+  await expect(page.locator('[data-timeline-track="video"] [data-timeline-gap-selection="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-timeline-track="audio"] [data-timeline-gap-selection="true"]')).toHaveCount(0);
+
+  assertNoEditorClientErrors(errors);
+});
+
 test('delete key only applies to the active canvas or timeline surface', async ({ page }) => {
   const errors = trackEditorClientErrors(page);
 

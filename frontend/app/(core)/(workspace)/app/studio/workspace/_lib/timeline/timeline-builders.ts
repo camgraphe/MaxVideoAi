@@ -15,10 +15,18 @@ export function workspaceOutputHasTimelineAudio(output: WorkspaceOutputMetadata)
 }
 
 export function workspaceAssetTimelineDuration(asset: WorkspaceAssetRecord): number {
-  if (asset.durationSec) return Math.max(MIN_CLIP_DURATION_SEC, asset.durationSec);
+  const sourceDurationSec = workspaceAssetSourceDuration(asset);
+  if (sourceDurationSec !== undefined) return Math.max(MIN_CLIP_DURATION_SEC, sourceDurationSec);
   if (asset.kind === 'audio') return 12;
   if (asset.kind === 'video') return 6;
   return 5;
+}
+
+function workspaceAssetSourceDuration(asset: WorkspaceAssetRecord): number | undefined {
+  if (typeof asset.durationSec !== 'number' || !Number.isFinite(asset.durationSec) || asset.durationSec <= 0) {
+    return undefined;
+  }
+  return asset.durationSec;
 }
 
 export function workspaceOutputTimelineDuration(output: WorkspaceOutputMetadata): number {
@@ -42,7 +50,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
   const idSuffix = params.idSeed ?? Date.now().toString(36);
   const baseId = `timeline-${params.assetNodeId}-${idSuffix}`;
   const durationSec = workspaceAssetTimelineDuration(params.asset);
-  const sourceDurationSec = durationSec;
+  const sourceDurationSec = workspaceAssetSourceDuration(params.asset);
   const mediaUrl = params.asset.url ?? params.asset.thumbUrl ?? null;
   const common = {
     outputNodeId: params.assetNodeId,
@@ -50,7 +58,7 @@ export function buildWorkspaceTimelineItemsForAsset(params: {
     durationSec,
     startSec: params.startSec,
     sourceStartSec: 0,
-    sourceDurationSec,
+    ...(sourceDurationSec !== undefined ? { sourceDurationSec } : {}),
     status: 'completed' as const,
   };
 

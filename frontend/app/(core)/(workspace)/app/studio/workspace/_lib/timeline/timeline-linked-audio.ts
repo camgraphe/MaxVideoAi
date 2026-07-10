@@ -1,9 +1,10 @@
 import { isWorkspaceTimelineAudioTrack, isWorkspaceTimelineVideoTrack } from '../workspace-timeline-tracks';
 import type { WorkspaceTimelineItem } from '../workspace-types';
-import { timelineTrackHasOverlap } from './timeline-collisions';
+import { timelineItemsOverlapOnSameTrack, timelineTrackHasOverlap } from './timeline-collisions';
 import { snapTimelineValue } from './timeline-frames';
 
 export type LinkedTimelineMoveResult = {
+  collidingItemIds: string[];
   items: WorkspaceTimelineItem[];
   ok: boolean;
   reason: string | null;
@@ -54,7 +55,12 @@ export function moveLinkedTimelineSelection(params: {
 }): LinkedTimelineMoveResult {
   const selectedItem = params.items.find((item) => item.id === params.selectedItemId);
   if (!selectedItem) {
-    return { items: params.items, ok: false, reason: 'The selected timeline item no longer exists.' };
+    return {
+      collidingItemIds: [],
+      items: params.items,
+      ok: false,
+      reason: 'The selected timeline item no longer exists.',
+    };
   }
 
   const movedItems = groupItemsFor(params.items, selectedItem);
@@ -68,14 +74,21 @@ export function moveLinkedTimelineSelection(params: {
       startSec: snapTimelineValue(Math.max(0, item.startSec + deltaSec)),
     };
   });
+  const collidingItemIds = nextItems
+    .filter((item) => movedIds.has(item.id))
+    .filter((item) => nextItems.some((candidate) => (
+      !movedIds.has(candidate.id) && timelineItemsOverlapOnSameTrack(item, candidate)
+    )))
+    .map((item) => item.id);
 
-  if (timelineTrackHasOverlap(nextItems)) {
+  if (collidingItemIds.length || timelineTrackHasOverlap(nextItems)) {
     return {
+      collidingItemIds,
       items: params.items,
       ok: false,
       reason: 'The linked timeline move would overlap an occupied track.',
     };
   }
 
-  return { items: nextItems, ok: true, reason: null };
+  return { collidingItemIds: [], items: nextItems, ok: true, reason: null };
 }

@@ -32,6 +32,7 @@ import {
   selectWorkspaceAsset,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-asset-selection';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
+import { buildWorkspaceTimelineItemsForAsset } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
@@ -143,6 +144,57 @@ test('project media metadata helpers do not invent resolution for unknown videos
 
   assert.equal(workspaceProjectMediaNeedsMetadata(asset), true);
   assert.equal(workspaceProjectMediaResolutionLabel(asset), null);
+});
+
+test('timeline builders keep unknown imported media duration out of source provenance', () => {
+  const unknownVideoItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'unknown-video',
+    title: 'Unknown video',
+    asset: {
+      id: 'unknown-video',
+      kind: 'video',
+      filename: 'unknown.mp4',
+      subtitle: 'Video',
+      url: '/media/unknown.mp4',
+      hasAudio: false,
+    },
+    startSec: 0,
+    idSeed: 'unknown-video',
+  });
+  const unknownAudioItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'unknown-audio',
+    title: 'Unknown audio',
+    asset: {
+      id: 'unknown-audio',
+      kind: 'audio',
+      filename: 'unknown.wav',
+      subtitle: 'Audio',
+      url: '/media/unknown.wav',
+    },
+    startSec: 0,
+    idSeed: 'unknown-audio',
+  });
+  const measuredItems = buildWorkspaceTimelineItemsForAsset({
+    assetNodeId: 'measured-video',
+    title: 'Measured video',
+    asset: {
+      id: 'measured-video',
+      kind: 'video',
+      filename: 'measured.mp4',
+      subtitle: 'Video',
+      url: '/media/measured.mp4',
+      durationSec: 9.25,
+      hasAudio: false,
+    },
+    startSec: 0,
+    idSeed: 'measured-video',
+  });
+
+  assert.equal(unknownVideoItems[0]?.durationSec, 6, 'unknown video may use a temporary editing duration');
+  assert.equal(unknownAudioItems[0]?.durationSec, 12, 'unknown audio may use a temporary editing duration');
+  assert.equal(unknownVideoItems[0]?.sourceDurationSec, undefined);
+  assert.equal(unknownAudioItems[0]?.sourceDurationSec, undefined);
+  assert.equal(measuredItems[0]?.sourceDurationSec, 9.25);
 });
 
 test('project media metadata helpers reject malformed and non-positive resolutions', () => {

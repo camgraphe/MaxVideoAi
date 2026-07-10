@@ -10,6 +10,7 @@ import {
 } from './timeline/timeline-collisions';
 import {
   hasLinkedVideoPeer,
+  moveLinkedTimelineSelection,
   primaryTimelineItemFor,
   syncLinkedAudioWithVideo,
 } from './timeline/timeline-linked-audio';
@@ -476,7 +477,6 @@ function revertIfTimelineOverlapRegresses(
   originalItems: WorkspaceTimelineItem[],
   candidateItems: WorkspaceTimelineItem[]
 ): WorkspaceTimelineItem[] {
-  if (timelineTrackHasOverlap(originalItems)) return candidateItems;
   return timelineTrackHasOverlap(candidateItems) ? originalItems : candidateItems;
 }
 
@@ -514,6 +514,21 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
   const targetInsideSelection = timelineSelectionContainsTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
   const targetInsideExternalClip = timelineSelectionHasExternalTarget(params.items, selectedKeys, targetTrack, packageTargetStartSec);
   const movedItems = retargetTimelineSelectionItems(selectedItems, selectedKeys, anchorItem, params.nextTrack);
+  const linkedMoveValidation = anchorItem.linkedGroupId && selectedKeys.size === 1
+    ? moveLinkedTimelineSelection({
+        items: params.items,
+        selectedItemId: anchorItem.id,
+        deltaSec: snapTimelineValue(params.nextStartSec - anchorItem.startSec),
+        targetTrack: params.nextTrack,
+      })
+    : null;
+  if (
+    linkedMoveValidation &&
+    !linkedMoveValidation.ok &&
+    linkedMoveValidation.collidingItemIds.some((itemId) => itemId !== anchorItem.id)
+  ) {
+    return params.items;
+  }
 
   if (
     params.mode === 'insert' &&
@@ -548,7 +563,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
     ? adjustInsertStartAfterSelectionRipple(params.items, selectedKeys, targetTrack, packageTargetStartSec)
     : packageTargetStartSec;
 
-  return insertWorkspaceTimelineItems({
+  return revertIfTimelineOverlapRegresses(params.items, insertWorkspaceTimelineItems({
     items: baseItems,
     newItems: movedItems,
     mode: resolvedMode,
@@ -556,5 +571,5 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
     selectedItemId: replacementTargetItemId,
     idSeed: params.idSeed ?? `move-${params.anchorItemId}`,
     allowInsertIntoClip: params.allowInsertIntoClip,
-  });
+  }));
 }
