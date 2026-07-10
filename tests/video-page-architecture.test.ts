@@ -59,7 +59,8 @@ test('video watch modules own rendering and helper contracts', () => {
   assert.match(contentSource, /CopyPromptButton/, 'content component should own prompt copy UI');
   assert.match(contentSource, /Prompt improvement notes/, 'watch page should include prompt improvement notes');
   assert.match(contentSource, /Compare this model/, 'watch page should include compare links');
-  assert.match(contentSource, /Estimated price/, 'watch page should label the estimated render price');
+  assert.match(contentSource, /Recorded render cost/, 'watch page should identify the historical job cost');
+  assert.doesNotMatch(contentSource, /Estimated price/, 'watch page should not present recorded cost as a live estimate');
   assert.match(contentSource, /Visual workflow context/, 'public watch page should name editorial visual context without exposing SEO jargon');
   assert.match(contentSource, /promptIsExpandable/, 'long prompts should be expandable from the primary prompt panel');
   assert.match(contentSource, /PROMPT_CONTEXT_PREVIEW_MAX_CHARS/, 'long visual workflow context should use a bounded preview length');

@@ -2763,7 +2763,7 @@
       "aspectLabel": "Aspect ratio",
       "aspectAuto": "Auto",
       "createdLabel": "Created",
-      "priceTotalLabel": "Render cost",
+      "priceTotalLabel": "Recorded render cost",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "Unavailable",
       "audioLabel": "Audio",

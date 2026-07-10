@@ -2790,7 +2790,7 @@
       "aspectLabel": "Relación",
       "aspectAuto": "Auto",
       "createdLabel": "Creado el",
-      "priceTotalLabel": "Costo del render",
+      "priceTotalLabel": "Coste registrado del render",
       "priceTotalValue": "{value}",
       "priceTotalUnknown": "No disponible",
       "audioLabel": "Audio",

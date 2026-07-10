@@ -76,4 +76,6 @@ test('watch page signal modules expose the expected contracts', () => {
   assert.match(readModule('recommendations.ts'), /export function buildPromptImprovementNotes/);
   assert.match(readModule('recommendations.ts'), /export function buildCompareLinks/);
   assert.match(readModule('visual.ts'), /export function buildWatchPageVisualContext/);
+  assert.match(readModule('content.ts'), /Recorded render cost/);
+  assert.doesNotMatch(readModule('content.ts'), /label: 'Render cost'/);
 });

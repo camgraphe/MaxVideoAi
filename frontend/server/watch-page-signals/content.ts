@@ -149,7 +149,7 @@ export function buildDetailRows(
   if (typeof video.finalPriceCents === 'number' && video.currency) {
     rows.push({
       key: 'cost',
-      label: 'Render cost',
+      label: 'Recorded render cost',
       value: new Intl.NumberFormat('en-US', { style: 'currency', currency: video.currency }).format(video.finalPriceCents / 100),
     });
   }
