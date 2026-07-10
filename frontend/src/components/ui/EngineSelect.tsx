@@ -1,7 +1,6 @@
 'use client';
 
 import clsx from 'clsx';
-import { ExternalLink } from 'lucide-react';
 import {
   useCallback,
   useEffect,
@@ -157,7 +156,11 @@ export function EngineSelect({
       onKeyDown={handleTriggerKeyDown}
       className={clsx(
         'flex min-w-0 flex-1 items-center justify-between gap-4 rounded-input border border-border bg-surface text-left text-text-primary shadow-sm transition hover:border-border-hover hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        isBarVariant ? 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]' : 'px-4 py-3 text-sm'
+        isBarVariant
+          ? controlPresentation === 'workspace'
+            ? 'h-[42px] px-2.5 py-0 text-[12px] sm:px-3 sm:text-[13px]'
+            : 'px-2.5 py-1.5 text-[12px] sm:px-3 sm:py-2 sm:text-[13px]'
+          : 'px-4 py-3 text-sm'
       )}
       aria-haspopup="listbox"
       aria-expanded={open}
@@ -231,24 +234,14 @@ export function EngineSelect({
       >
         <div className={clsx('flex-1 min-w-0', isBarVariant ? (isCompact ? 'space-y-1' : 'space-y-1.5') : 'space-y-2 sm:min-w-[240px]')}>
           {controlPresentation === 'workspace' ? (
-            <div className={clsx('flex min-w-0 flex-col', isCompact ? 'gap-0' : 'gap-2')}>
-              <div className="flex items-end gap-2">
-                <div className="min-w-0 flex-1">
-                  <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
-                    {copy.choose}
-                  </label>
-                  {engineTrigger}
-                </div>
-                {variantControl}
+            <div className="flex min-w-0 flex-nowrap items-end gap-3">
+              <div className="min-w-0 flex-1">
+                <label className={clsx('uppercase tracking-micro text-text-muted', isBarVariant ? 'text-[10px]' : 'text-[12px]')}>
+                  {copy.choose}
+                </label>
+                {engineTrigger}
               </div>
-              <button
-                type="button"
-                onClick={() => setBrowseOpen(true)}
-                className="ml-auto inline-flex items-center gap-1.5 min-h-9 px-1 text-[11px] font-medium text-text-muted hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <span>{copy.browseCompact}</span>
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
-              </button>
+              {variantControl}
             </div>
           ) : (
             <>

@@ -23,7 +23,7 @@ export function EngineVariantControl(props: Props) {
 
   if (presentation === 'workspace') {
     return (
-      <div className="w-[112px] shrink-0 space-y-1 sm:w-[136px]">
+      <div className="w-[104px] shrink-0 space-y-1 sm:w-[124px]">
         <span className="text-[10px] uppercase tracking-micro text-text-muted">{label}</span>
         <SelectMenu
           options={variants.map((entry) => ({
@@ -36,6 +36,7 @@ export function EngineVariantControl(props: Props) {
           onChange={(value) => onChange(String(value))}
           className="min-w-0"
           buttonClassName="!min-w-0 min-h-0 h-[42px] rounded-input border-border bg-surface px-3 py-0 text-[11px] font-semibold uppercase tracking-micro shadow-sm"
+          hideChevron
         />
       </div>
     );

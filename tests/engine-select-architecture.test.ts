@@ -91,23 +91,34 @@ test('engine select delegates variant presentation to a focused component', () =
   assert.match(typesSource, /controlPresentation\?: EngineSelectControlPresentation/);
 });
 
-test('workspace variant trigger overrides the shared select minimum width', () => {
+test('workspace variant trigger is compact and does not spend width on a chevron', () => {
   const variantControlSource = readFileSync(variantControlPath, 'utf8');
   assert.match(
     variantControlSource,
     /buttonClassName="!min-w-0 /,
-    'workspace variant trigger must fit its 112px and 136px wrappers'
+    'workspace variant trigger must override the shared minimum width'
   );
+  assert.match(variantControlSource, /w-\[104px\].*sm:w-\[124px\]/s);
+  assert.match(variantControlSource, /h-\[42px\]/);
+  assert.match(variantControlSource, /hideChevron/);
 });
 
-test('workspace compact engine controls preserve an independent Browse target and disabled variant explanations', () => {
+test('workspace engine and variant controls stay together without a Browse row', () => {
   const variantControlSource = readFileSync(variantControlPath, 'utf8');
-  assert.match(engineSelectSource, /ml-auto inline-flex items-center gap-1\.5 min-h-9/);
-  assert.doesNotMatch(engineSelectSource, /isCompact \? 'min-h-6'/);
+  const workspaceBranch = engineSelectSource.match(
+    /controlPresentation === 'workspace' \? \([\s\S]*?\n\s*\) : \(/,
+  )?.[0] ?? '';
+
+  assert.match(workspaceBranch, /flex min-w-0 flex-nowrap items-end gap-3/);
+  assert.match(workspaceBranch, /<div className="min-w-0 flex-1">/);
+  assert.match(engineSelectSource, /controlPresentation === 'workspace'\s*\? 'h-\[42px\]/);
+  assert.doesNotMatch(workspaceBranch, /copy\.browseCompact|ExternalLink/);
+  assert.match(engineSelectSource, /copy\.browse/);
+  assert.match(engineSelectSource, /BrowseEnginesModal/);
   assert.doesNotMatch(
-    engineSelectSource,
-    /-my-/,
-    'the 36px Browse hit target must own independent flow space without overlapping adjacent controls'
+    workspaceBranch,
+    /setBrowseOpen\(true\)/,
+    'the workspace branch should not reserve a second Browse action row',
   );
   assert.match(variantControlSource, /title: disabledEngineReasons\?\.\[entry\.id\]/);
   assert.match(variantControlSource, /disabled: Boolean\(disabledEngineReasons\?\.\[entry\.id\]\)/);
