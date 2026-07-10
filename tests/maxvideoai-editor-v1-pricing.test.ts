@@ -66,30 +66,32 @@ test('chat pricing is explicitly unavailable without blocking chat send', () => 
   assert.match(chatNodeSource, /disabled=\{!canSend\}/);
 });
 
-test('upscale pricing varies by resolution and upscale factor', () => {
+test('upscale pricing is blocked when its required input is missing', () => {
+  const settings = defaultShot('upscale-image');
+  const validation = validateShotConnections({ settings, connectedInputs: [] });
+  const estimate = buildWorkspaceToolPricingEstimate({
+    settings,
+    validation,
+    prompt: '',
+    connectedInputs: [],
+  });
+
+  assert.equal(estimate?.status, 'blocked');
+  assert.match(estimate?.label ?? '', /Connect input|Needs attention/);
+});
+
+test('valid upscale input reports unavailable server-derived pricing without blocking generation', () => {
   const settings = defaultShot('upscale-image');
   const validation = validateShotConnections({ settings, connectedInputs: ['reference'] });
-  const estimate = (patch: Partial<typeof settings>) => buildWorkspaceToolPricingEstimate({
-    settings: { ...settings, ...patch },
+  const estimate = buildWorkspaceToolPricingEstimate({
+    settings,
     validation,
     prompt: '',
     connectedInputs: ['reference'],
   });
 
-  const lowResolution = estimate({
-    resolution: '720p',
-    toolSettings: { upscale: { mode: 'target', upscaleFactor: 2, outputFormat: 'png' } },
-  });
-  const highResolution = estimate({
-    resolution: '4k',
-    toolSettings: { upscale: { mode: 'target', upscaleFactor: 2, outputFormat: 'png' } },
-  });
-  const largerFactor = estimate({
-    resolution: '720p',
-    toolSettings: { upscale: { mode: 'factor', upscaleFactor: 4, outputFormat: 'png' } },
-  });
-
-  assert.equal(lowResolution?.status, 'ready');
-  assert.notEqual(lowResolution?.totalCents, highResolution?.totalCents);
-  assert.notEqual(lowResolution?.totalCents, largerFactor?.totalCents);
+  assert.equal(validation.canGenerate, true);
+  assert.equal(estimate?.status, 'error');
+  assert.equal(estimate?.label, 'Price unavailable');
+  assert.match(estimate?.error ?? '', /source metadata.*server pricing context/i);
 });
