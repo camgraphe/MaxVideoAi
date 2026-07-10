@@ -1,14 +1,34 @@
 'use client';
 
 import { Send } from 'lucide-react';
-import { getDefaultStudioChatModel, getStudioChatModels, resolveStudioChatModel } from '@/lib/studio-chat-models';
+import { getStudioChatModels, resolveStudioChatModel } from '@/lib/studio-chat-models';
 import { FieldLabel, SelectControl } from './NodeInspectorControls';
+import { WorkspaceControlField } from './nodes/WorkspaceControlField';
 import baseStyles from '../maxvideoai-editor.module.css';
 import inspectorStyles from '../_styles/inspector.module.css';
-import type { WorkspaceChatSettings, WorkspaceGraphNode } from '../_lib/workspace-types';
+import type { WorkspaceChatSettings, WorkspaceGraphNode, WorkspaceShotSettings } from '../_lib/workspace-types';
+import { resolveWorkspaceBlockPolicy } from '../_lib/models/workspace-block-capability-policy';
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 const styles = { ...baseStyles, ...inspectorStyles };
+
+const CHAT_POLICY_SETTINGS: WorkspaceShotSettings = {
+  presetId: 'chat-box',
+  family: 'chat',
+  outputKind: 'text',
+  modelId: 'studio-chat-openai',
+  workflowType: 'chat_completion',
+  durationSec: 1,
+  aspectRatio: '16:9',
+  resolution: '1080p',
+  fps: 24,
+  seed: null,
+  audioEnabled: false,
+  lipSyncEnabled: false,
+  referenceStrength: 0.65,
+  outputName: 'Chat output',
+  status: 'draft',
+};
 
 type ChatNodeInspectorProps = {
   copy: StudioCopy['canvas']['nodes'];
@@ -36,15 +56,25 @@ function patchChat(chat: WorkspaceChatSettings | undefined, patch: Partial<Works
 export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: ChatNodeInspectorProps) {
   const chat = patchChat(node.data.chat, {});
   const chatModels = getStudioChatModels(chat.provider);
+  const policy = resolveWorkspaceBlockPolicy({
+    settings: CHAT_POLICY_SETTINGS,
+    capability: null,
+    connectedInputs: ['prompt'],
+  });
+  const patchNodeChat = (patch: Partial<WorkspaceChatSettings>) => onPatchNodeData(node.id, { chat: patchChat(chat, patch) });
+  const controlLabels = {
+    chatProvider: copy.provider,
+    chatModel: copy.model,
+    chatSystemPrompt: copy.systemPrompt,
+    chatMessage: copy.message,
+  };
   return (
     <>
       <FieldLabel>
         {copy.chatMode}
         <SelectControl
           value={chat.mode}
-          onChange={(value) => onPatchNodeData(node.id, {
-            chat: patchChat(chat, { mode: value === 'chatbot' ? 'chatbot' : 'assistant' }),
-          })}
+          onChange={(value) => patchNodeChat({ mode: value === 'chatbot' ? 'chatbot' : 'assistant' })}
         >
           <option value="assistant">{copy.llmBlockMode}</option>
           <option value="chatbot">{copy.chatbotMode}</option>
@@ -56,60 +86,21 @@ export function ChatNodeInspector({ copy, node, onPatchNodeData, onRunChat }: Ch
           className={styles.settingsInput}
           value={chat.botName}
           placeholder={copy.chatbotNamePlaceholder}
-          onChange={(event) => onPatchNodeData(node.id, { chat: patchChat(chat, { botName: event.currentTarget.value }) })}
+          onChange={(event) => patchNodeChat({ botName: event.currentTarget.value })}
         />
       </FieldLabel>
-      <FieldLabel>
-        {copy.provider}
-        <SelectControl
-          value={chat.provider}
-          onChange={(value) => onPatchNodeData(node.id, {
-            chat: patchChat(chat, {
-              provider: value === 'gemini' ? 'gemini' : 'openai',
-              modelId: getDefaultStudioChatModel(value === 'gemini' ? 'gemini' : 'openai').modelId,
-            }),
-          })}
-        >
-          <option value="openai">OpenAI</option>
-          <option value="gemini">Gemini</option>
-        </SelectControl>
-      </FieldLabel>
-      <FieldLabel>
-        {copy.model}
-        <SelectControl
-          value={chat.modelId}
-          onChange={(value) => onPatchNodeData(node.id, { chat: patchChat(chat, { modelId: value }) })}
-        >
-          {chatModels.map((model) => (
-            <option key={model.modelId} value={model.modelId}>
-              {model.label}
-            </option>
-          ))}
-        </SelectControl>
-      </FieldLabel>
-      <FieldLabel>
-        {copy.systemPrompt}
-        <textarea
-          className={styles.settingsTextarea}
-          rows={4}
-          value={chat.systemPrompt}
-          onChange={(event) => onPatchNodeData(node.id, { chat: patchChat(chat, { systemPrompt: event.currentTarget.value }) })}
+      {policy.controlFields.map((field) => (
+        <WorkspaceControlField
+          key={field}
+          field={field}
+          chat={chat}
+          label={controlLabels[field as keyof typeof controlLabels]}
+          chatModels={chatModels}
+          variant="inspector"
+          onPatchChat={patchNodeChat}
+          onPatchPromptText={(promptText) => onPatchNodeData(node.id, { promptText })}
         />
-      </FieldLabel>
-      <FieldLabel>
-        {copy.message}
-        <textarea
-          className={styles.settingsTextarea}
-          rows={6}
-          value={chat.draftMessage}
-          onChange={(event) => onPatchNodeData(node.id, {
-            chat: patchChat(chat, {
-              draftMessage: event.currentTarget.value,
-            }),
-            promptText: event.currentTarget.value,
-          })}
-        />
-      </FieldLabel>
+      ))}
       <button
         type="button"
         className={styles.primaryPanelButton}

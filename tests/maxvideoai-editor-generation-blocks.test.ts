@@ -2068,6 +2068,38 @@ test('Studio shot node controls render from policy control fields instead of har
   assert.doesNotMatch(source, /shot\.family !== 'audio' && !shot\.toolKind/);
 });
 
+test('Studio policy control renderers preserve capability render-option and chat policy boundaries', () => {
+  const controlFieldSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/WorkspaceControlField.tsx'),
+    'utf8'
+  );
+  const chatInspectorSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/ChatNodeInspector.tsx'),
+    'utf8'
+  );
+
+  assert.match(controlFieldSource, /audioOption\?\.control === 'included'/);
+  assert.match(controlFieldSource, /audioOption\?\.control === 'toggle'/);
+  assert.match(controlFieldSource, /chatProvider|chatModel|chatSystemPrompt|chatMessage/);
+  assert.match(chatInspectorSource, /resolveWorkspaceBlockPolicy/);
+  assert.match(chatInspectorSource, /policy\.controlFields\.map/);
+  assert.match(chatInspectorSource, /WorkspaceControlField/);
+});
+
+test('Studio specialized inspector fields patch the policy field they render', () => {
+  const toolSectionsSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/ShotNodeToolSections.tsx'),
+    'utf8'
+  );
+  const helpersSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-shot-inspector-helpers.ts'),
+    'utf8'
+  );
+
+  assert.match(toolSectionsSource, /has\('tool\.storyboard\.durationSec'\).*patchStoryboard\(\{ durationSec:/);
+  assert.match(helpersSource, /field === 'audioLanguage'/);
+});
+
 test('Angle node replaces the generic generate placeholder with an inline 3D picker', () => {
   const nodeTypesSource = readFileSync(
     join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-node-types.tsx'),

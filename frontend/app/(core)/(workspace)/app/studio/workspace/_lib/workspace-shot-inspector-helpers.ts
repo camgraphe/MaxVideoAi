@@ -68,6 +68,7 @@ export function isWorkspaceToolControlField(field: WorkspacePolicyControlField):
     field === 'voiceGender' ||
     field === 'voiceProfile' ||
     field === 'voiceDelivery' ||
+    field === 'audioLanguage' ||
     field === 'outputFormat' ||
     field.startsWith('tool.');
 }

@@ -17,7 +17,9 @@ import {
   AUDIO_VOICE_GENDER_VALUES,
   AUDIO_VOICE_PROFILE_VALUES,
 } from '@/lib/audio-generation';
+import { getDefaultStudioChatModel, getStudioChatModels } from '@/lib/studio-chat-models';
 import type {
+  WorkspaceChatSettings,
   WorkspaceModelCapability,
   WorkspacePolicyControlField,
   WorkspaceShotSettings,
@@ -30,12 +32,17 @@ type WorkspaceControlFieldInput = WorkspacePolicyControlField | WorkspaceResolve
 
 export type WorkspaceControlFieldProps = {
   field: WorkspaceControlFieldInput;
-  shot: WorkspaceShotSettings;
+  shot?: WorkspaceShotSettings;
+  chat?: WorkspaceChatSettings;
   capability?: WorkspaceModelCapability | null;
   disabled?: boolean;
   disabledReason?: string;
   variant?: 'node' | 'inspector';
-  onPatchShot: (patch: Partial<WorkspaceShotSettings>) => void;
+  label?: string;
+  chatModels?: Array<{ modelId: string; label: string }>;
+  onPatchShot?: (patch: Partial<WorkspaceShotSettings>) => void;
+  onPatchChat?: (patch: Partial<WorkspaceChatSettings>) => void;
+  onPatchPromptText?: (value: string) => void;
 };
 
 const FALLBACK_DURATIONS = [5, 7, 8, 10];
@@ -82,21 +89,54 @@ function defaultAudioSettings() {
 export function WorkspaceControlField({
   field,
   shot,
+  chat,
   capability = null,
   disabled = false,
   disabledReason,
   variant = 'node',
+  label: labelOverride,
+  chatModels,
   onPatchShot,
+  onPatchChat,
+  onPatchPromptText,
 }: WorkspaceControlFieldProps) {
   const id = fieldId(field);
   const metadata = fieldMetadata(field);
-  if (!id || id === 'model' || id.startsWith('chat') || id.startsWith('setting.')) return null;
+  if (!id || id === 'model' || id.startsWith('setting.')) return null;
 
   const isDisabled = disabled || Boolean(metadata.disabled);
   const title = disabledReason ?? metadata.disabledReason ?? metadata.reason;
   const className = `${styles.field} ${variant === 'inspector' ? styles.inspectorField : ''}`;
   const selectClassName = `${styles.select} ${variant === 'node' ? 'nodrag nowheel' : ''}`;
   const inputClassName = `${styles.input} ${variant === 'node' ? 'nodrag nowheel' : ''}`;
+  const wrapChat = (label: string, control: ReactNode) => <label className={className} title={title}>{label}{control}</label>;
+
+  if (id === 'chatProvider') {
+    if (!chat || !onPatchChat) return null;
+    return wrapChat(labelOverride ?? 'Provider', <select className={selectClassName} disabled={isDisabled} value={chat.provider} onChange={(event) => {
+      const provider = event.currentTarget.value === 'gemini' ? 'gemini' : 'openai';
+      onPatchChat({ provider, modelId: getDefaultStudioChatModel(provider).modelId });
+    }}><option value="openai">OpenAI</option><option value="gemini">Gemini</option></select>);
+  }
+  if (id === 'chatModel') {
+    if (!chat || !onPatchChat) return null;
+    const models = chatModels ?? getStudioChatModels(chat.provider);
+    return wrapChat(labelOverride ?? 'Model', <select className={selectClassName} disabled={isDisabled} value={chat.modelId} onChange={(event) => onPatchChat({ modelId: event.currentTarget.value })}>{models.map((model) => <option key={model.modelId} value={model.modelId}>{model.label}</option>)}</select>);
+  }
+  if (id === 'chatSystemPrompt') {
+    if (!chat || !onPatchChat) return null;
+    return wrapChat(labelOverride ?? 'System prompt', <textarea className={inputClassName} rows={4} disabled={isDisabled} value={chat.systemPrompt} onChange={(event) => onPatchChat({ systemPrompt: event.currentTarget.value })} />);
+  }
+  if (id === 'chatMessage') {
+    if (!chat || !onPatchChat) return null;
+    return wrapChat(labelOverride ?? 'Message', <textarea className={inputClassName} rows={6} disabled={isDisabled} value={chat.draftMessage} onChange={(event) => {
+      const value = event.currentTarget.value;
+      onPatchChat({ draftMessage: value });
+      onPatchPromptText?.(value);
+    }} />);
+  }
+
+  if (!shot || !onPatchShot) return null;
   const patchTool = (key: 'angle' | 'upscale' | 'audio', patch: Record<string, unknown>) => {
     const current = key === 'angle'
       ? shot.toolSettings?.angle ?? defaultAngleSettings()
@@ -118,7 +158,9 @@ export function WorkspaceControlField({
     upscaleMode: 'Mode', upscaleFactor: 'Factor', outputFormat: 'Format', audioMood: 'Mood', audioIntensity: 'Intensity',
     audioMusicEnabled: 'Music bed', voiceGender: 'Voice', voiceProfile: 'Profile', voiceDelivery: 'Delivery', audioLanguage: 'Language',
   };
-  const label = metadata.label ?? labels[id] ?? id.replace(/^tool\./, '').replaceAll('.', ' ');
+  const audioOption = capability?.render_options.find((option) => option.id === 'audio');
+  const lipSyncOption = capability?.render_options.find((option) => option.id === 'lip_sync');
+  const label = labelOverride ?? metadata.label ?? (id === 'audioEnabled' ? audioOption?.label : id === 'lipSyncEnabled' ? lipSyncOption?.label : undefined) ?? labels[id] ?? id.replace(/^tool\./, '').replaceAll('.', ' ');
   const wrap = (control: ReactNode) => <label className={className} title={title}>{label}{control}</label>;
   const toggle = (checked: boolean, onChange: () => void) => (
     <button type="button" className={`${styles.toggle} ${checked ? styles.toggleActive : ''} ${variant === 'node' ? 'nodrag' : ''}`} disabled={isDisabled} onClick={onChange}>
@@ -144,8 +186,16 @@ export function WorkspaceControlField({
   }
   if (id === 'seed') return wrap(<input className={inputClassName} type="number" disabled={isDisabled} value={shot.seed ?? ''} onChange={(event) => onPatchShot({ seed: event.currentTarget.value ? Number(event.currentTarget.value) : null })} />);
   if (id === 'referenceStrength') return wrap(<span className={styles.rangeControl}><input className={`${styles.range} ${variant === 'node' ? 'nodrag nowheel' : ''}`} type="range" min={0} max={1} step={0.05} disabled={isDisabled} value={shot.referenceStrength} onChange={(event) => onPatchShot({ referenceStrength: Number(event.currentTarget.value) })} /><strong>{Math.round(shot.referenceStrength * 100)}%</strong></span>);
-  if (id === 'audioEnabled') return wrap(toggle(shot.audioEnabled, () => onPatchShot({ audioEnabled: !shot.audioEnabled })));
-  if (id === 'lipSyncEnabled') return wrap(toggle(shot.lipSyncEnabled, () => onPatchShot({ lipSyncEnabled: !shot.lipSyncEnabled })));
+  if (id === 'audioEnabled') {
+    if (audioOption?.control === 'included') return wrap(<strong className={styles.staticValue}>Included</strong>);
+    if (audioOption?.control === 'toggle') return wrap(toggle(shot.audioEnabled, () => onPatchShot({ audioEnabled: !shot.audioEnabled })));
+    return null;
+  }
+  if (id === 'lipSyncEnabled') {
+    if (lipSyncOption?.control === 'included') return wrap(<strong className={styles.staticValue}>Included</strong>);
+    if (lipSyncOption?.control === 'toggle') return wrap(toggle(shot.lipSyncEnabled, () => onPatchShot({ lipSyncEnabled: !shot.lipSyncEnabled })));
+    return null;
+  }
   if (id === 'outputCount') {
     if (shot.toolKind !== 'character-builder') return wrap(<strong className={styles.staticValue}>{typeof capability?.output_count === 'number' ? capability.output_count : `${capability?.output_count?.min ?? 1}-${capability?.output_count?.max ?? 1}`}</strong>);
     return wrap(<select className={selectClassName} disabled={isDisabled} value={character.generateCount} onChange={(event) => patchCharacter({ generateCount: Number(event.currentTarget.value) === 4 ? 4 : 1 })}><option value={1}>1</option><option value={4}>4</option></select>);
