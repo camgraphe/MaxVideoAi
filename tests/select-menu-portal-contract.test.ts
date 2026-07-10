@@ -43,3 +43,7 @@ test('SelectMenu can retain disabled option explanations', () => {
   assert.match(selectMenuSource, /title\?: string/);
   assert.match(selectMenuSource, /title=\{option\.title\}/);
 });
+
+test('SelectMenu vertically centers rich trigger and option labels', () => {
+  assert.match(selectMenuSource, /<span className="flex min-w-0 flex-1 items-center">/);
+});

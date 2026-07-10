@@ -78,6 +78,12 @@ test('workspace mobile settings keep legible intrinsic controls inside the local
   assert.match(imageSettingsSource, /hideChevron=\{compact\}/);
   assert.match(coreSettingsSource, /formatCompactResolutionLabel/);
   assert.match(imageSettingsSource, /formatCompactResolutionLabel/);
+  assert.match(coreSettingsSource, /const showIcon = !compact \|\| !\['iterations', 'fps'\]\.includes\(kind\)/);
+  assert.match(imageSettingsSource, /const showIcon = !compact \|\| !\['images', 'format'\]\.includes\(kind\)/);
+  assert.match(coreSettingsSource, /'inline-flex h-4 items-center leading-none'/);
+  assert.match(imageSettingsSource, /'inline-flex h-4 items-center leading-none'/);
+  assert.match(coreSettingsSource, /<span className="block truncate leading-none">\{label\}<\/span>/);
+  assert.match(imageSettingsSource, /<span className="block truncate leading-none">\{label\}<\/span>/);
   assert.match(coreSettingsSource, /flex-nowrap gap-1\.5/);
   assert.match(imageSettingsSource, /flex-nowrap gap-1\.5/);
   assert.doesNotMatch(coreSettingsSource, /compact \? 'min-w-0 flex-1/);
@@ -101,6 +107,10 @@ test('workspace solo assets stretch while workspace-only vertical density expose
   assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
   assert.match(assetDropzoneSource, /workspaceDensity && 'h-full min-h-\[150px\]'/);
   assert.match(assetDropzoneSource, /workspaceDensity && 'h-full'/);
+  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && \(disabled \? 'min-h-8' : 'h-8'\)/);
+  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'min-h-0 flex-1'/);
+  assert.match(assetDropzoneSource, /visibleHelperText \|\| isCollectionField \|\| workspaceDensity/);
+  assert.match(assetDropzoneSource, /workspaceDensity && !fullBleedSingleAsset && 'flex h-8 items-end'/);
   assert.match(assetDropzoneSlotSource, /'min-h-\[96px\] h-full rounded-\[12px\] border-0 bg-transparent'/);
   assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot[\s\S]*'h-10 w-10'/);
   assert.match(assetDropzoneSlotSource, /workspaceDensity && isLockedEmptySlot \? 'gap-2'/);

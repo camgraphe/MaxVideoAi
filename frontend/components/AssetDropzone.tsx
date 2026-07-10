@@ -385,13 +385,16 @@ export function AssetDropzone({
           </div>
           {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
         </div>
-        <AssetFieldGuidance tooltipId={`${tooltipId}-guidance`} guidance={guidance} fullBleedSingleAsset={fullBleedSingleAsset} />
-        <AssetFieldDisabledNotice disabled={disabled} presentation={disabledPresentation} reason={disabledReason} />
+        <div className={clsx('space-y-2', workspaceDensity && !fullBleedSingleAsset && (disabled ? 'min-h-8' : 'h-8'))}>
+          <AssetFieldGuidance tooltipId={`${tooltipId}-guidance`} guidance={guidance} fullBleedSingleAsset={fullBleedSingleAsset} />
+          <AssetFieldDisabledNotice disabled={disabled} presentation={disabledPresentation} reason={disabledReason} />
+        </div>
 
         <div
           className={clsx(
             'grid gap-2',
             fullBleedSingleAsset && 'h-full',
+            workspaceDensity && !fullBleedSingleAsset && 'min-h-0 flex-1',
             multiSlotGridClass
           )}
         >
@@ -440,8 +443,11 @@ export function AssetDropzone({
             );
           })}
         </div>
-        {visibleHelperText || isCollectionField ? (
-          <p className="text-[11px] leading-none text-text-muted dark:text-white/45">
+        {visibleHelperText || isCollectionField || workspaceDensity ? (
+          <p className={clsx(
+            'text-[11px] leading-4 text-text-muted dark:text-white/45',
+            workspaceDensity && !fullBleedSingleAsset && 'flex h-8 items-end'
+          )}>
             {[visibleHelperText, isCollectionField ? assetCopy.slotsRemaining(remainingSlotCount) : null].filter(Boolean).join(' · ')}
           </p>
         ) : null}

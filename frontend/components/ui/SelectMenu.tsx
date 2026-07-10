@@ -298,7 +298,7 @@ export function SelectMenu({
         aria-controls={listboxId}
         aria-disabled={disabled}
       >
-        <span className="min-w-0 flex-1">
+        <span className="flex min-w-0 flex-1 items-center">
           {typeof selectedLabel === 'string' ? <span className="truncate">{selectedLabel}</span> : selectedLabel}
         </span>
         {!hideChevron ? (
@@ -380,7 +380,7 @@ export function SelectMenu({
                         isHighlighted && !option.disabled && !isSelected && 'bg-surface-2 dark:bg-white/[0.08]'
                       )}
                     >
-                      <span className="min-w-0 flex-1">
+                      <span className="flex min-w-0 flex-1 items-center">
                         {typeof option.label === 'string' ? (
                           <span className="truncate">{option.label}</span>
                         ) : (

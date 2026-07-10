@@ -53,6 +53,15 @@ Required fidelity surfaces:
   - Fix: retained the media center axis but allowed the image toolbar a parent-bounded 244px minimum action width.
   - Post-fix evidence: `image-mobile-390-final.png`; toolbar height is 38px and center delta is 0px.
 
+### Iteration 3 — browser annotation follow-up
+
+- [P2] The compact resolution value had lost its useful icon and rich SelectMenu labels sat 2px above the trigger center.
+  - Fix: restored the resolution icon for video and image workspaces, normalized compact label line-height, and made SelectMenu trigger/option label wrappers flex-centered.
+  - Post-fix measurement: the 720p trigger, resolution icon, and label share the exact same vertical center; the image workspace 1K control reports the same 0px center delta.
+- [P2] Seedance upload-card guidance, add actions, and remaining-slot copy used content-driven vertical positions.
+  - Fix: reserved 32px guidance and footer zones and let the add-action zone consume the shared flexible middle row.
+  - Post-fix measurement: all six empty Seedance cards use 32px information and footer zones; the three add actions on each row share the same center coordinate.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.
@@ -65,6 +74,7 @@ Required fidelity surfaces:
 
 - Focused workspace contracts and helper tests: passed (27 tests).
 - Full project validation suite: `pnpm test:validate` passed with exit code 0.
+- Annotation follow-up validation: all 1,566 project tests passed with 0 failures.
 - Frontend lint: `npm --prefix frontend run lint` passed.
 - Exposure lint: `npm run lint:exposure` passed.
 - TypeScript: `pnpm --prefix frontend exec tsc --noEmit` passed.

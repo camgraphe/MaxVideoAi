@@ -115,11 +115,11 @@ function ControlIcon({ kind }: { kind: InlineControlKind }) {
 }
 
 function createInlineLabel(kind: InlineControlKind, label: string, compact: boolean) {
-  const showIcon = !compact || !['images', 'resolution', 'format'].includes(kind);
+  const showIcon = !compact || !['images', 'format'].includes(kind);
   return (
-    <span className={clsx('inline-flex items-center', compact ? 'gap-1.5' : 'gap-2')}>
+    <span className={clsx('inline-flex h-4 items-center leading-none', compact ? 'gap-1.5' : 'gap-2')}>
       {showIcon ? <ControlIcon kind={kind} /> : null}
-      <span className="truncate">{label}</span>
+      <span className="block truncate leading-none">{label}</span>
     </span>
   );
 }
