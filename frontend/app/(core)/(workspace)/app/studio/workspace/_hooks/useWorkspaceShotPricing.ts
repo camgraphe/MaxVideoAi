@@ -3,11 +3,14 @@ import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { validateShotConnections } from '../_lib/workspace-capabilities';
 import {
+  buildWorkspaceStoryboardImageEstimateRequest,
   buildWorkspaceShotPreflightRequest,
   errorWorkspacePricingEstimate,
+  formatWorkspaceImagePricingEstimate,
   formatWorkspacePricingEstimate,
   loadingWorkspacePricingEstimate,
   unavailableWorkspacePricingEstimate,
+  type WorkspaceImagePricingEstimateResponse,
 } from '../_lib/workspace-pricing';
 import { buildWorkspaceToolPricingEstimate } from '../_lib/workspace-tool-pricing';
 import type {
@@ -35,7 +38,17 @@ type WorkspaceLocalPricingRequest = {
   estimate: WorkspacePricingEstimate;
 };
 
-type WorkspaceAnyPricingRequest = WorkspacePricingRequest | WorkspaceLocalPricingRequest;
+type WorkspaceImageEstimatePricingRequest = {
+  kind: 'image-estimate';
+  nodeId: string;
+  key: string;
+  request: ReturnType<typeof buildWorkspaceStoryboardImageEstimateRequest>;
+};
+
+type WorkspaceAnyPricingRequest =
+  | WorkspacePricingRequest
+  | WorkspaceLocalPricingRequest
+  | WorkspaceImageEstimatePricingRequest;
 
 type UseWorkspaceShotPricingOptions = {
   nodes: WorkspaceGraphNode[];
@@ -77,6 +90,10 @@ function pricingRequestKey(request: WorkspacePricingRequest['request']): string 
     voiceControl: request.voiceControl,
     memberTier: request.user?.memberTier,
   });
+}
+
+function imagePricingRequestKey(request: WorkspaceImageEstimatePricingRequest['request']): string {
+  return JSON.stringify(request);
 }
 
 export function useWorkspaceShotPricing({
@@ -145,6 +162,15 @@ export function useWorkspaceShotPricing({
             }),
           }];
         }
+        if (settings.toolKind === 'storyboard') {
+          const request = buildWorkspaceStoryboardImageEstimateRequest({ settings });
+          return [{
+            kind: 'image-estimate' as const,
+            nodeId: node.id,
+            request,
+            key: imagePricingRequestKey(request),
+          }];
+        }
         const request = buildWorkspaceShotPreflightRequest({
           settings,
           connectedInputs,
@@ -178,8 +204,10 @@ export function useWorkspaceShotPricing({
       }, {})
     );
 
-    const preflightRequests = pricingRequests.filter((request): request is WorkspacePricingRequest => request.kind === 'preflight');
-    if (!preflightRequests.length) {
+    const remoteRequests = pricingRequests.filter(
+      (request): request is WorkspacePricingRequest | WorkspaceImageEstimatePricingRequest => request.kind !== 'local'
+    );
+    if (!remoteRequests.length) {
       return () => {
         canceled = true;
       };
@@ -187,8 +215,25 @@ export function useWorkspaceShotPricing({
 
     const timeout = window.setTimeout(() => {
       void Promise.all(
-        preflightRequests.map(async (pricingRequest) => {
+        remoteRequests.map(async (pricingRequest) => {
           try {
+            if (pricingRequest.kind === 'image-estimate') {
+              const response = await authFetch('/api/images/estimate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(pricingRequest.request),
+              });
+              const payload = (await response.json().catch(() => null)) as WorkspaceImagePricingEstimateResponse | null;
+              if (!response.ok || !payload?.ok) {
+                return [
+                  pricingRequest.nodeId,
+                  formatWorkspaceImagePricingEstimate(
+                    payload ?? { error: `Storyboard price estimate failed (${response.status})` }
+                  ),
+                ] as const;
+              }
+              return [pricingRequest.nodeId, formatWorkspaceImagePricingEstimate(payload)] as const;
+            }
             const response = await runPreflight(pricingRequest.request);
             return [pricingRequest.nodeId, formatWorkspacePricingEstimate(response)] as const;
           } catch (error) {

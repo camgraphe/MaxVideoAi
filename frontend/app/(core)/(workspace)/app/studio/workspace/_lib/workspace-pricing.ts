@@ -1,4 +1,6 @@
 import type { PricingSnapshot } from '@maxvideoai/pricing';
+import { STORYBOARD_TEMPLATE_SIZES, getStoryboardOutputConfig } from '@/components/tools/storyboard/_lib/storyboard-templates';
+import { STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { resolveWorkspaceGenerationMode, workspaceAudioEnabledForRequest } from './workspace-capabilities';
 import type {
@@ -14,6 +16,31 @@ type BuildWorkspaceShotPreflightRequestOptions = {
   connectedInputs: WorkspaceEdgeKind[];
   capability: WorkspaceModelCapability | null;
   memberTier?: string;
+};
+
+export type WorkspaceStoryboardImageEstimateRequest = {
+  engineId: 'gpt-image-2';
+  mode: 'i2i';
+  numImages: 1;
+  referenceImageSizes: Array<{ width: number; height: number }>;
+  resolution: string;
+  customImageSize: { width: number; height: number } | null;
+  quality: 'medium' | 'high';
+  source: typeof STORYBOARD_SOURCE;
+  metadata: {
+    storyboard: {
+      role: 'board';
+      targetModel: 'seedance' | 'kling';
+    };
+  };
+  aspectRatio: '16:9' | '9:16';
+};
+
+export type WorkspaceImagePricingEstimateResponse = {
+  ok?: boolean;
+  pricing?: PricingSnapshot | null;
+  error?: string;
+  message?: string;
 };
 
 function formatMoney(totalCents: number, currency: string): string {
@@ -100,6 +127,31 @@ export function buildWorkspaceShotPreflightRequest({
   };
 }
 
+export function buildWorkspaceStoryboardImageEstimateRequest({
+  settings,
+}: {
+  settings: WorkspaceShotSettings;
+}): WorkspaceStoryboardImageEstimateRequest {
+  const storyboardSettings = settings.toolSettings?.storyboard;
+  const orientation = storyboardSettings?.orientation ?? 'landscape';
+  const tier = storyboardSettings?.tier ?? '4k';
+  const targetModel = storyboardSettings?.targetModel ?? 'seedance';
+  const outputConfig = getStoryboardOutputConfig(tier, orientation);
+
+  return {
+    engineId: 'gpt-image-2',
+    mode: 'i2i',
+    numImages: 1,
+    referenceImageSizes: [STORYBOARD_TEMPLATE_SIZES[orientation]],
+    resolution: outputConfig.resolution,
+    customImageSize: outputConfig.customImageSize,
+    quality: outputConfig.quality,
+    source: STORYBOARD_SOURCE,
+    metadata: { storyboard: { role: 'board', targetModel } },
+    aspectRatio: orientation === 'portrait' ? '9:16' : '16:9',
+  };
+}
+
 export function loadingWorkspacePricingEstimate(previous?: WorkspacePricingEstimate): WorkspacePricingEstimate {
   return {
     status: 'loading',
@@ -120,6 +172,19 @@ export function formatWorkspacePricingEstimate(response: PreflightResponse): Wor
     currency,
     pricing: response.pricing ?? null,
   });
+}
+
+export function formatWorkspaceImagePricingEstimate(
+  response: WorkspaceImagePricingEstimateResponse
+): WorkspacePricingEstimate {
+  const pricing = response.pricing ?? null;
+  if (response.ok && typeof pricing?.totalCents === 'number') {
+    return readyWorkspacePricingEstimate(pricing.totalCents, pricing.currency ?? 'USD', pricing);
+  }
+  return unavailableWorkspacePricingEstimate(
+    response.message ?? response.error ?? 'Unable to estimate Storyboard pricing',
+    { currency: pricing?.currency, pricing }
+  );
 }
 
 export function errorWorkspacePricingEstimate(error: unknown): WorkspacePricingEstimate {

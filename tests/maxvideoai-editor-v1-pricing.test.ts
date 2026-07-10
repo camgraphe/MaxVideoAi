@@ -8,6 +8,8 @@ import { validateShotConnections } from '../frontend/app/(core)/(workspace)/app/
 import { resolveWorkspaceBlockPolicy } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/models/workspace-block-capability-policy';
 import {
   blockedWorkspacePricingEstimate,
+  buildWorkspaceStoryboardImageEstimateRequest,
+  formatWorkspaceImagePricingEstimate,
   readyWorkspacePricingEstimate,
   unavailableWorkspacePricingEstimate,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-pricing';
@@ -57,6 +59,51 @@ test('character builder can price from scratch because reference is optional', (
 
   assert.equal(estimate?.status, 'ready');
   assert.ok((estimate?.totalCents ?? 0) > 0);
+});
+
+test('ready storyboard pricing uses its image estimate payload instead of virtual video preflight', () => {
+  const settings = defaultShot('storyboard');
+  const request = buildWorkspaceStoryboardImageEstimateRequest({
+    settings: {
+      ...settings,
+      toolSettings: {
+        ...settings.toolSettings,
+        storyboard: {
+          ...settings.toolSettings?.storyboard!,
+          orientation: 'portrait',
+          tier: 'ultra',
+          targetModel: 'kling',
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(request, {
+    engineId: 'gpt-image-2',
+    mode: 'i2i',
+    numImages: 1,
+    referenceImageSizes: [{ width: 1000, height: 1600 }],
+    resolution: 'custom',
+    customImageSize: { width: 2160, height: 3840 },
+    quality: 'high',
+    source: 'storyboard',
+    metadata: { storyboard: { role: 'board', targetModel: 'kling' } },
+    aspectRatio: '9:16',
+  });
+  assert.notEqual(request.engineId, settings.modelId);
+});
+
+test('Storyboard image estimate responses map to ready and explanatory error pricing states', () => {
+  const ready = formatWorkspaceImagePricingEstimate({
+    ok: true,
+    pricing: { totalCents: 42, currency: 'USD' },
+  });
+  const error = formatWorkspaceImagePricingEstimate({ ok: false, error: 'engine_unavailable' });
+
+  assert.equal(ready.status, 'ready');
+  assert.equal(ready.totalCents, 42);
+  assert.equal(error.status, 'error');
+  assert.equal(error.error, 'engine_unavailable');
 });
 
 test('Angle pricing uses the policy output count instead of the legacy best-angles toggle', () => {
