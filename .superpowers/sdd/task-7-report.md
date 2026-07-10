@@ -95,3 +95,40 @@ Result: pass.
 
 - The existing Project media modal retains its local selection state; this fix wires the Task 7 hook state through the asset-picker runtime flow within the permitted write scope.
 - The focused suite remains blocked only by the two unrelated existing architecture failures noted above.
+
+## Fix pass 2
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/TimelineClipInspector.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryModal.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaLibraryModal.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceRuntimeModals.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceGraphActions.ts`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 40 passed, 2 failed. The new inspector verified-resolution contract and deferred multi-select import contract pass. The two unchanged unrelated failures are the shot-control duration source assertion and pricing preflight's `includes` error in `model-input-connectors.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`91aef06f46e996a5d1774a89b2e700d5e156452c` - `fix: complete Studio asset picker imports`
+
+### Concerns
+
+- The focused suite remains blocked by the two unrelated existing architecture failures above.
+- `frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json` still reports the three pre-existing errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
