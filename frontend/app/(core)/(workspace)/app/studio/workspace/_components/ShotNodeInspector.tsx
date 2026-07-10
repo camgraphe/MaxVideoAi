@@ -13,6 +13,7 @@ import type {
   WorkspaceShotSettings,
 } from '../_lib/workspace-types';
 import { localizeWorkspaceShotOutputName } from '../_lib/workspace-generated-copy';
+import { connectedInputKinds } from '../_lib/workspace-graph-helpers';
 import {
   localizeStudioEdgeKindLabel,
   type StudioCopy,
@@ -58,7 +59,11 @@ export function ShotNodeInspector({
 
   const validation = node.data.validation;
   const selectedCapability = validation?.capability ?? capabilities.find((capability) => capability.id === shot.modelId) ?? null;
-  const compatibleCapabilities = compatibleCapabilitiesForShot(shot, capabilities);
+  const compatibleCapabilities = compatibleCapabilitiesForShot(
+    shot,
+    capabilities,
+    connectedInputKinds(node.id, edges)
+  );
   const inspectorSections = toolPanelSectionsForShot(shot);
   const hideModelSelect = !inspectorSections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
   const inputConnectors = Array.isArray(node.data.inputConnectors) ? node.data.inputConnectors : selectedCapability?.input_connectors ?? [];

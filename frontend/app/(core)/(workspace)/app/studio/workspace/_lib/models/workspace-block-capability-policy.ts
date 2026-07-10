@@ -81,12 +81,41 @@ function isSingleEngineTool(settings: WorkspaceShotSettings): string | null {
   return null;
 }
 
+function workflowForMode(
+  mode: WorkspaceBlockMode,
+  connected: Set<WorkspaceEdgeKind>,
+  fallbackWorkflow: WorkspaceWorkflowType
+): WorkspaceWorkflowType {
+  const workflowForMode: Partial<Record<WorkspaceBlockMode, WorkspaceWorkflowType>> = {
+    'text-to-video': connected.has('character') ? 'character_to_video' : 'text_to_video',
+    'image-to-video': 'image_to_video',
+    'reference-to-video': 'storyboard_to_video',
+    'first-last-video': 'image_to_video',
+    'video-edit': 'video_to_video',
+    'text-to-image': 'text_to_image',
+    'image-edit': 'image_to_image',
+  };
+  return workflowForMode[mode] ?? fallbackWorkflow;
+}
+
+function workflowImpliedByConnectedInputs(
+  settings: WorkspaceShotSettings,
+  connected: Set<WorkspaceEdgeKind>
+): WorkspaceWorkflowType | null {
+  const contract = v1BlockContractFor(settings);
+  if (!contract) return null;
+  const workflow = workflowForMode(inferBlockMode(settings, connected), connected, settings.workflowType);
+  return contract.workflows.includes(workflow) ? workflow : null;
+}
+
 export function getWorkspaceBlockCompatibleCapabilities({
   settings,
   capabilities,
+  connectedInputs = [],
 }: {
   settings: WorkspaceShotSettings;
   capabilities: WorkspaceModelCapability[];
+  connectedInputs?: WorkspaceEdgeKind[];
 }): WorkspaceModelCapability[] {
   const singleEngineTool = isSingleEngineTool(settings);
   if (singleEngineTool) return capabilities.filter((capability) => capability.id === singleEngineTool);
@@ -101,10 +130,13 @@ export function getWorkspaceBlockCompatibleCapabilities({
 
   const v1BlockContract = v1BlockContractFor(settings);
   if (v1BlockContract) {
+    const workflow = workflowImpliedByConnectedInputs(settings, connectedSet(connectedInputs));
     return capabilities.filter((capability) => (
       capability.family === v1BlockContract.family &&
       capability.outputKind === v1BlockContract.outputKind &&
-      v1BlockContract.workflows.some((workflow) => capability.workflows.includes(workflow)) &&
+      (workflow
+        ? capability.workflows.includes(workflow)
+        : v1BlockContract.workflows.some((workflow) => capability.workflows.includes(workflow))) &&
       (!v1BlockContract.compatibleModelIds || v1BlockContract.compatibleModelIds.includes(capability.id))
     ));
   }
@@ -178,16 +210,7 @@ function requiredInputsForMode(
 ): WorkspaceEdgeKind[] {
   const contract = v1BlockContractFor(settings);
   if (contract) {
-    const workflowForMode: Partial<Record<WorkspaceBlockMode, WorkspaceWorkflowType>> = {
-      'text-to-video': connected.has('character') ? 'character_to_video' : 'text_to_video',
-      'image-to-video': 'image_to_video',
-      'reference-to-video': 'storyboard_to_video',
-      'first-last-video': 'image_to_video',
-      'video-edit': 'video_to_video',
-      'text-to-image': 'text_to_image',
-      'image-edit': 'image_to_image',
-    };
-    const workflow = workflowForMode[mode] ?? settings.workflowType;
+    const workflow = workflowForMode(mode, connected, settings.workflowType);
     if (contract.workflows.includes(workflow)) return contract.requiredInputsByWorkflow[workflow] ?? [];
   }
   if (mode === 'image-edit') return ['prompt', 'reference'];
@@ -460,6 +483,7 @@ export function resolveWorkspaceBlockPolicy({
   const selectedModelCompatible = !capability || getWorkspaceBlockCompatibleCapabilities({
     settings,
     capabilities: [capability],
+    connectedInputs,
   }).length > 0;
   const disabledReason = selectedModelCompatible
     ? disabledReasonForMissingInputs(missingInputs)

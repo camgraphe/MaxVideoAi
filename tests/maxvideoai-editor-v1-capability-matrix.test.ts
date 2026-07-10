@@ -79,7 +79,7 @@ test('Studio V1 keeps generate and modify model lists distinct', () => {
   assert.ok(modifyImageIds.every((id) => !id.startsWith('audio-')));
 });
 
-test('Studio V1 generate video includes every matrix-declared capability workflow', () => {
+test('Studio V1 generate video excludes storyboard-only models without a reference', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const sourceCapability = capabilities.find((capability) => capability.id === 'seedance-2-0');
   const preset = getWorkspaceBlockPreset('generate-video');
@@ -97,12 +97,19 @@ test('Studio V1 generate video includes every matrix-declared capability workflo
     character_to_video: false,
   };
 
-  const compatible = getWorkspaceBlockCompatibleCapabilities({
+  const plainPromptCompatible = getWorkspaceBlockCompatibleCapabilities({
     settings: preset.defaultShot,
     capabilities: [...capabilities, storyboardOnlyCapability],
+    connectedInputs: ['prompt'],
+  });
+  const referenceCompatible = getWorkspaceBlockCompatibleCapabilities({
+    settings: preset.defaultShot,
+    capabilities: [...capabilities, storyboardOnlyCapability],
+    connectedInputs: ['prompt', 'reference'],
   });
 
-  assert.ok(compatible.some((capability) => capability.id === storyboardOnlyCapability.id));
+  assert.equal(plainPromptCompatible.some((capability) => capability.id === storyboardOnlyCapability.id), false);
+  assert.ok(referenceCompatible.some((capability) => capability.id === storyboardOnlyCapability.id));
 });
 
 test('Studio V1 tool blocks only expose their product tool capabilities', () => {

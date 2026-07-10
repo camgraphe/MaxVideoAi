@@ -86,7 +86,12 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
   const modelCapabilities = Array.isArray(data.modelCapabilities) ? data.modelCapabilities as WorkspaceModelCapability[] : [];
   const validation = data.validation;
   const selectedCapability = validation?.capability ?? modelCapabilities.find((capability) => capability.id === shot.modelId) ?? null;
-  const compatibleCapabilities = modelCapabilities.length ? compatibleCapabilitiesForShot(shot, modelCapabilities) : selectedCapability ? [selectedCapability] : [];
+  const connectedInputs = Array.isArray(data.inputConnectors)
+    ? data.inputConnectors.filter((connector) => (connector.connectedCount ?? 0) > 0).map((connector) => connector.kind)
+    : [];
+  const compatibleCapabilities = modelCapabilities.length
+    ? compatibleCapabilitiesForShot(shot, modelCapabilities, connectedInputs)
+    : selectedCapability ? [selectedCapability] : [];
   const sections = toolPanelSectionsForShot(shot);
   const hideModelSelect = !sections.includes('model-select') || (isToolOnlyPreset(shot) && compatibleCapabilities.length <= 1);
   const renderOptions = selectedCapability?.render_options ?? [];

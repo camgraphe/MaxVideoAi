@@ -1,4 +1,5 @@
 import type {
+  WorkspaceEdgeKind,
   WorkspaceModelCapability,
   WorkspaceShotSettings,
 } from './workspace-types';
@@ -24,11 +25,13 @@ export function isToolOnlyPreset(settings: WorkspaceShotSettings): boolean {
 
 export function compatibleCapabilitiesForShot(
   settings: WorkspaceShotSettings,
-  capabilities: WorkspaceModelCapability[]
+  capabilities: WorkspaceModelCapability[],
+  connectedInputs: WorkspaceEdgeKind[] = []
 ): WorkspaceModelCapability[] {
   return getWorkspaceBlockCompatibleCapabilities({
     settings,
     capabilities,
+    connectedInputs,
   });
 }
 

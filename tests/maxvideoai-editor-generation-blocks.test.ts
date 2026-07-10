@@ -623,6 +623,33 @@ test('modify video validation rejects stale non-allowlisted video-to-video model
   assert.equal(validation.canGenerate, false);
 });
 
+test('Generate Video validation rejects storyboard-only models without a reference', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;
+  const sourceCapability = capabilities.find((capability) => capability.id === 'seedance-2-0');
+  assert.ok(generateVideo);
+  assert.ok(sourceCapability);
+
+  const storyboardOnlyCapability = {
+    ...sourceCapability,
+    id: 'test-storyboard-only-video',
+    workflows: ['storyboard_to_video'] as const,
+    text_to_video: false,
+    image_to_video: false,
+    video_to_video: false,
+    storyboard_to_video: true,
+    character_to_video: false,
+  };
+
+  const validation = validateShotConnections({
+    settings: { ...generateVideo, modelId: storyboardOnlyCapability.id },
+    connectedInputs: ['prompt'],
+    capabilities: [...capabilities, storyboardOnlyCapability],
+  });
+
+  assert.equal(validation.canGenerate, false);
+});
+
 test('legacy modify video shots without preset ids retain the V1 model allowlist', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const modifyVideo = getWorkspaceBlockPreset('modify-video')?.defaultShot;
