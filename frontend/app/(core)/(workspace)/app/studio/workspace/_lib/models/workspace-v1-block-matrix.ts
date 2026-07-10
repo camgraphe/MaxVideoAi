@@ -3,6 +3,7 @@ import type {
   WorkspaceGenerationPresetId,
   WorkspaceOutputMediaKind,
   WorkspacePolicyControlField,
+  WorkspaceShotSettings,
   WorkspaceWorkflowType,
 } from '../workspace-types';
 
@@ -179,4 +180,19 @@ export const WORKSPACE_V1_BLOCK_MATRIX = {
 
 export function getWorkspaceV1BlockContract(presetId: WorkspaceGenerationPresetId): WorkspaceV1BlockContract {
   return WORKSPACE_V1_BLOCK_MATRIX[presetId];
+}
+
+export function getWorkspaceV1BlockContractForSettings(
+  settings: Pick<WorkspaceShotSettings, 'presetId' | 'family' | 'outputKind' | 'toolKind' | 'workflowType'>
+): WorkspaceV1BlockContract | null {
+  if (settings.presetId) return getWorkspaceV1BlockContract(settings.presetId);
+
+  const matchingContracts = Object.values(WORKSPACE_V1_BLOCK_MATRIX).filter((contract) => (
+    contract.workflows.includes(settings.workflowType) &&
+    (!settings.family || contract.family === settings.family) &&
+    (!settings.outputKind || contract.outputKind === settings.outputKind) &&
+    (!settings.toolKind || contract.presetId === settings.toolKind)
+  ));
+
+  return matchingContracts.length === 1 ? matchingContracts[0] : null;
 }

@@ -609,6 +609,20 @@ test('modify video validation rejects stale non-allowlisted video-to-video model
   assert.equal(validation.canGenerate, false);
 });
 
+test('legacy modify video shots without preset ids retain the V1 model allowlist', () => {
+  const capabilities = getWorkspaceModelCapabilities();
+  const modifyVideo = getWorkspaceBlockPreset('modify-video')?.defaultShot;
+  assert.ok(modifyVideo);
+
+  const { presetId: _presetId, ...legacyModifyVideo } = modifyVideo;
+  const compatibleModelIds = getWorkspaceBlockCompatibleCapabilities({
+    settings: legacyModifyVideo,
+    capabilities,
+  }).map((capability) => capability.id);
+
+  assert.deepEqual(compatibleModelIds, ['luma-ray-3-2']);
+});
+
 test('Studio V1 input connectors disable inputs unsupported by the selected real engine', () => {
   const capabilities = getWorkspaceModelCapabilities();
   const generateVideo = getWorkspaceBlockPreset('generate-video')?.defaultShot;

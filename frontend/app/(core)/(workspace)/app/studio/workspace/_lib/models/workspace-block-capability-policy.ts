@@ -10,7 +10,7 @@ import type {
   WorkspaceWorkflowType,
 } from '../workspace-types';
 import { edgeLabel } from '../workspace-templates';
-import { getWorkspaceV1BlockContract } from './workspace-v1-block-matrix';
+import { getWorkspaceV1BlockContractForSettings } from './workspace-v1-block-matrix';
 import {
   connectedSatisfiesRequirement,
   getWorkspaceShotInputConnectors,
@@ -72,7 +72,7 @@ function isGenerateVideo(settings: WorkspaceShotSettings): boolean {
 }
 
 function v1BlockContractFor(settings: WorkspaceShotSettings) {
-  return settings.presetId ? getWorkspaceV1BlockContract(settings.presetId) : null;
+  return getWorkspaceV1BlockContractForSettings(settings);
 }
 
 function isSingleEngineTool(settings: WorkspaceShotSettings): string | null {
