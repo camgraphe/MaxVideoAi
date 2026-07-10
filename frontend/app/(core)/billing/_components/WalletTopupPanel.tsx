@@ -15,6 +15,7 @@ type WalletTopupPanelProps = {
   applyCustomAmount: () => void;
   checkoutCaptchaError: string | null;
   checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
   checkoutCaptchaToken: string | null;
   copy: BillingCopy;
   currencyLoading: boolean;
@@ -36,7 +37,7 @@ type WalletTopupPanelProps = {
   handleCurrencyChange: (event: ChangeEvent<HTMLSelectElement>) => void;
   handleExpressTopupFailed: (amountCents: number, reason?: string) => void;
   handleExpressTopupStarted: (amountCents: number) => void;
-  handleTopUp: (amountCents: number) => void;
+  handleTopUp: () => void;
   isTopupStarting: boolean;
   locale: string;
   normalizedChargeCurrency: string;
@@ -61,6 +62,7 @@ export function WalletTopupPanel({
   applyCustomAmount,
   checkoutCaptchaError,
   checkoutCaptchaRequired,
+  checkoutCaptchaResetGeneration,
   checkoutCaptchaToken,
   copy,
   currencyLoading,
@@ -229,7 +231,7 @@ export function WalletTopupPanel({
             type="button"
             size="lg"
             disabled={isTopupStarting}
-            onClick={() => handleTopUp(selectedTopupCents)}
+            onClick={handleTopUp}
             className="w-full whitespace-normal px-4 text-center leading-snug sm:w-auto sm:px-5"
           >
             {copy.wallet.checkoutCta.replace('{amount}', selectedTopupAmountLabel)}
@@ -250,6 +252,7 @@ export function WalletTopupPanel({
                 siteKey={turnstileSiteKey}
                 onToken={handleCheckoutCaptchaToken}
                 onError={handleCheckoutCaptchaError}
+                resetGeneration={checkoutCaptchaResetGeneration}
               />
             </div>
           ) : null}

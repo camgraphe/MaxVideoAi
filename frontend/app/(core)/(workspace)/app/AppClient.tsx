@@ -177,6 +177,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     allowsUnifiedVeoFirstLast: composer.allowsUnifiedVeoFirstLast,
     isUnifiedHappyHorse: composer.isUnifiedHappyHorse,
     isUnifiedSeedance: composer.isUnifiedSeedance,
+    isUnifiedGeminiOmni: composer.isUnifiedGeminiOmni,
     uiLocale: app.uiLocale,
     authChecked: draft.authChecked,
     authLoading: app.authLoading,
@@ -186,6 +187,9 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     setForm: routeForm.setForm,
   });
   const pricing = useWorkspacePricingGate({
+    accessToken: app.session?.access_token ?? null,
+    locale: app.uiLocale,
+    topUpCopy: app.workspaceCopy.topUp,
     form: routeForm.form,
     selectedEngine: composer.selectedEngine,
     authChecked: draft.authChecked,
@@ -195,7 +199,6 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     effectiveDurationSec: composer.effectiveDurationSec,
     voiceControlEnabled: composer.voiceControlEnabled,
     submissionMode: composer.submissionMode,
-    showNotice: noticeState.showNotice,
   });
   const generation = useWorkspaceGenerationRunner({
     audioWorkflowUnsupported: composer.audioWorkflowUnsupported,

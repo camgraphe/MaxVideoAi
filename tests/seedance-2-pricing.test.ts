@@ -51,7 +51,8 @@ test('Seedance 2 pricing snapshot lands on the 2.5x BytePlus public target after
   assert.equal(snapshot.base.amountCents, 291);
   assert.equal(snapshot.platformFeeCents, 87);
   assert.equal(snapshot.vendorShareCents, 291);
-  assert.equal(snapshot.meta?.pricing_model, 'fal_tokens');
+  assert.equal(snapshot.meta?.pricing_model, 'byteplus_tokens');
+  assert.equal(snapshot.meta?.provider_cost_source, 'byteplus_modelark_pricing_config');
   assert.equal(snapshot.meta?.output_width, 1280);
   assert.equal(snapshot.meta?.output_height, 720);
   assert.equal(snapshot.meta?.token_count, 216000);
@@ -236,7 +237,7 @@ test('Seedance 2 Mini uses one 2.5x BytePlus no-video public target for every in
   assert.equal(targetCustomerUnitPriceUsdPer1kTokens(videoSnapshot.meta?.unit_price_usd_per_1k_tokens as number), 0.00875);
 });
 
-test('Seedance 2 pricing changes with aspect ratio because Fal charges on output pixels', async () => {
+test('Seedance 2 pricing changes with aspect ratio because BytePlus pricing follows output pixels', async () => {
   const engine = getEngine('seedance-2-0');
 
   const landscape = await computePricingSnapshot({

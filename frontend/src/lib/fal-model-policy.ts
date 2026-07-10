@@ -10,7 +10,9 @@ const ALLOWED_FAL_PROXY_HOSTS = new Set([
 ]);
 const ALLOWED_FAL_STORAGE_PATHS = new Set(['/storage/upload/initiate', '/storage/upload/initiate-multipart']);
 const EXTRA_FAL_PROXY_ENDPOINTS = [
+  'bytedance/seed-audio-1.0',
   'fal-ai/ace-step',
+  'fal-ai/elevenlabs/music',
   'fal-ai/gemini-3.1-flash-tts',
   'fal-ai/thinksound/audio',
   'fal-ai/lyria2',

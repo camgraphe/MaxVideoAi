@@ -160,6 +160,10 @@ type PricingHubCopy = {
     cards: Array<{
       title: string;
       body: string;
+      link?: {
+        href: '/pay-as-you-go-ai-video-generator';
+        label: string;
+      };
     }>;
   };
 };
@@ -220,7 +224,9 @@ const en: PricingHubCopy = {
     tableHeaders: { engine: 'Engine', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Video', image: 'Image', audio: 'Audio', tools: 'Tools & Upscale' },
     presetSubLabels: {
+      'entry-route': 'Native',
       '5s-720p': 'Draft',
+      '10s-720p': 'Preview',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
       '10s-1080p-audio': 'Narrative',
@@ -302,10 +308,10 @@ const en: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Music Only',
-    voiceOnly: 'Voice Over Only',
+    voiceOnly: 'Voice Over',
     cinematic: 'Cinematic',
     cinematicVoice: 'Cinematic + Voice',
-    voiceClone: 'MiniMax Voice Clone',
+    voiceClone: 'Seed Audio reference voice',
   },
   tools: {
     characterBuilderDraft: 'Character Builder Draft',
@@ -328,6 +334,10 @@ const en: PricingHubCopy = {
       {
         title: 'Pay-as-you-go credits',
         body: 'Use credits without a required subscription. Starter credits begin at $10, and you can top up when you need more generations.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'How pay-as-you-go credits work',
+        },
       },
       {
         title: 'Exact price before launch',
@@ -401,7 +411,9 @@ const fr: PricingHubCopy = {
     tableHeaders: { engine: 'Moteur', caps: 'Caps', actions: 'Actions' },
     tabs: { video: 'Vidéo', image: 'Image', audio: 'Audio', tools: 'Outils & upscale' },
     presetSubLabels: {
+      'entry-route': 'Natif',
       '5s-720p': 'Brouillon',
+      '10s-720p': 'Aperçu',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Standard',
       '10s-1080p-audio': 'Narratif',
@@ -483,10 +495,10 @@ const fr: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Musique seule',
-    voiceOnly: 'Voix off seule',
+    voiceOnly: 'Voix off',
     cinematic: 'Cinématique',
     cinematicVoice: 'Cinématique + voix',
-    voiceClone: 'Clone voix MiniMax',
+    voiceClone: 'Voix de référence Seed Audio',
   },
   tools: {
     characterBuilderDraft: 'Character Builder brouillon',
@@ -509,6 +521,10 @@ const fr: PricingHubCopy = {
       {
         title: 'Crédits à l’usage',
         body: 'Utilisez des crédits sans abonnement obligatoire. Les crédits de démarrage commencent à 10 $, et vous rechargez quand vous avez besoin de générer.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'Comprendre les crédits à l’usage',
+        },
       },
       {
         title: 'Prix exact avant lancement',
@@ -582,7 +598,9 @@ const es: PricingHubCopy = {
     tableHeaders: { engine: 'Motor', caps: 'Caps', actions: 'Acciones' },
     tabs: { video: 'Video', image: 'Imagen', audio: 'Audio', tools: 'Herramientas & upscale' },
     presetSubLabels: {
+      'entry-route': 'Nativa',
       '5s-720p': 'Borrador',
+      '10s-720p': 'Vista previa',
       '8s-1080p': 'Premium',
       '10s-1080p': 'Estándar',
       '10s-1080p-audio': 'Narrativo',
@@ -664,10 +682,10 @@ const es: PricingHubCopy = {
   },
   audioModes: {
     musicOnly: 'Solo música',
-    voiceOnly: 'Solo voz en off',
+    voiceOnly: 'Voz en off',
     cinematic: 'Cinemático',
     cinematicVoice: 'Cinemático + voz',
-    voiceClone: 'Clon de voz MiniMax',
+    voiceClone: 'Voz de referencia Seed Audio',
   },
   tools: {
     characterBuilderDraft: 'Character Builder borrador',
@@ -690,6 +708,10 @@ const es: PricingHubCopy = {
       {
         title: 'Créditos de pago por uso',
         body: 'Usa créditos sin suscripción obligatoria. Los créditos iniciales empiezan en $10 y puedes recargar cuando necesites más generaciones.',
+        link: {
+          href: '/pay-as-you-go-ai-video-generator',
+          label: 'Cómo funcionan los créditos por uso',
+        },
       },
       {
         title: 'Precio exacto antes de lanzar',

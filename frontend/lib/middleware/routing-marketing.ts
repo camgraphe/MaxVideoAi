@@ -16,6 +16,7 @@ const KNOWN_MARKETING_SEGMENTS = new Set(
     'examples',
     'legal',
     'models',
+    'pay-as-you-go-ai-video-generator',
     'pricing',
     'status',
     'video',

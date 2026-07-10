@@ -125,6 +125,7 @@ export const DEFAULT_BILLING_COPY = {
   toasts: {
     success: 'Payment successful. Funds added to your wallet.',
     cancelled: 'Checkout closed. No charge made.',
+    returnToWorkspace: 'Return to the video workspace',
   },
   errors: {
     loadReceipts: 'We couldn’t load your payment history. Refresh the page or contact support.',

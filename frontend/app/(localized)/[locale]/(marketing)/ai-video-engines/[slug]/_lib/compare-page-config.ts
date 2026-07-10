@@ -28,7 +28,12 @@ export const SHOWDOWN_OVERRIDES =
 export const CATALOG = engineCatalog as unknown as EngineCatalogEntry[];
 export const CATALOG_BY_SLUG = new Map(CATALOG.map((entry) => [entry.modelSlug, entry]));
 export const ENGINE_OPTIONS = [...CATALOG]
-  .filter((entry) => !EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug))
+  .filter(
+    (entry) =>
+      !EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug) &&
+      entry.surfaces?.app?.enabled !== false &&
+      entry.surfaces?.compare?.includeInHub === true
+  )
   .map((entry) => ({ value: entry.modelSlug, label: entry.marketingName }))
   .sort((a, b) => a.label.localeCompare(b.label, 'en'));
 export const PRICING_ENGINES = new Map<string, EngineCaps>(

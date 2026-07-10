@@ -1,6 +1,6 @@
 {
   "version": "v1",
-  "last_updated": "2026-06-09",
+  "last_updated": "2026-07-01",
   "method": "manual-v1-internet-calibrated-with-platform-pricing",
   "scores": [
     {
@@ -32,6 +32,21 @@
       "controllability": 8.3,
       "speedStability": 7.4,
       "pricing": 7.4
+    },
+    {
+      "modelSlug": "gemini-omni-flash",
+      "fidelity": 8.7,
+      "visualQuality": 8.2,
+      "motion": 8.0,
+      "consistency": 7.7,
+      "anatomy": 8.0,
+      "textRendering": 7.4,
+      "lipsyncQuality": 8.9,
+      "sequencingQuality": 7.8,
+      "controllability": 9.0,
+      "speedStability": 7.1,
+      "pricing": 8.4,
+      "last_updated": "2026-07-01"
     },
     {
       "modelSlug": "kling-2-6-pro",
@@ -434,36 +449,6 @@
       "speedStability": 6.6,
       "pricing": 7.8,
       "last_updated": "2026-06-11"
-    },
-    {
-      "modelSlug": "luma-uni-1",
-      "fidelity": 8.1,
-      "visualQuality": 8.1,
-      "motion": null,
-      "consistency": 8.0,
-      "anatomy": 7.8,
-      "textRendering": 7.8,
-      "lipsyncQuality": null,
-      "sequencingQuality": 6.8,
-      "controllability": 8.3,
-      "speedStability": 6.9,
-      "pricing": 8.7,
-      "last_updated": "2026-06-09"
-    },
-    {
-      "modelSlug": "luma-uni-1-max",
-      "fidelity": 8.4,
-      "visualQuality": 8.4,
-      "motion": null,
-      "consistency": 8.2,
-      "anatomy": 8.0,
-      "textRendering": 8.0,
-      "lipsyncQuality": null,
-      "sequencingQuality": 7.0,
-      "controllability": 8.5,
-      "speedStability": 6.5,
-      "pricing": 7.9,
-      "last_updated": "2026-06-09"
     },
     {
       "modelSlug": "kling-2-5-turbo",

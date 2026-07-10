@@ -337,6 +337,7 @@
           "angle": "Cambiar ángulo de cámara",
           "characterBuilder": "Character Builder",
           "pricing": "Precios",
+          "paygVideo": "Video IA de pago por uso",
           "models": "Todos los modelos"
         }
       },
@@ -4141,9 +4142,16 @@
       },
       "topUp": {
         "title": "Añadir créditos",
+        "balanceLowTitle": "Saldo de la billetera insuficiente",
+        "suggestedTopUp": "Recarga sugerida: {amount}",
         "presetsLabel": "Añadir créditos",
         "otherAmountLabel": "Otro importe",
         "minLabel": "Mín. {amount}",
+        "captchaPrompt": "Verificación de seguridad requerida antes del Checkout.",
+        "captchaComplete": "Verificación completada. Continúa al pago.",
+        "captchaError": "Verificación de seguridad no disponible. Inténtalo de nuevo.",
+        "rateLimited": "Demasiados intentos de pago. Inténtalo de nuevo en {time}.",
+        "startError": "No se pudo iniciar el pago. Inténtalo de nuevo.",
         "close": "Cerrar",
         "maybeLater": "Más tarde",
         "submit": "Añadir fondos",
@@ -4742,7 +4750,8 @@
       },
       "toasts": {
         "success": "Pago realizado con éxito. Fondos añadidos a tu billetera.",
-        "cancelled": "Checkout cerrado. No se aplicó ningún cargo."
+        "cancelled": "Checkout cerrado. No se aplicó ningún cargo.",
+        "returnToWorkspace": "Volver al espacio de vídeo"
       },
       "errors": {
         "loadReceipts": "No pudimos cargar tu historial de pagos. Actualiza la página o contacta con soporte.",
@@ -5148,14 +5157,14 @@
       "auth": {
         "eyebrow": "Generar audio",
         "title": "Crea una cuenta para generar audio",
-        "body": "Crea bandas sonoras cinemáticas, pistas de música de fondo o voces en off premium dentro del espacio de MaxVideoAI.",
+        "body": "Crea pistas musicales, diseño sonoro cinematográfico y voces en off con Seed Audio dentro del espacio de MaxVideoAI.",
         "createAccount": "Crear cuenta",
         "signIn": "Iniciar sesión"
       },
       "hero": {
         "eyebrow": "Generar audio",
-        "title": "Espacio de audio",
-        "body": "Genera voces realistas o paisajes sonoros con control avanzado.",
+        "title": "Crear audio",
+        "body": "Genera música con Google Lyria 3, diseño sonoro cinematográfico o una voz en off realista con Seed Audio 1.0.",
         "history": "Historial"
       },
       "modes": {
@@ -5164,8 +5173,8 @@
           "description": "Música de fondo o ambiente."
         },
         "voice_only": {
-          "label": "Solo voz en off",
-          "description": "Solo narración."
+          "label": "Voz en off",
+          "description": "Narración de Seed Audio como archivo de audio."
         },
         "sfx_only": {
           "label": "Solo SFX",
@@ -5219,19 +5228,21 @@
         "customizeStep": "Personalizar",
         "generateStep": "Generar",
         "chooseType": "Elige el tipo de audio que quieres crear",
-        "mood": "Ambiente",
+        "mood": "Estilo musical",
         "intensity": "Intensidad",
+        "musicModel": "Modelo Lyria",
+        "musicBpm": "Tempo",
         "duration": "Duración",
         "prompt": "Prompt de audio",
         "promptMusicPlaceholder": "Describe la música: género, ritmo, emoción, instrumentos y dónde debe encajar en el montaje.",
         "promptCinematicPlaceholder": "Describe el diseño sonoro que quieres: entorno, impactos, transiciones, textura y qué debe mantenerse sutil.",
         "script": "Script",
-        "scriptVoiceOnlyPlaceholder": "Escribe la voz en off independiente que quieres renderizar.",
+        "scriptVoiceOnlyPlaceholder": "Escribe la voz en off que quieres que Seed Audio renderice.",
         "scriptCinematicPlaceholder": "Escribe la narración o el diálogo que debe ir sobre la mezcla de audio cinematográfica.",
         "estimatedDuration": "~{seconds}s estimados",
         "voiceSample": "Muestra de voz",
         "uploadVoiceSample": "Subir muestra de voz",
-        "uploadVoiceSampleHint": ".wav, .mp3 hasta 50MB",
+        "uploadVoiceSampleHint": ".wav, .mp3, .pcm u .ogg hasta 10MB",
         "uploadSample": "Subir muestra",
         "cloneEnabled": "Clonado de voz activado",
         "defaultVoice": "Voz por defecto",
@@ -5239,6 +5250,43 @@
         "voice": "Voz",
         "delivery": "Interpretación",
         "language": "Idioma",
+        "seedAudioVoice": "Voz Seed Audio",
+        "seedAudioOutputFormat": "Formato",
+        "seedAudioSampleRate": "Sample rate",
+        "seedAudioSpeed": "Velocidad",
+        "seedAudioVolume": "Volumen",
+        "seedAudioPitch": "Pitch",
+        "seedAudioSampleTitle": "Muestra de voz",
+        "seedAudioSamplePending": "Muestra de audio pendiente",
+        "seedAudioVoices": {
+          "default": "Default",
+          "vivi_mixed_en_zh_ja_es_id": "Vivi",
+          "mindy_en_es_id_pt_zh": "Mindy",
+          "kian_en_zh": "Kian",
+          "cedric_en_zh": "Cedric",
+          "sophie_en_zh": "Sophie",
+          "jean_en_zh": "Jean",
+          "magnus_en_zh": "Magnus",
+          "mabel_en_zh": "Mabel",
+          "nadia_en_zh": "Nadia",
+          "opal_en_zh": "Opal",
+          "pearl_en_zh": "Pearl",
+          "quentin_en_zh": "Quentin",
+          "corinne_mixed_en_zh": "Corinne",
+          "esther_mixed_en_zh": "Esther",
+          "lyla_mixed_en_zh": "Lyla",
+          "tracy_es_zh": "Tracy",
+          "sandy_es_mixed_en_zh": "Sandy",
+          "felix_zh": "Felix",
+          "celeste_zh": "Celeste",
+          "monkey_king_zh": "Monkey King"
+        },
+        "seedAudioOutputFormats": {
+          "mp3": "MP3",
+          "wav": "WAV",
+          "pcm": "PCM",
+          "ogg_opus": "OGG Opus"
+        },
         "moods": {
           "epic": "Épico",
           "tense": "Tenso",
@@ -5252,6 +5300,17 @@
           "subtle": "Sutil",
           "standard": "Estándar",
           "intense": "Intenso"
+        },
+        "musicModels": {
+          "clip": "Lyria 3 Clip · 30s fijo",
+          "pro": "Lyria 3 Pro · duración controlada"
+        },
+        "musicBpmValues": {
+          "70": "70 BPM · lento",
+          "90": "90 BPM · relajado",
+          "110": "110 BPM · medio",
+          "130": "130 BPM · dinámico",
+          "150": "150 BPM · rápido"
         },
         "voiceGenders": {
           "female": "Mujer",
@@ -5289,13 +5348,13 @@
           "title": "Opciones avanzadas",
           "description": "Ajusta los parámetros de generación de audio"
         },
-        "selectedVoice": "Mujer · Natural · ES",
-        "chooseVoice": "Elegir una voz",
+        "selectedVoice": "Voz preset de Seed Audio",
+        "chooseVoice": "Voz preset",
         "providerStack": "Pila de modelos",
         "providerStackDescription": "{provider} prepara la pista base y luego MaxVideoAI masteriza el render final para la salida elegida.",
         "providers": {
-          "voice": "Gemini 3.1 Flash TTS",
-          "music": "MiniMax Music 2.6",
+          "voice": "Seed Audio 1.0",
+          "music": "Google Lyria 3",
           "sfx": "Mirelo SFX + MMAudio",
           "mix": "Mastering FFmpeg"
         }
@@ -5351,11 +5410,12 @@
         "voiceUploadFailed": "La subida de la muestra de voz falló.",
         "renderComplete": "Render de audio completado.",
         "generationFailed": "La generación de audio falló.",
+        "generatingInProgress": "Generaciones en curso ({count})…",
         "processing": {
           "soundDesign": "Generando sound design cinematográfico…",
           "musicTrack": "Generando pista musical…",
           "musicBed": "Generando cama musical…",
-          "clonedVoice": "Generando voz clonada…",
+          "clonedVoice": "Generando voz en off de referencia…",
           "voice": "Generando voz en off…",
           "masterAudio": "Masterizando archivo de audio…",
           "finalMix": "Mezclando banda sonora final…",

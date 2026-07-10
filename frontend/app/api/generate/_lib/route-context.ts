@@ -24,6 +24,7 @@ import {
   shouldRouteKlingDirectSourceElementsToFal,
   type VideoProviderRoutingPlan,
 } from '@/server/video-providers/router';
+import { isGoogleVertexOmniEngine } from '@/server/video-providers/google-vertex-omni/model-map';
 import { isGoogleVertexVeoEngine } from '@/server/video-providers/google-vertex-veo/model-map';
 import { isKlingDirectEngine } from '@/server/video-providers/kling-direct/model-map';
 import { isLumaAgentsVideoEngine } from '@/server/video-providers/luma-agents/model-map';
@@ -45,6 +46,14 @@ export type GenerateRouteContext = {
 export type GenerateRouteContextResult =
   | { ok: true; context: GenerateRouteContext }
   | { ok: false; status: number; body: Record<string, unknown> };
+
+function flagEnabled(value: string | undefined): boolean {
+  return ['1', 'true', 'yes', 'on'].includes((value ?? '').trim().toLowerCase());
+}
+
+function googleVertexOmniFallbackToFalEnabled(): boolean {
+  return flagEnabled(process.env.GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED);
+}
 
 export async function resolveGenerateRouteContext(params: {
   body: Record<string, unknown>;
@@ -104,6 +113,7 @@ export async function resolveGenerateRouteContext(params: {
     !isBytePlusV1a &&
     (isKlingDirectEngine(engine.id) ||
       isGoogleVertexVeoEngine(engine.id) ||
+      isGoogleVertexOmniEngine(engine.id) ||
       isLumaAgentsVideoEngine(engine.id) ||
       isLumaDirectEngine(engine.id))
   ) {
@@ -124,6 +134,13 @@ export async function resolveGenerateRouteContext(params: {
     })
   ) {
     providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  }
+  if (
+    isGoogleVertexOmniEngine(engine.id) &&
+    providerRoutingPlan.primaryProvider === 'fal' &&
+    !googleVertexOmniFallbackToFalEnabled()
+  ) {
+    return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
   }
   const providerKey = isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider;
 

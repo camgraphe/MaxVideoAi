@@ -1,6 +1,11 @@
 {
   "models": { "en": "models", "fr": "modeles", "es": "modelos" },
   "pricing": { "en": "pricing", "fr": "tarifs", "es": "precios" },
+  "payAsYouGoVideo": {
+    "en": "pay-as-you-go-ai-video-generator",
+    "fr": "pay-as-you-go-ai-video-generator",
+    "es": "pay-as-you-go-ai-video-generator"
+  },
   "tools": { "en": "tools", "fr": "outils", "es": "herramientas" },
   "gallery": { "en": "examples", "fr": "galerie", "es": "galeria" },
   "compare": { "en": "ai-video-engines", "fr": "comparatif", "es": "comparativa" },

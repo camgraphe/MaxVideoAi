@@ -6,6 +6,7 @@ import { normalizeBytePlusOptions } from '../frontend/app/api/generate/_lib/requ
 import {
   applyBytePlusSeedanceRuntimeOptions,
   buildBytePlusSeedancePayload,
+  getBytePlusUserSafeErrorMessage,
   getBytePlusSeedanceAllowedResolutions,
   shouldRoutePublicSeedanceFastToBytePlus,
   shouldRoutePublicSeedanceMiniToBytePlus,
@@ -74,7 +75,31 @@ test('BytePlus ModelArk provider delegates payload and response normalization', 
   assert.match(payloadSource, /export function buildBytePlusSeedanceFastPayload/);
   assert.match(responseSource, /export function normalizeBytePlusTask/);
   assert.match(responseSource, /export function scrubBytePlusError/);
+  assert.match(responseSource, /recognizable person/);
   assert.match(responseSource, /export async function parseJsonResponse/);
+});
+
+test('BytePlus ModelArk safety failures use precise Seedance customer copy', () => {
+  const message = getBytePlusUserSafeErrorMessage(
+    'The request failed because the input image may contain real person. Request id: abc'
+  );
+
+  assert.equal(
+    message,
+    'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.'
+  );
+  assert.doesNotMatch(message, /BytePlus|ModelArk|request id/i);
+});
+
+test('BytePlus ModelArk non-safety start failures stay specific without provider wording', () => {
+  assert.equal(
+    getBytePlusUserSafeErrorMessage('Invalid request: aspect ratio is not supported by this model.'),
+    'The selected Seedance prompt, media, or settings were not accepted. Adjust the reference media or settings and try again.'
+  );
+  assert.equal(
+    getBytePlusUserSafeErrorMessage('Quota exceeded: resource pack exhausted.'),
+    'The render queue is temporarily busy. Please retry in a few moments.'
+  );
 });
 
 test('BytePlus Mini runtime uses Mini caps and input-specific accounting rates', () => {

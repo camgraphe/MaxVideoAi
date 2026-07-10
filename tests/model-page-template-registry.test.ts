@@ -7,12 +7,45 @@ import {
   listModelPageTemplateSlugs,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 import { COMPARE_EXCLUDED_SLUGS } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-links.ts';
+import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
 import type { ModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-types.ts';
 
 const engineCatalog = JSON.parse(readFileSync('frontend/config/engine-catalog.json', 'utf8')) as Array<{
   modelSlug: string;
 }>;
 const CATALOG_MODEL_SLUGS = new Set(engineCatalog.map((entry) => entry.modelSlug));
+const imageModelPageSlugs = [
+  'gpt-image-2',
+  'luma-uni-1',
+  'luma-uni-1-max',
+  'nano-banana',
+  'nano-banana-2',
+  'nano-banana-lite',
+  'nano-banana-pro',
+  'seedream',
+  'seedream-5-0-pro',
+] as const;
+const imageMaxResolutionExpectations: Record<(typeof imageModelPageSlugs)[number], string> = {
+  'gpt-image-2': 'Up to 4K canonical sizes',
+  'luma-uni-1': '2048px / 2K',
+  'luma-uni-1-max': '2048px / 2K',
+  'nano-banana': 'HD still presets',
+  'nano-banana-2': '4K',
+  'nano-banana-lite': '1K',
+  'nano-banana-pro': '4K',
+  seedream: '4K',
+  'seedream-5-0-pro': '4K',
+};
+const keySpecsFile = JSON.parse(readFileSync('data/benchmarks/engine-key-specs.v1.json', 'utf8')) as {
+  specs?: Array<{ modelSlug?: string; keySpecs?: { maxResolution?: unknown } }>;
+};
+const scoresFile = JSON.parse(readFileSync('data/benchmarks/engine-scores.v1.json', 'utf8')) as {
+  scores?: Array<{ modelSlug?: string }>;
+};
+const modelPageLayoutSource = readFileSync(
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx',
+  'utf8'
+);
 
 test('model page template config separates SEO intent from shared layout slots', () => {
   const config: ModelPageTemplateConfig = {
@@ -63,8 +96,10 @@ test('template registry enables Seedance production and draft model templates', 
   const pika = getModelPageTemplateConfig('pika-text-to-video');
   const gptImage = getModelPageTemplateConfig('gpt-image-2');
   const nano = getModelPageTemplateConfig('nano-banana');
+  const nanoLite = getModelPageTemplateConfig('nano-banana-lite');
   const nano2 = getModelPageTemplateConfig('nano-banana-2');
   const nanoPro = getModelPageTemplateConfig('nano-banana-pro');
+  const seedreamPro = getModelPageTemplateConfig('seedream-5-0-pro');
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
@@ -83,8 +118,10 @@ test('template registry enables Seedance production and draft model templates', 
   assert.ok(pika);
   assert.ok(gptImage);
   assert.ok(nano);
+  assert.ok(nanoLite);
   assert.ok(nano2);
   assert.ok(nanoPro);
+  assert.ok(seedreamPro);
   assert.equal(seedance.intent, 'production');
   assert.equal(seedanceFast.intent, 'draft');
   assert.equal(seedanceMini.intent, 'draft');
@@ -102,8 +139,10 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(pika.intent, 'draft');
   assert.equal(gptImage.intent, 'specialized');
   assert.equal(nano.intent, 'draft');
+  assert.equal(nanoLite.intent, 'draft');
   assert.equal(nano2.intent, 'production');
   assert.equal(nanoPro.intent, 'specialized');
+  assert.equal(seedreamPro.intent, 'production');
   assert.equal(seedance.hero.primaryCtaHref, '/app?engine=seedance-2-0');
   assert.equal(seedanceFast.hero.primaryCtaHref, '/app?engine=seedance-2-0-fast');
   assert.equal(seedanceMini.hero.primaryCtaHref, '/app?engine=seedance-2-0-mini');
@@ -122,8 +161,10 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(pika.hero.primaryCtaHref, '/app?engine=pika-text-to-video');
   assert.equal(gptImage.hero.primaryCtaHref, '/app/image?engine=gpt-image-2');
   assert.equal(nano.hero.primaryCtaHref, '/app/image?engine=nano-banana');
+  assert.equal(nanoLite.hero.primaryCtaHref, '/app/image?engine=nano-banana-lite');
   assert.equal(nano2.hero.primaryCtaHref, '/app/image?engine=nano-banana-2');
   assert.equal(nanoPro.hero.primaryCtaHref, '/app/image?engine=nano-banana-pro');
+  assert.equal(seedreamPro.hero.primaryCtaHref, '/app/image?engine=seedream-5-0-pro');
   assert.equal(seedance.pricing.anchorHref, '/pricing#seedance-2-0-pricing');
   assert.equal(seedanceFast.pricing.anchorHref, '/pricing#seedance-2-0-fast-pricing');
   assert.equal(seedanceMini.pricing.anchorHref, '/pricing#dreamina-seedance-2-0-mini-pricing');
@@ -141,8 +182,10 @@ test('template registry enables Seedance production and draft model templates', 
   assert.equal(pika.pricing.anchorHref, '/pricing#pika-text-to-video-pricing');
   assert.equal(gptImage.pricing.anchorHref, '/pricing#gpt-image-2-pricing');
   assert.equal(nano.pricing.anchorHref, '/pricing#nano-banana-pricing');
+  assert.equal(nanoLite.pricing.anchorHref, '/pricing#nano-banana-lite-pricing');
   assert.equal(nano2.pricing.anchorHref, '/pricing#nano-banana-2-pricing');
   assert.equal(nanoPro.pricing.anchorHref, '/pricing#nano-banana-pro-pricing');
+  assert.equal(seedreamPro.pricing.anchorHref, '/pricing#seedream-5-0-pro-pricing');
   assert.deepEqual(
     seedance.pricing.presets.map((preset) => preset.id),
     ['5s-480p', '8s-720p', '10s-1080p', '5s-4k', 'audio-included', 'max-duration']
@@ -221,6 +264,10 @@ test('template registry enables Seedance production and draft model templates', 
     ['single-square', '4x-square', '8x-square']
   );
   assert.deepEqual(
+    nanoLite.pricing.presets.map((preset) => preset.id),
+    ['1k-image', '4x-1k-image']
+  );
+  assert.deepEqual(
     nano2.pricing.presets.map((preset) => preset.id),
     ['0-5k-image', '1k-image', '4k-image', '4x-1k-image']
   );
@@ -228,8 +275,13 @@ test('template registry enables Seedance production and draft model templates', 
     nanoPro.pricing.presets.map((preset) => preset.id),
     ['2k-image', '4k-image', '4x-2k-image']
   );
+  assert.deepEqual(
+    seedreamPro.pricing.presets.map((preset) => preset.id),
+    ['2k-image', '4k-image']
+  );
   assert.deepEqual(listModelPageTemplateSlugs().sort(), [
     'dreamina-seedance-2-0-mini',
+    'gemini-omni-flash',
     'gpt-image-2',
     'happy-horse-1-0',
     'happy-horse-1-1',
@@ -253,12 +305,14 @@ test('template registry enables Seedance production and draft model templates', 
     'minimax-hailuo-02-text',
     'nano-banana',
     'nano-banana-2',
+    'nano-banana-lite',
     'nano-banana-pro',
     'pika-text-to-video',
     'seedance-1-5-pro',
     'seedance-2-0',
     'seedance-2-0-fast',
     'seedream',
+    'seedream-5-0-pro',
     'sora-2',
     'sora-2-pro',
     'veo-3-1',
@@ -491,6 +545,52 @@ test('Luma Agents templates expose fallback-safe pricing presets and no image co
   assert.deepEqual(
     lumaUniMax.pricing.presets.map((preset) => preset.id),
     ['2k-hero-image', 'hero-edit', 'reference-edit-set']
+  );
+});
+
+test('image model templates stay off video compare and benchmark scoring surfaces', () => {
+  const publishedComparisonSlugs = getPublishedComparisonSlugs();
+  const scoredImageSlugs = (scoresFile.scores ?? [])
+    .filter((entry) => entry.modelSlug && imageModelPageSlugs.includes(entry.modelSlug as (typeof imageModelPageSlugs)[number]))
+    .map((entry) => entry.modelSlug)
+    .sort();
+
+  assert.deepEqual(scoredImageSlugs, []);
+
+  for (const slug of imageModelPageSlugs) {
+    const config = getModelPageTemplateConfig(slug);
+    assert.ok(config, `${slug} should have a model page template`);
+    assert.equal(config.sections.compare, false, `${slug} should not render a compare section`);
+    assert.equal(COMPARE_EXCLUDED_SLUGS.has(slug), true, `${slug} should be blocked from model-page compare URLs`);
+    assert.equal(
+      config.hero.quickLinks.some((link) => link.href.startsWith('/ai-video-engines/')),
+      false,
+      `${slug} should not link to a video compare page`
+    );
+    assert.equal(
+      publishedComparisonSlugs.some((pairSlug) => pairSlug.split('-vs-').includes(slug)),
+      false,
+      `${slug} should not have a published compare page`
+    );
+  }
+});
+
+test('image model benchmark specs expose max resolution for model pages', () => {
+  const specsBySlug = new Map((keySpecsFile.specs ?? []).map((entry) => [entry.modelSlug, entry.keySpecs]));
+
+  for (const slug of imageModelPageSlugs) {
+    assert.equal(
+      specsBySlug.get(slug)?.maxResolution,
+      imageMaxResolutionExpectations[slug],
+      `${slug} should expose maxResolution in benchmark specs`
+    );
+  }
+});
+
+test('model page layout disables every compare block for image models', () => {
+  assert.match(
+    modelPageLayoutSource,
+    /const hasCompareSection = !isImageEngine && \(Boolean\(focusVsConfig\) \|\| hasCompareGrid\);/
   );
 });
 

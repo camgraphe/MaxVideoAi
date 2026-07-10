@@ -18,6 +18,7 @@ type UseWorkspaceInputSchemaStateOptions = {
   allowsUnifiedVeoFirstLast: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedSeedance: boolean;
+  isUnifiedGeminiOmni: boolean;
   uiLocale: string;
   authChecked: boolean;
   authLoading: boolean;
@@ -33,6 +34,7 @@ export function useWorkspaceInputSchemaState({
   allowsUnifiedVeoFirstLast,
   isUnifiedHappyHorse,
   isUnifiedSeedance,
+  isUnifiedGeminiOmni,
   uiLocale,
   authChecked,
   authLoading,
@@ -49,9 +51,18 @@ export function useWorkspaceInputSchemaState({
         allowsUnifiedVeoFirstLast,
         isUnifiedHappyHorse,
         isUnifiedSeedance,
+        isUnifiedGeminiOmni,
         uiLocale,
       }),
-    [activeMode, allowsUnifiedVeoFirstLast, isUnifiedHappyHorse, isUnifiedSeedance, selectedEngine, uiLocale]
+    [
+      activeMode,
+      allowsUnifiedVeoFirstLast,
+      isUnifiedGeminiOmni,
+      isUnifiedHappyHorse,
+      isUnifiedSeedance,
+      selectedEngine,
+      uiLocale,
+    ]
   );
 
   const extraInputFields = useMemo(

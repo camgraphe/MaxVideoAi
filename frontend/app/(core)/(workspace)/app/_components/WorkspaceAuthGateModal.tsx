@@ -1,4 +1,7 @@
+'use client';
+
 import { Button, ButtonLink } from '@/components/ui/Button';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 
 type WorkspaceAuthGateCopy = {
   title: string;
@@ -19,14 +22,29 @@ export function WorkspaceAuthGateModal({
   loginRedirectTarget,
   onClose,
 }: WorkspaceAuthGateModalProps) {
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal<HTMLDivElement>({ onClose });
+
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
-      <div className="absolute inset-0" role="presentation" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float">
+      <div className="absolute inset-0" aria-hidden="true" onClick={onClose} />
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="workspace-auth-gate-title"
+        aria-describedby="workspace-auth-gate-description"
+        tabIndex={-1}
+        onKeyDown={onDialogKeyDown}
+        className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-text-primary">{copy.title}</h2>
-            <p className="mt-2 text-sm text-text-secondary">{copy.body}</p>
+            <h2 id="workspace-auth-gate-title" className="text-base font-semibold text-text-primary">
+              {copy.title}
+            </h2>
+            <p id="workspace-auth-gate-description" className="mt-2 text-sm text-text-secondary">
+              {copy.body}
+            </p>
           </div>
           <Button
             type="button"
@@ -40,7 +58,12 @@ export function WorkspaceAuthGateModal({
           </Button>
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+          <ButtonLink
+            href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`}
+            size="sm"
+            className="px-4"
+            data-modal-initial-focus="true"
+          >
             {copy.primary}
           </ButtonLink>
           <ButtonLink

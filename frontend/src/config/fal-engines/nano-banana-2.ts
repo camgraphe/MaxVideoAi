@@ -155,8 +155,8 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
   updatedAt: '2026-03-17T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
-    provider: 'fal.ai',
-    modelSlug: 'fal-ai/nano-banana-2',
+    provider: 'google_gemini_image',
+    modelSlug: 'gemini-3.1-flash-image',
   },
   availability: 'available',
   brandId: 'google',
@@ -180,7 +180,7 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     modes: [
       {
         mode: 't2i',
-        falModelId: 'fal-ai/nano-banana-2',
+        falModelId: 'gemini-3.1-flash-image',
         ui: {
           modes: ['t2i'],
           aspectRatio: ['auto', '21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16', '4:1', '1:4', '8:1', '1:8'],
@@ -190,7 +190,7 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'i2i',
-        falModelId: 'fal-ai/nano-banana-2/edit',
+        falModelId: 'gemini-3.1-flash-image',
         ui: {
           modes: ['i2i'],
           aspectRatio: ['auto', '21:9', '16:9', '3:2', '4:3', '5:4', '1:1', '4:5', '3:4', '2:3', '9:16', '4:1', '1:4', '8:1', '1:8'],
@@ -201,7 +201,7 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         },
       },
     ],
-    defaultFalModelId: 'fal-ai/nano-banana-2',
+    defaultFalModelId: 'gemini-3.1-flash-image',
     seo: {
       title: 'Nano Banana 2 – Google Image Generation & Editing | MaxVideoAI',
       description:

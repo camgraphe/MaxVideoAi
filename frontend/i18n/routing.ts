@@ -32,6 +32,11 @@ export const routing = defineRouting({
       fr: '/tarifs',
       es: '/precios',
     },
+    '/pay-as-you-go-ai-video-generator': {
+      en: '/pay-as-you-go-ai-video-generator',
+      fr: '/pay-as-you-go-ai-video-generator',
+      es: '/pay-as-you-go-ai-video-generator',
+    },
     '/tools': {
       en: '/tools',
       fr: '/outils',

@@ -142,7 +142,11 @@ test('pricing matrix data is generated from the catalog with scenario total pres
   assert.match(hubDataSource, /PRICING_DISPLAY_FAMILY_ORDER/);
   assert.match(hubDataSource, /getPricingDisplayRank/);
   assert.match(hubDataSource, /'seedance-2-0'[\s\S]*'kling-3-pro'[\s\S]*'veo-3-1'[\s\S]*'happy-horse-1-1'[\s\S]*'ltx-2-3-fast'[\s\S]*'wan-2-6'[\s\S]*'minimax-hailuo-02-text'[\s\S]*'luma-ray-2'[\s\S]*'happy-horse-1-0'/);
+  assert.match(hubDataSource, /Entry route/);
+  assert.match(hubDataSource, /chooseEntryDuration/);
+  assert.match(hubDataSource, /chooseEntryResolution/);
   assert.match(hubDataSource, /5s 720p/);
+  assert.match(hubDataSource, /10s 720p/);
   assert.match(hubDataSource, /8s 1080p/);
   assert.match(hubDataSource, /10s 1080p/);
   assert.match(hubDataSource, /10s \+ audio/);
@@ -304,6 +308,8 @@ test('credits and refunds stay compact below pricing matrices', () => {
   assert.match(hubCopySource, /Credits, live quotes and refunds/);
   assert.match(hubCopySource, /Crédits, devis live et remboursements/);
   assert.match(hubCopySource, /Pay-as-you-go credits/);
+  assert.match(hubCopySource, /How pay-as-you-go credits work/);
+  assert.match(creditsRefundsSource, /href=\{card\.link\.href\}/);
   assert.match(hubCopySource, /Crédits à l’usage/);
   assert.match(hubCopySource, /Exact price before launch/);
   assert.match(hubCopySource, /Prix exact avant lancement/);

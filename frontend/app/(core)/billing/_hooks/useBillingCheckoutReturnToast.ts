@@ -1,10 +1,16 @@
 import { useEffect } from 'react';
+import {
+  clearPendingWalletCheckoutReturn,
+  consumePendingWalletCheckoutReturn,
+  type WalletCheckoutReturnTarget,
+} from '@/lib/wallet/checkout-return';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 
 type CheckoutReturnToastOptions = {
   cancelledMessage: string;
   onCancelled: (amountCents: number | null, currency: string) => void;
   onGoogleAdsConversion: (value?: number, currency?: string) => void;
+  onReturnTarget: (target: WalletCheckoutReturnTarget | null) => void;
   onToast: (message: string | null) => void;
   successMessage: string;
 };
@@ -13,6 +19,7 @@ export function useBillingCheckoutReturnToast({
   cancelledMessage,
   onCancelled,
   onGoogleAdsConversion,
+  onReturnTarget,
   onToast,
   successMessage,
 }: CheckoutReturnToastOptions) {
@@ -37,6 +44,7 @@ export function useBillingCheckoutReturnToast({
     onToast(message);
     const timeout = window.setTimeout(() => onToast(null), 4000);
     if (status === 'success') {
+      onReturnTarget(consumePendingWalletCheckoutReturn());
       onGoogleAdsConversion(amountParam ? Number(amountParam) : undefined, currencyParam ?? undefined);
       if (checkoutSessionIdParam) {
         recordCheckoutInteractionEvent({
@@ -48,6 +56,8 @@ export function useBillingCheckoutReturnToast({
       }
     }
     if (status === 'cancelled') {
+      clearPendingWalletCheckoutReturn();
+      onReturnTarget(null);
       onCancelled(parsedAmountCents, parsedCurrency);
       if (checkoutSessionIdParam) {
         recordCheckoutInteractionEvent({
@@ -63,5 +73,5 @@ export function useBillingCheckoutReturnToast({
     );
     window.history.replaceState({}, '', url.toString());
     return () => window.clearTimeout(timeout);
-  }, [cancelledMessage, onCancelled, onGoogleAdsConversion, onToast, successMessage]);
+  }, [cancelledMessage, onCancelled, onGoogleAdsConversion, onReturnTarget, onToast, successMessage]);
 }

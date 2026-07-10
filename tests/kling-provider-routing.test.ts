@@ -590,6 +590,22 @@ test('Kling direct payload preserves supported advanced Kling V3 provider option
   assert.deepEqual(imagePayload.body.element_list, [{ element_id: 160 }, { element_id: 161 }]);
 });
 
+test('Kling direct numeric invalid-request codes are classified as provider input errors', () => {
+  const normalized = classifyKlingDirectError(
+    new KlingDirectError('multiPrompt[0].prompt: size must be between 0 and 512', {
+      status: 400,
+      body: {
+        code: 1201,
+        message: 'multiPrompt[0].prompt: size must be between 0 and 512',
+      },
+    })
+  );
+
+  assert.equal(normalized.code, '1201');
+  assert.equal(normalized.errorClass, 'invalid_request');
+  assert.equal(normalized.fallbackEligible, false);
+});
+
 test('Kling direct payload rejects unsupported or mutually exclusive V3 provider options before submit', () => {
   assert.throws(
     () =>

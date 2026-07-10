@@ -33,7 +33,9 @@ import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
+import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prompt-state';
 import { LumaRay32KeyframeEditor } from './LumaRay32KeyframeEditor';
+import { OmniStudioPanel, OMNI_CUSTOM_FIELD_IDS } from './omni/OmniStudioPanel.client';
 import { StoryboardLaunchModal } from './StoryboardLaunchModal';
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
@@ -43,6 +45,7 @@ const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
 
 type ComposerProps = ComponentProps<typeof Composer>;
 type ShotType = 'customize' | 'intelligent';
+type SeedanceReferenceGuidance = { label: string; tooltip: string };
 type WorkflowCopy = {
   clearReferencesToUseStartEnd: string;
   clearStartEndToUseReferences: string;
@@ -140,6 +143,33 @@ function isStoryboardLaunchEngine(engineId: string): boolean {
 const LUMA_RAY32_MODIFY_ASSET_FIELD_IDS = new Set(['video_url', 'start_image_url', 'edit_keyframe_urls']);
 const LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS = new Set(['edit_keyframe_indexes']);
 const HDR_FIELD_ID = 'hdr';
+const SEEDANCE_REFERENCE_GUIDANCE_COPY = {
+  en: {
+    label: 'Seedance may reject recognizable people in reference images.',
+    tooltip:
+      'Use Seedream text-to-image to create consistent character references, or upload an illustrated/stylized reference and ask Seedance in the prompt to render it realistically.',
+  },
+  fr: {
+    label: 'Seedance peut refuser les personnes reconnaissables dans les images de référence.',
+    tooltip:
+      "Pour des personnages de référence, crée d'abord des images cohérentes avec Seedream text-to-image, ou importe un dessin/stylisé et demande à Seedance dans le prompt de le rendre réaliste.",
+  },
+  es: {
+    label: 'Seedance puede rechazar personas reconocibles en las imágenes de referencia.',
+    tooltip:
+      'Para personajes de referencia, crea primero imágenes coherentes con Seedream text-to-image, o sube una referencia ilustrada/estilizada y pide a Seedance en el prompt que la haga realista.',
+  },
+} as const;
+
+function getSeedanceReferenceGuidance(locale: string): SeedanceReferenceGuidance {
+  const language = locale.toLowerCase().split('-')[0];
+  if (language === 'fr' || language === 'es') return SEEDANCE_REFERENCE_GUIDANCE_COPY[language];
+  return SEEDANCE_REFERENCE_GUIDANCE_COPY.en;
+}
+
+function shouldShowSeedanceReferenceGuidance(field: EngineInputField): boolean {
+  return field.type === 'image';
+}
 
 function isTruthyExtraInputValue(value: unknown): boolean {
   if (typeof value === 'boolean') return value;
@@ -236,6 +266,7 @@ export function WorkspaceComposerSurface({
   const klingO3VideoReferenceDisabledReason =
     isUnifiedKlingO3 && !klingO3VideoToVideoSupported ? KLING_O3_SOURCE_VIDEO_UNSUPPORTED_MESSAGE : null;
   const showLumaRay32KeyframeEditor = selectedEngine.id === 'luma-ray-3-2' && submissionMode === 'v2v';
+  const showOmniStudioPanel = selectedEngine.id === 'gemini-omni-flash';
   const hdrFieldEntry = useMemo(
     () =>
       inputSchemaSummary.secondaryFields.find(({ field }) => field.id === HDR_FIELD_ID) ??
@@ -265,10 +296,14 @@ export function WorkspaceComposerSurface({
       const disabledReason = klingO3DisabledReason ?? workflowDisabledReason ?? guestUploadLockedReason;
       return {
         ...entry,
+        guidance: isUnifiedSeedance && shouldShowSeedanceReferenceGuidance(entry.field)
+          ? getSeedanceReferenceGuidance(uiLocale)
+          : entry.guidance,
         disabled: Boolean(disabledReason),
         disabledReason,
       };
     }).filter((entry) => {
+      if (showOmniStudioPanel) return false;
       if (!showLumaRay32KeyframeEditor) return true;
       return !LUMA_RAY32_MODIFY_ASSET_FIELD_IDS.has(entry.field.id);
     });
@@ -281,19 +316,27 @@ export function WorkspaceComposerSurface({
     klingO3AssetState.hasAnyVideoInput,
     klingO3VideoToVideoSupported,
     showLumaRay32KeyframeEditor,
+    showOmniStudioPanel,
+    uiLocale,
     workflowCopy.clearReferencesToUseStartEnd,
     workflowCopy.clearStartEndToUseReferences,
   ]);
 
+  const omniExtraFields = useMemo(
+    () => [...inputSchemaSummary.promotedFields, ...inputSchemaSummary.secondaryFields],
+    [inputSchemaSummary.promotedFields, inputSchemaSummary.secondaryFields]
+  );
   const advancedFields = useMemo(() => {
-    const shouldHideInlineField = (field: EngineInputField) => Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id);
+    const shouldHideInlineField = (field: EngineInputField) =>
+      Boolean(hdrFieldEntry && field.id === hdrFieldEntry.field.id) ||
+      (showOmniStudioPanel && OMNI_CUSTOM_FIELD_IDS.has(field.id));
     if (!showLumaRay32KeyframeEditor) {
       return inputSchemaSummary.secondaryFields.filter(({ field }) => !shouldHideInlineField(field));
     }
     return inputSchemaSummary.secondaryFields.filter(
       ({ field }) => !LUMA_RAY32_MODIFY_ADVANCED_FIELD_IDS.has(field.id) && !shouldHideInlineField(field)
     );
-  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor]);
+  }, [hdrFieldEntry, inputSchemaSummary.secondaryFields, showLumaRay32KeyframeEditor, showOmniStudioPanel]);
 
   const handleExtraInputValueChange = useCallback(
     (field: EngineInputField, value: unknown) => {
@@ -452,6 +495,7 @@ export function WorkspaceComposerSurface({
                 totalDurationSec: multiPromptTotalSec,
                 minDurationSec: MULTI_PROMPT_MIN_SEC,
                 maxDurationSec: MULTI_PROMPT_MAX_SEC,
+                maxPromptChars: KLING_MULTI_PROMPT_SCENE_MAX_CHARS,
                 onToggle: setMultiPromptEnabled,
                 onAddScene: handleMultiPromptAddScene,
                 onRemoveScene: handleMultiPromptRemoveScene,
@@ -470,6 +514,23 @@ export function WorkspaceComposerSurface({
                 form={form}
                 setForm={setForm}
                 assetFields={inputSchemaSummary.assetFields}
+                inputAssets={inputAssets}
+                onAssetAdd={handleAssetAdd}
+                onAssetRemove={handleAssetRemove}
+                onOpenLibrary={handleOpenAssetLibrary}
+                onNotice={showNotice}
+                disabledReason={guestUploadLockedReason}
+              />
+            ) : null}
+            {showOmniStudioPanel ? (
+              <OmniStudioPanel
+                engine={selectedEngine}
+                caps={capability}
+                form={form}
+                setForm={setForm}
+                submissionMode={submissionMode}
+                assetFields={inputSchemaSummary.assetFields}
+                extraFields={omniExtraFields}
                 inputAssets={inputAssets}
                 onAssetAdd={handleAssetAdd}
                 onAssetRemove={handleAssetRemove}

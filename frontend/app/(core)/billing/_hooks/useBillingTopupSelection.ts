@@ -1,20 +1,37 @@
 'use client';
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
+import { createInitialTopupSelection } from '../_lib/billing-selection';
 import { parseAmountToCents } from '../_lib/billing-utils';
 import type { BillingCopy } from '../_lib/billing-copy';
 
 type UseBillingTopupSelectionOptions = {
   copy: BillingCopy;
   formatUsdAmount: (amountCents: number) => string;
+  initialTopupCents?: number;
 };
 
-export function useBillingTopupSelection({ copy, formatUsdAmount }: UseBillingTopupSelectionOptions) {
-  const [customAmountInput, setCustomAmountInput] = useState('');
+export function useBillingTopupSelection({
+  copy,
+  formatUsdAmount,
+  initialTopupCents,
+}: UseBillingTopupSelectionOptions) {
+  const initialSelection = useMemo(
+    () => createInitialTopupSelection(initialTopupCents),
+    [initialTopupCents]
+  );
+  const [customAmountInput, setCustomAmountInput] = useState(initialSelection.customAmountInput);
   const [customEditorOpen, setCustomEditorOpen] = useState(false);
-  const [selectedTopupCents, setSelectedTopupCents] = useState(USD_TOPUP_TIERS[0]?.amountCents ?? 1000);
+  const [selectedTopupCents, setSelectedTopupCents] = useState(initialSelection.selectedTopupCents);
   const customAmountInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setSelectedTopupCents(initialSelection.selectedTopupCents);
+    setCustomAmountInput(initialSelection.customAmountInput);
+    setCustomEditorOpen(false);
+  }, [initialSelection]);
+
   const customAmountCents = parseAmountToCents(customAmountInput);
   const customAmountError = !customAmountInput.trim()
     ? null

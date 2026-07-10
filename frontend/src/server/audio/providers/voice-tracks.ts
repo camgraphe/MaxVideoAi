@@ -1,58 +1,111 @@
-import type {
-  AudioLanguage,
-  AudioVoiceDelivery,
-  AudioVoiceGender,
-  AudioVoiceProfile,
-} from '@/lib/audio-generation';
-import { runAudioRoleWithFallback, subscribeFalModel } from './fal-runner';
-import { findFileUrl } from './response';
-import type { AudioProviderResult } from './types';
 import {
-  buildGeminiStyleInstructions,
-  buildVoiceModify,
-  buildVoiceSetting,
-  resolveGeminiLanguageCode,
-  resolveGeminiVoice,
-  resolveLanguageBoost,
-  resolveStandardVoiceId,
-} from './voice-utils';
+  AUDIO_SEED_AUDIO_MODEL_ID,
+  type AudioLanguage,
+  type AudioSeedAudioOutputFormat,
+  type AudioSeedAudioSampleRate,
+  type AudioSeedAudioVoice,
+  type AudioVoiceDelivery,
+  type AudioVoiceGender,
+  type AudioVoiceProfile,
+} from '@/lib/audio-generation';
+import { runAudioRoleWithFallback } from './fal-runner';
+import type { AudioProviderResult, AudioProviderSubscribe } from './types';
 
-async function renderCustomVoiceTrackFromVoiceId(input: {
+type VoiceGenerationOptions = {
+  subscribe?: AudioProviderSubscribe;
+  timeoutMs?: number;
+};
+
+type SeedAudioVoiceInput = {
   script: string;
   locale?: string | null;
   language?: AudioLanguage | null;
-  customVoiceId: string;
   voiceGender: AudioVoiceGender;
   voiceProfile: AudioVoiceProfile;
   voiceDelivery: AudioVoiceDelivery;
-}): Promise<AudioProviderResult> {
-  const result = await subscribeFalModel('fal-ai/minimax/speech-02-hd', {
-    prompt: input.script,
-    output_format: 'url',
-    language_boost: resolveLanguageBoost(input.language, input.locale),
-    voice_setting: buildVoiceSetting({
-      voiceId: input.customVoiceId,
-      voiceGender: input.voiceGender,
-      voiceProfile: input.voiceProfile,
-      voiceDelivery: input.voiceDelivery,
-    }),
-    voice_modify: buildVoiceModify({
-      voiceGender: input.voiceGender,
-      voiceProfile: input.voiceProfile,
-      voiceDelivery: input.voiceDelivery,
-    }),
-  });
-  const audioUrl = findFileUrl(result.data, 'audio');
-  if (!audioUrl) {
-    throw new Error('Custom voice rendering returned no audio URL.');
+  referenceAudioUrl?: string | null;
+  seedAudioVoice?: AudioSeedAudioVoice | null;
+  seedAudioOutputFormat?: AudioSeedAudioOutputFormat | null;
+  seedAudioSampleRate?: AudioSeedAudioSampleRate | null;
+  seedAudioSpeed?: number | null;
+  seedAudioVolume?: number | null;
+  seedAudioPitch?: number | null;
+};
+
+function resolveSeedAudioVoice(input: {
+  language?: AudioLanguage | null;
+  voiceGender: AudioVoiceGender;
+  voiceProfile: AudioVoiceProfile;
+  voiceDelivery: AudioVoiceDelivery;
+}): string {
+  if (input.language === 'spanish') {
+    return input.voiceGender === 'male' ? 'mindy_en_es_id_pt_zh' : 'tracy_es_zh';
   }
+  if (input.voiceGender === 'male') {
+    return input.voiceProfile === 'deep' || input.voiceDelivery === 'trailer' ? 'magnus_en_zh' : 'kian_en_zh';
+  }
+  if (input.voiceGender === 'neutral') {
+    return input.voiceProfile === 'bright' ? 'opal_en_zh' : 'quentin_en_zh';
+  }
+  if (input.voiceProfile === 'bright') return 'sophie_en_zh';
+  if (input.voiceProfile === 'deep') return 'nadia_en_zh';
+  return 'mindy_en_es_id_pt_zh';
+}
+
+function resolveSeedAudioSpeed(delivery: AudioVoiceDelivery): number {
+  if (delivery === 'trailer') return 0.94;
+  if (delivery === 'intimate') return 0.92;
+  if (delivery === 'cinematic') return 0.96;
+  return 1;
+}
+
+function resolveSeedAudioPitch(profile: AudioVoiceProfile): number {
+  if (profile === 'deep') return -2;
+  if (profile === 'bright') return 2;
+  return 0;
+}
+
+function languageInstruction(language?: AudioLanguage | null, locale?: string | null): string {
+  if (language && language !== 'auto') {
+    return `Use ${language} pronunciation and natural pacing.`;
+  }
+  if (locale?.trim()) {
+    return `Infer the spoken language from locale ${locale.trim()} and the script text.`;
+  }
+  return 'Infer the spoken language from the script text.';
+}
+
+export function buildSeedAudioVoiceInput(input: SeedAudioVoiceInput): Record<string, unknown> {
+  const script = input.script.replace(/\s+/g, ' ').trim();
+  const referenceAudioUrl = input.referenceAudioUrl?.trim() || null;
+  const prompt = [
+    referenceAudioUrl ? 'Use @Audio1 as the reference voice for speaker character, cadence, and tone.' : null,
+    `Voice over script: ${script}`,
+    `Delivery: ${input.voiceDelivery}. Voice texture: ${input.voiceProfile}.`,
+    languageInstruction(input.language, input.locale),
+  ].filter(Boolean).join(' ');
+
+  const presetVoice =
+    input.seedAudioVoice ??
+    resolveSeedAudioVoice({
+      language: input.language,
+      voiceGender: input.voiceGender,
+      voiceProfile: input.voiceProfile,
+      voiceDelivery: input.voiceDelivery,
+    });
+
   return {
-    url: audioUrl,
-    providerKey: 'minimax_custom_voice_render',
-    providerLabel: 'MiniMax Custom Voice Render',
-    model: 'fal-ai/minimax/speech-02-hd',
-    requestId: result.requestId ?? null,
-    customVoiceId: input.customVoiceId,
+    prompt,
+    output_format: input.seedAudioOutputFormat ?? 'mp3',
+    sample_rate: input.seedAudioSampleRate ?? 24000,
+    speed: input.seedAudioSpeed ?? resolveSeedAudioSpeed(input.voiceDelivery),
+    volume: input.seedAudioVolume ?? 1,
+    pitch: input.seedAudioPitch ?? resolveSeedAudioPitch(input.voiceProfile),
+    ...(referenceAudioUrl
+      ? { audio_urls: [referenceAudioUrl] }
+      : presetVoice === 'default'
+        ? {}
+        : { voice: presetVoice }),
   };
 }
 
@@ -63,45 +116,21 @@ export async function generateStandardVoiceTrack(input: {
   voiceGender: AudioVoiceGender;
   voiceProfile: AudioVoiceProfile;
   voiceDelivery: AudioVoiceDelivery;
-}): Promise<AudioProviderResult> {
-  return runAudioRoleWithFallback('tts', (candidate) => {
-    if (candidate.key === 'gemini_3_1_flash_tts') {
-      const languageCode = resolveGeminiLanguageCode(input.language, input.locale);
-      return {
-        prompt: input.script,
-        style_instructions: buildGeminiStyleInstructions({
-          voiceProfile: input.voiceProfile,
-          voiceDelivery: input.voiceDelivery,
-        }),
-        voice: resolveGeminiVoice({
-          voiceGender: input.voiceGender,
-          voiceProfile: input.voiceProfile,
-        }),
-        ...(languageCode ? { language_code: languageCode } : {}),
-        temperature: input.voiceDelivery === 'trailer' ? 0.9 : 1,
-        output_format: 'mp3',
-      };
+  seedAudioVoice?: AudioSeedAudioVoice | null;
+  seedAudioOutputFormat?: AudioSeedAudioOutputFormat | null;
+  seedAudioSampleRate?: AudioSeedAudioSampleRate | null;
+  seedAudioSpeed?: number | null;
+  seedAudioVolume?: number | null;
+  seedAudioPitch?: number | null;
+}, options?: VoiceGenerationOptions): Promise<AudioProviderResult> {
+  return runAudioRoleWithFallback(
+    'tts',
+    () => buildSeedAudioVoiceInput(input),
+    {
+      subscribe: options?.subscribe,
+      timeoutMs: options?.timeoutMs,
     }
-    return {
-      prompt: input.script,
-      output_format: 'url',
-      language_boost: resolveLanguageBoost(input.language, input.locale),
-      voice_setting: buildVoiceSetting({
-        voiceId: resolveStandardVoiceId({
-          providerKey: candidate.key,
-          voiceGender: input.voiceGender,
-        }),
-        voiceGender: input.voiceGender,
-        voiceProfile: input.voiceProfile,
-        voiceDelivery: input.voiceDelivery,
-      }),
-      voice_modify: buildVoiceModify({
-        voiceGender: input.voiceGender,
-        voiceProfile: input.voiceProfile,
-        voiceDelivery: input.voiceDelivery,
-      }),
-    };
-  });
+  );
 }
 
 export async function generateClonedVoiceTrack(input: {
@@ -111,37 +140,39 @@ export async function generateClonedVoiceTrack(input: {
   language?: AudioLanguage | null;
   voiceProfile: AudioVoiceProfile;
   voiceDelivery: AudioVoiceDelivery;
-}): Promise<AudioProviderResult> {
-  const cloned = await runAudioRoleWithFallback('voiceClone', () => ({
-    audio_url: input.voiceSampleUrl,
-    prompt: input.script,
-    output_format: 'url',
-    language_boost: resolveLanguageBoost(input.language, input.locale),
-    model: 'speech-02-hd',
-    voice_setting: buildVoiceSetting({
-      voiceGender: 'neutral',
-      voiceProfile: input.voiceProfile,
-      voiceDelivery: input.voiceDelivery,
-    }),
-    voice_modify: buildVoiceModify({
-      voiceGender: 'neutral',
-      voiceProfile: input.voiceProfile,
-      voiceDelivery: input.voiceDelivery,
-    }),
-  }));
-  if (cloned.url) {
-    return cloned;
-  }
-  if (cloned.customVoiceId) {
-    return renderCustomVoiceTrackFromVoiceId({
-      script: input.script,
-      locale: input.locale,
-      language: input.language,
-      customVoiceId: cloned.customVoiceId,
-      voiceGender: 'neutral',
-      voiceProfile: input.voiceProfile,
-      voiceDelivery: input.voiceDelivery,
-    });
-  }
-  throw new Error('Voice clone provider returned no usable output.');
+  seedAudioOutputFormat?: AudioSeedAudioOutputFormat | null;
+  seedAudioSampleRate?: AudioSeedAudioSampleRate | null;
+  seedAudioSpeed?: number | null;
+  seedAudioVolume?: number | null;
+  seedAudioPitch?: number | null;
+}, options?: VoiceGenerationOptions): Promise<AudioProviderResult> {
+  return runAudioRoleWithFallback(
+    'tts',
+    () =>
+      buildSeedAudioVoiceInput({
+        script: input.script,
+        locale: input.locale,
+        language: input.language,
+        voiceGender: 'neutral',
+        voiceProfile: input.voiceProfile,
+        voiceDelivery: input.voiceDelivery,
+        referenceAudioUrl: input.voiceSampleUrl,
+        seedAudioOutputFormat: input.seedAudioOutputFormat,
+        seedAudioSampleRate: input.seedAudioSampleRate,
+        seedAudioSpeed: input.seedAudioSpeed,
+        seedAudioVolume: input.seedAudioVolume,
+        seedAudioPitch: input.seedAudioPitch,
+      }),
+    {
+      candidates: [
+        {
+          key: 'seed_audio_1_0_reference',
+          label: 'Seed Audio 1.0 Reference Voice',
+          model: AUDIO_SEED_AUDIO_MODEL_ID,
+        },
+      ],
+      subscribe: options?.subscribe,
+      timeoutMs: options?.timeoutMs,
+    }
+  );
 }

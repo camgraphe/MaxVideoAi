@@ -1,14 +1,25 @@
+'use client';
+
 import clsx from 'clsx';
 import type { ChangeEvent, FormEvent } from 'react';
+import { TurnstileChallenge } from '@/components/ui/TurnstileChallenge';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import type { TopUpModalState } from '../_hooks/useWorkspacePricingGate';
 
 type WorkspaceTopUpCopy = {
   title: string;
+  balanceLowTitle: string;
+  suggestedTopUp: string;
   otherAmountLabel: string;
   minLabel: string;
+  captchaPrompt: string;
+  captchaComplete: string;
+  captchaError: string;
+  rateLimited: string;
+  startError: string;
   close: string;
   maybeLater: string;
   submit: string;
@@ -22,11 +33,19 @@ type WorkspaceTopUpModalProps = {
   topUpAmount: number;
   isTopUpLoading: boolean;
   topUpError: string | null;
+  checkoutCaptchaError: boolean;
+  checkoutCaptchaRequired: boolean;
+  checkoutCaptchaResetGeneration: number;
+  checkoutCaptchaToken: string | null;
+  onCheckoutCaptchaError: () => void;
+  onCheckoutCaptchaToken: (token: string | null) => void;
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onSelectPresetAmount: (value: number) => void;
   onCustomAmountChange: (event: ChangeEvent<HTMLInputElement>) => void;
 };
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 
 export function WorkspaceTopUpModal({
   modal,
@@ -35,27 +54,53 @@ export function WorkspaceTopUpModal({
   topUpAmount,
   isTopUpLoading,
   topUpError,
+  checkoutCaptchaError,
+  checkoutCaptchaRequired,
+  checkoutCaptchaResetGeneration,
+  checkoutCaptchaToken,
+  onCheckoutCaptchaError,
+  onCheckoutCaptchaToken,
   onClose,
   onSubmit,
   onSelectPresetAmount,
   onCustomAmountChange,
 }: WorkspaceTopUpModalProps) {
+  const { dialogRef, onDialogKeyDown } = useAccessibleModal<HTMLFormElement>({
+    onClose,
+    closeDisabled: isTopUpLoading,
+  });
+
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
-      <div className="absolute inset-0" role="presentation" onClick={onClose} />
+      <div
+        className="absolute inset-0"
+        aria-hidden="true"
+        onClick={isTopUpLoading ? undefined : onClose}
+      />
       <form
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="workspace-topup-title"
+        aria-describedby="workspace-topup-description"
+        tabIndex={-1}
+        onKeyDown={onDialogKeyDown}
         className="relative z-10 w-full max-w-md rounded-modal border border-border bg-surface p-6 shadow-float"
         onSubmit={onSubmit}
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <h2 className="text-base font-semibold text-text-primary">Wallet balance too low</h2>
-            <p className="mt-2 text-sm text-text-secondary">{modal.message}</p>
-            {modal.amountLabel && (
+            <h2 id="workspace-topup-title" className="text-base font-semibold text-text-primary">
+              {copy.balanceLowTitle}
+            </h2>
+            <p id="workspace-topup-description" className="mt-2 text-sm text-text-secondary">
+              {modal.message}
+            </p>
+            {modal.amountLabel ? (
               <p className="mt-2 text-sm font-medium text-text-primary">
-                Suggested top-up: {modal.amountLabel}
+                {copy.suggestedTopUp.replace('{amount}', modal.amountLabel)}
               </p>
-            )}
+            ) : null}
             <div className="mt-4">
               <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{copy.title}</p>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -111,6 +156,28 @@ export function WorkspaceTopUpModal({
                   </span>
                 </div>
               </div>
+              {checkoutCaptchaRequired ? (
+                <div className="mt-3 rounded-input border border-border bg-bg p-3">
+                  <p className="text-sm font-semibold text-text-primary">{copy.captchaPrompt}</p>
+                  {TURNSTILE_SITE_KEY ? (
+                    <div className="mt-3">
+                      <TurnstileChallenge
+                        siteKey={TURNSTILE_SITE_KEY}
+                        onToken={onCheckoutCaptchaToken}
+                        onError={onCheckoutCaptchaError}
+                        resetGeneration={checkoutCaptchaResetGeneration}
+                      />
+                    </div>
+                  ) : null}
+                  <p className={`mt-2 text-xs ${checkoutCaptchaError ? 'text-state-warning' : checkoutCaptchaToken ? 'text-success' : 'text-text-secondary'}`}>
+                    {checkoutCaptchaError
+                      ? copy.captchaError
+                      : checkoutCaptchaToken
+                        ? copy.captchaComplete
+                        : copy.captchaPrompt}
+                  </p>
+                </div>
+              ) : null}
               {topUpError && <p className="mt-2 text-sm text-state-warning">{topUpError}</p>}
             </div>
           </div>
@@ -119,6 +186,7 @@ export function WorkspaceTopUpModal({
             variant="outline"
             size="sm"
             onClick={onClose}
+            disabled={isTopUpLoading}
             className="rounded-full border-hairline bg-surface-glass-80 px-3 py-1.5 text-sm text-text-muted hover:bg-surface-2"
             aria-label={copy.close}
           >
@@ -126,13 +194,21 @@ export function WorkspaceTopUpModal({
           </Button>
         </div>
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:justify-end">
-          <Button type="button" variant="outline" size="sm" onClick={onClose} className="px-4">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onClose}
+            disabled={isTopUpLoading}
+            className="px-4"
+          >
             {copy.maybeLater}
           </Button>
           <Button
             type="submit"
             size="sm"
             disabled={isTopUpLoading}
+            data-modal-initial-focus="true"
             className={clsx('px-4', !isTopUpLoading && 'hover:brightness-105')}
           >
             {isTopUpLoading ? copy.submitting : copy.submit}

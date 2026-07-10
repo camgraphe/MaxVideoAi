@@ -123,7 +123,7 @@ test('attachment reference helper preserves Happy Horse slot routing', () => {
   );
 });
 
-test('source video duration helper uses source duration for reframe only', () => {
+test('source video duration helper uses source duration for reframe and enforces edit limits', () => {
   const attachments: NormalizedAttachment[] = [
     attachment({
       kind: 'video',
@@ -159,6 +159,23 @@ test('source video duration helper uses source duration for reframe only', () =>
       maxDurationSec: 30,
     }).durationSec,
     5
+  );
+  assert.equal(
+    resolveSourceVideoDurationSec({
+      mode: 'v2v',
+      attachments: [
+        attachment({
+          kind: 'video',
+          slotId: 'video_url',
+          url: 'https://cdn.maxvideoai.com/source.mp4',
+          durationSec: 11,
+        }),
+      ],
+      sourceInputVideoUrl: 'https://cdn.maxvideoai.com/source.mp4',
+      fallbackDurationSec: 5,
+      maxDurationSec: 10,
+    }).exceedsMax,
+    true
   );
   assert.equal(
     resolveSourceVideoDurationSec({

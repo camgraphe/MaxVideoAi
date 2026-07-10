@@ -10,11 +10,15 @@ export const SEEDANCE_2_ENDPOINTS = {
     t2v: 'bytedance/seedance-2.0/text-to-video',
     i2v: 'bytedance/seedance-2.0/image-to-video',
     ref2v: 'bytedance/seedance-2.0/reference-to-video',
+    v2v: 'byteplus/dreamina-seedance-2.0/video-to-video',
+    extend: 'byteplus/dreamina-seedance-2.0/extend',
   },
   fast: {
     t2v: 'bytedance/seedance-2.0/fast/text-to-video',
     i2v: 'bytedance/seedance-2.0/fast/image-to-video',
     ref2v: 'bytedance/seedance-2.0/fast/reference-to-video',
+    v2v: 'byteplus/dreamina-seedance-2.0-fast/video-to-video',
+    extend: 'byteplus/dreamina-seedance-2.0-fast/extend',
   },
 } as const;
 
@@ -129,7 +133,7 @@ export function buildSeedance2PricingDetails(
   return {
     currency: 'USD',
     tokenPricing: {
-      model: 'fal_tokens',
+      model: 'byteplus_tokens',
       unitPriceUsdPer1kTokens,
       unitPriceUsdPer1kTokensByResolution: options?.unitPriceUsdPer1kTokensByResolution,
       unitPriceUsdPer1kTokensByResolutionAndInputType:
@@ -146,7 +150,7 @@ export function buildSeedance2MiniPricingDetails(): EnginePricingDetails {
   return {
     currency: 'USD',
     tokenPricing: {
-      model: 'fal_tokens',
+      model: 'byteplus_tokens',
       unitPriceUsdPer1kTokens: SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS.mini,
       pricingSource: 'byteplus_seedance_2_0_mini_flat_markup',
       framesPerSecond: 24,

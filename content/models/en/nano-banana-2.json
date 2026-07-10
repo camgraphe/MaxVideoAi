@@ -176,6 +176,24 @@
       "Grounded prompts should still be specific about the target aesthetic."
     ],
     "promptingGuideLabel": "Learn more",
+    "relatedTitle": "Nano Banana family",
+    "relatedSubtitle": "Use Lite for fast 1K drafts, Nano Banana 2 for grounded flexible stills, and Pro for polished 4K finals.",
+    "relatedItems": [
+      {
+        "brand": "Google",
+        "title": "Nano Banana Lite",
+        "modelSlug": "nano-banana-lite",
+        "description": "Use Lite when speed and simple 1K draft generation matter more than grounding or 2K/4K output.",
+        "ctaLabel": "Open Nano Banana Lite"
+      },
+      {
+        "brand": "Google",
+        "title": "Nano Banana Pro",
+        "modelSlug": "nano-banana-pro",
+        "description": "Use Pro when the image needs 4K delivery, typography polish, and professional campaign finish.",
+        "ctaLabel": "Open Nano Banana Pro"
+      }
+    ],
     "faqs": [
       {
         "q": "Is Nano Banana 2 for still images or video?",

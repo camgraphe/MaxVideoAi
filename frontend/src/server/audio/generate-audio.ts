@@ -2,7 +2,6 @@ import { randomUUID } from 'node:crypto';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 
 import {
-  AUDIO_SURFACE,
   buildAudioPricingSnapshot,
   getAudioPackConfig,
   type AudioGenerateRequestBody,
@@ -38,6 +37,7 @@ import {
 import { refundAudioCharge } from '@/server/audio/audio-generate-receipts';
 import {
   buildPromptSummary,
+  buildInitialAudioSettingsSnapshot,
   buildProviderSnapshot,
   isVideoBackedPack,
   parseProviderFailures,
@@ -106,6 +106,8 @@ export async function generateAudioRun(params: {
     mood: normalized.mood ?? null,
     voiceMode: normalized.voiceMode,
     script: normalized.script,
+    musicModel: normalized.musicModel,
+    musicBpm: normalized.musicBpm,
     musicEnabled: normalized.musicEnabled,
   });
   const pricingSnapshotJson = JSON.stringify(pricingSnapshot);
@@ -115,31 +117,12 @@ export async function generateAudioRun(params: {
     mood: normalized.mood,
     script: normalized.script,
   });
-  const initialSettingsSnapshot = {
-    schemaVersion: 2,
-    surface: AUDIO_SURFACE,
-    pack: normalized.pack,
-    prompt: normalized.prompt,
-    mood: normalized.mood,
-    intensity: normalized.intensity,
+  const initialSettingsSnapshot = buildInitialAudioSettingsSnapshot({
     durationSec,
-    script: normalized.script,
-    musicEnabled: normalized.musicEnabled,
-    exportAudioFile: normalized.exportAudioFile,
-    voiceMode: normalized.voiceMode,
-    voiceGender: normalized.voiceGender,
-    voiceProfile: normalized.voiceProfile,
-    voiceDelivery: normalized.voiceDelivery,
-    language: normalized.language,
-    outputKind: normalized.outputKind,
+    normalized,
     sourceJobId: sourceJob?.job_id ?? null,
     sourceVideoUrl,
-    refs: {
-      sourceVideoUrl,
-      voiceSampleUrl: normalized.voiceSampleUrl,
-    },
-    providers: null,
-  };
+  });
 
   const jobId = `aud_${randomUUID()}`;
   const amountCents = pricingSnapshot.totalCents;
@@ -198,6 +181,8 @@ export async function generateAudioRun(params: {
         durationSec,
         mood: normalized.mood!,
         intensity: normalized.intensity,
+        musicModel: normalized.musicModel,
+        musicBpm: normalized.musicBpm,
         prompt: normalized.prompt,
       });
     }
@@ -207,7 +192,7 @@ export async function generateAudioRun(params: {
         progress: normalized.pack === 'voice_only' ? 56 : 62,
         message:
           normalized.voiceMode === 'clone'
-            ? 'Generating cloned voice over…'
+            ? 'Generating reference voice over…'
             : 'Generating voice over…',
       });
       voiceTrack =
@@ -219,6 +204,11 @@ export async function generateAudioRun(params: {
               language: normalized.language,
               voiceProfile: normalized.voiceProfile ?? 'balanced',
               voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
+              seedAudioOutputFormat: normalized.seedAudioOutputFormat,
+              seedAudioSampleRate: normalized.seedAudioSampleRate,
+              seedAudioSpeed: normalized.seedAudioSpeed,
+              seedAudioVolume: normalized.seedAudioVolume,
+              seedAudioPitch: normalized.seedAudioPitch,
             })
           : await generateStandardVoiceTrack({
               script: normalized.script,
@@ -227,6 +217,12 @@ export async function generateAudioRun(params: {
               voiceGender: normalized.voiceGender ?? 'female',
               voiceProfile: normalized.voiceProfile ?? 'balanced',
               voiceDelivery: normalized.voiceDelivery ?? 'cinematic',
+              seedAudioVoice: normalized.seedAudioVoice,
+              seedAudioOutputFormat: normalized.seedAudioOutputFormat,
+              seedAudioSampleRate: normalized.seedAudioSampleRate,
+              seedAudioSpeed: normalized.seedAudioSpeed,
+              seedAudioVolume: normalized.seedAudioVolume,
+              seedAudioPitch: normalized.seedAudioPitch,
             });
 
       if (!voiceTrack.url) {

@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
+import {
+  CATALOG_BY_SLUG,
+  ENGINE_OPTIONS,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-config.ts';
+import { resolvePromptInheritedShowdowns } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 
 const routePath = 'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx';
@@ -142,18 +147,41 @@ const compareConfig = JSON.parse(readFileSync('frontend/config/compare-config.js
   scoreboardOnlyComparisons?: string[];
   relatedComparisons?: Record<string, string[]>;
   trophyComparisons?: string[];
+  showdowns?: Record<
+    string,
+    Array<{
+      slotId?: string;
+      aspectRatio?: string;
+      mode?: string;
+      prompt?: string;
+      promptSourceSlug?: string;
+      left?: { jobId?: string };
+      right?: { jobId?: string };
+    }>
+  >;
 };
 const compareHubConfig = JSON.parse(readFileSync('frontend/config/compare-hub.json', 'utf8')) as {
   useCaseBuckets?: Array<{ id: string; pairs?: Array<{ left: string; right: string }> }>;
 };
 
-const miniScoreboardOnlyComparisons = [
+const seedanceFamilyShowdownComparisons = [
+  'seedance-2-0-vs-seedance-2-0-fast',
   'dreamina-seedance-2-0-mini-vs-seedance-2-0',
   'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+];
+
+const miniScoreboardOnlyComparisons = [
   'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
   'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
   'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
   'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+];
+
+const geminiScoreboardOnlyComparisons = [
+  'gemini-omni-flash-vs-veo-3-1',
+  'gemini-omni-flash-vs-veo-3-1-fast',
+  'gemini-omni-flash-vs-sora-2',
+  'gemini-omni-flash-vs-seedance-2-0',
 ];
 
 const canonicalMiniCompareOverrideSlugs = [
@@ -179,6 +207,31 @@ test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suff
     override?.heroIntro ?? '',
     /^Use Seedance 2\.0 when quality and consistency matter\. Use Seedance 2\.0 Fast when you want quicker, cheaper prompt tests and rapid iteration\./
   );
+  assert.equal(override?.quickVerdict?.title, 'Quick verdict');
+  assert.match(
+    override?.quickVerdict?.body ?? '',
+    /Seedance 2\.0 vs Seedance 2\.0 Fast is mainly a quality versus iteration-speed choice/
+  );
+  assert.match(
+    override?.quickVerdict?.body ?? '',
+    /final 1080p or 4K shots[\s\S]*cheaper 480p or 720p drafts/,
+    'Seedance 2.0 vs Fast should expose the direct snippet answer and resolution tradeoff'
+  );
+  assert.match(
+    JSON.stringify(override?.faq?.items ?? []),
+    /Fast vs normal/i,
+    'Seedance 2.0 vs Fast should cover the rising "fast vs normal" query language'
+  );
+  assert.match(
+    JSON.stringify(override?.faq?.items ?? []),
+    /video edit[\s\S]*extend|extend[\s\S]*video edit/i,
+    'Seedance 2.0 vs Fast should answer video edit and extend support queries'
+  );
+  assert.doesNotMatch(
+    JSON.stringify(override?.faq?.items ?? []),
+    /BytePlus|byteplus|fal\.ai|\bFal\b/,
+    'public Seedance comparison copy should not name implementation providers'
+  );
   assert.match(metadataSource, /titleBranding:\s*metaOverride\.titleBranding \?\? 'auto'/);
 
   const metadata = buildSeoMetadata({
@@ -190,6 +243,57 @@ test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suff
   });
 
   assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
+});
+
+test('public comparison engine selector excludes disabled admin-only engines', () => {
+  const serializedOptions = JSON.stringify(ENGINE_OPTIONS);
+
+  assert.doesNotMatch(serializedOptions, /byteplus|BytePlus/);
+  assert.doesNotMatch(serializedOptions, /Fast Direct/);
+  assert.equal(ENGINE_OPTIONS.some((option) => option.value === 'seedance-2-0-fast-byteplus'), false);
+  assert.equal(CATALOG_BY_SLUG.get('seedance-2-0-fast-byteplus')?.surfaces?.compare?.includeInHub, false);
+  ENGINE_OPTIONS.forEach((option) => {
+    assert.equal(
+      CATALOG_BY_SLUG.get(String(option.value))?.surfaces?.compare?.includeInHub,
+      true,
+      `${String(option.value)} should be a public compare hub engine`
+    );
+  });
+});
+
+test('Seedance 2.0 vs Fast comparison uses curated opposite-engine watch-page outputs', () => {
+  const showdowns = compareConfig.showdowns?.['seedance-2-0-vs-seedance-2-0-fast'] ?? [];
+  assert.equal(showdowns.length, 3);
+
+  const bySlotId = new Map(showdowns.map((entry) => [entry.slotId, entry]));
+  const weather = bySlotId.get('motion-physics');
+  const map = bySlotId.get('ugc-lipsync');
+  const skateboard = bySlotId.get('hands-text');
+
+  assert.ok(weather);
+  assert.equal(weather.left?.jobId, 'job_d12164ca-1c6f-46da-9136-2255a136f124');
+  assert.equal(weather.right?.jobId, 'job_528fe01f-e2ea-4cc0-850c-e98190a17473');
+  assert.equal(weather.aspectRatio, '16:9');
+  assert.equal(weather.mode, 't2v');
+  assert.match(weather.prompt ?? '', /weather immediately changes/);
+
+  assert.ok(map);
+  assert.equal(map.left?.jobId, 'job_5a365d86-98f8-495a-96b2-5737c88185b9');
+  assert.equal(map.right?.jobId, 'job_5bf86ec5-b464-4516-8163-6b11131df5b4');
+  assert.equal(map.aspectRatio, '16:9');
+  assert.equal(map.mode, 'ref2v');
+  assert.match(map.prompt ?? '', /harmless stunt-show tone/);
+  assert.doesNotMatch(map.prompt ?? '', /police|weapons|blood|real explosion|injury/i);
+
+  assert.ok(skateboard);
+  assert.equal(skateboard.left?.jobId, 'job_638aae88-1368-43a2-8098-10686f9e941c');
+  assert.equal(skateboard.right?.jobId, 'job_49f653bb-2ed2-425c-b0d2-f335d3d7f124');
+  assert.equal(skateboard.aspectRatio, '16:9');
+  assert.equal(skateboard.mode, 't2v');
+  assert.match(skateboard.prompt ?? '', /colorful interlocking toy brick/);
+  assert.doesNotMatch(skateboard.prompt ?? '', /Lego|immersive/i);
+  assert.match(showdownsSource, /aspectRatio:\s*entry\?\.aspectRatio \?\? template\.aspectRatio/);
+  assert.match(showdownsSource, /mode:\s*entry\?\.mode \?\? template\.mode/);
 });
 
 test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name suffix', () => {
@@ -218,11 +322,21 @@ test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name
   assert.equal(typeof metadata.title === 'object' ? metadata.title.absolute : metadata.title, title);
 });
 
-test('Seedance 2.0 Mini comparisons are scoreboard-only and stay out of trophy quality pages', () => {
-  assert.deepEqual(compareConfig.scoreboardOnlyComparisons, miniScoreboardOnlyComparisons);
+test('Seedance family comparisons use video showdowns while Mini and Gemini pages stay scoreboard-only', () => {
+  assert.deepEqual(compareConfig.scoreboardOnlyComparisons, [
+    ...miniScoreboardOnlyComparisons,
+    ...geminiScoreboardOnlyComparisons,
+  ]);
   assert.match(configSource, /export const SCOREBOARD_ONLY_COMPARISONS/);
   assert.match(configSource, /compareConfig as \{ scoreboardOnlyComparisons\?: string\[\] \}/);
   assert.ok(compareConfig.trophyComparisons?.every((slug) => !slug.includes('dreamina-seedance-2-0-mini')));
+  seedanceFamilyShowdownComparisons.forEach((slug) => {
+    assert.ok(!compareConfig.scoreboardOnlyComparisons?.includes(slug), `${slug} should not be scoreboard-only`);
+    assert.equal(compareConfig.showdowns?.[slug]?.length, 3, `${slug} should have three curated video showdowns`);
+  });
+  geminiScoreboardOnlyComparisons.forEach((slug) => {
+    assert.equal(compareConfig.showdowns?.[slug], undefined, `${slug} should stay scorecard-only until curated outputs exist`);
+  });
 
   const bestQualityBucket = compareHubConfig.useCaseBuckets?.find((bucket) => bucket.id === 'best-quality');
   assert.ok(bestQualityBucket);
@@ -240,7 +354,58 @@ test('Seedance 2.0 Mini comparisons are scoreboard-only and stay out of trophy q
   ]);
 });
 
-test('Seedance 2.0 Mini localized compare overrides explain scorecard-only positioning', () => {
+test('Seedance 2.0 Mini family showdowns reuse the Standard vs Fast prompts with Mini outputs', () => {
+  const sourceSlug = 'seedance-2-0-vs-seedance-2-0-fast';
+  const sourceShowdowns = compareConfig.showdowns?.[sourceSlug] ?? [];
+  const miniVsStandardSlug = 'dreamina-seedance-2-0-mini-vs-seedance-2-0';
+  const miniVsFastSlug = 'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast';
+  const miniVsStandard = compareConfig.showdowns?.[miniVsStandardSlug] ?? [];
+  const miniVsFast = compareConfig.showdowns?.[miniVsFastSlug] ?? [];
+
+  assert.equal(sourceShowdowns.length, 3);
+  assert.equal(miniVsStandard.length, 3);
+  assert.equal(miniVsFast.length, 3);
+  miniVsStandard.forEach((entry) => {
+    assert.equal(entry.promptSourceSlug, sourceSlug);
+    assert.equal(entry.prompt, undefined);
+  });
+  miniVsFast.forEach((entry) => {
+    assert.equal(entry.promptSourceSlug, sourceSlug);
+    assert.equal(entry.prompt, undefined);
+  });
+
+  const resolvedMiniVsStandard = resolvePromptInheritedShowdowns(miniVsStandard, compareConfig.showdowns ?? {});
+  const resolvedMiniVsFast = resolvePromptInheritedShowdowns(miniVsFast, compareConfig.showdowns ?? {});
+
+  resolvedMiniVsStandard.forEach((entry, index) => {
+    assert.equal(entry?.prompt, sourceShowdowns[index]?.prompt);
+    assert.equal(entry?.title, sourceShowdowns[index]?.title);
+    assert.equal(entry?.aspectRatio, '16:9');
+  });
+  resolvedMiniVsFast.forEach((entry, index) => {
+    assert.equal(entry?.prompt, sourceShowdowns[index]?.prompt);
+    assert.equal(entry?.title, sourceShowdowns[index]?.title);
+    assert.equal(entry?.aspectRatio, '16:9');
+  });
+
+  const standardBySlotId = new Map(resolvedMiniVsStandard.map((entry) => [entry?.slotId, entry]));
+  assert.equal(standardBySlotId.get('motion-physics')?.left?.jobId, 'job_f2605150-0d2a-48ad-b1a9-bba8891d568b');
+  assert.equal(standardBySlotId.get('motion-physics')?.right?.jobId, 'job_d12164ca-1c6f-46da-9136-2255a136f124');
+  assert.equal(standardBySlotId.get('ugc-lipsync')?.left?.jobId, 'job_f9e077a0-2568-464e-a4e6-962537320dec');
+  assert.equal(standardBySlotId.get('ugc-lipsync')?.right?.jobId, 'job_5a365d86-98f8-495a-96b2-5737c88185b9');
+  assert.equal(standardBySlotId.get('hands-text')?.left?.jobId, 'job_2581d0af-23fc-46dd-a1df-049cac1824c1');
+  assert.equal(standardBySlotId.get('hands-text')?.right?.jobId, 'job_638aae88-1368-43a2-8098-10686f9e941c');
+
+  const fastBySlotId = new Map(resolvedMiniVsFast.map((entry) => [entry?.slotId, entry]));
+  assert.equal(fastBySlotId.get('motion-physics')?.left?.jobId, 'job_f2605150-0d2a-48ad-b1a9-bba8891d568b');
+  assert.equal(fastBySlotId.get('motion-physics')?.right?.jobId, 'job_528fe01f-e2ea-4cc0-850c-e98190a17473');
+  assert.equal(fastBySlotId.get('ugc-lipsync')?.left?.jobId, 'job_f9e077a0-2568-464e-a4e6-962537320dec');
+  assert.equal(fastBySlotId.get('ugc-lipsync')?.right?.jobId, 'job_5bf86ec5-b464-4516-8163-6b11131df5b4');
+  assert.equal(fastBySlotId.get('hands-text')?.left?.jobId, 'job_2581d0af-23fc-46dd-a1df-049cac1824c1');
+  assert.equal(fastBySlotId.get('hands-text')?.right?.jobId, 'job_49f653bb-2ed2-425c-b0d2-f335d3d7f124');
+});
+
+test('Seedance 2.0 Mini localized compare overrides distinguish family videos from scorecard-only pages', () => {
   canonicalMiniCompareOverrideSlugs.forEach((slug) => {
     assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug], `missing EN Mini override for ${slug}`);
     assert.match(overrideFrSource, new RegExp(`'${slug}'`));
@@ -248,12 +413,25 @@ test('Seedance 2.0 Mini localized compare overrides explain scorecard-only posit
   });
 
   assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /flagship final-quality/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /scorecard and specs comparison/);
+  assert.doesNotMatch(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /scorecard and specs comparison/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /side-by-side Mini vs Seedance 2\.0 videos/);
   assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0-fast']?.heroIntro ?? '', /lower-cost batch volume/);
+  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0-fast']?.heroIntro ?? '', /side-by-side Mini vs Fast videos/);
   assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-ltx-2-3-fast']?.heroIntro ?? '', /480p\/720p batches/);
   assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-veo-3-1-fast']?.heroIntro ?? '', /does not include comparison videos/);
-  assert.match(overrideFrSource, /videos comparatives Mini ne sont pas encore incluses/);
-  assert.match(overrideEsSource, /todavia no incluye videos comparativos de Mini/);
+  assert.match(overrideFrSource, /videos cote-a-cote Mini vs Seedance 2\.0/);
+  assert.match(overrideFrSource, /videos cote-a-cote Mini vs Fast/);
+  assert.match(overrideEsSource, /videos lado a lado Mini vs Seedance 2\.0/);
+  assert.match(overrideEsSource, /videos lado a lado Mini vs Fast/);
+  assert.match(overrideFrSource, /n inclut pas de videos comparatives/);
+  assert.match(overrideEsSource, /no incluye videos comparativos/);
+  [overrideEnSource, overrideFrSource, overrideEsSource].forEach((source) => {
+    const seedanceSlice = source.slice(
+      source.indexOf("'seedance-2-0-vs-seedance-2-0-fast'"),
+      source.indexOf("'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast'")
+    );
+    assert.doesNotMatch(seedanceSlice, /BytePlus|byteplus|fal\.ai|\bFal\b/);
+  });
 });
 
 test('scoreboard-only comparisons skip video showdown lookup before database requests', () => {

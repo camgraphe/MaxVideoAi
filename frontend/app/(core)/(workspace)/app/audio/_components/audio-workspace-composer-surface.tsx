@@ -6,17 +6,17 @@ import { Textarea } from '@/components/ui/Input';
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
   type AudioIntensity,
-  type AudioLanguage,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioPackId,
-  type AudioVoiceDelivery,
-  type AudioVoiceGender,
-  type AudioVoiceProfile,
+  type AudioSeedAudioOutputFormat,
+  type AudioSeedAudioSampleRate,
+  type AudioSeedAudioVoice,
 } from '@/lib/audio-generation';
 import AudioLatestRendersRail from '../AudioLatestRendersRail';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { SourceVideoState } from '../_lib/audio-workspace-types';
-import { formatCopy } from '../_lib/audio-workspace-helpers';
 import { AudioGenerationDock } from './audio-generation-dock';
 import { AudioOptionsSection } from './audio-options-section';
 import { AudioSourceVideoSection } from './audio-source-video-section';
@@ -39,10 +39,9 @@ interface AudioWorkspaceComposerSurfaceProps {
   composerPlaceholder: string;
   composerValue: string;
   copy: AudioWorkspaceCopy;
-  dockDurationLabel: string;
+  dockDurationLabel: string | null;
   dockPriceLabel: string;
   durationOptions: AudioOption[];
-  estimatedDurationSec: number | null;
   exportAudioFile: boolean;
   generationHint: string;
   handleGenerate: () => void;
@@ -50,16 +49,18 @@ interface AudioWorkspaceComposerSurfaceProps {
   handleSelectLatestJob: (jobId: string) => void;
   intensity: AudioIntensity;
   intensityOptions: AudioOption[];
-  isGenerating: boolean;
+  inProgressMessage: string | null;
   isUploadingSource: boolean;
   isUploadingVoice: boolean;
-  language: AudioLanguage;
-  languageOptions: AudioOption[];
   manualDurationSec: number;
   modeOptions: Array<{ id: AudioPackId; label: string; description: string }>;
   mood: AudioMood;
   moodOptions: AudioOption[];
+  musicBpm: AudioLyria3Bpm;
+  musicBpmOptions: AudioOption[];
   musicEnabled: boolean;
+  musicModel: AudioLyria3Model;
+  musicModelOptions: AudioOption[];
   notice: string | null;
   onClearSourceVideo: () => void;
   onOpenGeneratedPicker: () => void;
@@ -69,33 +70,45 @@ interface AudioWorkspaceComposerSurfaceProps {
   resultJobId: string | null;
   setExportAudioFile: (value: boolean) => void;
   setIntensity: (value: AudioIntensity) => void;
-  setLanguage: (value: AudioLanguage) => void;
   setManualDurationSec: (value: number) => void;
+  setMusicBpm: (value: AudioLyria3Bpm) => void;
+  setMusicModel: (value: AudioLyria3Model) => void;
   setMood: (value: AudioMood) => void;
   setMusicEnabled: (value: boolean) => void;
   setPrompt: (value: string) => void;
   setScript: (value: string) => void;
-  setVoiceDelivery: (value: AudioVoiceDelivery) => void;
-  setVoiceGender: (value: AudioVoiceGender) => void;
-  setVoiceProfile: (value: AudioVoiceProfile) => void;
+  setSeedAudioOutputFormat: (value: AudioSeedAudioOutputFormat) => void;
+  setSeedAudioPitch: (value: number) => void;
+  setSeedAudioSampleRate: (value: AudioSeedAudioSampleRate) => void;
+  setSeedAudioSpeed: (value: number) => void;
+  setSeedAudioVoice: (value: AudioSeedAudioVoice) => void;
+  setSeedAudioVolume: (value: number) => void;
   setVoiceSample: (value: { url: string; name: string } | null) => void;
   showExportToggle: boolean;
   showIntensity: boolean;
   showManualDuration: boolean;
   showMood: boolean;
+  showMusicBpm: boolean;
+  showMusicModel: boolean;
   showMusicToggle: boolean;
+  showSeedAudioVoice: boolean;
   showVoiceFields: boolean;
-  showVoiceGender: boolean;
   sourceInputRef: RefObject<HTMLInputElement | null>;
   sourceVideo: SourceVideoState | null;
   sourceVideoRequired: boolean;
-  voiceDelivery: AudioVoiceDelivery;
-  voiceDeliveryOptions: AudioOption[];
-  voiceGender: AudioVoiceGender;
-  voiceGenderOptions: AudioOption[];
   voiceInputRef: RefObject<HTMLInputElement | null>;
-  voiceProfile: AudioVoiceProfile;
-  voiceProfileOptions: AudioOption[];
+  seedAudioOutputFormat: AudioSeedAudioOutputFormat;
+  seedAudioOutputFormatOptions: AudioOption[];
+  seedAudioPitch: number;
+  seedAudioPitchOptions: AudioOption[];
+  seedAudioSampleRate: AudioSeedAudioSampleRate;
+  seedAudioSampleRateOptions: AudioOption[];
+  seedAudioSpeed: number;
+  seedAudioSpeedOptions: AudioOption[];
+  seedAudioVoice: AudioSeedAudioVoice;
+  seedAudioVoiceOptions: AudioOption[];
+  seedAudioVolume: number;
+  seedAudioVolumeOptions: AudioOption[];
   voiceSample: { url: string; name: string } | null;
 }
 
@@ -112,7 +125,6 @@ export function AudioWorkspaceComposerSurface({
   dockDurationLabel,
   dockPriceLabel,
   durationOptions,
-  estimatedDurationSec,
   exportAudioFile,
   generationHint,
   handleGenerate,
@@ -120,16 +132,18 @@ export function AudioWorkspaceComposerSurface({
   handleSelectLatestJob,
   intensity,
   intensityOptions,
-  isGenerating,
+  inProgressMessage,
   isUploadingSource,
   isUploadingVoice,
-  language,
-  languageOptions,
   manualDurationSec,
   modeOptions,
   mood,
   moodOptions,
+  musicBpm,
+  musicBpmOptions,
   musicEnabled,
+  musicModel,
+  musicModelOptions,
   notice,
   onClearSourceVideo,
   onOpenGeneratedPicker,
@@ -139,38 +153,60 @@ export function AudioWorkspaceComposerSurface({
   resultJobId,
   setExportAudioFile,
   setIntensity,
-  setLanguage,
   setManualDurationSec,
+  setMusicBpm,
+  setMusicModel,
   setMood,
   setMusicEnabled,
   setPrompt,
   setScript,
-  setVoiceDelivery,
-  setVoiceGender,
-  setVoiceProfile,
+  setSeedAudioOutputFormat,
+  setSeedAudioPitch,
+  setSeedAudioSampleRate,
+  setSeedAudioSpeed,
+  setSeedAudioVoice,
+  setSeedAudioVolume,
   setVoiceSample,
   showExportToggle,
   showIntensity,
   showManualDuration,
   showMood,
+  showMusicBpm,
+  showMusicModel,
   showMusicToggle,
+  showSeedAudioVoice,
   showVoiceFields,
-  showVoiceGender,
   sourceInputRef,
   sourceVideo,
   sourceVideoRequired,
-  voiceDelivery,
-  voiceDeliveryOptions,
-  voiceGender,
-  voiceGenderOptions,
   voiceInputRef,
-  voiceProfile,
-  voiceProfileOptions,
+  seedAudioOutputFormat,
+  seedAudioOutputFormatOptions,
+  seedAudioPitch,
+  seedAudioPitchOptions,
+  seedAudioSampleRate,
+  seedAudioSampleRateOptions,
+  seedAudioSpeed,
+  seedAudioSpeedOptions,
+  seedAudioVoice,
+  seedAudioVoiceOptions,
+  seedAudioVolume,
+  seedAudioVolumeOptions,
   voiceSample,
 }: AudioWorkspaceComposerSurfaceProps) {
   return (
     <main className="min-h-0 flex-1 overflow-y-auto px-4 py-5 lg:px-7 lg:py-6">
       <div className="mx-auto flex w-full max-w-[980px] flex-col gap-4 pb-28">
+        {inProgressMessage ? (
+          <div
+            role="status"
+            aria-live="polite"
+            className="rounded-[10px] border border-success-border bg-success-bg px-4 py-2 text-sm font-semibold text-success shadow-card"
+          >
+            {inProgressMessage}
+          </div>
+        ) : null}
+
         {notice ? (
           <div role="status" aria-live="polite" className="rounded-[10px] border border-warning-border bg-warning-bg px-4 py-2 text-sm text-warning shadow-card">
             {notice}
@@ -232,15 +268,61 @@ export function AudioWorkspaceComposerSurface({
               className="min-h-[260px] resize-y bg-bg pr-4 text-base leading-7"
               maxLength={composerMaxLength}
             />
-            {pack === 'voice_only' && composerValue.trim().length ? (
-              <p className="mt-2 text-xs text-text-secondary">
-                {formatCopy(copy.controls.estimatedDuration, { seconds: estimatedDurationSec ?? '-' })}
-              </p>
-            ) : null}
           </label>
         </section>
 
         <section className="grid gap-4 lg:grid-cols-2">
+          <AudioOptionsSection
+            copy={copy}
+            durationOptions={durationOptions}
+            exportAudioFile={exportAudioFile}
+            intensity={intensity}
+            intensityOptions={intensityOptions}
+            manualDurationSec={manualDurationSec}
+            mood={mood}
+            moodOptions={moodOptions}
+            musicBpm={musicBpm}
+            musicBpmOptions={musicBpmOptions}
+            musicEnabled={musicEnabled}
+            musicModel={musicModel}
+            musicModelOptions={musicModelOptions}
+            onExportAudioFileChange={setExportAudioFile}
+            onIntensityChange={setIntensity}
+            onManualDurationChange={setManualDurationSec}
+            onMusicBpmChange={setMusicBpm}
+            onMoodChange={setMood}
+            onMusicModelChange={setMusicModel}
+            onMusicEnabledChange={setMusicEnabled}
+            onSeedAudioOutputFormatChange={setSeedAudioOutputFormat}
+            onSeedAudioPitchChange={setSeedAudioPitch}
+            onSeedAudioSampleRateChange={setSeedAudioSampleRate}
+            onSeedAudioSpeedChange={setSeedAudioSpeed}
+            onSeedAudioVoiceChange={setSeedAudioVoice}
+            onSeedAudioVolumeChange={setSeedAudioVolume}
+            pack={pack}
+            seedAudioOutputFormat={seedAudioOutputFormat}
+            seedAudioOutputFormatOptions={seedAudioOutputFormatOptions}
+            seedAudioPitch={seedAudioPitch}
+            seedAudioPitchOptions={seedAudioPitchOptions}
+            seedAudioSampleRate={seedAudioSampleRate}
+            seedAudioSampleRateOptions={seedAudioSampleRateOptions}
+            seedAudioSpeed={seedAudioSpeed}
+            seedAudioSpeedOptions={seedAudioSpeedOptions}
+            seedAudioVoice={seedAudioVoice}
+            seedAudioVoiceOptions={seedAudioVoiceOptions}
+            seedAudioVolume={seedAudioVolume}
+            seedAudioVolumeOptions={seedAudioVolumeOptions}
+            showExportToggle={showExportToggle}
+            showIntensity={showIntensity}
+            showManualDuration={showManualDuration}
+            showMood={showMood}
+            showMusicBpm={showMusicBpm}
+            showMusicModel={showMusicModel}
+            showMusicToggle={showMusicToggle}
+            showSeedAudioVoice={showSeedAudioVoice}
+            showVoiceFields={showVoiceFields}
+          />
+
           {showVoiceFields ? (
             <AudioVoiceSection
               copy={copy}
@@ -251,43 +333,6 @@ export function AudioWorkspaceComposerSurface({
               voiceSample={voiceSample}
             />
           ) : null}
-
-          <AudioOptionsSection
-            copy={copy}
-            durationOptions={durationOptions}
-            exportAudioFile={exportAudioFile}
-            intensity={intensity}
-            intensityOptions={intensityOptions}
-            language={language}
-            languageOptions={languageOptions}
-            manualDurationSec={manualDurationSec}
-            mood={mood}
-            moodOptions={moodOptions}
-            musicEnabled={musicEnabled}
-            onExportAudioFileChange={setExportAudioFile}
-            onIntensityChange={setIntensity}
-            onLanguageChange={setLanguage}
-            onManualDurationChange={setManualDurationSec}
-            onMoodChange={setMood}
-            onMusicEnabledChange={setMusicEnabled}
-            onVoiceDeliveryChange={setVoiceDelivery}
-            onVoiceGenderChange={setVoiceGender}
-            onVoiceProfileChange={setVoiceProfile}
-            pack={pack}
-            showExportToggle={showExportToggle}
-            showIntensity={showIntensity}
-            showManualDuration={showManualDuration}
-            showMood={showMood}
-            showMusicToggle={showMusicToggle}
-            showVoiceFields={showVoiceFields}
-            showVoiceGender={showVoiceGender}
-            voiceDelivery={voiceDelivery}
-            voiceDeliveryOptions={voiceDeliveryOptions}
-            voiceGender={voiceGender}
-            voiceGenderOptions={voiceGenderOptions}
-            voiceProfile={voiceProfile}
-            voiceProfileOptions={voiceProfileOptions}
-          />
         </section>
 
         <div className="xl:hidden">
@@ -301,7 +346,6 @@ export function AudioWorkspaceComposerSurface({
         copy={copy}
         durationLabel={dockDurationLabel}
         generationHint={generationHint}
-        isGenerating={isGenerating}
         onGenerate={handleGenerate}
         priceLabel={dockPriceLabel}
       />

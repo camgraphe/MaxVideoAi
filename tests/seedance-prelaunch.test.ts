@@ -24,7 +24,10 @@ import {
 import { getBaseEnginesByCategory } from '../frontend/src/lib/engines.ts';
 import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
 import { canonicalizeFalModelSlug, getFalEngineBySlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import {
+  FEATURED_EXAMPLE_MEDIA,
+  PREFERRED_MEDIA,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { extractMaxDuration } from '../frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts';
 import { parseMaxDurationNumber } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-score-utils.ts';
 
@@ -33,6 +36,13 @@ const DEFAULT_MAXVIDEOAI_MARGIN_FACTOR = 1.3;
 function targetCustomerUnitPriceUsdPer1kTokens(unitPriceUsdPer1kTokens: number | undefined): number | null {
   if (typeof unitPriceUsdPer1kTokens !== 'number') return null;
   return Number((unitPriceUsdPer1kTokens * DEFAULT_MAXVIDEOAI_MARGIN_FACTOR).toFixed(6));
+}
+
+function collectPublicCopy(value: unknown): string[] {
+  if (typeof value === 'string') return [value];
+  if (Array.isArray(value)) return value.flatMap(collectPublicCopy);
+  if (!value || typeof value !== 'object') return [];
+  return Object.values(value as Record<string, unknown>).flatMap(collectPublicCopy);
 }
 
 test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch surfaces aligned', () => {
@@ -50,12 +60,16 @@ test('Seedance 2 registry centralizes provisional Fal IDs and keeps both launch 
   assert.equal(fast.engine.providerMeta?.modelSlug, 'bytedance/seedance-2.0/fast/text-to-video');
   assert.equal(seedance.engine.status, 'live');
   assert.equal(fast.engine.status, 'live');
-  assert.equal(seedance.engine.modes.includes('ref2v'), true);
-  assert.equal(fast.engine.modes.includes('ref2v'), true);
-  assert.equal(seedance.engine.extend, false);
-  assert.equal(fast.engine.extend, false);
+  assert.deepEqual(seedance.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.deepEqual(fast.engine.modes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.equal(seedance.engine.extend, true);
+  assert.equal(fast.engine.extend, true);
   assert.equal(seedance.modes.some((mode) => mode.mode === 'ref2v'), true);
   assert.equal(fast.modes.some((mode) => mode.mode === 'ref2v'), true);
+  assert.equal(seedance.modes.some((mode) => mode.mode === 'v2v'), true);
+  assert.equal(seedance.modes.some((mode) => mode.mode === 'extend'), true);
+  assert.equal(fast.modes.some((mode) => mode.mode === 'v2v'), true);
+  assert.equal(fast.modes.some((mode) => mode.mode === 'extend'), true);
   assert.deepEqual(seedance.engine.resolutions, ['480p', '720p', '1080p', '4k']);
   assert.deepEqual(fast.engine.resolutions, ['480p', '720p']);
   assert.deepEqual(seedance.engine.aspectRatios, ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
@@ -264,8 +278,9 @@ test('Seedance benchmark specs stay aligned with the live MaxVideoAI product sur
   assert.ok(fast);
   assert.ok(mini);
 
-  assert.equal(standard.keySpecs?.videoToVideo, 'Not supported');
+  assert.equal(standard.keySpecs?.videoToVideo, 'Supported (video edit and extend)');
   assert.equal(standard.keySpecs?.firstLastFrame, 'Supported (1 start image + optional end image in i2v)');
+  assert.equal(standard.keySpecs?.referenceVideo, 'Supported (up to 3 video references, video edit, or extension clips)');
   assert.equal(
     standard.keySpecs?.maxResolution,
     '4K on the standard Dreamina Seedance 2.0 route'
@@ -276,8 +291,9 @@ test('Seedance benchmark specs stay aligned with the live MaxVideoAI product sur
   assert.equal(standard.keySpecs?.pricePerSecond ?? null, null);
   assert.equal(standard.keySpecs?.releaseDate ?? null, null);
 
-  assert.equal(fast.keySpecs?.videoToVideo, 'Not supported');
+  assert.equal(fast.keySpecs?.videoToVideo, 'Supported (video edit and extend)');
   assert.equal(fast.keySpecs?.firstLastFrame, 'Supported (1 start image + optional end image in i2v)');
+  assert.equal(fast.keySpecs?.referenceVideo, 'Supported (up to 3 video references, video edit, or extension clips)');
   assert.equal(fast.keySpecs?.maxResolution, '720p');
   assert.equal(fast.keySpecs?.maxDuration, '15s');
   assert.deepEqual(fast.keySpecs?.aspectRatios, ['Auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
@@ -287,12 +303,32 @@ test('Seedance benchmark specs stay aligned with the live MaxVideoAI product sur
 
   assert.equal(mini.keySpecs?.maxResolution, '480p / 720p');
   assert.equal(mini.keySpecs?.maxDuration, '4-15s');
+  assert.equal(mini.keySpecs?.videoToVideo, 'Supported (video edit and extend)');
+  assert.equal(mini.keySpecs?.referenceVideo, 'Supported (up to 3 video references, video edit, or extension clips)');
   assert.equal(mini.keySpecs?.audioOutput, 'Supported');
   assert.equal(mini.keySpecs?.nativeAudioGeneration, 'Supported');
   assert.equal(mini.keySpecs?.lipSync, 'Supported');
   assert.deepEqual(extractMaxDuration(String(mini.keySpecs?.maxDuration), null), { label: '15s', value: 15 });
   assert.equal(parseMaxDurationNumber(String(mini.keySpecs?.maxDuration)), 15);
   assert.deepEqual(extractMaxDuration('15s output (3-60s source for video edit)', null), { label: '15s', value: 15 });
+});
+
+test('Seedance public copy does not name implementation providers', () => {
+  const providerPattern = /BytePlus|byteplus|fal\.ai|\bFal\b/;
+  ['seedance-2-0', 'seedance-2-0-fast', 'seedance-2-0-mini'].forEach((engineId) => {
+    const entry = listFalEngines().find((engine) => engine.id === engineId);
+    assert.ok(entry, `Missing engine ${engineId}`);
+    const publicCopy = collectPublicCopy({
+      marketingName: entry.marketingName,
+      label: entry.engine.label,
+      description: entry.engine.description,
+      seo: entry.engine.seo,
+      faq: entry.engine.faq,
+      promptHints: entry.engine.promptHints,
+      surfaces: entry.surfaces,
+    }).join('\n');
+    assert.doesNotMatch(publicCopy, providerPattern, `${engineId} public copy should hide implementation providers`);
+  });
 });
 
 test('Seedance 2 marketing copy distinguishes standard 4K from Fast 720p', () => {
@@ -345,6 +381,11 @@ test('Public marketing media fetchers stay visibility-safe for pinned and prompt
     hero: 'job_d9481a70-db5c-4072-8ab7-adc82a8a5100',
     demo: 'job_d63d5269-6200-47d6-814d-9992b9a720be',
   });
+  assert.deepEqual(FEATURED_EXAMPLE_MEDIA['dreamina-seedance-2-0-mini'], [
+    'job_f2605150-0d2a-48ad-b1a9-bba8891d568b',
+    'job_f9e077a0-2568-464e-a4e6-962537320dec',
+    'job_2581d0af-23fc-46dd-a1df-049cac1824c1',
+  ]);
 });
 
 test('Seedance becomes the app and marketing priority family ahead of Sora', () => {
@@ -355,12 +396,22 @@ test('Seedance becomes the app and marketing priority family ahead of Sora', () 
 
   assert.deepEqual(
     MARKETING_NAV_MODELS.map((item) => item.key),
-    ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1', 'veo-3-1-lite', 'kling-o3-pro', 'kling-o3-4k']
+    [
+      'seedance-2-0',
+      'seedance-2-0-fast',
+      'ltx-2-3-fast',
+      'veo-3-1',
+      'gemini-omni-flash',
+      'veo-3-1-lite',
+      'kling-o3-pro',
+      'kling-o3-4k',
+    ]
   );
   assert.deepEqual(
     MARKETING_NAV_COMPARE.map((item) => item.key),
     [
       'seedance-2-0-vs-veo-3-1',
+      'gemini-omni-flash-vs-veo-3-1',
       'kling-3-pro-vs-kling-o3-pro',
       'ltx-2-3-pro-vs-veo-3-1',
       'seedance-2-0-vs-seedance-2-0-fast',
@@ -389,6 +440,7 @@ test('Header model menu promotes Seedance Fast while keeping the Veo family expa
     'seedance-2-0-fast',
     'ltx-2-3-fast',
     'veo-3-1',
+    'gemini-omni-flash',
     'veo-3-1-lite',
     'kling-o3-pro',
     'kling-o3-4k',
@@ -442,13 +494,25 @@ test('Examples family current model groups do not classify new delivery models a
   assert.deepEqual(getExampleFamilyCurrentModelSlugs('ltx'), ['ltx-2-3-pro', 'ltx-2-3-fast']);
 });
 
-test('Engine select uses the same family priority as the examples hub', () => {
-  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
-  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling'];
+test('Engine select keeps its app-specific family priority stable', () => {
+  const expectedPriority = [
+    'seedance',
+    'kling',
+    'veo',
+    'happy-horse',
+    'luma',
+    'sora',
+    'ltx',
+    'wan',
+    'pika',
+    'hailuo',
+  ];
+  assert.deepEqual(ENGINE_SELECT_FAMILY_PRIORITY, expectedPriority);
+  const families = ['sora', 'ltx', 'seedance', 'veo', 'happy-horse', 'wan', 'kling', 'luma', 'pika', 'hailuo'];
   const sorted = families
     .slice()
     .sort((a, b) => getEngineSelectFamilyRank({ family: a }) - getEngineSelectFamilyRank({ family: b }));
-  assert.deepEqual(sorted, ['veo', 'seedance', 'ltx', 'kling', 'wan', 'happy-horse', 'sora']);
+  assert.deepEqual(sorted, expectedPriority);
 });
 
 test('Homepage admin hero pricing labels preserve per-second suffixes', () => {

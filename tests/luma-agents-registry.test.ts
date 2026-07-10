@@ -109,7 +109,14 @@ test('Luma Ray 3.2 exposes direct Luma generation, Modify, and Reframe controls'
   assert.equal(entry.engine.audio, false);
   assert.equal(entry.engine.maxDurationSec, 30);
   assert.equal(entry.surfaces.compare.includeInHub, true);
-  assert.deepEqual(entry.surfaces.compare.publishedPairs, ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'luma-ray-2']);
+  assert.deepEqual(entry.surfaces.compare.publishedPairs, [
+    'seedance-2-0',
+    'kling-3-pro',
+    'veo-3-1',
+    'veo-3-1-fast',
+    'dreamina-seedance-2-0-mini',
+    'luma-ray-2',
+  ]);
 
   assert.deepEqual(field(entry, 'duration').values, ['5s', '10s']);
   assert.deepEqual(field(entry, 'duration').modes, ['t2v', 'i2v', 'v2v']);

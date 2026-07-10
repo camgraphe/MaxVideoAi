@@ -4,6 +4,7 @@ import { splitLocaleFromPath } from './routing-locale';
 
 const QUERY_PARAM_STRIP_PREFIXES = [
   '/models',
+  '/pay-as-you-go-ai-video-generator',
   '/pricing',
   '/examples',
   '/blog',

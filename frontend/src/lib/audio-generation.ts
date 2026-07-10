@@ -2,21 +2,68 @@ import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 export const AUDIO_SURFACE = 'audio' as const;
 export const AUDIO_MIN_DURATION_SEC = 3;
-export const AUDIO_MAX_DURATION_SEC = 190;
+export const AUDIO_MAX_DURATION_SEC = 184;
 export const AUDIO_PROMPT_MAX_LENGTH = 2000;
 export const AUDIO_SCRIPT_MAX_LENGTH = 5000;
 export const AUDIO_VOICE_ESTIMATE_WORDS_PER_MINUTE = 150;
-export const AUDIO_MUSIC_DURATION_OPTIONS_SEC = [3, 5, 8, 10, 15, 20, 30, 45, 60, 90, 120, 180, 190] as const;
-export const AUDIO_PRICING_MARGIN_PERCENT = 0.6;
-export const AUDIO_TTS_CHARS_PER_BILLING_UNIT = 1000;
-export const AUDIO_LONG_MUSIC_BILLING_BLOCK_SEC = 30;
+export const AUDIO_PRICING_MARGIN_PERCENT = 1.5;
+export const AUDIO_SEED_AUDIO_MODEL_ID = 'bytedance/seed-audio-1.0';
+export const AUDIO_LYRIA3_CLIP_MODEL_ID = 'lyria-3-clip-preview';
+export const AUDIO_LYRIA3_PRO_MODEL_ID = 'lyria-3-pro-preview';
+export const AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC = 30;
+export const AUDIO_LYRIA3_PRO_MAX_DURATION_SEC = 184;
+export const AUDIO_LYRIA3_MODEL_VALUES = ['clip', 'pro'] as const;
+export type AudioLyria3Model = (typeof AUDIO_LYRIA3_MODEL_VALUES)[number];
+export const DEFAULT_AUDIO_LYRIA3_MODEL: AudioLyria3Model = 'clip';
+export const AUDIO_LYRIA3_BPM_VALUES = [70, 90, 110, 130, 150] as const;
+export type AudioLyria3Bpm = (typeof AUDIO_LYRIA3_BPM_VALUES)[number];
+export const DEFAULT_AUDIO_LYRIA3_BPM: AudioLyria3Bpm = 110;
+export const AUDIO_LYRIA3_CLIP_DURATION_OPTIONS_SEC = [30] as const;
+export const AUDIO_LYRIA3_PRO_DURATION_OPTIONS_SEC = [30, 45, 60, 90, 120, 180, 184] as const;
+export const AUDIO_MUSIC_DURATION_OPTIONS_SEC = AUDIO_LYRIA3_PRO_DURATION_OPTIONS_SEC;
 
-const AUDIO_PRICE_MINIMAX_MUSIC_2_6_CENTS_PER_AUDIO = 15;
-const AUDIO_PRICE_STABLE_AUDIO_25_CENTS_PER_AUDIO = 20;
+export const AUDIO_SEED_AUDIO_VOICE_VALUES = [
+  'default',
+  'vivi_mixed_en_zh_ja_es_id',
+  'mindy_en_es_id_pt_zh',
+  'kian_en_zh',
+  'cedric_en_zh',
+  'sophie_en_zh',
+  'jean_en_zh',
+  'magnus_en_zh',
+  'mabel_en_zh',
+  'nadia_en_zh',
+  'opal_en_zh',
+  'pearl_en_zh',
+  'quentin_en_zh',
+  'corinne_mixed_en_zh',
+  'esther_mixed_en_zh',
+  'lyla_mixed_en_zh',
+  'tracy_es_zh',
+  'sandy_es_mixed_en_zh',
+  'felix_zh',
+  'celeste_zh',
+  'monkey_king_zh',
+] as const;
+export type AudioSeedAudioVoice = (typeof AUDIO_SEED_AUDIO_VOICE_VALUES)[number];
+
+export const AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES = ['mp3', 'wav', 'pcm', 'ogg_opus'] as const;
+export type AudioSeedAudioOutputFormat = (typeof AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES)[number];
+
+export const AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES = [8000, 16000, 24000, 32000, 44100, 48000] as const;
+export type AudioSeedAudioSampleRate = (typeof AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES)[number];
+
+export const DEFAULT_SEED_AUDIO_VOICE: AudioSeedAudioVoice = 'default';
+export const DEFAULT_SEED_AUDIO_OUTPUT_FORMAT: AudioSeedAudioOutputFormat = 'mp3';
+export const DEFAULT_SEED_AUDIO_SAMPLE_RATE: AudioSeedAudioSampleRate = 24000;
+export const DEFAULT_SEED_AUDIO_SPEED = 1;
+export const DEFAULT_SEED_AUDIO_VOLUME = 1;
+export const DEFAULT_SEED_AUDIO_PITCH = 0;
+
+const AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO = 4;
+const AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO = 8;
 const AUDIO_PRICE_MIRELO_SFX_CENTS_PER_SECOND = 1;
-const AUDIO_PRICE_GEMINI_TTS_CENTS_PER_1000_CHARS = 15;
-const AUDIO_PRICE_MINIMAX_VOICE_CLONE_CENTS_PER_REQUEST = 150;
-const AUDIO_PRICE_MINIMAX_VOICE_CLONE_PREVIEW_CENTS_PER_1000_CHARS = 30;
+const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 
 export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'sfx_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
@@ -78,8 +125,8 @@ const AUDIO_PACK_CONFIG: Record<AudioPackId, AudioPackConfig> = {
   voice_only: {
     engineId: 'audio-voice-only',
     billingProductKey: 'audio-voice-only',
-    label: 'Voice Over Only',
-    description: 'Cinematic-grade narration or dialogue as a standalone audio file.',
+    label: 'Voice Over',
+    description: 'Seed Audio narration or dialogue as a standalone audio file.',
     includesVoice: true,
     audioOnly: true,
     requiresVideo: false,
@@ -140,12 +187,20 @@ export type AudioGenerateRequestBody = {
   prompt?: string;
   mood?: string;
   intensity?: string;
+  musicModel?: string;
+  musicBpm?: number | string;
   script?: string;
   voiceSampleUrl?: string;
   voiceGender?: string;
   voiceProfile?: string;
   voiceDelivery?: string;
   language?: string;
+  seedAudioVoice?: string;
+  seedAudioOutputFormat?: string;
+  seedAudioSampleRate?: number | string;
+  seedAudioSpeed?: number | string;
+  seedAudioVolume?: number | string;
+  seedAudioPitch?: number | string;
   durationSec?: number;
   musicEnabled?: boolean;
   exportAudioFile?: boolean;
@@ -188,6 +243,18 @@ export function coerceAudioIntensity(value: unknown): AudioIntensity | null {
   return AUDIO_INTENSITY_VALUES.find((entry) => entry === normalized) ?? null;
 }
 
+export function coerceAudioLyria3Model(value: unknown): AudioLyria3Model | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_LYRIA3_MODEL_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceAudioLyria3Bpm(value: unknown): AudioLyria3Bpm | null {
+  const numeric = typeof value === 'number' ? value : typeof value === 'string' && value.trim() ? Number(value.trim()) : NaN;
+  if (!Number.isFinite(numeric)) return null;
+  return AUDIO_LYRIA3_BPM_VALUES.find((entry) => entry === Math.round(numeric)) ?? null;
+}
+
 export function coerceAudioVoiceMode(value: unknown): AudioVoiceMode | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
@@ -216,6 +283,24 @@ export function coerceAudioLanguage(value: unknown): AudioLanguage | null {
   if (typeof value !== 'string') return null;
   const normalized = value.trim().toLowerCase();
   return AUDIO_LANGUAGE_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceSeedAudioVoice(value: unknown): AudioSeedAudioVoice | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return AUDIO_SEED_AUDIO_VOICE_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceSeedAudioOutputFormat(value: unknown): AudioSeedAudioOutputFormat | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim().toLowerCase();
+  return AUDIO_SEED_AUDIO_OUTPUT_FORMAT_VALUES.find((entry) => entry === normalized) ?? null;
+}
+
+export function coerceSeedAudioSampleRate(value: unknown): AudioSeedAudioSampleRate | null {
+  const numeric = typeof value === 'number' ? value : typeof value === 'string' && value.trim() ? Number(value.trim()) : NaN;
+  if (!Number.isFinite(numeric)) return null;
+  return AUDIO_SEED_AUDIO_SAMPLE_RATE_VALUES.find((entry) => entry === Math.round(numeric)) ?? null;
 }
 
 export function resolveAudioVoiceMode(input: { pack: AudioPackId; voiceSampleUrl?: string | null }): AudioVoiceMode | null {
@@ -257,28 +342,40 @@ function countAudioBillingCharacters(script?: string | null, fallbackDurationSec
   return 1;
 }
 
-function countCharacterBillingUnits(script?: string | null, fallbackDurationSec?: number | null): number {
-  return Math.max(1, Math.ceil(countAudioBillingCharacters(script, fallbackDurationSec) / AUDIO_TTS_CHARS_PER_BILLING_UNIT));
+function resolveLyria3ModelForPricing(durationSec: number, musicModel?: AudioLyria3Model | null): AudioLyria3Model {
+  if (musicModel) return musicModel;
+  return durationSec <= AUDIO_LYRIA3_CLIP_MAX_DURATION_SEC ? 'clip' : 'pro';
 }
 
-function buildMusicVendorCostComponent(durationSec: number) {
-  if (durationSec <= 20) {
+function buildMusicVendorCostComponent(input: { durationSec: number; musicModel?: AudioLyria3Model | null }) {
+  if (resolveLyria3ModelForPricing(input.durationSec, input.musicModel) === 'clip') {
     return {
-      type: 'music_minimax_music_2_6',
-      label: 'MiniMax Music 2.6',
-      model: 'fal-ai/minimax-music/v2.6',
-      unit: 'audio',
-      amountCents: AUDIO_PRICE_MINIMAX_MUSIC_2_6_CENTS_PER_AUDIO,
+      type: 'music_google_lyria3_clip',
+      label: 'Google Lyria 3 Clip',
+      model: AUDIO_LYRIA3_CLIP_MODEL_ID,
+      unit: '30_sec_clip',
+      amountCents: AUDIO_PRICE_LYRIA3_CLIP_CENTS_PER_AUDIO,
     };
   }
-  const billingBlocks = Math.max(1, Math.ceil(durationSec / AUDIO_LONG_MUSIC_BILLING_BLOCK_SEC));
   return {
-    type: 'music_stable_audio_25',
-    label: 'Stable Audio 2.5',
-    model: 'fal-ai/stable-audio-25/text-to-audio',
-    unit: '30_sec_block',
-    units: billingBlocks,
-    amountCents: billingBlocks * AUDIO_PRICE_STABLE_AUDIO_25_CENTS_PER_AUDIO,
+    type: 'music_google_lyria3_pro',
+    label: 'Google Lyria 3 Pro',
+    model: AUDIO_LYRIA3_PRO_MODEL_ID,
+    unit: 'song',
+    amountCents: AUDIO_PRICE_LYRIA3_PRO_CENTS_PER_AUDIO,
+  };
+}
+
+function buildVoiceVendorCostComponent(durationSec: number) {
+  const exactMinutes = normalizeAudioDuration(durationSec) / 60;
+  const billedMinutes = Number(exactMinutes.toFixed(2));
+  return {
+    type: 'voice_seed_audio_1_0',
+    label: 'Seed Audio 1.0',
+    model: AUDIO_SEED_AUDIO_MODEL_ID,
+    unit: 'minute',
+    units: billedMinutes,
+    amountCents: Math.max(1, Math.ceil(exactMinutes * AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE - 1e-9)),
   };
 }
 
@@ -287,6 +384,7 @@ function buildAudioVendorCostComponents(input: {
   durationSec: number;
   voiceMode?: AudioVoiceMode | null;
   script?: string | null;
+  musicModel?: AudioLyria3Model | null;
   musicEnabled?: boolean | null;
 }) {
   const config = getAudioPackConfig(input.pack);
@@ -315,41 +413,20 @@ function buildAudioVendorCostComponents(input: {
     input.pack === 'music_only' ||
     ((input.pack === 'cinematic' || input.pack === 'cinematic_voice') && (input.musicEnabled ?? config.defaultMusicEnabled));
   if (shouldPriceMusic) {
-    components.push(buildMusicVendorCostComponent(durationSec));
+    components.push(buildMusicVendorCostComponent({
+      durationSec,
+      musicModel: input.musicModel,
+    }));
   }
 
   if (config.includesVoice) {
-    const characterUnits = countCharacterBillingUnits(input.script, durationSec);
-    if (input.voiceMode === 'clone') {
-      components.push({
-        type: 'voice_clone_minimax',
-        label: 'MiniMax Voice Clone',
-        model: 'fal-ai/minimax/voice-clone',
-        unit: 'request',
-        units: 1,
-        amountCents: AUDIO_PRICE_MINIMAX_VOICE_CLONE_CENTS_PER_REQUEST,
-      });
-      components.push({
-        type: 'voice_clone_preview_minimax',
-        label: 'MiniMax Voice Clone preview',
-        model: 'fal-ai/minimax/voice-clone',
-        unit: '1000_chars',
-        units: characterUnits,
-        amountCents: characterUnits * AUDIO_PRICE_MINIMAX_VOICE_CLONE_PREVIEW_CENTS_PER_1000_CHARS,
-      });
-    } else {
-      components.push({
-        type: 'tts_gemini_3_1_flash',
-        label: 'Gemini 3.1 Flash TTS',
-        model: 'fal-ai/gemini-3.1-flash-tts',
-        unit: '1000_chars',
-        units: characterUnits,
-        amountCents: characterUnits * AUDIO_PRICE_GEMINI_TTS_CENTS_PER_1000_CHARS,
-      });
-    }
+    components.push(buildVoiceVendorCostComponent(durationSec));
   }
 
-  return components.length ? components : [buildMusicVendorCostComponent(durationSec)];
+  return components.length ? components : [buildMusicVendorCostComponent({
+    durationSec,
+    musicModel: input.musicModel,
+  })];
 }
 
 export function buildAudioPricingSnapshot(input: {
@@ -358,6 +435,8 @@ export function buildAudioPricingSnapshot(input: {
   voiceMode?: AudioVoiceMode | null;
   mood?: AudioMood | null;
   script?: string | null;
+  musicModel?: AudioLyria3Model | null;
+  musicBpm?: number | null;
   musicEnabled?: boolean | null;
 }): PricingSnapshot {
   const durationSec = normalizeAudioDuration(input.durationSec);
@@ -367,6 +446,7 @@ export function buildAudioPricingSnapshot(input: {
     durationSec,
     voiceMode,
     script: input.script,
+    musicModel: input.musicModel,
     musicEnabled: input.musicEnabled,
   });
   const baseComponent = vendorCostComponents[0]!;
@@ -406,6 +486,8 @@ export function buildAudioPricingSnapshot(input: {
       pricingModel: 'audio_provider_cost_plus_margin',
       vendorCostCents: vendorSubtotalCents,
       marginPercent: AUDIO_PRICING_MARGIN_PERCENT,
+      musicModel: input.musicModel ?? null,
+      musicBpm: input.musicBpm ?? null,
       musicEnabled: input.musicEnabled ?? null,
       scriptBillingCharacters: getAudioPackConfig(input.pack).includesVoice
         ? countAudioBillingCharacters(input.script, durationSec)

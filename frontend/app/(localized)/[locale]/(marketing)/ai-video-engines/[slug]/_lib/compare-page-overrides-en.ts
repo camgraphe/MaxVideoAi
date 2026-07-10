@@ -92,6 +92,11 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       },
       heroIntro:
         'Use Seedance 2.0 when quality and consistency matter. Use Seedance 2.0 Fast when you want quicker, cheaper prompt tests and rapid iteration. Compare identical prompts, side-by-side outputs, pricing, speed, and quality tradeoffs before choosing the right Seedance workflow.',
+      quickVerdict: {
+        title: 'Quick verdict',
+        body:
+          'Seedance 2.0 vs Seedance 2.0 Fast is mainly a quality versus iteration-speed choice. Seedance 2.0 is better for final 1080p or 4K shots, stronger consistency, reference-driven work, native audio, and polished output. Seedance 2.0 Fast is better for cheaper 480p or 720p drafts, prompt testing, timing checks, and fast creative exploration before upgrading the best idea to the standard Seedance 2.0 route.',
+      },
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -123,6 +128,16 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
               'Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper tests, timing checks, and early iteration.',
           },
           {
+            question: 'Seedance 2.0 Fast vs normal: what is the difference?',
+            answer:
+              '"Normal" usually means the standard Seedance 2.0 route. Use Fast for lower-cost 480p/720p draft passes and timing checks; use standard Seedance 2.0 when the shot needs stronger polish, 1080p or 4K delivery, and final-quality consistency.',
+          },
+          {
+            question: 'Do Seedance 2.0 and Fast support video edit and extend?',
+            answer:
+              'Yes. On MaxVideoAI, Seedance 2.0 and Seedance 2.0 Fast support video edit and extend workflows, plus text-to-video, image-to-video, and reference-to-video.',
+          },
+          {
             question: 'Is Seedance 2.0 better for polished Seedance video output?',
             answer:
               'Yes. Seedance 2.0 is the better fit when the goal is polished Seedance video output, while Fast is the better fit when the goal is to test ideas and compare workflows quickly.',
@@ -138,7 +153,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page is a scorecard and specs comparison for now; Mini comparison videos are not included yet.',
+        'Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page now includes matched side-by-side Mini vs Seedance 2.0 videos using the same prompts, plus scorecard, specs, and pricing context.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -170,9 +185,9 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
               'Choose Seedance 2.0 for final-quality hero shots, stronger visual polish, higher-resolution delivery, and work where the best Seedance output matters more than per-variant cost.',
           },
           {
-            question: 'Why are there no comparison videos on this Mini page yet?',
+            question: 'Are Mini comparison videos included here?',
             answer:
-              'Mini pages use scorecards, specs, and positioning for now. Side-by-side Mini comparison videos will be added after curated outputs are ready.',
+              'Yes. This Seedance family page uses curated side-by-side Mini and Seedance 2.0 outputs generated from the same prompts, so the video section is directly comparable.',
           },
         ],
       },
@@ -185,7 +200,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Use Seedance 2.0 Fast when the priority is quick Seedance draft speed, timing checks, and a fast bridge back to the flagship model. Use Seedance 2.0 Mini as the lower-cost batch volume option for many ecommerce or social variants, video edits, extensions, and repeated marketing tests. This page is a scorecard and specs comparison for now, without Mini comparison videos.',
+        'Use Seedance 2.0 Fast when the priority is quick Seedance draft speed, timing checks, and a fast bridge back to the flagship model. Use Seedance 2.0 Mini as the lower-cost batch volume option for many ecommerce or social variants, video edits, extensions, and repeated marketing tests. This page now includes matched side-by-side Mini vs Fast videos using the same prompts, plus scorecard, specs, and pricing context.',
       primaryLinksTitle: 'Recommended next steps',
       primaryLinks: [
         {
@@ -219,7 +234,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Does this page include side-by-side videos?',
             answer:
-              'Not yet. This Mini comparison currently uses scorecards, specs, and decision copy only, so it does not request or show comparison video slots.',
+              'Yes. This Seedance family page uses curated side-by-side Mini and Fast outputs generated from the same prompts, so the video section is directly comparable.',
           },
         ],
       },
@@ -643,6 +658,85 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
             question: 'Which model is better for product ads?',
             answer:
               'Happy Horse 1.1 is better for spokesperson or UGC-style product ads with dialogue. LTX 2.3 Pro is better for polished product motion, higher-resolution finishing, and edit-heavy production.',
+          },
+        ],
+      },
+    },
+    'gemini-omni-flash-vs-veo-3-1': {
+      meta: {
+        title: 'Gemini Omni Flash vs Veo 3.1: Google Video Specs & Best Uses',
+        description:
+          'Compare Gemini Omni Flash and Veo 3.1 for stateful editing, references, source-video edits, first/last-frame, extend, 720p limits and Google video pricing.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Use Gemini Omni Flash when the Google video job needs stateful follow-up editing, larger image reference stacks, short source-video edits, or prompt-directed sound in a 720p preview route. Use Veo 3.1 when you need the mature Veo workflow for first/last-frame control, extend, stronger delivery resolution choices, and a more established production path. This is a scorecard/specs page until curated Omni comparison videos exist.',
+      quickVerdict: {
+        title: 'Quick verdict',
+        body:
+          'Gemini Omni Flash vs Veo 3.1 is mainly an interaction model choice. Omni Flash is the better fit for conversational refine, previous interaction id workflows, reference-to-video with more stills, and short source-video edits. Veo 3.1 is the safer default for polished first-pass Veo delivery, first/last-frame, extend, and higher-resolution output paths.',
+      },
+      topCards: [
+        {
+          title: 'Choose Omni Flash for refine',
+          body:
+            'Omni Flash is built around Google Interactions, so the previous interaction id and store/refine flow are central product controls in MaxVideoAI.',
+        },
+        {
+          title: 'Choose Veo 3.1 for delivery',
+          body:
+            'Veo 3.1 remains the stronger default when the brief needs first/last-frame, extend, more mature Veo routing, or higher-resolution finishing.',
+        },
+        {
+          title: 'Reference strategy',
+          body:
+            'Omni Flash can use larger reference image stacks. Veo 3.1 remains better when the goal is a controlled cinematic Veo clip rather than iterative editing.',
+        },
+        {
+          title: 'Launch stage',
+          body:
+            'Omni Flash is exposed as limited preview. Veo 3.1 is the better established Google video route on MaxVideoAI today.',
+        },
+      ],
+      primaryLinksTitle: 'Recommended next steps',
+      primaryLinks: [
+        {
+          href: '/models/gemini-omni-flash',
+          label: 'Open Gemini Omni Flash model page',
+        },
+        {
+          href: '/models/veo-3-1',
+          label: 'Open Veo 3.1 model page',
+        },
+        {
+          href: '/pricing#gemini-omni-flash-pricing',
+          label: 'Check Omni Flash pricing',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Short answers for choosing between Google Omni interaction workflows and the main Veo production route.',
+        items: [
+          {
+            question: 'Is Gemini Omni Flash better than Veo 3.1?',
+            answer:
+              'Not generally. Gemini Omni Flash is better for stateful refine, previous interaction id workflows, larger reference stacks and source-video edits. Veo 3.1 remains better for mature Veo delivery controls, first/last-frame, extend and higher-resolution paths.',
+          },
+          {
+            question: 'Which one should I use for reference-to-video?',
+            answer:
+              'Use Omni Flash when you need a larger reference stack or plan to refine the same interaction. Use Veo 3.1 when the goal is a polished Veo render with a more established cinematic output path.',
+          },
+          {
+            question: 'Which one supports first/last-frame and extend?',
+            answer:
+              'Veo 3.1 is the page to use for first/last-frame and extend. The current Gemini Omni Flash preview route on MaxVideoAI does not expose those controls.',
+          },
+          {
+            question: 'Why is Omni Flash listed as preview?',
+            answer:
+              'Google documents Gemini Omni Flash as a preview model. MaxVideoAI keeps public routing gated and labels pricing/specs as preview until quota and SKU behavior are stable.',
           },
         ],
       },

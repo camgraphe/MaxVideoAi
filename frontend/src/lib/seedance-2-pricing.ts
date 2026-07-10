@@ -47,7 +47,7 @@ function normalizeAspectRatio(
 export function isSeedance2TokenPricing(
   details?: EnginePricingDetails | null
 ): details is EnginePricingDetails & { tokenPricing: NonNullable<EnginePricingDetails['tokenPricing']> } {
-  return details?.tokenPricing?.model === 'fal_tokens';
+  return details?.tokenPricing?.model === 'byteplus_tokens' || details?.tokenPricing?.model === 'fal_tokens';
 }
 
 export function resolveSeedance2Dimensions(

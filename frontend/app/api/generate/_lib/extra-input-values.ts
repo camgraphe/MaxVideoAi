@@ -112,7 +112,11 @@ export function validateExtraInputValues(params: {
         if (parsed === '') {
           continue;
         }
-        if (Array.isArray(schemaField.values) && !schemaField.values.some((value) => String(value) === String(parsed))) {
+        if (
+          Array.isArray(schemaField.values) &&
+          schemaField.values.length > 0 &&
+          !schemaField.values.some((value) => String(value) === String(parsed))
+        ) {
           return {
             ok: false,
             status: 400,

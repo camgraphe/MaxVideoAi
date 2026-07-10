@@ -120,7 +120,7 @@ export interface TokenVideoPricingDimensions {
 export type TokenVideoPricingInputType = 'no_video_input' | 'video_input';
 
 export interface TokenVideoPricing {
-  model: 'fal_tokens';
+  model: 'byteplus_tokens' | 'fal_tokens';
   unitPriceUsdPer1kTokens: number;
   unitPriceUsdPer1kTokensByInputType?: Partial<Record<TokenVideoPricingInputType, number>>;
   unitPriceUsdPer1kTokensByResolution?: Partial<Record<Resolution, number>>;

@@ -17,14 +17,14 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
   latencyTier: 'standard',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'ref2v'],
+  modes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
   maxDurationSec: 15,
   resolutions: ['480p', '720p', '1080p', '4k'],
   aspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
   fps: [24],
   audio: true,
   upscale4k: false,
-  extend: false,
+  extend: true,
   motionControls: true,
   keyframes: false,
   params: {},
@@ -32,6 +32,7 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
     imageMaxMB: 30,
     videoMaxMB: 50,
     audioMaxMB: 15,
+    videoMaxDurationSec: 15,
   },
   inputSchema: {
     required: [
@@ -90,10 +91,21 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         id: 'image_urls',
         type: 'image',
         label: 'Reference images (up to 9)',
-        description: 'Optional reference stills for identity, styling, and continuity. Create clean references with Seedream first for better composition and consistency.',
-        modes: ['ref2v'],
+        description: 'Optional visual references for Reference to Video or Video Edit. Create clean references with Seedream first for better composition and consistency.',
+        modes: ['ref2v', 'v2v'],
         minCount: 1,
         maxCount: 9,
+        source: 'either',
+      },
+      {
+        id: 'video_url',
+        type: 'video',
+        label: 'Source video',
+        description: 'Required source video for video-to-video editing.',
+        modes: ['v2v'],
+        requiredInModes: ['v2v'],
+        minCount: 1,
+        maxCount: 1,
         source: 'either',
       },
       {
@@ -109,13 +121,25 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
         source: 'either',
       },
       {
+        id: 'extension_source_videos',
+        type: 'video',
+        label: 'Source clips to extend (up to 3)',
+        description: 'Add one source clip to extend forward or backward, or 2-3 clips to stitch a transition.',
+        modes: ['extend'],
+        requiredInModes: ['extend'],
+        minCount: 1,
+        maxCount: 3,
+        source: 'either',
+        slotLabelPattern: 'Source clip {n}',
+      },
+      {
         id: 'audio_urls',
         type: 'audio',
         label: 'Reference audio clips (up to 3)',
-        description: 'Optional soundtrack, dialogue, or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
+        description: 'Optional soundtrack, dialogue, or rhythm references for reference or video-edit runs. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
         minCount: 0,
         maxCount: 3,
-        modes: ['ref2v'],
+        modes: ['ref2v', 'v2v'],
         source: 'either',
       },
       {
@@ -209,6 +233,33 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           notes: 'Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files with 12 total references max.',
         },
       },
+      {
+        mode: 'v2v',
+        falModelId: SEEDANCE_2_ENDPOINTS.standard.v2v,
+        ui: {
+          modes: ['v2v'],
+          duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
+          resolution: ['480p', '720p', '1080p', '4k'],
+          aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 50,
+          audioToggle: true,
+          notes: 'Video edit uses a source clip plus optional image and audio references for 4-15s Standard Seedance 2.0 edits.',
+        },
+      },
+      {
+        mode: 'extend',
+        falModelId: SEEDANCE_2_ENDPOINTS.standard.extend,
+        ui: {
+          modes: ['extend'],
+          duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
+          resolution: ['480p', '720p', '1080p', '4k'],
+          aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+          maxUploadMB: 50,
+          audioToggle: true,
+          notes: 'Extend continues a source clip forward or backward, or stitches up to 3 clips into one coherent Standard Seedance 2.0 video.',
+        },
+      },
     ],
     defaultFalModelId: SEEDANCE_2_ENDPOINTS.standard.t2v,
     seo: {
@@ -219,7 +270,7 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, and reference-to-video workflows with 480p/720p/1080p/4K output, auto or 4-15 second durations, multimodal references, and native audio generation.',
+      'Seedance 2.0 supports text-to-video, image-to-video with optional end frame, reference-to-video, video edit, and extend workflows with 480p/720p/1080p/4K output, auto or 4-15 second durations, multimodal references, and native audio generation.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
       imagePath: '/hero/seedance-2-0.jpg',
@@ -245,6 +296,18 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           'Use six reference stills to keep one hero outfit and one city location consistent across a three-beat sequence, then add a soft ambience bed and one impact cue.',
         mode: 'ref2v',
       },
+      {
+        title: 'Video edit pass',
+        prompt:
+          'Use one source clip as the base video, preserve the main scene and camera continuity, then modify one visible action with clean native ambience.',
+        mode: 'v2v',
+      },
+      {
+        title: 'Extend pass',
+        prompt:
+          'Continue the source clip forward with matching lighting, motion direction, and sound so the extension feels like the next beat of the same scene.',
+        mode: 'extend',
+      },
     ],
     faqs: [
       {
@@ -261,6 +324,11 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         question: 'Does Seedance 2.0 support reference-to-video on MaxVideoAI?',
         answer:
           'Yes. Seedance 2.0 exposes a dedicated reference-to-video route with up to 9 images, up to 3 reference videos, and up to 3 reference audio files, with 12 total files across the run.',
+      },
+      {
+        question: 'Does Seedance 2.0 support video editing and extend?',
+        answer:
+          'Yes. The MaxVideoAI Seedance 2.0 route supports video edit and extend workflows alongside text, image, and reference-to-video generation.',
       },
     ],
     pricingHint: {

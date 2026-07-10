@@ -33,6 +33,10 @@ function score(slug: string) {
   return entry;
 }
 
+function hasScore(slug: string) {
+  return scoresFile.scores.some((candidate) => candidate.modelSlug === slug);
+}
+
 function keySpecs(slug: string) {
   const entry = keySpecsFile.specs.find((candidate) => candidate.modelSlug === slug);
   assert.ok(entry?.keySpecs, `Missing specs for ${slug}`);
@@ -99,15 +103,13 @@ test('Luma Agents specs keep Ray video-only and Uni image-only capabilities expl
 
   for (const slug of ['luma-uni-1', 'luma-uni-1-max']) {
     const specs = keySpecs(slug);
-    const imageScore = score(slug);
 
     assert.equal(specs.textToImage, 'Supported');
     assert.equal(specs.imageToImage, 'Supported');
     assert.equal(specs.videoToVideo, 'Not supported');
     assert.equal(specs.audioOutput, 'Not supported');
     assert.deepEqual(specs.outputFormats, ['PNG', 'JPEG']);
-    assert.equal(imageScore.motion, null);
-    assert.equal(imageScore.lipsyncQuality, null);
+    assert.equal(hasScore(slug), false, `${slug} should not expose compare score data`);
   }
 });
 
@@ -151,7 +153,10 @@ test('Luma Ray 2 routes stay indexable but move behind current Ray 3.2 discovery
   assert.equal(ray32.surfaces.app.enabled, true);
   assert.equal(ray2.surfaces.app.enabled, true);
   assert.equal(ray2Flash.surfaces.app.enabled, true);
-  assert.equal((ENGINE_SELECT_FAMILY_PRIORITY as readonly string[]).includes('luma'), false);
+  const engineSelectFamilyPriority = ENGINE_SELECT_FAMILY_PRIORITY as readonly string[];
+  assert.equal(engineSelectFamilyPriority.includes('luma'), true);
+  assert.ok(engineSelectFamilyPriority.indexOf('luma') > engineSelectFamilyPriority.indexOf('happy-horse'));
+  assert.ok(engineSelectFamilyPriority.indexOf('luma') < engineSelectFamilyPriority.indexOf('sora'));
 });
 
 test('Luma catalog placement exposes Ray 3.2 without dethroning current leaders', () => {

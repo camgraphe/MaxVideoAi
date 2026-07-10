@@ -735,6 +735,34 @@ function getDemoTitle(copy: SoraCopy, modelName: string, locale: AppLocale, engi
 }
 
 function getRouteDemoSummary(locale: AppLocale, engineSlug: string) {
+  if (engineSlug === 'gemini-omni-flash') {
+    if (locale === 'fr') {
+      return {
+        subject: 'Deux amis sur un rooftop au coucher du soleil',
+        action: 'Un enregistreur transforme un souvenir en lumiere mouvante',
+        camera: 'Dolly lateral fluide, fin en reaction deux visages',
+        style: 'Realisme cinematographique premium, backlight chaud, ville douce',
+        audio: 'Vent rooftop, clic recorder, echo ocean, une ligne chuchotee',
+      };
+    }
+    if (locale === 'es') {
+      return {
+        subject: 'Dos amigos en una azotea al atardecer',
+        action: 'Una grabadora convierte un recuerdo en luz en movimiento',
+        camera: 'Dolly lateral suave, cierre en reaccion de dos rostros',
+        style: 'Realismo cinematografico premium, contraluz calida, ciudad suave',
+        audio: 'Viento en azotea, clic de grabadora, eco de oceano, una frase susurrada',
+      };
+    }
+    return {
+      subject: 'Two friends on a golden-hour rooftop',
+      action: 'A recorder turns a memory into moving light',
+      camera: 'Smooth lateral dolly ending on a two-face reaction',
+      style: 'Premium cinematic realism, warm backlight, soft city atmosphere',
+      audio: 'Rooftop wind, recorder click, ocean echo, one whispered line',
+    };
+  }
+
   if (engineSlug === 'happy-horse-1-1') {
     if (locale === 'fr') {
       return {
@@ -2323,6 +2351,7 @@ export function ModelDecisionPromptingSection({
   const isLumaFlashRoute = engineSlug === 'luma-ray-2-flash' || engineSlug === 'lumaRay2_flash';
   const isSora2Route = engineSlug === 'sora-2';
   const isSora2ProRoute = engineSlug === 'sora-2-pro';
+  const isGeminiOmniRoute = engineSlug === 'gemini-omni-flash';
   const isVeo31Route = engineSlug === 'veo-3-1';
   const isVeoFastRoute = engineSlug === 'veo-3-1-fast';
   const isVeoLiteRoute = engineSlug === 'veo-3-1-lite';
@@ -2556,6 +2585,8 @@ export function ModelDecisionPromptingSection({
         ? copy.demoPrompt.join('\n')
       : isSora2ProRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
+      : isGeminiOmniRoute && copy.demoPrompt.length
+        ? copy.demoPrompt.join('\n')
       : isLtx23FastRoute && copy.demoPrompt.length
         ? copy.demoPrompt.join('\n')
       : isLtx23ProRoute && copy.demoPrompt.length
@@ -2600,6 +2631,8 @@ export function ModelDecisionPromptingSection({
     ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
     : isSeedance15ProRoute
       ? (locale === 'fr' || locale === 'es' ? '10 s' : '10s')
+    : isGeminiOmniRoute
+      ? getDuration(demoMedia, locale)
     : isPikaTextRoute
       ? (locale === 'fr' || locale === 'es' ? '5 s' : '5s')
       : isLumaRay2Route
@@ -2660,6 +2693,9 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Prompt lifestyle 720p'
           : '720p lifestyle prompt'
+    : isGeminiOmniRoute
+      ? (copy.demoPromptLabel ??
+        (locale === 'fr' ? 'Prompt Omni Flash audio' : locale === 'es' ? 'Prompt Omni Flash con audio' : 'Omni Flash audio prompt'))
     : isLtx23FastRoute
       ? locale === 'fr'
         ? 'Check brouillon fast'
@@ -2740,6 +2776,8 @@ export function ModelDecisionPromptingSection({
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
       : isKlingO3StandardRoute
         ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
+      : isGeminiOmniRoute
+        ? (demoMedia?.hasAudio ? labels.audioOn : audioOffChipLabel)
       : isSeedance20MiniRoute
         ? (demoMedia ? (demoMedia.hasAudio ? labels.audioOn : audioOffChipLabel) : labels.audioOn)
       : isKling34kRoute
@@ -2765,6 +2803,12 @@ export function ModelDecisionPromptingSection({
         : locale === 'es'
           ? 'Borrador de movimiento Seedance 2.0 Fast'
           : 'Seedance 2.0 Fast motion draft render'
+    : isGeminiOmniRoute
+      ? locale === 'fr'
+        ? 'Rendu Gemini Omni Flash rooftop avec son natif'
+        : locale === 'es'
+          ? 'Render Gemini Omni Flash en azotea con audio nativo'
+          : 'Gemini Omni Flash rooftop render with native audio'
     : isSeedance20MiniRoute
       ? locale === 'fr'
         ? 'Rendu Seedance 2.0 Mini dans un passage piéton urbain'

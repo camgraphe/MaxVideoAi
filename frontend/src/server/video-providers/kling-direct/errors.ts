@@ -29,9 +29,11 @@ export class KlingDirectError extends Error {
 }
 
 function errorCode(error: unknown): string | null {
-  if (error instanceof KlingDirectError) return error.code;
+  if (error instanceof KlingDirectError) return error.code ?? bodyErrorCode(error.body);
   const candidate = (error as { code?: unknown } | null | undefined)?.code;
-  return typeof candidate === 'string' && candidate.trim() ? candidate.trim() : null;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) return String(Math.trunc(candidate));
+  return bodyErrorCode((error as { body?: unknown } | null | undefined)?.body);
 }
 
 function errorStatus(error: unknown): number | null {
@@ -44,6 +46,14 @@ function errorMessage(error: unknown): string {
   if (error instanceof KlingDirectError && error.providerMessage) return error.providerMessage;
   if (error instanceof Error) return error.message;
   return typeof error === 'string' ? error : 'Kling direct request failed.';
+}
+
+function bodyErrorCode(body: unknown): string | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  const candidate = (body as { code?: unknown }).code;
+  if (typeof candidate === 'string' && candidate.trim()) return candidate.trim();
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) return String(Math.trunc(candidate));
+  return null;
 }
 
 function isNetworkOrTimeout(error: unknown, code: string | null, message: string): boolean {

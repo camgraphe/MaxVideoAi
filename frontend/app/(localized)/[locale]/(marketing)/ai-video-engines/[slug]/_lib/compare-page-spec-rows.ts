@@ -10,7 +10,9 @@ export type CompareSpecRow = {
   left: string;
   right: string;
   subline?: string | null;
+  sublines?: string[];
   rightSubline?: string | null;
+  rightSublines?: string[];
 };
 
 export function buildCompareSpecRows({
@@ -38,7 +40,9 @@ export function buildCompareSpecRows({
       left: leftPricingDisplay.headline,
       right: rightPricingDisplay.headline,
       subline: leftPricingDisplay.subline,
+      sublines: leftPricingDisplay.secondaryLines,
       rightSubline: rightPricingDisplay.subline,
+      rightSublines: rightPricingDisplay.secondaryLines,
     },
     { label: specLabels.textToVideo ?? 'Text-to-Video', left: leftSpecs.textToVideo, right: rightSpecs.textToVideo },
     { label: specLabels.imageToVideo ?? 'Image-to-Video', left: leftSpecs.imageToVideo, right: rightSpecs.imageToVideo },

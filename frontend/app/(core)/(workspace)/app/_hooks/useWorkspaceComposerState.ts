@@ -14,6 +14,7 @@ import {
   MULTI_PROMPT_MAX_SEC,
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
+import { getWorkspaceMultiPromptState } from '../_lib/workspace-multi-prompt-state';
 import {
   useWorkspaceEngineModeState,
   type WorkspaceComposerModeToggles,
@@ -59,6 +60,7 @@ type UseWorkspaceComposerStateResult = {
   isUnifiedSeedance: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedKlingO3: boolean;
+  isUnifiedGeminiOmni: boolean;
   klingO3UnsupportedVideoReason: string | null;
   klingO3DisabledEngineReasons: Record<string, string>;
   multiPromptTotalSec: number;
@@ -143,6 +145,7 @@ export function useWorkspaceComposerState({
     isUnifiedSeedance,
     isUnifiedHappyHorse,
     isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
     klingO3UnsupportedVideoReason,
     klingO3DisabledEngineReasons,
     referenceInputStatus,
@@ -187,20 +190,20 @@ export function useWorkspaceComposerState({
     showNotice,
   });
 
-  const multiPromptTotalSec = useMemo(
-    () => multiPromptScenes.reduce((sum, scene) => sum + (scene.duration || 0), 0),
-    [multiPromptScenes]
-  );
   const multiPromptActive = Boolean(supportsKlingV3Controls && multiPromptEnabled);
-  const multiPromptInvalid = multiPromptActive
-    ? multiPromptScenes.length === 0 ||
-      multiPromptScenes.some((scene) => !scene.prompt.trim()) ||
-      multiPromptTotalSec < MULTI_PROMPT_MIN_SEC ||
-      multiPromptTotalSec > MULTI_PROMPT_MAX_SEC
-    : false;
-  const multiPromptError = multiPromptInvalid
-    ? `Multi-prompt requires a prompt per scene and total duration between ${MULTI_PROMPT_MIN_SEC}s and ${MULTI_PROMPT_MAX_SEC}s.`
-    : null;
+  const multiPromptState = useMemo(
+    () =>
+      getWorkspaceMultiPromptState({
+        active: multiPromptActive,
+        scenes: multiPromptScenes,
+        minDurationSec: MULTI_PROMPT_MIN_SEC,
+        maxDurationSec: MULTI_PROMPT_MAX_SEC,
+      }),
+    [multiPromptActive, multiPromptScenes]
+  );
+  const multiPromptTotalSec = multiPromptState.totalDurationSec;
+  const multiPromptInvalid = multiPromptState.invalid;
+  const multiPromptError = multiPromptState.error;
 
   const voiceIds = useMemo(
     () =>
@@ -388,6 +391,7 @@ export function useWorkspaceComposerState({
     isUnifiedSeedance,
     isUnifiedHappyHorse,
     isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
     klingO3UnsupportedVideoReason,
     klingO3DisabledEngineReasons,
     multiPromptTotalSec,

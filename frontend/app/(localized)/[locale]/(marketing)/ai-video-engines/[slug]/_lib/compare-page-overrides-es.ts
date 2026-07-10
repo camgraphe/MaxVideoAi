@@ -117,6 +117,16 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
               'Seedance 2.0 es la opcion actual mas fuerte para trabajo multi-shot pulido, audio nativo y salidas mas exigentes guiadas por referencias, mientras que Seedance 2.0 Fast encaja mejor en borradores mas baratos, checks de timing e iteracion temprana.',
           },
           {
+            question: 'Seedance 2.0 Fast vs normal: cual es la diferencia?',
+            answer:
+              '"Normal" suele referirse a la ruta Seedance 2.0 estandar. Usa Fast para borradores 480p/720p de menor coste y checks de timing; usa Seedance 2.0 estandar cuando el plano necesite mas acabado, 1080p o 4K, y consistencia final mas solida.',
+          },
+          {
+            question: 'Seedance 2.0 y Fast soportan video edit y extend?',
+            answer:
+              'Si. En MaxVideoAI, Seedance 2.0 y Seedance 2.0 Fast soportan workflows de video edit y extend, ademas de text-to-video, image-to-video y reference-to-video.',
+          },
+          {
             question: 'Es mejor Seedance 2.0 para una salida de video de Seedance mas pulida?',
             answer:
               'Si. Seedance 2.0 encaja mejor cuando el objetivo es una salida de video de Seedance mas pulida, mientras que Fast encaja mejor cuando el objetivo es probar ideas y comparar workflows rapidamente.',
@@ -126,7 +136,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
       heroIntro:
-        'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, entrega de mayor resolucion y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina es una comparacion de scorecard/specs por ahora; todavia no incluye videos comparativos de Mini.',
+        'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, entrega de mayor resolucion y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina ahora incluye videos lado a lado Mini vs Seedance 2.0 con los mismos prompts, ademas de scorecard, specs y contexto de pricing.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
       primaryLinks: [
         {
@@ -158,16 +168,16 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
               'Elige Seedance 2.0 para hero shots finales, mayor pulido visual, entrega de mayor resolucion y trabajos donde la mejor salida Seedance importa mas que el coste por variante.',
           },
           {
-            question: 'Por que esta pagina Mini no tiene videos comparativos?',
+            question: 'Esta pagina incluye videos comparativos de Mini?',
             answer:
-              'Las paginas Mini usan scorecards, specs y recomendaciones por ahora. Los videos lado a lado de Mini se agregaran cuando haya outputs curados.',
+              'Si. Esta pagina de la familia Seedance usa outputs Mini y Seedance 2.0 lado a lado generados con los mismos prompts, asi que la seccion de video es directamente comparable.',
           },
         ],
       },
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast': {
       heroIntro:
-        'Usa Seedance 2.0 Fast cuando la prioridad sea velocidad de borrador Seedance, checks de timing y una ruta rapida de vuelta al modelo flagship. Usa Seedance 2.0 Mini como la opcion de volumen batch de menor coste para variantes ecommerce o social, ediciones de video, extensiones y pruebas de marketing repetidas. Esta pagina es una comparacion de scorecard/specs por ahora, sin videos comparativos de Mini.',
+        'Usa Seedance 2.0 Fast cuando la prioridad sea velocidad de borrador Seedance, checks de timing y una ruta rapida de vuelta al modelo flagship. Usa Seedance 2.0 Mini como la opcion de volumen batch de menor coste para variantes ecommerce o social, ediciones de video, extensiones y pruebas de marketing repetidas. Esta pagina ahora incluye videos lado a lado Mini vs Fast con los mismos prompts, ademas de scorecard, specs y contexto de pricing.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
       primaryLinks: [
         {
@@ -201,7 +211,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Esta pagina incluye videos lado a lado?',
             answer:
-              'Todavia no. Esta comparacion Mini usa actualmente solo scorecards, specs y ayuda de decision, por lo que no solicita ni muestra slots de video comparativo.',
+              'Si. Esta pagina de la familia Seedance usa outputs Mini y Fast lado a lado generados con los mismos prompts, asi que la seccion de video es directamente comparable.',
           },
         ],
       },
@@ -571,6 +581,85 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             question: 'Que modelo es mejor para anuncios de producto?',
             answer:
               'Happy Horse 1.1 es mejor para anuncios tipo spokesperson o UGC con dialogo. LTX 2.3 Pro es mejor para movimiento de producto pulido, acabado de alta resolucion y produccion mas editada.',
+          },
+        ],
+      },
+    },
+    'gemini-omni-flash-vs-veo-3-1': {
+      meta: {
+        title: 'Gemini Omni Flash vs Veo 3.1: specs de video Google y usos',
+        description:
+          'Compara Gemini Omni Flash y Veo 3.1 para edicion stateful, referencias, edicion de video fuente, first/last-frame, extend, limites 720p y precios de video Google.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Usa Gemini Omni Flash cuando el trabajo de video Google necesita refine stateful, stacks mas grandes de imagenes de referencia, ediciones cortas desde video fuente o direccion sonora por prompt dentro de una ruta preview 720p. Usa Veo 3.1 cuando necesitas el workflow Veo maduro para first/last-frame, extend, mas opciones de resolucion de entrega y una ruta de produccion mas establecida. Esta pagina es scorecard/specs hasta que existan videos comparativos Omni validados.',
+      quickVerdict: {
+        title: 'Veredicto rapido',
+        body:
+          'Gemini Omni Flash vs Veo 3.1 es sobre todo una eleccion de modelo de interaccion. Omni Flash encaja mejor en refine conversacional, previous interaction id, referencias mas numerosas y ediciones cortas desde video fuente. Veo 3.1 sigue siendo el default mas seguro para entrega Veo pulida, first/last-frame, extend y salidas de mayor resolucion.',
+      },
+      topCards: [
+        {
+          title: 'Elige Omni Flash para refine',
+          body:
+            'Omni Flash esta construido alrededor de Google Interactions, asi que previous interaction id y store/refine son controles centrales en MaxVideoAI.',
+        },
+        {
+          title: 'Elige Veo 3.1 para entrega',
+          body:
+            'Veo 3.1 sigue siendo el mejor default cuando el brief necesita first/last-frame, extend, ruteo Veo mas maduro o acabado en mayor resolucion.',
+        },
+        {
+          title: 'Estrategia de referencias',
+          body:
+            'Omni Flash puede usar stacks mas grandes de imagenes de referencia. Veo 3.1 sigue siendo mejor cuando el objetivo es un clip Veo cinematografico controlado.',
+        },
+        {
+          title: 'Etapa de lanzamiento',
+          body:
+            'Omni Flash se expone como preview limitada. Veo 3.1 es hoy la ruta Google video mas establecida en MaxVideoAI.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        {
+          href: '/es/modelos/gemini-omni-flash',
+          label: 'Abrir pagina de Gemini Omni Flash',
+        },
+        {
+          href: '/es/modelos/veo-3-1',
+          label: 'Abrir pagina de Veo 3.1',
+        },
+        {
+          href: '/es/precios#gemini-omni-flash-pricing',
+          label: 'Ver precio de Omni Flash',
+        },
+      ],
+      faq: {
+        title: 'FAQ',
+        subtitle:
+          'Respuestas cortas para elegir entre workflows Google Omni interactivos y la ruta de produccion Veo.',
+        items: [
+          {
+            question: 'Gemini Omni Flash es mejor que Veo 3.1?',
+            answer:
+              'No de forma general. Gemini Omni Flash es mejor para refine stateful, workflows con previous interaction id, stacks grandes de referencias y ediciones desde video fuente. Veo 3.1 sigue siendo mejor para controles Veo maduros, first/last-frame, extend y rutas de mayor resolucion.',
+          },
+          {
+            question: 'Cual usar para reference-to-video?',
+            answer:
+              'Usa Omni Flash si necesitas mas referencias o planeas refinar la misma interaccion. Usa Veo 3.1 si el objetivo es un render Veo mas establecido y cinematografico.',
+          },
+          {
+            question: 'Cual soporta first/last-frame y extend?',
+            answer:
+              'Veo 3.1 es la pagina que debes usar para first/last-frame y extend. La ruta preview actual de Gemini Omni Flash en MaxVideoAI no expone esos controles.',
+          },
+          {
+            question: 'Por que Omni Flash aparece como preview?',
+            answer:
+              'Google documenta Gemini Omni Flash como modelo preview. MaxVideoAI mantiene el ruteo publico con gate y etiqueta specs/precios como preview hasta que cuota y SKUs sean estables.',
           },
         ],
       },

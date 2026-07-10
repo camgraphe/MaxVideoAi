@@ -12,16 +12,14 @@ export function AudioGenerationDock({
   copy,
   durationLabel,
   generationHint,
-  isGenerating,
   onGenerate,
   priceLabel,
 }: {
   activeProgress: number | null;
   canGenerate: boolean;
   copy: AudioWorkspaceCopy;
-  durationLabel: string;
+  durationLabel: string | null;
   generationHint: string;
-  isGenerating: boolean;
   onGenerate: () => void;
   priceLabel: string;
 }) {
@@ -29,15 +27,17 @@ export function AudioGenerationDock({
     <div className="fixed bottom-0 left-0 right-0 z-[80] border-t border-hairline bg-bg px-4 py-3 shadow-[0_-18px_44px_rgba(15,23,42,0.08)] md:left-[188px] lg:px-7 xl:right-[332px]">
       <div className="mx-auto flex w-full max-w-[980px] flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
-              <UIIcon icon={Clock3} size={19} />
-            </span>
-            <div>
-              <p className="text-xs text-text-muted">{copy.pricing.durationEyebrow}</p>
-              <p className="text-sm font-semibold text-text-primary">~ {durationLabel}</p>
+          {durationLabel ? (
+            <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
+              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
+                <UIIcon icon={Clock3} size={19} />
+              </span>
+              <div>
+                <p className="text-xs text-text-muted">{copy.pricing.durationEyebrow}</p>
+                <p className="text-sm font-semibold text-text-primary">~ {durationLabel}</p>
+              </div>
             </div>
-          </div>
+          ) : null}
           <div className="flex min-w-[132px] items-center gap-2 rounded-[9px] border border-hairline bg-surface px-3 py-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-bg text-text-secondary">
               <UIIcon icon={Coins} size={19} />
@@ -65,7 +65,7 @@ export function AudioGenerationDock({
               className="min-w-0 flex-1 rounded-r-none sm:min-w-[210px]"
             >
               <UIIcon icon={AudioLines} size={18} />
-              {isGenerating ? copy.pricing.generating : copy.pricing.generate}
+              {copy.pricing.generate}
             </Button>
             <Button
               type="button"

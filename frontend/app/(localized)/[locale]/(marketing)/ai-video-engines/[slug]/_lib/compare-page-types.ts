@@ -51,6 +51,14 @@ export type EngineCatalogEntry = {
   modes?: Array<{ mode: string; falModelId?: string }>;
   features?: Record<string, EngineCatalogFeature>;
   bestFor?: string;
+  surfaces?: {
+    app?: {
+      enabled?: boolean;
+    };
+    compare?: {
+      includeInHub?: boolean;
+    };
+  };
 };
 
 export type EngineScore = {
@@ -80,7 +88,6 @@ export type EngineKeySpecsEntry = {
   modelSlug?: string;
   engineId?: string;
   keySpecs?: Record<string, unknown>;
-  sources?: string[];
 };
 
 export type EngineKeySpecsFile = {
@@ -111,7 +118,10 @@ export type CompareSpecValues = {
 export type ComparePricingDisplay = {
   headline: string;
   subline: string | null;
+  secondaryLines?: string[];
   prices: number[];
+  scoreLine?: string;
+  scorePrices?: number[];
 };
 
 export type ShowdownSide = {
@@ -125,7 +135,10 @@ export type ShowdownSide = {
 export type ShowdownEntry = {
   slotId?: string;
   title?: string;
+  aspectRatio?: string;
+  mode?: CompareShowdown['mode'];
   prompt?: string;
+  promptSourceSlug?: string;
   left: ShowdownSide;
   right: ShowdownSide;
 };

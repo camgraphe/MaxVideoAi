@@ -3,6 +3,7 @@ import { PIKA_FAL_ENGINE_REGISTRY } from './pika';
 import { VEO_3_1_FAL_ENGINE_REGISTRY } from './veo-3-1';
 import { VEO_3_1_FAST_FAL_ENGINE_REGISTRY } from './veo-3-1-fast';
 import { VEO_3_1_LITE_FAL_ENGINE_REGISTRY } from './veo-3-1-lite';
+import { GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY } from './gemini-omni-flash';
 import { LUMA_RAY_2_FAL_ENGINE_REGISTRY } from './luma-ray-2';
 import { LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY } from './luma-ray-2-flash';
 import { LUMA_RAY_3_2_FAL_ENGINE_REGISTRY } from './luma-ray-3-2';
@@ -29,6 +30,7 @@ import { LTX_2_3_FAST_FAL_ENGINE_REGISTRY } from './ltx-2-3-fast';
 import { LTX_2_3_FAL_ENGINE_REGISTRY } from './ltx-2-3';
 import { HAILUO_FAL_ENGINE_REGISTRY } from './hailuo';
 import { NANO_BANANA_FAL_ENGINE_REGISTRY } from './nano-banana';
+import { NANO_BANANA_LITE_FAL_ENGINE_REGISTRY } from './nano-banana-lite';
 import { NANO_BANANA_PRO_FAL_ENGINE_REGISTRY } from './nano-banana-pro';
 import { NANO_BANANA_2_FAL_ENGINE_REGISTRY } from './nano-banana-2';
 import { GPT_IMAGE_2_FAL_ENGINE_REGISTRY } from './gpt-image-2';
@@ -39,6 +41,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...VEO_3_1_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_FAST_FAL_ENGINE_REGISTRY,
   ...VEO_3_1_LITE_FAL_ENGINE_REGISTRY,
+  ...GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY,
   ...LUMA_RAY_3_2_FAL_ENGINE_REGISTRY,
@@ -65,6 +68,7 @@ export const RAW_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...LTX_2_3_FAL_ENGINE_REGISTRY,
   ...HAILUO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_FAL_ENGINE_REGISTRY,
+  ...NANO_BANANA_LITE_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_PRO_FAL_ENGINE_REGISTRY,
   ...NANO_BANANA_2_FAL_ENGINE_REGISTRY,
   ...GPT_IMAGE_2_FAL_ENGINE_REGISTRY,

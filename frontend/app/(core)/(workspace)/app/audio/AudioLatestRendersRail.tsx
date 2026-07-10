@@ -4,14 +4,11 @@
 
 import deepmerge from 'deepmerge';
 import { useMemo } from 'react';
-import { MoreVertical, Play, Volume2 } from 'lucide-react';
 
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { useInfiniteJobs } from '@/lib/api';
-import { formatAudioDurationLabel } from '@/lib/audio-generation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Job } from '@/types/jobs';
-import { UIIcon } from '@/components/ui/UIIcon';
 import { DEFAULT_AUDIO_WORKSPACE_COPY, formatAudioPackLabel, type AudioWorkspaceCopy } from './copy';
 
 type AudioLatestRendersRailProps = {
@@ -123,7 +120,6 @@ function AudioJobCard({
   locale: string;
 }) {
   const priceLabel = resolveAudioJobPrice(job, locale);
-  const durationLabel = typeof job.durationSec === 'number' ? formatAudioDurationLabel(job.durationSec) : null;
 
   return (
     <article
@@ -140,16 +136,6 @@ function AudioJobCard({
           <WaveformBars seed={job.jobId} />
         </div>
 
-        <div className="mt-3 flex items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand text-on-brand shadow-[0_10px_22px_rgba(46,99,216,0.18)]">
-            <UIIcon icon={Play} size={15} />
-          </span>
-          <span className="text-xs font-semibold text-text-primary">0:00 / {durationLabel ?? '--'}</span>
-          <span className="h-1 flex-1 rounded-full bg-surface-3" />
-          <Volume2 className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden />
-          <MoreVertical className="h-4 w-4 shrink-0 text-text-secondary" aria-hidden />
-        </div>
-
         <div className="mt-4 flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-text-primary">{resolveJobLabel(job, copy)}</p>
@@ -159,6 +145,16 @@ function AudioJobCard({
         </div>
         <p className="mt-3 text-xs text-text-muted">{formatDateTime(job.createdAt, locale)}</p>
       </button>
+
+      {job.audioUrl ? (
+        <audio
+          controls
+          preload="none"
+          src={job.audioUrl}
+          aria-label={`${resolveJobLabel(job, copy)} audio`}
+          className="mt-3 h-9 w-full"
+        />
+      ) : null}
 
       <div className="mt-3 flex gap-2">
         <Button type="button" variant="outline" size="sm" className="flex-1" onClick={onSelect}>

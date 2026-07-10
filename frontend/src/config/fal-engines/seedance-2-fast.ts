@@ -18,14 +18,14 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
   latencyTier: 'fast',
   queueDepth: 0,
   region: 'global',
-  modes: ['t2v', 'i2v', 'ref2v'],
+  modes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
   maxDurationSec: 15,
   resolutions: ['480p', '720p'],
   aspectRatios: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
   fps: [24],
   audio: true,
   upscale4k: false,
-  extend: false,
+  extend: true,
   motionControls: true,
   keyframes: false,
   params: {},
@@ -33,6 +33,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
     imageMaxMB: 30,
     videoMaxMB: 50,
     audioMaxMB: 15,
+    videoMaxDurationSec: 15,
   },
   inputSchema: {
     required: [
@@ -97,10 +98,21 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         id: 'image_urls',
         type: 'image',
         label: 'Reference images (up to 9)',
-        description: 'Optional still references for draft continuity checks. Create clean references with Seedream first for better composition and consistency.',
-        modes: ['ref2v'],
+        description: 'Optional visual references for draft continuity checks or Video Edit. Create clean references with Seedream first for better composition and consistency.',
+        modes: ['ref2v', 'v2v'],
         minCount: 1,
         maxCount: 9,
+        source: 'either',
+      },
+      {
+        id: 'video_url',
+        type: 'video',
+        label: 'Source video',
+        description: 'Required source video for video-to-video editing.',
+        modes: ['v2v'],
+        requiredInModes: ['v2v'],
+        minCount: 1,
+        maxCount: 1,
         source: 'either',
       },
       {
@@ -116,13 +128,25 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
         source: 'either',
       },
       {
+        id: 'extension_source_videos',
+        type: 'video',
+        label: 'Source clips to extend (up to 3)',
+        description: 'Add one source clip to extend forward or backward, or 2-3 clips to stitch a transition.',
+        modes: ['extend'],
+        requiredInModes: ['extend'],
+        minCount: 1,
+        maxCount: 3,
+        source: 'either',
+        slotLabelPattern: 'Source clip {n}',
+      },
+      {
         id: 'audio_urls',
         type: 'audio',
         label: 'Reference audio clips (up to 3)',
-        description: 'Optional soundtrack or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
+        description: 'Optional soundtrack or rhythm references for reference or video-edit runs. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.',
         minCount: 0,
         maxCount: 3,
-        modes: ['ref2v'],
+        modes: ['ref2v', 'v2v'],
         source: 'either',
       },
     ],
@@ -205,6 +229,33 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           notes: 'Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files before moving winners into standard Seedance 2.0.',
         },
       },
+      {
+        mode: 'v2v',
+        falModelId: SEEDANCE_2_ENDPOINTS.fast.v2v,
+        ui: {
+          modes: ['v2v'],
+          duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
+          resolution: ['480p', '720p'],
+          aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+          acceptsImageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+          maxUploadMB: 50,
+          audioToggle: true,
+          notes: 'Video edit uses a source clip plus optional image and audio references for fast 4-15s Seedance 2.0 edits.',
+        },
+      },
+      {
+        mode: 'extend',
+        falModelId: SEEDANCE_2_ENDPOINTS.fast.extend,
+        ui: {
+          modes: ['extend'],
+          duration: { options: ['auto', 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], default: 'auto' },
+          resolution: ['480p', '720p'],
+          aspectRatio: ['auto', '21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
+          maxUploadMB: 50,
+          audioToggle: true,
+          notes: 'Extend continues a source clip forward or backward, or stitches up to 3 clips into one coherent Fast Seedance 2.0 video.',
+        },
+      },
     ],
     defaultFalModelId: SEEDANCE_2_ENDPOINTS.fast.t2v,
     seo: {
@@ -215,7 +266,7 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     type: 'textImage',
     seoText:
-      'Seedance 2.0 Fast is the draft-speed Seedance 2.0 variant for quicker iteration, auto or 4-15 second runs, 480p/720p output, optional end-frame image-to-video, and faster reference-based comparison rounds.',
+      'Seedance 2.0 Fast is the draft-speed Seedance 2.0 variant for quicker iteration, auto or 4-15 second runs, 480p/720p output, optional end-frame image-to-video, reference-to-video, video edit, and extend comparison rounds.',
     media: {
       videoUrl: 'https://media.maxvideoai.com/marketing/marketing/15eafeab-582a-4126-80c3-879fdb7740aa.webm',
       imagePath: '/hero/seedance-2-0.jpg',
@@ -241,6 +292,18 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           'Use four reference stills to test one character, one outfit, and one set, then compare framing, timing, and continuity before the standard-tier final.',
         mode: 'ref2v',
       },
+      {
+        title: 'Fast video edit test',
+        prompt:
+          'Use one source clip as the base video, keep the scene structure readable, and modify one visible action for a quick draft-speed edit.',
+        mode: 'v2v',
+      },
+      {
+        title: 'Fast extend test',
+        prompt:
+          'Extend the source clip by one clear follow-up beat with matching camera direction, lighting, and native ambience.',
+        mode: 'extend',
+      },
     ],
     faqs: [
       {
@@ -257,6 +320,11 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         question: 'Can I use image-to-video and reference-to-video with Seedance 2.0 Fast?',
         answer:
           'Yes. Fast supports image-to-video with an optional end frame and reference-to-video with image, video, and audio references when you want to validate timing before scaling up.',
+      },
+      {
+        question: 'Can Seedance 2.0 Fast edit or extend a video?',
+        answer:
+          'Yes. The MaxVideoAI Seedance 2.0 Fast route supports video edit and extend workflows for quick source-clip tests before a higher-polish final.',
       },
     ],
     pricingHint: {

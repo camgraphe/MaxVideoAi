@@ -38,7 +38,7 @@ import { buildDefaultSettingsSnapshot } from './image-generation-settings-snapsh
 import { resolveImageGenerationRequestContext } from './image-generation-request-context';
 import { prepareImageGenerationReferences } from './image-generation-references';
 import { copyGeneratedImagesToStorage } from './image-output-storage';
-import { executeBytePlusSeedreamGeneration } from './byteplus-seedream-execution';
+import { executeDirectImageProviderIfAvailable } from './image-direct-provider-execution';
 import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
 import {
   executeImageProviderWithLumaAgentsDirectFallback,
@@ -459,38 +459,40 @@ export async function executeImageGeneration({
   let providerMode: string = getResultProviderMode();
   let providerJobId: string | undefined;
 
-  if (engine.id === 'seedream' && engine.providerMeta?.provider === 'byteplus_modelark') {
-    return executeBytePlusSeedreamGeneration({
-      billingProductKey,
-      characterReferenceCount: characterReferences.length,
-      combinedImageUrls,
-      costBreakdownJson,
-      effectivePrompt,
-      engine,
-      engineEntry,
-      indexable,
-      jobId,
-      jobSurface,
-      limitGenerations,
-      maskUrl,
-      mode,
-      normalizedSeed,
-      numImages,
-      outputFormat,
-      pendingReceipt,
-      priceOnlyReceipts,
-      pricing,
-      pricingSnapshotJson,
-      quality,
-      refundDescription,
-      resolvedAspectRatio,
-      resolution,
-      thinkingLevel,
-      userId,
-      vendorAccountId,
-      visibility,
-      watermark,
-    });
+  const directProviderResponse = await executeDirectImageProviderIfAvailable({
+    billingProductKey,
+    characterReferenceCount: characterReferences.length,
+    combinedImageUrls,
+    costBreakdownJson,
+    effectivePrompt,
+    enableWebSearch,
+    engine,
+    engineEntry,
+    indexable,
+    jobId,
+    jobSurface,
+    limitGenerations,
+    maskUrl,
+    mode,
+    normalizedSeed,
+    numImages,
+    outputFormat,
+    pendingReceipt,
+    priceOnlyReceipts,
+    pricing,
+    pricingSnapshotJson,
+    quality,
+    refundDescription,
+    resolvedAspectRatio,
+    resolution,
+    thinkingLevel,
+    userId,
+    vendorAccountId,
+    visibility,
+    watermark,
+  });
+  if (directProviderResponse) {
+    return directProviderResponse;
   }
 
   try {

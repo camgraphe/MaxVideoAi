@@ -1821,6 +1821,471 @@
     "bestFor": "Budget Veo drafts"
   },
   {
+    "engineId": "gemini-omni-flash",
+    "modelSlug": "gemini-omni-flash",
+    "marketingName": "Gemini Omni Flash",
+    "provider": "Google",
+    "brandId": "google-gemini",
+    "family": "veo",
+    "familyExamplesPage": {
+      "stage": "indexed",
+      "showInNav": true,
+      "publishedModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ],
+      "currentModelSlugs": []
+    },
+    "versionLabel": "Preview",
+    "availability": "limited",
+    "logoPolicy": "textOnly",
+    "surfaces": {
+      "modelPage": {
+        "indexable": true,
+        "includeInSitemap": true
+      },
+      "examples": {
+        "includeInFamilyResolver": false,
+        "includeInFamilyCopy": false
+      },
+      "compare": {
+        "suggestOpponents": [
+          "veo-3-1",
+          "veo-3-1-fast",
+          "sora-2",
+          "seedance-2-0"
+        ],
+        "publishedPairs": [
+          "veo-3-1",
+          "veo-3-1-fast",
+          "sora-2",
+          "seedance-2-0"
+        ],
+        "includeInHub": true
+      },
+      "app": {
+        "enabled": true,
+        "discoveryRank": 8,
+        "variantGroup": "google-gemini-video",
+        "variantLabel": "Omni Flash"
+      },
+      "pricing": {
+        "includeInEstimator": true
+      }
+    },
+    "surfacesSource": "explicit",
+    "engine": {
+      "id": "gemini-omni-flash",
+      "label": "Gemini Omni Flash",
+      "provider": "Google",
+      "version": "Preview",
+      "status": "early_access",
+      "latencyTier": "fast",
+      "queueDepth": 0,
+      "region": "global",
+      "modes": [
+        "t2v",
+        "i2v",
+        "ref2v",
+        "v2v",
+        "retake"
+      ],
+      "maxDurationSec": 10,
+      "resolutions": [
+        "720p"
+      ],
+      "aspectRatios": [
+        "16:9",
+        "9:16"
+      ],
+      "fps": [
+        24
+      ],
+      "audio": true,
+      "upscale4k": false,
+      "extend": false,
+      "motionControls": false,
+      "keyframes": false,
+      "params": {},
+      "inputLimits": {
+        "imageMaxMB": 20480,
+        "videoMaxDurationSec": 10,
+        "promptMaxChars": 12000,
+        "promptMaxCharsSource": "observed"
+      },
+      "inputSchema": {
+        "required": [
+          {
+            "id": "prompt",
+            "type": "text",
+            "label": "Prompt",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v",
+              "retake"
+            ],
+            "requiredInModes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v",
+              "retake"
+            ]
+          },
+          {
+            "id": "image_url",
+            "type": "image",
+            "label": "Source image",
+            "description": "Use one image as the starting visual context for image-to-video generation.",
+            "modes": [
+              "i2v"
+            ],
+            "requiredInModes": [
+              "i2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either"
+          },
+          {
+            "id": "reference_images",
+            "type": "image",
+            "label": "Reference images",
+            "description": "Add up to 10 images for Gemini Omni reference-to-video generation.",
+            "modes": [
+              "ref2v"
+            ],
+            "requiredInModes": [
+              "ref2v"
+            ],
+            "minCount": 1,
+            "maxCount": 10,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Use a short source clip for Gemini Omni video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
+            "source": "either",
+            "maxDurationSec": 10
+          },
+          {
+            "id": "previous_interaction_id",
+            "type": "enum",
+            "label": "Previous interaction",
+            "description": "Stored Gemini Omni interaction id used for conversational refine runs.",
+            "modes": [
+              "retake"
+            ],
+            "requiredInModes": [
+              "retake"
+            ],
+            "values": []
+          }
+        ],
+        "optional": [
+          {
+            "id": "duration",
+            "type": "enum",
+            "label": "Duration",
+            "values": [
+              "4s",
+              "6s",
+              "8s",
+              "10s"
+            ],
+            "default": "10s",
+            "modes": [
+              "t2v",
+              "i2v",
+              "ref2v",
+              "v2v"
+            ],
+            "min": 4,
+            "max": 10
+          },
+          {
+            "id": "aspect_ratio",
+            "type": "enum",
+            "label": "Aspect ratio",
+            "values": [
+              "16:9",
+              "9:16"
+            ],
+            "default": "16:9"
+          },
+          {
+            "id": "resolution",
+            "type": "enum",
+            "label": "Resolution",
+            "values": [
+              "720p"
+            ],
+            "default": "720p"
+          },
+          {
+            "id": "store_interaction",
+            "type": "boolean",
+            "label": "Store interaction",
+            "description": "Keep the provider interaction id so the result can be refined in a later Omni run.",
+            "default": true
+          },
+          {
+            "id": "prompt_audio_direction",
+            "type": "enum",
+            "label": "Sound direction",
+            "description": "Optional audio, ambience, music, speech, or SFX direction folded into the Omni prompt.",
+            "values": []
+          },
+          {
+            "id": "prompt_camera_direction",
+            "type": "enum",
+            "label": "Camera direction",
+            "description": "Optional camera movement, framing, lens, or motion direction folded into the Omni prompt.",
+            "values": []
+          },
+          {
+            "id": "prompt_edit_instruction",
+            "type": "enum",
+            "label": "Edit instruction",
+            "description": "Optional edit instruction for source-video and refine workflows.",
+            "modes": [
+              "v2v",
+              "retake"
+            ],
+            "values": []
+          }
+        ],
+        "constraints": {
+          "supportedFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif",
+            "mp4",
+            "webm",
+            "mov",
+            "mpeg",
+            "mpg",
+            "wmv",
+            "3gpp"
+          ],
+          "maxImageSizeMB": 20480,
+          "maxVideoDurationSec": 10,
+          "maxReferenceImages": 10,
+          "maxVideosPerPrompt": 3
+        }
+      },
+      "pricingDetails": {
+        "currency": "USD",
+        "perSecondCents": {
+          "default": 10,
+          "byResolution": {
+            "720p": 10
+          }
+        },
+        "maxDurationSec": 10
+      },
+      "pricing": {
+        "unit": "USD/s",
+        "base": 0.1,
+        "byResolution": {
+          "720p": 0.1
+        },
+        "currency": "USD",
+        "notes": "Competitive MaxVideoAI preview estimate aligned near Fal.ai public Gemini Omni Flash rates."
+      },
+      "updatedAt": "2026-06-30T00:00:00Z",
+      "ttlSec": 600,
+      "providerMeta": {
+        "provider": "google_vertex_omni",
+        "modelSlug": "gemini-omni-flash-preview"
+      },
+      "availability": "limited",
+      "brandId": "google-gemini"
+    },
+    "modes": [
+      {
+        "mode": "t2v",
+        "falModelId": "gemini-omni-flash-preview",
+        "ui": {
+          "modes": [
+            "t2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Generate a 720p video with native sound direction through Vertex Agent Platform Interactions."
+        }
+      },
+      {
+        "mode": "i2v",
+        "falModelId": "gemini-omni-flash-preview",
+        "ui": {
+          "modes": [
+            "i2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif"
+          ],
+          "maxUploadMB": 20480,
+          "notes": "Animate one source image with optional sound and camera direction."
+        }
+      },
+      {
+        "mode": "ref2v",
+        "falModelId": "gemini-omni-flash-preview",
+        "ui": {
+          "modes": [
+            "ref2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "heic",
+            "heif"
+          ],
+          "maxUploadMB": 20480,
+          "notes": "Use up to 10 reference images for reference-to-video prompts."
+        }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "gemini-omni-flash-preview",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "4s",
+              "6s",
+              "8s",
+              "10s"
+            ],
+            "default": "10s"
+          },
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "maxUploadMB": 20480,
+          "notes": "Edit a short source video with text, sound, and camera instructions."
+        }
+      },
+      {
+        "mode": "retake",
+        "falModelId": "gemini-omni-flash-preview",
+        "ui": {
+          "modes": [
+            "retake"
+          ],
+          "resolution": [
+            "720p"
+          ],
+          "resolutionLocked": true,
+          "aspectRatio": [
+            "16:9",
+            "9:16"
+          ],
+          "audioToggle": true,
+          "notes": "Refine a stored Gemini Omni interaction by passing its previous interaction id."
+        }
+      }
+    ],
+    "features": {
+      "audio": {
+        "value": true
+      },
+      "motionControls": {
+        "value": false
+      },
+      "keyframes": {
+        "value": false
+      },
+      "extend": {
+        "value": false
+      }
+    }
+  },
+  {
     "engineId": "lumaRay2",
     "modelSlug": "luma-ray-2",
     "marketingName": "Luma Ray 2",
@@ -9754,7 +10219,9 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v",
+        "extend"
       ],
       "maxDurationSec": 15,
       "resolutions": [
@@ -9777,14 +10244,15 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": true,
       "keyframes": false,
       "params": {},
       "inputLimits": {
         "imageMaxMB": 30,
         "videoMaxMB": 50,
-        "audioMaxMB": 15
+        "audioMaxMB": 15,
+        "videoMaxDurationSec": 15
       },
       "inputSchema": {
         "required": [
@@ -9876,12 +10344,28 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional reference stills for identity, styling, and continuity. Create clean references with Seedream first for better composition and consistency.",
+            "description": "Optional visual references for Reference to Video or Video Edit. Create clean references with Seedream first for better composition and consistency.",
             "modes": [
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "minCount": 1,
             "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Required source video for video-to-video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
             "source": "either"
           },
           {
@@ -9899,14 +10383,31 @@
             "source": "either"
           },
           {
+            "id": "extension_source_videos",
+            "type": "video",
+            "label": "Source clips to extend (up to 3)",
+            "description": "Add one source clip to extend forward or backward, or 2-3 clips to stitch a transition.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 3,
+            "source": "either",
+            "slotLabelPattern": "Source clip {n}"
+          },
+          {
             "id": "audio_urls",
             "type": "audio",
             "label": "Reference audio clips (up to 3)",
-            "description": "Optional soundtrack, dialogue, or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "description": "Optional soundtrack, dialogue, or rhythm references for reference or video-edit runs. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "source": "either"
           },
@@ -9936,7 +10437,7 @@
       "pricingDetails": {
         "currency": "USD",
         "tokenPricing": {
-          "model": "fal_tokens",
+          "model": "byteplus_tokens",
           "unitPriceUsdPer1kTokens": 0.013461538461538462,
           "unitPriceUsdPer1kTokensByResolution": {
             "1080p": 0.014807692307692306,
@@ -10229,6 +10730,102 @@
           "audioToggle": true,
           "notes": "Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files with 12 total references max."
         }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Video edit uses a source clip plus optional image and audio references for 4-15s Standard Seedance 2.0 edits."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "byteplus/dreamina-seedance-2.0/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p",
+            "1080p",
+            "4k"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Extend continues a source clip forward or backward, or stitches up to 3 clips into one coherent Standard Seedance 2.0 video."
+        }
       }
     ],
     "features": {
@@ -10242,7 +10839,7 @@
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     },
     "bestFor": "Flagship multi-shot video with native audio and references"
@@ -10338,7 +10935,9 @@
       "modes": [
         "t2v",
         "i2v",
-        "ref2v"
+        "ref2v",
+        "v2v",
+        "extend"
       ],
       "maxDurationSec": 15,
       "resolutions": [
@@ -10359,14 +10958,15 @@
       ],
       "audio": true,
       "upscale4k": false,
-      "extend": false,
+      "extend": true,
       "motionControls": true,
       "keyframes": false,
       "params": {},
       "inputLimits": {
         "imageMaxMB": 30,
         "videoMaxMB": 50,
-        "audioMaxMB": 15
+        "audioMaxMB": 15,
+        "videoMaxDurationSec": 15
       },
       "inputSchema": {
         "required": [
@@ -10462,12 +11062,28 @@
             "id": "image_urls",
             "type": "image",
             "label": "Reference images (up to 9)",
-            "description": "Optional still references for draft continuity checks. Create clean references with Seedream first for better composition and consistency.",
+            "description": "Optional visual references for draft continuity checks or Video Edit. Create clean references with Seedream first for better composition and consistency.",
             "modes": [
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "minCount": 1,
             "maxCount": 9,
+            "source": "either"
+          },
+          {
+            "id": "video_url",
+            "type": "video",
+            "label": "Source video",
+            "description": "Required source video for video-to-video editing.",
+            "modes": [
+              "v2v"
+            ],
+            "requiredInModes": [
+              "v2v"
+            ],
+            "minCount": 1,
+            "maxCount": 1,
             "source": "either"
           },
           {
@@ -10485,14 +11101,31 @@
             "source": "either"
           },
           {
+            "id": "extension_source_videos",
+            "type": "video",
+            "label": "Source clips to extend (up to 3)",
+            "description": "Add one source clip to extend forward or backward, or 2-3 clips to stitch a transition.",
+            "modes": [
+              "extend"
+            ],
+            "requiredInModes": [
+              "extend"
+            ],
+            "minCount": 1,
+            "maxCount": 3,
+            "source": "either",
+            "slotLabelPattern": "Source clip {n}"
+          },
+          {
             "id": "audio_urls",
             "type": "audio",
             "label": "Reference audio clips (up to 3)",
-            "description": "Optional soundtrack or rhythm references for ref2v. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
+            "description": "Optional soundtrack or rhythm references for reference or video-edit runs. Supports up to 3 files, max 15 MB each, and requires at least one image or video reference if audio is used.",
             "minCount": 0,
             "maxCount": 3,
             "modes": [
-              "ref2v"
+              "ref2v",
+              "v2v"
             ],
             "source": "either"
           }
@@ -10516,7 +11149,7 @@
       "pricingDetails": {
         "currency": "USD",
         "tokenPricing": {
-          "model": "fal_tokens",
+          "model": "byteplus_tokens",
           "unitPriceUsdPer1kTokens": 0.010769230769230769,
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",
@@ -10799,6 +11432,98 @@
           "audioToggle": true,
           "notes": "Prompt-only is allowed, or add up to 9 images, 3 videos, and 3 audio files before moving winners into standard Seedance 2.0."
         }
+      },
+      {
+        "mode": "v2v",
+        "falModelId": "byteplus/dreamina-seedance-2.0-fast/video-to-video",
+        "ui": {
+          "modes": [
+            "v2v"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "acceptsImageFormats": [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Video edit uses a source clip plus optional image and audio references for fast 4-15s Seedance 2.0 edits."
+        }
+      },
+      {
+        "mode": "extend",
+        "falModelId": "byteplus/dreamina-seedance-2.0-fast/extend",
+        "ui": {
+          "modes": [
+            "extend"
+          ],
+          "duration": {
+            "options": [
+              "auto",
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15
+            ],
+            "default": "auto"
+          },
+          "resolution": [
+            "480p",
+            "720p"
+          ],
+          "aspectRatio": [
+            "auto",
+            "21:9",
+            "16:9",
+            "4:3",
+            "1:1",
+            "3:4",
+            "9:16"
+          ],
+          "maxUploadMB": 50,
+          "audioToggle": true,
+          "notes": "Extend continues a source clip forward or backward, or stitches up to 3 clips into one coherent Fast Seedance 2.0 video."
+        }
       }
     ],
     "features": {
@@ -10812,7 +11537,7 @@
         "value": false
       },
       "extend": {
-        "value": false
+        "value": true
       }
     },
     "bestFor": "Fast Seedance drafts, reference tests, and shot planning"
@@ -11102,7 +11827,7 @@
       "pricingDetails": {
         "currency": "USD",
         "tokenPricing": {
-          "model": "fal_tokens",
+          "model": "byteplus_tokens",
           "unitPriceUsdPer1kTokens": 0.006730769230769231,
           "pricingSource": "byteplus_seedance_2_0_mini_flat_markup",
           "framesPerSecond": 24,
@@ -11570,7 +12295,7 @@
       "pricingDetails": {
         "currency": "USD",
         "tokenPricing": {
-          "model": "fal_tokens",
+          "model": "byteplus_tokens",
           "unitPriceUsdPer1kTokens": 0.010769230769230769,
           "framesPerSecond": 24,
           "defaultAspectRatio": "16:9",

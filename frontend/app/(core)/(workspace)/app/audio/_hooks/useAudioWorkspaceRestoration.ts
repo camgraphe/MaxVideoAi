@@ -3,17 +3,35 @@ import { useCallback, useEffect, useRef, type Dispatch, type MutableRefObject, t
 import {
   coerceAudioIntensity,
   coerceAudioLanguage,
+  coerceAudioLyria3Bpm,
+  coerceAudioLyria3Model,
   coerceAudioMood,
   coerceAudioPackId,
   coerceAudioVoiceDelivery,
   coerceAudioVoiceGender,
   coerceAudioVoiceProfile,
+  coerceSeedAudioOutputFormat,
+  coerceSeedAudioSampleRate,
+  coerceSeedAudioVoice,
+  DEFAULT_SEED_AUDIO_OUTPUT_FORMAT,
+  DEFAULT_AUDIO_LYRIA3_BPM,
+  DEFAULT_AUDIO_LYRIA3_MODEL,
+  DEFAULT_SEED_AUDIO_PITCH,
+  DEFAULT_SEED_AUDIO_SAMPLE_RATE,
+  DEFAULT_SEED_AUDIO_SPEED,
+  DEFAULT_SEED_AUDIO_VOICE,
+  DEFAULT_SEED_AUDIO_VOLUME,
   getAudioPackConfig,
   type AudioIntensity,
   type AudioLanguage,
+  type AudioLyria3Bpm,
+  type AudioLyria3Model,
   type AudioMood,
   type AudioOutputKind,
   type AudioPackId,
+  type AudioSeedAudioOutputFormat,
+  type AudioSeedAudioSampleRate,
+  type AudioSeedAudioVoice,
   type AudioVoiceDelivery,
   type AudioVoiceGender,
   type AudioVoiceProfile,
@@ -51,13 +69,21 @@ type UseAudioWorkspaceRestorationArgs = {
   setIntensity: Dispatch<SetStateAction<AudioIntensity>>;
   setLanguage: Dispatch<SetStateAction<AudioLanguage>>;
   setManualDurationSec: Dispatch<SetStateAction<number>>;
+  setMusicBpm: Dispatch<SetStateAction<AudioLyria3Bpm>>;
   setMood: Dispatch<SetStateAction<AudioMood>>;
+  setMusicModel: Dispatch<SetStateAction<AudioLyria3Model>>;
   setMusicEnabled: Dispatch<SetStateAction<boolean>>;
   setNotice: Dispatch<SetStateAction<string | null>>;
   setPack: Dispatch<SetStateAction<AudioPackId>>;
   setPrompt: Dispatch<SetStateAction<string>>;
   setResult: Dispatch<SetStateAction<AudioResultState | null>>;
   setScript: Dispatch<SetStateAction<string>>;
+  setSeedAudioOutputFormat: Dispatch<SetStateAction<AudioSeedAudioOutputFormat>>;
+  setSeedAudioPitch: Dispatch<SetStateAction<number>>;
+  setSeedAudioSampleRate: Dispatch<SetStateAction<AudioSeedAudioSampleRate>>;
+  setSeedAudioSpeed: Dispatch<SetStateAction<number>>;
+  setSeedAudioVoice: Dispatch<SetStateAction<AudioSeedAudioVoice>>;
+  setSeedAudioVolume: Dispatch<SetStateAction<number>>;
   setSourceVideo: Dispatch<SetStateAction<SourceVideoState | null>>;
   setVoiceDelivery: Dispatch<SetStateAction<AudioVoiceDelivery>>;
   setVoiceGender: Dispatch<SetStateAction<AudioVoiceGender>>;
@@ -78,13 +104,21 @@ export function useAudioWorkspaceRestoration({
   setIntensity,
   setLanguage,
   setManualDurationSec,
+  setMusicBpm,
   setMood,
+  setMusicModel,
   setMusicEnabled,
   setNotice,
   setPack,
   setPrompt,
   setResult,
   setScript,
+  setSeedAudioOutputFormat,
+  setSeedAudioPitch,
+  setSeedAudioSampleRate,
+  setSeedAudioSpeed,
+  setSeedAudioVoice,
+  setSeedAudioVolume,
   setSourceVideo,
   setVoiceDelivery,
   setVoiceGender,
@@ -169,11 +203,35 @@ export function useAudioWorkspaceRestoration({
       setPrompt(detail.settingsSnapshot?.prompt ?? '');
       setMood(nextMood);
       setIntensity(nextIntensity);
+      setMusicModel(coerceAudioLyria3Model(detail.settingsSnapshot?.musicModel) ?? DEFAULT_AUDIO_LYRIA3_MODEL);
+      setMusicBpm(coerceAudioLyria3Bpm(detail.settingsSnapshot?.musicBpm) ?? DEFAULT_AUDIO_LYRIA3_BPM);
       setScript(detail.settingsSnapshot?.script ?? '');
       setVoiceGender(coerceAudioVoiceGender(detail.settingsSnapshot?.voiceGender) ?? DEFAULT_VOICE_GENDER);
       setVoiceProfile(coerceAudioVoiceProfile(detail.settingsSnapshot?.voiceProfile) ?? DEFAULT_VOICE_PROFILE);
       setVoiceDelivery(coerceAudioVoiceDelivery(detail.settingsSnapshot?.voiceDelivery) ?? DEFAULT_VOICE_DELIVERY);
       setLanguage(coerceAudioLanguage(detail.settingsSnapshot?.language) ?? DEFAULT_LANGUAGE);
+      setSeedAudioVoice(coerceSeedAudioVoice(detail.settingsSnapshot?.seedAudioVoice) ?? DEFAULT_SEED_AUDIO_VOICE);
+      setSeedAudioOutputFormat(
+        coerceSeedAudioOutputFormat(detail.settingsSnapshot?.seedAudioOutputFormat) ?? DEFAULT_SEED_AUDIO_OUTPUT_FORMAT
+      );
+      setSeedAudioSampleRate(
+        coerceSeedAudioSampleRate(detail.settingsSnapshot?.seedAudioSampleRate) ?? DEFAULT_SEED_AUDIO_SAMPLE_RATE
+      );
+      setSeedAudioSpeed(
+        typeof detail.settingsSnapshot?.seedAudioSpeed === 'number'
+          ? detail.settingsSnapshot.seedAudioSpeed
+          : DEFAULT_SEED_AUDIO_SPEED
+      );
+      setSeedAudioVolume(
+        typeof detail.settingsSnapshot?.seedAudioVolume === 'number'
+          ? detail.settingsSnapshot.seedAudioVolume
+          : DEFAULT_SEED_AUDIO_VOLUME
+      );
+      setSeedAudioPitch(
+        typeof detail.settingsSnapshot?.seedAudioPitch === 'number'
+          ? detail.settingsSnapshot.seedAudioPitch
+          : DEFAULT_SEED_AUDIO_PITCH
+      );
       setManualDurationSec(
         typeof detail.settingsSnapshot?.durationSec === 'number'
           ? detail.settingsSnapshot.durationSec
@@ -229,12 +287,20 @@ export function useAudioWorkspaceRestoration({
       setIntensity,
       setLanguage,
       setManualDurationSec,
+      setMusicBpm,
       setMood,
+      setMusicModel,
       setMusicEnabled,
       setPack,
       setPrompt,
       setResult,
       setScript,
+      setSeedAudioOutputFormat,
+      setSeedAudioPitch,
+      setSeedAudioSampleRate,
+      setSeedAudioSpeed,
+      setSeedAudioVoice,
+      setSeedAudioVolume,
       setVoiceDelivery,
       setVoiceGender,
       setVoiceProfile,

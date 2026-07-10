@@ -21,14 +21,14 @@ import { uploadVideoFile } from '@/lib/client-video-upload';
 import type { AudioWorkspaceCopy } from '../copy';
 import type { AudioJobDetail } from './audio-workspace-types';
 
-export const DEFAULT_PACK: AudioPackId = 'cinematic';
+export const DEFAULT_PACK: AudioPackId = 'music_only';
 export const DEFAULT_MOOD: AudioMood = 'epic';
 export const DEFAULT_INTENSITY: AudioIntensity = 'standard';
 export const DEFAULT_VOICE_GENDER: AudioVoiceGender = 'female';
 export const DEFAULT_VOICE_PROFILE: AudioVoiceProfile = 'balanced';
 export const DEFAULT_VOICE_DELIVERY: AudioVoiceDelivery = 'cinematic';
 export const DEFAULT_LANGUAGE: AudioLanguage = 'auto';
-export const DEFAULT_MANUAL_DURATION_SEC = 8;
+export const DEFAULT_MANUAL_DURATION_SEC = 30;
 export const AUDIO_VOICE_GENDER_VALUES = ['female', 'male', 'neutral'] as const;
 
 export const AUDIO_MODE_META: Record<

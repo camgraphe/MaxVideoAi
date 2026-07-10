@@ -3,9 +3,19 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import {
+  buildAudioModeOptions,
+  DEFAULT_AUDIO_WORKSPACE_COPY,
+} from '../frontend/app/(core)/(workspace)/app/audio/copy';
+import {
+  DEFAULT_PACK,
+  resolveProviderLabel,
+} from '../frontend/app/(core)/(workspace)/app/audio/_lib/audio-workspace-helpers';
+
 const root = process.cwd();
 const audioDir = join(root, 'frontend/app/(core)/(workspace)/app/audio');
 const workspacePath = join(audioDir, 'AudioWorkspace.tsx');
+const latestRendersRailPath = join(audioDir, 'AudioLatestRendersRail.tsx');
 const controlsPath = join(audioDir, '_components/audio-workspace-controls.tsx');
 const composerSurfacePath = join(audioDir, '_components/audio-workspace-composer-surface.tsx');
 const generatedPickerPath = join(audioDir, '_components/audio-generated-video-picker.tsx');
@@ -22,6 +32,7 @@ const sourceMediaHandlersHookPath = join(audioDir, '_hooks/useAudioSourceMediaHa
 const restorationHookPath = join(audioDir, '_hooks/useAudioWorkspaceRestoration.ts');
 
 const workspaceSource = readFileSync(workspacePath, 'utf8');
+const latestRendersRailSource = readFileSync(latestRendersRailPath, 'utf8');
 const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
 
 function getFileInputBlock(source: string, accept: string): string {
@@ -212,4 +223,95 @@ test('audio upload inputs stay hidden from keyboard traversal', () => {
     assert.match(inputBlock, /aria-hidden="true"/);
     assert.match(inputBlock, /tabIndex=\{-1\}/);
   }
+});
+
+test('audio history renders playable audio files inline', () => {
+  assert.match(latestRendersRailSource, /<audio/, 'audio history should mount an audio element for audio jobs');
+  assert.match(latestRendersRailSource, /controls/, 'audio history audio element should expose native playback controls');
+  assert.match(latestRendersRailSource, /src=\{job\.audioUrl\}/, 'audio history should play the stored job audio URL');
+  assert.doesNotMatch(latestRendersRailSource, /0:00 \//, 'audio history should not render a fake playback timestamp');
+  assert.doesNotMatch(latestRendersRailSource, /<UIIcon icon=\{Play\}/, 'audio history should not render a fake play button');
+});
+
+test('audio workspace keeps voice script duration estimates internal for pricing', () => {
+  const generationDockSource = readFileSync(generationDockPath, 'utf8');
+
+  assert.match(workspaceSource, /buildAudioPricingSnapshot\(\{[\s\S]*durationSec: estimatedDurationSec/, 'pricing should keep using the internal estimated duration');
+  assert.match(workspaceSource, /const displayDurationSec = pack === 'voice_only' \? null : estimatedDurationSec/, 'voice-only duration estimates should be hidden from the UI');
+  assert.doesNotMatch(composerSurfaceSource, /copy\.controls\.estimatedDuration/, 'script composer should not display estimated read duration');
+  assert.match(generationDockSource, /\{durationLabel \? \(/, 'generation dock should render the duration card only when a display duration exists');
+});
+
+test('audio generation publishes job status updates for history refresh', () => {
+  const generationRunnerSource = readFileSync(generationRunnerHookPath, 'utf8');
+
+  assert.match(generationRunnerSource, /new CustomEvent\('jobs:status'/, 'audio generation should notify job history listeners');
+  assert.match(generationRunnerSource, /audioUrl: response\.audioUrl \?\? null/, 'audio generation status event should include audio media');
+  assert.match(generationRunnerSource, /pricing: response\.pricing/, 'audio generation status event should include pricing metadata');
+});
+
+test('audio workspace supports parallel generations with an in-progress banner', () => {
+  const generationRunnerSource = readFileSync(generationRunnerHookPath, 'utf8');
+  const generationDockSource = readFileSync(generationDockPath, 'utf8');
+
+  assert.match(workspaceSource, /pendingAudioGenerations/, 'audio workspace should track multiple local pending generations');
+  assert.match(workspaceSource, /setPendingAudioGenerations/, 'audio workspace should expose pending generation updates to the runner');
+  assert.doesNotMatch(workspaceSource, /!isGenerating\s*&&/, 'audio generation should not be globally blocked while another run is in flight');
+  assert.match(composerSurfaceSource, /inProgressMessage/, 'composer surface should accept an in-progress banner message');
+  assert.match(composerSurfaceSource, /aria-live="polite"/, 'in-progress banner should announce updates politely');
+  assert.match(generationRunnerSource, /crypto\.randomUUID/, 'audio runner should create a local pending generation id before the server responds');
+  assert.match(generationRunnerSource, /setPendingAudioGenerations/, 'audio runner should add and remove local pending generations');
+  assert.doesNotMatch(generationDockSource, /copy\.pricing\.generating/, 'generate button should remain available while other audio runs continue');
+});
+
+test('audio voice sample placeholder renders below audio options', () => {
+  const optionsIndex = composerSurfaceSource.indexOf('<AudioOptionsSection');
+  const voiceSampleIndex = composerSurfaceSource.indexOf('<AudioVoiceSection');
+
+  assert.notEqual(optionsIndex, -1, 'composer surface should render audio options');
+  assert.notEqual(voiceSampleIndex, -1, 'composer surface should render the voice sample placeholder');
+  assert.ok(
+    optionsIndex < voiceSampleIndex,
+    'voice sample placeholder should render below the audio options section'
+  );
+});
+
+test('audio voice selection uses a compact dropdown with sample playback in the menu', () => {
+  const optionsSectionSource = readFileSync(optionsSectionPath, 'utf8');
+
+  assert.match(optionsSectionSource, /function SeedAudioVoiceDropdown/, 'voice selector should use a dedicated dropdown');
+  assert.match(optionsSectionSource, /<summary/, 'voice selector should render a compact select-style trigger');
+  assert.match(optionsSectionSource, /role="listbox"/, 'voice selector menu should expose listbox semantics');
+  assert.match(optionsSectionSource, /<audio/, 'voice selector menu should support sample playback');
+  assert.match(optionsSectionSource, /document\.addEventListener\('pointerdown'/, 'voice selector should listen for outside clicks');
+  assert.match(optionsSectionSource, /dropdownRef\.current\?\.contains/, 'voice selector should only close when the click is outside');
+  assert.doesNotMatch(optionsSectionSource, /grid-cols-\[minmax\(0,1fr\)_minmax\(128px,0\.8fr\)\]/, 'voice selector should not render persistent voice cards');
+  assert.doesNotMatch(optionsSectionSource, /seedAudioSampleText/, 'sample text should not be rendered in the picker UI');
+});
+
+test('audio workspace keeps music and cinematic modes while adding Seed Audio voice-over', () => {
+  assert.equal(DEFAULT_PACK, 'music_only');
+  assert.deepEqual(buildAudioModeOptions(DEFAULT_AUDIO_WORKSPACE_COPY), [
+    {
+      id: 'music_only',
+      label: 'Music Only',
+      description: 'Background music or ambience.',
+    },
+    {
+      id: 'voice_only',
+      label: 'Voice Over',
+      description: 'Seed Audio narration as an audio file.',
+    },
+    {
+      id: 'cinematic',
+      label: 'Cinematic',
+      description: 'SFX + optional background music.',
+    },
+    {
+      id: 'cinematic_voice',
+      label: 'Cinematic + Voice',
+      description: 'SFX + background music + VO.',
+    },
+  ]);
+  assert.equal(resolveProviderLabel(DEFAULT_AUDIO_WORKSPACE_COPY, 'voice_only'), 'Seed Audio 1.0');
 });

@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const pagePath = 'frontend/app/(core)/billing/page.tsx';
 const clientPath = 'frontend/app/(core)/billing/_components/BillingClient.tsx';
+const authGatePath = 'frontend/app/(core)/billing/_components/BillingAuthGateModal.tsx';
 const walletPanelPath = 'frontend/app/(core)/billing/_components/WalletTopupPanel.tsx';
 const receiptsPanelPath = 'frontend/app/(core)/billing/_components/ReceiptsPanel.tsx';
 const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
@@ -14,12 +15,17 @@ const analyticsHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupAna
 const quotesHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupQuotes.ts';
 const topupSelectionHookPath = 'frontend/app/(core)/billing/_hooks/useBillingTopupSelection.ts';
 const copyPath = 'frontend/app/(core)/billing/_lib/billing-copy.ts';
+const intentPath = 'frontend/app/(core)/billing/_lib/billing-intent.ts';
 const typesPath = 'frontend/app/(core)/billing/_lib/billing-types.ts';
 const utilsPath = 'frontend/app/(core)/billing/_lib/billing-utils.ts';
+const accessibleModalHookPath = 'frontend/components/ui/useAccessibleModal.ts';
+const hostedCheckoutHookPath = 'frontend/hooks/useHostedWalletCheckout.ts';
+const checkoutReturnNoticePath = 'frontend/app/(core)/billing/_components/BillingCheckoutReturnNotice.tsx';
 
 test('billing page delegates client billing behavior to route-local modules', () => {
   for (const file of [
     clientPath,
+    authGatePath,
     walletPanelPath,
     receiptsPanelPath,
     expressCheckoutPath,
@@ -30,8 +36,12 @@ test('billing page delegates client billing behavior to route-local modules', ()
     quotesHookPath,
     topupSelectionHookPath,
     copyPath,
+    intentPath,
     typesPath,
     utilsPath,
+    accessibleModalHookPath,
+    hostedCheckoutHookPath,
+    checkoutReturnNoticePath,
   ]) {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
@@ -60,6 +70,14 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.match(clientSource, /useBillingTopupQuotes\(\{/);
   assert.match(clientSource, /useBillingTopupAnalytics\(topupQuotes\)/);
   assert.match(clientSource, /useBillingTopupSelection\(\{/);
+  assert.match(clientSource, /useHostedWalletCheckout\(\{/);
+  assert.match(
+    clientSource,
+    /function handleTopUp\(\) \{[\s\S]*?setToast\(null\);[\s\S]*?hostedCheckout\.startCheckout\(\);/,
+    'a new Billing hosted attempt should clear its visible hosted-checkout toast'
+  );
+  assert.match(clientSource, /checkoutCaptchaResetGeneration=\{hostedCheckout\.captchaResetGeneration\}/);
+  assert.match(clientSource, /<BillingCheckoutReturnNotice/);
 
   assert.doesNotMatch(clientSource, /function WalletExpressCheckout/);
   assert.doesNotMatch(clientSource, /function TurnstileChallenge/);
@@ -77,9 +95,15 @@ test('billing client keeps orchestration separate from copy, checkout widgets, a
   assert.doesNotMatch(clientSource, /userCurrencyOverrideRef/);
   assert.doesNotMatch(clientSource, /parseAmountToCents/);
   assert.doesNotMatch(clientSource, /USD_TOPUP_TIERS/);
+  assert.doesNotMatch(clientSource, /fetch\('\/api\/wallet'/);
+  assert.doesNotMatch(clientSource, /const \[checkoutCaptchaRequired, setCheckoutCaptchaRequired\]/);
 });
 
 test('billing feature modules own their explicit responsibilities', () => {
+  const authGateSource = readFileSync(authGatePath, 'utf8');
+  const accessibleModalHookSource = readFileSync(accessibleModalHookPath, 'utf8');
+  const intentSource = readFileSync(intentPath, 'utf8');
+  const clientSource = readFileSync(clientPath, 'utf8');
   const walletPanelSource = readFileSync(walletPanelPath, 'utf8');
   const receiptsPanelSource = readFileSync(receiptsPanelPath, 'utf8');
   const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
@@ -91,6 +115,9 @@ test('billing feature modules own their explicit responsibilities', () => {
   const topupSelectionHookSource = readFileSync(topupSelectionHookPath, 'utf8');
   const copySource = readFileSync(copyPath, 'utf8');
   const utilsSource = readFileSync(utilsPath, 'utf8');
+
+  assert.match(accessibleModalHookSource, /export function useAccessibleModal/);
+  assert.match(authGateSource, /from '@\/components\/ui\/useAccessibleModal';/);
 
   assert.match(walletPanelSource, /export function WalletTopupPanel/);
   assert.match(walletPanelSource, /<WalletExpressCheckout/);
@@ -120,5 +147,8 @@ test('billing feature modules own their explicit responsibilities', () => {
   assert.match(topupSelectionHookSource, /parseAmountToCents/);
   assert.match(topupSelectionHookSource, /USD_TOPUP_TIERS/);
   assert.match(copySource, /export const DEFAULT_BILLING_COPY/);
+  assert.match(intentSource, /export function parseBillingIntent/);
+  assert.match(intentSource, /export function buildBillingIntentTarget/);
+  assert.match(clientSource, /from '\.\.\/_lib\/billing-intent';/);
   assert.match(utilsSource, /export function parseAmountToCents/);
 });

@@ -45,6 +45,30 @@ function hasCuratedShowdowns(slug: string | null | undefined) {
   return Boolean(SHOWDOWNS[slug]?.some((entry) => Boolean(entry)));
 }
 
+export function resolvePromptInheritedShowdowns(
+  entries: Array<ShowdownEntry | null>,
+  allShowdowns: Record<string, Array<ShowdownEntry | null>>
+): Array<ShowdownEntry | null> {
+  return entries.map((entry) => {
+    if (!entry || entry.prompt || !entry.promptSourceSlug || !entry.slotId) {
+      return entry;
+    }
+    const source = allShowdowns[entry.promptSourceSlug]?.find(
+      (candidate): candidate is ShowdownEntry => Boolean(candidate && candidate.slotId === entry.slotId)
+    );
+    if (!source?.prompt) {
+      return entry;
+    }
+    return {
+      ...entry,
+      title: entry.title ?? source.title,
+      aspectRatio: entry.aspectRatio ?? source.aspectRatio,
+      mode: entry.mode ?? source.mode,
+      prompt: source.prompt,
+    };
+  });
+}
+
 function logShowdownMediaLookupError(operation: string, error: unknown) {
   console.warn(`[compare-page] Skipping optional showdown media lookup after ${operation} failed.`, error);
 }
@@ -84,7 +108,7 @@ export async function buildCompareShowdownSlots({
       : reversedShowdownSlug && SHOWDOWNS[reversedShowdownSlug] != null
         ? reversedShowdownSlug
         : canonicalSlug;
-  const showdowns = await hydrateShowdowns(SHOWDOWNS[showdownSourceSlug] ?? []);
+  const showdowns = await hydrateShowdowns(resolvePromptInheritedShowdowns(SHOWDOWNS[showdownSourceSlug] ?? [], SHOWDOWNS));
   const normalizedShowdowns = showdowns.filter((entry): entry is ShowdownEntry => Boolean(entry));
   const showdownsByPrompt = new Map(normalizedShowdowns.map((entry) => [normalizePrompt(entry.prompt), entry]));
   const showdownsBySlotId = new Map(
@@ -184,6 +208,8 @@ export async function buildCompareShowdownSlots({
 
     return {
       ...template,
+      aspectRatio: entry?.aspectRatio ?? template.aspectRatio,
+      mode: entry?.mode ?? template.mode,
       title: localizeMappedValue(entry?.title ?? template.title, activeLocale, LOCALIZED_SHOWDOWN_TITLES),
       whatItTests: localizeMappedValue(template.whatItTests, activeLocale, LOCALIZED_SHOWDOWN_TESTS),
       prompt: entry?.prompt ?? template.prompt,

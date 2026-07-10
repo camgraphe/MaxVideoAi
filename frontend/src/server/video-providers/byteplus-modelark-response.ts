@@ -103,12 +103,38 @@ export function getBytePlusUserSafeErrorMessage(providerMessage: string): string
   if (
     normalized.includes('real person') ||
     normalized.includes('private information') ||
+    normalized.includes('private content') ||
+    normalized.includes('recognizable') ||
+    normalized.includes('recognisable') ||
+    normalized.includes('identifiable') ||
     normalized.includes('sensitive') ||
     normalized.includes('policy')
   ) {
-    return 'One of the input images was blocked by safety checks. Try an image without identifiable people or private content.';
+    return 'Seedance blocked a reference image because it may contain a recognizable person or private content. Use a non-identifiable, stylized, or generated reference image and try again.';
   }
-  return 'The render could not start. Please retry later.';
+  if (
+    normalized.includes('quota') ||
+    normalized.includes('resource pack') ||
+    normalized.includes('credits exhausted') ||
+    normalized.includes('too many requests') ||
+    normalized.includes('rate limit') ||
+    normalized.includes('temporarily unavailable')
+  ) {
+    return 'The render queue is temporarily busy. Please retry in a few moments.';
+  }
+  if (
+    normalized.includes('invalid request') ||
+    normalized.includes('unsupported') ||
+    normalized.includes('not supported') ||
+    normalized.includes('does not support') ||
+    normalized.includes('unprocessable') ||
+    normalized.includes('aspect ratio') ||
+    normalized.includes('resolution') ||
+    normalized.includes('duration')
+  ) {
+    return 'The selected Seedance prompt, media, or settings were not accepted. Adjust the reference media or settings and try again.';
+  }
+  return 'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.';
 }
 
 export async function parseJsonResponse(response: Response): Promise<BytePlusTaskResponse> {

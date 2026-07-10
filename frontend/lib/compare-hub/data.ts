@@ -1,7 +1,17 @@
 import compareHubConfig from '@/config/compare-hub.json';
 import engineCatalog from '@/config/engine-catalog.json';
 
-const EXCLUDED_ENGINE_SLUGS = new Set(['nano-banana', 'nano-banana-pro', 'nano-banana-2', 'gpt-image-2']);
+const EXCLUDED_ENGINE_SLUGS = new Set([
+  'nano-banana',
+  'nano-banana-lite',
+  'nano-banana-pro',
+  'nano-banana-2',
+  'gpt-image-2',
+  'seedream',
+  'seedream-5-0-pro',
+  'luma-uni-1',
+  'luma-uni-1-max',
+]);
 const ELIGIBLE_STATUSES = new Set(['live', 'early_access']);
 const VIDEO_MODES = new Set(['t2v', 'i2v', 'ref2v', 'fl2v', 'v2v', 'r2v', 'extend', 'reframe']);
 const LEGACY_UNAVAILABLE = new Set(['paused']);
@@ -103,7 +113,9 @@ function buildPublishedComparisonSlugSet(entries: CatalogEngine[]): Set<string> 
 
   entries.forEach((entry) => {
     if (!entry?.modelSlug) return;
+    if (EXCLUDED_ENGINE_SLUGS.has(entry.modelSlug)) return;
     getPublishedOpponentSlugs(entry).forEach((opponentSlug) => {
+      if (EXCLUDED_ENGINE_SLUGS.has(opponentSlug)) return;
       if (!validSlugs.has(opponentSlug) || opponentSlug === entry.modelSlug) return;
       published.add(buildCanonicalCompareSlug(entry.modelSlug, opponentSlug));
     });

@@ -19,6 +19,10 @@ import {
   resolveKlingO3UnifiedMode,
 } from '../_lib/kling-o3-unified-workflow';
 import {
+  isGeminiOmniEngineId,
+  resolveGeminiOmniUnifiedMode,
+} from '../_lib/gemini-omni-unified-workflow';
+import {
   getReferenceInputStatus,
   hasInputAssetInSlots,
   PRIMARY_IMAGE_SLOT_IDS,
@@ -80,6 +84,7 @@ type UseWorkspaceEngineModeStateResult = {
   isUnifiedSeedance: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedKlingO3: boolean;
+  isUnifiedGeminiOmni: boolean;
   klingO3UnsupportedVideoReason: string | null;
   klingO3DisabledEngineReasons: Record<string, string>;
   referenceInputStatus: WorkspaceReferenceInputStatus;
@@ -165,6 +170,7 @@ export function useWorkspaceEngineModeState({
   const isUnifiedSeedance = isUnifiedSeedanceEngineId(selectedEngine?.id);
   const isUnifiedHappyHorse = isHappyHorseEngineId(selectedEngine?.id);
   const isUnifiedKlingO3 = isKlingO3EngineId(selectedEngine?.id);
+  const isUnifiedGeminiOmni = isGeminiOmniEngineId(selectedEngine?.id);
   const klingO3DisabledEngineReasons = useMemo(
     () => getKlingO3DisabledEngineReasons({ engines, inputAssets, klingElements }),
     [engines, inputAssets, klingElements]
@@ -231,6 +237,13 @@ export function useWorkspaceEngineModeState({
         klingElements,
       });
     }
+    if (isUnifiedGeminiOmni) {
+      return resolveGeminiOmniUnifiedMode({
+        engine: selectedEngine,
+        inputAssets,
+        previousInteractionId: form?.extraInputValues.previous_interaction_id,
+      });
+    }
     if (isUnifiedHappyHorse && (form?.mode === 't2v' || !form?.mode)) {
       return getUnifiedHappyHorseMode(inputAssets, {
         supportsVideoEdit: supportsHappyHorseVideoEdit(selectedEngine.id),
@@ -245,9 +258,11 @@ export function useWorkspaceEngineModeState({
     if (modes.includes('t2v')) return 't2v';
     return modes[0] ?? 't2v';
   }, [
+    form?.extraInputValues.previous_interaction_id,
     form?.mode,
     inputAssets,
     isUnifiedHappyHorse,
+    isUnifiedGeminiOmni,
     isUnifiedKlingO3,
     isUnifiedSeedance,
     klingElements,
@@ -272,6 +287,7 @@ export function useWorkspaceEngineModeState({
       return currentMode === 'extend' && isWorkspaceModeAvailable(selectedEngine, currentMode) ? currentMode : null;
     }
     if (isUnifiedKlingO3) return null;
+    if (isUnifiedGeminiOmni) return null;
     if (referenceInputStatus.hasAudio) return null;
     if (
       (currentMode === 'v2v' ||
@@ -284,7 +300,14 @@ export function useWorkspaceEngineModeState({
       return currentMode;
     }
     return null;
-  }, [form?.mode, isUnifiedKlingO3, isUnifiedSeedance, referenceInputStatus.hasAudio, selectedEngine]);
+  }, [
+    form?.mode,
+    isUnifiedGeminiOmni,
+    isUnifiedKlingO3,
+    isUnifiedSeedance,
+    referenceInputStatus.hasAudio,
+    selectedEngine,
+  ]);
 
   const activeMode: Mode = activeManualMode ?? implicitMode;
   const allowsUnifiedVeoFirstLast = useMemo(() => {
@@ -512,6 +535,7 @@ export function useWorkspaceEngineModeState({
     isUnifiedSeedance,
     isUnifiedHappyHorse,
     isUnifiedKlingO3,
+    isUnifiedGeminiOmni,
     klingO3UnsupportedVideoReason,
     klingO3DisabledEngineReasons,
     referenceInputStatus,

@@ -8,6 +8,7 @@ import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
+import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
 import { AssetDropzoneSlot } from '@/components/asset-dropzone/AssetDropzoneSlot';
 import {
   buildAssetFieldTooltipLines,
@@ -17,14 +18,9 @@ import {
   resolveSlotLabel,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
-import type { AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
+import type { AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
-export type {
-  AssetFieldConfig,
-  AssetFieldRole,
-  AssetSlotAttachment,
-  AssetUploadMeta,
-} from '@/components/asset-dropzone/asset-dropzone-types';
+export type { AssetFieldConfig, AssetFieldGuidance, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
 
 interface AssetDropzoneProps {
   engine: EngineCaps;
@@ -43,6 +39,7 @@ interface AssetDropzoneProps {
   onOpenLibrary?: (field: EngineInputField, slotIndex: number) => void;
   onUrlSelect?: (field: EngineInputField, url: string, slotIndex: number) => void;
   referenceWarning?: string;
+  guidance?: AssetFieldGuidanceCopy | null;
   disabled?: boolean;
   disabledReason?: string | null;
 }
@@ -64,6 +61,7 @@ export function AssetDropzone({
   onOpenLibrary,
   onUrlSelect,
   referenceWarning,
+  guidance,
   disabled = false,
   disabledReason = null,
 }: AssetDropzoneProps) {
@@ -387,6 +385,7 @@ export function AssetDropzone({
           </div>
           {headerAction ? <div className="shrink-0">{headerAction}</div> : null}
         </div>
+        <AssetFieldGuidance tooltipId={`${tooltipId}-guidance`} guidance={guidance} fullBleedSingleAsset={fullBleedSingleAsset} />
         {disabled && disabledReason && !isSourceVideoDisabledState ? (
           <div
             role="note"

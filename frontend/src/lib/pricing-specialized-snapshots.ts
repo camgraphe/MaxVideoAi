@@ -439,8 +439,8 @@ export function buildSeedance2Snapshot(params: {
     vendorShareCents,
     vendorAccountId: params.vendorAccountId ?? undefined,
     meta: {
-      pricing_model: 'fal_tokens',
-      provider_cost_source: 'estimated_fal_pricing_config',
+      pricing_model: 'byteplus_tokens',
+      provider_cost_source: 'byteplus_modelark_pricing_config',
       billed_resolution: params.resolution,
       billed_aspect_ratio: quote.aspectRatio,
       output_width: quote.width,

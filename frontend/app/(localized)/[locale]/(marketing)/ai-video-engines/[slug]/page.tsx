@@ -165,8 +165,8 @@ export default async function CompareDetailPage(
   const leftCanGenerate = isEngineGeneratable(left);
   const rightCanGenerate = isEngineGeneratable(right);
   const priceScores = {
-    leftScore: computePricingScore(leftPricingDisplay.prices),
-    rightScore: computePricingScore(rightPricingDisplay.prices),
+    leftScore: computePricingScore(leftPricingDisplay.scorePrices ?? leftPricingDisplay.prices),
+    rightScore: computePricingScore(rightPricingDisplay.scorePrices ?? rightPricingDisplay.prices),
   };
   const speedScores = computePairScores(left.engine?.avgDurationMs ?? null, right.engine?.avgDurationMs ?? null, true);
   const resolvedLeftOptions = ENGINE_OPTIONS;
@@ -266,6 +266,7 @@ export default async function CompareDetailPage(
       leftCanGenerate={leftCanGenerate}
       leftIsPrelaunch={leftIsPrelaunch}
       leftOverall={leftOverall}
+      leftPricingDisplay={leftPricingDisplay}
       leftScoreStyle={leftScoreStyle}
       localizedPromptNote={localizedPromptNote}
       pageOverride={pageOverride}
@@ -280,6 +281,7 @@ export default async function CompareDetailPage(
       rightCanGenerate={rightCanGenerate}
       rightIsPrelaunch={rightIsPrelaunch}
       rightOverall={rightOverall}
+      rightPricingDisplay={rightPricingDisplay}
       rightScoreStyle={rightScoreStyle}
       scorecardCriteriaLabel={scorecardCriteriaLabel}
       scorecardProvisionalNote={scorecardProvisionalNote}

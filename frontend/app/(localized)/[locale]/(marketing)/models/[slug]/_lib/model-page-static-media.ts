@@ -19,6 +19,10 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_a424b7be-5f70-491b-b70e-6cbbbe223d21',
     demo: 'job_43c4c8cd-246a-4c96-80a9-ab647b2eade7',
   },
+  'gemini-omni-flash': {
+    hero: 'job_bd1604b7-ae90-45eb-9a65-fb6d44dfffe9',
+    demo: 'job_bbc31801-7191-4d40-90b7-6b52bdeb1a7a',
+  },
   'pika-text-to-video': {
     hero: 'job_2c958e35-92e7-4c0f-8828-ec49476c8c4e',
     demo: 'job_f5992c71-a197-482f-8d0f-028f261ed27b',
@@ -99,6 +103,14 @@ export const PREFERRED_MEDIA: Record<string, { hero: string | null; demo: string
     hero: 'job_24d59992-532b-43e3-b382-12310d973af1',
     demo: 'job_b67e3f62-b117-4e89-997d-e11eb8f48c4a',
   },
+};
+
+export const FEATURED_EXAMPLE_MEDIA: Record<string, string[]> = {
+  'dreamina-seedance-2-0-mini': [
+    'job_f2605150-0d2a-48ad-b1a9-bba8891d568b',
+    'job_f9e077a0-2568-464e-a4e6-962537320dec',
+    'job_2581d0af-23fc-46dd-a1df-049cac1824c1',
+  ],
 };
 
 export const PREP_LINK_VISUALS = {

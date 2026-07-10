@@ -7,6 +7,10 @@ export type ComparePageOverride = {
     titleBranding?: 'auto' | 'none';
   };
   heroIntro?: string;
+  quickVerdict?: {
+    title: string;
+    body: string;
+  };
   topCards?: Array<{
     title: string;
     body: string;

@@ -5,7 +5,6 @@ export type EngineKeySpecsEntry = {
   modelSlug?: string;
   engineId?: string;
   keySpecs?: Record<string, unknown>;
-  sources?: string[];
 };
 
 type EngineKeySpecsFile = {
@@ -27,7 +26,11 @@ export async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEn
       (data.specs ?? []).forEach((entry) => {
         const key = entry.modelSlug ?? entry.engineId;
         if (key) {
-          map.set(key, entry);
+          map.set(key, {
+            modelSlug: entry.modelSlug,
+            engineId: entry.engineId,
+            keySpecs: entry.keySpecs,
+          });
         }
       });
       return map;
@@ -37,4 +40,3 @@ export async function loadEngineKeySpecs(): Promise<Map<string, EngineKeySpecsEn
   }
   return new Map();
 }
-

@@ -8,6 +8,7 @@ import {
 } from '@/lib/supabase-auth-cleanup';
 import {
   consumePendingGoogleLogin,
+  resolveGoogleAuthCompletionEvent,
   sanitizeNextPath,
 } from '../_lib/login-helpers';
 
@@ -18,14 +19,18 @@ type UseLoginAuthenticatedRedirectOptions = {
   oauthCodeExchangeStartedRef: MutableRefObject<boolean>;
 };
 
-function persistGoogleLoginCompleted() {
-  if (consumePendingGoogleLogin()) {
-    persistPendingAnalyticsEvent('login_completed', {
-      route_family: 'auth',
-      auth_surface: 'login',
-      method: 'google',
-    });
-  }
+function persistGoogleAuthCompleted() {
+  const pendingMode = consumePendingGoogleLogin();
+  if (!pendingMode) return;
+  const eventName = resolveGoogleAuthCompletionEvent(pendingMode);
+  persistPendingAnalyticsEvent(eventName, {
+    route_family: 'auth',
+    auth_surface: 'login',
+    method: 'google',
+    ...(eventName === 'sign_up_completed'
+      ? { email_confirmation_required: false }
+      : {}),
+  });
 }
 
 export function useLoginAuthenticatedRedirect({
@@ -39,7 +44,7 @@ export function useLoginAuthenticatedRedirect({
       const session = await readBrowserSession();
       const userId = session?.user?.id ?? null;
       if (!session?.access_token || !userId) return false;
-      persistGoogleLoginCompleted();
+      persistGoogleAuthCompleted();
       completeAuthenticatedRedirect(target, userId);
       return true;
     },
@@ -62,7 +67,7 @@ export function useLoginAuthenticatedRedirect({
       }
       const user = data.user ?? null;
       if (user && nextPath) {
-        persistGoogleLoginCompleted();
+        persistGoogleAuthCompleted();
         completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
       }
     }
@@ -81,7 +86,7 @@ export function useLoginAuthenticatedRedirect({
         }
         const user = data.user ?? null;
         if (user && nextPath) {
-          persistGoogleLoginCompleted();
+          persistGoogleAuthCompleted();
           completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
         }
       }).catch((err) => {
@@ -105,7 +110,7 @@ export function useLoginAuthenticatedRedirect({
     readBrowserSession().then((session) => {
       if (cancelled) return;
       if (session?.access_token) {
-        persistGoogleLoginCompleted();
+        persistGoogleAuthCompleted();
         completeAuthenticatedRedirect(sanitizeNextPath(nextPath), session.user?.id ?? null);
       }
     }).catch((err) => {

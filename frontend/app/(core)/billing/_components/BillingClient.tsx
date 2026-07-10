@@ -1,15 +1,18 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import deepmerge from 'deepmerge';
-import { usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { HeaderBar } from '@/components/HeaderBar';
 import { AppSidebar } from '@/components/AppSidebar';
+import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import type { WalletCheckoutReturnTarget } from '@/lib/wallet/checkout-return';
 import { BillingAuthGateModal } from './BillingAuthGateModal';
+import { BillingCheckoutReturnNotice } from './BillingCheckoutReturnNotice';
 import { BillingHero } from './BillingHero';
 import { BillingInfoAside } from './BillingInfoAside';
 import { ReceiptsPanel } from './ReceiptsPanel';
@@ -22,15 +25,13 @@ import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
 import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
+import { buildBillingIntentTarget, parseBillingIntent } from '../_lib/billing-intent';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
-type LegacyCheckoutStripe = Stripe & {
-  redirectToCheckout?: (params: { sessionId: string }) => Promise<{ error?: { message?: string } }>;
-};
-
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
+const EMPTY_SEARCH_PARAMS = new URLSearchParams();
 
 export function BillingClient() {
   const { locale, t } = useI18n();
@@ -45,19 +46,15 @@ export function BillingClient() {
     if (!PUBLISHABLE_KEY) return null;
     return loadStripe(PUBLISHABLE_KEY, { locale });
   }, [locale]);
-  const pathname = usePathname();
+  const searchParams = useSearchParams() ?? EMPTY_SEARCH_PARAMS;
+  const billingIntent = useMemo(() => parseBillingIntent(searchParams), [searchParams]);
   const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [isTopupStarting, setIsTopupStarting] = useState(false);
   const [expressRequested, setExpressRequested] = useState(false);
-  const [checkoutCaptchaRequired, setCheckoutCaptchaRequired] = useState(false);
-  const [checkoutCaptchaToken, setCheckoutCaptchaToken] = useState<string | null>(null);
-  const [checkoutCaptchaError, setCheckoutCaptchaError] = useState<string | null>(null);
-
+  const [checkoutReturnTarget, setCheckoutReturnTarget] = useState<WalletCheckoutReturnTarget | null>(null);
   const [toast, setToast] = useState<string | null>(null);
-  const loginRedirectTarget = pathname || '/billing';
   const billingIntlLocale = locale === 'fr' ? 'fr-FR' : locale === 'es' ? 'es-ES' : CURRENCY_LOCALE;
 
   const formatMoney = (amountCents: number, currency: string) => {
@@ -95,7 +92,6 @@ export function BillingClient() {
   };
   const {
     applyDetectedCurrency,
-    chargeCurrency,
     currencyLoading,
     currencyOptions,
     currencyStatus,
@@ -128,7 +124,16 @@ export function BillingClient() {
   } = useBillingTopupSelection({
     copy,
     formatUsdAmount,
+    initialTopupCents: billingIntent.amountCents,
   });
+  const loginRedirectTarget = useMemo(
+    () =>
+      buildBillingIntentTarget({
+        amountCents: selectedTopupCents,
+        currency: 'USD',
+      }),
+    [selectedTopupCents]
+  );
   const { topupQuotes, quoteLoading, quoteError } = useBillingTopupQuotes({
     authLoading,
     session,
@@ -160,9 +165,6 @@ export function BillingClient() {
 
   useEffect(() => {
     setExpressRequested(false);
-    setCheckoutCaptchaRequired(false);
-    setCheckoutCaptchaToken(null);
-    setCheckoutCaptchaError(null);
   }, [normalizedChargeCurrency, selectedTopupCents]);
 
   useEffect(() => {
@@ -175,101 +177,51 @@ export function BillingClient() {
     cancelledMessage: copy.toasts.cancelled,
     onCancelled: triggerTopupCancelled,
     onGoogleAdsConversion: triggerGoogleAdsConversion,
+    onReturnTarget: setCheckoutReturnTarget,
     onToast: setToast,
     successMessage: copy.toasts.success,
   });
 
-  async function handleTopUp(amountCents: number) {
+  const handleHostedTopupStarted = useCallback(({ amountCents, currency }: { amountCents: number; currency: string }) => {
+    triggerTopupStarted(amountCents, currency);
+  }, [triggerTopupStarted]);
+
+  const handleHostedTopupFailed = useCallback(({
+    amountCents,
+    currency,
+    reason,
+  }: {
+    amountCents: number;
+    currency: string;
+    reason: string;
+  }) => {
+    triggerTopupFailed(amountCents, currency, reason);
+    setToast(copy.errors.topupStart);
+  }, [copy.errors.topupStart, triggerTopupFailed]);
+
+  const handleHostedRateLimited = useCallback((seconds: number | null) => {
+    setToast(formatRateLimitMessage(copy.wallet.rateLimited, seconds ?? 900));
+  }, [copy.wallet.rateLimited]);
+
+  const hostedCheckout = useHostedWalletCheckout({
+    accessToken: session?.access_token ?? null,
+    amountCents: selectedTopupCents,
+    currency: normalizedChargeCurrency,
+    locale,
+    source: 'billing',
+    stripePromise,
+    onStarted: handleHostedTopupStarted,
+    onFailed: handleHostedTopupFailed,
+    onRateLimited: handleHostedRateLimited,
+  });
+
+  function handleTopUp() {
     if (!session) {
       setAuthModalOpen(true);
       return;
     }
-    if (isTopupStarting) return;
-    setIsTopupStarting(true);
-    setCheckoutCaptchaError(null);
-    recordCheckoutInteractionEvent({
-      amountCents,
-      eventName: 'hosted_checkout_requested',
-      mode: 'hosted',
-      metadata: {
-        currency: normalizedChargeCurrency,
-        locale,
-      },
-    });
-    const token = session?.access_token ?? null;
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-    try {
-      const response = await fetch('/api/wallet', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          amountCents,
-          currency: (chargeCurrency || 'USD').toLowerCase(),
-          locale,
-          captchaToken: checkoutCaptchaToken ?? undefined,
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        if (payload?.captchaRequired) {
-          setCheckoutCaptchaRequired(true);
-          setCheckoutCaptchaToken(null);
-          return;
-        }
-        if (response.status === 429) {
-          const seconds = Number(payload?.retryAfterSeconds ?? 900);
-          setToast(formatRateLimitMessage(copy.wallet.rateLimited, seconds));
-          return;
-        }
-        throw new Error(payload?.error ?? 'checkout_session_failed');
-      }
-      const checkoutUrl = typeof payload?.url === 'string' ? payload.url : null;
-      const checkoutAttemptId = Number(payload?.checkoutAttemptId);
-      const normalizedCheckoutAttemptId =
-        Number.isFinite(checkoutAttemptId) && checkoutAttemptId > 0 ? checkoutAttemptId : null;
-      const stripeCheckoutSessionId = typeof payload?.id === 'string' ? payload.id : null;
-      const hasCheckoutTarget = Boolean(checkoutUrl || payload?.id);
-      if (!hasCheckoutTarget) {
-        throw new Error('missing_checkout_target');
-      }
-      setCheckoutCaptchaRequired(false);
-      setCheckoutCaptchaToken(null);
-      triggerTopupStarted(amountCents, normalizedChargeCurrency);
-      recordCheckoutInteractionEvent({
-        amountCents,
-        checkoutAttemptId: normalizedCheckoutAttemptId,
-        eventName: 'hosted_checkout_redirecting',
-        mode: 'hosted',
-        stripeCheckoutSessionId,
-        metadata: {
-          currency: normalizedChargeCurrency,
-          redirectMethod: checkoutUrl ? 'url' : 'stripe_js',
-        },
-      });
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
-        return;
-      }
-      if (payload?.id && stripePromise) {
-        const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
-        const redirectResult = await stripe?.redirectToCheckout?.({ sessionId: String(payload.id) });
-        if (!redirectResult?.error) {
-          return;
-        }
-        console.error('[billing] redirectToCheckout error', redirectResult.error);
-      }
-      throw new Error('missing_checkout_target');
-    } catch (error) {
-      console.error('[billing] top-up failed', error);
-      const reason = error instanceof Error ? error.message : 'topup_failed';
-      triggerTopupFailed(amountCents, normalizedChargeCurrency, reason);
-      setToast(copy.errors.topupStart);
-    } finally {
-      setIsTopupStarting(false);
-    }
+    setToast(null);
+    void hostedCheckout.startCheckout();
   }
 
   const handleExpressTopupStarted = useCallback(
@@ -286,24 +238,6 @@ export function BillingClient() {
     },
     [copy.errors.topupStart, normalizedChargeCurrency, triggerTopupFailed]
   );
-
-  const handleCheckoutCaptchaRequired = useCallback(() => {
-    setCheckoutCaptchaRequired(true);
-    setCheckoutCaptchaToken(null);
-    setCheckoutCaptchaError(null);
-  }, []);
-
-  const handleCheckoutCaptchaToken = useCallback((token: string | null) => {
-    setCheckoutCaptchaToken(token);
-    if (token) {
-      setCheckoutCaptchaError(null);
-    }
-  }, []);
-
-  const handleCheckoutCaptchaError = useCallback(() => {
-    setCheckoutCaptchaToken(null);
-    setCheckoutCaptchaError(copy.wallet.captchaError);
-  }, [copy.wallet.captchaError]);
 
   const dateFormatter = useMemo(
     () =>
@@ -342,13 +276,20 @@ export function BillingClient() {
           )}
           <div className="mx-auto max-w-7xl">
             <BillingHero copy={copy} stripeMode={stripeMode} wallet={wallet} />
+            {checkoutReturnTarget ? (
+              <BillingCheckoutReturnNotice
+                href={checkoutReturnTarget}
+                label={copy.toasts.returnToWorkspace}
+              />
+            ) : null}
 
             <section className="grid gap-5 lg:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]">
               <WalletTopupPanel
                 applyCustomAmount={applyCustomAmount}
-                checkoutCaptchaError={checkoutCaptchaError}
-                checkoutCaptchaRequired={checkoutCaptchaRequired}
-                checkoutCaptchaToken={checkoutCaptchaToken}
+                checkoutCaptchaError={hostedCheckout.captchaError ? copy.wallet.captchaError : null}
+                checkoutCaptchaRequired={hostedCheckout.captchaRequired}
+                checkoutCaptchaResetGeneration={hostedCheckout.captchaResetGeneration}
+                checkoutCaptchaToken={hostedCheckout.captchaToken}
                 copy={copy}
                 currencyLoading={currencyLoading}
                 currencyOptions={currencyOptions}
@@ -363,14 +304,14 @@ export function BillingClient() {
                 expressRequested={expressRequested}
                 formatLocalAmount={formatLocalAmount}
                 formatUsdAmount={formatUsdAmount}
-                handleCheckoutCaptchaError={handleCheckoutCaptchaError}
-                handleCheckoutCaptchaRequired={handleCheckoutCaptchaRequired}
-                handleCheckoutCaptchaToken={handleCheckoutCaptchaToken}
+                handleCheckoutCaptchaError={hostedCheckout.handleCaptchaError}
+                handleCheckoutCaptchaRequired={hostedCheckout.requireCaptcha}
+                handleCheckoutCaptchaToken={hostedCheckout.handleCaptchaToken}
                 handleCurrencyChange={handleCurrencyChange}
                 handleExpressTopupFailed={handleExpressTopupFailed}
                 handleExpressTopupStarted={handleExpressTopupStarted}
                 handleTopUp={handleTopUp}
-                isTopupStarting={isTopupStarting}
+                isTopupStarting={hostedCheckout.isSubmitting}
                 locale={locale}
                 normalizedChargeCurrency={normalizedChargeCurrency}
                 onCustomAmountInputChange={onCustomAmountInputChange}

@@ -67,7 +67,10 @@ test('fal model policy rejects blocked models directly', () => {
 
 test('fal proxy policy allows audio generation endpoints', () => {
   [
+    'bytedance/seed-audio-1.0',
+    'fal-ai/elevenlabs/music',
     'fal-ai/gemini-3.1-flash-tts',
+    'fal-ai/lyria2',
     'fal-ai/minimax-music/v2.6',
     'fal-ai/mmaudio-v2/text-to-audio',
     'fal-ai/stable-audio-25/text-to-audio',

@@ -184,6 +184,41 @@
       }
     },
     {
+      "modelSlug": "gemini-omni-flash",
+      "sources": [
+        "https://maxvideoai.com/models/gemini-omni-flash",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/gemini/omni-flash-preview",
+        "https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/models/interactions-api",
+        "https://ai.google.dev/gemini-api/docs/omni"
+      ],
+      "keySpecs": {
+        "textToVideo": "Supported",
+        "imageToVideo": "Supported",
+        "videoToVideo": "Supported (short source-video edit and conversational refine)",
+        "firstLastFrame": "Not supported in current Omni route",
+        "referenceImageStyle": "Supported (up to 10 reference images)",
+        "referenceVideo": "Supported (short source video for edit; previous interaction id for refine)",
+        "maxResolution": "720p",
+        "maxDuration": "10s",
+        "aspectRatios": [
+          "16:9",
+          "9:16"
+        ],
+        "fpsOptions": [
+          "24 fps"
+        ],
+        "outputFormats": [
+          "MP4"
+        ],
+        "audioOutput": "Supported",
+        "nativeAudioGeneration": "Supported",
+        "lipSync": "Prompt-directed only",
+        "cameraMotionControls": "Prompt-based sound, camera and edit directions",
+        "watermark": "No visible MaxVideoAI watermark; provider provenance markers may apply",
+        "releaseDate": "Google preview: Jun 30 2026"
+      }
+    },
+    {
       "modelSlug": "ltx-2",
       "sources": [
         "https://maxvideoai.com/models/ltx-2",
@@ -789,10 +824,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-        "referenceVideo": "Ref2V: up to 3 video references",
+      "videoToVideo": "Supported (video edit and extend)",
+      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "4K on the standard Dreamina Seedance 2.0 route",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -826,10 +861,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Not supported",
-        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-        "referenceVideo": "Ref2V: up to 3 video references",
+      "videoToVideo": "Supported (video edit and extend)",
+      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "720p",
         "maxDuration": "15s",
         "aspectRatios": [
@@ -863,10 +898,10 @@
       "keySpecs": {
         "textToVideo": "Supported",
         "imageToVideo": "Supported",
-        "videoToVideo": "Supported (video editing)",
-        "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
-        "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
-        "referenceVideo": "Supported (up to 3 video references for references or extension)",
+      "videoToVideo": "Supported (video edit and extend)",
+      "firstLastFrame": "Supported (1 start image + optional end image in i2v)",
+      "referenceImageStyle": "Ref2V: up to 9 image references; I2V: 1 start image",
+      "referenceVideo": "Supported (up to 3 video references, video edit, or extension clips)",
         "maxResolution": "480p / 720p",
         "maxDuration": "4-15s",
         "aspectRatios": [
@@ -1102,7 +1137,97 @@
         "https://cloud.google.com/vertex-ai/generative-ai/docs/models/gemini/2-5-flash-image"
       ],
       "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "maxResolution": "HD still presets",
+        "aspectRatios": [
+          "9:16",
+          "16:9",
+          "1:1",
+          "4:5",
+          "5:4",
+          "4:3",
+          "3:4",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "PNG",
+          "JPEG",
+          "WEBP"
+        ],
+        "audioOutput": "Not supported",
         "releaseDate": "Aug 2025"
+      }
+    },
+    {
+      "modelSlug": "nano-banana-lite",
+      "sources": [
+        "https://ai.google.dev/gemini-api/docs/image-generation",
+        "https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-images"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 14 references for edit workflows",
+        "maxResolution": "1K",
+        "aspectRatios": [
+          "auto",
+          "1:1",
+          "3:2",
+          "2:3",
+          "3:4",
+          "4:3",
+          "4:5",
+          "5:4",
+          "9:16",
+          "16:9",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG",
+          "WEBP"
+        ],
+        "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "nano-banana-2",
+      "sources": [
+        "https://ai.google.dev/gemini-api/docs/image-generation",
+        "https://cloud.google.com/vertex-ai/generative-ai/docs/image/generate-images"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 14 references for edit workflows",
+        "webSearch": "Supported",
+        "maxResolution": "4K",
+        "aspectRatios": [
+          "auto",
+          "21:9",
+          "16:9",
+          "3:2",
+          "4:3",
+          "5:4",
+          "1:1",
+          "4:5",
+          "3:4",
+          "2:3",
+          "9:16",
+          "4:1",
+          "1:4",
+          "8:1",
+          "1:8"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG",
+          "WEBP"
+        ],
+        "audioOutput": "Not supported"
       }
     },
     {
@@ -1111,7 +1236,88 @@
         "https://blog.google/innovation-and-ai/products/google-ai-updates-november-2025/"
       ],
       "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 14 references for edit workflows",
+        "maxResolution": "4K",
+        "aspectRatios": [
+          "auto",
+          "9:16",
+          "16:9",
+          "1:1",
+          "4:5",
+          "5:4",
+          "4:3",
+          "3:4",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG",
+          "WEBP"
+        ],
+        "audioOutput": "Not supported",
         "releaseDate": "Nov 2025"
+      }
+    },
+    {
+      "modelSlug": "seedream",
+      "sources": [
+        "https://www.byteplus.com/en/product/modelark",
+        "https://www.byteplus.com/en/docs/ModelArk"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 10 references for edit workflows",
+        "maxResolution": "4K",
+        "aspectRatios": [
+          "auto",
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG"
+        ],
+        "audioOutput": "Not supported"
+      }
+    },
+    {
+      "modelSlug": "seedream-5-0-pro",
+      "sources": [
+        "https://www.byteplus.com/en/product/modelark",
+        "https://www.byteplus.com/en/docs/ModelArk"
+      ],
+      "keySpecs": {
+        "textToImage": "Supported",
+        "imageToImage": "Supported",
+        "imageReferences": "Up to 10 references for edit workflows",
+        "maxResolution": "4K",
+        "aspectRatios": [
+          "auto",
+          "1:1",
+          "4:3",
+          "3:4",
+          "16:9",
+          "9:16",
+          "3:2",
+          "2:3",
+          "21:9"
+        ],
+        "outputFormats": [
+          "JPEG",
+          "PNG"
+        ],
+        "audioOutput": "Not supported"
       }
     }
   ]

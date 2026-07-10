@@ -67,6 +67,17 @@ test('workspace video composer shows in-progress render banner from pending grou
   assert.match(surfaceSource, /bg-success-bg/);
 });
 
+test('workspace Seedance composer explains recognizable-person reference limits near upload placeholders', () => {
+  assert.equal(existsSync(composerSurfacePath), true);
+
+  const surfaceSource = readFileSync(composerSurfacePath, 'utf8');
+
+  assert.match(surfaceSource, /getSeedanceReferenceGuidance/);
+  assert.match(surfaceSource, /Seedance may reject recognizable people in reference images/);
+  assert.match(surfaceSource, /Seedream text-to-image/);
+  assert.match(surfaceSource, /guidance: isUnifiedSeedance[\s\S]*getSeedanceReferenceGuidance\(uiLocale\)/);
+});
+
 test('workspace treats Seedance 2.0 Mini as a unified Seedance workflow', () => {
   assert.equal(isUnifiedSeedanceEngineId('seedance-2-0-mini'), true);
 
@@ -100,6 +111,7 @@ test('workspace exposes Seedance 2.0 Mini source-video fields in the unified com
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: true,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 
@@ -113,7 +125,7 @@ test('workspace exposes Seedance 2.0 Mini source-video fields in the unified com
   ]));
 });
 
-test('workspace keeps BytePlus-only Seedance source video fields out of Fal-routed Standard and Fast composers', () => {
+test('workspace exposes Seedance 2.0 source-video fields for Standard and Fast composers', () => {
   for (const engineId of ['seedance-2-0', 'seedance-2-0-fast']) {
     const entry = listFalEngines().find((engine) => engine.id === engineId);
     assert.ok(entry);
@@ -124,12 +136,26 @@ test('workspace keeps BytePlus-only Seedance source video fields out of Fal-rout
       allowsUnifiedVeoFirstLast: false,
       isUnifiedHappyHorse: false,
       isUnifiedSeedance: true,
+      isUnifiedGeminiOmni: false,
       uiLocale: 'en',
     });
     const assetIds = schema.assetFields.map(({ field }) => field.id);
 
-    assert.equal(assetIds.includes('video_url'), false);
+    assert.equal(assetIds.includes('video_url'), true);
+    assert.equal(assetIds.includes('video_urls'), true);
     assert.equal(assetIds.includes('extension_source_videos'), false);
+
+    const extendSchema = summarizeWorkspaceInputSchema({
+      selectedEngine: entry.engine,
+      activeMode: 'extend',
+      allowsUnifiedVeoFirstLast: false,
+      isUnifiedHappyHorse: false,
+      isUnifiedSeedance: true,
+      isUnifiedGeminiOmni: false,
+      uiLocale: 'en',
+    });
+
+    assert.deepEqual(extendSchema.assetFields.map(({ field }) => field.id), ['extension_source_videos']);
   }
 });
 
@@ -143,6 +169,7 @@ test('workspace exposes only source clips in the Seedance 2.0 Mini extension sch
     allowsUnifiedVeoFirstLast: false,
     isUnifiedHappyHorse: false,
     isUnifiedSeedance: true,
+    isUnifiedGeminiOmni: false,
     uiLocale: 'en',
   });
 

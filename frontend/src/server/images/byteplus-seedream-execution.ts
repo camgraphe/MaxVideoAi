@@ -31,6 +31,14 @@ import { resolveBytePlusSeedreamOutputPricing } from './byteplus-seedream-pricin
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 const BYTEPLUS_PROVIDER_MODE = BYTEPLUS_SEEDREAM_PROVIDER;
 
+function resolveSeedreamModelId(engine: EngineCaps): string {
+  const configuredModel = engine.providerMeta?.modelSlug?.trim();
+  if (configuredModel?.includes('seedream-5-0-pro')) {
+    return ENV.BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID ?? configuredModel;
+  }
+  return ENV.BYTEPLUS_ARK_SEEDREAM_MODEL_ID ?? configuredModel ?? BYTEPLUS_SEEDREAM_DEFAULT_MODEL_ID;
+}
+
 async function signReferenceUrls(urls: string[]): Promise<string[]> {
   return Promise.all(
     urls.map(async (url) => {
@@ -83,7 +91,7 @@ export async function executeBytePlusSeedreamGeneration(params: {
   watermark: boolean;
 }): Promise<ImageGenerationResponse> {
   const apiKey = ENV.BYTEPLUS_ARK_API_KEY;
-  const modelId = ENV.BYTEPLUS_ARK_SEEDREAM_MODEL_ID ?? BYTEPLUS_SEEDREAM_DEFAULT_MODEL_ID;
+  const modelId = resolveSeedreamModelId(params.engine);
   let providerJobId: string | null = null;
 
   try {

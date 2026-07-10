@@ -250,7 +250,9 @@ export function buildCompareSummaryRows({
     labels,
     validatingLabel
   )} vs ${formatCompareFaqValue(rightSpecs.maxDuration, activeLocale, labels, validatingLabel)}`;
-  const pricingSummary = `${leftPricingDisplay.headline} vs ${rightPricingDisplay.headline}`;
+  const leftPricingSummary = leftPricingDisplay.scoreLine ?? leftPricingDisplay.headline;
+  const rightPricingSummary = rightPricingDisplay.scoreLine ?? rightPricingDisplay.headline;
+  const pricingSummary = `${leftPricingSummary} vs ${rightPricingSummary}`;
   const summaryCopy = compareCopy.summary ?? {};
   const scorecardTemplate = hasPrelaunchEngine
     ? (summaryCopy.scorecardTemplatePrelaunch ??
