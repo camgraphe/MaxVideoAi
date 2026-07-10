@@ -1181,6 +1181,10 @@ test('Studio shot node controls do not expose draft as a user-facing status labe
 });
 
 test('Studio shot generate button uses the full action row after status badge removal', () => {
+  const nodeControlsSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-shot-node-controls.tsx'),
+    'utf8'
+  );
   const controlsStyles = readFileSync(
     join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-shot-controls.module.css'),
     'utf8'
@@ -1188,6 +1192,8 @@ test('Studio shot generate button uses the full action row after status badge re
 
   assert.match(controlsStyles, /\.shotActionRow\s*\{[\s\S]*grid-template-columns:\s*1fr/);
   assert.doesNotMatch(controlsStyles, /grid-template-columns:\s*minmax\(54px,\s*0\.42fr\)/);
+  assert.match(nodeControlsSource, /shotGeneratePrice[\s\S]*title=\{estimatedCost\}/);
+  assert.match(controlsStyles, /\.shotGeneratePrice\s*\{[\s\S]*min-width:\s*0[\s\S]*max-width:\s*96px[\s\S]*text-overflow:\s*ellipsis/);
 });
 
 test('Studio rendered shot nodes derive input docks and target handles from block policy', () => {

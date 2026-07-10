@@ -1,4 +1,3 @@
-import type { PricingSnapshot } from '@maxvideoai/pricing';
 import {
   buildAudioPricingSnapshot,
   getAudioPackConfig,
@@ -13,52 +12,17 @@ import type {
   WorkspaceWorkflowType,
 } from './workspace-types';
 import { resolveWorkspaceBlockPolicy } from './models/workspace-block-capability-policy';
+import {
+  blockedWorkspacePricingEstimate,
+  readyWorkspacePricingEstimate,
+  unavailableWorkspacePricingEstimate,
+} from './workspace-pricing';
 import { normalizeWorkspaceCharacterBuilderSettings } from './workspace-tool-settings';
+
+export { blockedWorkspacePricingEstimate } from './workspace-pricing';
 
 const CHARACTER_DRAFT_CENTS = 8;
 const CHARACTER_FINAL_CENTS = 15;
-
-function formatMoney(totalCents: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(totalCents / 100);
-  } catch {
-    return `$${(totalCents / 100).toFixed(2)}`;
-  }
-}
-
-function readyEstimate(totalCents: number, currency = 'USD', pricing?: PricingSnapshot | null): WorkspacePricingEstimate {
-  return {
-    status: 'ready',
-    label: `Est. ${formatMoney(totalCents, currency)}`,
-    totalCents,
-    currency,
-    pricing,
-  };
-}
-
-export function blockedWorkspacePricingEstimate(
-  validation: WorkspaceShotValidation,
-  reason?: string
-): WorkspacePricingEstimate {
-  return {
-    status: 'blocked',
-    label: validation.missingInputs.length ? 'Connect input' : 'Needs attention',
-    error: reason ?? [...validation.missingInputs, ...validation.incompatibleInputs].join(', '),
-  };
-}
-
-function unavailableWorkspacePricingEstimate(error: string): WorkspacePricingEstimate {
-  return {
-    status: 'error',
-    label: 'Price unavailable',
-    error,
-  };
-}
 
 function audioPackForWorkflowType(workflowType: WorkspaceWorkflowType): AudioPackId {
   if (workflowType === 'cinematic_audio') return 'cinematic';
@@ -72,7 +36,7 @@ function estimateCharacterBuilderPricing(settings: WorkspaceShotSettings): Works
   const characterSettings = normalizeWorkspaceCharacterBuilderSettings(settings.toolSettings?.characterBuilder);
   const baseCents = characterSettings.qualityMode === 'final' ? CHARACTER_FINAL_CENTS : CHARACTER_DRAFT_CENTS;
   const multiplier = getCharacterFormatMultiplier(characterSettings.formatMode, characterSettings.qualityMode);
-  return readyEstimate(baseCents * multiplier * characterSettings.generateCount);
+  return readyWorkspacePricingEstimate(baseCents * multiplier * characterSettings.generateCount);
 }
 
 function estimateAudioPricing(settings: WorkspaceShotSettings, prompt: string): WorkspacePricingEstimate {
@@ -87,14 +51,14 @@ function estimateAudioPricing(settings: WorkspaceShotSettings, prompt: string): 
     script: config.includesVoice ? prompt : null,
     musicEnabled: audioSettings?.musicEnabled ?? config.defaultMusicEnabled,
   });
-  return readyEstimate(pricing.totalCents, pricing.currency, pricing);
+  return readyWorkspacePricingEstimate(pricing.totalCents, pricing.currency, pricing);
 }
 
 function estimateAnglePricing(settings: WorkspaceShotSettings): WorkspacePricingEstimate {
   const isQwen = settings.modelId === 'angle-qwen-multiple-angles';
   const multi = settings.toolSettings?.angle?.generateBestAngles === true;
-  if (isQwen) return readyEstimate(multi ? 40 : 7);
-  return readyEstimate(multi ? 24 : 4);
+  if (isQwen) return readyWorkspacePricingEstimate(multi ? 40 : 7);
+  return readyWorkspacePricingEstimate(multi ? 24 : 4);
 }
 
 function estimateUpscalePricing(settings: WorkspaceShotSettings): WorkspacePricingEstimate {
@@ -106,7 +70,7 @@ function estimateUpscalePricing(settings: WorkspaceShotSettings): WorkspacePrici
     'upscale-video-flashvsr': 18,
     'upscale-video-topaz': 80,
   };
-  return readyEstimate(centsByModel[settings.modelId] ?? 4);
+  return readyWorkspacePricingEstimate(centsByModel[settings.modelId] ?? 4);
 }
 
 export function buildWorkspaceToolPricingEstimate({

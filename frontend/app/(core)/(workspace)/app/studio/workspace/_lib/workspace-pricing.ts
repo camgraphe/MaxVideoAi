@@ -1,3 +1,4 @@
+import type { PricingSnapshot } from '@maxvideoai/pricing';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import { resolveWorkspaceGenerationMode, workspaceAudioEnabledForRequest } from './workspace-capabilities';
 import type {
@@ -5,6 +6,7 @@ import type {
   WorkspaceModelCapability,
   WorkspacePricingEstimate,
   WorkspaceShotSettings,
+  WorkspaceShotValidation,
 } from './workspace-types';
 
 type BuildWorkspaceShotPreflightRequestOptions = {
@@ -35,6 +37,43 @@ function preflightErrorMessage(response: PreflightResponse): string {
     response.messages?.find((entry) => typeof entry === 'string' && entry.trim().length)?.trim() ??
     'Unable to compute pricing'
   );
+}
+
+export function readyWorkspacePricingEstimate(
+  totalCents: number,
+  currency = 'USD',
+  pricing?: PricingSnapshot | null
+): WorkspacePricingEstimate {
+  return {
+    status: 'ready',
+    label: `Est. ${formatMoney(totalCents, currency)}`,
+    totalCents,
+    currency,
+    pricing,
+  };
+}
+
+export function blockedWorkspacePricingEstimate(
+  validation: WorkspaceShotValidation,
+  reason?: string
+): WorkspacePricingEstimate {
+  return {
+    status: 'blocked',
+    label: validation.missingInputs.length ? 'Connect input' : 'Needs attention',
+    error: reason ?? [...validation.missingInputs, ...validation.incompatibleInputs].join(', '),
+  };
+}
+
+export function unavailableWorkspacePricingEstimate(
+  error: string,
+  options?: Pick<WorkspacePricingEstimate, 'currency' | 'pricing'>
+): WorkspacePricingEstimate {
+  return {
+    status: 'error',
+    label: 'Price unavailable',
+    error,
+    ...options,
+  };
 }
 
 export function buildWorkspaceShotPreflightRequest({
@@ -75,27 +114,14 @@ export function formatWorkspacePricingEstimate(response: PreflightResponse): Wor
   const totalCents = typeof response.total === 'number' ? response.total : response.pricing?.totalCents;
   const currency = response.currency ?? response.pricing?.currency ?? 'USD';
   if (response.ok && typeof totalCents === 'number') {
-    return {
-      status: 'ready',
-      label: `Est. ${formatMoney(totalCents, currency)}`,
-      totalCents,
-      currency,
-      pricing: response.pricing ?? null,
-    };
+    return readyWorkspacePricingEstimate(totalCents, currency, response.pricing ?? null);
   }
-  return {
-    status: 'error',
-    label: 'Price unavailable',
+  return unavailableWorkspacePricingEstimate(preflightErrorMessage(response), {
     currency,
-    error: preflightErrorMessage(response),
     pricing: response.pricing ?? null,
-  };
+  });
 }
 
 export function errorWorkspacePricingEstimate(error: unknown): WorkspacePricingEstimate {
-  return {
-    status: 'error',
-    label: 'Price unavailable',
-    error: error instanceof Error ? error.message : 'Unable to compute pricing',
-  };
+  return unavailableWorkspacePricingEstimate(error instanceof Error ? error.message : 'Unable to compute pricing');
 }

@@ -143,7 +143,14 @@ export function ShotNodeControls({ data, nodeId }: ShotNodeControlsProps) {
             <Sparkles size={12} />
             <span>{shot.status === 'generating' ? copy.generating : copy.generate}</span>
           </span>
-          <strong className={styles.shotGeneratePrice} data-shot-generate-price="true" title={estimatedCost}>{estimatedCost}</strong>
+          <strong
+            className={styles.shotGeneratePrice}
+            data-shot-generate-price="true"
+            title={estimatedCost}
+            aria-label={estimatedCost}
+          >
+            {estimatedCost}
+          </strong>
         </button>
       </div>
 
