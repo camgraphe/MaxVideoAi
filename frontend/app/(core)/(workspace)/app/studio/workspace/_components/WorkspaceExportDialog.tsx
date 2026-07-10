@@ -7,6 +7,7 @@ import {
   workspaceTimelineExportQualityPresetOptions,
   workspaceTimelineExportArtifactUrl,
   workspaceTimelineExportReadinessChecks,
+  workspaceTimelineVideoExportSubmitDisabled,
   type WorkspaceTimelineExportQualityPreset,
   type WorkspaceTimelineExportRangeMode,
   type WorkspaceTimelineRenderManifest,
@@ -41,6 +42,7 @@ type WorkspaceExportDialogProps = {
   exportVideoFeedback: string | null;
   inPointSec: number | null;
   isEstimateLoading: boolean;
+  isEstimateReady: boolean;
   isExportStarting: boolean;
   isOpen: boolean;
   manifest: WorkspaceTimelineRenderManifest;
@@ -94,6 +96,7 @@ export function WorkspaceExportDialog({
   exportVideoFeedback,
   inPointSec,
   isEstimateLoading,
+  isEstimateReady,
   isExportStarting,
   isOpen,
   manifest,
@@ -113,6 +116,13 @@ export function WorkspaceExportDialog({
   const readinessChecks = workspaceTimelineExportReadinessChecks(manifest, copy);
   const hasBlockingChecks = readinessChecks.some((check) => check.status === 'blocking');
   const isServerJobActive = activeExportJob?.status === 'queued' || activeExportJob?.status === 'rendering';
+  const isExportSubmitDisabled = workspaceTimelineVideoExportSubmitDisabled({
+    hasBlockingChecks,
+    isEstimateLoading,
+    isEstimateCurrent: isEstimateReady,
+    isExportStarting,
+    isServerJobActive,
+  });
   const completedArtifactUrl = activeExportJob ? workspaceTimelineExportArtifactUrl(activeExportJob) : null;
   const exportPriceLabel = exportEstimate
     ? exportEstimate.billingKind === 'free'
@@ -257,7 +267,7 @@ export function WorkspaceExportDialog({
           <button
             type="button"
             className={`${editorStyles.primaryPanelButton} ${styles.exportPrimaryAction}`}
-            disabled={hasBlockingChecks || isExportStarting || isServerJobActive}
+            disabled={isExportSubmitDisabled}
             onClick={onExportVideo}
           >
             <Film size={15} />

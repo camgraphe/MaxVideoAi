@@ -74,6 +74,52 @@ export const WORKSPACE_TIMELINE_EXPORT_QUALITY_PRESETS = [
   },
 ] as const satisfies readonly WorkspaceTimelineExportQualityPresetOption[];
 
+export function workspaceTimelineExportEstimateKey(params: {
+  manifest: WorkspaceTimelineRenderManifest;
+  qualityPreset: WorkspaceTimelineExportQualityPreset;
+  idempotencyKey: string;
+}): string {
+  return JSON.stringify({
+    manifest: params.manifest,
+    qualityPreset: params.qualityPreset,
+    idempotencyKey: params.idempotencyKey,
+  });
+}
+
+export function workspaceTimelineExportEstimateIsCurrent(params: {
+  estimate: unknown | null;
+  estimateKey: string | null;
+  manifest: WorkspaceTimelineRenderManifest;
+  qualityPreset: WorkspaceTimelineExportQualityPreset;
+  idempotencyKey: string | null;
+  isLoading: boolean;
+}): boolean {
+  return Boolean(
+    !params.isLoading
+    && params.estimate
+    && params.idempotencyKey
+    && params.estimateKey === workspaceTimelineExportEstimateKey({
+      manifest: params.manifest,
+      qualityPreset: params.qualityPreset,
+      idempotencyKey: params.idempotencyKey,
+    })
+  );
+}
+
+export function workspaceTimelineVideoExportSubmitDisabled(params: {
+  hasBlockingChecks: boolean;
+  isEstimateLoading: boolean;
+  isEstimateCurrent: boolean;
+  isExportStarting: boolean;
+  isServerJobActive: boolean;
+}): boolean {
+  return params.hasBlockingChecks
+    || params.isEstimateLoading
+    || !params.isEstimateCurrent
+    || params.isExportStarting
+    || params.isServerJobActive;
+}
+
 function exportCopy(copy: StudioCopy['exportDialog'] | undefined, key: string, fallback: string): string {
   return copy?.[key] ?? fallback;
 }

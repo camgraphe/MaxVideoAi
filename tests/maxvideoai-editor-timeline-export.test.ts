@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
+  workspaceTimelineExportEstimateIsCurrent,
+  workspaceTimelineExportEstimateKey,
   workspaceTimelineExportArtifactUrl,
+  workspaceTimelineVideoExportSubmitDisabled,
   workspaceProjectAssetFromCompletedTimelineExport,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 import {
@@ -41,6 +45,8 @@ const readyManifest: WorkspaceTimelineRenderManifest = {
   tracks: [],
   issues: [],
 };
+
+const exportControllerPath = 'frontend/app/(core)/(workspace)/app/studio/workspace/_controllers/useExportController.ts';
 
 test('viewer composition keeps source dimensions separate from sequence dimensions', () => {
   const composition = buildWorkspaceClipComposition({
@@ -98,6 +104,61 @@ test('timeline export artifact is available only after completion', () => {
     status: 'completed',
     outputUrl,
   }), outputUrl);
+});
+
+test('timeline export estimate identity invalidates stale manifest, preset, and session estimates', () => {
+  const idempotencyKey = 'export-session-a';
+  const estimateKey = workspaceTimelineExportEstimateKey({
+    manifest: readyManifest,
+    qualityPreset: 'standard',
+    idempotencyKey,
+  });
+  const current = {
+    estimate: { amountCents: 0 },
+    estimateKey,
+    manifest: readyManifest,
+    qualityPreset: 'standard' as const,
+    idempotencyKey,
+    isLoading: false,
+  };
+
+  assert.equal(workspaceTimelineExportEstimateIsCurrent(current), true);
+  assert.equal(workspaceTimelineExportEstimateIsCurrent({
+    ...current,
+    manifest: {
+      ...readyManifest,
+      durationSec: 6,
+      exportRange: { mode: 'in-out', startSec: 2, endSec: 8, durationSec: 6 },
+    },
+  }), false);
+  assert.equal(workspaceTimelineExportEstimateIsCurrent({ ...current, qualityPreset: 'high' }), false);
+  assert.equal(workspaceTimelineExportEstimateIsCurrent({ ...current, idempotencyKey: 'export-session-b' }), false);
+  assert.equal(workspaceTimelineExportEstimateIsCurrent({ ...current, isLoading: true }), false);
+});
+
+test('timeline export submit is disabled until the current estimate is ready', () => {
+  const base = {
+    hasBlockingChecks: false,
+    isEstimateLoading: false,
+    isEstimateCurrent: true,
+    isExportStarting: false,
+    isServerJobActive: false,
+  };
+
+  assert.equal(workspaceTimelineVideoExportSubmitDisabled(base), false);
+  assert.equal(workspaceTimelineVideoExportSubmitDisabled({ ...base, isEstimateLoading: true }), true);
+  assert.equal(workspaceTimelineVideoExportSubmitDisabled({ ...base, isEstimateCurrent: false }), true);
+  assert.equal(workspaceTimelineVideoExportSubmitDisabled({ ...base, hasBlockingChecks: true }), true);
+});
+
+test('export controller fails closed before the reservation POST without a current estimate', () => {
+  const source = readFileSync(exportControllerPath, 'utf8');
+  const estimateGuardIndex = source.indexOf('if (!hasCurrentExportEstimate)');
+  const reservationPostIndex = source.indexOf("fetch('/api/studio/timeline-exports', {");
+
+  assert.ok(estimateGuardIndex >= 0, 'the controller should require a current estimate before submission');
+  assert.ok(reservationPostIndex > estimateGuardIndex, 'the reservation POST must be after the estimate guard');
+  assert.match(source, /setExportVideoFeedback\(notices\.exportEstimateFailed\)/);
 });
 
 test('timeline render manifest carries native source composition for sequence-scale renders', () => {

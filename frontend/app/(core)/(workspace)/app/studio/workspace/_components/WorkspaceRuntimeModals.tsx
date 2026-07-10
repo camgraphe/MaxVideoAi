@@ -26,6 +26,7 @@ type WorkspaceRuntimeModalsProps = {
   inPointSec: number | null;
   isExportDialogOpen: boolean;
   isExportEstimateLoading: boolean;
+  isExportEstimateReady: boolean;
   isExportVideoStarting: boolean;
   isProjectMediaPickerOpen: boolean;
   manifest: WorkspaceExportDialogProps['manifest'];
@@ -60,6 +61,7 @@ export function WorkspaceRuntimeModals({
   inPointSec,
   isExportDialogOpen,
   isExportEstimateLoading,
+  isExportEstimateReady,
   isExportVideoStarting,
   isProjectMediaPickerOpen,
   manifest,
@@ -105,6 +107,7 @@ export function WorkspaceRuntimeModals({
         exportVideoFeedback={exportVideoFeedback}
         inPointSec={inPointSec}
         isEstimateLoading={isExportEstimateLoading}
+        isEstimateReady={isExportEstimateReady}
         isExportStarting={isExportVideoStarting}
         isOpen={isExportDialogOpen}
         manifest={manifest}

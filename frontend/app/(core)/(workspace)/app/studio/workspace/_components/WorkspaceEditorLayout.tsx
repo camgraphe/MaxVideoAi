@@ -475,6 +475,7 @@ export function WorkspaceEditorLayout({
         inPointSec={timelinePlayback.timelineInPointSec}
         isExportDialogOpen={exportController.isExportDialogOpen}
         isExportEstimateLoading={exportController.isExportEstimateLoading}
+        isExportEstimateReady={exportController.isExportEstimateReady}
         isExportVideoStarting={exportController.isExportVideoStarting}
         isProjectMediaPickerOpen={isProjectMediaPickerOpen}
         manifest={exportManifest}

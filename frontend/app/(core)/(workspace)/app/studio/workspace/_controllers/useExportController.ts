@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   buildWorkspaceTimelineEdl,
   buildWorkspaceTimelineVideoExportRequest,
   serializeWorkspaceTimelineVideoExportRequest,
   type WorkspaceTimelineExportQualityPreset,
+  workspaceTimelineExportEstimateIsCurrent,
+  workspaceTimelineExportEstimateKey,
   workspaceTimelineRenderReadinessLabel,
 } from '../_lib/workspace-timeline-export';
 import {
@@ -128,18 +130,36 @@ export function useExportController({
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [exportVideoFeedback, setExportVideoFeedback] = useState<string | null>(null);
   const [exportEstimate, setExportEstimate] = useState<TimelineExportClientEstimate | null>(null);
+  const [exportEstimateKey, setExportEstimateKey] = useState<string | null>(null);
   const [exportQuota, setExportQuota] = useState<TimelineExportClientQuota | null>(null);
   const [activeExportJob, setActiveExportJob] = useState<TimelineExportClientJob | null>(null);
   const [exportIdempotencyKey, setExportIdempotencyKey] = useState<string | null>(null);
   const [isExportEstimateLoading, setIsExportEstimateLoading] = useState(false);
   const [isExportVideoStarting, setIsExportVideoStarting] = useState(false);
+  const terminalExportJobIdRef = useRef<string | null>(null);
   const exportReadinessLabel = useMemo(() => workspaceTimelineRenderReadinessLabel(manifest, copy), [copy, manifest]);
+  const exportEstimateContextKey = useMemo(
+    () => exportIdempotencyKey
+      ? workspaceTimelineExportEstimateKey({ manifest, qualityPreset, idempotencyKey: exportIdempotencyKey })
+      : null,
+    [exportIdempotencyKey, manifest, qualityPreset]
+  );
+  const hasCurrentExportEstimate = workspaceTimelineExportEstimateIsCurrent({
+    estimate: exportEstimate,
+    estimateKey: exportEstimateKey,
+    manifest,
+    qualityPreset,
+    idempotencyKey: exportIdempotencyKey,
+    isLoading: isExportEstimateLoading,
+  });
 
   const resetExportSession = useCallback(() => {
     setExportVideoFeedback(null);
     setExportEstimate(null);
+    setExportEstimateKey(null);
     setExportQuota(null);
     setActiveExportJob(null);
+    terminalExportJobIdRef.current = null;
     setExportIdempotencyKey(createClientExportIdempotencyKey());
   }, []);
 
@@ -153,9 +173,9 @@ export function useExportController({
   }, []);
 
   useEffect(() => {
-    if (!isExportDialogOpen || !exportIdempotencyKey) return;
-    if (manifest.status === 'blocked') {
+    if (!isExportDialogOpen || !exportIdempotencyKey || !exportEstimateContextKey || manifest.status === 'blocked') {
       setExportEstimate(null);
+      setExportEstimateKey(null);
       setExportQuota(null);
       setIsExportEstimateLoading(false);
       return;
@@ -167,6 +187,9 @@ export function useExportController({
       includeAudio: true,
       idempotencyKey: exportIdempotencyKey,
     });
+    setExportEstimate(null);
+    setExportEstimateKey(null);
+    setExportQuota(null);
     setIsExportEstimateLoading(true);
     fetch('/api/studio/timeline-exports/estimate', {
       method: 'POST',
@@ -179,12 +202,16 @@ export function useExportController({
         if (!response.ok || !payload?.ok) {
           throw new Error(payload?.error ?? 'EXPORT_ESTIMATE_FAILED');
         }
-        setExportEstimate(payload.estimate ?? null);
+        if (!payload.estimate) throw new Error('EXPORT_ESTIMATE_FAILED');
+        if (controller.signal.aborted) return;
+        setExportEstimate(payload.estimate);
+        setExportEstimateKey(exportEstimateContextKey);
         setExportQuota(payload.quota ?? null);
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
         setExportEstimate(null);
+        setExportEstimateKey(null);
         setExportQuota(null);
         setExportVideoFeedback(error instanceof Error
           ? humanizeTimelineExportError(error.message, notices, copy, notices.exportEstimateFailed)
@@ -195,7 +222,16 @@ export function useExportController({
       });
 
     return () => controller.abort();
-  }, [copy, exportIdempotencyKey, isExportDialogOpen, manifest, notices, qualityPreset]);
+  }, [copy, exportEstimateContextKey, exportIdempotencyKey, isExportDialogOpen, manifest, notices, qualityPreset]);
+
+  useEffect(() => {
+    if (!activeExportJob || !isTerminalExportJob(activeExportJob) || terminalExportJobIdRef.current === activeExportJob.id) return;
+    terminalExportJobIdRef.current = activeExportJob.id;
+    setExportEstimate(null);
+    setExportEstimateKey(null);
+    setExportQuota(null);
+    setExportIdempotencyKey(createClientExportIdempotencyKey());
+  }, [activeExportJob]);
 
   useEffect(() => {
     if (!activeExportJob || isTerminalExportJob(activeExportJob)) return;
@@ -251,11 +287,22 @@ export function useExportController({
   }, [copy, manifest, onNotice]);
 
   const exportTimelineVideo = useCallback(async () => {
-    const idempotencyKey = activeExportJob && isTerminalExportJob(activeExportJob)
-      ? createClientExportIdempotencyKey()
-      : exportIdempotencyKey ?? createClientExportIdempotencyKey();
-    if (idempotencyKey !== exportIdempotencyKey) {
-      setExportIdempotencyKey(idempotencyKey);
+    const idempotencyKey = exportIdempotencyKey;
+    if (manifest.status === 'blocked') {
+      const blockedMessage = workspaceTimelineRenderReadinessLabel(manifest, copy);
+      setExportVideoFeedback(blockedMessage);
+      onNotice(blockedMessage);
+      return;
+    }
+    if (!hasCurrentExportEstimate) {
+      setExportVideoFeedback(notices.exportEstimateFailed);
+      onNotice(notices.exportEstimateFailed);
+      return;
+    }
+    if (!idempotencyKey) {
+      setExportVideoFeedback(notices.exportEstimateFailed);
+      onNotice(notices.exportEstimateFailed);
+      return;
     }
     const request = buildWorkspaceTimelineVideoExportRequest(manifest, {
       qualityPreset,
@@ -265,12 +312,6 @@ export function useExportController({
     const serializedRequest = serializeWorkspaceTimelineVideoExportRequest(request);
     if (typeof window !== 'undefined') {
       window.localStorage.setItem(VIDEO_EXPORT_REQUEST_STORAGE_KEY, serializedRequest);
-    }
-    if (request.status === 'blocked') {
-      const blockedMessage = workspaceTimelineRenderReadinessLabel(manifest, copy);
-      setExportVideoFeedback(blockedMessage);
-      onNotice(blockedMessage);
-      return;
     }
     setIsExportVideoStarting(true);
     setExportVideoFeedback(notices.queueingServerExport);
@@ -306,7 +347,7 @@ export function useExportController({
     } finally {
       setIsExportVideoStarting(false);
     }
-  }, [activeExportJob, copy, exportIdempotencyKey, manifest, notices, onNotice, qualityPreset]);
+  }, [copy, exportIdempotencyKey, hasCurrentExportEstimate, manifest, notices, onNotice, qualityPreset]);
 
   const exportTimelineEdl = useCallback(() => {
     const edl = buildWorkspaceTimelineEdl(manifest);
@@ -332,6 +373,7 @@ export function useExportController({
     exportTimelineVideo,
     exportVideoFeedback,
     isExportDialogOpen,
+    isExportEstimateReady: hasCurrentExportEstimate,
     isExportEstimateLoading,
     isExportVideoStarting,
     openExportDialog,
