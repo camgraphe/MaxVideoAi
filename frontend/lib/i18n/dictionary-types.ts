@@ -262,12 +262,15 @@ export type Dictionary = {
     entries: Array<{ date: string; title: string; body: string }>;
   };
   status: {
-    hero: {
+    hero: { title: string; subtitle: string };
+    currentNotice: {
       title: string;
-      subtitle: string;
+      activeLabel: string;
+      clearLabel: string;
+      clearBody: string;
     };
-    systems: Array<{ name: string; status: string; detail: string }>;
-    incidents: Array<{ date: string; title: string; summary: string; status: string }>;
+    affected: { title: string; body: string };
+    support: { title: string; prefix: string; suffix: string };
   };
   systemMessages: {
     refundInitiated: string;

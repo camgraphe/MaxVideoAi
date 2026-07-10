@@ -6,20 +6,24 @@ import { localizePathFromEnglish } from '@/lib/i18n/paths';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { ObfuscatedEmailLink } from '@/components/marketing/ObfuscatedEmailLink';
+import { getServiceNoticeSetting } from '@/server/app-settings';
+import { buildStatusNoticeState } from './_lib/status-page-state';
+
+export const revalidate = 30;
 
 const STATUS_SLUG_MAP = buildSlugMap('status');
 const STATUS_META: Record<AppLocale, { title: string; description: string }> = {
   en: {
-    title: 'Status — MaxVideoAI',
-    description: 'Live status for engines, queue health, and incidents.',
+    title: 'Service status — MaxVideoAI',
+    description: 'Read current MaxVideoAI service notices and get help with an affected AI video generation.',
   },
   fr: {
-    title: 'Statut des modèles — MaxVideoAI',
-    description: 'Statut en direct des modèles, santé des files d’attente et incidents récents.',
+    title: 'État du service — MaxVideoAI',
+    description: 'Consultez les avis de service MaxVideoAI et obtenez de l’aide pour une génération vidéo IA affectée.',
   },
   es: {
-    title: 'Estado de motores — MaxVideoAI',
-    description: 'Estado en vivo de los motores, salud de las colas y registro de incidentes.',
+    title: 'Estado del servicio — MaxVideoAI',
+    description: 'Consulta los avisos de servicio de MaxVideoAI y obtén ayuda con una generación de video IA afectada.',
   },
 };
 
@@ -33,19 +37,10 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     description: metaCopy.description,
     hreflangGroup: 'status',
     slugMap: STATUS_SLUG_MAP,
-    keywords: ['AI video', 'text-to-video', 'price calculator', 'pay-as-you-go', 'model-agnostic'],
-    imageAlt: 'Status indicators.',
+    keywords: ['AI video service status', 'MaxVideoAI service notice', 'generation support'],
+    imageAlt: 'MaxVideoAI service status.',
   });
 }
-
-const STATUS_BADGE_CLASSES: Record<string, string> = {
-  Operational: 'bg-[var(--success-bg)] text-[var(--success)]',
-  Opérationnel: 'bg-[var(--success-bg)] text-[var(--success)]',
-  Operativo: 'bg-[var(--success-bg)] text-[var(--success)]',
-  Dégradé: 'bg-[var(--warning-bg)] text-[var(--warning)]',
-  Degraded: 'bg-[var(--warning-bg)] text-[var(--warning)]',
-  Degradado: 'bg-[var(--warning-bg)] text-[var(--warning)]',
-};
 
 const STATUS_LINKS: Record<
   AppLocale,
@@ -82,8 +77,12 @@ const STATUS_LINKS: Record<
 
 export default async function StatusPage(props: { params: Promise<{ locale: AppLocale }> }) {
   const params = await props.params;
-  const { dictionary } = await resolveDictionary({ locale: params.locale });
+  const [{ dictionary }, serviceNotice] = await Promise.all([
+    resolveDictionary({ locale: params.locale }),
+    getServiceNoticeSetting(),
+  ]);
   const content = dictionary.status;
+  const notice = buildStatusNoticeState(serviceNotice, content.currentNotice);
   const related = STATUS_LINKS[params.locale] ?? STATUS_LINKS.en;
   const relatedLinks = related.links.map((item) => ({
     ...item,
@@ -97,56 +96,40 @@ export default async function StatusPage(props: { params: Promise<{ locale: AppL
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{content.hero.subtitle}</p>
         </header>
-        <section className="rounded-card border border-hairline bg-surface/90 p-6 text-sm text-text-secondary shadow-card sm:p-8">
-          <p>{content.overview.paragraphs[0]}</p>
-          <p className="mt-4">{content.overview.paragraphs[1]}</p>
-          <div className="mt-5 rounded-card border border-dashed border-hairline bg-bg/70 p-4">
-            <h2 className="text-xs font-semibold uppercase tracking-micro text-text-muted">{content.overview.quickReferencesTitle}</h2>
-            <ul className="mt-3 list-disc space-y-1 pl-5">
-              <li>
-                <span className="font-semibold text-text-primary">{content.overview.quickReferences[0].label}</span> — {content.overview.quickReferences[0].body}
-              </li>
-              <li>
-                <span className="font-semibold text-text-primary">{content.overview.quickReferences[1].label}</span> — {content.overview.quickReferences[1].body}
-              </li>
-              <li>
-                <span className="font-semibold text-text-primary">{content.overview.quickReferences[2].label}</span> — {content.overview.quickReferences[2].prefix}{' '}
-                <ObfuscatedEmailLink user="support" domain="maxvideoai.com" label="support@maxvideoai.com" />{' '}
-                {content.overview.quickReferences[2].suffix}
-              </li>
-            </ul>
+        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card sm:p-8">
+          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
+            {content.currentNotice.title}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            <span
+              className={
+                notice.isActive
+                  ? 'rounded-pill bg-[var(--warning-bg)] px-3 py-1 text-xs font-semibold text-[var(--warning)]'
+                  : 'rounded-pill bg-surface-subtle px-3 py-1 text-xs font-semibold text-text-secondary'
+              }
+            >
+              {notice.label}
+            </span>
           </div>
+          <p className="mt-4 whitespace-pre-wrap text-sm leading-relaxed text-text-secondary">
+            {notice.message}
+          </p>
         </section>
-        <section className="stack-gap">
-          {content.systems.map((system) => (
-            <article key={system.name} className="flex items-start justify-between gap-4 rounded-card border border-hairline bg-surface p-4 shadow-card">
-              <div>
-                <h2 className="text-sm font-semibold text-text-primary">{system.name}</h2>
-                <p className="text-xs text-text-secondary">{system.detail}</p>
-              </div>
-              <span
-                className={`rounded-pill px-3 py-1 text-xs font-semibold uppercase tracking-micro ${
-                  STATUS_BADGE_CLASSES[system.status] ?? 'bg-[var(--success-bg)] text-[var(--success)]'
-                }`}
-              >
-                {system.status}
-              </span>
-            </article>
-          ))}
-        </section>
-        <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
-          <h2 className="text-lg font-semibold text-text-primary">{content.incidentsHeading}</h2>
-          {content.incidents.map((incident) => (
-            <article key={incident.date} className="mt-4 border-t border-hairline pt-4 first:border-none first:pt-0">
-              <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">{incident.date}</p>
-              <h3 className="text-sm font-semibold text-text-primary">{incident.title}</h3>
-              <p className="mt-1 text-sm text-text-secondary">{incident.summary}</p>
-              <span className="mt-2 inline-flex rounded-pill bg-[var(--success-bg)] px-3 py-1 text-xs font-semibold uppercase tracking-micro text-[var(--success)]">
-                {incident.status}
-              </span>
-            </article>
-          ))}
-        </section>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">{content.affected.title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">{content.affected.body}</p>
+          </section>
+          <section className="rounded-card border border-hairline bg-surface p-6 shadow-card">
+            <h2 className="text-lg font-semibold text-text-primary">{content.support.title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-text-secondary">
+              {content.support.prefix}{' '}
+              <ObfuscatedEmailLink user="support" domain="maxvideoai.com" label="support@maxvideoai.com" />{' '}
+              {content.support.suffix}
+            </p>
+          </section>
+        </div>
 
         <p className="text-sm text-text-muted">
           <span className="font-medium text-text-secondary">{related.prefix}</span>{' '}

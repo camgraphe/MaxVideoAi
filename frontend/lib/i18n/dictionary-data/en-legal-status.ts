@@ -71,25 +71,26 @@ export const changelog: Dictionary['changelog'] = {
   };
 
 export const status: Dictionary['status'] = {
-    hero: {
-      title: 'Status',
-      subtitle: 'Live indicators for queue health, routing providers, and billing systems. Subscribe inside the app for incident alerts.',
-    },
-    systems: [
-      { name: 'Engine routing', status: 'Operational', detail: 'All engines responding within SLA.' },
-      { name: 'Queue processing', status: 'Operational', detail: 'Average start time under 45 seconds.' },
-      { name: 'Wallet + billing', status: 'Operational', detail: 'Payments, refunds, and receipts running normally.' },
-      { name: 'Callbacks & webhooks', status: 'Degraded', detail: 'Webhook retries delayed ~2 minutes. Investigating.' },
-    ],
-    incidents: [
-      {
-        date: '2024-06-10',
-        title: 'Pika provider latency',
-        summary: 'Pika queue delays for 34 minutes. Auto refunds triggered for impacted renders.',
-        status: 'Resolved',
-      },
-    ],
-  };
+  hero: {
+    title: 'Service status',
+    subtitle: 'Current service notices published by the MaxVideoAI team.',
+  },
+  currentNotice: {
+    title: 'Current notice',
+    activeLabel: 'Active service notice',
+    clearLabel: 'No active service notice',
+    clearBody: 'There is no administrator-published service notice at this time.',
+  },
+  affected: {
+    title: 'If a generation is affected',
+    body: 'Failed generations follow the existing refund policy. If a job is delayed, avoid submitting duplicates and keep its job ID available.',
+  },
+  support: {
+    title: 'Need help?',
+    prefix: 'Contact',
+    suffix: 'and include the job ID and engine name so the team can investigate.',
+  },
+};
 
 export const systemMessages: Dictionary['systemMessages'] = {
     refundInitiated: 'Your payment is being refunded. It can take 5–10 business days to appear on your statement.',

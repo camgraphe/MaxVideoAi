@@ -3020,62 +3020,24 @@
   },
   "status": {
     "hero": {
-      "title": "Estado",
-      "subtitle": "Indicadores en tiempo real del estado de las colas, los proveedores de enrutamiento y los sistemas de facturación. Suscríbete desde la app para recibir alertas de incidentes."
+      "title": "Estado del servicio",
+      "subtitle": "Avisos de servicio actuales publicados por el equipo de MaxVideoAI."
     },
-    "overview": {
-      "paragraphs": [
-        "Las comprobaciones de estado se actualizan de forma continua con la misma telemetría que usamos para enrutar renders. Cuando un motor pasa de «Operativo» a «Degradado», MaxVideoAI desvía automáticamente el tráfico a la región disponible más rápida y publica un incidente debajo. Si una caída exige una acción de tu parte, lo indicamos en las notas del incidente junto con los IDs de los trabajos que podrían necesitar reintento o reembolso.",
-        "Antes de contactar con soporte, confirma si el motor que estás usando muestra una interrupción y revisa el historial de incidentes. También puedes suscribirte al RSS o al resumen por correo para recibir alertas en cuanto degrademos un motor. Para escalaciones urgentes, incluye el ID del trabajo y el nombre del motor para que podamos rastrear el problema al instante."
-      ],
-      "quickReferencesTitle": "Referencias rápidas",
-      "quickReferences": [
-        {
-          "label": "Latencia de la cola de render",
-          "body": "normalmente se actualiza cada 60 segundos."
-        },
-        {
-          "label": "Registro de incidentes",
-          "body": "cada entrada incluye hora de inicio/fin, causa raíz y pasos de mitigación."
-        },
-        {
-          "label": "Soporte",
-          "prefix": "escribe a",
-          "suffix": "con el código del incidente + el ID del trabajo para una respuesta prioritaria."
-        }
-      ]
+    "currentNotice": {
+      "title": "Aviso actual",
+      "activeLabel": "Aviso de servicio activo",
+      "clearLabel": "No hay avisos de servicio activos",
+      "clearBody": "El equipo no ha publicado ningún aviso de servicio en este momento."
     },
-    "systems": [
-      {
-        "name": "Enrutamiento de motores",
-        "status": "Operativo",
-        "detail": "Todos los motores responden dentro del SLA."
-      },
-      {
-        "name": "Procesamiento de colas",
-        "status": "Operativo",
-        "detail": "Tiempo medio de arranque inferior a 45 segundos."
-      },
-      {
-        "name": "Billetera + facturación",
-        "status": "Operativo",
-        "detail": "Pagos, reembolsos y recibos operan con normalidad."
-      },
-      {
-        "name": "Callbacks y webhooks",
-        "status": "Degradado",
-        "detail": "Reintentos de webhooks con retraso de ~2 minutos. En investigación."
-      }
-    ],
-    "incidents": [
-      {
-        "date": "2024-06-10",
-        "title": "Latencia del proveedor Pika",
-        "summary": "Retrasos en la cola de Pika durante 34 minutos. Se dispararon reembolsos automáticos para los renders afectados.",
-        "status": "Resuelto"
-      }
-    ],
-    "incidentsHeading": "Incidentes"
+    "affected": {
+      "title": "Si una generación se ve afectada",
+      "body": "Las generaciones fallidas siguen la política de reembolso existente. Si un trabajo se retrasa, evita enviarlo de nuevo y conserva su identificador."
+    },
+    "support": {
+      "title": "¿Necesitas ayuda?",
+      "prefix": "Contacta con",
+      "suffix": "e incluye el identificador del trabajo y el nombre del motor para que el equipo pueda investigarlo."
+    }
   },
   "systemMessages": {
     "refundInitiated": "Se está reembolsando tu pago. Normalmente aparece en tu extracto en 5–10 días laborables.",

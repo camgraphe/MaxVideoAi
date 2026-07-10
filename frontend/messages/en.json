@@ -2993,62 +2993,24 @@
   },
   "status": {
     "hero": {
-      "title": "Status",
-      "subtitle": "Live indicators for queue health, routing providers, and billing systems. Subscribe inside the app for incident alerts."
+      "title": "Service status",
+      "subtitle": "Current service notices published by the MaxVideoAI team."
     },
-    "overview": {
-      "paragraphs": [
-        "Status checks refresh continuously from the same telemetry we use to route renders. When an engine moves from \"Operational\" to \"Degraded\", MaxVideoAI automatically shifts traffic to the fastest available region and posts an incident below. If an outage requires customer action we flag it in the incident notes and reference the job IDs that may need a retry or credit refund.",
-        "Before contacting support, confirm whether the engine you are using shows a disruption and review the incident history. You can also subscribe to the RSS feed or email digest to receive alerts the moment we downgrade an engine. For urgent escalations, include the job ID and engine name so we can trace the queue instantly."
-      ],
-      "quickReferencesTitle": "Quick references",
-      "quickReferences": [
-        {
-          "label": "Render queue latency",
-          "body": "typically updates every 60 seconds."
-        },
-        {
-          "label": "Incident log",
-          "body": "entries include start/end time, root cause, and mitigation steps."
-        },
-        {
-          "label": "Support",
-          "prefix": "email",
-          "suffix": "with incident code + job ID for a priority response."
-        }
-      ]
+    "currentNotice": {
+      "title": "Current notice",
+      "activeLabel": "Active service notice",
+      "clearLabel": "No active service notice",
+      "clearBody": "There is no administrator-published service notice at this time."
     },
-    "systems": [
-      {
-        "name": "Engine routing",
-        "status": "Operational",
-        "detail": "All engines responding within SLA."
-      },
-      {
-        "name": "Queue processing",
-        "status": "Operational",
-        "detail": "Average start time under 45 seconds."
-      },
-      {
-        "name": "Wallet + billing",
-        "status": "Operational",
-        "detail": "Payments, refunds, and receipts running normally."
-      },
-      {
-        "name": "Callbacks & webhooks",
-        "status": "Degraded",
-        "detail": "Webhook retries delayed ~2 minutes. Investigating."
-      }
-    ],
-    "incidents": [
-      {
-        "date": "2024-06-10",
-        "title": "Pika provider latency",
-        "summary": "Pika queue delays for 34 minutes. Auto refunds triggered for impacted renders.",
-        "status": "Resolved"
-      }
-    ],
-    "incidentsHeading": "Incidents"
+    "affected": {
+      "title": "If a generation is affected",
+      "body": "Failed generations follow the existing refund policy. If a job is delayed, avoid submitting duplicates and keep its job ID available."
+    },
+    "support": {
+      "title": "Need help?",
+      "prefix": "Contact",
+      "suffix": "and include the job ID and engine name so the team can investigate."
+    }
   },
   "systemMessages": {
     "refundInitiated": "Your payment is being refunded. It can take 5–10 business days to appear on your statement.",
