@@ -95,3 +95,39 @@ Result: passed with no whitespace errors.
 ### Concerns
 
 - None for this focused fix pass.
+
+## Fix pass 2
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceProjectMediaActions.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-generated-media.ts`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+- `.superpowers/sdd/task-6-report.md`
+
+### Verification
+
+Passed:
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-generation-blocks.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 66 tests passed, 0 failed.
+
+```bash
+git diff --check
+```
+
+Result: passed with no whitespace errors.
+
+### Commit
+
+`5d4c8602` (`fix: sync generated media folder moves`)
+
+### Concerns
+
+- None for this focused fix pass.
