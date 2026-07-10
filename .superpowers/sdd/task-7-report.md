@@ -132,3 +132,35 @@ Result: pass.
 
 - The focused suite remains blocked by the two unrelated existing architecture failures above.
 - `frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json` still reports the three pre-existing errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
+
+## Fix pass 3
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaLibraryModal.tsx`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 41 passed, 2 failed. The new plain-click selection contract passes. The two remaining failures are unchanged and unrelated: the shot-control duration source assertion and pricing preflight's `includes` error in `model-input-connectors.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`465ecc341d88fbeb603b44e62ccfeb7b20b75fb0` - `fix: replace project media selection on click`
+
+### Concerns
+
+- The focused suite remains blocked by the same two unrelated existing architecture failures above.
