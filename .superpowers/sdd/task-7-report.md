@@ -196,3 +196,38 @@ Result: pass.
 ### Concerns
 
 - The focused suite remains blocked only by the two unrelated existing architecture failures above.
+
+## Fix pass 5
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-asset-selection.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceEditorAssetLibrary.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceRuntimeModals.tsx`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 43 passed, 2 failed. The new behavior-level selection transition test passes, including replace, toggle, range selection, and reset state. The two remaining failures are unchanged and unrelated: the shot-control duration source assertion and pricing preflight's `includes` error in `model-input-connectors.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`6e8ff28def97ba548b63ae7afa7444e44f197f00` - `fix: reset Studio asset picker selection`
+
+### Concerns
+
+- The focused suite remains blocked by the same two unrelated existing architecture failures above.
