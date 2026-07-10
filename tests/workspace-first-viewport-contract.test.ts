@@ -103,7 +103,7 @@ test('workspace solo assets stretch while workspace-only vertical density expose
   assert.match(composerSource, /workspaceDensity \? 'h-9' : 'h-11'/);
   assert.match(composerSource, /workspaceDensity \? 'space-y-2 border-t[\s\S]*pt-2/);
   assert.match(composerSource, /workspaceDensity \? 'flex-nowrap gap-2 pb-1 pt-2'/);
-  assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
+  assert.match(composerSource, /workspaceDensity \? 'py-1 pl-3 pr-0' : 'px-4 py-3'/);
   assert.match(assetDropzoneSource, /workspaceDensity=\{workspaceDensity\}/);
   assert.match(assetDropzoneSource, /workspaceDensity && 'h-full min-h-\[150px\]'/);
   assert.match(assetDropzoneSource, /workspaceDensity && 'h-full'/);
@@ -126,7 +126,7 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(composerSource, /min-h-\[164px\]/);
   assert.doesNotMatch(composerSource, /sm:h-10 sm:min-h-0/);
   assert.match(composerSource, /density=\{workspaceDensity \? 'workspace' : 'default'\}/);
-  assert.match(composerSource, /workspaceDensity \? 'px-0 py-1' : 'px-4 py-3'/);
+  assert.match(composerSource, /workspaceDensity \? 'py-1 pl-3 pr-0' : 'px-4 py-3'/);
   assert.match(composerSource, /h-10 gap-3[\s\S]*lg:min-w-\[176px\]/);
   assert.match(compositePreviewSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-0 py-0' : 'px-4 py-4'/);

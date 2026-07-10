@@ -62,6 +62,12 @@ Required fidelity surfaces:
   - Fix: reserved 32px guidance and footer zones and let the add-action zone consume the shared flexible middle row.
   - Post-fix measurement: all six empty Seedance cards use 32px information and footer zones; the three add actions on each row share the same center coordinate.
 
+### Iteration 4 — control-row inset
+
+- [P2] The first compact setting control sat against the prompt footer border.
+  - Fix: added a workspace-only 12px left inset while preserving the zero right inset and Generate position.
+  - Post-fix measurement: footer-to-first-control gap is 12px; footer-to-Generate right gap remains 0px.
+
 ## Primary Interactions Tested
 
 - Engine and variant rendering across Seedance, Kling, and Sora.
