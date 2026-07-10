@@ -86,3 +86,25 @@ None.
 ### Concerns
 
 - None.
+
+## Fix pass 4
+
+### Changed files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-tool-pricing.ts`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/nodes/workspace-chat-node.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_styles/canvas-chat-node.module.css`
+- `tests/maxvideoai-editor-v1-pricing.test.ts`
+
+### Verification
+
+- `PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" ./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/maxvideoai-editor-v1-pricing.test.ts tests/maxvideoai-editor-generation-blocks.test.ts`: passed, 60 tests passed, 0 failed.
+- `git diff --check`: passed.
+
+### Commit
+
+- `70f2b8d0a375a35ebb57aa8e5dfa8b4364491042 fix: align Studio Angle pricing policy`
+
+### Concerns
+
+- None.
