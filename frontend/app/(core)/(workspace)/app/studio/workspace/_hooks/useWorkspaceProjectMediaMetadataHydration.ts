@@ -3,7 +3,7 @@
 import { useEffect, useRef, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import {
   applyWorkspaceProjectAssetMetadataToTimelineItems,
-  workspaceAssetNeedsMetadataHydration,
+  workspaceProjectMediaNeedsMetadata,
   workspaceProjectAssetMetadataSource,
   workspaceAssetWithMeasuredMetadata,
   type WorkspaceProjectAssetMetadataSource,
@@ -101,7 +101,7 @@ export function useWorkspaceProjectMediaMetadataHydration({
         asset,
         source: workspaceProjectAssetMetadataSource(asset, timelineItems),
       }))
-      .filter(({ asset, source }) => workspaceAssetNeedsMetadataHydration(asset) && Boolean(source));
+      .filter(({ asset, source }) => workspaceProjectMediaNeedsMetadata(asset) && Boolean(source));
     if (!candidates.length) return;
 
     let cancelled = false;
@@ -130,7 +130,7 @@ export function useWorkspaceProjectMediaMetadataHydration({
           );
         })
         .catch(() => {
-          // Some remote media blocks metadata probing; those assets keep the legacy full-frame fallback.
+          // Some remote media blocks metadata probing; unknown metadata remains unknown.
         });
     });
 

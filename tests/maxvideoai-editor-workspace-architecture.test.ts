@@ -32,6 +32,23 @@ import type {
 import type { EngineCaps } from '../frontend/types/engines';
 
 const root = process.cwd();
+
+test('Studio asset library exposes scalable filters and load-more access', () => {
+  const browserSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceAssetLibraryBrowser.tsx'),
+    'utf8'
+  );
+  const hookSource = readFileSync(
+    join(root, 'frontend/app/(core)/(workspace)/app/studio/workspace/_hooks/useWorkspaceEditorAssetLibrary.ts'),
+    'utf8'
+  );
+
+  assert.match(browserSource, /mediaKindFilter/);
+  assert.match(browserSource, /Load more|loadMore|onLoadMore/);
+  assert.match(browserSource, /selectedAssetIds|multi/i);
+  assert.match(hookSource, /cursor|page|hasMore/);
+});
+
 const packageJsonPath = join(root, 'package.json');
 const rootAgentsPath = join(root, 'AGENTS.md');
 const studioArchitectureGuidePath = join(root, 'docs/engineering/studio-editor-architecture.md');

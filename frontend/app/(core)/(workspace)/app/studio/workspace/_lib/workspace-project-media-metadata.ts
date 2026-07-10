@@ -55,6 +55,16 @@ export function workspaceAssetNeedsMetadataHydration(asset: WorkspaceAssetRecord
   return false;
 }
 
+export function workspaceProjectMediaNeedsMetadata(asset: WorkspaceAssetRecord): boolean {
+  return workspaceAssetNeedsMetadataHydration(asset);
+}
+
+export function workspaceProjectMediaResolutionLabel(asset: WorkspaceAssetRecord): string | null {
+  const dimensions = parseWorkspaceMediaDimensions(asset.dimensions);
+  if (dimensions) return `${dimensions.width}x${dimensions.height}`;
+  return asset.dimensions?.trim() || null;
+}
+
 export function workspaceAssetNeedsMeasuredDimensions(asset: WorkspaceAssetRecord): boolean {
   return workspaceAssetNeedsMetadataHydration(asset);
 }

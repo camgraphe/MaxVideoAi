@@ -153,9 +153,17 @@ function metaForUserAsset(asset: {
     : asset.kind === 'audio' || asset.mime?.startsWith('audio/')
       ? 'Audio'
       : 'Image';
-  if (asset.width && asset.height) return `${kind} · ${asset.width}x${asset.height}`;
+  if (positiveMediaDimension(asset.width) && positiveMediaDimension(asset.height)) return `${kind} · ${asset.width}x${asset.height}`;
   if (asset.source) return `${kind} · ${asset.source}`;
   return kind;
+}
+
+function positiveMediaDimension(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? Math.round(value) : null;
+}
+
+function positiveMediaDuration(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined;
 }
 
 function stringValue(value: unknown): string | null {
@@ -270,14 +278,9 @@ export function workspaceLibraryAssetFromUploadedAsset(
     url,
   });
   if (kind && resolvedKind !== kind) return null;
-  const width = typeof asset.width === 'number' ? asset.width : null;
-  const height = typeof asset.height === 'number' ? asset.height : null;
-  const durationSec =
-    typeof asset.durationSec === 'number'
-      ? asset.durationSec
-      : typeof asset.duration === 'number'
-        ? asset.duration
-        : undefined;
+  const width = positiveMediaDimension(asset.width);
+  const height = positiveMediaDimension(asset.height);
+  const durationSec = positiveMediaDuration(asset.durationSec) ?? positiveMediaDuration(asset.duration);
   return {
     id: typeof asset.id === 'string' ? asset.id : url,
     name: fileNameFromUrl(url, resolvedKind === 'video' ? 'Video asset' : resolvedKind === 'audio' ? 'Audio asset' : 'Image asset'),

@@ -25,6 +25,7 @@ import {
   localizeStudioGeneratedSequenceDisplayName,
   type StudioCopy,
 } from '../../_lib/studio-copy';
+import { workspaceProjectMediaResolutionLabel } from '../_lib/workspace-project-media-metadata';
 
 export type { WorkspaceProjectSequenceSummary };
 
@@ -716,6 +717,11 @@ export function TimelineProjectSidebar({
         })}
 
         {projectMedia.visibleProjectAssets.map(({ asset, cardKind, key, mediaKind, subtitle, thumbnailUrl, timelineDurationSec }) => {
+          const displaySubtitle = asset.kind === 'video'
+            ? [asset.durationSec ? formatProjectMediaDuration(asset.durationSec) : null, workspaceProjectMediaResolutionLabel(asset)]
+              .filter(Boolean)
+              .join(MEDIA_DETAIL_SEPARATOR)
+            : subtitle;
           return (
             <div
               key={asset.id}
@@ -737,7 +743,7 @@ export function TimelineProjectSidebar({
                 onContextMenu={(event) => projectMedia.openContextMenu(event, { id: asset.id, title: asset.filename, type: 'asset' })}
                 onDragEnd={projectMedia.endProjectMediaTimelineDrag}
                 onDragStart={mediaKind ? (event) => projectMedia.beginProjectAssetTimelineDrag(event, asset) : undefined}
-                subtitle={subtitle}
+                subtitle={displaySubtitle}
                 thumbnailUrl={thumbnailUrl}
                 title={asset.filename}
               />

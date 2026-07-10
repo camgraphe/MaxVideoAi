@@ -10,6 +10,8 @@ import {
 import {
   applyWorkspaceProjectAssetMetadataToTimelineItems,
   workspaceAssetNeedsMeasuredDimensions,
+  workspaceProjectMediaNeedsMetadata,
+  workspaceProjectMediaResolutionLabel,
   workspaceProjectAssetMetadataSource,
   workspaceProjectAssetMetadataSourceUrl,
   workspaceAssetWithMeasuredMetadata,
@@ -82,6 +84,19 @@ function generatedVideoNode(overrides: Partial<WorkspaceGraphNode> = {}): Worksp
     ...overrides,
   };
 }
+
+test('project media metadata helpers do not invent resolution for unknown videos', () => {
+  const asset = {
+    id: 'asset-unknown-video',
+    kind: 'video',
+    filename: 'unknown.mp4',
+    subtitle: 'Video',
+    url: 'https://example.com/unknown.mp4',
+  } as WorkspaceAssetRecord;
+
+  assert.equal(workspaceProjectMediaNeedsMetadata(asset), true);
+  assert.equal(workspaceProjectMediaResolutionLabel(asset), null);
+});
 
 test('ready generated output nodes become typed project media assets', () => {
   const asset = workspaceAssetFromOutputNode({

@@ -20,6 +20,8 @@ import {
 import type { StudioCopy } from '../../_lib/studio-copy';
 
 type WorkspaceLibraryKindFilter = 'all' | WorkspaceLibraryKind;
+export type WorkspaceAssetLibraryMediaKindFilter = WorkspaceLibraryKindFilter;
+type WorkspaceAssetLibraryStatus = 'idle' | 'loading' | 'ready' | 'error';
 
 type WorkspaceEditorAssetLibraryCacheEntry = WorkspaceUserLibraryPage & {
   error: string | null;
@@ -91,6 +93,9 @@ export function useWorkspaceEditorAssetLibrary(
   const isEnabled = nodeKind !== undefined;
   const libraryKind = nodeKind ? workspaceLibraryKindForNodeKind(nodeKind) : null;
   const [kindFilter, setKindFilter] = useState<WorkspaceLibraryKindFilter>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [selectionAnchorId, setSelectionAnchorId] = useState<string | null>(null);
   const effectiveLibraryKind = libraryKind ?? (kindFilter === 'all' ? null : kindFilter);
   const canFilterKind = nodeKind === null;
   const sourceOptions = useMemo(() => workspaceLibrarySourceOptionsForKind(effectiveLibraryKind), [effectiveLibraryKind]);
@@ -230,50 +235,46 @@ export function useWorkspaceEditorAssetLibrary(
     };
   }, [copy.unableToLoadLibrary, fetchLibraryPage, isEnabled, requestKey]);
 
-  const loadMore = useCallback(() => {
+  const loadMore = useCallback(async (): Promise<void> => {
     if (!requestKey || !hasMore || isLoading || isLoadingMore || !nextCursor) return;
     const currentRequestKey = requestKey;
     const cursor = nextCursor;
     setIsLoadingMore(true);
     setError(null);
 
-    async function loadNextPage() {
-      try {
-        const page = await fetchLibraryPage(cursor);
-        if (page.error) {
-          WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
-            assets: userAssets,
-            nextCursor: null,
-            hasMore: false,
-            error: page.error,
-          });
-          setNextCursor(null);
-          setHasMore(false);
-          setError(page.error);
-          setLoadedKey(currentRequestKey);
-          return;
-        }
-        setUserAssets((currentAssets) => {
-          const mergedAssets = mergeWorkspaceLibraryAssets(currentAssets, page.assets, 'append');
-          WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
-            assets: mergedAssets,
-            nextCursor: page.nextCursor,
-            hasMore: page.hasMore,
-            error: null,
-          });
-          return mergedAssets;
+    try {
+      const page = await fetchLibraryPage(cursor);
+      if (page.error) {
+        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
+          assets: userAssets,
+          nextCursor: null,
+          hasMore: false,
+          error: page.error,
         });
-        setNextCursor(page.nextCursor);
-        setHasMore(page.hasMore);
+        setNextCursor(null);
+        setHasMore(false);
+        setError(page.error);
         setLoadedKey(currentRequestKey);
-      } catch {
-        setError(copy.unableToLoadLibrary);
-      } finally {
-        setIsLoadingMore(false);
+        return;
       }
+      setUserAssets((currentAssets) => {
+        const mergedAssets = mergeWorkspaceLibraryAssets(currentAssets, page.assets, 'append');
+        WORKSPACE_EDITOR_ASSET_LIBRARY_CACHE.set(currentRequestKey, {
+          assets: mergedAssets,
+          nextCursor: page.nextCursor,
+          hasMore: page.hasMore,
+          error: null,
+        });
+        return mergedAssets;
+      });
+      setNextCursor(page.nextCursor);
+      setHasMore(page.hasMore);
+      setLoadedKey(currentRequestKey);
+    } catch {
+      setError(copy.unableToLoadLibrary);
+    } finally {
+      setIsLoadingMore(false);
     }
-
-    void loadNextPage();
   }, [
     copy.unableToLoadLibrary,
     fetchLibraryPage,
@@ -295,6 +296,37 @@ export function useWorkspaceEditorAssetLibrary(
     error !== copy.signInToAccessLibrary;
   const assets = userAssets.length ? userAssets : shouldUseFallback ? fallbackAssets : [];
 
+  const toggleAssetSelection = useCallback((assetId: string, mode: 'replace' | 'toggle' | 'range') => {
+    setSelectedAssetIds((currentIds) => {
+      if (mode === 'replace') return [assetId];
+      if (mode === 'toggle') {
+        return currentIds.includes(assetId)
+          ? currentIds.filter((currentId) => currentId !== assetId)
+          : [...currentIds, assetId];
+      }
+      const assetIds = assets.map((asset) => asset.id);
+      const anchorIndex = selectionAnchorId ? assetIds.indexOf(selectionAnchorId) : -1;
+      const targetIndex = assetIds.indexOf(assetId);
+      if (anchorIndex === -1 || targetIndex === -1) return [assetId];
+      const [start, end] = anchorIndex < targetIndex ? [anchorIndex, targetIndex] : [targetIndex, anchorIndex];
+      return Array.from(new Set([...currentIds, ...assetIds.slice(start, end + 1)]));
+    });
+    setSelectionAnchorId(assetId);
+  }, [assets, selectionAnchorId]);
+
+  useEffect(() => {
+    const availableAssetIds = new Set(assets.map((asset) => asset.id));
+    setSelectedAssetIds((currentIds) => currentIds.filter((assetId) => availableAssetIds.has(assetId)));
+  }, [assets]);
+
+  const status: WorkspaceAssetLibraryStatus = !isEnabled
+    ? 'idle'
+    : isLoading
+      ? 'loading'
+      : error
+        ? 'error'
+        : 'ready';
+
   return {
     assets,
     userAssets,
@@ -302,10 +334,17 @@ export function useWorkspaceEditorAssetLibrary(
     isLoading,
     isLoadingMore,
     error,
+    status,
     libraryKind,
     effectiveLibraryKind,
     kindFilter,
     setKindFilter,
+    mediaKindFilter: kindFilter,
+    setMediaKindFilter: setKindFilter,
+    searchQuery,
+    setSearchQuery,
+    selectedAssetIds,
+    toggleAssetSelection,
     canFilterKind,
     source: activeSource,
     setSource,
@@ -318,4 +357,13 @@ export function useWorkspaceEditorAssetLibrary(
   };
 }
 
-export type WorkspaceEditorAssetLibraryState = ReturnType<typeof useWorkspaceEditorAssetLibrary>;
+export type WorkspaceEditorAssetLibraryState = ReturnType<typeof useWorkspaceEditorAssetLibrary> & {
+  status: WorkspaceAssetLibraryStatus;
+  mediaKindFilter: WorkspaceAssetLibraryMediaKindFilter;
+  searchQuery: string;
+  selectedAssetIds: string[];
+  loadMore: () => Promise<void>;
+  setMediaKindFilter: (kind: WorkspaceAssetLibraryMediaKindFilter) => void;
+  setSearchQuery: (query: string) => void;
+  toggleAssetSelection: (assetId: string, mode: 'replace' | 'toggle' | 'range') => void;
+};
