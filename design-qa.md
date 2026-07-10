@@ -2,12 +2,12 @@
 
 ## Scope, state, and final captures
 
-The final implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the independent-review remediation in `4d581ece`. Captures use settled starter media and live composer data.
+The final implementation was exercised as a guest in Playwright Chrome against `http://127.0.0.1:3000` after the whole-branch keyboard, accessibility, and stage-geometry review fixes. Captures use settled starter media and live composer data. The final video captures replace the earlier remediation views because the stage geometry changed materially; the settled image captures remain valid because that preview implementation did not change.
 
 | Route | Viewport and state | Source target | Final implementation |
 | --- | --- | --- | --- |
-| `/app` | 390 × 844; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-remediation.png` |
-| `/app` | 1440 × 1024; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-remediation.png` |
+| `/app` | 390 × 844; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-ec897e31-e4be-4404-a505-8f562287b964.png` | `output/playwright/workspace-video-mobile-final-fix.png` — SHA-256 `a480c9420cffb54940621c5e42c8cfcd91c975a5e1b96947dc1f4feb380ff44c` |
+| `/app` | 1440 × 1024; Kling 3 Pro / Pro; curated warrior sample; populated multi-scene prompt | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-e8b6d408-809e-4061-b1f4-6d63ef66e7d4.png` | `output/playwright/workspace-video-desktop-final-fix.png` — SHA-256 `f8a52675032ddf5895606ba43f4241742ec8d96951f85b38afafe0498f747064` |
 | `/app/image` | 390 × 844; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-0c9e7b82-d6cb-45e9-861e-2972c61231c7.png` | `output/playwright/workspace-image-mobile-remediation.png` |
 | `/app/image` | 1440 × 1024; Seedream 5.0 Lite; curated camera-rig sample and prompt; `$0.06` quote | `/Users/adrienmillot/.codex/generated_images/019f486b-af5c-7be2-b74f-e7457586bcd7/exec-a1c4bd95-268f-4acc-a7a1-3b7b7317ad70.png` | `output/playwright/workspace-image-desktop-remediation.png` |
 
@@ -18,7 +18,7 @@ Every source and implementation full view was opened together in the same compar
 | Target | Engine and viewer | Composer and actions | Asset area and first viewport |
 | --- | --- | --- | --- |
 | Video mobile | The stacked engine/variant header, Browse link, contained warrior frame, sample badge, and compact toolbar preserve the source hierarchy. | Prompt metadata and promoted actions stay legible. Settings remain one intrinsic-width row in a local scroller, with a full-width Generate row immediately below. | Start/End guest locks retain their paired layout and `Sign in to upload` copy. The document itself has no horizontal overflow. |
-| Video desktop | Engine/variant controls, Browse placement, wide contained preview, navigation affordances, toolbar, shell rail, and starter cards align with the source structure. | Prompt, settings, and Generate occupy the compact source-like rhythm; settings and Generate share one desktop row. | Paired Start/End fields, Negative prompt, and Advanced settings are present. Advanced spans y=985–1021 inside the 1024px target. |
+| Video desktop | Engine/variant controls, Browse placement, navigation affordances, toolbar, shell rail, and starter cards align with the source structure. The final branch review intentionally replaces the independently sized wide frame with a centered exact-16:9 stage derived from the existing height budget. | Prompt, settings, and Generate occupy the compact source-like rhythm; settings and Generate share one desktop row. | Paired Start/End fields, Negative prompt, and Advanced settings are present. Advanced spans y=985.44–1021.44 inside the 1024px target. |
 | Image mobile | The engine header, contained camera image, and five-action toolbar follow the reference composition without cropping or stretching the media. | Prompt, intrinsic settings, and the full-width Generate button retain clear hierarchy. Local settings overflow does not leak to the page. | Reference images spans the available card width, Characters stays aligned, the add target and remaining-slot copy are visible, and Advanced spans y=804.25–840.25. |
 | Image desktop | Engine/variant controls, contained camera image, toolbar, navigation, promotion, and sample rail preserve the existing product shell and source proportions. | Prompt, settings, and Generate remain one compact desktop action surface. | Reference images uses 850px inside the 884px composer rather than the shared 640px solo cap. Advanced spans y=894–930 within the target. |
 
@@ -62,7 +62,7 @@ The implementation crop dimensions and hashes differ from their 1440×1024 and 3
 ### Image quality and containment
 
 - Final captures use the real curated warrior and camera-rig media rather than placeholders or recreated assets.
-- Video and image previews preserve the full subject and source framing through contained rendering. No visible crop, stretch, or aspect distortion remains.
+- Video and image previews preserve the full subject and source framing through contained rendering. The video stage measures exactly 16:9, a 16:9 source fills it, and portrait/square sources letterbox without crop or stretch.
 - Starter thumbnails and the main selected media stay crisp at both target sizes; toolbar and overlay controls do not obscure the primary subject.
 
 ### Copy and content
@@ -78,7 +78,9 @@ The implementation crop dimensions and hashes differ from their 1440×1024 and 3
 - Short mobile controls retain a 112px minimum. `1080p • Full HD • Pro` measures 195.14px and `Horizontal 16:9` measures 161.66px; labels and icons do not collide.
 - Mobile Generate spans x=30–360 (330px) on both routes.
 - Image Reference images spans x=29–361 (332px) on mobile and 850px inside the 884px desktop composer.
-- Video desktop Advanced spans y=985–1021; image desktop spans y=894–930; image mobile spans y=804.25–840.25.
+- At 1440×1024 the final video stage is 583×327.9375px (`1.7777777777777777`, exactly 16/9). Its live media box is the same size with computed `object-fit: contain`. Browser containment geometry is 583×327.9375 for 16:9, 184.46484375×327.9375 for 9:16, and 327.9375×327.9375 for 1:1.
+- The compact Browse target measures 36px high at both target viewports while retaining the prior 24px layout footprint. Video desktop Advanced spans y=985.44–1021.44; image desktop spans y=894.5–930.5; settled image mobile spans y=798–834.
+- Final live checks found no document-level horizontal overflow: desktop client/scroll widths were 1428/1428 in the headed browser and mobile client/scroll widths were 378/378 after accounting for the visible browser scrollbar.
 
 ## Primary interaction and behavior checks
 
@@ -106,6 +108,8 @@ The implementation crop dimensions and hashes differ from their 1440×1024 and 3
 - Workspace settings menus render in the document body, remain viewport-visible, and reposition/clamp when the nested horizontal scroller moves.
 - Outside click and Escape close an open menu.
 - ArrowDown/ArrowDown/Enter keyboard selection changed the image aspect to Square 1:1.
+- The final focused keyboard proof opened the 16:9 workspace listbox, moved its highlight with ArrowDown, and pressed Tab. Focus moved normally to the `On` trigger, the old listbox count became zero, and 16:9 remained selected. Space then opened the `On` listbox, proving the departed menu did not handle the competing control's key.
+- The open duration trigger had id `_r_1_` and `aria-controls="_r_2_"`; the body-portaled listbox had id `_r_2_` and `aria-labelledby="_r_1_"`.
 - Mobile settings scroll locally in one row, Generate remains below, and neither route introduces document-level horizontal overflow.
 - Guest/auth route ordering and default settings remain unchanged by the workspace-only density contract.
 
@@ -123,5 +127,9 @@ A fresh direct `/app/image` run completed without console errors or warnings att
 6. The implementation replaced equal-flex compression with intrinsic controls inside a local scroller, excluded only workspace solo assets from the shared cap, compacted workspace-only vertical rhythm, and preserved portals, keyboard behavior, defaults, and shared density.
 7. Fresh settled captures at all four exact viewports produced the geometry above. Genuine focused crops were regenerated, dimension/hash verified, and opened with their source counterparts.
 8. Final full-view and focused comparisons contain no P0/P1/P2 issue. Remaining P3 variation is limited to live starter data, quote values, prompt copy, and media-frame timing.
+9. Whole-branch review then found the shared portaled selector could retain document-wide Enter/Space ownership after focus departure, lacked stable trigger/listbox ownership, and sized the workspace video stage with independent width and height.
+10. Focused RED contracts drove focus-in dismissal, target-scoped key handling, stable ARIA ids, disabled variant explanations, and a height-budget-derived workspace width that leaves CSS aspect ratio authoritative.
+11. Live verification found the restored 36px Browse target initially pushed desktop Advanced below the target viewport. A second RED contract drove compact-only negative margins that preserve a 36px hit target with the old 24px layout footprint.
+12. Fresh video captures and exact browser measurements confirm the final 16:9 geometry, contained portrait/square projections, Tab → competing control → Space behavior, 36px Browse target, visible Advanced controls, and zero document overflow. No P0/P1/P2 remains.
 
 final result: passed

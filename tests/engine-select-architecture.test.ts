@@ -99,3 +99,16 @@ test('workspace variant trigger overrides the shared select minimum width', () =
     'workspace variant trigger must fit its 112px and 136px wrappers'
   );
 });
+
+test('workspace compact engine controls preserve Browse target size and disabled variant explanations', () => {
+  const variantControlSource = readFileSync(variantControlPath, 'utf8');
+  assert.match(engineSelectSource, /ml-auto inline-flex items-center gap-1\.5 min-h-9/);
+  assert.doesNotMatch(engineSelectSource, /isCompact \? 'min-h-6'/);
+  assert.match(
+    engineSelectSource,
+    /isCompact && '-my-1\.5'/,
+    'the 36px compact target must keep the prior 24px layout footprint'
+  );
+  assert.match(variantControlSource, /title: disabledEngineReasons\?\.\[entry\.id\]/);
+  assert.match(variantControlSource, /disabled: Boolean\(disabledEngineReasons\?\.\[entry\.id\]\)/);
+});

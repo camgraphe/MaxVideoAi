@@ -113,6 +113,22 @@ test('workspace preview and image prompt density stay opt-in without changing sh
   assert.match(compositePreviewSource, /workspaceDensity \? 'mt-1' : 'mt-3'/);
   assert.match(compositePreviewSource, /workspaceDensity \? 'px-3 py-0' : 'px-3 py-2'/);
   assert.match(compositePreviewSource, /window\.innerWidth < 640 \? 0\.25 : 0\.32/);
+  assert.match(
+    compositePreviewSource,
+    /const workspaceHeightBudget = Math\.min\(viewportHeight \* workspaceHeightRatio, 340\)/
+  );
+  assert.match(
+    compositePreviewSource,
+    /Math\.min\(availableWidth, maxWidth, \(workspaceHeightBudget \* 16\) \/ 9\)/
+  );
+  assert.match(
+    compositePreviewSource,
+    /const heightPx = workspaceDensity \? '' : `\$\{Math\.round\(\(width \* 9\) \/ 16\)\}px`/
+  );
+  assert.doesNotMatch(
+    compositePreviewSource,
+    /const height = workspaceDensity[\s\S]{0,180}viewportHeight \* workspaceHeightRatio/
+  );
   assert.match(compositePreviewHeaderSource, /density\?: 'default' \| 'workspace'/);
   assert.match(compositePreviewHeaderSource, /density === 'workspace' \? 'py-1' : 'py-3'/);
   assert.match(imageCompositePreviewSource, /density\?: 'default' \| 'workspace'/);

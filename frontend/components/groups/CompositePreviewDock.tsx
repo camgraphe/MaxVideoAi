@@ -130,14 +130,12 @@ export function CompositePreviewDock({
         const maxWidth = 960;
         const availableWidth = parent.clientWidth;
         const workspaceHeightRatio = window.innerWidth < 640 ? 0.25 : 0.32;
+        const workspaceHeightBudget = Math.min(viewportHeight * workspaceHeightRatio, 340);
         const width = workspaceDensity
-          ? Math.min(availableWidth, maxWidth)
+          ? Math.min(availableWidth, maxWidth, (workspaceHeightBudget * 16) / 9)
           : Math.min(availableWidth, maxWidth, (maxHeight * 16) / 9);
-        const height = workspaceDensity
-          ? Math.max(1, Math.min(viewportHeight * workspaceHeightRatio, 340))
-          : Math.max(1, (width * 9) / 16);
         const widthPx = `${Math.round(width)}px`;
-        const heightPx = `${Math.round(height)}px`;
+        const heightPx = workspaceDensity ? '' : `${Math.round((width * 9) / 16)}px`;
         if (target.style.width !== widthPx) target.style.width = widthPx;
         if (target.style.height !== heightPx) target.style.height = heightPx;
         if (toolbar.style.width !== widthPx) toolbar.style.width = widthPx;

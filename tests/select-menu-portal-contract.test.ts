@@ -22,3 +22,24 @@ test('workspace settings opt into a portaled SelectMenu without changing its def
   assert.doesNotMatch(imageAdvancedSettingsSource, /portal=/);
   assert.doesNotMatch(priceEstimatorSelectSource, /portal=/);
 });
+
+test('portaled SelectMenu closes on focus departure without stealing Tab or competing control keys', () => {
+  assert.match(selectMenuSource, /document\.addEventListener\('focusin', handleFocusIn\)/);
+  assert.match(selectMenuSource, /containerRef\.current\?\.contains\(target\) \|\| menuRef\.current\?\.contains\(target\)/);
+  assert.match(selectMenuSource, /if \(!isWithinSelect\) return;/);
+  assert.doesNotMatch(selectMenuSource, /event\.key === 'Tab'[\s\S]{0,160}event\.preventDefault\(\)/);
+});
+
+test('portaled SelectMenu exposes stable trigger and listbox ARIA ownership', () => {
+  assert.match(selectMenuSource, /const triggerId = useId\(\)/);
+  assert.match(selectMenuSource, /const listboxId = useId\(\)/);
+  assert.match(selectMenuSource, /id=\{triggerId\}/);
+  assert.match(selectMenuSource, /aria-controls=\{listboxId\}/);
+  assert.match(selectMenuSource, /id=\{listboxId\}/);
+  assert.match(selectMenuSource, /aria-labelledby=\{triggerId\}/);
+});
+
+test('SelectMenu can retain disabled option explanations', () => {
+  assert.match(selectMenuSource, /title\?: string/);
+  assert.match(selectMenuSource, /title=\{option\.title\}/);
+});

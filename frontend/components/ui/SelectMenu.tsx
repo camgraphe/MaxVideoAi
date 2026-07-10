@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import { createPortal } from 'react-dom';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, ReactNode } from 'react';
 import { Button } from '@/components/ui/Button';
 
@@ -10,6 +10,7 @@ export type SelectOption = {
   value: string | number | boolean;
   label: string | ReactNode;
   disabled?: boolean;
+  title?: string;
 };
 
 interface SelectMenuProps {
@@ -76,6 +77,8 @@ export function SelectMenu({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const triggerId = useId();
+  const listboxId = useId();
 
   const selectedIndex = useMemo(
     () => options.findIndex((option) => String(option.value) === String(value)),
@@ -199,6 +202,9 @@ export function SelectMenu({
       }
     };
     const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as Node;
+      const isWithinSelect = containerRef.current?.contains(target) || menuRef.current?.contains(target);
+      if (!isWithinSelect) return;
       const targetTag = (event.target as HTMLElement | null)?.tagName;
       const isTypingTarget = targetTag === 'INPUT' || targetTag === 'TEXTAREA';
       if (event.key === 'Escape') {
@@ -234,11 +240,18 @@ export function SelectMenu({
         setOpen(false);
       }
     };
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target as Node;
+      if (containerRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     document.addEventListener('mousedown', handleClick);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('focusin', handleFocusIn);
     return () => {
       document.removeEventListener('mousedown', handleClick);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('focusin', handleFocusIn);
     };
   }, [filteredOptions, highlightedIndex, onChange, open, selectedFilteredIndex]);
 
@@ -270,6 +283,7 @@ export function SelectMenu({
   return (
     <div ref={containerRef} className={clsx('relative', className)}>
       <Button
+        id={triggerId}
         type="button"
         size="sm"
         variant="outline"
@@ -281,6 +295,7 @@ export function SelectMenu({
         className={clsx(BUTTON_BASE, disabled && 'cursor-not-allowed opacity-60', buttonClassName)}
         aria-haspopup="listbox"
         aria-expanded={open}
+        aria-controls={listboxId}
         aria-disabled={disabled}
       >
         <span className="min-w-0 flex-1">
@@ -326,7 +341,9 @@ export function SelectMenu({
               </div>
             ) : null}
             <ul
+              id={listboxId}
               role="listbox"
+              aria-labelledby={triggerId}
               className={clsx(
                 'space-y-1 overflow-y-auto overflow-x-hidden text-[12px]',
                 searchable ? 'max-h-56 pr-1' : 'max-h-60'
@@ -346,6 +363,7 @@ export function SelectMenu({
                       variant="ghost"
                       role="option"
                       aria-selected={isSelected}
+                      title={option.title}
                       disabled={option.disabled}
                       onMouseEnter={() => setHighlightedIndex(index)}
                       onClick={() => {

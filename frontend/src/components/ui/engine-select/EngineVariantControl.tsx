@@ -30,6 +30,7 @@ export function EngineVariantControl(props: Props) {
             value: entry.id,
             label: getLabel(entry),
             disabled: Boolean(disabledEngineReasons?.[entry.id]),
+            title: disabledEngineReasons?.[entry.id],
           }))}
           value={selectedEngineId}
           onChange={(value) => onChange(String(value))}
