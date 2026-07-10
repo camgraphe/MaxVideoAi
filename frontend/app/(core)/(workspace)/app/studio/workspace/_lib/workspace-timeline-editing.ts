@@ -67,7 +67,7 @@ export type { WorkspaceTimelineTrimMode } from './timeline/timeline-resize-editi
 export { linkWorkspaceTimelineSelection, unlinkWorkspaceTimelineSelection } from './timeline/timeline-selection-groups';
 export type WorkspaceTimelineInsertMode = 'insert' | 'overwrite' | 'replace';
 
-function commitTimelineInsertWithoutOverlap(
+function commitTimelineEditWithoutOverlap(
   originalItems: WorkspaceTimelineItem[],
   candidateItems: WorkspaceTimelineItem[]
 ): WorkspaceTimelineItem[] {
@@ -183,7 +183,7 @@ export function insertWorkspaceTimelineItems(params: {
   ]));
 
   if (params.mode === 'replace' && selectedPrimaryItem) {
-    return commitTimelineInsertWithoutOverlap(params.items, [
+    return commitTimelineEditWithoutOverlap(params.items, [
       ...deleteWorkspaceTimelineItem(params.items, selectedPrimaryItem.id),
       ...preparedItems,
     ].sort((left, right) => left.startSec - right.startSec));
@@ -200,7 +200,7 @@ export function insertWorkspaceTimelineItems(params: {
         idSeed,
       });
     }, params.items);
-    return commitTimelineInsertWithoutOverlap(
+    return commitTimelineEditWithoutOverlap(
       params.items,
       [...overwrittenItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec)
     );
@@ -217,7 +217,7 @@ export function insertWorkspaceTimelineItems(params: {
     });
   }, params.items);
 
-  return commitTimelineInsertWithoutOverlap(
+  return commitTimelineEditWithoutOverlap(
     params.items,
     [...shiftedItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec)
   );
@@ -242,7 +242,10 @@ export function moveWorkspaceTimelineItem(
   nextOrder.splice(nextIndex, 0, movedId);
   const reorderedItems = orderedTrackItems(items, primaryItem.track, nextOrder);
   const remainingItems = items.filter((candidate) => candidate.track !== primaryItem.track);
-  return normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems]);
+  return commitTimelineEditWithoutOverlap(
+    items,
+    normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems])
+  );
 }
 
 export function reorderWorkspaceTimelineItem(
@@ -265,7 +268,10 @@ export function reorderWorkspaceTimelineItem(
 
   const reorderedItems = orderedTrackItems(items, primaryItem.track, order);
   const remainingItems = items.filter((candidate) => candidate.track !== primaryItem.track);
-  return normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems]);
+  return commitTimelineEditWithoutOverlap(
+    items,
+    normalizeWorkspaceTimelineStarts([...remainingItems, ...reorderedItems])
+  );
 }
 
 export function splitWorkspaceTimelineItem(
@@ -404,7 +410,7 @@ function removeTimelineSelectionByKeys(
   });
   const shiftedItems = shiftTimelineItemsAfterRemovalEvents(remainingItems, removalEvents);
   const syncedItems = syncLinkedAudioWithVideo(shiftedItems);
-  return revertIfTimelineOverlapRegresses(items, syncedItems);
+  return commitTimelineEditWithoutOverlap(items, syncedItems);
 }
 
 function removeTimelineSelectionWithRipple(items: WorkspaceTimelineItem[], selectedKeys: Set<string>): WorkspaceTimelineItem[] {
@@ -486,13 +492,6 @@ function timelineSelectionCanMoveFreely(params: {
   });
 }
 
-function revertIfTimelineOverlapRegresses(
-  originalItems: WorkspaceTimelineItem[],
-  candidateItems: WorkspaceTimelineItem[]
-): WorkspaceTimelineItem[] {
-  return timelineTrackHasOverlap(candidateItems) ? originalItems : candidateItems;
-}
-
 export function moveWorkspaceTimelineSelectionWithMode(params: {
   allowInsertIntoClip?: boolean;
   anchorItemId: string;
@@ -563,7 +562,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
     const positionedItems = selectedKeys.size > 1
       ? positionWorkspaceTimelineItems(params.items, params.itemIds, params.anchorItemId, params.nextStartSec, params.nextTrack)
       : positionWorkspaceTimelineItem(params.items, params.anchorItemId, params.nextStartSec, params.nextTrack);
-    return revertIfTimelineOverlapRegresses(params.items, positionedItems);
+    return commitTimelineEditWithoutOverlap(params.items, positionedItems);
   }
   const baseItems = params.mode === 'insert'
     ? removeTimelineSelectionWithRipple(params.items, selectedKeys)
@@ -576,7 +575,7 @@ export function moveWorkspaceTimelineSelectionWithMode(params: {
     ? adjustInsertStartAfterSelectionRipple(params.items, selectedKeys, targetTrack, packageTargetStartSec)
     : packageTargetStartSec;
 
-  return revertIfTimelineOverlapRegresses(params.items, insertWorkspaceTimelineItems({
+  return commitTimelineEditWithoutOverlap(params.items, insertWorkspaceTimelineItems({
     items: baseItems,
     newItems: movedItems,
     mode: resolvedMode,

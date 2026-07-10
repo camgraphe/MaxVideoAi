@@ -59,7 +59,7 @@ export type WorkspaceTimelineRenderClip = {
   durationSec: number;
   sourceStartSec: number;
   sourceEndSec: number;
-  sourceDurationSec: number;
+  sourceDurationSec: number | null;
   linkedGroupId?: string | null;
   hasEmbeddedAudio?: boolean;
   sourceWidth?: number | null;
@@ -307,7 +307,9 @@ function renderClipForItem(
       });
   const sourceStartSec = roundTimelineSeconds(item.sourceStartSec ?? 0);
   const durationSec = roundTimelineSeconds(item.durationSec);
-  const sourceDurationSec = roundTimelineSeconds(item.sourceDurationSec ?? item.durationSec);
+  const sourceDurationSec = typeof item.sourceDurationSec === 'number' && Number.isFinite(item.sourceDurationSec) && item.sourceDurationSec > 0
+    ? roundTimelineSeconds(item.sourceDurationSec)
+    : null;
   return {
     id: item.id,
     outputNodeId: item.outputNodeId,

@@ -18,7 +18,9 @@ import { moveLinkedTimelineSelection } from '../frontend/app/(core)/(workspace)/
 import {
   deleteWorkspaceTimelineGap,
   deleteWorkspaceTimelineItems,
+  moveWorkspaceTimelineItem,
   moveWorkspaceTimelineSelectionWithMode,
+  reorderWorkspaceTimelineItem,
   resizeWorkspaceTimelineItem,
   timelineEditTouchesLockedTracks,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-editing';
@@ -113,6 +115,37 @@ test('production linked video drag reverts when only its audio peer would overla
 
   assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
   assert.equal(result, items, 'invalid linked drops must return the last committed timeline');
+  assert.equal(timelineTrackHasOverlap(result), false);
+});
+
+function linkedReorderCollisionItems(): WorkspaceTimelineItem[] {
+  return [
+    videoClip({ id: 'video-a', startSec: 0, durationSec: 4, linkedGroupId: null }),
+    videoClip({ id: 'video-b', startSec: 4, durationSec: 4, linkedGroupId: null }),
+    videoClip({ id: 'linked-video', startSec: 8, durationSec: 4, linkedGroupId: 'linked-group', linkedGroupKind: 'video-audio' }),
+    audioClip({ id: 'audio-intro', startSec: 0, durationSec: 4, linkedGroupId: null }),
+    audioClip({ id: 'audio-blocker', startSec: 4, durationSec: 4, linkedGroupId: null }),
+    audioClip({ id: 'linked-audio', startSec: 8, durationSec: 4, linkedGroupId: 'linked-group', linkedGroupKind: 'video-audio' }),
+  ];
+}
+
+test('directional timeline move reverts when normalized linked audio would overlap', () => {
+  const items = linkedReorderCollisionItems();
+
+  const result = moveWorkspaceTimelineItem(items, 'linked-video', -1);
+
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
+  assert.equal(result, items);
+  assert.equal(timelineTrackHasOverlap(result), false);
+});
+
+test('timeline reorder reverts when normalized linked audio would overlap', () => {
+  const items = linkedReorderCollisionItems();
+
+  const result = reorderWorkspaceTimelineItem(items, 'linked-video', 'video-a');
+
+  assert.equal(timelineTrackHasOverlap(items), false, 'the fixture must begin overlap-free');
+  assert.equal(result, items);
   assert.equal(timelineTrackHasOverlap(result), false);
 });
 

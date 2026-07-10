@@ -5,6 +5,7 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-export';
 import {
   buildWorkspaceTimelineRenderManifest,
+  serializeWorkspaceTimelineRenderManifest,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-timeline-render';
 import {
   buildWorkspaceClipComposition,
@@ -189,6 +190,51 @@ test('timeline render manifest derives source composition from output resolution
   assert.equal(clip?.composition?.sourceHeight, 720);
   assert.equal(clip?.composition?.width, 1280);
   assert.equal(clip?.composition?.height, 720);
+});
+
+test('timeline render manifest separates edit duration from optional source duration provenance', () => {
+  const manifest = buildWorkspaceTimelineRenderManifest({
+    items: [
+      {
+        id: 'unknown-duration',
+        outputNodeId: 'project-asset-unknown-duration',
+        track: 'video',
+        title: 'Unknown duration',
+        durationSec: 6,
+        startSec: 0,
+        sourceStartSec: 0,
+        mediaKind: 'video',
+        mediaUrl: '/media/unknown-duration.mp4',
+      },
+      {
+        id: 'measured-duration',
+        outputNodeId: 'project-asset-measured-duration',
+        track: 'video-2',
+        title: 'Measured duration',
+        durationSec: 4,
+        startSec: 0,
+        sourceStartSec: 1,
+        sourceDurationSec: 9.25,
+        mediaKind: 'video',
+        mediaUrl: '/media/measured-duration.mp4',
+      },
+    ],
+    nodes: [],
+    projectName: 'Source provenance test',
+    createdAt: '2026-07-10T12:00:00.000Z',
+  });
+  const unknownClip = manifest.tracks.find((track) => track.id === 'video')?.clips[0];
+  const measuredClip = manifest.tracks.find((track) => track.id === 'video-2')?.clips[0];
+
+  assert.equal(unknownClip?.durationSec, 6, 'temporary edit duration remains available to render the clip');
+  assert.equal(unknownClip?.sourceEndSec, 6, 'the renderer still receives the edited source window');
+  assert.equal(unknownClip?.sourceDurationSec, null, 'unknown source provenance must remain explicit');
+  assert.equal(measuredClip?.durationSec, 4);
+  assert.equal(measuredClip?.sourceEndSec, 5);
+  assert.equal(measuredClip?.sourceDurationSec, 9.25);
+  const serialized = JSON.parse(serializeWorkspaceTimelineRenderManifest(manifest)) as WorkspaceTimelineRenderManifest;
+  assert.equal(serialized.tracks.find((track) => track.id === 'video')?.clips[0]?.sourceDurationSec, null);
+  assert.equal(serialized.tracks.find((track) => track.id === 'video-2')?.clips[0]?.sourceDurationSec, 9.25);
 });
 
 test('timeline clip fit-height scale matches source height to sequence height', () => {
