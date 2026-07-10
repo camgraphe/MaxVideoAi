@@ -15,6 +15,7 @@ export type WorkspaceV1BlockContract = {
   optionalInputs: WorkspaceEdgeKind[];
   visibleControls: WorkspacePolicyControlField[];
   pricingRelevantFields: WorkspacePolicyControlField[];
+  compatibleModelIds?: string[];
 };
 
 export const WORKSPACE_V1_BLOCK_MATRIX = {
@@ -42,6 +43,7 @@ export const WORKSPACE_V1_BLOCK_MATRIX = {
     optionalInputs: ['motion_reference', 'previous_shot', 'continuity', 'style', 'camera', 'audio'],
     visibleControls: ['model', 'durationSec', 'aspectRatio', 'resolution', 'fps', 'referenceStrength'],
     pricingRelevantFields: ['model', 'durationSec', 'resolution'],
+    compatibleModelIds: ['luma-ray-3-2'],
   },
   'generate-image': {
     presetId: 'generate-image',

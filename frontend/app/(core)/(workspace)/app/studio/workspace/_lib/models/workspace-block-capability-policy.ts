@@ -115,10 +115,12 @@ export function getWorkspaceBlockCompatibleCapabilities({
   }
 
   if (isModifyVideo(settings)) {
+    const compatibleModelIds = v1BlockContractFor(settings)?.compatibleModelIds;
     return capabilities.filter((capability) => (
       capability.family === 'video' &&
       capability.outputKind === 'video' &&
-      capability.workflows.includes('video_to_video')
+      capability.workflows.includes('video_to_video') &&
+      (!compatibleModelIds || compatibleModelIds.includes(capability.id))
     ));
   }
 
