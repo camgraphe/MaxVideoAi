@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   mergePersistedWorkspaceWithServerSequences,
+  normalizePersistedWorkspaceState,
   shouldApplyStudioProjectWorkspaceState,
   stripWorkspaceSequencesForProjectApi,
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-api-persistence';
@@ -108,6 +109,41 @@ test('server sequence records override stale project timeline payloads during hy
   assert.equal(merged.projectSettings.fps, 24);
   assert.equal(merged.timelineInPointSec, 1);
   assert.equal(merged.timelineOutPointSec, 4);
+});
+
+test('workspace reload preserves unknown and measured source duration provenance', () => {
+  const unknownItem: WorkspaceTimelineItem = {
+    id: 'unknown-duration',
+    outputNodeId: 'project-asset-unknown-duration',
+    title: 'Unknown duration',
+    track: 'video',
+    startSec: 0,
+    durationSec: 6,
+    sourceStartSec: 0,
+    mediaKind: 'video',
+    mediaUrl: '/unknown-duration.mp4',
+  };
+  const measuredItem: WorkspaceTimelineItem = {
+    ...unknownItem,
+    id: 'measured-duration',
+    outputNodeId: 'project-asset-measured-duration',
+    startSec: 6,
+    durationSec: 9.25,
+    sourceDurationSec: 9.25,
+    mediaUrl: '/measured-duration.mp4',
+  };
+  const state = persistedWorkspaceState();
+  const reloaded = normalizePersistedWorkspaceState(JSON.parse(JSON.stringify({
+    ...state,
+    timelineItems: [unknownItem, measuredItem],
+  })));
+
+  assert.ok(reloaded);
+  assert.equal(reloaded.timelineItems.find((item) => item.id === unknownItem.id)?.sourceDurationSec, undefined);
+  assert.equal(reloaded.timelineItems.find((item) => item.id === measuredItem.id)?.sourceDurationSec, 9.25);
+  const activeSequence = reloaded.sequences?.find((sequence) => sequence.id === reloaded.activeSequenceId);
+  assert.equal(activeSequence?.timelineItems.find((item) => item.id === unknownItem.id)?.sourceDurationSec, undefined);
+  assert.equal(activeSequence?.timelineItems.find((item) => item.id === measuredItem.id)?.sourceDurationSec, 9.25);
 });
 
 test('workspace graph normalization preserves media-specific output handles and generation metadata', () => {

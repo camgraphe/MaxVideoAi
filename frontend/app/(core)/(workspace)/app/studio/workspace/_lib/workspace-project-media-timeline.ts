@@ -12,6 +12,7 @@ import {
 } from './workspace-timeline-drops';
 import type { WorkspaceAssetRecord, WorkspaceTimelineItem, WorkspaceTimelineTrack } from './workspace-types';
 import { DEFAULT_STUDIO_COPY, type StudioCopy } from '../../_lib/studio-copy';
+import { timelineTrackHasOverlap } from './timeline/timeline-collisions';
 
 type ResolveProjectAssetTimelineInsertSuccess = {
   items: WorkspaceTimelineItem[];
@@ -124,7 +125,7 @@ export function resolveProjectAssetTimelineInsert(params: {
     allowInsertIntoClip: params.allowInsertIntoClip,
   });
   const insertedItem = nextTimelineItems.find((item) => item.id === selectedItemId) ?? null;
-  if (!insertedItem) {
+  if (!insertedItem || timelineTrackHasOverlap(nextTimelineItems)) {
     const isBlockedClipInsert =
       !params.allowInsertIntoClip && timelineTrackHasClipAt(params.currentItems, resolvedTargetTrack, params.startSec);
     return {

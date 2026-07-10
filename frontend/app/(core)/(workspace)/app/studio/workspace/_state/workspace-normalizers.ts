@@ -367,7 +367,6 @@ export function normalizeTimelineMediaUrls(nodes: WorkspaceGraphNode[], items: W
       ...item,
       track,
       sourceStartSec: item.sourceStartSec ?? 0,
-      sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
       mediaKind: item.mediaKind ?? (isWorkspaceTimelineAudioTrack(track) ? 'audio' : 'video'),
     };
     const sourceNode = nodes.find((node) => node.id === item.outputNodeId);

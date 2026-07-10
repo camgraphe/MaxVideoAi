@@ -20,7 +20,6 @@ export function retimeNewItems(
     ...item,
     startSec: snapTimelineValue(item.startSec + startDeltaSec),
     durationSec: durationSec ? Math.max(MIN_CLIP_DURATION_SEC, Math.min(item.durationSec, durationSec)) : item.durationSec,
-    sourceDurationSec: item.sourceDurationSec ?? item.durationSec,
     sourceStartSec: item.sourceStartSec ?? 0,
   }));
 }

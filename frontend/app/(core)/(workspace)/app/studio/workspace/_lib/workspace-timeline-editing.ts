@@ -67,6 +67,13 @@ export type { WorkspaceTimelineTrimMode } from './timeline/timeline-resize-editi
 export { linkWorkspaceTimelineSelection, unlinkWorkspaceTimelineSelection } from './timeline/timeline-selection-groups';
 export type WorkspaceTimelineInsertMode = 'insert' | 'overwrite' | 'replace';
 
+function commitTimelineInsertWithoutOverlap(
+  originalItems: WorkspaceTimelineItem[],
+  candidateItems: WorkspaceTimelineItem[]
+): WorkspaceTimelineItem[] {
+  return timelineTrackHasOverlap(candidateItems) ? originalItems : candidateItems;
+}
+
 function trackOrder(items: WorkspaceTimelineItem[], track: WorkspaceTimelineTrack): string[] {
   return items
     .filter((item) => item.track === track)
@@ -176,10 +183,10 @@ export function insertWorkspaceTimelineItems(params: {
   ]));
 
   if (params.mode === 'replace' && selectedPrimaryItem) {
-    return [
+    return commitTimelineInsertWithoutOverlap(params.items, [
       ...deleteWorkspaceTimelineItem(params.items, selectedPrimaryItem.id),
       ...preparedItems,
-    ].sort((left, right) => left.startSec - right.startSec);
+    ].sort((left, right) => left.startSec - right.startSec));
   }
 
   if (params.mode === 'overwrite') {
@@ -193,7 +200,10 @@ export function insertWorkspaceTimelineItems(params: {
         idSeed,
       });
     }, params.items);
-    return [...overwrittenItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec);
+    return commitTimelineInsertWithoutOverlap(
+      params.items,
+      [...overwrittenItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec)
+    );
   }
 
   const shiftedItems = affectedTracks.reduce((currentItems, track) => {
@@ -207,7 +217,10 @@ export function insertWorkspaceTimelineItems(params: {
     });
   }, params.items);
 
-  return [...shiftedItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec);
+  return commitTimelineInsertWithoutOverlap(
+    params.items,
+    [...shiftedItems, ...preparedItems].sort((left, right) => left.startSec - right.startSec)
+  );
 }
 
 export function moveWorkspaceTimelineItem(

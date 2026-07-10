@@ -33,6 +33,8 @@ import {
 } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-asset-selection';
 import { resolveProjectAssetTimelineInsert } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-project-media-timeline';
 import { buildWorkspaceTimelineItemsForAsset } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-builders';
+import { timelineTrackHasOverlap } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_lib/timeline/timeline-collisions';
+import { normalizeTimelineMediaUrls } from '../frontend/app/(core)/(workspace)/app/studio/workspace/_state/workspace-normalizers';
 import type {
   WorkspaceAssetRecord,
   WorkspaceGraphNode,
@@ -456,6 +458,86 @@ test('project media timeline resolver places compatible media on the requested t
     const current = v2Items[index];
     assert.ok(previous.startSec + previous.durationSec <= current.startSec, 'inserted project media should not overlap the target track');
   }
+});
+
+test('project media insertion rejects a linked audio collision when the video target is free', () => {
+  const currentItems: WorkspaceTimelineItem[] = [
+    {
+      id: 'occupied-audio',
+      outputNodeId: 'occupied-audio',
+      title: 'Occupied audio',
+      track: 'audio',
+      mediaKind: 'audio',
+      mediaUrl: '/media/occupied.wav',
+      durationSec: 5,
+      startSec: 8,
+    },
+  ];
+  const result = resolveProjectAssetTimelineInsert({
+    assetId: 'linked-video',
+    projectAssets: [{
+      id: 'linked-video',
+      kind: 'video',
+      filename: 'linked-video.mp4',
+      subtitle: 'Video',
+      url: '/media/linked-video.mp4',
+      durationSec: 5,
+      hasAudio: true,
+    }],
+    currentItems,
+    startSec: 6,
+    targetTrack: 'video',
+    lockedTimelineTracks: [],
+    allowInsertIntoClip: false,
+    idSeed: 'linked-audio-collision',
+  });
+
+  assert.equal(timelineTrackHasOverlap(currentItems), false, 'the committed timeline must begin overlap-free');
+  assert.equal(result.ok, false);
+  assert.equal('items' in result, false, 'failed insertions must not expose a candidate timeline to commit');
+});
+
+test('unknown imported duration stays unknown through insert, normalization, and hydration', () => {
+  const asset: WorkspaceAssetRecord = {
+    id: 'unknown-duration-video',
+    kind: 'video',
+    filename: 'unknown-duration.mp4',
+    subtitle: 'Video',
+    url: '/media/unknown-duration.mp4',
+    hasAudio: true,
+  };
+  const insertResult = resolveProjectAssetTimelineInsert({
+    assetId: asset.id,
+    projectAssets: [asset],
+    currentItems: [],
+    startSec: 0,
+    targetTrack: 'video',
+    lockedTimelineTracks: [],
+    allowInsertIntoClip: false,
+    idSeed: 'unknown-duration',
+  });
+
+  assert.equal(insertResult.ok, true);
+  if (!insertResult.ok) return;
+  assert.deepEqual(
+    insertResult.items.map((item) => item.sourceDurationSec),
+    [undefined, undefined],
+    'temporary edit duration must not become source provenance during insertion'
+  );
+
+  const normalizedItems = normalizeTimelineMediaUrls([], insertResult.items);
+  assert.deepEqual(
+    normalizedItems.map((item) => item.sourceDurationSec),
+    [undefined, undefined],
+    'media normalization must preserve unknown source duration'
+  );
+
+  const unmeasuredHydration = applyWorkspaceProjectAssetMetadataToTimelineItems(normalizedItems, asset);
+  assert.deepEqual(unmeasuredHydration.map((item) => item.sourceDurationSec), [undefined, undefined]);
+
+  const measuredAsset = workspaceAssetWithMeasuredMetadata(asset, { durationSec: 9.25 });
+  const measuredItems = applyWorkspaceProjectAssetMetadataToTimelineItems(unmeasuredHydration, measuredAsset);
+  assert.deepEqual(measuredItems.map((item) => item.sourceDurationSec), [9.25, 9.25]);
 });
 
 test('project media timeline resolver rejects incompatible target tracks', () => {
