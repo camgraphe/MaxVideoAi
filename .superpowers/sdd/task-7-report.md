@@ -231,3 +231,38 @@ Result: pass.
 ### Concerns
 
 - The focused suite remains blocked by the same two unrelated existing architecture failures above.
+
+## Fix pass 6
+
+### Changed Files
+
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_components/WorkspaceProjectMediaLibraryModal.tsx`
+- `frontend/app/(core)/(workspace)/app/studio/workspace/_lib/workspace-library-assets.ts`
+- `tests/maxvideoai-editor-project-media-timeline.test.ts`
+- `tests/maxvideoai-editor-workspace-architecture.test.ts`
+
+### Verification
+
+```bash
+PATH="/Users/adrienmillot/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin:$PATH" \
+./node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/maxvideoai-editor-workspace-architecture.test.ts \
+  tests/maxvideoai-editor-project-media-timeline.test.ts
+```
+
+Result: 43 passed, 2 failed. The new valid-but-unverified image metadata regression and Project Media modal shared-selection-helper contract pass. The two remaining failures are unchanged and unrelated: the shot-control duration source assertion and pricing preflight's `includes` error in `model-input-connectors.ts`.
+
+```bash
+git diff --check
+```
+
+Result: pass.
+
+### Commit
+
+`44eb4751fbc8ce46687456b99ff8679c58a59d05` - `fix: harden project media imports`
+
+### Concerns
+
+- The focused suite remains blocked only by the two unrelated existing architecture failures above.
+- `frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json` still reports the three known unrelated errors in `workspace-shot-input-dock.tsx`, `useWorkspaceShotPricing.ts`, and `workspace-v1-block-matrix.ts`.
