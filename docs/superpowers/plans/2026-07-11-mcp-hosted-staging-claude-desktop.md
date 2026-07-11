@@ -15,7 +15,7 @@
 - Never copy production Supabase users, sessions, OAuth grants, Storage objects, or Neon rows into staging.
 - Use `maxvideoai-mcp-staging.vercel.app` as the stable staging origin; if Vercel reports that the name is unavailable, stop before creating another project name because every OAuth and environment value depends on the final host.
 - The staging runtime gate must reject `maxvideoai.com`, `www.maxvideoai.com`, and `api.maxvideoai.com` even if staging environment variables are accidentally set there.
-- The staging Vercel deployment must be public for Claude Desktop but send `X-Robots-Tag: noindex, nofollow, noarchive` and must not install any production cron schedule.
+- The staging Vercel deployment must be public for Claude Desktop through the staging project's Deployment Protection setting, but send `X-Robots-Tag: noindex, nofollow, noarchive` and must not install any production cron schedule. Do not change Deployment Protection on the production project.
 - Treat the final Supabase project creation, Vercel project creation, custom Claude connector creation, OAuth approval, and any paid-plan choice as external state changes requiring action-time confirmation.
 - Prefer the second Free Supabase project slot. Stop if the dashboard proposes a paid upgrade instead of a `$0` Free project.
 - Do not print, commit, paste into documentation, or expose Supabase secret keys, database passwords, Neon connection strings, OAuth codes, access tokens, or refresh tokens.
@@ -216,7 +216,8 @@ git commit -m "feat: add fail-closed MCP staging gate"
 **Interfaces:**
 
 - Consumes: Vercel CLI `--local-config`.
-- Produces: a public, non-indexable deployment configuration with no scheduled production jobs.
+- Produces: a deployment file that guarantees only a global `X-Robots-Tag: noindex, nofollow, noarchive` header and the absence of scheduled production jobs.
+- Does not configure public or anonymous access. Deployment Protection is a project-level responsibility handled only for `maxvideoai-mcp-staging` in Task 5 and proven by the anonymous `curl` in Task 6.
 
 - [ ] **Step 1: Write the failing configuration test**
 
@@ -283,6 +284,8 @@ git diff --check
 ```
 
 Expected: all commands exit `0`; no `crons` property exists in the staging config.
+
+Task 2 is complete when the file and test prove the noindex/no-cron contract. It does not establish anonymous access; do not add a `public` property to this file as a substitute for the project-level Deployment Protection change in Task 5.
 
 - [ ] **Step 5: Commit the deployment contract**
 
@@ -432,11 +435,19 @@ Expected: both table names are present and `app_receipts` contains `0` rows.
 **Interfaces:**
 
 - Consumes: Supabase staging URL/publishable key, Neon branch URL, and `frontend/vercel.mcp-staging.json`.
-- Produces: `https://maxvideoai-mcp-staging.vercel.app`.
+- Produces: `https://maxvideoai-mcp-staging.vercel.app`, with Deployment Protection disabled only on that dedicated staging project.
 
-- [ ] **Step 1: Request action-time confirmation and reserve the exact Vercel project name**
+- [ ] **Step 1: Request action-time confirmation, capture the production baseline, and reserve the exact Vercel project name**
 
-After confirmation:
+After confirmation, first use the Vercel Dashboard to locate the existing project that owns `maxvideoai.com`, copy its exact project name, then run `read -r PRODUCTION_VERCEL_PROJECT` and paste that name without quotes. Capture its read-only CLI baseline and record its current **Settings → Deployment Protection** value in temporary execution notes without saving any change:
+
+```bash
+read -r PRODUCTION_VERCEL_PROJECT
+printf '%s\n' "$PRODUCTION_VERCEL_PROJECT" > /tmp/maxvideoai-production-project.name
+vercel project inspect "$PRODUCTION_VERCEL_PROJECT" --no-color | tee /tmp/maxvideoai-production-project.before.txt
+```
+
+Then create and link only the dedicated staging project:
 
 ```bash
 vercel project add maxvideoai-mcp-staging
@@ -445,7 +456,13 @@ vercel link --cwd frontend --yes --project maxvideoai-mcp-staging
 
 Expected: Vercel assigns the production domain `maxvideoai-mcp-staging.vercel.app`. Stop if it assigns a different permanent domain.
 
-- [ ] **Step 2: Add non-secret staging runtime variables to the Vercel production target**
+- [ ] **Step 2: Disable Deployment Protection only on the dedicated staging project**
+
+The action-time confirmation obtained in Step 1 also covers this immediate, staging-only project setting change. In the Vercel Dashboard, select the exact `maxvideoai-mcp-staging` project, open **Settings → Deployment Protection**, set Deployment Protection to **Off/None**, and save. Confirm Vercel Authentication and any other protection method are disabled for this project. Do not change the team default and do not open or modify Deployment Protection for the project serving `maxvideoai.com`.
+
+This is a project-level Vercel setting, not a `vercel.json` responsibility. Do not add a `public` property to `frontend/vercel.mcp-staging.json` to represent anonymous MCP access.
+
+- [ ] **Step 3: Add non-secret staging runtime variables to the Vercel production target**
 
 Add each named value through `vercel env add NAME production` without placing it in a tracked file:
 
@@ -460,7 +477,7 @@ NEXT_PUBLIC_COOKIE_DOMAIN=
 COOKIE_DOMAIN=
 ```
 
-- [ ] **Step 3: Add secret or project-specific values without printing them**
+- [ ] **Step 4: Add secret or project-specific values without printing them**
 
 Add the staging-only values to Vercel's production target with three interactive commands:
 
@@ -472,7 +489,7 @@ vercel env add DATABASE_URL production --cwd frontend
 
 At each prompt, paste respectively the value held in `SUPABASE_STAGING_URL`, the staging publishable/anonymous key, and the `preview/mcp-staging` pooled connection string. Never include the values in the shell command, logs, documentation, or Git.
 
-- [ ] **Step 4: Confirm dangerous production credentials are absent**
+- [ ] **Step 5: Confirm dangerous production credentials are absent**
 
 Review only the variable names:
 
@@ -482,7 +499,7 @@ vercel env ls production --cwd frontend
 
 Confirm the staging project has no Stripe live secret, provider generation key, production Supabase secret/service-role key, production Neon URL, SMTP credential, or cron secret.
 
-- [ ] **Step 5: Run the complete local gate**
+- [ ] **Step 6: Run the complete local gate**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/mcp*.test.ts
@@ -495,7 +512,7 @@ pnpm --prefix frontend run build
 
 Expected: tests and build pass; lint has zero errors. Existing unrelated warnings must be listed rather than changed in this branch.
 
-- [ ] **Step 6: Deploy using the staging-only Vercel config**
+- [ ] **Step 7: Deploy using the staging-only Vercel config**
 
 ```bash
 vercel deploy frontend \
@@ -506,7 +523,7 @@ vercel deploy frontend \
 
 `--prod` means the stable environment of the dedicated staging project; it does not deploy the MaxVideoAI production project.
 
-- [ ] **Step 7: Verify no indexing and no cron installation**
+- [ ] **Step 8: Verify no indexing and no cron installation**
 
 ```bash
 curl -sSI https://maxvideoai-mcp-staging.vercel.app/ | rg -i '^x-robots-tag: noindex, nofollow, noarchive'
@@ -514,6 +531,19 @@ vercel project inspect maxvideoai-mcp-staging
 ```
 
 Expected: the header is present and the staging project has no cron jobs.
+
+- [ ] **Step 9: Verify staging isolation and that the production project is unchanged**
+
+Inspect both projects through the CLI, then compare the production project with the pre-change baseline:
+
+```bash
+vercel project inspect maxvideoai-mcp-staging --no-color
+PRODUCTION_VERCEL_PROJECT="$(cat /tmp/maxvideoai-production-project.name)"
+vercel project inspect "$PRODUCTION_VERCEL_PROJECT" --no-color | tee /tmp/maxvideoai-production-project.after.txt
+diff -u /tmp/maxvideoai-production-project.before.txt /tmp/maxvideoai-production-project.after.txt
+```
+
+In the Vercel Dashboard, verify `maxvideoai-mcp-staging` has Deployment Protection **Off/None**, while the project owning `maxvideoai.com` still has the exact protection value recorded in Step 1. Expected: the CLI diff has no output; project IDs and domains remain distinct; no production setting was changed.
 
 ## Task 6: Verify hosted OAuth and MCP without an LLM host
 
@@ -541,7 +571,7 @@ Expected resource and authorization server:
 }
 ```
 
-- [ ] **Step 2: Verify the unauthenticated MCP challenge**
+- [ ] **Step 2: Verify the unauthenticated MCP challenge as the public-access proof**
 
 ```bash
 curl -i -X POST https://maxvideoai-mcp-staging.vercel.app/mcp \
@@ -550,7 +580,7 @@ curl -i -X POST https://maxvideoai-mcp-staging.vercel.app/mcp \
   --data '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"staging-smoke","version":"1.0"}}}'
 ```
 
-Expected: HTTP `401`, private no-store caching, and a `WWW-Authenticate` resource-metadata link on the staging host.
+This request sends no Vercel authentication cookie, share link, or protection-bypass credential. Expected: a direct application HTTP `401`, private no-store caching, and a `WWW-Authenticate` resource-metadata link on the staging host. A redirect to Vercel login or a Vercel Deployment Protection response fails the public-access requirement.
 
 - [ ] **Step 3: Verify production remains disabled**
 
@@ -714,7 +744,7 @@ Even if every staging check passes, leave production disabled. Production rollou
 
 ## Completion Criteria
 
-- `https://maxvideoai-mcp-staging.vercel.app/mcp` is a public HTTPS Streamable HTTP MCP endpoint with noindex headers and no staging crons.
+- Task 2's file contract supplies noindex headers and no staging crons only; Task 5 disables Deployment Protection only on `maxvideoai-mcp-staging`, and Task 6's credential-free `curl` proves `https://maxvideoai-mcp-staging.vercel.app/mcp` is publicly reachable as an HTTPS Streamable HTTP MCP endpoint.
 - Supabase staging—not production—owns all test users, OAuth clients, grants, access tokens, refresh tokens, and dynamic registration.
 - Claude Desktop completes discovery, login, consent, all three read-only calls, revocation, and reconnect.
 - Codex completes hosted discovery, consent, and at least one authenticated read-only call, with its requested scopes recorded.
