@@ -21,6 +21,7 @@ export type DispatchGaEventOptions = {
 function dispatchPreparedEvents(
   preparedEvents: PreparedAnalyticsTransportEvent[],
   hasConsent: () => boolean,
+  consentCategory: 'analytics' | 'ads',
   options?: DispatchGaEventOptions,
 ): Promise<boolean> {
   if (typeof window === 'undefined' || preparedEvents.length === 0 || !hasConsent()) {
@@ -45,9 +46,20 @@ function dispatchPreparedEvents(
       cleanup();
       resolve(value);
     };
-    const handleConsentUpdated = () => settle(false);
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{
+        categories?: { analytics?: boolean; ads?: boolean };
+      }>).detail;
+      const eventConsent = detail?.categories?.[consentCategory];
+      if (typeof eventConsent === 'boolean') {
+        if (!eventConsent) settle(false);
+        return;
+      }
+      if (!hasConsent()) settle(false);
+    };
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === null || event.key === ANALYTICS_CONSENT_STORAGE_KEY) settle(false);
+      if (event.key !== null && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
+      if (!hasConsent()) settle(false);
     };
     const send = (attempt: number) => {
       if (settled) return;
@@ -84,7 +96,7 @@ export function dispatchGaEvent(
 ): Promise<boolean> {
   if (typeof window === 'undefined') return Promise.resolve(false);
   const preparedEvents = prepareBrowserAnalyticsEvents(eventName, payload);
-  return dispatchPreparedEvents(preparedEvents, hasAnalyticsConsentInBrowser, options);
+  return dispatchPreparedEvents(preparedEvents, hasAnalyticsConsentInBrowser, 'analytics', options);
 }
 
 export function dispatchGoogleAdsConversion(
@@ -94,6 +106,7 @@ export function dispatchGoogleAdsConversion(
   return dispatchPreparedEvents(
     [{ event: 'conversion', payload }],
     hasAdsConsentInBrowser,
+    'ads',
     options,
   );
 }

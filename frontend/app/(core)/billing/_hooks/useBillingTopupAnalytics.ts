@@ -9,6 +9,7 @@ import {
 } from '@/lib/analytics-client';
 import { hasAdsConsentInBrowser } from '@/lib/analytics/consent-client';
 import { dispatchGaEvent, dispatchGoogleAdsConversion } from '@/lib/analytics/ga-events';
+import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import type { TopupQuote } from '../_lib/billing-types';
 
 const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
@@ -81,10 +82,10 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
   const triggerTopupFailed = useCallback(
     (amountCents: number | null | undefined, chargeCurrency: string, reason?: string) => {
       const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
-      if (reason) {
-        payload.error_message = String(reason).slice(0, 120);
-      }
-      void dispatchGaEvent('topup_failed', payload);
+      void dispatchGaEvent('topup_failed', {
+        ...payload,
+        failure_category: classifyTopupFailure(reason),
+      });
     },
     [buildTopupAnalyticsPayload]
   );

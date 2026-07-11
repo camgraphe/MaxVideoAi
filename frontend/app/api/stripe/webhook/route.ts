@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureBillingSchema } from '@/lib/schema';
-import { query } from '@/lib/db';
+import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
 import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
 import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
+import { lockAndResolveFirstWalletTopup } from '@/server/wallet-first-topup';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -805,7 +806,8 @@ async function updateTopupDocumentFields(
   fields: TopupDocumentFields & {
     stripePaymentIntentId?: string | null;
     stripeChargeId?: string | null;
-  }
+  },
+  executor?: QueryExecutor
 ) {
   const values = {
     stripePaymentIntentId: normalizeStripeId(fields.stripePaymentIntentId),
@@ -820,7 +822,7 @@ async function updateTopupDocumentFields(
   const hasDocumentValue = Object.values(values).some(Boolean);
   if (!hasDocumentValue) return;
 
-  await query(
+  const sql =
     `UPDATE app_receipts
      SET stripe_payment_intent_id = COALESCE(stripe_payment_intent_id, $2),
          stripe_charge_id = COALESCE(stripe_charge_id, $3),
@@ -831,19 +833,23 @@ async function updateTopupDocumentFields(
          stripe_invoice_pdf = COALESCE(stripe_invoice_pdf, $8),
          stripe_receipt_url = COALESCE(stripe_receipt_url, $9),
          stripe_document_synced_at = NOW()
-     WHERE id = $1`,
-    [
-      receiptId,
-      values.stripePaymentIntentId,
-      values.stripeChargeId,
-      values.stripeCustomerId,
-      values.stripeCheckoutSessionId,
-      values.stripeInvoiceId,
-      values.stripeHostedInvoiceUrl,
-      values.stripeInvoicePdf,
-      values.stripeReceiptUrl,
-    ]
-  );
+     WHERE id = $1`;
+  const params = [
+    receiptId,
+    values.stripePaymentIntentId,
+    values.stripeChargeId,
+    values.stripeCustomerId,
+    values.stripeCheckoutSessionId,
+    values.stripeInvoiceId,
+    values.stripeHostedInvoiceUrl,
+    values.stripeInvoicePdf,
+    values.stripeReceiptUrl,
+  ];
+  if (executor) {
+    await executor.query(sql, params);
+  } else {
+    await query(sql, params);
+  }
 }
 
 async function recordTopup({
@@ -929,49 +935,53 @@ async function recordTopup({
       stripeReceiptUrl: stripeReceiptUrl ?? null,
     };
 
-    if (paymentIntentId) {
-      const existing = await query<{ id: string }>(
-        `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
-        [paymentIntentId]
-      );
-      if (existing.length > 0) {
-        await updateTopupDocumentFields(existing[0].id, documentFields);
-        return;
+    const persistenceResult = await withDbTransaction(async (executor) => {
+      const isFirstWalletTopup = await lockAndResolveFirstWalletTopup(executor, userId);
+
+      if (paymentIntentId) {
+        const existing = await executor.query<{ id: string }>(
+          `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
+          [paymentIntentId]
+        );
+        if (existing.length > 0) {
+          await updateTopupDocumentFields(existing[0].id, documentFields, executor);
+          return { kind: 'duplicate' as const };
+        }
       }
-    }
 
-    if (chargeId) {
-      const existingCharge = await query<{ id: string }>(
-        `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
-        [chargeId]
-      );
-      if (existingCharge.length > 0) {
-        await updateTopupDocumentFields(existingCharge[0].id, documentFields);
-        return;
+      if (chargeId) {
+        const existingCharge = await executor.query<{ id: string }>(
+          `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
+          [chargeId]
+        );
+        if (existingCharge.length > 0) {
+          await updateTopupDocumentFields(existingCharge[0].id, documentFields, executor);
+          return { kind: 'duplicate' as const };
+        }
       }
-    }
 
-    if (stripeCheckoutSessionId) {
-      const existingSession = await query<{ id: string }>(
-        `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
-        [stripeCheckoutSessionId]
-      );
-      if (existingSession.length > 0) {
-        await updateTopupDocumentFields(existingSession[0].id, documentFields);
-        return;
+      if (stripeCheckoutSessionId) {
+        const existingSession = await executor.query<{ id: string }>(
+          `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
+          [stripeCheckoutSessionId]
+        );
+        if (existingSession.length > 0) {
+          await updateTopupDocumentFields(existingSession[0].id, documentFields, executor);
+          return { kind: 'duplicate' as const };
+        }
       }
-    }
 
-    const combinedMetadata = {
-      ...(metadata ?? {}),
-      wallet_amount_cents: normalizedWalletAmount,
-      wallet_currency: walletCurrencyUpper,
-      settlement_amount_cents: normalizedSettlementAmount,
-      settlement_currency: settlementCurrencyUpper,
-    };
+      const combinedMetadata = {
+        ...(metadata ?? {}),
+        first_wallet_topup: String(isFirstWalletTopup),
+        wallet_amount_cents: normalizedWalletAmount,
+        wallet_currency: walletCurrencyUpper,
+        settlement_amount_cents: normalizedSettlementAmount,
+        settlement_currency: settlementCurrencyUpper,
+      };
 
-    const rows = await query<{ id: number }>(
-      `INSERT INTO app_receipts (
+      const rows = await executor.query<{ id: number }>(
+        `INSERT INTO app_receipts (
          user_id,
          type,
          amount_cents,
@@ -998,46 +1008,62 @@ async function recordTopup({
        VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, CASE WHEN $15::text IS NOT NULL OR $16::text IS NOT NULL OR $17::text IS NOT NULL OR $18::text IS NOT NULL OR $19::text IS NOT NULL OR $20::text IS NOT NULL THEN NOW() ELSE NULL END)
        ON CONFLICT DO NOTHING
        RETURNING id`,
-      [
-        userId,
-        normalizedWalletAmount,
-        walletCurrencyUpper,
-        'Wallet top-up',
-        combinedMetadata,
-        paymentIntentId ?? null,
-        chargeId ?? null,
-        receiptsPriceOnly ? null : platformRevenueCents ?? null,
-        destinationAcct ?? null,
-        originalAmountCents ?? normalizedSettlementAmount ?? normalizedWalletAmount,
-        originalCurrency ? originalCurrency.toUpperCase() : settlementCurrencyUpper,
-        fxRate ?? null,
-        fxMarginBps ?? null,
-        fxRateTimestamp ? new Date(fxRateTimestamp) : null,
-        documentFields.stripeCustomerId,
-        documentFields.stripeCheckoutSessionId,
-        documentFields.stripeInvoiceId,
-        documentFields.stripeHostedInvoiceUrl,
-        documentFields.stripeInvoicePdf,
-        documentFields.stripeReceiptUrl,
-      ]
-    );
+        [
+          userId,
+          normalizedWalletAmount,
+          walletCurrencyUpper,
+          'Wallet top-up',
+          combinedMetadata,
+          paymentIntentId ?? null,
+          chargeId ?? null,
+          receiptsPriceOnly ? null : platformRevenueCents ?? null,
+          destinationAcct ?? null,
+          originalAmountCents ?? normalizedSettlementAmount ?? normalizedWalletAmount,
+          originalCurrency ? originalCurrency.toUpperCase() : settlementCurrencyUpper,
+          fxRate ?? null,
+          fxMarginBps ?? null,
+          fxRateTimestamp ? new Date(fxRateTimestamp) : null,
+          documentFields.stripeCustomerId,
+          documentFields.stripeCheckoutSessionId,
+          documentFields.stripeInvoiceId,
+          documentFields.stripeHostedInvoiceUrl,
+          documentFields.stripeInvoicePdf,
+          documentFields.stripeReceiptUrl,
+        ]
+      );
 
-    if (rows.length === 0) {
-      const fallbackExisting = paymentIntentId
-        ? await query<{ id: string }>(`SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`, [
-            paymentIntentId,
-          ])
-        : chargeId
-          ? await query<{ id: string }>(`SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`, [chargeId])
-          : stripeCheckoutSessionId
-            ? await query<{ id: string }>(
-                `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
-                [stripeCheckoutSessionId]
+      if (rows.length === 0) {
+        const fallbackExisting = paymentIntentId
+          ? await executor.query<{ id: string }>(
+              `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
+              [paymentIntentId]
+            )
+          : chargeId
+            ? await executor.query<{ id: string }>(
+                `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
+                [chargeId]
               )
-            : [];
-      if (fallbackExisting.length > 0) {
-        await updateTopupDocumentFields(fallbackExisting[0].id, documentFields);
+            : stripeCheckoutSessionId
+              ? await executor.query<{ id: string }>(
+                  `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
+                  [stripeCheckoutSessionId]
+                )
+              : [];
+        if (fallbackExisting.length > 0) {
+          await updateTopupDocumentFields(fallbackExisting[0].id, documentFields, executor);
+        }
+        return { kind: 'duplicate' as const };
       }
+
+      return {
+        kind: 'inserted' as const,
+        receiptId: rows[0].id,
+        combinedMetadata,
+        isFirstWalletTopup,
+      };
+    });
+
+    if (persistenceResult.kind === 'duplicate') {
       console.log('[stripe-webhook] Skipped duplicate wallet top-up', {
         userId,
         amountCents: normalizedWalletAmount,
@@ -1047,6 +1073,8 @@ async function recordTopup({
       });
       return;
     }
+
+    const { combinedMetadata } = persistenceResult;
 
     const resolvedCurrency = normalizeCurrencyCode(walletCurrencyUpper.toLowerCase());
     if (resolvedCurrency) {
@@ -1058,7 +1086,6 @@ async function recordTopup({
     const analyticsConsentGranted = consentValue.toLowerCase() === 'granted';
     if (analyticsConsentGranted) {
       const attributionParams = buildTopupAttributionGa4Params(metadataRecord);
-      const isFirstWalletTopup = String(metadataRecord.first_wallet_topup ?? '').toLowerCase() === 'true';
       const gaClientId = extractGaClientId(
         typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
       );
@@ -1067,13 +1094,13 @@ async function recordTopup({
       const topupTierLabel =
         typeof metadataRecord.topup_tier_label === 'string' ? metadataRecord.topup_tier_label : null;
       const fxSource = typeof metadataRecord.fx_source === 'string' ? metadataRecord.fx_source : null;
-      const transactionId = paymentIntentId ?? chargeId ?? `topup_${rows[0].id}`;
+      const transactionId = paymentIntentId ?? chargeId ?? `topup_${persistenceResult.receiptId}`;
       const purchaseValueMinor = normalizedSettlementAmount ?? normalizedWalletAmount;
       const purchaseCurrency = settlementCurrencyUpper;
       const commonParams = {
         ...attributionParams,
         funnel_stage: 'topup_completed',
-        is_first_wallet_topup: isFirstWalletTopup,
+        is_first_wallet_topup: persistenceResult.isFirstWalletTopup,
         value: minorToMajorAmount(purchaseValueMinor),
         currency: purchaseCurrency,
         wallet_currency: walletCurrencyUpper,

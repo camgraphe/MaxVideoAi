@@ -12,6 +12,14 @@ export function hasAnalyticsConsentInBrowser(): boolean {
   }
 }
 
+export function analyticsConsentFromUpdateEvent(event: Event): boolean {
+  const detail = (event as CustomEvent<{ categories?: { analytics?: boolean } }>).detail;
+  if (typeof detail?.categories?.analytics === 'boolean') {
+    return detail.categories.analytics;
+  }
+  return hasAnalyticsConsentInBrowser();
+}
+
 export function hasAdsConsentInBrowser(): boolean {
   if (typeof document === 'undefined') return false;
   try {

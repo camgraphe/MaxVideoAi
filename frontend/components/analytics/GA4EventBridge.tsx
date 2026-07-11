@@ -9,6 +9,7 @@ import {
   type AnalyticsPayload,
 } from '@/lib/analytics-client';
 import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { mergeRequestGenerationFailureContext } from '@/lib/analytics/generation-correlation';
 import {
   clearBrowserAnalyticsState,
   prepareBrowserAnalyticsEvents,
@@ -128,7 +129,13 @@ export function GA4EventBridge() {
       const detail = (event as CustomEvent<AnalyticsClientEventDetail>).detail;
       const eventName = typeof detail?.event === 'string' ? detail.event : '';
       if (!eventName) return;
-      const payload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
+      const eventPayload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
+      const payload = eventName === 'generation_failed' && eventPayload
+        ? mergeRequestGenerationFailureContext({
+            payload: eventPayload,
+            generationContextByLocalKey: generationContextByLocalKeyRef.current,
+          })
+        : eventPayload;
 
       const preparedPayload = enqueueEvent(eventName, payload);
       if (eventName === 'generation_started') {

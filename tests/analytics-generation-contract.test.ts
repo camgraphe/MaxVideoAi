@@ -16,4 +16,5 @@ test('generation analytics use classifications instead of free-form errors', () 
   assert.doesNotMatch(bridge, /error_message: typeof detail\.message/);
   assert.match(runner, /failure_category: 'generation_request_failed'/);
   assert.match(bridge, /failure_category: 'job_failed'/);
+  assert.match(bridge, /mergeRequestGenerationFailureContext/);
 });

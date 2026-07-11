@@ -8,6 +8,11 @@ import type {
   StripeCheckoutLoadActionsResult,
   StripeExpressCheckoutElementReadyEvent,
 } from '@stripe/stripe-js';
+import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  analyticsConsentFromUpdateEvent,
+  hasAnalyticsConsentInBrowser,
+} from '@/lib/analytics/consent-client';
 import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
 import {
   walletAnalyticsJourneyCacheKey,
@@ -87,6 +92,7 @@ export function WalletExpressCheckout({
   const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
+  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentInBrowser);
   const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const sessionUserId = session?.user?.id ?? null;
@@ -103,6 +109,26 @@ export function WalletExpressCheckout({
       onPaymentStarted,
     };
   }, [labels, onCaptchaRequired, onPaymentFailed, onPaymentStarted]);
+
+  useEffect(() => {
+    const updateAnalyticsConsent = (nextConsent: boolean) => {
+      setAnalyticsConsentGranted((current) => current === nextConsent ? current : nextConsent);
+    };
+    const handleConsentUpdated = (event: Event) => {
+      updateAnalyticsConsent(analyticsConsentFromUpdateEvent(event));
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
+      updateAnalyticsConsent(hasAnalyticsConsentInBrowser());
+    };
+
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -150,7 +176,7 @@ export function WalletExpressCheckout({
         });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
       const analyticsJourney = readWalletAnalyticsJourney();
-      const attributionKey = walletAnalyticsJourneyCacheKey(analyticsJourney);
+      const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}`;
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
         amountCents,
@@ -455,6 +481,7 @@ export function WalletExpressCheckout({
     };
   }, [
     amountCents,
+    analyticsConsentGranted,
     locale,
     captchaToken,
     normalizedChargeCurrency,

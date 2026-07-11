@@ -162,25 +162,58 @@ test('direct dispatch catches gtag failures and retries only unsent prepared eve
   });
 });
 
-test('direct dispatch cancels stale retries on any consent update', async () => {
+test('direct dispatch keeps retries across granted and ads-only consent updates', async () => {
   await withBrowser({ analyticsConsent: true }, async (browser) => {
     const calls: string[] = [];
     const result = dispatchGaEvent('topup_cancelled', {}, { maxAttempts: 2, retryDelayMs: 100 });
     assert.equal(browser.timerCount(), 1);
-    browser.dispatch(new Event('consent:updated'));
+    browser.dispatch(new CustomEvent('consent:updated', {
+      detail: { categories: { analytics: true, ads: false } },
+    }));
+    browser.dispatch(new CustomEvent('consent:updated', {
+      detail: { categories: { ads: true } },
+    }));
     browser.window.gtag = (_command, event) => { calls.push(String(event)); };
     browser.runNextTimer();
-    assert.equal(await result, false);
-    assert.deepEqual(calls, []);
+    assert.equal(await result, true);
+    assert.deepEqual(calls, ['funnel_entry', 'topup_cancelled']);
     assert.equal(browser.listenerCount('consent:updated'), 0);
     assert.equal(browser.listenerCount('storage'), 0);
   });
 });
 
-test('direct dispatch cancels stale retries on analytics storage updates', async () => {
+test('direct dispatch cancels retries on an explicit analytics withdrawal', async () => {
   await withBrowser({ analyticsConsent: true }, async (browser) => {
     const calls: string[] = [];
     const result = dispatchGaEvent('topup_cancelled', {}, { maxAttempts: 2, retryDelayMs: 100 });
+    browser.dispatch(new CustomEvent('consent:updated', {
+      detail: { categories: { analytics: false, ads: true } },
+    }));
+    browser.window.gtag = (_command, event) => { calls.push(String(event)); };
+    browser.runNextTimer();
+    assert.equal(await result, false);
+    assert.deepEqual(calls, []);
+    assert.equal(browser.timerCount(), 0);
+  });
+});
+
+test('analytics storage updates cancel only after consent is actually removed', async () => {
+  await withBrowser({ analyticsConsent: true }, async (browser) => {
+    const calls: string[] = [];
+    const result = dispatchGaEvent('topup_cancelled', {}, { maxAttempts: 2, retryDelayMs: 100 });
+    const storageEvent = new Event('storage');
+    Object.defineProperty(storageEvent, 'key', { value: 'mv-consent-analytics' });
+    browser.dispatch(storageEvent);
+    browser.window.gtag = (_command, event) => { calls.push(String(event)); };
+    browser.runNextTimer();
+    assert.equal(await result, true);
+    assert.deepEqual(calls, ['funnel_entry', 'topup_cancelled']);
+  });
+
+  await withBrowser({ analyticsConsent: true }, async (browser) => {
+    const calls: string[] = [];
+    const result = dispatchGaEvent('topup_cancelled', {}, { maxAttempts: 2, retryDelayMs: 100 });
+    browser.window.localStorage.removeItem('mv-consent-analytics');
     const storageEvent = new Event('storage');
     Object.defineProperty(storageEvent, 'key', { value: 'mv-consent-analytics' });
     browser.dispatch(storageEvent);
@@ -213,7 +246,9 @@ test('Google Ads conversion requires ads consent and cancels retries on consent 
       { maxAttempts: 2, retryDelayMs: 100 },
     );
     assert.equal(browser.timerCount(), 1);
-    browser.dispatch(new Event('consent:updated'));
+    browser.dispatch(new CustomEvent('consent:updated', {
+      detail: { categories: { analytics: true, ads: false } },
+    }));
     assert.equal(await result, false);
     assert.equal(browser.timerCount(), 0);
   });

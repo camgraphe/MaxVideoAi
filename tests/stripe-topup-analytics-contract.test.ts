@@ -16,7 +16,8 @@ test('Stripe completion emits accepted attribution and first-topup state', () =>
   assert.match(source, /buildTopupAttributionGa4Params/);
   assert.match(source, /\.\.\.attributionParams/);
   assert.match(source, /funnel_stage: 'topup_completed'/);
-  assert.match(source, /is_first_wallet_topup: isFirstWalletTopup/);
+  assert.match(source, /is_first_wallet_topup: persistenceResult\.isFirstWalletTopup/);
+  assert.doesNotMatch(source, /String\(metadataRecord\.first_wallet_topup/);
   assert.match(source, /name: 'topup_completed'/);
   assert.match(source, /name: 'purchase'/);
   assert.match(source, /await Promise\.allSettled\(\[/);
