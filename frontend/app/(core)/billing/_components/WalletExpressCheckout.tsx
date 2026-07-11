@@ -8,6 +8,16 @@ import type {
   StripeCheckoutLoadActionsResult,
   StripeExpressCheckoutElementReadyEvent,
 } from '@stripe/stripe-js';
+import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  analyticsConsentFromUpdateEvent,
+  hasAnalyticsConsentCookieInBrowser,
+} from '@/lib/analytics/consent-client';
+import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
+import {
+  walletAnalyticsJourneyCacheKey,
+  type WalletAnalyticsJourney,
+} from '@/lib/analytics/journey-contract';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
@@ -82,6 +92,7 @@ export function WalletExpressCheckout({
   const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
+  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentCookieInBrowser);
   const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const sessionUserId = session?.user?.id ?? null;
@@ -98,6 +109,26 @@ export function WalletExpressCheckout({
       onPaymentStarted,
     };
   }, [labels, onCaptchaRequired, onPaymentFailed, onPaymentStarted]);
+
+  useEffect(() => {
+    const updateAnalyticsConsent = (nextConsent: boolean) => {
+      setAnalyticsConsentGranted((current) => current === nextConsent ? current : nextConsent);
+    };
+    const handleConsentUpdated = (event: Event) => {
+      updateAnalyticsConsent(analyticsConsentFromUpdateEvent(event, hasAnalyticsConsentCookieInBrowser));
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
+      updateAnalyticsConsent(hasAnalyticsConsentCookieInBrowser());
+    };
+
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,12 +175,15 @@ export function WalletExpressCheckout({
           },
         });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
+      const analyticsJourney = readWalletAnalyticsJourney();
+      const attributionKey = `${analyticsConsentGranted ? 'analytics-granted' : 'analytics-denied'}:${walletAnalyticsJourneyCacheKey(analyticsJourney)}`;
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
         amountCents,
         currency: normalizedChargeCurrency,
         locale,
         captchaToken,
+        attributionKey,
       });
 
       try {
@@ -162,7 +196,7 @@ export function WalletExpressCheckout({
                 clientSecret: cachedCheckoutSession.clientSecret,
                 sessionId: cachedCheckoutSession.sessionId,
               }
-            : await getCheckoutSessionResult(requestKey);
+            : await getCheckoutSessionResult(requestKey, analyticsJourney);
 
         if (readyTimedOut) return;
         if (checkoutSessionResult.type !== 'success') {
@@ -358,13 +392,16 @@ export function WalletExpressCheckout({
       }
     }
 
-    async function getCheckoutSessionResult(requestKey: string): Promise<CheckoutSessionResult> {
+    async function getCheckoutSessionResult(
+      requestKey: string,
+      analyticsJourney: WalletAnalyticsJourney | null
+    ): Promise<CheckoutSessionResult> {
       const pendingCheckoutSession = pendingCheckoutSessionRef.current;
       if (pendingCheckoutSession?.key === requestKey) {
         return pendingCheckoutSession.promise;
       }
 
-      const promise = createCheckoutSessionResult();
+      const promise = createCheckoutSessionResult(analyticsJourney);
       pendingCheckoutSessionRef.current = { key: requestKey, promise };
       const result = await promise;
       if (pendingCheckoutSessionRef.current?.key === requestKey) {
@@ -381,7 +418,9 @@ export function WalletExpressCheckout({
       return result;
     }
 
-    async function createCheckoutSessionResult(): Promise<CheckoutSessionResult> {
+    async function createCheckoutSessionResult(
+      analyticsJourney: WalletAnalyticsJourney | null
+    ): Promise<CheckoutSessionResult> {
       const currentSession = sessionRef.current;
       const token = currentSession?.access_token ?? null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -396,6 +435,7 @@ export function WalletExpressCheckout({
           mode: 'express_checkout',
           locale,
           captchaToken: captchaToken ?? undefined,
+          ...(analyticsJourney ? { analyticsJourney } : {}),
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -441,6 +481,7 @@ export function WalletExpressCheckout({
     };
   }, [
     amountCents,
+    analyticsConsentGranted,
     locale,
     captchaToken,
     normalizedChargeCurrency,

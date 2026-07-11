@@ -5,6 +5,7 @@ import {
   consumePendingGoogleLogin,
   markPendingGoogleLogin,
   resolveGoogleAuthCompletionEvent,
+  shouldTrackGoogleSignupStart,
 } from '../frontend/app/(core)/login/_lib/login-helpers';
 
 function createStorage(): Storage {
@@ -79,4 +80,10 @@ test('Google auth marker rejects expired or invalid state', () => {
 test('Google auth completion event follows the pending mode', () => {
   assert.equal(resolveGoogleAuthCompletionEvent('signup'), 'sign_up_completed');
   assert.equal(resolveGoogleAuthCompletionEvent('signin'), 'login_completed');
+});
+
+test('Google signup start follows visible auth mode', () => {
+  assert.equal(shouldTrackGoogleSignupStart('signup'), true);
+  assert.equal(shouldTrackGoogleSignupStart('signin'), false);
+  assert.equal(shouldTrackGoogleSignupStart('reset'), false);
 });
