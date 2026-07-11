@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import { validateKlingElementImageDimensions } from '../frontend/app/api/generate/_lib/kling-element-image-dimensions';
@@ -122,4 +124,15 @@ test('skips dimension lookup for non-Kling engines', async () => {
 
   assert.deepEqual(result, { ok: true });
   assert.equal(queried, false);
+});
+
+test('validates Kling element dimensions before billing preflight', () => {
+  const source = readFileSync(join(process.cwd(), 'frontend/app/api/generate/route.ts'), 'utf8');
+
+  assert.match(source, /validateKlingElementImageDimensions/);
+  assert.ok(
+    source.indexOf('await validateKlingElementImageDimensions') <
+      source.indexOf('await resolveGenerateBillingPreflight'),
+    'Kling element dimensions must be validated before billing preflight'
+  );
 });

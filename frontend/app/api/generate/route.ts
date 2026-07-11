@@ -23,6 +23,7 @@ import { ensureUserPreferredCurrency } from '@/lib/currency';
 import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
 import { buildMissingProviderJobIdResponse } from './_lib/missing-provider-job';
+import { validateKlingElementImageDimensions } from './_lib/kling-element-image-dimensions';
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
   const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
@@ -212,6 +213,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(validationPayloadResult.body, { status: validationPayloadResult.status });
   }
   const { needsImage, needsFirstLastFrames } = validationPayloadResult;
+
+  const dimensionValidation = await validateKlingElementImageDimensions({
+    engineId: engine.id,
+    userId: String(userId),
+    elements,
+  });
+  if (!dimensionValidation.ok) {
+    logMetric('rejected', dimensionValidation.metric);
+    return NextResponse.json(dimensionValidation.body, { status: dimensionValidation.status });
+  }
 
   const billingPreflight = await resolveGenerateBillingPreflight({
     req,
