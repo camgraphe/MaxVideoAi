@@ -17,14 +17,6 @@ const FUNNEL_STAGES: Record<string, string> = {
 };
 
 const ORGANIC_DOMAINS: ReadonlyArray<{ source: string; domains: readonly string[] }> = [
-  {
-    source: 'google',
-    domains: [
-      'google.com', 'google.ca', 'google.co.uk', 'google.com.au', 'google.co.in',
-      'google.co.jp', 'google.com.br', 'google.de', 'google.es', 'google.fr',
-      'google.it', 'google.nl', 'google.pl', 'google.pt',
-    ],
-  },
   { source: 'bing', domains: ['bing.com'] },
   { source: 'yahoo', domains: ['yahoo.com', 'yahoo.co.jp', 'yahoo.co.uk'] },
   { source: 'duckduckgo', domains: ['duckduckgo.com'] },
@@ -46,11 +38,24 @@ type AnalyticsTouchInput = {
 };
 
 function normalizeHostname(hostname: string): string | null {
-  return sanitizeAttributionValue(hostname.replace(/^www\./i, ''), { lowercase: true });
+  const normalized = hostname.normalize('NFKC').trim().toLowerCase().replace(/^www\./, '');
+  return normalized || null;
 }
 
 function matchesDomain(hostname: string, domain: string): boolean {
   return hostname === domain || hostname.endsWith(`.${domain}`);
+}
+
+function matchesGoogleDomain(hostname: string): boolean {
+  if (matchesDomain(hostname, 'google.com') || matchesDomain(hostname, 'google.cat')) return true;
+  return /(?:^|\.)google\.(?:[a-z]{2}|(?:co|com)\.[a-z]{2})$/.test(hostname);
+}
+
+function organicSourceForHostname(hostname: string): string | null {
+  if (matchesGoogleDomain(hostname)) return 'google';
+  return ORGANIC_DOMAINS.find(({ domains }) => (
+    domains.some((domain) => matchesDomain(hostname, domain))
+  ))?.source ?? null;
 }
 
 function safeUrl(value: string): URL | null {
@@ -93,14 +98,14 @@ export function resolveAnalyticsTouch(input: AnalyticsTouchInput): AnalyticsTouc
     && (referrerUrl.protocol === 'http:' || referrerUrl.protocol === 'https:')
     && (!siteUrl || referrerUrl.origin !== siteUrl.origin)
   ) {
-    const referrerHost = normalizeHostname(referrerUrl.hostname);
+    const classificationHost = normalizeHostname(referrerUrl.hostname);
+    if (!classificationHost) return { source: 'direct', medium: 'none', ...routeFields(input) };
+    const referrerHost = sanitizeAttributionValue(classificationHost, { lowercase: true });
     if (!referrerHost) return { source: 'direct', medium: 'none', ...routeFields(input) };
-    const organic = ORGANIC_DOMAINS.find(({ domains }) => (
-      domains.some((domain) => matchesDomain(referrerHost, domain))
-    ));
-    if (organic) {
+    const organicSource = organicSourceForHostname(classificationHost);
+    if (organicSource) {
       return {
-        source: organic.source,
+        source: organicSource,
         medium: 'organic',
         referrerHost,
         ...routeFields(input),

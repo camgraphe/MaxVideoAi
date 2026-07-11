@@ -44,6 +44,31 @@ test('organic classification accepts verified engines and rejects lookalikes', (
   }
 });
 
+test('organic classification uses the complete hostname before bounded storage', () => {
+  const googleHostname = `${'a'.repeat(40)}.${'b'.repeat(40)}.google.com`;
+  const googleTouch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${googleHostname}/search`, siteOrigin: 'https://maxvideoai.com', ...route });
+  assert.equal(googleTouch.medium, 'organic');
+  assert.equal(googleTouch.source, 'google');
+  assert.equal(googleTouch.referrerHost?.length, 80);
+
+  const lookalikeHostname = `${'a'.repeat(40)}.${'b'.repeat(20)}.google.com.partner.example`;
+  const lookalikeTouch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${lookalikeHostname}/post`, siteOrigin: 'https://maxvideoai.com', ...route });
+  assert.equal(lookalikeTouch.medium, 'referral');
+  assert.equal(lookalikeTouch.source.length, 80);
+  assert.equal(lookalikeTouch.referrerHost?.length, 80);
+});
+
+test('google country registrable domains are organic without accepting lookalikes', () => {
+  for (const hostname of ['google.ch', 'images.google.co.ch', 'www.google.com.ch']) {
+    const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${hostname}/search`, siteOrigin: 'https://maxvideoai.com', ...route });
+    assert.equal(touch.medium, 'organic');
+    assert.equal(touch.source, 'google');
+  }
+
+  const lookalike = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: 'https://google.partner.example/post', siteOrigin: 'https://maxvideoai.com', ...route });
+  assert.equal(lookalike.medium, 'referral');
+});
+
 test('first touch is immutable and identical touches do not refresh time', () => {
   const first = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/?utm_source=google&utm_medium=cpc', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route });
   const record = createAnalyticsJourneyRecord({ journeyId: uuid, now: 1_000, touch: first });
