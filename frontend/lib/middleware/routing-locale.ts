@@ -11,6 +11,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/api',
   '/trpc',
   '/admin',
+  '/account',
   '/billing',
   '/connect',
   '/dashboard',

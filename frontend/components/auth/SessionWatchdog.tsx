@@ -6,6 +6,7 @@ import { useSWRConfig } from 'swr';
 
 const REFRESH_DEBOUNCE_MS = 1500;
 const PROTECTED_PREFIXES = [
+  '/account',
   '/app',
   '/dashboard',
   '/generate',

@@ -27,7 +27,7 @@ const QUERY_PARAM_ALLOWLISTS = {
   video: new Set(['from']),
   compare: new Set(['order']),
 };
-const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/connect'];
+const APP_NOINDEX_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/account', '/connect'];
 
 function shouldStripQueryParams(pathWithoutLocale: string): boolean {
   if (pathWithoutLocale === '/') {

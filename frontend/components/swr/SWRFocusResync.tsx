@@ -6,6 +6,7 @@ import { useSWRConfig } from 'swr';
 
 const RESYNC_THROTTLE_MS = 5000;
 const PROTECTED_PREFIXES = [
+  '/account',
   '/app',
   '/dashboard',
   '/generate',

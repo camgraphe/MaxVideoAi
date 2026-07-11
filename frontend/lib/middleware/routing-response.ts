@@ -4,7 +4,7 @@ import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 
 export const LOGIN_PATH = '/login';
 const LOCAL_ADMIN_BYPASS_COOKIE = 'mva_local_admin_bypass';
-export const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/admin'];
+export const PROTECTED_PREFIXES = ['/app', '/dashboard', '/jobs', '/billing', '/settings', '/account', '/admin'];
 const MARKETING_EDGE_CACHE_CONTROL = 'public, max-age=0, must-revalidate';
 const MARKETING_VERCEL_CDN_CACHE_CONTROL = 'max-age=300, stale-while-revalidate=60';
 const CACHEABLE_LOCALIZED_MARKETING_PATHS = new Set(['/fr', '/es', '/fr/tarifs', '/es/precios']);
@@ -20,7 +20,6 @@ export function applyMarketingEdgeCacheHeaders(res: NextResponse, pathname: stri
   res.headers.set('Vercel-CDN-Cache-Control', MARKETING_VERCEL_CDN_CACHE_CONTROL);
   return res;
 }
-
 export function isLoopbackHost(host: string | null | undefined): boolean {
   if (!host) return false;
   const normalized = host.trim().toLowerCase().split(':')[0] ?? '';

@@ -3,6 +3,7 @@ import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/
 import { FEATURES } from '@/content/feature-flags';
 import { isMcpApiHost } from '@/lib/mcp-host-routing';
 import { AgentApiError } from '@/server/agent-api/errors';
+import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
 import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
@@ -16,6 +17,7 @@ export type McpHttpHandlerDeps = {
   enabled: boolean;
   config: McpConfig;
   resolvePrincipal(request: Request): Promise<AgentPrincipal>;
+  recordEvent?(event: McpAuditEvent): Promise<boolean>;
 };
 
 function jsonRpcError(status: number, code: number, message: string, headers?: HeadersInit): Response {
@@ -59,6 +61,33 @@ async function readBoundedJson(request: Request): Promise<{ ok: true; value: unk
   } catch {
     return { ok: false, response: jsonRpcError(400, -32700, 'Invalid JSON.') };
   }
+}
+
+function protocolMethod(body: unknown): string | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  const method = (body as { method?: unknown }).method;
+  return typeof method === 'string' ? method : null;
+}
+
+async function recordProtocolDiscovery(
+  body: unknown,
+  principal: AgentPrincipal,
+  recorder: ((event: McpAuditEvent) => Promise<boolean>) | undefined
+): Promise<void> {
+  if (!recorder) return;
+  const method = protocolMethod(body);
+  const eventType = method === 'initialize' ? 'connection_initialized' : method === 'tools/list' ? 'tool_discovery' : null;
+  if (!eventType) return;
+  await recorder({
+    eventType,
+    userId: principal.userId,
+    oauthClientId: principal.clientId,
+    tool: null,
+    outcome: 'success',
+    surface: null,
+    engineId: null,
+    errorCode: null,
+  });
 }
 
 function withPrivateCaching(response: Response): Response {
@@ -108,6 +137,9 @@ export async function handleMcpHttpRequest(
     if (!parsed.ok) return parsed.response;
     parsedBody = parsed.value;
   }
+
+  const recorder = injectedDeps ? injectedDeps.recordEvent : recordMcpEvent;
+  await recordProtocolDiscovery(parsedBody, principal, recorder);
 
   const server = createMaxVideoAiMcpServer(principal);
   const transport = new WebStandardStreamableHTTPServerTransport({
