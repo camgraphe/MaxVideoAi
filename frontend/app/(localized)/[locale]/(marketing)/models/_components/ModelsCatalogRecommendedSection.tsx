@@ -1,9 +1,12 @@
 import { ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import type { ModelGalleryCard } from '@/components/marketing/ModelsGallery';
+import type { AppLocale } from '@/i18n/locales';
 
 type ModelsCatalogRecommendedSectionProps = {
+  locale: AppLocale;
   title: string;
   subtitle: string;
   cards: ModelGalleryCard[];
@@ -16,6 +19,7 @@ type ModelsCatalogRecommendedSectionProps = {
 };
 
 export function ModelsCatalogRecommendedSection({
+  locale,
   title,
   subtitle,
   cards,
@@ -30,10 +34,13 @@ export function ModelsCatalogRecommendedSection({
             <h2 className="text-xl font-semibold text-text-primary">{title}</h2>
             <p className="mt-1 max-w-3xl text-sm leading-relaxed text-text-secondary">{subtitle}</p>
           </div>
-          <a href="#models-grid" className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary hover:text-text-primary">
-            {allModelsLabel}
-            <ArrowRight className="h-3.5 w-3.5" aria-hidden />
-          </a>
+          <div className="flex flex-wrap items-center gap-2">
+            <BenchmarkMethodologyLink locale={locale} variant="pill" />
+            <a href="#models-grid" className="inline-flex items-center gap-2 text-xs font-semibold text-text-secondary hover:text-text-primary">
+              {allModelsLabel}
+              <ArrowRight className="h-3.5 w-3.5" aria-hidden />
+            </a>
+          </div>
         </div>
         <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {cards.map((card) => (

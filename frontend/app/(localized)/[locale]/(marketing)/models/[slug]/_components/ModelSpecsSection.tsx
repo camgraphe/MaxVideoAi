@@ -1,4 +1,5 @@
 import type { AppLocale } from '@/i18n/locales';
+import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import { SpecDetailsGrid } from '@/components/marketing/SpecDetailsGrid.client';
 import { UIIcon } from '@/components/ui/UIIcon';
 import {
@@ -45,6 +46,7 @@ type ModelSpecsSectionProps = {
   isImageEngine: boolean;
   locale: AppLocale;
   statusLabels: { supported: string };
+  showBenchmarkLink?: boolean;
   variant?: 'default' | 'decision';
 };
 
@@ -120,6 +122,7 @@ function ModelDecisionSpecsPanel({
   specSectionsToShow,
   locale,
   statusLabels,
+  showBenchmarkLink,
 }: Omit<ModelSpecsSectionProps, 'hasSpecs' | 'isImageEngine' | 'variant'>) {
   const detailsLabel = getDetailsLabel(locale);
 
@@ -135,13 +138,16 @@ function ModelDecisionSpecsPanel({
               {specNote ?? getDecisionSpecFallbackNote(locale)}
             </p>
           </div>
-          <a
-            href="#specs"
-            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
-          >
-            <span>{getFullSpecsLabel(locale)}</span>
-            <UIIcon icon={ExternalLink} size={14} />
-          </a>
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {showBenchmarkLink ? <BenchmarkMethodologyLink locale={locale} variant="pill" /> : null}
+            <a
+              href="#specs"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-primary shadow-sm transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            >
+              <span>{getFullSpecsLabel(locale)}</span>
+              <UIIcon icon={ExternalLink} size={14} />
+            </a>
+          </div>
         </div>
 
         {keySpecRows.length ? (
@@ -228,6 +234,7 @@ export function ModelSpecsSection({
   isImageEngine,
   locale,
   statusLabels,
+  showBenchmarkLink,
   variant = 'default',
 }: ModelSpecsSectionProps) {
   if (!hasSpecs) {
@@ -243,6 +250,7 @@ export function ModelSpecsSection({
         specSectionsToShow={specSectionsToShow}
         locale={locale}
         statusLabels={statusLabels}
+        showBenchmarkLink={showBenchmarkLink}
       />
     );
   }
@@ -256,6 +264,11 @@ export function ModelSpecsSection({
               <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:text-3xl sm:mt-0">
                 {specTitle}
               </h2>
+            ) : null}
+            {showBenchmarkLink ? (
+              <div className="flex justify-center">
+                <BenchmarkMethodologyLink locale={locale} variant="pill" />
+              </div>
             ) : null}
             {specNote ? (
               <blockquote className="rounded-2xl border border-hairline bg-surface-2 px-4 py-3 text-center text-sm text-text-secondary">

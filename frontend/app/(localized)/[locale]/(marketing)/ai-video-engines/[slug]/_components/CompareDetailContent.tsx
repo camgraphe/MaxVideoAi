@@ -161,6 +161,7 @@ export function CompareDetailContent({
               rightPricingDisplay={rightPricingDisplay}
             />
             <CompareScorecardSection
+              activeLocale={activeLocale}
               compareCopy={compareCopy}
               comparisonMetrics={comparisonMetrics}
               criteriaCount={criteriaCount}

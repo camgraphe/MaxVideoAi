@@ -74,6 +74,7 @@ export function MarketingModelPageLayout({
   copy,
   isVideoEngine,
   isImageEngine,
+  showBenchmarkLink,
   heroMedia,
   demoMedia,
   galleryVideos,
@@ -98,6 +99,7 @@ export function MarketingModelPageLayout({
   copy: SoraCopy;
   isVideoEngine: boolean;
   isImageEngine: boolean;
+  showBenchmarkLink: boolean;
   heroMedia: FeaturedMedia;
   demoMedia: FeaturedMedia | null;
   galleryVideos: ExampleGalleryVideo[];
@@ -426,7 +428,7 @@ export function MarketingModelPageLayout({
           <ModelPageContentSections
             isDecision={Boolean(templateData)}
             tocProps={{ items: templateData ? decisionTocItems : tocItems, variant: templateData ? 'pill' : 'default', overviewLabel: decisionTocOverviewLabel }}
-            specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels }}
+            specsProps={{ hasSpecs, specTitle, specNote, keySpecRows, specSectionsToShow, isImageEngine, locale, statusLabels, showBenchmarkLink }}
             pricingCallout={legacyPricingCallout}
             microCta={legacyMicroCta}
             microCtaHref={normalizedPrimaryCtaHref}

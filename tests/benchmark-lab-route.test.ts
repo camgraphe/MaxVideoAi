@@ -19,6 +19,7 @@ import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketin
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)/benchmarks';
 const pagePath = path.join(routeRoot, 'page.tsx');
 const defaultPagePath = 'frontend/app/benchmarks/page.tsx';
+const methodologyLinkPath = 'frontend/components/marketing/BenchmarkMethodologyLink.tsx';
 const require = createRequire(import.meta.url);
 const sitemapConfig = require('../frontend/next-sitemap.config.js') as {
   additionalPaths(config: unknown): Promise<Array<{ loc: string; alternateRefs: Array<{ href: string; hreflang: string }> }>>;
@@ -34,6 +35,15 @@ test('benchmark lab route stays a thin localized server orchestrator', () => {
   assert.match(source, /BenchmarkLabView/);
   assert.doesNotMatch(source, /FROM app_jobs|PERCENTILE_CONT|scores\.map|specs\.map/);
   assert.ok(source.split('\n').length <= 120);
+});
+
+test('shared benchmark methodology link exposes localized labels and the benchmark route', () => {
+  assert.ok(existsSync(methodologyLinkPath));
+  const source = readFileSync(methodologyLinkPath, 'utf8');
+  assert.match(source, /\/benchmarks/);
+  assert.match(source, /en:/);
+  assert.match(source, /fr:/);
+  assert.match(source, /es:/);
 });
 
 test('benchmark copy is complete in American English, French, and Latin American Spanish', () => {

@@ -11,6 +11,7 @@ import { normalizeEngineId } from '@/lib/engine-alias';
 import { listPlaylistVideos, getPublicVideosByIds, type GalleryVideo } from '@/server/videos';
 import { applyEnginePricingOverride } from '@/lib/pricing-definition';
 import { listEnginePricingOverrides } from '@/server/engine-settings';
+import { loadBenchmarkScoreSlugs } from '@/server/benchmark-lab-data';
 import {
   buildDetailSlugMap,
   MODELS_BASE_PATH_MAP,
@@ -146,6 +147,8 @@ async function renderMarketingModelPage({
   const hasImageMode = engineModes.some((mode) => mode.endsWith('i'));
   const isVideoEngine = hasVideoMode;
   const isImageEngine = hasImageMode && !hasVideoMode;
+  const benchmarkScoreSlugs = await loadBenchmarkScoreSlugs();
+  const showBenchmarkLink = isVideoEngine && benchmarkScoreSlugs.has(engine.modelSlug);
   const enginePricingOverrides = await listEnginePricingOverrides();
   const pricingEngine = applyEnginePricingOverride(
     engine.engine,
@@ -412,6 +415,7 @@ async function renderMarketingModelPage({
       pricingEngine={pricingEngine}
       isVideoEngine={isVideoEngine}
       isImageEngine={isImageEngine}
+      showBenchmarkLink={showBenchmarkLink}
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}

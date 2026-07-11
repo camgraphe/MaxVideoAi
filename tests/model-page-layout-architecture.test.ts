@@ -4,7 +4,9 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 const root = process.cwd();
+const modelPagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx');
 const layoutPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx');
+const specsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelSpecsSection.tsx');
 const prepLinksPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prep-links.ts');
 const schemaPayloadsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts');
 const schemaBuilderPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts');
@@ -30,6 +32,16 @@ const decisionSafetyFaqSectionPath = join(root, 'frontend/app/(localized)/[local
 
 const readSource = (path: string) => readFileSync(path, 'utf8');
 const lineCount = (source: string) => source.split('\n').length;
+
+test('scored video model pages link their specs to the benchmark methodology', () => {
+  const modelPageSource = readSource(modelPagePath);
+  const layoutSource = readSource(layoutPath);
+  const specsSectionSource = readSource(specsSectionPath);
+
+  assert.match(modelPageSource, /loadBenchmarkScoreSlugs/);
+  assert.match(layoutSource, /showBenchmarkLink/);
+  assert.match(specsSectionSource, /BenchmarkMethodologyLink/);
+});
 
 test('model page layout delegates prep link copy and schema payload composition', () => {
   for (const path of [layoutPath, prepLinksPath, schemaPayloadsPath, schemaBuilderPath, prepLinksSectionPath, pricingCalloutsPath, pricingCalloutSectionPath]) {
