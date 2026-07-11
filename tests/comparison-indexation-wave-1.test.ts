@@ -201,10 +201,17 @@ test('wave 1 metadata builder preserves order-query noindex and applies the loca
     'utf8',
   );
 
-  assert.match(metadataSource, /isComparisonIndexable\(locale, canonicalSlug\)/);
+  assert.match(
+    metadataSource,
+    /if\s*\(\s*!isComparisonIndexable\(\s*locale\s*,\s*canonicalSlug\s*\)\s*\)\s*\{\s*robots\s*=\s*\{\s*index:\s*false\s*,\s*follow:\s*true\s*\}\s*;\s*\}/,
+  );
   assert.match(
     metadataSource,
     /availableLocales:\s*getIndexableComparisonLocales\(canonicalSlug\)/,
+  );
+  assert.match(
+    metadataSource,
+    /return\s+buildSeoMetadata\(\s*\{[\s\S]*?\brobots\s*,[\s\S]*?\}\s*\)\s*;/,
   );
   assert.match(
     metadataSource,
