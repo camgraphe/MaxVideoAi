@@ -17,6 +17,7 @@ const MARKETING_CORE_PATHS = [
   '/models/video',
   '/models/image',
   '/examples',
+  '/benchmarks',
   '/tools',
   '/tools/angle',
   '/tools/character-builder',
