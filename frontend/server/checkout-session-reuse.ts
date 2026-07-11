@@ -1,5 +1,9 @@
 import type Stripe from 'stripe';
 import { query } from '@/lib/db';
+import {
+  matchesWalletAttribution,
+  type NormalizedWalletAttribution,
+} from '@/server/wallet-attribution';
 
 export const EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS = 30 * 60;
 
@@ -11,17 +15,21 @@ type CheckoutSessionReuseRow = {
 type StripeCheckoutSessionRetriever = Pick<Stripe, 'checkout'>;
 
 export type ReusableStripeCheckoutSessionInput = {
+  attribution?: NormalizedWalletAttribution | null;
   clientSecret?: string | null;
   created?: number | null;
   expiresAt?: number | null;
+  metadata?: Record<string, string> | null;
   now?: number;
   paymentStatus?: string | null;
   status?: string | null;
 };
 
 export function isReusableStripeCheckoutSession({
+  attribution,
   clientSecret,
   expiresAt,
+  metadata,
   now = Math.floor(Date.now() / 1000),
   paymentStatus,
   status,
@@ -32,7 +40,8 @@ export function isReusableStripeCheckoutSession({
       status === 'open' &&
       paymentStatus === 'unpaid' &&
       expiresAtSeconds !== null &&
-      expiresAtSeconds > now
+      expiresAtSeconds > now &&
+      matchesWalletAttribution(metadata ?? {}, attribution ?? null)
   );
 }
 
@@ -40,10 +49,12 @@ export async function findReusableExpressCheckoutSession(
   stripe: StripeCheckoutSessionRetriever,
   {
     amountCents,
+    attribution,
     currency,
     userId,
   }: {
     amountCents: number;
+    attribution?: NormalizedWalletAttribution | null;
     currency: string;
     userId: string;
   }
@@ -72,8 +83,10 @@ export async function findReusableExpressCheckoutSession(
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       if (
         isReusableStripeCheckoutSession({
+          attribution,
           clientSecret: session.client_secret,
           expiresAt: session.expires_at,
+          metadata: session.metadata,
           now,
           paymentStatus: session.payment_status,
           status: session.status,
