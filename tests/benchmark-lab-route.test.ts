@@ -183,6 +183,15 @@ test('page builder preserves the complete editorial roster, including legacy vid
   assert.ok(pageData.scores.some((row) => row.modelSlug === 'ltx-2'));
 });
 
+test('page builder emits only navigable HTTP sources for specification links', async () => {
+  const staticData = await loadBenchmarkLabStaticData();
+  const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
+  const dreamina = pageData.specs.find((row) => row.modelSlug === 'dreamina-seedance-2-0-mini');
+
+  assert.equal(dreamina?.sourceUrl, 'https://maxvideoai.com/models/dreamina-seedance-2-0-mini');
+  assert.ok(pageData.specs.every((row) => row.sourceUrl == null || /^https?:\/\//.test(row.sourceUrl)));
+});
+
 test('localized sitemap generation emits each benchmark locale URL exactly once', async () => {
   const sitemapSource = readFileSync('frontend/next-sitemap.config.js', 'utf8');
   assert.match(sitemapSource, /MARKETING_CORE_PATHS[\s\S]*['"]\/benchmarks['"]/);

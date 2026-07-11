@@ -44,6 +44,18 @@ function isSupported(value: unknown): boolean {
   return /^supported\b|^yes$|^true$/i.test(value == null ? '' : String(value).trim());
 }
 
+function sourceUrl(sources: string[] | undefined): string | null {
+  const urls = (sources ?? []).filter((source) => {
+    try {
+      const parsed = new URL(source);
+      return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  });
+  return urls.find((url) => !url.includes('maxvideoai.com')) ?? urls[0] ?? null;
+}
+
 function metricMap(score: BenchmarkScore): BenchmarkScoreRow['metrics'] {
   return Object.fromEntries(METRIC_IDS.map((id) => [id, typeof score[id] === 'number' ? score[id] : null])) as BenchmarkScoreRow['metrics'];
 }
@@ -95,7 +107,7 @@ export function buildBenchmarkPageData(
       inputModes,
       audio: value(spec.keySpecs.nativeAudioGeneration ?? spec.keySpecs.audioOutput),
       references: value(spec.keySpecs.referenceImageStyle ?? spec.keySpecs.referenceVideo),
-      sourceUrl: spec.sources?.find((url) => !url.includes('maxvideoai.com')) ?? spec.sources?.[0] ?? null,
+      sourceUrl: sourceUrl(spec.sources),
     }];
   }).sort((left, right) => left.modelName.localeCompare(right.modelName));
 

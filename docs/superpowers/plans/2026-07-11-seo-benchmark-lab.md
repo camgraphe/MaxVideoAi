@@ -696,7 +696,7 @@ Expected: 3 tests pass, 0 fail.
 Run from `frontend/` with the root environment file:
 
 ```bash
-./node_modules/.bin/tsx --env-file='/Users/adrienmillot/Desktop/MaxVideoAi V2/frontend/.env.local' --tsconfig tsconfig.json -e "import { fetchPublicBenchmarkLatency } from './server/benchmark-lab-metrics.ts'; void (async () => { const snapshot = await fetchPublicBenchmarkLatency(); console.log(JSON.stringify(snapshot, null, 2)); })();"
+./node_modules/.bin/tsx --env-file='/Users/adrienmillot/Desktop/MaxVideoAi V2/frontend/.env.local' --tsconfig=tsconfig.json -e "import { fetchPublicBenchmarkLatency } from './server/benchmark-lab-metrics.ts'; void (async () => { const snapshot = await fetchPublicBenchmarkLatency(); console.log(JSON.stringify(snapshot, null, 2)); })();"
 ```
 
 Expected: `status` is `available`; every row contains only `engineId`, `modelSlug`, `medianDurationMs`, `p90DurationMs`, and `asOf`; no row contains counts or rates.
@@ -931,7 +931,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
   },
   es: {
     meta: { title: 'Benchmarks de modelos de video IA y metodología', description: 'Compara puntuaciones editoriales de MaxVideoAI, especificaciones con fuentes y tiempos de generación medianos y P90 observados.' },
-    hero: { eyebrow: 'Investigación de MaxVideoAI', title: 'Benchmarks de modelos de video IA, explicados', intro: 'Compara puntuaciones editoriales, capacidades con fuentes y tiempos de generación observados en un solo centro de investigación.', proof: 'Creado con scorecards de MaxVideoAI, especificaciones actuales y latencia de producción anonimizada.' },
+    hero: { eyebrow: 'Investigación de MaxVideoAI', title: 'Benchmarks de modelos de video IA, explicados', intro: 'Compara puntuaciones editoriales de modelos de video, capacidades con fuentes y tiempos de generación observados en un solo centro de investigación.', proof: 'Creado con scorecards de MaxVideoAI, especificaciones actuales y latencia de producción anonimizada.' },
     nav: { scores: 'Scorecards', specs: 'Especificaciones', speed: 'Velocidad observada', method: 'Metodología' },
     evidence: [
       { title: 'Puntuaciones editoriales', body: 'Un marco coherente de 0 a 10 para calidad, movimiento, control y uso en producción.' },
@@ -1080,7 +1080,7 @@ export function buildBenchmarkPageData(
 
 - [ ] **Step 5: Implement schema builders and the route wrapper**
 
-Use `buildSeoMetadata({ locale, englishPath: '/benchmarks', titleBranding: 'none' })`, `buildMetadataUrls()`, `JsonLd`, and `localeRegions`. The complete route wrapper must stay equivalent to:
+Use `buildSeoMetadata({ locale, englishPath: '/benchmarks', titleBranding: 'none' })`, `buildMetadataUrls()`, `JsonLd`, and `localeRegions`. Preserve the shared SEO convention: reciprocal hreflang keys are generic `en`, `fr`, and `es`, plus `x-default`; Open Graph locales are `en_US`, `fr_FR`, and `es_419`, while schema language values use the corresponding regional BCP 47 values. Keep the exact public URLs `/benchmarks`, `/fr/benchmarks`, and `/es/benchmarks`. The complete route wrapper must stay equivalent to:
 
 ```tsx
 import type { Metadata } from 'next';
@@ -1512,7 +1512,7 @@ Expected visual results:
 For each locale route, verify:
 
 - self-canonical URL;
-- reciprocal `en-US`, `fr-FR`, `es-419`, and `x-default` hreflang values;
+- reciprocal `en`, `fr`, `es`, and `x-default` hreflang values, with regional `en_US`, `fr_FR`, and `es_419` Open Graph locales and corresponding regional schema language values;
 - `index,follow` behavior;
 - one `WebPage` and one `BreadcrumbList` JSON-LD payload;
 - no `Dataset` payload;

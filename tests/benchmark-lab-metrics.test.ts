@@ -85,3 +85,24 @@ test('missing database returns unavailable rather than zero metrics', async () =
   });
   assert.deepEqual(snapshot, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
 });
+
+test('query failures return unavailable without leaking errors or zero metrics', async () => {
+  const queryFn: BenchmarkQuery = async () => {
+    throw new Error('private database failure details');
+  };
+  const originalWarn = console.warn;
+  console.warn = () => {};
+  const snapshot = await (async () => {
+    try {
+      return await fetchPublicBenchmarkLatency({
+        queryFn,
+        databaseConfigured: true,
+        engines,
+      });
+    } finally {
+      console.warn = originalWarn;
+    }
+  })();
+
+  assert.deepEqual(snapshot, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
+});
