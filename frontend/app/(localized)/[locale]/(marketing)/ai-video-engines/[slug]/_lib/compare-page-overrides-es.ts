@@ -2225,7 +2225,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara LTX Video 2.0 Pro disponible con Wan 2.6 Text & Image to Video actual. LTX favorece trabajos 16:9 de alta resolución y diez segundos hasta 4K; Wan amplía los formatos y llega a 15 segundos en modos de texto o imagen, además de ofrecer una ruta separada y silenciosa con videos de referencia.',
+        'Compara LTX Video 2.0 Pro disponible con Wan 2.6 Text & Image to Video actual. LTX favorece trabajos 16:9 de hasta diez segundos y hasta 4K; Wan amplía los formatos y llega a 15 segundos en modos de texto o imagen, además de ofrecer una ruta separada y silenciosa con videos de referencia.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
@@ -2292,7 +2292,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara LTX 2.3 Fast con Seedance 2.0 cuando la decisión real sea entre generación de alta resolución con precios publicados y un conjunto de producción más amplio. Ambos llegan a 4K con audio; Seedance agrega referencias, edición de video, extensión, controles de movimiento y más formatos.',
+        'Compara LTX 2.3 Fast con Seedance 2.0 cuando la decisión real sea entre generación de alta resolución con precios publicados y un conjunto más amplio de herramientas de producción. Ambos llegan a 4K con audio; Seedance agrega referencias, edición de video, extensión, controles de movimiento y más formatos.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
@@ -2384,7 +2384,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Separar trabajos simples y avanzados',
           body:
-            'Usa 2.0 Fast para generación horizontal económica; usa 2.3 Pro para producción vertical, guiada por audio, extendida, retocada o controlada por cuadros.',
+            'Usa 2.0 Fast para generación horizontal económica; usa 2.3 Pro para producción vertical y flujos que requieran generación desde audio, extensión, retoque o control de los cuadros.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2614,7 +2614,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cambian los precios publicados entre LTX 2.0 Pro y 2.3 Pro?',
             answer:
-              'No. Sus precios por segundo coinciden en 1080p, 1440p y 4K; elige según los modos y el formato de entrega, no por el precio de resolución.',
+              'No. Sus precios por segundo coinciden en 1080p, 1440p y 4K; elige según los modos y el formato de entrega, no por el precio por resolución.',
           },
         ],
       },
@@ -2652,7 +2652,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Asignar el mejor flujo de Veo',
           body:
-            'Usa Lite para borradores económicos o entrega aprobada en 1080p; usa Veo estándar para una entrega final en 4K o producción con varias imágenes de referencia.',
+            'Usa Lite para borradores económicos o entrega aprobada en 1080p; usa Veo estándar para una entrega final en 4K o una producción con varias imágenes de referencia.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2743,7 +2743,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Por qué migrar un trabajo 1080p a LTX 2.3 Fast?',
             answer:
-              'LTX publica un menor precio por segundo en 1080p y agrega 1440p, 4K y más velocidades de cuadro para la producción actual.',
+              'LTX publica un menor precio por segundo en 1080p y agrega 1440p, 4K y más velocidades de cuadro para proyectos actuales.',
           },
           {
             question: '¿LTX 2.3 Fast puede crear un video 4K de 20 segundos?',
