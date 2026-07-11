@@ -180,7 +180,7 @@ export default async function CompareDetailPage(
     specLabels,
   });
 
-  const relatedLinks = buildRelatedComparisonLinks(canonicalSlug);
+  const relatedLinks = buildRelatedComparisonLinks(canonicalSlug, activeLocale);
 
   const faqItems = buildCompareFaqItems({
     activeLocale,

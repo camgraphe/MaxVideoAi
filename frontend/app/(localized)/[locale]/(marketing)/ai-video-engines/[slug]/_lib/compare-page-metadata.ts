@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
 import { isPublishedComparisonSlug } from '@/lib/compare-hub/data';
+import {
+  getIndexableComparisonLocales,
+  isComparisonIndexable,
+} from '@/lib/compare-hub/indexation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import type { ComparePageCopy } from './compare-page-copy';
@@ -67,6 +71,9 @@ export async function buildComparePageMetadata(props: {
   if (!isPublishedComparisonSlug(canonicalSlug)) {
     robots = { index: false, follow: true };
   }
+  if (!isComparisonIndexable(locale, canonicalSlug)) {
+    robots = { index: false, follow: true };
+  }
   if (resolved) {
     const keySpecs = await loadEngineKeySpecs();
     const leftKeySpecs = keySpecs.get(resolved.left.modelSlug)?.keySpecs ?? undefined;
@@ -112,6 +119,7 @@ export async function buildComparePageMetadata(props: {
     title,
     description,
     englishPath: `/ai-video-engines/${canonicalSlug}`,
+    availableLocales: getIndexableComparisonLocales(canonicalSlug),
     titleBranding: metaOverride.titleBranding ?? 'auto',
     robots,
   });

@@ -122,3 +122,106 @@ test('wave 1 keeps English and every comparison carrying a positive safety signa
     );
   }
 });
+
+test('wave 1 applies locale exclusions to comparison metadata and hreflang alternates', async () => {
+  const { getIndexableComparisonLocales, isComparisonIndexable } = await import(
+    '../frontend/lib/compare-hub/indexation.ts'
+  );
+  const { buildSeoMetadata } = await import('../frontend/lib/seo/metadata.ts');
+  const frenchSelectedSlug = 'ltx-2-vs-veo-3-1-lite';
+  const spanishSelectedSlug = 'kling-3-pro-vs-minimax-hailuo-02-text';
+  const metadataFor = (locale: 'en' | CuratedLocale, slug: string) => {
+    const excluded = !isComparisonIndexable(locale, slug);
+    return buildSeoMetadata({
+      locale,
+      title: 'Comparison metadata contract',
+      description: 'Comparison metadata contract for locale-aware indexation.',
+      englishPath: `/ai-video-engines/${slug}`,
+      availableLocales: getIndexableComparisonLocales(slug),
+      robots: excluded ? { index: false, follow: true } : undefined,
+    });
+  };
+
+  const [frenchSelected, spanishSelected, frenchSelectedEnglish, spanishSelectedEnglish, frenchUnselected] =
+    [
+      metadataFor('fr', frenchSelectedSlug),
+      metadataFor('es', spanishSelectedSlug),
+      metadataFor('en', frenchSelectedSlug),
+      metadataFor('en', spanishSelectedSlug),
+      metadataFor('fr', spanishSelectedSlug),
+    ];
+
+  assert.deepEqual(frenchSelected.robots, { index: false, follow: true });
+  assert.equal(
+    frenchSelected.alternates?.canonical,
+    `https://maxvideoai.com/fr/comparatif/${frenchSelectedSlug}`,
+  );
+  assert.deepEqual(frenchSelected.alternates?.languages, {
+    en: `https://maxvideoai.com/ai-video-engines/${frenchSelectedSlug}`,
+    es: `https://maxvideoai.com/es/comparativa/${frenchSelectedSlug}`,
+    'x-default': `https://maxvideoai.com/ai-video-engines/${frenchSelectedSlug}`,
+  });
+
+  assert.deepEqual(spanishSelected.robots, { index: false, follow: true });
+  assert.equal(
+    spanishSelected.alternates?.canonical,
+    `https://maxvideoai.com/es/comparativa/${spanishSelectedSlug}`,
+  );
+  assert.deepEqual(spanishSelected.alternates?.languages, {
+    en: `https://maxvideoai.com/ai-video-engines/${spanishSelectedSlug}`,
+    fr: `https://maxvideoai.com/fr/comparatif/${spanishSelectedSlug}`,
+    'x-default': `https://maxvideoai.com/ai-video-engines/${spanishSelectedSlug}`,
+  });
+
+  assert.notEqual(
+    typeof frenchSelectedEnglish.robots === 'object'
+      ? frenchSelectedEnglish.robots?.index
+      : frenchSelectedEnglish.robots,
+    false,
+  );
+  assert.notEqual(
+    typeof spanishSelectedEnglish.robots === 'object'
+      ? spanishSelectedEnglish.robots?.index
+      : spanishSelectedEnglish.robots,
+    false,
+  );
+  assert.notEqual(
+    typeof frenchUnselected.robots === 'object' ? frenchUnselected.robots?.index : frenchUnselected.robots,
+    false,
+  );
+  assert.equal(
+    frenchUnselected.alternates?.canonical,
+    `https://maxvideoai.com/fr/comparatif/${spanishSelectedSlug}`,
+  );
+});
+
+test('wave 1 metadata builder preserves order-query noindex and applies the locale policy', () => {
+  const metadataSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-metadata.ts',
+    'utf8',
+  );
+
+  assert.match(metadataSource, /isComparisonIndexable\(locale, canonicalSlug\)/);
+  assert.match(
+    metadataSource,
+    /availableLocales:\s*getIndexableComparisonLocales\(canonicalSlug\)/,
+  );
+  assert.match(
+    metadataSource,
+    /if \(typeof searchParams\?\.order === 'string' && searchParams\.order\.trim\(\)\) \{\s*robots = \{ index: false, follow: true \};\s*\}/,
+  );
+});
+
+test('wave 1 applies locale indexation policy when accepting related comparison destinations', () => {
+  const relatedSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-related-links.ts',
+    'utf8',
+  );
+  const pageSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/page.tsx',
+    'utf8',
+  );
+
+  assert.match(relatedSource, /isComparisonIndexable\(locale, canonicalPair\)/);
+  assert.match(pageSource, /buildRelatedComparisonLinks\(canonicalSlug, activeLocale\)/);
+});
