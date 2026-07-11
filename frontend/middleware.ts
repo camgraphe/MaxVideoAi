@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { isbot as detectBot } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
+import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 import {
   LOGIN_PATH,
@@ -33,6 +34,7 @@ const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
+  const forwardedHost = req.headers.get('x-forwarded-host') ?? host;
   const userAgent = req.headers.get('user-agent') ?? '';
   const isLighthouseAudit = /lighthouse/i.test(userAgent);
   const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
@@ -43,6 +45,16 @@ export async function middleware(req: NextRequest) {
     req.nextUrl.searchParams.get('nolocale') === '1';
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
   const hasLogoutIntentCookie = logoutIntentCookieValue === '1';
+  const mcpRewritePath = getMcpApiRewritePath(
+    forwardedHost,
+    req.nextUrl.pathname,
+    process.env.MCP_API_HOST ?? 'api.maxvideoai.com'
+  );
+  if (mcpRewritePath) {
+    const target = req.nextUrl.clone();
+    target.pathname = mcpRewritePath;
+    return NextResponse.rewrite(target);
+  }
   if (host.startsWith('www.')) {
     const url = new URL(req.url);
     url.host = host.replace(/^www\./, '');
