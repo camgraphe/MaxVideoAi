@@ -1,7 +1,17 @@
 import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
 
 export const DEFAULT_NEXT_PATH = '/generate';
-export const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/admin', '/connect'];
+export const NEXT_PATH_PREFIXES = [
+  '/app',
+  '/generate',
+  '/dashboard',
+  '/jobs',
+  '/billing',
+  '/settings',
+  '/admin',
+  '/connect',
+  '/oauth',
+];
 export const PENDING_GOOGLE_LOGIN_STORAGE_KEY = 'mvai.pending-google-login.v1';
 export const PENDING_GOOGLE_LOGIN_TTL_MS = 10 * 60 * 1000;
 
