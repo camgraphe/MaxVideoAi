@@ -6,6 +6,7 @@ import { query } from '@/lib/db';
 import { recordMockWalletTopUp } from '@/lib/wallet';
 import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/currency';
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
+import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -712,6 +713,8 @@ async function handleCheckoutSession(session: Stripe.Checkout.Session) {
       topup_tier_label: session.metadata.topup_tier_label ?? null,
       analytics_consent: session.metadata.analytics_consent ?? null,
       ga_client_id: session.metadata.ga_client_id ?? null,
+      first_wallet_topup: session.metadata.first_wallet_topup ?? null,
+      ...buildTopupAttributionGa4Params(session.metadata),
     },
     originalAmountCents: settlementAmountCents ?? amountCents,
     originalCurrency: settlementCurrency,
@@ -782,6 +785,8 @@ async function handlePaymentIntent(intent: Stripe.PaymentIntent) {
         topup_tier_label: intent.metadata?.topup_tier_label ?? null,
         analytics_consent: intent.metadata?.analytics_consent ?? null,
         ga_client_id: intent.metadata?.ga_client_id ?? null,
+        first_wallet_topup: intent.metadata?.first_wallet_topup ?? null,
+        ...buildTopupAttributionGa4Params(intent.metadata),
       },
       originalAmountCents: settlementAmountCents ?? amountCents,
       originalCurrency,
@@ -1052,6 +1057,8 @@ async function recordTopup({
     const consentValue = typeof metadataRecord.analytics_consent === 'string' ? metadataRecord.analytics_consent : '';
     const analyticsConsentGranted = consentValue.toLowerCase() === 'granted';
     if (analyticsConsentGranted) {
+      const attributionParams = buildTopupAttributionGa4Params(metadataRecord);
+      const isFirstWalletTopup = String(metadataRecord.first_wallet_topup ?? '').toLowerCase() === 'true';
       const gaClientId = extractGaClientId(
         typeof metadataRecord.ga_client_id === 'string' ? metadataRecord.ga_client_id : null
       );
@@ -1064,6 +1071,9 @@ async function recordTopup({
       const purchaseValueMinor = normalizedSettlementAmount ?? normalizedWalletAmount;
       const purchaseCurrency = settlementCurrencyUpper;
       const commonParams = {
+        ...attributionParams,
+        funnel_stage: 'topup_completed',
+        is_first_wallet_topup: isFirstWalletTopup,
         value: minorToMajorAmount(purchaseValueMinor),
         currency: purchaseCurrency,
         wallet_currency: walletCurrencyUpper,

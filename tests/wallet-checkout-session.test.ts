@@ -165,6 +165,16 @@ test('wallet route honors bearer auth tokens sent by billing clients', () => {
   assert.match(routeSource, /const userId = await resolveAuthenticatedUser\(req\);/);
 });
 
+test('wallet route validates and propagates consented journey attribution', () => {
+  const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+
+  assert.match(routeSource, /normalizeWalletAttribution\(body\.analyticsJourney, analyticsConsentGranted\)/);
+  assert.match(routeSource, /buildWalletAttributionMetadata/);
+  assert.match(routeSource, /buildCheckoutAttemptAttributionMetadata/);
+  assert.match(routeSource, /attribution: walletAttribution/);
+  assert.equal((routeSource.match(/hasAnalyticsConsent\(req\)/g) ?? []).length, 1);
+});
+
 test('wallet GET aggregates receipt rows in SQL instead of returning the ledger', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
 
