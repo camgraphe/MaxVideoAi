@@ -1,0 +1,126 @@
+{
+  "version": "1.0.0",
+  "effectiveDate": "2026-07-11",
+  "scoreScale": {
+    "minimum": 0,
+    "maximum": 10,
+    "anchors": [
+      { "score": 2, "meaning": "Major visible failures prevent practical use." },
+      { "score": 5, "meaning": "Usable in selected shots with clear limitations." },
+      { "score": 8, "meaning": "Strong production-ready behavior for the tested criterion." },
+      { "score": 10, "meaning": "Exceptional behavior with no material issue in the evaluated outputs." }
+    ]
+  },
+  "overallFormula": {
+    "method": "arithmetic_mean",
+    "fields": ["fidelity", "motion", "consistency"],
+    "roundToDecimals": 1
+  },
+  "criteria": [
+    { "id": "fidelity", "label": "Prompt adherence", "definition": "How closely the output follows requested subjects, actions, composition, and constraints.", "includedInOverall": true },
+    { "id": "visualQuality", "label": "Visual quality", "definition": "Perceived detail, realism, lighting, material rendering, and absence of visible artifacts.", "includedInOverall": false },
+    { "id": "motion", "label": "Motion realism", "definition": "Smoothness, physical plausibility, camera movement, and temporal behavior of moving subjects.", "includedInOverall": true },
+    { "id": "consistency", "label": "Temporal consistency", "definition": "Identity, object, background, and style stability across the generated clip.", "includedInOverall": true },
+    { "id": "anatomy", "label": "Human fidelity", "definition": "Faces, hands, limbs, body proportions, contact, and human-object interactions.", "includedInOverall": false },
+    { "id": "textRendering", "label": "Text legibility", "definition": "Accuracy and stability of requested words, labels, interface elements, and signage.", "includedInOverall": false },
+    { "id": "lipsyncQuality", "label": "Audio and lip sync", "definition": "Alignment between visible speech, dialogue timing, and generated audio when the model supports audio.", "includedInOverall": false },
+    { "id": "sequencingQuality", "label": "Multi-shot sequencing", "definition": "Continuity, narrative order, and identity preservation across explicit shot changes.", "includedInOverall": false },
+    { "id": "controllability", "label": "Controllability", "definition": "Reliability of camera, reference, framing, and other supported production controls.", "includedInOverall": false },
+    { "id": "speedStability", "label": "Speed and stability", "definition": "Editorial assessment of delivery consistency; live median and P90 latency are published separately.", "includedInOverall": false },
+    { "id": "pricing", "label": "Value score", "definition": "Relative production value at the current MaxVideoAI price position; exact live pricing remains on pricing and generation surfaces.", "includedInOverall": false }
+  ],
+  "promptPack": [
+    {
+      "id": "hands-object",
+      "title": "Hands and object interaction",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Documentary-style medium close-up of a ceramic artist at a sunlit studio table. The artist picks up a small blue cup with the left hand, rotates it slowly with both hands, checks the rim, and places it beside a wooden carving tool. Keep five natural fingers on each hand, believable contact, stable cup geometry, and one continuous camera take."
+    },
+    {
+      "id": "two-character-continuity",
+      "title": "Two-character identity continuity",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Two distinct friends meet beside a train-station clock at golden hour. One wears a red denim jacket and round glasses; the other wears a navy wool coat and carries a folded paper map. They exchange the map, point toward platform seven, then walk together toward the camera. Preserve each face, outfit, body position, and the map throughout one continuous shot."
+    },
+    {
+      "id": "fast-motion-camera",
+      "title": "Fast motion and camera tracking",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Low-angle tracking shot beside a cyclist moving quickly through a wet city street just after rain. The camera accelerates smoothly, passes a reflective bus shelter, then arcs around the cyclist without changing the bicycle frame, wheel shape, clothing, or direction of travel. Preserve realistic tire contact, water spray, motion blur, reflections, and stable urban geometry."
+    },
+    {
+      "id": "product-text",
+      "title": "Product and text legibility",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Premium studio product shot of a matte black coffee can rotating slowly on a dark stone pedestal. The front label must read exactly “MAX NORTH” in large white letters with “COLD BREW” directly below in smaller gold letters. Use a controlled rim light and a gentle push-in. Keep the can cylindrical, the typography readable, and every letter unchanged for the full shot."
+    },
+    {
+      "id": "cinematic-materials",
+      "title": "Cinematic lighting and materials",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Cinematic night-market scene in light rain, photographed at eye level with a slow forward dolly. Warm paper lanterns reflect on wet pavement while steam rises from a stainless-steel food cart. A vendor in a green apron serves a ceramic bowl to a customer. Preserve realistic skin, fabric, metal, ceramic, steam, rain, reflections, and consistent lighting without flicker."
+    },
+    {
+      "id": "camera-control",
+      "title": "Constrained camera control",
+      "language": "en-US",
+      "appliesTo": "all-video-models",
+      "prompt": "Perfectly centered architectural shot of a modern concrete gallery with a single red chair in the middle. Begin with a locked symmetrical wide frame for two seconds, then perform one slow straight dolly forward. Do not pan, tilt, roll, orbit, zoom, add objects, move the chair, or change the lighting. Keep vertical lines straight and the composition symmetrical."
+    },
+    {
+      "id": "dialogue-lipsync",
+      "title": "Dialogue and lip synchronization",
+      "language": "en-US",
+      "appliesTo": "audio-capable-models",
+      "prompt": "Medium close-up of a presenter in a quiet daylight studio looking directly into the camera. The presenter says exactly: “Every frame should feel intentional, clear, and ready to share.” Use a natural conversational pace, clean studio sound, stable facial identity, realistic blinking, and precise lip movement synchronized to every spoken word. No subtitles and no background music."
+    },
+    {
+      "id": "three-shot-sequence",
+      "title": "Three-shot sequencing",
+      "language": "en-US",
+      "appliesTo": "multi-shot-capable-models",
+      "prompt": "Create a coherent three-shot sequence featuring the same woman in a yellow raincoat and the same silver compact camera: shot one, a wide view as she enters a foggy pine forest; shot two, a close-up as she raises the camera and takes one photograph; shot three, an over-the-shoulder view of the captured deer on the camera screen. Preserve her identity, clothing, camera, weather, direction, and color grade across all shots."
+    }
+  ],
+  "requiredRunMetadata": [
+    "evaluationDate",
+    "modelVersion",
+    "evaluator",
+    "reviewer",
+    "promptPackVersion",
+    "sampleSize",
+    "resolution",
+    "aspectRatio",
+    "duration",
+    "mode",
+    "controls",
+    "retryCount",
+    "failureCount"
+  ],
+  "operationalLatency": {
+    "windowDays": 30,
+    "minimumCompletedJobs": 30,
+    "minimumDistinctUsers": 5,
+    "medianPercentile": 0.5,
+    "slowPercentile": 0.9
+  },
+  "limitations": [
+    "Generative outputs vary between runs.",
+    "Not every model supports every criterion or prompt type.",
+    "Provider capacity and queues change over time.",
+    "Production traffic is not a controlled experiment.",
+    "MaxVideoAI sells access to the compared models and discloses that commercial interest."
+  ],
+  "changelog": [
+    {
+      "date": "2026-07-11",
+      "version": "1.0.0",
+      "summary": "Published the initial score definitions, current overall formula, canonical prompt pack, and rolling latency rules."
+    }
+  ]
+}
