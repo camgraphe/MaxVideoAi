@@ -3,17 +3,19 @@
 import { Button, ButtonLink } from '@/components/ui/Button';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 
+export type ImageAuthGateModalProps = {
+  open: boolean;
+  copy: ImageWorkspaceCopy['authGate'];
+  loginRedirectTarget: string;
+  onClose: () => void;
+};
+
 export function ImageAuthGateModal({
   open,
   copy,
   loginRedirectTarget,
   onClose,
-}: {
-  open: boolean;
-  copy: ImageWorkspaceCopy['authGate'];
-  loginRedirectTarget: string;
-  onClose: () => void;
-}) {
+}: ImageAuthGateModalProps) {
   if (!open) return null;
 
   return (

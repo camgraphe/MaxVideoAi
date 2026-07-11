@@ -1,7 +1,19 @@
-import { GalleryRail } from '@/components/GalleryRail';
+'use client';
+
+import dynamic from 'next/dynamic';
+import type { GalleryRailProps } from '@/components/GalleryRail';
 import type { EngineCaps } from '@/types/engines';
 import type { GroupSummary } from '@/types/groups';
 import type { Job } from '@/types/jobs';
+import { GalleryRailSkeleton } from '../../_components/WorkspaceBootSkeletons';
+
+const GalleryRail = dynamic<GalleryRailProps>(
+  () => import('@/components/GalleryRail').then((mod) => mod.GalleryRail),
+  {
+    ssr: false,
+    loading: () => <GalleryRailSkeleton />,
+  }
+);
 
 type ImageWorkspaceGalleryRailProps = {
   activeGroups: GroupSummary[];

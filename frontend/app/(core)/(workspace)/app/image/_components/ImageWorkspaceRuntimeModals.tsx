@@ -5,8 +5,8 @@ import type { Dispatch, SetStateAction } from 'react';
 import type { MediaLightboxEntry } from '@/components/MediaLightbox';
 import type { CharacterReferenceSelection } from '@/types/image-generation';
 import type { VideoGroup } from '@/types/video-groups';
-import { ImageAuthGateModal } from './ImageAuthGateModal';
-import { ImageLibraryModal } from './ImageLibraryModal';
+import type { ImageAuthGateModalProps } from './ImageAuthGateModal';
+import type { ImageLibraryModalProps } from './ImageLibraryModal';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 import type {
   ImageLibraryModalState,
@@ -15,6 +15,16 @@ import type {
 
 const GroupViewerModal = dynamic(
   () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
+  { ssr: false }
+);
+
+const ImageAuthGateModal = dynamic<ImageAuthGateModalProps>(
+  () => import('./ImageAuthGateModal').then((mod) => mod.ImageAuthGateModal),
+  { ssr: false }
+);
+
+const ImageLibraryModal = dynamic<ImageLibraryModalProps>(
+  () => import('./ImageLibraryModal').then((mod) => mod.ImageLibraryModal),
   { ssr: false }
 );
 
@@ -64,12 +74,14 @@ export function ImageWorkspaceRuntimeModals({
           onSaveToLibrary={handleSaveVariantToLibrary}
         />
       ) : null}
-      <ImageAuthGateModal
-        open={authModalOpen}
-        copy={resolvedCopy.authGate}
-        loginRedirectTarget={loginRedirectTarget}
-        onClose={() => setAuthModalOpen(false)}
-      />
+      {authModalOpen ? (
+        <ImageAuthGateModal
+          open
+          copy={resolvedCopy.authGate}
+          loginRedirectTarget={loginRedirectTarget}
+          onClose={() => setAuthModalOpen(false)}
+        />
+      ) : null}
       {libraryModal.open ? (
         <ImageLibraryModal
           open={libraryModal.open}
