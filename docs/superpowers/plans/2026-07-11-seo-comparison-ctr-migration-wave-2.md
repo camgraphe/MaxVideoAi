@@ -152,6 +152,35 @@ function assertUniqueCopy(
   seen.set(normalized, slug);
 }
 
+function normalizeLocalizedValue(value: string | readonly string[] | undefined): string {
+  const parts = typeof value === 'string' ? [value] : (value ?? []);
+  return parts
+    .join('\n')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function assertLocalizedField(
+  entries: Record<Locale, ComparePageOverride>,
+  slug: string,
+  field: string,
+  select: (entry: ComparePageOverride) => string | readonly string[] | undefined,
+): void {
+  const localePairs = [
+    ['en', 'fr'],
+    ['en', 'es'],
+    ['fr', 'es'],
+  ] as const;
+
+  localePairs.forEach(([leftLocale, rightLocale]) => {
+    assert.notEqual(
+      normalizeLocalizedValue(select(entries[leftLocale])),
+      normalizeLocalizedValue(select(entries[rightLocale])),
+      `${leftLocale.toUpperCase()}/${rightLocale.toUpperCase()} ${field} should be localized for ${slug}`,
+    );
+  });
+}
+
 function assertCompleteOverride(locale: Locale, slug: string): void {
   const entry = getEntry(locale, slug);
   const title = entry.meta?.title ?? '';
@@ -265,15 +294,36 @@ test('legacy comparisons explain the migration or stay decision in every locale'
   }
 });
 
-test('French and LATAM Spanish are localized instead of copying English', () => {
+test('English, French, and LATAM Spanish are localized instead of copying each other', () => {
   TARGET_COMPARISONS.forEach(([slug]) => {
-    const english = getEntry('en', slug);
-    const french = getEntry('fr', slug);
-    const spanish = getEntry('es', slug);
-    assert.notEqual(french.meta?.title, english.meta?.title, `FR title should be localized for ${slug}`);
-    assert.notEqual(spanish.meta?.title, english.meta?.title, `ES title should be localized for ${slug}`);
-    assert.notEqual(french.quickVerdict?.body, english.quickVerdict?.body, `FR verdict should be localized for ${slug}`);
-    assert.notEqual(spanish.quickVerdict?.body, english.quickVerdict?.body, `ES verdict should be localized for ${slug}`);
+    const entries = {
+      en: getEntry('en', slug),
+      fr: getEntry('fr', slug),
+      es: getEntry('es', slug),
+    };
+
+    assertLocalizedField(entries, slug, 'meta.title', (entry) => entry.meta?.title);
+    assertLocalizedField(entries, slug, 'meta.description', (entry) => entry.meta?.description);
+    assertLocalizedField(entries, slug, 'heroIntro', (entry) => entry.heroIntro);
+    assertLocalizedField(entries, slug, 'quickVerdict.body', (entry) => entry.quickVerdict?.body);
+
+    const cardCount = Math.max(...Object.values(entries).map((entry) => entry.topCards?.length ?? 0));
+    for (let index = 0; index < cardCount; index += 1) {
+      assertLocalizedField(entries, slug, `topCards[${index}].title+body`, (entry) => {
+        const card = entry.topCards?.[index];
+        return card ? [card.title, card.body] : undefined;
+      });
+    }
+
+    const faqCount = Math.max(...Object.values(entries).map((entry) => entry.faq?.items.length ?? 0));
+    for (let index = 0; index < faqCount; index += 1) {
+      assertLocalizedField(entries, slug, `faq.items[${index}].question+answer`, (entry) => {
+        const item = entry.faq?.items[index];
+        if (!item) return undefined;
+        const answers = Array.isArray(item.answer) ? item.answer : [item.answer];
+        return [item.question, ...answers];
+      });
+    }
   });
 });
 
@@ -286,8 +336,19 @@ test('Spanish wave-2 copy stays LATAM-neutral', () => {
 
 test('wave-2 links resolve to public model and comparison routes', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
-    TARGET_COMPARISONS.forEach(([slug]) => {
-      for (const link of getEntry(locale, slug).primaryLinks ?? []) {
+    TARGET_COMPARISONS.forEach(([slug, leftSlug, rightSlug]) => {
+      const links = getEntry(locale, slug).primaryLinks ?? [];
+      const hrefs = links.map((link) => link.href);
+      assert.ok(
+        hrefs.includes(`/models/${leftSlug}`),
+        `${locale} hrefs should include left model /models/${leftSlug} for ${slug}`,
+      );
+      assert.ok(
+        hrefs.includes(`/models/${rightSlug}`),
+        `${locale} hrefs should include right model /models/${rightSlug} for ${slug}`,
+      );
+
+      for (const link of links) {
         if (link.href.startsWith('/models/')) {
           const model = CATALOG_BY_SLUG.get(link.href.slice('/models/'.length));
           assert.ok(model, `missing model route ${link.href}`);

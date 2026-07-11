@@ -1684,7 +1684,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'Luma Ray 2 vs Flash : vitesse, qualité et usages',
         description:
-          'Comparez Luma Ray 2 et Ray 2 Flash sur la vitesse, le workflow historique, Modify, Reframe, la durée et la migration vers Luma actuel.',
+          'Comparez Luma Ray 2 et Ray 2 Flash sur la vitesse, le workflow historique, Modify, Reframe, la durée et la migration vers Luma Ray 3.2.',
         titleBranding: 'none',
       },
       heroIntro:
@@ -1889,7 +1889,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Comparez Seedance 2.0 et Google Veo 3.1 Fast pour choisir entre un workflow étendu de 15 secondes, riche en références et en outils d’édition, et un workflow de production rapide limité à huit secondes. Les deux prennent en charge l’audio et la 4K, mais organisent leurs contrôles et leur tarification différemment.',
+        'Comparez Seedance 2.0 et Google Veo 3.1 Fast pour choisir entre un workflow riche en références et en outils d’édition pour des clips allant jusqu’à 15 secondes, et un workflow de production rapide limité à huit secondes. Les deux prennent en charge l’audio et la 4K, mais organisent leurs contrôles et leur tarification différemment.',
       quickVerdict: {
         title: 'Verdict rapide',
         body:
