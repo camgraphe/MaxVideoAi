@@ -1,4 +1,4 @@
-import { LOCALE_OPTIONS, type Locale } from './login-copy';
+import { LOCALE_OPTIONS, type AuthMode, type Locale } from './login-copy';
 
 export const DEFAULT_NEXT_PATH = '/generate';
 export const NEXT_PATH_PREFIXES = ['/app', '/generate', '/dashboard', '/jobs', '/billing', '/settings', '/admin', '/connect'];
@@ -99,4 +99,7 @@ export function resolveGoogleAuthCompletionEvent(
   mode: PendingGoogleAuthMode
 ): GoogleAuthCompletionEvent {
   return mode === 'signup' ? 'sign_up_completed' : 'login_completed';
+}
+export function shouldTrackGoogleSignupStart(mode: AuthMode): boolean {
+  return mode === 'signup';
 }

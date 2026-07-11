@@ -32,6 +32,7 @@ export {
   getCanonicalCompareSlug,
   resolveEngines,
   resolveExcludedCompareRedirect,
+  resolveLegacyCompareRedirect,
   reverseCompareSlug,
 } from './compare-page-routing';
 export {

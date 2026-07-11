@@ -2,14 +2,20 @@
 
 import { useCallback, useRef } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
-import { dispatchGaEvent } from '@/lib/analytics/ga-events';
+import {
+  clearPendingTopupCancelledEvent,
+  persistPendingTopupCancelledEvent,
+  readPendingTopupCancelledEvent,
+} from '@/lib/analytics-client';
+import { hasAdsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { dispatchGaEvent, dispatchGoogleAdsConversion } from '@/lib/analytics/ga-events';
+import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import type { TopupQuote } from '../_lib/billing-types';
 
 const GOOGLE_ADS_CONVERSION_TARGET = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID ?? 'AW-992154028/7oDUCMuC9rQbEKyjjNkD';
 const GOOGLE_ADS_CONVERSION_CURRENCY = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_CURRENCY ?? 'EUR';
 const GOOGLE_ADS_CONVERSION_VALUE_ENV = Number(process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_VALUE ?? 1);
 const GOOGLE_ADS_CONVERSION_VALUE_FALLBACK = Number.isFinite(GOOGLE_ADS_CONVERSION_VALUE_ENV) ? GOOGLE_ADS_CONVERSION_VALUE_ENV : 1;
-const PENDING_TOPUP_CANCELLED_STORAGE_KEY = 'mv-pending-topup-cancelled-event';
 
 export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>) {
   const conversionSentRef = useRef(false);
@@ -17,6 +23,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
   const triggerGoogleAdsConversion = useCallback((value?: number, currency?: string) => {
     if (typeof window === 'undefined') return;
     if (!GOOGLE_ADS_CONVERSION_TARGET) return;
+    if (!hasAdsConsentInBrowser()) return;
     if (conversionSentRef.current) return;
     conversionSentRef.current = true;
 
@@ -27,35 +34,7 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
       currency: currency ?? GOOGLE_ADS_CONVERSION_CURRENCY,
     };
 
-    const dispatch = (attempt: number) => {
-      const gtag = (window as typeof window & { gtag?: (...args: unknown[]) => void }).gtag;
-      if (typeof gtag === 'function') {
-        gtag('event', 'conversion', payload);
-        return;
-      }
-      if (attempt >= 20) return;
-      window.setTimeout(() => dispatch(attempt + 1), 200);
-    };
-
-    dispatch(0);
-  }, []);
-
-  const persistPendingTopupCancelled = useCallback((payload: Record<string, unknown>) => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify(payload));
-    } catch {
-      // ignore storage failures
-    }
-  }, []);
-
-  const clearPendingTopupCancelled = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    try {
-      window.sessionStorage.removeItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY);
-    } catch {
-      // ignore storage failures
-    }
+    void dispatchGoogleAdsConversion(payload, { maxAttempts: 20, retryDelayMs: 200 });
   }, []);
 
   const buildTopupAnalyticsPayload = useCallback(
@@ -103,10 +82,10 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
   const triggerTopupFailed = useCallback(
     (amountCents: number | null | undefined, chargeCurrency: string, reason?: string) => {
       const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
-      if (reason) {
-        payload.error_message = String(reason).slice(0, 120);
-      }
-      void dispatchGaEvent('topup_failed', payload);
+      void dispatchGaEvent('topup_failed', {
+        ...payload,
+        failure_category: classifyTopupFailure(reason),
+      });
     },
     [buildTopupAnalyticsPayload]
   );
@@ -114,35 +93,25 @@ export function useBillingTopupAnalytics(topupQuotes: Record<number, TopupQuote>
   const triggerTopupCancelled = useCallback(
     (amountCents: number | null | undefined, chargeCurrency: string) => {
       const payload = buildTopupAnalyticsPayload(amountCents, chargeCurrency);
-      persistPendingTopupCancelled(payload);
+      persistPendingTopupCancelledEvent(payload);
       void dispatchGaEvent('topup_cancelled', payload, { maxAttempts: 180, retryDelayMs: 500 }).then((sent) => {
         if (sent) {
-          clearPendingTopupCancelled();
+          clearPendingTopupCancelledEvent();
         }
       });
     },
-    [buildTopupAnalyticsPayload, clearPendingTopupCancelled, persistPendingTopupCancelled]
+    [buildTopupAnalyticsPayload]
   );
 
   const replayPendingTopupCancelled = useCallback(() => {
-    if (typeof window === 'undefined') return;
-    let parsedPayload: Record<string, unknown> | null = null;
-    try {
-      const raw = window.sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY);
-      if (!raw) return;
-      const parsed = JSON.parse(raw) as unknown;
-      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return;
-      parsedPayload = parsed as Record<string, unknown>;
-    } catch {
-      return;
-    }
+    const parsedPayload = readPendingTopupCancelledEvent();
     if (!parsedPayload) return;
     void dispatchGaEvent('topup_cancelled', parsedPayload, { maxAttempts: 180, retryDelayMs: 500 }).then((sent) => {
       if (sent) {
-        clearPendingTopupCancelled();
+        clearPendingTopupCancelledEvent();
       }
     });
-  }, [clearPendingTopupCancelled]);
+  }, []);
 
   return {
     replayPendingTopupCancelled,

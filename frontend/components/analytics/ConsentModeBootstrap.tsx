@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import Script from 'next/script';
 import { suppressLoadedAnalyticsForExcludedRoute } from '@/lib/analytics-client';
+import {
+  ANALYTICS_CONSENT_STORAGE_KEY,
+  hasAnalyticsConsentInBrowser,
+} from '@/lib/analytics/consent-client';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 const GA_ID =
@@ -15,15 +19,6 @@ const GA_ID =
 const DISABLE_GA =
   process.env.NEXT_PUBLIC_DISABLE_GA === '1' ||
   process.env.NODE_ENV === 'test';
-
-function hasConsent() {
-  if (typeof window === 'undefined') return false;
-  try {
-    return window.localStorage.getItem('mv-consent-analytics') === 'granted';
-  } catch {
-    return false;
-  }
-}
 
 function isLighthouseRun() {
   if (typeof navigator === 'undefined') return false;
@@ -54,7 +49,7 @@ export default function ConsentModeBootstrap() {
   }, [routeContext.excludedFromGa4]);
 
   useEffect(() => {
-    const syncFromStorage = () => setAnalyticsConsentGranted(hasConsent());
+    const syncFromStorage = () => setAnalyticsConsentGranted(hasAnalyticsConsentInBrowser());
 
     const handleConsentUpdated = (event: Event) => {
       const detail = (event as CustomEvent<ConsentEventDetail>).detail;
@@ -66,7 +61,7 @@ export default function ConsentModeBootstrap() {
     };
 
     const handleStorage = (event: StorageEvent) => {
-      if (event.key && event.key !== 'mv-consent-analytics') return;
+      if (event.key && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
       syncFromStorage();
     };
 

@@ -6,6 +6,26 @@ import {
 } from '../frontend/server/checkout-session-reuse';
 
 const now = 1_800_000;
+const attribution = {
+  journey: {
+    version: 1 as const,
+    journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+    cohortWeek: '2026-W28',
+    firstSource: 'google',
+    firstMedium: 'cpc',
+    lastSource: 'google',
+    lastMedium: 'cpc',
+  },
+  fingerprint: 'a'.repeat(32),
+};
+const openSession = {
+  clientSecret: 'cs_secret_123',
+  created: 1_799_000,
+  expiresAt: 1_801_000,
+  now,
+  paymentStatus: 'unpaid',
+  status: 'open',
+};
 
 assert.equal(
   EXPRESS_CHECKOUT_REUSE_WINDOW_SECONDS,
@@ -63,4 +83,40 @@ assert.equal(
   }),
   false,
   'an expired session must not be reused'
+);
+
+assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: {}, attribution }), false);
+assert.equal(
+  isReusableStripeCheckoutSession({
+    ...openSession,
+    metadata: {
+      journey_id: attribution.journey.journeyId,
+      attribution_fingerprint: attribution.fingerprint,
+    },
+    attribution,
+  }),
+  true
+);
+assert.equal(
+  isReusableStripeCheckoutSession({
+    ...openSession,
+    metadata: {
+      journey_id: attribution.journey.journeyId,
+      attribution_fingerprint: 'b'.repeat(32),
+    },
+    attribution,
+  }),
+  false
+);
+assert.equal(isReusableStripeCheckoutSession({ ...openSession, metadata: {}, attribution: null }), true);
+assert.equal(
+  isReusableStripeCheckoutSession({
+    ...openSession,
+    metadata: {
+      journey_id: attribution.journey.journeyId,
+      attribution_fingerprint: attribution.fingerprint,
+    },
+    attribution: null,
+  }),
+  false
 );

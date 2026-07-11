@@ -1,3 +1,5 @@
+import type { WalletAnalyticsJourney } from '@/lib/analytics/journey-contract';
+
 export type HostedWalletCheckoutFailureReason =
   | 'authentication'
   | 'validation'
@@ -11,6 +13,7 @@ export type HostedWalletCheckoutInput = {
   locale: string;
   accessToken: string | null;
   captchaToken?: string;
+  analyticsJourney?: WalletAnalyticsJourney | null;
 };
 
 export type HostedWalletCheckoutResult =
@@ -150,6 +153,7 @@ export async function requestHostedWalletCheckout(
         currency: currency.toLowerCase(),
         locale: input.locale,
         ...(input.captchaToken ? { captchaToken: input.captchaToken } : {}),
+        ...(input.analyticsJourney ? { analyticsJourney: input.analyticsJourney } : {}),
       }),
     });
     const payload = await response.json().catch(() => null);

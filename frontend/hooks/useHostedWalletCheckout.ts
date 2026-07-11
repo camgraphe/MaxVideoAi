@@ -4,6 +4,7 @@ import { loadStripe, type Stripe } from '@stripe/stripe-js';
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { recordCheckoutInteractionEvent, type CheckoutInteractionSource } from '@/lib/analytics/checkout-interaction-events';
+import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
 import {
   beginHostedWalletCheckoutAttempt,
   clearPendingWalletCheckoutReturn,
@@ -129,12 +130,14 @@ export function useHostedWalletCheckout({
     const submittedCaptchaToken = challengeState.captchaToken;
 
     try {
+      const analyticsJourney = readWalletAnalyticsJourney();
       const result = await requestHostedWalletCheckout({
         amountCents,
         currency,
         locale,
         accessToken,
         captchaToken: submittedCaptchaToken ?? undefined,
+        analyticsJourney,
       });
 
       if (result.kind === 'captcha_required') {

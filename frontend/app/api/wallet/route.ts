@@ -36,6 +36,11 @@ import {
   resolveCheckoutClientIp,
 } from '@/server/checkout-guard';
 import { findReusableExpressCheckoutSession } from '@/server/checkout-session-reuse';
+import {
+  buildCheckoutAttemptAttributionMetadata,
+  buildWalletAttributionMetadata,
+  normalizeWalletAttribution,
+} from '@/server/wallet-attribution';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -227,6 +232,9 @@ export async function POST(req: NextRequest) {
   if (!body) {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
+  const analyticsConsentGranted = hasAnalyticsConsent(req);
+  const walletAttribution = normalizeWalletAttribution(body.analyticsJourney, analyticsConsentGranted);
+  const walletAttributionMetadata = buildWalletAttributionMetadata(walletAttribution);
 
   const amountCents = normalizeWalletTopUpAmountCents(body.amountCents);
   if (amountCents === null) {
@@ -441,6 +449,7 @@ export async function POST(req: NextRequest) {
       const reusableSession = await findReusableExpressCheckoutSession(stripe, {
         userId,
         amountCents,
+        attribution: walletAttribution,
         currency: resolvedCurrencyUpper,
       });
       if (reusableSession) {
@@ -478,6 +487,7 @@ export async function POST(req: NextRequest) {
         amexBlocked: shouldBlockAmexForCheckoutSession,
         brandsBlocked: shouldBlockAmexForCheckoutSession ? ['american_express'] : [],
         amexBlockSkippedReason: isFirstTopUp && isExpressCheckoutTopUp ? 'checkout_elements_unsupported' : null,
+        ...buildCheckoutAttemptAttributionMetadata(walletAttribution),
       },
     });
     checkoutAttemptId = checkoutGuard.attemptId;
@@ -525,6 +535,7 @@ export async function POST(req: NextRequest) {
       checkout_guard_reason: checkoutGuard.reason,
       checkout_captcha_passed: String(checkoutGuard.captchaPassed),
     };
+    Object.assign(sessionMetadata, walletAttributionMetadata);
     if (shouldBlockAmexForCheckoutSession) {
       sessionMetadata.amex_block_required = 'true';
       sessionMetadata.brands_blocked = 'american_express';
@@ -535,7 +546,6 @@ export async function POST(req: NextRequest) {
     if (tier?.label) {
       sessionMetadata.topup_tier_label = tier.label;
     }
-    const analyticsConsentGranted = hasAnalyticsConsent(req);
     sessionMetadata.analytics_consent = analyticsConsentGranted ? 'granted' : 'denied';
     if (analyticsConsentGranted) {
       const gaClientId = extractGaClientId(req.cookies.get('_ga')?.value ?? null);

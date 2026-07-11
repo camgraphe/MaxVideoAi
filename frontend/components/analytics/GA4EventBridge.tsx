@@ -8,6 +8,13 @@ import {
   type AnalyticsClientEventDetail,
   type AnalyticsPayload,
 } from '@/lib/analytics-client';
+import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { mergeRequestGenerationFailureContext } from '@/lib/analytics/generation-correlation';
+import {
+  clearBrowserAnalyticsState,
+  prepareBrowserAnalyticsEvents,
+} from '@/lib/analytics/journey-browser';
+import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 declare global {
@@ -68,26 +75,35 @@ export function GA4EventBridge() {
   const generationContextByJobIdRef = useRef(new Map<string, AnalyticsPayload>());
   const seenTerminalEventsRef = useRef(new Set<string>());
 
+  const clearQueuedAnalytics = useCallback(() => {
+    queuedEventsRef.current = [];
+    generationContextByLocalKeyRef.current.clear();
+    generationContextByJobIdRef.current.clear();
+    seenTerminalEventsRef.current.clear();
+  }, []);
+
   const flushQueue = useCallback(() => {
     if (routeContext.excludedFromGa4) {
       queuedEventsRef.current = [];
+      return;
+    }
+    if (!hasAnalyticsConsentInBrowser()) {
+      clearQueuedAnalytics();
+      clearBrowserAnalyticsState();
       return;
     }
 
     const gtag = window.gtag;
     if (typeof gtag !== 'function') return;
 
-    const remaining: QueuedEvent[] = [];
-    queuedEventsRef.current.forEach(({ event, payload }) => {
-      const params = sanitizePayload(payload);
-      try {
-        gtag('event', event, params);
-      } catch {
-        remaining.push({ event, payload });
-      }
-    });
-    queuedEventsRef.current = remaining;
-  }, [routeContext.excludedFromGa4]);
+    const queuedEvents = queuedEventsRef.current;
+    const sanitizedEvents = queuedEvents.map(({ event, payload }) => ({
+      event,
+      payload: sanitizePayload(payload),
+    }));
+    const unsentIndex = sendPreparedAnalyticsEvents(gtag, sanitizedEvents);
+    queuedEventsRef.current = queuedEvents.slice(unsentIndex);
+  }, [clearQueuedAnalytics, routeContext.excludedFromGa4]);
 
   const enqueueEvent = useCallback(
     (event: string, payload?: AnalyticsPayload) => {
@@ -97,8 +113,11 @@ export function GA4EventBridge() {
             route_family: routeContext.family,
             ...payload,
           };
-      queuedEventsRef.current.push({ event, payload: defaultPayload });
+      const preparedEvents = prepareBrowserAnalyticsEvents(event, defaultPayload);
+      if (preparedEvents.length === 0) return undefined;
+      queuedEventsRef.current.push(...preparedEvents);
       flushQueue();
+      return preparedEvents.at(-1)?.payload;
     },
     [flushQueue, routeContext.family]
   );
@@ -110,16 +129,21 @@ export function GA4EventBridge() {
       const detail = (event as CustomEvent<AnalyticsClientEventDetail>).detail;
       const eventName = typeof detail?.event === 'string' ? detail.event : '';
       if (!eventName) return;
-      const payload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
+      const eventPayload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
+      const payload = eventName === 'generation_failed' && eventPayload
+        ? mergeRequestGenerationFailureContext({
+            payload: eventPayload,
+            generationContextByLocalKey: generationContextByLocalKeyRef.current,
+          })
+        : eventPayload;
 
+      const preparedPayload = enqueueEvent(eventName, payload);
       if (eventName === 'generation_started') {
-        const localKey = typeof payload?.local_key === 'string' ? payload.local_key : null;
+        const localKey = typeof preparedPayload?.local_key === 'string' ? preparedPayload.local_key : null;
         if (localKey) {
-          generationContextByLocalKeyRef.current.set(localKey, payload ?? {});
+          generationContextByLocalKeyRef.current.set(localKey, preparedPayload ?? {});
         }
       }
-
-      enqueueEvent(eventName, payload);
     };
 
     const handleJobsStatus = (event: Event) => {
@@ -177,7 +201,7 @@ export function GA4EventBridge() {
       enqueueEvent('generation_failed', {
         ...generationContext,
         job_id: jobId,
-        error_message: typeof detail.message === 'string' ? detail.message : undefined,
+        failure_category: 'job_failed',
         payment_status: typeof detail.paymentStatus === 'string' ? detail.paymentStatus : undefined,
         batch_id: typeof detail.batchId === 'string' ? detail.batchId : undefined,
         group_id: typeof detail.groupId === 'string' ? detail.groupId : undefined,
@@ -223,6 +247,23 @@ export function GA4EventBridge() {
       document.removeEventListener('click', handleTrackedClick, true);
     };
   }, [enqueueEvent, routeContext.excludedFromGa4, routeContext.family]);
+
+  useEffect(() => {
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ categories?: { analytics?: boolean } }>).detail;
+      const analyticsGranted = typeof detail?.categories?.analytics === 'boolean'
+        ? detail.categories.analytics
+        : hasAnalyticsConsentInBrowser();
+      if (analyticsGranted) return;
+      clearQueuedAnalytics();
+      clearBrowserAnalyticsState();
+    };
+
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+    };
+  }, [clearQueuedAnalytics]);
 
   useEffect(() => {
     if (!isPendingAuthFlushFamily(routeContext.family)) return;

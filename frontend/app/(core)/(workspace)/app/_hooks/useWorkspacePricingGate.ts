@@ -3,6 +3,7 @@ import type { ChangeEvent, Dispatch, FormEvent, SetStateAction } from 'react';
 import { useHostedWalletCheckout } from '@/hooks/useHostedWalletCheckout';
 import type { AppLocale } from '@/i18n/locales';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
+import { classifyTopupFailure } from '@/lib/analytics/topup-failure';
 import { runPreflight } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
 import { formatRateLimitMessage } from '@/lib/wallet/rate-limit-message';
@@ -117,7 +118,7 @@ export function useWorkspacePricingGate({
   }) => {
     void dispatchGaEvent('topup_failed', {
       ...buildWorkspaceTopupAnalyticsPayload(amountCents),
-      error_message: reason,
+      failure_category: classifyTopupFailure(reason),
     });
     setTopUpError(topUpCopy.startError);
   }, [topUpCopy.startError]);

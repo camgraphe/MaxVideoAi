@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const sharedHookPath = 'frontend/hooks/useHostedWalletCheckout.ts';
+const expressCheckoutPath = 'frontend/app/(core)/billing/_components/WalletExpressCheckout.tsx';
 const sharedEventsPath = 'frontend/lib/analytics/checkout-interaction-events.ts';
 const sharedTurnstilePath = 'frontend/components/ui/TurnstileChallenge.tsx';
 const billingEventFacadePath = 'frontend/app/(core)/billing/_lib/checkout-interaction-events.ts';
@@ -18,6 +19,7 @@ test('hosted wallet checkout behavior has stable shared owners', () => {
     assert.equal(existsSync(file), true, `${file} should exist`);
   }
   const hookSource = readFileSync(sharedHookPath, 'utf8');
+  const expressCheckoutSource = readFileSync(expressCheckoutPath, 'utf8');
   const eventFacadeSource = readFileSync(billingEventFacadePath, 'utf8');
   const turnstileFacadeSource = readFileSync(billingTurnstileFacadePath, 'utf8');
   const billingClientSource = readFileSync(billingClientPath, 'utf8');
@@ -25,6 +27,8 @@ test('hosted wallet checkout behavior has stable shared owners', () => {
   const workspacePricingSource = readFileSync(workspacePricingPath, 'utf8');
   const workspaceTopupModalSource = readFileSync(workspaceTopupModalPath, 'utf8');
   assert.match(hookSource, /requestHostedWalletCheckout/);
+  assert.match(hookSource, /readWalletAnalyticsJourney/);
+  assert.match(expressCheckoutSource, /readWalletAnalyticsJourney/);
   assert.match(hookSource, /hosted_checkout_requested/);
   assert.match(hookSource, /hosted_checkout_captcha_required/);
   assert.match(hookSource, /hosted_checkout_rate_limited/);
