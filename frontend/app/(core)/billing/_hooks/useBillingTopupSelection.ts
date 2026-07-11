@@ -2,7 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { USD_TOPUP_TIERS } from '@/config/topupTiers';
-import { createInitialTopupSelection } from '../_lib/billing-selection';
+import {
+  createInitialTopupSelection,
+  createReturnedTopupSelection,
+} from '../_lib/billing-selection';
 import { parseAmountToCents } from '../_lib/billing-utils';
 import type { BillingCopy } from '../_lib/billing-copy';
 
@@ -70,6 +73,14 @@ export function useBillingTopupSelection({
     setCustomEditorOpen(false);
   }, []);
 
+  const restoreTopupSelection = useCallback((amountCents: number | null) => {
+    const returnedSelection = createReturnedTopupSelection(amountCents);
+    if (!returnedSelection) return;
+    setSelectedTopupCents(returnedSelection.selectedTopupCents);
+    setCustomAmountInput(returnedSelection.customAmountInput);
+    setCustomEditorOpen(false);
+  }, []);
+
   return {
     applyCustomAmount,
     customAmountCents,
@@ -81,6 +92,7 @@ export function useBillingTopupSelection({
     handlePresetSelected,
     onCustomAmountInputChange: setCustomAmountInput,
     openCustomAmountEditor,
+    restoreTopupSelection,
     selectedTopupAmountLabel,
     selectedTopupCents,
   };

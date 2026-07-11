@@ -82,6 +82,15 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
   assert.match(topUpModalSource, /resetGeneration=\{checkoutCaptchaResetGeneration\}/);
   assert.doesNotMatch(topUpModalSource, />Wallet balance too low</);
   assert.match(topUpModalSource, /custom-topup/);
+  assert.match(
+    topUpModalSource,
+    /suggestedTopUp\.replace\('\{amount\}', suggestedTopUpAmountLabel\)/,
+    'the suggested amount should reflect the selectable minimum top-up, not the smaller wallet shortfall'
+  );
+  assert.doesNotMatch(
+    topUpModalSource,
+    /suggestedTopUp\.replace\('\{amount\}', modal\.amountLabel\)/
+  );
 
   assert.match(authGateModalSource, /export function WorkspaceAuthGateModal/);
   assert.match(authGateModalSource, /ButtonLink/);

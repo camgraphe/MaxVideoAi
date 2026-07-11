@@ -8,6 +8,7 @@ import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-eve
 
 type CheckoutReturnToastOptions = {
   cancelledMessage: string;
+  onAmountReturned: (amountCents: number | null) => void;
   onCancelled: (amountCents: number | null, currency: string) => void;
   onGoogleAdsConversion: (value?: number, currency?: string) => void;
   onReturnTarget: (target: WalletCheckoutReturnTarget | null) => void;
@@ -17,6 +18,7 @@ type CheckoutReturnToastOptions = {
 
 export function useBillingCheckoutReturnToast({
   cancelledMessage,
+  onAmountReturned,
   onCancelled,
   onGoogleAdsConversion,
   onReturnTarget,
@@ -42,6 +44,7 @@ export function useBillingCheckoutReturnToast({
     if (!message) return undefined;
 
     onToast(message);
+    onAmountReturned(parsedAmountCents);
     const timeout = window.setTimeout(() => onToast(null), 4000);
     if (status === 'success') {
       onReturnTarget(consumePendingWalletCheckoutReturn());
@@ -73,5 +76,5 @@ export function useBillingCheckoutReturnToast({
     );
     window.history.replaceState({}, '', url.toString());
     return () => window.clearTimeout(timeout);
-  }, [cancelledMessage, onCancelled, onGoogleAdsConversion, onReturnTarget, onToast, successMessage]);
+  }, [cancelledMessage, onAmountReturned, onCancelled, onGoogleAdsConversion, onReturnTarget, onToast, successMessage]);
 }
