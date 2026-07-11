@@ -221,6 +221,49 @@ hostname does not resolve, rather than an application HTTP response. This is
 the existing disabled rollout state, not a staging test failure. Do not add the
 hostname or enable production MCP flags as part of staging validation.
 
+### Hosted client evidence
+
+Claude Desktop 1.20186.1 completed the hosted read-only lifecycle on
+2026-07-12. Dynamic registration reached only the documented staging Supabase
+project. The consent page showed exactly `openid`, `email`, and `profile`, plus
+the expected `https://claude.ai/api/mcp/auth_callback` return address.
+
+The connector rendered exactly three read-only tools. Sanitized results were:
+
+| Check | Result |
+| --- | --- |
+| `list_models` | 39 public models; response limited to the requested count and first three IDs |
+| `recommend_models` | Three factual text-to-video recommendations with duration, audio, resolution, and reference-support trade-offs |
+| `get_account_status` | Email omitted; wallet `$0.00`; no pending funds; trial disabled; staging account-connections URL |
+| Prompt and references | Claude drafted the text-to-video prompt and a three-part reference-image plan without generating or submitting media |
+| Revocation | Staging account page changed to no connected applications; the next approved tool call returned `Authentication required` |
+| Reconnect | A fresh consent page and explicit approval were required; a subsequent read-only `list_models` call succeeded |
+
+An early `get_account_status` call exposed the canonical production account
+handoff because the stable alias still served an older runtime revision. The
+staging promotion guard rejected the first replacement candidate when its
+direct deployment returned an authentication interstitial. After the guard was
+corrected, the READY candidate passed anonymous access, noindex, zero-cron,
+OAuth, stable-alias, and production-project invariants before promotion. The
+repeated account call then returned exactly:
+
+```text
+https://maxvideoai-mcp-staging.vercel.app/account/connections
+```
+
+Codex CLI 0.144.1 was also registered persistently against the exact staging
+MCP URL. Its current `mcp add` command automatically began OAuth and requested
+`openid profile email phone`, despite the resource advertising only
+`openid email profile`. The flow was stopped before approval or token exchange.
+The registered entry was then authenticated with explicit
+`mcp login --scopes openid,email,profile`. That second authorization request and
+the MaxVideoAI consent page both showed only the three requested scopes, used a
+loopback callback, and completed PKCE successfully. An ephemeral Codex session
+running in a read-only sandbox called only `list_models` and returned 42 public
+models. Treat the broader automatic `mcp add` request as a production onboarding
+blocker; do not weaken the server scopes or approve `phone` merely to make the
+default flow continue.
+
 ## Cleanup
 
 When the hosted MCP test environment is no longer required:
