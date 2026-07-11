@@ -37,6 +37,7 @@ export type AgentModel = {
 };
 
 export type AgentModelFilter = {
+  id?: string;
   surface?: 'video' | 'image';
   mode?: AgentGenerationMode;
   aspectRatio?: string;
@@ -58,4 +59,10 @@ export type AgentModelRecommendation = {
   reasons: string[];
   tradeoffs: string[];
   nextAction: 'prepare_generation' | 'clarify_requirements';
+};
+
+export type AgentModelRecommendationResult = {
+  recommendations: AgentModelRecommendation[];
+  nextAction: 'prepare_generation' | 'clarify_requirements';
+  message?: string;
 };
