@@ -1503,17 +1503,17 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compare LTX 2.3 Fast with OpenAI Sora 2 Pro when the choice is economical high-resolution iteration or studio-grade Sora output. LTX reaches 20 seconds and 4K, while Sora Pro adds a reference-led workflow for polished shots up to 12 seconds.',
+        'Compare LTX 2.3 Fast with OpenAI Sora 2 Pro when the choice is economical high-resolution iteration or studio-grade Sora output. LTX offers 1440p or 4K for clips up to 10 seconds and reaches 20 seconds at 1080p and 25 fps; Sora Pro adds reference-led workflows for polished shots up to 12 seconds.',
       quickVerdict: {
         title: 'Quick verdict',
         body:
-          'Choose LTX 2.3 Fast for longer, economical iterations in 1080p, 1440p, or 4K. Choose OpenAI Sora 2 Pro when studio-grade Sora rendering and image or video references matter more than clip length or price.',
+          'Choose LTX 2.3 Fast for economical 1440p or 4K iterations up to 10 seconds, or longer 1080p clips at 25 fps. Choose OpenAI Sora 2 Pro when studio-grade Sora rendering and image or reference workflows matter more than clip length or price.',
       },
       topCards: [
         {
           title: 'Choose LTX for longer iterations',
           body:
-            'LTX reaches 20 seconds, supports native audio, and offers 1080p, 1440p, or 4K for fast high-resolution campaign exploration.',
+            'LTX supports native audio and reaches 20 seconds at 1080p and 25 fps; its 1440p and 4K options are available for clips up to 10 seconds.',
         },
         {
           title: 'Choose Sora Pro for references',
@@ -1528,7 +1528,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Best production fit',
           body:
-            'Use LTX for repeated ad concepts and longer vertical or landscape shots; use Sora Pro for high-value reference-led hero footage.',
+            'Use LTX for repeated ad concepts, 1440p or 4K shots up to 10 seconds, and longer 1080p/25 fps clips; use Sora Pro for high-value reference-led hero footage.',
         },
       ],
       primaryLinksTitle: 'Recommended next steps',
@@ -1547,17 +1547,17 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Which model makes longer clips, LTX 2.3 Fast or Sora 2 Pro?',
             answer:
-              'LTX 2.3 Fast supports clips up to 20 seconds. OpenAI Sora 2 Pro supports up to 12 seconds, so LTX offers eight more seconds per generation.',
+              'LTX 2.3 Fast supports clips up to 20 seconds at 1080p and 25 fps. OpenAI Sora 2 Pro supports up to 12 seconds, while LTX 1440p and 4K output is limited to 10 seconds.',
           },
           {
             question: 'Can both LTX 2.3 Fast and Sora 2 Pro generate native audio?',
             answer:
-              'Yes. Both models support native audio. The larger distinction is LTX high-resolution duration versus Sora Pro reference-led studio output.',
+              'Yes. Both models support native audio. LTX separates 1440p/4K output up to 10 seconds from longer 1080p/25 fps runs, while Sora Pro emphasizes reference-led studio output.',
           },
           {
             question: 'Should I choose LTX 2.3 Fast for 4K delivery?',
             answer:
-              'Choose LTX when direct 4K output, rapid iteration, and clips beyond 12 seconds are priorities. Choose Sora Pro when references and the Sora rendering style define the shot.',
+              'Choose LTX for direct 4K output up to 10 seconds. For clips beyond 12 seconds, use its 1080p/25 fps path; choose Sora Pro when image or reference workflows and the Sora rendering style define the shot.',
           },
         ],
       },
@@ -1574,7 +1574,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Quick verdict',
         body:
-          'Choose Google Veo 3.1 for polished final ads, 4K, references, and advanced production controls. Stay on available Wan 2.5 for inexpensive text or image clips up to 10 seconds; migrate to current Wan 2.6 when longer audio or reference-video work becomes necessary.',
+          'Choose Google Veo 3.1 for polished final ads, 4K, references, and advanced production controls. Stay on available Wan 2.5 for inexpensive text or image clips up to 10 seconds; migrate to current Wan 2.6 for 15-second text/image clips with audio or separate 5/10-second silent reference-video work.',
       },
       topCards: [
         {
@@ -1590,7 +1590,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Upgrade the Wan workflow',
           body:
-            'Move to current Wan 2.6 Text & Image to Video for clips up to 15 seconds, 1080p, audio, and reference-video guidance.',
+            'Move to current Wan 2.6 Text & Image to Video for 5-, 10-, or 15-second clips with optional audio; its separate silent reference-video mode supports 5 or 10 seconds.',
         },
         {
           title: 'Eight seconds or ten',
@@ -1624,7 +1624,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'When should a Wan 2.5 user migrate to Wan 2.6?',
             answer:
-              'Upgrade to the current Wan 2.6 route when the job needs up to 15 seconds, reference videos, or a broader audio-ready production workflow.',
+              'Upgrade to current Wan 2.6 for text or image clips up to 15 seconds with optional audio, or use its separate 5/10-second silent mode for one to three reference videos.',
           },
         ],
       },
@@ -1641,7 +1641,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Quick verdict',
         body:
-          'Stay on Kling 2.6 Pro for established 1080p cinematic dialogue or keep Wan 2.5 for low-resolution budget flexibility. Both remain available; migrate new demanding work to current Kling 3 Pro or Wan 2.6 for 15-second production and newer controls.',
+          'Stay on Kling 2.6 Pro for established 1080p cinematic dialogue or keep Wan 2.5 for low-resolution budget flexibility. Both remain available; migrate new demanding work to current Kling 3 Pro or to Wan 2.6 text/image mode for 15-second production.',
       },
       topCards: [
         {
@@ -1657,7 +1657,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Two current upgrade paths',
           body:
-            'Move to Kling 3 Pro for the current Kling Pro route or Wan 2.6 Text & Image to Video for the current 15-second Wan workflow.',
+            'Move to Kling 3 Pro for the current Kling Pro route or Wan 2.6 Text & Image to Video for current text/image clips up to 15 seconds.',
         },
         {
           title: 'Shared legacy limit',
@@ -1708,7 +1708,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Quick verdict',
         body:
-          'Choose Google Veo 3.1 Fast for rapid current production with 4K, references, first-last-frame control, and extension. Stay on available Wan 2.5 for inexpensive simple clips with two extra seconds; migrate to current Wan 2.6 for longer, reference-led work.',
+          'Choose Google Veo 3.1 Fast for rapid current production with 4K, references, first-last-frame control, and extension. Stay on available Wan 2.5 for inexpensive simple clips with two extra seconds; migrate to current Wan 2.6 for 15-second text/image clips with audio or 5/10-second silent reference-led work.',
       },
       topCards: [
         {
@@ -1724,7 +1724,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Migrate for modern Wan control',
           body:
-            'Upgrade to Wan 2.6 Text & Image to Video when the next job needs up to 15 seconds, audio, or one to three reference videos.',
+            'Upgrade to Wan 2.6 Text & Image to Video for text/image clips up to 15 seconds with optional audio; its separate silent reference mode accepts one to three videos for 5 or 10 seconds.',
         },
         {
           title: 'Core duration trade-off',
@@ -1758,7 +1758,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'When is Wan 2.6 the better upgrade from Wan 2.5?',
             answer:
-              'Move to current Wan 2.6 for clips up to 15 seconds, 1080p audio production, or guidance from one to three reference videos.',
+              'Move to current Wan 2.6 for 1080p text/image clips up to 15 seconds with optional audio, or for separate 5/10-second silent generation guided by one to three reference videos.',
           },
         ],
       },
@@ -1863,7 +1863,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Resolution drives the decision',
           body:
-            'Standard keeps iteration at 1080p and a lower provider base; 4K spends more compute on the native-resolution final.',
+            'Standard keeps iteration at 1080p and a lower provider base; the 4K tier is native-4K-only and carries the higher provider base.',
         },
       ],
       primaryLinksTitle: 'Recommended next steps',
@@ -2107,11 +2107,11 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compare Kling 2.5 Turbo with Wan 2.6 Text & Image to Video when deciding between an available inexpensive silent legacy route and current general-purpose production. Kling reaches 10 seconds; Wan reaches 15 seconds with audio and reference-video control.',
+        'Compare Kling 2.5 Turbo with Wan 2.6 Text & Image to Video when deciding between an available inexpensive silent legacy route and current general-purpose production. Wan text/image mode reaches 15 seconds with optional audio; its separate silent reference-video mode reaches 5 or 10 seconds.',
       quickVerdict: {
         title: 'Quick verdict',
         body:
-          'Stay on available Kling 2.5 Turbo for inexpensive silent drafts up to 10 seconds. Choose Wan 2.6 Text & Image to Video for current 15-second audio and reference-video production; migrate new Kling Pro work to current Kling 3 Pro.',
+          'Stay on available Kling 2.5 Turbo for inexpensive silent drafts up to 10 seconds. Choose Wan 2.6 Text & Image to Video for text/image clips up to 15 seconds with optional audio or separate 5/10-second silent reference-video production; migrate new Kling Pro work to current Kling 3 Pro.',
       },
       topCards: [
         {
@@ -2122,7 +2122,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Choose Wan for current production',
           body:
-            'Wan 2.6 reaches 15 seconds in 720p or 1080p with optional audio and guidance from one to three reference videos.',
+            'Wan 2.6 text/image mode reaches 15 seconds in 720p or 1080p with optional audio; its separate silent reference mode accepts one to three videos for 5 or 10 seconds.',
         },
         {
           title: 'Migrate to the Kling successor',
@@ -2132,7 +2132,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Silent value or broader control',
           body:
-            'Legacy Kling minimizes cost for silent drafts; current Wan adds five seconds, audio, and reference-video control for production work.',
+            'Legacy Kling minimizes cost for silent drafts; current Wan adds 15-second text/image generation with optional audio plus a separate silent 5/10-second reference-video mode.',
         },
       ],
       primaryLinksTitle: 'Recommended next steps',
@@ -2156,7 +2156,7 @@ export const EN_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Who should keep Kling 2.5 Turbo instead of moving to Wan 2.6?',
             answer:
-              'Stay on Kling when inexpensive silent drafts are enough. Switch to Wan when audio, 15-second clips, or reference-video guidance affects the result.',
+              'Stay on Kling when inexpensive silent drafts are enough. Switch to Wan for text/image clips up to 15 seconds with optional audio, or for separate 5/10-second silent reference-video guidance.',
           },
           {
             question: 'When should Kling 2.5 Turbo users upgrade to Kling 3 Pro?',
