@@ -1,3 +1,19 @@
+import { readFileSync } from 'node:fs';
+
+const COMPARISON_PATH_BY_LOCALE = {
+  en: '/ai-video-engines',
+  fr: '/fr/comparatif',
+  es: '/es/comparativa',
+};
+const comparisonIndexation = JSON.parse(
+  readFileSync(new URL('../frontend/config/comparison-indexation.json', import.meta.url), 'utf8'),
+);
+const COMPARISON_NOINDEX_BY_LOCALE = {
+  en: new Set(),
+  fr: new Set(comparisonIndexation.noindexByLocale.fr),
+  es: new Set(comparisonIndexation.noindexByLocale.es),
+};
+
 const EXCLUDED_ENGINE_SLUGS = new Set([
   'nano-banana',
   'nano-banana-lite',
@@ -57,12 +73,18 @@ export function getPublishedComparisonSlugsForModels(catalog, changedModelSlugs)
   });
 }
 
+export function getIndexableComparisonLocalesForIndexNow(slug) {
+  return Object.keys(COMPARISON_PATH_BY_LOCALE).filter(
+    (locale) => !COMPARISON_NOINDEX_BY_LOCALE[locale].has(slug),
+  );
+}
+
 export function addComparisonUrls(urls, site, comparisonSlug) {
   const slug = canonicalizeComparisonSlug(comparisonSlug);
   if (!slug) return;
-  urls.add(toAbsoluteUrl(site, `/ai-video-engines/${slug}`));
-  urls.add(toAbsoluteUrl(site, `/fr/comparatif/${slug}`));
-  urls.add(toAbsoluteUrl(site, `/es/comparativa/${slug}`));
+  getIndexableComparisonLocalesForIndexNow(slug).forEach((locale) => {
+    urls.add(toAbsoluteUrl(site, `${COMPARISON_PATH_BY_LOCALE[locale]}/${slug}`));
+  });
 }
 
 export function addComparisonHubUrls(urls, site) {

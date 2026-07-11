@@ -6,12 +6,15 @@ import test from 'node:test';
 import engineCatalog from '../frontend/config/engine-catalog.json';
 import modelRoster from '../frontend/config/model-roster.json';
 import { getHubComparisonSlugsForSitemap } from '../frontend/lib/compare-hub/data.ts';
-import {
+import { getIndexableComparisonLocales } from '../frontend/lib/compare-hub/indexation.ts';
+import * as indexNowSelection from '../scripts/indexnow-url-selection.mjs';
+
+const {
   addComparisonHubUrls,
   addComparisonUrls,
   getPublishedComparisonSlugs,
   getPublishedComparisonSlugsForModels,
-} from '../scripts/indexnow-url-selection.mjs';
+} = indexNowSelection;
 
 test('IndexNow comparison slugs are exactly the sitemap publication set', () => {
   assert.deepEqual(getPublishedComparisonSlugs(engineCatalog), getHubComparisonSlugsForSitemap());
@@ -40,21 +43,38 @@ test('changed models only select published comparisons involving that model', ()
   assert.deepEqual(getPublishedComparisonSlugsForModels(fixtureCatalog, new Set(['gamma'])), []);
 });
 
-test('localized comparison and hub URLs use canonical public paths', () => {
+test('localized comparison URLs omit selected locales while hub URLs remain unchanged', () => {
   const urls = new Set<string>();
   addComparisonHubUrls(urls, 'https://maxvideoai.com');
-  addComparisonUrls(urls, 'https://maxvideoai.com', 'beta-vs-alpha');
+  addComparisonUrls(urls, 'https://maxvideoai.com', 'veo-3-1-lite-vs-ltx-2');
 
   assert.deepEqual(Array.from(urls).sort(), [
     'https://maxvideoai.com/ai-video-engines',
-    'https://maxvideoai.com/ai-video-engines/alpha-vs-beta',
+    'https://maxvideoai.com/ai-video-engines/ltx-2-vs-veo-3-1-lite',
     'https://maxvideoai.com/es/comparativa',
-    'https://maxvideoai.com/es/comparativa/alpha-vs-beta',
+    'https://maxvideoai.com/es/comparativa/ltx-2-vs-veo-3-1-lite',
     'https://maxvideoai.com/fr/comparatif',
-    'https://maxvideoai.com/fr/comparatif/alpha-vs-beta',
   ]);
+  assert.ok(!urls.has('https://maxvideoai.com/fr/comparatif/ltx-2-vs-veo-3-1-lite'));
   assert.ok(!urls.has('https://maxvideoai.com/fr/ai-video-engines'));
   assert.ok(!urls.has('https://maxvideoai.com/es/ai-video-engines'));
+});
+
+test('IndexNow locale selection exactly matches the shared comparison indexation policy', () => {
+  assert.equal(
+    typeof indexNowSelection.getIndexableComparisonLocalesForIndexNow,
+    'function',
+    'IndexNow must export its comparison locale resolver',
+  );
+  const publishedSlugs = getPublishedComparisonSlugs(engineCatalog);
+
+  for (const slug of publishedSlugs) {
+    assert.deepEqual(
+      indexNowSelection.getIndexableComparisonLocalesForIndexNow(slug),
+      getIndexableComparisonLocales(slug),
+      `IndexNow locale mismatch for ${slug}`,
+    );
+  }
 });
 
 test('IndexNow command delegates publication selection without synthesizing or truncating combinations', () => {
@@ -94,7 +114,11 @@ test('IndexNow dry run excludes private, parameterized, redirecting, and noindex
         pathname.startsWith('/es/comparativa/')),
   );
 
-  assert.equal(comparisonUrls.length, getHubComparisonSlugsForSitemap().length * 3);
+  const expectedComparisonUrlCount = getHubComparisonSlugsForSitemap().reduce(
+    (count, slug) => count + getIndexableComparisonLocales(slug).length,
+    0,
+  );
+  assert.equal(comparisonUrls.length, expectedComparisonUrlCount);
   urls.forEach(({ pathname, search }) => {
     assert.equal(search, '', `IndexNow must not submit parameterized URL ${pathname}${search}`);
     assert.ok(pathname !== '/app' && !pathname.startsWith('/app/'), `private app URL submitted: ${pathname}`);

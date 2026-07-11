@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import test from 'node:test';
 
+import { getHubComparisonSlugsForSitemap } from '../frontend/lib/compare-hub/data.ts';
 import { generateComparisonIndexationArtifacts } from '../scripts/generate-comparison-indexation-matrix.ts';
 
 type CuratedLocale = 'fr' | 'es';
@@ -25,6 +27,9 @@ const comparisonIndexation = JSON.parse(
 const engineCatalog = JSON.parse(
   readFileSync('frontend/config/engine-catalog.json', 'utf8'),
 ) as EngineCatalogEntry[];
+const requireFromTest = createRequire(import.meta.url);
+const reactModule = requireFromTest('react') as { cache?: <T>(callback: T) => T };
+reactModule.cache ??= (callback) => callback;
 
 test('wave 1 exposes one shared locale indexation policy', async () => {
   const policy = await import('../frontend/lib/compare-hub/indexation.ts').catch(() => null);
@@ -120,6 +125,52 @@ test('wave 1 keeps English and every comparison carrying a positive safety signa
       true,
       `${row.locale}:${row.slug} has a positive safety signal and must remain indexable`,
     );
+  }
+});
+
+test('wave 1 sitemap contains exactly the indexable localized comparison URLs', async () => {
+  const { getCanonicalPathEntries } = await import('../frontend/lib/sitemap/route-discovery.ts');
+  const comparisonPathByLocale = {
+    en: '/ai-video-engines',
+    fr: '/fr/comparatif',
+    es: '/es/comparativa',
+  } as const;
+  const publishedSlugs = getHubComparisonSlugsForSitemap();
+  const publishedSlugSet = new Set(publishedSlugs);
+  const comparisonEntries = (await getCanonicalPathEntries()).filter(({ englishPath }) => {
+    const slug = englishPath.slice('/ai-video-engines/'.length);
+    return englishPath.startsWith('/ai-video-engines/') && publishedSlugSet.has(slug);
+  });
+  const comparisonUrlKeys = new Set(
+    comparisonEntries.flatMap((entry) => {
+      const slug = entry.englishPath.slice('/ai-video-engines/'.length);
+      return (entry.locales ?? []).map(
+        (locale) => `${locale}:${comparisonPathByLocale[locale]}/${slug}`,
+      );
+    }),
+  );
+
+  assert.equal(publishedSlugs.length, 292);
+  assert.equal(comparisonEntries.length, publishedSlugs.length);
+  assert.equal(comparisonUrlKeys.size, 292 * 3 - 60);
+
+  for (const slug of publishedSlugs) {
+    assert.ok(
+      comparisonUrlKeys.has(`en:${comparisonPathByLocale.en}/${slug}`),
+      `English comparison must remain in the sitemap: ${slug}`,
+    );
+  }
+
+  for (const locale of ['fr', 'es'] as const) {
+    const excludedSlugs = new Set(comparisonIndexation.noindexByLocale[locale]);
+    for (const slug of publishedSlugs) {
+      const key = `${locale}:${comparisonPathByLocale[locale]}/${slug}`;
+      if (excludedSlugs.has(slug)) {
+        assert.ok(!comparisonUrlKeys.has(key), `configured sitemap URL must be omitted: ${key}`);
+      } else {
+        assert.ok(comparisonUrlKeys.has(key), `unselected sitemap URL must remain: ${key}`);
+      }
+    }
   }
 });
 

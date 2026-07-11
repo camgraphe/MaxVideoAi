@@ -7,6 +7,7 @@ import { BLOG_ENTRIES } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
+import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
 import { canonicalizeCompareSlug, comparePaths, normalizeCompareEnglishPath } from './compare-paths';
 import { formatLastModified, getGitLastModified, getModelLastModified, getRouteLastModified } from './lastmod';
 import { hasBlogLocale, hasModelLocale } from './model-locales';
@@ -357,7 +358,7 @@ const DYNAMIC_ROUTE_GENERATORS: Record<string, DynamicRouteGenerator> = {
   '/ai-video-engines/[slug]': async () =>
     Array.from(new Set(getHubComparisonSlugsForSitemap().map((slug) => canonicalizeCompareSlug(slug)))).map((slug) => ({
       englishPath: `/ai-video-engines/${slug}`,
-      locales: LOCALES,
+      locales: getIndexableComparisonLocales(slug),
     })),
   '/ai-video-engines/best-for/[usecase]': async () =>
     (compareConfig.bestForPages ?? []).map((entry: { slug: string }) => ({
@@ -379,12 +380,22 @@ function validateLocaleCounts(entries: CanonicalPathEntry[]): void {
   });
 
   const englishCount = counts.en ?? 0;
+  const intentionalComparisonOmissions = Object.fromEntries(
+    LOCALES.map((locale) => [
+      locale,
+      getHubComparisonSlugsForSitemap().filter(
+        (slug) => !getIndexableComparisonLocales(slug).includes(locale),
+      ).length,
+    ]),
+  ) as Record<AppLocale, number>;
+
   LOCALES.forEach((locale) => {
     if (locale === 'en') {
       return;
     }
     const localeCount = counts[locale] ?? 0;
-    const difference = Math.abs(englishCount - localeCount);
+    const adjustedLocaleCount = localeCount + intentionalComparisonOmissions[locale];
+    const difference = Math.abs(englishCount - adjustedLocaleCount);
     if (difference > LOCALE_MISMATCH_TOLERANCE) {
       const warningMessage = `[sitemap] ${locale.toUpperCase()} sitemap has ${localeCount} URLs vs EN ${englishCount} (diff ${difference}).`;
       console.warn(warningMessage);
