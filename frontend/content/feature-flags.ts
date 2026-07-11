@@ -37,4 +37,12 @@ export const FEATURES = {
     libraryDocs: false,
     apiPublicRefs: true,
   },
+  mcp: {
+    transport: false,
+    oauth: false,
+    discovery: false,
+    paidGeneration: false,
+    trial: false,
+    referenceUploads: false,
+  },
 } as const;

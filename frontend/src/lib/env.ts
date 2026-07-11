@@ -52,6 +52,8 @@ export const ENV = {
   LEGAL_NOTIFY_EMAIL: getOptionalEnv('LEGAL_NOTIFY_EMAIL'),
   SUPABASE_SITE_URL: getOptionalEnv('SUPABASE_SITE_URL'),
   NEXT_PUBLIC_SITE_URL: getOptionalEnv('NEXT_PUBLIC_SITE_URL'),
+  MCP_RESOURCE_URL: getOptionalEnv('MCP_RESOURCE_URL'),
+  MCP_API_HOST: getOptionalEnv('MCP_API_HOST'),
   GA4_MEASUREMENT_ID:
     getOptionalEnv('GA4_MEASUREMENT_ID') ??
     getOptionalEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID') ??
