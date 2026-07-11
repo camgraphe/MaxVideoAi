@@ -1,7 +1,7 @@
 import { useEffect, type Dispatch, type SetStateAction } from 'react';
 import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
 import { writeLastKnownUserId } from '@/lib/last-known';
-import { supabase } from '@/lib/supabaseClient';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import {
   clearPendingGoogleLogin,
   consumePendingGoogleLogin,
@@ -38,11 +38,13 @@ export function useLoginAuthHashSession({
     setStatusTone('info');
     setStatus('Completing sign-in…');
     setError(null);
-    void supabase.auth
-      .setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      })
+    void loadSupabaseClient()
+      .then((supabase) =>
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+      )
       .then(({ data, error }) => {
         if (error) {
           clearPendingGoogleLogin();

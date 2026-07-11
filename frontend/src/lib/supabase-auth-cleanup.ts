@@ -2,7 +2,7 @@
 
 import type { Session } from '@supabase/supabase-js';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
-import { supabase } from '@/lib/supabaseClient';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 
 let staleAuthClearPromise: Promise<void> | null = null;
 
@@ -80,6 +80,7 @@ export async function clearStaleBrowserAuthState(): Promise<void> {
     clearBrowserSupabaseAuthCookies();
     clearLastKnownAccount();
     writeLastKnownUserId(null);
+    const supabase = await loadSupabaseClient();
     await supabase.auth.signOut({ scope: 'local' }).catch(() => undefined);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new Event('wallet:invalidate'));
@@ -92,6 +93,7 @@ export async function clearStaleBrowserAuthState(): Promise<void> {
 
 export async function readBrowserSession(): Promise<Session | null> {
   try {
+    const supabase = await loadSupabaseClient();
     const { data, error } = await supabase.auth.getSession();
     if (error) {
       if (isInvalidRefreshTokenError(error)) {
@@ -110,6 +112,7 @@ export async function readBrowserSession(): Promise<Session | null> {
 
 export async function refreshBrowserSession(): Promise<Session | null> {
   try {
+    const supabase = await loadSupabaseClient();
     const { data, error } = await supabase.auth.refreshSession();
     if (error) {
       if (isInvalidRefreshTokenError(error)) {

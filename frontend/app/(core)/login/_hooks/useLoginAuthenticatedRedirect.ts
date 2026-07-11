@@ -1,11 +1,12 @@
 import { useCallback, useEffect, type MutableRefObject } from 'react';
 import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
-import { supabase } from '@/lib/supabaseClient';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
   readBrowserSession,
 } from '@/lib/supabase-auth-cleanup';
+import { hasSupabaseAuthCookie } from '@/lib/supabase-session-hint';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import {
   consumePendingGoogleLogin,
   resolveGoogleAuthCompletionEvent,
@@ -53,9 +54,38 @@ export function useLoginAuthenticatedRedirect({
 
   useEffect(() => {
     if (!nextPathReady) return;
+    if (!hasSupabaseAuthCookie()) return;
     let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
 
-    async function redirectIfAuthenticated() {
+    async function initializeAuthenticatedRedirect() {
+      const supabase = await loadSupabaseClient();
+      if (cancelled) return;
+
+      const { data: authListener } = supabase.auth.onAuthStateChange(() => {
+        if (oauthCodeExchangeStartedRef.current) return;
+        void supabase.auth.getUser().then(({ data, error }) => {
+          if (cancelled) return;
+          if (error) {
+            if (isInvalidRefreshTokenError(error)) {
+              void clearStaleBrowserAuthState();
+            }
+            return;
+          }
+          const user = data.user ?? null;
+          if (user && nextPath) {
+            persistGoogleAuthCompleted();
+            completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
+          }
+        }).catch((err) => {
+          if (cancelled) return;
+          if (isInvalidRefreshTokenError(err)) {
+            void clearStaleBrowserAuthState();
+          }
+        });
+      });
+      unsubscribe = () => authListener?.subscription.unsubscribe();
+
       if (oauthCodeExchangeStartedRef.current) return;
       const { data, error } = await supabase.auth.getUser();
       if (cancelled) return;
@@ -72,40 +102,23 @@ export function useLoginAuthenticatedRedirect({
       }
     }
 
-    void redirectIfAuthenticated();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(() => {
-      if (oauthCodeExchangeStartedRef.current) return;
-      void supabase.auth.getUser().then(({ data, error }) => {
-        if (cancelled) return;
-        if (error) {
-          if (isInvalidRefreshTokenError(error)) {
-            void clearStaleBrowserAuthState();
-          }
-          return;
-        }
-        const user = data.user ?? null;
-        if (user && nextPath) {
-          persistGoogleAuthCompleted();
-          completeAuthenticatedRedirect(sanitizeNextPath(nextPath), user.id);
-        }
-      }).catch((err) => {
-        if (cancelled) return;
-        if (isInvalidRefreshTokenError(err)) {
-          void clearStaleBrowserAuthState();
-        }
-      });
+    void initializeAuthenticatedRedirect().catch((error) => {
+      if (cancelled) return;
+      if (isInvalidRefreshTokenError(error)) {
+        void clearStaleBrowserAuthState();
+      }
     });
 
     return () => {
       cancelled = true;
-      authListener?.subscription.unsubscribe();
+      unsubscribe?.();
     };
   }, [completeAuthenticatedRedirect, nextPath, nextPathReady, oauthCodeExchangeStartedRef]);
 
   useEffect(() => {
     if (!nextPathReady) return;
     if (oauthCodeExchangeStartedRef.current) return;
+    if (!hasSupabaseAuthCookie()) return;
     let cancelled = false;
     readBrowserSession().then((session) => {
       if (cancelled) return;
