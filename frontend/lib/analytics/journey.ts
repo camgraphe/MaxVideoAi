@@ -16,14 +16,24 @@ const FUNNEL_STAGES: Record<string, string> = {
   topup_completed: 'topup_completed', topup_cancelled: 'topup_cancelled', topup_failed: 'topup_failed',
 };
 
-const ORGANIC_HOSTS: ReadonlyArray<{ source: string; pattern: RegExp }> = [
-  { source: 'google', pattern: /(^|\.)google\.[a-z.]+$/ },
-  { source: 'bing', pattern: /(^|\.)bing\.com$/ },
-  { source: 'yahoo', pattern: /(^|\.)yahoo\.[a-z.]+$/ },
-  { source: 'duckduckgo', pattern: /(^|\.)duckduckgo\.com$/ },
-  { source: 'ecosia', pattern: /(^|\.)ecosia\.org$/ },
-  { source: 'baidu', pattern: /(^|\.)baidu\.com$/ },
-  { source: 'yandex', pattern: /(^|\.)yandex\.[a-z.]+$/ },
+const ORGANIC_DOMAINS: ReadonlyArray<{ source: string; domains: readonly string[] }> = [
+  {
+    source: 'google',
+    domains: [
+      'google.com', 'google.ca', 'google.co.uk', 'google.com.au', 'google.co.in',
+      'google.co.jp', 'google.com.br', 'google.de', 'google.es', 'google.fr',
+      'google.it', 'google.nl', 'google.pl', 'google.pt',
+    ],
+  },
+  { source: 'bing', domains: ['bing.com'] },
+  { source: 'yahoo', domains: ['yahoo.com', 'yahoo.co.jp', 'yahoo.co.uk'] },
+  { source: 'duckduckgo', domains: ['duckduckgo.com'] },
+  { source: 'ecosia', domains: ['ecosia.org'] },
+  { source: 'baidu', domains: ['baidu.com'] },
+  {
+    source: 'yandex',
+    domains: ['yandex.ru', 'yandex.com', 'yandex.by', 'yandex.kz', 'yandex.uz', 'yandex.com.tr'],
+  },
 ];
 
 type AnalyticsTouchInput = {
@@ -35,8 +45,12 @@ type AnalyticsTouchInput = {
   locale?: string;
 };
 
-function normalizeHostname(hostname: string): string {
-  return hostname.toLowerCase().replace(/^www\./, '');
+function normalizeHostname(hostname: string): string | null {
+  return sanitizeAttributionValue(hostname.replace(/^www\./i, ''), { lowercase: true });
+}
+
+function matchesDomain(hostname: string, domain: string): boolean {
+  return hostname === domain || hostname.endsWith(`.${domain}`);
 }
 
 function safeUrl(value: string): URL | null {
@@ -80,7 +94,10 @@ export function resolveAnalyticsTouch(input: AnalyticsTouchInput): AnalyticsTouc
     && (!siteUrl || referrerUrl.origin !== siteUrl.origin)
   ) {
     const referrerHost = normalizeHostname(referrerUrl.hostname);
-    const organic = ORGANIC_HOSTS.find(({ pattern }) => pattern.test(referrerHost));
+    if (!referrerHost) return { source: 'direct', medium: 'none', ...routeFields(input) };
+    const organic = ORGANIC_DOMAINS.find(({ domains }) => (
+      domains.some((domain) => matchesDomain(referrerHost, domain))
+    ));
     if (organic) {
       return {
         source: organic.source,

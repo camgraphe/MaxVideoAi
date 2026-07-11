@@ -13,6 +13,37 @@ test('resolution prioritizes campaign, organic, referral, then direct', () => {
   assert.equal(resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route }).source, 'direct');
 });
 
+test('referral hostname attribution is bounded', () => {
+  const hostname = `${'a'.repeat(40)}.${'b'.repeat(40)}.example`;
+  const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${hostname}/post`, siteOrigin: 'https://maxvideoai.com', ...route });
+  assert.equal(touch.source.length, 80);
+  assert.equal(touch.referrerHost?.length, 80);
+  assert.equal(touch.source, touch.referrerHost);
+});
+
+test('organic classification accepts verified engines and rejects lookalikes', () => {
+  const organicHosts = [
+    ['www.google.com', 'google'],
+    ['www.bing.com', 'bing'],
+    ['search.yahoo.com', 'yahoo'],
+    ['duckduckgo.com', 'duckduckgo'],
+    ['www.ecosia.org', 'ecosia'],
+    ['www.baidu.com', 'baidu'],
+    ['yandex.ru', 'yandex'],
+  ] as const;
+  for (const [hostname, source] of organicHosts) {
+    const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${hostname}/search`, siteOrigin: 'https://maxvideoai.com', ...route });
+    assert.equal(touch.medium, 'organic');
+    assert.equal(touch.source, source);
+  }
+
+  for (const hostname of ['google.partner.example', 'yahoo.partner.example', 'yandex.partner.example']) {
+    const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${hostname}/post`, siteOrigin: 'https://maxvideoai.com', ...route });
+    assert.equal(touch.medium, 'referral');
+    assert.equal(touch.source, hostname);
+  }
+});
+
 test('first touch is immutable and identical touches do not refresh time', () => {
   const first = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/?utm_source=google&utm_medium=cpc', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route });
   const record = createAnalyticsJourneyRecord({ journeyId: uuid, now: 1_000, touch: first });
