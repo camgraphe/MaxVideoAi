@@ -1,7 +1,7 @@
 'use client';
 
-import { loadStripe, type Stripe } from '@stripe/stripe-js';
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import type { Stripe } from '@stripe/stripe-js';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import type { AppLocale } from '@/i18n/locales';
 import { recordCheckoutInteractionEvent, type CheckoutInteractionSource } from '@/lib/analytics/checkout-interaction-events';
 import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
@@ -68,15 +68,21 @@ export function useHostedWalletCheckout({
   const [failureReason, setFailureReason] = useState<HostedWalletCheckoutFailureReason | null>(null);
   const [retryAfterSeconds, setRetryAfterSeconds] = useState<number | null>(null);
   const submissionGuardRef = useRef(createHostedCheckoutSubmissionGuard());
-  const internalStripePromise = useMemo(
-    () => (
-      suppliedStripePromise === undefined && PUBLISHABLE_KEY
-        ? loadStripe(PUBLISHABLE_KEY, { locale })
-        : null
-    ),
+  const stripePromiseRef = useRef<{ locale: AppLocale; promise: Promise<Stripe | null> } | null>(null);
+  const getStripePromise = useCallback(
+    () => {
+      if (suppliedStripePromise !== undefined) return suppliedStripePromise;
+      if (!PUBLISHABLE_KEY) return null;
+      if (stripePromiseRef.current?.locale === locale) return stripePromiseRef.current.promise;
+
+      const promise = import('@stripe/stripe-js').then(({ loadStripe }) =>
+        loadStripe(PUBLISHABLE_KEY, { locale })
+      );
+      stripePromiseRef.current = { locale, promise };
+      return promise;
+    },
     [locale, suppliedStripePromise]
   );
-  const stripePromise = suppliedStripePromise === undefined ? internalStripePromise : suppliedStripePromise;
 
   const resetCheckout = useCallback(() => {
     dispatchChallenge({ type: 'reset' });
@@ -193,12 +199,15 @@ export function useHostedWalletCheckout({
         return;
       }
 
-      if (result.sessionId && stripePromise) {
-        const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
-        if (stripe?.redirectToCheckout) {
-          if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
-          const redirectResult = await stripe.redirectToCheckout({ sessionId: result.sessionId });
-          if (redirectResult && !redirectResult.error) return;
+      if (result.sessionId) {
+        const stripePromise = getStripePromise();
+        if (stripePromise) {
+          const stripe = (await stripePromise) as LegacyCheckoutStripe | null;
+          if (stripe?.redirectToCheckout) {
+            if (returnTarget) persistPendingWalletCheckoutReturn(returnTarget);
+            const redirectResult = await stripe.redirectToCheckout({ sessionId: result.sessionId });
+            if (redirectResult && !redirectResult.error) return;
+          }
         }
       }
       dispatchChallenge({ type: 'checkout_not_redirected', submittedCaptchaToken });
@@ -218,6 +227,7 @@ export function useHostedWalletCheckout({
     amountCents,
     challengeState.captchaToken,
     currency,
+    getStripePromise,
     locale,
     onRateLimited,
     onStarted,
@@ -225,7 +235,6 @@ export function useHostedWalletCheckout({
     requireCaptcha,
     returnTarget,
     source,
-    stripePromise,
   ]);
 
   return {

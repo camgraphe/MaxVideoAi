@@ -33,7 +33,7 @@ const COMPACT_TIMELINE_SLOT_WIDTH = 122;
 const MIN_TIMELINE_WIDTH = 680;
 const SLOT_INDEXES_FIELD_ID = 'edit_keyframe_slot_indexes';
 
-type LumaRay32KeyframeEditorProps = {
+export type LumaRay32KeyframeEditorProps = {
   engine: EngineCaps;
   caps?: EngineModeUiCaps;
   form: FormState;

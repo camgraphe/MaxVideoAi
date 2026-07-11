@@ -3,7 +3,7 @@
 import { LayoutPanelTop, X } from 'lucide-react';
 import { Button, ButtonLink } from '@/components/ui/Button';
 
-type StoryboardLaunchModalProps = {
+export type StoryboardLaunchModalProps = {
   open: boolean;
   selectedEngineId: string;
   selectedEngineLabel: string;
