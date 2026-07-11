@@ -14,16 +14,17 @@ test('critical marketing pages use CDN caching without browser staleness', () =>
   assert.match(source, /key: 'Vercel-CDN-Cache-Control',\s*value: 'max-age=300, stale-while-revalidate=60'/s);
 
   for (const path of [
-    '/',
     '/fr',
     '/es',
-    '/pricing',
     '/fr/tarifs',
     '/es/precios',
-    '/models/:path*',
     '/fr/modeles/:path*',
     '/es/modelos/:path*',
   ]) {
     assert.match(source, new RegExp(`'${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`));
   }
+
+  const cachePathsBlock = source.match(/const MARKETING_CDN_CACHE_PATHS = \[(.*?)\];/s)?.[1] ?? '';
+  assert.doesNotMatch(cachePathsBlock, /'\/pricing'/);
+  assert.doesNotMatch(cachePathsBlock, /'\/models\/:path\*'/);
 });

@@ -9,6 +9,7 @@ import {
   LOCALE_SET,
   LOCALE_STRIPPABLE_PREFIXES,
   PROTECTED_PREFIXES,
+  applyMarketingEdgeCacheHeaders,
   containsLocalePlaceholder,
   extractLocaleFromPathname,
   finalizeResponse,
@@ -173,6 +174,15 @@ export async function middleware(req: NextRequest) {
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
   if (!isProtectedRoute) {
+    if (
+      isMarketingPath &&
+      (req.method === 'GET' || req.method === 'HEAD') &&
+      !hasLogoutIntentCookie &&
+      !trackingNoindex &&
+      !appNoindex
+    ) {
+      applyMarketingEdgeCacheHeaders(response, pathname);
+    }
     return finalizeResponse(response, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
 

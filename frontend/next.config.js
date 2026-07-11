@@ -12,13 +12,10 @@ const MARKETING_CDN_CACHE_HEADERS = [
   },
 ];
 const MARKETING_CDN_CACHE_PATHS = [
-  '/',
   '/fr',
   '/es',
-  '/pricing',
   '/fr/tarifs',
   '/es/precios',
-  '/models/:path*',
   '/fr/modeles/:path*',
   '/es/modelos/:path*',
 ];
