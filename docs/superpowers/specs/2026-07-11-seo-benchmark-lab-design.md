@@ -18,6 +18,8 @@ The page must help a visitor answer four questions:
 
 The lab is a public evidence surface for people first. Search engines, answer engines, journalists, and other sites can also use its explicit definitions, dates, sources, and internal links. The feature must not fabricate historical test records or present a manually calibrated score as a reproducible scientific benchmark.
 
+Transparency must strengthen the product rather than make every page sound apologetic. Model pages and comparison scorecards use positive, accurate source labels and link to one concise methodology page.
+
 ## Evidence Baseline
 
 The July 11 data-quality review confirmed the following starting state.
@@ -43,10 +45,9 @@ The read-only review of the production database found:
 - 469 completed and 103 failed terminal jobs in that filtered cohort;
 - job-lifecycle duration available for all 469 completed jobs;
 - detailed `completed` generation-metric events for only 213 of the 469 completed jobs, or 45.4% coverage;
-- 131 refund receipts during the same 30-day window;
 - data fresh through 2026-07-11.
 
-Refund provenance is incomplete for the historical window: 20 of the 131 receipts are explicitly classified as `auto_render_failure_refund`, while 111 are unclassified. An unclassified refund may have been created automatically by an older code path, but the database does not prove that. The first public version therefore reports **failed-job refund coverage**, not an automatic-refund rate. It must not relabel unclassified receipts as automatic.
+The product code automatically refunds eligible failed paid generations. The page states that behavior directly. Refund automation is not a benchmark KPI in this V1, so the lab does not publish a separate automation percentage or add refund-provenance caveats.
 
 The public latency calculation must therefore use the canonical job lifecycle (`app_jobs.updated_at - app_jobs.created_at`) rather than the partial generation-event stream. The detailed event table remains useful for diagnostics, but it is not complete enough to be the public latency source in this version.
 
@@ -73,7 +74,7 @@ Seedance 2.0's failures are concentrated on several dates rather than evenly dis
 
 ### 1. Hybrid evidence lab — selected
 
-Publish all existing editorial scorecards with an explicit historical-evidence label, publish sourced specifications, and add fresh observed production metrics only when cohort and metric-specific thresholds are met.
+Publish all existing scorecards with the positive `MaxVideoAI editorial score` label, publish sourced specifications, and add fresh observed production metrics only when cohort and metric-specific thresholds are met.
 
 This approach gives the page useful data at launch while preserving the distinction between subjective quality evaluation and measured platform performance. It also creates a contract for future documented benchmark runs without pretending those runs already exist.
 
@@ -122,11 +123,11 @@ Render the 31 existing score rows in a usable model table. Each row includes:
 - score last-updated date when available;
 - evidence status.
 
-The default evidence status for current rows is `Historical editorial calibration`. Missing dates render as `Update date not recorded`, not as today's date.
+The visible source label for current rows is `MaxVideoAI editorial score`. Dates appear where they are recorded. When a row has no update date, the table simply omits the date and never backfills today's date.
 
 The current overall score retains the production formula already used by the model and comparison hubs: the unweighted arithmetic mean of prompt adherence (`fidelity`), motion realism (`motion`), and temporal consistency (`consistency`), rounded to one decimal. Visual quality, anatomy, text rendering, audio/lip-sync, sequencing, controllability, speed/stability, and pricing are visible supporting criteria but are not silently folded into that overall value.
 
-Observed latency, reliability, and refunds never change the editorial quality overall. Pricing never changes the editorial quality overall.
+Observed latency and reliability never change the editorial quality overall. Pricing never changes the editorial quality overall.
 
 ### 3. Sourced model specifications
 
@@ -146,8 +147,7 @@ Render a rolling 30-day table generated on the server. For each eligible model, 
 - successful and failed job counts;
 - success rate;
 - completed-job median render time;
-- completed-job P90 render time;
-- refund coverage for failed jobs.
+- completed-job P90 render time.
 
 The page does not render user IDs, job IDs, prompts, uploaded media, provider payloads, error messages, or per-user segments.
 
@@ -160,14 +160,11 @@ Eligibility and metric rules are:
 - latency is published only with at least 30 completed jobs and 5 distinct non-admin users;
 - latency includes completed jobs with non-null timestamps and `updated_at > created_at`;
 - median is `PERCENTILE_CONT(0.5)` and P90 is `PERCENTILE_CONT(0.9)` over end-to-end job duration;
-- refund coverage equals failed jobs with a refunded payment status or refund receipt divided by failed terminal jobs;
-- refund numerator and denominator are displayed together;
-- when fewer than 5 failed jobs exist, show the raw refunded/failed count with a `small failure sample` label instead of a standalone percentage;
-- when no failed jobs exist, render `No failed jobs in this window` rather than `100% refund rate`;
-- receipts without explicit provenance are never counted as confirmed automatic refunds;
 - unknown, pending, stale, or non-terminal states are excluded from the rate denominator.
 
-For a model that does not meet the publication threshold, the page still shows its editorial scorecard and specifications. Its operational cell says `Not enough diverse production data yet`. It does not expose a percentage based on a tiny or administrator-dominated sample.
+The operational table contains only models that meet the publication threshold. A short neutral line below it says that additional models appear as their rolling sample matures. Models outside the operational cohort still retain their complete editorial scorecards and specifications; the page does not attach a negative warning cell to every one of them.
+
+A compact product-protection note says: `Failed paid generations are automatically refunded.` It is not presented as a scored benchmark criterion or a percentage.
 
 ### 5. Methodology and weighting
 
@@ -217,8 +214,6 @@ The visible limitations section states that:
 - provider capacity and queues change over time;
 - production traffic is not a controlled experiment;
 - rolling performance may reflect incidents, routing changes, and user-selected settings;
-- historical editorial scores do not have complete run archives;
-- historical refund receipts are not consistently classified as automatic or manual;
 - a high operational success rate does not imply better visual quality;
 - MaxVideoAI sells access to the compared models and therefore discloses its commercial interest.
 
@@ -235,7 +230,6 @@ Create a server-only benchmark metrics module that owns the public aggregate que
 The server module:
 
 - reads `app_jobs` as the source of terminal outcomes and end-to-end duration;
-- reads `app_receipts` and the job payment status only to measure failed-job refund coverage;
 - excludes `ADMIN_EXCLUDED_USER_IDS` before grouping;
 - groups by canonical engine ID;
 - maps engine IDs to public model slugs through the existing catalog rather than duplicating model names;
@@ -260,17 +254,12 @@ type PublicBenchmarkPerformance = {
   successRate: number | null;
   medianDurationMs: number | null;
   p90DurationMs: number | null;
-  refundedFailures: number;
-  refundCoverageRate: number | null;
   eligibility: 'publishable' | 'insufficient-volume' | 'insufficient-diversity';
   latencyEligibility: 'publishable' | 'insufficient-completions';
-  refundSample: 'none' | 'small' | 'publishable';
 };
 ```
 
 The route receives no distinct-user count for display. The query uses that count only to derive eligibility.
-
-This lot does not retroactively classify old refund receipts. If automatic-refund provenance is standardized in a later billing-instrumentation change, the lab may add a separate confirmed automatic-refund metric after a complete observation window. Until then, the visible label remains `Refund coverage for failed jobs`.
 
 ## Integration With Existing Pages
 
@@ -282,7 +271,7 @@ Add one unobtrusive localized `How we benchmark` link to:
 
 The links point to the visitor's locale-specific Benchmark Lab. Existing score values, model availability, legacy-model access, comparison publication, pricing, and generation behavior remain unchanged.
 
-Legacy models remain eligible for editorial display when they are still accessible on MaxVideoAI. `Legacy` describes product generation or positioning; it is separate from `Historical editorial calibration`, which describes evidence quality.
+Legacy models remain eligible for editorial display when they are still accessible on MaxVideoAI. `Legacy` describes product generation or positioning and does not reduce their editorial score visibility.
 
 ## SEO and Structured Data
 
@@ -296,7 +285,7 @@ The page emits:
 - crawlable semantic tables and headings;
 - localized canonical and hreflang URLs.
 
-Do not emit `Dataset` structured data in this lot. The historical score evidence is incomplete and the observed snapshot is not yet a stable downloadable dataset. Dataset markup can be considered later when MaxVideoAI publishes a versioned downloadable table with a durable license and distribution URL.
+Do not emit `Dataset` structured data in this lot because the V1 does not publish a downloadable dataset. Dataset markup can be considered later with a versioned download, durable license, and distribution URL.
 
 The new route is discovered by the existing localized sitemap system. Tests must confirm that all three exact locale URLs are present once and that no admin or API route becomes discoverable.
 
@@ -305,7 +294,7 @@ The new route is discovered by the existing localized sitemap system. Tests must
 - If the database is unavailable, render editorial scores, sourced specifications, and methodology normally. The observed section says that the current production snapshot is temporarily unavailable.
 - If no model meets the operational threshold, render the threshold explanation and scorecards rather than an empty table.
 - If an engine cannot map to a public model slug, omit it from the public table and retain it only in server diagnostics.
-- If a model score has no update date, show the explicit missing-date label.
+- If a model score has no update date, omit the date instead of inventing one.
 - If a metric is ineligible, render its reason; never substitute zero.
 - If a specification source is absent, do not invent one or present the spec as provider-verified.
 
@@ -317,25 +306,23 @@ Implementation uses focused contract tests before production changes. Automated 
 2. criterion IDs align with the score fields consumed by current model and comparison surfaces;
 3. the current overall formula remains the unweighted mean of fidelity, motion, and consistency;
 4. all 31 current scores remain in range and unique;
-5. missing historical dates render as missing rather than being backfilled;
-6. historical scores are not labeled as documented runs;
+5. missing historical dates are omitted rather than being backfilled or repeated as negative warnings;
+6. current scores use the positive `MaxVideoAI editorial score` label and are not mislabeled as documented runs;
 7. administrator users are excluded before aggregation;
 8. duplicate event rows cannot duplicate canonical jobs because public outcomes use `app_jobs` grain;
-9. success, latency, and refund-coverage formulas match this specification;
+9. success and latency formulas match this specification;
 10. rate publication requires 30 terminal jobs and 5 distinct users;
 11. latency publication separately requires 30 completed jobs;
-12. refund percentages are suppressed for fewer than 5 failed jobs while numerator and denominator remain available;
-13. no-failure cohorts render a no-failure state;
-14. unclassified refund receipts are not labeled as confirmed automatic refunds;
-15. non-terminal jobs are excluded from denominators;
-16. invalid or missing durations are excluded without changing outcome counts;
-17. database failure returns an unavailable snapshot rather than zeros;
-18. the route stays a thin Server Component and route-local sections own rendering;
-19. English, French, and Latin American Spanish contain equivalent definitions and caveats;
-20. canonical, hreflang, sitemap, and structured-data output are correct in all three locales;
-21. model and comparison score surfaces link to the localized lab;
-22. no user ID, job ID, prompt, media URL, provider payload, or error detail enters the public data contract;
-23. existing model, comparison, sitemap, localization, pricing, and architecture tests remain green.
+12. non-terminal jobs are excluded from denominators;
+13. invalid or missing durations are excluded without changing outcome counts;
+14. database failure returns an unavailable snapshot rather than zeros;
+15. the route stays a thin Server Component and route-local sections own rendering;
+16. English, French, and Latin American Spanish contain equivalent definitions and caveats;
+17. canonical, hreflang, sitemap, and structured-data output are correct in all three locales;
+18. model and comparison score surfaces link to the localized lab;
+19. no user ID, job ID, prompt, media URL, provider payload, or error detail enters the public data contract;
+20. refund copy states directly that failed paid generations are automatically refunded and exposes no unsupported automation percentage;
+21. existing model, comparison, sitemap, localization, pricing, and architecture tests remain green.
 
 Manual browser checks cover:
 
@@ -343,7 +330,6 @@ Manual browser checks cover:
 - semantic table overflow and keyboard navigation;
 - a model with fully publishable performance;
 - a model with publishable success rate but insufficient completed jobs for latency;
-- a model with no failures;
 - a model with insufficient operational evidence;
 - the database-unavailable state;
 - links from representative model and comparison scorecards;
@@ -354,8 +340,10 @@ Manual browser checks cover:
 - The page contains real model data at launch; it is not a methodology-only shell.
 - All existing editorial scores are clearly identified as editorial evidence.
 - No historical score is presented as a documented run without the required metadata.
+- Model and comparison pages do not repeat defensive caveats; they use concise positive source labels and link to the central methodology.
 - Eligible production metrics are fresh, anonymized, deduplicated at job grain, and accompanied by window and sample size.
 - Low-volume or low-diversity cohorts do not expose misleading rates.
+- Failed paid generations are described directly as automatically refunded, without an automation-rate KPI or admin caveat.
 - Editorial quality, product specifications, pricing, and observed performance remain visibly separate.
 - The page remains useful when the database is unavailable.
 - Every visible claim has a source class, definition, date, or limitation.
@@ -375,7 +363,7 @@ After deployment:
 - log every methodology or formula change in the public changelog;
 - do not silently rewrite historical score dates.
 
-The first documented prompt-pack evaluation is a later evidence-collection operation because it creates paid generations and requires explicit execution approval. It can replace `Historical editorial calibration` model by model as complete run evidence becomes available.
+The first documented prompt-pack evaluation is a later evidence-collection operation because it creates paid generations and requires explicit execution approval. Complete future runs can add a `Documented benchmark run` badge model by model.
 
 ## Non-Goals
 
