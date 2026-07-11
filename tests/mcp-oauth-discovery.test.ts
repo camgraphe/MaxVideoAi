@@ -32,6 +32,22 @@ test('protected resource metadata rejects unsafe authorization server URLs', () 
   );
 });
 
+test('protected resource metadata permits explicit loopback HTTP for local OAuth development', () => {
+  assert.deepEqual(
+    buildProtectedResourceMetadata({
+      resourceUrl: 'http://127.0.0.1:3100/mcp',
+      supabaseUrl: 'http://127.0.0.1:54321',
+    }),
+    {
+      resource: 'http://127.0.0.1:3100/mcp',
+      resource_name: 'MaxVideoAI MCP',
+      authorization_servers: ['http://127.0.0.1:54321/auth/v1'],
+      bearer_methods_supported: ['header'],
+      scopes_supported: ['openid', 'email', 'profile'],
+    }
+  );
+});
+
 test('protected resource route is flag-gated and publicly cacheable only when enabled', () => {
   const routePath = join(
     process.cwd(),
@@ -40,7 +56,7 @@ test('protected resource route is flag-gated and publicly cacheable only when en
   assert.equal(existsSync(routePath), true);
   const source = readFileSync(routePath, 'utf8');
 
-  assert.match(source, /FEATURES\.mcp\.discovery/);
+  assert.match(source, /isMcpFoundationFeatureEnabled\('discovery'\)/);
   assert.match(source, /public, max-age=300/);
   assert.match(source, /buildProtectedResourceMetadata/);
   assert.doesNotMatch(source, /SERVICE_ROLE|SUPABASE_SECRET|accessToken/);

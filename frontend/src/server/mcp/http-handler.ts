@@ -1,6 +1,5 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 
-import { FEATURES } from '@/content/feature-flags';
 import { isMcpApiHost } from '@/lib/mcp-host-routing';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
@@ -8,6 +7,7 @@ import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
 import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
 import { createMaxVideoAiMcpServer } from '@/server/mcp/server';
+import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 
 const MAX_BODY_BYTES = 128 * 1024;
 const PRIVATE_CACHE_CONTROL = 'private, no-store';
@@ -111,7 +111,9 @@ export async function handleMcpHttpRequest(
   request: Request,
   injectedDeps?: McpHttpHandlerDeps
 ): Promise<Response> {
-  const enabled = injectedDeps?.enabled ?? (FEATURES.mcp.transport && FEATURES.mcp.oauth);
+  const enabled =
+    injectedDeps?.enabled ??
+    (isMcpFoundationFeatureEnabled('transport') && isMcpFoundationFeatureEnabled('oauth'));
   if (!enabled) return notFound();
 
   const config = injectedDeps?.config ?? resolveMcpConfig();

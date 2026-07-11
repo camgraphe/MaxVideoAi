@@ -1,11 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
-import { FEATURES } from '@/content/feature-flags';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 import {
   buildConsentLoginPath,
   isValidAuthorizationId,
   resolveOAuthRedirectUrl,
 } from '@/server/mcp/oauth-consent';
+import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { OAuthConsentForm } from './_components/OAuthConsentForm';
 import { MCP_OAUTH_CONSENT_COPY as copy } from './_lib/consent-copy';
 
@@ -27,7 +27,7 @@ function InvalidAuthorizationRequest() {
 }
 
 export default async function OAuthConsentPage({ searchParams }: ConsentPageProps) {
-  if (!FEATURES.mcp.oauth) notFound();
+  if (!isMcpFoundationFeatureEnabled('oauth')) notFound();
 
   const params = await searchParams;
   const authorizationId = params.authorization_id;

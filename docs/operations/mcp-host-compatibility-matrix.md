@@ -16,11 +16,13 @@ This matrix separates protocol evidence from real hosted OAuth evidence. Do not 
 | Host | Connection mechanism | Local evidence | Hosted OAuth evidence | Status |
 | --- | --- | --- | --- | --- |
 | MCP TypeScript SDK 1.29.0 | In-memory client and raw Streamable HTTP fixtures | `initialize`, `tools/list`, all three tool calls, structured content, annotations, and safe errors pass | Not applicable | Protocol contract passes |
-| Codex CLI 0.46.0 | `codex mcp add --url …`; OAuth via `codex mcp login` with the remote MCP client enabled | Local CLI advertises Streamable HTTP URL registration and experimental OAuth login | Preview deployment not available | Pending hosted smoke test |
+| Codex CLI 0.144.1 | `codex mcp add --url …`; OAuth via `codex mcp login` | Full local PKCE flow passes: protected-resource discovery, dynamic registration, MaxVideoAI login and consent, token exchange, and one authenticated `list_models` call returning 40 models | Preview deployment not available; refresh and revocation still untested | Local OAuth passes; hosted smoke test pending |
 | Codex app / library | Direct remote MCP URL or curated distribution | Server shape is independent of library inclusion | Installation, consent UI, refresh, revocation, and tool rendering not yet exercised | Pending hosted smoke test |
 | Claude Code | `claude mcp add --transport http …`; authenticate from `/mcp` | Anthropic documents remote HTTP and OAuth login with secure refresh | Claude binary is not installed in this workspace; preview deployment not available | Pending hosted smoke test |
 
-Codex’s locally installed CLI confirms `--url` for Streamable HTTP and an OAuth login command. OpenAI’s API also supports remote MCP URLs, bearer authorization, and filtering by `readOnlyHint`: [OpenAI MCP tool reference](https://platform.openai.com/docs/api-reference/responses/create#responses-create-tools).
+Codex CLI 0.144.1 was exercised through the complete local OAuth flow. The older locally bundled 0.46.0 client did not follow RFC 9728 protected-resource discovery and fell back to `/authorize`; do not use it as compatibility evidence. OpenAI’s API also supports remote MCP URLs, bearer authorization, and filtering by `readOnlyHint`: [OpenAI MCP tool reference](https://platform.openai.com/docs/api-reference/responses/create#responses-create-tools).
+
+During the 0.144.1 local test, Codex requested every standard scope advertised by the Supabase authorization server, including `phone`, even though the MaxVideoAI protected-resource metadata advertises only `openid`, `email`, and `profile`. The consent UI exposed all four scopes before approval. Resolve this host/provider scope mismatch before enabling production discovery.
 
 Anthropic documents `claude mcp add --transport http <name> <url>` and browser OAuth through `/mcp`, including automatic refresh and a clear-authentication control: [Claude Code MCP documentation](https://docs.anthropic.com/en/docs/claude-code/mcp).
 
@@ -30,7 +32,7 @@ Codex CLI:
 
 ```bash
 codex mcp add --url https://api.maxvideoai.com/mcp maxvideoai
-codex mcp login -c experimental_use_rmcp_client=true maxvideoai
+codex mcp login maxvideoai
 codex mcp get maxvideoai
 ```
 

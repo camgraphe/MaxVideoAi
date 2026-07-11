@@ -16,11 +16,32 @@ export function buildConsentLoginPath(authorizationId: string): string {
   return `/login?next=${encodeURIComponent(nextPath)}`;
 }
 
+function firstForwardedValue(value: string | null): string | null {
+  const first = value?.split(',')[0]?.trim();
+  return first || null;
+}
+
 export function isSameOriginConsentRequest(request: Pick<Request, 'headers' | 'url'>): boolean {
   const origin = request.headers.get('origin');
   if (!origin) return false;
   try {
-    return new URL(origin).origin === new URL(request.url).origin;
+    const parsedOrigin = new URL(origin);
+    const requestUrl = new URL(request.url);
+    if (parsedOrigin.origin === requestUrl.origin) return true;
+
+    const externalHost =
+      firstForwardedValue(request.headers.get('x-forwarded-host')) ??
+      firstForwardedValue(request.headers.get('host'));
+    if (!externalHost) return false;
+
+    const forwardedProtocol = firstForwardedValue(request.headers.get('x-forwarded-proto'));
+    const protocol =
+      forwardedProtocol === 'http' || forwardedProtocol === 'https'
+        ? `${forwardedProtocol}:`
+        : requestUrl.protocol;
+    const externalUrl = new URL(`${protocol}//${externalHost}`);
+    if (externalUrl.username || externalUrl.password) return false;
+    return parsedOrigin.origin === externalUrl.origin;
   } catch {
     return false;
   }

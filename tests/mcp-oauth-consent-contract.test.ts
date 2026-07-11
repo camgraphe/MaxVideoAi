@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { sanitizeNextPath } from '../frontend/app/(core)/login/_lib/login-helpers';
+import { shouldHandleLocale } from '../frontend/lib/middleware/routing-locale';
 import {
   buildConsentLoginPath,
   isSameOriginConsentRequest,
@@ -30,6 +31,11 @@ test('OAuth login return preserves only the authorization id', () => {
   assert.equal(sanitizeNextPath('/api/oauth/decision'), '/generate');
 });
 
+test('OAuth consent is a non-localized application route', () => {
+  assert.equal(shouldHandleLocale('/oauth/consent'), false);
+  assert.equal(shouldHandleLocale('/mcp'), true);
+});
+
 test('OAuth decision accepts only same-origin form submissions', () => {
   assert.equal(
     isSameOriginConsentRequest(
@@ -48,6 +54,18 @@ test('OAuth decision accepts only same-origin form submissions', () => {
       })
     ),
     false
+  );
+  assert.equal(
+    isSameOriginConsentRequest(
+      new Request('http://localhost:3100/api/oauth/decision', {
+        method: 'POST',
+        headers: {
+          host: '127.0.0.1:3100',
+          origin: 'http://127.0.0.1:3100',
+        },
+      })
+    ),
+    true
   );
 });
 

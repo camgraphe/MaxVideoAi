@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { FEATURES } from '@/content/feature-flags';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import {
   isSameOriginConsentRequest,
   isValidAuthorizationId,
@@ -17,7 +17,7 @@ function jsonError(error: string, status: number) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!FEATURES.mcp.oauth) return jsonError('not_found', 404);
+  if (!isMcpFoundationFeatureEnabled('oauth')) return jsonError('not_found', 404);
   if (!isSameOriginConsentRequest(request)) return jsonError('origin_forbidden', 403);
 
   const form = await request.formData().catch(() => null);

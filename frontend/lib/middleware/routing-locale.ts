@@ -22,6 +22,7 @@ const NON_LOCALIZED_PREFIXES = [
   '/refund-policy',
   '/login',
   '/auth',
+  '/oauth',
   '/settings',
   '/video',
   '/sitemap-video-pages.xml',

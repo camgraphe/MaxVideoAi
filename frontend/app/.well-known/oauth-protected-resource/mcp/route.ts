@@ -1,13 +1,13 @@
 import { NextResponse } from 'next/server';
-import { FEATURES } from '@/content/feature-flags';
 import { ENV } from '@/lib/env';
 import { resolveMcpConfig } from '@/server/mcp/config';
+import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { buildProtectedResourceMetadata } from '@/server/mcp/oauth-resource-metadata';
 
 export const runtime = 'nodejs';
 
 export function GET() {
-  if (!FEATURES.mcp.discovery) {
+  if (!isMcpFoundationFeatureEnabled('discovery')) {
     return new NextResponse(null, {
       status: 404,
       headers: { 'Cache-Control': 'private, no-store' },

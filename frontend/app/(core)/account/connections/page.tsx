@@ -3,8 +3,8 @@ import { notFound, redirect } from 'next/navigation';
 
 import { AppSidebar } from '@/components/AppSidebar';
 import { HeaderBar } from '@/components/HeaderBar';
-import { FEATURES } from '@/content/feature-flags';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
+import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import {
   McpConnectionsClient,
   type McpConnectionGrant,
@@ -14,7 +14,7 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = { title: 'Connected applications', robots: { index: false, follow: false } };
 
 export default async function McpConnectionsPage() {
-  if (!FEATURES.mcp.oauth) notFound();
+  if (!isMcpFoundationFeatureEnabled('oauth')) notFound();
 
   const supabase = await createSupabaseServerClient();
   const { data: userData, error: userError } = await supabase.auth.getUser();
