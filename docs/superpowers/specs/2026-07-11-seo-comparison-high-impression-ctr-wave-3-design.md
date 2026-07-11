@@ -111,7 +111,7 @@ Titles, descriptions, hero introductions, verdicts, normalized card content, and
 
 - Both are available, include audio, reach 1080p/1440p/4K, and list the same per-resolution price tiers.
 - LTX 2.3 Fast adds 9:16, start/end-frame control, and 24/48 fps options alongside 25/50 fps.
-- Durations above ten seconds on LTX 2.3 Fast require 1080p at 25 fps.
+- Both models require 1080p at 25 fps for durations above ten seconds; this is a shared constraint, not a differentiator.
 - Decision: choose 2.3 Fast for vertical delivery and newer framing controls; stay on 2.0 Fast when an established 16:9 workflow already fits the job.
 - Related comparison: `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro`.
 
@@ -126,8 +126,9 @@ Titles, descriptions, hero introductions, verdicts, normalized card content, and
 ### LTX Video 2.0 Pro vs Wan 2.6
 
 - LTX 2.0 Pro offers 1080p/1440p/4K, 25/50 fps, audio, ten-second clips, and 16:9.
-- Wan 2.6 offers 720p/1080p, broader aspect ratios, up to fifteen seconds in text/image modes, and reference-video input.
-- Wan reference-video mode must be described separately from text/image mode: five or ten seconds and no generated audio.
+- Wan 2.6 text-to-video offers 720p/1080p, optional audio, five to fifteen seconds, and exactly five ratios: 16:9, 9:16, 1:1, 4:3, and 3:4.
+- Wan image-to-video offers 720p/1080p, optional audio, and five to fifteen seconds, but its aspect ratio follows the source image instead of exposing the text-mode ratio selector.
+- Wan reference-video mode remains separate: it explicitly supports 16:9, 9:16, 1:1, 4:3, and 3:4, runs for five or ten seconds, and generates no audio.
 - Decision: stay on LTX 2.0 Pro for high-resolution landscape output; choose Wan 2.6 for broader ratios, longer text/image clips, or video-reference workflows.
 - Related comparison: `/ai-video-engines/ltx-2-3-fast-vs-wan-2-6`.
 
@@ -141,7 +142,8 @@ Titles, descriptions, hero introductions, verdicts, normalized card content, and
 
 ### LTX 2.3 Pro vs LTX Video 2.0 Fast
 
-- LTX 2.3 Pro adds 9:16, audio-to-video, extend, retake, start/end-frame control, and up to twenty seconds.
+- LTX 2.3 Pro text-to-video and image-to-video offer only six, eight, or ten seconds. Its twenty-second ceiling belongs to audio-to-video, extension, or retake, not standard text/image generation.
+- LTX 2.3 Pro also adds 9:16 and start/end-frame control.
 - LTX 2.0 Fast remains available, supports 16:9 text/image generation, audio, up to twenty seconds, and lower listed price tiers than 2.3 Pro.
 - Do not claim an unsupported quality percentage or speed multiplier.
 - Decision: stay on 2.0 Fast for economical 16:9 generation; choose 2.3 Pro for advanced production modes and vertical delivery.
@@ -166,8 +168,8 @@ Titles, descriptions, hero introductions, verdicts, normalized card content, and
 
 - Both are available, include audio, and list the same 1080p/1440p/4K per-second tiers.
 - LTX 2.0 Pro is a ten-second 16:9 text/image route.
-- LTX 2.3 Pro reaches twenty seconds and adds 9:16, audio-to-video, extend, retake, and newer frame controls.
-- Decision: stay on 2.0 Pro when its familiar 16:9 text/image workflow is sufficient; move to 2.3 Pro for vertical output, longer clips, audio-led work, extension, or retake.
+- LTX 2.3 Pro text/image generation offers six, eight, or ten seconds; twenty seconds applies only to audio-to-video, extension, or retake. It also adds 9:16 and newer start/end-frame controls.
+- Decision: stay on 2.0 Pro when its familiar 16:9 text/image workflow is sufficient; move to 2.3 Pro for vertical output, audio-led work, extension, retake, or start/end-frame control.
 - Related comparison: `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro`.
 
 ### Google Veo 3.1 vs Google Veo 3.1 Lite
@@ -224,6 +226,9 @@ The focused contract must verify:
 - every French and Spanish block differs from its English counterpart;
 - Spanish avoids the disallowed Spain-specific vocabulary and accented `vídeo`;
 - the seven earlier-model comparisons state availability, staying, and migration in every locale;
+- every earlier-model requirement binds the comparison slug to the exact earlier `modelSlug` and assigned related comparison, verifies the catalog entry is `available`, and requires each availability/stay/migration block to name that earlier model's catalog `marketingName`;
+- all three locales state the LTX 2.3 Pro mode-specific durations, Wan 2.6 ratios per mode, and the shared long-duration constraint of both LTX Fast models;
+- French wave-3 copy uses `images de début et de fin` or `contrôle début/fin`, never `images clés`;
 - unavailable, removed, abandoned, or discontinued language is rejected for those available models;
 - no locale-prefixed href appears in override data.
 
@@ -238,13 +243,12 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/comparison-high-imp
 npm --prefix frontend run lint
 npm run lint:exposure
 git diff --check origin/main...HEAD
-pnpm test:validate
 pnpm --prefix frontend run build
 ```
 
-Smoke-check one target comparison in English, French, and Spanish. Confirm HTTP 200, localized title and verdict, canonical, four hreflang links, and JSON-LD output.
+The focused run must report 7/7 wave-3 and 17/17 architecture tests, or 24/24 total. The already-recorded 1705/1705 complete-suite run does not need to be repeated for this correction pass.
 
-If the complete suite regenerates the historical comparison-indexation matrices, restore only those two generated files before final scope review.
+Smoke-check `ltx-2-3-fast-vs-ltx-2-fast`, `ltx-2-vs-wan-2-6`, and `ltx-2-3-pro-vs-ltx-2-fast` in English, French, and Spanish. Confirm numeric HTTP 200, localized content, self-canonical, four hreflang links, and JSON-LD output for all nine pages.
 
 ## Non-Goals
 

@@ -37,14 +37,35 @@ const REQUIRED_RELATED_LINKS = {
   'ltx-2-3-fast-vs-wan-2-5': '/ai-video-engines/ltx-2-3-fast-vs-wan-2-6',
 } as const;
 
-const EARLIER_MODEL_RELATED_LINKS = {
-  'ltx-2-3-fast-vs-ltx-2-fast': REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-ltx-2-fast'],
-  'ltx-2-vs-ltx-2-3-fast': REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-fast'],
-  'ltx-2-vs-wan-2-6': REQUIRED_RELATED_LINKS['ltx-2-vs-wan-2-6'],
-  'ltx-2-3-pro-vs-ltx-2-fast': REQUIRED_RELATED_LINKS['ltx-2-3-pro-vs-ltx-2-fast'],
-  'seedance-2-0-vs-wan-2-5': REQUIRED_RELATED_LINKS['seedance-2-0-vs-wan-2-5'],
-  'ltx-2-vs-ltx-2-3-pro': REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-pro'],
-  'ltx-2-3-fast-vs-wan-2-5': REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-wan-2-5'],
+const EARLIER_MODEL_REQUIREMENTS = {
+  'ltx-2-3-fast-vs-ltx-2-fast': {
+    modelSlug: 'ltx-2-fast',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-ltx-2-fast'],
+  },
+  'ltx-2-vs-ltx-2-3-fast': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-fast'],
+  },
+  'ltx-2-vs-wan-2-6': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-wan-2-6'],
+  },
+  'ltx-2-3-pro-vs-ltx-2-fast': {
+    modelSlug: 'ltx-2-fast',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-pro-vs-ltx-2-fast'],
+  },
+  'seedance-2-0-vs-wan-2-5': {
+    modelSlug: 'wan-2-5',
+    relatedHref: REQUIRED_RELATED_LINKS['seedance-2-0-vs-wan-2-5'],
+  },
+  'ltx-2-vs-ltx-2-3-pro': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-pro'],
+  },
+  'ltx-2-3-fast-vs-wan-2-5': {
+    modelSlug: 'wan-2-5',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-wan-2-5'],
+  },
 } as const;
 
 type Locale = 'en' | 'fr' | 'es';
@@ -82,6 +103,19 @@ function collectText(entry: ComparePageOverride): string {
   ]
     .filter(Boolean)
     .join(' ');
+}
+
+function collectEditorialBlocks(entry: ComparePageOverride): string[] {
+  return [
+    entry.meta?.description,
+    entry.heroIntro,
+    entry.quickVerdict?.body,
+    ...(entry.topCards ?? []).map((card) => `${card.title} ${card.body}`),
+    ...(entry.faq?.items ?? []).map((item) => {
+      const answers = Array.isArray(item.answer) ? item.answer : [item.answer];
+      return `${item.question} ${answers.join(' ')}`;
+    }),
+  ].filter((block): block is string => Boolean(block));
 }
 
 function escapeRegExp(value: string): string {
@@ -129,6 +163,119 @@ function assertLocalizedField(
       `${leftLocale.toUpperCase()}/${rightLocale.toUpperCase()} ${field} should be localized for ${slug}`,
     );
   });
+}
+
+function assertNamedSemanticBlock(
+  blocks: string[],
+  semanticPattern: RegExp,
+  marketingName: string,
+  message: string,
+): void {
+  assert.ok(
+    blocks.some(
+      (block) => semanticPattern.test(block) && new RegExp(escapeRegExp(marketingName), 'i').test(block),
+    ),
+    message,
+  );
+}
+
+function assertOneBlockMatches(
+  entry: ComparePageOverride,
+  patterns: readonly RegExp[],
+  message: string,
+): void {
+  assert.ok(
+    collectEditorialBlocks(entry).some((block) => patterns.every((pattern) => pattern.test(block))),
+    message,
+  );
+}
+
+function assertModeFacts(locale: Locale): void {
+  const language = {
+    en: {
+      text: /text-to-video/i,
+      image: /image-to-video/i,
+      sourceRatio: /(?:follows|inherits) the (?:source|input) image(?:'s)? (?:aspect )?ratio/i,
+      reference: /reference-video/i,
+      silent: /(?:silent|no (?:generated )?audio|does not generate audio)/i,
+      aboveTen: /(?:above|beyond|over|longer than) (?:ten|10) seconds/i,
+      both: /(?:both models|both Fast models|each model)/i,
+      twenty: /(?:20|twenty)[ -]second/i,
+      audioToVideo: /audio-to-video/i,
+      extension: /exten(?:d|sion)/i,
+      retake: /retake/i,
+    },
+    fr: {
+      text: /texte-vers-vidéo/i,
+      image: /image-vers-vidéo/i,
+      sourceRatio: /(?:suit|reprend|conserve) le ratio de l’image source/i,
+      reference: /(?:vidéo de référence|référence-vidéo)/i,
+      silent: /(?:silencieux|sans audio|ne génère pas d’audio)/i,
+      aboveTen: /(?:au-delà de|plus de) (?:dix|10) secondes/i,
+      both: /(?:les deux modèles|les deux Fast|chaque modèle)/i,
+      twenty: /(?:20|vingt) secondes/i,
+      audioToVideo: /audio-vers-vidéo/i,
+      extension: /extension/i,
+      retake: /retake/i,
+    },
+    es: {
+      text: /texto a video/i,
+      image: /imagen a video/i,
+      sourceRatio: /(?:sigue|hereda|conserva) la (?:relación|proporción) de la imagen (?:fuente|de origen)/i,
+      reference: /video de referencia/i,
+      silent: /(?:silencioso|sin audio|no genera audio)/i,
+      aboveTen: /(?:más de|por encima de) (?:diez|10) segundos/i,
+      both: /(?:ambos modelos|los dos modelos|ambos Fast|cada modelo)/i,
+      twenty: /(?:20|veinte) segundos/i,
+      audioToVideo: /audio a video/i,
+      extension: /exten(?:der|sión)/i,
+      retake: /retake/i,
+    },
+  }[locale];
+
+  for (const slug of ['ltx-2-3-pro-vs-ltx-2-fast', 'ltx-2-vs-ltx-2-3-pro'] as const) {
+    const entry = getEntry(locale, slug);
+    const blocks = collectEditorialBlocks(entry);
+    assertOneBlockMatches(
+      entry,
+      [/LTX 2\.3 Pro/i, language.text, language.image, /6/, /8/, /10/],
+      `${locale} should state LTX 2.3 Pro text/image durations are 6, 8, or 10 seconds for ${slug}`,
+    );
+    assertOneBlockMatches(
+      entry,
+      [/LTX 2\.3 Pro/i, language.twenty, language.audioToVideo, language.extension, language.retake],
+      `${locale} should reserve LTX 2.3 Pro 20-second claims for audio-to-video, extension, or retake in ${slug}`,
+    );
+    blocks.filter((block) => /LTX 2\.3 Pro/i.test(block) && language.twenty.test(block)).forEach((block) => {
+      assert.ok(
+        [language.audioToVideo, language.extension, language.retake].some((pattern) => pattern.test(block)),
+        `${locale} must qualify every LTX 2.3 Pro 20-second claim by an eligible mode in ${slug}`,
+      );
+    });
+  }
+
+  const wanEntry = getEntry(locale, 'ltx-2-vs-wan-2-6');
+  assertOneBlockMatches(
+    wanEntry,
+    [/Wan 2\.6/i, language.text, /16:9/, /9:16/, /1:1/, /4:3/, /3:4/],
+    `${locale} should list all five Wan 2.6 text-mode ratios`,
+  );
+  assertOneBlockMatches(
+    wanEntry,
+    [/Wan 2\.6/i, language.image, language.sourceRatio],
+    `${locale} should say Wan 2.6 image mode follows the source ratio`,
+  );
+  assertOneBlockMatches(
+    wanEntry,
+    [language.reference, /16:9/, /9:16/, /1:1/, /4:3/, /3:4/, /5/, /10/, language.silent],
+    `${locale} should keep Wan 2.6 reference mode separate with explicit ratios, 5/10 seconds, and no audio`,
+  );
+
+  assertOneBlockMatches(
+    getEntry(locale, 'ltx-2-3-fast-vs-ltx-2-fast'),
+    [/LTX 2\.3 Fast/i, /LTX Video 2\.0 Fast/i, language.both, language.aboveTen, /1080p/i, /25 fps/i],
+    `${locale} should state the shared Fast-model constraint above ten seconds`,
+  );
 }
 
 function assertCompleteOverride(locale: Locale, slug: string): void {
@@ -198,6 +345,13 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         );
       });
     });
+
+    assertModeFacts(locale);
+    if (locale === 'fr') {
+      TARGET_COMPARISONS.forEach(([slug]) => {
+        assert.doesNotMatch(collectText(getEntry(locale, slug)), /images clés/i, `fr should avoid images clés in ${slug}`);
+      });
+    }
   });
 }
 
@@ -212,7 +366,7 @@ test('earlier-model comparisons explain availability, staying, and migration in 
     },
     fr: {
       available: /\b(disponibles?|accessibles?)\b/i,
-      stay: /\b(rester|restez|conserver|gardez|continuer)\b/i,
+      stay: /\b(rester|restez|conserver|conservez|gardez|continuer)\b/i,
       migrate: /(?<![\p{L}\p{N}_])(?:migrer|migrez|évoluer|évoluez|passer)(?![\p{L}\p{N}_])/iu,
       successor: /\b(actuel(?:le)?s?|successeurs?|plus récent(?:e)?s?|nouvelle génération)\b/i,
       unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retir(?:é|ée|és|ées)|abandonn(?:é|ée|és|ées)|arrêt(?:é|ée|és|ées)|discontinu(?:é|ée|és|ées)|supprim(?:é|ée|és|ées)|obsolètes?|(?:pas|plus) (?:disponibles?|accessibles?))(?![\p{L}\p{N}_])/iu,
@@ -220,25 +374,44 @@ test('earlier-model comparisons explain availability, staying, and migration in 
     es: {
       available: /\b(disponibles?|accesibles?)\b/i,
       stay: /\b(quedarse|mantener|seguir|conservar)\b/i,
-      migrate: /\b(migrar|actualizar|pasar|cambiar)\b/i,
+      migrate: /\b(migrar|actualizar|pasar|cambiar|cambia)\b/i,
       successor: /\b(actual(?:es)?|sucesor(?:es)?|más reciente|nueva generación)\b/i,
       unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retirad[oa]s?|abandonad[oa]s?|descontinuad[oa]s?|discontinuad[oa]s?|eliminad[oa]s?|(?:no|ya no) (?:está |están |es |sigue )?(?:disponibles?|accesibles?))(?![\p{L}\p{N}_])/iu,
     },
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const [slug, successorHref] of Object.entries(EARLIER_MODEL_RELATED_LINKS)) {
+    for (const [slug, requirement] of Object.entries(EARLIER_MODEL_REQUIREMENTS)) {
       const entry = getEntry(locale, slug);
       const text = collectText(entry);
+      const blocks = collectEditorialBlocks(entry);
       const language = migrationLanguage[locale];
-      assert.match(text, language.available, `${locale} should say the earlier model remains available for ${slug}`);
-      assert.match(text, language.stay, `${locale} should explain who can stay on the earlier model for ${slug}`);
-      assert.match(text, language.migrate, `${locale} should explain who should migrate for ${slug}`);
+      const earlierModel = CATALOG_BY_SLUG.get(requirement.modelSlug);
+      assert.ok(earlierModel, `missing earlier-model catalog entry ${requirement.modelSlug}`);
+      assert.equal(earlierModel.availability, 'available', `${requirement.modelSlug} should remain available in catalog`);
+      assertNamedSemanticBlock(
+        blocks,
+        language.available,
+        earlierModel.marketingName,
+        `${locale} availability block should name ${earlierModel.marketingName} for ${slug}`,
+      );
+      assertNamedSemanticBlock(
+        blocks,
+        language.stay,
+        earlierModel.marketingName,
+        `${locale} stay block should name ${earlierModel.marketingName} for ${slug}`,
+      );
+      assertNamedSemanticBlock(
+        blocks,
+        language.migrate,
+        earlierModel.marketingName,
+        `${locale} migration block should name ${earlierModel.marketingName} for ${slug}`,
+      );
       assert.match(text, language.successor, `${locale} should identify the current successor for ${slug}`);
       assert.doesNotMatch(text, language.unavailable, `${locale} must not claim an available model is unavailable for ${slug}`);
       assert.ok(
-        entry.primaryLinks?.some((link) => link.href === successorHref),
-        `${locale} should link to current comparison ${successorHref} for ${slug}`,
+        entry.primaryLinks?.some((link) => link.href === requirement.relatedHref),
+        `${locale} should link to current comparison ${requirement.relatedHref} for ${slug}`,
       );
     }
   }

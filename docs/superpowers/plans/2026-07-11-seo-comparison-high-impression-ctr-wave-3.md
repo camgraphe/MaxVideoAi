@@ -16,6 +16,11 @@
 - Spanish copy must use `video` without an accent and avoid `vídeo`, `móvil`, `ordenador`, `monedero`, and `vosotros`.
 - Treat LTX Video 2.0 Pro, LTX Video 2.0 Fast, and Wan 2.5 as available earlier workflows. Never call or imply that they are unavailable, removed, abandoned, discontinued, or inaccessible.
 - On each earlier-model comparison, state who can stay, who should migrate, and which current comparison supports the next decision.
+- Bind every earlier-model comparison to its exact earlier `modelSlug` and assigned related href; verify that catalog entry is `available`, and name its catalog `marketingName` inside every block that expresses availability, staying, or migration.
+- State that LTX 2.3 Pro text/image modes offer 6, 8, or 10 seconds; reserve its 20-second ceiling for audio-to-video, extension, or retake.
+- State Wan 2.6 ratios by mode: text exposes 16:9, 9:16, 1:1, 4:3, and 3:4; image follows the source ratio; reference remains separate with those five explicit ratios, 5/10 seconds, and no audio.
+- State that LTX 2.3 Fast and LTX Video 2.0 Fast both require 1080p at 25 fps above 10 seconds; never present this shared rule as a differentiator.
+- In French wave-3 copy, use `images de début et de fin` or `contrôle début/fin`, never `images clés`.
 - Keep titles at 30–65 characters, descriptions at 120–170 characters, hero introductions at 140 characters or more, verdict bodies at 120 characters or more, exactly four decision cards, at least three links, and three to five FAQ items.
 - Do not invent quality percentages, speed multipliers, a universal Seedance price winner, or capabilities that combine incompatible modes.
 - Keep every href canonical and locale-neutral. Every page must link to both exact model pages and the exact related comparison assigned in this plan.
@@ -57,7 +62,7 @@
 **Interfaces:**
 
 - Consumes: the three exported locale override maps, `engine-catalog.json`, `isPublishedComparisonSlug`, and `canonicalizePublishedCompareSlug`.
-- Produces: ten target tuples, ten exact related links, seven earlier-model migration requirements, and seven executable contracts.
+- Produces: ten target tuples, ten exact related links, seven earlier-model requirements pairing `modelSlug` with `relatedHref`, and seven executable contracts.
 
 - [ ] **Step 1: Create the complete failing test**
 
@@ -103,14 +108,35 @@ const REQUIRED_RELATED_LINKS = {
   'ltx-2-3-fast-vs-wan-2-5': '/ai-video-engines/ltx-2-3-fast-vs-wan-2-6',
 } as const;
 
-const EARLIER_MODEL_RELATED_LINKS = {
-  'ltx-2-3-fast-vs-ltx-2-fast': REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-ltx-2-fast'],
-  'ltx-2-vs-ltx-2-3-fast': REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-fast'],
-  'ltx-2-vs-wan-2-6': REQUIRED_RELATED_LINKS['ltx-2-vs-wan-2-6'],
-  'ltx-2-3-pro-vs-ltx-2-fast': REQUIRED_RELATED_LINKS['ltx-2-3-pro-vs-ltx-2-fast'],
-  'seedance-2-0-vs-wan-2-5': REQUIRED_RELATED_LINKS['seedance-2-0-vs-wan-2-5'],
-  'ltx-2-vs-ltx-2-3-pro': REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-pro'],
-  'ltx-2-3-fast-vs-wan-2-5': REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-wan-2-5'],
+const EARLIER_MODEL_REQUIREMENTS = {
+  'ltx-2-3-fast-vs-ltx-2-fast': {
+    modelSlug: 'ltx-2-fast',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-ltx-2-fast'],
+  },
+  'ltx-2-vs-ltx-2-3-fast': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-fast'],
+  },
+  'ltx-2-vs-wan-2-6': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-wan-2-6'],
+  },
+  'ltx-2-3-pro-vs-ltx-2-fast': {
+    modelSlug: 'ltx-2-fast',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-pro-vs-ltx-2-fast'],
+  },
+  'seedance-2-0-vs-wan-2-5': {
+    modelSlug: 'wan-2-5',
+    relatedHref: REQUIRED_RELATED_LINKS['seedance-2-0-vs-wan-2-5'],
+  },
+  'ltx-2-vs-ltx-2-3-pro': {
+    modelSlug: 'ltx-2',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-vs-ltx-2-3-pro'],
+  },
+  'ltx-2-3-fast-vs-wan-2-5': {
+    modelSlug: 'wan-2-5',
+    relatedHref: REQUIRED_RELATED_LINKS['ltx-2-3-fast-vs-wan-2-5'],
+  },
 } as const;
 
 type Locale = 'en' | 'fr' | 'es';
@@ -148,6 +174,19 @@ function collectText(entry: ComparePageOverride): string {
   ]
     .filter(Boolean)
     .join(' ');
+}
+
+function collectEditorialBlocks(entry: ComparePageOverride): string[] {
+  return [
+    entry.meta?.description,
+    entry.heroIntro,
+    entry.quickVerdict?.body,
+    ...(entry.topCards ?? []).map((card) => `${card.title} ${card.body}`),
+    ...(entry.faq?.items ?? []).map((item) => {
+      const answers = Array.isArray(item.answer) ? item.answer : [item.answer];
+      return `${item.question} ${answers.join(' ')}`;
+    }),
+  ].filter((block): block is string => Boolean(block));
 }
 
 function escapeRegExp(value: string): string {
@@ -195,6 +234,119 @@ function assertLocalizedField(
       `${leftLocale.toUpperCase()}/${rightLocale.toUpperCase()} ${field} should be localized for ${slug}`,
     );
   });
+}
+
+function assertNamedSemanticBlock(
+  blocks: string[],
+  semanticPattern: RegExp,
+  marketingName: string,
+  message: string,
+): void {
+  assert.ok(
+    blocks.some(
+      (block) => semanticPattern.test(block) && new RegExp(escapeRegExp(marketingName), 'i').test(block),
+    ),
+    message,
+  );
+}
+
+function assertOneBlockMatches(
+  entry: ComparePageOverride,
+  patterns: readonly RegExp[],
+  message: string,
+): void {
+  assert.ok(
+    collectEditorialBlocks(entry).some((block) => patterns.every((pattern) => pattern.test(block))),
+    message,
+  );
+}
+
+function assertModeFacts(locale: Locale): void {
+  const language = {
+    en: {
+      text: /text-to-video/i,
+      image: /image-to-video/i,
+      sourceRatio: /(?:follows|inherits) the (?:source|input) image(?:'s)? (?:aspect )?ratio/i,
+      reference: /reference-video/i,
+      silent: /(?:silent|no (?:generated )?audio|does not generate audio)/i,
+      aboveTen: /(?:above|beyond|over|longer than) (?:ten|10) seconds/i,
+      both: /(?:both models|both Fast models|each model)/i,
+      twenty: /(?:20|twenty)[ -]second/i,
+      audioToVideo: /audio-to-video/i,
+      extension: /exten(?:d|sion)/i,
+      retake: /retake/i,
+    },
+    fr: {
+      text: /texte-vers-vidéo/i,
+      image: /image-vers-vidéo/i,
+      sourceRatio: /(?:suit|reprend|conserve) le ratio de l’image source/i,
+      reference: /(?:vidéo de référence|référence-vidéo)/i,
+      silent: /(?:silencieux|sans audio|ne génère pas d’audio)/i,
+      aboveTen: /(?:au-delà de|plus de) (?:dix|10) secondes/i,
+      both: /(?:les deux modèles|les deux Fast|chaque modèle)/i,
+      twenty: /(?:20|vingt) secondes/i,
+      audioToVideo: /audio-vers-vidéo/i,
+      extension: /extension/i,
+      retake: /retake/i,
+    },
+    es: {
+      text: /texto a video/i,
+      image: /imagen a video/i,
+      sourceRatio: /(?:sigue|hereda|conserva) la (?:relación|proporción) de la imagen (?:fuente|de origen)/i,
+      reference: /video de referencia/i,
+      silent: /(?:silencioso|sin audio|no genera audio)/i,
+      aboveTen: /(?:más de|por encima de) (?:diez|10) segundos/i,
+      both: /(?:ambos modelos|los dos modelos|ambos Fast|cada modelo)/i,
+      twenty: /(?:20|veinte) segundos/i,
+      audioToVideo: /audio a video/i,
+      extension: /exten(?:der|sión)/i,
+      retake: /retake/i,
+    },
+  }[locale];
+
+  for (const slug of ['ltx-2-3-pro-vs-ltx-2-fast', 'ltx-2-vs-ltx-2-3-pro'] as const) {
+    const entry = getEntry(locale, slug);
+    const blocks = collectEditorialBlocks(entry);
+    assertOneBlockMatches(
+      entry,
+      [/LTX 2\.3 Pro/i, language.text, language.image, /6/, /8/, /10/],
+      `${locale} should state LTX 2.3 Pro text/image durations are 6, 8, or 10 seconds for ${slug}`,
+    );
+    assertOneBlockMatches(
+      entry,
+      [/LTX 2\.3 Pro/i, language.twenty, language.audioToVideo, language.extension, language.retake],
+      `${locale} should reserve LTX 2.3 Pro 20-second claims for audio-to-video, extension, or retake in ${slug}`,
+    );
+    blocks.filter((block) => /LTX 2\.3 Pro/i.test(block) && language.twenty.test(block)).forEach((block) => {
+      assert.ok(
+        [language.audioToVideo, language.extension, language.retake].some((pattern) => pattern.test(block)),
+        `${locale} must qualify every LTX 2.3 Pro 20-second claim by an eligible mode in ${slug}`,
+      );
+    });
+  }
+
+  const wanEntry = getEntry(locale, 'ltx-2-vs-wan-2-6');
+  assertOneBlockMatches(
+    wanEntry,
+    [/Wan 2\.6/i, language.text, /16:9/, /9:16/, /1:1/, /4:3/, /3:4/],
+    `${locale} should list all five Wan 2.6 text-mode ratios`,
+  );
+  assertOneBlockMatches(
+    wanEntry,
+    [/Wan 2\.6/i, language.image, language.sourceRatio],
+    `${locale} should say Wan 2.6 image mode follows the source ratio`,
+  );
+  assertOneBlockMatches(
+    wanEntry,
+    [language.reference, /16:9/, /9:16/, /1:1/, /4:3/, /3:4/, /5/, /10/, language.silent],
+    `${locale} should keep Wan 2.6 reference mode separate with explicit ratios, 5/10 seconds, and no audio`,
+  );
+
+  assertOneBlockMatches(
+    getEntry(locale, 'ltx-2-3-fast-vs-ltx-2-fast'),
+    [/LTX 2\.3 Fast/i, /LTX Video 2\.0 Fast/i, language.both, language.aboveTen, /1080p/i, /25 fps/i],
+    `${locale} should state the shared Fast-model constraint above ten seconds`,
+  );
 }
 
 function assertCompleteOverride(locale: Locale, slug: string): void {
@@ -264,6 +416,13 @@ for (const locale of ['en', 'fr', 'es'] as const) {
         );
       });
     });
+
+    assertModeFacts(locale);
+    if (locale === 'fr') {
+      TARGET_COMPARISONS.forEach(([slug]) => {
+        assert.doesNotMatch(collectText(getEntry(locale, slug)), /images clés/i, `fr should avoid images clés in ${slug}`);
+      });
+    }
   });
 }
 
@@ -278,7 +437,7 @@ test('earlier-model comparisons explain availability, staying, and migration in 
     },
     fr: {
       available: /\b(disponibles?|accessibles?)\b/i,
-      stay: /\b(rester|restez|conserver|gardez|continuer)\b/i,
+      stay: /\b(rester|restez|conserver|conservez|gardez|continuer)\b/i,
       migrate: /(?<![\p{L}\p{N}_])(?:migrer|migrez|évoluer|évoluez|passer)(?![\p{L}\p{N}_])/iu,
       successor: /\b(actuel(?:le)?s?|successeurs?|plus récent(?:e)?s?|nouvelle génération)\b/i,
       unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retir(?:é|ée|és|ées)|abandonn(?:é|ée|és|ées)|arrêt(?:é|ée|és|ées)|discontinu(?:é|ée|és|ées)|supprim(?:é|ée|és|ées)|obsolètes?|(?:pas|plus) (?:disponibles?|accessibles?))(?![\p{L}\p{N}_])/iu,
@@ -286,25 +445,44 @@ test('earlier-model comparisons explain availability, staying, and migration in 
     es: {
       available: /\b(disponibles?|accesibles?)\b/i,
       stay: /\b(quedarse|mantener|seguir|conservar)\b/i,
-      migrate: /\b(migrar|actualizar|pasar|cambiar)\b/i,
+      migrate: /\b(migrar|actualizar|pasar|cambiar|cambia)\b/i,
       successor: /\b(actual(?:es)?|sucesor(?:es)?|más reciente|nueva generación)\b/i,
       unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retirad[oa]s?|abandonad[oa]s?|descontinuad[oa]s?|discontinuad[oa]s?|eliminad[oa]s?|(?:no|ya no) (?:está |están |es |sigue )?(?:disponibles?|accesibles?))(?![\p{L}\p{N}_])/iu,
     },
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
-    for (const [slug, successorHref] of Object.entries(EARLIER_MODEL_RELATED_LINKS)) {
+    for (const [slug, requirement] of Object.entries(EARLIER_MODEL_REQUIREMENTS)) {
       const entry = getEntry(locale, slug);
       const text = collectText(entry);
+      const blocks = collectEditorialBlocks(entry);
       const language = migrationLanguage[locale];
-      assert.match(text, language.available, `${locale} should say the earlier model remains available for ${slug}`);
-      assert.match(text, language.stay, `${locale} should explain who can stay on the earlier model for ${slug}`);
-      assert.match(text, language.migrate, `${locale} should explain who should migrate for ${slug}`);
+      const earlierModel = CATALOG_BY_SLUG.get(requirement.modelSlug);
+      assert.ok(earlierModel, `missing earlier-model catalog entry ${requirement.modelSlug}`);
+      assert.equal(earlierModel.availability, 'available', `${requirement.modelSlug} should remain available in catalog`);
+      assertNamedSemanticBlock(
+        blocks,
+        language.available,
+        earlierModel.marketingName,
+        `${locale} availability block should name ${earlierModel.marketingName} for ${slug}`,
+      );
+      assertNamedSemanticBlock(
+        blocks,
+        language.stay,
+        earlierModel.marketingName,
+        `${locale} stay block should name ${earlierModel.marketingName} for ${slug}`,
+      );
+      assertNamedSemanticBlock(
+        blocks,
+        language.migrate,
+        earlierModel.marketingName,
+        `${locale} migration block should name ${earlierModel.marketingName} for ${slug}`,
+      );
       assert.match(text, language.successor, `${locale} should identify the current successor for ${slug}`);
       assert.doesNotMatch(text, language.unavailable, `${locale} must not claim an available model is unavailable for ${slug}`);
       assert.ok(
-        entry.primaryLinks?.some((link) => link.href === successorHref),
-        `${locale} should link to current comparison ${successorHref} for ${slug}`,
+        entry.primaryLinks?.some((link) => link.href === requirement.relatedHref),
+        `${locale} should link to current comparison ${requirement.relatedHref} for ${slug}`,
       );
     }
   }
@@ -381,6 +559,7 @@ test('wave-3 links resolve to exact public model and comparison routes', () => {
     });
   }
 });
+
 ```
 
 - [ ] **Step 2: Run the contract and verify RED**
@@ -433,18 +612,18 @@ Use `Quick verdict`, `Recommended next steps`, and `FAQ`. Use these exact titles
 
 | Slug | Exact American-English title | Required verdict | Required related comparison |
 | --- | --- | --- | --- |
-| `ltx-2-3-fast-vs-ltx-2-fast` | `LTX 2.3 Fast vs LTX 2.0 Fast: Upgrade or Stay?` | Both remain available at the same listed tiers. Stay on 2.0 Fast for an established 16:9 workflow; choose 2.3 Fast for 9:16, start/end-frame control, and broader FPS choices. | `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro` |
+| `ltx-2-3-fast-vs-ltx-2-fast` | `LTX 2.3 Fast vs LTX 2.0 Fast: Upgrade or Stay?` | Both remain available at the same listed tiers. Stay on 2.0 Fast for an established 16:9 workflow; choose 2.3 Fast for 9:16, start/end-frame control, and broader FPS choices. Both share the 1080p/25 fps rule above ten seconds. | `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro` |
 | `ltx-2-vs-ltx-2-3-fast` | `LTX 2.0 Pro vs LTX 2.3 Fast: Price, 4K & Upgrade` | Stay on 2.0 Pro for a familiar ten-second 16:9 route; choose 2.3 Fast for lower listed shared-resolution pricing, vertical delivery, and longer constrained clips. | `/ai-video-engines/ltx-2-vs-ltx-2-3-pro` |
-| `ltx-2-vs-wan-2-6` | `LTX 2.0 Pro vs Wan 2.6: 4K, Duration & References` | Stay on LTX for high-resolution landscape delivery; choose Wan for broader ratios, longer text/image clips, or silent five/ten-second reference-video work. | `/ai-video-engines/ltx-2-3-fast-vs-wan-2-6` |
+| `ltx-2-vs-wan-2-6` | `LTX 2.0 Pro vs Wan 2.6: 4K, Duration & References` | Stay on LTX for high-resolution landscape delivery; choose Wan for text mode's five ratios, image mode's source ratio, or separate silent 5/10-second reference-video work with five explicit ratios. | `/ai-video-engines/ltx-2-3-fast-vs-wan-2-6` |
 | `ltx-2-3-fast-vs-seedance-2-0` | `LTX 2.3 Fast vs Seedance 2.0: Price or Control?` | LTX for price-transparent high-resolution generation; Seedance for references, editing, extension, motion controls, or broad ratios. Do not declare a universal price winner. | `/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0` |
 | `ltx-2-3-pro-vs-ltx-2-fast` | `LTX 2.3 Pro vs LTX 2.0 Fast: Cost or Control?` | Stay on available 2.0 Fast for economical 16:9 work; choose current 2.3 Pro for 9:16, audio-to-video, extend, retake, and frame controls. | `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro` |
 | `seedance-2-0-vs-wan-2-5` | `Seedance 2.0 vs Wan 2.5: 4K, Audio & Upgrade` | Stay on available Wan 2.5 for simple fixed-price text/image clips; choose current Seedance for 4K, references, editing, extension, motion control, or fifteen seconds. | `/ai-video-engines/seedance-2-0-vs-wan-2-6` |
 | `minimax-hailuo-02-text-vs-seedance-2-0` | `Hailuo 02 vs Seedance 2.0: Price, Audio & 4K` | Hailuo for inexpensive silent stylized clips at 512P/768P; Seedance for audio, 4K, references, editing, extension, or fifteen-second output. | `/ai-video-engines/minimax-hailuo-02-text-vs-wan-2-6` |
-| `ltx-2-vs-ltx-2-3-pro` | `LTX 2.0 Pro vs LTX 2.3 Pro: Upgrade or Stay?` | Both remain available at the same listed tiers. Stay on 2.0 Pro for familiar 16:9 text/image work; choose 2.3 Pro for 9:16, longer clips, audio-to-video, extend, or retake. | `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro` |
+| `ltx-2-vs-ltx-2-3-pro` | `LTX 2.0 Pro vs LTX 2.3 Pro: Upgrade or Stay?` | Both remain available at the same listed tiers. Stay on 2.0 Pro for familiar 16:9 text/image work; choose 2.3 Pro for 9:16, audio-to-video, extension, retake, or start/end-frame control. Its text/image modes remain limited to 6/8/10 seconds. | `/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro` |
 | `veo-3-1-vs-veo-3-1-lite` | `Veo 3.1 vs Veo 3.1 Lite: 4K, References & Price` | Lite for budget 720p/1080p drafts; standard Veo for reference-image mode or 4K. Both support audio, eight seconds, first/last frame, and extension. | `/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite` |
 | `ltx-2-3-fast-vs-wan-2-5` | `LTX 2.3 Fast vs Wan 2.5: Price, 4K & Upgrade` | Stay on available Wan for existing simple or 1:1/lower-resolution work; choose current LTX for 4K, longer constrained clips, or lower listed 1080p price. | `/ai-video-engines/ltx-2-3-fast-vs-wan-2-6` |
 
-For every entry, include unique metadata, a substantive hero, a direct verdict, exactly four cards, both model links, the required related comparison, and three pair-specific FAQs. Name both exact catalog marketing names in the combined copy. Keep all facts within the approved design; specifically separate Wan reference-video limits from text/image duration/audio, preserve the LTX long-duration restriction, and describe Seedance pricing as dynamic.
+For every entry, include unique metadata, a substantive hero, a direct verdict, exactly four cards, both model links, the required related comparison, and three pair-specific FAQs. Name both exact catalog marketing names in the combined copy. Keep all facts within the approved design; specifically preserve all three mode-specific fact groups in Global Constraints and describe Seedance pricing as dynamic.
 
 - [ ] **Step 2: Run the English contract and verify GREEN**
 
@@ -601,7 +780,7 @@ Expected: 17 architecture tests pass before the commit is created.
 **Interfaces:**
 
 - Consumes: all 30 entries from Tasks 2–4.
-- Produces: release evidence for content, links, localization, architecture, lint, full tests, build, localized rendering, and final scope.
+- Produces: release evidence for content, links, localization, architecture, lint, build, localized rendering, and final six-file scope.
 
 - [ ] **Step 1: Run focused contracts**
 
@@ -621,19 +800,9 @@ git diff --check origin/main...HEAD
 
 Expected: all commands exit 0.
 
-- [ ] **Step 3: Run the complete repository suite**
+- [ ] **Step 3: Record complete-suite evidence**
 
-```bash
-pnpm test:validate
-```
-
-Expected: all repository tests pass with zero failures. The baseline is 1,698 tests, so this branch should add seven tests if `main` remains otherwise unchanged. Restore only these generated historical files afterward if they change:
-
-```bash
-git restore --source=HEAD -- \
-  docs/seo/comparison-indexation-matrix-2026-07-08.json \
-  docs/seo/comparison-indexation-matrix-2026-07-08.md
-```
+Do not rerun the complete repository suite in this correction pass. The senior review accepts the already-recorded 1705/1705 result; the required fresh test evidence is the 24/24 focused run from Step 1.
 
 - [ ] **Step 4: Build the frontend**
 
@@ -643,7 +812,7 @@ pnpm --prefix frontend run build
 
 Expected: the Next.js production build exits 0 and generates every localized static route.
 
-- [ ] **Step 5: Smoke-check the highest-impression target in three locales**
+- [ ] **Step 5: Smoke-check all three fact-corrected comparisons in three locales**
 
 Start the production server:
 
@@ -651,23 +820,25 @@ Start the production server:
 pnpm --prefix frontend exec next start -p 3100
 ```
 
-Request the same comparison in all locales while recording numeric status codes:
+Request each affected comparison in all locales while recording numeric status codes:
 
 ```bash
-curl -LfsS -w '%{http_code}' http://localhost:3100/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast -o /tmp/maxvideo-wave3-en.html
-curl -LfsS -w '%{http_code}' http://localhost:3100/fr/comparatif/ltx-2-3-fast-vs-ltx-2-fast -o /tmp/maxvideo-wave3-fr.html
-curl -LfsS -w '%{http_code}' http://localhost:3100/es/comparativa/ltx-2-3-fast-vs-ltx-2-fast -o /tmp/maxvideo-wave3-es.html
+for slug in ltx-2-3-fast-vs-ltx-2-fast ltx-2-vs-wan-2-6 ltx-2-3-pro-vs-ltx-2-fast; do
+  curl -LfsS -w '%{http_code}\n' "http://localhost:3100/ai-video-engines/$slug" -o "/tmp/maxvideo-wave3-$slug-en.html"
+  curl -LfsS -w '%{http_code}\n' "http://localhost:3100/fr/comparatif/$slug" -o "/tmp/maxvideo-wave3-$slug-fr.html"
+  curl -LfsS -w '%{http_code}\n' "http://localhost:3100/es/comparativa/$slug" -o "/tmp/maxvideo-wave3-$slug-es.html"
+done
 ```
 
-Expected: each command prints `200`.
+Expected: all nine commands print `200`.
 
 Verify localized content and SEO markup:
 
 ```bash
-rg -n "LTX 2.3 Fast vs LTX 2.0 Fast|Quick verdict|Verdict rapide|Veredicto rápido|canonical|hrefLang|application/ld\\+json" /tmp/maxvideo-wave3-{en,fr,es}.html
+rg -n "Quick verdict|Verdict rapide|Veredicto rápido|canonical|hrefLang|application/ld\\+json" /tmp/maxvideo-wave3-*.html
 ```
 
-Expected: each document contains localized metadata and verdict copy, a self-canonical, four hreflang links, and the existing JSON-LD scripts. Stop the server and confirm port 3100 is free.
+Expected: all nine documents contain localized comparison content, a self-canonical, four hreflang links, and existing JSON-LD scripts. Stop the server and confirm port 3100 is free.
 
 - [ ] **Step 6: Review final scope**
 
@@ -689,5 +860,5 @@ Expected: only the design, implementation plan, focused wave-3 test, and the thr
 - Every page links to both exact models and its assigned canonical published comparison.
 - EN, FR, and ES editorial blocks are independently localized and unique.
 - Spanish stays LATAM-neutral and keeps `video` unaccented.
-- Full lint, exposure, repository tests, production build, three-locale smoke tests, and branch-level whitespace checks pass.
+- Full lint, exposure, the 24 focused tests, production build, nine localized smoke checks, and branch-level whitespace checks pass; the accepted complete-suite evidence remains 1705/1705.
 - The final diff contains no sitemap, robots, publication, catalog, pricing, Studio, workspace, or historical audit change.

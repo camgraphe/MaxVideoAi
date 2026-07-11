@@ -2095,7 +2095,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Los dos siguen disponibles con los mismos precios publicados por resolución. Conviene quedarse en LTX Video 2.0 Fast para un flujo 16:9 ya probado y migrar al actual LTX 2.3 Fast para 9:16, control de los cuadros inicial y final o más fps. Por encima de 10 segundos, 2.3 Fast exige 1080p a 25 fps.',
+          'Los dos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Fast para un flujo 16:9 probado y migrar a LTX 2.3 Fast para 9:16, control inicial/final o más fps. Por encima de 10 segundos, ambos modelos exigen 1080p a 25 fps.',
       },
       topCards: [
         {
@@ -2109,9 +2109,9 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             'Elige LTX 2.3 Fast para entregar en 9:16, guiar opcionalmente el cuadro final desde una imagen y seleccionar 24, 25, 48 o 50 fps.',
         },
         {
-          title: 'Planear con cuidado los clips largos',
+          title: 'Aplicar una restricción compartida',
           body:
-            'La ruta Fast más reciente alcanza 20 segundos, pero cualquier duración superior a 10 segundos queda limitada a 1080p y 25 fps.',
+            'Ambos modelos Fast, LTX 2.3 Fast y LTX Video 2.0 Fast, llegan a 20 segundos y exigen 1080p a 25 fps para más de 10 segundos.',
         },
         {
           title: 'Elegir el flujo Fast adecuado',
@@ -2143,9 +2143,9 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
               'Agrega salida 9:16, guía de los cuadros inicial y final para generación desde imagen, y opciones de 24/48 fps además de 25/50 fps.',
           },
           {
-            question: '¿LTX 2.3 Fast genera más de diez segundos en 4K?',
+            question: '¿Alguno de los dos modelos LTX Fast supera diez segundos en 4K?',
             answer:
-              'No. Las duraciones superiores a 10 segundos requieren 1080p a 25 fps. Para 1440p o 4K, elige una duración de 10 segundos o menos.',
+              'No. LTX 2.3 Fast y LTX Video 2.0 Fast exigen 1080p a 25 fps para más de 10 segundos. Limita 1440p o 4K a 10 segundos.',
           },
         ],
       },
@@ -2238,14 +2238,14 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             'Conserva LTX Video 2.0 Pro para producción 16:9 desde texto o imagen en 1080p, 1440p o 4K, con audio y un máximo de diez segundos.',
         },
         {
-          title: 'Migrar a Wan para más formatos',
+          title: 'Detallar formatos del modo texto',
           body:
-            'Los modos de texto e imagen de Wan 2.6 ofrecen 720p o 1080p, audio opcional, entre cinco y 15 segundos y cinco formatos, incluidos cuadrado y vertical.',
+            'El modo texto a video de Wan 2.6 ofrece 16:9, 9:16, 1:1, 4:3 y 3:4. Imagen a video sigue la relación de la imagen fuente; ambos duran de 5 a 15 segundos con audio opcional.',
         },
         {
           title: 'Separar los límites de referencias',
           body:
-            'El modo de referencia de Wan recibe de uno a tres videos, produce una salida de cinco o diez segundos y no genera audio.',
+            'El modo video de referencia de Wan 2.6 es separado: admite 16:9, 9:16, 1:1, 4:3 o 3:4, produce 5 o 10 segundos y no genera audio.',
         },
         {
           title: 'Decidir por el formato de entrega',
@@ -2274,7 +2274,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cuánto duran los clips de texto e imagen de Wan 2.6?',
             answer:
-              'Los modos de texto a video e imagen a video admiten entre cinco y 15 segundos, con audio generado opcionalmente, en 720p o 1080p.',
+              'Wan 2.6 ofrece de 5 a 15 segundos en texto a video. Imagen a video ofrece las mismas duraciones, pero sigue la relación de la imagen fuente.',
           },
           {
             question: '¿El modo con videos de referencia de Wan 2.6 admite audio o 15 segundos?',
@@ -2363,7 +2363,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Conviene quedarse en LTX Video 2.0 Fast, que sigue disponible, para trabajos económicos de texto o imagen en 16:9. Migra a LTX 2.3 Pro, el modelo actual, si necesitas 9:16, generación desde audio, extensión, retoque o control de los cuadros inicial y final. Ambos llegan a 20 segundos, pero difieren en alcance y precio.',
+          'Conviene quedarse en LTX Video 2.0 Fast, que sigue disponible, para trabajos económicos de texto o imagen en 16:9. Migra a LTX 2.3 Pro por 9:16 y modos avanzados; su generación estándar desde texto o imagen termina en 10 segundos.',
       },
       topCards: [
         {
@@ -2372,9 +2372,9 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             'Sigue con LTX Video 2.0 Fast cuando ya tengas validada la generación desde texto o imagen en 16:9 con audio y quieras conservar sus precios menores en 1080p, 1440p o 4K.',
         },
         {
-          title: 'Adoptar Pro para modos avanzados',
+          title: 'Entender el límite del modo estándar',
           body:
-            'LTX 2.3 Pro agrega generación de video a partir de audio, extensión y retoque, además de generación vertical y guía opcional del cuadro final para tomas generadas desde una imagen.',
+            'LTX 2.3 Pro limita texto a video e imagen a video a 6, 8 o 10 segundos. Los 20 segundos quedan reservados para audio a video, extensión o retake.',
         },
         {
           title: 'Pagar por control cuando sea necesario',
@@ -2384,7 +2384,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Separar trabajos simples y avanzados',
           body:
-            'Usa 2.0 Fast para generación horizontal económica; usa 2.3 Pro para producción vertical y flujos que requieran generación desde audio, extensión, retoque o control de los cuadros.',
+            'Usa LTX Video 2.0 Fast para generación horizontal económica; usa LTX 2.3 Pro para producción vertical, audio a video, extensión, retake o control inicial/final.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2408,7 +2408,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cuándo conviene migrar a LTX 2.3 Pro?',
             answer:
-              'Pasa al modelo actual cuando necesites entrega 9:16, generación desde audio, extensión, retoque o control de los cuadros inicial y final.',
+              'Pasa de LTX Video 2.0 Fast al modelo actual cuando necesites 9:16, audio a video, extensión, retake o control de los cuadros inicial y final.',
           },
           {
             question: '¿LTX 2.3 Pro reemplaza el flujo Fast simple?',
@@ -2430,7 +2430,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para clips simples con precio fijo. Conviene migrar al actual Seedance 2.0 por 4K, referencias, edición, extensión, control de movimiento o clips de hasta 15 segundos. El precio de Seedance es dinámico y no garantiza el menor costo.',
+          'Conviene quedarse en Wan 2.5 Text & Image to Video, que sigue disponible, para clips simples con precio fijo. Conviene migrar al actual Seedance 2.0 por 4K, referencias, edición, extensión, control de movimiento o clips de hasta 15 segundos. El precio de Seedance es dinámico y no garantiza el menor costo.',
       },
       topCards: [
         {
@@ -2560,11 +2560,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Pro actual. Ambos incluyen audio, llegan a 4K y comparten los mismos precios publicados por resolución; 2.3 Pro agrega 9:16, mayor duración, generación de video a partir de audio, extensión, retoque y control más reciente de los cuadros inicial y final.',
+        'Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Pro actual. Ambos incluyen audio, llegan a 4K y comparten los mismos precios publicados por resolución; 2.3 Pro agrega 9:16, audio a video, extensión, retake y control más reciente de los cuadros inicial y final.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Ambos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Pro para trabajos conocidos de texto o imagen, de diez segundos y en 16:9; migra al actual LTX 2.3 Pro para 9:16, clips más largos, generación desde audio, extensión, retoque o control de los cuadros inicial y final.',
+          'Ambos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Pro para trabajos de texto o imagen de diez segundos en 16:9; migra a LTX 2.3 Pro por 9:16, audio a video, extensión, retake o control inicial/final.',
       },
       topCards: [
         {
@@ -2573,9 +2573,9 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             'Conserva LTX Video 2.0 Pro cuando un flujo validado de texto o imagen en 16:9, con audio y diez segundos, ya produce la entrega necesaria.',
         },
         {
-          title: 'Pasar a 2.3 Pro por sus modos',
+          title: 'Separar duraciones según el modo',
           body:
-            'Elige LTX 2.3 Pro para generación vertical, generación desde audio, extensión de clips, retoque, guía opcional del cuadro final y duraciones de hasta 20 segundos.',
+            'Los modos texto a video e imagen a video de LTX 2.3 Pro ofrecen 6, 8 o 10 segundos. Los 20 segundos corresponden solo a audio a video, extensión o retake.',
         },
         {
           title: 'No decidir solo por el precio',
@@ -2609,7 +2609,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Qué funciones de LTX 2.3 Pro justifican actualizar?',
             answer:
-              'Migra para obtener 9:16, hasta 20 segundos, generación desde audio, extensión, retoque o control más reciente de los cuadros inicial y final.',
+              'Migra desde LTX Video 2.0 Pro por 9:16, audio a video de hasta 20 segundos, extensión, retake o control de los cuadros inicial y final.',
           },
           {
             question: '¿Cambian los precios publicados entre LTX 2.0 Pro y 2.3 Pro?',
@@ -2698,7 +2698,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para trabajos simples, formato 1:1 o salida en 480p/720p. Conviene migrar a LTX 2.3 Fast, la opción actual, por 4K, menor precio publicado en 1080p o clips largos con restricciones. Por encima de 10 segundos, LTX exige 1080p a 25 fps.',
+          'Conviene quedarse en Wan 2.5 Text & Image to Video, que sigue disponible, para trabajos simples, formato 1:1 o salida en 480p/720p. Conviene migrar a LTX 2.3 Fast, la opción actual, por 4K, menor precio publicado en 1080p o clips largos con restricciones. Por encima de 10 segundos, LTX exige 1080p a 25 fps.',
       },
       topCards: [
         {
