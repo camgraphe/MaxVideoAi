@@ -4983,6 +4983,36 @@
         "description": "We'll send a secure link to reset your password."
       }
     },
+    "continuation": {
+      "billing": {
+        "title": "Your {amount} top-up is saved",
+        "body": "Create an account or sign in, then you’ll return to Billing with that amount still selected."
+      },
+      "billingGeneric": {
+        "title": "Your top-up selection is saved",
+        "body": "Create an account or sign in, then you’ll return to Billing to continue securely."
+      },
+      "video": {
+        "title": "Your generation setup is saved",
+        "body": "Continue here, then you’ll return to the same video engine and settings."
+      },
+      "image": {
+        "title": "Your image setup is saved",
+        "body": "Continue here, then you’ll return to the same image engine and settings."
+      },
+      "audio": {
+        "title": "Your audio workspace is waiting",
+        "body": "Continue here, then you’ll return to Generate Audio."
+      },
+      "library": {
+        "title": "You’ll return to your Library",
+        "body": "Continue here, then you’ll go back to your saved media and recent renders."
+      },
+      "tool": {
+        "title": "Your tool setup is saved",
+        "body": "Continue here, then you’ll return to the same tool."
+      }
+    },
     "google": "Continue with Google",
     "divider": "Email access",
     "fields": {

@@ -1,11 +1,11 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
 import { persistPendingAnalyticsEvent } from '@/lib/analytics-client';
-import { supabase } from '@/lib/supabaseClient';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
   isPkceCodeVerifierError,
 } from '@/lib/supabase-auth-cleanup';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import { startOAuthCookieRedirectFallback } from '../_lib/oauth-cookie-fallback';
 import { AUTH_COPY, type AuthCopy, type AuthMode } from '../_lib/login-copy';
 import {
@@ -103,8 +103,8 @@ export function useLoginOAuthCodeExchange({
         completeAuthenticatedRedirect(target);
       },
     });
-    void supabase.auth
-      .exchangeCodeForSession(oauthCode)
+    void loadSupabaseClient()
+      .then((supabase) => supabase.auth.exchangeCodeForSession(oauthCode))
       .then(async ({ data, error }) => {
         if (cancelled) return;
         if (error || !data.session) {

@@ -1,14 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
-import { AuthApiError } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
 import { LOGIN_NEXT_STORAGE_KEY } from '@/lib/auth-storage';
 import { writeLastKnownUserId } from '@/lib/last-known';
-import { supabase } from '@/lib/supabaseClient';
+import { loadSupabaseClient } from '@/lib/supabaseClientLoader';
 import { canonicalizeBrowserAuthOrigin } from '@/lib/siteOrigin';
 import { AUTH_COPY, type AuthMode, type Locale } from '../_lib/login-copy';
+import { buildLoginContinuation } from '../_lib/login-continuation';
 import {
   buildAuthCallbackRedirect,
   clearPendingGoogleLogin,
@@ -77,6 +77,13 @@ export function useLoginPageController({
     }),
     [emailRef, passwordRef]
   );
+  const continuation = nextPathReady
+    ? buildLoginContinuation({
+        copy: authCopy.continuation,
+        locale,
+        nextPath: safeNextPath,
+      })
+    : null;
 
   const clearFieldError = useCallback((field: AuthFieldName) => {
     setFieldErrors((current) => {
@@ -179,9 +186,10 @@ export function useLoginPageController({
     setError(null);
     setSignupSuggestion(null);
     clearPendingGoogleLogin();
+    const supabase = await loadSupabaseClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      if (error instanceof AuthApiError && error.status === 400) {
+      if (error.status === 400) {
         setSignupSuggestion({ email, password });
         setStatusTone('info');
         setStatus(authCopy.feedback.signinSuggestion);
@@ -260,6 +268,7 @@ export function useLoginPageController({
       method: 'password',
       marketing_opt_in: marketingOptIn,
     });
+    const supabase = await loadSupabaseClient();
     const emailRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
       safeNextPath
@@ -324,6 +333,7 @@ export function useLoginPageController({
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
       safeNextPath
     );
+    const supabase = await loadSupabaseClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: passwordResetRedirectTo,
     });
@@ -364,6 +374,7 @@ export function useLoginPageController({
         marketing_opt_in: marketingOptIn,
       });
     }
+    const supabase = await loadSupabaseClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -435,6 +446,7 @@ export function useLoginPageController({
     email,
     password,
     confirm,
+    continuation,
     status,
     statusTone,
     error,

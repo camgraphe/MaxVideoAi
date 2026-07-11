@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
+import clsx from 'clsx';
 import { usePathname } from 'next/navigation';
 import { createDefaultConsent, mergeConsent, parseConsent, type ConsentCategory, type ConsentRecord } from '@/lib/consent';
 import { Button } from '@/components/ui/Button';
@@ -20,6 +21,7 @@ import {
 
 export function CookieBanner() {
   const pathname = usePathname();
+  const isLoginRoute = pathname === '/login';
   const isAdminRoute = pathname?.startsWith('/admin');
   const copy = COOKIE_BANNER_COPY[resolveCookieBannerLocale(pathname)];
   const [state, setState] = useState<BannerState>({ ready: false });
@@ -191,50 +193,84 @@ export function CookieBanner() {
   }
 
   return (
-    <div className="pointer-events-auto fixed bottom-1 left-0 right-0 z-[1100] flex justify-center px-3 sm:bottom-4 sm:px-6">
-      <div className="max-h-[24svh] w-full max-w-3xl overflow-y-auto rounded-card border border-border bg-surface p-2 shadow-xl sm:max-h-[42svh] sm:p-5">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex-1 space-y-0 sm:space-y-2">
-            <h2 className="hidden text-sm font-semibold text-text-primary sm:block sm:text-base">{copy.title}</h2>
-            <p className="hidden text-xs text-text-secondary sm:block sm:text-sm">{copy.body}</p>
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-4">
-              <Button
-                type="button"
-                size="sm"
-                onClick={() => void applyConsent({ analytics: true, ads: true }, 'banner')}
-                disabled={fetchState === 'saving'}
-                className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
+    <>
+      {isLoginRoute ? <div aria-hidden="true" className="h-[4.5rem] min-[1200px]:hidden" /> : null}
+      <div
+        className={clsx(
+          'pointer-events-auto fixed z-[1100] flex justify-center',
+          isLoginRoute
+            ? 'bottom-1 left-0 right-0 px-3 min-[1200px]:bottom-4 min-[1200px]:left-auto min-[1200px]:right-4 min-[1200px]:w-[22rem] min-[1200px]:px-0'
+            : 'bottom-1 left-0 right-0 px-3 sm:bottom-4 sm:px-6'
+        )}
+      >
+        <div
+          className={clsx(
+            'max-h-[24svh] w-full overflow-y-auto rounded-card border border-border bg-surface p-2 shadow-xl sm:max-h-[42svh] sm:p-5',
+            isLoginRoute ? 'max-w-3xl min-[1200px]:max-w-none min-[1200px]:p-4' : 'max-w-3xl'
+          )}
+        >
+          <div
+            className={clsx(
+              'flex flex-col gap-3',
+              isLoginRoute ? 'min-[1200px]:flex-col' : 'md:flex-row md:items-start md:justify-between'
+            )}
+          >
+            <div className="flex-1 space-y-0 sm:space-y-2">
+              <h2
+                className={clsx(
+                  'hidden text-sm font-semibold text-text-primary sm:text-base',
+                  isLoginRoute ? 'min-[1200px]:block' : 'sm:block'
+                )}
               >
-                {fetchState === 'saving' ? copy.actions.saving : copy.actions.acceptAll}
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                onClick={() => void applyConsent({ analytics: false, ads: false }, 'banner')}
-                disabled={fetchState === 'saving'}
-                className="border-border px-3 py-1.5 text-xs text-text-primary hover:bg-surface-hover sm:px-4 sm:py-2 sm:text-sm"
+                {copy.title}
+              </h2>
+              <p
+                className={clsx(
+                  'hidden text-xs text-text-secondary sm:text-sm',
+                  isLoginRoute ? 'min-[1200px]:block' : 'sm:block'
+                )}
               >
-                {copy.actions.rejectAll}
-              </Button>
-              <Button
-                ref={manageChoicesButtonRef}
-                type="button"
-                size="sm"
-                variant="ghost"
-                onClick={handleManageChoicesToggle}
-                aria-expanded={showPreferences}
-                aria-controls={preferencesPanelId}
-                className="min-h-0 h-auto p-0 text-xs font-semibold text-brand underline underline-offset-4 hover:text-brandHover sm:text-sm"
-              >
-                {showPreferences ? copy.actions.hideChoices : copy.actions.manageChoices}
-              </Button>
+                {copy.body}
+              </p>
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-4">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => void applyConsent({ analytics: true, ads: true }, 'banner')}
+                  disabled={fetchState === 'saving'}
+                  className="px-3 py-1.5 text-xs sm:px-4 sm:py-2 sm:text-sm"
+                >
+                  {fetchState === 'saving' ? copy.actions.saving : copy.actions.acceptAll}
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => void applyConsent({ analytics: false, ads: false }, 'banner')}
+                  disabled={fetchState === 'saving'}
+                  className="border-border px-3 py-1.5 text-xs text-text-primary hover:bg-surface-hover sm:px-4 sm:py-2 sm:text-sm"
+                >
+                  {copy.actions.rejectAll}
+                </Button>
+                <Button
+                  ref={manageChoicesButtonRef}
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleManageChoicesToggle}
+                  aria-expanded={showPreferences}
+                  aria-controls={preferencesPanelId}
+                  className="min-h-0 h-auto p-0 text-xs font-semibold text-brand underline underline-offset-4 hover:text-brandHover sm:text-sm"
+                >
+                  {showPreferences ? copy.actions.hideChoices : copy.actions.manageChoices}
+                </Button>
+              </div>
+              {error ? <p className="text-xs text-[var(--warning)]">{error}</p> : null}
             </div>
-            {error ? <p className="text-xs text-[var(--warning)]">{error}</p> : null}
+            {showPreferences ? preferencesPanel : null}
           </div>
-          {showPreferences ? preferencesPanel : null}
         </div>
       </div>
-    </div>
+    </>
   );
 }

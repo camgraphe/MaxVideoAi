@@ -5018,6 +5018,36 @@
         "description": "Nous vous enverrons un lien sécurisé pour le réinitialiser."
       }
     },
+    "continuation": {
+      "billing": {
+        "title": "Votre recharge de {amount} est conservée",
+        "body": "Créez un compte ou connectez-vous, puis vous reviendrez à la facturation avec ce montant toujours sélectionné."
+      },
+      "billingGeneric": {
+        "title": "Votre sélection de recharge est conservée",
+        "body": "Créez un compte ou connectez-vous, puis vous reviendrez à la facturation pour continuer en toute sécurité."
+      },
+      "video": {
+        "title": "Vos réglages vidéo sont conservés",
+        "body": "Continuez ici, puis vous reviendrez au même modèle vidéo et aux mêmes réglages."
+      },
+      "image": {
+        "title": "Vos réglages d’image sont conservés",
+        "body": "Continuez ici, puis vous reviendrez au même modèle d’image et aux mêmes réglages."
+      },
+      "audio": {
+        "title": "Votre espace audio vous attend",
+        "body": "Continuez ici, puis vous reviendrez à la génération audio."
+      },
+      "library": {
+        "title": "Vous reviendrez à votre bibliothèque",
+        "body": "Continuez ici, puis vous retrouverez vos médias enregistrés et vos rendus récents."
+      },
+      "tool": {
+        "title": "Vos réglages d’outil sont conservés",
+        "body": "Continuez ici, puis vous reviendrez au même outil."
+      }
+    },
     "google": "Continuer avec Google",
     "divider": "Accès par e-mail",
     "fields": {

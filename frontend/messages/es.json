@@ -5010,6 +5010,36 @@
         "description": "Te enviaremos un enlace seguro para restablecerla."
       }
     },
+    "continuation": {
+      "billing": {
+        "title": "Tu recarga de {amount} está guardada",
+        "body": "Crea una cuenta o inicia sesión y volverás a Facturación con ese importe todavía seleccionado."
+      },
+      "billingGeneric": {
+        "title": "Tu selección de recarga está guardada",
+        "body": "Crea una cuenta o inicia sesión y volverás a Facturación para continuar de forma segura."
+      },
+      "video": {
+        "title": "Tu configuración de video está guardada",
+        "body": "Continúa aquí y volverás al mismo motor de video y a los mismos ajustes."
+      },
+      "image": {
+        "title": "Tu configuración de imagen está guardada",
+        "body": "Continúa aquí y volverás al mismo motor de imagen y a los mismos ajustes."
+      },
+      "audio": {
+        "title": "Tu espacio de audio te espera",
+        "body": "Continúa aquí y volverás a Generar audio."
+      },
+      "library": {
+        "title": "Volverás a tu biblioteca",
+        "body": "Continúa aquí y volverás a tus medios guardados y renders recientes."
+      },
+      "tool": {
+        "title": "La configuración de la herramienta está guardada",
+        "body": "Continúa aquí y volverás a la misma herramienta."
+      }
+    },
     "google": "Continuar con Google",
     "divider": "Acceso por correo",
     "fields": {

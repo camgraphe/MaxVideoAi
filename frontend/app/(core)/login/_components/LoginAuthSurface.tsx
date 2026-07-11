@@ -2,9 +2,11 @@
 
 import type { FormEvent, Ref } from 'react';
 import clsx from 'clsx';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AuthCopy, AuthMode } from '../_lib/login-copy';
+import type { LoginContinuation } from '../_lib/login-continuation';
 import { formatTemplate } from '../_lib/login-helpers';
 import type { AuthFieldErrors, AuthFieldName } from '../_lib/login-validation';
 import { LoginPasswordField } from './LoginPasswordField';
@@ -18,6 +20,7 @@ type LoginAuthSurfaceProps = {
   email: string;
   password: string;
   confirm: string;
+  continuation: LoginContinuation | null;
   status: string | null;
   statusTone: 'info' | 'success';
   error: string | null;
@@ -75,6 +78,7 @@ export function LoginAuthSurface({
   email,
   password,
   confirm,
+  continuation,
   status,
   statusTone,
   error,
@@ -157,6 +161,16 @@ export function LoginAuthSurface({
                   : authCopy.modes.signin.description}
             </p>
           </div>
+
+          {mode !== 'reset' && continuation ? (
+            <div className="flex items-start gap-2.5 rounded-input border border-border bg-bg px-3 py-2.5">
+              <CheckCircle2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-brand" strokeWidth={1.75} />
+              <div>
+                <p className="text-sm font-medium text-text-primary">{continuation.title}</p>
+                <p className="mt-0.5 text-xs leading-5 text-text-secondary">{continuation.body}</p>
+              </div>
+            </div>
+          ) : null}
 
           <div
             role="group"

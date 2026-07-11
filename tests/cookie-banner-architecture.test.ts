@@ -31,6 +31,27 @@ test('cookie banner delegates copy, browser effects, and preferences rendering',
   assert.match(clientSource, /export function readConsentCookie|export function writeConsentCookie|function updateGoogleConsent/, 'cookie banner client module should own browser side effects');
 });
 
+test('login cookie banner preserves access to auth conversion actions', () => {
+  const bannerSource = readSource(bannerPath);
+
+  assert.match(bannerSource, /const isLoginRoute = pathname === '\/login';/);
+  assert.match(
+    bannerSource,
+    /aria-hidden="true"[\s\S]*h-\[4\.5rem\][\s\S]*min-\[1200px\]:hidden/,
+    'the first-choice login banner should reserve mobile and tablet scroll space'
+  );
+  assert.match(
+    bannerSource,
+    /min-\[1200px\]:left-auto[\s\S]*min-\[1200px\]:right-4[\s\S]*min-\[1200px\]:w-\[22rem\]/,
+    'wide login screens should move consent away from the centered auth card'
+  );
+  assert.match(
+    bannerSource,
+    /isLoginRoute[\s\S]*min-\[1200px\]:flex-col/,
+    'login copy, actions, and preferences should stack inside the corner card'
+  );
+});
+
 test('cookie banner modules stay focused', () => {
   const bannerSource = readSource(bannerPath);
   const preferencesSource = readSource(preferencesPanelPath);
