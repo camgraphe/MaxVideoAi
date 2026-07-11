@@ -443,7 +443,6 @@ export function useLoginPageController({
     signupSuggestion,
     isGoogleOAuthStarting,
     acceptTerms,
-    termsError: Boolean(fieldErrors.acceptTerms),
     ageConfirmed,
     marketingOptIn,
     legalMinAge: LEGAL_MIN_AGE,

@@ -17,6 +17,7 @@ const oauthCodeExchangeHookPath = join(root, 'frontend/app/(core)/login/_hooks/u
 const copyPath = join(root, 'frontend/app/(core)/login/_lib/login-copy.ts');
 const helpersPath = join(root, 'frontend/app/(core)/login/_lib/login-helpers.ts');
 const authSurfacePath = join(root, 'frontend/app/(core)/login/_components/LoginAuthSurface.tsx');
+const passwordFieldPath = join(root, 'frontend/app/(core)/login/_components/LoginPasswordField.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const pageClientSource = readFileSync(pageClientPath, 'utf8');
@@ -40,6 +41,7 @@ test('login page delegates localized copy and browser helpers to route-local mod
   assert.ok(existsSync(copyPath), 'login localized copy should stay in a route-local copy module');
   assert.ok(existsSync(helpersPath), 'login browser helpers should stay in a route-local helper module');
   assert.ok(existsSync(authSurfacePath), 'login form UI should stay in a route-local component module');
+  assert.ok(existsSync(passwordFieldPath), 'password visibility should stay in a focused route-local component');
 
   assert.match(
     pageSource,
@@ -119,6 +121,7 @@ test('login helper modules expose the expected route contract', () => {
   assert.match(controllerSource, /markPendingGoogleLogin\(mode === 'signup' \? 'signup' : 'signin'\)/);
   assert.match(oauthCodeExchangeHookSource, /resolveGoogleAuthCompletionEvent\(pendingMode\)/);
   assert.match(authSurfaceSource, /export function LoginAuthSurface/, 'auth surface component should export the login form shell');
+  assert.match(authSurfaceSource, /from '\.\/LoginPasswordField'/, 'auth surface should delegate password visibility');
   assert.match(authSurfaceSource, /function GoogleIcon\(/, 'auth surface component should own the inline Google icon');
   assert.match(authSurfaceSource, /formatTemplate\(authCopy\.terms\.age/, 'auth surface component should own localized legal text rendering');
 

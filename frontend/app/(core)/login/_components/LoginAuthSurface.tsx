@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { AuthCopy, AuthMode } from '../_lib/login-copy';
 import { formatTemplate } from '../_lib/login-helpers';
+import type { AuthFieldErrors, AuthFieldName } from '../_lib/login-validation';
+import { LoginPasswordField } from './LoginPasswordField';
 
 type SignupSuggestion = { email: string; password: string };
 
@@ -19,15 +21,19 @@ type LoginAuthSurfaceProps = {
   status: string | null;
   statusTone: 'info' | 'success';
   error: string | null;
+  fieldErrors: AuthFieldErrors;
+  formAttention: boolean;
   signupSuggestion: SignupSuggestion | null;
   isGoogleOAuthStarting: boolean;
   acceptTerms: boolean;
-  termsError: boolean;
   ageConfirmed: boolean;
   marketingOptIn: boolean;
   legalMinAge: number;
   emailRef: Ref<HTMLInputElement>;
   passwordRef: Ref<HTMLInputElement>;
+  confirmRef: Ref<HTMLInputElement>;
+  termsRef: Ref<HTMLInputElement>;
+  ageRef: Ref<HTMLInputElement>;
   onBack: () => void;
   onModeChange: (mode: AuthMode) => void;
   onGoogleSignIn: () => void | Promise<void>;
@@ -72,15 +78,19 @@ export function LoginAuthSurface({
   status,
   statusTone,
   error,
+  fieldErrors,
+  formAttention,
   signupSuggestion,
   isGoogleOAuthStarting,
   acceptTerms,
-  termsError,
   ageConfirmed,
   marketingOptIn,
   legalMinAge,
   emailRef,
   passwordRef,
+  confirmRef,
+  termsRef,
+  ageRef,
   onBack,
   onModeChange,
   onGoogleSignIn,
@@ -97,8 +107,18 @@ export function LoginAuthSurface({
   onAcceptSignupSuggestion,
   onClearSignupSuggestion,
 }: LoginAuthSurfaceProps) {
+  const fieldError = (field: AuthFieldName) => {
+    const code = fieldErrors[field];
+    return code ? authCopy.validation[code] : undefined;
+  };
+  const emailError = fieldError('email');
+  const passwordError = fieldError('password');
+  const confirmError = fieldError('confirm');
+  const termsError = fieldError('acceptTerms');
+  const ageError = fieldError('ageConfirmed');
+
   const renderTermsStatement = () => (
-    <span className={clsx(termsError && 'text-state-warning')}>
+    <span className={clsx(Boolean(termsError) && 'text-state-warning')}>
       {authCopy.terms.prefix}
       <a href="/legal/terms" target="_blank" rel="noopener noreferrer" className="text-brand underline">
         {authCopy.terms.termsLabel}
@@ -112,15 +132,15 @@ export function LoginAuthSurface({
   );
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-bg p-6">
-      <div className="mb-6 w-full max-w-md">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-bg p-4 sm:p-6">
+      <div className="mb-3 w-full max-w-md sm:mb-6">
         <Button type="button" onClick={onBack} variant="ghost" size="sm" className="gap-2">
           <span aria-hidden>←</span>
           <span>{authCopy.back}</span>
         </Button>
       </div>
-      <div className="w-full max-w-md stack-gap-lg rounded-card border border-border bg-surface p-6 shadow-card">
-        <header className="stack-gap">
+      <div className="w-full max-w-md space-y-4 rounded-card border border-border bg-surface p-4 shadow-card sm:space-y-6 sm:p-6">
+        <header className="space-y-3">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">
               {mode === 'signup'
@@ -138,14 +158,19 @@ export function LoginAuthSurface({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium">
+          <div
+            role="group"
+            aria-label={authCopy.modeGroup}
+            className="flex items-center gap-2 rounded-pill bg-bg p-1 text-sm font-medium"
+          >
             <Button
               type="button"
               variant={effectiveMode === 'signin' ? 'primary' : 'ghost'}
               size="sm"
+              aria-pressed={effectiveMode === 'signin'}
               onClick={() => onModeChange('signin')}
               className={clsx(
-                'flex-1 rounded-pill px-3 py-2',
+                'min-h-11 flex-1 rounded-pill px-3 py-2',
                 effectiveMode === 'signin' ? 'shadow-card' : 'hover:bg-surface'
               )}
             >
@@ -155,9 +180,10 @@ export function LoginAuthSurface({
               type="button"
               variant={effectiveMode === 'signup' ? 'primary' : 'ghost'}
               size="sm"
+              aria-pressed={effectiveMode === 'signup'}
               onClick={() => onModeChange('signup')}
               className={clsx(
-                'flex-1 rounded-pill px-3 py-2',
+                'min-h-11 flex-1 rounded-pill px-3 py-2',
                 effectiveMode === 'signup' ? 'shadow-card' : 'hover:bg-surface'
               )}
             >
@@ -179,17 +205,24 @@ export function LoginAuthSurface({
               <span aria-hidden className="inline-flex h-5 w-5 items-center justify-center">
                 <GoogleIcon />
               </span>
-              Continue with Google
+              {authCopy.google}
             </Button>
             <div className="flex items-center gap-2 text-[11px] uppercase tracking-wide text-text-muted">
               <span className="h-px flex-1 bg-border" aria-hidden />
               <span>{authCopy.divider}</span>
               <span className="h-px flex-1 bg-border" aria-hidden />
             </div>
-            <form onSubmit={mode === 'signin' ? onSignInSubmit : onSignUpSubmit} className="stack-gap-sm">
-              <label className="block text-sm">
-                <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
+            <form
+              noValidate
+              onSubmit={mode === 'signin' ? onSignInSubmit : onSignUpSubmit}
+              className="stack-gap-sm"
+            >
+              <div className="block text-sm">
+                <label htmlFor="auth-email" className="mb-1 block text-text-secondary">
+                  {authCopy.fields.email}
+                </label>
                 <Input
+                  id="auth-email"
                   type="email"
                   required
                   ref={emailRef}
@@ -197,51 +230,67 @@ export function LoginAuthSurface({
                   value={email}
                   onChange={(e) => onEmailChange(e.target.value)}
                   onFocus={onSyncInputState}
-                  className="mt-2"
+                  className="min-h-11"
                   placeholder={authCopy.placeholders.email}
                   autoComplete="email"
+                  aria-invalid={Boolean(emailError)}
+                  aria-describedby={emailError ? 'auth-email-error' : undefined}
                 />
-              </label>
-              <label className="block text-sm">
-                <span className="mb-1 block text-text-secondary">{authCopy.fields.password}</span>
-                <Input
-                  type="password"
-                  required
-                  ref={passwordRef}
-                  name="password"
-                  value={password}
-                  onChange={(e) => onPasswordChange(e.target.value)}
-                  onFocus={onSyncInputState}
-                  className="mt-2"
-                  placeholder={mode === 'signup' ? authCopy.placeholders.passwordNew : authCopy.placeholders.password}
-                  autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
-                />
-              </label>
+                {emailError ? (
+                  <p id="auth-email-error" className="mt-1 text-xs text-state-warning">
+                    {emailError}
+                  </p>
+                ) : null}
+              </div>
+              <LoginPasswordField
+                authCopy={authCopy}
+                inputId="auth-password"
+                errorId="auth-password-error"
+                errorMessage={passwordError}
+                label={authCopy.fields.password}
+                ref={passwordRef}
+                name="password"
+                required
+                value={password}
+                onChange={(event) => onPasswordChange(event.target.value)}
+                onFocus={onSyncInputState}
+                placeholder={
+                  mode === 'signup'
+                    ? authCopy.placeholders.passwordNew
+                    : authCopy.placeholders.password
+                }
+                autoComplete={mode === 'signup' ? 'new-password' : 'current-password'}
+              />
               {mode === 'signup' && (
-                <label className="block text-sm">
-                  <span className="mb-1 block text-text-secondary">{authCopy.fields.confirmPassword}</span>
-                  <Input
-                    type="password"
-                    required
-                    value={confirm}
-                    onChange={(e) => onConfirmChange(e.target.value)}
-                    className="mt-2"
-                    placeholder={authCopy.placeholders.passwordNew}
-                    autoComplete="new-password"
-                  />
-                </label>
+                <LoginPasswordField
+                  authCopy={authCopy}
+                  inputId="auth-confirm"
+                  errorId="auth-confirm-error"
+                  errorMessage={confirmError}
+                  label={authCopy.fields.confirmPassword}
+                  ref={confirmRef}
+                  name="confirm-password"
+                  required
+                  value={confirm}
+                  onChange={(event) => onConfirmChange(event.target.value)}
+                  placeholder={authCopy.placeholders.passwordNew}
+                  autoComplete="new-password"
+                />
               )}
               {mode === 'signup' && (
                 <div className="stack-gap-sm rounded-card bg-bg p-3 text-sm text-text-secondary">
                   <label className="flex items-start gap-2">
                     <input
                       type="checkbox"
+                      ref={termsRef}
                       checked={acceptTerms}
                       onChange={(event) => onAcceptTermsChange(event.target.checked)}
                       className={clsx(
                         'mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring',
                         termsError && 'border-state-warning text-state-warning focus:ring-state-warning'
                       )}
+                      aria-invalid={Boolean(termsError)}
+                      aria-describedby={termsError ? 'auth-terms-error' : undefined}
                       required
                     />
                     <span className={clsx(termsError && 'text-state-warning')}>
@@ -249,18 +298,31 @@ export function LoginAuthSurface({
                     </span>
                   </label>
                   {termsError ? (
-                    <p className="pl-6 text-xs text-state-warning">{authCopy.terms.error}</p>
+                    <p id="auth-terms-error" className="pl-6 text-xs text-state-warning">
+                      {termsError}
+                    </p>
                   ) : null}
                   <label className="flex items-start gap-2">
                     <input
                       type="checkbox"
+                      ref={ageRef}
                       checked={ageConfirmed}
                       onChange={(event) => onAgeConfirmedChange(event.target.checked)}
-                      className="mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring"
+                      className={clsx(
+                        'mt-1 h-4 w-4 rounded border-border text-brand focus:ring-ring',
+                        ageError && 'border-state-warning text-state-warning focus:ring-state-warning'
+                      )}
+                      aria-invalid={Boolean(ageError)}
+                      aria-describedby={ageError ? 'auth-age-error' : undefined}
                       required
                     />
                     <span>{formatTemplate(authCopy.terms.age, { age: String(legalMinAge) })}</span>
                   </label>
+                  {ageError ? (
+                    <p id="auth-age-error" className="pl-6 text-xs text-state-warning">
+                      {ageError}
+                    </p>
+                  ) : null}
                   <label className="flex items-start gap-2">
                     <input
                       type="checkbox"
@@ -293,27 +355,17 @@ export function LoginAuthSurface({
                 >
                   {authCopy.forgotPassword}
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onModeChange('signup')}
-                  className="self-start text-brand hover:text-brandHover"
-                >
-                  {authCopy.links.newAccount}
-                </Button>
               </div>
-            ) : (
-              <Button type="button" variant="ghost" size="sm" onClick={() => onModeChange('signin')}>
-                {authCopy.links.haveAccount}
-              </Button>
-            )}
+            ) : null}
           </>
         ) : (
-          <form onSubmit={onResetSubmit} className="stack-gap-sm">
-            <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">{authCopy.fields.email}</span>
+          <form noValidate onSubmit={onResetSubmit} className="stack-gap-sm">
+            <div className="block text-sm">
+              <label htmlFor="reset-email" className="mb-1 block text-text-secondary">
+                {authCopy.fields.email}
+              </label>
               <Input
+                id="reset-email"
                 type="email"
                 required
                 ref={emailRef}
@@ -321,11 +373,18 @@ export function LoginAuthSurface({
                 value={email}
                 onChange={(e) => onEmailChange(e.target.value)}
                 onFocus={onSyncInputState}
-                className="mt-2"
-                placeholder="you@domain.com"
+                className="min-h-11"
+                placeholder={authCopy.placeholders.email}
                 autoComplete="email"
+                aria-invalid={Boolean(emailError)}
+                aria-describedby={emailError ? 'reset-email-error' : undefined}
               />
-            </label>
+              {emailError ? (
+                <p id="reset-email-error" className="mt-1 text-xs text-state-warning">
+                  {emailError}
+                </p>
+              ) : null}
+            </div>
             <div className="flex justify-between text-xs">
               <Button type="button" variant="ghost" size="sm" onClick={() => onModeChange('signin')}>
                 {authCopy.links.backToSignIn}
@@ -336,6 +395,10 @@ export function LoginAuthSurface({
             </Button>
           </form>
         )}
+
+        <p role="alert" className="sr-only">
+          {formAttention ? authCopy.validation.formAttention : ''}
+        </p>
 
         {status && (
           <div
@@ -351,7 +414,9 @@ export function LoginAuthSurface({
         )}
         {mode === 'signin' && signupSuggestion && (
           <div className="rounded-card border border-dashed border-border bg-surface-glass-75 px-3 py-3 text-xs text-text-secondary">
-            <p className="text-sm font-semibold text-text-primary">New here?</p>
+            <p className="text-sm font-semibold text-text-primary">
+              {authCopy.signupSuggestion.title}
+            </p>
             <p className="mt-1">
               {formatTemplate(authCopy.signupSuggestion.body, { email: signupSuggestion.email })}
             </p>
@@ -370,7 +435,11 @@ export function LoginAuthSurface({
             </div>
           </div>
         )}
-        {error && <p className="text-xs text-state-warning">{error}</p>}
+        {error && (
+          <p role="alert" className="text-xs text-state-warning">
+            {error}
+          </p>
+        )}
       </div>
     </main>
   );
