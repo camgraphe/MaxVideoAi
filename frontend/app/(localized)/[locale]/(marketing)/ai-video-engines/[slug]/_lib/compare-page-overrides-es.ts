@@ -742,4 +742,674 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'pika-text-to-video-vs-wan-2-6': {
+      meta: {
+        title: 'Pika 2.2 vs Wan 2.6: precio, audio y mejores usos',
+        description:
+          'Compara Pika 2.2 y Wan 2.6 en precio, duración, audio, resolución y referencias de video para elegir el modelo ideal para tu proyecto.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Pika 2.2 Text & Image to Video con Wan 2.6 Text & Image to Video para decidir entre un loop corto y económico o un flujo más completo con audio. Pika simplifica la animación desde texto o imagen, mientras Wan llega a 15 segundos y admite videos de referencia.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Pika 2.2 para loops silenciosos de 5 o 10 segundos, pruebas estilizadas y animaciones simples a menor precio. Elige Wan 2.6 si la toma necesita hasta 15 segundos, audio nativo o entre uno y tres videos de referencia, aunque el costo en 720p y 1080p sea mayor.',
+      },
+      topCards: [
+        {
+          title: 'Elige Pika 2.2',
+          body:
+            'Úsalo para pruebas económicas en 720p, loops silenciosos y trabajos simples de texto a video o imagen a video.',
+        },
+        {
+          title: 'Elige Wan 2.6',
+          body:
+            'Úsalo para tomas de hasta 15 segundos, audio opcional, entrega 1080p o un flujo guiado por videos de referencia.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Pika parte de US$0.04 por segundo en 720p; Wan parte de US$0.10 y agrega duración, audio y control por referencias.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Pika funciona para loops sociales y conceptos. Wan funciona para tomas más largas, narradas o guiadas por video.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/pika-text-to-video', label: 'Abrir la página del modelo Pika 2.2' },
+        { href: '/models/wan-2-6', label: 'Abrir la página del modelo Wan 2.6' },
+        {
+          href: '/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video',
+          label: 'Comparar Hailuo 02 y Pika 2.2',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves para elegir entre Pika 2.2 y Wan 2.6.',
+        items: [
+          {
+            question: '¿Pika 2.2 o Wan 2.6 es más económico para hacer pruebas?',
+            answer:
+              'Pika 2.2 cuesta menos en 720p y funciona bien para loops silenciosos cortos. Wan 2.6 justifica su precio cuando la prueba requiere audio, más duración o videos de referencia.',
+          },
+          {
+            question: '¿Qué puede hacer Wan 2.6 que Pika 2.2 no ofrece?',
+            answer:
+              'Wan 2.6 genera hasta 15 segundos, admite audio opcional y trabaja con uno a tres videos de referencia. Pika 2.2 se concentra en texto a video e imagen a video sin audio.',
+          },
+          {
+            question: '¿Qué modelo conviene para una toma final en 1080p?',
+            answer:
+              'Los dos ofrecen 1080p. Pika sirve para una toma silenciosa simple y más económica; Wan conviene cuando el audio, la duración o la guía por video son esenciales.',
+          },
+        ],
+      },
+    },
+    'kling-2-6-pro-vs-kling-3-pro': {
+      meta: {
+        title: 'Kling 2.6 Pro vs Kling 3 Pro: ¿conviene actualizar?',
+        description:
+          'Compara Kling 2.6 Pro y Kling 3 Pro en duración, audio, precio y control de varias tomas para decidir si vale la pena actualizar.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 2.6 Pro con Kling 3 Pro para saber si tu flujo anterior sigue siendo suficiente o si la generación actual justifica el precio adicional. Ambos entregan video 1080p con audio, pero Kling 3 Pro llega a 15 segundos y apunta a secuencias cinematográficas de varias tomas.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Mantén Kling 2.6 Pro para diálogos conocidos de 5 o 10 segundos y un menor precio con audio. Actualiza a Kling 3 Pro cuando el proyecto necesite hasta 15 segundos, la generación Kling actual y un flujo mejor preparado para secuencias de varias tomas que justifiquen el costo extra.',
+      },
+      topCards: [
+        {
+          title: 'Elige Kling 2.6 Pro',
+          body:
+            'Conserva este modelo anterior para prompts 1080p validados, diálogos cortos y una tarifa de US$0.14 por segundo con audio.',
+        },
+        {
+          title: 'Elige Kling 3 Pro',
+          body:
+            'Usa el Pro actual para clips de hasta 15 segundos y secuencias cinematográficas prioritarias de varias tomas.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Ambos ofrecen texto, imagen, 1080p y audio; la decisión es valor del modelo anterior frente a duración y vigencia.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Kling 2.6 Pro sirve para diálogos cortos repetibles. Kling 3 Pro sirve para piezas principales y secuencias planeadas.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-2-6-pro', label: 'Abrir la página de Kling 2.6 Pro' },
+        { href: '/models/kling-3-pro', label: 'Abrir la página de Kling 3 Pro' },
+        {
+          href: '/ai-video-engines/kling-3-pro-vs-kling-3-standard',
+          label: 'Comparar Kling 3 Pro y Kling 3 Standard',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves antes de pasar de Kling 2.6 Pro a Kling 3 Pro.',
+        items: [
+          {
+            question: '¿Kling 3 Pro es una actualización directa de Kling 2.6 Pro?',
+            answer:
+              'Kling 3 Pro es la ruta Pro actual y aumenta la duración máxima de 10 a 15 segundos. Kling 2.6 Pro sigue disponible como opción anterior para flujos cortos ya validados.',
+          },
+          {
+            question: '¿Los dos modelos Kling Pro generan audio?',
+            answer:
+              'Sí. Ambos admiten audio en 1080p desde texto o imagen. Kling 2.6 Pro cuesta US$0.14 por segundo con audio y Kling 3 Pro lista US$0.168 antes del margen de la plataforma.',
+          },
+          {
+            question: '¿Cuándo vale la pena pagar más por Kling 3 Pro?',
+            answer:
+              'Elige Kling 3 Pro para 15 segundos, la generación actual o la planeación de varias tomas. Conserva 2.6 Pro si tu flujo validado de 10 segundos ya resuelve el proyecto.',
+          },
+        ],
+      },
+    },
+    'ltx-2-3-fast-vs-luma-ray-2': {
+      meta: {
+        title: 'LTX 2.3 Fast vs Luma Ray 2: velocidad, 4K y edición',
+        description:
+          'Compara LTX 2.3 Fast y Luma Ray 2 en duración, 4K, audio, transformación de video y reencuadre para elegir tu mejor flujo.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara LTX 2.3 Fast con Luma Ray 2 para elegir entre generación rápida con audio y una herramienta Luma anterior enfocada en edición. LTX alcanza 20 segundos en 1080p, 1440p o 4K; Luma se limita a 9 segundos, pero agrega transformación de video y reencuadre.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige LTX 2.3 Fast para generar rápidamente desde texto o imagen, con audio, clips más largos y salida hasta 4K. Elige Luma Ray 2 cuando necesites transformar un video existente o adaptarlo a una variedad mayor de formatos y una entrega 1080p sea suficiente.',
+      },
+      topCards: [
+        {
+          title: 'Elige LTX 2.3 Fast',
+          body:
+            'Para conceptos rápidos, audio nativo, clips de hasta 20 segundos y entregas desde 1080p hasta 4K.',
+        },
+        {
+          title: 'Elige Luma Ray 2',
+          body:
+            'Para modificar un video existente o reencuadrarlo en formato ancho, cuadrado, vertical o ultraancho.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'LTX ofrece más duración, resolución y audio; Luma aporta transformación de una fuente y más relaciones de aspecto.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'LTX sirve para borradores de campaña y alta resolución. Luma sirve para reutilizar y adaptar material existente.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/ltx-2-3-fast', label: 'Abrir la página de LTX 2.3 Fast' },
+        { href: '/models/luma-ray-2', label: 'Abrir la página de Luma Ray 2' },
+        {
+          href: '/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast',
+          label: 'Comparar LTX 2.3 Fast y Veo 3.1 Fast',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves para elegir entre generación LTX y edición Luma.',
+        items: [
+          {
+            question: '¿Qué modelo conviene para generar video 4K rápidamente?',
+            answer:
+              'LTX 2.3 Fast es la opción clara porque admite 4K, audio y clips de hasta 20 segundos. Luma Ray 2 llega a 1080p y no genera audio.',
+          },
+          {
+            question: '¿Qué permite Luma Ray 2 que LTX 2.3 Fast no hace?',
+            answer:
+              'Luma Ray 2 incluye transformación de video a video y reencuadre de material existente. LTX 2.3 Fast se enfoca en generar desde texto o una imagen.',
+          },
+          {
+            question: '¿Todavía conviene usar Luma Ray 2?',
+            answer:
+              'Sí, cuando la prioridad es modificar una fuente de video o adaptarla a varios formatos. Para generación nueva con audio y alta resolución, usa LTX 2.3 Fast.',
+          },
+        ],
+      },
+    },
+    'kling-2-6-pro-vs-minimax-hailuo-02-text': {
+      meta: {
+        title: 'Kling 2.6 Pro vs Hailuo 02: calidad, audio y precio',
+        description:
+          'Compara Kling 2.6 Pro y MiniMax Hailuo 02 en 1080p, audio, movimiento estilizado y precio por segundo para elegir el modelo correcto.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 2.6 Pro con MiniMax Hailuo 02 Standard para decidir entre diálogo cinematográfico en 1080p y exploración estilizada más económica. Kling agrega audio nativo y mayor resolución, mientras Hailuo produce animaciones silenciosas accesibles en 512P o 768P.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Kling 2.6 Pro para tomas cinematográficas en 1080p, diálogo y audio nativo opcional. Elige MiniMax Hailuo 02 Standard para probar estilos, formatos verticales o cuadrados y movimiento silencioso a menor precio cuando 512P o 768P sean suficientes.',
+      },
+      topCards: [
+        {
+          title: 'Elige Kling 2.6 Pro',
+          body:
+            'Para diálogos cinematográficos en 1080p, audio opcional y tomas donde el acabado importa más que el precio.',
+        },
+        {
+          title: 'Elige Hailuo 02',
+          body:
+            'Para explorar conceptos estilizados a US$0.045 por segundo y producir movimiento silencioso de menor resolución.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Kling entrega 1080p y audio por US$0.14 por segundo con sonido; Hailuo cuesta menos, pero es silencioso y llega a 768P.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Kling sirve para diálogo y tomas terminadas. Hailuo sirve para ganchos estilizados y lotes de exploración económica.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-2-6-pro', label: 'Abrir la página de Kling 2.6 Pro' },
+        { href: '/models/minimax-hailuo-02-text', label: 'Abrir la página de MiniMax Hailuo 02' },
+        {
+          href: '/ai-video-engines/kling-2-6-pro-vs-wan-2-6',
+          label: 'Comparar Kling 2.6 Pro y Wan 2.6',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre acabado Kling y movimiento Hailuo económico.',
+        items: [
+          {
+            question: '¿Kling 2.6 Pro o Hailuo 02 conviene más para diálogo?',
+            answer:
+              'Kling 2.6 Pro es más adecuado por su audio nativo y salida 1080p. Hailuo 02 genera video silencioso y funciona mejor para pruebas visuales o estilizadas.',
+          },
+          {
+            question: '¿Qué resolución ofrece cada modelo?',
+            answer:
+              'Kling 2.6 Pro entrega 1080p. MiniMax Hailuo 02 Standard ofrece 512P y 768P, por lo que sirve más para explorar conceptos que para terminar en alta resolución.',
+          },
+          {
+            question: '¿Cuándo conviene el menor precio de Hailuo 02?',
+            answer:
+              'Usa Hailuo para multiplicar exploraciones estilizadas silenciosas a US$0.045 por segundo. Paga Kling cuando el audio y una entrega 1080p sean requisitos.',
+          },
+        ],
+      },
+    },
+    'kling-3-standard-vs-kling-o3-standard': {
+      meta: {
+        title: 'Kling 3 Standard vs Omni Standard: ¿cuál elegir?',
+        description:
+          'Compara Kling 3 Standard y Kling 3.0 Omni Standard en referencias, edición de video, 1080p, audio y precio para elegir el flujo correcto.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 3 Standard con Kling 3.0 Omni Standard cuando ambos ofrecen 15 segundos en 1080p con audio al mismo precio base. Standard simplifica la generación desde texto o una imagen inicial; Omni agrega referencias visuales y transformación de un video fuente.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Kling 3 Standard para probar directamente un prompt o una imagen inicial sin complejidad extra. Elige Kling 3.0 Omni Standard cuando personajes, productos, referencias visuales o un video existente deban guiar el resultado mediante referencia a video o video a video.',
+      },
+      topCards: [
+        {
+          title: 'Elige Kling 3 Standard',
+          body:
+            'Para prompts directos, animación de una imagen inicial y borradores 1080p repetibles con audio opcional.',
+        },
+        {
+          title: 'Elige Omni Standard',
+          body:
+            'Para guiar la toma con referencias o transformar un video fuente además de generar desde texto o imagen.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Resolución, duración, audio y precio base coinciden; Omni amplía las entradas y Standard mantiene el flujo simple.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Standard sirve para pruebas desde una imagen. Omni sirve para continuidad de personajes, productos y fuentes de video.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-3-standard', label: 'Abrir la página de Kling 3 Standard' },
+        { href: '/models/kling-o3-standard', label: 'Abrir la página de Kling 3.0 Omni Standard' },
+        {
+          href: '/ai-video-engines/kling-3-pro-vs-kling-3-standard',
+          label: 'Comparar Kling 3 Pro y Kling 3 Standard',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre los flujos Kling Standard y Omni Standard.',
+        items: [
+          {
+            question: '¿Cuál es la diferencia principal entre Standard y Omni Standard?',
+            answer:
+              'Ambos producen hasta 15 segundos en 1080p con audio. Omni Standard agrega referencia a video y video a video, modos que Kling 3 Standard no incluye.',
+          },
+          {
+            question: '¿Kling 3 Standard y Omni Standard cuestan lo mismo?',
+            answer:
+              'El catálogo indica las mismas tarifas del proveedor: US$0.084 por segundo sin audio y US$0.126 con audio, antes del margen aplicado por MaxVideoAI.',
+          },
+          {
+            question: '¿Qué modelo debo usar con recursos de referencia?',
+            answer:
+              'Elige Kling 3.0 Omni Standard si imágenes de referencia o un video fuente deben guiar el resultado. Kling 3 Standard basta cuando un prompt o imagen inicial resuelven la toma.',
+          },
+        ],
+      },
+    },
+    'seedance-2-0-fast-vs-veo-3-1': {
+      meta: {
+        title: 'Seedance 2.0 Fast vs Veo 3.1: borradores o 4K final',
+        description:
+          'Compara Seedance 2.0 Fast y Google Veo 3.1 en borradores, referencias, edición, duración, audio y salida 4K para tu próximo video.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Seedance 2.0 Fast con Google Veo 3.1 para elegir entre un flujo amplio de borrador y edición o una entrega final de mayor resolución. Seedance llega a 15 segundos con referencias, edición y extensión en 480p o 720p; Veo alcanza 4K para anuncios y B-roll pulidos de 8 segundos.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Seedance 2.0 Fast para planear con rapidez, crear borradores más largos, usar referencias, editar o extender un video cuando 720p sean suficientes. Elige Google Veo 3.1 para anuncios cortos terminados, control de primera y última imagen, y entrega 1080p o 4K.',
+      },
+      topCards: [
+        {
+          title: 'Elige Seedance 2.0 Fast',
+          body:
+            'Para borradores de 4 a 15 segundos, referencias visuales, edición, extensión y una variedad amplia de formatos.',
+        },
+        {
+          title: 'Elige Veo 3.1',
+          body:
+            'Para anuncios o B-roll terminados de 8 segundos, audio, control de imágenes límite y entrega 1080p o 4K.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Seedance ofrece más duración y herramientas en 480p/720p; Veo produce clips más cortos con mayor resolución final.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Seedance sirve para planeación y ajustes. Veo sirve para tomas aprobadas de campaña y masters de alta resolución.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/seedance-2-0-fast', label: 'Abrir la página de Seedance 2.0 Fast' },
+        { href: '/models/veo-3-1', label: 'Abrir la página de Google Veo 3.1' },
+        {
+          href: '/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast',
+          label: 'Comparar Seedance 2.0 Fast y Veo 3.1 Fast',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre borradores Seedance y entregas finales Veo.',
+        items: [
+          {
+            question: '¿Seedance 2.0 Fast o Veo 3.1 conviene más para borradores?',
+            answer:
+              'Seedance 2.0 Fast está diseñado para borradores rápidos, pruebas con referencias y planeación de tomas. También llega a 15 segundos y permite editar o extender video.',
+          },
+          {
+            question: '¿Qué modelo conviene para una entrega final en 4K?',
+            answer:
+              'Google Veo 3.1 es la mejor opción para un master 4K pulido. Seedance 2.0 Fast llega a 720p y funciona mejor como ruta de iteración y edición.',
+          },
+          {
+            question: '¿Los dos modelos admiten audio y referencias?',
+            answer:
+              'Sí. Seedance agrega edición de video y más formatos, mientras Veo agrega control de primera y última imagen junto con una resolución final superior.',
+          },
+        ],
+      },
+    },
+    'ltx-2-fast-vs-minimax-hailuo-02-text': {
+      meta: {
+        title: 'LTX 2 Fast vs Hailuo 02: resolución, audio y usos',
+        description:
+          'Compara LTX Video 2.0 Fast y MiniMax Hailuo 02 en duración, resolución, audio, formatos y precio para clips sociales y estilizados.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara LTX Video 2.0 Fast con MiniMax Hailuo 02 Standard para elegir entre clips horizontales largos en alta resolución o formatos estilizados más modestos. LTX alcanza 20 segundos con audio y salida hasta 4K; Hailuo agrega formatos vertical y cuadrado en 512P o 768P sin audio.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige LTX Video 2.0 Fast para clips horizontales rápidos, audio nativo, duración de hasta 20 segundos y salida 1080p, 1440p o 4K. Elige MiniMax Hailuo 02 Standard para un concepto estilizado silencioso en vertical, cuadrado u horizontal cuando 512P o 768P sean suficientes.',
+      },
+      topCards: [
+        {
+          title: 'Elige LTX 2 Fast',
+          body:
+            'Para clips sociales 16:9 más largos, generación con audio y entregas desde 1080p hasta 4K.',
+        },
+        {
+          title: 'Elige Hailuo 02',
+          body:
+            'Para movimiento estilizado silencioso en 16:9, 9:16 o 1:1 cuando 512P o 768P cubran el canal.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'LTX ofrece duración, audio y alta resolución, pero solo 16:9; Hailuo ofrece más formatos sociales con menor resolución.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'LTX sirve para promociones horizontales con música. Hailuo sirve para ganchos verticales, cuadrados y pruebas visuales.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/ltx-2-fast', label: 'Abrir la página de LTX Video 2.0 Fast' },
+        { href: '/models/minimax-hailuo-02-text', label: 'Abrir la página de MiniMax Hailuo 02' },
+        {
+          href: '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast',
+          label: 'Comparar LTX 2.3 Fast y LTX 2 Fast',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre LTX de alta resolución y Hailuo multiformato.',
+        items: [
+          {
+            question: '¿Qué modelo conviene para clips largos en alta resolución?',
+            answer:
+              'LTX Video 2.0 Fast alcanza 20 segundos con audio y salida 1080p, 1440p o 4K. Hailuo 02 se limita a 10 segundos y 768P.',
+          },
+          {
+            question: '¿Qué modelo funciona mejor en vertical o cuadrado?',
+            answer:
+              'MiniMax Hailuo 02 Standard admite 9:16 y 1:1 además de 16:9. LTX Video 2.0 Fast se limita al formato horizontal 16:9.',
+          },
+          {
+            question: '¿LTX 2 Fast y Hailuo 02 generan audio?',
+            answer:
+              'No los dos. LTX Video 2.0 Fast admite audio nativo, mientras Hailuo 02 produce video silencioso que puede sonorizarse después si hace falta.',
+          },
+        ],
+      },
+    },
+    'minimax-hailuo-02-text-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Hailuo 02 vs Veo 3.1 Fast: precio, audio y 4K',
+        description:
+          'Compara MiniMax Hailuo 02 y Google Veo 3.1 Fast en precio, audio, referencias, resolución y duración para pruebas o entregas pulidas.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara MiniMax Hailuo 02 Standard con Google Veo 3.1 Fast para decidir entre exploración estilizada económica y un flujo de producción más completo. Hailuo crea movimiento silencioso en 512P o 768P por US$0.045 por segundo; Veo Fast agrega audio, referencias, extensión y salida hasta 4K.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige MiniMax Hailuo 02 Standard para conceptos estilizados silenciosos y económicos de hasta 10 segundos cuando 768P sean suficientes. Elige Google Veo 3.1 Fast para anuncios con audio, referencias, control de primera y última imagen, extensiones o una entrega final en 1080p o 4K.',
+      },
+      topCards: [
+        {
+          title: 'Elige Hailuo 02',
+          body:
+            'Para pruebas estilizadas a US$0.045 por segundo, conceptos sociales silenciosos y hasta 10 segundos en 768P.',
+        },
+        {
+          title: 'Elige Veo 3.1 Fast',
+          body:
+            'Para audio, referencias, control de imágenes límite, extensión y entregas desde 720p hasta 4K.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Hailuo cuesta menos y ofrece dos segundos más; Veo Fast amplía la resolución, el sonido y los controles.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Hailuo sirve para pruebas estilizadas y ganchos económicos. Veo Fast sirve para anuncios, productos y masters pulidos.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/minimax-hailuo-02-text', label: 'Abrir la página de MiniMax Hailuo 02' },
+        { href: '/models/veo-3-1-fast', label: 'Abrir la página de Google Veo 3.1 Fast' },
+        {
+          href: '/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast',
+          label: 'Comparar Seedance 2.0 Fast y Veo 3.1 Fast',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre Hailuo económico y Veo Fast más completo.',
+        items: [
+          {
+            question: '¿Hailuo 02 o Veo 3.1 Fast cuesta menos?',
+            answer:
+              'Hailuo 02 cuesta US$0.045 por segundo. Veo 3.1 Fast parte de US$0.10 en 720p con audio y sube con la resolución, por lo que Hailuo es la ruta silenciosa más económica.',
+          },
+          {
+            question: '¿Qué modelo admite audio y salida 4K?',
+            answer:
+              'Google Veo 3.1 Fast admite audio nativo y salida hasta 4K. MiniMax Hailuo 02 Standard es silencioso y llega como máximo a 768P.',
+          },
+          {
+            question: '¿Cuándo conviene elegir Hailuo 02 en vez de Veo Fast?',
+            answer:
+              'Elige Hailuo para explorar estilos a bajo precio sin necesitar sonido ni alta resolución. Veo Fast conviene cuando importan referencias, audio y una entrega terminada.',
+          },
+        ],
+      },
+    },
+    'kling-3-4k-vs-seedance-2-0': {
+      meta: {
+        title: 'Kling 3 4K vs Seedance 2.0: 4K final o más control',
+        description:
+          'Compara Kling 3 4K y Seedance 2.0 en 4K nativo, referencias, edición, extensión, audio y flexibilidad antes de renderizar tu proyecto.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 3 4K con Seedance 2.0: ambos entregan 4K, pero siguen rutas de producción distintas. Kling es una opción de texto o imagen inicial dedicada al render final en 4K nativo; Seedance va de 480p a 4K con referencias, edición, extensión, controles de movimiento y audio.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Kling 3 4K cuando un prompt o imagen aprobados deban renderizarse directamente en 4K nativo. Elige Seedance 2.0 cuando el proyecto necesite iteraciones de menor resolución, varias referencias, edición de video, extensión de clips, más formatos o mayor control antes del master 4K.',
+      },
+      topCards: [
+        {
+          title: 'Elige Kling 3 4K',
+          body:
+            'Para renderizar directamente un prompt o imagen aprobados en 4K nativo, con audio opcional.',
+        },
+        {
+          title: 'Elige Seedance 2.0',
+          body:
+            'Para referencias, edición, extensión, controles de movimiento, varias resoluciones y más relaciones de aspecto.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Kling bloquea cada render en 4K nativo; Seedance permite iterar desde 480p con entradas mucho más variadas.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Kling sirve para piezas principales ya aprobadas. Seedance sirve para campañas iterativas, secuencias y ajustes.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-3-4k', label: 'Abrir la página de Kling 3 4K' },
+        { href: '/models/seedance-2-0', label: 'Abrir la página de Seedance 2.0' },
+        {
+          href: '/ai-video-engines/kling-3-4k-vs-veo-3-1',
+          label: 'Comparar Kling 3 4K y Veo 3.1',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre 4K nativo dedicado y un flujo Seedance completo.',
+        items: [
+          {
+            question: '¿Kling 3 4K y Seedance 2.0 admiten salida 4K?',
+            answer:
+              'Sí. Kling 3 4K está bloqueado en salida 4K nativa, mientras Seedance 2.0 ofrece 480p, 720p, 1080p y 4K para iterar antes de la entrega final.',
+          },
+          {
+            question: '¿Qué modelo ofrece más control con referencias y edición?',
+            answer:
+              'Seedance 2.0 agrega referencias, edición, extensión, controles de movimiento y varias fuentes de imagen, video o audio. Kling 3 4K se concentra en texto e imagen inicial.',
+          },
+          {
+            question: '¿Qué modelo conviene para una pieza principal final en 4K?',
+            answer:
+              'Kling 3 4K es una ruta directa para renderizar un prompt o imagen aprobados en 4K nativo. Seedance conviene si la toma todavía requiere referencias, ajustes o extensiones.',
+          },
+        ],
+      },
+    },
+    'minimax-hailuo-02-text-vs-wan-2-6': {
+      meta: {
+        title: 'Hailuo 02 vs Wan 2.6: precio, audio y mejores usos',
+        description:
+          'Compara MiniMax Hailuo 02 y Wan 2.6 en precio, duración, 1080p, audio, referencias de video y movimiento estilizado para elegir bien.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara MiniMax Hailuo 02 Standard con Wan 2.6 Text & Image to Video para decidir entre movimiento estilizado económico y un flujo de uso general. Hailuo cuesta US$0.045 por segundo para clips silenciosos en 512P o 768P; Wan llega a 15 segundos en 1080p con audio y referencias de video.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige MiniMax Hailuo 02 Standard para conceptos estilizados silenciosos más económicos, formatos verticales o cuadrados y hasta 10 segundos cuando 768P sean suficientes. Elige Wan 2.6 para producción general en 1080p, hasta 15 segundos, con audio opcional o entre uno y tres videos de referencia.',
+      },
+      topCards: [
+        {
+          title: 'Elige Hailuo 02',
+          body:
+            'Para movimiento estilizado a US$0.045 por segundo y pruebas silenciosas horizontales, verticales o cuadradas.',
+        },
+        {
+          title: 'Elige Wan 2.6',
+          body:
+            'Para entrega 720p o 1080p, audio opcional, hasta 15 segundos y guía por referencias de video.',
+        },
+        {
+          title: 'Diferencia clave',
+          body:
+            'Hailuo minimiza el costo de contenido estilizado; Wan cuesta más, pero agrega resolución, duración, sonido y referencias.',
+        },
+        {
+          title: 'Mejores flujos',
+          body:
+            'Hailuo sirve para conceptos sociales económicos. Wan sirve para narración, B-roll y secuencias guiadas.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/minimax-hailuo-02-text', label: 'Abrir la página de MiniMax Hailuo 02' },
+        { href: '/models/wan-2-6', label: 'Abrir la página de Wan 2.6' },
+        {
+          href: '/ai-video-engines/veo-3-1-vs-wan-2-6',
+          label: 'Comparar Veo 3.1 y Wan 2.6',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas breves entre Hailuo estilizado y Wan de uso general.',
+        items: [
+          {
+            question: '¿Hailuo 02 o Wan 2.6 cuesta menos?',
+            answer:
+              'Hailuo 02 cuesta US$0.045 por segundo. Wan 2.6 parte de US$0.10 en 720p y US$0.15 en 1080p, así que Hailuo es más económico si basta una salida silenciosa de menor resolución.',
+          },
+          {
+            question: '¿Qué modelo admite audio y videos de referencia?',
+            answer:
+              'Wan 2.6 admite audio opcional y entre uno y tres videos de referencia. MiniMax Hailuo 02 Standard genera desde texto o imagen sin audio.',
+          },
+          {
+            question: '¿Cuándo debo elegir Wan 2.6 en vez de Hailuo 02?',
+            answer:
+              'Elige Wan cuando necesites 1080p, más de 10 segundos, audio nativo o guía por video. Elige Hailuo para explorar estilos y formatos sociales a menor precio.',
+          },
+        ],
+      },
+    },
   } satisfies ComparePageOverridesBySlug;
