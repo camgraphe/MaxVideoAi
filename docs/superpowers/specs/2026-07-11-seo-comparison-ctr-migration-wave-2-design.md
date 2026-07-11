@@ -1,8 +1,8 @@
 # SEO Comparison CTR + Migration Wave 2 Design
 
-**Date:** 2026-07-11  
-**Status:** Approved for written-spec review  
-**Branch:** `codex/seo-comparison-ctr-migration-wave-2`  
+**Date:** 2026-07-11
+**Status:** Approved for written-spec review
+**Branch:** `codex/seo-comparison-ctr-migration-wave-2`
 **Base:** `origin/main` at `6b7cf74538f0883731c029065a5d9aff658383a8`
 
 ## Objective
