@@ -3147,7 +3147,7 @@
       },
       "authGate": {
         "title": "Créez un compte pour générer",
-        "body": "Vous pouvez explorer l’espace de travail avec des rendus de démonstration, mais générer un vrai rendu nécessite un compte.",
+        "body": "Explorez l’espace de travail avec les rendus de démonstration. Créez un compte et nous vous ramènerons ici pour continuer.",
         "primary": "Créer un compte",
         "secondary": "Se connecter",
         "close": "Plus tard",
@@ -3918,7 +3918,7 @@
       },
       "authGate": {
         "title": "Créez un compte pour générer",
-        "body": "Vous pouvez explorer l’espace image, mais lancer une véritable génération nécessite un compte.",
+        "body": "Explorez d’abord l’espace image. Créez un compte et nous vous ramènerons ici pour continuer.",
         "primary": "Créer un compte",
         "secondary": "Se connecter",
         "close": "Plus tard"

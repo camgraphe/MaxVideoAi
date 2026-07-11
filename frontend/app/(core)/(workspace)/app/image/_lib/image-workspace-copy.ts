@@ -330,7 +330,7 @@ export const DEFAULT_COPY: ImageWorkspaceCopy = {
   },
   authGate: {
     title: 'Create an account to render',
-    body: 'You can explore the image workspace, but starting a real image generation requires an account.',
+    body: "Explore the image workspace first. Create an account and we'll return you here to continue.",
     primary: 'Create account',
     secondary: 'Sign in',
     close: 'Maybe later',

@@ -3139,7 +3139,7 @@
       },
       "authGate": {
         "title": "Crea una cuenta para renderizar",
-        "body": "Puedes explorar todo el espacio de trabajo con renders de prueba, pero lanzar un render real requiere una cuenta.",
+        "body": "Explora el workspace con renders de muestra. Crea una cuenta y volverás aquí para continuar.",
         "primary": "Crear cuenta",
         "secondary": "Iniciar sesión",
         "close": "Más tarde",
@@ -3910,7 +3910,7 @@
       },
       "authGate": {
         "title": "Crea una cuenta para generar",
-        "body": "Puedes explorar el espacio de imágenes, pero necesitas una cuenta para iniciar una generación real.",
+        "body": "Explora primero el workspace de imágenes. Crea una cuenta y volverás aquí para continuar.",
         "primary": "Crear cuenta",
         "secondary": "Iniciar sesión",
         "close": "Quizá más tarde"

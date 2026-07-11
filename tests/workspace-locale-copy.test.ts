@@ -73,3 +73,16 @@ test('video preview empty, download, and error copy are localized in every works
     assert.deepEqual(missing, [], `${locale} is missing video preview copy: ${missing.join(', ')}`);
   }
 });
+
+test('video and image auth gates promise only a return to the workspace', () => {
+  for (const [locale, messages] of Object.entries(localeMessages)) {
+    for (const gate of [messages.workspace.generate.authGate, messages.workspace.image.authGate]) {
+      assert.match(gate.body, /return|ramèner|volver/i, `${locale} should explain workspace return`);
+      assert.doesNotMatch(
+        gate.body,
+        /free|gratuit|gratis|credit|crédit|price|prix|precio/i,
+        `${locale} should not promise a signup incentive`
+      );
+    }
+  }
+});

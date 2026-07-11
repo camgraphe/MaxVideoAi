@@ -32,7 +32,7 @@ export const DEFAULT_WORKSPACE_COPY = {
   },
   authGate: {
     title: 'Create an account to render',
-    body: 'You can explore the full workspace with starter renders, but launching a real render requires an account.',
+    body: "Explore the workspace with starter renders. Create an account and we'll return you here to continue.",
     primary: 'Create account',
     secondary: 'Sign in',
     close: 'Maybe later',
