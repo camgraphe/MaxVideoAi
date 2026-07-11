@@ -8,12 +8,7 @@ import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp } from '@/lib/wallet';
 import { getConfiguredEngine } from '@/server/engines';
 import { getSoraVariantForEngine, isSoraEngineId, parseSoraRequest, type SoraRequest } from '@/lib/sora';
-import {
-  getUserPreferredCurrency,
-  normalizeCurrencyCode,
-  resolveCurrency,
-  resolveEnabledCurrencies,
-} from '@/lib/currency';
+import { getUserPreferredCurrency, normalizeCurrencyCode, resolveCurrency, resolveEnabledCurrencies } from '@/lib/currency';
 import { convertCents } from '@/lib/exchange';
 import type { Currency } from '@/lib/currency';
 import type { Mode } from '@/types/engines';
@@ -36,11 +31,8 @@ import {
   resolveCheckoutClientIp,
 } from '@/server/checkout-guard';
 import { findReusableExpressCheckoutSession } from '@/server/checkout-session-reuse';
-import {
-  buildCheckoutAttemptAttributionMetadata,
-  buildWalletAttributionMetadata,
-  normalizeWalletAttribution,
-} from '@/server/wallet-attribution';
+import { getWalletSummary } from '@/server/wallet-summary';
+import { buildCheckoutAttemptAttributionMetadata, buildWalletAttributionMetadata, normalizeWalletAttribution } from '@/server/wallet-attribution';
 
 const WALLET_DISPLAY_CURRENCY = 'USD';
 const WALLET_DISPLAY_CURRENCY_LOWER = 'usd';
@@ -133,14 +125,6 @@ async function hasCompletedWalletTopUp(userId: string): Promise<boolean> {
   return Number(rows[0]?.topup_count ?? 0) > 0;
 }
 
-type WalletLedgerSummaryRow = {
-  topups_cents: number | string | null;
-  charges_cents: number | string | null;
-  refunds_cents: number | string | null;
-  completed_topups: number | string | null;
-  mismatched_currencies: string | null;
-};
-
 export async function GET(req: NextRequest) {
   const userId = await resolveAuthenticatedUser(req);
   if (!userId) return json({ error: 'Unauthorized' }, { status: 401 });
@@ -166,44 +150,12 @@ export async function GET(req: NextRequest) {
   const fallbackResolution = resolveCurrency(req, preferredCurrency ? { preferred_currency: preferredCurrency } : undefined);
 
   try {
-    const walletCurrency = WALLET_DISPLAY_CURRENCY_LOWER as Currency;
-    const walletCurrencyUpper = WALLET_DISPLAY_CURRENCY;
-    const rows = await query<WalletLedgerSummaryRow>(
-      `SELECT
-          COALESCE(SUM(CASE WHEN type = 'topup' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS topups_cents,
-          COALESCE(SUM(CASE WHEN type = 'charge' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS charges_cents,
-          COALESCE(SUM(CASE WHEN type = 'refund' AND (currency IS NULL OR UPPER(currency) = $2) THEN amount_cents ELSE 0 END), 0)::bigint AS refunds_cents,
-          COUNT(*) FILTER (WHERE type = 'topup' AND amount_cents > 0)::int AS completed_topups,
-          COALESCE(STRING_AGG(DISTINCT LOWER(currency), ',') FILTER (WHERE currency IS NOT NULL AND LOWER(currency) <> $3), '') AS mismatched_currencies
-         FROM app_receipts
-        WHERE user_id = $1`,
-      [userId, walletCurrencyUpper, walletCurrency]
-    );
-    const summary = rows[0];
-    const normalizedMismatches = (summary?.mismatched_currencies ?? '')
-      .split(',')
-      .map((currency) => normalizeCurrencyCode(currency))
-      .filter((currency): currency is Currency => Boolean(currency) && currency !== walletCurrency);
-
-    if (normalizedMismatches.length) {
-      console.warn('[wallet] detected receipts with mismatched currency', {
-        userId,
-        walletCurrency,
-        mismatched: normalizedMismatches,
-      });
-    }
-
-    const topups = Number(summary?.topups_cents ?? 0);
-    const charges = Number(summary?.charges_cents ?? 0);
-    const refunds = Number(summary?.refunds_cents ?? 0);
-    const completedTopups = Number(summary?.completed_topups ?? 0);
-
-    const balanceCents = Math.max(0, topups + refunds - charges);
+    const summary = await getWalletSummary(userId);
     return json({
-      balance: balanceCents / 100,
-      currency: walletCurrencyUpper,
+      balance: summary.balanceCents / 100,
+      currency: summary.currency,
       settlementCurrency: fallbackResolution.currency.toUpperCase(),
-      hasCompletedTopUp: completedTopups > 0,
+      hasCompletedTopUp: summary.hasCompletedTopUp,
     });
   } catch (error) {
     console.warn('[wallet] query failed', error);

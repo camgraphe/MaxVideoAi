@@ -175,13 +175,14 @@ test('wallet route validates and propagates consented journey attribution', () =
   assert.equal((routeSource.match(/hasAnalyticsConsent\(req\)/g) ?? []).length, 1);
 });
 
-test('wallet GET aggregates receipt rows in SQL instead of returning the ledger', () => {
+test('wallet GET delegates aggregated receipt reads instead of returning the ledger', () => {
   const routeSource = fs.readFileSync(path.join(process.cwd(), 'frontend/app/api/wallet/route.ts'), 'utf8');
+  const summarySource = fs.readFileSync(path.join(process.cwd(), 'frontend/src/server/wallet-summary.ts'), 'utf8');
 
-  assert.match(routeSource, /type WalletLedgerSummaryRow/);
-  assert.match(routeSource, /SUM\(CASE WHEN type = 'topup'/);
-  assert.match(routeSource, /SUM\(CASE WHEN type = 'charge'/);
-  assert.match(routeSource, /SUM\(CASE WHEN type = 'refund'/);
-  assert.match(routeSource, /STRING_AGG\(DISTINCT LOWER\(currency\)/);
-  assert.doesNotMatch(routeSource, /SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = \$1/);
+  assert.match(routeSource, /getWalletSummary/);
+  assert.match(summarySource, /SUM\(CASE WHEN type = 'topup'/);
+  assert.match(summarySource, /SUM\(CASE WHEN type = 'charge'/);
+  assert.match(summarySource, /SUM\(CASE WHEN type = 'refund'/);
+  assert.match(summarySource, /STRING_AGG\(DISTINCT LOWER\(currency\)/);
+  assert.doesNotMatch(summarySource, /SELECT type, amount_cents, currency FROM app_receipts WHERE user_id = \$1/);
 });
