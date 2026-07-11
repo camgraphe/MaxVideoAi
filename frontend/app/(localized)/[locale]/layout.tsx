@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { locales, type AppLocale } from '@/i18n/locales';
 import { LocaleRuntime } from '@/app/_components/LocaleRuntime';
+import { MARKETING_CLIENT_MESSAGE_NAMESPACES } from '@/lib/i18n/client-message-namespaces';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 type LocaleLayoutProps = {
   children: ReactNode;
@@ -49,5 +50,9 @@ export default async function LocaleLayout(props: LocaleLayoutProps) {
     notFound();
   }
 
-  return <LocaleRuntime locale={locale}>{children}</LocaleRuntime>;
+  return (
+    <LocaleRuntime locale={locale} clientMessageNamespaces={MARKETING_CLIENT_MESSAGE_NAMESPACES}>
+      {children}
+    </LocaleRuntime>
+  );
 }
