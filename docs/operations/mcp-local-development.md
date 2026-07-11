@@ -96,10 +96,21 @@ npx --yes @openai/codex@latest mcp login maxvideoai-local
 
 Approve the request on the MaxVideoAI consent screen. The current foundation exposes only the safe read-only account, model-listing, and model-recommendation tools.
 
+Claude Code can use the same local endpoint with its own OAuth grant:
+
+```bash
+claude mcp add --transport http --scope local maxvideoai-local http://127.0.0.1:3100/mcp
+claude mcp login maxvideoai-local
+claude mcp get maxvideoai-local
+```
+
+Claude Code 2.1.207 was verified locally through consent, revocation from `/account/connections`, loss of authentication, and explicit reapproval. Running an LLM-authored tool call additionally requires Claude Code itself to be signed into an Anthropic account.
+
 ## Cleanup
 
 ```bash
 codex mcp remove maxvideoai-local
+claude mcp remove maxvideoai-local --scope local
 npx supabase@latest stop --workdir /tmp/maxvideoai-mcp-local
 ```
 
