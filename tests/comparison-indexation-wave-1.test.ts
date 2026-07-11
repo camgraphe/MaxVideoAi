@@ -45,8 +45,10 @@ const comparisonIndexation = JSON.parse(
 const engineCatalog = JSON.parse(
   readFileSync('frontend/config/engine-catalog.json', 'utf8'),
 ) as EngineCatalogEntry[];
-const requireFromTest = createRequire(import.meta.url);
-const reactModule = requireFromTest('react') as { cache?: <T>(callback: T) => T };
+const requireFromSitemapDependency = createRequire(
+  new URL('../frontend/server/video-seo.ts', import.meta.url),
+);
+const reactModule = requireFromSitemapDependency('react') as { cache?: <T>(callback: T) => T };
 reactModule.cache ??= (callback) => callback;
 
 test('wave 1 exposes one shared locale indexation policy', async () => {
