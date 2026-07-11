@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { AuthApiError } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { dispatchAnalyticsEvent, persistPendingAnalyticsEvent } from '@/lib/analytics-client';
@@ -17,6 +17,11 @@ import {
   sanitizeNextPath,
   shouldTrackGoogleSignupStart,
 } from '../_lib/login-helpers';
+import {
+  validateAuthForm,
+  type AuthFieldErrors,
+  type AuthFieldName,
+} from '../_lib/login-validation';
 import { useLoginAutofillSync } from './useLoginAutofillSync';
 import { useLoginAuthenticatedRedirect } from './useLoginAuthenticatedRedirect';
 import { useLoginAuthHashSession } from './useLoginAuthHashSession';
@@ -47,17 +52,69 @@ export function useLoginPageController({
   const [statusTone, setStatusTone] = useState<'info' | 'success'>('info');
   const [error, setError] = useState<string | null>(null);
   const { emailRef, passwordRef, syncInputState } = useLoginAutofillSync({ mode, setEmail, setPassword });
+  const confirmRef = useRef<HTMLInputElement>(null);
+  const termsRef = useRef<HTMLInputElement>(null);
+  const ageRef = useRef<HTMLInputElement>(null);
+  const [fieldErrors, setFieldErrors] = useState<AuthFieldErrors>({});
+  const [formAttention, setFormAttention] = useState(false);
   const oauthCodeExchangeStartedRef = useRef(false);
   const authNavigationStartedRef = useRef(false);
   const googleOAuthStartedRef = useRef(false);
   const [isGoogleOAuthStarting, setIsGoogleOAuthStarting] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [termsError, setTermsError] = useState(false);
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
   const browserLocale = useLoginBrowserLocale();
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
+  const fieldRefs = useMemo(
+    () => ({
+      email: emailRef,
+      password: passwordRef,
+      confirm: confirmRef,
+      acceptTerms: termsRef,
+      ageConfirmed: ageRef,
+    }),
+    [emailRef, passwordRef]
+  );
+
+  const clearFieldError = useCallback((field: AuthFieldName) => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+    setFormAttention(false);
+  }, []);
+
+  const handleModeChange = useCallback((nextMode: AuthMode) => {
+    setMode(nextMode);
+    setFieldErrors({});
+    setFormAttention(false);
+    setError(null);
+  }, []);
+
+  const validateCurrentForm = useCallback(
+    (targetMode: AuthMode) => {
+      const result = validateAuthForm({
+        mode: targetMode,
+        email,
+        password,
+        confirm,
+        acceptTerms,
+        ageConfirmed,
+      });
+      setFieldErrors(result.errors);
+      setFormAttention(Boolean(result.firstInvalidField));
+      if (result.firstInvalidField) {
+        fieldRefs[result.firstInvalidField].current?.focus();
+        return false;
+      }
+      return true;
+    },
+    [acceptTerms, ageConfirmed, confirm, email, fieldRefs, password]
+  );
 
   const completeAuthenticatedRedirect = useCallback(
     (target: string, authenticatedUserId?: string | null) => {
@@ -101,13 +158,8 @@ export function useLoginPageController({
     setStatusTone,
   });
 
-  useEffect(() => {
-    if (mode !== 'signup' && termsError) {
-      setTermsError(false);
-    }
-  }, [mode, termsError]);
-
   useLoginAuthHashSession({
+    authCopy,
     setError,
     setStatus,
     setStatusTone,
@@ -121,8 +173,9 @@ export function useLoginPageController({
 
   async function signInWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!validateCurrentForm('signin')) return;
     setStatusTone('info');
-    setStatus('Signing in…');
+    setStatus(authCopy.feedback.signingIn);
     setError(null);
     setSignupSuggestion(null);
     clearPendingGoogleLogin();
@@ -131,9 +184,7 @@ export function useLoginPageController({
       if (error instanceof AuthApiError && error.status === 400) {
         setSignupSuggestion({ email, password });
         setStatusTone('info');
-        setStatus(
-          "We couldn't sign you in with those details. If you're new, create your account without retyping anything."
-        );
+        setStatus(authCopy.feedback.signinSuggestion);
         setError(null);
       } else {
         setError(error.message);
@@ -142,7 +193,7 @@ export function useLoginPageController({
       return;
     }
     setStatusTone('info');
-    setStatus('Signed in. Redirecting…');
+    setStatus(authCopy.feedback.signinRedirecting);
     persistPendingAnalyticsEvent('login_completed', {
       route_family: 'auth',
       auth_surface: 'login',
@@ -155,14 +206,14 @@ export function useLoginPageController({
 
   const handleAcceptSignupSuggestion = useCallback(() => {
     if (!signupSuggestion) return;
-    setMode('signup');
+    handleModeChange('signup');
     if (signupSuggestion.password) {
       setConfirm((prev) => (prev ? prev : signupSuggestion.password));
     }
     setStatusTone('info');
-    setStatus("Great, let's create your account.");
+    setStatus(authCopy.feedback.signupSuggestionReady);
     setSignupSuggestion(null);
-  }, [signupSuggestion, setMode, setConfirm, setStatusTone, setStatus]);
+  }, [authCopy.feedback.signupSuggestionReady, handleModeChange, signupSuggestion]);
 
   const handleClearSignupSuggestion = useCallback(() => {
     setSignupSuggestion(null);
@@ -170,13 +221,8 @@ export function useLoginPageController({
 
   const handleAcceptTermsChange = useCallback((checked: boolean) => {
     setAcceptTerms(checked);
-    if (checked) {
-      setTermsError(false);
-      setError((prev) =>
-        prev === 'You must accept the Terms of Service and Privacy Policy to continue.' ? null : prev
-      );
-    }
-  }, []);
+    clearFieldError('acceptTerms');
+  }, [clearFieldError]);
 
   async function submitSignupConsents(userId: string) {
     try {
@@ -194,39 +240,19 @@ export function useLoginPageController({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.ok) {
-        throw new Error(json?.error ?? 'Failed to record legal consents');
+        throw new Error(authCopy.feedback.consentSaveError);
       }
     } catch (error) {
-      throw error instanceof Error ? error : new Error('Failed to record legal consents');
+      throw error instanceof Error ? error : new Error(authCopy.feedback.consentSaveError);
     }
   }
 
   async function signUpWithPassword(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!validateCurrentForm('signup')) return;
     setStatusTone('info');
-    setStatus('Creating account…');
+    setStatus(authCopy.feedback.creatingAccount);
     setError(null);
-    if (!password || password.length < 6) {
-      setError('Password must be at least 6 characters.');
-      setStatus(null);
-      return;
-    }
-    if (password !== confirm) {
-      setError('Passwords do not match.');
-      setStatus(null);
-      return;
-    }
-    if (!acceptTerms) {
-      setTermsError(true);
-      setError('You must accept the Terms of Service and Privacy Policy to continue.');
-      setStatus(null);
-      return;
-    }
-    if (!ageConfirmed) {
-      setError(`You must confirm you are at least ${LEGAL_MIN_AGE} years old to create an account.`);
-      setStatus(null);
-      return;
-    }
     clearPendingGoogleLogin();
     dispatchAnalyticsEvent('sign_up_started', {
       route_family: 'auth',
@@ -253,7 +279,11 @@ export function useLoginPageController({
       try {
         await submitSignupConsents(data.user.id);
       } catch (consentError) {
-        setError(consentError instanceof Error ? consentError.message : 'Failed to record legal consents.');
+        setError(
+          consentError instanceof Error
+            ? consentError.message
+            : authCopy.feedback.consentSaveError
+        );
         setStatus(null);
         if (data.session) {
           await supabase.auth.signOut().catch(() => undefined);
@@ -264,7 +294,7 @@ export function useLoginPageController({
 
     if (data.session) {
       setStatusTone('success');
-      setStatus('Account created. Redirecting…');
+      setStatus(authCopy.feedback.accountRedirecting);
       persistPendingAnalyticsEvent('sign_up_completed', {
         route_family: 'auth',
         auth_surface: 'login',
@@ -274,7 +304,7 @@ export function useLoginPageController({
       completeAuthenticatedRedirect(safeNextPath, data.session.user?.id ?? data.user?.id ?? null);
     } else {
       setStatusTone('success');
-      setStatus('Check your inbox to confirm your email.');
+      setStatus(authCopy.feedback.confirmEmail);
       dispatchAnalyticsEvent('sign_up_completed', {
         route_family: 'auth',
         auth_surface: 'login',
@@ -286,8 +316,9 @@ export function useLoginPageController({
 
   async function sendReset(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!validateCurrentForm('reset')) return;
     setStatusTone('info');
-    setStatus('Sending reset link…');
+    setStatus(authCopy.feedback.sendingReset);
     setError(null);
     const passwordResetRedirectTo = buildAuthCallbackRedirect(
       getBrowserAuthRedirectOrigin() || authRedirectOrigin,
@@ -302,7 +333,7 @@ export function useLoginPageController({
       return;
     }
     setStatusTone('info');
-    setStatus('Password reset email sent.');
+    setStatus(authCopy.feedback.resetSent);
   }
 
   async function signInWithGoogle() {
@@ -320,11 +351,11 @@ export function useLoginPageController({
       googleOAuthStartedRef.current = false;
       setIsGoogleOAuthStarting(false);
       setStatusTone('info');
-      setStatus('Google sign-in is unavailable because the auth redirect URL could not be resolved.');
+      setStatus(authCopy.feedback.googleUnavailable);
       return;
     }
     setStatusTone('info');
-    setStatus('Redirecting to Google…');
+    setStatus(authCopy.feedback.googleRedirecting);
     if (shouldTrackGoogleSignupStart(mode)) {
       dispatchAnalyticsEvent('sign_up_started', {
         route_family: 'auth',
@@ -377,6 +408,26 @@ export function useLoginPageController({
     }
   }, [router]);
 
+  const handleEmailChange = useCallback((value: string) => {
+    setEmail(value);
+    clearFieldError('email');
+  }, [clearFieldError]);
+
+  const handlePasswordChange = useCallback((value: string) => {
+    setPassword(value);
+    clearFieldError('password');
+  }, [clearFieldError]);
+
+  const handleConfirmChange = useCallback((value: string) => {
+    setConfirm(value);
+    clearFieldError('confirm');
+  }, [clearFieldError]);
+
+  const handleAgeConfirmedChange = useCallback((checked: boolean) => {
+    setAgeConfirmed(checked);
+    clearFieldError('ageConfirmed');
+  }, [clearFieldError]);
+
   return {
     authCopy,
     mode,
@@ -387,27 +438,32 @@ export function useLoginPageController({
     status,
     statusTone,
     error,
+    fieldErrors,
+    formAttention,
     signupSuggestion,
     isGoogleOAuthStarting,
     acceptTerms,
-    termsError,
+    termsError: Boolean(fieldErrors.acceptTerms),
     ageConfirmed,
     marketingOptIn,
     legalMinAge: LEGAL_MIN_AGE,
     emailRef,
     passwordRef,
+    confirmRef,
+    termsRef,
+    ageRef,
     onBack: handleBack,
-    onModeChange: setMode,
+    onModeChange: handleModeChange,
     onGoogleSignIn: signInWithGoogle,
     onSignInSubmit: signInWithPassword,
     onSignUpSubmit: signUpWithPassword,
     onResetSubmit: sendReset,
-    onEmailChange: setEmail,
-    onPasswordChange: setPassword,
-    onConfirmChange: setConfirm,
+    onEmailChange: handleEmailChange,
+    onPasswordChange: handlePasswordChange,
+    onConfirmChange: handleConfirmChange,
     onSyncInputState: syncInputState,
     onAcceptTermsChange: handleAcceptTermsChange,
-    onAgeConfirmedChange: setAgeConfirmed,
+    onAgeConfirmedChange: handleAgeConfirmedChange,
     onMarketingOptInChange: setMarketingOptIn,
     onAcceptSignupSuggestion: handleAcceptSignupSuggestion,
     onClearSignupSuggestion: handleClearSignupSuggestion,

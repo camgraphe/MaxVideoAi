@@ -91,7 +91,7 @@ export function useLoginOAuthCodeExchange({
     oauthCodeExchangeStartedRef.current = true;
     cleanAuthQuery();
     setStatusTone('info');
-    setStatus('Completing sign-in…');
+    setStatus(authCopy.feedback.completingSignIn);
     setError(null);
 
     let cancelled = false;
