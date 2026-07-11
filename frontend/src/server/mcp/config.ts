@@ -59,9 +59,10 @@ export function resolveMcpConfig(env: McpConfigEnv = process.env): McpConfig {
     throw new Error('MCP_API_HOST must match the configured MCP resource URL host.');
   }
 
-  const accountUrl = isProduction
-    ? PRODUCTION_ACCOUNT_URL
-    : `${parsed.origin}/account/connections`;
+  const accountUrl =
+    parsed.origin === 'https://api.maxvideoai.com'
+      ? PRODUCTION_ACCOUNT_URL
+      : `${parsed.origin}/account/connections`;
 
   return {
     apiHost,

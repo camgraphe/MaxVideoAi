@@ -76,3 +76,15 @@ test('MCP API host must match the configured resource URL', () => {
     /host/i
   );
 });
+
+test('hosted non-production MCP config keeps account handoff on its own origin', () => {
+  const config = resolveMcpConfig({
+    NODE_ENV: 'production',
+    MCP_API_HOST: 'maxvideoai-mcp-staging.vercel.app',
+    MCP_RESOURCE_URL: 'https://maxvideoai-mcp-staging.vercel.app/mcp',
+  });
+  assert.equal(
+    config.accountUrl,
+    'https://maxvideoai-mcp-staging.vercel.app/account/connections'
+  );
+});
