@@ -10,16 +10,23 @@ const PRODUCTION_HOSTS = new Set([
   'api.maxvideoai.com',
 ]);
 
+function canonicalizeHostname(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/\.+$/, '');
+}
+
 function isHostedStagingEnabled(env: FeatureEnv): boolean {
   if (env.NODE_ENV !== 'production' || env.MCP_STAGING_ENABLED !== 'true') return false;
   const allowedHost = env.MCP_STAGING_HOST?.trim().toLowerCase();
-  if (!allowedHost || PRODUCTION_HOSTS.has(allowedHost)) return false;
+  if (!allowedHost) return false;
+  const allowedHostname = canonicalizeHostname(allowedHost);
+  if (PRODUCTION_HOSTS.has(allowedHostname)) return false;
 
   try {
     const config = resolveMcpConfig(env);
     const resource = new URL(config.resourceUrl);
     return (
       resource.protocol === 'https:' &&
+      canonicalizeHostname(resource.hostname) === allowedHostname &&
       resource.host.toLowerCase() === allowedHost &&
       config.apiHost.toLowerCase() === allowedHost
     );

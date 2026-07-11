@@ -22,6 +22,10 @@ function isLoopbackHostname(hostname: string): boolean {
   return normalized === 'localhost' || normalized === '127.0.0.1' || normalized === '[::1]' || normalized === '::1';
 }
 
+function canonicalizeHostname(hostname: string): string {
+  return hostname.toLowerCase().replace(/\.+$/, '');
+}
+
 function parseResourceUrl(value: string): URL {
   let parsed: URL;
   try {
@@ -59,10 +63,13 @@ export function resolveMcpConfig(env: McpConfigEnv = process.env): McpConfig {
     throw new Error('MCP_API_HOST must match the configured MCP resource URL host.');
   }
 
-  const accountUrl =
-    parsed.origin === 'https://api.maxvideoai.com'
-      ? PRODUCTION_ACCOUNT_URL
-      : `${parsed.origin}/account/connections`;
+  const usesProductionApiOrigin =
+    parsed.protocol === 'https:' &&
+    canonicalizeHostname(parsed.hostname) === PRODUCTION_API_HOST &&
+    parsed.port === '';
+  const accountUrl = usesProductionApiOrigin
+    ? PRODUCTION_ACCOUNT_URL
+    : `${parsed.origin}/account/connections`;
 
   return {
     apiHost,

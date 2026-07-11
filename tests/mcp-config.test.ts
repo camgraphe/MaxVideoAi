@@ -88,3 +88,12 @@ test('hosted non-production MCP config keeps account handoff on its own origin',
     'https://maxvideoai-mcp-staging.vercel.app/account/connections'
   );
 });
+
+test('canonical production API with a terminal DNS dot keeps production account handoff', () => {
+  const config = resolveMcpConfig({
+    NODE_ENV: 'production',
+    MCP_API_HOST: 'api.maxvideoai.com.',
+    MCP_RESOURCE_URL: 'https://api.maxvideoai.com./mcp',
+  });
+  assert.equal(config.accountUrl, 'https://maxvideoai.com/account/connections');
+});
