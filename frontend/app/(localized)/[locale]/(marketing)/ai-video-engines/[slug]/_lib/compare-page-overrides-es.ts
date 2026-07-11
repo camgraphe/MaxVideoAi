@@ -1412,4 +1412,675 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         ],
       },
     },
+    'ltx-2-3-fast-vs-sora-2-pro': {
+      meta: {
+        title: 'LTX 2.3 Fast vs Sora 2 Pro: precio, 4K y usos',
+        description:
+          'Compara LTX 2.3 Fast y Sora 2 Pro en precio, duración, 4K, audio nativo y referencias para elegir iteración rápida o acabado de estudio.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara LTX 2.3 Fast con OpenAI Sora 2 Pro para elegir entre iteración económica de alta resolución y un acabado Sora de estudio. LTX ofrece 1440p o 4K en clips de hasta 10 segundos y llega a 20 segundos en 1080p a 25 fps; Sora Pro admite imagen o referencias para tomas pulidas de hasta 12 segundos.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige LTX 2.3 Fast para iteraciones económicas en 1440p o 4K de hasta 10 segundos, o clips más largos en 1080p a 25 fps. Elige OpenAI Sora 2 Pro cuando el render de estudio y los flujos con imagen o referencias pesen más que la duración o el precio.',
+      },
+      topCards: [
+        {
+          title: 'LTX para iteraciones más largas',
+          body:
+            'LTX admite audio nativo y llega a 20 segundos en 1080p a 25 fps; las opciones 1440p y 4K están disponibles para clips de hasta 10 segundos.',
+        },
+        {
+          title: 'Sora Pro para trabajar con referencias',
+          body:
+            'Sora Pro acepta texto, imágenes y referencias para equipos que buscan el estilo Sora de estudio en clips de hasta 12 segundos.',
+        },
+        {
+          title: 'Resolución frente a costo',
+          body:
+            'LTX parte de US$0.04 por segundo en 1080p y puede renderizar en 4K; Sora Pro parte de US$0.30 por segundo en 720p y llega hasta 1080p.',
+        },
+        {
+          title: 'Uso recomendado en producción',
+          body:
+            'Usa LTX para repetir conceptos de anuncios, producir tomas 1440p o 4K de hasta 10 segundos y extender clips 1080p/25 fps; usa Sora Pro para piezas principales guiadas por referencias.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/ltx-2-3-fast', label: 'Abrir la página de LTX 2.3 Fast' },
+        { href: '/models/sora-2-pro', label: 'Abrir la página de OpenAI Sora 2 Pro' },
+        {
+          href: '/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro',
+          label: 'Comparar LTX 2.3 Fast y LTX 2.3 Pro',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas para elegir entre iteración 4K económica y un flujo Sora con referencias.',
+        items: [
+          {
+            question: '¿Qué modelo crea clips más largos, LTX 2.3 Fast o Sora 2 Pro?',
+            answer:
+              'LTX 2.3 Fast admite hasta 20 segundos en 1080p a 25 fps. OpenAI Sora 2 Pro llega a 12 segundos, mientras que la salida 1440p o 4K de LTX está limitada a 10 segundos.',
+          },
+          {
+            question: '¿LTX 2.3 Fast y Sora 2 Pro generan audio nativo?',
+            answer:
+              'Sí. Ambos modelos admiten audio nativo. LTX separa la salida 1440p/4K de hasta 10 segundos de las ejecuciones 1080p/25 fps más largas; Sora Pro prioriza el acabado de estudio guiado por referencias.',
+          },
+          {
+            question: '¿Conviene elegir LTX 2.3 Fast para entregar en 4K?',
+            answer:
+              'Elige LTX para una salida directa en 4K de hasta 10 segundos. Para más de 12 segundos, usa su ruta 1080p/25 fps; elige Sora Pro cuando la imagen o las referencias y el estilo Sora definan la toma.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-vs-wan-2-5': {
+      meta: {
+        title: 'Veo 3.1 vs Wan 2.5: 4K, audio, precio y migración',
+        description:
+          'Compara Google Veo 3.1 y Wan 2.5 en 4K, audio, controles, duración y precio para decidir si mantener el modelo anterior o migrar.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Google Veo 3.1 con Wan 2.5 Text & Image to Video para elegir entre producción pulida en 4K y clips económicos con un modelo anterior. Wan 2.5 sigue disponible en MaxVideoAI para trabajos simples de hasta 10 segundos; Veo agrega referencias, control de primer y último fotograma y extensión.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Google Veo 3.1 para anuncios finales pulidos, 4K, referencias y controles avanzados. Mantén Wan 2.5 para clips económicos de texto o imagen de hasta 10 segundos; migra a Wan 2.6 actual para texto o imagen de hasta 15 segundos con audio, o para su modo separado de referencias de 5 o 10 segundos sin audio.',
+      },
+      topCards: [
+        {
+          title: 'Veo para producción pulida en 4K',
+          body:
+            'Veo admite desde 720p hasta 4K, audio nativo, referencias, primer y último fotograma y extensión para una producción final controlada.',
+        },
+        {
+          title: 'Conservar Wan 2.5 por su valor',
+          body:
+            'Quédate en Wan 2.5 cuando su flujo disponible de texto o imagen en 480p, 720p o 1080p ya cubra un clip económico de hasta 10 segundos.',
+        },
+        {
+          title: 'Actualizar el flujo de Wan',
+          body:
+            'Pasa a Wan 2.6 Text & Image to Video actual para clips de texto o imagen de 5, 10 o 15 segundos con audio opcional; el modo separado con video de referencia dura 5 o 10 segundos y no incluye audio.',
+        },
+        {
+          title: 'Ocho segundos o diez',
+          body:
+            'Veo se enfoca en clips controlados de hasta ocho segundos; Wan anterior ofrece dos segundos extra cuando los controles avanzados no son necesarios.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/veo-3-1', label: 'Abrir la página de Google Veo 3.1' },
+        { href: '/models/wan-2-5', label: 'Abrir la página del Wan 2.5 disponible' },
+        {
+          href: '/ai-video-engines/veo-3-1-vs-wan-2-6',
+          label: 'Comparar Google Veo 3.1 y Wan 2.6 actual',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas para elegir controles Veo, valor Wan anterior o la actualización a Wan actual.',
+        items: [
+          {
+            question: '¿Wan 2.5 sigue disponible en MaxVideoAI?',
+            answer:
+              'Sí. Wan 2.5 sigue disponible para trabajos anteriores de texto a video e imagen a video de hasta 10 segundos en 480p, 720p o 1080p.',
+          },
+          {
+            question: '¿Quién debería quedarse en Wan 2.5 en vez de elegir Veo 3.1?',
+            answer:
+              'Quédate en Wan 2.5 cuando los clips simples de menor costo y dos segundos extra importen más que el 4K, las referencias, el control de primer y último fotograma o la extensión.',
+          },
+          {
+            question: '¿Cuándo conviene migrar de Wan 2.5 a Wan 2.6?',
+            answer:
+              'Actualiza a Wan 2.6 actual para clips de texto o imagen de hasta 15 segundos con audio opcional, o usa el modo separado de 5 o 10 segundos sin audio con entre uno y tres videos de referencia.',
+          },
+        ],
+      },
+    },
+    'kling-2-6-pro-vs-wan-2-5': {
+      meta: {
+        title: 'Kling 2.6 Pro vs Wan 2.5: calidad, audio y precio',
+        description:
+          'Compara Kling 2.6 Pro y Wan 2.5 en diálogo 1080p, audio, duración, resolución y valor anterior antes de mantenerlos o actualizar.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 2.6 Pro con Wan 2.5 Text & Image to Video como dos flujos anteriores que siguen disponibles en MaxVideoAI. Ambos llegan a 10 segundos con audio; Kling apunta a diálogo cinematográfico en 1080p fijo, mientras Wan ofrece una escala económica desde 480p hasta 1080p.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Quédate en Kling 2.6 Pro para diálogo cinematográfico probado en 1080p o mantén Wan 2.5 por su flexibilidad económica de resolución. Ambos siguen accesibles; migra trabajos nuevos exigentes a Kling 3 Pro actual o a Wan 2.6 para producción de texto o imagen de hasta 15 segundos.',
+      },
+      topCards: [
+        {
+          title: 'Conservar Kling para diálogo',
+          body:
+            'Mantén Kling 2.6 Pro cuando su flujo disponible y establecido en 1080p ya entregue diálogo cinematográfico corto con audio.',
+        },
+        {
+          title: 'Seguir con Wan por resolución y precio',
+          body:
+            'Continúa con Wan 2.5 cuando los borradores económicos en 480p o 720p y la opción 1080p importen más que el enfoque cinematográfico.',
+        },
+        {
+          title: 'Dos rutas de actualización actuales',
+          body:
+            'Pasa a Kling 3 Pro para la ruta Pro actual de Kling o a Wan 2.6 Text & Image to Video para clips actuales de texto o imagen de hasta 15 segundos.',
+        },
+        {
+          title: 'Límite compartido de la generación anterior',
+          body:
+            'Ambos modelos anteriores admiten audio y clips de hasta 10 segundos; la diferencia central es diálogo en 1080p fijo frente a una escala flexible de menor costo.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-2-6-pro', label: 'Abrir la página del Kling 2.6 Pro disponible' },
+        { href: '/models/wan-2-5', label: 'Abrir la página del Wan 2.5 disponible' },
+        {
+          href: '/ai-video-engines/kling-3-pro-vs-wan-2-6',
+          label: 'Comparar Kling 3 Pro actual y Wan 2.6',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre dos rutas anteriores y sus sucesores actuales de Kling y Wan.',
+        items: [
+          {
+            question: '¿Kling 2.6 Pro y Wan 2.5 siguen disponibles?',
+            answer:
+              'Sí. MaxVideoAI mantiene ambos modelos anteriores disponibles para trabajos establecidos. Cada uno admite audio y clips de hasta 10 segundos.',
+          },
+          {
+            question: '¿Quién debería quedarse en Kling 2.6 Pro o Wan 2.5?',
+            answer:
+              'Quédate en Kling para prompts de diálogo probados en 1080p. Conserva Wan para borradores simples de menor resolución cuando su escala de precio en 480p y 720p sea decisiva.',
+          },
+          {
+            question: '¿Qué sucesores deberían elegir los usuarios de Kling y Wan anteriores?',
+            answer:
+              'Actualiza el trabajo exigente de Kling a Kling 3 Pro actual y migra la producción más amplia de Wan a Wan 2.6 Text & Image to Video actual.',
+          },
+        ],
+      },
+    },
+    'veo-3-1-fast-vs-wan-2-5': {
+      meta: {
+        title: 'Veo 3.1 Fast vs Wan 2.5: velocidad, 4K y valor',
+        description:
+          'Compara Google Veo 3.1 Fast y Wan 2.5 en velocidad, 4K, audio, controles, duración y valor anterior antes de mantener o actualizar.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Google Veo 3.1 Fast con Wan 2.5 Text & Image to Video para elegir entre controles actuales en 4K y un flujo anterior económico. Veo Fast llega a ocho segundos; Wan 2.5 sigue disponible en MaxVideoAI y llega a 10 segundos con entradas simples de texto e imagen.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Google Veo 3.1 Fast para producción rápida con un modelo actual, 4K, referencias, primer y último fotograma y extensión. Quédate en Wan 2.5 para clips simples económicos con dos segundos extra; migra a Wan 2.6 actual para texto o imagen de hasta 15 segundos con audio, o referencias separadas de 5 o 10 segundos sin audio.',
+      },
+      topCards: [
+        {
+          title: 'Veo Fast para mayor control',
+          body:
+            'Usa Veo Fast para salida 720p, 1080p o 4K con audio, referencias, primer y último fotograma y extensión dentro de un flujo de ocho segundos.',
+        },
+        {
+          title: 'Mantener Wan 2.5 para clips simples',
+          body:
+            'Quédate en Wan cuando su generación disponible desde texto o imagen, su escala de 480p a 1080p y el límite de 10 segundos ya encajen con el trabajo.',
+        },
+        {
+          title: 'Migrar al control actual de Wan',
+          body:
+            'Actualiza a Wan 2.6 Text & Image to Video para clips de texto o imagen de hasta 15 segundos con audio opcional; su modo separado sin audio acepta entre uno y tres videos de referencia durante 5 o 10 segundos.',
+        },
+        {
+          title: 'La diferencia central de duración',
+          body:
+            'Veo Fast termina en ocho segundos, pero agrega controles actuales y 4K; Wan 2.5 ofrece simplicidad de 10 segundos con hasta 1080p.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/veo-3-1-fast', label: 'Abrir la página de Google Veo 3.1 Fast' },
+        { href: '/models/wan-2-5', label: 'Abrir la página del Wan 2.5 disponible' },
+        {
+          href: '/ai-video-engines/veo-3-1-fast-vs-wan-2-6',
+          label: 'Comparar Google Veo 3.1 Fast y Wan 2.6 actual',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre producción rápida con Veo, valor Wan y la migración a Wan 2.6.',
+        items: [
+          {
+            question: '¿Wan 2.5 sigue disponible junto a Veo 3.1 Fast?',
+            answer:
+              'Sí. Wan 2.5 sigue disponible como ruta anterior de texto e imagen para clips de hasta 10 segundos en 480p, 720p o 1080p.',
+          },
+          {
+            question: '¿Cuándo conviene quedarse en Wan 2.5?',
+            answer:
+              'Mantén Wan 2.5 para clips económicos directos cuando 10 segundos y hasta 1080p sean suficientes y los controles avanzados de referencias o fotogramas no agreguen valor.',
+          },
+          {
+            question: '¿Cuándo es Wan 2.6 la mejor actualización desde Wan 2.5?',
+            answer:
+              'Pasa a Wan 2.6 actual para clips 1080p de texto o imagen de hasta 15 segundos con audio opcional, o para la generación separada sin audio de 5 o 10 segundos guiada por entre uno y tres videos de referencia.',
+          },
+        ],
+      },
+    },
+    'luma-ray-2-vs-luma-ray-2-flash': {
+      meta: {
+        title: 'Luma Ray 2 vs Flash: velocidad, calidad y usos',
+        description:
+          'Compara Luma Ray 2 y Ray 2 Flash en borradores rápidos, salida anterior, modificación, reencuadre, duración y actualización actual.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Luma Ray 2 con Luma Ray 2 Flash como dos flujos anteriores de Luma que siguen disponibles en MaxVideoAI. Ambos son silenciosos, llegan a nueve segundos y 1080p, y admiten texto, imagen, modificación de video y reencuadre; Flash está orientado a borradores más rápidos.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Quédate en Luma Ray 2 para el flujo estándar anterior disponible o elige Luma Ray 2 Flash para iterar borradores más rápido con los mismos modos catalogados. Migra la producción nueva de Luma a Luma Ray 3.2 actual cuando su generación más reciente encaje con el proyecto.',
+      },
+      topCards: [
+        {
+          title: 'Flujo estándar de Ray 2',
+          body:
+            'Mantén Ray 2 cuando los prompts existentes y los trabajos de modificación o reencuadre dependan de la ruta estándar anterior disponible de Luma.',
+        },
+        {
+          title: 'Borradores más rápidos con Flash',
+          body:
+            'Elige Ray 2 Flash cuando la velocidad de borrador sea prioritaria y basten los modos compartidos, silenciosos, de nueve segundos y hasta 1080p.',
+        },
+        {
+          title: 'Modos de creación equivalentes',
+          body:
+            'Ambas rutas admiten texto, imagen, modificación desde video fuente y reencuadre en proporciones horizontales, cuadradas, verticales y ultrapanorámicas.',
+        },
+        {
+          title: 'Sucesor actual de Luma',
+          body:
+            'Actualiza a Luma Ray 3.2 para la generación Ray actual; los flujos establecidos de Ray 2 y Flash pueden seguir cuando todavía resuelvan el trabajo.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/luma-ray-2', label: 'Abrir la página del Luma Ray 2 disponible' },
+        { href: '/models/luma-ray-2-flash', label: 'Abrir la página del Luma Ray 2 Flash disponible' },
+        {
+          href: '/ai-video-engines/luma-ray-2-vs-luma-ray-3-2',
+          label: 'Comparar Luma Ray 2 anterior y Luma Ray 3.2 actual',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre Ray 2 estándar, borradores Flash y la ruta actual de Ray 3.2.',
+        items: [
+          {
+            question: '¿Luma Ray 2 y Ray 2 Flash siguen disponibles?',
+            answer:
+              'Sí. Ambas rutas anteriores de Luma siguen disponibles en MaxVideoAI para flujos de texto, imagen, modificación de video y reencuadre.',
+          },
+          {
+            question: '¿Quién debería quedarse en Luma Ray 2 en vez de usar Flash?',
+            answer:
+              'Quédate en Ray 2 cuando el flujo estándar anterior ya esté validado. Elige Flash cuando iterar borradores más rápido sea la prioridad clara.',
+          },
+          {
+            question: '¿Cuándo debería migrar un usuario de Ray 2 a Luma Ray 3.2?',
+            answer:
+              'Pasa a Luma Ray 3.2 actual para producción nueva que aproveche la generación Ray más reciente, y conserva Ray 2 para trabajos establecidos de modificación o reencuadre.',
+          },
+        ],
+      },
+    },
+    'kling-3-4k-vs-kling-3-standard': {
+      meta: {
+        title: 'Kling 3 4K vs Standard: 4K nativo o menor precio',
+        description:
+          'Compara Kling 3 4K y Kling 3 Standard en finales 4K nativos, borradores 1080p de menor costo, audio, duración y etapa de producción.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 3 4K con Kling 3 Standard dentro de la familia Kling actual. Ambos llegan a 15 segundos, admiten texto o imagen con audio y cubren 16:9, 9:16 y 1:1; la resolución y el costo base catalogado determinan si conviene un borrador 1080p o un final 4K nativo.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Kling 3 Standard para borradores 1080p de menor costo y entregas HD aprobadas, con o sin audio. Elige Kling 3 4K solo cuando el concepto esté aprobado y la pieza final realmente requiera un máster nativo en 4K.',
+      },
+      topCards: [
+        {
+          title: 'Borradores con Kling 3 Standard',
+          body:
+            'Standard renderiza en 1080p y permite controlar el costo catalogado de los borradores antes de llevar una toma aprobada a resolución final.',
+        },
+        {
+          title: 'Finales con Kling 3 4K',
+          body:
+            'La variante 4K está limitada a 4K nativo, por lo que encaja con másteres aprobados, pantallas grandes y recortes de alta resolución.',
+        },
+        {
+          title: 'Base compartida de Kling 3',
+          body:
+            'Ambas variantes actuales admiten texto a video, imagen a video, audio opcional, clips de 15 segundos y las mismas tres proporciones principales.',
+        },
+        {
+          title: 'La resolución define la decisión',
+          body:
+            'Standard mantiene la iteración en 1080p y tiene una base de proveedor catalogada menor; la variante 4K solo produce 4K nativo y tiene una base catalogada mayor.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-3-4k', label: 'Abrir la página de Kling 3 4K' },
+        { href: '/models/kling-3-standard', label: 'Abrir la página de Kling 3 Standard' },
+        {
+          href: '/ai-video-engines/kling-3-4k-vs-kling-3-pro',
+          label: 'Comparar Kling 3 4K y Kling 3 Pro',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas para planear borradores 1080p económicos y másteres aprobados en 4K nativo.',
+        items: [
+          {
+            question: '¿Kling 3 4K siempre es mejor que Kling 3 Standard?',
+            answer:
+              'No. Kling 3 4K encaja mejor cuando se requiere 4K nativo. Standard es más económico según el costo catalogado para iterar y también sirve para entregas aprobadas en 1080p.',
+          },
+          {
+            question: '¿Ambas variantes Kling 3 admiten audio y clips de 15 segundos?',
+            answer:
+              'Sí. Ambas admiten audio opcional, entrada de texto o imagen y clips de hasta 15 segundos en 16:9, 9:16 o 1:1.',
+          },
+          {
+            question: '¿Cuál es el mejor flujo Kling para un máster de campaña en 4K?',
+            answer:
+              'Desarrolla y aprueba el concepto con Kling 3 Standard en 1080p para controlar el costo, y usa Kling 3 4K cuando la toma final seleccionada necesite entrega 4K nativa.',
+          },
+        ],
+      },
+    },
+    'kling-2-5-turbo-vs-veo-3-1': {
+      meta: {
+        title: 'Kling 2.5 Turbo vs Veo 3.1: precio, audio y 4K',
+        description:
+          'Compara Kling 2.5 Turbo y Google Veo 3.1 en costo de borrador, audio, 4K, referencias, controles y la actualización actual de Kling.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 2.5 Turbo con Google Veo 3.1 para elegir entre una ruta anterior económica y silenciosa para borradores o una producción pulida con un modelo actual. Kling sigue disponible en MaxVideoAI para clips de hasta 10 segundos; Veo agrega audio, referencias, controles de fotogramas, extensión y 4K.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Quédate en Kling 2.5 Turbo, que sigue disponible, para borradores silenciosos económicos de hasta 10 segundos. Elige Google Veo 3.1 para producción pulida con audio, referencias, controles y 4K; migra los nuevos trabajos Kling Pro a Kling 3 Pro actual cuando la producción de 15 segundos sea prioritaria.',
+      },
+      topCards: [
+        {
+          title: 'Conservar Kling para borradores silenciosos',
+          body:
+            'Mantén Kling 2.5 Turbo cuando su flujo disponible de texto, imagen o imagen a imagen en 720p o 1080p cubra un concepto de bajo costo.',
+        },
+        {
+          title: 'Elegir Veo para control de producción',
+          body:
+            'Veo agrega audio nativo, referencias, control de primer y último fotograma, extensión y resoluciones desde 720p hasta 4K.',
+        },
+        {
+          title: 'Actualizar dentro de Kling',
+          body:
+            'Pasa a Kling 3 Pro actual cuando un proyecto Kling nuevo necesite audio, clips de hasta 15 segundos y la ruta Pro de producción vigente.',
+        },
+        {
+          title: 'Diez segundos o ocho controlados',
+          body:
+            'Kling anterior llega a 10 segundos sin audio; Veo termina en ocho, pero aporta herramientas más amplias para controlar la salida final.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-2-5-turbo', label: 'Abrir la página del Kling 2.5 Turbo disponible' },
+        { href: '/models/veo-3-1', label: 'Abrir la página de Google Veo 3.1' },
+        {
+          href: '/ai-video-engines/kling-3-pro-vs-veo-3-1',
+          label: 'Comparar Kling 3 Pro actual y Google Veo 3.1',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre borradores Kling anteriores, salida Veo y el sucesor Kling actual.',
+        items: [
+          {
+            question: '¿Kling 2.5 Turbo sigue disponible para generar?',
+            answer:
+              'Sí. Kling 2.5 Turbo sigue disponible para trabajos silenciosos de la generación anterior desde texto, imagen o imagen a imagen de hasta 10 segundos en 720p o 1080p.',
+          },
+          {
+            question: '¿Quién debería quedarse en Kling 2.5 Turbo en vez de usar Veo 3.1?',
+            answer:
+              'Quédate en Kling 2.5 Turbo para borradores silenciosos económicos cuando una resolución de 1080p sea suficiente y el trabajo no necesite audio, referencias ni 4K.',
+          },
+          {
+            question: '¿Cuándo conviene actualizar Kling 2.5 Turbo a Kling 3 Pro?',
+            answer:
+              'Migra el trabajo Kling nuevo a Kling 3 Pro actual cuando el audio, hasta 15 segundos o el flujo Pro más reciente importen más que el costo del borrador anterior.',
+          },
+        ],
+      },
+    },
+    'seedance-2-0-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Seedance 2.0 vs Veo 3.1 Fast: control o velocidad',
+        description:
+          'Compara Seedance 2.0 y Google Veo 3.1 Fast en duración, referencias, edición, 4K, audio, velocidad de iteración y estructura de precio.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Seedance 2.0 con Google Veo 3.1 Fast para elegir entre un flujo amplio de referencias y edición de 15 segundos y una ruta rápida de producción enfocada en ocho segundos. Ambos admiten audio y 4K, pero organizan sus controles y precios de manera distinta.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Elige Seedance 2.0 para producción más larga y cargada de referencias que pueda requerir edición de video, extensión, controles de movimiento o más proporciones. Elige Google Veo 3.1 Fast para iteraciones cortas y rápidas con control de primer y último fotograma y una escala de precio por resolución más simple.',
+      },
+      topCards: [
+        {
+          title: 'Seedance para mayor control',
+          body:
+            'Seedance llega a 15 segundos y combina referencias, edición de video, extensión, controles de movimiento, audio y resoluciones desde 480p hasta 4K.',
+        },
+        {
+          title: 'Veo Fast para iterar rápido',
+          body:
+            'Veo Fast se enfoca en producción rápida de ocho segundos con audio, referencias, primer y último fotograma, extensión y hasta 4K.',
+        },
+        {
+          title: 'Sistemas de precio diferentes',
+          body:
+            'Seedance usa precios dinámicos por tokens, mientras Veo Fast usa una escala por segundo basada en resolución; ninguno es siempre más económico.',
+        },
+        {
+          title: 'Edición larga o toma rápida',
+          body:
+            'Seedance encaja con secuencias extendidas, editadas y ricas en referencias; Veo Fast sirve para anuncios cortos con opciones de resolución previsibles.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/seedance-2-0', label: 'Abrir la página de Seedance 2.0' },
+        { href: '/models/veo-3-1-fast', label: 'Abrir la página de Google Veo 3.1 Fast' },
+        {
+          href: '/ai-video-engines/seedance-2-0-vs-veo-3-1',
+          label: 'Comparar Seedance 2.0 y Google Veo 3.1',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas para elegir un flujo largo y controlado o una ruta corta de producción rápida.',
+        items: [
+          {
+            question: '¿Qué modelo admite clips más largos, Seedance 2.0 o Veo 3.1 Fast?',
+            answer:
+              'Seedance 2.0 llega a 15 segundos, mientras Google Veo 3.1 Fast llega a ocho. Seedance encaja mejor cuando la duración de la toma define la decisión.',
+          },
+          {
+            question: '¿Qué modelo ofrece más controles de edición de video?',
+            answer:
+              'Seedance 2.0 ofrece edición de video a video, extensión, referencias y controles de movimiento. Veo Fast ofrece referencias, control de primer y último fotograma y extensión en un flujo más enfocado.',
+          },
+          {
+            question: '¿Seedance 2.0 cuesta menos que Veo 3.1 Fast?',
+            answer:
+              'No hay un ganador universal: Seedance usa precios dinámicos por tokens, mientras Veo Fast usa una escala por segundo que cambia según la resolución y la elección de audio.',
+          },
+        ],
+      },
+    },
+    'luma-ray-2-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Luma Ray 2 vs Seedance 2.0 Fast: editar o migrar',
+        description:
+          'Compara Luma Ray 2 y Seedance 2.0 Fast para modificar y reencuadrar en 1080p o usar audio, referencias, edición y extensión actuales.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Luma Ray 2 con Seedance 2.0 Fast para elegir entre modificación y reencuadre 1080p con un modelo anterior disponible en MaxVideoAI o un flujo actual con audio. Luma llega a nueve segundos y 1080p; Seedance Fast llega a 15 segundos y 720p con referencias, edición y extensión.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Quédate en Luma Ray 2, que sigue disponible, para modificar o reencuadrar video fuente en 1080p sin audio. Elige Seedance 2.0 Fast para audio, referencias, edición y extensión actuales hasta 720p; migra la generación nueva de Luma a Luma Ray 3.2 actual cuando corresponda.',
+      },
+      topCards: [
+        {
+          title: 'Conservar Luma para reencuadre 1080p',
+          body:
+            'Mantén Ray 2 cuando su flujo disponible y silencioso de modificación y reencuadre, sus proporciones amplias y su límite 1080p ya encajen con el video fuente.',
+        },
+        {
+          title: 'Seedance Fast para trabajar con audio',
+          body:
+            'Seedance Fast agrega audio, referencias de imagen y video, edición, extensión, controles de movimiento y clips de hasta 15 segundos en un máximo de 720p.',
+        },
+        {
+          title: 'Resolución frente a amplitud del flujo',
+          body:
+            'Luma llega a 1080p, pero es silencioso; Seedance Fast termina en 720p y suma un conjunto más amplio de herramientas actuales de producción.',
+        },
+        {
+          title: 'Ruta de migración actual de Luma',
+          body:
+            'Actualiza los proyectos Luma nuevos a Luma Ray 3.2, la generación Ray actual, y conserva Ray 2 para tareas establecidas de modificación o reencuadre.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/luma-ray-2', label: 'Abrir la página del Luma Ray 2 disponible' },
+        { href: '/models/seedance-2-0-fast', label: 'Abrir la página de Seedance 2.0 Fast' },
+        {
+          href: '/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast',
+          label: 'Comparar Seedance 2.0 Fast y Google Veo 3.1 Fast',
+        },
+        { href: '/models/luma-ray-3-2', label: 'Abrir la página de Luma Ray 3.2 actual' },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre ediciones Luma anteriores, producción Seedance y la ruta Ray reciente.',
+        items: [
+          {
+            question: '¿Luma Ray 2 sigue disponible para modificar y reencuadrar?',
+            answer:
+              'Sí. Luma Ray 2 sigue disponible para modificar y reencuadrar video fuente sin audio en resoluciones de hasta 1080p.',
+          },
+          {
+            question: '¿Quién debería quedarse en Ray 2 en vez de usar Seedance 2.0 Fast?',
+            answer:
+              'Conserva Ray 2 cuando modificar o reencuadrar video fuente en 1080p sea la necesidad central. Elige Seedance Fast para audio, referencias, clips más largos, edición o extensión.',
+          },
+          {
+            question: '¿Cuándo deberían migrar los usuarios de Luma a Luma Ray 3.2?',
+            answer:
+              'Migra los proyectos nuevos de Luma a Luma Ray 3.2 actual cuando encaje su flujo Ray más reciente, y mantén los trabajos validados de modificación y reencuadre en Ray 2.',
+          },
+        ],
+      },
+    },
+    'kling-2-5-turbo-vs-wan-2-6': {
+      meta: {
+        title: 'Kling 2.5 Turbo vs Wan 2.6: precio, audio y migración',
+        description:
+          'Compara Kling 2.5 Turbo y Wan 2.6 en costo de borrador silencioso, audio, duración, resolución, referencias y actualización de Kling.',
+        titleBranding: 'none',
+      },
+      heroIntro:
+        'Compara Kling 2.5 Turbo con Wan 2.6 Text & Image to Video para elegir entre una ruta anterior económica y silenciosa, todavía disponible en MaxVideoAI, y un modelo actual para producción de uso general. Wan llega a 15 segundos con audio opcional en texto o imagen; su modo separado con video de referencia dura 5 o 10 segundos y no tiene audio.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body:
+          'Quédate en Kling 2.5 Turbo para borradores silenciosos económicos de hasta 10 segundos. Elige Wan 2.6 para texto o imagen de hasta 15 segundos con audio opcional, o su modo separado con referencias de 5 o 10 segundos sin audio; migra los nuevos trabajos Kling Pro a Kling 3 Pro actual.',
+      },
+      topCards: [
+        {
+          title: 'Conservar Kling para borradores económicos',
+          body:
+            'Mantén Kling 2.5 Turbo cuando un concepto silencioso en 720p o 1080p desde texto, imagen o imagen a imagen sea todo lo que requiere el trabajo.',
+        },
+        {
+          title: 'Wan actual para producción general',
+          body:
+            'Wan 2.6 en modo texto o imagen llega a 15 segundos en 720p o 1080p con audio opcional; su modo separado y silencioso acepta entre uno y tres videos de referencia durante 5 o 10 segundos.',
+        },
+        {
+          title: 'Migrar al sucesor de Kling',
+          body:
+            'Pasa los proyectos Kling Pro nuevos a Kling 3 Pro actual cuando el audio, el límite de 15 segundos o el flujo Kling más reciente justifiquen la actualización.',
+        },
+        {
+          title: 'Valor silencioso o mayor control',
+          body:
+            'Kling anterior minimiza el costo de borradores silenciosos; Wan actual agrega texto o imagen de 15 segundos con audio y un modo separado de referencias de 5 o 10 segundos sin audio.',
+        },
+      ],
+      primaryLinksTitle: 'Siguientes pasos recomendados',
+      primaryLinks: [
+        { href: '/models/kling-2-5-turbo', label: 'Abrir la página del Kling 2.5 Turbo disponible' },
+        { href: '/models/wan-2-6', label: 'Abrir la página de Wan 2.6' },
+        {
+          href: '/ai-video-engines/kling-3-pro-vs-wan-2-6',
+          label: 'Comparar Kling 3 Pro actual y Wan 2.6',
+        },
+      ],
+      faq: {
+        title: 'Preguntas frecuentes',
+        subtitle: 'Respuestas sobre valor Kling anterior, producción Wan actual y la ruta Kling 3 Pro.',
+        items: [
+          {
+            question: '¿Todavía puedo usar Kling 2.5 Turbo en MaxVideoAI?',
+            answer:
+              'Sí. Kling 2.5 Turbo sigue disponible para clips silenciosos con este modelo anterior, de hasta 10 segundos en 720p o 1080p.',
+          },
+          {
+            question: '¿Quién debería mantener Kling 2.5 Turbo en vez de pasar a Wan 2.6?',
+            answer:
+              'Quédate en Kling cuando basten borradores silenciosos económicos. Cambia a Wan para texto o imagen de hasta 15 segundos con audio opcional, o para el modo separado con referencias de 5 o 10 segundos sin audio.',
+          },
+          {
+            question: '¿Cuándo conviene actualizar Kling 2.5 Turbo a Kling 3 Pro?',
+            answer:
+              'Migra los proyectos Kling nuevos a Kling 3 Pro actual cuando el flujo necesite audio, clips de hasta 15 segundos o la ruta Pro más reciente.',
+          },
+        ],
+      },
+    },
   } satisfies ComparePageOverridesBySlug;
