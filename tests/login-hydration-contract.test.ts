@@ -5,9 +5,9 @@ import { test } from 'node:test';
 
 const loginPaths = [
   'frontend/app/(core)/login/page.tsx',
+  'frontend/app/(core)/login/_components/LoginPageClient.tsx',
   'frontend/app/(core)/login/_hooks/useLoginAutofillSync.ts',
   'frontend/app/(core)/login/_hooks/useLoginBrowserLocale.ts',
-  'frontend/app/(core)/login/_hooks/useLoginModeFromQuery.ts',
   'frontend/app/(core)/login/_hooks/useLoginNextTarget.ts',
   'frontend/app/(core)/login/_hooks/useLoginAuthenticatedRedirect.ts',
   'frontend/app/(core)/login/_hooks/useLoginAuthHashSession.ts',
@@ -17,6 +17,10 @@ const loginPaths = [
 const loginSources = loginPaths.map((path) => readFileSync(join(process.cwd(), path), 'utf8')).join('\n');
 const authHashSessionSource = readFileSync(
   join(process.cwd(), 'frontend/app/(core)/login/_hooks/useLoginAuthHashSession.ts'),
+  'utf8'
+);
+const routeStateSource = readFileSync(
+  join(process.cwd(), 'frontend/app/(core)/login/_lib/login-route-state.ts'),
   'utf8'
 );
 
@@ -30,6 +34,12 @@ test('login first render is stable between server and browser hydration', () => 
     loginSources,
     /const\s+authRedirectOrigin\s*=[^;]*typeof window/,
     'do not derive auth redirect origin from window during render'
+  );
+  assert.match(routeStateSource, /export function resolveInitialAuthMode/);
+  assert.doesNotMatch(
+    loginSources,
+    /useLoginModeFromQuery/,
+    'query mode should be resolved before the client surface renders'
   );
 });
 

@@ -12,7 +12,6 @@ import { AUTH_COPY, type AuthMode, type Locale } from '../_lib/login-copy';
 import {
   buildAuthCallbackRedirect,
   clearPendingGoogleLogin,
-  detectLocale,
   getBrowserAuthRedirectOrigin,
   markPendingGoogleLogin,
   sanitizeNextPath,
@@ -22,18 +21,25 @@ import { useLoginAutofillSync } from './useLoginAutofillSync';
 import { useLoginAuthenticatedRedirect } from './useLoginAuthenticatedRedirect';
 import { useLoginAuthHashSession } from './useLoginAuthHashSession';
 import { useLoginBrowserLocale } from './useLoginBrowserLocale';
-import { useLoginModeFromQuery } from './useLoginModeFromQuery';
 import { useLoginNextTarget } from './useLoginNextTarget';
 import { useLoginOAuthCodeExchange } from './useLoginOAuthCodeExchange';
 
 const MIN_AGE_ENV = Number.parseInt(process.env.NEXT_PUBLIC_LEGAL_MIN_AGE ?? '15', 10);
 const LEGAL_MIN_AGE = Number.isNaN(MIN_AGE_ENV) ? 15 : MIN_AGE_ENV;
 
-export function useLoginPageController() {
+type UseLoginPageControllerOptions = {
+  initialMode: AuthMode;
+  initialLocale: Locale;
+};
+
+export function useLoginPageController({
+  initialMode,
+  initialLocale,
+}: UseLoginPageControllerOptions) {
   const router = useRouter();
-  const [locale, setLocale] = useState<Locale>('en');
+  const [locale] = useState<Locale>(initialLocale);
   const { authRedirectOrigin, nextPath, nextPathReady, persistNextTarget, safeNextPath } = useLoginNextTarget();
-  const [mode, setMode] = useState<AuthMode>('signup');
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -52,8 +58,6 @@ export function useLoginPageController() {
   const browserLocale = useLoginBrowserLocale();
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
-
-  useLoginModeFromQuery({ setMode });
 
   const completeAuthenticatedRedirect = useCallback(
     (target: string, authenticatedUserId?: string | null) => {
@@ -372,11 +376,6 @@ export function useLoginPageController() {
       router.push('/');
     }
   }, [router]);
-
-  useEffect(() => {
-    const detected = detectLocale();
-    setLocale(detected);
-  }, []);
 
   return {
     authCopy,
