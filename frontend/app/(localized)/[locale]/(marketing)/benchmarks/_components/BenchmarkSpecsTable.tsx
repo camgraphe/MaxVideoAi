@@ -27,11 +27,11 @@ export function BenchmarkSpecsTable({ copy, locale, rows }: BenchmarkSpecsTableP
         tabIndex={0}
         className="overflow-x-auto overscroll-x-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [scrollbar-gutter:stable]"
       >
-        <table className="min-w-[980px] w-full border-collapse text-left">
+        <table className="min-w-[1100px] w-full border-collapse text-left">
           <caption className="sr-only">{copy.specs.intro}</caption>
           <thead>
             <tr className="border-b border-hairline bg-surface-2/70">
-              {[labels.model, labels.duration, labels.resolution, copy.specs.modes, copy.specs.audio, copy.specs.references, copy.specs.source].map((label, index) => (
+              {[labels.model, labels.duration, labels.resolution, copy.specs.release, copy.specs.modes, copy.specs.audio, copy.specs.references, copy.specs.source].map((label, index) => (
                 <th
                   key={label}
                   scope="col"
@@ -55,6 +55,7 @@ export function BenchmarkSpecsTable({ copy, locale, rows }: BenchmarkSpecsTableP
                 </th>
                 <td className="px-5 py-4 text-sm font-medium text-text-primary">{row.maxDuration}</td>
                 <td className="px-5 py-4 text-sm font-medium text-text-primary">{row.maxResolution}</td>
+                <td className="px-5 py-4 text-sm font-medium text-text-primary">{row.releaseDate}</td>
                 <td className="px-5 py-4">
                   <div className="flex max-w-[230px] flex-wrap gap-1.5">
                     {row.inputModes.length ? row.inputModes.map((mode) => (

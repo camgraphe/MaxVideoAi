@@ -2,7 +2,7 @@ import { FlaskConical } from 'lucide-react';
 import { UIIcon } from '@/components/ui/UIIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { localeRegions } from '@/i18n/locales';
-import type { BenchmarkCopy } from '../_lib/benchmark-copy';
+import type { BenchmarkCopy, BenchmarkScoreAnchor } from '../_lib/benchmark-copy';
 import type { BenchmarkPageData } from '../_lib/benchmark-page-data';
 
 type BenchmarkMethodologySectionProps = {
@@ -41,6 +41,20 @@ export function BenchmarkMethodologySection({ copy, locale, methodology }: Bench
         <p className="mt-3 text-lg font-semibold leading-8 tracking-[-0.02em] text-text-primary sm:text-2xl">
           ({fidelity} + {motion} + {consistency}) ÷ 3
         </p>
+      </div>
+
+      <div className="mt-6">
+        <h3 className="text-lg font-semibold tracking-[-0.02em] text-text-primary">{copy.methodology.scale}</h3>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {methodology.scoreScale.anchors.map((anchor) => (
+            <article key={anchor.score} className="rounded-[18px] border border-hairline bg-surface/70 p-4">
+              <p className="text-lg font-bold tabular-nums text-brand">{anchor.score}/10</p>
+              <p className="mt-2 text-sm leading-6 text-text-secondary">
+                {copy.methodology.scoreAnchors[anchor.score as BenchmarkScoreAnchor]}
+              </p>
+            </article>
+          ))}
+        </div>
       </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

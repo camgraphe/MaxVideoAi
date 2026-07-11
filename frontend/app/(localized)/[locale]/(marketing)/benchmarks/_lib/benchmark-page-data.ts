@@ -18,6 +18,7 @@ export type BenchmarkSpecRow = {
   modelName: string;
   maxDuration: string;
   maxResolution: string;
+  releaseDate: string;
   inputModes: Array<'textToVideo' | 'imageToVideo' | 'videoToVideo'>;
   audio: string;
   references: string;
@@ -104,6 +105,7 @@ export function buildBenchmarkPageData(
       modelName: engine.marketingName,
       maxDuration: value(spec.keySpecs.maxDuration),
       maxResolution: value(spec.keySpecs.maxResolution),
+      releaseDate: value(spec.keySpecs.releaseDate),
       inputModes,
       audio: value(spec.keySpecs.nativeAudioGeneration ?? spec.keySpecs.audioOutput),
       references: value(spec.keySpecs.referenceImageStyle ?? spec.keySpecs.referenceVideo),

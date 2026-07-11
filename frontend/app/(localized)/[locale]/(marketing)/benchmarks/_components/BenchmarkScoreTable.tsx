@@ -34,6 +34,9 @@ function ScoreValue({ value }: { value: number | null }) {
 export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableProps) {
   return (
     <div className="overflow-hidden rounded-[24px] border border-hairline bg-surface/80 shadow-card">
+      <div className="border-b border-hairline bg-surface-2/45 px-5 py-3">
+        <p className="text-xs font-semibold text-text-secondary">{copy.scores.source}</p>
+      </div>
       <div
         role="region"
         aria-label={copy.scores.title}

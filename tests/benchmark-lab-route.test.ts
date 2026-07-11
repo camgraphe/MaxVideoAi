@@ -3,8 +3,13 @@ import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import * as React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { NextRequest } from 'next/server';
 import { generateMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/page';
+import { BenchmarkMethodologySection } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_components/BenchmarkMethodologySection';
+import { BenchmarkScoreTable } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_components/BenchmarkScoreTable';
+import { BenchmarkSpecsTable } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_components/BenchmarkSpecsTable';
 import { buildBenchmarkPageData } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-page-data';
 import { getBenchmarkCopy } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-copy';
 import {
@@ -21,6 +26,7 @@ const pagePath = path.join(routeRoot, 'page.tsx');
 const defaultPagePath = 'frontend/app/benchmarks/page.tsx';
 const methodologyLinkPath = 'frontend/components/marketing/BenchmarkMethodologyLink.tsx';
 const require = createRequire(import.meta.url);
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
 const sitemapConfig = require('../frontend/next-sitemap.config.js') as {
   additionalPaths(config: unknown): Promise<Array<{ loc: string; alternateRefs: Array<{ href: string; hreflang: string }> }>>;
 };
@@ -52,6 +58,11 @@ test('benchmark copy is complete in American English, French, and Latin American
     fr: { model: 'Modèle', overall: 'Score global (0–10)' },
     es: { model: 'Modelo', overall: 'Puntuación global (0–10)' },
   } as const;
+  const rollingNotes = {
+    en: 'Rolling performance may reflect incidents, routing changes, and user-selected settings.',
+    fr: 'Les performances glissantes peuvent refléter des incidents, des changements de routage et les réglages choisis par les utilisateurs.',
+    es: 'El rendimiento de la ventana móvil puede reflejar incidentes, cambios de enrutamiento y configuraciones elegidas por los usuarios.',
+  } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getBenchmarkCopy(locale);
     assert.ok(copy.meta.title.length >= 30);
@@ -59,13 +70,74 @@ test('benchmark copy is complete in American English, French, and Latin American
     assert.equal(copy.refundNote.length > 0, true);
     assert.equal(copy.scoreLabels.length, 11);
     assert.equal(Object.keys(copy.methodology.criteria).length, 11);
-    assert.equal(copy.methodology.methodNotes.length, 5);
+    assert.equal(copy.methodology.methodNotes.length, 6);
+    assert.ok(copy.methodology.methodNotes.includes(rollingNotes[locale]));
     assert.equal(copy.scores.model, scoreHeaders[locale].model);
     assert.equal(copy.scores.overall, scoreHeaders[locale].overall);
     assert.doesNotMatch(copy.evidence.map((item) => `${item.title} ${item.body}`).join(' '), /threshold|seuil|umbral/i);
   }
   assert.equal(getBenchmarkCopy('en').refundNote, 'Failed paid generations are automatically refunded.');
   assert.match(getBenchmarkCopy('es').hero.intro, /modelos de video/i);
+});
+
+test('evaluation scale exposes all four localized anchors', () => {
+  const expectedAnchors = {
+    en: {
+      2: 'Major visible failures prevent practical use.',
+      5: 'Usable in selected shots with clear limitations.',
+      8: 'Strong production-ready behavior for the tested criterion.',
+      10: 'Exceptional behavior with no material issue in the evaluated outputs.',
+    },
+    fr: {
+      2: 'Des défauts visibles majeurs empêchent une utilisation pratique.',
+      5: 'Utilisable pour certains plans, avec des limites nettes.',
+      8: 'Comportement solide, prêt pour la production sur le critère évalué.',
+      10: 'Comportement exceptionnel, sans problème notable dans les résultats évalués.',
+    },
+    es: {
+      2: 'Las fallas visibles importantes impiden un uso práctico.',
+      5: 'Utilizable en tomas seleccionadas, con limitaciones claras.',
+      8: 'Desempeño sólido y listo para producción en el criterio evaluado.',
+      10: 'Desempeño excepcional, sin problemas relevantes en los resultados evaluados.',
+    },
+  } as const;
+  const methodology = {
+    version: '1.0.0',
+    effectiveDate: '2026-07-11',
+    scoreScale: {
+      minimum: 0,
+      maximum: 10,
+      anchors: [2, 5, 8, 10].map((score) => ({ score, meaning: `English source ${score}` })),
+    },
+    overallFormula: { method: 'arithmetic_mean' as const, fields: ['fidelity', 'motion', 'consistency'] as const, roundToDecimals: 1 },
+    criteria: [],
+    promptPack: [],
+    limitations: [],
+    changelog: [],
+  };
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getBenchmarkCopy(locale);
+    assert.ok(copy.methodology.scale);
+    assert.deepEqual(copy.methodology.scoreAnchors, expectedAnchors[locale]);
+    const html = renderToStaticMarkup(React.createElement(BenchmarkMethodologySection, {
+      copy,
+      locale,
+      methodology,
+    }));
+    for (const score of [2, 5, 8, 10] as const) {
+      assert.match(html, new RegExp(`${score}/10`));
+      assert.ok(html.includes(expectedAnchors[locale][score]));
+    }
+  }
+});
+
+test('score table renders localized editorial provenance for every current row', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getBenchmarkCopy(locale);
+    const html = renderToStaticMarkup(React.createElement(BenchmarkScoreTable, { copy, locale, rows: [] }));
+    assert.ok(html.includes(copy.scores.source));
+  }
 });
 
 test('benchmark metadata is self-canonical, reciprocal, regionalized, and indexable in every locale', async () => {
@@ -141,7 +213,7 @@ test('page builder keeps production volumes and rates out of public data', () =>
   const pageData = buildBenchmarkPageData(
     {
       scores: [{ modelSlug: 'kling-3-pro', fidelity: 8.6, motion: 8.4, consistency: 8.0 }],
-      specs: [{ modelSlug: 'kling-3-pro', sources: ['https://fal.ai/models/kling'], keySpecs: { maxDuration: '15s', maxResolution: '1080p' } }],
+      specs: [{ modelSlug: 'kling-3-pro', sources: ['https://fal.ai/models/kling'], keySpecs: { maxDuration: '15s', maxResolution: '1080p', releaseDate: 'Sep 2025' } }],
       methodology: {
         version: '1.0.0', effectiveDate: '2026-07-11', scoreScale: { minimum: 0, maximum: 10, anchors: [] },
         overallFormula: { method: 'arithmetic_mean', fields: ['fidelity', 'motion', 'consistency'], roundToDecimals: 1 },
@@ -153,6 +225,7 @@ test('page builder keeps production volumes and rates out of public data', () =>
     latencyWithInternalFields
   );
   assert.equal(pageData.scores[0]?.overall, 8.3);
+  assert.equal(pageData.specs[0]?.releaseDate, 'Sep 2025');
   assert.equal(pageData.latency.rows[0]?.medianDurationMs, 230800);
   const serialized = JSON.stringify(pageData);
   for (const privateField of [
@@ -190,6 +263,22 @@ test('page builder emits only navigable HTTP sources for specification links', a
 
   assert.equal(dreamina?.sourceUrl, 'https://maxvideoai.com/models/dreamina-seedance-2-0-mini');
   assert.ok(pageData.specs.every((row) => row.sourceUrl == null || /^https?:\/\//.test(row.sourceUrl)));
+});
+
+test('specification rows and localized tables include release information with a missing-value dash', async () => {
+  const staticData = await loadBenchmarkLabStaticData();
+  const pageData = buildBenchmarkPageData(staticData, { status: 'unavailable', windowDays: 30, asOf: null, rows: [] });
+  const sora = pageData.specs.find((row) => row.modelSlug === 'sora-2');
+  const kling = pageData.specs.find((row) => row.modelSlug === 'kling-3-pro');
+  assert.equal(sora?.releaseDate, 'Sep 2025');
+  assert.equal(kling?.releaseDate, '—');
+
+  const releaseLabels = { en: 'Release', fr: 'Sortie', es: 'Lanzamiento' } as const;
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getBenchmarkCopy(locale);
+    const html = renderToStaticMarkup(React.createElement(BenchmarkSpecsTable, { copy, locale, rows: [] }));
+    assert.ok(html.includes(releaseLabels[locale]));
+  }
 });
 
 test('localized sitemap generation emits each benchmark locale URL exactly once', async () => {
@@ -257,6 +346,11 @@ test('benchmark lab presentation stays split into focused server components', ()
   assert.match(specsTable, /tabIndex=\{0\}/);
   assert.match(specsTable, /focus-visible:ring-2/);
   assert.match(scoreTable, /\{copy\.scores\.model\}[\s\S]*\{copy\.scores\.overall\}/);
+  assert.match(scoreTable, /copy\.scores\.source/);
+  assert.match(specsTable, /copy\.specs\.release/);
+  assert.match(specsTable, /row\.releaseDate/);
+  assert.match(methodology, /scoreScale\.anchors/);
+  assert.match(methodology, /scoreAnchors/);
   assert.match(view, /radial-gradient[^\n]+var\(--accent\)/);
   assert.doesNotMatch(view, /radial-gradient[^\n]+var\(--brand\)/);
   assert.match(view, /Failed paid generations are automatically refunded\.|refundNote/);

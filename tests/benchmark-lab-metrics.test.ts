@@ -18,20 +18,27 @@ const engines = [
   },
 ] as unknown as FalEngineEntry[];
 
+const aliasedEngines = [
+  {
+    id: 'kling-3-pro',
+    modelSlug: 'kling-3-pro',
+    defaultFalModelId: 'fal-ai/kling-video/v3/pro/text-to-video',
+    engine: { id: 'kling-3-pro', modes: ['t2v'] },
+    modes: [{ falModelId: 'provider/kling-v3-pro' }],
+    surfaces: { modelPage: { indexable: true, includeInSitemap: true } },
+  },
+] as unknown as FalEngineEntry[];
+
 test('latency mapper emits only public-safe fields for mapped models', () => {
   const rows: BenchmarkLatencyAggregateRow[] = [
     {
       engine_id: 'kling-3-pro',
-      completed_count: 104,
-      distinct_users: 28,
       median_duration_ms: 230800,
       p90_duration_ms: 451600,
       as_of: '2026-07-11T14:00:00.000Z',
     },
     {
       engine_id: 'unknown-engine',
-      completed_count: 80,
-      distinct_users: 20,
       median_duration_ms: 100000,
       p90_duration_ms: 200000,
       as_of: '2026-07-11T14:00:00.000Z',
@@ -76,6 +83,75 @@ test('latency query applies internal thresholds and admin exclusions', async () 
   assert.equal(capturedParams[1], 30);
   assert.equal(capturedParams[3], 30);
   assert.equal(capturedParams[4], 5);
+});
+
+test('multiple aliases jointly cross eligibility and publish one canonical model row', async () => {
+  const completedJobs = [
+    ...Array.from({ length: 18 }, (_, index) => ({
+      engineId: 'fal-ai/kling-video/v3/pro/text-to-video',
+      userId: `user-${index % 5}`,
+    })),
+    ...Array.from({ length: 17 }, (_, index) => ({
+      engineId: 'provider/kling-v3-pro',
+      userId: `user-${index % 5}`,
+    })),
+  ];
+
+  const queryFn: BenchmarkQuery = async <T>(_sql: string, params?: readonly unknown[]) => {
+    const aliases = params?.[5];
+    const canonicalEngineIds = params?.[6];
+    assert.ok(Array.isArray(aliases), 'known aliases must be supplied to the aggregate query');
+    assert.ok(Array.isArray(canonicalEngineIds), 'canonical engine IDs must be supplied to the aggregate query');
+
+    const canonicalByAlias = new Map(
+      aliases.map((alias, index) => [String(alias), String(canonicalEngineIds[index])])
+    );
+    const canonicalJobs = completedJobs.flatMap((job) => {
+      const engineId = canonicalByAlias.get(job.engineId);
+      return engineId ? [{ ...job, engineId }] : [];
+    });
+    assert.equal(canonicalJobs.length, 35);
+    assert.equal(new Set(canonicalJobs.map((job) => job.engineId)).size, 1);
+    assert.equal(new Set(canonicalJobs.map((job) => job.userId)).size, 5);
+
+    return [{
+      engine_id: canonicalJobs[0]!.engineId,
+      median_duration_ms: 210000,
+      p90_duration_ms: 420000,
+      as_of: '2026-07-11T14:00:00.000Z',
+    }] as T[];
+  };
+
+  const snapshot = await fetchPublicBenchmarkLatency({
+    queryFn,
+    databaseConfigured: true,
+    engines: aliasedEngines,
+  });
+
+  assert.deepEqual(snapshot.rows, [{
+    engineId: 'kling-3-pro',
+    modelSlug: 'kling-3-pro',
+    medianDurationMs: 210000,
+    p90DurationMs: 420000,
+    asOf: '2026-07-11T14:00:00.000Z',
+  }]);
+});
+
+test('eligibility uses the full completed cohort while percentiles use only valid durations', async () => {
+  let capturedSql = '';
+  const queryFn: BenchmarkQuery = async <T>(sql: string) => {
+    capturedSql = sql;
+    return [] as T[];
+  };
+
+  await fetchPublicBenchmarkLatency({ queryFn, databaseConfigured: true, engines: aliasedEngines });
+
+  assert.match(capturedSql, /completed_cohort AS/);
+  assert.match(capturedSql, /eligible_engines AS[\s\S]*FROM completed_cohort[\s\S]*HAVING COUNT\(\*\) >= \$4/);
+  assert.match(capturedSql, /duration_samples AS[\s\S]*FROM completed_cohort[\s\S]*updated_at IS NOT NULL[\s\S]*updated_at > created_at/);
+  const completedCohortSql = capturedSql.match(/completed_cohort AS \(([\s\S]*?)\),\s*eligible_engines AS/)?.[1] ?? '';
+  assert.doesNotMatch(completedCohortSql, /updated_at IS NOT NULL|updated_at > created_at/);
+  assert.match(capturedSql, /JOIN eligible_engines USING \(engine_id\)/);
 });
 
 test('missing database returns unavailable rather than zero metrics', async () => {
