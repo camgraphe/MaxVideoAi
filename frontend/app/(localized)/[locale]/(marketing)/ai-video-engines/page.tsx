@@ -15,6 +15,7 @@ import {
   getRankedComparisonPairs,
   getSuggestedOpponents,
   getUseCaseBuckets,
+  isPublishedComparisonSlug,
 } from '@/lib/compare-hub/data';
 import { isComparisonIndexable } from '@/lib/compare-hub/indexation';
 import { CompareNowWidget } from './CompareNowWidget.client';
@@ -72,7 +73,9 @@ export default async function AiVideoEnginesPage() {
             label: opponent.marketingName,
           };
         })
-        .filter((action) => isIndexablePair(action.slug))
+        .filter(
+          (action) => isPublishedComparisonSlug(action.slug) && isIndexablePair(action.slug)
+        )
         .slice(0, 3);
 
       return {

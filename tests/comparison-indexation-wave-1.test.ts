@@ -11,6 +11,7 @@ import {
   getRankedComparisonPairs,
   getSuggestedOpponents,
   getUseCaseBuckets,
+  isPublishedComparisonSlug,
 } from '../frontend/lib/compare-hub/data.ts';
 import { isComparisonIndexable } from '../frontend/lib/compare-hub/indexation.ts';
 import type {
@@ -344,32 +345,77 @@ test('wave 1 filters every comparison hub discovery set for the active locale', 
   }
 });
 
-test('wave 1 refills suggested opponents after locale exclusions', () => {
+test('wave 1 renders only published, locale-indexable suggested opponents and refills later candidates', () => {
   const pageSource = readFileSync(
     'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx',
     'utf8',
   );
-  const engines = getHubEngines();
-  const kling = engines.find((engine) => engine.modelSlug === 'kling-2-6-pro');
-  assert.ok(kling, 'Kling 2.6 Pro should remain in the hub engine set');
+  const engineLists = [
+    getHubEngines(),
+    getHubEngines({ includeLimited: true, includeWaitlist: true }),
+  ];
+  const getCandidates = (engineSlug: string, engines: (typeof engineLists)[number]) =>
+    getSuggestedOpponents(engineSlug, engines, engines.length).map((opponent) => ({
+      slug: buildCanonicalCompareSlug(engineSlug, opponent.modelSlug),
+      label: opponent.marketingName,
+    }));
+  const getRenderedActions = (
+    engineSlug: string,
+    engines: (typeof engineLists)[number],
+    locale: 'en' | CuratedLocale,
+  ) =>
+    getCandidates(engineSlug, engines)
+      .filter(
+        (candidate) =>
+          isPublishedComparisonSlug(candidate.slug) && isComparisonIndexable(locale, candidate.slug),
+      )
+      .slice(0, 3);
 
-  const candidates = getSuggestedOpponents(kling.modelSlug, engines, engines.length).map((opponent) => ({
-    slug: buildCanonicalCompareSlug(kling.modelSlug, opponent.modelSlug),
-    label: opponent.marketingName,
-  }));
-  const frenchActions = candidates
-    .filter((candidate) => isComparisonIndexable('fr', candidate.slug))
-    .slice(0, 3);
+  for (const engines of engineLists) {
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      for (const engine of engines) {
+        const actions = getRenderedActions(engine.modelSlug, engines, locale);
+        assert.ok(
+          actions.every((action) => isPublishedComparisonSlug(action.slug)),
+          `${locale}:${engine.modelSlug} suggested actions must all be published`,
+        );
+        assert.ok(
+          actions.every((action) => isComparisonIndexable(locale, action.slug)),
+          `${locale}:${engine.modelSlug} suggested actions must all be indexable`,
+        );
+      }
+    }
+  }
 
-  assert.ok(
-    candidates.slice(0, 3).some((candidate) => !isComparisonIndexable('fr', candidate.slug)),
-    'fixture should include an excluded early candidate',
-  );
-  assert.equal(frenchActions.length, 3);
-  assert.ok(frenchActions.every((candidate) => isComparisonIndexable('fr', candidate.slug)));
+  const regressionCases = [
+    {
+      locale: 'fr' as const,
+      engineSlug: 'kling-o3-pro',
+      unpublishedSlug: 'kling-2-5-turbo-vs-kling-o3-pro',
+    },
+    {
+      locale: 'es' as const,
+      engineSlug: 'luma-ray-2-flash',
+      unpublishedSlug: 'luma-ray-2-flash-vs-luma-ray-3-2',
+    },
+  ];
+
+  for (const { locale, engineSlug, unpublishedSlug } of regressionCases) {
+    const engines = engineLists[0];
+    const candidates = getCandidates(engineSlug, engines);
+    const actions = getRenderedActions(engineSlug, engines, locale);
+    assert.ok(
+      candidates.some((candidate) => candidate.slug === unpublishedSlug),
+      `${unpublishedSlug} must remain a candidate-stream regression fixture`,
+    );
+    assert.equal(isPublishedComparisonSlug(unpublishedSlug), false);
+    assert.ok(!actions.some((action) => action.slug === unpublishedSlug));
+    assert.equal(actions.length, 3, `${locale}:${engineSlug} should refill with published replacements`);
+  }
+
   assert.match(
     pageSource,
-    /getSuggestedOpponents\(engine\.modelSlug, list, list\.length\)[\s\S]*?\.filter\(\(action\) => isIndexablePair\(action\.slug\)\)[\s\S]*?\.slice\(0, 3\)/,
+    /getSuggestedOpponents\(engine\.modelSlug, list, list\.length\)[\s\S]*?\.filter\([\s\S]*?isPublishedComparisonSlug\(action\.slug\) && isIndexablePair\(action\.slug\)[\s\S]*?\)[\s\S]*?\.slice\(0, 3\)/,
   );
 });
 
