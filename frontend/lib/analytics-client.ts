@@ -1,3 +1,5 @@
+import { hasAnalyticsConsentInBrowser } from './analytics/consent-client';
+
 export type AnalyticsPayload = Record<string, unknown>;
 
 export type AnalyticsClientEventDetail = {
@@ -24,7 +26,10 @@ declare global {
 }
 
 export function dispatchAnalyticsEvent(event: string, payload?: AnalyticsPayload): void {
-  if (typeof window === 'undefined') return;
+  if (!hasAnalyticsConsentInBrowser()) {
+    clearPendingAnalyticsEvent();
+    return;
+  }
   try {
     window.dispatchEvent(new CustomEvent<AnalyticsClientEventDetail>('mvai:analytics', { detail: { event, payload } }));
   } catch {
@@ -33,7 +38,10 @@ export function dispatchAnalyticsEvent(event: string, payload?: AnalyticsPayload
 }
 
 export function persistPendingAnalyticsEvent(event: string, payload?: AnalyticsPayload): void {
-  if (typeof window === 'undefined') return;
+  if (!hasAnalyticsConsentInBrowser()) {
+    clearPendingAnalyticsEvent();
+    return;
+  }
   try {
     const stored: StoredAnalyticsEvent = {
       event,
@@ -47,7 +55,10 @@ export function persistPendingAnalyticsEvent(event: string, payload?: AnalyticsP
 }
 
 export function readPendingAnalyticsEvent(): StoredAnalyticsEvent | null {
-  if (typeof window === 'undefined') return null;
+  if (!hasAnalyticsConsentInBrowser()) {
+    clearPendingAnalyticsEvent();
+    return null;
+  }
   try {
     const raw = window.sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY);
     if (!raw) return null;
