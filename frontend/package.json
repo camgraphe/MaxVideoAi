@@ -68,7 +68,7 @@
     "micro": "^10.0.1",
     "next": "15.5.18",
     "next-intl": "4.9.2",
-    "nodemailer": "^8.0.5",
+    "nodemailer": "9.0.1",
     "openai": "^6.8.1",
     "p-limit": "^7.2.0",
     "pg": "^8.11.3",
