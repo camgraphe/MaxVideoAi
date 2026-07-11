@@ -30,3 +30,12 @@ export function createInitialTopupSelection(
     customAmountInput: isPreset ? '' : formatCustomAmountInput(selectedTopupCents),
   };
 }
+
+export function createReturnedTopupSelection(
+  amountCents: number | null
+): InitialTopupSelection | null {
+  if (!Number.isSafeInteger(amountCents) || Number(amountCents) < DEFAULT_TOPUP_CENTS) {
+    return null;
+  }
+  return createInitialTopupSelection(Number(amountCents));
+}

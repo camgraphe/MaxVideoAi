@@ -119,6 +119,7 @@ export function BillingClient() {
     handlePresetSelected,
     onCustomAmountInputChange,
     openCustomAmountEditor,
+    restoreTopupSelection,
     selectedTopupAmountLabel,
     selectedTopupCents,
   } = useBillingTopupSelection({
@@ -175,6 +176,7 @@ export function BillingClient() {
 
   useBillingCheckoutReturnToast({
     cancelledMessage: copy.toasts.cancelled,
+    onAmountReturned: restoreTopupSelection,
     onCancelled: triggerTopupCancelled,
     onGoogleAdsConversion: triggerGoogleAdsConversion,
     onReturnTarget: setCheckoutReturnTarget,

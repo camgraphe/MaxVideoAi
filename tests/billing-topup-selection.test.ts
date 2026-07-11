@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createInitialTopupSelection } from '../frontend/app/(core)/billing/_lib/billing-selection';
+import {
+  createInitialTopupSelection,
+  createReturnedTopupSelection,
+} from '../frontend/app/(core)/billing/_lib/billing-selection';
 import { parseAmountToCents } from '../frontend/app/(core)/billing/_lib/billing-utils';
 
 test('preset billing hydration selects the tier without opening custom state', () => {
@@ -38,5 +41,20 @@ test('invalid billing hydration falls back to the first tier', () => {
       selectedTopupCents: 1000,
       customAmountInput: '',
     });
+  }
+});
+
+test('hosted checkout return restores the selected preset or custom amount', () => {
+  assert.deepEqual(createReturnedTopupSelection(2500), {
+    selectedTopupCents: 2500,
+    customAmountInput: '',
+  });
+  assert.deepEqual(createReturnedTopupSelection(1234), {
+    selectedTopupCents: 1234,
+    customAmountInput: '12.34',
+  });
+
+  for (const value of [null, Number.NaN, 999, 10.5]) {
+    assert.equal(createReturnedTopupSelection(value), null);
   }
 });

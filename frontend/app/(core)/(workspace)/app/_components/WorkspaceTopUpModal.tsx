@@ -69,6 +69,13 @@ export function WorkspaceTopUpModal({
     onClose,
     closeDisabled: isTopUpLoading,
   });
+  const suggestedTopUpAmountLabel = (() => {
+    try {
+      return new Intl.NumberFormat(CURRENCY_LOCALE, { style: 'currency', currency }).format(topUpAmount / 100);
+    } catch {
+      return `${currency} ${(topUpAmount / 100).toFixed(2)}`;
+    }
+  })();
 
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center bg-surface-on-media-dark-40 px-4">
@@ -98,7 +105,7 @@ export function WorkspaceTopUpModal({
             </p>
             {modal.amountLabel ? (
               <p className="mt-2 text-sm font-medium text-text-primary">
-                {copy.suggestedTopUp.replace('{amount}', modal.amountLabel)}
+                {copy.suggestedTopUp.replace('{amount}', suggestedTopUpAmountLabel)}
               </p>
             ) : null}
             <div className="mt-4">
