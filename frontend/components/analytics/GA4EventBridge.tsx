@@ -8,6 +8,11 @@ import {
   type AnalyticsClientEventDetail,
   type AnalyticsPayload,
 } from '@/lib/analytics-client';
+import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import {
+  clearBrowserAnalyticsState,
+  prepareBrowserAnalyticsEvents,
+} from '@/lib/analytics/journey-browser';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 declare global {
@@ -68,9 +73,21 @@ export function GA4EventBridge() {
   const generationContextByJobIdRef = useRef(new Map<string, AnalyticsPayload>());
   const seenTerminalEventsRef = useRef(new Set<string>());
 
+  const clearQueuedAnalytics = useCallback(() => {
+    queuedEventsRef.current = [];
+    generationContextByLocalKeyRef.current.clear();
+    generationContextByJobIdRef.current.clear();
+    seenTerminalEventsRef.current.clear();
+  }, []);
+
   const flushQueue = useCallback(() => {
     if (routeContext.excludedFromGa4) {
       queuedEventsRef.current = [];
+      return;
+    }
+    if (!hasAnalyticsConsentInBrowser()) {
+      clearQueuedAnalytics();
+      clearBrowserAnalyticsState();
       return;
     }
 
@@ -87,7 +104,7 @@ export function GA4EventBridge() {
       }
     });
     queuedEventsRef.current = remaining;
-  }, [routeContext.excludedFromGa4]);
+  }, [clearQueuedAnalytics, routeContext.excludedFromGa4]);
 
   const enqueueEvent = useCallback(
     (event: string, payload?: AnalyticsPayload) => {
@@ -97,8 +114,11 @@ export function GA4EventBridge() {
             route_family: routeContext.family,
             ...payload,
           };
-      queuedEventsRef.current.push({ event, payload: defaultPayload });
+      const preparedEvents = prepareBrowserAnalyticsEvents(event, defaultPayload);
+      if (preparedEvents.length === 0) return undefined;
+      queuedEventsRef.current.push(...preparedEvents);
       flushQueue();
+      return preparedEvents.at(-1)?.payload;
     },
     [flushQueue, routeContext.family]
   );
@@ -112,14 +132,13 @@ export function GA4EventBridge() {
       if (!eventName) return;
       const payload = detail?.payload && typeof detail.payload === 'object' ? detail.payload : undefined;
 
+      const preparedPayload = enqueueEvent(eventName, payload);
       if (eventName === 'generation_started') {
-        const localKey = typeof payload?.local_key === 'string' ? payload.local_key : null;
+        const localKey = typeof preparedPayload?.local_key === 'string' ? preparedPayload.local_key : null;
         if (localKey) {
-          generationContextByLocalKeyRef.current.set(localKey, payload ?? {});
+          generationContextByLocalKeyRef.current.set(localKey, preparedPayload ?? {});
         }
       }
-
-      enqueueEvent(eventName, payload);
     };
 
     const handleJobsStatus = (event: Event) => {
@@ -223,6 +242,23 @@ export function GA4EventBridge() {
       document.removeEventListener('click', handleTrackedClick, true);
     };
   }, [enqueueEvent, routeContext.excludedFromGa4, routeContext.family]);
+
+  useEffect(() => {
+    const handleConsentUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<{ categories?: { analytics?: boolean } }>).detail;
+      const analyticsGranted = typeof detail?.categories?.analytics === 'boolean'
+        ? detail.categories.analytics
+        : hasAnalyticsConsentInBrowser();
+      if (analyticsGranted) return;
+      clearQueuedAnalytics();
+      clearBrowserAnalyticsState();
+    };
+
+    window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
+    return () => {
+      window.removeEventListener('consent:updated', handleConsentUpdated as EventListener);
+    };
+  }, [clearQueuedAnalytics]);
 
   useEffect(() => {
     if (!isPendingAuthFlushFamily(routeContext.family)) return;

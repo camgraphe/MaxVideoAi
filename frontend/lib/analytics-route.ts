@@ -179,3 +179,27 @@ export function getAnalyticsRouteContext(pathname: string | null | undefined): A
     excludedFromGa4: false,
   };
 }
+
+export function getSafeAnalyticsPath(pathname: string | null | undefined): string {
+  const context = getAnalyticsRouteContext(pathname);
+  if (context.family === 'auth') return '/login';
+  if (context.family === 'billing') return '/billing';
+  if (context.family === 'workspace') {
+    if (context.workspaceSection === 'video') return '/video/:video';
+    if (context.workspaceSection === 'home') return '/app';
+    return `/app/${context.workspaceSection ?? 'home'}`;
+  }
+  if (context.family === 'app_tools') return `/app/tools/${context.toolName ?? 'tools_hub'}`;
+  if (context.family === 'public_tools') {
+    return context.toolName === 'tools_hub' ? '/tools' : `/tools/${context.toolName ?? 'tools_hub'}`;
+  }
+  return context.normalizedPath;
+}
+
+export function buildSafeAnalyticsLocation(origin: string, pathname: string | null | undefined): string {
+  return `${origin.replace(/\/$/, '')}${getSafeAnalyticsPath(pathname)}`;
+}
+
+export function getAnalyticsLandingSurface(context: AnalyticsRouteContext): string {
+  return context.toolName ?? context.workspaceSection ?? context.normalizedPath;
+}

@@ -1,9 +1,15 @@
 'use client';
 
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { shouldDispatchRecentAnalyticsEvent } from '@/lib/analytics-client';
-import { getAnalyticsRouteContext } from '@/lib/analytics-route';
+import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
+import { prepareBrowserAnalyticsEvents } from '@/lib/analytics/journey-browser';
+import {
+  buildSafeAnalyticsLocation,
+  getAnalyticsRouteContext,
+  getSafeAnalyticsPath,
+} from '@/lib/analytics-route';
 
 declare global {
   interface Window {
@@ -13,7 +19,6 @@ declare global {
 
 function TrackerCore() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const prevUrlRef = useRef<string>('');
   const [consentRevision, setConsentRevision] = useState(0);
 
@@ -32,47 +37,60 @@ function TrackerCore() {
     if (!pathname) return;
     const routeContext = getAnalyticsRouteContext(pathname);
     if (routeContext.excludedFromGa4) return;
-    const query = searchParams?.toString();
-    const url = `${window.location.origin}${pathname}${query ? `?${query}` : ''}`;
+    if (!hasAnalyticsConsentInBrowser()) return;
+    const safePath = getSafeAnalyticsPath(pathname);
+    const url = buildSafeAnalyticsLocation(window.location.origin, pathname);
     if (prevUrlRef.current === url) return;
 
     const sendPageView = () => {
-      if (typeof window.gtag !== 'function') return false;
+      if (!hasAnalyticsConsentInBrowser()) return true;
+      const gtag = window.gtag;
+      if (typeof gtag !== 'function') return false;
       const pageViewKey = `page_view:${routeContext.family}:${url}`;
       if (!shouldDispatchRecentAnalyticsEvent(pageViewKey)) {
         prevUrlRef.current = url;
         return true;
       }
 
-      window.gtag('event', 'page_view', {
+      const pageViewEvents = prepareBrowserAnalyticsEvents('page_view', {
         page_location: url,
-        page_path: routeContext.normalizedPath,
+        page_path: safePath,
         page_title: document.title,
         route_family: routeContext.family,
         tool_name: routeContext.toolName ?? undefined,
         tool_surface: routeContext.toolSurface ?? undefined,
         workspace_section: routeContext.workspaceSection ?? undefined,
       });
+      if (pageViewEvents.length === 0) return true;
+      for (const prepared of pageViewEvents) {
+        gtag('event', prepared.event, prepared.payload);
+      }
 
       if (routeContext.family === 'public_tools' || routeContext.family === 'app_tools') {
         const toolViewKey = `tool_view:${routeContext.family}:${url}`;
         if (shouldDispatchRecentAnalyticsEvent(toolViewKey)) {
-          window.gtag('event', 'tool_view', {
+          const toolViewEvents = prepareBrowserAnalyticsEvents('tool_view', {
             route_family: routeContext.family,
             tool_name: routeContext.toolName ?? 'tools_hub',
             tool_surface: routeContext.toolSurface ?? undefined,
             logged_in: routeContext.family === 'app_tools',
           });
+          for (const prepared of toolViewEvents) {
+            gtag('event', prepared.event, prepared.payload);
+          }
         }
       }
 
       if (routeContext.family === 'workspace') {
         const appOpenKey = `app_open:${routeContext.family}:${url}`;
         if (shouldDispatchRecentAnalyticsEvent(appOpenKey)) {
-          window.gtag('event', 'app_open', {
+          const appOpenEvents = prepareBrowserAnalyticsEvents('app_open', {
             route_family: routeContext.family,
             app_section: routeContext.workspaceSection ?? 'workspace',
           });
+          for (const prepared of appOpenEvents) {
+            gtag('event', prepared.event, prepared.payload);
+          }
         }
       }
 
@@ -100,7 +118,7 @@ function TrackerCore() {
     return () => {
       window.clearInterval(retryTimer);
     };
-  }, [pathname, searchParams, consentRevision]);
+  }, [pathname, consentRevision]);
 
   return null;
 }
