@@ -1,6 +1,27 @@
 const path = require('path');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
+const MARKETING_CDN_CACHE_HEADERS = [
+  {
+    key: 'Cache-Control',
+    value: 'public, max-age=0, must-revalidate',
+  },
+  {
+    key: 'Vercel-CDN-Cache-Control',
+    value: 'max-age=300, stale-while-revalidate=60',
+  },
+];
+const MARKETING_CDN_CACHE_PATHS = [
+  '/',
+  '/fr',
+  '/es',
+  '/pricing',
+  '/fr/tarifs',
+  '/es/precios',
+  '/models/:path*',
+  '/fr/modeles/:path*',
+  '/es/modelos/:path*',
+];
 const CONTENT_GLOBS = [
   '../content/en/blog/**/*',
   '../content/fr/blog/**/*',
@@ -517,6 +538,10 @@ const nextConfig = {
   },
   async headers() {
     const rules = [];
+
+    MARKETING_CDN_CACHE_PATHS.forEach((source) => {
+      rules.push({ source, headers: MARKETING_CDN_CACHE_HEADERS });
+    });
 
     // Always ensure robots.txt is not cached so changes propagate immediately
     rules.push({

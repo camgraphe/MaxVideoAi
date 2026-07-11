@@ -5,6 +5,7 @@ export const routing = defineRouting({
   locales,
   defaultLocale,
   localePrefix: 'as-needed',
+  localeCookie: false,
   pathnames: {
     '/': '/',
     '/models': {

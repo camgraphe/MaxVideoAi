@@ -10,7 +10,6 @@ import {
   LOCALE_STRIPPABLE_PREFIXES,
   PROTECTED_PREFIXES,
   containsLocalePlaceholder,
-  extractLocale,
   extractLocaleFromPathname,
   finalizeResponse,
   getPreferredLocale,
@@ -25,7 +24,6 @@ import {
   resolveLangParamRedirect,
   resolveNonPrefixedLocalizedMarketingRedirect,
   rewriteToNotFound,
-  setLocaleCookies,
   shouldHandleLocale,
   shouldMarkAppNoindex,
   shouldMarkTrackingNoindex,
@@ -171,17 +169,6 @@ export async function middleware(req: NextRequest) {
     }
   } else {
     response = NextResponse.next();
-  }
-
-  if (isMarketingPath) {
-    const resolvedLocale =
-      localeFromPath ??
-      detectedLocale ??
-      extractLocale(response.headers.get('location') ?? '') ??
-      extractLocale(req.nextUrl.toString());
-    if (resolvedLocale) {
-      setLocaleCookies(response, resolvedLocale);
-    }
   }
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
