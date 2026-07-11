@@ -1,8 +1,8 @@
 # Comparison Indexation Controlled Wave 1 Design
 
-**Date:** 2026-07-11  
+**Date:** 2026-07-11
 **Status:** Approved by user
-**Branch:** `codex/seo-comparison-indexation-wave-1`  
+**Branch:** `codex/seo-comparison-indexation-wave-1`
 **Base:** `origin/main` at `78838c99d63282bc81ee54bf0d29194e447a87c0`
 
 ## Objective
