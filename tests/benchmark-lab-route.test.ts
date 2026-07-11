@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
 import { generateMetadata } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/page';
 import { buildBenchmarkPageData } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-page-data';
 import { getBenchmarkCopy } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-copy';
@@ -12,9 +13,12 @@ import {
 } from '../frontend/app/(localized)/[locale]/(marketing)/benchmarks/_lib/benchmark-schema';
 import { loadBenchmarkLabStaticData } from '../frontend/server/benchmark-lab-data';
 import type { PublicBenchmarkLatencySnapshot } from '../frontend/server/benchmark-lab-metrics';
+import { routing } from '../frontend/i18n/routing';
+import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing';
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)/benchmarks';
 const pagePath = path.join(routeRoot, 'page.tsx');
+const defaultPagePath = 'frontend/app/benchmarks/page.tsx';
 const require = createRequire(import.meta.url);
 const sitemapConfig = require('../frontend/next-sitemap.config.js') as {
   additionalPaths(config: unknown): Promise<Array<{ loc: string; alternateRefs: Array<{ href: string; hreflang: string }> }>>;
@@ -180,4 +184,44 @@ test('localized sitemap generation emits each benchmark locale URL exactly once'
   ]) {
     assert.equal(localizedUrls.filter((url) => url === expected).length, 1, `${expected} must appear once`);
   }
+});
+
+test('middleware and i18n routing recognize every public benchmark URL', () => {
+  for (const pathname of ['/benchmarks', '/fr/benchmarks', '/es/benchmarks']) {
+    const request = new NextRequest(`https://maxvideoai.com${pathname}`);
+    assert.equal(handleMarketingSlug(request, pathname), null, `${pathname} must not rewrite to /404`);
+  }
+  assert.deepEqual(routing.pathnames['/benchmarks'], {
+    en: '/benchmarks',
+    fr: '/benchmarks',
+    es: '/benchmarks',
+  });
+  assert.ok(existsSync(defaultPagePath), 'the canonical English URL needs a default-locale wrapper');
+  const defaultPage = readFileSync(defaultPagePath, 'utf8');
+  assert.match(defaultPage, /BenchmarkDefaultPage/);
+  assert.match(defaultPage, /DEFAULT_LOCALE/);
+  assert.match(defaultPage, /DefaultMarketingLayout/);
+});
+
+test('benchmark lab presentation stays split into focused server components', () => {
+  const components = ['BenchmarkLabView', 'BenchmarkScoreTable', 'BenchmarkSpecsTable', 'BenchmarkLatencySection', 'BenchmarkMethodologySection'];
+  for (const component of components) {
+    const file = path.join(routeRoot, '_components', `${component}.tsx`);
+    assert.ok(existsSync(file), `${component} should exist`);
+    const source = readFileSync(file, 'utf8');
+    assert.doesNotMatch(source, /['\"]use client['\"]/);
+  }
+  const view = readFileSync(path.join(routeRoot, '_components/BenchmarkLabView.tsx'), 'utf8');
+  const scoreTable = readFileSync(path.join(routeRoot, '_components/BenchmarkScoreTable.tsx'), 'utf8');
+  const specsTable = readFileSync(path.join(routeRoot, '_components/BenchmarkSpecsTable.tsx'), 'utf8');
+  const methodology = readFileSync(path.join(routeRoot, '_components/BenchmarkMethodologySection.tsx'), 'utf8');
+  assert.match(view, /id="scorecards"/);
+  assert.match(view, /id="specifications"/);
+  assert.match(view, /id="observed-speed"/);
+  assert.match(view, /id="methodology"/);
+  assert.match(scoreTable, /overflow-x-auto/);
+  assert.match(specsTable, /overflow-x-auto/);
+  assert.match(view, /Failed paid generations are automatically refunded\.|refundNote/);
+  assert.doesNotMatch(view, /success rate|generation count|distinct users|failed jobs refunded/i);
+  assert.doesNotMatch(methodology, /minimumCompletedJobs|minimumDistinctUsers|sampleSize/);
 });
