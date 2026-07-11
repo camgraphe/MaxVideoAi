@@ -6,7 +6,10 @@ import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/
 import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
 import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
 import type { ComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts';
-import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
+import {
+  canonicalizePublishedCompareSlug,
+  isPublishedComparisonSlug,
+} from '../frontend/lib/compare-hub/data.ts';
 
 const TARGET_COMPARISONS = [
   ['ltx-2-3-fast-vs-sora-2-pro', 'ltx-2-3-fast', 'sora-2-pro'],
@@ -21,15 +24,15 @@ const TARGET_COMPARISONS = [
   ['kling-2-5-turbo-vs-wan-2-6', 'kling-2-5-turbo', 'wan-2-6'],
 ] as const;
 
-const LEGACY_COMPARISONS = [
-  'veo-3-1-vs-wan-2-5',
-  'kling-2-6-pro-vs-wan-2-5',
-  'veo-3-1-fast-vs-wan-2-5',
-  'luma-ray-2-vs-luma-ray-2-flash',
-  'kling-2-5-turbo-vs-veo-3-1',
-  'luma-ray-2-vs-seedance-2-0-fast',
-  'kling-2-5-turbo-vs-wan-2-6',
-] as const;
+const LEGACY_SUCCESSOR_LINKS = {
+  'veo-3-1-vs-wan-2-5': '/ai-video-engines/veo-3-1-vs-wan-2-6',
+  'kling-2-6-pro-vs-wan-2-5': '/ai-video-engines/kling-3-pro-vs-wan-2-6',
+  'veo-3-1-fast-vs-wan-2-5': '/ai-video-engines/veo-3-1-fast-vs-wan-2-6',
+  'luma-ray-2-vs-luma-ray-2-flash': '/ai-video-engines/luma-ray-2-vs-luma-ray-3-2',
+  'kling-2-5-turbo-vs-veo-3-1': '/ai-video-engines/kling-3-pro-vs-veo-3-1',
+  'luma-ray-2-vs-seedance-2-0-fast': '/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast',
+  'kling-2-5-turbo-vs-wan-2-6': '/ai-video-engines/kling-3-pro-vs-wan-2-6',
+} as const;
 
 type Locale = 'en' | 'fr' | 'es';
 type OverrideMap = Record<string, ComparePageOverride>;
@@ -72,13 +75,27 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function assertUniqueCopy(
+  seen: Map<string, string>,
+  value: string | undefined,
+  locale: Locale,
+  field: string,
+  slug: string,
+): void {
+  const normalized = (value ?? '').replace(/\s+/g, ' ').trim();
+  assert.ok(normalized, `${locale} ${field} should not be empty for ${slug}`);
+  const duplicateSlug = seen.get(normalized);
+  assert.equal(duplicateSlug, undefined, `${locale} ${field} for ${slug} duplicates ${duplicateSlug}`);
+  seen.set(normalized, slug);
+}
+
 function assertCompleteOverride(locale: Locale, slug: string): void {
   const entry = getEntry(locale, slug);
   const title = entry.meta?.title ?? '';
   const description = entry.meta?.description ?? '';
 
-  assert.ok(title.length >= 35 && title.length <= 80, `${locale} title length for ${slug}: ${title.length}`);
-  assert.ok(description.length >= 120 && description.length <= 180, `${locale} description length for ${slug}: ${description.length}`);
+  assert.ok(title.length >= 30 && title.length <= 65, `${locale} title length for ${slug}: ${title.length}`);
+  assert.ok(description.length >= 120 && description.length <= 170, `${locale} description length for ${slug}: ${description.length}`);
   assert.equal(entry.meta?.titleBranding, 'none', `${locale} should disable title branding for ${slug}`);
   assert.ok((entry.heroIntro?.length ?? 0) >= 140, `${locale} hero should frame the decision for ${slug}`);
   assert.ok((entry.quickVerdict?.body.length ?? 0) >= 120, `${locale} verdict should be substantive for ${slug}`);
@@ -99,8 +116,14 @@ function assertCompleteOverride(locale: Locale, slug: string): void {
 
 for (const locale of ['en', 'fr', 'es'] as const) {
   test(`${locale.toUpperCase()} wave-2 entries satisfy the editorial contract`, () => {
-    const titles = new Set<string>();
-    const descriptions = new Set<string>();
+    const uniqueCopy = {
+      titles: new Map<string, string>(),
+      descriptions: new Map<string, string>(),
+      heroIntros: new Map<string, string>(),
+      verdicts: new Map<string, string>(),
+      cards: new Map<string, string>(),
+      faqItems: new Map<string, string>(),
+    };
 
     TARGET_COMPARISONS.forEach(([slug, leftSlug, rightSlug]) => {
       assert.ok(isPublishedComparisonSlug(slug), `${slug} should remain published`);
@@ -115,27 +138,67 @@ for (const locale of ['en', 'fr', 'es'] as const) {
       assert.match(text, new RegExp(escapeRegExp(left.marketingName), 'i'));
       assert.match(text, new RegExp(escapeRegExp(right.marketingName), 'i'));
 
-      const title = entry.meta?.title ?? '';
-      const description = entry.meta?.description ?? '';
-      assert.ok(!titles.has(title), `${locale} title should be unique: ${title}`);
-      assert.ok(!descriptions.has(description), `${locale} description should be unique: ${description}`);
-      titles.add(title);
-      descriptions.add(description);
+      assertUniqueCopy(uniqueCopy.titles, entry.meta?.title, locale, 'title', slug);
+      assertUniqueCopy(uniqueCopy.descriptions, entry.meta?.description, locale, 'description', slug);
+      assertUniqueCopy(uniqueCopy.heroIntros, entry.heroIntro, locale, 'hero intro', slug);
+      assertUniqueCopy(uniqueCopy.verdicts, entry.quickVerdict?.body, locale, 'verdict', slug);
+      (entry.topCards ?? []).forEach((card, index) => {
+        assertUniqueCopy(uniqueCopy.cards, `${card.title}\n${card.body}`, locale, `card ${index + 1}`, slug);
+      });
+      (entry.faq?.items ?? []).forEach((item, index) => {
+        const answers = Array.isArray(item.answer) ? item.answer : [item.answer];
+        assertUniqueCopy(
+          uniqueCopy.faqItems,
+          `${item.question}\n${answers.join('\n')}`,
+          locale,
+          `FAQ item ${index + 1}`,
+          slug,
+        );
+      });
     });
   });
 }
 
 test('legacy comparisons explain the migration or stay decision in every locale', () => {
   const migrationLanguage = {
-    en: /legacy|older|current|upgrade/i,
-    fr: /historique|ancien|actuel|migr|évolu/i,
-    es: /anterior|actual|migr|actualizar/i,
+    en: {
+      available: /\b(available|accessible)\b/i,
+      stay: /\b(stay|keep|remain|continue|stick)\b/i,
+      migrate: /\b(migrate|upgrade|move|switch)\b/i,
+      successor: /\b(current|successor|newer|latest)\b/i,
+      unavailable: /\b(unavailable|removed|retired|abandoned|discontinued|deprecated|withdrawn|decommissioned|sunset(?:ted)?)\b|(?:not|no longer|isn['’]t|aren['’]t) (?:available|accessible)/i,
+    },
+    fr: {
+      available: /\b(disponibles?|accessibles?)\b/i,
+      stay: /\b(rester|restez|conserver|gardez|continuer)\b/i,
+      migrate: /\b(migrer|migrez|évoluer|évoluez|passer)\b/i,
+      successor: /\b(actuel(?:le)?s?|successeurs?|plus récent(?:e)?s?|nouvelle génération)\b/i,
+      unavailable: /\b(indisponibles?|retir(?:é|ée|és|ées)|abandonn(?:é|ée|és|ées)|arrêt(?:é|ée|és|ées)|discontinu(?:é|ée|és|ées)|supprim(?:é|ée|és|ées)|obsolètes?)\b|(?:pas|plus) (?:disponibles?|accessibles?)/i,
+    },
+    es: {
+      available: /\b(disponibles?|accesibles?)\b/i,
+      stay: /\b(quedarse|mantener|seguir|conservar)\b/i,
+      migrate: /\b(migrar|actualizar|pasar|cambiar)\b/i,
+      successor: /\b(actual(?:es)?|sucesor(?:es)?|más reciente|nueva generación)\b/i,
+      unavailable: /\b(retirad[oa]s?|abandonad[oa]s?|descontinuad[oa]s?|discontinuad[oa]s?|eliminad[oa]s?)\b|(?:no|ya no) (?:está |es |sigue )?(?:disponibles?|accesibles?)/i,
+    },
   } as const;
 
   for (const locale of ['en', 'fr', 'es'] as const) {
-    LEGACY_COMPARISONS.forEach((slug) => {
-      assert.match(collectText(getEntry(locale, slug)), migrationLanguage[locale], `${locale} migration framing for ${slug}`);
-    });
+    for (const [slug, successorHref] of Object.entries(LEGACY_SUCCESSOR_LINKS)) {
+      const entry = getEntry(locale, slug);
+      const text = collectText(entry);
+      const language = migrationLanguage[locale];
+      assert.match(text, language.available, `${locale} should say the legacy model remains available for ${slug}`);
+      assert.match(text, language.stay, `${locale} should explain who can stay on the legacy model for ${slug}`);
+      assert.match(text, language.migrate, `${locale} should explain who should migrate for ${slug}`);
+      assert.match(text, language.successor, `${locale} should identify the current successor for ${slug}`);
+      assert.doesNotMatch(text, language.unavailable, `${locale} must not claim a legacy model is unavailable for ${slug}`);
+      assert.ok(
+        entry.primaryLinks?.some((link) => link.href === successorHref),
+        `${locale} should link to successor comparison ${successorHref} for ${slug}`,
+      );
+    }
   }
 });
 
@@ -168,8 +231,14 @@ test('wave-2 links resolve to public model and comparison routes', () => {
           assert.equal(model.surfaces.modelPage.indexable, true, `model route should be indexable: ${link.href}`);
         }
         if (link.href.startsWith('/ai-video-engines/')) {
+          const comparisonSlug = link.href.slice('/ai-video-engines/'.length);
+          assert.equal(
+            canonicalizePublishedCompareSlug(comparisonSlug),
+            comparisonSlug,
+            `comparison href should use its exact canonical slug: ${link.href}`,
+          );
           assert.ok(
-            isPublishedComparisonSlug(link.href.slice('/ai-video-engines/'.length)),
+            isPublishedComparisonSlug(comparisonSlug),
             `comparison route should be published: ${link.href}`,
           );
         }
