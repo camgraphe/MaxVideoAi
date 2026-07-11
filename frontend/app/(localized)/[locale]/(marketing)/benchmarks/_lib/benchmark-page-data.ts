@@ -48,6 +48,21 @@ function metricMap(score: BenchmarkScore): BenchmarkScoreRow['metrics'] {
   return Object.fromEntries(METRIC_IDS.map((id) => [id, typeof score[id] === 'number' ? score[id] : null])) as BenchmarkScoreRow['metrics'];
 }
 
+function publicLatencySnapshot(latency: PublicBenchmarkLatencySnapshot): PublicBenchmarkLatencySnapshot {
+  return {
+    status: latency.status,
+    windowDays: latency.windowDays,
+    asOf: latency.asOf,
+    rows: latency.rows.map((row) => ({
+      engineId: row.engineId,
+      modelSlug: row.modelSlug,
+      medianDurationMs: row.medianDurationMs,
+      p90DurationMs: row.p90DurationMs,
+      asOf: row.asOf,
+    })),
+  };
+}
+
 export function buildBenchmarkPageData(
   staticData: BenchmarkLabStaticData,
   latency: PublicBenchmarkLatencySnapshot
@@ -95,5 +110,5 @@ export function buildBenchmarkPageData(
     changelog: staticData.methodology.changelog,
   };
 
-  return { scores, specs, methodology, latency };
+  return { scores, specs, methodology, latency: publicLatencySnapshot(latency) };
 }
