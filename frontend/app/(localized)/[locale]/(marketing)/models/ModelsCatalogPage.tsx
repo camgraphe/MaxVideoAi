@@ -186,6 +186,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
           />
           {decisionData.recommendedCards.length ? (
             <ModelsCatalogRecommendedSection
+              locale={activeLocale}
               title={decisionCopy.recommendedTitle ?? scopeDefaults.chooseOutcomeTitle}
               subtitle={decisionCopy.recommendedSubtitle ?? scopeDefaults.chooseOutcomeSubtitle}
               cards={decisionData.recommendedCards}

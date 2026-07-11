@@ -1,5 +1,7 @@
 import clsx from 'clsx';
 import { Trophy } from 'lucide-react';
+import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
+import type { AppLocale } from '@/i18n/locales';
 import { CompareScoreboard } from '../CompareScoreboard.client';
 import type { CompareDetailLabels, ComparePageCopy } from '../_lib/compare-page-copy';
 import type { EngineAccent } from '../_lib/compare-page-helpers';
@@ -18,6 +20,7 @@ import type { EngineCatalogEntry } from '../_lib/compare-page-types';
 import { CompareGenerateCard } from './CompareGenerateCard';
 
 type CompareScorecardSectionProps = {
+  activeLocale: AppLocale;
   compareCopy: ComparePageCopy;
   comparisonMetrics: CompareMetric[];
   criteriaCount: number;
@@ -36,6 +39,7 @@ type CompareScorecardSectionProps = {
 };
 
 export function CompareScorecardSection({
+  activeLocale,
   compareCopy,
   comparisonMetrics,
   criteriaCount,
@@ -66,6 +70,7 @@ export function CompareScorecardSection({
               criteriaCount
             )}
           </p>
+          <BenchmarkMethodologyLink locale={activeLocale} className="mt-3" />
           {scorecardProvisionalNote ? (
             <p className="mt-2 text-xs font-semibold text-text-muted">{scorecardProvisionalNote}</p>
           ) : null}

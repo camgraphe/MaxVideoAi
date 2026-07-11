@@ -102,6 +102,11 @@ export const routing = defineRouting({
       fr: '/blog/[slug]',
       es: '/blog/[slug]',
     },
+    '/benchmarks': {
+      en: '/benchmarks',
+      fr: '/benchmarks',
+      es: '/benchmarks',
+    },
     '/about': {
       en: '/about',
       fr: '/a-propos',

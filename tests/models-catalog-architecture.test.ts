@@ -109,6 +109,8 @@ test('models catalog decision hub sections stay route-local and focused', () => 
   assert.match(topPicksSource, /export function ModelsCatalogTopPicksPanel/);
   assert.match(useCaseStripSource, /export function ModelsCatalogUseCaseStrip/);
   assert.match(recommendedSource, /export function ModelsCatalogRecommendedSection/);
+  assert.match(recommendedSource, /BenchmarkMethodologyLink/);
+  assert.match(pageSource, /locale=\{activeLocale\}/);
   assert.match(popularComparisonsSource, /export function ModelsCatalogPopularComparisons/);
   assert.match(pricingLimitsSource, /export function ModelsCatalogPricingLimitsSection/);
   assert.match(decisionFaqSource, /export function ModelsCatalogDecisionFaq/);

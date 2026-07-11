@@ -603,6 +603,8 @@ test('comparison detail split helpers own FAQ, scorecard, and generate card resp
   assert.match(detailHeroSource, /export function CompareDetailHero/);
   assert.match(engineHeroCardsSource, /export function CompareEngineHeroCards/);
   assert.match(scorecardSectionSource, /export function CompareScorecardSection/);
+  assert.match(scorecardSectionSource, /BenchmarkMethodologyLink/);
+  assert.match(scorecardSectionSource, /activeLocale/);
   assert.match(specsSectionSource, /export function CompareSpecsSection/);
   assert.match(showdownSectionSource, /export function CompareShowdownSection/);
   assert.match(relatedSectionSource, /export function CompareRelatedSection/);

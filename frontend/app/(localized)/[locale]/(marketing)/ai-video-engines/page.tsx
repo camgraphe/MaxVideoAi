@@ -5,6 +5,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { FAQSchema } from '@/components/seo/FAQSchema';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import { MarketingHeroImage } from '@/components/marketing/MarketingHeroImage';
+import { BenchmarkMethodologyLink } from '@/components/marketing/BenchmarkMethodologyLink';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveDictionary } from '@/lib/i18n/server';
@@ -183,6 +184,9 @@ export default async function AiVideoEnginesPage() {
                 embedded
                 className="p-0"
               />
+              <div className="flex justify-center">
+                <BenchmarkMethodologyLink locale={locale} variant="pill" />
+              </div>
               {quickStartComparisons.length ? (
                 <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs">
                   <span className="font-semibold uppercase tracking-micro text-text-muted">
