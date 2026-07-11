@@ -123,18 +123,54 @@ The current staging deployment was therefore produced with
 `frontend/vercel.mcp-staging.json` as the effective project-root config and was
 verified after stable-alias assignment to contain zero cron registrations.
 
-Do not run a generic `vercel deploy --prod` against this linked staging
-project. Before any later staging deployment, use a reviewed packaging step in
-an isolated checkout that makes `frontend/vercel.mcp-staging.json` the
-effective `frontend/vercel.json`, then verify the resulting deployment through
-the Vercel API before accepting its stable alias. The acceptance conditions
-are all mandatory:
+Do not run Vercel deployment commands directly against this linked staging
+project. Commit the exact revision to validate, make sure the worktree contains
+no tracked or untracked changes, then use only the reviewed wrapper from the
+repository root:
+
+```bash
+bash scripts/deploy-mcp-staging-vercel.sh --dry-run
+bash scripts/deploy-mcp-staging-vercel.sh
+```
+
+The dry run exports tracked `HEAD` into an isolated temporary directory, makes
+`frontend/vercel.mcp-staging.json` the effective temporary
+`frontend/vercel.json`, and verifies the repo-root workspace and staging config
+without contacting Vercel.
+
+The real invocation repeats those checks, asserts the exact Vercel scope and
+project, links only the temporary directory, and creates a production-target
+candidate with `--skip-domain`. The stable alias is not changed at this point.
+The wrapper waits for `READY` and rejects the candidate unless all pre-promotion
+checks pass: the deployment belongs to `maxvideoai-mcp-staging`, the API cron
+list is empty, and the direct candidate origin is anonymous and carries the
+exact global noindex header. Only then does it call `vercel promote`.
+
+After promotion the wrapper proves that the stable alias resolves to the same
+candidate, rechecks the noindex header, OAuth protected-resource metadata, and
+the unauthenticated MCP challenge, then compares the production project's
+settings, domains, and Deployment Protection with the baseline captured before
+packaging. Temporary files, local Vercel links, and downloaded OIDC material
+are removed by a trap. No environment-variable value is read or printed.
+
+The acceptance conditions are all mandatory:
 
 - the deployment belongs to `maxvideoai-mcp-staging`;
 - its cron list is empty;
 - every response includes `X-Robots-Tag: noindex, nofollow, noarchive`;
 - the stable alias resolves directly without Vercel Authentication;
 - the production `maxvideoai` project and protection settings are unchanged.
+
+### Transient cron incident
+
+During the initial 2026-07-11 setup, one intermediate deployment inherited the
+production cron list because the alternate config path was ignored. A later
+24-hour log review found seven requests while the corrected build was still
+building: Fal, BytePlus, Kling, both Vertex pollers, Luma, and missing-job
+reconciliation. Every request returned HTTP `401`. No cron secret, provider
+credential, payment credential, or production database was present, and no
+side effect is evidenced. The corrected stable deployment has an empty cron
+list. The candidate-before-promotion wrapper above prevents recurrence.
 
 ## Verification
 

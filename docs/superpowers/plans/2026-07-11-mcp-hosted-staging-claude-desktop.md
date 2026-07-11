@@ -512,38 +512,69 @@ pnpm --prefix frontend run build
 
 Expected: tests and build pass; lint has zero errors. Existing unrelated warnings must be listed rather than changed in this branch.
 
-- [ ] **Step 7: Deploy using the staging-only Vercel config**
+- [ ] **Step 7: Verify the isolated staging package without contacting Vercel**
+
+Commit the exact revision to deploy and require a clean worktree. From the
+repository root run:
 
 ```bash
-vercel deploy frontend \
-  --prod \
-  --yes \
-  --local-config frontend/vercel.mcp-staging.json
+bash scripts/deploy-mcp-staging-vercel.sh --dry-run
 ```
 
-`--prod` means the stable environment of the dedicated staging project; it does not deploy the MaxVideoAI production project.
+The wrapper exports tracked `HEAD` to a temporary repo-root tree so
+`packages/pricing` is present. It makes
+`frontend/vercel.mcp-staging.json` the effective temporary
+`frontend/vercel.json`, then asserts that the config has no cron list and has
+the exact global `X-Robots-Tag: noindex, nofollow, noarchive` header. It never
+modifies the real tracked `frontend/vercel.json`.
 
-- [ ] **Step 8: Verify no indexing and no cron installation**
+Expected: one sanitized `SAFE_PACKAGE_OK` line naming only the exact staging
+project, scope, and short commit. Do not continue if the worktree revision is
+not the revision approved for staging.
+
+- [ ] **Step 8: Deploy and verify an unaliased production-target candidate**
+
+Use only the reviewed wrapper; do not invoke Vercel deployment directly:
 
 ```bash
-curl -sSI https://maxvideoai-mcp-staging.vercel.app/ | rg -i '^x-robots-tag: noindex, nofollow, noarchive'
-vercel project inspect maxvideoai-mcp-staging
+bash scripts/deploy-mcp-staging-vercel.sh
 ```
 
-Expected: the header is present and the staging project has no cron jobs.
+The wrapper performs these operations in order:
 
-- [ ] **Step 9: Verify staging isolation and that the production project is unchanged**
+1. captures sanitized settings, domains, and Deployment Protection baselines
+   for the read-only `maxvideoai` production project;
+2. asserts exact scope `camgraphes-projects`, exact project
+   `maxvideoai-mcp-staging`, and distinct project IDs;
+3. links only the isolated temporary tree to the staging project;
+4. creates a production-target candidate with `--prod --skip-domain`, leaving
+   the existing stable alias untouched;
+5. waits for `READY` and verifies through the deployment API that the candidate
+   belongs to the staging project and has an empty cron list;
+6. verifies the direct candidate URL is anonymous and carries the exact global
+   noindex header.
 
-Inspect both projects through the CLI, then compare the production project with the pre-change baseline:
+Any failure before promotion exits with the existing stable alias unchanged.
+Do not bypass a failed candidate check and do not redeploy by hand.
 
-```bash
-vercel project inspect maxvideoai-mcp-staging --no-color
-PRODUCTION_VERCEL_PROJECT="$(cat /tmp/maxvideoai-production-project.name)"
-vercel project inspect "$PRODUCTION_VERCEL_PROJECT" --no-color | tee /tmp/maxvideoai-production-project.after.txt
-diff -u /tmp/maxvideoai-production-project.before.txt /tmp/maxvideoai-production-project.after.txt
-```
+- [ ] **Step 9: Promote only the accepted candidate and prove isolation**
 
-In the Vercel Dashboard, verify `maxvideoai-mcp-staging` has Deployment Protection **Off/None**, while the project owning `maxvideoai.com` still has the exact protection value recorded in Step 1. Expected: the CLI diff has no output; project IDs and domains remain distinct; no production setting was changed.
+The same wrapper calls `vercel promote` only after every Step 8 gate passes.
+It then verifies that:
+
+- `https://maxvideoai-mcp-staging.vercel.app` resolves to the exact accepted
+  candidate;
+- the stable response is anonymous and has the exact global noindex header;
+- protected-resource metadata identifies the stable staging MCP resource and
+  staging Supabase authorization server;
+- anonymous MCP initialization returns application HTTP `401`, private
+  no-store caching, and the RFC 9728 metadata challenge;
+- the production project's normalized settings, domains, and Deployment
+  Protection are unchanged from the pre-deploy baseline.
+
+Expected: a final sanitized `SAFE_DEPLOY_OK` line. The wrapper's trap removes
+the temporary checkout, local Vercel link, downloaded OIDC material, and
+verification artifacts. No environment-variable value is printed or copied.
 
 ## Task 6: Verify hosted OAuth and MCP without an LLM host
 
