@@ -28,13 +28,18 @@ test('attribution sanitization is bounded', () => {
   assert.equal(sanitizeAttributionValue('   '), null);
 });
 
-test('field attribution rejects URL, query, and hash shapes before sanitizing', () => {
+test('field attribution rejects URL, path, query, and hash shapes before sanitizing', () => {
   assert.equal(sanitizeAttributionFieldValue('summer_launch'), 'summer_launch');
+  assert.equal(sanitizeAttributionFieldValue('partner.com'), 'partner.com');
   for (const value of [
     'https://tracker.example/private',
     'prefix https://tracker.example/private',
     'javascript:alert(1)',
     '//tracker.example/private',
+    '/oauth/callback',
+    'tracker.example/private',
+    'www.example.com/private',
+    'oauth\\callback',
     'summer?token=private',
     'summer#private',
   ]) {
@@ -49,6 +54,7 @@ test('wallet parser accepts only the versioned bounded contract', () => {
   assert.equal(parseWalletAnalyticsJourney({ ...valid, cohortWeek: '2026-28' }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, firstSource: '' }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, firstSource: 'https://tracker.example/private' }), null);
+  assert.equal(parseWalletAnalyticsJourney({ ...valid, firstSource: 'tracker.example/private' }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, firstCampaign: 'summer#private' }), null);
 });
 

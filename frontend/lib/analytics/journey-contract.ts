@@ -38,7 +38,8 @@ export function sanitizeAttributionFieldValue(
   if (typeof value !== 'string') return null;
   const normalized = value.normalize('NFKC').trim();
   if (
-    normalized.startsWith('//')
+    normalized.includes('/')
+    || normalized.includes('\\')
     || normalized.includes('?')
     || normalized.includes('#')
     || /[a-z][a-z0-9+.-]*:/i.test(normalized)

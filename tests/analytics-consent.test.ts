@@ -213,3 +213,35 @@ test('URL-shaped UTM values are absent from stored journeys and prepared payload
     assert.equal(readAnalyticsJourney()?.firstTouch.content, undefined);
   });
 });
+
+test('scheme-less UTM paths are absent from stored journeys and prepared payloads', () => {
+  for (const value of ['/oauth/callback', 'tracker.example/private', 'www.example.com/private']) {
+    const url = new URL('https://maxvideoai.com/pricing');
+    url.searchParams.set('utm_source', 'newsletter');
+    url.searchParams.set('utm_medium', 'email');
+    url.searchParams.set('utm_campaign', value);
+
+    withBrowser({ consent: 'granted', href: url.href }, ({ localStorage }) => {
+      const events = prepareBrowserAnalyticsEvents('sign_up_started');
+      const stored = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+      assert.ok(stored);
+      assert.equal(stored.includes(value), false, value);
+      assert.equal(JSON.stringify(events).includes(value), false, value);
+      assert.equal(readAnalyticsJourney()?.firstTouch.campaign, undefined);
+    });
+  }
+});
+
+test('plain controlled attribution values remain stored and emitted', () => {
+  const url = new URL('https://maxvideoai.com/pricing');
+  url.searchParams.set('utm_source', 'newsletter');
+  url.searchParams.set('utm_medium', 'email');
+  url.searchParams.set('utm_campaign', 'partner.com');
+
+  withBrowser({ consent: 'granted', href: url.href }, ({ localStorage }) => {
+    const events = prepareBrowserAnalyticsEvents('sign_up_started');
+    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, 'partner.com');
+    assert.match(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY) ?? '', /partner\.com/);
+    assert.match(JSON.stringify(events), /partner\.com/);
+  });
+});
