@@ -73,6 +73,45 @@ function services(overrides: Partial<MaxVideoAiMcpServices> = {}): MaxVideoAiMcp
   };
 }
 
+function record(value: unknown): Record<string, unknown> {
+  assert.ok(value && typeof value === 'object' && !Array.isArray(value));
+  return value as Record<string, unknown>;
+}
+
+function assertAccountStatus(value: unknown): asserts value is AgentAccountStatus {
+  const status = record(value);
+  assert.equal(typeof status.accountId, 'string');
+  assert.equal(typeof status.emailVerified, 'boolean');
+  assert.equal(typeof record(status.wallet).amountCents, 'number');
+  assert.equal(record(status.trial).status, 'disabled');
+  assert.equal(typeof status.accountUrl, 'string');
+  assert.equal('email' in status, false);
+}
+
+function assertModel(value: unknown): asserts value is AgentModel {
+  const candidate = record(value);
+  assert.equal(typeof candidate.id, 'string');
+  assert.ok(candidate.surface === 'video' || candidate.surface === 'image');
+  assert.ok(Array.isArray(candidate.modes));
+  assert.ok(Array.isArray(candidate.aspectRatios));
+  assert.equal(typeof candidate.audio, 'boolean');
+  assert.equal(typeof candidate.referenceImages, 'boolean');
+  assert.equal('pricing' in candidate, false);
+}
+
+function assertRecommendationResult(value: unknown): void {
+  const result = record(value);
+  assert.ok(Array.isArray(result.recommendations));
+  assert.ok(result.nextAction === 'prepare_generation' || result.nextAction === 'clarify_requirements');
+  for (const recommendation of result.recommendations) {
+    const entry = record(recommendation);
+    assert.equal(typeof entry.rank, 'number');
+    assertModel(entry.model);
+    assert.ok(Array.isArray(entry.reasons));
+    assert.ok(Array.isArray(entry.tradeoffs));
+  }
+}
+
 async function connectedClient(serviceOverrides: Partial<MaxVideoAiMcpServices> = {}) {
   const server = createMaxVideoAiMcpServer(principal, services(serviceOverrides));
   const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
@@ -94,6 +133,7 @@ test('server advertises only the three read-only discovery tools with narrow gui
   t.after(() => connected.close());
 
   const result = await connected.client.listTools();
+  assert.equal(connected.client.getServerVersion()?.name, 'maxvideoai');
   assert.deepEqual(result.tools.map((tool) => tool.name), [
     'get_account_status',
     'list_models',
@@ -149,6 +189,11 @@ test('tools return structured content and pass validated filters to facade servi
     speedPreference: 'fastest',
     qualityPreference: 'balanced',
   });
+  assertAccountStatus(accountResult.structuredContent);
+  const listedModels = record(modelsResult.structuredContent).models;
+  assert.ok(Array.isArray(listedModels));
+  listedModels.forEach(assertModel);
+  assertRecommendationResult(recommendationResult.structuredContent);
 });
 
 test('tool errors are stable and unexpected failures never expose secrets or stacks', async (t) => {
