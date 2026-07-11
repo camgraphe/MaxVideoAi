@@ -53,22 +53,19 @@ The public latency calculation must therefore use the canonical job lifecycle (`
 
 Eight completed jobs had an end-to-end duration above one hour and three were above six hours. Median and P90 are intentionally preferred over mean and maximum because they are more resistant to that long tail. Valid positive durations are not silently trimmed; the limitations section explains that manual updates, provider queues, or delayed polling can extend a job lifecycle.
 
-### Current publishable operational cohort
+### Current publishable latency cohort
 
-Using the proposed eligibility threshold of at least 30 terminal jobs and 5 distinct non-admin users in 30 days, four engines currently qualify for rate-level publication:
+Using the internal eligibility threshold of at least 30 completed jobs and 5 distinct non-admin users in 30 days, three engines currently qualify for latency publication:
 
-| Engine | Terminal jobs | Distinct users | Completed | Failed | Success rate | Completed-job P50 | Completed-job P90 |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| Kling 3 Pro | 111 | 28 | 104 | 7 | 93.7% | 230.8s | 451.6s |
-| Veo 3.1 Lite | 79 | 5 | 79 | 0 | 100.0% | 228.4s | 407.7s |
-| Seedance 2.0 | 72 | 17 | 24 | 48 | 33.3% | 390.1s | 577.5s |
-| Kling O3 Pro | 50 | 11 | 46 | 4 | 92.0% | 337.9s | 685.9s |
+| Engine | Completed jobs | Distinct users | Completed-job P50 | Completed-job P90 |
+| --- | ---: | ---: | ---: | ---: |
+| Kling 3 Pro | 104 | 28 | 230.8s | 451.6s |
+| Veo 3.1 Lite | 79 | 5 | 228.4s | 407.7s |
+| Kling O3 Pro | 46 | 11 | 337.9s | 685.9s |
 
 This table documents the design evidence only. Its values must not be copied into public source code. The public page calculates a fresh rolling snapshot through a server-only query.
 
-Seedance 2.0 qualifies for success-rate publication in this snapshot but has only 24 completed jobs, so its latency values would remain hidden under the separate 30-completion latency rule. This distinction prevents a large failure cohort from making a small completion sample look more robust than it is.
-
-Seedance 2.0's failures are concentrated on several dates rather than evenly distributed across the month. The first public version reports the defined 30-day window without editorially removing bad days. A later incident-annotation system is outside this lot.
+Seedance 2.0 has only 24 completed jobs in this snapshot, so its latency values remain internal until the threshold is met.
 
 ## Approaches Considered
 
@@ -84,7 +81,7 @@ This would be safe but too weak. A page called Benchmark Lab that contains defin
 
 ### 3. Publish every available aggregate immediately
 
-This would produce more populated tables, but low-volume percentages and administrator-heavy cohorts would be misleading. It would also expose inconsistent latency definitions because the detailed event stream has only 45.4% completed-job coverage.
+This would produce more populated tables, but low-volume or administrator-heavy cohorts would be misleading. It would also expose inconsistent latency definitions because the detailed event stream has only 45.4% completed-job coverage.
 
 ## Public Routes and Localization
 
@@ -142,10 +139,6 @@ The V1 lab is limited to public video-model scorecards. Image-only models and sp
 Render a rolling 30-day table generated on the server. For each eligible model, show:
 
 - observation window and `as of` timestamp;
-- terminal job count;
-- distinct-user threshold status, without exposing user count where doing so would weaken privacy;
-- successful and failed job counts;
-- success rate;
 - completed-job median render time;
 - completed-job P90 render time.
 
@@ -153,14 +146,11 @@ The page does not render user IDs, job IDs, prompts, uploaded media, provider pa
 
 Eligibility and metric rules are:
 
-- a model qualifies for rate publication with at least 30 terminal jobs and at least 5 distinct non-admin users in the rolling window;
 - completed states are `completed`, `success`, `succeeded`, and `finished` after lowercase normalization;
-- failed states are `failed`, `error`, `cancelled`, and `canceled` after lowercase normalization;
-- success rate equals completed terminal jobs divided by completed plus failed terminal jobs;
 - latency is published only with at least 30 completed jobs and 5 distinct non-admin users;
 - latency includes completed jobs with non-null timestamps and `updated_at > created_at`;
 - median is `PERCENTILE_CONT(0.5)` and P90 is `PERCENTILE_CONT(0.9)` over end-to-end job duration;
-- unknown, pending, stale, or non-terminal states are excluded from the rate denominator.
+- the exact completed-job count and distinct-user count are used only for eligibility and are not returned to the public page.
 
 The operational table contains only models that meet the publication threshold. A short neutral line below it says that additional models appear as their rolling sample matures. Models outside the operational cohort still retain their complete editorial scorecards and specifications; the page does not attach a negative warning cell to every one of them.
 
@@ -214,7 +204,6 @@ The visible limitations section states that:
 - provider capacity and queues change over time;
 - production traffic is not a controlled experiment;
 - rolling performance may reflect incidents, routing changes, and user-selected settings;
-- a high operational success rate does not imply better visual quality;
 - MaxVideoAI sells access to the compared models and therefore discloses its commercial interest.
 
 The methodology changelog records changes to prompts, criteria, formulas, thresholds, or data sources. Score-row edits retain their existing row-level update date.
@@ -248,18 +237,12 @@ type PublicBenchmarkPerformance = {
   modelSlug: string | null;
   windowDays: 30;
   asOf: string;
-  terminalJobs: number;
-  completedJobs: number;
-  failedJobs: number;
-  successRate: number | null;
   medianDurationMs: number | null;
   p90DurationMs: number | null;
-  eligibility: 'publishable' | 'insufficient-volume' | 'insufficient-diversity';
-  latencyEligibility: 'publishable' | 'insufficient-completions';
 };
 ```
 
-The route receives no distinct-user count for display. The query uses that count only to derive eligibility.
+The route receives only eligible rows. It receives no job count, failure count, success rate, or distinct-user count.
 
 ## Integration With Existing Pages
 
@@ -310,11 +293,11 @@ Implementation uses focused contract tests before production changes. Automated 
 6. current scores use the positive `MaxVideoAI editorial score` label and are not mislabeled as documented runs;
 7. administrator users are excluded before aggregation;
 8. duplicate event rows cannot duplicate canonical jobs because public outcomes use `app_jobs` grain;
-9. success and latency formulas match this specification;
-10. rate publication requires 30 terminal jobs and 5 distinct users;
-11. latency publication separately requires 30 completed jobs;
-12. non-terminal jobs are excluded from denominators;
-13. invalid or missing durations are excluded without changing outcome counts;
+9. median and P90 formulas match this specification;
+10. latency publication requires 30 completed jobs and 5 distinct users;
+11. completed-job and distinct-user counts remain internal eligibility inputs;
+12. success rate, failure count, and sample size do not enter the public result contract;
+13. invalid or missing durations are excluded without changing eligibility counts;
 14. database failure returns an unavailable snapshot rather than zeros;
 15. the route stays a thin Server Component and route-local sections own rendering;
 16. English, French, and Latin American Spanish contain equivalent definitions and caveats;
@@ -328,8 +311,7 @@ Manual browser checks cover:
 
 - all three localized Benchmark Lab routes on desktop and mobile;
 - semantic table overflow and keyboard navigation;
-- a model with fully publishable performance;
-- a model with publishable success rate but insufficient completed jobs for latency;
+- a model with publishable latency;
 - a model with insufficient operational evidence;
 - the database-unavailable state;
 - links from representative model and comparison scorecards;
@@ -341,8 +323,8 @@ Manual browser checks cover:
 - All existing editorial scores are clearly identified as editorial evidence.
 - No historical score is presented as a documented run without the required metadata.
 - Model and comparison pages do not repeat defensive caveats; they use concise positive source labels and link to the central methodology.
-- Eligible production metrics are fresh, anonymized, deduplicated at job grain, and accompanied by window and sample size.
-- Low-volume or low-diversity cohorts do not expose misleading rates.
+- Eligible production latency is fresh, anonymized, deduplicated at job grain, and accompanied by its rolling window.
+- Job count, user count, failure count, and success rate remain internal and are not displayed.
 - Failed paid generations are described directly as automatically refunded, without an automation-rate KPI or admin caveat.
 - Editorial quality, product specifications, pricing, and observed performance remain visibly separate.
 - The page remains useful when the database is unavailable.
