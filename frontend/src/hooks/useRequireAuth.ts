@@ -12,6 +12,7 @@ import {
 } from '@/lib/clarity-client';
 import { consumeLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, readLastKnownUserId, writeLastKnownUserId } from '@/lib/last-known';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import {
   clearStaleBrowserAuthState,
   isInvalidRefreshTokenError,
@@ -109,8 +110,10 @@ export function useRequireAuth(options?: UseRequireAuthOptions): RequireAuthResu
       return;
     }
     redirectingRef.current = true;
-    const target =
-      nextPath && nextPath !== '/login' ? `/login?next=${encodeURIComponent(nextPath)}` : '/login';
+    const target = buildLoginHref({
+      mode: 'signup',
+      nextPath: nextPath && nextPath !== '/login' ? nextPath : '/app',
+    });
     router.replace(target);
   }, [router, nextPath]);
 

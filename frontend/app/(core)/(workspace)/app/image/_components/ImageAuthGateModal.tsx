@@ -3,6 +3,7 @@
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 
 type ImageAuthGateModalProps = {
   open: boolean;
@@ -58,7 +59,7 @@ function ImageAuthGateDialog({
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <ButtonLink
-            href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`}
+            href={buildLoginHref({ mode: 'signup', nextPath: loginRedirectTarget })}
             size="sm"
             className="px-4"
             data-modal-initial-focus="true"
@@ -66,7 +67,7 @@ function ImageAuthGateDialog({
             {copy.primary}
           </ButtonLink>
           <ButtonLink
-            href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+            href={buildLoginHref({ mode: 'signin', nextPath: loginRedirectTarget })}
             variant="outline"
             size="sm"
             className="px-4"

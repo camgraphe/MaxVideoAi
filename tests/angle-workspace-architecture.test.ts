@@ -122,7 +122,9 @@ test('angle helper modules expose the expected workspace contract', () => {
   assert.match(recentJobModalSource, /export function AngleRecentJobModal/, 'recent job modal module should export AngleRecentJobModal');
   assert.match(recentJobModalSource, /AngleOutputMosaic/, 'recent job modal should own recent output mosaic composition');
   assert.match(authGateModalSource, /export function AngleAuthGateModal/, 'auth gate modal module should export AngleAuthGateModal');
-  assert.match(authGateModalSource, /encodeURIComponent\(loginRedirectTarget\)/, 'auth gate modal should own login redirect links');
+  assert.match(authGateModalSource, /buildLoginHref/, 'auth gate modal should use the shared login redirect owner');
+  assert.match(authGateModalSource, /mode: 'signup', nextPath: loginRedirectTarget/);
+  assert.match(authGateModalSource, /mode: 'signin', nextPath: loginRedirectTarget/);
   assert.match(sourceImagePanelSource, /export function AngleSourceImagePanel/, 'source image panel module should export AngleSourceImagePanel');
   assert.match(sourceImagePanelSource, /copy\.sourceReady/, 'source image panel should own selected image chrome');
   assert.match(sourceImagePanelSource, /onSourceDrop/, 'source image panel should own dropzone wiring');

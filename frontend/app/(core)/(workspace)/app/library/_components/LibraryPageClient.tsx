@@ -12,6 +12,7 @@ import { AssetLibraryBrowser } from '@/components/library/AssetLibraryBrowser';
 import { FEATURES } from '@/content/feature-flags';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { buildAppDownloadUrl, suggestDownloadFilename } from '@/lib/download';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { useLibraryAssetMutations } from '../_hooks/useLibraryAssetMutations';
 import { useLibraryPageData } from '../_hooks/useLibraryPageData';
@@ -186,10 +187,14 @@ export function LibraryPageClient() {
               <h1 className="mt-3 text-2xl font-semibold text-text-primary">{copy.auth.title}</h1>
               <p className="mt-3 text-sm text-text-secondary">{copy.auth.body}</p>
               <div className="mt-6 flex flex-wrap gap-3">
-                <ButtonLink href="/login" size="sm">
+                <ButtonLink href={buildLoginHref({ mode: 'signup', nextPath: '/app/library' })} size="sm">
                   {copy.auth.createAccount}
                 </ButtonLink>
-                <ButtonLink href="/login?mode=signin" variant="outline" size="sm">
+                <ButtonLink
+                  href={buildLoginHref({ mode: 'signin', nextPath: '/app/library' })}
+                  variant="outline"
+                  size="sm"
+                >
                   {copy.auth.signIn}
                 </ButtonLink>
               </div>

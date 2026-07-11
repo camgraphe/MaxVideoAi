@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import type { AdminNavBadgeMap } from '@/lib/admin/navigation';
 import { buildAdminBadges } from '@/lib/admin/badges';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import { AdminAuthError, requireAdmin } from '@/server/admin';
 import { fetchAdminHealth } from '@/server/admin-metrics';
 import { AdminLayout as AdminShellLayout } from '@/components/admin/AdminLayout';
@@ -26,7 +27,7 @@ export default async function AdminLayout({ children }: AdminLayoutProps) {
   } catch (error) {
     console.warn('[admin/layout] access denied', error);
     if (error instanceof AdminAuthError && error.status === 401) {
-      redirect(`/login?next=${encodeURIComponent('/generate')}`);
+      redirect(buildLoginHref({ mode: 'signin', nextPath: '/admin' }));
     }
     notFound();
   }

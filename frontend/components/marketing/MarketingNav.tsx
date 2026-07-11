@@ -16,6 +16,7 @@ import { MarketingMobileMenu } from '@/components/marketing/MarketingMobileMenu'
 import { consumeLogoutIntent, setLogoutIntent } from '@/lib/logout-intent';
 import { clearLastKnownAccount, writeLastKnownUserId } from '@/lib/last-known';
 import { MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 
 type MarketingNavProps = {
   initialEmail?: string | null;
@@ -46,6 +47,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
   const generateLabel = t('nav.generate', 'Generate');
   const loginLabelMobile = locale === 'fr' ? 'Connexion' : locale === 'es' ? 'Entrar' : 'Log in';
   const generateLabelMobile = locale === 'fr' ? 'Generer' : locale === 'es' ? 'Generar' : 'Generate';
+  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
   const isAuthenticated = Boolean(email);
   const themeStorageKey = 'mv-theme';
 
@@ -364,7 +366,7 @@ export function MarketingNav({ initialEmail = null, initialIsAdmin = false }: Ma
           ) : (
             <>
               <Link
-                href="/login?next=/app"
+                href={loginHref}
                 prefetch={false}
                 className="inline-flex text-xs font-medium text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg sm:text-sm"
                 data-analytics-event="cta_click"
