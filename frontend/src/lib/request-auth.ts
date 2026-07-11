@@ -10,3 +10,7 @@ export function readBearerAccessToken(headers: HeaderReader): string | null {
   const token = match?.[1]?.trim() ?? '';
   return token.length ? token : null;
 }
+
+export function readRequestBearerAccessToken(request: Pick<Request, 'headers'>): string | null {
+  return readBearerAccessToken(request.headers);
+}

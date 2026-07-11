@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readBearerAccessToken } from '../frontend/src/lib/request-auth';
+import { readBearerAccessToken, readRequestBearerAccessToken } from '../frontend/src/lib/request-auth';
 
 test('readBearerAccessToken extracts a bearer token', () => {
   const token = readBearerAccessToken(
@@ -36,4 +36,14 @@ test('readBearerAccessToken returns null when the header is missing', () => {
   const token = readBearerAccessToken(new Headers());
 
   assert.equal(token, null);
+});
+
+test('readRequestBearerAccessToken reads standard Request headers', () => {
+  const token = readRequestBearerAccessToken(
+    new Request('https://api.maxvideoai.com/mcp', {
+      headers: { authorization: 'Bearer request-token' },
+    })
+  );
+
+  assert.equal(token, 'request-token');
 });
