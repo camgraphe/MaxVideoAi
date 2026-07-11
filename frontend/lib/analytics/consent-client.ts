@@ -12,25 +12,36 @@ export function hasAnalyticsConsentInBrowser(): boolean {
   }
 }
 
-export function analyticsConsentFromUpdateEvent(event: Event): boolean {
+export function analyticsConsentFromUpdateEvent(
+  event: Event,
+  fallback: () => boolean = hasAnalyticsConsentInBrowser
+): boolean {
   const detail = (event as CustomEvent<{ categories?: { analytics?: boolean } }>).detail;
   if (typeof detail?.categories?.analytics === 'boolean') {
     return detail.categories.analytics;
   }
-  return hasAnalyticsConsentInBrowser();
+  return fallback();
 }
 
-export function hasAdsConsentInBrowser(): boolean {
+function hasConsentCookieCategory(category: 'analytics' | 'ads'): boolean {
   if (typeof document === 'undefined') return false;
   try {
     for (const entry of document.cookie ? document.cookie.split(';') : []) {
       const [key, ...rest] = entry.trim().split('=');
       if (key === CONSENT_COOKIE_NAME) {
-        return hasConsentFor(parseConsent(decodeURIComponent(rest.join('='))), 'ads');
+        return hasConsentFor(parseConsent(decodeURIComponent(rest.join('='))), category);
       }
     }
   } catch {
     return false;
   }
   return false;
+}
+
+export function hasAnalyticsConsentCookieInBrowser(): boolean {
+  return hasConsentCookieCategory('analytics');
+}
+
+export function hasAdsConsentInBrowser(): boolean {
+  return hasConsentCookieCategory('ads');
 }

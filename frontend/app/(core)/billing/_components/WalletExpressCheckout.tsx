@@ -11,7 +11,7 @@ import type {
 import {
   ANALYTICS_CONSENT_STORAGE_KEY,
   analyticsConsentFromUpdateEvent,
-  hasAnalyticsConsentInBrowser,
+  hasAnalyticsConsentCookieInBrowser,
 } from '@/lib/analytics/consent-client';
 import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
 import {
@@ -92,7 +92,7 @@ export function WalletExpressCheckout({
   const pendingCheckoutSessionRef = useRef<{ key: string; promise: Promise<CheckoutSessionResult> } | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable' | 'error'>('idle');
   const [message, setMessage] = useState<string | null>(null);
-  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentInBrowser);
+  const [analyticsConsentGranted, setAnalyticsConsentGranted] = useState(hasAnalyticsConsentCookieInBrowser);
   const amountLabel = `$${(amountCents / 100).toFixed(amountCents % 100 === 0 ? 0 : 2)}`;
   const normalizedChargeCurrency = (chargeCurrency || 'USD').toUpperCase();
   const sessionUserId = session?.user?.id ?? null;
@@ -115,11 +115,11 @@ export function WalletExpressCheckout({
       setAnalyticsConsentGranted((current) => current === nextConsent ? current : nextConsent);
     };
     const handleConsentUpdated = (event: Event) => {
-      updateAnalyticsConsent(analyticsConsentFromUpdateEvent(event));
+      updateAnalyticsConsent(analyticsConsentFromUpdateEvent(event, hasAnalyticsConsentCookieInBrowser));
     };
     const handleStorage = (event: StorageEvent) => {
       if (event.key && event.key !== ANALYTICS_CONSENT_STORAGE_KEY) return;
-      updateAnalyticsConsent(hasAnalyticsConsentInBrowser());
+      updateAnalyticsConsent(hasAnalyticsConsentCookieInBrowser());
     };
 
     window.addEventListener('consent:updated', handleConsentUpdated as EventListener);
