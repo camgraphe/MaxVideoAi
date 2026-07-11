@@ -8,6 +8,7 @@ import {
   ANALYTICS_CONSENT_GRANTED_VALUE,
   ANALYTICS_CONSENT_STORAGE_KEY,
 } from '@/lib/analytics/consent-client';
+import { clearBrowserAnalyticsState } from '@/lib/analytics/journey-browser';
 import { setAnalyticsConsentCookie, setClarityConsent } from '@/lib/clarity-client';
 
 export type BannerState =
@@ -62,15 +63,18 @@ export function broadcastConsent(record: ConsentRecord) {
 }
 
 export function applyStoredConsentEffects(record: ConsentRecord) {
+  const analyticsGranted = Boolean(record.categories.analytics);
   broadcastConsent(record);
-  setAnalyticsConsentCookie(Boolean(record.categories.analytics));
-  setLocalAnalyticsFlag(Boolean(record.categories.analytics));
-  setClarityConsent(Boolean(record.categories.analytics));
+  setAnalyticsConsentCookie(analyticsGranted);
+  setLocalAnalyticsFlag(analyticsGranted);
+  if (!analyticsGranted) clearBrowserAnalyticsState();
+  setClarityConsent(analyticsGranted);
   updateGoogleConsent(record.categories);
 }
 
 export function clearLocalAnalyticsFlag() {
   setLocalAnalyticsFlag(false);
+  clearBrowserAnalyticsState();
 }
 
 export async function persistCookieConsent(categories: ConsentRecord['categories']) {

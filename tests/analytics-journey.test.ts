@@ -13,6 +13,28 @@ test('resolution prioritizes campaign, organic, referral, then direct', () => {
   assert.equal(resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: '', siteOrigin: 'https://maxvideoai.com', ...route }).source, 'direct');
 });
 
+test('URL-shaped UTM values are not persisted in attribution touches', () => {
+  const maliciousSource = new URL('https://maxvideoai.com/pricing');
+  maliciousSource.searchParams.set('utm_source', 'https://tracker.example/private');
+  maliciousSource.searchParams.set('utm_medium', 'cpc');
+  assert.deepEqual(resolveAnalyticsTouch({ href: maliciousSource.href, referrer: '', siteOrigin: 'https://maxvideoai.com', ...route }), {
+    source: 'direct',
+    medium: 'none',
+    ...route,
+  });
+
+  const maliciousOptionalFields = new URL('https://maxvideoai.com/pricing');
+  maliciousOptionalFields.searchParams.set('utm_source', 'newsletter');
+  maliciousOptionalFields.searchParams.set('utm_medium', 'email');
+  maliciousOptionalFields.searchParams.set('utm_campaign', 'https://tracker.example/private');
+  maliciousOptionalFields.searchParams.set('utm_content', 'cta#private');
+  assert.deepEqual(resolveAnalyticsTouch({ href: maliciousOptionalFields.href, referrer: '', siteOrigin: 'https://maxvideoai.com', ...route }), {
+    source: 'newsletter',
+    medium: 'email',
+    ...route,
+  });
+});
+
 test('referral hostname attribution is bounded', () => {
   const hostname = `${'a'.repeat(40)}.${'b'.repeat(40)}.example`;
   const touch = resolveAnalyticsTouch({ href: 'https://maxvideoai.com/', referrer: `https://${hostname}/post`, siteOrigin: 'https://maxvideoai.com', ...route });

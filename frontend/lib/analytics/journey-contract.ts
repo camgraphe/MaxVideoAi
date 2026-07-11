@@ -31,6 +31,23 @@ export function sanitizeAttributionValue(value: unknown, options: { lowercase?: 
   return options.lowercase ? result.toLowerCase() : result;
 }
 
+export function sanitizeAttributionFieldValue(
+  value: unknown,
+  options: { lowercase?: boolean } = {},
+): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.normalize('NFKC').trim();
+  if (
+    normalized.startsWith('//')
+    || normalized.includes('?')
+    || normalized.includes('#')
+    || /[a-z][a-z0-9+.-]*:/i.test(normalized)
+  ) {
+    return null;
+  }
+  return sanitizeAttributionValue(normalized, options);
+}
+
 export function parseWalletAnalyticsJourney(value: unknown): WalletAnalyticsJourney | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
 
@@ -39,10 +56,10 @@ export function parseWalletAnalyticsJourney(value: unknown): WalletAnalyticsJour
 
   const journeyId = sanitizeAttributionValue(candidate.journeyId, { lowercase: true });
   const cohortWeek = sanitizeAttributionValue(candidate.cohortWeek);
-  const firstSource = sanitizeAttributionValue(candidate.firstSource, { lowercase: true });
-  const firstMedium = sanitizeAttributionValue(candidate.firstMedium, { lowercase: true });
-  const lastSource = sanitizeAttributionValue(candidate.lastSource, { lowercase: true });
-  const lastMedium = sanitizeAttributionValue(candidate.lastMedium, { lowercase: true });
+  const firstSource = sanitizeAttributionFieldValue(candidate.firstSource, { lowercase: true });
+  const firstMedium = sanitizeAttributionFieldValue(candidate.firstMedium, { lowercase: true });
+  const lastSource = sanitizeAttributionFieldValue(candidate.lastSource, { lowercase: true });
+  const lastMedium = sanitizeAttributionFieldValue(candidate.lastMedium, { lowercase: true });
 
   if (
     !journeyId || !UUID_PATTERN.test(journeyId)
@@ -62,10 +79,18 @@ export function parseWalletAnalyticsJourney(value: unknown): WalletAnalyticsJour
     lastMedium,
   };
 
-  const firstCampaign = sanitizeAttributionValue(candidate.firstCampaign);
-  const firstContent = sanitizeAttributionValue(candidate.firstContent);
-  const lastCampaign = sanitizeAttributionValue(candidate.lastCampaign);
-  const lastContent = sanitizeAttributionValue(candidate.lastContent);
+  const firstCampaign = sanitizeAttributionFieldValue(candidate.firstCampaign);
+  const firstContent = sanitizeAttributionFieldValue(candidate.firstContent);
+  const lastCampaign = sanitizeAttributionFieldValue(candidate.lastCampaign);
+  const lastContent = sanitizeAttributionFieldValue(candidate.lastContent);
+  if (
+    (sanitizeAttributionValue(candidate.firstCampaign) && !firstCampaign)
+    || (sanitizeAttributionValue(candidate.firstContent) && !firstContent)
+    || (sanitizeAttributionValue(candidate.lastCampaign) && !lastCampaign)
+    || (sanitizeAttributionValue(candidate.lastContent) && !lastContent)
+  ) {
+    return null;
+  }
   if (firstCampaign) parsed.firstCampaign = firstCampaign;
   if (firstContent) parsed.firstContent = firstContent;
   if (lastCampaign) parsed.lastCampaign = lastCampaign;

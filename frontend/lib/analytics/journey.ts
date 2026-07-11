@@ -1,6 +1,7 @@
 import {
   ANALYTICS_JOURNEY_TTL_MS,
   ANALYTICS_JOURNEY_VERSION,
+  sanitizeAttributionFieldValue,
   sanitizeAttributionValue,
   type AnalyticsJourneyRecordV1,
   type AnalyticsTouch,
@@ -76,12 +77,12 @@ function routeFields(input: AnalyticsTouchInput): Pick<AnalyticsTouch, 'landingR
 
 export function resolveAnalyticsTouch(input: AnalyticsTouchInput): AnalyticsTouch {
   const pageUrl = safeUrl(input.href);
-  const source = pageUrl && sanitizeAttributionValue(pageUrl.searchParams.get('utm_source'), { lowercase: true });
-  const medium = pageUrl && sanitizeAttributionValue(pageUrl.searchParams.get('utm_medium'), { lowercase: true });
+  const source = pageUrl && sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_source'), { lowercase: true });
+  const medium = pageUrl && sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_medium'), { lowercase: true });
 
   if (source && medium) {
-    const campaign = sanitizeAttributionValue(pageUrl.searchParams.get('utm_campaign'));
-    const content = sanitizeAttributionValue(pageUrl.searchParams.get('utm_content'));
+    const campaign = sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_campaign'));
+    const content = sanitizeAttributionFieldValue(pageUrl.searchParams.get('utm_content'));
     return {
       source,
       medium,

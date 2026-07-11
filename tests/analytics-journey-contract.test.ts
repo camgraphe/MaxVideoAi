@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { parseWalletAnalyticsJourney, sanitizeAttributionValue, walletAnalyticsJourneyCacheKey } from '../frontend/lib/analytics/journey-contract';
+import {
+  parseWalletAnalyticsJourney,
+  sanitizeAttributionFieldValue,
+  sanitizeAttributionValue,
+  walletAnalyticsJourneyCacheKey,
+} from '../frontend/lib/analytics/journey-contract';
 
 const valid = {
   version: 1,
@@ -23,12 +28,28 @@ test('attribution sanitization is bounded', () => {
   assert.equal(sanitizeAttributionValue('   '), null);
 });
 
+test('field attribution rejects URL, query, and hash shapes before sanitizing', () => {
+  assert.equal(sanitizeAttributionFieldValue('summer_launch'), 'summer_launch');
+  for (const value of [
+    'https://tracker.example/private',
+    'prefix https://tracker.example/private',
+    'javascript:alert(1)',
+    '//tracker.example/private',
+    'summer?token=private',
+    'summer#private',
+  ]) {
+    assert.equal(sanitizeAttributionFieldValue(value), null, value);
+  }
+});
+
 test('wallet parser accepts only the versioned bounded contract', () => {
   assert.deepEqual(parseWalletAnalyticsJourney(valid), valid);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, version: 2 }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, journeyId: 'invalid' }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, cohortWeek: '2026-28' }), null);
   assert.equal(parseWalletAnalyticsJourney({ ...valid, firstSource: '' }), null);
+  assert.equal(parseWalletAnalyticsJourney({ ...valid, firstSource: 'https://tracker.example/private' }), null);
+  assert.equal(parseWalletAnalyticsJourney({ ...valid, firstCampaign: 'summer#private' }), null);
 });
 
 test('wallet cache keys change with attribution', () => {

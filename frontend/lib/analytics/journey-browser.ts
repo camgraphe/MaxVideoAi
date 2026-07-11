@@ -3,10 +3,12 @@ import { getAnalyticsRouteContext, type AnalyticsRouteContext } from '../analyti
 import { hasAnalyticsConsentInBrowser } from './consent-client';
 import {
   ANALYTICS_JOURNEY_STORAGE_KEY,
+  ANALYTICS_JOURNEY_TTL_MS,
   ANALYTICS_JOURNEY_VERSION,
   ISO_COHORT_WEEK_PATTERN,
   UUID_PATTERN,
   parseWalletAnalyticsJourney,
+  sanitizeAttributionFieldValue,
   sanitizeAttributionValue,
   type AnalyticsJourneyRecordV1,
   type AnalyticsTouch,
@@ -28,20 +30,25 @@ function isBoundedValue(value: unknown, options: { lowercase?: boolean } = {}): 
   return typeof value === 'string' && sanitizeAttributionValue(value, options) === value;
 }
 
+function isBoundedFieldValue(value: unknown, options: { lowercase?: boolean } = {}): value is string {
+  return typeof value === 'string' && sanitizeAttributionFieldValue(value, options) === value;
+}
+
 function isAnalyticsTouch(value: unknown): value is AnalyticsTouch {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const touch = value as Record<string, unknown>;
   if (
-    !isBoundedValue(touch.source, { lowercase: true })
-    || !isBoundedValue(touch.medium, { lowercase: true })
+    !isBoundedFieldValue(touch.source, { lowercase: true })
+    || !isBoundedFieldValue(touch.medium, { lowercase: true })
     || !isBoundedValue(touch.landingRouteFamily, { lowercase: true })
   ) {
     return false;
   }
 
-  for (const key of ['campaign', 'content', 'landingSurface'] as const) {
-    if (touch[key] !== undefined && !isBoundedValue(touch[key])) return false;
+  for (const key of ['campaign', 'content'] as const) {
+    if (touch[key] !== undefined && !isBoundedFieldValue(touch[key])) return false;
   }
+  if (touch.landingSurface !== undefined && !isBoundedValue(touch.landingSurface)) return false;
   for (const key of ['referrerHost', 'locale'] as const) {
     if (touch[key] !== undefined && !isBoundedValue(touch[key], { lowercase: true })) return false;
   }
@@ -57,7 +64,7 @@ function parseAnalyticsJourney(value: unknown, now: number): AnalyticsJourneyRec
     || !UUID_PATTERN.test(record.journeyId)
     || !isNonNegativeInteger(record.createdAt)
     || !isNonNegativeInteger(record.expiresAt)
-    || record.expiresAt <= record.createdAt
+    || record.expiresAt !== record.createdAt + ANALYTICS_JOURNEY_TTL_MS
     || record.expiresAt <= now
     || typeof record.cohortWeek !== 'string'
     || !ISO_COHORT_WEEK_PATTERN.test(record.cohortWeek)

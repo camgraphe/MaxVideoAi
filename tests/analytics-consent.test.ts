@@ -5,7 +5,14 @@ import {
   persistPendingAnalyticsEvent,
   readPendingAnalyticsEvent,
 } from '../frontend/lib/analytics-client';
-import { ANALYTICS_JOURNEY_STORAGE_KEY } from '../frontend/lib/analytics/journey-contract';
+import {
+  applyStoredConsentEffects,
+  clearLocalAnalyticsFlag,
+} from '../frontend/components/legal/cookie-banner-client';
+import {
+  ANALYTICS_JOURNEY_STORAGE_KEY,
+  ANALYTICS_JOURNEY_TTL_MS,
+} from '../frontend/lib/analytics/journey-contract';
 import {
   clearBrowserAnalyticsState,
   prepareBrowserAnalyticsEvents,
@@ -26,7 +33,7 @@ function createStorage(): Storage {
 }
 
 function withBrowser(
-  options: { consent: string | null; storedJourney?: string },
+  options: { consent: string | null; href?: string; storedJourney?: string },
   run: (value: { localStorage: Storage; sessionStorage: Storage }) => void,
 ) {
   const descriptors = {
@@ -36,6 +43,7 @@ function withBrowser(
   };
   const localStorage = createStorage();
   const sessionStorage = createStorage();
+  const location = new URL(options.href ?? 'https://maxvideoai.com/pricing?utm_source=google&utm_medium=cpc');
   if (options.consent) localStorage.setItem('mv-consent-analytics', options.consent);
   if (options.storedJourney) localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, options.storedJourney);
   Object.defineProperty(globalThis, 'window', {
@@ -44,16 +52,18 @@ function withBrowser(
       localStorage,
       sessionStorage,
       location: {
-        href: 'https://maxvideoai.com/pricing?utm_source=google&utm_medium=cpc',
-        origin: 'https://maxvideoai.com',
-        pathname: '/pricing',
+        href: location.href,
+        hostname: location.hostname,
+        origin: location.origin,
+        pathname: location.pathname,
+        protocol: location.protocol,
       },
       dispatchEvent() {},
     },
   });
   Object.defineProperty(globalThis, 'document', {
     configurable: true,
-    value: { referrer: '', documentElement: { lang: 'en' } },
+    value: { cookie: '', referrer: '', documentElement: { lang: 'en' } },
   });
   Object.defineProperty(globalThis, 'crypto', {
     configurable: true,
@@ -122,5 +132,84 @@ test('denied consent clears stored analytics state', () => {
     clearBrowserAnalyticsState();
     assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
     assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+  });
+});
+
+test('applying denied stored consent clears journey and pending auth state', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage, sessionStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    persistPendingAnalyticsEvent('sign_up_completed');
+
+    applyStoredConsentEffects({
+      version: '2026-07',
+      timestamp: 1_000,
+      categories: { analytics: false, ads: false },
+      source: 'preferences',
+    });
+
+    assert.equal(localStorage.getItem('mv-consent-analytics'), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+    assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+  });
+});
+
+test('clearing the local analytics flag clears journey and pending auth state', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage, sessionStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    persistPendingAnalyticsEvent('sign_up_completed');
+
+    clearLocalAnalyticsFlag();
+
+    assert.equal(localStorage.getItem('mv-consent-analytics'), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+    assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+  });
+});
+
+for (const [label, delta] of [['longer', 1], ['shorter', -1]] as const) {
+  test(`stored journeys with an altered ${label} lifetime are rejected and removed`, () => {
+    withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+      prepareBrowserAnalyticsEvents('sign_up_started');
+      const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+      assert.ok(raw);
+      const record = JSON.parse(raw) as { createdAt: number; expiresAt: number };
+      record.expiresAt = record.createdAt + ANALYTICS_JOURNEY_TTL_MS + delta;
+      localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+      assert.equal(readAnalyticsJourney(), null);
+      assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+    });
+  });
+}
+
+test('stored journeys with URL-shaped attribution are rejected and removed', () => {
+  withBrowser({ consent: 'granted' }, ({ localStorage }) => {
+    prepareBrowserAnalyticsEvents('sign_up_started');
+    const raw = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(raw);
+    const record = JSON.parse(raw) as { firstTouch: { source: string } };
+    record.firstTouch.source = 'https://tracker.example/private';
+    localStorage.setItem(ANALYTICS_JOURNEY_STORAGE_KEY, JSON.stringify(record));
+
+    assert.equal(readAnalyticsJourney(), null);
+    assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
+  });
+});
+
+test('URL-shaped UTM values are absent from stored journeys and prepared payloads', () => {
+  const url = new URL('https://maxvideoai.com/pricing');
+  url.searchParams.set('utm_source', 'newsletter');
+  url.searchParams.set('utm_medium', 'email');
+  url.searchParams.set('utm_campaign', 'https://tracker.example/private');
+  url.searchParams.set('utm_content', 'cta#private');
+
+  withBrowser({ consent: 'granted', href: url.href }, ({ localStorage }) => {
+    const events = prepareBrowserAnalyticsEvents('sign_up_started');
+    const stored = localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY);
+    assert.ok(stored);
+    assert.doesNotMatch(stored, /tracker\.example|private/);
+    assert.doesNotMatch(JSON.stringify(events), /tracker\.example|private/);
+    assert.equal(readAnalyticsJourney()?.firstTouch.campaign, undefined);
+    assert.equal(readAnalyticsJourney()?.firstTouch.content, undefined);
   });
 });
