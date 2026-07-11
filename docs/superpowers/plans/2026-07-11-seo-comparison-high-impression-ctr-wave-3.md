@@ -559,7 +559,6 @@ test('wave-3 links resolve to exact public model and comparison routes', () => {
     });
   }
 });
-
 ```
 
 - [ ] **Step 2: Run the contract and verify RED**
