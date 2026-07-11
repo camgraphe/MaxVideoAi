@@ -5,6 +5,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import { PricingCreditsRefundsSection } from './_components/PricingCreditsRefundsSection';
 import { PricingHeroSection } from './_components/PricingHeroSection';
 import { PricingJsonLdScripts } from './_components/PricingJsonLdScripts';
@@ -60,11 +61,21 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
 
       <div className="container-page max-w-[1440px] py-8 sm:py-10">
         <div className="stack-gap-lg">
-          <PricingVideoMatrixSection video={pricingHub.video} locale={locale} />
-          <PricingPopularChecksSection checks={pricingHub.popularChecks} locale={locale} />
-          <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} locale={locale} />
-          <PricingCreditsRefundsSection locale={locale} />
-          <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
+          <DeferredMarketingContent>
+            <PricingVideoMatrixSection video={pricingHub.video} locale={locale} />
+          </DeferredMarketingContent>
+          <DeferredMarketingContent>
+            <PricingPopularChecksSection checks={pricingHub.popularChecks} locale={locale} />
+          </DeferredMarketingContent>
+          <DeferredMarketingContent>
+            <PricingOtherSurfacesSection data={pricingHub.otherSurfaces} locale={locale} />
+          </DeferredMarketingContent>
+          <DeferredMarketingContent>
+            <PricingCreditsRefundsSection locale={locale} />
+          </DeferredMarketingContent>
+          <DeferredMarketingContent>
+            <PricingRefundsFaqSection faq={faq} faqEntries={faqEntries} />
+          </DeferredMarketingContent>
         </div>
       </div>
 

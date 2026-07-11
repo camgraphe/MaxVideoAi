@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { type AppLocale } from '@/i18n/locales';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import {
   AiVideoToolbox,
   ComparisonPreview,
@@ -78,14 +79,28 @@ export default async function HomePage(props: { params: Promise<{ locale: AppLoc
   return (
     <div className="home-monochrome">
       <HomeHero copy={hero} proofStats={proofStats} previews={examples.slice(0, 5)} programmedHeroItems={programmedHeroItems} />
-      <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
-      <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
-      <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
-      <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
-      <AiVideoToolbox copy={content.toolbox} tools={tools} />
-      <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
-      {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} /> : null}
-      <HomeFaq copy={content.faq} items={content.faq.items} />
+      <DeferredMarketingContent>
+        <ShotTypeEngineSelector copy={content.shotTypes} cards={primaryBestForCards} startupFameLabel={startupFameLabel} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <RealExamplesPreview copy={content.examples} examples={examples} providers={providers} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <ComparisonPreview copy={content.comparisons} comparisons={comparisons} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <ReferenceWorkflow copy={content.workflow} steps={content.workflow.steps} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <AiVideoToolbox copy={content.toolbox} tools={tools} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        <TransparentPricingBlock copy={content.pricingTrust} cards={content.pricingTrust.cards} />
+      </DeferredMarketingContent>
+      <DeferredMarketingContent>
+        {workflowSeoCopy ? <WorkflowSeoSummary copy={workflowSeoCopy} /> : null}
+        <HomeFaq copy={content.faq} items={content.faq.items} />
+      </DeferredMarketingContent>
       <Script id="home-webapp-jsonld" type="application/ld+json">
         {JSON.stringify(softwareSchema)}
       </Script>

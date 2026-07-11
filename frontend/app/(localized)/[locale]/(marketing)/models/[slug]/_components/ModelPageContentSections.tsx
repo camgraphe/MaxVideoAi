@@ -1,5 +1,6 @@
 import type { ComponentProps } from 'react';
 
+import { DeferredMarketingContent } from '@/components/marketing/DeferredMarketingContent';
 import { Link } from '@/i18n/navigation';
 
 import type { ModelDecisionData } from '../_lib/model-page-decision-data';
@@ -59,14 +60,14 @@ export function ModelPageContentSections({
     return (
       <>
         {toc}
-        {examples}
-        {decisionCards ? <ModelDecisionCardsSection cards={decisionCards} /> : null}
-        {prompting}
-        {prepLinks}
-        {tips}
-        {compare}
-        {specs}
-        {safetyFaq}
+        <DeferredMarketingContent>{examples}</DeferredMarketingContent>
+        <DeferredMarketingContent>{decisionCards ? <ModelDecisionCardsSection cards={decisionCards} /> : null}</DeferredMarketingContent>
+        <DeferredMarketingContent>{prompting}</DeferredMarketingContent>
+        <DeferredMarketingContent>{prepLinks}</DeferredMarketingContent>
+        <DeferredMarketingContent>{tips}</DeferredMarketingContent>
+        <DeferredMarketingContent>{compare}</DeferredMarketingContent>
+        <DeferredMarketingContent>{specs}</DeferredMarketingContent>
+        <DeferredMarketingContent>{safetyFaq}</DeferredMarketingContent>
       </>
     );
   }
@@ -83,12 +84,12 @@ export function ModelPageContentSections({
           </Link>
         </div>
       ) : null}
-      {examples}
-      {prompting}
-      {prepLinks}
-      {tips}
-      {compare}
-      {safetyFaq}
+      <DeferredMarketingContent>{examples}</DeferredMarketingContent>
+      <DeferredMarketingContent>{prompting}</DeferredMarketingContent>
+      <DeferredMarketingContent>{prepLinks}</DeferredMarketingContent>
+      <DeferredMarketingContent>{tips}</DeferredMarketingContent>
+      <DeferredMarketingContent>{compare}</DeferredMarketingContent>
+      <DeferredMarketingContent>{safetyFaq}</DeferredMarketingContent>
     </>
   );
 }
