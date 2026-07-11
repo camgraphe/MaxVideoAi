@@ -32,12 +32,12 @@ test('4K best-for shortlist ranks Veo standard first and Veo Fast third', () => 
   assert.ok(fourKEntry, '4K best-for entry should exist');
   assert.deepEqual(fourKEntry.topPicks?.slice(0, 3), ['veo-3-1', 'kling-3-4k', 'veo-3-1-fast']);
   assert.equal(fourKEntry.topPicks?.[3], 'seedance-2-0');
-  assert.deepEqual(getPublishedRelatedComparisons(fourKEntry).slice(0, 3), [
+  assert.deepEqual(getPublishedRelatedComparisons(fourKEntry, 'en').slice(0, 3), [
     'kling-3-4k-vs-veo-3-1',
     'veo-3-1-vs-veo-3-1-fast',
     'ltx-2-3-pro-vs-veo-3-1',
   ]);
-  assert.ok(getPublishedRelatedComparisons(fourKEntry).includes('seedance-2-0-vs-veo-3-1'));
+  assert.ok(getPublishedRelatedComparisons(fourKEntry, 'en').includes('seedance-2-0-vs-veo-3-1'));
 });
 
 test('localized 4K best-for editorial content reflects the Veo 4K ranking', () => {

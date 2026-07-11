@@ -1,5 +1,6 @@
 import { Check, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
+import type { AppLocale } from '@/i18n/locales';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type {
   BestForDetailCopy,
@@ -15,10 +16,12 @@ import {
 export function RankedShortlistCard({
   pick,
   relatedComparisons,
+  locale,
   copy,
 }: {
   pick: RankedPick;
   relatedComparisons: string[];
+  locale: AppLocale;
   copy: BestForDetailCopy;
 }) {
   const compareSlug = findComparisonForPick(pick.slug, relatedComparisons);
@@ -73,7 +76,11 @@ export function RankedShortlistCard({
           {copy.viewExamples} →
         </Link>
         {compareSlug ? (
-          <Link href={{ pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug } }} className="text-brand transition hover:text-brandHover">
+          <Link
+            href={{ pathname: '/ai-video-engines/[slug]', params: { slug: compareSlug } }}
+            locale={locale}
+            className="text-brand transition hover:text-brandHover"
+          >
             {copy.compareWith} →
           </Link>
         ) : null}

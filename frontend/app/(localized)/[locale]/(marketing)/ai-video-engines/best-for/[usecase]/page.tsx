@@ -109,7 +109,7 @@ export default async function BestForDetailPage(props: { params: Promise<Params>
   const heroDescription = buildBestForHeroDescription(locale, entry, content?.description);
   const chips = getUsecaseChips(locale, entry.slug, criteria);
   const alsoAvailable = getAlsoAvailableModels(entry.slug, topPicks);
-  const relatedComparisons = getPublishedRelatedComparisons(entry);
+  const relatedComparisons = getPublishedRelatedComparisons(entry, locale);
   const canonicalUrl = getLocalizedUrl(locale, `/ai-video-engines/best-for/${entry.slug}`);
   const breadcrumbJsonLd = buildBreadcrumbJsonLd(locale, entry, heroTitle, canonicalUrl);
   const itemListJsonLd = buildBestForItemListJsonLd(locale, rankedPicks, canonicalUrl);

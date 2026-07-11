@@ -28,7 +28,7 @@ export function TopPicksPanel({
   locale,
   copy,
 }: TopPicksPanelProps) {
-  const comparisonSlug = pickComparisonSlug(picks, relatedComparisons);
+  const comparisonSlug = pickComparisonSlug(picks, relatedComparisons, locale);
 
   return (
     <section className="rounded-[18px] border border-hairline bg-surface p-4 shadow-[0_24px_70px_rgba(15,23,42,0.08)] dark:shadow-[0_24px_70px_rgba(0,0,0,0.28)]">

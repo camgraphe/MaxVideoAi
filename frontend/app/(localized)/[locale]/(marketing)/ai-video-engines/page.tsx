@@ -16,6 +16,7 @@ import {
   getSuggestedOpponents,
   getUseCaseBuckets,
 } from '@/lib/compare-hub/data';
+import { isComparisonIndexable } from '@/lib/compare-hub/indexation';
 import { CompareNowWidget } from './CompareNowWidget.client';
 import { UseCaseExplorer } from './UseCaseExplorer.client';
 import { EnginesCatalog, type EngineCatalogCard } from './EnginesCatalog.client';
@@ -52,23 +53,27 @@ export default async function AiVideoEnginesPage() {
   const enginesWithWaitlist = getHubEngines({ includeLimited: true, includeWaitlist: true });
   const scoreMap = await loadHubEngineScoreMap();
   const enginesBySlug = new Map(engines.map((engine) => [engine.modelSlug, engine]));
+  const isIndexablePair = (slug: string) => isComparisonIndexable(locale, slug);
 
   const engineOptions = engines.map((engine) => ({ value: engine.modelSlug, label: engine.marketingName }));
-  const popularComparisons = getPopularComparisons(engines).slice(0, 12);
+  const popularComparisons = getPopularComparisons(engines).filter((pair) => isIndexablePair(pair.slug)).slice(0, 12);
   const useCaseBuckets = getUseCaseBuckets(engines).map((bucket) => ({
     id: bucket.id,
     label: copy.useCaseLabels[bucket.id] ?? bucket.id,
-    pairs: bucket.pairs,
+    pairs: bucket.pairs.filter((pair) => isIndexablePair(pair.slug)),
   }));
 
   const toEngineCards = (list: ReturnType<typeof getHubEngines>): EngineCatalogCard[] =>
     list.map((engine) => {
-      const compareActions = getSuggestedOpponents(engine.modelSlug, list, 3).map((opponent) => {
-        return {
-          slug: buildCanonicalCompareSlug(engine.modelSlug, opponent.modelSlug),
-          label: opponent.marketingName,
-        };
-      });
+      const compareActions = getSuggestedOpponents(engine.modelSlug, list, list.length)
+        .map((opponent) => {
+          return {
+            slug: buildCanonicalCompareSlug(engine.modelSlug, opponent.modelSlug),
+            label: opponent.marketingName,
+          };
+        })
+        .filter((action) => isIndexablePair(action.slug))
+        .slice(0, 3);
 
       return {
         ...engine,
@@ -79,10 +84,12 @@ export default async function AiVideoEnginesPage() {
   const engineCards = toEngineCards(engines);
   const extendedEngineCards = toEngineCards(enginesWithWaitlist);
 
-  const allComparisonEntries = getRankedComparisonPairs(engines).map((pair) => ({
-    slug: pair.slug,
-    label: pair.label,
-  }));
+  const allComparisonEntries = getRankedComparisonPairs(engines)
+    .filter((pair) => isIndexablePair(pair.slug))
+    .map((pair) => ({
+      slug: pair.slug,
+      label: pair.label,
+    }));
   const engineMetaBySlug = Object.fromEntries(
     engines.map((engine) => [
       engine.modelSlug,
@@ -114,6 +121,7 @@ export default async function AiVideoEnginesPage() {
     showSeedanceSpotlight ? null : strategicPikaSeedanceComparison,
   ]
     .filter((entry): entry is { slug: string; label: string } => entry != null)
+    .filter((entry) => isIndexablePair(entry.slug))
     .filter((entry, index, entries) => entries.findIndex((candidate) => candidate.slug === entry.slug) === index);
 
   const faqJsonLdEntries = copy.faq.slice(0, 5).map((entry) => ({

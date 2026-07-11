@@ -3,7 +3,24 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 
-import { getHubComparisonSlugsForSitemap } from '../frontend/lib/compare-hub/data.ts';
+import {
+  buildCanonicalCompareSlug,
+  getHubComparisonSlugsForSitemap,
+  getHubEngines,
+  getPopularComparisons,
+  getRankedComparisonPairs,
+  getSuggestedOpponents,
+  getUseCaseBuckets,
+} from '../frontend/lib/compare-hub/data.ts';
+import { isComparisonIndexable } from '../frontend/lib/compare-hub/indexation.ts';
+import type {
+  BestForEntry,
+  RankedPick,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-config.ts';
+import {
+  getPublishedRelatedComparisons,
+  pickComparisonSlug,
+} from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/best-for/[usecase]/_lib/best-for-detail-related.ts';
 import { generateComparisonIndexationArtifacts } from '../scripts/generate-comparison-indexation-matrix.ts';
 
 type CuratedLocale = 'fr' | 'es';
@@ -282,4 +299,121 @@ test('wave 1 applies locale indexation policy when accepting related comparison 
 
   assert.match(relatedSource, /isComparisonIndexable\(locale, canonicalPair\)/);
   assert.match(pageSource, /buildRelatedComparisonLinks\(canonicalSlug, activeLocale\)/);
+});
+
+test('wave 1 filters every comparison hub discovery set for the active locale', () => {
+  const pageSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx',
+    'utf8',
+  );
+  const engines = getHubEngines();
+  const unfilteredSets = {
+    popular: getPopularComparisons(engines).map((pair) => pair.slug),
+    useCases: getUseCaseBuckets(engines).flatMap((bucket) => bucket.pairs.map((pair) => pair.slug)),
+    directory: getRankedComparisonPairs(engines).map((pair) => pair.slug),
+  };
+
+  assert.match(pageSource, /const isIndexablePair = \(slug: string\) => isComparisonIndexable\(locale, slug\)/);
+  assert.match(pageSource, /getPopularComparisons\(engines\)\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/);
+  assert.match(pageSource, /pairs: bucket\.pairs\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/);
+  assert.match(
+    pageSource,
+    /getRankedComparisonPairs\(engines\)\s*\.filter\(\(pair\) => isIndexablePair\(pair\.slug\)\)/,
+  );
+  assert.match(pageSource, /quickStartComparisons[\s\S]*?\.filter\(\(entry\) => isIndexablePair\(entry\.slug\)\)/);
+
+  for (const locale of ['fr', 'es'] as const) {
+    const excluded = comparisonIndexation.noindexByLocale[locale];
+    assert.ok(
+      excluded.every((slug) => unfilteredSets.directory.includes(slug)),
+      `${locale} exclusions should remain discoverable on the unchanged English directory`,
+    );
+
+    for (const [surface, slugs] of Object.entries(unfilteredSets)) {
+      const localizedSlugs = slugs.filter((slug) => isComparisonIndexable(locale, slug));
+      assert.ok(
+        localizedSlugs.every((slug) => !excluded.includes(slug)),
+        `${locale} ${surface} links must not include a configured noindex destination`,
+      );
+      assert.deepEqual(
+        slugs.filter((slug) => isComparisonIndexable('en', slug)),
+        slugs,
+        `English ${surface} links must preserve the published pair set`,
+      );
+    }
+  }
+});
+
+test('wave 1 refills suggested opponents after locale exclusions', () => {
+  const pageSource = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/page.tsx',
+    'utf8',
+  );
+  const engines = getHubEngines();
+  const kling = engines.find((engine) => engine.modelSlug === 'kling-2-6-pro');
+  assert.ok(kling, 'Kling 2.6 Pro should remain in the hub engine set');
+
+  const candidates = getSuggestedOpponents(kling.modelSlug, engines, engines.length).map((opponent) => ({
+    slug: buildCanonicalCompareSlug(kling.modelSlug, opponent.modelSlug),
+    label: opponent.marketingName,
+  }));
+  const frenchActions = candidates
+    .filter((candidate) => isComparisonIndexable('fr', candidate.slug))
+    .slice(0, 3);
+
+  assert.ok(
+    candidates.slice(0, 3).some((candidate) => !isComparisonIndexable('fr', candidate.slug)),
+    'fixture should include an excluded early candidate',
+  );
+  assert.equal(frenchActions.length, 3);
+  assert.ok(frenchActions.every((candidate) => isComparisonIndexable('fr', candidate.slug)));
+  assert.match(
+    pageSource,
+    /getSuggestedOpponents\(engine\.modelSlug, list, list\.length\)[\s\S]*?\.filter\(\(action\) => isIndexablePair\(action\.slug\)\)[\s\S]*?\.slice\(0, 3\)/,
+  );
+});
+
+test('wave 1 filters explicit best-for comparisons only in excluded locales', () => {
+  const frenchExcluded = 'ltx-2-vs-veo-3-1-lite';
+  const spanishExcluded = 'kling-3-pro-vs-minimax-hailuo-02-text';
+  const entry: BestForEntry = {
+    slug: 'locale-indexation-test',
+    title: 'Locale indexation test',
+    tier: 1,
+    relatedComparisons: [frenchExcluded, spanishExcluded],
+  };
+
+  assert.deepEqual(getPublishedRelatedComparisons(entry, 'en'), [frenchExcluded, spanishExcluded]);
+  assert.deepEqual(getPublishedRelatedComparisons(entry, 'fr'), [spanishExcluded]);
+  assert.deepEqual(getPublishedRelatedComparisons(entry, 'es'), [frenchExcluded]);
+});
+
+test('wave 1 skips locale-excluded generated best-for fallbacks', () => {
+  const createPick = (slug: string, rank: number): RankedPick => ({
+    slug,
+    rank,
+    criterion: 'Locale indexation test',
+    score: 10 - rank,
+    accent: 'from-brand',
+    reason: 'Locale indexation test',
+    bullets: [],
+  });
+  const frenchPicks = [
+    createPick('ltx-2', 1),
+    createPick('veo-3-1-lite', 2),
+    createPick('kling-3-pro', 3),
+  ];
+  const spanishPicks = [
+    createPick('kling-3-pro', 1),
+    createPick('minimax-hailuo-02-text', 2),
+    createPick('veo-3-1', 3),
+  ];
+
+  assert.equal(pickComparisonSlug(frenchPicks, [], 'en'), 'ltx-2-vs-veo-3-1-lite');
+  assert.equal(pickComparisonSlug(frenchPicks, [], 'fr'), 'kling-3-pro-vs-ltx-2');
+  assert.equal(
+    pickComparisonSlug(spanishPicks, [], 'en'),
+    'kling-3-pro-vs-minimax-hailuo-02-text',
+  );
+  assert.equal(pickComparisonSlug(spanishPicks, [], 'es'), 'kling-3-pro-vs-veo-3-1');
 });

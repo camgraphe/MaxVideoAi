@@ -118,7 +118,13 @@ export function BestForDetailView({
               </div>
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 {rankedPicks.map((pick) => (
-                  <RankedShortlistCard key={pick.slug} pick={pick} relatedComparisons={relatedComparisons} copy={copy} />
+                  <RankedShortlistCard
+                    key={pick.slug}
+                    pick={pick}
+                    relatedComparisons={relatedComparisons}
+                    locale={locale}
+                    copy={copy}
+                  />
                 ))}
               </div>
               {alsoAvailable.length ? <AlsoAvailableRow models={alsoAvailable} copy={copy} /> : null}

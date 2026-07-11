@@ -1,6 +1,7 @@
 import type { AppLocale } from '@/i18n/locales';
 import { defaultLocale } from '@/i18n/locales';
 import { canonicalizePublishedCompareSlug, isPublishedComparisonSlug } from '@/lib/compare-hub/data';
+import { isComparisonIndexable } from '@/lib/compare-hub/indexation';
 import { getContentEntries } from '@/lib/content/markdown';
 import {
   BEST_FOR_PAGES,
@@ -19,24 +20,36 @@ export function buildComparisonLabel(slug: string) {
   return right ? `${left} vs ${right}` : slug;
 }
 
-export function getPublishedRelatedComparisons(entry: BestForEntry) {
+export function getPublishedRelatedComparisons(entry: BestForEntry, locale: AppLocale): string[] {
   return Array.from(
     new Set(
       (entry.relatedComparisons ?? [])
-        .filter((slug) => isPublishedComparisonSlug(slug))
-        .map((slug) => canonicalizePublishedCompareSlug(slug))
+        .map((slug) => ({ slug, canonicalSlug: canonicalizePublishedCompareSlug(slug) }))
+        .filter(
+          ({ slug, canonicalSlug }) =>
+            isPublishedComparisonSlug(slug) && isComparisonIndexable(locale, canonicalSlug)
+        )
+        .map(({ canonicalSlug }) => canonicalSlug)
     )
   );
 }
 
-export function pickComparisonSlug(picks: RankedPick[], relatedComparisons: string[]) {
-  const explicit = relatedComparisons.find((slug) => isPublishedComparisonSlug(slug));
+export function pickComparisonSlug(
+  picks: RankedPick[],
+  relatedComparisons: string[],
+  locale: AppLocale
+): string | null {
+  const explicit = relatedComparisons.find((slug) => {
+    const canonicalSlug = canonicalizePublishedCompareSlug(slug);
+    return isPublishedComparisonSlug(slug) && isComparisonIndexable(locale, canonicalSlug);
+  });
   if (explicit) return canonicalizePublishedCompareSlug(explicit);
   for (let index = 0; index < picks.length; index += 1) {
     for (let nextIndex = index + 1; nextIndex < picks.length; nextIndex += 1) {
       const candidate = `${picks[index].slug}-vs-${picks[nextIndex].slug}`;
-      if (isPublishedComparisonSlug(candidate)) {
-        return canonicalizePublishedCompareSlug(candidate);
+      const canonicalSlug = canonicalizePublishedCompareSlug(candidate);
+      if (isPublishedComparisonSlug(candidate) && isComparisonIndexable(locale, canonicalSlug)) {
+        return canonicalSlug;
       }
     }
   }
