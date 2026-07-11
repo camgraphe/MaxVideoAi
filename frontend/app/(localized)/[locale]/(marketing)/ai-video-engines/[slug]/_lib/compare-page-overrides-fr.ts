@@ -2225,7 +2225,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'LTX Video 2.0 Pro reste disponible pour livrer des plans 16:9 jusqu’en 4K sur 10 secondes. L’actuel Wan 2.6 Text & Image to Video élargit les ratios et atteint 15 secondes avec audio facultatif en mode texte ou image ; son mode référence vidéo est distinct, silencieux et limité à 5 ou 10 secondes.',
+        'LTX Video 2.0 Pro reste disponible pour livrer des plans 16:9 jusqu’en 4K pendant 10 secondes. L’actuel Wan 2.6 Text & Image to Video élargit les ratios et atteint 15 secondes avec audio facultatif en mode texte ou image ; son mode référence vidéo est distinct, silencieux et limité à 5 ou 10 secondes.',
       quickVerdict: {
         title: 'Verdict rapide',
         body:
@@ -2235,17 +2235,17 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Rester sur LTX pour la résolution',
           body:
-            'LTX Video 2.0 Pro couvre la génération 16:9 à partir d’un texte ou d’une image, avec audio, pendant 10 secondes au maximum, en 1080p, 1440p ou 4K.',
+            'LTX Video 2.0 Pro couvre pendant 10 secondes au maximum la génération 16:9 à partir d’un texte ou d’une image, avec audio, en 1080p, 1440p ou 4K.',
         },
         {
           title: 'Choisir Wan pour les formats',
           body:
-            'Les modes texte et image de Wan 2.6 proposent cinq ratios, dont le carré et le portrait, en 720p ou 1080p, sur 5 à 15 secondes avec audio facultatif.',
+            'Les modes texte et image de Wan 2.6 proposent des vidéos d’une durée de 5 à 15 secondes avec audio facultatif, en 720p ou 1080p et dans cinq ratios, dont le carré et le portrait.',
         },
         {
           title: 'Isoler le mode référence vidéo',
           body:
-            'Ce mode Wan accepte une à trois vidéos sources et produit un résultat de 5 ou 10 secondes sans audio ; il ne partage pas la limite de 15 secondes.',
+            'Ce mode Wan accepte une à trois vidéos sources et produit un résultat de 5 ou 10 secondes sans audio ; la limite de 15 secondes ne s’applique pas à ce mode.',
         },
         {
           title: 'Décider selon la livraison',
@@ -2269,7 +2269,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
           {
             question: 'Faut-il garder LTX Video 2.0 Pro pour la 4K ?',
             answer:
-              'Oui. Ce modèle disponible propose une sortie paysage en 1080p, 1440p ou 4K, tandis que Wan 2.6 atteint au maximum le 1080p.',
+              'Oui. Ce modèle disponible propose une sortie au format paysage en 1080p, 1440p ou 4K, tandis que Wan 2.6 atteint au maximum le 1080p.',
           },
           {
             question: 'Quelle durée offrent les modes texte et image de Wan 2.6 ?',
@@ -2292,11 +2292,11 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Cette comparaison oppose des rendus haute résolution aux tarifs lisibles à une boîte à outils plus large. LTX 2.3 Fast et Seedance 2.0 atteignent tous deux la 4K avec audio ; Seedance ajoute les références, le montage vidéo, l’extension, le contrôle du mouvement et davantage de ratios.',
+        'Cette comparaison met en balance la génération haute résolution à tarifs transparents de LTX 2.3 Fast et la boîte à outils plus complète de Seedance 2.0. Les deux modèles atteignent la 4K avec audio ; Seedance ajoute les références, le montage vidéo, l’extension, le contrôle du mouvement et davantage de ratios.',
       quickVerdict: {
         title: 'Verdict rapide',
         body:
-          'Choisissez LTX 2.3 Fast pour ses paliers tarifaires transparents, avec une contrainte 1080p à 25 fps au-delà de 10 secondes. Préférez Seedance 2.0 pour les références, le montage, l’extension, le contrôle du mouvement ou les ratios variés. Son prix dynamique empêche de désigner un gagnant universel sur le coût.',
+          'Choisissez LTX 2.3 Fast pour ses paliers tarifaires transparents, avec une contrainte 1080p à 25 fps au-delà de 10 secondes. Préférez Seedance 2.0 pour les références, le montage, l’extension, le contrôle du mouvement ou les ratios variés. Son prix dynamique signifie qu’aucun modèle n’est toujours le moins cher.',
       },
       topCards: [
         {
@@ -2312,7 +2312,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Comparer chaque devis',
           body:
-            'Le tarif de Seedance dépend dynamiquement des jetons et des paramètres demandés ; LTX publie des paliers fixes par résolution.',
+            'Le tarif de Seedance est calculé dynamiquement selon le nombre de jetons et les paramètres demandés ; LTX publie des paliers fixes par résolution.',
         },
         {
           title: 'Séparer rendu et transformation',
@@ -2379,7 +2379,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Payer le contrôle utile',
           body:
-            'Les paliers du Pro actuel sont plus élevés : ses modes supplémentaires doivent donc répondre à un besoin concret avant de migrer.',
+            'Les paliers de l’actuel modèle Pro sont plus élevés : ses modes supplémentaires doivent donc répondre à un besoin concret avant de migrer.',
         },
         {
           title: 'Distinguer simplicité et maîtrise',
@@ -2702,7 +2702,7 @@ export const FR_COMPARE_PAGE_OVERRIDES = {
       },
       topCards: [
         {
-          title: 'Conserver Wan pour ses formats accessibles',
+          title: 'Conserver Wan pour le carré et les basses résolutions',
           body:
             'Wan 2.5 génère avec audio à partir d’un texte ou d’une image, en 480p, 720p ou 1080p, aux formats 16:9, 9:16 ou carré.',
         },
