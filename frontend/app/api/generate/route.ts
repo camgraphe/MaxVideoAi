@@ -214,16 +214,11 @@ export async function POST(req: NextRequest) {
   }
   const { needsImage, needsFirstLastFrames } = validationPayloadResult;
 
-  const dimensionValidation = await validateKlingElementImageDimensions({
-    engineId: engine.id,
-    userId: String(userId),
-    elements,
-  });
+  const dimensionValidation = await validateKlingElementImageDimensions({ engineId: engine.id, userId: String(userId), elements });
   if (!dimensionValidation.ok) {
     logMetric('rejected', dimensionValidation.metric);
     return NextResponse.json(dimensionValidation.body, { status: dimensionValidation.status });
   }
-
   const billingPreflight = await resolveGenerateBillingPreflight({
     req,
     engine,
