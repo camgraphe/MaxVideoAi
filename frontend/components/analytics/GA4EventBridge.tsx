@@ -13,6 +13,7 @@ import {
   clearBrowserAnalyticsState,
   prepareBrowserAnalyticsEvents,
 } from '@/lib/analytics/journey-browser';
+import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
 import { getAnalyticsRouteContext } from '@/lib/analytics-route';
 
 declare global {
@@ -94,16 +95,13 @@ export function GA4EventBridge() {
     const gtag = window.gtag;
     if (typeof gtag !== 'function') return;
 
-    const remaining: QueuedEvent[] = [];
-    queuedEventsRef.current.forEach(({ event, payload }) => {
-      const params = sanitizePayload(payload);
-      try {
-        gtag('event', event, params);
-      } catch {
-        remaining.push({ event, payload });
-      }
-    });
-    queuedEventsRef.current = remaining;
+    const queuedEvents = queuedEventsRef.current;
+    const sanitizedEvents = queuedEvents.map(({ event, payload }) => ({
+      event,
+      payload: sanitizePayload(payload),
+    }));
+    const unsentIndex = sendPreparedAnalyticsEvents(gtag, sanitizedEvents);
+    queuedEventsRef.current = queuedEvents.slice(unsentIndex);
   }, [clearQueuedAnalytics, routeContext.excludedFromGa4]);
 
   const enqueueEvent = useCallback(

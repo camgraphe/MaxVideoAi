@@ -30,6 +30,7 @@ test('safe locations remove query, hash, locale prefix, and dynamic ids', () => 
   assert.equal(buildSafeAnalyticsLocation('https://maxvideoai.com', '/login?code=secret#token'), 'https://maxvideoai.com/login');
   assert.equal(buildSafeAnalyticsLocation('https://maxvideoai.com', '/billing?checkoutSessionId=cs_secret'), 'https://maxvideoai.com/billing');
   assert.equal(getSafeAnalyticsPath('/video/job_123/private-slug'), '/video/:video');
+  assert.equal(getSafeAnalyticsPath('/v/video_123?token=secret#private'), '/v/:video');
   assert.equal(getSafeAnalyticsPath('/fr/pricing?utm_source=google'), '/pricing');
   assert.equal(buildSafeAnalyticsLocation('https://maxvideoai.com', '/tools/angle?next=/private#secret'), 'https://maxvideoai.com/tools/angle');
 });

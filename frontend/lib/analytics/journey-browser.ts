@@ -1,4 +1,4 @@
-import { clearPendingAnalyticsEvent } from '../analytics-client';
+import { clearPendingAnalyticsEvent, clearPendingTopupCancelledEvent } from '../analytics-client';
 import { getAnalyticsRouteContext, type AnalyticsRouteContext } from '../analytics-route';
 import { hasAnalyticsConsentInBrowser } from './consent-client';
 import {
@@ -202,4 +202,5 @@ export function readWalletAnalyticsJourney(): WalletAnalyticsJourney | null {
 export function clearBrowserAnalyticsState(): void {
   clearAnalyticsJourney();
   clearPendingAnalyticsEvent();
+  clearPendingTopupCancelledEvent();
 }

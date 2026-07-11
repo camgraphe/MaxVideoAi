@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { shouldDispatchRecentAnalyticsEvent } from '@/lib/analytics-client';
 import { hasAnalyticsConsentInBrowser } from '@/lib/analytics/consent-client';
 import { prepareBrowserAnalyticsEvents } from '@/lib/analytics/journey-browser';
+import { sendPreparedAnalyticsEvents } from '@/lib/analytics/ordered-events';
 import {
   buildSafeAnalyticsLocation,
   getAnalyticsRouteContext,
@@ -41,58 +42,56 @@ function TrackerCore() {
     const safePath = getSafeAnalyticsPath(pathname);
     const url = buildSafeAnalyticsLocation(window.location.origin, pathname);
     if (prevUrlRef.current === url) return;
+    let preparedRouteEvents: Array<{ event: string; payload: Record<string, unknown> }> | null = null;
+    let unsentIndex = 0;
 
     const sendPageView = () => {
       if (!hasAnalyticsConsentInBrowser()) return true;
       const gtag = window.gtag;
       if (typeof gtag !== 'function') return false;
-      const pageViewKey = `page_view:${routeContext.family}:${url}`;
-      if (!shouldDispatchRecentAnalyticsEvent(pageViewKey)) {
-        prevUrlRef.current = url;
-        return true;
-      }
+      if (!preparedRouteEvents) {
+        const pageViewKey = `page_view:${routeContext.family}:${url}`;
+        if (!shouldDispatchRecentAnalyticsEvent(pageViewKey)) {
+          prevUrlRef.current = url;
+          return true;
+        }
 
-      const pageViewEvents = prepareBrowserAnalyticsEvents('page_view', {
-        page_location: url,
-        page_path: safePath,
-        page_title: document.title,
-        route_family: routeContext.family,
-        tool_name: routeContext.toolName ?? undefined,
-        tool_surface: routeContext.toolSurface ?? undefined,
-        workspace_section: routeContext.workspaceSection ?? undefined,
-      });
-      if (pageViewEvents.length === 0) return true;
-      for (const prepared of pageViewEvents) {
-        gtag('event', prepared.event, prepared.payload);
-      }
+        preparedRouteEvents = prepareBrowserAnalyticsEvents('page_view', {
+          page_location: url,
+          page_path: safePath,
+          page_title: document.title,
+          route_family: routeContext.family,
+          tool_name: routeContext.toolName ?? undefined,
+          tool_surface: routeContext.toolSurface ?? undefined,
+          workspace_section: routeContext.workspaceSection ?? undefined,
+        });
+        if (preparedRouteEvents.length === 0) return true;
 
-      if (routeContext.family === 'public_tools' || routeContext.family === 'app_tools') {
-        const toolViewKey = `tool_view:${routeContext.family}:${url}`;
-        if (shouldDispatchRecentAnalyticsEvent(toolViewKey)) {
-          const toolViewEvents = prepareBrowserAnalyticsEvents('tool_view', {
-            route_family: routeContext.family,
-            tool_name: routeContext.toolName ?? 'tools_hub',
-            tool_surface: routeContext.toolSurface ?? undefined,
-            logged_in: routeContext.family === 'app_tools',
-          });
-          for (const prepared of toolViewEvents) {
-            gtag('event', prepared.event, prepared.payload);
+        if (routeContext.family === 'public_tools' || routeContext.family === 'app_tools') {
+          const toolViewKey = `tool_view:${routeContext.family}:${url}`;
+          if (shouldDispatchRecentAnalyticsEvent(toolViewKey)) {
+            preparedRouteEvents.push(...prepareBrowserAnalyticsEvents('tool_view', {
+              route_family: routeContext.family,
+              tool_name: routeContext.toolName ?? 'tools_hub',
+              tool_surface: routeContext.toolSurface ?? undefined,
+              logged_in: routeContext.family === 'app_tools',
+            }));
+          }
+        }
+
+        if (routeContext.family === 'workspace') {
+          const appOpenKey = `app_open:${routeContext.family}:${url}`;
+          if (shouldDispatchRecentAnalyticsEvent(appOpenKey)) {
+            preparedRouteEvents.push(...prepareBrowserAnalyticsEvents('app_open', {
+              route_family: routeContext.family,
+              app_section: routeContext.workspaceSection ?? 'workspace',
+            }));
           }
         }
       }
 
-      if (routeContext.family === 'workspace') {
-        const appOpenKey = `app_open:${routeContext.family}:${url}`;
-        if (shouldDispatchRecentAnalyticsEvent(appOpenKey)) {
-          const appOpenEvents = prepareBrowserAnalyticsEvents('app_open', {
-            route_family: routeContext.family,
-            app_section: routeContext.workspaceSection ?? 'workspace',
-          });
-          for (const prepared of appOpenEvents) {
-            gtag('event', prepared.event, prepared.payload);
-          }
-        }
-      }
+      unsentIndex = sendPreparedAnalyticsEvents(gtag, preparedRouteEvents, unsentIndex);
+      if (unsentIndex < preparedRouteEvents.length) return false;
 
       prevUrlRef.current = url;
       if (process.env.NODE_ENV !== 'production') {

@@ -182,6 +182,7 @@ export function getAnalyticsRouteContext(pathname: string | null | undefined): A
 
 export function getSafeAnalyticsPath(pathname: string | null | undefined): string {
   const context = getAnalyticsRouteContext(pathname);
+  if (context.normalizedPath.startsWith('/v/')) return '/v/:video';
   if (context.family === 'auth') return '/login';
   if (context.family === 'billing') return '/billing';
   if (context.family === 'workspace') {

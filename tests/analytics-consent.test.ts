@@ -2,9 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   PENDING_AUTH_EVENT_STORAGE_KEY,
+  PENDING_TOPUP_CANCELLED_STORAGE_KEY,
   persistPendingAnalyticsEvent,
+  persistPendingTopupCancelledEvent,
   readPendingAnalyticsEvent,
+  readPendingTopupCancelledEvent,
 } from '../frontend/lib/analytics-client';
+import { hasAdsConsentInBrowser } from '../frontend/lib/analytics/consent-client';
 import {
   applyStoredConsentEffects,
   clearLocalAnalyticsFlag,
@@ -33,7 +37,7 @@ function createStorage(): Storage {
 }
 
 function withBrowser(
-  options: { consent: string | null; href?: string; storedJourney?: string },
+  options: { consent: string | null; consentCookie?: string; href?: string; storedJourney?: string },
   run: (value: { localStorage: Storage; sessionStorage: Storage }) => void,
 ) {
   const descriptors = {
@@ -63,7 +67,7 @@ function withBrowser(
   });
   Object.defineProperty(globalThis, 'document', {
     configurable: true,
-    value: { cookie: '', referrer: '', documentElement: { lang: 'en' } },
+    value: { cookie: options.consentCookie ?? '', referrer: '', documentElement: { lang: 'en' } },
   });
   Object.defineProperty(globalThis, 'crypto', {
     configurable: true,
@@ -108,6 +112,48 @@ test('pending auth events are never stored without consent', () => {
   });
 });
 
+test('pending topup cancellation persistence and replay are suppressed without analytics consent', () => {
+  withBrowser({ consent: null }, ({ sessionStorage }) => {
+    persistPendingTopupCancelledEvent({ topup_amount_cents: 1000 });
+    assert.equal(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY), null);
+
+    sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify({ topup_amount_cents: 1000 }));
+    assert.equal(readPendingTopupCancelledEvent(), null);
+    assert.equal(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY), null);
+  });
+});
+
+test('analytics withdrawal clears pending topup cancellation state', () => {
+  withBrowser({ consent: 'granted' }, ({ sessionStorage }) => {
+    persistPendingTopupCancelledEvent({ topup_amount_cents: 1000 });
+    assert.ok(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY));
+    clearBrowserAnalyticsState();
+    assert.equal(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY), null);
+  });
+});
+
+test('ads consent is read from the official consent cookie', () => {
+  const granted = encodeURIComponent(JSON.stringify({
+    version: '2026-07',
+    timestamp: 1_000,
+    categories: { analytics: false, ads: true },
+    source: 'preferences',
+  }));
+  withBrowser({ consent: null, consentCookie: `other=value; mv-consent=${granted}` }, () => {
+    assert.equal(hasAdsConsentInBrowser(), true);
+  });
+
+  const denied = encodeURIComponent(JSON.stringify({
+    version: '2026-07',
+    timestamp: 1_000,
+    categories: { analytics: true, ads: false },
+    source: 'preferences',
+  }));
+  withBrowser({ consent: 'granted', consentCookie: `mv-consent=${denied}` }, () => {
+    assert.equal(hasAdsConsentInBrowser(), false);
+  });
+});
+
 test('wallet projection reads an existing journey without creating one', () => {
   withBrowser({ consent: 'granted' }, ({ localStorage }) => {
     assert.equal(readWalletAnalyticsJourney(), null);
@@ -129,9 +175,11 @@ test('wallet projection reads an existing journey without creating one', () => {
 test('denied consent clears stored analytics state', () => {
   withBrowser({ consent: null, storedJourney: JSON.stringify({ version: 1 }) }, ({ localStorage, sessionStorage }) => {
     sessionStorage.setItem(PENDING_AUTH_EVENT_STORAGE_KEY, JSON.stringify({ event: 'sign_up_completed' }));
+    sessionStorage.setItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY, JSON.stringify({ topup_amount_cents: 1000 }));
     clearBrowserAnalyticsState();
     assert.equal(localStorage.getItem(ANALYTICS_JOURNEY_STORAGE_KEY), null);
     assert.equal(sessionStorage.getItem(PENDING_AUTH_EVENT_STORAGE_KEY), null);
+    assert.equal(sessionStorage.getItem(PENDING_TOPUP_CANCELLED_STORAGE_KEY), null);
   });
 });
 
