@@ -8,6 +8,11 @@ import type {
   StripeCheckoutLoadActionsResult,
   StripeExpressCheckoutElementReadyEvent,
 } from '@stripe/stripe-js';
+import { readWalletAnalyticsJourney } from '@/lib/analytics/journey-browser';
+import {
+  walletAnalyticsJourneyCacheKey,
+  type WalletAnalyticsJourney,
+} from '@/lib/analytics/journey-contract';
 import type { BillingCopy } from '../_lib/billing-copy';
 import type { BillingSession } from '../_lib/billing-types';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
@@ -144,12 +149,15 @@ export function WalletExpressCheckout({
           },
         });
       }, EXPRESS_CHECKOUT_READY_TIMEOUT_MS);
+      const analyticsJourney = readWalletAnalyticsJourney();
+      const attributionKey = walletAnalyticsJourneyCacheKey(analyticsJourney);
       const requestKey = buildWalletExpressCheckoutRequestKey({
         userId: sessionUserId,
         amountCents,
         currency: normalizedChargeCurrency,
         locale,
         captchaToken,
+        attributionKey,
       });
 
       try {
@@ -162,7 +170,7 @@ export function WalletExpressCheckout({
                 clientSecret: cachedCheckoutSession.clientSecret,
                 sessionId: cachedCheckoutSession.sessionId,
               }
-            : await getCheckoutSessionResult(requestKey);
+            : await getCheckoutSessionResult(requestKey, analyticsJourney);
 
         if (readyTimedOut) return;
         if (checkoutSessionResult.type !== 'success') {
@@ -358,13 +366,16 @@ export function WalletExpressCheckout({
       }
     }
 
-    async function getCheckoutSessionResult(requestKey: string): Promise<CheckoutSessionResult> {
+    async function getCheckoutSessionResult(
+      requestKey: string,
+      analyticsJourney: WalletAnalyticsJourney | null
+    ): Promise<CheckoutSessionResult> {
       const pendingCheckoutSession = pendingCheckoutSessionRef.current;
       if (pendingCheckoutSession?.key === requestKey) {
         return pendingCheckoutSession.promise;
       }
 
-      const promise = createCheckoutSessionResult();
+      const promise = createCheckoutSessionResult(analyticsJourney);
       pendingCheckoutSessionRef.current = { key: requestKey, promise };
       const result = await promise;
       if (pendingCheckoutSessionRef.current?.key === requestKey) {
@@ -381,7 +392,9 @@ export function WalletExpressCheckout({
       return result;
     }
 
-    async function createCheckoutSessionResult(): Promise<CheckoutSessionResult> {
+    async function createCheckoutSessionResult(
+      analyticsJourney: WalletAnalyticsJourney | null
+    ): Promise<CheckoutSessionResult> {
       const currentSession = sessionRef.current;
       const token = currentSession?.access_token ?? null;
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -396,6 +409,7 @@ export function WalletExpressCheckout({
           mode: 'express_checkout',
           locale,
           captchaToken: captchaToken ?? undefined,
+          ...(analyticsJourney ? { analyticsJourney } : {}),
         }),
       });
       const payload = await response.json().catch(() => null);

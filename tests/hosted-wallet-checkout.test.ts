@@ -14,6 +14,15 @@ const validInput: HostedWalletCheckoutInput = {
   locale: 'fr',
   accessToken: 'access-token',
   captchaToken: 'captcha-token',
+  analyticsJourney: {
+    version: 1,
+    journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+    cohortWeek: '2026-W28',
+    firstSource: 'google',
+    firstMedium: 'cpc',
+    lastSource: 'google',
+    lastMedium: 'cpc',
+  },
 };
 
 test('hosted wallet request preserves amount, settlement currency, locale, auth, and captcha', async () => {
@@ -42,6 +51,15 @@ test('hosted wallet request preserves amount, settlement currency, locale, auth,
     currency: 'eur',
     locale: 'fr',
     captchaToken: 'captcha-token',
+    analyticsJourney: {
+      version: 1,
+      journeyId: '7df6d42a-4b70-4eca-82fe-3a320c4a6eb9',
+      cohortWeek: '2026-W28',
+      firstSource: 'google',
+      firstMedium: 'cpc',
+      lastSource: 'google',
+      lastMedium: 'cpc',
+    },
   });
   assert.deepEqual(result, {
     kind: 'ready',
@@ -49,6 +67,20 @@ test('hosted wallet request preserves amount, settlement currency, locale, auth,
     sessionId: 'cs_test_123',
     checkoutAttemptId: 42,
   });
+});
+
+test('hosted wallet request omits analytics journey when attribution is unavailable', async () => {
+  let capturedInit: RequestInit | undefined;
+  await requestHostedWalletCheckout({ ...validInput, analyticsJourney: null }, async (_input, init) => {
+    capturedInit = init;
+    return new Response(JSON.stringify({ id: 'cs_test_no_attribution' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  });
+
+  const requestBody = JSON.parse(String(capturedInit?.body));
+  assert.equal(Object.hasOwn(requestBody, 'analyticsJourney'), false);
 });
 
 test('hosted wallet response supports Stripe session fallback', async () => {
