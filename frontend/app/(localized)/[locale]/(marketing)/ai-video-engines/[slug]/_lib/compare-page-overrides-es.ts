@@ -2087,21 +2087,21 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'LTX 2.3 Fast vs LTX 2.0 Fast: quedarse o migrar',
         description:
-          'Compara los dos modelos LTX Fast disponibles por video vertical, control de cuadros, fps, duración y precios publicados para cada resolución.',
+          'Compara los dos modelos LTX Fast disponibles por video vertical, control de los cuadros, fps, duración y precios publicados para cada resolución.',
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara LTX 2.3 Fast con el flujo disponible de LTX Video 2.0 Fast. Ambos generan audio, llegan a 4K y comparten los mismos precios publicados por resolución; la ruta actual 2.3 Fast agrega formato vertical, más opciones de fps y control del cuadro inicial y final.',
+        'Compara LTX 2.3 Fast con el flujo disponible de LTX Video 2.0 Fast. Ambos generan audio, llegan a 4K y comparten los mismos precios publicados por resolución; la ruta actual 2.3 Fast agrega formato vertical, más opciones de fps y control de los cuadros inicial y final.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Los dos siguen disponibles con los mismos niveles de precio. Conviene quedarse en LTX Video 2.0 Fast para un flujo 16:9 ya probado y migrar al actual LTX 2.3 Fast para 9:16, control del cuadro inicial y final o más fps. Por encima de 10 segundos, 2.3 Fast exige 1080p a 25 fps.',
+          'Los dos siguen disponibles con los mismos precios publicados por resolución. Conviene quedarse en LTX Video 2.0 Fast para un flujo 16:9 ya probado y migrar al actual LTX 2.3 Fast para 9:16, control de los cuadros inicial y final o más fps. Por encima de 10 segundos, 2.3 Fast exige 1080p a 25 fps.',
       },
       topCards: [
         {
           title: 'Mantener una ruta Fast ya validada',
           body:
-            'Conserva LTX Video 2.0 Fast cuando el flujo de texto o imagen a video en 16:9 ya cubre el proyecto, incluido audio y salida de hasta 4K.',
+            'Conserva LTX Video 2.0 Fast cuando el flujo de generación de video desde texto o imagen en 16:9 ya cubre el proyecto, incluido audio y salida de hasta 4K.',
         },
         {
           title: 'Migrar a controles Fast actuales',
@@ -2140,7 +2140,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Qué agrega LTX 2.3 Fast frente a LTX Video 2.0 Fast?',
             answer:
-              'Agrega salida 9:16, guía de cuadro inicial y final para generación desde imagen, y opciones de 24/48 fps además de 25/50 fps.',
+              'Agrega salida 9:16, guía de los cuadros inicial y final para generación desde imagen, y opciones de 24/48 fps además de 25/50 fps.',
           },
           {
             question: '¿LTX 2.3 Fast genera más de diez segundos en 4K?',
@@ -2162,13 +2162,13 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Puedes quedarte en LTX Video 2.0 Pro, que sigue disponible, para una ruta 16:9 conocida de diez segundos. Conviene actualizar al actual LTX 2.3 Fast por menor precio publicado en resoluciones compartidas, formato vertical o mayor duración; todo clip de más de 10 segundos exige 1080p a 25 fps.',
+          'Puedes quedarte en LTX Video 2.0 Pro, que sigue disponible, para un flujo 16:9 conocido de diez segundos. Conviene migrar a LTX 2.3 Fast, la ruta actual, por menor precio publicado en resoluciones compartidas, formato vertical o mayor duración; todo clip de más de 10 segundos exige 1080p a 25 fps.',
       },
       topCards: [
         {
           title: 'Conservar el flujo Pro conocido',
           body:
-            'Mantén LTX Video 2.0 Pro cuando su ruta comprobada de texto o imagen en 16:9, límite de diez segundos, audio y opciones de 25/50 fps encajen en producción.',
+            'Mantén LTX Video 2.0 Pro cuando su flujo comprobado de generación desde texto o imagen en 16:9, con límite de diez segundos, audio y opciones de 25/50 fps, encaje en producción.',
         },
         {
           title: 'Usar Fast para entrega vertical',
@@ -2221,7 +2221,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'LTX 2.0 Pro vs Wan 2.6: 4K, duración y referencias',
         description:
-          'Compara LTX 2.0 Pro disponible y Wan 2.6 actual por salida horizontal 4K, más formatos, clips de 15 segundos, audio y referencias de video.',
+          'Compara LTX 2.0 Pro disponible y Wan 2.6 actual por salida horizontal 4K, más formatos, clips de hasta 15 segundos, audio y referencias de video.',
         titleBranding: 'none',
       },
       heroIntro:
@@ -2250,7 +2250,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Decidir por el formato de entrega',
           body:
-            'LTX encaja con masters horizontales de alta resolución; Wan funciona para tomas generales más largas o continuidad guiada por referencias cuando 1080p basta.',
+            'LTX encaja con entregables horizontales de alta resolución; Wan funciona para tomas generales más largas o continuidad guiada por referencias cuando 1080p basta.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2274,12 +2274,12 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cuánto duran los clips de texto e imagen de Wan 2.6?',
             answer:
-              'Los modos de texto a video e imagen a video admiten entre cinco y 15 segundos, con audio generado opcional, en 720p o 1080p.',
+              'Los modos de texto a video e imagen a video admiten entre cinco y 15 segundos, con audio generado opcionalmente, en 720p o 1080p.',
           },
           {
             question: '¿El modo con videos de referencia de Wan 2.6 admite audio o 15 segundos?',
             answer:
-              'No. Esa ruta separada crea clips silenciosos de cinco o diez segundos a partir de uno a tres videos; el máximo de 15 segundos solo aplica a texto e imagen.',
+              'No. Esa ruta separada crea clips silenciosos de cinco o diez segundos a partir de uno a tres videos; el máximo de 15 segundos solo se aplica a los modos de texto e imagen.',
           },
         ],
       },
@@ -2296,7 +2296,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Elige LTX 2.3 Fast para generación de alta resolución con precios claros, considerando que más de 10 segundos exige 1080p a 25 fps. Elige Seedance 2.0 para referencias, edición, extensión, controles de movimiento o más formatos; su precio por tokens es dinámico, así que ninguno gana siempre por costo.',
+          'Elige LTX 2.3 Fast para generación de alta resolución con precios claros, considerando que un clip de más de 10 segundos exige 1080p a 25 fps. Elige Seedance 2.0 para referencias, edición, extensión, controles de movimiento o más formatos; su precio por tokens es dinámico, así que ninguno gana siempre por costo.',
       },
       topCards: [
         {
@@ -2317,7 +2317,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Distinguir generación y producción',
           body:
-            'Usa LTX para renders directos de alta resolución desde texto o imagen. Usa Seedance cuando el trabajo dependa de referencias, ediciones, extensiones o movimiento.',
+            'Usa LTX para generaciones directas de alta resolución desde texto o imagen. Usa Seedance cuando el trabajo dependa de referencias, ediciones, extensiones o movimiento.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2355,26 +2355,26 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'LTX 2.3 Pro vs LTX 2.0 Fast: costo o control',
         description:
-          'Compara LTX 2.3 Pro actual con LTX 2.0 Fast disponible por costo publicado, salida vertical, audio a video, extensión, retoque y cuadros.',
+          'Compara LTX 2.3 Pro actual con LTX 2.0 Fast disponible por costo publicado, salida vertical, generación desde audio, extensión, retoque y control de los cuadros.',
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara LTX 2.3 Pro actual con el flujo disponible de LTX Video 2.0 Fast. La ruta Fast anterior conserva precios publicados más bajos para generación 16:9 directa, mientras que 2.3 Pro suma 9:16, audio a video, extensión, retoque y controles más recientes para el cuadro inicial y final.',
+        'Compara LTX 2.3 Pro actual con el flujo disponible de LTX Video 2.0 Fast. La ruta Fast anterior conserva precios publicados más bajos para generación 16:9 directa, mientras que 2.3 Pro suma 9:16, generación de video a partir de audio, extensión, retoque y control más reciente de los cuadros inicial y final.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Conviene quedarse en LTX Video 2.0 Fast, que sigue disponible, para trabajos económicos de texto o imagen en 16:9. Actualiza al actual LTX 2.3 Pro si necesitas 9:16, audio a video, extensión, retoque o control del cuadro inicial y final. Ambos llegan a 20 segundos, pero cambian el alcance y los precios.',
+          'Conviene quedarse en LTX Video 2.0 Fast, que sigue disponible, para trabajos económicos de texto o imagen en 16:9. Migra a LTX 2.3 Pro, el modelo actual, si necesitas 9:16, generación desde audio, extensión, retoque o control de los cuadros inicial y final. Ambos llegan a 20 segundos, pero difieren en alcance y precio.',
       },
       topCards: [
         {
           title: 'Conservar Fast para generación económica',
           body:
-            'Sigue con LTX Video 2.0 Fast cuando el trabajo sea generación conocida desde texto o imagen en 16:9, con audio y precios menores en 1080p, 1440p o 4K.',
+            'Sigue con LTX Video 2.0 Fast cuando ya tengas validada la generación desde texto o imagen en 16:9 con audio y quieras conservar sus precios menores en 1080p, 1440p o 4K.',
         },
         {
           title: 'Adoptar Pro para modos avanzados',
           body:
-            'LTX 2.3 Pro agrega audio a video, extensión y retoque, además de generación vertical y guía opcional del cuadro final para tomas desde imagen.',
+            'LTX 2.3 Pro agrega generación de video a partir de audio, extensión y retoque, además de generación vertical y guía opcional del cuadro final para tomas generadas desde una imagen.',
         },
         {
           title: 'Pagar por control cuando sea necesario',
@@ -2408,7 +2408,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cuándo conviene migrar a LTX 2.3 Pro?',
             answer:
-              'Pasa al modelo actual cuando necesites entrega 9:16, generación guiada por audio, extensión, retoque o control del cuadro inicial y final.',
+              'Pasa al modelo actual cuando necesites entrega 9:16, generación desde audio, extensión, retoque o control de los cuadros inicial y final.',
           },
           {
             question: '¿LTX 2.3 Pro reemplaza el flujo Fast simple?',
@@ -2430,7 +2430,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para clips simples con precio fijo. Conviene migrar al actual Seedance 2.0 por 4K, referencias, edición, extensión, control de movimiento o 15 segundos de salida. El precio de Seedance es dinámico y no garantiza el menor costo.',
+          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para clips simples con precio fijo. Conviene migrar al actual Seedance 2.0 por 4K, referencias, edición, extensión, control de movimiento o clips de hasta 15 segundos. El precio de Seedance es dinámico y no garantiza el menor costo.',
       },
       topCards: [
         {
@@ -2441,12 +2441,12 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Actualizar a Seedance por su alcance',
           body:
-            'Seedance 2.0 incorpora 4K, más formatos, generación con referencias, edición de video, extensión, controles de movimiento, audio y un máximo de 15 segundos.',
+            'Seedance 2.0 incorpora 4K, más formatos, generación con referencias, edición de video, extensión, controles de movimiento, audio y clips de hasta 15 segundos.',
         },
         {
           title: 'Entender cómo cambia el precio',
           body:
-            'Wan publica precios fijos por resolución y duración; Seedance obtiene una cotización dinámica basada en tokens a partir de la salida solicitada.',
+            'Wan publica precios fijos por resolución y duración; la cotización de Seedance se calcula dinámicamente según los tokens de la salida solicitada.',
         },
         {
           title: 'Ajustar el modelo a la complejidad',
@@ -2480,7 +2480,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿El precio de Seedance 2.0 siempre es menor que el de Wan 2.5?',
             answer:
-              'No. Seedance usa un precio dinámico basado en tokens y Wan aplica precios fijos por resolución. Compara la cotización de Seedance con el nivel de Wan elegido.',
+              'No. Seedance usa un precio dinámico basado en tokens y Wan aplica precios fijos por resolución. Compara la cotización de Seedance con la tarifa de Wan elegida.',
           },
         ],
       },
@@ -2493,32 +2493,32 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara MiniMax Hailuo 02 Standard con Seedance 2.0 para decidir entre movimiento estilizado económico y un conjunto completo de producción. Hailuo crea clips silenciosos en 512P o 768P de hasta diez segundos; Seedance agrega audio, 4K, referencias, edición, extensión y salidas de hasta 15 segundos.',
+        'Compara MiniMax Hailuo 02 Standard con Seedance 2.0 para decidir entre movimiento estilizado económico y un conjunto completo de herramientas de producción. Hailuo crea clips silenciosos en 512P o 768P de hasta diez segundos; Seedance agrega audio, 4K, referencias, edición, extensión y clips de hasta 15 segundos.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Elige MiniMax Hailuo 02 Standard para clips estilizados económicos y silenciosos en 512P o 768P. Elige Seedance 2.0 cuando la producción requiera audio, 4K, referencias, edición, extensión, controles de movimiento, más formatos o una duración de hasta 15 segundos.',
+          'Elige MiniMax Hailuo 02 Standard para clips estilizados económicos y silenciosos en 512P o 768P. Elige Seedance 2.0 cuando la producción requiera audio, 4K, referencias, edición, extensión, controles de movimiento, más formatos o clips de hasta 15 segundos.',
       },
       topCards: [
         {
           title: 'Usar Hailuo para estilización simple',
           body:
-            'Hailuo 02 anima texto o imagen en 16:9, 9:16 o 1:1, a 512P o 768P, con salida silenciosa de seis o diez segundos y precio publicado por segundo.',
+            'Hailuo 02 genera un video a partir de un prompt de texto o una imagen en 16:9, 9:16 o 1:1, a 512P o 768P, con salida silenciosa de seis o diez segundos y precio publicado por segundo.',
         },
         {
           title: 'Usar Seedance para producción completa',
           body:
-            'Seedance 2.0 suma audio generado, salida de 480p a 4K, referencias, edición de video, extensión, controles de movimiento y más formatos.',
+            'Seedance 2.0 suma audio, salida de 480p a 4K, referencias, edición de video, extensión, controles de movimiento y más formatos.',
         },
         {
           title: 'Considerar sonido y acabado',
           body:
-            'Hailuo siempre produce video silencioso y llega como máximo a 768P; Seedance permite entregar audio y masters de mayor resolución dentro del mismo flujo.',
+            'Hailuo siempre produce video silencioso y llega como máximo a 768P; Seedance permite entregar audio y resultados finales de mayor resolución dentro del mismo flujo.',
         },
         {
           title: 'Trazar el límite según la complejidad',
           body:
-            'Hailuo sirve para conceptos animados accesibles. Seedance se adapta a campañas con referencias, tomas largas, fuentes editadas, extensiones y entrega final.',
+            'Hailuo sirve para conceptos animados económicos. Seedance se adapta a campañas con referencias, tomas largas, videos fuente editados, extensiones y entrega final.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2556,15 +2556,15 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'LTX 2.0 Pro vs LTX 2.3 Pro: quedarse o migrar',
         description:
-          'Compara dos rutas LTX Pro disponibles por precios publicados equivalentes, 4K, duración, formato vertical, audio a video, extensión y retoque.',
+          'Compara dos rutas LTX Pro disponibles por precios publicados equivalentes, 4K, duración, formato vertical, generación desde audio, extensión y retoque.',
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Pro actual. Ambos incluyen audio, llegan a 4K y comparten los mismos precios publicados por resolución; 2.3 Pro agrega 9:16, mayor duración, audio a video, extensión, retoque y controles de cuadros más recientes.',
+        'Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Pro actual. Ambos incluyen audio, llegan a 4K y comparten los mismos precios publicados por resolución; 2.3 Pro agrega 9:16, mayor duración, generación de video a partir de audio, extensión, retoque y control más reciente de los cuadros inicial y final.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Ambos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Pro para trabajos conocidos de texto o imagen, de diez segundos y en 16:9; migra al actual LTX 2.3 Pro para 9:16, clips más largos, audio a video, extensión, retoque o control del cuadro inicial y final.',
+          'Ambos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Pro para trabajos conocidos de texto o imagen, de diez segundos y en 16:9; migra al actual LTX 2.3 Pro para 9:16, clips más largos, generación desde audio, extensión, retoque o control de los cuadros inicial y final.',
       },
       topCards: [
         {
@@ -2575,7 +2575,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Pasar a 2.3 Pro por sus modos',
           body:
-            'Elige LTX 2.3 Pro para generación vertical, audio a video, extensión de clips, retoque, guía opcional del cuadro final y duraciones de hasta 20 segundos.',
+            'Elige LTX 2.3 Pro para generación vertical, generación desde audio, extensión de clips, retoque, guía opcional del cuadro final y duraciones de hasta 20 segundos.',
         },
         {
           title: 'No decidir solo por el precio',
@@ -2609,7 +2609,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Qué funciones de LTX 2.3 Pro justifican actualizar?',
             answer:
-              'Migra para obtener 9:16, hasta 20 segundos, audio a video, extensión, retoque o controles más recientes del cuadro inicial y final.',
+              'Migra para obtener 9:16, hasta 20 segundos, generación desde audio, extensión, retoque o control más reciente de los cuadros inicial y final.',
           },
           {
             question: '¿Cambian los precios publicados entre LTX 2.0 Pro y 2.3 Pro?',
@@ -2623,21 +2623,21 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'Veo 3.1 vs Veo 3.1 Lite: 4K, referencias y precio',
         description:
-          'Compara Google Veo 3.1 y Google Veo 3.1 Lite por precio publicado, 4K, imágenes de referencia, audio, ocho segundos, cuadros y extensión.',
+          'Compara Google Veo 3.1 y Google Veo 3.1 Lite por precio publicado, 4K, imágenes de referencia, audio, ocho segundos, control de los cuadros y extensión.',
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara Google Veo 3.1 con Google Veo 3.1 Lite para borradores económicos o producción final. Ambos admiten audio, generación desde texto o imagen, salida de ocho segundos, control del primer y último cuadro y extensión; Veo estándar agrega 4K y un modo con varias imágenes de referencia por un precio mayor.',
+        'Compara Google Veo 3.1 con Google Veo 3.1 Lite para borradores económicos o producción final. Ambos admiten audio, generación desde texto o imagen, salida de ocho segundos, control del primer y del último cuadro y extensión; Veo estándar agrega 4K y un modo con varias imágenes de referencia por un precio mayor.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Elige Google Veo 3.1 Lite para borradores económicos en 720p o 1080p. Elige Google Veo 3.1 para el modo con varias imágenes de referencia o 4K. Ambos admiten audio, ocho segundos, control del primer y último cuadro y extensión, pero Lite no ofrece 4K ni ese modo de referencias.',
+          'Elige Google Veo 3.1 Lite para borradores económicos en 720p o 1080p. Elige Google Veo 3.1 para el modo con varias imágenes de referencia o 4K. Ambos admiten audio, ocho segundos, control del primer y del último cuadro y extensión, pero Lite no ofrece 4K ni ese modo de referencias.',
       },
       topCards: [
         {
           title: 'Elegir Lite para borradores económicos',
           body:
-            'Google Veo 3.1 Lite publica precios más bajos en 720p y 1080p para texto, una imagen, primer y último cuadro o extensiones con audio.',
+            'Google Veo 3.1 Lite publica precios más bajos en 720p y 1080p para flujos de generación desde texto o imagen, control del primer y del último cuadro y extensión con audio.',
         },
         {
           title: 'Elegir Veo estándar para 4K',
@@ -2647,12 +2647,12 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Reconocer lo que ambos comparten',
           body:
-            'Los dos admiten audio, hasta ocho segundos, 16:9 o 9:16, texto o imagen a video, control del primer y último cuadro y extensión de siete segundos.',
+            'Los dos admiten audio, hasta ocho segundos, 16:9 o 9:16, generación de video desde texto o imagen, control del primer y del último cuadro y extensión de siete segundos.',
         },
         {
           title: 'Asignar el mejor flujo de Veo',
           body:
-            'Usa Lite para borradores económicos o entrega aprobada en 1080p; usa Veo estándar para un master 4K o producción con varias imágenes de referencia.',
+            'Usa Lite para borradores económicos o entrega aprobada en 1080p; usa Veo estándar para una entrega final en 4K o producción con varias imágenes de referencia.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -2676,12 +2676,12 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Veo 3.1 Lite admite varias imágenes de referencia?',
             answer:
-              'No. Lite admite una sola imagen inicial y control del primer y último cuadro; el modo dedicado con una a tres imágenes de referencia pertenece a Veo 3.1 estándar.',
+              'No. Lite admite una sola imagen inicial y control del primer y del último cuadro; el modo dedicado con una a tres imágenes de referencia pertenece a Veo 3.1 estándar.',
           },
           {
             question: '¿Qué admiten tanto Google Veo 3.1 como Lite?',
             answer:
-              'Ambos admiten audio, generación desde texto o imagen, primer y último cuadro, extensiones, formatos 16:9 o 9:16 y hasta ocho segundos.',
+              'Ambos admiten audio, generación desde texto o imagen, control del primer y del último cuadro, extensiones, formatos 16:9 o 9:16 y hasta ocho segundos.',
           },
         ],
       },
@@ -2690,15 +2690,15 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'LTX 2.3 Fast vs Wan 2.5: precio, 4K y migración',
         description:
-          'Compara LTX 2.3 Fast con Wan 2.5 disponible por precio en 1080p, 4K, duración restringida, audio, formato cuadrado y resoluciones de entrada.',
+          'Compara LTX 2.3 Fast con Wan 2.5 disponible por precio en 1080p, 4K, duración restringida, audio, formato cuadrado y opciones de salida en 480p/720p.',
         titleBranding: 'none',
       },
       heroIntro:
-        'Compara LTX 2.3 Fast actual con Wan 2.5 Text & Image to Video disponible. LTX llega a 4K, admite clips largos con restricciones y publica un precio menor en 1080p; Wan conserva 1:1 y opciones de entrada en 480p/720p para trabajos simples de diez segundos.',
+        'Compara LTX 2.3 Fast actual con Wan 2.5 Text & Image to Video disponible. LTX llega a 4K, admite clips largos con restricciones y publica un precio menor en 1080p; Wan conserva 1:1 y opciones de salida en 480p/720p para trabajos simples de diez segundos.',
       quickVerdict: {
         title: 'Veredicto rápido',
         body:
-          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para trabajos simples, formato 1:1 o menor resolución. Conviene actualizar al actual LTX 2.3 Fast por 4K, menor precio publicado en 1080p o clips largos con restricciones. Por encima de 10 segundos, LTX exige 1080p a 25 fps.',
+          'Puedes quedarte en Wan 2.5 Text & Image to Video, que sigue disponible, para trabajos simples, formato 1:1 o salida en 480p/720p. Conviene migrar a LTX 2.3 Fast, la opción actual, por 4K, menor precio publicado en 1080p o clips largos con restricciones. Por encima de 10 segundos, LTX exige 1080p a 25 fps.',
       },
       topCards: [
         {
@@ -2714,12 +2714,12 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'Equilibrar formato y duración',
           body:
-            'Wan ofrece 1:1 y resoluciones de entrada; LTX suma alta resolución y más duración, limitada por encima de diez segundos a 1080p y 25 fps.',
+            'Wan ofrece 1:1 y resoluciones de salida de 480p/720p; LTX suma alta resolución y más duración, limitada por encima de diez segundos a 1080p y 25 fps.',
         },
         {
           title: 'Destinar cada modelo a su mejor trabajo',
           body:
-            'Usa Wan para clips simples cuadrados o de baja resolución; usa LTX para valor en 1080p, entrega 1440p o 4K y tomas largas sujetas a su límite.',
+            'Usa Wan para clips simples cuadrados o con salida en 480p/720p; usa LTX para un precio más bajo en 1080p, entrega en 1440p o 4K y tomas largas sujetas a su límite.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
