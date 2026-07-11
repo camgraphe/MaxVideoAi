@@ -11,6 +11,7 @@ import { BACKGROUND_REMOVAL_MAX_STUDIO_DURATION_SECONDS } from '@/config/tools-b
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { saveAssetToLibrary } from '@/lib/api';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { formatBackgroundRemovalOutputCodecLabel } from '@/lib/tools-background-removal';
@@ -238,7 +239,11 @@ export default function BackgroundRemovalWorkspace() {
                   <h2 className="text-lg font-semibold text-text-primary">{copy.authTitle}</h2>
                   <p className="mt-1 text-sm text-text-secondary">{copy.authBody}</p>
                 </div>
-                <ButtonLink href={`/login?next=${encodeURIComponent('/app/tools/background-removal')}`} linkComponent={Link} size="sm">
+                <ButtonLink
+                  href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/background-removal' })}
+                  linkComponent={Link}
+                  size="sm"
+                >
                   Sign in
                 </ButtonLink>
               </Card>

@@ -1,5 +1,6 @@
 import { Button, ButtonLink } from '@/components/ui/Button';
 import type { AngleCopy } from '../_lib/angle-workspace-copy';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 
 export function AngleAuthGateModal({
   loginRedirectTarget,
@@ -35,11 +36,15 @@ export function AngleAuthGateModal({
           </Button>
         </div>
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <ButtonLink href={`/login?next=${encodeURIComponent(loginRedirectTarget)}`} size="sm" className="px-4">
+          <ButtonLink
+            href={buildLoginHref({ mode: 'signup', nextPath: loginRedirectTarget })}
+            size="sm"
+            className="px-4"
+          >
             {copy.authGate.primary}
           </ButtonLink>
           <ButtonLink
-            href={`/login?mode=signin&next=${encodeURIComponent(loginRedirectTarget)}`}
+            href={buildLoginHref({ mode: 'signin', nextPath: loginRedirectTarget })}
             variant="outline"
             size="sm"
             className="px-4"

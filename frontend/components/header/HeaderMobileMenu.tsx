@@ -21,6 +21,7 @@ type HeaderMobileMenuProps = {
   ctaLabel?: string;
   guestMobileNavItems: GuestMobileNavItem[];
   isAuthenticated: boolean;
+  loginHref: string;
   loginLabel?: string;
   marketingLinks: HeaderMarketingLink[];
   mobileDropdownOpen: Record<string, boolean>;
@@ -37,6 +38,7 @@ export function HeaderMobileMenu({
   ctaLabel,
   guestMobileNavItems,
   isAuthenticated,
+  loginHref,
   loginLabel,
   marketingLinks,
   mobileDropdownOpen,
@@ -234,7 +236,7 @@ export function HeaderMobileMenu({
         {isAuthenticated ? null : (
           <div className="stack-gap-sm">
             <Link
-              href="/login?next=/app"
+              href={loginHref}
               className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
               onClick={onClose}
             >

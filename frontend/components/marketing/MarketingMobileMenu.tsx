@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS } from '@/config/navigation';
 import type { MarketingTopNavLink } from '@/config/navigation';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 
 type MarketingTranslate = <T = unknown>(key: string, fallback?: T) => T | undefined;
 
@@ -44,6 +45,8 @@ export function MarketingMobileMenu({
   onToggleDropdown,
   onToggleTheme,
 }: MarketingMobileMenuProps) {
+  const loginHref = buildLoginHref({ mode: 'signin', nextPath: '/app' });
+
   return (
     <div className={clsx('fixed inset-0 z-50 bg-bg px-4 py-6 sm:px-6', isHomePage && 'home-monochrome')}>
       <div className="mx-auto flex max-w-sm items-center justify-end">
@@ -200,7 +203,7 @@ export function MarketingMobileMenu({
         ) : (
           <div className="stack-gap-sm">
             <Link
-              href="/login?next=/app"
+              href={loginHref}
               prefetch={false}
               className="block rounded-2xl border border-hairline px-4 py-3 text-center text-base font-semibold text-text-primary shadow-card"
               onClick={onClose}

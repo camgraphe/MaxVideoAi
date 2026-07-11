@@ -16,6 +16,7 @@ import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { hideJob, runImageGeneration, saveImageToLibrary } from '@/lib/api';
 import { authFetch } from '@/lib/authFetch';
+import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import {
@@ -1105,10 +1106,17 @@ export default function StoryboardWorkspace() {
               </Button>
             </div>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
-              <ButtonLink href={`/login?next=${encodeURIComponent('/app/tools/storyboard')}`} size="sm">
+              <ButtonLink
+                href={buildLoginHref({ mode: 'signup', nextPath: '/app/tools/storyboard' })}
+                size="sm"
+              >
                 {copy.authPrimary}
               </ButtonLink>
-              <ButtonLink href={`/login?mode=signin&next=${encodeURIComponent('/app/tools/storyboard')}`} variant="outline" size="sm">
+              <ButtonLink
+                href={buildLoginHref({ mode: 'signin', nextPath: '/app/tools/storyboard' })}
+                variant="outline"
+                size="sm"
+              >
                 {copy.authSecondary}
               </ButtonLink>
             </div>

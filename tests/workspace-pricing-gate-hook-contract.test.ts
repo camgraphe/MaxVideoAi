@@ -85,7 +85,9 @@ test('workspace pricing and auth gate orchestration is owned by route-local modu
 
   assert.match(authGateModalSource, /export function WorkspaceAuthGateModal/);
   assert.match(authGateModalSource, /ButtonLink/);
-  assert.match(authGateModalSource, /encodeURIComponent\(loginRedirectTarget\)/);
+  assert.match(authGateModalSource, /buildLoginHref/);
+  assert.match(authGateModalSource, /mode: 'signup', nextPath: loginRedirectTarget/);
+  assert.match(authGateModalSource, /mode: 'signin', nextPath: loginRedirectTarget/);
 
   assert.match(runtimeModalsSource, /WorkspaceTopUpModal/);
   assert.match(runtimeModalsSource, /WorkspaceAuthGateModal/);

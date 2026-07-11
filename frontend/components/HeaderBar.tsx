@@ -7,7 +7,7 @@ import { ChevronDown, Moon, Sun } from 'lucide-react';
 import { ReconsentPrompt } from '@/components/legal/ReconsentPrompt';
 import { AppLanguageToggle } from '@/components/AppLanguageToggle';
 import { useI18n } from '@/lib/i18n/I18nProvider';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 import { MARKETING_NAV_DROPDOWNS, MARKETING_TOP_NAV_LINKS } from '@/config/navigation';
@@ -22,10 +22,12 @@ import {
   resolveLocalizedHref,
 } from '@/components/header/header-nav-helpers';
 import { useHeaderAccountState } from '@/components/header/useHeaderAccountState';
+import { buildAuthReturnTarget, buildLoginHref } from '@/lib/auth-entry-href';
 
 export function HeaderBar() {
   const { locale, t } = useI18n();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { email, authResolved, wallet, isAdmin, signOut } = useHeaderAccountState();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [walletPromptOpen, setWalletPromptOpen] = useState(false);
@@ -237,6 +239,9 @@ export function HeaderBar() {
   const marketingLinks = useMemo(() => normalizeMarketingLinks(rawMarketingLinks), [rawMarketingLinks]);
   const isAuthenticated = Boolean(email);
   const guestMobileNavItems = useMemo(() => getGuestMobileNavItems(), []);
+  const authReturnTarget = buildAuthReturnTarget(pathname, searchParams);
+  const signupHref = buildLoginHref({ mode: 'signup', nextPath: authReturnTarget });
+  const signinHref = buildLoginHref({ mode: 'signin', nextPath: authReturnTarget });
 
   return (
     <>
@@ -436,7 +441,7 @@ export function HeaderBar() {
           ) : authResolved ? (
             <div className="flex items-center gap-1.5 sm:gap-2">
               <ButtonLink
-                href="/login"
+                href={signupHref}
                 size="sm"
                 className="h-9 px-2.5 text-[11px] shadow-card sm:h-10 sm:px-3 sm:text-sm"
               >
@@ -444,7 +449,7 @@ export function HeaderBar() {
                 <span className="hidden sm:inline">{t('workspace.header.createAccount', 'Create account')}</span>
               </ButtonLink>
               <ButtonLink
-                href="/login?mode=signin"
+                href={signinHref}
                 variant="outline"
                 size="sm"
                 className="h-9 px-2.5 text-[11px] sm:h-10 sm:px-3 sm:text-sm"
@@ -463,6 +468,7 @@ export function HeaderBar() {
           ctaLabel={ctaLabel}
           guestMobileNavItems={guestMobileNavItems}
           isAuthenticated={isAuthenticated}
+          loginHref={signinHref}
           loginLabel={loginLabel}
           marketingLinks={marketingLinks}
           mobileDropdownOpen={mobileDropdownOpen}
