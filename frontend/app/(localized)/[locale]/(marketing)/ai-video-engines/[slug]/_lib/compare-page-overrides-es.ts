@@ -1780,7 +1780,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
         {
           title: 'La resolución define la decisión',
           body:
-            'Standard mantiene la iteración en 1080p y tiene una base de proveedor catalogada menor; la variante 4K solo produce 4K nativo y tiene una base catalogada mayor.',
+            'Según el catálogo, Standard mantiene la iteración en 1080p con un costo base de proveedor menor; la variante 4K solo produce 4K nativo y tiene un costo base mayor.',
         },
       ],
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -1876,7 +1876,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
           {
             question: '¿Cuándo conviene actualizar Kling 2.5 Turbo a Kling 3 Pro?',
             answer:
-              'Migra los proyectos nuevos de Kling a Kling 3 Pro actual cuando el audio, hasta 15 segundos o el flujo Pro más reciente importen más que el costo de los borradores con Kling 2.5 Turbo.',
+              'Migra los proyectos nuevos de Kling a Kling 3 Pro actual cuando el audio, los clips de hasta 15 segundos o el flujo Pro más reciente importen más que el costo de los borradores con Kling 2.5 Turbo.',
           },
         ],
       },
@@ -1885,7 +1885,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       meta: {
         title: 'Seedance 2.0 vs Veo 3.1 Fast: control o velocidad',
         description:
-          'Compara Seedance 2.0 y Google Veo 3.1 Fast en duración, referencias, edición, 4K, audio, velocidad de iteración y estructura de precio.',
+          'Compara Seedance 2.0 y Google Veo 3.1 Fast en duración, referencias, edición, 4K, audio, velocidad de iteración y estructura de precios.',
         titleBranding: 'none',
       },
       heroIntro:
@@ -1907,7 +1907,7 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
             'Veo Fast se enfoca en producción rápida de ocho segundos con audio, referencias, primer y último fotograma, extensión y hasta 4K.',
         },
         {
-          title: 'Sistemas de precio diferentes',
+          title: 'Sistemas de precios diferentes',
           body:
             'Seedance usa precios dinámicos por tokens, mientras Veo Fast usa una escala por segundo basada en resolución; ninguno es siempre más económico.',
         },
