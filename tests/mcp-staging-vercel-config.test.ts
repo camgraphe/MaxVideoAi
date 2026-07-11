@@ -49,6 +49,24 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.doesNotMatch(script, /vercel deploy frontend/);
   assert.doesNotMatch(script, /--local-config/);
 
+  const deploymentRefFilter = script.match(/^DEPLOYMENT_REF_FILTER='([^']+)'$/m)?.[1];
+  assert.ok(deploymentRefFilter, 'the deploy wrapper must define its Vercel output parser once');
+  for (const payload of [
+    { url: 'direct-candidate.vercel.app' },
+    {
+      status: 'ok',
+      deployment: { url: 'agent-candidate.vercel.app' },
+      message: 'Deployment ready.',
+    },
+  ]) {
+    const parsed = spawnSync('jq', ['-er', deploymentRefFilter], {
+      encoding: 'utf8',
+      input: JSON.stringify(payload),
+    });
+    assert.equal(parsed.status, 0, parsed.stderr);
+    assert.match(parsed.stdout.trim(), /-candidate\.vercel\.app$/);
+  }
+
   const dryRun = spawnSync('bash', [scriptPath, '--dry-run'], {
     cwd: process.cwd(),
     encoding: 'utf8',
@@ -57,6 +75,18 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(dryRun.stdout, /SAFE_PACKAGE_OK/);
   assert.match(dryRun.stdout, /project=maxvideoai-mcp-staging/);
   assert.match(dryRun.stdout, /scope=camgraphes-projects/);
+
+  const resumeDryRun = spawnSync(
+    'bash',
+    [scriptPath, '--candidate', 'dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos', '--dry-run'],
+    {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+    },
+  );
+  assert.equal(resumeDryRun.status, 0, resumeDryRun.stderr);
+  assert.match(resumeDryRun.stdout, /mode=existing-candidate/);
+  assert.match(resumeDryRun.stdout, /candidate=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/);
 
   const plan = readFileSync(
     join(process.cwd(), 'docs/superpowers/plans/2026-07-11-mcp-hosted-staging-claude-desktop.md'),

@@ -9,17 +9,34 @@ STABLE_HOST='maxvideoai-mcp-staging.vercel.app'
 STAGING_SUPABASE_ORIGIN='https://gecrywjztpbwbrlnomti.supabase.co'
 EXPECTED_ROBOTS='noindex, nofollow, noarchive'
 VERCEL_VERSION='55.0.0'
+DEPLOYMENT_REF_FILTER='.deployment.url // .deployment.deploymentUrl // .deployment.id // .url // .deploymentUrl // .id'
 
 usage() {
-  printf 'Usage: %s [--dry-run]\n' "$0" >&2
+  printf 'Usage: %s [--candidate dpl_ID] [--dry-run]\n' "$0" >&2
 }
 
 DRY_RUN=false
-case "${1:-}" in
-  '') ;;
-  --dry-run) DRY_RUN=true ;;
-  *) usage; exit 64 ;;
-esac
+RESUME_CANDIDATE_ID=''
+while (($#)); do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=true
+      shift
+      ;;
+    --candidate)
+      if (($# < 2)) || [[ ! "$2" =~ ^dpl_[A-Za-z0-9]+$ ]]; then
+        usage
+        exit 64
+      fi
+      RESUME_CANDIDATE_ID="$2"
+      shift 2
+      ;;
+    *)
+      usage
+      exit 64
+      ;;
+  esac
+done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 TEMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/maxvideoai-mcp-staging.XXXXXX")"
@@ -28,35 +45,45 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-git -C "$REPO_ROOT" archive HEAD | tar -xf - -C "$TEMP_ROOT"
+if [[ -z "$RESUME_CANDIDATE_ID" ]]; then
+  git -C "$REPO_ROOT" archive HEAD | tar -xf - -C "$TEMP_ROOT"
 
-STAGING_CONFIG="$TEMP_ROOT/frontend/vercel.mcp-staging.json"
-EFFECTIVE_CONFIG="$TEMP_ROOT/frontend/vercel.json"
-test -f "$STAGING_CONFIG"
-test -f "$TEMP_ROOT/packages/pricing/package.json"
-cp "$STAGING_CONFIG" "$EFFECTIVE_CONFIG"
+  STAGING_CONFIG="$TEMP_ROOT/frontend/vercel.mcp-staging.json"
+  EFFECTIVE_CONFIG="$TEMP_ROOT/frontend/vercel.json"
+  test -f "$STAGING_CONFIG"
+  test -f "$TEMP_ROOT/packages/pricing/package.json"
+  cp "$STAGING_CONFIG" "$EFFECTIVE_CONFIG"
 
-jq -e --arg expected "$EXPECTED_ROBOTS" '
-  ((.crons // []) | length) == 0 and
-  .headers == [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Robots-Tag",
-          "value": $expected
-        }
-      ]
-    }
-  ]
-' "$EFFECTIVE_CONFIG" >/dev/null
-cmp -s "$STAGING_CONFIG" "$EFFECTIVE_CONFIG"
+  jq -e --arg expected "$EXPECTED_ROBOTS" '
+    ((.crons // []) | length) == 0 and
+    .headers == [
+      {
+        "source": "/(.*)",
+        "headers": [
+          {
+            "key": "X-Robots-Tag",
+            "value": $expected
+          }
+        ]
+      }
+    ]
+  ' "$EFFECTIVE_CONFIG" >/dev/null
+  cmp -s "$STAGING_CONFIG" "$EFFECTIVE_CONFIG"
+fi
 
 if "$DRY_RUN"; then
-  printf 'SAFE_PACKAGE_OK project=%s scope=%s tracked_head=%s\n' \
-    "$STAGING_PROJECT" \
-    "$STAGING_SCOPE" \
-    "$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
+  if [[ -n "$RESUME_CANDIDATE_ID" ]]; then
+    printf 'SAFE_PACKAGE_OK project=%s scope=%s tracked_head=%s mode=existing-candidate candidate=%s\n' \
+      "$STAGING_PROJECT" \
+      "$STAGING_SCOPE" \
+      "$(git -C "$REPO_ROOT" rev-parse --short HEAD)" \
+      "$RESUME_CANDIDATE_ID"
+  else
+    printf 'SAFE_PACKAGE_OK project=%s scope=%s tracked_head=%s mode=new-candidate\n' \
+      "$STAGING_PROJECT" \
+      "$STAGING_SCOPE" \
+      "$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
+  fi
   exit 0
 fi
 
@@ -114,29 +141,33 @@ STAGING_PROJECT_ID="$(jq -er --arg name "$STAGING_PROJECT" 'select(.name == $nam
 PRODUCTION_PROJECT_ID="$(jq -er --arg name "$PRODUCTION_PROJECT" 'select(.name == $name) | .id' "$ARTIFACTS/production-before.project.raw.json")"
 test "$STAGING_PROJECT_ID" != "$PRODUCTION_PROJECT_ID"
 
-"${VERCEL[@]}" link \
-  --cwd "$TEMP_ROOT" \
-  --yes \
-  --project "$STAGING_PROJECT" \
-  --scope "$STAGING_SCOPE" \
-  --no-color >/dev/null
-rm -f "$TEMP_ROOT/.env.local"
-jq -e \
-  --arg id "$STAGING_PROJECT_ID" \
-  --arg name "$STAGING_PROJECT" \
-  '.projectId == $id and .projectName == $name' \
-  "$TEMP_ROOT/.vercel/project.json" >/dev/null
+if [[ -n "$RESUME_CANDIDATE_ID" ]]; then
+  CANDIDATE_REF="$RESUME_CANDIDATE_ID"
+else
+  "${VERCEL[@]}" link \
+    --cwd "$TEMP_ROOT" \
+    --yes \
+    --project "$STAGING_PROJECT" \
+    --scope "$STAGING_SCOPE" \
+    --no-color >/dev/null
+  rm -f "$TEMP_ROOT/.env.local"
+  jq -e \
+    --arg id "$STAGING_PROJECT_ID" \
+    --arg name "$STAGING_PROJECT" \
+    '.projectId == $id and .projectName == $name' \
+    "$TEMP_ROOT/.vercel/project.json" >/dev/null
 
-"${VERCEL[@]}" deploy "$TEMP_ROOT" \
-  --project "$STAGING_PROJECT" \
-  --scope "$STAGING_SCOPE" \
-  --prod \
-  --skip-domain \
-  --yes \
-  --format json \
-  --no-color >"$ARTIFACTS/deploy.json"
+  "${VERCEL[@]}" deploy "$TEMP_ROOT" \
+    --project "$STAGING_PROJECT" \
+    --scope "$STAGING_SCOPE" \
+    --prod \
+    --skip-domain \
+    --yes \
+    --format json \
+    --no-color >"$ARTIFACTS/deploy.json"
 
-CANDIDATE_REF="$(jq -er '.url // .deploymentUrl // .id' "$ARTIFACTS/deploy.json")"
+  CANDIDATE_REF="$(jq -er "$DEPLOYMENT_REF_FILTER" "$ARTIFACTS/deploy.json")"
+fi
 "${VERCEL[@]}" inspect "$CANDIDATE_REF" \
   --scope "$STAGING_SCOPE" \
   --wait \
@@ -153,6 +184,9 @@ CANDIDATE_ID="$(jq -er --arg name "$STAGING_PROJECT" '
 CANDIDATE_HOST="$(jq -er '.url' "$ARTIFACTS/candidate-inspect.json")"
 CANDIDATE_URL="https://${CANDIDATE_HOST}"
 test "$CANDIDATE_HOST" != "$STABLE_HOST"
+if [[ -n "$RESUME_CANDIDATE_ID" ]]; then
+  test "$CANDIDATE_ID" = "$RESUME_CANDIDATE_ID"
+fi
 
 "${VERCEL[@]}" api "/v13/deployments/${CANDIDATE_ID}" \
   --scope "$STAGING_SCOPE" \
