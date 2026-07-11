@@ -194,7 +194,7 @@ export function GA4EventBridge() {
       enqueueEvent('generation_failed', {
         ...generationContext,
         job_id: jobId,
-        error_message: typeof detail.message === 'string' ? detail.message : undefined,
+        failure_category: 'job_failed',
         payment_status: typeof detail.paymentStatus === 'string' ? detail.paymentStatus : undefined,
         batch_id: typeof detail.batchId === 'string' ? detail.batchId : undefined,
         group_id: typeof detail.groupId === 'string' ? detail.groupId : undefined,

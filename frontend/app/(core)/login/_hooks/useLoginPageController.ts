@@ -16,6 +16,7 @@ import {
   getBrowserAuthRedirectOrigin,
   markPendingGoogleLogin,
   sanitizeNextPath,
+  shouldTrackGoogleSignupStart,
 } from '../_lib/login-helpers';
 import { useLoginAutofillSync } from './useLoginAutofillSync';
 import { useLoginAuthenticatedRedirect } from './useLoginAuthenticatedRedirect';
@@ -320,6 +321,14 @@ export function useLoginPageController() {
     }
     setStatusTone('info');
     setStatus('Redirecting to Google…');
+    if (shouldTrackGoogleSignupStart(mode)) {
+      dispatchAnalyticsEvent('sign_up_started', {
+        route_family: 'auth',
+        auth_surface: 'login',
+        method: 'google',
+        marketing_opt_in: marketingOptIn,
+      });
+    }
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

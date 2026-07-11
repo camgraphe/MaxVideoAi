@@ -443,7 +443,7 @@ export async function runWorkspaceGenerationIteration({
         error && typeof error === 'object' && typeof (error as { code?: unknown }).code === 'string'
           ? (error as { code: string }).code
           : 'generation_request_failed',
-      error_message: error instanceof Error ? error.message : 'Generation failed',
+      failure_category: 'generation_request_failed',
     });
     let fallbackBatchId: string | null = null;
     setRenders((prev) => {
