@@ -171,16 +171,16 @@ test('legacy comparisons explain the migration or stay decision in every locale'
     fr: {
       available: /\b(disponibles?|accessibles?)\b/i,
       stay: /\b(rester|restez|conserver|gardez|continuer)\b/i,
-      migrate: /\b(migrer|migrez|évoluer|évoluez|passer)\b/i,
+      migrate: /(?<![\p{L}\p{N}_])(?:migrer|migrez|évoluer|évoluez|passer)(?![\p{L}\p{N}_])/iu,
       successor: /\b(actuel(?:le)?s?|successeurs?|plus récent(?:e)?s?|nouvelle génération)\b/i,
-      unavailable: /\b(indisponibles?|retir(?:é|ée|és|ées)|abandonn(?:é|ée|és|ées)|arrêt(?:é|ée|és|ées)|discontinu(?:é|ée|és|ées)|supprim(?:é|ée|és|ées)|obsolètes?)\b|(?:pas|plus) (?:disponibles?|accessibles?)/i,
+      unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retir(?:é|ée|és|ées)|abandonn(?:é|ée|és|ées)|arrêt(?:é|ée|és|ées)|discontinu(?:é|ée|és|ées)|supprim(?:é|ée|és|ées)|obsolètes?|(?:pas|plus) (?:disponibles?|accessibles?))(?![\p{L}\p{N}_])/iu,
     },
     es: {
       available: /\b(disponibles?|accesibles?)\b/i,
       stay: /\b(quedarse|mantener|seguir|conservar)\b/i,
       migrate: /\b(migrar|actualizar|pasar|cambiar)\b/i,
       successor: /\b(actual(?:es)?|sucesor(?:es)?|más reciente|nueva generación)\b/i,
-      unavailable: /\b(retirad[oa]s?|abandonad[oa]s?|descontinuad[oa]s?|discontinuad[oa]s?|eliminad[oa]s?)\b|(?:no|ya no) (?:está |es |sigue )?(?:disponibles?|accesibles?)/i,
+      unavailable: /(?<![\p{L}\p{N}_])(?:indisponibles?|retirad[oa]s?|abandonad[oa]s?|descontinuad[oa]s?|discontinuad[oa]s?|eliminad[oa]s?|(?:no|ya no) (?:está |están |es |sigue )?(?:disponibles?|accesibles?))(?![\p{L}\p{N}_])/iu,
     },
   } as const;
 
