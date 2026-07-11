@@ -9,6 +9,7 @@ import { writeLastKnownUserId } from '@/lib/last-known';
 import { supabase } from '@/lib/supabaseClient';
 import { canonicalizeBrowserAuthOrigin } from '@/lib/siteOrigin';
 import { AUTH_COPY, type AuthMode, type Locale } from '../_lib/login-copy';
+import { buildLoginContinuation } from '../_lib/login-continuation';
 import {
   buildAuthCallbackRedirect,
   clearPendingGoogleLogin,
@@ -52,6 +53,13 @@ export function useLoginPageController() {
   const browserLocale = useLoginBrowserLocale();
   const [signupSuggestion, setSignupSuggestion] = useState<{ email: string; password: string } | null>(null);
   const authCopy = AUTH_COPY[locale] ?? AUTH_COPY.en;
+  const continuation = nextPathReady
+    ? buildLoginContinuation({
+        copy: authCopy.continuation,
+        locale,
+        nextPath: safeNextPath,
+      })
+    : null;
 
   useLoginModeFromQuery({ setMode });
 
@@ -385,6 +393,7 @@ export function useLoginPageController() {
     email,
     password,
     confirm,
+    continuation,
     status,
     statusTone,
     error,
