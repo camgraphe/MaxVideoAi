@@ -21,7 +21,12 @@ export function BenchmarkSpecsTable({ copy, locale, rows }: BenchmarkSpecsTableP
   const labels = COLUMN_LABELS[locale];
   return (
     <div className="overflow-hidden rounded-[24px] border border-hairline bg-surface/80 shadow-card">
-      <div className="overflow-x-auto overscroll-x-contain [scrollbar-gutter:stable]">
+      <div
+        role="region"
+        aria-label={copy.specs.title}
+        tabIndex={0}
+        className="overflow-x-auto overscroll-x-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [scrollbar-gutter:stable]"
+      >
         <table className="min-w-[980px] w-full border-collapse text-left">
           <caption className="sr-only">{copy.specs.intro}</caption>
           <thead>

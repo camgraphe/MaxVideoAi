@@ -34,7 +34,12 @@ function ScoreValue({ value }: { value: number | null }) {
 export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableProps) {
   return (
     <div className="overflow-hidden rounded-[24px] border border-hairline bg-surface/80 shadow-card">
-      <div className="overflow-x-auto overscroll-x-contain [scrollbar-gutter:stable]">
+      <div
+        role="region"
+        aria-label={copy.scores.title}
+        tabIndex={0}
+        className="overflow-x-auto overscroll-x-contain focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring [scrollbar-gutter:stable]"
+      >
         <table className="min-w-[1180px] w-full border-collapse text-left">
           <caption className="sr-only">{copy.scores.intro}</caption>
           <thead>
@@ -43,10 +48,10 @@ export function BenchmarkScoreTable({ copy, locale, rows }: BenchmarkScoreTableP
                 scope="col"
                 className="sticky left-0 z-10 w-[210px] border-r border-hairline bg-surface-2 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted"
               >
-                {copy.scores.source}
+                {copy.scores.model}
               </th>
               <th scope="col" className="w-[104px] px-4 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-text-muted">
-                0–10
+                {copy.scores.overall}
               </th>
               {copy.scoreLabels.map((metric) => (
                 <th key={metric.id} scope="col" className="min-w-[88px] px-3 py-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-text-muted">

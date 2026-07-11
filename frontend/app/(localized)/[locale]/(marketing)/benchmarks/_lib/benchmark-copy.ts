@@ -5,7 +5,7 @@ export type BenchmarkCopy = {
   hero: { eyebrow: string; title: string; intro: string; proof: string };
   nav: { scores: string; specs: string; speed: string; method: string };
   evidence: Array<{ title: string; body: string }>;
-  scores: { title: string; intro: string; updated: string; source: string };
+  scores: { title: string; intro: string; model: string; overall: string; updated: string; source: string };
   specs: {
     title: string;
     intro: string;
@@ -51,7 +51,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
       { title: 'Sourced specifications', body: 'Current capabilities checked against provider sources and the MaxVideoAI route.' },
       { title: 'Observed speed', body: 'Rolling 30-day median and P90 generation time for eligible models.' }
     ],
-    scores: { title: 'Model scorecards', intro: 'Compare the current MaxVideoAI editorial view across eleven production criteria.', updated: 'Score updated', source: 'MaxVideoAI editorial score' },
+    scores: { title: 'Model scorecards', intro: 'Compare the current MaxVideoAI editorial view across eleven production criteria.', model: 'Model', overall: 'Overall score (0–10)', updated: 'Score updated', source: 'MaxVideoAI editorial score' },
     specs: { title: 'Verified model specifications', intro: 'Review the limits and workflows exposed through MaxVideoAI.', source: 'Source', modes: 'Input modes', audio: 'Audio', references: 'References', modeLabels: { textToVideo: 'Text → video', imageToVideo: 'Image → video', videoToVideo: 'Video → video' } },
     latency: { title: 'Observed generation times', intro: 'Median and P90 end-to-end generation time over a rolling 30-day window.', median: 'Median', p90: 'P90', window: 'Rolling 30 days', unavailable: 'The current latency snapshot is being refreshed.', more: 'Additional models appear as their rolling history matures.' },
     methodology: {
@@ -84,7 +84,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
       { title: 'Spécifications sourcées', body: 'Des capacités vérifiées selon les sources fournisseur et la route MaxVideoAI.' },
       { title: 'Vitesse observée', body: 'Médiane et P90 sur 30 jours glissants pour les modèles éligibles.' }
     ],
-    scores: { title: 'Scorecards des modèles', intro: 'Comparez la lecture éditoriale MaxVideoAI actuelle sur onze critères de production.', updated: 'Score mis à jour', source: 'Score éditorial MaxVideoAI' },
+    scores: { title: 'Scorecards des modèles', intro: 'Comparez la lecture éditoriale MaxVideoAI actuelle sur onze critères de production.', model: 'Modèle', overall: 'Score global (0–10)', updated: 'Score mis à jour', source: 'Score éditorial MaxVideoAI' },
     specs: { title: 'Spécifications vérifiées', intro: 'Consultez les limites et workflows réellement exposés dans MaxVideoAI.', source: 'Source', modes: 'Modes d’entrée', audio: 'Audio', references: 'Références', modeLabels: { textToVideo: 'Texte → vidéo', imageToVideo: 'Image → vidéo', videoToVideo: 'Vidéo → vidéo' } },
     latency: { title: 'Temps de génération observés', intro: 'Médiane et P90 du temps de génération de bout en bout sur 30 jours glissants.', median: 'Médiane', p90: 'P90', window: '30 jours glissants', unavailable: 'La mesure de latence actuelle est en cours d’actualisation.', more: 'D’autres modèles apparaissent à mesure que leur historique se consolide.' },
     methodology: {
@@ -115,9 +115,9 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
     evidence: [
       { title: 'Puntuaciones editoriales', body: 'Un marco coherente de 0 a 10 para calidad, movimiento, control y uso en producción.' },
       { title: 'Especificaciones con fuentes', body: 'Capacidades actuales verificadas con fuentes del proveedor y la ruta de MaxVideoAI.' },
-      { title: 'Velocidad observada', body: 'Mediana y P90 de 30 días para los modelos que cumplen el umbral interno.' }
+      { title: 'Velocidad observada', body: 'Mediana y P90 de 30 días para modelos con historial suficiente.' }
     ],
-    scores: { title: 'Scorecards de modelos', intro: 'Compara la evaluación editorial actual de MaxVideoAI en once criterios de producción.', updated: 'Puntuación actualizada', source: 'Puntuación editorial de MaxVideoAI' },
+    scores: { title: 'Scorecards de modelos', intro: 'Compara la evaluación editorial actual de MaxVideoAI en once criterios de producción.', model: 'Modelo', overall: 'Puntuación global (0–10)', updated: 'Puntuación actualizada', source: 'Puntuación editorial de MaxVideoAI' },
     specs: { title: 'Especificaciones verificadas', intro: 'Revisa los límites y flujos disponibles en MaxVideoAI.', source: 'Fuente', modes: 'Modos de entrada', audio: 'Audio', references: 'Referencias', modeLabels: { textToVideo: 'Texto → video', imageToVideo: 'Imagen → video', videoToVideo: 'Video → video' } },
     latency: { title: 'Tiempos de generación observados', intro: 'Mediana y P90 del tiempo total de generación durante una ventana móvil de 30 días.', median: 'Mediana', p90: 'P90', window: '30 días móviles', unavailable: 'La medición de latencia se está actualizando.', more: 'Aparecerán más modelos cuando su historial móvil esté consolidado.' },
     methodology: {

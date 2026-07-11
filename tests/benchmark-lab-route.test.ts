@@ -37,6 +37,11 @@ test('benchmark lab route stays a thin localized server orchestrator', () => {
 });
 
 test('benchmark copy is complete in American English, French, and Latin American Spanish', () => {
+  const scoreHeaders = {
+    en: { model: 'Model', overall: 'Overall score (0–10)' },
+    fr: { model: 'Modèle', overall: 'Score global (0–10)' },
+    es: { model: 'Modelo', overall: 'Puntuación global (0–10)' },
+  } as const;
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getBenchmarkCopy(locale);
     assert.ok(copy.meta.title.length >= 30);
@@ -45,6 +50,9 @@ test('benchmark copy is complete in American English, French, and Latin American
     assert.equal(copy.scoreLabels.length, 11);
     assert.equal(Object.keys(copy.methodology.criteria).length, 11);
     assert.equal(copy.methodology.methodNotes.length, 5);
+    assert.equal(copy.scores.model, scoreHeaders[locale].model);
+    assert.equal(copy.scores.overall, scoreHeaders[locale].overall);
+    assert.doesNotMatch(copy.evidence.map((item) => `${item.title} ${item.body}`).join(' '), /threshold|seuil|umbral/i);
   }
   assert.equal(getBenchmarkCopy('en').refundNote, 'Failed paid generations are automatically refunded.');
   assert.match(getBenchmarkCopy('es').hero.intro, /modelos de video/i);
@@ -221,6 +229,17 @@ test('benchmark lab presentation stays split into focused server components', ()
   assert.match(view, /id="methodology"/);
   assert.match(scoreTable, /overflow-x-auto/);
   assert.match(specsTable, /overflow-x-auto/);
+  assert.match(scoreTable, /role="region"/);
+  assert.match(scoreTable, /aria-label=\{copy\.scores\.title\}/);
+  assert.match(scoreTable, /tabIndex=\{0\}/);
+  assert.match(scoreTable, /focus-visible:ring-2/);
+  assert.match(specsTable, /role="region"/);
+  assert.match(specsTable, /aria-label=\{copy\.specs\.title\}/);
+  assert.match(specsTable, /tabIndex=\{0\}/);
+  assert.match(specsTable, /focus-visible:ring-2/);
+  assert.match(scoreTable, /\{copy\.scores\.model\}[\s\S]*\{copy\.scores\.overall\}/);
+  assert.match(view, /radial-gradient[^\n]+var\(--accent\)/);
+  assert.doesNotMatch(view, /radial-gradient[^\n]+var\(--brand\)/);
   assert.match(view, /Failed paid generations are automatically refunded\.|refundNote/);
   assert.doesNotMatch(view, /success rate|generation count|distinct users|failed jobs refunded/i);
   assert.doesNotMatch(methodology, /minimumCompletedJobs|minimumDistinctUsers|sampleSize/);
