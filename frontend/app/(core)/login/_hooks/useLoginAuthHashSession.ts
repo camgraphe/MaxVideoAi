@@ -7,14 +7,17 @@ import {
   consumePendingGoogleLogin,
   resolveGoogleAuthCompletionEvent,
 } from '../_lib/login-helpers';
+import type { AuthCopy } from '../_lib/login-copy';
 
 type UseLoginAuthHashSessionOptions = {
+  authCopy: AuthCopy;
   setError: Dispatch<SetStateAction<string | null>>;
   setStatus: Dispatch<SetStateAction<string | null>>;
   setStatusTone: Dispatch<SetStateAction<'info' | 'success'>>;
 };
 
 export function useLoginAuthHashSession({
+  authCopy,
   setError,
   setStatus,
   setStatusTone,
@@ -36,7 +39,7 @@ export function useLoginAuthHashSession({
     }
     let cancelled = false;
     setStatusTone('info');
-    setStatus('Completing sign-in…');
+    setStatus(authCopy.feedback.completingSignIn);
     setError(null);
     void supabase.auth
       .setSession({
@@ -47,7 +50,7 @@ export function useLoginAuthHashSession({
         if (error) {
           clearPendingGoogleLogin();
           if (cancelled) return;
-          setError(error.message ?? 'Unable to complete sign-in.');
+          setError(error.message ?? authCopy.feedback.completeSignInError);
           setStatus(null);
           return;
         }
@@ -76,7 +79,9 @@ export function useLoginAuthHashSession({
       .catch((err) => {
         clearPendingGoogleLogin();
         if (cancelled) return;
-        setError(err instanceof Error ? err.message : 'Unable to complete sign-in.');
+        setError(
+          err instanceof Error ? err.message : authCopy.feedback.completeSignInError
+        );
         setStatus(null);
       })
       .finally(() => {
@@ -86,5 +91,5 @@ export function useLoginAuthHashSession({
     return () => {
       cancelled = true;
     };
-  }, [setError, setStatus, setStatusTone]);
+  }, [authCopy, setError, setStatus, setStatusTone]);
 }

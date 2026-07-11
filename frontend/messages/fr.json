@@ -3147,7 +3147,7 @@
       },
       "authGate": {
         "title": "Créez un compte pour générer",
-        "body": "Vous pouvez explorer l’espace de travail avec des rendus de démonstration, mais générer un vrai rendu nécessite un compte.",
+        "body": "Explorez l’espace de travail avec les rendus de démonstration. Créez un compte et nous vous ramènerons ici pour continuer.",
         "primary": "Créer un compte",
         "secondary": "Se connecter",
         "close": "Plus tard",
@@ -3918,7 +3918,7 @@
       },
       "authGate": {
         "title": "Créez un compte pour générer",
-        "body": "Vous pouvez explorer l’espace image, mais lancer une véritable génération nécessite un compte.",
+        "body": "Explorez d’abord l’espace image. Créez un compte et nous vous ramènerons ici pour continuer.",
         "primary": "Créer un compte",
         "secondary": "Se connecter",
         "close": "Plus tard"
@@ -5007,7 +5007,7 @@
     "modes": {
       "signup": {
         "title": "Créez votre compte studio",
-        "description": "Accédez instantanément à MaxVideoAI. Nous confirmerons votre e-mail avant votre premier rendu."
+        "description": "Créez votre compte, confirmez votre e-mail, puis revenez dans le studio pour lancer votre rendu."
       },
       "signin": {
         "title": "Accédez à votre studio",
@@ -5056,6 +5056,38 @@
       "body": "Créez un compte avec {email} sans ressaisir vos informations.",
       "accept": "Créer ce compte",
       "decline": "Je réessaierai plus tard"
+    },
+    "modeGroup": "Choisir le mode d’accès au compte",
+    "passwordVisibility": {
+      "show": "Afficher le mot de passe",
+      "hide": "Masquer le mot de passe"
+    },
+    "validation": {
+      "formAttention": "Vérifiez les champs signalés puis réessayez.",
+      "emailRequired": "Saisissez votre adresse e-mail.",
+      "emailInvalid": "Saisissez une adresse e-mail valide.",
+      "passwordRequired": "Saisissez votre mot de passe.",
+      "passwordTooShort": "Utilisez au moins 6 caractères.",
+      "confirmRequired": "Confirmez votre mot de passe.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas.",
+      "termsRequired": "Acceptez les Conditions d’utilisation et la Politique de confidentialité pour continuer.",
+      "ageRequired": "Confirmez que vous respectez l’âge minimum requis."
+    },
+    "feedback": {
+      "signingIn": "Connexion…",
+      "signinRedirecting": "Connexion réussie. Redirection…",
+      "signinSuggestion": "Ces informations ne permettent pas de vous connecter. Si vous êtes nouveau, créez votre compte sans tout ressaisir.",
+      "signupSuggestionReady": "Parfait, créons votre compte.",
+      "creatingAccount": "Création du compte…",
+      "accountRedirecting": "Compte créé. Redirection…",
+      "confirmEmail": "Consultez votre boîte de réception pour confirmer votre e-mail.",
+      "sendingReset": "Envoi du lien…",
+      "resetSent": "E-mail de réinitialisation envoyé.",
+      "googleUnavailable": "La connexion Google est indisponible car l’URL de redirection n’a pas pu être déterminée.",
+      "googleRedirecting": "Redirection vers Google…",
+      "completingSignIn": "Finalisation de la connexion…",
+      "completeSignInError": "Impossible de finaliser la connexion.",
+      "consentSaveError": "Impossible d’enregistrer vos choix de consentement. Réessayez."
     },
     "oauthCallbackError": "La connexion Google n’a pas pu aboutir. Veuillez réessayer."
   },

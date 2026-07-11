@@ -17,6 +17,7 @@ const viewerHookPath = path.join(imageDir, '_hooks/useImageWorkspaceViewer.ts');
 const composerSurfacePath = path.join(imageDir, '_components/ImageWorkspaceComposerSurface.tsx');
 const galleryRailPath = path.join(imageDir, '_components/ImageWorkspaceGalleryRail.tsx');
 const runtimeModalsPath = path.join(imageDir, '_components/ImageWorkspaceRuntimeModals.tsx');
+const imageAuthGatePath = path.join(imageDir, '_components/ImageAuthGateModal.tsx');
 const shellPath = path.join(imageDir, '_components/ImageWorkspaceShell.tsx');
 const emptyStatePath = path.join(imageDir, '_components/ImageWorkspaceEmptyState.tsx');
 const routeContextHookPath = path.join(imageDir, '_hooks/useImageWorkspaceRouteContext.ts');
@@ -70,6 +71,7 @@ test('image workspace foundations are split from the route orchestrator', () => 
   const composerSurfaceSource = readFileSync(composerSurfacePath, 'utf8');
   const galleryRailSource = readFileSync(galleryRailPath, 'utf8');
   const runtimeModalsSource = readFileSync(runtimeModalsPath, 'utf8');
+  const imageAuthGateSource = readFileSync(imageAuthGatePath, 'utf8');
   const shellSource = readFileSync(shellPath, 'utf8');
   const emptyStateSource = readFileSync(emptyStatePath, 'utf8');
   const routeContextHookSource = readFileSync(routeContextHookPath, 'utf8');
@@ -187,6 +189,18 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(galleryRailSource, /<GalleryRail\b/);
   assert.match(runtimeModalsSource, /export function ImageWorkspaceRuntimeModals/);
   assert.match(runtimeModalsSource, /<ImageAuthGateModal\b/);
+  assert.match(imageAuthGateSource, /useAccessibleModal/);
+  assert.match(imageAuthGateSource, /role="dialog"/);
+  assert.match(imageAuthGateSource, /aria-modal="true"/);
+  assert.match(imageAuthGateSource, /data-modal-initial-focus="true"/);
+  assert.match(
+    imageAuthGateSource,
+    /href=\{`\/login\?next=\$\{encodeURIComponent\(loginRedirectTarget\)\}`\}/
+  );
+  assert.match(
+    imageAuthGateSource,
+    /href=\{`\/login\?mode=signin&next=\$\{encodeURIComponent\(loginRedirectTarget\)\}`\}/
+  );
   assert.match(runtimeModalsSource, /<ImageLibraryModal\b/);
   assert.match(runtimeModalsSource, /GroupViewerModal/);
   assert.match(shellSource, /export function ImageWorkspaceShell/);

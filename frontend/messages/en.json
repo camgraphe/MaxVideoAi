@@ -3112,7 +3112,7 @@
       },
       "authGate": {
         "title": "Create an account to render",
-        "body": "You can explore the full workspace with starter renders, but launching a real render requires an account.",
+        "body": "Explore the workspace with starter renders. Create an account and we'll return you here to continue.",
         "primary": "Create account",
         "secondary": "Sign in",
         "close": "Maybe later",
@@ -3573,7 +3573,7 @@
       },
       "authGate": {
         "title": "Create an account to render",
-        "body": "You can explore the image workspace, but starting a real image generation requires an account.",
+        "body": "Explore the image workspace first. Create an account and we'll return you here to continue.",
         "primary": "Create account",
         "secondary": "Sign in",
         "close": "Maybe later"
@@ -4972,7 +4972,7 @@
     "modes": {
       "signup": {
         "title": "Create your workspace account",
-        "description": "Get instant access to the MaxVideoAI workspace. We'll confirm your email before your first render."
+        "description": "Create your account, confirm your email, and return to the workspace to start your render."
       },
       "signin": {
         "title": "Access your workspace",
@@ -5021,6 +5021,38 @@
       "body": "Create an account with {email} without re-entering your details.",
       "accept": "Create this account",
       "decline": "I'll try again"
+    },
+    "modeGroup": "Choose account access mode",
+    "passwordVisibility": {
+      "show": "Show password",
+      "hide": "Hide password"
+    },
+    "validation": {
+      "formAttention": "Check the highlighted fields and try again.",
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordRequired": "Enter your password.",
+      "passwordTooShort": "Use at least 6 characters.",
+      "confirmRequired": "Confirm your password.",
+      "passwordMismatch": "Passwords do not match.",
+      "termsRequired": "Accept the Terms of Service and Privacy Policy to continue.",
+      "ageRequired": "Confirm that you meet the minimum age requirement."
+    },
+    "feedback": {
+      "signingIn": "Signing in…",
+      "signinRedirecting": "Signed in. Redirecting…",
+      "signinSuggestion": "We couldn't sign you in with those details. If you're new, create your account without retyping anything.",
+      "signupSuggestionReady": "Great, let's create your account.",
+      "creatingAccount": "Creating account…",
+      "accountRedirecting": "Account created. Redirecting…",
+      "confirmEmail": "Check your inbox to confirm your email.",
+      "sendingReset": "Sending reset link…",
+      "resetSent": "Password reset email sent.",
+      "googleUnavailable": "Google sign-in is unavailable because the auth redirect URL could not be resolved.",
+      "googleRedirecting": "Redirecting to Google…",
+      "completingSignIn": "Completing sign-in…",
+      "completeSignInError": "Unable to complete sign-in.",
+      "consentSaveError": "We couldn't save your consent choices. Please try again."
     },
     "oauthCallbackError": "Google sign-in could not be completed. Please try again."
   },

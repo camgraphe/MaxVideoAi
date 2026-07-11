@@ -5,10 +5,11 @@ import test from 'node:test';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(core)/login/page.tsx');
+const pageClientPath = join(root, 'frontend/app/(core)/login/_components/LoginPageClient.tsx');
 const controllerPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginPageController.ts');
 const autofillHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginAutofillSync.ts');
 const browserLocaleHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginBrowserLocale.ts');
-const modeQueryHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginModeFromQuery.ts');
+const routeStatePath = join(root, 'frontend/app/(core)/login/_lib/login-route-state.ts');
 const nextTargetHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginNextTarget.ts');
 const authenticatedRedirectHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginAuthenticatedRedirect.ts');
 const authHashSessionHookPath = join(root, 'frontend/app/(core)/login/_hooks/useLoginAuthHashSession.ts');
@@ -16,8 +17,10 @@ const oauthCodeExchangeHookPath = join(root, 'frontend/app/(core)/login/_hooks/u
 const copyPath = join(root, 'frontend/app/(core)/login/_lib/login-copy.ts');
 const helpersPath = join(root, 'frontend/app/(core)/login/_lib/login-helpers.ts');
 const authSurfacePath = join(root, 'frontend/app/(core)/login/_components/LoginAuthSurface.tsx');
+const passwordFieldPath = join(root, 'frontend/app/(core)/login/_components/LoginPasswordField.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
+const pageClientSource = readFileSync(pageClientPath, 'utf8');
 const controllerSource = readFileSync(controllerPath, 'utf8');
 const autofillHookSource = readFileSync(autofillHookPath, 'utf8');
 const nextTargetHookSource = readFileSync(nextTargetHookPath, 'utf8');
@@ -29,7 +32,8 @@ test('login page delegates localized copy and browser helpers to route-local mod
   assert.ok(existsSync(controllerPath), 'login controller hook should stay in a route-local hook module');
   assert.ok(existsSync(autofillHookPath), 'login autofill sync should stay in a route-local hook module');
   assert.ok(existsSync(browserLocaleHookPath), 'login browser locale should stay in a route-local hook module');
-  assert.ok(existsSync(modeQueryHookPath), 'login mode query sync should stay in a route-local hook module');
+  assert.ok(existsSync(pageClientPath), 'login client orchestration should stay in a route-local client component');
+  assert.ok(existsSync(routeStatePath), 'login initial route state should stay in a pure route-local module');
   assert.ok(existsSync(nextTargetHookPath), 'login next target state should stay in a route-local hook module');
   assert.ok(existsSync(authenticatedRedirectHookPath), 'login authenticated redirect probes should stay in a route-local hook module');
   assert.ok(existsSync(authHashSessionHookPath), 'login hash session handling should stay in a route-local hook module');
@@ -37,22 +41,30 @@ test('login page delegates localized copy and browser helpers to route-local mod
   assert.ok(existsSync(copyPath), 'login localized copy should stay in a route-local copy module');
   assert.ok(existsSync(helpersPath), 'login browser helpers should stay in a route-local helper module');
   assert.ok(existsSync(authSurfacePath), 'login form UI should stay in a route-local component module');
+  assert.ok(existsSync(passwordFieldPath), 'password visibility should stay in a focused route-local component');
 
   assert.match(
     pageSource,
-    /from '\.\/_hooks\/useLoginPageController'/,
-    'login page should import the route-local controller hook'
+    /from '\.\/_components\/LoginPageClient'/,
+    'login page should render the route-local client owner'
   );
-  assert.match(
-    pageSource,
-    /from '\.\/_components\/LoginAuthSurface'/,
-    'login page should render the route-local auth surface component'
-  );
+  assert.doesNotMatch(pageSource, /'use client'/);
+  assert.match(pageSource, /from 'next\/headers'/);
+  assert.match(pageSource, /<LoginPageClient/);
+  assert.match(pageSource, /resolveInitialAuthMode\(params\.mode\)/);
+  assert.match(pageSource, /resolveInitialAuthLocale\(/);
+  assert.match(pageClientSource, /'use client'/);
+  assert.match(pageClientSource, /from '\.\.\/_hooks\/useLoginPageController'/);
+  assert.match(pageClientSource, /from '\.\/LoginAuthSurface'/);
+  assert.match(pageClientSource, /useLoginPageController\(\{ initialMode, initialLocale \}\)/);
+  const routeStateSource = readFileSync(routeStatePath, 'utf8');
+  assert.match(routeStateSource, /export function resolveInitialAuthMode/);
+  assert.match(routeStateSource, /export function resolveInitialAuthLocale/);
   assert.match(controllerSource, /from '\.\.\/_lib\/login-copy'/);
   assert.match(controllerSource, /from '\.\.\/_lib\/login-helpers'/);
   assert.match(controllerSource, /from '\.\/useLoginAutofillSync'/);
   assert.match(controllerSource, /from '\.\/useLoginBrowserLocale'/);
-  assert.match(controllerSource, /from '\.\/useLoginModeFromQuery'/);
+  assert.doesNotMatch(controllerSource, /useLoginModeFromQuery/);
   assert.match(controllerSource, /from '\.\/useLoginNextTarget'/);
   assert.match(controllerSource, /from '\.\/useLoginAuthenticatedRedirect'/);
   assert.match(controllerSource, /from '\.\/useLoginAuthHashSession'/);
@@ -79,6 +91,7 @@ test('login page does not regain auth copy or browser helper ownership', () => {
     `login controller should keep shrinking as browser helpers move out, got ${controllerLineCount}`
   );
   assert.doesNotMatch(pageSource, /<main className=/, 'login page should not own the full form surface JSX');
+  assert.doesNotMatch(pageClientSource, /supabase\.auth/, 'client composition should not own Supabase auth');
 });
 
 test('login helper modules expose the expected route contract', () => {
@@ -108,6 +121,7 @@ test('login helper modules expose the expected route contract', () => {
   assert.match(controllerSource, /markPendingGoogleLogin\(mode === 'signup' \? 'signup' : 'signin'\)/);
   assert.match(oauthCodeExchangeHookSource, /resolveGoogleAuthCompletionEvent\(pendingMode\)/);
   assert.match(authSurfaceSource, /export function LoginAuthSurface/, 'auth surface component should export the login form shell');
+  assert.match(authSurfaceSource, /from '\.\/LoginPasswordField'/, 'auth surface should delegate password visibility');
   assert.match(authSurfaceSource, /function GoogleIcon\(/, 'auth surface component should own the inline Google icon');
   assert.match(authSurfaceSource, /formatTemplate\(authCopy\.terms\.age/, 'auth surface component should own localized legal text rendering');
 
