@@ -16,15 +16,7 @@ import type { ReferenceAsset } from '../../_lib/workspace-assets';
 import type { FormState } from '../../_lib/workspace-form-state';
 import type { WorkspaceInputFieldEntry } from '../../_lib/workspace-input-schema';
 
-export const OMNI_CUSTOM_FIELD_IDS = new Set([
-  'store_interaction',
-  'previous_interaction_id',
-  'prompt_audio_direction',
-  'prompt_camera_direction',
-  'prompt_edit_instruction',
-]);
-
-type OmniStudioPanelProps = {
+export type OmniStudioPanelProps = {
   engine: EngineCaps;
   caps?: EngineModeUiCaps;
   form: FormState;

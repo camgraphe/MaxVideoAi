@@ -5,6 +5,14 @@ const SOURCE_IMAGE_FIELD_IDS = new Set(['image_url']);
 const REFERENCE_IMAGE_FIELD_IDS = new Set(['reference_images']);
 const SOURCE_VIDEO_FIELD_IDS = new Set(['video_url']);
 
+export const OMNI_CUSTOM_FIELD_IDS = new Set([
+  'store_interaction',
+  'previous_interaction_id',
+  'prompt_audio_direction',
+  'prompt_camera_direction',
+  'prompt_edit_instruction',
+]);
+
 export const GEMINI_OMNI_SOURCE_IMAGE_ACTIVE_MESSAGE =
   'Source image controls this Omni workflow. Remove it to use references, video edit, or refine.';
 

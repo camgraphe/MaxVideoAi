@@ -1,6 +1,6 @@
 'use client';
 
-import type { ChangeEvent, ComponentProps, FormEvent } from 'react';
+import type { ChangeEvent, FormEvent } from 'react';
 import dynamic from 'next/dynamic';
 import type { AssetLibraryModalProps } from '@/components/library/AssetLibraryModal';
 import type { EngineInputField } from '@/types/engines';
@@ -12,8 +12,8 @@ import type {
   AssetPickerTarget,
   UserAsset,
 } from '../_lib/workspace-assets';
-import { WorkspaceAuthGateModal } from './WorkspaceAuthGateModal';
-import { WorkspaceTopUpModal } from './WorkspaceTopUpModal';
+import type { WorkspaceAuthGateModalProps } from './WorkspaceAuthGateModal';
+import type { WorkspaceTopUpModalProps } from './WorkspaceTopUpModal';
 
 const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
   () => import('@/components/library/AssetLibraryModal').then((mod) => mod.AssetLibraryModal),
@@ -22,6 +22,16 @@ const AssetLibraryModal = dynamic<AssetLibraryModalProps>(
 
 const GroupViewerModal = dynamic(
   () => import('@/components/groups/GroupViewerModal').then((mod) => mod.GroupViewerModal),
+  { ssr: false }
+);
+
+const WorkspaceTopUpModal = dynamic<WorkspaceTopUpModalProps>(
+  () => import('./WorkspaceTopUpModal').then((mod) => mod.WorkspaceTopUpModal),
+  { ssr: false }
+);
+
+const WorkspaceAuthGateModal = dynamic<WorkspaceAuthGateModalProps>(
+  () => import('./WorkspaceAuthGateModal').then((mod) => mod.WorkspaceAuthGateModal),
   { ssr: false }
 );
 
@@ -68,7 +78,7 @@ export function WorkspaceRuntimeModals({
   onCloseViewer: () => void;
   onRefreshJob: (jobId: string) => Promise<void>;
   topUpModal: TopUpModalState;
-  topUpCopy: ComponentProps<typeof WorkspaceTopUpModal>['copy'];
+  topUpCopy: WorkspaceTopUpModalProps['copy'];
   currency: string;
   topUpAmount: number;
   isTopUpLoading: boolean;
@@ -84,7 +94,7 @@ export function WorkspaceRuntimeModals({
   onSelectPresetAmount: (value: number) => void;
   onCustomAmountChange: (event: ChangeEvent<HTMLInputElement>) => void;
   authModalOpen: boolean;
-  authGateCopy: ComponentProps<typeof WorkspaceAuthGateModal>['copy'];
+  authGateCopy: WorkspaceAuthGateModalProps['copy'];
   loginRedirectTarget: string;
   onCloseAuthModal: () => void;
   assetPickerTarget: AssetPickerTarget | null;

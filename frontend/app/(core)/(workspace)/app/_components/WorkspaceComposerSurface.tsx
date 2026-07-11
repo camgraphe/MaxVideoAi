@@ -22,6 +22,7 @@ import {
   KLING_O3_VIDEO_FRAME_IGNORED_MESSAGE,
   supportsKlingO3VideoToVideo,
 } from '../_lib/kling-o3-unified-workflow';
+import { OMNI_CUSTOM_FIELD_IDS } from '../_lib/gemini-omni-unified-workflow';
 import type { FormState } from '../_lib/workspace-form-state';
 import { normalizeExtraInputValue } from '../_lib/workspace-form-state';
 import {
@@ -34,12 +35,27 @@ import {
   MULTI_PROMPT_MIN_SEC,
 } from '../_lib/workspace-input-helpers';
 import { KLING_MULTI_PROMPT_SCENE_MAX_CHARS } from '../_lib/workspace-multi-prompt-state';
-import { LumaRay32KeyframeEditor } from './LumaRay32KeyframeEditor';
-import { OmniStudioPanel, OMNI_CUSTOM_FIELD_IDS } from './omni/OmniStudioPanel.client';
-import { StoryboardLaunchModal } from './StoryboardLaunchModal';
+import type { LumaRay32KeyframeEditorProps } from './LumaRay32KeyframeEditor';
+import type { OmniStudioPanelProps } from './omni/OmniStudioPanel.client';
+import type { StoryboardLaunchModalProps } from './StoryboardLaunchModal';
 
 const KlingElementsBuilder = dynamic<KlingElementsBuilderProps>(
   () => import('@/components/KlingElementsBuilder').then((mod) => mod.KlingElementsBuilder),
+  { ssr: false }
+);
+
+const LumaRay32KeyframeEditor = dynamic<LumaRay32KeyframeEditorProps>(
+  () => import('./LumaRay32KeyframeEditor').then((mod) => mod.LumaRay32KeyframeEditor),
+  { ssr: false }
+);
+
+const OmniStudioPanel = dynamic<OmniStudioPanelProps>(
+  () => import('./omni/OmniStudioPanel.client').then((mod) => mod.OmniStudioPanel),
+  { ssr: false }
+);
+
+const StoryboardLaunchModal = dynamic<StoryboardLaunchModalProps>(
+  () => import('./StoryboardLaunchModal').then((mod) => mod.StoryboardLaunchModal),
   { ssr: false }
 );
 
@@ -662,12 +678,14 @@ export function WorkspaceComposerSurface({
           />
         }
       />
-      <StoryboardLaunchModal
-        open={storyboardModalOpen}
-        selectedEngineId={selectedEngine.id}
-        selectedEngineLabel={selectedEngine.label}
-        onClose={() => setStoryboardModalOpen(false)}
-      />
+      {storyboardModalOpen ? (
+        <StoryboardLaunchModal
+          open
+          selectedEngineId={selectedEngine.id}
+          selectedEngineLabel={selectedEngine.label}
+          onClose={() => setStoryboardModalOpen(false)}
+        />
+      ) : null}
     </>
   );
 }

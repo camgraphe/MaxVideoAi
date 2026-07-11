@@ -11,7 +11,7 @@ type WorkspaceAuthGateCopy = {
   close: string;
 };
 
-type WorkspaceAuthGateModalProps = {
+export type WorkspaceAuthGateModalProps = {
   copy: WorkspaceAuthGateCopy;
   loginRedirectTarget: string;
   onClose: () => void;

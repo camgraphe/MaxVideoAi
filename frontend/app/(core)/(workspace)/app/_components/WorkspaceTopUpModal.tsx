@@ -26,7 +26,7 @@ type WorkspaceTopUpCopy = {
   submitting: string;
 };
 
-type WorkspaceTopUpModalProps = {
+export type WorkspaceTopUpModalProps = {
   modal: NonNullable<TopUpModalState>;
   copy: WorkspaceTopUpCopy;
   currency: string;
