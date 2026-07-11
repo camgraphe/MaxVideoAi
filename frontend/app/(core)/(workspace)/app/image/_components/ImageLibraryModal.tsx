@@ -43,7 +43,7 @@ const AssetLibraryBrowser = dynamic<AssetLibraryBrowserProps>(
   { ssr: false }
 );
 
-type ImageLibraryModalProps = {
+export type ImageLibraryModalProps = {
   open: boolean;
   onClose: () => void;
   onSelect: (asset: LibraryAsset) => void;

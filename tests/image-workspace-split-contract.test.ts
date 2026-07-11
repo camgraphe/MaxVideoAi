@@ -195,11 +195,11 @@ test('image workspace foundations are split from the route orchestrator', () => 
   assert.match(imageAuthGateSource, /data-modal-initial-focus="true"/);
   assert.match(
     imageAuthGateSource,
-    /href=\{`\/login\?next=\$\{encodeURIComponent\(loginRedirectTarget\)\}`\}/
+    /buildLoginHref\(\{ mode: 'signup', nextPath: loginRedirectTarget \}\)/
   );
   assert.match(
     imageAuthGateSource,
-    /href=\{`\/login\?mode=signin&next=\$\{encodeURIComponent\(loginRedirectTarget\)\}`\}/
+    /buildLoginHref\(\{ mode: 'signin', nextPath: loginRedirectTarget \}\)/
   );
   assert.match(runtimeModalsSource, /<ImageLibraryModal\b/);
   assert.match(runtimeModalsSource, /GroupViewerModal/);

@@ -5,7 +5,7 @@ import { useAccessibleModal } from '@/components/ui/useAccessibleModal';
 import type { ImageWorkspaceCopy } from '../_lib/image-workspace-copy';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 
-type ImageAuthGateModalProps = {
+export type ImageAuthGateModalProps = {
   open: boolean;
   copy: ImageWorkspaceCopy['authGate'];
   loginRedirectTarget: string;
