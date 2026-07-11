@@ -94,6 +94,57 @@ test('authenticated initialize uses stateless Streamable HTTP and private cachin
   assert.equal(payload.result.serverInfo.name, 'maxvideoai');
 });
 
+test('authenticated account tool uses the resolved staging account URL through default services', async () => {
+  const stagingOrigin = 'https://maxvideoai-mcp-staging.vercel.app';
+  const response = await handleMcpHttpRequest(
+    new Request(`${stagingOrigin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer access-token',
+        accept: 'application/json, text/event-stream',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 2,
+        method: 'tools/call',
+        params: { name: 'get_account_status', arguments: {} },
+      }),
+    }),
+    deps({
+      config: {
+        apiHost: 'maxvideoai-mcp-staging.vercel.app',
+        resourceUrl: `${stagingOrigin}/mcp`,
+        protectedResourceMetadataUrl:
+          `${stagingOrigin}/.well-known/oauth-protected-resource/mcp`,
+        accountUrl: `${stagingOrigin}/account/connections`,
+      },
+      accountStatusDeps: {
+        async getWalletSummary() {
+          return {
+            balanceCents: 0,
+            currency: 'USD',
+            pendingCents: 0,
+            hasCompletedTopUp: false,
+          };
+        },
+      },
+    }),
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(
+    payload.result.structuredContent.accountUrl,
+    `${stagingOrigin}/account/connections`,
+  );
+  assert.deepEqual(payload.result.structuredContent.wallet, {
+    amountCents: 0,
+    currency: 'USD',
+    pendingCents: 0,
+  });
+});
+
 test('browser HTML negotiation, oversized bodies, wrong hosts, and unsupported methods are rejected safely', async () => {
   const browserRequest = protocolRequest(initializeRequest, { accept: 'text/html' });
   const oversizedRequest = protocolRequest(initializeRequest, { 'content-length': '200000' });

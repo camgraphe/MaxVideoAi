@@ -1,6 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
-import { getAgentAccountStatus } from '@/server/agent-api/account-status';
+import {
+  createAgentAccountStatusService,
+  type AgentAccountStatusWalletDeps,
+} from '@/server/agent-api/account-status';
 import { listAgentModels } from '@/server/agent-api/model-catalog';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
@@ -11,6 +14,7 @@ import type {
   AgentModelRecommendationInput,
   AgentModelRecommendationResult,
 } from '@/server/agent-api/types';
+import type { McpConfig } from '@/server/mcp/config';
 import { MAXVIDEOAI_MCP_INSTRUCTIONS } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
@@ -25,15 +29,20 @@ export type MaxVideoAiMcpServices = {
   ): Promise<AgentModelRecommendationResult>;
 };
 
-const defaultServices: MaxVideoAiMcpServices = {
-  getAccountStatus: getAgentAccountStatus,
-  listModels: (filter) => listAgentModels(filter),
-  recommendModels: (input) => recommendAgentModels(input),
-};
+export function createDefaultMaxVideoAiMcpServices(
+  config: McpConfig,
+  accountStatusDeps?: AgentAccountStatusWalletDeps
+): MaxVideoAiMcpServices {
+  return {
+    getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
+    listModels: (filter) => listAgentModels(filter),
+    recommendModels: (input) => recommendAgentModels(input),
+  };
+}
 
 export function createMaxVideoAiMcpServer(
   principal: AgentPrincipal,
-  services: MaxVideoAiMcpServices = defaultServices
+  services: MaxVideoAiMcpServices
 ): McpServer {
   const server = new McpServer(
     {

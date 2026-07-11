@@ -1,12 +1,16 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 
 import { isMcpApiHost } from '@/lib/mcp-host-routing';
+import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
 import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
-import { createMaxVideoAiMcpServer } from '@/server/mcp/server';
+import {
+  createDefaultMaxVideoAiMcpServices,
+  createMaxVideoAiMcpServer,
+} from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 
 const MAX_BODY_BYTES = 128 * 1024;
@@ -18,6 +22,7 @@ export type McpHttpHandlerDeps = {
   config: McpConfig;
   resolvePrincipal(request: Request): Promise<AgentPrincipal>;
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
+  accountStatusDeps?: AgentAccountStatusWalletDeps;
 };
 
 function jsonRpcError(status: number, code: number, message: string, headers?: HeadersInit): Response {
@@ -143,7 +148,10 @@ export async function handleMcpHttpRequest(
   const recorder = injectedDeps ? injectedDeps.recordEvent : recordMcpEvent;
   await recordProtocolDiscovery(parsedBody, principal, recorder);
 
-  const server = createMaxVideoAiMcpServer(principal);
+  const server = createMaxVideoAiMcpServer(
+    principal,
+    createDefaultMaxVideoAiMcpServices(config, injectedDeps?.accountStatusDeps)
+  );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
