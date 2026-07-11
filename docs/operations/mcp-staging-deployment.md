@@ -198,6 +198,29 @@ Expected results:
 - JWKS exposes a public EC key with `alg` equal to `ES256`;
 - no production project setting or user has changed.
 
+### Hosted protocol evidence
+
+The credential-free hosted smoke test passed on 2026-07-12. No Vercel
+authentication cookie, share link, protection-bypass credential, Supabase
+session, or MCP bearer token was sent.
+
+| Check | Sanitized result |
+| --- | --- |
+| Protected-resource discovery | HTTP `200`; resource `https://maxvideoai-mcp-staging.vercel.app/mcp`; sole authorization-server host `gecrywjztpbwbrlnomti.supabase.co` |
+| Supabase OAuth discovery | HTTP `200` on the staging authorization server |
+| Anonymous MCP `initialize` | Direct application HTTP `401`; no redirect or Vercel protection page |
+| MCP cache policy | `Cache-Control: private, no-store` |
+| MCP authentication challenge | RFC 9728 bearer challenge referencing the staging protected-resource metadata URL |
+| Indexing policy | Exact `X-Robots-Tag: noindex, nofollow, noarchive` on both tested staging endpoints |
+| Stable deployment schedule | Vercel deployment metadata reports `crons: []` |
+| Stable deployment cron logs | Zero `/api/cron/` requests from the corrected stable deployment between its 2026-07-11 creation and the 2026-07-12 verification |
+| Production rollout | `api.maxvideoai.com` has no DNS record and is absent from the production Vercel project's domains; MCP and protected-resource discovery therefore remain unavailable without changing production |
+
+The production `curl` probes returned status `000` because the dedicated API
+hostname does not resolve, rather than an application HTTP response. This is
+the existing disabled rollout state, not a staging test failure. Do not add the
+hostname or enable production MCP flags as part of staging validation.
+
 ## Cleanup
 
 When the hosted MCP test environment is no longer required:
