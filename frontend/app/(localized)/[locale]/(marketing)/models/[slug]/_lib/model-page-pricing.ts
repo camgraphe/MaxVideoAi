@@ -1,5 +1,5 @@
 import { localeRegions, type AppLocale } from '@/i18n/locales';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import { computeMarketingPricePoints, computeMarketingPriceRange, type MarketingPricePoint } from '@/lib/pricing-marketing';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import type { EngineCaps } from '@/types/engines';
@@ -150,7 +150,7 @@ async function computePerSecondValue(
 ): Promise<{ label: string; perSecond: number } | null> {
   const durationSec = selectQuickDurations(engineCaps)[0] ?? 5;
   try {
-    const snapshot = await computePricingSnapshot({
+    const snapshot = await computeCanonicalPublicSnapshot({
       engine: engineCaps,
       durationSec,
       resolution,
@@ -173,7 +173,7 @@ export async function buildPricePerSecondLabel(engine: EngineCaps, locale: AppLo
   const durationOptions = selectQuickDurations(engine);
   const durationSec = durationOptions[0] ?? 5;
   try {
-    const snapshot = await computePricingSnapshot({
+    const snapshot = await computeCanonicalPublicSnapshot({
       engine,
       durationSec,
       resolution,

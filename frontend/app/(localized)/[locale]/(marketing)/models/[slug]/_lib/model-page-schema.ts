@@ -1,11 +1,13 @@
 import { PARTNER_BRAND_MAP } from '@/lib/brand-partners';
-import {
-  calculateLumaAgentsImageReferencePrice,
-  calculateLumaRay32ReferencePrice,
-} from '@/lib/luma-agents-pricing';
 import { isImageOnlyModel, supportsAudioGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
+import {
+  buildAuthoredPublicOfferFacts,
+  buildPublicPricingFacts,
+  type PublicPricingFactsResult,
+} from '@/lib/pricing-public-facts';
+import { quotePublicPricing } from '@/lib/pricing-public-quote';
 import type { FalEngineEntry } from '@/config/falEngines';
-import { computeSeedance2TokenQuote, isSeedance2TokenPricing, roundUsdUpToCents } from '@/lib/seedance-2-pricing';
+import { isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import type { EngineAvailability, EngineCaps } from '@/types/engines';
 import { SITE } from './model-page-links';
 
@@ -28,7 +30,6 @@ const AVAILABILITY_MAP: Record<EngineAvailability, string> = {
   paused: 'https://schema.org/Discontinued',
 };
 
-const DEFAULT_SCHEMA_MARGIN_PERCENT = 0.3;
 const MERCHANT_POLICY_COUNTRIES = [
   'US',
   'CA',
@@ -114,30 +115,81 @@ function resolveOfferResolution(engine: EngineCaps, hintResolution?: string): st
   return Array.from(allowed)[0] ?? null;
 }
 
+function quoteModelOfferFacts(
+  facts: PublicPricingFactsResult,
+  input: { mode?: string; resolution?: string }
+): number {
+  return quotePublicPricing({
+    facts: facts.facts,
+    scenario: {
+      id: `json-ld:${facts.facts.engineId}:offer`,
+      engineId: facts.facts.engineId,
+      ...(input.mode ? { mode: input.mode } : {}),
+      ...(input.resolution ? { resolution: input.resolution } : {}),
+      membershipTier: 'member',
+    },
+    compatibilityProfileId: facts.compatibilityProfileId,
+  }).customerTotalCents;
+}
+
 export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngine: EngineCaps): number | null {
   const hint = engine.pricingHint;
   if (typeof hint?.amountCents === 'number' && Number.isFinite(hint.amountCents) && hint.amountCents > 0) {
-    return Math.round(hint.amountCents);
-  }
-
-  const lumaAgentsAmountCents = resolveLumaAgentsOfferAmountCents(engine);
-  if (lumaAgentsAmountCents != null) {
-    return lumaAgentsAmountCents;
+    return quoteModelOfferFacts(
+      buildAuthoredPublicOfferFacts({
+        engineId: engine.id,
+        currency: hint.currency ?? pricingEngine.pricingDetails?.currency ?? 'USD',
+        amountCents: hint.amountCents,
+      }),
+      { resolution: hint.resolution }
+    );
   }
 
   const pricingDetails = pricingEngine.pricingDetails;
   const resolution = resolveOfferResolution(pricingEngine, hint?.resolution);
   const durationSeconds = resolveOfferDurationSeconds(pricingEngine, hint?.durationSeconds);
+  const mode = engine.category === 'image' ? 't2i' : 't2v';
+
+  if (pricingEngine.id === 'luma-ray-3-2') {
+    try {
+      const facts = buildPublicPricingFacts({
+        engine: pricingEngine,
+        durationSec: 5,
+        durationOption: '5s',
+        resolution: '540p',
+        mode: 't2v',
+      });
+      return quoteModelOfferFacts(facts, { mode: 't2v', resolution: '540p' });
+    } catch {
+      return null;
+    }
+  }
+
+  if (pricingEngine.id === 'luma-uni-1' || pricingEngine.id === 'luma-uni-1-max') {
+    try {
+      const facts = buildPublicPricingFacts({
+        engine: pricingEngine,
+        durationSec: 1,
+        resolution: resolution ?? '2k',
+        mode: 't2i',
+        referenceImageCount: 0,
+      });
+      return quoteModelOfferFacts(facts, { mode: 't2i', resolution: resolution ?? '2k' });
+    } catch {
+      return null;
+    }
+  }
 
   if (pricingDetails && isSeedance2TokenPricing(pricingDetails) && resolution) {
     try {
-      const quote = computeSeedance2TokenQuote({
-        details: pricingDetails,
+      const facts = buildPublicPricingFacts({
+        engine: pricingEngine,
         durationSec: durationSeconds,
         resolution,
         aspectRatio: pricingDetails.tokenPricing.defaultAspectRatio,
+        mode: 't2v',
       });
-      return roundUsdUpToCents(quote.vendorCostUsd * (1 + DEFAULT_SCHEMA_MARGIN_PERCENT));
+      return quoteModelOfferFacts(facts, { mode: 't2v', resolution });
     } catch {
       return null;
     }
@@ -152,32 +204,24 @@ export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngi
     0;
 
   if (typeof perSecondCents === 'number' && Number.isFinite(perSecondCents) && perSecondCents > 0) {
-    return Math.round(perSecondCents * durationSeconds + flatCents);
+    return quoteModelOfferFacts(
+      buildAuthoredPublicOfferFacts({
+        engineId: pricingEngine.id,
+        currency: pricingDetails?.currency ?? pricingEngine.pricing?.currency ?? 'USD',
+        amountCents: Math.round(perSecondCents * durationSeconds + flatCents),
+      }),
+      { mode, resolution: resolution ?? undefined }
+    );
   }
   if (typeof flatCents === 'number' && Number.isFinite(flatCents) && flatCents > 0) {
-    return Math.round(flatCents);
-  }
-
-  return null;
-}
-
-function resolveLumaAgentsOfferAmountCents(engine: FalEngineEntry): number | null {
-  try {
-    if (engine.engine.id === 'luma-ray-3-2') {
-      const quote = calculateLumaRay32ReferencePrice({ duration: '5s', resolution: '540p' });
-      return roundUsdUpToCents(quote.totalUsd * (1 + DEFAULT_SCHEMA_MARGIN_PERCENT));
-    }
-
-    if (engine.engine.id === 'luma-uni-1' || engine.engine.id === 'luma-uni-1-max') {
-      const quote = calculateLumaAgentsImageReferencePrice({
-        engineId: engine.engine.id,
-        mode: 't2i',
-        referenceImageCount: 0,
-      });
-      return roundUsdUpToCents(quote.totalUsd * (1 + DEFAULT_SCHEMA_MARGIN_PERCENT));
-    }
-  } catch {
-    return null;
+    return quoteModelOfferFacts(
+      buildAuthoredPublicOfferFacts({
+        engineId: pricingEngine.id,
+        currency: pricingDetails?.currency ?? pricingEngine.pricing?.currency ?? 'USD',
+        amountCents: Math.round(flatCents),
+      }),
+      { mode, resolution: resolution ?? undefined }
+    );
   }
 
   return null;

@@ -310,15 +310,16 @@ git commit -m "feat: migrate browser pricing projections"
 
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts`
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts`
+- Modify: `frontend/src/lib/pricing-marketing.ts`
 - Modify: `tests/model-page-layout-architecture.test.ts`
 - Modify: `tests/marketing-jsonld-schema-audit.test.ts`
 - Modify: `tests/pricing-public-projection.test.ts`
 
-- [ ] **Step 1: Add failing model/JSON-LD authority tests**
+- [x] **Step 1: Add failing model/JSON-LD authority tests**
 
 Require model pricing to use the server public owner and JSON-LD to use the public canonical adapter with `schema-current`. Forbid imports from `@/lib/pricing`, `DEFAULT_SCHEMA_MARGIN_PERCENT`, direct provider-total markup, and local commercial rounding.
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -330,15 +331,15 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: FAIL because model rows and schema offers remain legacy-authoritative.
 
-- [ ] **Step 3: Migrate DB-aware model pricing rows**
+- [x] **Step 3: Migrate DB-aware model pricing rows**
 
 Use `computeCanonicalPublicSnapshot()` for per-second and per-image points. Preserve engine-pricing overrides already applied by the route, database policy fallback, membership tier, localized formatting, resolution/quality labels, and async error fallback.
 
-- [ ] **Step 4: Migrate structured-data offers**
+- [x] **Step 4: Migrate structured-data offers**
 
 Create factual schema offer inputs from authored `pricingHint` amounts or provider facts. Use `schema-current` exactly where the authored amount is already customer-facing; use `provider-reference-current` only for existing fallback paths that currently add the provider-reference margin. Preserve `priceCurrency`, two-decimal `price`, availability, shipping, and return policy.
 
-- [ ] **Step 5: Run exhaustive model and schema parity**
+- [x] **Step 5: Run exhaustive model and schema parity**
 
 Run the Step 2 suite plus:
 
@@ -349,10 +350,10 @@ pnpm pricing:audit
 
 Expected: every Offer and model price matches the frozen fixture; audit remains 178/178.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
-git add 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts' tests/model-page-layout-architecture.test.ts tests/marketing-jsonld-schema-audit.test.ts tests/pricing-public-projection.test.ts
+git add 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts' frontend/src/lib/pricing-marketing.ts tests/model-page-layout-architecture.test.ts tests/marketing-jsonld-schema-audit.test.ts tests/pricing-public-projection.test.ts
 git commit -m "feat: migrate model pricing projections"
 ```
 

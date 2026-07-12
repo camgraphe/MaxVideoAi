@@ -338,3 +338,21 @@ test('browser estimator and price chip delegate commercial totals to the public 
   assert.doesNotMatch(options, /defaultMultiplier/);
   assert.doesNotMatch(options, /platformMultiplier/);
 });
+
+test('model price rows and Product Offer JSON-LD use canonical public owners', () => {
+  const modelPricing = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts',
+    'utf8'
+  );
+  const modelSchema = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts',
+    'utf8'
+  );
+  assert.match(modelPricing, /server\/pricing\/quote-public/);
+  assert.match(modelPricing, /computeCanonicalPublicSnapshot/);
+  assert.doesNotMatch(modelPricing, /from '@\/lib\/pricing'/);
+  assert.match(modelSchema, /pricing-public-facts/);
+  assert.match(modelSchema, /pricing-public-quote/);
+  assert.doesNotMatch(modelSchema, /DEFAULT_SCHEMA_MARGIN_PERCENT/);
+  assert.doesNotMatch(modelSchema, /roundUsdUpToCents/);
+});

@@ -1,5 +1,5 @@
 import type { EngineCaps } from '@/types/engines';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import {
   GPT_IMAGE_2_CANONICAL_SIZE_VALUES,
   type GptImage2Quality,
@@ -56,7 +56,7 @@ export async function computeMarketingPricePoints(
   for (const resolution of resolutions) {
     for (const quality of qualities) {
       try {
-        const snapshot = await computePricingSnapshot({
+        const snapshot = await computeCanonicalPublicSnapshot({
           engine,
           durationSec,
           resolution,
