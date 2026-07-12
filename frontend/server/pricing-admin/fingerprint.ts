@@ -17,6 +17,7 @@ export type PricingPreviewFingerprintInput = {
   versionedPolicyVersion: number | string;
   affectedScenarioIds: string[];
   unsupportedScenarioIds: string[];
+  projectionState?: PricingChangeJsonValue;
 };
 
 function invalidJson(path: string): never {
@@ -75,6 +76,9 @@ export function buildPricingPreviewFingerprint(input: PricingPreviewFingerprintI
     domain: input.domain,
     operation: input.operation,
     proposedState: input.proposedState === null ? null : normalizeJson(input.proposedState, 'proposedState'),
+    ...(input.projectionState === undefined
+      ? {}
+      : { projectionState: normalizeJson(input.projectionState, 'projectionState') }),
     targetId: input.targetId,
     versionedPolicyVersion: input.versionedPolicyVersion,
   };

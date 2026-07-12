@@ -207,6 +207,20 @@ test('database override validation allows a selector that intentionally overlaps
   assert.equal(overrides[0]?.engineId, 'audio-generation');
 });
 
+test('database override IDs cannot collide with validation internals', async () => {
+  const { validatePricingPolicyOverrides } = await import('../packages/pricing/src/policy.ts');
+  const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
+  const internalLookingId = '__pricing_override_validation_global__';
+
+  const overrides = validatePricingPolicyOverrides(
+    [rule(internalLookingId, { engineId: 'kling-3-pro' })],
+    getVersionedPricingPolicy(),
+    { engineIds: new Set(['kling-3-pro']) }
+  );
+
+  assert.equal(overrides[0]?.id, internalLookingId);
+});
+
 test('versioned policy facade returns defensive clones', async () => {
   assert.equal(existsSync(defaultsModulePath), true, `${defaultsModulePath} should exist`);
   const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
@@ -398,4 +412,21 @@ test('executor-aware pricing rule delete returns the previous canonical row', as
   assert.equal(previous.vendorAccountId, 'acct_existing');
   assert.match(calls[0]!.text, /DELETE FROM app_pricing_rules/);
   assert.match(calls[0]!.text, /RETURNING/);
+});
+
+test('transaction-local pricing override reads lock the authoritative rows', async () => {
+  const { loadPricingPolicyOverridesWithExecutor } = await import('../frontend/src/lib/pricing-rule-store.ts');
+  const calls: Array<{ text: string; params?: ReadonlyArray<unknown> }> = [];
+  const executor = {
+    async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<TRecord[]> {
+      calls.push({ text, params });
+      return [persistedRuleRow] as TRecord[];
+    },
+  };
+
+  const result = await loadPricingPolicyOverridesWithExecutor(executor, { lock: true });
+
+  assert.equal(result.status, 'loaded');
+  assert.match(calls[0]?.text ?? '', /LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE/);
+  assert.match(calls[1]?.text ?? '', /FOR UPDATE/);
 });

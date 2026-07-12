@@ -155,3 +155,20 @@ export async function listPricingChangeEvents(
   );
   return rows.map(mapPricingChangeEventRow);
 }
+
+export async function getPricingChangeEventById(
+  id: string,
+  domain: PricingChangeDomain,
+  executor: QueryExecutor = { query }
+): Promise<PricingChangeEvent | null> {
+  const eventId = id.trim();
+  if (!eventId) return null;
+  const rows = await executor.query<RawPricingChangeEvent>(
+    `SELECT id, domain, operation, target_id, actor_id, previous_state, next_state,
+            preview_summary, affected_scenario_ids, created_at
+       FROM app_pricing_change_events
+      WHERE id = $1 AND domain = $2`,
+    [eventId, domain]
+  );
+  return rows[0] ? mapPricingChangeEventRow(rows[0]) : null;
+}

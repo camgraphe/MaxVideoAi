@@ -12,6 +12,7 @@ import { listFalEngines } from '@/config/falEngines';
 import type {
   InsertPricingChangeEventInput,
   ListPricingChangeEventsInput,
+  PricingChangeDomain,
   PricingChangeEvent,
   PricingChangeJsonObject,
   PricingChangeJsonValue,
@@ -24,6 +25,7 @@ import {
   deletePricingRuleWithExecutor,
   invalidatePricingRulesCache,
   loadPricingPolicyOverrides,
+  loadPricingPolicyOverridesWithExecutor,
   upsertPricingRuleWithExecutor,
   type PricingPolicyOverrideLoadResult,
   type PricingRule,
@@ -40,7 +42,7 @@ import {
   type RequestedPricingSurcharge,
 } from './canonical-scenarios';
 import { PricingAdminError } from './errors';
-import { insertPricingChangeEvent, listPricingChangeEvents } from './event-store';
+import { getPricingChangeEventById, insertPricingChangeEvent, listPricingChangeEvents } from './event-store';
 import { buildPricingPreviewFingerprint } from './fingerprint';
 import { revalidatePricingChangeSurfaces } from './revalidation';
 
@@ -65,9 +67,14 @@ export type PricingChangePreview = {
 };
 
 export type PricingChangeConfirmation = {
+  committed: true;
   preview: PricingChangePreview;
   persistedState: PricingChangeJsonValue | null;
   event: PricingChangeEvent;
+  operationalWarnings: Array<{
+    code: 'cache_invalidation_failed' | 'path_revalidation_failed';
+    message: string;
+  }>;
 };
 
 export type PricingPolicyInventoryRow = {
@@ -88,7 +95,8 @@ export type PricingPolicyInventoryResponse = {
 };
 
 export type PricingPolicyServiceDependencies = {
-  loadOverrides(): Promise<PricingPolicyOverrideLoadResult>;
+  loadOverrides(executor?: QueryExecutor): Promise<PricingPolicyOverrideLoadResult>;
+  getEvent(id: string, domain: PricingChangeDomain, executor?: QueryExecutor): Promise<PricingChangeEvent | null>;
   listEvents(input?: ListPricingChangeEventsInput): Promise<PricingChangeEvent[]>;
   withTransaction<TResult>(callback: (executor: QueryExecutor) => Promise<TResult>): Promise<TResult>;
   upsertRule(executor: QueryExecutor, rule: PricingPolicyRule, actorId: string): Promise<PricingRule>;
@@ -99,7 +107,11 @@ export type PricingPolicyServiceDependencies = {
 };
 
 const DEFAULT_DEPENDENCIES: PricingPolicyServiceDependencies = {
-  loadOverrides: loadPricingPolicyOverrides,
+  loadOverrides: (executor) =>
+    executor
+      ? loadPricingPolicyOverridesWithExecutor(executor, { lock: true })
+      : loadPricingPolicyOverrides(),
+  getEvent: (id, domain, executor) => getPricingChangeEventById(id, domain, executor),
   listEvents: listPricingChangeEvents,
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   upsertRule: (executor, rule, actorId) => upsertPricingRuleWithExecutor(executor, rule, actorId),
@@ -116,6 +128,7 @@ type PreviewContext = {
   proposedRule: PricingPolicyRule | null;
   currentRules: PricingPolicyRule[];
   proposedRules: PricingPolicyRule[];
+  currentRoutingRules: PricingRule[];
   rollbackEventId?: string;
 };
 
@@ -251,30 +264,55 @@ async function buildPreviewContext(
     throw new PricingAdminError('invalid_payload', 'Unsupported pricing policy operation');
   }
   const operation = operationValue;
-  const { rules: currentRules } = await loadDatabaseRules(deps);
+  const { rules: currentRules, routingRules: currentRoutingRules } = await loadDatabaseRules(deps);
 
   if (operation === 'rollback') {
     const eventId = requiredText(proposal.eventId, 'eventId');
-    const events = await deps.listEvents({ domain: 'policy_rule', limit: 200 });
-    const event = events.find((candidate) => candidate.id === eventId && candidate.domain === 'policy_rule');
+    const event = await deps.getEvent(eventId, 'policy_rule');
     if (!event) throw new PricingAdminError('missing_target', 'Pricing change event not found');
     const targetId = event.targetId;
     const currentRule = currentRules.find((rule) => rule.id === targetId) ?? null;
+    const currentRouting = currentRoutingRules.find((rule) => rule.id === targetId);
     if (event.previousState === null) {
       if (targetId === 'default') {
         throw new PricingAdminError('default_rule_delete_forbidden', 'The default pricing rule cannot be deleted');
       }
       if (!currentRule) throw new PricingAdminError('missing_target', 'Pricing rule not found');
+      if (currentRouting?.vendorAccountId) {
+        throw new PricingAdminError('routing_conflict', 'Cannot delete a pricing rule that owns vendor routing');
+      }
       const proposedRules = validateOverrides(currentRules.filter((rule) => rule.id !== targetId), policy);
-      return { operation, targetId, currentRule, proposedRule: null, currentRules, proposedRules, rollbackEventId: eventId };
+      return {
+        operation,
+        targetId,
+        currentRule,
+        proposedRule: null,
+        currentRules,
+        proposedRules,
+        currentRoutingRules,
+        rollbackEventId: eventId,
+      };
     }
-    const previous = { ...asRecord(event.previousState, 'rollback previousState'), id: targetId };
+    const previousState = asRecord(event.previousState, 'rollback previousState');
+    if (!currentRule && typeof previousState.vendorAccountId === 'string' && previousState.vendorAccountId.trim()) {
+      throw new PricingAdminError('routing_conflict', 'Cannot recreate historical vendor routing from pricing policy state');
+    }
+    const previous = { ...previousState, id: targetId };
     const proposedRules = validateOverrides(
       [...currentRules.filter((rule) => rule.id !== targetId), previous],
       policy
     );
     const proposedRule = proposedRules.find((rule) => rule.id === targetId)!;
-    return { operation, targetId, currentRule, proposedRule, currentRules, proposedRules, rollbackEventId: eventId };
+    return {
+      operation,
+      targetId,
+      currentRule,
+      proposedRule,
+      currentRules,
+      proposedRules,
+      currentRoutingRules,
+      rollbackEventId: eventId,
+    };
   }
 
   if (operation === 'delete') {
@@ -284,8 +322,11 @@ async function buildPreviewContext(
     }
     const currentRule = currentRules.find((rule) => rule.id === targetId) ?? null;
     if (!currentRule) throw new PricingAdminError('missing_target', 'Pricing rule not found');
+    if (currentRoutingRules.find((rule) => rule.id === targetId)?.vendorAccountId) {
+      throw new PricingAdminError('routing_conflict', 'Cannot delete a pricing rule that owns vendor routing');
+    }
     const proposedRules = validateOverrides(currentRules.filter((rule) => rule.id !== targetId), policy);
-    return { operation, targetId, currentRule, proposedRule: null, currentRules, proposedRules };
+    return { operation, targetId, currentRule, proposedRule: null, currentRules, proposedRules, currentRoutingRules };
   }
 
   const rawRule = asRecord(proposal.rule, 'rule');
@@ -300,22 +341,51 @@ async function buildPreviewContext(
     policy
   );
   const proposedRule = proposedRules.find((rule) => rule.id === targetId)!;
-  return { operation, targetId, currentRule, proposedRule, currentRules, proposedRules };
+  return { operation, targetId, currentRule, proposedRule, currentRules, proposedRules, currentRoutingRules };
 }
 
-function requestedSurcharges(context: PreviewContext, selector: PricingScenarioSelector): RequestedPricingSurcharge[] {
-  const scenarios = selectAffectedPricingScenarios(selector);
+export function deriveRequestedPricingSurcharges(input: {
+  selector: PricingScenarioSelector;
+  currentRules: PricingPolicyRule[];
+  proposedRules: PricingPolicyRule[];
+}): RequestedPricingSurcharge[] {
+  const scenarios = selectAffectedPricingScenarios(input.selector);
   if (!scenarios.length) return [];
   const changed = (field: 'surchargeAudioPercent' | 'surchargeUpscalePercent') =>
     scenarios.some((scenario) => {
-      const current = resolveCanonicalAdminScenarioPolicy({ databaseRules: context.currentRules, scenario }).rule[field];
-      const proposed = resolveCanonicalAdminScenarioPolicy({ databaseRules: context.proposedRules, scenario }).rule[field];
+      const current = resolveCanonicalAdminScenarioPolicy({ databaseRules: input.currentRules, scenario }).rule[field];
+      const proposed = resolveCanonicalAdminScenarioPolicy({ databaseRules: input.proposedRules, scenario }).rule[field];
       return current !== proposed;
     });
-  return [
-    ...(changed('surchargeAudioPercent') ? [{ kind: 'audio' as const, selector }] : []),
-    ...(changed('surchargeUpscalePercent') ? [{ kind: 'upscale' as const, selector }] : []),
+  const changedKinds = [
+    ...(changed('surchargeAudioPercent') ? ['audio' as const] : []),
+    ...(changed('surchargeUpscalePercent') ? ['upscale' as const] : []),
   ];
+  if (input.selector.engineId) {
+    return changedKinds.map((kind) => ({ kind, selector: input.selector }));
+  }
+
+  const entries = listFalEngines();
+  const supports = (engineId: string, kind: RequestedPricingSurcharge['kind']) => {
+    const entry = entries.find((candidate) => candidate.id === engineId || candidate.engine.id === engineId);
+    return kind === 'audio' ? entry?.engine.audio === true : entry?.engine.upscale4k === true;
+  };
+  const affectedEngineIds = [...new Set(scenarios.map((scenario) => scenario.engineId))].sort();
+  return changedKinds.flatMap((kind) =>
+    affectedEngineIds
+      .filter((engineId) => supports(engineId, kind))
+      .map((engineId) => ({ kind, selector: { engineId } }))
+  );
+}
+
+function projectionJson(value: unknown): PricingChangeJsonValue {
+  return JSON.parse(JSON.stringify(value)) as PricingChangeJsonValue;
+}
+
+function sortRules<T extends PricingPolicyRule>(rules: T[]): T[] {
+  return [...rules].sort((left, right) =>
+    `${selectorKey(left)}|${left.id}`.localeCompare(`${selectorKey(right)}|${right.id}`)
+  );
 }
 
 export async function previewPricingPolicyChange(
@@ -329,7 +399,11 @@ export async function previewPricingPolicyChange(
   const selector = selectorOf(selectorRule);
   const scenarios = selectAffectedPricingScenarios(selector);
   if (!scenarios.length) throw new PricingAdminError('invalid_payload', 'No canonical pricing scenario matches this selector');
-  const surchargeRequests = requestedSurcharges(context, selector);
+  const surchargeRequests = deriveRequestedPricingSurcharges({
+    selector,
+    currentRules: context.currentRules,
+    proposedRules: context.proposedRules,
+  });
   const currentOutcomes = quoteCanonicalAdminScenarios({
     databaseRules: context.currentRules,
     scenarios,
@@ -346,6 +420,9 @@ export async function previewPricingPolicyChange(
   const affectedScenarioIds = [...new Set(currentOutcomes.map((outcome) => outcome.scenarioId))].sort();
   const currentState = jsonRule(context.currentRule);
   const proposedState = jsonRule(context.proposedRule);
+  const rows = unsupportedScenarioIds.length
+    ? []
+    : compareCanonicalAdminScenarios(currentOutcomes, proposedOutcomes);
   const previewFingerprint = buildPricingPreviewFingerprint({
     domain: 'policy_rule',
     operation: context.operation,
@@ -355,8 +432,14 @@ export async function previewPricingPolicyChange(
     versionedPolicyVersion: policy.version,
     affectedScenarioIds,
     unsupportedScenarioIds,
+    projectionState: projectionJson({
+      currentDatabaseRules: sortRules(context.currentRules),
+      currentRoutingRules: [...context.currentRoutingRules].sort((left, right) => left.id.localeCompare(right.id)),
+      currentOutcomes,
+      proposedOutcomes,
+      rows,
+    }),
   });
-  const rows = compareCanonicalAdminScenarios(currentOutcomes, proposedOutcomes);
   if (!rows.length) throw new PricingAdminError('invalid_payload', 'Pricing proposal has no observable canonical impact');
   return {
     previewFingerprint,
@@ -397,27 +480,36 @@ export async function confirmPricingPolicyChange(
   let result: { persistedState: PricingChangeJsonValue | null; event: PricingChangeEvent };
   try {
     result = await dependencies.withTransaction(async (executor) => {
+      const transactionDependencies: PricingPolicyServiceDependencies = {
+        ...dependencies,
+        loadOverrides: () => dependencies.loadOverrides(executor),
+        getEvent: (id, domain) => dependencies.getEvent(id, domain, executor),
+      };
+      const transactionPreview = await previewPricingPolicyChange(proposal, transactionDependencies);
+      if (transactionPreview.previewFingerprint !== fingerprint) {
+        throw new PricingAdminError('preview_stale', 'Pricing preview became stale before persistence');
+      }
       let persistedState: PricingChangeJsonValue | null;
-      if (preview.proposedState === null) {
-        await dependencies.deleteRule(executor, preview.targetId);
+      if (transactionPreview.proposedState === null) {
+        await dependencies.deleteRule(executor, transactionPreview.targetId);
         persistedState = null;
       } else {
         const persisted = await dependencies.upsertRule(
           executor,
-          preview.proposedState as unknown as PricingPolicyRule,
+          transactionPreview.proposedState as unknown as PricingPolicyRule,
           serverActorId
         );
         persistedState = jsonRule(persisted);
       }
       const event = await dependencies.insertEvent(executor, {
         domain: 'policy_rule',
-        operation: preview.operation,
-        targetId: preview.targetId,
+        operation: transactionPreview.operation,
+        targetId: transactionPreview.targetId,
         actorId: serverActorId,
-        previousState: preview.currentState,
-        nextState: preview.proposedState,
-        previewSummary: previewSummary(preview),
-        affectedScenarioIds: preview.affectedScenarioIds,
+        previousState: transactionPreview.currentState,
+        nextState: transactionPreview.proposedState,
+        previewSummary: previewSummary(transactionPreview),
+        affectedScenarioIds: transactionPreview.affectedScenarioIds,
       });
       return { persistedState, event };
     });
@@ -426,9 +518,24 @@ export async function confirmPricingPolicyChange(
     throw new PricingAdminError('persistence_failed', 'Failed to persist pricing policy change');
   }
 
-  dependencies.invalidateCache();
-  dependencies.revalidate(preview);
-  return { preview, ...result };
+  const operationalWarnings: PricingChangeConfirmation['operationalWarnings'] = [];
+  try {
+    dependencies.invalidateCache();
+  } catch {
+    operationalWarnings.push({
+      code: 'cache_invalidation_failed',
+      message: 'Pricing change committed; in-process cache invalidation failed.',
+    });
+  }
+  try {
+    dependencies.revalidate(preview);
+  } catch {
+    operationalWarnings.push({
+      code: 'path_revalidation_failed',
+      message: 'Pricing change committed; public path revalidation failed.',
+    });
+  }
+  return { committed: true, preview, ...result, operationalWarnings };
 }
 
 export async function loadPricingPolicyHistory(

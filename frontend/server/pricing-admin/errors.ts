@@ -10,6 +10,7 @@ export type PricingAdminErrorCode =
   | 'unsupported_scenario'
   | 'missing_target'
   | 'default_rule_delete_forbidden'
+  | 'routing_conflict'
   | 'preview_stale'
   | 'database_unavailable'
   | 'persistence_failed';
@@ -26,6 +27,7 @@ const STATUS_BY_CODE: Record<PricingAdminErrorCode, number> = {
   unsupported_scenario: 400,
   missing_target: 404,
   default_rule_delete_forbidden: 400,
+  routing_conflict: 409,
   preview_stale: 409,
   database_unavailable: 503,
   persistence_failed: 500,

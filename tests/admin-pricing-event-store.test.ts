@@ -3,6 +3,7 @@ import test from 'node:test';
 
 import type { QueryExecutor } from '../frontend/src/lib/db.ts';
 import {
+  getPricingChangeEventById,
   insertPricingChangeEvent,
   listPricingChangeEvents,
 } from '../frontend/server/pricing-admin/event-store.ts';
@@ -112,4 +113,18 @@ test('listPricingChangeEvents maps malformed JSON fields defensively', async () 
   assert.equal(event?.nextState, null);
   assert.deepEqual(event?.previewSummary, {});
   assert.deepEqual(event?.affectedScenarioIds, ['valid']);
+});
+
+test('getPricingChangeEventById uses a direct domain-scoped lookup without history limits', async () => {
+  const calls: QueryCall[] = [];
+  const event = await getPricingChangeEventById(
+    rawEvent.id,
+    'policy_rule',
+    buildExecutor([rawEvent], calls)
+  );
+
+  assert.equal(event?.id, rawEvent.id);
+  assert.match(calls[0]?.text ?? '', /WHERE id = \$1 AND domain = \$2/);
+  assert.doesNotMatch(calls[0]?.text ?? '', /LIMIT 200/);
+  assert.deepEqual(calls[0]?.params, [rawEvent.id, 'policy_rule']);
 });

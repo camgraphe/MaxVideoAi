@@ -137,11 +137,22 @@ export async function loadPricingPolicyOverrides(): Promise<PricingPolicyOverrid
   if (!isDatabaseConfigured()) {
     return { status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' };
   }
+  return loadPricingPolicyOverridesWithExecutor({ query });
+}
+
+export async function loadPricingPolicyOverridesWithExecutor(
+  executor: QueryExecutor,
+  options: { lock?: boolean } = {}
+): Promise<PricingPolicyOverrideLoadResult> {
   try {
-    const rows = await query<RawPricingRule>(
+    if (options.lock) {
+      await executor.query('LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE');
+    }
+    const rows = await executor.query<RawPricingRule>(
       `SELECT id, engine_id, resolution, mode, margin_percent, margin_flat_cents, surcharge_audio_percent, surcharge_upscale_percent, currency, compatibility_profile, vendor_account_id, effective_from, updated_at, updated_by
        FROM app_pricing_rules
-       ORDER BY engine_id NULLS LAST, resolution NULLS LAST, effective_from DESC`
+       ORDER BY engine_id NULLS LAST, resolution NULLS LAST, effective_from DESC
+       ${options.lock ? 'FOR UPDATE' : ''}`
     );
     const routingRules = rows.map(mapPricingRuleRow);
     return { status: 'loaded', rules: routingRules.map(toPricingPolicyRule), routingRules };

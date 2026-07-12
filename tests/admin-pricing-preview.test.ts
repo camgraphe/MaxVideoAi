@@ -80,6 +80,10 @@ test('preview fingerprints bind current state, proposal, policy version, scenari
   assert.notEqual(buildPricingPreviewFingerprint({ ...base, versionedPolicyVersion: 2 }), fingerprint);
   assert.notEqual(buildPricingPreviewFingerprint({ ...base, affectedScenarioIds: ['scenario-b'] }), fingerprint);
   assert.notEqual(buildPricingPreviewFingerprint({ ...base, targetId: 'db-kling-720p' }), fingerprint);
+  assert.notEqual(
+    buildPricingPreviewFingerprint({ ...base, projectionState: { currentRules: [{ id: 'other', marginPercent: 0.31 }] } }),
+    fingerprint
+  );
 });
 
 test('preview fingerprints reject every non-JSON state value instead of collapsing it', () => {
@@ -419,6 +423,7 @@ test('pricing admin errors expose stable domain codes and HTTP statuses', () => 
     ['unsupported_scenario', 400],
     ['unknown_engine', 400],
     ['missing_target', 404],
+    ['routing_conflict', 409],
     ['preview_stale', 409],
     ['database_unavailable', 503],
     ['persistence_failed', 500],

@@ -285,7 +285,15 @@ export function validatePricingPolicyOverrides(
     const rule = raw as Record<string, unknown>;
     return rule.engineId == null && rule.mode == null && rule.resolution == null;
   });
-  const sentinelId = '__pricing_override_validation_global__';
+  const inputIds = new Set(
+    input.flatMap((raw) => {
+      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return [];
+      const id = (raw as Record<string, unknown>).id;
+      return typeof id === 'string' ? [id.trim()] : [];
+    })
+  );
+  let sentinelId = '__pricing_override_validation_global__';
+  while (inputIds.has(sentinelId)) sentinelId = `_${sentinelId}`;
   const globalRule = policyDocument.rules.find(
     (rule) => !rule.engineId && !rule.mode && !rule.resolution
   );

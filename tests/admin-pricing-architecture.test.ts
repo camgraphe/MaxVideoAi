@@ -97,3 +97,13 @@ test('preview-required pricing policy routes exist and stay thin, authorized ser
   );
   assert.doesNotMatch(confirmSource, /payload\.(actor|actorId|adminUserId)/, 'request actor fields must not be authoritative');
 });
+
+test('pricing confirmation performs a transaction-local locked preview check', () => {
+  const serviceSource = readFileSync(pricingPolicyServicePath, 'utf8');
+  const storeSource = readFileSync(join(root, 'frontend/src/lib/pricing-rule-store.ts'), 'utf8');
+
+  assert.match(serviceSource, /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/);
+  assert.match(serviceSource, /transactionPreview\s*=\s*await previewPricingPolicyChange/);
+  assert.match(storeSource, /LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE/);
+  assert.match(storeSource, /options\.lock \? 'FOR UPDATE'/);
+});
