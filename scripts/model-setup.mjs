@@ -53,6 +53,8 @@ function parseArgs(argv) {
     const next = argv[index + 1];
 
     switch (arg) {
+      case '--':
+        break;
       case '--from':
         options.fromSlug = next;
         index += 1;

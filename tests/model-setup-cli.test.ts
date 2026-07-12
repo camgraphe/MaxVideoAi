@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import test from 'node:test';
 
 const script = 'scripts/model-setup.mjs';
 
 function run(args: string[]) {
   return spawnSync(process.execPath, [script, ...args], {
+    cwd: process.cwd(),
+    encoding: 'utf8',
+  });
+}
+
+function runPnpm(args: string[]) {
+  return spawnSync(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['model:setup', '--', ...args], {
     cwd: process.cwd(),
     encoding: 'utf8',
   });
@@ -56,4 +64,29 @@ test('model setup dry run prints a complete canonical registry entry and command
   assert.match(result.stdout, /pnpm model:registry:check/);
   assert.match(result.stdout, /frontend\/config\/model-registry\.json/);
   assert.doesNotMatch(result.stdout, /new in the engine catalog, add its catalog\/config entries separately/);
+});
+
+test('documented pnpm model setup entrypoint accepts its argument separator', () => {
+  const help = runPnpm(['--help']);
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /--category <video\|image\|audio\|multimodal>/);
+
+  const sample = runPnpm([...requiredArgs, '--category', 'multimodal', '--dry-run']);
+  assert.equal(sample.status, 0, sample.stderr);
+  assert.match(sample.stdout, /"category": "multimodal"/);
+  assert.match(sample.stdout, /\[dry-run\] write content\/models\/en\/task-ten-test-model\.json/);
+  for (const path of [
+    'content/models/en/task-ten-test-model.json',
+    'content/models/fr/task-ten-test-model.json',
+    'content/models/es/task-ten-test-model.json',
+    'docs/model-launch/task-ten-test-model.engine.stub.ts',
+    'docs/model-launch/task-ten-test-model.family.stub.ts',
+    'docs/model-launch/task-ten-test-model.md',
+  ]) {
+    assert.equal(existsSync(path), false, `${path} was written during --dry-run`);
+  }
+
+  const invalid = runPnpm([...requiredArgs, '--category', 'document', '--dry-run']);
+  assert.equal(invalid.status, 1);
+  assert.match(invalid.stderr, /--category must be video, image, audio, or multimodal\./);
 });
