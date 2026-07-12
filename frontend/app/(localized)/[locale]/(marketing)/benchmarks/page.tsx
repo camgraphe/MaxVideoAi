@@ -4,6 +4,7 @@ import { localeRegions } from '@/i18n/locales';
 import { JsonLd } from '@/components/SeoJsonLd';
 import { buildMetadataUrls } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
+import { getEditorialProfile } from '@/lib/editorial/profile';
 import { loadBenchmarkLabStaticData } from '@/server/benchmark-lab-data';
 import { fetchPublicBenchmarkLatency } from '@/server/benchmark-lab-metrics';
 import { BenchmarkLabView } from './_components/BenchmarkLabView';
@@ -32,12 +33,13 @@ export default async function BenchmarkLabPage({ params }: { params: Promise<{ l
   const copy = getBenchmarkCopy(locale);
   const [staticData, latency] = await Promise.all([loadBenchmarkLabStaticData(), fetchPublicBenchmarkLatency()]);
   const data = buildBenchmarkPageData(staticData, latency);
+  const editorialProfile = getEditorialProfile(locale);
   const canonicalUrl = buildMetadataUrls(locale, undefined, { englishPath: '/benchmarks' }).canonical;
   return (
     <>
-      <JsonLd json={buildBenchmarkWebPageJsonLd({ canonicalUrl, copy, inLanguage: localeRegions[locale], modifiedAt: data.methodology.effectiveDate })} />
+      <JsonLd json={buildBenchmarkWebPageJsonLd({ canonicalUrl, copy, editorialProfile, inLanguage: localeRegions[locale], modifiedAt: data.methodology.effectiveDate })} />
       <JsonLd json={buildBenchmarkBreadcrumbJsonLd({ canonicalUrl, copy })} />
-      <BenchmarkLabView copy={copy} data={data} locale={locale} />
+      <BenchmarkLabView copy={copy} data={data} editorialProfile={editorialProfile} locale={locale} />
     </>
   );
 }

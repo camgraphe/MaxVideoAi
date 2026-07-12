@@ -1,6 +1,7 @@
 import { ArrowRight, Clock3, Database, FlaskConical, Gauge, ShieldCheck } from 'lucide-react';
 import { UIIcon } from '@/components/ui/UIIcon';
 import type { AppLocale } from '@/i18n/locales';
+import type { ResolvedEditorialProfile } from '@/lib/editorial/profile';
 import { localeRegions } from '@/i18n/locales';
 import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import type { BenchmarkCopy } from '../_lib/benchmark-copy';
@@ -9,17 +10,19 @@ import { BenchmarkLatencySection } from './BenchmarkLatencySection';
 import { BenchmarkMethodologySection } from './BenchmarkMethodologySection';
 import { BenchmarkScoreTable } from './BenchmarkScoreTable';
 import { BenchmarkSpecsTable } from './BenchmarkSpecsTable';
+import { BenchmarkEditorialOwnership } from './BenchmarkEditorialOwnership';
 
 type BenchmarkLabViewProps = {
   copy: BenchmarkCopy;
   data: BenchmarkPageData;
+  editorialProfile: ResolvedEditorialProfile;
   locale: AppLocale;
 };
 
 const sectionHeadingClassName = 'font-display text-3xl font-semibold tracking-[-0.03em] text-text-primary sm:text-4xl';
 const sectionIntroClassName = 'mt-3 max-w-3xl text-base leading-7 text-text-secondary';
 
-export function BenchmarkLabView({ copy, data, locale }: BenchmarkLabViewProps) {
+export function BenchmarkLabView({ copy, data, editorialProfile, locale }: BenchmarkLabViewProps) {
   const number = new Intl.NumberFormat(localeRegions[locale]);
   const ctaLinks: Array<{ href: LocalizedLinkHref; label: string }> = [
     { href: { pathname: '/models' }, label: copy.cta.models },
@@ -43,6 +46,12 @@ export function BenchmarkLabView({ copy, data, locale }: BenchmarkLabViewProps) 
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-text-secondary sm:text-xl">{copy.hero.intro}</p>
           <p className="mx-auto mt-8 max-w-3xl border-t border-hairline pt-5 text-sm leading-6 text-text-muted">{copy.hero.proof}</p>
+          <BenchmarkEditorialOwnership
+            copy={copy}
+            locale={locale}
+            methodology={data.methodology}
+            profile={editorialProfile}
+          />
         </div>
       </header>
 

@@ -19,6 +19,7 @@ import {
 import { loadBenchmarkLabStaticData } from '../frontend/server/benchmark-lab-data';
 import type { PublicBenchmarkLatencySnapshot } from '../frontend/server/benchmark-lab-metrics';
 import { routing } from '../frontend/i18n/routing';
+import { getEditorialProfile } from '../frontend/lib/editorial/profile';
 import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing';
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)/benchmarks';
@@ -167,6 +168,7 @@ test('benchmark schema is limited to WebPage and BreadcrumbList with MaxVideoAI 
   const webPage = buildBenchmarkWebPageJsonLd({
     canonicalUrl: 'https://maxvideoai.com/benchmarks',
     copy,
+    editorialProfile: getEditorialProfile('en'),
     inLanguage: 'en-US',
     modifiedAt: '2026-07-11',
   });
@@ -181,6 +183,12 @@ test('benchmark schema is limited to WebPage and BreadcrumbList with MaxVideoAI 
     '@type': 'Organization',
     name: 'MaxVideoAI',
     url: 'https://maxvideoai.com',
+  });
+  assert.deepEqual(webPage.author, {
+    '@type': 'Person',
+    name: 'Adrien Millot',
+    jobTitle: 'Founder & Product Lead',
+    url: 'https://maxvideoai.com/about#adrien-millot',
   });
   assert.equal(JSON.stringify(schemas).includes('Dataset'), false);
 });
@@ -320,7 +328,7 @@ test('middleware and i18n routing recognize every public benchmark URL', () => {
 });
 
 test('benchmark lab presentation stays split into focused server components', () => {
-  const components = ['BenchmarkLabView', 'BenchmarkScoreTable', 'BenchmarkSpecsTable', 'BenchmarkLatencySection', 'BenchmarkMethodologySection'];
+  const components = ['BenchmarkLabView', 'BenchmarkScoreTable', 'BenchmarkSpecsTable', 'BenchmarkLatencySection', 'BenchmarkMethodologySection', 'BenchmarkEditorialOwnership'];
   for (const component of components) {
     const file = path.join(routeRoot, '_components', `${component}.tsx`);
     assert.ok(existsSync(file), `${component} should exist`);
@@ -356,4 +364,12 @@ test('benchmark lab presentation stays split into focused server components', ()
   assert.match(view, /Failed paid generations are automatically refunded\.|refundNote/);
   assert.doesNotMatch(view, /success rate|generation count|distinct users|failed jobs refunded/i);
   assert.doesNotMatch(methodology, /minimumCompletedJobs|minimumDistinctUsers|sampleSize/);
+});
+
+test('benchmark lab names its real editorial owner without independent-review claims', () => {
+  const source = readFileSync(path.join(routeRoot, '_components/BenchmarkEditorialOwnership.tsx'), 'utf8');
+  assert.match(source, /profile\.name/);
+  assert.match(source, /profile\.jobTitle/);
+  assert.match(source, /editorial-standards/);
+  assert.doesNotMatch(source, /independently reviewed|certified|laboratory/i);
 });

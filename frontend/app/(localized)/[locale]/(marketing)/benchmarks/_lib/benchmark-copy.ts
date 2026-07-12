@@ -5,6 +5,13 @@ export type BenchmarkScoreAnchor = 2 | 5 | 8 | 10;
 export type BenchmarkCopy = {
   meta: { title: string; description: string };
   hero: { eyebrow: string; title: string; intro: string; proof: string };
+  ownership: {
+    label: string;
+    methodologyVersion: string;
+    effective: string;
+    about: string;
+    standards: string;
+  };
   nav: { scores: string; specs: string; speed: string; method: string };
   evidence: Array<{ title: string; body: string }>;
   scores: { title: string; intro: string; model: string; overall: string; updated: string; source: string };
@@ -50,6 +57,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
   en: {
     meta: { title: 'AI Video Model Benchmarks & Methodology', description: 'Compare MaxVideoAI editorial scores, sourced AI video model specifications, and observed median and P90 generation times.' },
     hero: { eyebrow: 'MaxVideoAI Research', title: 'AI video model benchmarks, explained', intro: 'Compare editorial quality scores, sourced model capabilities, and observed generation times in one clear research hub.', proof: 'Built from MaxVideoAI scorecards, current model specifications, and anonymized production latency.' },
+    ownership: { label: 'Editorial lead', methodologyVersion: 'Methodology', effective: 'Effective', about: 'About the editor', standards: 'Editorial Standards' },
     nav: { scores: 'Scorecards', specs: 'Specifications', speed: 'Observed speed', method: 'Methodology' },
     evidence: [
       { title: 'Editorial scores', body: 'A consistent 0–10 framework for quality, motion, control, and production fit.' },
@@ -83,6 +91,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
   fr: {
     meta: { title: 'Benchmarks des modèles vidéo IA et méthodologie', description: 'Comparez les scores éditoriaux MaxVideoAI, les spécifications sourcées et les temps de génération médians et P90 observés.' },
     hero: { eyebrow: 'Recherche MaxVideoAI', title: 'Les benchmarks des modèles vidéo IA, expliqués', intro: 'Comparez scores éditoriaux, capacités sourcées et temps de génération observés dans un même espace clair.', proof: 'Construit à partir des scorecards MaxVideoAI, des spécifications actuelles et de la latence de production anonymisée.' },
+    ownership: { label: 'Responsable éditorial', methodologyVersion: 'Méthodologie', effective: 'Applicable le', about: 'À propos du responsable', standards: 'Normes éditoriales' },
     nav: { scores: 'Scorecards', specs: 'Spécifications', speed: 'Vitesse observée', method: 'Méthodologie' },
     evidence: [
       { title: 'Scores éditoriaux', body: 'Un cadre cohérent sur 10 pour la qualité, le mouvement, le contrôle et le fit production.' },
@@ -116,6 +125,7 @@ const COPY: Record<AppLocale, Omit<BenchmarkCopy, 'scoreLabels'>> = {
   es: {
     meta: { title: 'Benchmarks de modelos de video IA y metodología', description: 'Compara puntuaciones editoriales de MaxVideoAI, especificaciones con fuentes y tiempos de generación medianos y P90 observados.' },
     hero: { eyebrow: 'Investigación de MaxVideoAI', title: 'Benchmarks de modelos de video IA, explicados', intro: 'Compara puntuaciones editoriales de modelos de video, capacidades con fuentes y tiempos de generación observados en un solo centro de investigación.', proof: 'Creado con scorecards de MaxVideoAI, especificaciones actuales y latencia de producción anonimizada.' },
+    ownership: { label: 'Responsable editorial', methodologyVersion: 'Metodología', effective: 'Vigente desde', about: 'Acerca del responsable', standards: 'Estándares editoriales' },
     nav: { scores: 'Scorecards', specs: 'Especificaciones', speed: 'Velocidad observada', method: 'Metodología' },
     evidence: [
       { title: 'Puntuaciones editoriales', body: 'Un marco coherente de 0 a 10 para calidad, movimiento, control y uso en producción.' },

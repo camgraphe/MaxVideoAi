@@ -1,13 +1,16 @@
 import type { BenchmarkCopy } from './benchmark-copy';
+import { getEditorialProfileAbsoluteUrl, type ResolvedEditorialProfile } from '@/lib/editorial/profile';
 
 export function buildBenchmarkWebPageJsonLd({
   canonicalUrl,
   copy,
+  editorialProfile,
   inLanguage,
   modifiedAt,
 }: {
   canonicalUrl: string;
   copy: BenchmarkCopy;
+  editorialProfile: ResolvedEditorialProfile;
   inLanguage: string;
   modifiedAt: string;
 }) {
@@ -19,6 +22,12 @@ export function buildBenchmarkWebPageJsonLd({
     url: canonicalUrl,
     inLanguage,
     dateModified: modifiedAt,
+    author: {
+      '@type': 'Person',
+      name: editorialProfile.name,
+      jobTitle: editorialProfile.jobTitle,
+      url: getEditorialProfileAbsoluteUrl(editorialProfile),
+    },
     publisher: {
       '@type': 'Organization',
       name: 'MaxVideoAI',
