@@ -1,18 +1,19 @@
-import slugs from '../../config/model-slugs.json' assert { type: 'json' };
+import {
+  getRuntimeModelByCanonicalSlug,
+  getRuntimeModelById,
+  listRuntimeModels,
+} from '../../config/model-runtime';
 
 export type ModelSlugMap = Record<string, string>;
 
-export const MODEL_SLUGS = slugs as ModelSlugMap;
-
-const slugToEngine = Object.entries(MODEL_SLUGS).reduce<Record<string, string>>((acc, [engineId, slug]) => {
-  acc[slug] = engineId;
-  return acc;
-}, {});
+export const MODEL_SLUGS: ModelSlugMap = Object.fromEntries(
+  listRuntimeModels().map((model) => [model.id, model.slug]),
+);
 
 export function getCanonicalSlug(engineId: string): string | undefined {
-  return MODEL_SLUGS[engineId];
+  return getRuntimeModelById(engineId)?.slug;
 }
 
 export function getEngineIdFromSlug(slug: string): string | undefined {
-  return slugToEngine[slug];
+  return getRuntimeModelByCanonicalSlug(slug)?.id;
 }

@@ -9,6 +9,15 @@ import {
   resolveRuntimePublicSlug,
   toLegacyModelSurfaces,
 } from '../frontend/config/model-runtime.ts';
+import {
+  canonicalizeFalModelSlug,
+  getFalEngineBySlug,
+} from '../frontend/src/config/falEngines.ts';
+import { normalizeEngineId } from '../frontend/src/lib/engine-alias.ts';
+import {
+  getCanonicalSlug,
+  getEngineIdFromSlug,
+} from '../frontend/src/lib/model-slugs.ts';
 
 const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline.json', 'utf8'));
 
@@ -52,4 +61,18 @@ test('generated runtime document excludes registry-only replacement and tombston
   const runtime = JSON.parse(readFileSync('frontend/config/model-runtime.json', 'utf8'));
   assert.equal(Object.hasOwn(runtime, 'tombstones'), false);
   assert.equal(runtime.models.every((model: object) => !Object.hasOwn(model, 'replacement')), true);
+});
+
+test('legacy facades resolve the frozen registry compatibility matrix', () => {
+  for (const row of baseline.internalAliases) {
+    assert.equal(normalizeEngineId(row.alias), row.targetId, row.alias);
+  }
+  for (const row of baseline.publicSlugAliases) {
+    assert.equal(canonicalizeFalModelSlug(row.alias), row.targetSlug, row.alias);
+    assert.equal(getFalEngineBySlug(row.alias)?.modelSlug, row.targetSlug, row.alias);
+  }
+  for (const model of baseline.models) {
+    assert.equal(getCanonicalSlug(model.id), model.slug);
+    assert.equal(getEngineIdFromSlug(model.slug), model.id);
+  }
 });

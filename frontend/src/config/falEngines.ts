@@ -1,5 +1,9 @@
 import { getPartnerByBrandId } from '../lib/brand-partners';
-import { getRuntimeModelById, toLegacyModelSurfaces } from '../../config/model-runtime';
+import {
+  getRuntimeModelById,
+  resolveRuntimePublicSlug,
+  toLegacyModelSurfaces,
+} from '../../config/model-runtime';
 import { RAW_FAL_ENGINE_REGISTRY } from './fal-engines/registry';
 import type { FalEngineEntry, RawFalEngineEntry } from './fal-engines/types';
 
@@ -69,69 +73,15 @@ export function getFalEngineById(id: string): FalEngineEntry | undefined {
   return FAL_ENGINE_REGISTRY.find((entry) => entry.id === id);
 }
 
-const LEGACY_MODEL_SLUG_ALIASES: Record<string, string> = {
-  'openai-sora-2': 'sora-2',
-  'openai-sora-2-pro': 'sora-2-pro',
-  'google-veo-3': 'veo-3-1',
-  'veo-3': 'veo-3-1',
-  veo3: 'veo-3-1',
-  'veo3.1': 'veo-3-1',
-  'google-omni-flash': 'gemini-omni-flash',
-  'omni-flash': 'gemini-omni-flash',
-  'gemini-omni': 'gemini-omni-flash',
-  'gemini-omni-flash-preview': 'gemini-omni-flash',
-  'google-veo-3-fast': 'veo-3-1-fast',
-  'veo-3-fast': 'veo-3-1-fast',
-  veo3fast: 'veo-3-1-fast',
-  'veo3-fast': 'veo-3-1-fast',
-  'google-veo-3-1-fast': 'veo-3-1-fast',
-  'veo-3-1-first-last': 'veo-3-1',
-  'veo-3-1-first-last-fast': 'veo-3-1-fast',
-  'veo-3-lite': 'veo-3-1-lite',
-  veo3lite: 'veo-3-1-lite',
-  'veo3-lite': 'veo-3-1-lite',
-  'veo3.1-lite': 'veo-3-1-lite',
-  'seedance-2-fast': 'seedance-2-0-fast',
-  'seedance-2.0-fast': 'seedance-2-0-fast',
-  'seedance-v2-fast': 'seedance-2-0-fast',
-  'seedance-v2.0-fast': 'seedance-2-0-fast',
-  'seedance-fast': 'seedance-2-0-fast',
-  happyhorse: 'happy-horse-1-1',
-  'happy-horse': 'happy-horse-1-1',
-  'happyhorse-1-1': 'happy-horse-1-1',
-  'happy-horse-1.1': 'happy-horse-1-1',
-  'alibaba-happy-horse': 'happy-horse-1-1',
-  'happyhorse-1-0': 'happy-horse-1-0',
-  'happy-horse-1.0': 'happy-horse-1-0',
-  'ltx-2-3': 'ltx-2-3-pro',
-  'pika-2-2': 'pika-text-to-video',
-  'pika-image-to-video': 'pika-text-to-video',
-  'minimax-video-01': 'minimax-hailuo-02-text',
-  'minimax-video-1': 'minimax-hailuo-02-text',
-  'minimax-hailuo-02': 'minimax-hailuo-02-text',
-  'minimax-hailuo-02-pro': 'minimax-hailuo-02-text',
-  'minimax-hailuo-02-image': 'minimax-hailuo-02-text',
-  'hailuo-2-pro': 'minimax-hailuo-02-text',
-  'kling-25-turbo-pro': 'kling-2-5-turbo',
-  'kling-2-5-turbo-pro': 'kling-2-5-turbo',
-};
-
 export function canonicalizeFalModelSlug(slug: string): string {
-  const normalized = slug.trim().toLowerCase();
-  return LEGACY_MODEL_SLUG_ALIASES[normalized] ?? normalized;
+  return resolveRuntimePublicSlug(slug)?.slug ?? slug.trim().toLowerCase();
 }
 
 export function getFalEngineBySlug(slug: string): FalEngineEntry | undefined {
+  const model = resolveRuntimePublicSlug(slug);
+  if (model) return getFalEngineById(model.id);
   const normalized = slug.trim().toLowerCase();
-  const canonicalSlug = canonicalizeFalModelSlug(slug);
-
-  const directMatch = FAL_ENGINE_REGISTRY.find((entry) => entry.modelSlug.toLowerCase() === canonicalSlug);
-  if (directMatch) {
-    return directMatch;
-  }
-
-  return FAL_ENGINE_REGISTRY.find((entry) => {
-    const aliases = getEngineAliases(entry).map((alias) => alias.trim().toLowerCase());
-    return aliases.includes(normalized);
-  });
+  return FAL_ENGINE_REGISTRY.find((entry) =>
+    getEngineAliases(entry).some((alias) => alias.trim().toLowerCase() === normalized),
+  );
 }
