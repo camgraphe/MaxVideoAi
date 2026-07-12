@@ -34,7 +34,6 @@ const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
-  const forwardedHost = req.headers.get('x-forwarded-host') ?? host;
   const userAgent = req.headers.get('user-agent') ?? '';
   const isLighthouseAudit = /lighthouse/i.test(userAgent);
   const isLoopbackRequest = isLoopbackHost(req.headers.get('x-forwarded-host') ?? host);
@@ -46,7 +45,7 @@ export async function middleware(req: NextRequest) {
   const logoutIntentCookieValue = req.cookies.get(LOGOUT_INTENT_COOKIE)?.value;
   const hasLogoutIntentCookie = logoutIntentCookieValue === '1';
   const mcpRewritePath = getMcpApiRewritePath(
-    forwardedHost,
+    host,
     req.nextUrl.pathname,
     process.env.MCP_API_HOST ?? 'api.maxvideoai.com'
   );

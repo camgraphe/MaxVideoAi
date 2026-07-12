@@ -13,7 +13,9 @@ const clientPath = join(
 test('connections page is authenticated, flag-gated, private, and lists Supabase OAuth grants', () => {
   const source = readFileSync(pagePath, 'utf8');
 
-  assert.match(source, /isMcpFoundationFeatureEnabled\('oauth'\)/);
+  assert.match(source, /isMcpFoundationFeatureEnabled\('oauth'/);
+  assert.match(source, /getMcpRequestHost\(requestHeaders\)/);
+  assert.match(source, /isMcpFoundationFeatureEnabled\('oauth', process\.env, requestHost\)/);
   assert.match(source, /supabase\.auth\.getUser\(\)/);
   assert.match(source, /redirect\(/);
   assert.match(source, /supabase\.auth\.oauth\.listGrants\(\)/);

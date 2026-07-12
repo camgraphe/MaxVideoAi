@@ -1,4 +1,5 @@
 import { FEATURES } from '@/content/feature-flags';
+import { isMcpApiHost } from '@/lib/mcp-host-routing';
 import { resolveMcpConfig } from '@/server/mcp/config';
 
 export type McpFoundationFeature = 'transport' | 'oauth' | 'discovery';
@@ -14,7 +15,11 @@ function canonicalizeHostname(hostname: string): string {
   return hostname.trim().toLowerCase().replace(/\.+$/, '');
 }
 
-function isHostedStagingEnabled(env: FeatureEnv): boolean {
+function requestMatchesConfiguredHost(requestHost: string | null | undefined, configuredHost: string): boolean {
+  return typeof requestHost === 'string' && isMcpApiHost(requestHost, configuredHost);
+}
+
+function isHostedStagingEnabled(env: FeatureEnv, requestHost: string | null | undefined): boolean {
   if (env.NODE_ENV !== 'production' || env.MCP_STAGING_ENABLED !== 'true') return false;
   const allowedHost = env.MCP_STAGING_HOST?.trim().toLowerCase();
   if (!allowedHost) return false;
@@ -28,7 +33,8 @@ function isHostedStagingEnabled(env: FeatureEnv): boolean {
       resource.protocol === 'https:' &&
       canonicalizeHostname(resource.hostname) === allowedHostname &&
       resource.host.toLowerCase() === allowedHost &&
-      config.apiHost.toLowerCase() === allowedHost
+      config.apiHost.toLowerCase() === allowedHost &&
+      requestMatchesConfiguredHost(requestHost, config.apiHost)
     );
   } catch {
     return false;
@@ -37,15 +43,16 @@ function isHostedStagingEnabled(env: FeatureEnv): boolean {
 
 export function isMcpFoundationFeatureEnabled(
   feature: McpFoundationFeature,
-  env: FeatureEnv = process.env
+  env: FeatureEnv = process.env,
+  requestHost?: string | null,
 ): boolean {
   if (FEATURES.mcp[feature]) return true;
-  if (isHostedStagingEnabled(env)) return true;
+  if (isHostedStagingEnabled(env, requestHost)) return true;
   if (env.NODE_ENV === 'production' || env.MCP_LOCAL_ENABLED !== 'true') return false;
 
   try {
-    resolveMcpConfig(env);
-    return true;
+    const config = resolveMcpConfig(env);
+    return requestMatchesConfiguredHost(requestHost, config.apiHost);
   } catch {
     return false;
   }

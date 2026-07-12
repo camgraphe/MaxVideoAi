@@ -1,6 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
 
-import { isMcpApiHost } from '@/lib/mcp-host-routing';
+import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
@@ -42,10 +42,6 @@ function notFound(): Response {
   return Response.json({ error: 'not_found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
 }
 
-function requestHost(request: Request): string {
-  return request.headers.get('x-forwarded-host') ?? request.headers.get('host') ?? new URL(request.url).host;
-}
-
 function rejectsHtmlNegotiation(request: Request): boolean {
   const accept = request.headers.get('accept')?.toLowerCase() ?? '';
   return accept.includes('text/html') && !accept.includes('application/json') && !accept.includes('text/event-stream');
@@ -74,8 +70,26 @@ function protocolMethod(body: unknown): string | null {
   return typeof method === 'string' ? method : null;
 }
 
+async function isSuccessfulJsonRpcResponse(response: Response): Promise<boolean> {
+  if (!response.ok) return false;
+  try {
+    const payload = await response.clone().json();
+    return (
+      payload != null &&
+      typeof payload === 'object' &&
+      !Array.isArray(payload) &&
+      (payload as { jsonrpc?: unknown }).jsonrpc === '2.0' &&
+      !Object.prototype.hasOwnProperty.call(payload, 'error') &&
+      Object.prototype.hasOwnProperty.call(payload, 'result')
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function recordProtocolDiscovery(
   body: unknown,
+  response: Response,
   principal: AgentPrincipal,
   recorder: ((event: McpAuditEvent) => Promise<boolean>) | undefined
 ): Promise<void> {
@@ -83,6 +97,7 @@ async function recordProtocolDiscovery(
   const method = protocolMethod(body);
   const eventType = method === 'initialize' ? 'connection_initialized' : method === 'tools/list' ? 'tool_discovery' : null;
   if (!eventType) return;
+  if (!(await isSuccessfulJsonRpcResponse(response))) return;
   await recorder({
     eventType,
     userId: principal.userId,
@@ -92,7 +107,7 @@ async function recordProtocolDiscovery(
     surface: null,
     engineId: null,
     errorCode: null,
-  });
+  }).catch(() => false);
 }
 
 function withPrivateCaching(response: Response): Response {
@@ -116,13 +131,15 @@ export async function handleMcpHttpRequest(
   request: Request,
   injectedDeps?: McpHttpHandlerDeps
 ): Promise<Response> {
+  const requestHost = getMcpRequestHost(request.headers);
   const enabled =
     injectedDeps?.enabled ??
-    (isMcpFoundationFeatureEnabled('transport') && isMcpFoundationFeatureEnabled('oauth'));
+    (isMcpFoundationFeatureEnabled('transport', process.env, requestHost) &&
+      isMcpFoundationFeatureEnabled('oauth', process.env, requestHost));
   if (!enabled) return notFound();
 
   const config = injectedDeps?.config ?? resolveMcpConfig();
-  if (!isMcpApiHost(requestHost(request), config.apiHost)) return notFound();
+  if (!requestHost || !isMcpApiHost(requestHost, config.apiHost)) return notFound();
   if (!SUPPORTED_METHODS.has(request.method)) {
     return jsonRpcError(405, -32600, 'Unsupported HTTP method.', { Allow: 'GET, POST, DELETE' });
   }
@@ -145,9 +162,6 @@ export async function handleMcpHttpRequest(
     parsedBody = parsed.value;
   }
 
-  const recorder = injectedDeps ? injectedDeps.recordEvent : recordMcpEvent;
-  await recordProtocolDiscovery(parsedBody, principal, recorder);
-
   const server = createMaxVideoAiMcpServer(
     principal,
     createDefaultMaxVideoAiMcpServices(config, injectedDeps?.accountStatusDeps)
@@ -160,6 +174,8 @@ export async function handleMcpHttpRequest(
   try {
     await server.connect(transport);
     const response = await transport.handleRequest(request, { parsedBody });
+    const recorder = injectedDeps ? injectedDeps.recordEvent : recordMcpEvent;
+    await recordProtocolDiscovery(parsedBody, response, principal, recorder);
     return withPrivateCaching(response);
   } catch {
     return jsonRpcError(500, -32603, 'MCP request handling failed.');

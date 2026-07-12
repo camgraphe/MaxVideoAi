@@ -102,10 +102,14 @@ test('OAuth consent page and decision route use server-side Supabase OAuth metho
   assert.doesNotMatch(pageSource, /['"]use client['"]/);
   assert.match(pageSource, /oauth\.getAuthorizationDetails/);
   assert.match(pageSource, /buildConsentLoginPath/);
+  assert.match(pageSource, /getMcpRequestHost\(requestHeaders\)/);
+  assert.match(pageSource, /isMcpFoundationFeatureEnabled\('oauth', process\.env, requestHost\)/);
   assert.match(formSource, /action="\/api\/oauth\/decision"/);
   assert.match(formSource, /value="approve"/);
   assert.match(formSource, /value="deny"/);
   assert.match(decisionSource, /isSameOriginConsentRequest/);
+  assert.match(decisionSource, /getMcpRequestHost\(request\.headers\)/);
+  assert.match(decisionSource, /isMcpFoundationFeatureEnabled\('oauth', process\.env, requestHost\)/);
   assert.match(decisionSource, /oauth\.approveAuthorization/);
   assert.match(decisionSource, /oauth\.denyAuthorization/);
   assert.match(decisionSource, /skipBrowserRedirect:\s*true/);

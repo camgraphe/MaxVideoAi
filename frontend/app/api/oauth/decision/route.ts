@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import {
@@ -17,7 +18,10 @@ function jsonError(error: string, status: number) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isMcpFoundationFeatureEnabled('oauth')) return jsonError('not_found', 404);
+  const requestHost = getMcpRequestHost(request.headers);
+  if (!isMcpFoundationFeatureEnabled('oauth', process.env, requestHost)) {
+    return jsonError('not_found', 404);
+  }
   if (!isSameOriginConsentRequest(request)) return jsonError('origin_forbidden', 403);
 
   const form = await request.formData().catch(() => null);

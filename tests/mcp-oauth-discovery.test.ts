@@ -56,7 +56,10 @@ test('protected resource route is flag-gated and publicly cacheable only when en
   assert.equal(existsSync(routePath), true);
   const source = readFileSync(routePath, 'utf8');
 
-  assert.match(source, /isMcpFoundationFeatureEnabled\('discovery'\)/);
+  assert.match(source, /isMcpFoundationFeatureEnabled\('discovery'/);
+  assert.match(source, /export function GET\(request: Request\)/);
+  assert.match(source, /getMcpRequestHost\(request\.headers\)/);
+  assert.match(source, /isMcpFoundationFeatureEnabled\('discovery', process\.env, requestHost\)/);
   assert.match(source, /public, max-age=300/);
   assert.match(source, /buildProtectedResourceMetadata/);
   assert.doesNotMatch(source, /SERVICE_ROLE|SUPABASE_SECRET|accessToken/);

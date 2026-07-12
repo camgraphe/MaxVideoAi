@@ -1,5 +1,7 @@
+import { headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
+import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import {
   buildConsentLoginPath,
   isValidAuthorizationId,
@@ -27,7 +29,9 @@ function InvalidAuthorizationRequest() {
 }
 
 export default async function OAuthConsentPage({ searchParams }: ConsentPageProps) {
-  if (!isMcpFoundationFeatureEnabled('oauth')) notFound();
+  const requestHeaders = await headers();
+  const requestHost = getMcpRequestHost(requestHeaders);
+  if (!isMcpFoundationFeatureEnabled('oauth', process.env, requestHost)) notFound();
 
   const params = await searchParams;
   const authorizationId = params.authorization_id;

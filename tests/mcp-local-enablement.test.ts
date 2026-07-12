@@ -11,18 +11,24 @@ const loopbackEnv = {
 };
 
 test('local MCP override enables only foundation features with explicit loopback config', () => {
-  assert.equal(isMcpFoundationFeatureEnabled('transport', loopbackEnv), true);
-  assert.equal(isMcpFoundationFeatureEnabled('oauth', loopbackEnv), true);
-  assert.equal(isMcpFoundationFeatureEnabled('discovery', loopbackEnv), true);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', loopbackEnv, '127.0.0.1:3000'), true);
+  assert.equal(isMcpFoundationFeatureEnabled('oauth', loopbackEnv, '127.0.0.1:3000'), true);
+  assert.equal(isMcpFoundationFeatureEnabled('discovery', loopbackEnv, '127.0.0.1:3000'), true);
+});
+
+test('local MCP override fails closed without the exact request host and port', () => {
+  for (const requestHost of [undefined, null, '', '127.0.0.1', '127.0.0.1:3001', 'localhost:3000']) {
+    assert.equal(isMcpFoundationFeatureEnabled('transport', loopbackEnv, requestHost), false);
+  }
 });
 
 test('local MCP override is disabled by default and fails closed without valid config', () => {
-  assert.equal(isMcpFoundationFeatureEnabled('transport', { NODE_ENV: 'development' }), false);
+  assert.equal(isMcpFoundationFeatureEnabled('transport', { NODE_ENV: 'development' }, '127.0.0.1:3000'), false);
   assert.equal(
     isMcpFoundationFeatureEnabled('transport', {
       NODE_ENV: 'development',
       MCP_LOCAL_ENABLED: 'true',
-    }),
+    }, '127.0.0.1:3000'),
     false
   );
   assert.equal(
@@ -30,7 +36,7 @@ test('local MCP override is disabled by default and fails closed without valid c
       ...loopbackEnv,
       MCP_RESOURCE_URL: 'https://api.example.com/mcp',
       MCP_API_HOST: 'api.example.com',
-    }),
+    }, 'api.example.com'),
     false
   );
 });
@@ -40,7 +46,7 @@ test('local MCP override can never enable production', () => {
     isMcpFoundationFeatureEnabled('transport', {
       ...loopbackEnv,
       NODE_ENV: 'production',
-    }),
+    }, '127.0.0.1:3000'),
     false
   );
 });
