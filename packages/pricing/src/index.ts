@@ -13,10 +13,15 @@ export { buildPricingDefinitionsFromFixtures } from './definitions';
 export { STANDARD_PAYMENT_MESSAGES } from './messages';
 export {
   PricingPolicyValidationError,
+  PricingPolicyResolutionError,
+  resolvePricingPolicy,
   validatePricingPolicyDocument,
   type PricingCompatibilityProfile,
   type PricingPolicyDocument,
   type PricingPolicyReferences,
+  type PricingPolicyResolutionCode,
   type PricingPolicyRule,
+  type PricingPolicyScenario,
   type PricingPolicyValidationCode,
+  type ResolvedPricingPolicy,
 } from './policy';

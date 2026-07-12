@@ -126,3 +126,96 @@ test('versioned policy facade returns defensive clones', async () => {
   const second = getVersionedPricingPolicy();
   assert.equal(second.rules[0]!.marginPercent, 0.3);
 });
+
+const rule = (id: string, selector: { engineId?: string; mode?: string; resolution?: string } = {}) => ({
+  id,
+  ...selector,
+  marginPercent: 0.3,
+  marginFlatCents: 0,
+  surchargeAudioPercent: 0.2,
+  surchargeUpscalePercent: 0.5,
+  currency: 'USD',
+});
+
+test('policy resolver applies the binding source and specificity order with provenance', async () => {
+  const { resolvePricingPolicy } = await import('../packages/pricing/src/policy.ts');
+  const scenario = { engineId: 'engine-a', mode: 't2v', resolution: '1080p' };
+  const resolved = resolvePricingPolicy({
+    scenario,
+    databaseRules: [rule('db-global'), rule('db-engine', { engineId: 'engine-a' }), rule('db-precise', { engineId: 'engine-a', resolution: '1080p' })],
+    versionedRules: [rule('versioned-global'), rule('versioned-precise', { engineId: 'engine-a', mode: 't2v', resolution: '1080p' })],
+  });
+
+  assert.deepEqual(resolved, {
+    rule: rule('db-precise', { engineId: 'engine-a', resolution: '1080p' }),
+    source: 'database',
+    matchedBy: 'precise',
+    sourceRuleId: 'db-precise',
+  });
+});
+
+test('policy resolver falls back from empty database overrides to versioned rules', async () => {
+  const { resolvePricingPolicy } = await import('../packages/pricing/src/policy.ts');
+  const resolved = resolvePricingPolicy({
+    scenario: { engineId: 'engine-a', mode: 't2v', resolution: '1080p' },
+    databaseRules: [],
+    versionedRules: [rule('versioned-global'), rule('versioned-engine', { engineId: 'engine-a' })],
+  });
+
+  assert.equal(resolved.source, 'versioned');
+  assert.equal(resolved.matchedBy, 'engine');
+  assert.equal(resolved.sourceRuleId, 'versioned-engine');
+});
+
+test('policy resolver rejects ambiguous rules instead of using array order', async () => {
+  const { PricingPolicyResolutionError, resolvePricingPolicy } = await import('../packages/pricing/src/policy.ts');
+  assert.throws(
+    () =>
+      resolvePricingPolicy({
+        scenario: { engineId: 'engine-a', resolution: '1080p' },
+        databaseRules: [
+          rule('first', { engineId: 'engine-a', resolution: '1080p' }),
+          rule('second', { engineId: 'engine-a', resolution: '1080p' }),
+        ],
+        versionedRules: [rule('default')],
+      }),
+    (error: unknown) => error instanceof PricingPolicyResolutionError && error.code === 'ambiguous_match'
+  );
+});
+
+test('server resolver logs one structured warning and uses versioned policy when DB is unavailable', async () => {
+  const serverModulePath = 'frontend/server/pricing/resolve-pricing-policy.ts';
+  assert.equal(existsSync(serverModulePath), true, `${serverModulePath} should exist`);
+  const { resolveServerPricingPolicy } = await import('../frontend/server/pricing/resolve-pricing-policy.ts');
+  const warnings: Array<Record<string, unknown>> = [];
+  const resolved = await resolveServerPricingPolicy(
+    { engineId: 'kling-3-pro', mode: 't2v', resolution: '1080p' },
+    {
+      loadOverrides: async () => ({ status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' }),
+      warn: (event) => warnings.push(event),
+    }
+  );
+
+  assert.equal(resolved.source, 'versioned');
+  assert.deepEqual(warnings, [
+    {
+      event: 'pricing_policy_db_fallback',
+      errorCode: 'pricing_rules_query_failed',
+      engineId: 'kling-3-pro',
+      mode: 't2v',
+      resolution: '1080p',
+    },
+  ]);
+});
+
+test('historical billing selector keeps exact engine, engine, global precedence', async () => {
+  const { selectPricingRuleForBilling } = await import('../frontend/src/lib/pricing-rule-store.ts');
+  const rules = [
+    rule('global'),
+    rule('engine', { engineId: 'engine-a' }),
+    rule('exact', { engineId: 'engine-a', resolution: '1080p' }),
+  ];
+  assert.equal(selectPricingRuleForBilling(rules, 'engine-a', '1080p').id, 'exact');
+  assert.equal(selectPricingRuleForBilling(rules, 'engine-a', '720p').id, 'engine');
+  assert.equal(selectPricingRuleForBilling(rules, 'engine-b', '720p').id, 'global');
+});

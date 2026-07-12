@@ -1,5 +1,6 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
+import type { PricingPolicyRule } from '@maxvideoai/pricing';
 
 const DECIMAL_PLACES = 6;
 
@@ -90,6 +91,39 @@ export async function loadPricingRules(): Promise<PricingRule[]> {
 
   cacheLoadedAt = Date.now();
   return cachedRules!;
+}
+
+export type PricingPolicyOverrideLoadResult =
+  | { status: 'loaded'; rules: PricingPolicyRule[] }
+  | { status: 'unavailable'; rules: []; errorCode: 'pricing_rules_query_failed' };
+
+function toPricingPolicyRule(rule: PricingRule): PricingPolicyRule {
+  return {
+    id: rule.id,
+    ...(rule.engineId ? { engineId: rule.engineId } : {}),
+    ...(rule.resolution ? { resolution: rule.resolution } : {}),
+    marginPercent: rule.marginPercent,
+    marginFlatCents: rule.marginFlatCents,
+    surchargeAudioPercent: rule.surchargeAudioPercent,
+    surchargeUpscalePercent: rule.surchargeUpscalePercent,
+    currency: rule.currency,
+  };
+}
+
+export async function loadPricingPolicyOverrides(): Promise<PricingPolicyOverrideLoadResult> {
+  if (!isDatabaseConfigured()) {
+    return { status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' };
+  }
+  try {
+    const rows = await query<RawPricingRule>(
+      `SELECT id, engine_id, resolution, margin_percent, margin_flat_cents, surcharge_audio_percent, surcharge_upscale_percent, currency, vendor_account_id, effective_from
+       FROM app_pricing_rules
+       ORDER BY engine_id NULLS LAST, resolution NULLS LAST, effective_from DESC`
+    );
+    return { status: 'loaded', rules: rows.map(normaliseRule).map(toPricingPolicyRule) };
+  } catch {
+    return { status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' };
+  }
 }
 
 export function selectPricingRuleForBilling(rules: PricingRule[], engineId: string, resolution: string): PricingRule {

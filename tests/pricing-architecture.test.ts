@@ -31,6 +31,7 @@ test('pricing rule store owns DB persistence and rule cache', () => {
 
   assert.match(ruleStoreSource, /export type RawPricingRule/);
   assert.match(ruleStoreSource, /export async function loadPricingRules/);
+  assert.match(ruleStoreSource, /export async function loadPricingPolicyOverrides/);
   assert.match(ruleStoreSource, /export function selectPricingRuleForBilling/);
   assert.match(ruleStoreSource, /export function invalidatePricingRulesCache/);
   assert.match(ruleStoreSource, /export async function upsertPricingRule/);

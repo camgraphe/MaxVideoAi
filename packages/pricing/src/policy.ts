@@ -33,6 +33,31 @@ export type PricingPolicyReferences = {
   resolutionsByEngineId?: ReadonlyMap<string, ReadonlySet<string>>;
 };
 
+export type PricingPolicyScenario = {
+  engineId: string;
+  mode?: string;
+  resolution?: string;
+};
+
+export type ResolvedPricingPolicy = {
+  rule: PricingPolicyRule;
+  source: 'database' | 'versioned';
+  matchedBy: 'precise' | 'engine' | 'global';
+  sourceRuleId: string;
+};
+
+export type PricingPolicyResolutionCode = 'ambiguous_match' | 'missing_rule';
+
+export class PricingPolicyResolutionError extends Error {
+  readonly code: PricingPolicyResolutionCode;
+
+  constructor(code: PricingPolicyResolutionCode, message: string) {
+    super(message);
+    this.name = 'PricingPolicyResolutionError';
+    this.code = code;
+  }
+}
+
 export type PricingPolicyValidationCode =
   | 'invalid_document'
   | 'unsupported_version'
@@ -197,4 +222,53 @@ export function validatePricingPolicyDocument(
     compatibilityProfiles: compatibilityProfiles.map((profile) => ({ ...profile })),
     rules: rules.map((rule) => ({ ...rule })),
   };
+}
+
+function matchRank(rule: PricingPolicyRule, scenario: PricingPolicyScenario): number {
+  if (!rule.engineId) return !rule.mode && !rule.resolution ? 1 : -1;
+  if (rule.engineId !== scenario.engineId) return -1;
+  if (rule.mode && rule.mode !== scenario.mode) return -1;
+  if (rule.resolution && rule.resolution !== scenario.resolution) return -1;
+  if (rule.mode && rule.resolution) return 5;
+  if (rule.resolution) return 4;
+  if (rule.mode) return 3;
+  return 2;
+}
+
+function resolveFromSource(
+  rules: PricingPolicyRule[],
+  scenario: PricingPolicyScenario,
+  source: ResolvedPricingPolicy['source']
+): ResolvedPricingPolicy | null {
+  const candidates = rules
+    .map((rule) => ({ rule, rank: matchRank(rule, scenario) }))
+    .filter((candidate) => candidate.rank > 0)
+    .sort((left, right) => right.rank - left.rank || left.rule.id.localeCompare(right.rule.id));
+  const winner = candidates[0];
+  if (!winner) return null;
+  const tied = candidates.filter((candidate) => candidate.rank === winner.rank);
+  if (tied.length > 1) {
+    throw new PricingPolicyResolutionError(
+      'ambiguous_match',
+      `ambiguous ${source} pricing rules for ${scenario.engineId}: ${tied.map((candidate) => candidate.rule.id).join(', ')}`
+    );
+  }
+  return {
+    rule: { ...winner.rule },
+    source,
+    matchedBy: winner.rank === 1 ? 'global' : winner.rank === 2 ? 'engine' : 'precise',
+    sourceRuleId: winner.rule.id,
+  };
+}
+
+export function resolvePricingPolicy(input: {
+  scenario: PricingPolicyScenario;
+  databaseRules: PricingPolicyRule[];
+  versionedRules: PricingPolicyRule[];
+}): ResolvedPricingPolicy {
+  const database = resolveFromSource(input.databaseRules, input.scenario, 'database');
+  if (database) return database;
+  const versioned = resolveFromSource(input.versionedRules, input.scenario, 'versioned');
+  if (versioned) return versioned;
+  throw new PricingPolicyResolutionError('missing_rule', `no pricing policy matched ${input.scenario.engineId}`);
 }
