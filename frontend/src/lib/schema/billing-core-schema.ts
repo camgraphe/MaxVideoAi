@@ -6,16 +6,53 @@ export async function ensureBillingCoreSchema(): Promise<void> {
       CREATE TABLE IF NOT EXISTS app_pricing_rules (
         id TEXT PRIMARY KEY,
         engine_id TEXT,
+        mode TEXT,
         resolution TEXT,
         margin_percent NUMERIC DEFAULT 0,
         margin_flat_cents INTEGER DEFAULT 0,
         surcharge_audio_percent NUMERIC DEFAULT 0,
         surcharge_upscale_percent NUMERIC DEFAULT 0,
         currency TEXT DEFAULT 'USD',
+        compatibility_profile TEXT,
         vendor_account_id TEXT,
         effective_from TIMESTAMPTZ DEFAULT NOW(),
-        created_at TIMESTAMPTZ DEFAULT NOW()
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_by UUID
       );
+    `);
+
+    await query(`
+      ALTER TABLE app_pricing_rules
+        ADD COLUMN IF NOT EXISTS mode TEXT,
+        ADD COLUMN IF NOT EXISTS compatibility_profile TEXT,
+        ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ADD COLUMN IF NOT EXISTS updated_by UUID;
+    `);
+
+    await query(`
+      CREATE TABLE IF NOT EXISTS app_pricing_change_events (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        domain TEXT NOT NULL CHECK (domain IN ('policy_rule', 'membership', 'billing_product')),
+        operation TEXT NOT NULL CHECK (operation IN ('create', 'update', 'delete', 'rollback')),
+        target_id TEXT NOT NULL,
+        actor_id UUID NOT NULL,
+        previous_state JSONB,
+        next_state JSONB,
+        preview_summary JSONB NOT NULL,
+        affected_scenario_ids JSONB NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      );
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS app_pricing_change_events_target_created_idx
+        ON app_pricing_change_events (domain, target_id, created_at DESC);
+    `);
+
+    await query(`
+      CREATE INDEX IF NOT EXISTS app_pricing_change_events_actor_created_idx
+        ON app_pricing_change_events (actor_id, created_at DESC);
     `);
 
   try {

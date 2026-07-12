@@ -219,3 +219,94 @@ test('historical billing selector keeps exact engine, engine, global precedence'
   assert.equal(selectPricingRuleForBilling(rules, 'engine-a', '720p').id, 'engine');
   assert.equal(selectPricingRuleForBilling(rules, 'engine-b', '720p').id, 'global');
 });
+
+const persistedRuleRow = {
+  id: 'rule-kling-t2v-1080p',
+  engine_id: 'kling-3-pro',
+  mode: 't2v',
+  resolution: '1080p',
+  margin_percent: '0.300000',
+  margin_flat_cents: 0,
+  surcharge_audio_percent: '0.200000',
+  surcharge_upscale_percent: '0.500000',
+  currency: 'USD',
+  compatibility_profile: 'standard',
+  vendor_account_id: 'acct_existing',
+  effective_from: null,
+  updated_at: '2026-07-12T10:00:00.000Z',
+  updated_by: '00000000-0000-0000-0000-000000000001',
+};
+
+test('pricing rule row mapping round-trips the complete canonical rule fields', async () => {
+  const { mapPricingRuleRow } = await import('../frontend/src/lib/pricing-rule-store.ts');
+
+  assert.deepEqual(mapPricingRuleRow(persistedRuleRow), {
+    id: 'rule-kling-t2v-1080p',
+    engineId: 'kling-3-pro',
+    mode: 't2v',
+    resolution: '1080p',
+    marginPercent: 0.3,
+    marginFlatCents: 0,
+    surchargeAudioPercent: 0.2,
+    surchargeUpscalePercent: 0.5,
+    currency: 'USD',
+    compatibilityProfile: 'standard',
+    vendorAccountId: 'acct_existing',
+    updatedAt: '2026-07-12T10:00:00.000Z',
+    updatedBy: '00000000-0000-0000-0000-000000000001',
+  });
+});
+
+test('executor-aware pricing rule upsert preserves routing on update and leaves routing null on create', async () => {
+  const { upsertPricingRuleWithExecutor } = await import('../frontend/src/lib/pricing-rule-store.ts');
+  const calls: Array<{ text: string; params?: ReadonlyArray<unknown> }> = [];
+  const executor = {
+    async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<TRecord[]> {
+      calls.push({ text, params });
+      return [persistedRuleRow] as TRecord[];
+    },
+  };
+
+  const rule = await upsertPricingRuleWithExecutor(
+    executor,
+    {
+      id: 'rule-kling-t2v-1080p',
+      engineId: 'kling-3-pro',
+      mode: 't2v',
+      resolution: '1080p',
+      marginPercent: 0.3,
+      marginFlatCents: 0,
+      surchargeAudioPercent: 0.2,
+      surchargeUpscalePercent: 0.5,
+      currency: 'USD',
+      compatibilityProfile: 'standard',
+      vendorAccountId: 'must-not-be-written',
+    },
+    '00000000-0000-0000-0000-000000000001'
+  );
+
+  assert.equal(rule.vendorAccountId, 'acct_existing');
+  assert.equal(calls.length, 1);
+  const updateClause = calls[0]!.text.split('DO UPDATE SET')[1]?.split('RETURNING')[0] ?? '';
+  assert.doesNotMatch(updateClause, /vendor_account_id/);
+  assert.equal(calls[0]!.params?.[10], null);
+  assert.equal(calls[0]!.params?.[11], '00000000-0000-0000-0000-000000000001');
+});
+
+test('executor-aware pricing rule delete returns the previous canonical row', async () => {
+  const { deletePricingRuleWithExecutor } = await import('../frontend/src/lib/pricing-rule-store.ts');
+  const calls: Array<{ text: string; params?: ReadonlyArray<unknown> }> = [];
+  const executor = {
+    async query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<TRecord[]> {
+      calls.push({ text, params });
+      return [persistedRuleRow] as TRecord[];
+    },
+  };
+
+  const previous = await deletePricingRuleWithExecutor(executor, persistedRuleRow.id);
+
+  assert.equal(previous.id, persistedRuleRow.id);
+  assert.equal(previous.vendorAccountId, 'acct_existing');
+  assert.match(calls[0]!.text, /DELETE FROM app_pricing_rules/);
+  assert.match(calls[0]!.text, /RETURNING/);
+});
