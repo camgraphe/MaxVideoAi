@@ -15,7 +15,7 @@ export type PricingPolicyFallbackEvent = {
   resolution?: string;
 };
 
-type ResolveServerPricingPolicyDependencies = {
+export type ResolveServerPricingPolicyDependencies = {
   loadOverrides?: () => Promise<PricingPolicyOverrideLoadResult>;
   warn?: (event: PricingPolicyFallbackEvent) => void;
 };

@@ -370,11 +370,11 @@ git commit -m "feat: migrate model pricing projections"
 - Modify: `tests/pricing-billing-authority.test.ts`
 - Modify: `tests/pricing-foundation-architecture.test.ts`
 
-- [ ] **Step 1: Write failing preview-equals-charge tests**
+- [x] **Step 1: Write failing preview-equals-charge tests**
 
 For representative standard, addon, Luma, Seedance, GPT Image 2, storyboard, and membership inputs, assert the live preview base quote equals the canonical billing quote before explicitly documented storyboard transformations. Assert no public route calls the pure commercial kernel directly.
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -386,19 +386,19 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: FAIL because live estimates still import the legacy facade.
 
-- [ ] **Step 3: Use the canonical server quote for live previews**
+- [x] **Step 3: Use the canonical server quote for live previews**
 
 Replace `computePricingSnapshot()` in workspace preflight and image estimate routes with the same server canonical quote used before a real charge. Preserve validation, engine configuration overrides, storyboards, response contracts, itemization, errors, and status codes.
 
-- [ ] **Step 4: Lock public authority boundaries**
+- [x] **Step 4: Lock public authority boundaries**
 
 The architecture guard must require canonical public ownership across the pricing hub, model pages, estimator, chip, JSON-LD, workspace preflight, and image estimate. It must forbid server/database imports from browser modules and forbid direct commercial arithmetic in migrated consumers. Admin and the legacy facade remain allowed only outside these public paths.
 
-- [ ] **Step 5: Run focused route and pricing tests**
+- [x] **Step 5: Run focused route and pricing tests**
 
 Run the Step 2 suite plus existing configured-engine, preflight, image-estimate, storyboard, Luma, Seedance, and GPT Image pricing tests.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add frontend/src/server/engines.ts frontend/app/api/images/estimate/route.ts tests/pricing-public-authority.test.ts tests/pricing-billing-authority.test.ts tests/pricing-foundation-architecture.test.ts tests

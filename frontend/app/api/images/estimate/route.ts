@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import {
   applyStoryboardEditPricing,
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
         ? Math.max(0, estimatedReferenceCount - 1)
         : estimatedReferenceCount
       : undefined;
-    const pricing = await computePricingSnapshot({
+    const pricing = await computeCanonicalPublicSnapshot({
       engine: engineCaps,
       durationSec: numImages,
       resolution: resolutionResult.resolution,
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
           aspectRatio: typeof body.aspectRatio === 'string' ? body.aspectRatio : null,
         });
         const firstFramePricing = applyStoryboardPricing(
-          await computePricingSnapshot({
+          await computeCanonicalPublicSnapshot({
             engine: engineCaps,
             durationSec: 1,
             resolution: firstFrameConfig.resolution,

@@ -12,14 +12,20 @@ import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing';
 
-import { resolveServerBillingPolicy } from './resolve-pricing-policy';
+import {
+  resolveServerBillingPolicy,
+  type ResolveServerPricingPolicyDependencies,
+} from './resolve-pricing-policy';
 
 function normalizeMembershipTier(value: string | null | undefined): 'member' | 'plus' | 'pro' {
   const normalized = value?.trim().toLowerCase();
   return normalized === 'plus' || normalized === 'pro' ? normalized : 'member';
 }
 
-export async function computeCanonicalBillingSnapshot(context: PricingContext): Promise<PricingSnapshot> {
+export async function computeCanonicalBillingSnapshot(
+  context: PricingContext,
+  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}
+): Promise<PricingSnapshot> {
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
     {
@@ -27,7 +33,8 @@ export async function computeCanonicalBillingSnapshot(context: PricingContext): 
       ...(context.mode ? { mode: context.mode } : {}),
       ...(context.resolution ? { resolution: context.resolution } : {}),
     },
-    context.engine.vendorAccountId
+    context.engine.vendorAccountId,
+    dependencies.pricingPolicy
   );
   const currency = (context.currency ?? policy.rule.currency ?? pricingDetails?.currency ?? context.engine.pricing?.currency ?? 'USD').toUpperCase();
   const memberTier = normalizeMembershipTier(context.membershipTier);

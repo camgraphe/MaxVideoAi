@@ -7,7 +7,7 @@ import {
   toItemization,
   type EngineCategory,
 } from '@/lib/engines';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
 import { fetchEngineOverrides } from '@/server/engine-overrides';
 import type { EngineOverride } from '@/server/engine-overrides';
@@ -392,7 +392,7 @@ export async function computeConfiguredPreflight(request: PreflightRequest): Pro
   };
   let snapshot: PricingSnapshot;
   try {
-    snapshot = await computePricingSnapshot({
+    snapshot = await computeCanonicalPublicSnapshot({
       engine: pricingEngine,
       durationSec,
       resolution: effectiveResolution,

@@ -8,15 +8,11 @@ const pureModules = [
   'packages/pricing/src/projection.ts',
   'packages/pricing/src/shadow.ts',
 ] as const;
-const productionOwners = [
-  'frontend/src/lib/pricing.ts',
-  'frontend/src/lib/pricing-specialized-snapshots.ts',
-  'frontend/src/lib/audio-generation.ts',
+const publicProjectionOwners = [
   'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts',
   'frontend/components/marketing/PriceEstimator.tsx',
   'frontend/components/marketing/PriceChip.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts',
-  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts',
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts',
 ] as const;
 
@@ -44,11 +40,17 @@ test('versioned pricing policy contains commercial policy but no provider facts 
   }
 });
 
-test('public pricing consumers remain legacy-authoritative after billing migration', () => {
-  for (const path of productionOwners) {
+test('public pricing consumers are canonical-authoritative while the compatibility facade remains', () => {
+  for (const path of publicProjectionOwners) {
     const source = readFileSync(path, 'utf8');
-    assert.doesNotMatch(source, /quoteCanonicalPricing|canonical-collectors|pricing-audit/);
+    assert.match(source, /pricing-public|quote-public/);
+    assert.doesNotMatch(source, /canonical-collectors|pricing-audit/);
   }
+  const decisionPricing = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts',
+    'utf8'
+  );
+  assert.match(decisionPricing, /get(?:Image)?PresetQuote/);
   const pricingSource = readFileSync('frontend/src/lib/pricing.ts', 'utf8');
   assert.match(pricingSource, /export async function computePricingSnapshot/);
   assert.match(pricingSource, /selectPricingRuleForBilling/);
@@ -69,7 +71,7 @@ test('only the server resolver combines database overrides with versioned defaul
   assert.match(resolver, /pricing-policy-defaults/);
   assert.match(resolver, /pricing-rule-store/);
 
-  for (const path of [...productionOwners, 'frontend/src/lib/pricing-audit/canonical-collectors.ts']) {
+  for (const path of [...publicProjectionOwners, 'frontend/src/lib/pricing-audit/canonical-collectors.ts']) {
     const source = readFileSync(path, 'utf8');
     assert.equal(
       source.includes('pricing-policy-defaults') && source.includes('pricing-rule-store'),

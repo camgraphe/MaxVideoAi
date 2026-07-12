@@ -53,16 +53,18 @@ test('API routes and tool runners never call the pure canonical kernel directly'
   }
 });
 
-test('public projections remain on the legacy facade until their own migration', () => {
-  for (const path of [
-    'frontend/src/server/engines.ts',
-    'frontend/app/api/images/estimate/route.ts',
-    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts',
-    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts',
-    'frontend/components/marketing/PriceEstimator.tsx',
-    'frontend/components/marketing/PriceChip.tsx',
-  ]) {
-    assert.doesNotMatch(read(path), /quote-billing/, `${path} is outside the billing migration`);
+test('public projections use their canonical owner without importing billing internals directly', () => {
+  const owners = new Map([
+    ['frontend/src/server/engines.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/api/images/estimate/route.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts', 'quotePublicPricing'],
+    ['frontend/components/marketing/PriceEstimator.tsx', 'quotePublicPricing'],
+    ['frontend/components/marketing/PriceChip.tsx', 'quotePublicPricing'],
+  ]);
+  for (const [path, symbol] of owners) {
+    assert.match(read(path), new RegExp(symbol), `${path} should use ${symbol}`);
+    assert.doesNotMatch(read(path), /quote-billing/, `${path} should not import billing internals directly`);
   }
   assert.doesNotMatch(read('frontend/src/lib/pricing.ts'), /quoteCanonicalPricing/);
 });
