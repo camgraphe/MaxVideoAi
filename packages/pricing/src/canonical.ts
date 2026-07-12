@@ -1,0 +1,172 @@
+import type { PricingCompatibilityProfile, ResolvedPricingPolicy } from './policy';
+
+const CENT_EPSILON = 1e-9;
+
+export type PricingFacts = {
+  engineId: string;
+  currency: string;
+  vendorSubtotalExactCents: number;
+  unit: string;
+  quantity: number;
+  metadata?: Record<string, unknown>;
+};
+
+export type PricingScenario = {
+  id: string;
+  engineId: string;
+  mode?: string;
+  resolution?: string;
+  membershipTier: 'member' | 'plus' | 'pro';
+  discountPercent: number;
+  surcharge?: 'audio' | 'upscale';
+};
+
+export type CanonicalPricingQuote = {
+  engineId: string;
+  scenarioId: string;
+  currency: string;
+  vendorSubtotalCents: number;
+  marginCents: number;
+  surchargeCents: number;
+  discountCents: number;
+  customerTotalCents: number;
+  platformFeeCents: number;
+  vendorShareCents: number;
+  unit: string;
+  quantity: number;
+  breakdown: {
+    vendorSubtotalExactCents: number;
+    marginPercent: number;
+    marginFlatCents: number;
+    surchargePercent: number;
+    discountPercent: number;
+  };
+  policyProvenance: {
+    source: 'database' | 'versioned';
+    matchedBy: 'precise' | 'engine' | 'global';
+    sourceRuleId: string;
+    compatibilityProfile: string;
+  };
+};
+
+export type PricingDomainErrorCode =
+  | 'invalid_facts'
+  | 'invalid_scenario'
+  | 'currency_mismatch'
+  | 'unknown_surcharge';
+
+export class PricingDomainError extends Error {
+  readonly code: PricingDomainErrorCode;
+
+  constructor(code: PricingDomainErrorCode, message: string) {
+    super(message);
+    this.name = 'PricingDomainError';
+    this.code = code;
+  }
+}
+
+type IntegerRounding = 'nearest' | 'up' | 'down';
+
+function roundCents(value: number, mode: IntegerRounding): number {
+  if (mode === 'up') return Math.ceil(value - CENT_EPSILON);
+  if (mode === 'down') return Math.floor(value + CENT_EPSILON);
+  return Math.round(value);
+}
+
+function assertFiniteNonNegative(value: number, code: PricingDomainErrorCode, label: string): void {
+  if (!Number.isFinite(value) || value < 0) {
+    throw new PricingDomainError(code, `${label} must be finite and non-negative`);
+  }
+}
+
+export function quoteCanonicalPricing(input: {
+  facts: PricingFacts;
+  scenario: PricingScenario;
+  policy: ResolvedPricingPolicy;
+  compatibilityProfile: PricingCompatibilityProfile;
+}): CanonicalPricingQuote {
+  const { facts, scenario, policy, compatibilityProfile } = input;
+  assertFiniteNonNegative(facts.vendorSubtotalExactCents, 'invalid_facts', 'vendorSubtotalExactCents');
+  assertFiniteNonNegative(facts.quantity, 'invalid_facts', 'quantity');
+  if (facts.quantity <= 0 || !facts.unit.trim()) {
+    throw new PricingDomainError('invalid_facts', 'quantity and unit must describe a positive factual unit');
+  }
+  assertFiniteNonNegative(scenario.discountPercent, 'invalid_scenario', 'discountPercent');
+  if (scenario.discountPercent > 1 || facts.engineId !== scenario.engineId || !scenario.id.trim()) {
+    throw new PricingDomainError('invalid_scenario', 'scenario must match facts and use a discount between 0 and 1');
+  }
+
+  const factsCurrency = facts.currency.trim().toUpperCase();
+  const policyCurrency = policy.rule.currency.trim().toUpperCase();
+  if (!factsCurrency || factsCurrency !== policyCurrency) {
+    throw new PricingDomainError('currency_mismatch', `facts use ${factsCurrency || 'no currency'} but policy uses ${policyCurrency}`);
+  }
+
+  const vendorBaseForMath =
+    compatibilityProfile.vendorSubtotalRounding === 'preserve'
+      ? facts.vendorSubtotalExactCents
+      : roundCents(facts.vendorSubtotalExactCents, compatibilityProfile.vendorSubtotalRounding);
+  const vendorSubtotalCents =
+    compatibilityProfile.vendorSubtotalRounding === 'preserve'
+      ? roundCents(facts.vendorSubtotalExactCents, 'nearest')
+      : vendorBaseForMath;
+  const marginCents = Math.max(
+    0,
+    roundCents(
+      vendorBaseForMath * policy.rule.marginPercent + policy.rule.marginFlatCents,
+      compatibilityProfile.marginRounding
+    )
+  );
+
+  let surchargePercent = 0;
+  if (scenario.surcharge === 'audio') surchargePercent = policy.rule.surchargeAudioPercent;
+  else if (scenario.surcharge === 'upscale') surchargePercent = policy.rule.surchargeUpscalePercent;
+  else if (scenario.surcharge != null) {
+    throw new PricingDomainError('unknown_surcharge', `unsupported surcharge ${String(scenario.surcharge)}`);
+  }
+  const surchargeCents = Math.max(
+    0,
+    roundCents(vendorBaseForMath * surchargePercent, compatibilityProfile.surchargeRounding)
+  );
+  const subtotalBeforeDiscountExactCents = vendorBaseForMath + marginCents + surchargeCents;
+  const discountCents = Math.max(
+    0,
+    roundCents(subtotalBeforeDiscountExactCents * scenario.discountPercent, compatibilityProfile.discountRounding)
+  );
+  const customerTotalCents = Math.max(
+    0,
+    roundCents(subtotalBeforeDiscountExactCents - discountCents, compatibilityProfile.totalRounding)
+  );
+  const commercialCents = marginCents + surchargeCents;
+  const discountAppliedToCommercial = Math.min(commercialCents, discountCents);
+  const platformFeeCents = Math.max(0, commercialCents - discountAppliedToCommercial);
+  const vendorShareCents = Math.max(0, customerTotalCents - platformFeeCents);
+
+  return {
+    engineId: facts.engineId,
+    scenarioId: scenario.id,
+    currency: factsCurrency,
+    vendorSubtotalCents,
+    marginCents,
+    surchargeCents,
+    discountCents,
+    customerTotalCents,
+    platformFeeCents,
+    vendorShareCents,
+    unit: facts.unit,
+    quantity: facts.quantity,
+    breakdown: {
+      vendorSubtotalExactCents: facts.vendorSubtotalExactCents,
+      marginPercent: policy.rule.marginPercent,
+      marginFlatCents: policy.rule.marginFlatCents,
+      surchargePercent,
+      discountPercent: scenario.discountPercent,
+    },
+    policyProvenance: {
+      source: policy.source,
+      matchedBy: policy.matchedBy,
+      sourceRuleId: policy.sourceRuleId,
+      compatibilityProfile: compatibilityProfile.id,
+    },
+  };
+}

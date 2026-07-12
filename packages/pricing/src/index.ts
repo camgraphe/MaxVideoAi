@@ -12,6 +12,14 @@ export { createPricingKernel, computePricingSnapshot } from './kernel';
 export { buildPricingDefinitionsFromFixtures } from './definitions';
 export { STANDARD_PAYMENT_MESSAGES } from './messages';
 export {
+  PricingDomainError,
+  quoteCanonicalPricing,
+  type CanonicalPricingQuote,
+  type PricingDomainErrorCode,
+  type PricingFacts,
+  type PricingScenario,
+} from './canonical';
+export {
   PricingPolicyValidationError,
   PricingPolicyResolutionError,
   resolvePricingPolicy,
