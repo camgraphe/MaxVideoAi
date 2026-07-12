@@ -5,6 +5,9 @@
   "description": "Mock API server and fixtures for the MaxVideoAI Generate page",
   "license": "BUSL-1.1",
   "author": "MaxVideoAI",
+  "engines": {
+    "node": ">=22"
+  },
   "dependencies": {
     "lucide-react": "^0.553.0",
     "pg": "^8.11.3",
