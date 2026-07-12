@@ -20,6 +20,8 @@
     "model:generate": "node scripts/generate-model-roster.mjs",
     "model:generate:write": "node scripts/generate-model-roster.mjs --write",
     "model:check": "node scripts/validate-model-roster.mjs",
+    "model:registry:generate": "node scripts/generate-model-runtime.mjs --write",
+    "model:registry:check": "tsx --tsconfig frontend/tsconfig.json scripts/validate-model-registry.ts && node scripts/generate-model-runtime.mjs",
     "model:scaffold": "npm --prefix frontend run models:scaffold --",
     "model:setup": "node scripts/model-setup.mjs",
     "models:audit": "node scripts/models-audit.mjs",

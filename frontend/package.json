@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.18.2",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "pnpm --dir .. model:registry:check",
     "build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
