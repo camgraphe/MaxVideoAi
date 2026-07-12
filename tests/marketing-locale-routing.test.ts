@@ -1,11 +1,18 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
+import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing.ts';
 
 const helperPath = 'frontend/lib/i18n/marketing-locale-switch.ts';
 const togglePath = 'frontend/components/marketing/LanguageToggle.tsx';
 const middlewarePath = 'frontend/middleware.ts';
 const routingLocalePath = 'frontend/lib/middleware/routing-locale.ts';
+
+function resolveRedirectLocation(url: string): string | null {
+  const request = new NextRequest(url);
+  return handleMarketingSlug(request, request.nextUrl.pathname)?.headers.get('location') ?? null;
+}
 
 test('marketing locale switching has one browser-safe route owner', () => {
   assert.equal(existsSync(helperPath), true, 'the shared marketing locale switch helper should exist');
@@ -95,4 +102,23 @@ test('public marketing URLs remain authoritative over browser locale detection',
 
   assert.match(routingLocaleSource, /localeDetection:\s*false/);
   assert.doesNotMatch(middlewareSource, /getPreferredLocale\(req\)/);
+});
+
+test('model-shaped compatibility redirects are not owned by marketing middleware', () => {
+  const source = readFileSync('frontend/lib/middleware/routing-marketing.ts', 'utf8');
+  assert.doesNotMatch(source, /['"]\/models\/(?:luma-dream-machine|pika-image-to-video)/);
+  assert.doesNotMatch(source, /['"]\/(?:fr\/modeles|es\/modelos)\/pika-2-2/);
+  assert.match(source, /resolveLocalizedEnglishModelSegment/);
+  assert.match(source, /resolveRuntimePublicSlug/);
+});
+
+test('wrong localized model segments resolve aliases directly in one hop', () => {
+  assert.equal(
+    resolveRedirectLocation('https://maxvideoai.com/fr/models/pika-2-2?utm_source=locale'),
+    'https://maxvideoai.com/fr/modeles/pika-text-to-video?utm_source=locale'
+  );
+  assert.equal(
+    resolveRedirectLocation('https://maxvideoai.com/es/models/pika-2-2?utm_source=locale'),
+    'https://maxvideoai.com/es/modelos/pika-text-to-video?utm_source=locale'
+  );
 });

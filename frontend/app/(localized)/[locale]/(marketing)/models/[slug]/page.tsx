@@ -439,12 +439,6 @@ export default async function ModelDetailPage(props: PageParams) {
   const params = await props.params;
   const { slug, locale: routeLocale } = params;
   const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
-  if (slug === 'veo-3-1-first-last') {
-    permanentRedirect(`/${localizedModelsBase}/veo-3-1`.replace(/\/{2,}/g, '/'));
-  }
-  if (slug === 'veo-3-1-first-last-fast') {
-    permanentRedirect(`/${localizedModelsBase}/veo-3-1-fast`.replace(/\/{2,}/g, '/'));
-  }
   const engine = getFalEngineBySlug(slug);
   if (!engine || engine.surfaces.modelPage.includeInSitemap === false) {
     notFound();

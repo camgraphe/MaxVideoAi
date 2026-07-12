@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { resolveRuntimePublicSlug } from '@/config/model-runtime';
 import type { AppLocale } from '@/i18n/locales';
 import { LOCALIZED_SEGMENT_VALUES, splitLocaleFromPath } from './routing-locale';
 
@@ -34,9 +35,6 @@ const EXACT_PATH_REDIRECTS: Record<string, string> = {
   '/pikavideo': '/models/pika-text-to-video',
   '/sora2': '/models/sora-2',
   '/sora-2': '/models/sora-2',
-  '/models/luma-dream-machine': '/models',
-  '/models/pika-image-to-video': '/models/pika-text-to-video',
-  '/models/pika-image-video': '/models/pika-text-to-video',
 };
 const GONE_MARKETING_PATHS = new Set(['/a']);
 const FUZZY_REDIRECT_TARGETS: Array<{ slug: string; destination: string }> = [
@@ -84,10 +82,6 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
   '/es/company': '/empresa',
   '/fr/status': '/statut',
   '/es/status': '/estado',
-  '/fr/models/pika-2-2': '/modeles/pika-text-to-video',
-  '/fr/modeles/pika-2-2': '/modeles/pika-text-to-video',
-  '/es/models/pika-2-2': '/modelos/pika-text-to-video',
-  '/es/modelos/pika-2-2': '/modelos/pika-text-to-video',
   // Compare AI video engines
   '/fr/blog/como-comparar-motores-de-video-con-ia-sora-vs-veo-vs-pika':
     '/blog/comment-comparer-les-moteurs-video-dia-sora-vs-veo-vs-pika',
@@ -129,9 +123,30 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
     '/es/blog/como-crear-personajes-de-ia-coherentes-en-imagenes-y-video',
 };
 
+function resolveLocalizedEnglishModelSegment(
+  req: NextRequest,
+  normalizedPath: string,
+  localePrefix: string
+): NextResponse | null {
+  if (localePrefix !== '/fr' && localePrefix !== '/es') return null;
+  if (!normalizedPath.startsWith('/models/')) return null;
+  const slug = normalizedPath.slice('/models/'.length);
+  if (!slug || slug.includes('/')) return null;
+  const model = resolveRuntimePublicSlug(slug);
+  if (!model) return null;
+  const localizedBase = localePrefix === '/fr' ? 'modeles' : 'modelos';
+  const redirectUrl = req.nextUrl.clone();
+  redirectUrl.pathname = `${localePrefix}/${localizedBase}/${model.slug}`;
+  return NextResponse.redirect(redirectUrl, 301);
+}
+
 export function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   const normalizedPath = normalizePath(pathWithoutLocale);
+  const localizedEnglishModelRedirect = resolveLocalizedEnglishModelSegment(req, normalizedPath, localePrefix);
+  if (localizedEnglishModelRedirect) {
+    return localizedEnglishModelRedirect;
+  }
   if (GONE_MARKETING_PATHS.has(normalizedPath)) {
     return new NextResponse('Gone', { status: 410 });
   }

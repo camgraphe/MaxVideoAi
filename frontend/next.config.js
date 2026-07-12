@@ -1,4 +1,5 @@
 const path = require('path');
+const modelRegistry = require('./config/model-registry.json');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
 const MARKETING_CDN_CACHE_HEADERS = [
@@ -38,6 +39,36 @@ const SITEMAP_RUNTIME_GLOBS = [
   '.next/app-path-routes-manifest.json',
   '.next/routes-manifest.json',
 ];
+const MODEL_ROUTE_BASES = [
+  { prefix: '/models', index: '/models' },
+  { prefix: '/fr/modeles', index: '/fr/modeles' },
+  { prefix: '/es/modelos', index: '/es/modelos' },
+];
+
+function buildModelRegistryRedirects() {
+  const redirects = [];
+  for (const model of modelRegistry.models) {
+    for (const alias of model.aliases.publicSlugs) {
+      for (const route of MODEL_ROUTE_BASES) {
+        redirects.push({
+          source: `${route.prefix}/${alias}`,
+          destination: `${route.prefix}/${model.slug}`,
+          statusCode: 301,
+        });
+      }
+    }
+  }
+  for (const tombstone of modelRegistry.tombstones) {
+    for (const route of MODEL_ROUTE_BASES) {
+      redirects.push({
+        source: `${route.prefix}/${tombstone.slug}`,
+        destination: route.index,
+        statusCode: 301,
+      });
+    }
+  }
+  return redirects;
+}
 const FFPROBE_NON_RUNTIME_BINARIES = [
   'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/darwin/**/*',
   'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/win32/**/*',
@@ -170,156 +201,7 @@ const nextConfig = {
         destination: '/docs/get-started',
         permanent: true,
       },
-      {
-        source: '/models/openai-sora-2',
-        destination: '/models/sora-2',
-        permanent: true,
-      },
-      {
-        source: '/models/ltx-2-3',
-        destination: '/models/ltx-2-3-pro',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/ltx-2-3',
-        destination: '/fr/modeles/ltx-2-3-pro',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/ltx-2-3',
-        destination: '/es/modelos/ltx-2-3-pro',
-        permanent: true,
-      },
-      {
-        source: '/models/openai-sora-2-pro',
-        destination: '/models/sora-2-pro',
-        permanent: true,
-      },
-      {
-        source: '/models/google-veo-3',
-        destination: '/models/veo-3-1',
-        permanent: true,
-      },
-      {
-        source: '/models/veo-3',
-        destination: '/models/veo-3-1',
-        permanent: true,
-      },
-      {
-        source: '/models/pika-2-2',
-        destination: '/models/pika-text-to-video',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/pika-2-2',
-        destination: '/fr/modeles/pika-text-to-video',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/pika-2-2',
-        destination: '/es/modelos/pika-text-to-video',
-        permanent: true,
-      },
-      {
-        source: '/models/google-veo-3-fast',
-        destination: '/models/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/models/veo-3-fast',
-        destination: '/models/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/models/veo-3-1-first-last',
-        destination: '/models/veo-3-1',
-        permanent: true,
-      },
-      {
-        source: '/models/veo-3-1-first-last-fast',
-        destination: '/models/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/veo-3-fast',
-        destination: '/fr/modeles/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/veo-3-1-first-last',
-        destination: '/fr/modeles/veo-3-1',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/veo-3-1-first-last-fast',
-        destination: '/fr/modeles/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/veo-3-fast',
-        destination: '/es/modelos/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/veo-3-1-first-last',
-        destination: '/es/modelos/veo-3-1',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/veo-3-1-first-last-fast',
-        destination: '/es/modelos/veo-3-1-fast',
-        permanent: true,
-      },
-      {
-        source: '/models/minimax-video-01',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/models/minimax-hailuo-02-pro',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/models/minimax-video-1',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/models/minimax-hailuo-02',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/models/minimax-hailuo-02-image',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/minimax-hailuo-02-image',
-        destination: '/fr/modeles/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/minimax-hailuo-02-image',
-        destination: '/es/modelos/minimax-hailuo-02-text',
-        permanent: true,
-      },
-      {
-        source: '/fr/modeles/pika-image-to-video',
-        destination: '/fr/modeles/pika-text-to-video',
-        permanent: true,
-      },
-      {
-        source: '/es/modelos/pika-image-to-video',
-        destination: '/es/modelos/pika-text-to-video',
-        permanent: true,
-      },
-      {
-        source: '/models/hailuo-2-pro',
-        destination: '/models/minimax-hailuo-02-text',
-        permanent: true,
-      },
+      ...buildModelRegistryRedirects(),
       {
         source: '/examples/ltx-2-fast',
         destination: '/examples/ltx',
@@ -411,16 +293,6 @@ const nextConfig = {
         permanent: true,
       },
       {
-        source: '/models/luma-dream-machine',
-        destination: '/models',
-        permanent: true,
-      },
-      {
-        source: '/models/hunyuan-video',
-        destination: '/models',
-        permanent: true,
-      },
-      {
         source: '/storyboard-sora-pro',
         destination: 'https://maxvideoai.com/blog/sora-2-sequenced-prompts',
         permanent: true,
@@ -454,16 +326,6 @@ const nextConfig = {
       {
         source: '/es/sitemap-video-pages.xml',
         destination: '/sitemap-video-pages.xml',
-        permanent: true,
-      },
-      {
-        source: '/models/kling-25-turbo-pro',
-        destination: '/models/kling-2-5-turbo',
-        permanent: true,
-      },
-      {
-        source: '/models/kling-2-5-turbo-pro',
-        destination: '/models/kling-2-5-turbo',
         permanent: true,
       },
       {
@@ -524,11 +386,6 @@ const nextConfig = {
       {
         source: '/en/:path*',
         destination: '/:path*',
-        permanent: true,
-      },
-      {
-        source: '/models/veo3fast',
-        destination: '/models/veo-3-1-fast',
         permanent: true,
       },
     ];
