@@ -43,7 +43,11 @@ const appHeaderPath = 'frontend/components/HeaderBar.tsx';
 const appHeaderNavHelpersPath = 'frontend/components/header/header-nav-helpers.ts';
 const obfuscatedEmailPath = 'frontend/components/marketing/ObfuscatedEmailLink.tsx';
 const dictionariesPath = 'frontend/lib/i18n/dictionaries.ts';
-const companyPagePath = 'frontend/app/(localized)/[locale]/(marketing)/company/page.tsx';
+const companySourcePaths = [
+  'frontend/app/(localized)/[locale]/(marketing)/company/page.tsx',
+  'frontend/app/(localized)/[locale]/(marketing)/company/_lib/company-copy.ts',
+  'frontend/app/(localized)/[locale]/(marketing)/company/_components/CompanyTrustView.tsx',
+];
 
 const footerSource = read(footerPath);
 const navSource = read(navPath);
@@ -51,7 +55,7 @@ const appHeaderSource = read(appHeaderPath);
 const appHeaderNavHelpersSource = read(appHeaderNavHelpersPath);
 const obfuscatedEmailSource = read(obfuscatedEmailPath);
 const dictionariesSource = read(dictionariesPath);
-const companyPageSource = read(companyPagePath);
+const companySources = companySourcePaths.map(read).join('\n');
 
 assert(/pathname:\s*'\/company'/.test(footerSource), 'Footer must include /company as trust hub entry.');
 assert(!/pathname:\s*'\/about'/.test(footerSource), 'Footer must not link directly to /about.');
@@ -94,7 +98,7 @@ const strategicHrefPatterns = [
 ];
 
 for (const pattern of strategicHrefPatterns) {
-  assert(!pattern.test(companyPageSource), `Company trust hub must not link to strategic destination (${pattern}).`);
+  assert(!pattern.test(companySources), `Company trust hub must not link to strategic destination (${pattern}).`);
 }
 
 for (const localeFile of ['frontend/messages/en.json', 'frontend/messages/fr.json', 'frontend/messages/es.json']) {
@@ -132,7 +136,10 @@ for (const localeFile of ['frontend/messages/en.json', 'frontend/messages/fr.jso
 
 const companyAllowedFiles = new Set([
   'frontend/components/marketing/MarketingFooter.tsx',
+  'frontend/app/(localized)/[locale]/(marketing)/about/_components/AboutView.tsx',
   'frontend/app/(localized)/[locale]/(marketing)/company/page.tsx',
+  'frontend/app/(localized)/[locale]/(marketing)/company/_lib/company-copy.ts',
+  'frontend/app/(localized)/[locale]/(marketing)/company/_components/CompanyTrustView.tsx',
   'frontend/app/company/page.tsx',
   'frontend/config/localized-slugs.json',
   'frontend/i18n/routing.ts',

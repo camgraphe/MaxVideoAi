@@ -53,3 +53,10 @@ test('Company route delegates visual ownership to a focused view', () => {
   assert.match(view, /return-policy/);
   assert.doesNotMatch(view, /['"]use client['"]/);
 });
+
+test('internal link guard follows the extracted Company owner and allows the About trust link', () => {
+  const guard = readFileSync('scripts/internal-link-guard.mjs', 'utf8');
+  assert.match(guard, /company\/_lib\/company-copy\.ts/);
+  assert.match(guard, /about\/_components\/AboutView\.tsx/);
+  assert.match(guard, /companySources/);
+});
