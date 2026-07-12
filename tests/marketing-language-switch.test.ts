@@ -20,5 +20,6 @@ test('server locale redirects persist the selected locale without a permanent re
   const source = readFileSync('frontend/lib/middleware/routing-locale.ts', 'utf8');
 
   assert.match(source, /const response = NextResponse\.redirect\(redirectUrl, 307\);/);
-  assert.match(source, /setLocaleCookies\(response, targetLocale\);/);
+  assert.match(source, /resolveSharedLocaleCookieDomain\(req\.nextUrl\.hostname\)/);
+  assert.match(source, /setLocaleCookies\(response, targetLocale, sharedCookieDomain\);/);
 });

@@ -140,18 +140,26 @@ export function extractLocaleFromPathname(pathname: string): string | null {
   return PREFIX_TO_LOCALE.get(prefix) ?? null;
 }
 
-export function setLocaleCookies(response: NextResponse, locale: string) {
+export function setLocaleCookies(response: NextResponse, locale: string, sharedDomain?: string) {
   const maxAge = 60 * 60 * 24 * 365;
-  response.cookies.set(LOCALE_COOKIE, locale, {
+  const options = {
     path: '/',
     maxAge,
-    sameSite: 'lax',
-  });
-  response.cookies.set(NEXT_LOCALE_COOKIE, locale, {
-    path: '/',
-    maxAge,
-    sameSite: 'lax',
-  });
+    sameSite: 'lax' as const,
+  };
+  for (const name of [LOCALE_COOKIE, NEXT_LOCALE_COOKIE]) {
+    response.cookies.set(name, locale, options);
+    if (sharedDomain) {
+      response.cookies.set(name, locale, { ...options, domain: sharedDomain });
+    }
+  }
+}
+
+function resolveSharedLocaleCookieDomain(hostname: string): string | undefined {
+  const normalized = hostname.trim().toLowerCase();
+  return normalized === 'maxvideoai.com' || normalized.endsWith('.maxvideoai.com')
+    ? '.maxvideoai.com'
+    : undefined;
 }
 
 export function getPreferredLocale(req: NextRequest): (typeof locales)[number] {
@@ -264,6 +272,7 @@ export function resolveLangParamRedirect(req: NextRequest, pathname: string): Ne
   redirectUrl.pathname = localizedPath;
   redirectUrl.searchParams.delete('lang');
   const response = NextResponse.redirect(redirectUrl, 307);
-  setLocaleCookies(response, targetLocale);
+  const sharedCookieDomain = resolveSharedLocaleCookieDomain(req.nextUrl.hostname);
+  setLocaleCookies(response, targetLocale, sharedCookieDomain);
   return response;
 }
