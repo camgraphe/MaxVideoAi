@@ -74,3 +74,38 @@ Incidental dated SEO matrix updates and the model-roster report timestamp produc
 ## Remaining concerns
 
 No known correctness blocker. The live registry currently exercises replacement behavior only through mutation fixtures; the first real retirement will be protected by the same validator, redirect, one-hop, and exact-projection checks.
+
+## Final re-review follow-up
+
+The subsequent re-review found one Important middleware chain and one Minor architecture-guard coverage gap. Both are resolved in `b3f6f1de8832b92c6007e524378c9718af7b63a8` (`fix: flatten replacement middleware routing`).
+
+### RED
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-runtime-replacement-routing.test.ts tests/model-registry-architecture.test.ts
+```
+
+Result: 7 passed, 2 failed as expected. The new runtime projection helper was absent, and the semantic guard proved that `frontend/app` was not yet scanned.
+
+### GREEN
+
+```bash
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-runtime-replacement-routing.test.ts tests/model-registry-architecture.test.ts tests/model-registry-parity.test.ts tests/marketing-locale-routing.test.ts tests/model-registry-redirects.test.ts
+```
+
+Result: 27/27 passed. Mutation coverage retires `happy-horse-1-0`, including dotted alias `happy-horse-1.0`, and proves:
+
+- engine IDs and internal aliases continue to resolve to the retired source identity;
+- canonical and public aliases resolve through an optional flattened `publicTargetId` only;
+- no `replacement` graph enters the browser runtime;
+- `/fr/models/*` and `/es/models/*` preserve queries and return one HTTP 301 directly to the active localized canonical slug;
+- native redirect sources remain unique and one hop.
+
+The semantic guard now recursively scans all source files under `frontend` and `scripts`, including `app`, `components`, and `server`. It skips only dependency/build directories and the authorized registry scaffold.
+
+Final verification:
+
+- `pnpm test:validate`: 1894/1894 passed.
+- frontend lint, exposure lint, TypeScript, registry check, model check, and `git diff --check`: passed.
+- production build: passed with `BUILD_ID=9RnjdCb0HrkX80FVXukon`.
+- incidental SEO matrices and generated report timestamps were reversed.
