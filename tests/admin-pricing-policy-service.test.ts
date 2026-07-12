@@ -85,6 +85,11 @@ function createMemoryHarness(initialRules: PricingRule[] = [], initialEvents: Pr
     },
     getEvent: async (eventId, domain) =>
       harness.events.find((event) => event.id === eventId && event.domain === domain) ?? null,
+    listLatestEventsByTargets: async (domain, targetIds) =>
+      targetIds.flatMap((targetId) => {
+        const event = harness.events.find((candidate) => candidate.domain === domain && candidate.targetId === targetId);
+        return event ? [{ ...event }] : [];
+      }),
     listEvents: async (filter: ListPricingChangeEventsInput = {}) =>
       harness.events
         .filter((event) => !filter.domain || event.domain === filter.domain)
@@ -305,6 +310,40 @@ test('global surcharge changes expand into engine-specific authoritative coverag
   assert.equal(new Set(upscale.map((request) => request.selector.engineId)).size, upscale.length);
 });
 
+test('integrated global margin and surcharge previews ignore unrelated base unsupported outcomes', async () => {
+  const current = policyRule('db-global', {
+    engineId: undefined,
+    mode: undefined,
+    resolution: undefined,
+  });
+  const harness = createMemoryHarness([current]);
+  const marginPreview = await previewPricingPolicyChange(
+    { operation: 'update', targetId: current.id, rule: { ...current, marginFlatCents: 1 } },
+    harness.deps
+  );
+  const surchargePreview = await previewPricingPolicyChange(
+    { operation: 'update', targetId: current.id, rule: { ...current, surchargeAudioPercent: 0.25 } },
+    harness.deps
+  );
+
+  assert.ok(marginPreview.rows.length > 0);
+  assert.ok(surchargePreview.rows.some((row) => row.scenarioId.startsWith('admin-surcharge:audio:')));
+  assert.ok(marginPreview.warnings.some((warning) => warning.includes('Canonical facts are unavailable')));
+});
+
+test('integrated preview still blocks an explicitly requested non-authoritative surcharge dimension', async () => {
+  const current = policyRule('db-kling');
+  const harness = createMemoryHarness([current]);
+
+  await assert.rejects(
+    previewPricingPolicyChange(
+      { operation: 'update', targetId: current.id, rule: { ...current, surchargeUpscalePercent: 0.6 } },
+      harness.deps
+    ),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'unsupported_scenario'
+  );
+});
+
 test('database unavailability fails previews explicitly and does not fall back to versioned state', async () => {
   const harness = createMemoryHarness();
   harness.deps.loadOverrides = async () => ({ status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' });
@@ -520,6 +559,63 @@ test('inventory scenario rows inherit the effective database override routing an
   assert.equal(inherited?.databaseOverride?.id, engineRule.id);
   assert.equal(inherited?.routingContext?.vendorAccountId, 'acct-engine-routing');
   assert.equal(inherited?.lastEvent?.id, event.id);
+});
+
+test('inventory enriches a seeded versioned selector from its effective database global override', async () => {
+  const dbGlobal = {
+    ...policyRule('db-global', { engineId: undefined, mode: undefined, resolution: undefined }),
+    vendorAccountId: 'acct-global-routing',
+  };
+  const event: PricingChangeEvent = {
+    id: 'event-global',
+    domain: 'policy_rule',
+    operation: 'update',
+    targetId: dbGlobal.id,
+    actorId,
+    previousState: null,
+    nextState: dbGlobal,
+    previewSummary: {},
+    affectedScenarioIds: [],
+    createdAt: '2026-07-13T00:00:00.000Z',
+  };
+  const harness = createMemoryHarness([dbGlobal], [event]);
+
+  const inventory = await loadPricingPolicyInventory(harness.deps);
+  const seededAudio = inventory.rows.find((row) => row.selector.engineId === 'audio-generation');
+
+  assert.equal(seededAudio?.versionedRule?.id, 'audio-current');
+  assert.equal(seededAudio?.databaseOverride?.id, dbGlobal.id);
+  assert.equal(seededAudio?.effectiveProvenance?.sourceRuleId, dbGlobal.id);
+  assert.equal(seededAudio?.routingContext?.vendorAccountId, 'acct-global-routing');
+  assert.equal(seededAudio?.lastEvent?.id, event.id);
+});
+
+test('inventory finds a quiet target last event beyond 200 newer global events', async () => {
+  const quietRule = policyRule('db-kling');
+  const quietEvent: PricingChangeEvent = {
+    id: 'event-quiet',
+    domain: 'policy_rule',
+    operation: 'create',
+    targetId: quietRule.id,
+    actorId,
+    previousState: null,
+    nextState: quietRule,
+    previewSummary: {},
+    affectedScenarioIds: [],
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
+  const noisyEvents = Array.from({ length: 201 }, (_, index): PricingChangeEvent => ({
+    ...quietEvent,
+    id: `event-noisy-${index}`,
+    targetId: `noisy-${index}`,
+    createdAt: `2026-07-13T00:${String(index % 60).padStart(2, '0')}:00.000Z`,
+  }));
+  const harness = createMemoryHarness([quietRule], [...noisyEvents, quietEvent]);
+
+  const inventory = await loadPricingPolicyInventory(harness.deps);
+  const row = inventory.rows.find((candidate) => candidate.databaseOverride?.id === quietRule.id);
+
+  assert.equal(row?.lastEvent?.id, quietEvent.id);
 });
 
 test('rollback uses direct event lookup beyond the 200-row history window and recreates only unrouted state', async () => {

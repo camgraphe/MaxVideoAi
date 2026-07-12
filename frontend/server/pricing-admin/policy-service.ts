@@ -42,7 +42,12 @@ import {
   type RequestedPricingSurcharge,
 } from './canonical-scenarios';
 import { PricingAdminError } from './errors';
-import { getPricingChangeEventById, insertPricingChangeEvent, listPricingChangeEvents } from './event-store';
+import {
+  getPricingChangeEventById,
+  insertPricingChangeEvent,
+  listLatestPricingChangeEventsByTargets,
+  listPricingChangeEvents,
+} from './event-store';
 import { buildPricingPreviewFingerprint } from './fingerprint';
 import { revalidatePricingChangeSurfaces } from './revalidation';
 
@@ -97,6 +102,7 @@ export type PricingPolicyInventoryResponse = {
 export type PricingPolicyServiceDependencies = {
   loadOverrides(executor?: QueryExecutor): Promise<PricingPolicyOverrideLoadResult>;
   getEvent(id: string, domain: PricingChangeDomain, executor?: QueryExecutor): Promise<PricingChangeEvent | null>;
+  listLatestEventsByTargets(domain: PricingChangeDomain, targetIds: string[]): Promise<PricingChangeEvent[]>;
   listEvents(input?: ListPricingChangeEventsInput): Promise<PricingChangeEvent[]>;
   withTransaction<TResult>(callback: (executor: QueryExecutor) => Promise<TResult>): Promise<TResult>;
   upsertRule(executor: QueryExecutor, rule: PricingPolicyRule, actorId: string): Promise<PricingRule>;
@@ -112,6 +118,7 @@ const DEFAULT_DEPENDENCIES: PricingPolicyServiceDependencies = {
       ? loadPricingPolicyOverridesWithExecutor(executor, { lock: true })
       : loadPricingPolicyOverrides(),
   getEvent: (id, domain, executor) => getPricingChangeEventById(id, domain, executor),
+  listLatestEventsByTargets: listLatestPricingChangeEventsByTargets,
   listEvents: listPricingChangeEvents,
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   upsertRule: (executor, rule, actorId) => upsertPricingRuleWithExecutor(executor, rule, actorId),
@@ -414,15 +421,30 @@ export async function previewPricingPolicyChange(
     scenarios,
     requestedSurcharges: surchargeRequests,
   });
-  const unsupportedScenarioIds = [...currentOutcomes, ...proposedOutcomes]
-    .filter((outcome) => outcome.status === 'unsupported')
-    .map((outcome) => outcome.scenarioId);
+  const unsupportedOutcomes = [...currentOutcomes, ...proposedOutcomes]
+    .filter((outcome) => outcome.status === 'unsupported');
+  const unsupportedScenarioIds = [...new Set(
+    unsupportedOutcomes
+      .filter((outcome) => outcome.scenarioId.startsWith('admin-surcharge:'))
+      .map((outcome) => outcome.scenarioId)
+  )];
+  const warnings = [...new Set(
+    unsupportedOutcomes
+      .filter((outcome) => !outcome.scenarioId.startsWith('admin-surcharge:'))
+      .map((outcome) => outcome.warning)
+  )];
   const affectedScenarioIds = [...new Set(currentOutcomes.map((outcome) => outcome.scenarioId))].sort();
   const currentState = jsonRule(context.currentRule);
   const proposedState = jsonRule(context.proposedRule);
+  const comparableCurrent = currentOutcomes.filter(
+    (outcome): outcome is AdminCanonicalScenarioQuote => outcome.status === 'quoted'
+  );
+  const comparableProposed = proposedOutcomes.filter(
+    (outcome): outcome is AdminCanonicalScenarioQuote => outcome.status === 'quoted'
+  );
   const rows = unsupportedScenarioIds.length
     ? []
-    : compareCanonicalAdminScenarios(currentOutcomes, proposedOutcomes);
+    : compareCanonicalAdminScenarios(comparableCurrent, comparableProposed);
   const previewFingerprint = buildPricingPreviewFingerprint({
     domain: 'policy_rule',
     operation: context.operation,
@@ -451,7 +473,7 @@ export async function previewPricingPolicyChange(
     affectedScenarioIds,
     affectedSurfaces: [...new Set(rows.map((row) => row.surface))].sort(),
     rows,
-    warnings: [],
+    warnings,
     ...(context.rollbackEventId ? { rollbackEventId: context.rollbackEventId } : {}),
   };
 }
@@ -552,7 +574,6 @@ export async function loadPricingPolicyInventory(
   const loaded = await dependencies.loadOverrides();
   const databaseRules = loaded.status === 'loaded' ? loaded.rules.map(canonicalRule) : [];
   const routingRules = loaded.status === 'loaded' ? loaded.routingRules ?? [] : [];
-  const events = loaded.status === 'loaded' ? await dependencies.listEvents({ domain: 'policy_rule', limit: 200 }) : [];
   const bySelector = new Map<string, {
     selector: PricingScenarioSelector;
     versionedRule: PricingPolicyRule | null;
@@ -600,6 +621,31 @@ export async function loadPricingPolicyInventory(
           : null,
     });
   });
+
+  bySelector.forEach((entry, key) => {
+    if (!entry.selector.engineId) return;
+    const effective = resolvePricingPolicy({
+      scenario: { ...entry.selector, engineId: entry.selector.engineId },
+      databaseRules,
+      versionedRules: policy.rules,
+    });
+    if (effective.source !== 'database') return;
+    bySelector.set(key, {
+      ...entry,
+      databaseOverride: databaseRules.find((rule) => rule.id === effective.sourceRuleId) ?? null,
+    });
+  });
+
+  const eventTargetIds = [...new Set(
+    [...bySelector.values()].flatMap((entry) => [
+      ...(entry.databaseOverride ? [entry.databaseOverride.id] : []),
+      ...(entry.versionedRule ? [entry.versionedRule.id] : []),
+    ])
+  )];
+  const latestEvents = loaded.status === 'loaded'
+    ? await dependencies.listLatestEventsByTargets('policy_rule', eventTargetIds)
+    : [];
+  const latestEventByTarget = new Map(latestEvents.map((event) => [event.targetId, event]));
 
   const rows = [...bySelector.values()].map(({ selector, versionedRule, databaseOverride }): PricingPolicyInventoryRow => {
     const scenarios = selectAffectedPricingScenarios(selector);
@@ -650,7 +696,7 @@ export async function loadPricingPolicyInventory(
             ...(routing.updatedBy ? { updatedBy: routing.updatedBy } : {}),
           }
         : null,
-      lastEvent: targetId ? events.find((event) => event.targetId === targetId) ?? null : null,
+      lastEvent: targetId ? latestEventByTarget.get(targetId) ?? null : null,
     };
   });
 

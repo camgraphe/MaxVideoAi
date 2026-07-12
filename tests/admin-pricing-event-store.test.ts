@@ -5,6 +5,7 @@ import type { QueryExecutor } from '../frontend/src/lib/db.ts';
 import {
   getPricingChangeEventById,
   insertPricingChangeEvent,
+  listLatestPricingChangeEventsByTargets,
   listPricingChangeEvents,
 } from '../frontend/server/pricing-admin/event-store.ts';
 
@@ -127,4 +128,18 @@ test('getPricingChangeEventById uses a direct domain-scoped lookup without histo
   assert.match(calls[0]?.text ?? '', /WHERE id = \$1 AND domain = \$2/);
   assert.doesNotMatch(calls[0]?.text ?? '', /LIMIT 200/);
   assert.deepEqual(calls[0]?.params, [rawEvent.id, 'policy_rule']);
+});
+
+test('listLatestPricingChangeEventsByTargets batches exact per-target history reads', async () => {
+  const calls: QueryCall[] = [];
+  const events = await listLatestPricingChangeEventsByTargets(
+    'policy_rule',
+    [rawEvent.target_id, 'quiet-rule'],
+    buildExecutor([rawEvent], calls)
+  );
+
+  assert.equal(events[0]?.id, rawEvent.id);
+  assert.match(calls[0]?.text ?? '', /DISTINCT ON \(target_id\)/);
+  assert.match(calls[0]?.text ?? '', /target_id = ANY\(\$2::text\[\]\)/);
+  assert.deepEqual(calls[0]?.params, ['policy_rule', [rawEvent.target_id, 'quiet-rule']]);
 });

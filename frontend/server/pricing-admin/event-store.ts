@@ -172,3 +172,22 @@ export async function getPricingChangeEventById(
   );
   return rows[0] ? mapPricingChangeEventRow(rows[0]) : null;
 }
+
+export async function listLatestPricingChangeEventsByTargets(
+  domain: PricingChangeDomain,
+  targetIds: string[],
+  executor: QueryExecutor = { query }
+): Promise<PricingChangeEvent[]> {
+  const normalizedTargetIds = [...new Set(targetIds.map((targetId) => targetId.trim()).filter(Boolean))];
+  if (!normalizedTargetIds.length) return [];
+  const rows = await executor.query<RawPricingChangeEvent>(
+    `SELECT DISTINCT ON (target_id)
+            id, domain, operation, target_id, actor_id, previous_state, next_state,
+            preview_summary, affected_scenario_ids, created_at
+       FROM app_pricing_change_events
+      WHERE domain = $1 AND target_id = ANY($2::text[])
+      ORDER BY target_id, created_at DESC, id DESC`,
+    [domain, normalizedTargetIds]
+  );
+  return rows.map(mapPricingChangeEventRow);
+}
