@@ -96,6 +96,7 @@ No internal alias is retired during the registry-introduction wave.
 - product category;
 - historical internal/input aliases;
 - historical public model slugs;
+- model-shaped public tombstones whose final destination is the localized model catalogue rather than another model;
 - publication state for model, examples, comparison, app discovery, pricing-link, and sitemap surfaces;
 - replacement model, when a retired model delegates discovery to another canonical model.
 
@@ -117,9 +118,18 @@ The source is JSON so it can be consumed by `frontend/next.config.js` without im
 
 `next.config.js` is the sole build-time projector for historical public model redirects. It reads the same JSON and expands public slugs into locale-specific redirect objects; it does not own model data. The production build runs the typed registry validator as an explicit preflight before Next.js evaluates the redirect output, avoiding a second JavaScript validation policy in `next.config.js`.
 
-A conceptual entry has this shape:
+A conceptual document has this shape:
 
 ```ts
+type ModelRegistryDocument = {
+  schemaVersion: 1;
+  models: ModelRegistryEntry[];
+  tombstones: Array<{
+    slug: string;
+    destination: 'models-index';
+  }>;
+};
+
 type ModelRegistryEntry = {
   id: string;
   slug: string;
@@ -149,6 +159,8 @@ type ModelRegistryEntry = {
   replacement: string | null;
 };
 ```
+
+The initial tombstones are `luma-dream-machine` and `hunyuan-video`, which currently redirect from model-shaped paths to the model catalogue. They cannot be represented as aliases because no canonical replacement model exists. Keeping them in the registry lets the single redirect projector preserve these URLs without inventing a fake canonical model.
 
 All cross-model references use canonical product IDs, never display names, provider IDs, or aliases. Optional app presentation fields remain optional; booleans are explicit so absence cannot silently mean different things to different consumers.
 
@@ -203,7 +215,7 @@ model-registry.json
 
 model-registry.json
   -> next.config.js historical public-slug projection
-  -> en / fr / es permanent single-hop redirects
+  -> en / fr / es permanent single-hop model and catalogue-tombstone redirects
 
 canonical product ID
   -> provider adapter
@@ -223,6 +235,7 @@ Create an executable compatibility matrix from the current implementation before
 - all canonical IDs and canonical public slugs;
 - all 87 historical internal aliases and their current targets;
 - every historical model URL, current status, and destination in English, French, and Spanish;
+- the two catalogue tombstones and their current model-index destinations;
 - publication results for model, examples, comparison, app, pricing links, and sitemap surfaces;
 - canonical and hreflang output for representative and edge-case models;
 - replacement and family relationships used by current consumers.
@@ -249,7 +262,7 @@ This phase changes ownership, not output. Existing localized content fallbacks a
 
 ### Phase 6: Consolidate model redirects
 
-Derive all historical model URL rules from `aliases.publicSlugs` and canonical slugs in the single `next.config.js` projector. Replace hand-authored model-only entries in `next.config.js`, marketing middleware, and route-level redirects with the generated rules or a data-free defensive canonical resolver. Preserve unrelated redirect rules in their existing layers.
+Derive all historical model URL rules from `aliases.publicSlugs`, canonical slugs, and registry tombstones in the single `next.config.js` projector. Model aliases target their canonical localized model path. Tombstones target the localized model catalogue. Replace hand-authored model-only entries in `next.config.js`, marketing middleware, and route-level redirects with the generated rules or a data-free defensive canonical resolver. Preserve unrelated redirect rules in their existing layers.
 
 Every generated rule uses explicit HTTP 301, preserves locale and existing query behavior, and points directly to the final canonical path. The compatibility test treats the current 301/308 mixture as the characterized baseline through phases 1–5, then asserts the approved uniform 301 contract when this phase lands.
 
@@ -275,14 +288,15 @@ Registry validation fails the focused test suite and production build for any of
 5. a cross-model reference to a missing canonical ID;
 6. a replacement that points to itself, forms a cycle, or requires a replacement chain;
 7. a historical public slug equal to its own canonical slug;
-8. a generated redirect whose source equals its destination;
-9. duplicate redirect sources with different destinations;
-10. a redirect chain or loop;
-11. a published surface whose required canonical route or localized content does not exist;
-12. a comparison relation that references an unpublished or incompatible comparison target;
-13. duplicate app discovery ranks where ordering must be unique;
-14. a model published to sitemap without a canonical, indexable model route;
-15. a provider ID, price formula, or localized copy block added to the registry.
+8. a tombstone that collides with a canonical or historical model slug, has an unsupported destination kind, or duplicates another tombstone;
+9. a generated redirect whose source equals its destination;
+10. duplicate redirect sources with different destinations;
+11. a redirect chain or loop;
+12. a published surface whose required canonical route or localized content does not exist;
+13. a comparison relation that references an unpublished or incompatible comparison target;
+14. duplicate app discovery ranks where ordering must be unique;
+15. a model published to sitemap without a canonical, indexable model route;
+16. a provider ID, price formula, or localized copy block added to the registry.
 
 Validation errors identify the model, field, conflicting value, and expected invariant. Validation is deterministic and performs no network or database calls.
 
@@ -296,6 +310,14 @@ For every historical public model slug `legacy` targeting canonical slug `canoni
 /es/modelos/legacy   -> /es/modelos/canonical
 ```
 
+For each catalogue tombstone `retired`, the projection produces:
+
+```text
+/models/retired       -> /models
+/fr/modeles/retired   -> /fr/modeles
+/es/modelos/retired   -> /es/modelos
+```
+
 The projection does not create unprefixed French or Spanish destinations, translate the model slug differently per locale, or fall back to the browser's preferred language. Locale choice comes from the requested path and remains authoritative.
 
 Requests already using a canonical path render directly. Canonical URLs never redirect because of cookies, `Accept-Language`, or a stale locale stored by the client.
@@ -307,7 +329,7 @@ Requests already using a canonical path render directly. Canonical URLs never re
 - A registry structure test validates schema, uniqueness, direct references, publication consistency, and forbidden fields.
 - A registry parity test compares the new registry with the pre-migration compatibility matrix.
 - An alias contract covers every historical input alias and verifies one-step canonicalization.
-- A redirect contract evaluates the `next.config.js` output, expands every public slug across English, French, and Spanish, and verifies 301, final destination, query behavior, no chain, and no loop.
+- A redirect contract evaluates the `next.config.js` output, expands every public slug and tombstone across English, French, and Spanish, and verifies 301, final destination, query behavior, no chain, and no loop.
 - An architecture test rejects new model identity, publication, or public-alias maps outside the registry and approved test fixtures.
 - A client-boundary test ensures registry validation and redirect projection do not enter client component dependency graphs.
 
@@ -370,6 +392,7 @@ The subproject is complete only when all of the following are true:
 - every product model has exactly one canonical registry entry;
 - all current canonical IDs, slugs, 87 historical aliases, and historical model URLs retain their current destinations and resolution behavior;
 - every historical model URL redirects once to the final canonical path in the same locale;
+- every catalogue tombstone redirects once to the localized model index;
 - model, examples, comparison, app, pricing-link, and sitemap publication match the pre-migration compatibility matrix;
 - canonical, hreflang, JSON-LD, and sitemap output are unchanged;
 - existing public helper imports still work through data-free facades where retained;
