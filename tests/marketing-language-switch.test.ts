@@ -13,7 +13,9 @@ test('marketing locale switch delegates generic page changes to the server local
   const source = readFileSync('frontend/components/marketing/LanguageToggle.tsx', 'utf8');
 
   assert.match(source, /searchParams\.set\('lang', value\)/);
+  assert.match(source, /searchParams\.set\('nolocale', '1'\)/);
   assert.match(source, /window\.location\.assign\(localeSwitchHref\)/);
+  assert.match(source, /window\.history\.replaceState\(window\.history\.state, '', cleanHref\)/);
 });
 
 test('server locale redirects persist the selected locale without a permanent redirect', () => {

@@ -70,7 +70,17 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
   useEffect(() => {
     const rawPathname =
       typeof window !== 'undefined' && window.location?.pathname ? window.location.pathname : pathname;
-    setPendingLocale(resolveMarketingLocaleFromPathname(rawPathname, locale));
+    const resolvedLocale = resolveMarketingLocaleFromPathname(rawPathname, locale);
+    setPendingLocale(resolvedLocale);
+    if (typeof window !== 'undefined' && resolvedLocale === 'en') {
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.get('nolocale') === '1') {
+        currentUrl.searchParams.delete('nolocale');
+        const query = currentUrl.searchParams.toString();
+        const cleanHref = `${currentUrl.pathname}${query ? `?${query}` : ''}${currentUrl.hash}`;
+        window.history.replaceState(window.history.state, '', cleanHref);
+      }
+    }
   }, [locale, pathname]);
 
   const handleChange = (value: Locale) => {
@@ -147,6 +157,11 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
       const englishPath = resolveEnglishPath(targetPath, currentLocale);
       const searchParams = new URLSearchParams(window.location.search);
       searchParams.set('lang', value);
+      if (value === 'en') {
+        searchParams.set('nolocale', '1');
+      } else {
+        searchParams.delete('nolocale');
+      }
       const localeSwitchHref = `${englishPath}?${searchParams.toString()}`;
       window.location.assign(localeSwitchHref);
     });
