@@ -5,6 +5,7 @@ import {
   type PricingPolicyRule,
   type ResolvedPricingPolicy,
 } from '@maxvideoai/pricing';
+import { listFalEngines } from '@/config/falEngines';
 import { buildCanonicalPricingFacts } from '@/lib/pricing-audit/canonical-facts';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import type { PricingAuditScenario, PricingAuditSurface } from '@/lib/pricing-audit/types';
@@ -14,6 +15,10 @@ import { PricingAdminError } from './errors';
 
 export type PricingScenarioSelector = Pick<PricingPolicyRule, 'engineId' | 'mode' | 'resolution'>;
 export type PricingMembershipDiscountMap = Record<'member' | 'plus' | 'pro', number>;
+export type RequestedPricingSurcharge = {
+  kind: 'audio' | 'upscale';
+  selector: PricingScenarioSelector;
+};
 
 export type AdminCanonicalScenarioQuote = CanonicalPricingQuote & {
   status: 'quoted';
@@ -53,11 +58,61 @@ const DEFAULT_MEMBERSHIP_DISCOUNTS: PricingMembershipDiscountMap = {
   plus: 0.05,
   pro: 0.1,
 };
+const engineCapabilitiesById = new Map(
+  listFalEngines().flatMap((entry) => [
+    [entry.id, entry.engine] as const,
+    [entry.engine.id, entry.engine] as const,
+  ])
+);
+
+function scenarioMatchesSelector(scenario: PricingAuditScenario, selector: PricingScenarioSelector): boolean {
+  return (
+    (!selector.engineId || scenario.engineId === selector.engineId) &&
+    (!selector.mode || scenario.mode === selector.mode) &&
+    (!selector.resolution || scenario.resolution === selector.resolution)
+  );
+}
 
 function resolveScenarioSurcharge(scenario: PricingAuditScenario): 'audio' | 'upscale' | undefined {
+  if (scenario.input.requestedSurcharge === 'audio' || scenario.input.requestedSurcharge === 'upscale') {
+    return scenario.input.requestedSurcharge;
+  }
   if (scenario.input.audio === true) return 'audio';
   if (scenario.engineId === 'upscale' || scenario.input.product === 'upscale') return 'upscale';
   return undefined;
+}
+
+function buildRequestedSurchargeScenario(
+  scenarios: PricingAuditScenario[],
+  request: RequestedPricingSurcharge
+): PricingAuditScenario {
+  const matching = request.selector.engineId
+    ? scenarios.filter((scenario) => scenarioMatchesSelector(scenario, request.selector))
+    : [];
+  const representative =
+    matching.find((scenario) => scenario.surface === 'billing' && scenario.membershipTier === 'member') ??
+    matching.find((scenario) => scenario.surface === 'estimator' && scenario.membershipTier === 'member') ??
+    matching[0];
+  const engineId = request.selector.engineId ?? representative?.engineId ?? '*';
+  const mode = request.selector.mode ?? representative?.mode;
+  const resolution = request.selector.resolution ?? representative?.resolution;
+  return {
+    id: `admin-surcharge:${request.kind}:${engineId}:${mode ?? 'default'}:${resolution ?? 'default'}`,
+    surface: 'billing',
+    engineId,
+    ...(mode ? { mode } : {}),
+    ...(resolution ? { resolution } : {}),
+    ...(representative?.durationSec != null ? { durationSec: representative.durationSec } : {}),
+    membershipTier: 'member',
+    ...(representative?.compatibilityProfile
+      ? { compatibilityProfile: representative.compatibilityProfile }
+      : {}),
+    input: {
+      ...(representative?.input ?? {}),
+      requestedSurcharge: request.kind,
+      requestedSurchargeAuthoritative: Boolean(representative),
+    },
+  };
 }
 
 function resolveCompatibilityProfileId(
@@ -87,12 +142,7 @@ function resolveScenarioPolicy(
 }
 
 export function selectAffectedPricingScenarios(selector: PricingScenarioSelector): PricingAuditScenario[] {
-  return buildPricingAuditScenarios().filter(
-    (scenario) =>
-      (!selector.engineId || scenario.engineId === selector.engineId) &&
-      (!selector.mode || scenario.mode === selector.mode) &&
-      (!selector.resolution || scenario.resolution === selector.resolution)
-  );
+  return buildPricingAuditScenarios().filter((scenario) => scenarioMatchesSelector(scenario, selector));
 }
 
 export function resolveCanonicalAdminScenarioPolicy(input: {
@@ -106,13 +156,18 @@ export function quoteCanonicalAdminScenarios(input: {
   databaseRules: PricingPolicyRule[];
   scenarios?: PricingAuditScenario[];
   membershipDiscounts?: Partial<PricingMembershipDiscountMap>;
+  requestedSurcharges?: RequestedPricingSurcharge[];
 }): AdminCanonicalScenarioOutcome[] {
   const policyDocument = getVersionedPricingPolicy();
   const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
   const membershipDiscounts = { ...DEFAULT_MEMBERSHIP_DISCOUNTS, ...input.membershipDiscounts };
   const scenarios = input.scenarios ?? buildPricingAuditScenarios();
+  const projectionScenarios = [
+    ...scenarios,
+    ...(input.requestedSurcharges ?? []).map((request) => buildRequestedSurchargeScenario(scenarios, request)),
+  ];
 
-  return scenarios
+  return projectionScenarios
     .map((scenario): AdminCanonicalScenarioOutcome => {
       const policy = resolveScenarioPolicy(scenario, input.databaseRules, policyDocument.rules);
       const profileId = resolveCompatibilityProfileId(scenario, policy);
@@ -124,6 +179,35 @@ export function quoteCanonicalAdminScenarios(input: {
         );
       }
       const surcharge = resolveScenarioSurcharge(scenario);
+      const requestedSurcharge =
+        scenario.input.requestedSurcharge === 'audio' || scenario.input.requestedSurcharge === 'upscale'
+          ? scenario.input.requestedSurcharge
+          : undefined;
+      const capabilities = engineCapabilitiesById.get(scenario.engineId);
+      const requestedSurchargeIsAuthoritative =
+        scenario.input.requestedSurchargeAuthoritative === true &&
+        (requestedSurcharge === 'audio'
+          ? capabilities?.audio === true
+          : requestedSurcharge === 'upscale'
+            ? capabilities?.upscale4k === true
+            : true);
+      if (requestedSurcharge && !requestedSurchargeIsAuthoritative) {
+        return {
+          status: 'unsupported',
+          scenarioId: scenario.id,
+          engineId: scenario.engineId,
+          surface: scenario.surface,
+          reason: 'surcharge_policy_not_authoritative',
+          warning: `No authoritative policy scenario exists for ${requestedSurcharge} surcharge impact.`,
+          policyProvenance: {
+            source: policy.source,
+            matchedBy: policy.matchedBy,
+            sourceRuleId: policy.sourceRuleId,
+            compatibilityProfile: profileId,
+          },
+          surcharge: requestedSurcharge,
+        };
+      }
       if (surcharge === 'upscale' && scenario.surface === 'tool') {
         return {
           status: 'unsupported',

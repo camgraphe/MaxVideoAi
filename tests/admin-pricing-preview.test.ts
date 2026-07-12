@@ -365,6 +365,54 @@ test('upscale surcharge-only policy changes are blocked when no authoritative po
   );
 });
 
+test('requested audio coverage builds a selector-aware canonical Kling scenario', () => {
+  const selector = { engineId: 'kling-3-pro', mode: 't2v', resolution: '1080p' };
+  const scenarios = selectAffectedPricingScenarios(selector);
+  const currentRule: PricingPolicyRule = {
+    ...globalRule,
+    id: 'db-kling-audio',
+    ...selector,
+    marginPercent: 0,
+    marginFlatCents: 0,
+    surchargeAudioPercent: 0.2,
+  };
+  const proposedRule: PricingPolicyRule = { ...currentRule, surchargeAudioPercent: 0.4 };
+  const requestedSurcharges = [{ kind: 'audio' as const, selector }];
+
+  const current = quoteCanonicalAdminScenarios({ databaseRules: [currentRule], scenarios, requestedSurcharges });
+  const proposed = quoteCanonicalAdminScenarios({ databaseRules: [proposedRule], scenarios, requestedSurcharges });
+  const requested = current.find(
+    (outcome) => outcome.scenarioId === 'admin-surcharge:audio:kling-3-pro:t2v:1080p'
+  );
+
+  requireQuoted(requested);
+  assert.equal(requested.surcharge, 'audio');
+  assert.equal(requested.policyProvenance.sourceRuleId, currentRule.id);
+  const preview = compareCanonicalAdminScenarios(current, proposed);
+  assert.deepEqual(preview.map((row) => row.scenarioId), [requested.scenarioId]);
+  assert.equal(preview[0]?.deltaCents, 17);
+});
+
+test('requested upscale coverage blocks an ordinary selector without an authoritative scenario', () => {
+  const selector = { engineId: 'kling-3-pro', mode: 't2v', resolution: '1080p' };
+  const scenarios = selectAffectedPricingScenarios(selector);
+  const requestedSurcharges = [{ kind: 'upscale' as const, selector }];
+  const outcomes = quoteCanonicalAdminScenarios({ databaseRules: [globalRule], scenarios, requestedSurcharges });
+  const requested = outcomes.find(
+    (outcome) => outcome.scenarioId === 'admin-surcharge:upscale:kling-3-pro:t2v:1080p'
+  );
+
+  assert.equal(requested?.status, 'unsupported');
+  assert.equal(
+    requested?.status === 'unsupported' ? requested.reason : undefined,
+    'surcharge_policy_not_authoritative'
+  );
+  assert.throws(
+    () => compareCanonicalAdminScenarios(outcomes, outcomes),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'unsupported_scenario'
+  );
+});
+
 test('pricing admin errors expose stable domain codes and HTTP statuses', () => {
   const cases = [
     ['invalid_payload', 400],
