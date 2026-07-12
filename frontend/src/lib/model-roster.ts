@@ -1,5 +1,6 @@
 import modelRoster from '@/config/model-roster.json';
 import type { EngineLogoPolicy } from '@/config/falEngines';
+import { getRuntimeModelById, toLegacyModelSurfaces } from '@/config/model-runtime';
 
 export type LogoPolicy = EngineLogoPolicy;
 export type ModelAvailability = 'available' | 'limited' | 'waitlist' | 'paused';
@@ -22,11 +23,18 @@ export interface ModelRosterEntry {
   };
 }
 
-const rosterEntries = (modelRoster as ModelRosterEntry[]).map((entry) => ({
-  ...entry,
-  family: entry.family,
-  surfaces: entry.surfaces,
-}));
+const rosterEntries = (modelRoster as ModelRosterEntry[]).map((entry) => {
+  const model = getRuntimeModelById(entry.engineId);
+  if (!model) {
+    throw new Error(`Model roster references missing registry id "${entry.engineId}"`);
+  }
+  return {
+    ...entry,
+    modelSlug: model.slug,
+    family: model.family ?? undefined,
+    surfaces: { modelPage: toLegacyModelSurfaces(model).modelPage },
+  };
+});
 
 const rosterBySlug = new Map<string, ModelRosterEntry>();
 const rosterByEngine = new Map<string, ModelRosterEntry>();

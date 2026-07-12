@@ -12,7 +12,9 @@
       "publishedModelSlugs": [
         "pika-text-to-video"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "pika-text-to-video"
+      ]
     },
     "versionLabel": "2.2",
     "availability": "available",
@@ -328,7 +330,11 @@
         "veo-3-1-fast",
         "veo-3-1-lite"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ]
     },
     "versionLabel": "3.1",
     "availability": "available",
@@ -847,7 +853,11 @@
         "veo-3-1-fast",
         "veo-3-1-lite"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ]
     },
     "versionLabel": "3.1 Fast",
     "availability": "available",
@@ -1369,7 +1379,11 @@
         "veo-3-1-fast",
         "veo-3-1-lite"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ]
     },
     "versionLabel": "3.1 Lite",
     "availability": "available",
@@ -1835,7 +1849,11 @@
         "veo-3-1-fast",
         "veo-3-1-lite"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite"
+      ]
     },
     "versionLabel": "Preview",
     "availability": "limited",
@@ -4407,7 +4425,10 @@
         "sora-2-pro",
         "sora-2"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "sora-2-pro",
+        "sora-2"
+      ]
     },
     "versionLabel": "2",
     "availability": "available",
@@ -4680,7 +4701,10 @@
         "sora-2-pro",
         "sora-2"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "sora-2-pro",
+        "sora-2"
+      ]
     },
     "versionLabel": "Pro",
     "availability": "available",
@@ -12502,7 +12526,10 @@
         "wan-2-6",
         "wan-2-5"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ]
     },
     "versionLabel": "Preview",
     "availability": "available",
@@ -12817,7 +12844,10 @@
         "wan-2-6",
         "wan-2-5"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "wan-2-6",
+        "wan-2-5"
+      ]
     },
     "versionLabel": "2.6",
     "availability": "available",
@@ -14739,7 +14769,9 @@
       "publishedModelSlugs": [
         "minimax-hailuo-02-text"
       ],
-      "currentModelSlugs": []
+      "currentModelSlugs": [
+        "minimax-hailuo-02-text"
+      ]
     },
     "versionLabel": "Standard",
     "availability": "available",

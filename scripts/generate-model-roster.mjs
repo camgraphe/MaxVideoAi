@@ -7,6 +7,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
 const ENGINE_CATALOG_PATH = path.join(ROOT, 'frontend', 'config', 'engine-catalog.json');
+const MODEL_REGISTRY_PATH = path.join(ROOT, 'frontend', 'config', 'model-registry.json');
 const DOCS_DIR = path.join(ROOT, 'docs');
 const FRONTEND_CONFIG_DIR = path.join(ROOT, 'frontend', 'config');
 const FRONTEND_ROSTER_PATH = path.join(FRONTEND_CONFIG_DIR, 'model-roster.json');
@@ -68,15 +69,15 @@ function normalizeVersionLabel(entry) {
   return '1';
 }
 
-function computeRosterEntry(entry) {
+function computeRosterEntry(entry, registryById) {
   const engineId = typeof entry.engineId === 'string' ? entry.engineId.trim() : '';
-  const modelSlug = typeof entry.modelSlug === 'string' ? entry.modelSlug.trim() : '';
+  const model = registryById.get(engineId.toLowerCase());
   const marketingName = typeof entry.marketingName === 'string' ? entry.marketingName.trim() : '';
   const brandId = typeof entry.brandId === 'string' ? entry.brandId.trim() : '';
   const logoPolicy = typeof entry.logoPolicy === 'string' ? entry.logoPolicy.trim() : '';
 
   if (!engineId) throw new Error('Catalog entry is missing engineId.');
-  if (!modelSlug) throw new Error(`Engine "${engineId}" is missing modelSlug.`);
+  if (!model) throw new Error(`Engine "${engineId}" is missing from model-registry.json.`);
   if (!marketingName) throw new Error(`Engine "${engineId}" is missing marketingName.`);
   if (!brandId) throw new Error(`Engine "${engineId}" is missing brandId.`);
   if (!logoPolicy) throw new Error(`Engine "${engineId}" is missing logoPolicy.`);
@@ -85,22 +86,18 @@ function computeRosterEntry(entry) {
     engineId,
     marketingName,
     brandId,
-    modelSlug,
-    family: typeof entry.family === 'string' && entry.family.trim().length ? entry.family.trim() : undefined,
+    modelSlug: model.slug,
+    family: model.family ?? undefined,
     versionLabel: normalizeVersionLabel(entry),
     availability: normalizeAvailability(entry.availability, engineId),
     logoPolicy,
     surfaces: {
       modelPage: {
-        indexable: entry?.surfaces?.modelPage?.indexable !== false,
-        includeInSitemap: entry?.surfaces?.modelPage?.includeInSitemap !== false,
+        indexable: model.publication.model.indexable,
+        includeInSitemap: model.publication.sitemap.published,
       },
     },
   };
-}
-
-function hasPublishedModelPage(entry) {
-  return entry?.surfaces?.modelPage?.indexable !== false || entry?.surfaces?.modelPage?.includeInSitemap !== false;
 }
 
 function ensureNoShrink(currentRoster, generatedRoster, allowedRemovedSlugs = new Set()) {
@@ -193,15 +190,26 @@ async function main() {
   const { write } = parseArgs(process.argv.slice(2));
   runEngineCatalog();
 
-  const [catalog, currentRoster] = await Promise.all([loadJson(ENGINE_CATALOG_PATH), loadCurrentRoster()]);
+  const [catalog, registry, currentRoster] = await Promise.all([
+    loadJson(ENGINE_CATALOG_PATH),
+    loadJson(MODEL_REGISTRY_PATH),
+    loadCurrentRoster(),
+  ]);
   if (!Array.isArray(catalog)) {
     throw new Error('engine-catalog.json must be an array.');
   }
   if (!Array.isArray(currentRoster)) {
     throw new Error('frontend/config/model-roster.json must be an array when present.');
   }
+  if (!registry || !Array.isArray(registry.models)) {
+    throw new Error('model-registry.json must contain a models array.');
+  }
 
-  const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
+  const registryById = new Map(registry.models.map((model) => [model.id.toLowerCase(), model]));
+  const publicCatalog = catalog.filter((entry) => {
+    const model = registryById.get(String(entry.engineId).trim().toLowerCase());
+    return model?.publication.model.published === true;
+  });
   const publicSlugs = new Set(publicCatalog.map((entry) => entry.modelSlug).filter((slug) => typeof slug === 'string'));
   const allowedRemovedSlugs = new Set(
     currentRoster
@@ -209,7 +217,7 @@ async function main() {
       .filter((slug) => typeof slug === 'string' && !publicSlugs.has(slug))
   );
   const roster = publicCatalog
-    .map((entry) => computeRosterEntry(entry))
+    .map((entry) => computeRosterEntry(entry, registryById))
     .sort((a, b) => {
       if (a.brandId === b.brandId) {
         return a.marketingName.localeCompare(b.marketingName, 'en');

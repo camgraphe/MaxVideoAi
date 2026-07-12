@@ -2,6 +2,7 @@ import {
   normalizeFamilyExamplesPageConfig,
   type ModelFamilyExamplesPageConfig,
 } from './model-publication';
+import { getRuntimeModelById, listRuntimeModels } from './model-runtime';
 
 export type ModelFamilyDefinition = {
   id: string;
@@ -16,20 +17,24 @@ export type ModelFamilyDefinition = {
   examplesPage?: Partial<ModelFamilyExamplesPageConfig>;
 };
 
-export const MODEL_FAMILIES = [
+type ModelFamilySource = Omit<ModelFamilyDefinition, 'defaultModelSlug' | 'examplesPage'> & {
+  defaultModelId?: string;
+  examplesPage?: Pick<ModelFamilyExamplesPageConfig, 'stage' | 'showInNav'>;
+};
+
+const MODEL_FAMILY_SOURCES = [
   {
     id: 'sora',
     label: 'Sora',
     navLabel: 'Sora 2 Pro',
     brandId: 'openai',
-    defaultModelSlug: 'sora-2-pro',
+    defaultModelId: 'sora-2-pro',
     routeAliases: ['sora-2', 'sora-2-pro'],
     aliases: ['sora-2', 'sora-2-pro'],
     prefixes: ['sora', 'openai-sora'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['sora-2-pro', 'sora-2'],
     },
   },
   {
@@ -37,7 +42,7 @@ export const MODEL_FAMILIES = [
     label: 'Kling',
     navLabel: 'Kling 3.0 Omni',
     brandId: 'kling',
-    defaultModelSlug: 'kling-o3-pro',
+    defaultModelId: 'kling-o3-pro',
     routeAliases: [
       'kling-2-5-turbo',
       'kling-2-6-pro',
@@ -53,17 +58,6 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: [
-        'kling-o3-pro',
-        'kling-o3-standard',
-        'kling-o3-4k',
-        'kling-3-pro',
-        'kling-3-standard',
-        'kling-3-4k',
-        'kling-2-6-pro',
-        'kling-2-5-turbo',
-      ],
-      currentModelSlugs: ['kling-o3-pro', 'kling-o3-standard', 'kling-o3-4k', 'kling-3-pro', 'kling-3-standard', 'kling-3-4k'],
     },
   },
   {
@@ -71,7 +65,7 @@ export const MODEL_FAMILIES = [
     label: 'Veo',
     navLabel: 'Veo 3.1',
     brandId: 'google-veo',
-    defaultModelSlug: 'veo-3-1',
+    defaultModelId: 'veo-3-1',
     routeAliases: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite', 'gemini-omni-flash'],
     aliases: [
       'veo-3',
@@ -91,7 +85,6 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite'],
     },
   },
   {
@@ -99,15 +92,13 @@ export const MODEL_FAMILIES = [
     label: 'Luma Ray',
     navLabel: 'Ray 3.2',
     brandId: 'luma',
-    defaultModelSlug: 'luma-ray-3-2',
+    defaultModelId: 'luma-ray-3-2',
     routeAliases: ['luma-ray-2', 'luma-ray-2-flash', 'luma-ray-3-2'],
     aliases: ['ray-2', 'ray-2-flash', 'ray-3-2', 'lumaray2', 'lumaray2flash', 'lumaray32'],
     prefixes: ['luma', 'fal-ai/luma-dream-machine'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['luma-ray-3-2', 'luma-ray-2', 'luma-ray-2-flash'],
-      currentModelSlugs: ['luma-ray-3-2'],
     },
   },
   {
@@ -115,14 +106,13 @@ export const MODEL_FAMILIES = [
     label: 'Wan',
     navLabel: 'Wan 2.6',
     brandId: 'wan',
-    defaultModelSlug: 'wan-2-6',
+    defaultModelId: 'wan-2-6',
     routeAliases: ['wan-2-5', 'wan-2-6'],
     aliases: ['wan-25', 'wan25', 'wan-26', 'wan26'],
     prefixes: ['wan', 'wan/'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['wan-2-6', 'wan-2-5'],
     },
   },
   {
@@ -130,7 +120,7 @@ export const MODEL_FAMILIES = [
     label: 'Seedance',
     navLabel: 'Seedance 2.0',
     brandId: 'bytedance',
-    defaultModelSlug: 'seedance-2-0',
+    defaultModelId: 'seedance-2-0',
     routeAliases: ['seedance-1-5-pro', 'seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'],
     aliases: [
       'seedance-1-5',
@@ -151,8 +141,6 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini', 'seedance-1-5-pro'],
-      currentModelSlugs: ['seedance-2-0', 'seedance-2-0-fast', 'dreamina-seedance-2-0-mini'],
     },
   },
   {
@@ -160,7 +148,7 @@ export const MODEL_FAMILIES = [
     label: 'Happy Horse',
     navLabel: 'Happy Horse 1.1',
     brandId: 'alibaba',
-    defaultModelSlug: 'happy-horse-1-1',
+    defaultModelId: 'happy-horse-1-1',
     routeAliases: ['happy-horse-1-1', 'happy-horse-1-0'],
     aliases: [
       'happyhorse',
@@ -175,8 +163,6 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['happy-horse-1-1', 'happy-horse-1-0'],
-      currentModelSlugs: ['happy-horse-1-1'],
     },
   },
   {
@@ -184,15 +170,13 @@ export const MODEL_FAMILIES = [
     label: 'LTX',
     navLabel: 'LTX',
     brandId: 'lightricks',
-    defaultModelSlug: 'ltx-2-3-pro',
+    defaultModelId: 'ltx-2-3',
     routeAliases: ['ltx-2-3', 'ltx-2-3-pro', 'ltx-2-3-fast', 'ltx-2', 'ltx-2-fast'],
     aliases: ['ltx-23', 'ltx23', 'ltx-23-fast', 'ltx23-fast'],
     prefixes: ['ltx', 'fal-ai/ltx'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['ltx-2-3-pro', 'ltx-2-3-fast', 'ltx-2', 'ltx-2-fast'],
-      currentModelSlugs: ['ltx-2-3-pro', 'ltx-2-3-fast'],
     },
   },
   {
@@ -200,14 +184,13 @@ export const MODEL_FAMILIES = [
     label: 'Pika',
     navLabel: 'Pika 2.2',
     brandId: 'pika',
-    defaultModelSlug: 'pika-text-to-video',
+    defaultModelId: 'pika-text-to-video',
     routeAliases: ['pika-text-to-video', 'pika-image-to-video', 'pika-2-2'],
     aliases: ['pika-22', 'pika22'],
     prefixes: ['pika'],
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['pika-text-to-video'],
     },
   },
   {
@@ -215,7 +198,7 @@ export const MODEL_FAMILIES = [
     label: 'Hailuo',
     navLabel: 'MiniMax Hailuo 02',
     brandId: 'minimax',
-    defaultModelSlug: 'minimax-hailuo-02-text',
+    defaultModelId: 'minimax-hailuo-02-text',
     routeAliases: ['minimax-hailuo-02-text', 'minimax-hailuo-02-image'],
     aliases: ['minimax-hailuo-02'],
     prefixes: ['minimax-hailuo-02'],
@@ -223,12 +206,43 @@ export const MODEL_FAMILIES = [
     examplesPage: {
       stage: 'indexed',
       showInNav: true,
-      publishedModelSlugs: ['minimax-hailuo-02-text'],
     },
   },
-] as const satisfies readonly ModelFamilyDefinition[];
+] as const satisfies readonly ModelFamilySource[];
 
-export type ModelFamilyId = (typeof MODEL_FAMILIES)[number]['id'];
+const FAMILY_MODELS = listRuntimeModels();
+
+function materializeFamily(source: ModelFamilySource): ModelFamilyDefinition {
+  const members = FAMILY_MODELS
+    .filter((model) => model.family === source.id)
+    .sort(
+      (left, right) =>
+        (left.publication.examples.familyRank ?? Number.MAX_SAFE_INTEGER) -
+        (right.publication.examples.familyRank ?? Number.MAX_SAFE_INTEGER)
+    );
+  const defaultModel = source.defaultModelId ? getRuntimeModelById(source.defaultModelId) : null;
+  const published = members
+    .filter((model) => model.publication.examples.published)
+    .map((model) => model.slug);
+  const current = members
+    .filter((model) => model.publication.examples.current)
+    .map((model) => model.slug);
+  const { defaultModelId: _defaultModelId, ...presentation } = source;
+
+  return {
+    ...presentation,
+    defaultModelSlug: defaultModel?.slug,
+    examplesPage: {
+      stage: source.examplesPage?.stage ?? 'hidden',
+      showInNav: source.examplesPage?.showInNav ?? false,
+      publishedModelSlugs: published,
+      currentModelSlugs: current.length ? current : published,
+    },
+  };
+}
+
+export type ModelFamilyId = (typeof MODEL_FAMILY_SOURCES)[number]['id'];
+export const MODEL_FAMILIES: readonly ModelFamilyDefinition[] = MODEL_FAMILY_SOURCES.map(materializeFamily);
 
 export const PUBLIC_MARKETING_EXAMPLE_CANONICAL_SLUGS = MODEL_FAMILIES.filter((family) => {
   const examplesPage = normalizeFamilyExamplesPageConfig(family.examplesPage);

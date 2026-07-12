@@ -18,6 +18,10 @@ import {
   getCanonicalSlug,
   getEngineIdFromSlug,
 } from '../frontend/src/lib/model-slugs.ts';
+import {
+  MODEL_FAMILIES,
+  getModelFamilyExamplesPageConfig,
+} from '../frontend/config/model-families.ts';
 
 const baseline = JSON.parse(readFileSync('tests/fixtures/model-registry-baseline.json', 'utf8'));
 
@@ -74,5 +78,24 @@ test('legacy facades resolve the frozen registry compatibility matrix', () => {
   for (const model of baseline.models) {
     assert.equal(getCanonicalSlug(model.id), model.slug);
     assert.equal(getEngineIdFromSlug(model.slug), model.id);
+  }
+});
+
+test('family model membership and current variants remain identical to baseline', () => {
+  for (const expected of baseline.familyDefinitions) {
+    const actual = MODEL_FAMILIES.find((family) => family.id === expected.id);
+    assert.ok(actual, expected.id);
+    assert.equal(actual.defaultModelSlug, expected.defaultModelSlug);
+    assert.deepEqual(actual.routeAliases, expected.routeAliases);
+    assert.deepEqual(
+      getModelFamilyExamplesPageConfig(expected.id)?.publishedModelSlugs,
+      expected.examplesPage?.publishedModelSlugs ?? []
+    );
+    assert.deepEqual(
+      getModelFamilyExamplesPageConfig(expected.id)?.currentModelSlugs,
+      expected.examplesPage?.currentModelSlugs?.length
+        ? expected.examplesPage.currentModelSlugs
+        : expected.examplesPage?.publishedModelSlugs ?? []
+    );
   }
 });

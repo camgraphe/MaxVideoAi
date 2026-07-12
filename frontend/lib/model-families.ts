@@ -47,23 +47,12 @@ function resolveEntryFamilyId(entry: {
   return null;
 }
 
-function sortFamilyModelSlugs(family: ModelFamilyDefinition, modelSlugs: string[]): string[] {
-  const uniqueSlugs = unique(modelSlugs);
-  if (!family.defaultModelSlug || !uniqueSlugs.includes(family.defaultModelSlug)) {
-    return uniqueSlugs;
-  }
-
-  return [family.defaultModelSlug, ...uniqueSlugs.filter((slug) => slug !== family.defaultModelSlug)];
-}
-
 const FAMILY_STATE = (() => {
   const aliasToFamily = new Map<string, ModelFamilyId>();
   const routeSlugs = new Set<string>();
   const publicFamilyIds: ModelFamilyId[] = [];
   const indexedFamilyIds: ModelFamilyId[] = [];
   const navFamilyIds: ModelFamilyId[] = [];
-  const resolverModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
-  const copyCandidateSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const publishedModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const currentModelSlugsByFamily = new Map<ModelFamilyId, string[]>();
   const variantLabelsByFamily = new Map<ModelFamilyId, string[]>();
@@ -113,20 +102,6 @@ const FAMILY_STATE = (() => {
     register(entry.modelSlug, familyId);
     register(entry.defaultFalModelId, familyId);
     entry.modes.forEach((mode) => register(mode.falModelId, familyId));
-
-    const resolverModelSlugs = resolverModelSlugsByFamily.get(familyId) ?? [];
-    if (!resolverModelSlugs.includes(entry.modelSlug)) {
-      resolverModelSlugs.push(entry.modelSlug);
-      resolverModelSlugsByFamily.set(familyId, resolverModelSlugs);
-    }
-
-    if (entry.surfaces.examples.includeInFamilyCopy) {
-      const copyCandidateSlugs = copyCandidateSlugsByFamily.get(familyId) ?? [];
-      if (!copyCandidateSlugs.includes(entry.modelSlug)) {
-        copyCandidateSlugs.push(entry.modelSlug);
-        copyCandidateSlugsByFamily.set(familyId, copyCandidateSlugs);
-      }
-    }
   });
 
   publicFamilyIds.forEach((familyId) => {
@@ -136,11 +111,7 @@ const FAMILY_STATE = (() => {
       return;
     }
 
-    const copyCandidateSlugs = copyCandidateSlugsByFamily.get(familyId) ?? [];
-    const publishedFromConfig = examplesPage.publishedModelSlugs.filter((slug) => copyCandidateSlugs.includes(slug));
-    const publishedModelSlugs = publishedFromConfig.length
-      ? publishedFromConfig
-      : sortFamilyModelSlugs(family, copyCandidateSlugs);
+    const publishedModelSlugs = examplesPage.publishedModelSlugs;
     const currentModelSlugs = examplesPage.currentModelSlugs.filter((slug) => publishedModelSlugs.includes(slug));
 
     publishedModelSlugsByFamily.set(familyId, publishedModelSlugs);
@@ -184,7 +155,6 @@ const FAMILY_STATE = (() => {
     publicFamilyIds,
     indexedFamilyIds,
     navFamilyIds,
-    resolverModelSlugsByFamily,
     publishedModelSlugsByFamily,
     currentModelSlugsByFamily,
     variantLabelsByFamily,
@@ -239,9 +209,7 @@ export function getExampleFamilyModelSlugs(familyId: string): string[] {
   const family = getModelFamilyDefinition(familyId);
   if (!family) return [];
   const published = FAMILY_STATE.publishedModelSlugsByFamily.get(family.id as ModelFamilyId) ?? [];
-  if (published.length) return published.slice();
-  const resolverModelSlugs = FAMILY_STATE.resolverModelSlugsByFamily.get(family.id as ModelFamilyId) ?? [];
-  return sortFamilyModelSlugs(family, resolverModelSlugs);
+  return published.slice();
 }
 
 export function getExampleFamilyCurrentModelSlugs(familyId: string): string[] {
