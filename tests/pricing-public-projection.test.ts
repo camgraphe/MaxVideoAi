@@ -267,3 +267,43 @@ test('pricing audit reuses production public provider facts', () => {
   assert.doesNotMatch(source, /function standardFacts\(/);
   assert.doesNotMatch(source, /function engineFacts\(/);
 });
+
+test('pricing hub delegates every customer total to canonical public pricing', () => {
+  const source = readFileSync(
+    'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts',
+    'utf8'
+  );
+  assert.match(source, /pricing-public-facts/);
+  assert.match(source, /pricing-public-quote/);
+  assert.match(source, /quotePublicPricing/);
+  assert.doesNotMatch(source, /applyDisplayedPriceMarginCents/);
+  assert.doesNotMatch(source, /DISPLAY_PRICE_MARGIN_PERCENT/);
+  assert.doesNotMatch(source, /applyFalReferenceDisplayMarginCents/);
+  assert.doesNotMatch(source, /function displayedScenarioCents\(/);
+});
+
+test('canonical quote scaling preserves historical per-unit rounding for public batches', async () => {
+  const publicQuote = await import('../frontend/src/lib/pricing-public-quote');
+  assert.equal(typeof publicQuote.scalePublicPricingQuote, 'function');
+  const unit = publicQuote.quotePublicPricing({
+    facts: {
+      engineId: 'public-image-unit',
+      currency: 'USD',
+      vendorSubtotalExactCents: 4,
+      unit: 'image',
+      quantity: 1,
+    },
+    scenario: {
+      id: 'public:image:unit',
+      engineId: 'public-image-unit',
+      membershipTier: 'member',
+    },
+    compatibilityProfileId: 'standard',
+  });
+  assert.equal(unit.customerTotalCents, 6);
+  const batch = publicQuote.scalePublicPricingQuote(unit, 4);
+  assert.equal(batch.vendorSubtotalCents, 16);
+  assert.equal(batch.marginCents, 8);
+  assert.equal(batch.customerTotalCents, 24);
+  assert.equal(batch.quantity, 4);
+});

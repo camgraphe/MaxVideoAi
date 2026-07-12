@@ -36,6 +36,7 @@ export type PublicPricingFactsContext = {
   hasVideoInput?: boolean;
   addons?: Record<string, boolean | number | undefined>;
   lumaRay2BasePriceUsd?: number;
+  useFlatImageUnitFacts?: boolean;
 };
 
 const ZERO_DISCOUNTS: PricingEngineDefinition['memberTierDiscounts'] = {
@@ -166,12 +167,32 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     });
   }
 
+  if (
+    context.useFlatImageUnitFacts &&
+    (mode === 't2i' || mode === 'i2i') &&
+    engine.pricingDetails?.flatCents
+  ) {
+    const flat = engine.pricingDetails.flatCents;
+    const unitCents = flat.byResolution?.[resolution] ?? flat.default;
+    if (typeof unitCents === 'number' && Number.isFinite(unitCents) && unitCents >= 0) {
+      const quantity = Math.max(1, Math.round(durationSec));
+      return resultFromExactFacts({
+        engineId: engine.id,
+        currency,
+        exactCents: unitCents * quantity,
+        quantity,
+        unit: 'image',
+        rate: unitCents / 100,
+      });
+    }
+  }
+
   if (isSeedance2TokenPricing(engine.pricingDetails)) {
     const reference = computeSeedance2TokenQuote({
       details: engine.pricingDetails,
       durationSec,
       resolution,
-      aspectRatio: context.aspectRatio,
+      aspectRatio: context.aspectRatio ?? engine.pricingDetails.tokenPricing.defaultAspectRatio,
       billingInputType:
         context.hasVideoInput === true
           ? 'video_input'

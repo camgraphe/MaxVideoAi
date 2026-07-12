@@ -296,7 +296,9 @@ test('popular checks and non-video pricing surfaces are compact matrices', () =>
   assert.match(hubCopySource, /Prix audio/);
   assert.match(hubCopySource, /Prep tools and upscale pricing/);
   assert.match(hubCopySource, /Prix outils de préparation et upscale/);
-  assert.match(hubDataSource, /resolveGptImage2PricingTier/);
+  assert.match(hubDataSource, /buildPublicPricingFacts/);
+  assert.match(hubDataSource, /quotePublicPricing/);
+  assert.doesNotMatch(hubDataSource, /resolveGptImage2PricingTier/);
   assert.doesNotMatch(hubDataSource, /copy\.links\.gptImage2/, 'GPT Image 2 row should not duplicate its model link');
   assert.match(hubCopySource, /Character Builder/);
   assert.doesNotMatch(otherSurfacesSource, /'use client'/);

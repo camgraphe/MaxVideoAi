@@ -12,7 +12,7 @@
 
 - Preserve every existing public amount at integer-cent precision, including provider-reference rounding, image quantities, audio-on/off behavior, membership discounts, per-second labels, model decision cards, and structured-data offer strings.
 - Keep the committed 178-row pricing audit unchanged at 178 matches, 0 mismatches, and 4 explicit compatibility profiles. Add a separate exhaustive public-projection baseline instead of rewriting the existing audit fixture.
-- Do not change `frontend/config/pricing-policy.json`, database pricing values, seeded billing products, top-up prices, wallet rules, Stripe configuration, or any admin mutation/API behavior.
+- Do not change commercial values in `frontend/config/pricing-policy.json`, database pricing values, seeded billing products, top-up prices, wallet rules, Stripe configuration, or any admin mutation/API behavior. A named rounding-only compatibility profile may be added only when the frozen public fixture first demonstrates the historical cent-level behavior it preserves.
 - Public components may format a canonical quote but may not calculate margin, surcharge, discount, or customer total.
 - Browser code must not import database, server-only, environment-secret, admin, or pricing-rule-store modules.
 - Preserve current override behavior: surfaces that currently use database rules or engine-pricing overrides continue to use them; deterministic catalog-only surfaces continue to use validated versioned defaults.
@@ -39,6 +39,8 @@
 
 - `package.json` — add `pricing:public-baseline` and explicit `pricing:public-baseline:generate` commands.
 - `frontend/src/lib/pricing-audit/canonical-facts.ts` — delegate overlapping provider facts to the production public factual adapter so the audit is not a second provider-fact implementation.
+- `frontend/config/pricing-policy.json` — add the fixture-reviewed `public-rounded-vendor-current` rounding profile; no margin, surcharge, discount, currency, or price value changes.
+- `packages/pricing/src/canonical.ts` and `packages/pricing/src/index.ts` — expose canonical quote scaling so historical per-unit rounding can be preserved for image batches inside the pure kernel.
 - `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts` — retain catalog filtering, scenario support, notes, links, sorting, and formatting; delegate all video/image/fixed-product totals.
 - `frontend/components/marketing/PriceEstimator.tsx` and `frontend/components/marketing/PriceChip.tsx` — consume canonical public snapshots.
 - `frontend/components/marketing/price-estimator/price-estimator-options.ts` — retain option/capability presentation; remove embedded margin arithmetic from displayed rates.
@@ -190,17 +192,20 @@ git commit -m "feat: add canonical public pricing adapter"
 **Files:**
 
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts`
+- Modify: `frontend/config/pricing-policy.json`
+- Modify: `packages/pricing/src/canonical.ts`
+- Modify: `packages/pricing/src/index.ts`
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts`
 - Modify: `tests/pricing-page-architecture.test.ts`
 - Modify: `tests/model-page-decision-data.test.ts`
 - Modify: `tests/model-page-layout-architecture.test.ts`
 - Modify: `tests/pricing-public-projection.test.ts`
 
-- [ ] **Step 1: Add failing authority and exhaustive parity assertions**
+- [x] **Step 1: Add failing authority and exhaustive parity assertions**
 
 Require `pricingHubData.ts` to import the public canonical adapter. Forbid `applyDisplayedPriceMarginCents`, `DISPLAY_PRICE_MARGIN_PERCENT`, direct `1 + margin` arithmetic, and local commercial rounding. Assert the complete pricing hub and model decision output equals the frozen public fixture.
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -212,19 +217,19 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: FAIL because the hub still owns commercial math.
 
-- [ ] **Step 3: Migrate video and image totals**
+- [x] **Step 3: Migrate video and image totals**
 
 Keep duration/resolution support, closest-route notes, entry/4K preset selection, sorting, cheapest flags, links, and localized formatting in the route-local hub. Replace every standard, Luma, Seedance, GPT Image 2, and image-quantity total with a canonical public quote.
 
-- [ ] **Step 4: Migrate fixed public rows without changing seeded values**
+- [x] **Step 4: Migrate fixed public rows without changing seeded values**
 
 Audio rows continue consuming their already canonical snapshot. Wrap fixed tool/product facts in `fixed-product-current`; do not query or mutate admin billing products from the static marketing page. The frozen values remain exactly 8/24, 15/30, 4/7, 24/40, 4/12, and 25/80 cents as currently displayed.
 
-- [ ] **Step 5: Keep model decisions on the shared scenario owner**
+- [x] **Step 5: Keep model decisions on the shared scenario owner**
 
 Preserve `getPresetQuote()`/`getImagePresetQuote()` reuse and existing formatting. Add no model-specific commercial formula.
 
-- [ ] **Step 6: Run parity, route architecture, and pricing audit**
+- [x] **Step 6: Run parity, route architecture, and pricing audit**
 
 Run the Step 2 suite plus:
 
@@ -235,10 +240,10 @@ pnpm pricing:audit
 
 Expected: all pass; frozen public outputs unchanged; 178/178 audit unchanged.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
-git add 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts' tests/pricing-page-architecture.test.ts tests/model-page-decision-data.test.ts tests/model-page-layout-architecture.test.ts tests/pricing-public-projection.test.ts
+git add packages/pricing/src/canonical.ts packages/pricing/src/index.ts frontend/config/pricing-policy.json 'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts' tests/pricing-page-architecture.test.ts tests/model-page-decision-data.test.ts tests/model-page-layout-architecture.test.ts tests/pricing-public-projection.test.ts
 git commit -m "feat: migrate public pricing hub projections"
 ```
 

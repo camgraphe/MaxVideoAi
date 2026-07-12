@@ -2,6 +2,7 @@ import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
   resolvePricingPolicy,
+  scaleCanonicalPricingQuote,
   type CanonicalPricingQuote,
   type PricingFacts,
   type PricingPolicyRule,
@@ -124,4 +125,11 @@ export function projectPublicPricingSnapshot(input: {
     addons: input.addons,
     meta: input.meta,
   });
+}
+
+export function scalePublicPricingQuote(
+  quote: CanonicalPricingQuote,
+  factor: number
+): CanonicalPricingQuote {
+  return scaleCanonicalPricingQuote(quote, factor);
 }

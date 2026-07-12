@@ -3,28 +3,23 @@ import { localePathnames } from '@/i18n/locales';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
-import type { EngineCaps, EnginePricingDetails, Resolution } from '@/types/engines';
+import type { EngineCaps, Resolution } from '@/types/engines';
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
 import { buildAudioPricingSnapshot, type AudioPackId, type AudioVoiceMode } from '@/lib/audio-generation';
-import { resolveGptImage2PricingTier, type GptImage2Quality } from '@/lib/image/gptImage2';
-import { getLumaRay2DurationInfo, getLumaRay2ResolutionInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
-import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
+import type { GptImage2Quality } from '@/lib/image/gptImage2';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
-import { applyDisplayedPriceMarginCents } from '@/lib/pricing-display';
+import {
+  buildFixedPublicProductFacts,
+  buildPublicPricingFacts,
+} from '@/lib/pricing-public-facts';
+import { quotePublicPricing, scalePublicPricingQuote } from '@/lib/pricing-public-quote';
 import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
 import { isLumaAgentsImageEngineId, isLumaRay32EngineId, type LumaAgentsImageMode } from '@/lib/luma-agents';
-import {
-  calculateLumaAgentsImageReferencePrice,
-  calculateLumaRay32ReferencePrice,
-} from '@/lib/luma-agents-pricing';
-import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
 import { getPricingHubCopy } from './pricingHubCopy';
 
 const FALLBACK_CURRENCY = 'USD';
-const DISPLAY_PRICE_MARGIN_PERCENT = 0.3;
-const CENT_EPSILON = 1e-9;
 
 const PRICING_DISPLAY_MODEL_ORDER = [
   'seedance-2-0',
@@ -389,111 +384,34 @@ function formatResolutionLabel(resolution: string) {
   return resolution;
 }
 
-function readResolutionRate(pricingDetails: EnginePricingDetails | undefined, resolution?: string) {
-  const perSecond = pricingDetails?.perSecondCents;
-  if (!perSecond) return null;
-  const byResolution = perSecond.byResolution;
-  const exactRate = resolution && byResolution ? byResolution[resolution] : undefined;
-  const fallbackRate = perSecond.default ?? (byResolution ? Math.min(...Object.values(byResolution)) : undefined);
-  return typeof exactRate === 'number' ? exactRate : typeof fallbackRate === 'number' ? fallbackRate : null;
-}
-
-function readAudioDelta(pricingDetails: EnginePricingDetails | undefined, resolution: string, audioMode: AudioRateMode) {
-  if (audioMode !== 'audio_off') return 0;
-  const audioOff = pricingDetails?.addons?.audio_off;
-  if (!audioOff) return 0;
-  return audioOff.perSecondCentsByResolution?.[resolution] ?? audioOff.perSecondCents ?? 0;
-}
-
-function readPerSecondRateCents(engine: EngineCaps, resolution: string, audioMode: AudioRateMode = 'default') {
-  const pricingDetails = engine.pricingDetails;
-  if (pricingDetails && isSeedance2TokenPricing(pricingDetails)) {
-    const quote = computeSeedance2TokenQuote({
-      details: pricingDetails,
-      durationSec: 1,
-      resolution: resolution as Resolution,
-      aspectRatio: pricingDetails.tokenPricing.defaultAspectRatio,
-    });
-    return quote.vendorCostPerSecondUsd * 100;
-  }
-
-  const detailsRate = readResolutionRate(pricingDetails, resolution);
-  const fallbackRate =
-    engine.pricing?.byResolution?.[resolution] != null
-      ? engine.pricing.byResolution[resolution] * 100
-      : typeof engine.pricing?.base === 'number'
-        ? engine.pricing.base * 100
-        : null;
-  const baseRate = detailsRate ?? fallbackRate;
-  if (typeof baseRate !== 'number' || !Number.isFinite(baseRate) || baseRate <= 0) return null;
-  return Math.max(0, baseRate + readAudioDelta(pricingDetails, resolution, audioMode));
-}
-
-function readScenarioVendorCents(
+function quoteVideoScenarioCents(
   engine: EngineCaps,
   resolution: string,
   durationSec: number,
   audioMode: AudioRateMode = 'default'
 ) {
-  const pricingDetails = engine.pricingDetails;
-  if (pricingDetails && isSeedance2TokenPricing(pricingDetails)) {
-    try {
-      const quote = computeSeedance2TokenQuote({
-        details: pricingDetails,
-        durationSec,
-        resolution: resolution as Resolution,
-        aspectRatio: pricingDetails.tokenPricing.defaultAspectRatio,
-      });
-      return quote.vendorCostUsd * 100;
-    } catch {
-      return null;
-    }
-  }
-
-  const perSecondRate = readPerSecondRateCents(engine, resolution, audioMode);
-  return perSecondRate == null ? null : perSecondRate * durationSec;
-}
-
-function displayedScenarioCents(
-  engine: EngineCaps,
-  resolution: string,
-  durationSec: number,
-  audioMode: AudioRateMode = 'default'
-) {
-  const vendorCents = readScenarioVendorCents(engine, resolution, durationSec, audioMode);
-  return vendorCents == null ? null : applyDisplayedPriceMarginCents(vendorCents);
-}
-
-function displayedLumaRay2ScenarioCents(engine: EngineCaps, resolution: string, durationSec: number) {
-  if (!isLumaRay2EngineId(engine.id)) return null;
-
-  const baseUsd = Number(getLumaRay2BasePriceEnv(engine.id));
-  const durationInfo = getLumaRay2DurationInfo(durationSec);
-  const resolutionInfo = getLumaRay2ResolutionInfo(resolution);
-
-  if (!Number.isFinite(baseUsd) || baseUsd <= 0 || !durationInfo || !resolutionInfo) {
-    return null;
-  }
-
-  const quote = calculateLumaRay2Price({
-    engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
-    baseUsd,
-    duration: durationInfo.label,
-    resolution: resolutionInfo.value,
-  });
-
-  return applyDisplayedPriceMarginCents(quote.totalUsd * 100);
-}
-
-function displayedLumaRay32ScenarioCents(engine: EngineCaps, resolution: string, durationSec: number) {
-  if (!isLumaRay32EngineId(engine.id)) return null;
-
   try {
-    const quote = calculateLumaRay32ReferencePrice({
-      duration: `${durationSec}s`,
+    const lumaBasePriceUsd = Number(getLumaRay2BasePriceEnv(engine.id));
+    const facts = buildPublicPricingFacts({
+      engine,
+      durationSec,
       resolution,
+      mode: 't2v',
+      ...(audioMode === 'audio_off' ? { addons: { audio_off: true } } : {}),
+      ...(Number.isFinite(lumaBasePriceUsd) && lumaBasePriceUsd > 0 ? { lumaRay2BasePriceUsd: lumaBasePriceUsd } : {}),
     });
-    return applyFalReferenceDisplayMarginCents(quote.totalUsd);
+    return quotePublicPricing({
+      facts: facts.facts,
+      scenario: {
+        id: `pricing-hub:${engine.id}:${durationSec}:${resolution}:${audioMode}`,
+        engineId: facts.facts.engineId,
+        resolution,
+        membershipTier: 'member',
+      },
+      compatibilityProfileId: isLumaRay32EngineId(engine.id)
+        ? facts.compatibilityProfileId
+        : 'public-rounded-vendor-current',
+    }).customerTotalCents;
   } catch {
     return null;
   }
@@ -525,9 +443,7 @@ export function getPresetQuote(entry: FalEngineEntry, preset: VideoPriceScenario
 
   const exactCents =
     exact && duration.durationSec != null
-      ? displayedLumaRay32ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
-        displayedLumaRay2ScenarioCents(engine, resolution.resolution, duration.durationSec) ??
-        displayedScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
+      ? quoteVideoScenarioCents(engine, resolution.resolution, duration.durationSec, audioMode)
       : null;
   if (exact) {
     if (exactCents == null || duration.durationSec == null) {
@@ -816,22 +732,37 @@ function buildVideoHighlights(rows: VideoPricingRow[], locale: AppLocale): Video
   ];
 }
 
-function flatImageCents(engine: EngineCaps, resolution: string, quality: GptImage2Quality = 'medium') {
-  if (isLumaAgentsImageEngineId(engine.id)) {
-    const quote = calculateLumaAgentsImageReferencePrice({
-      engineId: engine.id,
-      mode: 't2i',
-      referenceImageCount: 0,
+function quoteImageScenarioCents(engine: EngineCaps, preset: ImagePriceScenario) {
+  try {
+    const mode = preset.mode ?? 't2i';
+    const quantity = Math.max(1, Math.floor(preset.quantity ?? 1));
+    const scalePerUnit = quantity > 1 && !isLumaAgentsImageEngineId(engine.id);
+    const facts = buildPublicPricingFacts({
+      engine,
+      durationSec: scalePerUnit ? 1 : quantity,
+      resolution: preset.resolution,
+      quality: preset.quality ?? 'medium',
+      mode,
+      referenceImageCount: Math.max(0, Math.floor(preset.referenceImageCount ?? 0)),
+      useFlatImageUnitFacts: true,
     });
-    return applyFalReferenceDisplayMarginCents(quote.totalUsd);
+    const quote = quotePublicPricing({
+      facts: facts.facts,
+      scenario: {
+        id: `pricing-hub:${engine.id}:${preset.id}`,
+        engineId: facts.facts.engineId,
+        mode,
+        resolution: preset.resolution,
+        membershipTier: 'member',
+      },
+      compatibilityProfileId: isLumaAgentsImageEngineId(engine.id)
+        ? facts.compatibilityProfileId
+        : 'public-rounded-vendor-current',
+    });
+    return (scalePerUnit ? scalePublicPricingQuote(quote, quantity) : quote).customerTotalCents;
+  } catch {
+    return null;
   }
-  if (engine.id === 'gpt-image-2') {
-    const tier = resolveGptImage2PricingTier(resolution);
-    return applyDisplayedPriceMarginCents(tier.prices[quality]);
-  }
-  const flat = engine.pricingDetails?.flatCents;
-  const base = flat?.byResolution?.[resolution] ?? flat?.default ?? readResolutionRate(engine.pricingDetails, resolution);
-  return typeof base === 'number' ? applyDisplayedPriceMarginCents(base) : null;
 }
 
 function formatImageQuantityNote(locale: AppLocale, quantity: number, resolution: string) {
@@ -848,10 +779,6 @@ function formatImageQuantityNote(locale: AppLocale, quantity: number, resolution
           ? 'images'
           : 'image';
   return `${quantity} ${label} · ${resolution}`;
-}
-
-function applyFalReferenceDisplayMarginCents(totalUsd: number) {
-  return Math.max(0, Math.ceil(totalUsd * 100 * (1 + DISPLAY_PRICE_MARGIN_PERCENT) - CENT_EPSILON));
 }
 
 function formatLumaImageReferenceNote(locale: AppLocale, mode: LumaAgentsImageMode, referenceImageCount: number) {
@@ -881,12 +808,12 @@ function getLumaAgentsImagePresetQuote(
 
   const mode = preset.mode ?? 't2i';
   const referenceImageCount = Math.max(0, Math.floor(preset.referenceImageCount ?? 0));
-  const quote = calculateLumaAgentsImageReferencePrice({
-    engineId: entry.engine.id,
+  const amountCents = quoteImageScenarioCents(entry.engine, {
+    ...preset,
     mode,
     referenceImageCount,
   });
-  const amountCents = applyFalReferenceDisplayMarginCents(quote.totalUsd);
+  if (amountCents == null) return null;
 
   return {
     status: 'exact',
@@ -919,8 +846,8 @@ export function getImagePresetQuote(
   const lumaAgentsQuote = getLumaAgentsImagePresetQuote(entry, preset, locale, currency);
   if (lumaAgentsQuote) return lumaAgentsQuote;
 
-  const perImageCents = flatImageCents(engine, preset.resolution, preset.quality ?? 'medium');
-  if (perImageCents == null) {
+  const totalCents = quoteImageScenarioCents(engine, { ...preset, quantity });
+  if (totalCents == null) {
     return {
       status: 'live_quote',
       display: copy.liveQuote,
@@ -929,7 +856,6 @@ export function getImagePresetQuote(
     };
   }
 
-  const totalCents = perImageCents * quantity;
   return {
     status: 'exact',
     amountCents: totalCents,
@@ -996,8 +922,22 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
         anchorId: anchorFromSlug(entry.modelSlug),
         engine: entry.marketingName || engine.label,
         modelHref: buildModelHref(entry, locale),
-        standardImage: formatPrice(locale, flatImageCents(engine, standardResolution, 'medium')),
-        highQualityImage: formatPrice(locale, flatImageCents(engine, highResolution, 'high')),
+        standardImage: formatPrice(
+          locale,
+          quoteImageScenarioCents(engine, {
+            id: 'standard-image',
+            resolution: standardResolution,
+            quality: 'medium',
+          })
+        ),
+        highQualityImage: formatPrice(
+          locale,
+          quoteImageScenarioCents(engine, {
+            id: 'high-quality-image',
+            resolution: highResolution,
+            quality: 'high',
+          })
+        ),
         reference: engine.modes.includes('i2i') ? getPricingHubCopy(locale).quote.supported : '—',
         sizes: formatImageSizeSummary(resolutions, locale),
         links: buildImageLinks(entry, locale),
@@ -1074,6 +1014,29 @@ function buildAudioPricingRows(locale: AppLocale): AudioPricingRow[] {
   ];
 }
 
+function fixedPublicProductCents(engineId: string, amountCents: number) {
+  const facts = buildFixedPublicProductFacts({
+    engineId,
+    currency: FALLBACK_CURRENCY,
+    amountCents,
+    quantity: 1,
+    unit: 'run',
+  });
+  return quotePublicPricing({
+    facts: facts.facts,
+    scenario: {
+      id: `pricing-hub:${engineId}`,
+      engineId,
+      membershipTier: 'member',
+    },
+    compatibilityProfileId: facts.compatibilityProfileId,
+  }).customerTotalCents;
+}
+
+function formatFixedPublicProduct(locale: AppLocale, engineId: string, amountCents: number) {
+  return formatPrice(locale, fixedPublicProductCents(engineId, amountCents));
+}
+
 function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
   const copy = getPricingHubCopy(locale);
   const fourKFormat = CHARACTER_FORMAT_OPTIONS.find((option) => option.id === '4k');
@@ -1092,8 +1055,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-draft',
       anchorId: 'character-builder-pricing',
       tool: copy.tools.characterBuilderDraft,
-      standardOutput: formatPrice(locale, 8),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatPrice(locale, 24)}`,
+      standardOutput: formatFixedPublicProduct(locale, 'character-draft', 8),
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-draft-4k', 24)}`,
       bestUsedBefore: copy.tools.imageToVideoReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },
@@ -1104,8 +1067,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'character-builder-final',
       anchorId: 'character-builder-final-pricing',
       tool: copy.tools.characterBuilderFinal,
-      standardOutput: formatPrice(locale, 15),
-      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatPrice(locale, 30)}`,
+      standardOutput: formatFixedPublicProduct(locale, 'character-final', 15),
+      proOutput: `${fourKFormat?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'character-final-4k', 30)}`,
       bestUsedBefore: copy.tools.finalCharacterReferences,
       links: [
         { label: copy.links.tool, href: '/tools/character-builder' },
@@ -1116,8 +1079,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'change-camera-angle',
       anchorId: 'change-camera-angle-pricing',
       tool: copy.tools.changeCameraAngle,
-      standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatPrice(locale, 4)}`,
-      proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatPrice(locale, 7)}`,
+      standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatFixedPublicProduct(locale, 'angle-flux-single', 4)}`,
+      proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatFixedPublicProduct(locale, 'angle-qwen-single', 7)}`,
       bestUsedBefore: copy.tools.imageToVideoSetup,
       links: [
         { label: copy.links.tool, href: '/tools/angle' },
@@ -1128,8 +1091,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'generate-best-angles',
       anchorId: 'generate-best-angles-pricing',
       tool: copy.tools.generateBestAngles,
-      standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatPrice(locale, 24)}`,
-      proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatPrice(locale, 40)}`,
+      standardOutput: `${fluxAngle?.label ?? 'FLUX'}: ${formatFixedPublicProduct(locale, 'angle-flux-multi', 24)}`,
+      proOutput: `${qwenAngle?.label ?? 'Qwen'}: ${formatFixedPublicProduct(locale, 'angle-qwen-multi', 40)}`,
       bestUsedBefore: copy.tools.storyboardCoverage,
       links: [
         { label: copy.links.tool, href: '/tools/angle' },
@@ -1140,8 +1103,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'image-upscale',
       anchorId: 'upscale-pricing',
       tool: copy.tools.imageUpscale,
-      standardOutput: `${seedvrImage?.label ?? '2x'}: ${formatPrice(locale, 4)}`,
-      proOutput: `${topazImage?.label ?? '4x'}: ${formatPrice(locale, 12)}`,
+      standardOutput: `${seedvrImage?.label ?? '2x'}: ${formatFixedPublicProduct(locale, 'upscale-image-seedvr', 4)}`,
+      proOutput: `${topazImage?.label ?? '4x'}: ${formatFixedPublicProduct(locale, 'upscale-image-topaz', 12)}`,
       bestUsedBefore: copy.tools.imageToVideoSourceCleanup,
       links: [
         { label: copy.links.tool, href: '/tools/upscale' },
@@ -1152,8 +1115,8 @@ function buildToolPricingRows(locale: AppLocale): ToolPricingRow[] {
       id: 'video-upscale',
       anchorId: 'video-upscale-pricing',
       tool: copy.tools.videoUpscale,
-      standardOutput: `${seedvrVideo?.label ?? '1080p'}: ${formatPrice(locale, 25)}`,
-      proOutput: `${topazVideo?.label ?? '4K'}: ${formatPrice(locale, 80)}`,
+      standardOutput: `${seedvrVideo?.label ?? '1080p'}: ${formatFixedPublicProduct(locale, 'upscale-video-seedvr', 25)}`,
+      proOutput: `${topazVideo?.label ?? '4K'}: ${formatFixedPublicProduct(locale, 'upscale-video-topaz', 80)}`,
       bestUsedBefore: copy.tools.finalExport,
       links: [
         { label: copy.links.tool, href: '/tools/upscale' },

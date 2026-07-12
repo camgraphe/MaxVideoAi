@@ -14,6 +14,7 @@ export { STANDARD_PAYMENT_MESSAGES } from './messages';
 export {
   PricingDomainError,
   quoteCanonicalPricing,
+  scaleCanonicalPricingQuote,
   type CanonicalPricingQuote,
   type PricingDomainErrorCode,
   type PricingFacts,

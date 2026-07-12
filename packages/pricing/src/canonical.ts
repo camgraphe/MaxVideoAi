@@ -194,3 +194,28 @@ export function quoteCanonicalPricing(input: {
     },
   };
 }
+
+export function scaleCanonicalPricingQuote(
+  quote: CanonicalPricingQuote,
+  factor: number
+): CanonicalPricingQuote {
+  if (!Number.isInteger(factor) || factor <= 0) {
+    throw new PricingDomainError('invalid_scenario', 'canonical quote scale factor must be a positive integer');
+  }
+  return {
+    ...quote,
+    vendorSubtotalCents: quote.vendorSubtotalCents * factor,
+    marginCents: quote.marginCents * factor,
+    surchargeCents: quote.surchargeCents * factor,
+    discountCents: quote.discountCents * factor,
+    subtotalBeforeDiscountCents: normaliseCents(quote.subtotalBeforeDiscountCents * factor),
+    customerTotalCents: quote.customerTotalCents * factor,
+    platformFeeCents: quote.platformFeeCents * factor,
+    vendorShareCents: quote.vendorShareCents * factor,
+    quantity: quote.quantity * factor,
+    breakdown: {
+      ...quote.breakdown,
+      vendorSubtotalExactCents: normaliseCents(quote.breakdown.vendorSubtotalExactCents * factor),
+    },
+  };
+}

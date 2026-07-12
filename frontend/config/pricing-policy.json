@@ -28,6 +28,14 @@
       "marginPercentOverride": 0
     },
     {
+      "id": "public-rounded-vendor-current",
+      "vendorSubtotalRounding": "nearest",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest"
+    },
+    {
       "id": "fixed-product-current",
       "vendorSubtotalRounding": "nearest",
       "marginRounding": "up",
