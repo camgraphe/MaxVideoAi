@@ -110,17 +110,22 @@ export function quoteCanonicalPricing(input: {
     compatibilityProfile.vendorSubtotalRounding === 'preserve'
       ? roundCents(facts.vendorSubtotalExactCents, 'nearest')
       : vendorBaseForMath;
-  const marginCents = Math.max(
+  const marginPercent = compatibilityProfile.marginPercentOverride ?? policy.rule.marginPercent;
+  const marginFlatCents = compatibilityProfile.marginFlatCentsOverride ?? policy.rule.marginFlatCents;
+  let marginCents = Math.max(
     0,
     roundCents(
-      vendorBaseForMath * policy.rule.marginPercent + policy.rule.marginFlatCents,
+      vendorBaseForMath * marginPercent + marginFlatCents,
       compatibilityProfile.marginRounding
     )
   );
 
   let surchargePercent = 0;
-  if (scenario.surcharge === 'audio') surchargePercent = policy.rule.surchargeAudioPercent;
-  else if (scenario.surcharge === 'upscale') surchargePercent = policy.rule.surchargeUpscalePercent;
+  if (scenario.surcharge === 'audio') {
+    surchargePercent = compatibilityProfile.surchargeAudioPercentOverride ?? policy.rule.surchargeAudioPercent;
+  } else if (scenario.surcharge === 'upscale') {
+    surchargePercent = compatibilityProfile.surchargeUpscalePercentOverride ?? policy.rule.surchargeUpscalePercent;
+  }
   else if (scenario.surcharge != null) {
     throw new PricingDomainError('unknown_surcharge', `unsupported surcharge ${String(scenario.surcharge)}`);
   }
@@ -128,10 +133,18 @@ export function quoteCanonicalPricing(input: {
     0,
     roundCents(vendorBaseForMath * surchargePercent, compatibilityProfile.surchargeRounding)
   );
-  const subtotalBeforeDiscountExactCents = vendorBaseForMath + marginCents + surchargeCents;
+  let subtotalBeforeDiscountExactCents = vendorBaseForMath + marginCents + surchargeCents;
+  if (compatibilityProfile.subtotalRounding) {
+    subtotalBeforeDiscountExactCents = roundCents(
+      facts.vendorSubtotalExactCents * (1 + marginPercent + surchargePercent) + marginFlatCents,
+      compatibilityProfile.subtotalRounding
+    );
+    marginCents = Math.max(0, subtotalBeforeDiscountExactCents - vendorSubtotalCents - surchargeCents);
+  }
+  const discountPercent = compatibilityProfile.discountPercentOverride ?? scenario.discountPercent;
   const discountCents = Math.max(
     0,
-    roundCents(subtotalBeforeDiscountExactCents * scenario.discountPercent, compatibilityProfile.discountRounding)
+    roundCents(subtotalBeforeDiscountExactCents * discountPercent, compatibilityProfile.discountRounding)
   );
   const customerTotalCents = Math.max(
     0,
@@ -157,10 +170,10 @@ export function quoteCanonicalPricing(input: {
     quantity: facts.quantity,
     breakdown: {
       vendorSubtotalExactCents: facts.vendorSubtotalExactCents,
-      marginPercent: policy.rule.marginPercent,
-      marginFlatCents: policy.rule.marginFlatCents,
+      marginPercent,
+      marginFlatCents,
       surchargePercent,
-      discountPercent: scenario.discountPercent,
+      discountPercent,
     },
     policyProvenance: {
       source: policy.source,

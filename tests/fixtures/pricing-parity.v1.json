@@ -11,7 +11,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 625,
       "unit": "sec",
-      "quantity": 184
+      "quantity": 184,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:cinematic_voice:3",
@@ -22,7 +23,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 20,
       "unit": "sec",
-      "quantity": 3
+      "quantity": 3,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:cinematic_voice:30",
@@ -33,7 +35,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 110,
       "unit": "sec",
-      "quantity": 30
+      "quantity": 30,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:cinematic:184",
@@ -44,7 +47,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 480,
       "unit": "sec",
-      "quantity": 184
+      "quantity": 184,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:cinematic:3",
@@ -55,7 +59,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 18,
       "unit": "sec",
-      "quantity": 3
+      "quantity": 3,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:cinematic:30",
@@ -66,7 +71,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 85,
       "unit": "sec",
-      "quantity": 30
+      "quantity": 30,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:music_only:184",
@@ -77,7 +83,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 20,
       "unit": "song",
-      "quantity": 184
+      "quantity": 184,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:music_only:3",
@@ -88,7 +95,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 10,
       "unit": "30_sec_clip",
-      "quantity": 3
+      "quantity": 3,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:music_only:30",
@@ -99,7 +107,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 10,
       "unit": "30_sec_clip",
-      "quantity": 30
+      "quantity": 30,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:voice_only:184",
@@ -110,7 +119,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 145,
       "unit": "minute",
-      "quantity": 184
+      "quantity": 184,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:voice_only:3",
@@ -121,7 +131,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 3,
       "unit": "minute",
-      "quantity": 3
+      "quantity": 3,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "audio:voice_only:30",
@@ -132,7 +143,8 @@
       "surchargeCents": 0,
       "customerTotalCents": 25,
       "unit": "minute",
-      "quantity": 30
+      "quantity": 30,
+      "compatibilityProfile": "audio-current"
     },
     {
       "scenarioId": "billing:gemini-omni-flash:t2v:10:720p:member",
@@ -720,7 +732,8 @@
       "customerTotalCents": 130,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:member"
+      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-ray-3-2:t2v:5:720p:plus",
@@ -732,7 +745,8 @@
       "customerTotalCents": 123,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:plus"
+      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-ray-3-2:t2v:5:720p:pro",
@@ -744,7 +758,8 @@
       "customerTotalCents": 117,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:pro"
+      "equivalenceKey": "luma-ray-3-2:t2v:5:720p:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1-max:t2i:1:2K:member",
@@ -756,7 +771,8 @@
       "customerTotalCents": 14,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:member"
+      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1-max:t2i:1:2K:plus",
@@ -768,7 +784,8 @@
       "customerTotalCents": 13,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:plus"
+      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1-max:t2i:1:2K:pro",
@@ -780,7 +797,8 @@
       "customerTotalCents": 13,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:pro"
+      "equivalenceKey": "luma-uni-1-max:t2i:1:2K:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1:t2i:1:2K:member",
@@ -792,7 +810,8 @@
       "customerTotalCents": 6,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1:t2i:1:2K:member"
+      "equivalenceKey": "luma-uni-1:t2i:1:2K:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1:t2i:1:2K:plus",
@@ -804,7 +823,8 @@
       "customerTotalCents": 6,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1:t2i:1:2K:plus"
+      "equivalenceKey": "luma-uni-1:t2i:1:2K:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:luma-uni-1:t2i:1:2K:pro",
@@ -816,7 +836,8 @@
       "customerTotalCents": 5,
       "unit": "image",
       "quantity": 1,
-      "equivalenceKey": "luma-uni-1:t2i:1:2K:pro"
+      "equivalenceKey": "luma-uni-1:t2i:1:2K:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:minimax-hailuo-02-text:t2v:6:768P:member",
@@ -1080,7 +1101,8 @@
       "customerTotalCents": 31,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:member"
+      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0-fast:t2v:1:720p:plus",
@@ -1092,7 +1114,8 @@
       "customerTotalCents": 29,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:plus"
+      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0-fast:t2v:1:720p:pro",
@@ -1104,7 +1127,8 @@
       "customerTotalCents": 28,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:pro"
+      "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0-mini:t2v:5:720p:member",
@@ -1116,7 +1140,8 @@
       "customerTotalCents": 95,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:member"
+      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0-mini:t2v:5:720p:plus",
@@ -1128,7 +1153,8 @@
       "customerTotalCents": 90,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:plus"
+      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0-mini:t2v:5:720p:pro",
@@ -1140,7 +1166,8 @@
       "customerTotalCents": 85,
       "unit": "sec",
       "quantity": 5,
-      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:pro"
+      "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0:t2v:1:720p:member",
@@ -1152,7 +1179,8 @@
       "customerTotalCents": 38,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0:t2v:1:720p:member"
+      "equivalenceKey": "seedance-2-0:t2v:1:720p:member",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0:t2v:1:720p:plus",
@@ -1164,7 +1192,8 @@
       "customerTotalCents": 36,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0:t2v:1:720p:plus"
+      "equivalenceKey": "seedance-2-0:t2v:1:720p:plus",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedance-2-0:t2v:1:720p:pro",
@@ -1176,7 +1205,8 @@
       "customerTotalCents": 34,
       "unit": "sec",
       "quantity": 1,
-      "equivalenceKey": "seedance-2-0:t2v:1:720p:pro"
+      "equivalenceKey": "seedance-2-0:t2v:1:720p:pro",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "billing:seedream-5-0-pro:t2i:1:2K:member",
@@ -1721,6 +1751,7 @@
       "unit": "sec",
       "quantity": 5,
       "equivalenceKey": "luma-ray-3-2:t2v:5:720p:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$1.30"
     },
     {
@@ -1734,6 +1765,7 @@
       "unit": "image",
       "quantity": 1,
       "equivalenceKey": "luma-uni-1-max:t2i:1:2K:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$0.14"
     },
     {
@@ -1747,6 +1779,7 @@
       "unit": "image",
       "quantity": 1,
       "equivalenceKey": "luma-uni-1:t2i:1:2K:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$0.06"
     },
     {
@@ -1851,6 +1884,7 @@
       "unit": "sec",
       "quantity": 1,
       "equivalenceKey": "seedance-2-0-fast:t2v:1:720p:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$0.31"
     },
     {
@@ -1864,6 +1898,7 @@
       "unit": "sec",
       "quantity": 5,
       "equivalenceKey": "seedance-2-0-mini:t2v:5:720p:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$0.95"
     },
     {
@@ -1877,6 +1912,7 @@
       "unit": "sec",
       "quantity": 1,
       "equivalenceKey": "seedance-2-0:t2v:1:720p:member",
+      "compatibilityProfile": "provider-reference-current",
       "displayedAmount": "$0.38"
     },
     {
@@ -2000,7 +2036,7 @@
       "scenarioId": "json-ld:pika-text-to-video:offer",
       "surface": "json-ld",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
+      "vendorSubtotalCents": 30,
       "marginCents": 0,
       "surchargeCents": 0,
       "customerTotalCents": 30,
@@ -2012,11 +2048,11 @@
       "scenarioId": "model-page:pika-text-to-video:decision",
       "surface": "model-page",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 20,
+      "marginCents": 6,
       "surchargeCents": 0,
       "customerTotalCents": 26,
-      "unit": "scenario",
+      "unit": "sec",
       "quantity": 5,
       "displayedAmount": "$0.26",
       "equivalenceKey": "pika-text-to-video:t2v:5:720p:member"
@@ -2038,23 +2074,24 @@
       "scenarioId": "pricing-hub:luma-uni-1:image-default",
       "surface": "pricing-hub",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 5,
+      "marginCents": 1,
       "surchargeCents": 0,
       "customerTotalCents": 6,
       "unit": "image",
       "quantity": 1,
-      "displayedAmount": "$0.06"
+      "displayedAmount": "$0.06",
+      "compatibilityProfile": "provider-reference-current"
     },
     {
       "scenarioId": "pricing-hub:pika-text-to-video:10s-1080p",
       "surface": "pricing-hub",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 90,
+      "marginCents": 27,
       "surchargeCents": 0,
       "customerTotalCents": 117,
-      "unit": "scenario",
+      "unit": "sec",
       "quantity": 10,
       "displayedAmount": "$1.17"
     },
@@ -2074,11 +2111,11 @@
       "scenarioId": "pricing-hub:pika-text-to-video:10s-720p",
       "surface": "pricing-hub",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
       "surchargeCents": 0,
       "customerTotalCents": 52,
-      "unit": "scenario",
+      "unit": "sec",
       "quantity": 10,
       "displayedAmount": "$0.52"
     },
@@ -2098,11 +2135,11 @@
       "scenarioId": "pricing-hub:pika-text-to-video:5s-720p",
       "surface": "pricing-hub",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 20,
+      "marginCents": 6,
       "surchargeCents": 0,
       "customerTotalCents": 26,
-      "unit": "scenario",
+      "unit": "sec",
       "quantity": 5,
       "displayedAmount": "$0.26"
     },
@@ -2122,12 +2159,12 @@
       "scenarioId": "pricing-hub:pika-text-to-video:entry-route",
       "surface": "pricing-hub",
       "currency": "USD",
-      "vendorSubtotalCents": 0,
-      "marginCents": 0,
+      "vendorSubtotalCents": 40,
+      "marginCents": 12,
       "surchargeCents": 0,
       "customerTotalCents": 52,
-      "unit": "scenario",
-      "quantity": 0,
+      "unit": "sec",
+      "quantity": 10,
       "displayedAmount": "$0.52"
     },
     {

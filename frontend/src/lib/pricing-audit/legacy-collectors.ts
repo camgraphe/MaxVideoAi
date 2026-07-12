@@ -26,6 +26,7 @@ import {
   type VideoPriceScenario,
 } from '../../../app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData';
 import { buildPricingAuditScenarios } from './scenarios';
+import { buildCanonicalPricingFacts } from './canonical-facts';
 import type { FrozenPricingOutput, PricingAuditScenario } from './types';
 
 const CURRENT_DEFAULT_RULE: PricingRule = {
@@ -187,16 +188,25 @@ function collectPublicQuote(entry: FalEngineEntry, scenario: PricingAuditScenari
         'en'
       );
   const total = Math.max(0, Math.round(quote.amountCents ?? 0));
+  const facts = buildCanonicalPricingFacts(scenario);
+  const vendorSubtotalCents = facts
+    ? Math.max(
+        0,
+        scenario.compatibilityProfile === 'provider-reference-current'
+          ? Math.ceil(facts.vendorSubtotalExactCents - 1e-9)
+          : Math.round(facts.vendorSubtotalExactCents)
+      )
+    : 0;
   return {
     scenarioId: scenario.id,
     surface: scenario.surface,
     currency: 'USD',
-    vendorSubtotalCents: 0,
-    marginCents: 0,
+    vendorSubtotalCents,
+    marginCents: Math.max(0, total - vendorSubtotalCents),
     surchargeCents: 0,
     customerTotalCents: total,
-    unit: isImage ? 'image' : 'scenario',
-    quantity: isImage ? Number(scenario.input.quantity ?? 1) : scenario.durationSec ?? 0,
+    unit: facts?.unit ?? (isImage ? 'image' : 'scenario'),
+    quantity: facts?.quantity ?? (isImage ? Number(scenario.input.quantity ?? 1) : scenario.durationSec ?? 0),
     displayedAmount: quote.display,
     equivalenceKey: scenario.equivalenceKey,
     compatibilityProfile: scenario.compatibilityProfile,
@@ -278,12 +288,14 @@ export async function collectLegacyPricingOutputs(): Promise<FrozenPricingOutput
     }
     if (scenario.surface === 'json-ld') {
       const total = Math.max(0, resolveModelOfferAmountCents(entry, entry.engine) ?? 0);
+      const facts = buildCanonicalPricingFacts(scenario);
+      const vendorSubtotalCents = facts ? Math.max(0, Math.round(facts.vendorSubtotalExactCents)) : total;
       return {
         scenarioId: scenario.id,
         surface: scenario.surface,
         currency: entry.pricingHint?.currency ?? entry.engine.pricingDetails?.currency ?? 'USD',
-        vendorSubtotalCents: 0,
-        marginCents: 0,
+        vendorSubtotalCents,
+        marginCents: Math.max(0, total - vendorSubtotalCents),
         surchargeCents: 0,
         customerTotalCents: total,
         unit: 'offer',

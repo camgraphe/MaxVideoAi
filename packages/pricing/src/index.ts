@@ -20,6 +20,11 @@ export {
   type PricingScenario,
 } from './canonical';
 export {
+  comparePricingOutputs,
+  type PricingComparableOutput,
+  type PricingShadowComparison,
+} from './shadow';
+export {
   PricingPolicyValidationError,
   PricingPolicyResolutionError,
   resolvePricingPolicy,

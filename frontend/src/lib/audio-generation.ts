@@ -415,6 +415,27 @@ function buildAudioVendorCostComponents(input: {
   })];
 }
 
+export function buildAudioVendorCostFacts(input: {
+  pack: AudioPackId;
+  durationSec: number;
+  voiceMode?: AudioVoiceMode | null;
+  script?: string | null;
+  musicModel?: AudioLyria3Model | null;
+  musicEnabled?: boolean | null;
+}) {
+  const durationSec = normalizeAudioDuration(input.durationSec);
+  const components = buildAudioVendorCostComponents({
+    ...input,
+    durationSec,
+  });
+  return {
+    durationSec,
+    components,
+    vendorSubtotalCents: components.reduce((sum, component) => sum + component.amountCents, 0),
+    unit: components[0]!.unit,
+  };
+}
+
 export function buildAudioPricingSnapshot(input: {
   pack: AudioPackId;
   durationSec: number;
@@ -427,7 +448,7 @@ export function buildAudioPricingSnapshot(input: {
 }): PricingSnapshot {
   const durationSec = normalizeAudioDuration(input.durationSec);
   const voiceMode = input.voiceMode ?? null;
-  const vendorCostComponents = buildAudioVendorCostComponents({
+  const vendorFacts = buildAudioVendorCostFacts({
     pack: input.pack,
     durationSec,
     voiceMode,
@@ -435,9 +456,10 @@ export function buildAudioPricingSnapshot(input: {
     musicModel: input.musicModel,
     musicEnabled: input.musicEnabled,
   });
+  const vendorCostComponents = vendorFacts.components;
   const baseComponent = vendorCostComponents[0]!;
   const addonComponents = vendorCostComponents.slice(1);
-  const vendorSubtotalCents = vendorCostComponents.reduce((sum, component) => sum + component.amountCents, 0);
+  const vendorSubtotalCents = vendorFacts.vendorSubtotalCents;
   const marginAmountCents = computeRoundedUpMarginCents(vendorSubtotalCents);
   const totalCents = vendorSubtotalCents + marginAmountCents;
   const rate = durationSec > 0 ? Number((vendorSubtotalCents / 100 / durationSec).toFixed(4)) : vendorSubtotalCents / 100;

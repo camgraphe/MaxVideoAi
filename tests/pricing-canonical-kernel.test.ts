@@ -86,6 +86,39 @@ test('canonical quote supports explicit vendor rounding compatibility', async ()
   assert.equal(quote.customerTotalCents, 15);
 });
 
+test('canonical compatibility profile can preserve a historical zero-margin surface', async () => {
+  const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId: 'engine-a', currency: 'USD', vendorSubtotalExactCents: 30, unit: 'offer', quantity: 1 },
+    scenario: { id: 'schema', engineId: 'engine-a', membershipTier: 'member', discountPercent: 0 },
+    policy: resolvedPolicy,
+    compatibilityProfile: { ...standardProfile, id: 'schema-current', marginPercentOverride: 0 },
+  });
+
+  assert.equal(quote.marginCents, 0);
+  assert.equal(quote.customerTotalCents, 30);
+  assert.equal(quote.policyProvenance.compatibilityProfile, 'schema-current');
+});
+
+test('canonical compatibility can round the historical commercial subtotal before deriving margin', async () => {
+  const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId: 'engine-a', currency: 'USD', vendorSubtotalExactCents: 4.4, unit: 'image', quantity: 1 },
+    scenario: { id: 'provider-reference', engineId: 'engine-a', membershipTier: 'member', discountPercent: 0 },
+    policy: resolvedPolicy,
+    compatibilityProfile: {
+      ...standardProfile,
+      id: 'provider-reference-current',
+      vendorSubtotalRounding: 'up',
+      subtotalRounding: 'up',
+    },
+  });
+
+  assert.equal(quote.vendorSubtotalCents, 5);
+  assert.equal(quote.marginCents, 1);
+  assert.equal(quote.customerTotalCents, 6);
+});
+
 test('canonical quote rejects invalid facts, currency mismatches, and unsupported surcharge keys', async () => {
   assert.equal(existsSync(canonicalPath), true, `${canonicalPath} should exist`);
   const { PricingDomainError, quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');

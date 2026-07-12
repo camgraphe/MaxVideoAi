@@ -15,6 +15,18 @@ const PRICING_HUB_PRESETS = [
 ] as const;
 const AUDIO_PACKS = ['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const;
 const TOOL_PRODUCTS = ['angle', 'background-removal', 'upscale'] as const;
+const PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS = new Set([
+  'luma-ray-3-2',
+  'luma-uni-1',
+  'luma-uni-1-max',
+  'seedance-2-0',
+  'seedance-2-0-fast',
+  'seedance-2-0-mini',
+]);
+
+function compatibilityProfileForEngine(engineId: string): string | undefined {
+  return PROVIDER_REFERENCE_COMPATIBILITY_ENGINE_IDS.has(engineId) ? 'provider-reference-current' : undefined;
+}
 
 function resolveDuration(engine: EngineCaps): number {
   const durationField =
@@ -49,6 +61,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
     const resolution = resolveResolution(engine);
     const mode = entry.modes[0]?.mode ?? (entry.category === 'image' ? 't2i' : 't2v');
     const equivalenceKey = `${entry.id}:${mode}:${durationSec}:${resolution}:member`;
+    const compatibilityProfile = compatibilityProfileForEngine(entry.id);
 
     for (const membershipTier of MEMBER_TIERS) {
       addScenario(rows, {
@@ -60,6 +73,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
         durationSec,
         membershipTier,
         equivalenceKey: `${entry.id}:${mode}:${durationSec}:${resolution}:${membershipTier}`,
+        ...(compatibilityProfile ? { compatibilityProfile } : {}),
         input: {},
       });
     }
@@ -73,6 +87,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       durationSec,
       membershipTier: 'member',
       equivalenceKey,
+      ...(compatibilityProfile ? { compatibilityProfile } : {}),
       input: {},
     });
   }
@@ -89,6 +104,9 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
         resolution: preset.resolution,
         durationSec: preset.durationSec ?? undefined,
         membershipTier: 'member',
+        ...(compatibilityProfileForEngine(videoEntry.id)
+          ? { compatibilityProfile: compatibilityProfileForEngine(videoEntry.id) }
+          : {}),
         input: { presetId: preset.id, audio: preset.audio },
       });
     }
@@ -104,6 +122,9 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       resolution,
       durationSec,
       membershipTier: 'member',
+      ...(compatibilityProfileForEngine(videoEntry.id)
+        ? { compatibilityProfile: compatibilityProfileForEngine(videoEntry.id) }
+        : {}),
       equivalenceKey,
       input: {},
     });
@@ -115,6 +136,9 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       resolution,
       durationSec,
       membershipTier: 'member',
+      ...(compatibilityProfileForEngine(videoEntry.id)
+        ? { compatibilityProfile: compatibilityProfileForEngine(videoEntry.id) }
+        : {}),
       equivalenceKey,
       input: { modelSlug: videoEntry.modelSlug },
     });
@@ -126,6 +150,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       resolution,
       durationSec,
       membershipTier: 'member',
+      compatibilityProfile: 'schema-current',
       input: { modelSlug: videoEntry.modelSlug },
     });
   }
@@ -139,6 +164,9 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       resolution: resolveResolution(imageEntry.engine),
       durationSec: 1,
       membershipTier: 'member',
+      ...(compatibilityProfileForEngine(imageEntry.id)
+        ? { compatibilityProfile: compatibilityProfileForEngine(imageEntry.id) }
+        : {}),
       input: { quantity: 1 },
     });
   }
@@ -152,6 +180,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
         mode: pack,
         durationSec,
         membershipTier: 'member',
+        compatibilityProfile: 'audio-current',
         input: { pack },
       });
     }
@@ -163,6 +192,7 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       surface: 'tool',
       engineId: product,
       membershipTier: 'member',
+      compatibilityProfile: 'fixed-product-current',
       input:
         product === 'angle'
           ? { product, unitPriceCents: 4, engineId: 'flux-multiple-angles', width: 1024, height: 1024 }

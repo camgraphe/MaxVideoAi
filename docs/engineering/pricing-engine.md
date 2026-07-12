@@ -68,3 +68,13 @@ pnpm pricing:audit -- --json
 `pricing:baseline:generate` is an intentional write operation. The other commands do not mutate pricing policy or application state.
 
 Every current cross-surface difference is preserved and identified by a compatibility profile. Updating `frontend/config/pricing-policy.json` is a commercial change after this foundation batch and requires an intentional matrix review; it must never be bundled into an unrelated refactor.
+
+## Foundation compatibility profiles
+
+- `standard`: preserves fractional provider cents for commercial math and rounds the margin upward.
+- `provider-reference-current`: preserves the existing Luma and Seedance behavior that rounds the provider share and the commercial subtotal upward before deriving the margin component.
+- `audio-current`: preserves the existing 150% audio margin and integer vendor components.
+- `schema-current`: preserves structured-data offers that currently use an already-authored offer amount without adding another margin.
+- `fixed-product-current`: preserves seeded billing-product totals for tools without applying a second commercial margin or surcharge.
+
+These profiles document existing behavior only. They cannot be added implicitly by the audit command and they do not authorize new cross-surface differences.

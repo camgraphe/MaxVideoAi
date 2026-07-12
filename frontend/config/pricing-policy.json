@@ -17,6 +17,35 @@
       "surchargeRounding": "up",
       "discountRounding": "nearest",
       "totalRounding": "nearest"
+    },
+    {
+      "id": "schema-current",
+      "vendorSubtotalRounding": "nearest",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest",
+      "marginPercentOverride": 0
+    },
+    {
+      "id": "fixed-product-current",
+      "vendorSubtotalRounding": "nearest",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest",
+      "marginPercentOverride": 0,
+      "surchargeAudioPercentOverride": 0,
+      "surchargeUpscalePercentOverride": 0
+    },
+    {
+      "id": "provider-reference-current",
+      "vendorSubtotalRounding": "up",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest",
+      "subtotalRounding": "up"
     }
   ],
   "rules": [
