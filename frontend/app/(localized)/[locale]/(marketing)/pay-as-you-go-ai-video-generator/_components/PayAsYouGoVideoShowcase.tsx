@@ -2,14 +2,25 @@ import Image from 'next/image';
 import { ArrowRight, Play } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
+import type { AppLocale } from '@/i18n/locales';
 import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
 
 type PayAsYouGoVideoShowcaseProps = {
+  locale: AppLocale;
   videos: PayAsYouGoShowcaseVideo[];
 };
 
-function VideoMedia({ video, priority }: { video: PayAsYouGoShowcaseVideo; priority: boolean }) {
-  const mediaLabel = `${video.title}, example video generated with ${video.engineLabel}, ${video.priceLabel}, ${video.durationLabel}`;
+function getShowcaseCopy(locale: AppLocale) {
+  return {
+    en: { eyebrow: 'Real pay-as-you-go outputs', title: 'Example videos with model and price context', intro: 'A short strip from public MaxVideoAI renders, showing the model, duration, and recorded render price when available.', preview: 'Preview', result: 'View prompt and result', cta: 'Test your prompt with a live quote', media: 'example video generated with' },
+    es: { eyebrow: 'Resultados reales de pago por uso', title: 'Videos de ejemplo con modelo y precio', intro: 'Una selección breve de renders públicos de MaxVideoAI que muestra el modelo, la duración y el precio registrado cuando está disponible.', preview: 'Vista previa', result: 'Ver prompt y resultado', cta: 'Prueba tu prompt con una cotización en tiempo real', media: 'video de ejemplo generado con' },
+    fr: { eyebrow: 'Rendus réels sans abonnement', title: 'Vidéos d’exemple avec modèle et prix', intro: 'Une courte sélection de rendus publics MaxVideoAI montrant le modèle, la durée et le prix enregistré lorsqu’il est disponible.', preview: 'Aperçu', result: 'Voir le prompt et le résultat', cta: 'Testez votre prompt avec un devis en temps réel', media: 'vidéo d’exemple générée avec' },
+  }[locale];
+}
+
+function VideoMedia({ video, priority, locale }: { video: PayAsYouGoShowcaseVideo; priority: boolean; locale: AppLocale }) {
+  const copy = getShowcaseCopy(locale);
+  const mediaLabel = `${video.title}, ${copy.media} ${video.engineLabel}, ${video.priceLabel}, ${video.durationLabel}`;
   if (video.videoUrl) {
     return (
       <video
@@ -42,25 +53,26 @@ function VideoMedia({ video, priority }: { video: PayAsYouGoShowcaseVideo; prior
 
   return (
     <div className="flex h-full w-full items-center justify-center bg-surface-3 text-xs font-semibold uppercase tracking-micro text-text-muted">
-      Preview
+      {copy.preview}
     </div>
   );
 }
 
-export function PayAsYouGoVideoShowcase({ videos }: PayAsYouGoVideoShowcaseProps) {
+export function PayAsYouGoVideoShowcase({ locale, videos }: PayAsYouGoVideoShowcaseProps) {
   if (!videos.length) return null;
+  const copy = getShowcaseCopy(locale);
 
   return (
     <section className="border-b border-hairline bg-bg">
       <div className="container-page max-w-[1220px] py-8 sm:py-10">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-micro text-brand">Real pay-as-you-go outputs</p>
+            <p className="text-xs font-semibold uppercase tracking-micro text-brand">{copy.eyebrow}</p>
             <h2 className="mt-2 text-2xl font-semibold tracking-normal text-text-primary sm:text-3xl">
-              Example videos with model and price context
+              {copy.title}
             </h2>
             <p className="mt-3 text-sm leading-6 text-text-secondary">
-              A short strip from public MaxVideoAI renders, showing the model, duration, and recorded render price when available.
+              {copy.intro}
             </p>
           </div>
         </div>
@@ -74,7 +86,7 @@ export function PayAsYouGoVideoShowcase({ videos }: PayAsYouGoVideoShowcaseProps
               className="group relative block h-[280px] w-[210px] shrink-0 overflow-hidden rounded-[8px] border border-hairline bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-text-muted sm:h-[320px] sm:w-[230px]"
             >
               <div className="absolute inset-0">
-                <VideoMedia video={video} priority={index < 2} />
+                <VideoMedia video={video} priority={index < 2} locale={locale} />
               </div>
               <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-black/70 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
@@ -102,7 +114,7 @@ export function PayAsYouGoVideoShowcase({ videos }: PayAsYouGoVideoShowcaseProps
                 </div>
                 <h3 className="mt-2 line-clamp-1 text-sm font-semibold leading-5">{video.title}</h3>
                 <p className="mt-1 line-clamp-2 text-xs leading-5 text-white/82">{video.useCase}</p>
-                <span className="mt-2 inline-flex text-xs font-semibold text-white/90">View prompt and result</span>
+                <span className="mt-2 inline-flex text-xs font-semibold text-white/90">{copy.result}</span>
               </div>
             </Link>
           ))}
@@ -113,7 +125,7 @@ export function PayAsYouGoVideoShowcase({ videos }: PayAsYouGoVideoShowcaseProps
             prefetch={false}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[8px] bg-text-primary px-4 text-sm font-semibold text-bg shadow-card transition hover:bg-text-primary/90"
           >
-            Test your prompt with a live quote
+            {copy.cta}
             <ArrowRight className="h-4 w-4" strokeWidth={1.8} />
           </Link>
         </div>
