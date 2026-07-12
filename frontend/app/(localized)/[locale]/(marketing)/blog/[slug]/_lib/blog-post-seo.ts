@@ -5,6 +5,7 @@ import { localePathnames, localeRegions, locales } from '@/i18n/locales';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { getBreadcrumbLabels } from '@/lib/seo/breadcrumbs';
+import { getEditorialProfileAbsoluteUrl, type ResolvedEditorialProfile } from '@/lib/editorial/profile';
 import {
   BLOG_SLUG_MAP,
   BLOG_TITLE_OVERRIDES,
@@ -128,12 +129,14 @@ export function buildBlogPostMetadata({
 }
 
 export function buildBlogPostJsonLd({
+  editorialProfile,
   locale,
   localization,
   modifiedIso,
   post,
   publishedIso,
 }: {
+  editorialProfile: ResolvedEditorialProfile;
   locale: AppLocale;
   localization: BlogPostLocalization;
   modifiedIso: string;
@@ -178,8 +181,10 @@ export function buildBlogPostJsonLd({
     inLanguage: localeRegions[locale],
     image: imageUrl,
     author: {
-      '@type': 'Organization',
-      name: 'MaxVideo AI',
+      '@type': 'Person',
+      name: editorialProfile.name,
+      jobTitle: editorialProfile.jobTitle,
+      url: getEditorialProfileAbsoluteUrl(editorialProfile),
     },
     publisher: {
       '@type': 'Organization',

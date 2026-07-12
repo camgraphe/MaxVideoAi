@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { locales } from '@/i18n/locales';
+import { getEditorialProfile } from '@/lib/editorial/profile';
 import { BlogPostView } from './_components/blog-post-view';
 import {
   buildLocalizedBlogPostPath,
@@ -21,6 +22,7 @@ import {
   buildBlogPostLocalization,
   buildBlogPostMetadata,
 } from './_lib/blog-post-seo';
+import { getBlogEditorialCopy } from './_lib/blog-editorial-copy';
 
 export const dynamicParams = false;
 
@@ -86,7 +88,14 @@ export default async function BlogPostPage(props: { params: Promise<BlogPostPara
   });
   const publishedIso = toIsoDate(post.date) ?? post.date;
   const modifiedIso = toIsoDate(post.updatedAt ?? post.date) ?? publishedIso;
+  const editorialProfile = getEditorialProfile(locale, post.authorId);
+  const editorialCopy = getBlogEditorialCopy(locale);
+  const publishedLabel = formatBlogPostDate(locale, post.date);
+  const modifiedLabel = post.updatedAt && post.updatedAt !== post.date
+    ? formatBlogPostDate(locale, post.updatedAt)
+    : null;
   const { articleSchema, breadcrumbJsonLd } = buildBlogPostJsonLd({
+    editorialProfile,
     locale,
     localization,
     modifiedIso,
@@ -104,10 +113,13 @@ export default async function BlogPostPage(props: { params: Promise<BlogPostPara
       articleSchema={articleSchema}
       breadcrumbJsonLd={breadcrumbJsonLd}
       demotedContent={demoteArticleHeadingContent(post.content)}
-      formattedDate={formatBlogPostDate(locale, post.date)}
+      editorialCopy={editorialCopy}
+      editorialProfile={editorialProfile}
       locale={locale}
+      modifiedLabel={modifiedLabel}
       nextStep={getNextStepCopy(locale, canonicalSlug)}
       post={post}
+      publishedLabel={publishedLabel}
       relatedPosts={relatedPosts}
     />
   );

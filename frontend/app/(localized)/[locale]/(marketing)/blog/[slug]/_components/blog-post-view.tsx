@@ -4,6 +4,7 @@ import { Link } from '@/i18n/navigation';
 import { TextLink } from '@/components/ui/TextLink';
 import type { ContentEntry } from '@/lib/content/markdown';
 import type { AppLocale } from '@/i18n/locales';
+import type { ResolvedEditorialProfile } from '@/lib/editorial/profile';
 import {
   getBlogLinkProps,
   getCanonicalBlogSlug,
@@ -11,16 +12,21 @@ import {
   type ArticleNextStep,
   type BlogArticleCopy,
 } from '../_lib/blog-post-data';
+import type { BlogEditorialCopy } from '../_lib/blog-editorial-copy';
+import { BlogAuthorByline, BlogAuthorCard } from './blog-author-byline';
 
 type BlogPostViewProps = {
   articleCopy: BlogArticleCopy;
   articleSchema: unknown;
   breadcrumbJsonLd: unknown;
   demotedContent: string;
-  formattedDate: string;
+  editorialCopy: BlogEditorialCopy;
+  editorialProfile: ResolvedEditorialProfile;
   locale: AppLocale;
+  modifiedLabel: string | null;
   nextStep: ArticleNextStep | null;
   post: ContentEntry;
+  publishedLabel: string;
   relatedPosts: ContentEntry[];
 };
 
@@ -29,10 +35,13 @@ export function BlogPostView({
   articleSchema,
   breadcrumbJsonLd,
   demotedContent,
-  formattedDate,
+  editorialCopy,
+  editorialProfile,
   locale,
+  modifiedLabel,
   nextStep,
   post,
+  publishedLabel,
   relatedPosts,
 }: BlogPostViewProps) {
   return (
@@ -63,9 +72,6 @@ export function BlogPostView({
             )}
             <div className="relative z-10 stack-gap-lg px-6 pb-10 pt-8 sm:px-10">
               <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-micro text-text-muted">
-                <span className="rounded-pill border border-hairline bg-surface/80 px-3 py-1 font-semibold text-text-secondary shadow-sm">
-                  {formattedDate}
-                </span>
                 <div className="flex flex-wrap gap-2">
                   {post.keywords?.map((keyword) => (
                     <span key={keyword} className="rounded-pill bg-surface-2 px-3 py-1 font-semibold text-brand">
@@ -77,12 +83,21 @@ export function BlogPostView({
               <div className="max-w-3xl stack-gap-sm">
                 <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-5xl">{post.title}</h1>
                 <p className="text-base leading-relaxed text-text-secondary sm:text-lg">{post.description}</p>
+                <BlogAuthorByline
+                  copy={editorialCopy}
+                  locale={locale}
+                  modifiedLabel={modifiedLabel}
+                  profile={editorialProfile}
+                  publishedLabel={publishedLabel}
+                />
               </div>
             </div>
           </header>
 
           <div className="blog-prose px-6 py-10 sm:px-10" dangerouslySetInnerHTML={{ __html: demotedContent }} />
         </article>
+
+        <BlogAuthorCard copy={editorialCopy} locale={locale} profile={editorialProfile} />
 
         {nextStep ? <ArticleNextStepSection nextStep={nextStep} /> : null}
 

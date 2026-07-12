@@ -8,6 +8,8 @@ const pagePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/
 const viewPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_components/blog-post-view.tsx');
 const dataPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_lib/blog-post-data.ts');
 const seoPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_lib/blog-post-seo.ts');
+const editorialCopyPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_lib/blog-editorial-copy.ts');
+const authorBylinePath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_components/blog-author-byline.tsx');
 
 const pageSource = readFileSync(pagePath, 'utf8');
 const viewSource = readFileSync(viewPath, 'utf8');
@@ -19,10 +21,14 @@ test('localized blog article page stays a route orchestrator', () => {
   assert.ok(existsSync(viewPath), 'blog article view should exist');
   assert.ok(existsSync(dataPath), 'blog article data helper should exist');
   assert.ok(existsSync(seoPath), 'blog article SEO helper should exist');
+  assert.ok(existsSync(editorialCopyPath), 'blog editorial copy should exist');
+  assert.ok(existsSync(authorBylinePath), 'blog author byline should exist');
 
   assert.match(pageSource, /from '\.\/_components\/blog-post-view'/, 'route should import the view component');
   assert.match(pageSource, /from '\.\/_lib\/blog-post-data'/, 'route should import data helpers');
   assert.match(pageSource, /from '\.\/_lib\/blog-post-seo'/, 'route should import SEO helpers');
+  assert.match(pageSource, /getEditorialProfile/, 'route should resolve the verified author');
+  assert.match(pageSource, /getBlogEditorialCopy/, 'route should resolve localized byline copy');
   assert.match(pageSource, /export async function generateStaticParams/, 'route should keep static param orchestration');
   assert.match(pageSource, /export async function generateMetadata/, 'route should keep metadata orchestration');
   assert.match(pageSource, /export default async function BlogPostPage/, 'route should keep page orchestration');
@@ -88,4 +94,14 @@ test('blog article view owns article rendering surfaces', () => {
   assert.match(viewSource, /function ArticleNextStepSection/, 'view should own next-step rendering');
   assert.match(viewSource, /function RelatedPostsSection/, 'view should own related post cards');
   assert.match(viewSource, /getBlogLinkProps/, 'view should preserve localized related links');
+  assert.match(viewSource, /BlogAuthorByline/, 'view should render the verified byline');
+  assert.match(viewSource, /BlogAuthorCard/, 'view should render the author card');
+});
+
+test('blog author component links identity and editorial standards without fake review claims', () => {
+  const source = readFileSync(authorBylinePath, 'utf8');
+  assert.match(source, /profile\.name/);
+  assert.match(source, /profile\.jobTitle/);
+  assert.match(source, /editorial-standards/);
+  assert.doesNotMatch(source, /independently reviewed|external reviewer|certified/i);
 });

@@ -32,6 +32,7 @@ import {
   buildBlogPostLocalization,
 } from '../frontend/app/(localized)/[locale]/(marketing)/blog/[slug]/_lib/blog-post-seo.ts';
 import { getFalEngineBySlug } from '../frontend/src/config/falEngines.ts';
+import { getEditorialProfile } from '../frontend/lib/editorial/profile.ts';
 
 type JsonRecord = Record<string, unknown>;
 
@@ -76,6 +77,7 @@ const KNOWN_SCHEMA_TYPES = new Set([
   'WebApplication',
   'WebPage',
   'Article',
+  'Person',
 ]);
 
 const URL_LIKE_KEYS = new Set([
@@ -264,6 +266,7 @@ function buildAuditedSchemaCases(): SchemaCase[] {
     localizedSlugs: { en: 'schema-audit-sample' },
   });
   const blogSchemas = buildBlogPostJsonLd({
+    editorialProfile: getEditorialProfile('en'),
     locale: 'en',
     localization: blogLocalization,
     modifiedIso: '2026-06-20',
@@ -415,6 +418,38 @@ test('marketing JSON-LD builders emit baseline-valid schema payloads', () => {
     assert.ok(schemas.length > 0, `${schemaCase.surface} should expose JSON-LD schemas for audit`);
     schemas.forEach((schema, index) => assertSchemaNode(schema, `${schemaCase.surface}[${index}]`, true));
   }
+});
+
+test('blog Article schema identifies the visible person while retaining MaxVideoAI as publisher', () => {
+  const localization = buildBlogPostLocalization({
+    canonicalSlug: 'author-schema-sample',
+    locale: 'en',
+    localizedSlugs: { en: 'author-schema-sample' },
+  });
+  const { articleSchema } = buildBlogPostJsonLd({
+    editorialProfile: getEditorialProfile('en'),
+    locale: 'en',
+    localization,
+    modifiedIso: '2026-07-12',
+    post: {
+      content: '',
+      date: '2026-07-12',
+      description: 'Author schema sample.',
+      excerpt: 'Author schema sample.',
+      slug: 'author-schema-sample',
+      title: 'Author Schema Sample',
+    },
+    publishedIso: '2026-07-12',
+  });
+
+  assert.deepEqual(articleSchema.author, {
+    '@type': 'Person',
+    name: 'Adrien Millot',
+    jobTitle: 'Founder & Product Lead',
+    url: 'https://maxvideoai.com/about#adrien-millot',
+  });
+  assert.equal(articleSchema.publisher['@type'], 'Organization');
+  assert.equal(articleSchema.publisher.name, 'MaxVideo AI');
 });
 
 test('restricted FAQPage usage is inventoried without allowing deprecated schema types', () => {

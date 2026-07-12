@@ -19,6 +19,7 @@ export interface ContentFrontMatter {
   lang?: string;
   canonical?: string;
   canonicalSlug?: string;
+  authorId?: string;
 }
 
 export interface ContentEntry extends ContentFrontMatter {
