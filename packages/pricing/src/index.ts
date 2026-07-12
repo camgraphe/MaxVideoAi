@@ -34,6 +34,7 @@ export {
   PricingPolicyResolutionError,
   resolvePricingPolicy,
   validatePricingPolicyDocument,
+  validatePricingPolicyOverrides,
   type PricingCompatibilityProfile,
   type PricingPolicyDocument,
   type PricingPolicyReferences,

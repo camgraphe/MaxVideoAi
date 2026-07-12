@@ -15,6 +15,13 @@ const componentPaths = [
 ];
 
 const pageSource = readFileSync(pagePath, 'utf8');
+const pricingPolicyServicePath = join(root, 'frontend/server/pricing-admin/policy-service.ts');
+const pricingPolicyRoutePaths = [
+  join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
+  join(root, 'frontend/app/api/admin/pricing/preview/route.ts'),
+  join(root, 'frontend/app/api/admin/pricing/confirm/route.ts'),
+  join(root, 'frontend/app/api/admin/pricing/history/route.ts'),
+];
 
 test('admin pricing page delegates types, helpers, and cards to route-local modules', () => {
   assert.ok(existsSync(helpersPath), 'admin pricing helpers should stay route-local');
@@ -67,4 +74,26 @@ test('admin pricing helper and component modules expose the expected route contr
   for (const componentName of ['BillingProductCard', 'PricingRuleCard', 'NewPricingRuleCard', 'PricingAdminField']) {
     assert.match(componentSources, new RegExp(`export function ${componentName}\\(`), `${componentName} should be exported`);
   }
+});
+
+test('preview-required pricing policy routes exist and stay thin, authorized service adapters', () => {
+  assert.ok(existsSync(pricingPolicyServicePath), 'canonical pricing policy service should exist');
+  for (const routePath of pricingPolicyRoutePaths) {
+    assert.ok(existsSync(routePath), `${routePath} should exist`);
+    const source = readFileSync(routePath, 'utf8');
+    assert.match(source, /requireAdmin\(req\)/, 'every pricing policy handler should require admin');
+    assert.match(source, /@\/server\/pricing-admin\/policy-service/, 'route should delegate to the pricing policy service');
+    assert.doesNotMatch(source, /quoteCanonicalPricing|resolvePricingPolicy|marginPercent\s*[+*/-]/, 'route must not own quote math');
+    assert.doesNotMatch(source, /app_pricing_rules|INSERT INTO|UPDATE app_|DELETE FROM/, 'route must not own SQL');
+    assert.ok(source.split('\n').length <= 100, `${routePath} should stay below 100 lines`);
+  }
+
+  const confirmSource = readFileSync(pricingPolicyRoutePaths[2]!, 'utf8');
+  assert.match(confirmSource, /adminUserId\s*=\s*await requireAdmin\(req\)/, 'confirmation actor should come from requireAdmin');
+  assert.match(
+    confirmSource,
+    /confirmPricingPolicyChange\([\s\S]*?adminUserId\s*\n\s*\)/,
+    'confirmation should pass the server actor'
+  );
+  assert.doesNotMatch(confirmSource, /payload\.(actor|actorId|adminUserId)/, 'request actor fields must not be authoritative');
 });

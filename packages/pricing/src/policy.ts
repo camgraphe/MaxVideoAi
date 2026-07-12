@@ -207,6 +207,12 @@ export function validatePricingPolicyDocument(
     const engineId = optionalString(rule.engineId, `${id}.engineId`);
     const mode = optionalString(rule.mode, `${id}.mode`);
     const resolution = optionalString(rule.resolution, `${id}.resolution`);
+    if (!engineId && (mode || resolution)) {
+      throw new PricingPolicyValidationError(
+        'invalid_document',
+        `${id} requires engineId when mode or resolution is set`
+      );
+    }
     const currency = asNonEmptyString(rule.currency, `${id}.currency`).toUpperCase();
     const compatibilityProfile = optionalString(rule.compatibilityProfile, `${id}.compatibilityProfile`);
     if (!supportedCurrencies.includes(currency)) {
@@ -262,6 +268,49 @@ export function validatePricingPolicyDocument(
     compatibilityProfiles: compatibilityProfiles.map((profile) => ({ ...profile })),
     rules: rules.map((rule) => ({ ...rule })),
   };
+}
+
+export function validatePricingPolicyOverrides(
+  input: unknown,
+  policyDocument: PricingPolicyDocument,
+  references: PricingPolicyReferences = {}
+): PricingPolicyRule[] {
+  if (!Array.isArray(input)) {
+    throw new PricingPolicyValidationError('invalid_document', 'pricing policy overrides must be an array');
+  }
+  if (!input.length) return [];
+
+  const hasGlobalOverride = input.some((raw) => {
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return false;
+    const rule = raw as Record<string, unknown>;
+    return rule.engineId == null && rule.mode == null && rule.resolution == null;
+  });
+  const sentinelId = '__pricing_override_validation_global__';
+  const globalRule = policyDocument.rules.find(
+    (rule) => !rule.engineId && !rule.mode && !rule.resolution
+  );
+  if (!hasGlobalOverride && !globalRule) {
+    throw new PricingPolicyValidationError('missing_global_rule', 'versioned pricing policy requires one global rule');
+  }
+  const rules = hasGlobalOverride
+    ? input
+    : [
+        ...input,
+        {
+          ...globalRule!,
+          id: sentinelId,
+        },
+      ];
+  const validated = validatePricingPolicyDocument(
+    {
+      version: policyDocument.version,
+      supportedCurrencies: policyDocument.supportedCurrencies,
+      compatibilityProfiles: policyDocument.compatibilityProfiles,
+      rules,
+    },
+    references
+  );
+  return validated.rules.filter((rule) => rule.id !== sentinelId).map((rule) => ({ ...rule }));
 }
 
 function matchRank(rule: PricingPolicyRule, scenario: PricingPolicyScenario): number {

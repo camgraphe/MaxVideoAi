@@ -118,6 +118,95 @@ test('policy validation rejects unknown references and compatibility profiles', 
   );
 });
 
+test('database override validation normalizes the complete canonical rule without requiring a global override', async () => {
+  const { validatePricingPolicyOverrides } = await import('../packages/pricing/src/policy.ts');
+  const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
+  const policy = getVersionedPricingPolicy();
+
+  assert.deepEqual(
+    validatePricingPolicyOverrides(
+      [
+        {
+          id: '  db-kling-precise  ',
+          engineId: '  kling-3-pro  ',
+          mode: '  t2v  ',
+          resolution: '  1080p  ',
+          marginPercent: 0.31,
+          marginFlatCents: 2,
+          surchargeAudioPercent: 0.21,
+          surchargeUpscalePercent: 0.51,
+          currency: ' usd ',
+          compatibilityProfile: ' standard ',
+        },
+      ],
+      policy,
+      {
+        engineIds: new Set(['kling-3-pro']),
+        modesByEngineId: new Map([['kling-3-pro', new Set(['t2v'])]]),
+        resolutionsByEngineId: new Map([['kling-3-pro', new Set(['1080p'])]]),
+      }
+    ),
+    [
+      {
+        id: 'db-kling-precise',
+        engineId: 'kling-3-pro',
+        mode: 't2v',
+        resolution: '1080p',
+        marginPercent: 0.31,
+        marginFlatCents: 2,
+        surchargeAudioPercent: 0.21,
+        surchargeUpscalePercent: 0.51,
+        currency: 'USD',
+        compatibilityProfile: 'standard',
+      },
+    ]
+  );
+});
+
+test('database override validation rejects unknown references and ambiguity within only the override set', async () => {
+  const { PricingPolicyValidationError, validatePricingPolicyOverrides } = await import('../packages/pricing/src/policy.ts');
+  const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
+  const policy = getVersionedPricingPolicy();
+  const references = { engineIds: new Set(['kling-3-pro']) };
+
+  assert.throws(
+    () => validatePricingPolicyOverrides([rule('unknown', { engineId: 'missing' })], policy, references),
+    (error: unknown) => error instanceof PricingPolicyValidationError && error.code === 'unknown_engine'
+  );
+  assert.throws(
+    () =>
+      validatePricingPolicyOverrides(
+        [rule('one', { engineId: 'kling-3-pro' }), rule('two', { engineId: 'kling-3-pro' })],
+        policy,
+        references
+      ),
+    (error: unknown) => error instanceof PricingPolicyValidationError && error.code === 'ambiguous_selector'
+  );
+  assert.throws(
+    () => validatePricingPolicyOverrides([rule('orphan-mode', { mode: 't2v' })], policy, references),
+    (error: unknown) => error instanceof PricingPolicyValidationError && error.code === 'invalid_document'
+  );
+  assert.throws(
+    () => validatePricingPolicyOverrides([rule('orphan-resolution', { resolution: '1080p' })], policy, references),
+    (error: unknown) => error instanceof PricingPolicyValidationError && error.code === 'invalid_document'
+  );
+});
+
+test('database override validation allows a selector that intentionally overlaps a versioned selector', async () => {
+  const { validatePricingPolicyOverrides } = await import('../packages/pricing/src/policy.ts');
+  const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
+  const policy = getVersionedPricingPolicy();
+
+  const overrides = validatePricingPolicyOverrides(
+    [rule('db-audio', { engineId: 'audio-generation' })],
+    policy,
+    { engineIds: new Set(['audio-generation']) }
+  );
+
+  assert.equal(overrides.length, 1);
+  assert.equal(overrides[0]?.engineId, 'audio-generation');
+});
+
 test('versioned policy facade returns defensive clones', async () => {
   assert.equal(existsSync(defaultsModulePath), true, `${defaultsModulePath} should exist`);
   const { getVersionedPricingPolicy } = await import('../frontend/src/lib/pricing-policy-defaults.ts');
