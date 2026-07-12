@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 export type ModelCategory = 'video' | 'image' | 'audio' | 'multimodal';
 
 export type ModelRegistryPublication = {
@@ -255,4 +258,46 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
   }
 
   return document;
+}
+
+export function validateModelRegistryRepository(document: ModelRegistryDocument, root: string): void {
+  const modelsById = new Map(document.models.map((model) => [normalized(model.id), model]));
+  const catalog = JSON.parse(
+    readFileSync(join(root, 'frontend/config/engine-catalog.json'), 'utf8')
+  ) as Array<{ engineId: string }>;
+  const catalogIds = new Set(catalog.map((entry) => normalized(entry.engineId)));
+
+  for (const entry of catalog) {
+    if (!modelsById.has(normalized(entry.engineId))) {
+      fail(`engine catalog references missing registry id "${entry.engineId}"`);
+    }
+  }
+
+  for (const model of document.models) {
+    if (!catalogIds.has(normalized(model.id))) {
+      fail(`registry model is missing from engine catalog "${model.id}"`);
+    }
+
+    if (model.publication.model.published) {
+      for (const locale of ['en', 'fr', 'es'] as const) {
+        const contentPath = join(root, 'content/models', locale, `${model.slug}.json`);
+        if (!existsSync(contentPath)) fail(`missing ${locale} content for published model "${model.slug}"`);
+      }
+    }
+
+    if (model.publication.sitemap.published && !model.publication.model.indexable) {
+      fail(`sitemap model must be indexable "${model.slug}"`);
+    }
+
+    const opponentIds = [
+      ...model.publication.compare.suggestedOpponentIds,
+      ...model.publication.compare.publishedPairIds,
+    ];
+    for (const opponentId of opponentIds) {
+      const opponent = modelsById.get(normalized(opponentId));
+      if (!opponent?.publication.compare.published) {
+        fail(`comparison opponent "${opponentId}" is not published for "${model.id}"`);
+      }
+    }
+  }
 }

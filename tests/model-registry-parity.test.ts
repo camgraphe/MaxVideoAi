@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { buildLocalizedModelPath } from '../frontend/config/model-registry.ts';
 import {
   getRuntimeModelByCanonicalSlug,
   getRuntimeModelById,
@@ -34,6 +35,14 @@ test('runtime model projection matches every baseline identity and surface', () 
     assert.equal(actual.family, expected.family);
     assert.equal(actual.category, expected.category);
     assert.deepEqual(toLegacyModelSurfaces(actual), expected.publication);
+  }
+});
+
+test('every published runtime model has canonical localized paths', () => {
+  for (const model of listRuntimeModels().filter((entry) => entry.publication.model.published)) {
+    assert.equal(buildLocalizedModelPath('en', model.slug), `/models/${model.slug}`);
+    assert.equal(buildLocalizedModelPath('fr', model.slug), `/fr/modeles/${model.slug}`);
+    assert.equal(buildLocalizedModelPath('es', model.slug), `/es/modelos/${model.slug}`);
   }
 });
 
