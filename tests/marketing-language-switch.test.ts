@@ -31,4 +31,5 @@ test('middleware prefers an explicitly stored locale over browser locale detecti
   const source = readFileSync('frontend/middleware.ts', 'utf8');
 
   assert.match(source, /getPreferredLocale\(req\) \?\? detectedLocale \?\? defaultLocale/);
+  assert.match(source, /req\.nextUrl\.pathname === '\/'/);
 });
