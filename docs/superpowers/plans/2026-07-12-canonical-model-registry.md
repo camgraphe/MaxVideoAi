@@ -19,6 +19,7 @@
 - Perform no database migration and no network lookup while loading or validating the registry.
 - Do not add validation, tombstone, or redirect code to client bundles. The generated runtime projection may contain only model fields that replace data already shipped by the current engine/alias/publication modules.
 - Keep `normalizeEngineId`, `getFalEngineBySlug`, `MODEL_FAMILIES`, roster helpers, and slug helpers available as compatibility facades.
+- Treat engine/app inputs and public URL slugs as separate alias namespaces inside the same registry. The same token may intentionally target different models by context; specifically, engine input `veo3` resolves to `veo-3-1-fast`, while public slug `veo3` resolves to `veo-3-1`.
 - Use `pnpm`; do not run `npm install`.
 - Do not mix pricing-calculation, editorial-content, provider-routing, job-finalization, or polling refactors into these commits.
 
@@ -250,7 +251,7 @@ git commit -m "test: freeze model registry compatibility baseline"
   - `getModelRegistryEntries(): readonly ModelRegistryEntry[]`
   - `getModelRegistryEntryById(id: string): ModelRegistryEntry | null`
   - `getModelRegistryEntryByCanonicalSlug(slug: string): ModelRegistryEntry | null`
-  - `resolveModelRegistryInput(value: string | null | undefined): ModelRegistryEntry | null`
+  - `resolveModelRegistryEngineInput(value: string | null | undefined): ModelRegistryEntry | null`
   - `resolveModelRegistryPublicSlug(slug: string): ModelRegistryEntry | null`
   - `buildLocalizedModelPath(locale: 'en' | 'fr' | 'es', slug: string): string`
 
@@ -272,6 +273,14 @@ function mutate(run: (copy: any) => void) {
 
 test('canonical registry validates the committed document', () => {
   assert.equal(validateModelRegistryDocument(valid).models.length, 41);
+});
+
+test('engine and public alias namespaces preserve context-specific veo3 behavior', () => {
+  const document = validateModelRegistryDocument(valid);
+  const internalOwner = document.models.find((model) => model.aliases.internal.includes('veo3'));
+  const publicOwner = document.models.find((model) => model.aliases.publicSlugs.includes('veo3'));
+  assert.equal(internalOwner?.id, 'veo-3-1-fast');
+  assert.equal(publicOwner?.id, 'veo-3-1');
 });
 
 test('registry rejects duplicate identity and ambiguous aliases', () => {
@@ -498,7 +507,8 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
   const bySlug = new Map<string, ModelRegistryEntry>();
   const internalAliases = new Map<string, string>();
   const publicAliases = new Map<string, string>();
-  const acceptedInputs = new Map<string, string>();
+  const engineInputs = new Map<string, string>();
+  const publicInputs = new Map<string, string>();
 
   for (const model of document.models) {
     if (!model || typeof model !== 'object') fail('model entry must be an object');
@@ -540,14 +550,17 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     const slugKey = normalized(model.slug);
     if (byId.has(idKey)) fail(`duplicate canonical id "${model.id}"`);
     if (bySlug.has(slugKey)) fail(`duplicate canonical slug "${model.slug}"`);
-    const idOwner = acceptedInputs.get(idKey);
-    const slugOwner = acceptedInputs.get(slugKey);
+    const idOwner = engineInputs.get(idKey);
+    const engineSlugOwner = engineInputs.get(slugKey);
+    const publicSlugOwner = publicInputs.get(slugKey);
     if (idOwner && idOwner !== model.id) fail(`canonical id input collision "${model.id}"`);
-    if (slugOwner && slugOwner !== model.id) fail(`canonical slug input collision "${model.slug}"`);
+    if (engineSlugOwner && engineSlugOwner !== model.id) fail(`canonical engine slug collision "${model.slug}"`);
+    if (publicSlugOwner && publicSlugOwner !== model.id) fail(`canonical public slug collision "${model.slug}"`);
     byId.set(idKey, model);
     bySlug.set(slugKey, model);
-    acceptedInputs.set(idKey, model.id);
-    acceptedInputs.set(slugKey, model.id);
+    engineInputs.set(idKey, model.id);
+    engineInputs.set(slugKey, model.id);
+    publicInputs.set(slugKey, model.id);
   }
 
   for (const model of document.models) {
@@ -558,10 +571,10 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
       const owner = internalAliases.get(key);
       if (owner && owner !== model.id) fail(`ambiguous internal alias "${alias}"`);
       if (byId.has(key) && key !== idKey) fail(`internal alias conflicts with canonical id "${alias}"`);
-      const inputOwner = acceptedInputs.get(key);
-      if (inputOwner && inputOwner !== model.id) fail(`ambiguous accepted input "${alias}"`);
+      const inputOwner = engineInputs.get(key);
+      if (inputOwner && inputOwner !== model.id) fail(`ambiguous engine input "${alias}"`);
       internalAliases.set(key, model.id);
-      acceptedInputs.set(key, model.id);
+      engineInputs.set(key, model.id);
     }
     for (const alias of model.aliases.publicSlugs) {
       const key = normalized(alias);
@@ -570,10 +583,10 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
       const owner = publicAliases.get(key);
       if (owner && owner !== model.id) fail(`ambiguous public alias "${alias}"`);
       if (bySlug.has(key) && key !== slugKey) fail(`public alias conflicts with canonical slug "${alias}"`);
-      const inputOwner = acceptedInputs.get(key);
-      if (inputOwner && inputOwner !== model.id) fail(`ambiguous accepted input "${alias}"`);
+      const inputOwner = publicInputs.get(key);
+      if (inputOwner && inputOwner !== model.id) fail(`ambiguous public input "${alias}"`);
       publicAliases.set(key, model.id);
-      acceptedInputs.set(key, model.id);
+      publicInputs.set(key, model.id);
     }
   }
 
@@ -653,12 +666,12 @@ import type { ModelRegistryDocument, ModelRegistryEntry } from './model-registry
 const registry = validateModelRegistryDocument(rawRegistry) as ModelRegistryDocument;
 const byId = new Map(registry.models.map((model) => [model.id.toLowerCase(), model]));
 const bySlug = new Map(registry.models.map((model) => [model.slug, model]));
-const byInput = new Map<string, ModelRegistryEntry>();
+const byEngineInput = new Map<string, ModelRegistryEntry>();
 const byPublicSlug = new Map<string, ModelRegistryEntry>();
 
 for (const model of registry.models) {
-  for (const value of [model.id, model.slug, ...model.aliases.internal, ...model.aliases.publicSlugs]) {
-    byInput.set(value.trim().toLowerCase(), model);
+  for (const value of [model.id, model.slug, ...model.aliases.internal]) {
+    byEngineInput.set(value.trim().toLowerCase(), model);
   }
   for (const value of [model.slug, ...model.aliases.publicSlugs]) {
     byPublicSlug.set(value.trim().toLowerCase(), model);
@@ -680,9 +693,9 @@ export function getModelRegistryEntryByCanonicalSlug(slug: string): ModelRegistr
   return bySlug.get(slug.trim().toLowerCase()) ?? null;
 }
 
-export function resolveModelRegistryInput(value: string | null | undefined): ModelRegistryEntry | null {
+export function resolveModelRegistryEngineInput(value: string | null | undefined): ModelRegistryEntry | null {
   const key = value?.trim().toLowerCase();
-  return key ? byInput.get(key) ?? null : null;
+  return key ? byEngineInput.get(key) ?? null : null;
 }
 
 export function resolveModelRegistryPublicSlug(slug: string): ModelRegistryEntry | null {
@@ -700,7 +713,7 @@ export function buildLocalizedModelPath(locale: 'en' | 'fr' | 'es', slug: string
 
 Run: `pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-registry-validation.test.ts`
 
-Expected: PASS with three tests and zero failures.
+Expected: PASS with four tests and zero failures.
 
 - [ ] **Step 6: Commit the canonical source and validator**
 
@@ -728,7 +741,7 @@ git commit -m "feat: add canonical model registry"
   - `listRuntimeModels(): readonly RuntimeModelEntry[]`
   - `getRuntimeModelById(id: string): RuntimeModelEntry | null`
   - `getRuntimeModelByCanonicalSlug(slug: string): RuntimeModelEntry | null`
-  - `resolveRuntimeModelInput(value: string | null | undefined): RuntimeModelEntry | null`
+  - `resolveRuntimeEngineInput(value: string | null | undefined): RuntimeModelEntry | null`
   - `resolveRuntimePublicSlug(slug: string): RuntimeModelEntry | null`
   - `toLegacyModelSurfaces(model: RuntimeModelEntry): ModelPublicationSurfaces`
 
@@ -740,7 +753,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
   listRuntimeModels,
-  resolveRuntimeModelInput,
+  resolveRuntimeEngineInput,
   resolveRuntimePublicSlug,
   toLegacyModelSurfaces,
 } from '../frontend/config/model-runtime.ts';
@@ -761,7 +774,7 @@ test('runtime model projection matches every baseline identity and surface', () 
 
 test('runtime projection resolves every frozen explicit alias', () => {
   for (const row of baseline.internalAliases) {
-    assert.equal(resolveRuntimeModelInput(row.alias)?.id, row.targetId, row.alias);
+    assert.equal(resolveRuntimeEngineInput(row.alias)?.id, row.targetId, row.alias);
   }
   for (const row of baseline.publicSlugAliases) {
     assert.equal(resolveRuntimePublicSlug(row.alias)?.slug, row.targetSlug, row.alias);
@@ -820,12 +833,12 @@ export type RuntimeModelEntry = Omit<ModelRegistryEntry, 'replacement'>;
 const models = runtimeDocument.models as RuntimeModelEntry[];
 const byId = new Map(models.map((model) => [model.id.toLowerCase(), model]));
 const bySlug = new Map(models.map((model) => [model.slug, model]));
-const byInput = new Map<string, RuntimeModelEntry>();
+const byEngineInput = new Map<string, RuntimeModelEntry>();
 const byPublicSlug = new Map<string, RuntimeModelEntry>();
 
 for (const model of models) {
-  for (const value of [model.id, model.slug, ...model.aliases.internal, ...model.aliases.publicSlugs]) {
-    byInput.set(value.trim().toLowerCase(), model);
+  for (const value of [model.id, model.slug, ...model.aliases.internal]) {
+    byEngineInput.set(value.trim().toLowerCase(), model);
   }
   for (const value of [model.slug, ...model.aliases.publicSlugs]) {
     byPublicSlug.set(value.trim().toLowerCase(), model);
@@ -844,9 +857,9 @@ export function getRuntimeModelByCanonicalSlug(slug: string): RuntimeModelEntry 
   return bySlug.get(slug.trim().toLowerCase()) ?? null;
 }
 
-export function resolveRuntimeModelInput(value: string | null | undefined): RuntimeModelEntry | null {
+export function resolveRuntimeEngineInput(value: string | null | undefined): RuntimeModelEntry | null {
   const key = value?.trim().toLowerCase();
-  return key ? byInput.get(key) ?? null : null;
+  return key ? byEngineInput.get(key) ?? null : null;
 }
 
 export function resolveRuntimePublicSlug(slug: string): RuntimeModelEntry | null {
@@ -1225,7 +1238,7 @@ Expected: PASS; this establishes the facade behavior that must remain green duri
 - [ ] **Step 3: Rewrite `normalizeEngineId` as a registry-first facade**
 
 ```ts
-import { resolveRuntimeModelInput } from '../../config/model-runtime';
+import { resolveRuntimeEngineInput } from '../../config/model-runtime';
 import { listFalEngines } from '@/config/falEngines';
 
 const PROVIDER_INPUT_ALIASES = new Map<string, string>();
@@ -1239,7 +1252,7 @@ export function normalizeEngineId(raw: string | null | undefined): string | null
   if (!raw) return null;
   const key = raw.trim().toLowerCase();
   if (!key) return null;
-  return resolveRuntimeModelInput(key)?.id ?? PROVIDER_INPUT_ALIASES.get(key) ?? raw;
+  return resolveRuntimeEngineInput(key)?.id ?? PROVIDER_INPUT_ALIASES.get(key) ?? raw;
 }
 ```
 
@@ -1248,14 +1261,14 @@ Delete the 87-row `manualAliases` object.
 - [ ] **Step 4: Rewrite public slug resolution without `LEGACY_MODEL_SLUG_ALIASES`**
 
 ```ts
-import { resolveRuntimeModelInput, resolveRuntimePublicSlug } from '../../config/model-runtime';
+import { resolveRuntimePublicSlug } from '../../config/model-runtime';
 
 export function canonicalizeFalModelSlug(slug: string): string {
   return resolveRuntimePublicSlug(slug)?.slug ?? slug.trim().toLowerCase();
 }
 
 export function getFalEngineBySlug(slug: string): FalEngineEntry | undefined {
-  const model = resolveRuntimeModelInput(slug);
+  const model = resolveRuntimePublicSlug(slug);
   if (model) return getFalEngineById(model.id);
   const normalized = slug.trim().toLowerCase();
   return FAL_ENGINE_REGISTRY.find((entry) =>
