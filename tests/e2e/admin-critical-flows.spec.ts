@@ -90,6 +90,43 @@ test.describe('admin critical flows', () => {
 
     assertNoClientErrors(errors);
   });
+
+  test('pricing policy filters, selects, previews, and cancels without applying', async ({ page }) => {
+    const errors = trackClientErrors(page);
+
+    await openAdminRoute(page, '/admin/pricing');
+    const pricingState = await waitForPricingPolicyState(page);
+    if (pricingState === 'unavailable') {
+      test.skip(true, 'requires configured pricing policy database access');
+    }
+    if (pricingState === 'empty') {
+      test.skip(true, 'requires canonical pricing inventory data');
+    }
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
+
+    const engineInput = page.getByLabel('Engine');
+    const engine = await engineInput.inputValue();
+    if (engine) {
+      await page.getByLabel('Search policy selectors').fill(engine);
+      await expect(page.locator('tbody tr').first()).toContainText(engine);
+      await page.getByLabel('Search policy selectors').fill('');
+    }
+
+    const flatMarginInput = page.getByLabel('Flat margin (cents)');
+    const currentFlatMargin = Number(await flatMarginInput.inputValue());
+    await flatMarginInput.fill(String(currentFlatMargin + 1));
+    await page.getByRole('button', { name: 'Preview policy change' }).click();
+
+    const dialog = page.getByRole('dialog', { name: /update|create/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Confirm and apply now' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+
+    assertNoClientErrors(errors);
+  });
 });
 
 async function waitForUserDirectoryState(page: Page) {
@@ -108,6 +145,25 @@ async function waitForUserDirectoryState(page: Page) {
       return 'rows' as const;
     }
 
+    await page.waitForTimeout(250);
+  }
+
+  return 'empty' as const;
+}
+
+async function waitForPricingPolicyState(page: Page) {
+  const deadline = Date.now() + 10_000;
+
+  while (Date.now() < deadline) {
+    if (await page.getByText(/Unable to load pricing policy|database is unavailable/i).first().isVisible().catch(() => false)) {
+      return 'unavailable' as const;
+    }
+    if ((await page.locator('tbody tr').count()) > 0) {
+      return 'rows' as const;
+    }
+    if (await page.getByText('No canonical pricing policy rows are available.').isVisible().catch(() => false)) {
+      return 'empty' as const;
+    }
     await page.waitForTimeout(250);
   }
 

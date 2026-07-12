@@ -43,3 +43,37 @@ export type ListPricingChangeEventsInput = {
   targetId?: string;
   limit?: number;
 };
+
+export type PricingChangePreviewProvenance = {
+  source: 'database' | 'versioned';
+  matchedBy: 'precise' | 'engine' | 'global';
+  sourceRuleId: string;
+  compatibilityProfile: string;
+};
+
+export type PricingChangePreviewRow = {
+  scenarioId: string;
+  engineId: string;
+  surface: string;
+  currentTotalCents: number;
+  proposedTotalCents: number;
+  deltaCents: number;
+  deltaPercent: number | null;
+  currentProvenance: PricingChangePreviewProvenance;
+  proposedProvenance: PricingChangePreviewProvenance;
+  compatibilityProfile: string;
+};
+
+export type PricingChangePreview = {
+  previewFingerprint: string;
+  domain: PricingChangeDomain;
+  operation: PricingChangeOperation;
+  targetId: string;
+  currentState: PricingChangeJsonValue | null;
+  proposedState: PricingChangeJsonValue | null;
+  affectedScenarioIds: string[];
+  affectedSurfaces: string[];
+  rows: PricingChangePreviewRow[];
+  warnings: string[];
+  rollbackEventId?: string;
+};
