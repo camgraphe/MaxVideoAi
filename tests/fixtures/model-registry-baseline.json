@@ -1,0 +1,2931 @@
+{
+  "capturedFromCommit": "5cf44bbafc620102a9ffe32acd1bdded5bd0674e",
+  "models": [
+    {
+      "id": "gemini-omni-flash",
+      "slug": "gemini-omni-flash",
+      "family": "veo",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1",
+            "veo-3-1-fast",
+            "sora-2",
+            "seedance-2-0"
+          ],
+          "publishedPairs": [
+            "veo-3-1",
+            "veo-3-1-fast",
+            "sora-2",
+            "seedance-2-0"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 8,
+          "variantGroup": "google-gemini-video",
+          "variantLabel": "Omni Flash"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "gpt-image-2",
+      "slug": "gpt-image-2",
+      "family": "gpt-image",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 7,
+          "variantGroup": "gpt-image",
+          "variantLabel": "2"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "high-quality product still"
+        }
+      }
+    },
+    {
+      "id": "happy-horse-1-0",
+      "slug": "happy-horse-1-0",
+      "family": "happy-horse",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "happy-horse-1-1",
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "happy-horse-1-1",
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 50,
+          "variantGroup": "happy-horse",
+          "variantLabel": "1.0 legacy"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "legacy happy-horse-video-edit"
+        }
+      }
+    },
+    {
+      "id": "happy-horse-1-1",
+      "slug": "happy-horse-1-1",
+      "family": "happy-horse",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1",
+            "kling-o3-pro",
+            "dreamina-seedance-2-0-mini"
+          ],
+          "publishedPairs": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1",
+            "sora-2-pro",
+            "happy-horse-1-0",
+            "kling-o3-pro",
+            "veo-3-1-fast",
+            "seedance-2-0-fast",
+            "dreamina-seedance-2-0-mini",
+            "ltx-2-3-pro"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 6,
+          "variantGroup": "happy-horse",
+          "variantLabel": "1.1"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "happy-horse-1-1-native-audio-video"
+        }
+      }
+    },
+    {
+      "id": "kling-2-5-turbo",
+      "slug": "kling-2-5-turbo",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "kling-2-6-pro",
+      "slug": "kling-2-6-pro",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "kling-3-4k",
+      "slug": "kling-3-4k",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "veo-3-1",
+            "sora-2-pro"
+          ],
+          "publishedPairs": [
+            "kling-3-pro",
+            "kling-3-standard",
+            "veo-3-1",
+            "sora-2-pro"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "kling-3",
+          "variantLabel": "4K"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "kling-3-pro",
+      "slug": "kling-3-pro",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-standard",
+            "kling-3-4k",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "kling-3",
+          "variantLabel": "Pro"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "kling-3-standard",
+      "slug": "kling-3-standard",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "kling-3-4k",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "kling-3",
+          "variantLabel": "Standard"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "kling-o3-4k",
+      "slug": "kling-o3-4k",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "kling-3-pro",
+            "kling-3-standard",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "kling-o3",
+          "variantLabel": "4K"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "reference-guided storyboard video"
+        }
+      }
+    },
+    {
+      "id": "kling-o3-pro",
+      "slug": "kling-o3-pro",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "kling-3-pro",
+            "kling-3-standard",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 6,
+          "variantGroup": "kling-o3",
+          "variantLabel": "Pro"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "reference-guided storyboard video"
+        }
+      }
+    },
+    {
+      "id": "kling-o3-standard",
+      "slug": "kling-o3-standard",
+      "family": "kling",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "kling-3-pro",
+            "kling-3-standard",
+            "seedance-2-0",
+            "veo-3-1"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "kling-o3",
+          "variantLabel": "Standard"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "reference-guided storyboard video"
+        }
+      }
+    },
+    {
+      "id": "ltx-2",
+      "slug": "ltx-2",
+      "family": "ltx",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "ltx-2-3",
+      "slug": "ltx-2-3-pro",
+      "family": "ltx",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "ltx-2-3-fast",
+            "ltx-2-fast",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "ltx-2-3-fast",
+      "slug": "ltx-2-3-fast",
+      "family": "ltx",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "ltx-2-3-pro",
+            "veo-3-1-fast",
+            "ltx-2-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "variantGroup": "ltx-2-3",
+          "variantLabel": "Fast"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "ltx-2-fast",
+      "slug": "ltx-2-fast",
+      "family": "ltx",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1-fast",
+            "wan-2-5",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "luma-ray-3-2",
+      "slug": "luma-ray-3-2",
+      "family": "luma",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "luma-ray-2"
+          ],
+          "publishedPairs": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "dreamina-seedance-2-0-mini",
+            "luma-ray-2"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 12,
+          "variantGroup": "luma-ray",
+          "variantLabel": "Ray 3.2"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "luma-uni-1",
+      "slug": "luma-uni-1",
+      "family": "luma-uni",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 9,
+          "variantGroup": "luma-uni",
+          "variantLabel": "Uni-1"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "luma-uni-1-max",
+      "slug": "luma-uni-1-max",
+      "family": "luma-uni",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 11,
+          "variantGroup": "luma-uni",
+          "variantLabel": "Uni-1 Max"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "lumaRay2",
+      "slug": "luma-ray-2",
+      "family": "luma",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1-fast",
+            "kling-3-standard",
+            "seedance-1-5-pro"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 5,
+          "variantGroup": "luma-ray-2",
+          "variantLabel": "Ray 2"
+        },
+        "pricing": {
+          "includeInEstimator": false
+        }
+      }
+    },
+    {
+      "id": "lumaRay2_flash",
+      "slug": "luma-ray-2-flash",
+      "family": "luma",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "luma-ray-2",
+            "veo-3-1-lite",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 6,
+          "variantGroup": "luma-ray-2",
+          "variantLabel": "Ray 2 Flash"
+        },
+        "pricing": {
+          "includeInEstimator": false
+        }
+      }
+    },
+    {
+      "id": "minimax-hailuo-02-text",
+      "slug": "minimax-hailuo-02-text",
+      "family": "hailuo",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 6
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "nano-banana",
+      "slug": "nano-banana",
+      "family": "nano-banana",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 10
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "nano-banana-2",
+      "slug": "nano-banana-2",
+      "family": "nano-banana",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 8
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "nano-banana-lite",
+      "slug": "nano-banana-lite",
+      "family": "nano-banana",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 7,
+          "variantGroup": "nano-banana",
+          "variantLabel": "Lite"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "fast 1K image draft"
+        }
+      }
+    },
+    {
+      "id": "nano-banana-pro",
+      "slug": "nano-banana-pro",
+      "family": "nano-banana",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 9
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "pika-text-to-video",
+      "slug": "pika-text-to-video",
+      "family": "pika",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "seedance-2-0-fast",
+            "minimax-hailuo-02-text",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 5
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "seedance-1-5-pro",
+      "slug": "seedance-1-5-pro",
+      "family": "seedance",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "seedance-2-0",
+            "kling-3-pro",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "seedance-2-0",
+      "slug": "seedance-2-0",
+      "family": "seedance",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1",
+            "kling-3-pro",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6",
+            "seedance-2-0-fast"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": -2,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "Standard"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "seedance-2-family"
+        }
+      }
+    },
+    {
+      "id": "seedance-2-0-fast",
+      "slug": "seedance-2-0-fast",
+      "family": "seedance",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1-fast",
+            "ltx-2-3-fast",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": -1,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "Fast"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "seedance-2-family"
+        }
+      }
+    },
+    {
+      "id": "seedance-2-0-fast-byteplus",
+      "slug": "seedance-2-0-fast-byteplus",
+      "family": "seedance",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": false,
+          "includeInSitemap": false
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": false
+        },
+        "pricing": {
+          "includeInEstimator": false
+        }
+      }
+    },
+    {
+      "id": "seedance-2-0-mini",
+      "slug": "dreamina-seedance-2-0-mini",
+      "family": "seedance",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "seedance-2-0",
+            "seedance-2-0-fast",
+            "ltx-2-3-fast",
+            "veo-3-1-fast"
+          ],
+          "publishedPairs": [
+            "seedance-2-0",
+            "seedance-2-0-fast",
+            "ltx-2-3-fast",
+            "veo-3-1-fast",
+            "luma-ray-3-2"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 0,
+          "variantGroup": "seedance-2-0",
+          "variantLabel": "Mini"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "seedance-2-family"
+        }
+      }
+    },
+    {
+      "id": "seedream",
+      "slug": "seedream",
+      "family": "seedream",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 8,
+          "variantGroup": "seedream",
+          "variantLabel": "5.0 Lite"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "reference image before Seedance"
+        }
+      }
+    },
+    {
+      "id": "seedream-5-0-pro",
+      "slug": "seedream-5-0-pro",
+      "family": "seedream",
+      "category": "image",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": false,
+          "includeInFamilyCopy": false
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [],
+          "includeInHub": false
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 9,
+          "variantGroup": "seedream",
+          "variantLabel": "5.0 Pro"
+        },
+        "pricing": {
+          "includeInEstimator": true,
+          "featuredScenario": "professional image final"
+        }
+      }
+    },
+    {
+      "id": "sora-2",
+      "slug": "sora-2",
+      "family": "sora",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1",
+            "kling-3-pro",
+            "seedance-2-0"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 0,
+          "variantGroup": "sora",
+          "variantLabel": "Standard"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "sora-2-pro",
+      "slug": "sora-2-pro",
+      "family": "sora",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 1,
+          "variantGroup": "sora",
+          "variantLabel": "Pro"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "veo-3-1",
+      "slug": "veo-3-1",
+      "family": "veo",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "kling-3-pro",
+            "veo-3-1-fast",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 2,
+          "variantGroup": "veo-3-1",
+          "variantLabel": "Standard"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "veo-3-1-fast",
+      "slug": "veo-3-1-fast",
+      "family": "veo",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "ltx-2-fast",
+            "ltx-2-3-fast",
+            "veo-3-1"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-lite",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 3,
+          "variantGroup": "veo-3-1",
+          "variantLabel": "Fast"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "veo-3-1-lite",
+      "slug": "veo-3-1-lite",
+      "family": "veo",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "veo-3-1-fast",
+            "veo-3-1",
+            "sora-2"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "wan-2-5",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true,
+          "discoveryRank": 4,
+          "variantGroup": "veo-3-1",
+          "variantLabel": "Lite"
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "wan-2-5",
+      "slug": "wan-2-5",
+      "family": "wan",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-6"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    },
+    {
+      "id": "wan-2-6",
+      "slug": "wan-2-6",
+      "family": "wan",
+      "category": "video",
+      "publication": {
+        "modelPage": {
+          "indexable": true,
+          "includeInSitemap": true
+        },
+        "examples": {
+          "includeInFamilyResolver": true,
+          "includeInFamilyCopy": true
+        },
+        "compare": {
+          "suggestOpponents": [
+            "sora-2",
+            "veo-3-1",
+            "ltx-2-3-fast"
+          ],
+          "publishedPairs": [
+            "kling-2-5-turbo",
+            "kling-2-6-pro",
+            "kling-3-4k",
+            "kling-3-pro",
+            "kling-3-standard",
+            "ltx-2",
+            "ltx-2-3-fast",
+            "ltx-2-3-pro",
+            "ltx-2-fast",
+            "luma-ray-2",
+            "luma-ray-2-flash",
+            "minimax-hailuo-02-text",
+            "pika-text-to-video",
+            "seedance-1-5-pro",
+            "seedance-2-0",
+            "sora-2",
+            "sora-2-pro",
+            "veo-3-1",
+            "veo-3-1-fast",
+            "veo-3-1-lite",
+            "wan-2-5"
+          ],
+          "includeInHub": true
+        },
+        "app": {
+          "enabled": true
+        },
+        "pricing": {
+          "includeInEstimator": true
+        }
+      }
+    }
+  ],
+  "internalAliases": [
+    {
+      "alias": "veo3",
+      "targetId": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo-3",
+      "targetId": "veo-3-1"
+    },
+    {
+      "alias": "veo3.1",
+      "targetId": "veo-3-1"
+    },
+    {
+      "alias": "veo3-fast",
+      "targetId": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo3-lite",
+      "targetId": "veo-3-1-lite"
+    },
+    {
+      "alias": "veo3.1-lite",
+      "targetId": "veo-3-1-lite"
+    },
+    {
+      "alias": "pika22",
+      "targetId": "pika-text-to-video"
+    },
+    {
+      "alias": "pika-22",
+      "targetId": "pika-text-to-video"
+    },
+    {
+      "alias": "pika-2-2",
+      "targetId": "pika-text-to-video"
+    },
+    {
+      "alias": "kling25",
+      "targetId": "kling-2-5-turbo"
+    },
+    {
+      "alias": "kling-25",
+      "targetId": "kling-2-5-turbo"
+    },
+    {
+      "alias": "kling-2-5",
+      "targetId": "kling-2-5-turbo"
+    },
+    {
+      "alias": "kling25_turbo",
+      "targetId": "kling-2-5-turbo"
+    },
+    {
+      "alias": "kling3",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling-3",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling3-4k",
+      "targetId": "kling-3-4k"
+    },
+    {
+      "alias": "kling-3-4k",
+      "targetId": "kling-3-4k"
+    },
+    {
+      "alias": "kling-v3-4k",
+      "targetId": "kling-3-4k"
+    },
+    {
+      "alias": "kling-v3-pro",
+      "targetId": "kling-3-pro"
+    },
+    {
+      "alias": "kling-3-standard",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling3-standard",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling-3-std",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling-v3-standard",
+      "targetId": "kling-3-standard"
+    },
+    {
+      "alias": "kling-o3",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-o3-pro",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-o3-standard",
+      "targetId": "kling-o3-standard"
+    },
+    {
+      "alias": "kling-o3-std",
+      "targetId": "kling-o3-standard"
+    },
+    {
+      "alias": "kling-o3-4k",
+      "targetId": "kling-o3-4k"
+    },
+    {
+      "alias": "kling-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3-0-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3.0-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-video-3-0-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-video-3.0-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling3-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3-0-omni-pro",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3.0-omni-pro",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "kling-3-0-omni-standard",
+      "targetId": "kling-o3-standard"
+    },
+    {
+      "alias": "kling-3.0-omni-standard",
+      "targetId": "kling-o3-standard"
+    },
+    {
+      "alias": "kling-3-0-omni-std",
+      "targetId": "kling-o3-standard"
+    },
+    {
+      "alias": "kling-3-0-omni-4k",
+      "targetId": "kling-o3-4k"
+    },
+    {
+      "alias": "kling-3.0-omni-4k",
+      "targetId": "kling-o3-4k"
+    },
+    {
+      "alias": "kling-v3-omni",
+      "targetId": "kling-o3-pro"
+    },
+    {
+      "alias": "seedance",
+      "targetId": "seedance-2-0"
+    },
+    {
+      "alias": "seedance-1-5",
+      "targetId": "seedance-1-5-pro"
+    },
+    {
+      "alias": "seedance-v1-5-pro",
+      "targetId": "seedance-1-5-pro"
+    },
+    {
+      "alias": "seedance-v1.5-pro",
+      "targetId": "seedance-1-5-pro"
+    },
+    {
+      "alias": "seedance-2",
+      "targetId": "seedance-2-0"
+    },
+    {
+      "alias": "seedance-2.0",
+      "targetId": "seedance-2-0"
+    },
+    {
+      "alias": "seedance-v2",
+      "targetId": "seedance-2-0"
+    },
+    {
+      "alias": "seedance-v2.0",
+      "targetId": "seedance-2-0"
+    },
+    {
+      "alias": "seedance-2-fast",
+      "targetId": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-2.0-fast",
+      "targetId": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-v2-fast",
+      "targetId": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-v2.0-fast",
+      "targetId": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-fast",
+      "targetId": "seedance-2-0-fast"
+    },
+    {
+      "alias": "happyhorse",
+      "targetId": "happy-horse-1-1"
+    },
+    {
+      "alias": "happy-horse",
+      "targetId": "happy-horse-1-1"
+    },
+    {
+      "alias": "happyhorse-1-1",
+      "targetId": "happy-horse-1-1"
+    },
+    {
+      "alias": "happy-horse-1.1",
+      "targetId": "happy-horse-1-1"
+    },
+    {
+      "alias": "alibaba-happy-horse",
+      "targetId": "happy-horse-1-1"
+    },
+    {
+      "alias": "happyhorse-1-0",
+      "targetId": "happy-horse-1-0"
+    },
+    {
+      "alias": "happy-horse-1.0",
+      "targetId": "happy-horse-1-0"
+    },
+    {
+      "alias": "wan25",
+      "targetId": "wan-2-5"
+    },
+    {
+      "alias": "wan-25",
+      "targetId": "wan-2-5"
+    },
+    {
+      "alias": "wan-25-preview",
+      "targetId": "wan-2-5"
+    },
+    {
+      "alias": "wan26",
+      "targetId": "wan-2-6"
+    },
+    {
+      "alias": "wan-26",
+      "targetId": "wan-2-6"
+    },
+    {
+      "alias": "ltx23",
+      "targetId": "ltx-2-3"
+    },
+    {
+      "alias": "ltx-23",
+      "targetId": "ltx-2-3"
+    },
+    {
+      "alias": "ltx-2-3-pro",
+      "targetId": "ltx-2-3"
+    },
+    {
+      "alias": "ltx23-fast",
+      "targetId": "ltx-2-3-fast"
+    },
+    {
+      "alias": "ltx-23-fast",
+      "targetId": "ltx-2-3-fast"
+    },
+    {
+      "alias": "luma-dm",
+      "targetId": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "lumadreammachine",
+      "targetId": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "luma-ray-2",
+      "targetId": "lumaRay2"
+    },
+    {
+      "alias": "lumaray2",
+      "targetId": "lumaRay2"
+    },
+    {
+      "alias": "ray-2",
+      "targetId": "lumaRay2"
+    },
+    {
+      "alias": "luma-ray-2-flash",
+      "targetId": "lumaRay2_flash"
+    },
+    {
+      "alias": "lumaray2flash",
+      "targetId": "lumaRay2_flash"
+    },
+    {
+      "alias": "ray-2-flash",
+      "targetId": "lumaRay2_flash"
+    },
+    {
+      "alias": "minimax-hailuo-02-image",
+      "targetId": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "runway-gen2",
+      "targetId": "sora-2"
+    },
+    {
+      "alias": "runwaygen-2",
+      "targetId": "sora-2"
+    },
+    {
+      "alias": "sora2pro",
+      "targetId": "sora-2-pro"
+    },
+    {
+      "alias": "sora-pro",
+      "targetId": "sora-2-pro"
+    },
+    {
+      "alias": "openai-sora-2-pro",
+      "targetId": "sora-2-pro"
+    }
+  ],
+  "publicSlugAliases": [
+    {
+      "alias": "openai-sora-2",
+      "targetSlug": "sora-2"
+    },
+    {
+      "alias": "openai-sora-2-pro",
+      "targetSlug": "sora-2-pro"
+    },
+    {
+      "alias": "google-veo-3",
+      "targetSlug": "veo-3-1"
+    },
+    {
+      "alias": "veo-3",
+      "targetSlug": "veo-3-1"
+    },
+    {
+      "alias": "veo3",
+      "targetSlug": "veo-3-1"
+    },
+    {
+      "alias": "veo3.1",
+      "targetSlug": "veo-3-1"
+    },
+    {
+      "alias": "google-omni-flash",
+      "targetSlug": "gemini-omni-flash"
+    },
+    {
+      "alias": "omni-flash",
+      "targetSlug": "gemini-omni-flash"
+    },
+    {
+      "alias": "gemini-omni",
+      "targetSlug": "gemini-omni-flash"
+    },
+    {
+      "alias": "gemini-omni-flash-preview",
+      "targetSlug": "gemini-omni-flash"
+    },
+    {
+      "alias": "google-veo-3-fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo-3-fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo3fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo3-fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "google-veo-3-1-fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo-3-1-first-last",
+      "targetSlug": "veo-3-1"
+    },
+    {
+      "alias": "veo-3-1-first-last-fast",
+      "targetSlug": "veo-3-1-fast"
+    },
+    {
+      "alias": "veo-3-lite",
+      "targetSlug": "veo-3-1-lite"
+    },
+    {
+      "alias": "veo3lite",
+      "targetSlug": "veo-3-1-lite"
+    },
+    {
+      "alias": "veo3-lite",
+      "targetSlug": "veo-3-1-lite"
+    },
+    {
+      "alias": "veo3.1-lite",
+      "targetSlug": "veo-3-1-lite"
+    },
+    {
+      "alias": "seedance-2-fast",
+      "targetSlug": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-2.0-fast",
+      "targetSlug": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-v2-fast",
+      "targetSlug": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-v2.0-fast",
+      "targetSlug": "seedance-2-0-fast"
+    },
+    {
+      "alias": "seedance-fast",
+      "targetSlug": "seedance-2-0-fast"
+    },
+    {
+      "alias": "happyhorse",
+      "targetSlug": "happy-horse-1-1"
+    },
+    {
+      "alias": "happy-horse",
+      "targetSlug": "happy-horse-1-1"
+    },
+    {
+      "alias": "happyhorse-1-1",
+      "targetSlug": "happy-horse-1-1"
+    },
+    {
+      "alias": "happy-horse-1.1",
+      "targetSlug": "happy-horse-1-1"
+    },
+    {
+      "alias": "alibaba-happy-horse",
+      "targetSlug": "happy-horse-1-1"
+    },
+    {
+      "alias": "happyhorse-1-0",
+      "targetSlug": "happy-horse-1-0"
+    },
+    {
+      "alias": "happy-horse-1.0",
+      "targetSlug": "happy-horse-1-0"
+    },
+    {
+      "alias": "ltx-2-3",
+      "targetSlug": "ltx-2-3-pro"
+    },
+    {
+      "alias": "pika-2-2",
+      "targetSlug": "pika-text-to-video"
+    },
+    {
+      "alias": "pika-image-to-video",
+      "targetSlug": "pika-text-to-video"
+    },
+    {
+      "alias": "minimax-video-01",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "minimax-video-1",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "minimax-hailuo-02",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "minimax-hailuo-02-pro",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "minimax-hailuo-02-image",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "hailuo-2-pro",
+      "targetSlug": "minimax-hailuo-02-text"
+    },
+    {
+      "alias": "kling-25-turbo-pro",
+      "targetSlug": "kling-2-5-turbo"
+    },
+    {
+      "alias": "kling-2-5-turbo-pro",
+      "targetSlug": "kling-2-5-turbo"
+    },
+    {
+      "alias": "pika-image-video",
+      "targetSlug": "pika-text-to-video"
+    }
+  ],
+  "familyDefinitions": [
+    {
+      "id": "sora",
+      "label": "Sora",
+      "navLabel": "Sora 2 Pro",
+      "brandId": "openai",
+      "defaultModelSlug": "sora-2-pro",
+      "routeAliases": [
+        "sora-2",
+        "sora-2-pro"
+      ],
+      "aliases": [
+        "sora-2",
+        "sora-2-pro"
+      ],
+      "prefixes": [
+        "sora",
+        "openai-sora"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "sora-2-pro",
+          "sora-2"
+        ]
+      }
+    },
+    {
+      "id": "kling",
+      "label": "Kling",
+      "navLabel": "Kling 3.0 Omni",
+      "brandId": "kling",
+      "defaultModelSlug": "kling-o3-pro",
+      "routeAliases": [
+        "kling-2-5-turbo",
+        "kling-2-6-pro",
+        "kling-3-standard",
+        "kling-3-pro",
+        "kling-3-4k",
+        "kling-o3-standard",
+        "kling-o3-pro",
+        "kling-o3-4k"
+      ],
+      "aliases": [
+        "kling-o3",
+        "kling-omni",
+        "kling-v3-omni"
+      ],
+      "prefixes": [
+        "kling",
+        "fal-ai/kling-video"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "kling-o3-pro",
+          "kling-o3-standard",
+          "kling-o3-4k",
+          "kling-3-pro",
+          "kling-3-standard",
+          "kling-3-4k",
+          "kling-2-6-pro",
+          "kling-2-5-turbo"
+        ],
+        "currentModelSlugs": [
+          "kling-o3-pro",
+          "kling-o3-standard",
+          "kling-o3-4k",
+          "kling-3-pro",
+          "kling-3-standard",
+          "kling-3-4k"
+        ]
+      }
+    },
+    {
+      "id": "veo",
+      "label": "Veo",
+      "navLabel": "Veo 3.1",
+      "brandId": "google-veo",
+      "defaultModelSlug": "veo-3-1",
+      "routeAliases": [
+        "veo-3-1",
+        "veo-3-1-fast",
+        "veo-3-1-lite",
+        "gemini-omni-flash"
+      ],
+      "aliases": [
+        "veo-3",
+        "veo3",
+        "veo3.1",
+        "veo-3-fast",
+        "veo3-fast",
+        "veo-3-lite",
+        "veo3-lite",
+        "veo3.1-lite",
+        "google-omni-flash",
+        "omni-flash",
+        "gemini-omni",
+        "gemini-omni-flash-preview"
+      ],
+      "prefixes": [
+        "veo",
+        "veo-3",
+        "veo3",
+        "gemini-omni",
+        "google-omni"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "veo-3-1",
+          "veo-3-1-fast",
+          "veo-3-1-lite"
+        ]
+      }
+    },
+    {
+      "id": "luma",
+      "label": "Luma Ray",
+      "navLabel": "Ray 3.2",
+      "brandId": "luma",
+      "defaultModelSlug": "luma-ray-3-2",
+      "routeAliases": [
+        "luma-ray-2",
+        "luma-ray-2-flash",
+        "luma-ray-3-2"
+      ],
+      "aliases": [
+        "ray-2",
+        "ray-2-flash",
+        "ray-3-2",
+        "lumaray2",
+        "lumaray2flash",
+        "lumaray32"
+      ],
+      "prefixes": [
+        "luma",
+        "fal-ai/luma-dream-machine"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "luma-ray-3-2",
+          "luma-ray-2",
+          "luma-ray-2-flash"
+        ],
+        "currentModelSlugs": [
+          "luma-ray-3-2"
+        ]
+      }
+    },
+    {
+      "id": "wan",
+      "label": "Wan",
+      "navLabel": "Wan 2.6",
+      "brandId": "wan",
+      "defaultModelSlug": "wan-2-6",
+      "routeAliases": [
+        "wan-2-5",
+        "wan-2-6"
+      ],
+      "aliases": [
+        "wan-25",
+        "wan25",
+        "wan-26",
+        "wan26"
+      ],
+      "prefixes": [
+        "wan",
+        "wan/"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "wan-2-6",
+          "wan-2-5"
+        ]
+      }
+    },
+    {
+      "id": "seedance",
+      "label": "Seedance",
+      "navLabel": "Seedance 2.0",
+      "brandId": "bytedance",
+      "defaultModelSlug": "seedance-2-0",
+      "routeAliases": [
+        "seedance-1-5-pro",
+        "seedance-2-0",
+        "seedance-2-0-fast",
+        "dreamina-seedance-2-0-mini"
+      ],
+      "aliases": [
+        "seedance-1-5",
+        "seedance-v1-5-pro",
+        "seedance-v1.5-pro",
+        "seedance-2",
+        "seedance-2.0",
+        "seedance-2-fast",
+        "seedance-2.0-fast",
+        "seedance-v2-fast",
+        "seedance-v2.0-fast",
+        "seedance mini",
+        "seedance 2 mini",
+        "seedance 2.0 mini",
+        "dreamina seedance 2.0 mini"
+      ],
+      "prefixes": [
+        "seedance",
+        "fal-ai/bytedance/seedance",
+        "bytedance/seedance",
+        "bytedance/seedance-2.0"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "seedance-2-0",
+          "seedance-2-0-fast",
+          "dreamina-seedance-2-0-mini",
+          "seedance-1-5-pro"
+        ],
+        "currentModelSlugs": [
+          "seedance-2-0",
+          "seedance-2-0-fast",
+          "dreamina-seedance-2-0-mini"
+        ]
+      }
+    },
+    {
+      "id": "happy-horse",
+      "label": "Happy Horse",
+      "navLabel": "Happy Horse 1.1",
+      "brandId": "alibaba",
+      "defaultModelSlug": "happy-horse-1-1",
+      "routeAliases": [
+        "happy-horse-1-1",
+        "happy-horse-1-0"
+      ],
+      "aliases": [
+        "happyhorse",
+        "happy-horse",
+        "happyhorse-1-1",
+        "happy-horse-1.1",
+        "alibaba-happy-horse",
+        "happyhorse-1-0",
+        "happy-horse-1.0"
+      ],
+      "prefixes": [
+        "happy-horse",
+        "happyhorse",
+        "alibaba/happy-horse"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "happy-horse-1-1",
+          "happy-horse-1-0"
+        ],
+        "currentModelSlugs": [
+          "happy-horse-1-1"
+        ]
+      }
+    },
+    {
+      "id": "ltx",
+      "label": "LTX",
+      "navLabel": "LTX",
+      "brandId": "lightricks",
+      "defaultModelSlug": "ltx-2-3-pro",
+      "routeAliases": [
+        "ltx-2-3",
+        "ltx-2-3-pro",
+        "ltx-2-3-fast",
+        "ltx-2",
+        "ltx-2-fast"
+      ],
+      "aliases": [
+        "ltx-23",
+        "ltx23",
+        "ltx-23-fast",
+        "ltx23-fast"
+      ],
+      "prefixes": [
+        "ltx",
+        "fal-ai/ltx"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "ltx-2-3-pro",
+          "ltx-2-3-fast",
+          "ltx-2",
+          "ltx-2-fast"
+        ],
+        "currentModelSlugs": [
+          "ltx-2-3-pro",
+          "ltx-2-3-fast"
+        ]
+      }
+    },
+    {
+      "id": "pika",
+      "label": "Pika",
+      "navLabel": "Pika 2.2",
+      "brandId": "pika",
+      "defaultModelSlug": "pika-text-to-video",
+      "routeAliases": [
+        "pika-text-to-video",
+        "pika-image-to-video",
+        "pika-2-2"
+      ],
+      "aliases": [
+        "pika-22",
+        "pika22"
+      ],
+      "prefixes": [
+        "pika"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "pika-text-to-video"
+        ]
+      }
+    },
+    {
+      "id": "hailuo",
+      "label": "Hailuo",
+      "navLabel": "MiniMax Hailuo 02",
+      "brandId": "minimax",
+      "defaultModelSlug": "minimax-hailuo-02-text",
+      "routeAliases": [
+        "minimax-hailuo-02-text",
+        "minimax-hailuo-02-image"
+      ],
+      "aliases": [
+        "minimax-hailuo-02"
+      ],
+      "prefixes": [
+        "minimax-hailuo-02"
+      ],
+      "contains": [
+        "hailuo"
+      ],
+      "examplesPage": {
+        "stage": "indexed",
+        "showInNav": true,
+        "publishedModelSlugs": [
+          "minimax-hailuo-02-text"
+        ]
+      }
+    }
+  ],
+  "modelRedirects": [
+    {
+      "source": "/es/modelos/ltx-2-3",
+      "destination": "/es/modelos/ltx-2-3-pro",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/minimax-hailuo-02-image",
+      "destination": "/es/modelos/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/pika-2-2",
+      "destination": "/es/modelos/pika-text-to-video",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/pika-image-to-video",
+      "destination": "/es/modelos/pika-text-to-video",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/veo-3-1-first-last",
+      "destination": "/es/modelos/veo-3-1",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/veo-3-1-first-last-fast",
+      "destination": "/es/modelos/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/es/modelos/veo-3-fast",
+      "destination": "/es/modelos/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/ltx-2-3",
+      "destination": "/fr/modeles/ltx-2-3-pro",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/minimax-hailuo-02-image",
+      "destination": "/fr/modeles/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/pika-2-2",
+      "destination": "/fr/modeles/pika-text-to-video",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/pika-image-to-video",
+      "destination": "/fr/modeles/pika-text-to-video",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/veo-3-1-first-last",
+      "destination": "/fr/modeles/veo-3-1",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/veo-3-1-first-last-fast",
+      "destination": "/fr/modeles/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/fr/modeles/veo-3-fast",
+      "destination": "/fr/modeles/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/google-veo-3",
+      "destination": "/models/veo-3-1",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/google-veo-3-fast",
+      "destination": "/models/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/hailuo-2-pro",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/hunyuan-video",
+      "destination": "/models",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/kling-2-5-turbo-pro",
+      "destination": "/models/kling-2-5-turbo",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/kling-25-turbo-pro",
+      "destination": "/models/kling-2-5-turbo",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/ltx-2-3",
+      "destination": "/models/ltx-2-3-pro",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/luma-dream-machine",
+      "destination": "/models",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/minimax-hailuo-02",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/minimax-hailuo-02-image",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/minimax-hailuo-02-pro",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/minimax-video-01",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/minimax-video-1",
+      "destination": "/models/minimax-hailuo-02-text",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/openai-sora-2",
+      "destination": "/models/sora-2",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/openai-sora-2-pro",
+      "destination": "/models/sora-2-pro",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/pika-2-2",
+      "destination": "/models/pika-text-to-video",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/veo-3",
+      "destination": "/models/veo-3-1",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/veo-3-1-first-last",
+      "destination": "/models/veo-3-1",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/veo-3-1-first-last-fast",
+      "destination": "/models/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/veo-3-fast",
+      "destination": "/models/veo-3-1-fast",
+      "statusCode": 308
+    },
+    {
+      "source": "/models/veo3fast",
+      "destination": "/models/veo-3-1-fast",
+      "statusCode": 308
+    }
+  ],
+  "tombstones": [
+    {
+      "slug": "hunyuan-video",
+      "destination": "models-index"
+    },
+    {
+      "slug": "luma-dream-machine",
+      "destination": "models-index"
+    }
+  ]
+}
