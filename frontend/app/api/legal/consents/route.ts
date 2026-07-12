@@ -2,6 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { recordUserConsents, resolveCurrentLegalVersions, type ConsentSource, type ConsentEntry } from '@/server/legal-consents';
 import { getSupabaseAdmin } from '@/server/supabase-admin';
+import { LEGAL_FALLBACK_VERSIONS } from '@/lib/legal';
 
 export const runtime = 'nodejs';
 
@@ -54,13 +55,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const marketingVersion = versions.privacy ?? versions.terms ?? versions.cookies ?? '2025-10-26';
+    const marketingVersion = versions.privacy ?? versions.terms ?? versions.cookies ?? LEGAL_FALLBACK_VERSIONS.privacy;
     const minAge = Number.parseInt(process.env.LEGAL_MIN_AGE ?? '15', 10);
     const ageVersion = Number.isNaN(minAge) ? 'age_gate' : `min_age:${minAge}`;
 
     const entries: ConsentEntry[] = [
-      { docKey: 'terms' as const, docVersion: versions.terms ?? '2025-10-26', accepted: true, source: body.source ?? 'signup' },
-      { docKey: 'privacy' as const, docVersion: versions.privacy ?? '2025-10-26', accepted: true, source: body.source ?? 'signup' },
+      { docKey: 'terms' as const, docVersion: versions.terms ?? LEGAL_FALLBACK_VERSIONS.terms, accepted: true, source: body.source ?? 'signup' },
+      { docKey: 'privacy' as const, docVersion: versions.privacy ?? LEGAL_FALLBACK_VERSIONS.privacy, accepted: true, source: body.source ?? 'signup' },
       {
         docKey: 'age_attestation' as const,
         docVersion: ageVersion,

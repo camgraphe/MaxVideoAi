@@ -70,7 +70,7 @@ export function TermsArticleEs({
         </ul>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="generated-media-rights" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">6. Contenido del usuario y medios generados</h3>
         <p>
           Conservas la propiedad de tus prompts, archivos cargados, referencias, subtítulos y demás activos que aportes al Servicio. Podemos almacenar, procesar y mostrar
@@ -78,6 +78,10 @@ export function TermsArticleEs({
           tu espacio de trabajo y cumplir obligaciones de seguridad. No reclamamos la propiedad de los archivos cargados.
         </p>
         <ul className="ml-5 list-disc space-y-2">
+          <li>
+            <strong>Uso comercial.</strong> Los usuarios pueden usar comercialmente sus generaciones, siempre que respeten los derechos de terceros,
+            las leyes aplicables y cualquier restricción específica del modelo o proveedor utilizado.
+          </li>
           <li>
             <strong>Licencia sobre los medios generados.</strong> Por cada salida creada con MaxVideoAI nos concedes una licencia mundial, no exclusiva, libre de regalías,
             transferible y sublicenciable para alojar, reproducir, indexar, mostrar y usar esos medios con el fin de (a) operar el Servicio, (b) mejorar el enrutamiento, las

@@ -71,12 +71,16 @@ export function TermsArticleFr({
         </ul>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="generated-media-rights" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">6. Contenus utilisateur &amp; médias générés</h3>
         <p>
           Vous conservez la propriété de vos prompts, uploads, références, légendes ou autres éléments fournis au Service. Nous pouvons stocker, traiter et afficher ces assets uniquement pour livrer le rendu demandé (texte-vers-vidéo ou image-vers-vidéo), router les jobs, fournir les fonctionnalités activées dans votre workspace et respecter nos obligations de sécurité. Nous ne revendiquons aucune propriété sur les uploads.
         </p>
         <ul className="ml-5 list-disc space-y-2">
+          <li>
+            <strong>Utilisation commerciale.</strong> Les utilisateurs peuvent utiliser commercialement leurs générations, sous réserve des droits de
+            tiers, des lois applicables et des éventuelles restrictions propres au modèle ou fournisseur utilisé.
+          </li>
           <li>
             <strong>Licence sur les médias générés.</strong> Pour chaque sortie produite via MaxVideoAI, vous nous accordez une licence mondiale, non exclusive, gratuite, transférable et sous-licenciable pour héberger, reproduire, indexer, afficher et utiliser ces vidéos afin (a) d’exploiter le Service, (b) d’améliorer le routage, les protections et les modèles, (c) de mener des enquêtes sécurité/abus et (d) de présenter la galerie Examples, les pages modèles, études de cas ou supports marketing.
           </li>

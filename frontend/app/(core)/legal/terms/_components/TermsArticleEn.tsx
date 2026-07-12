@@ -72,7 +72,7 @@ export function TermsArticleEn({
         </ul>
       </section>
 
-      <section className="stack-gap-sm">
+      <section id="generated-media-rights" className="stack-gap-sm scroll-mt-[calc(var(--header-height)+24px)]">
         <h3 className="text-lg font-semibold text-text-primary">6. User content &amp; generated media</h3>
         <p>
           You own your prompts, uploads, reference frames, captions, and other assets you provide to the Service. We may store, process, and display
@@ -80,6 +80,10 @@ export function TermsArticleEn({
           (such as galleries or version history), and meet security obligations. We do not claim ownership of uploaded inputs.
         </p>
         <ul className="ml-5 list-disc space-y-2">
+          <li>
+            <strong>Commercial use.</strong> Users may use their generations commercially, subject to third-party rights, applicable laws, and any
+            restrictions specific to the model or provider used.
+          </li>
           <li>
             <strong>Generated media licence.</strong> For every output created with MaxVideoAI, you grant us a worldwide, non-exclusive, royalty-free,
             transferable, and sublicensable licence to host, reproduce, index, display, and otherwise use that media to (a) operate the Service, (b)

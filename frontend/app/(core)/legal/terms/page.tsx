@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { LegalVersionBadge } from '@/components/legal/LegalVersionBadge';
-import { formatLegalDate, getLegalDocument } from '@/lib/legal';
+import { formatLegalDate, getLegalDocument, LEGAL_FALLBACK_VERSIONS } from '@/lib/legal';
 import type { AppLocale } from '@/i18n/locales';
 import { TermsArticle } from './_components/TermsArticle';
 import { HEADER_COPY, METADATA_COPY } from './_lib/terms-page-copy';
@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function TermsPage() {
   const locale = await resolveLocale();
   const document = await getLegalDocument('terms');
-  const version = document?.version ?? '2025-10-26';
+  const version = document?.version ?? LEGAL_FALLBACK_VERSIONS.terms;
   const effective = formatLegalDate(document?.publishedAt ?? `${version}T00:00:00Z`, locale);
   const header = HEADER_COPY[locale] ?? HEADER_COPY.en;
   const subprocessorsHref = localizePathFromEnglish(locale, '/legal/subprocessors');

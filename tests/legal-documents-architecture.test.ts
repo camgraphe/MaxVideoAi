@@ -18,6 +18,8 @@ const termsCopyPath = join(root, 'frontend/app/(core)/legal/terms/_lib/terms-pag
 const privacyCopyPath = join(root, 'frontend/app/(core)/legal/privacy/_lib/privacy-page-copy.ts');
 const localizedTermsPath = join(root, 'frontend/app/(localized)/[locale]/legal/terms/page.tsx');
 const localizedPrivacyPath = join(root, 'frontend/app/(localized)/[locale]/legal/privacy/page.tsx');
+const legalLibPath = join(root, 'frontend/src/lib/legal.ts');
+const consentRoutePath = join(root, 'frontend/app/api/legal/consents/route.ts');
 
 const termsPageSource = readFileSync(termsPagePath, 'utf8');
 const privacyPageSource = readFileSync(privacyPagePath, 'utf8');
@@ -33,6 +35,8 @@ const termsCopySource = readFileSync(termsCopyPath, 'utf8');
 const privacyCopySource = readFileSync(privacyCopyPath, 'utf8');
 const localizedTermsSource = readFileSync(localizedTermsPath, 'utf8');
 const localizedPrivacySource = readFileSync(localizedPrivacyPath, 'utf8');
+const legalLibSource = readFileSync(legalLibPath, 'utf8');
+const consentRouteSource = readFileSync(consentRoutePath, 'utf8');
 
 test('legal terms and privacy pages stay route orchestrators', () => {
   assert.ok(existsSync(termsArticlePath), 'terms article should live in a route-local component');
@@ -110,4 +114,30 @@ test('localized legal routes continue to re-export core legal pages', () => {
   assert.match(localizedTermsSource, /export \{ default \} from '@\/app\/\(core\)\/legal\/terms\/page'/);
   assert.match(localizedPrivacySource, /export \{ generateMetadata \} from '@\/app\/\(core\)\/legal\/privacy\/page'/);
   assert.match(localizedPrivacySource, /export \{ default \} from '@\/app\/\(core\)\/legal\/privacy\/page'/);
+});
+
+test('commercial generation rights are explicit and deep-linkable in every Terms locale', () => {
+  assert.match(termsArticleEnSource, /id="generated-media-rights"/);
+  assert.match(termsArticleFrSource, /id="generated-media-rights"/);
+  assert.match(termsArticleEsSource, /id="generated-media-rights"/);
+  assert.match(termsArticleEnSource, /use their generations commercially/);
+  assert.match(termsArticleFrSource, /utiliser commercialement leurs générations/);
+  assert.match(termsArticleEsSource, /usar comercialmente sus generaciones/);
+});
+
+test('Terms fallback version has one source shared by pages and signup consent', () => {
+  assert.match(legalLibSource, /LEGAL_FALLBACK_VERSIONS/);
+  assert.match(legalLibSource, /terms: '2026-07-12'/);
+  assert.match(termsPageSource, /LEGAL_FALLBACK_VERSIONS\.terms/);
+  assert.match(consentRouteSource, /LEGAL_FALLBACK_VERSIONS/);
+  assert.doesNotMatch(consentRouteSource, /versions\.terms \?\? '2025-10-26'/);
+});
+
+test('Terms rollout documentation preserves soft re-consent ordering', () => {
+  const rolloutPath = join(root, 'docs/deployment/legal-document-rollout.md');
+  assert.ok(existsSync(rolloutPath));
+  const rollout = readFileSync(rolloutPath, 'utf8');
+  assert.match(rollout, /Deploy the code[\s\S]*update Terms to version `2026-07-12`/);
+  assert.match(rollout, /SOFT[\s\S]*14-day grace period/);
+  assert.match(rollout, /Do not change the re-consent mode to `hard`/);
 });

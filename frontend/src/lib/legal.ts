@@ -5,6 +5,12 @@ import { isDatabaseConfigured, query } from '@/lib/db';
 
 export type LegalDocumentKey = 'terms' | 'privacy' | 'cookies';
 
+export const LEGAL_FALLBACK_VERSIONS = {
+  terms: '2026-07-12',
+  privacy: '2025-10-26',
+  cookies: '2025-10-26',
+} as const satisfies Record<LegalDocumentKey, string>;
+
 export type LegalDocument = {
   key: LegalDocumentKey;
   version: string;
