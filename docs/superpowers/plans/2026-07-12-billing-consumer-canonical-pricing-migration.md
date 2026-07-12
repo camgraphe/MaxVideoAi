@@ -90,7 +90,7 @@ assert.equal(snapshot.vendorShareCents, quote.vendorShareCents);
 assert.equal(snapshot.margin.ruleId, quote.policyProvenance.sourceRuleId);
 ```
 
-Also assert rejection when base plus addons does not equal the provider subtotal within 0.001 cents.
+Also assert rejection when projected base or addon factual amounts are non-finite or negative. Do not require base plus addons to equal the exact provider subtotal: named compatibility profiles intentionally preserve historical provider-reference rounding in the presented base field.
 
 - [ ] **Step 2: Run the test and verify RED**
 

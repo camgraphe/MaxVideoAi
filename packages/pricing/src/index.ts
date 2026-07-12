@@ -20,6 +20,10 @@ export {
   type PricingScenario,
 } from './canonical';
 export {
+  projectCanonicalQuoteToSnapshot,
+  type CanonicalSnapshotProjectionInput,
+} from './projection';
+export {
   comparePricingOutputs,
   type PricingComparableOutput,
   type PricingShadowComparison,

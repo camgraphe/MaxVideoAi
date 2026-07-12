@@ -24,11 +24,13 @@ export type PricingScenario = {
 export type CanonicalPricingQuote = {
   engineId: string;
   scenarioId: string;
+  membershipTier: 'member' | 'plus' | 'pro';
   currency: string;
   vendorSubtotalCents: number;
   marginCents: number;
   surchargeCents: number;
   discountCents: number;
+  subtotalBeforeDiscountCents: number;
   customerTotalCents: number;
   platformFeeCents: number;
   vendorShareCents: number;
@@ -71,6 +73,10 @@ function roundCents(value: number, mode: IntegerRounding): number {
   if (mode === 'up') return Math.ceil(value - CENT_EPSILON);
   if (mode === 'down') return Math.floor(value + CENT_EPSILON);
   return Math.round(value);
+}
+
+function normaliseCents(value: number): number {
+  return Math.round(value * 1000) / 1000;
 }
 
 function assertFiniteNonNegative(value: number, code: PricingDomainErrorCode, label: string): void {
@@ -158,11 +164,13 @@ export function quoteCanonicalPricing(input: {
   return {
     engineId: facts.engineId,
     scenarioId: scenario.id,
+    membershipTier: scenario.membershipTier,
     currency: factsCurrency,
     vendorSubtotalCents,
     marginCents,
     surchargeCents,
     discountCents,
+    subtotalBeforeDiscountCents: normaliseCents(subtotalBeforeDiscountExactCents),
     customerTotalCents,
     platformFeeCents,
     vendorShareCents,
