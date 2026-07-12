@@ -1,13 +1,19 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { computePricingSnapshot, type MemberTier } from '@maxvideoai/pricing';
+import { listFalEngines } from '@/config/falEngines';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { CURRENCY_LOCALE } from '@/lib/intl';
 import { getModelByEngineId } from '@/lib/model-roster';
 import { normalizeEngineId } from '@/lib/engine-alias';
-import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
+import {
+  projectPublicPricingSnapshot,
+  quotePublicPricing,
+  type PublicPricingMembershipTier,
+} from '@/lib/pricing-public-quote';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 import { Button } from '@/components/ui/Button';
 
@@ -15,10 +21,12 @@ interface PriceChipProps {
   engineId: string;
   durationSec: number;
   resolution: string;
-  memberTier?: MemberTier | string;
+  memberTier?: PublicPricingMembershipTier | string;
   suffix?: string;
   pricingRules?: PricingRuleLite[];
 }
+
+const PRICING_ENTRIES = listFalEngines();
 
 function formatCurrency(currency: string, cents: number) {
   return new Intl.NumberFormat(CURRENCY_LOCALE, {
@@ -46,34 +54,49 @@ export function PriceChip({
   const [isOpen, setIsOpen] = useState(false);
   const canonicalId = normalizeEngineId(engineId) ?? engineId;
 
-  const pricingRule = useMemo(
-    () => selectPricingRule(pricingRules, canonicalId, resolution),
-    [pricingRules, canonicalId, resolution]
-  );
-
   const quote = useMemo(() => {
     const definition = kernel.getDefinition(canonicalId);
-    if (!definition) return null;
+    const entry = PRICING_ENTRIES.find(
+      (candidate) => candidate.id === canonicalId || candidate.engine.id === canonicalId
+    );
+    if (!definition || !entry) return null;
     try {
-      const adjusted = pricingRule
-        ? {
-            ...definition,
-            platformFeePct: pricingRule.marginPercent ?? definition.platformFeePct,
-            platformFeeFlatCents: pricingRule.marginFlatCents ?? definition.platformFeeFlatCents,
-            currency: pricingRule.currency ?? definition.currency,
-          }
-        : definition;
-      return computePricingSnapshot(adjusted, {
-        engineId: canonicalId,
+      const mode = entry.engine.modes.includes('t2v')
+        ? 't2v'
+        : entry.engine.modes.find((candidate) => candidate === 'i2v' || candidate === 't2i' || candidate === 'i2i');
+      const facts = buildPublicPricingFacts({
+        engine: entry.engine,
         durationSec,
         resolution,
-        memberTier: (memberTier ?? 'member').toString().toLowerCase() as MemberTier,
-      }).quote;
+        ...(mode ? { mode } : {}),
+        useStandardDefinitionFacts: true,
+      });
+      const canonicalQuote = quotePublicPricing({
+        facts: facts.facts,
+        scenario: {
+          id: `price-chip:${canonicalId}:${durationSec}:${resolution}`,
+          engineId: facts.facts.engineId,
+          ...(mode ? { mode } : {}),
+          resolution,
+          membershipTier: (memberTier ?? 'member').toString().toLowerCase(),
+        },
+        compatibilityProfileId: 'public-rounded-vendor-current',
+        pricingRules,
+      });
+      return {
+        definition,
+        snapshot: projectPublicPricingSnapshot({
+          quote: canonicalQuote,
+          base: facts.base,
+          addons: facts.addons,
+          meta: facts.meta,
+        }),
+      };
     } catch {
       return null;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canonicalId, durationSec, resolution, memberTier?.toString(), pricingRule]);
+  }, [canonicalId, durationSec, resolution, memberTier?.toString(), pricingRules]);
 
   if (!quote) {
     return null;

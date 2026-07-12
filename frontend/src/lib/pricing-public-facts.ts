@@ -37,6 +37,7 @@ export type PublicPricingFactsContext = {
   addons?: Record<string, boolean | number | undefined>;
   lumaRay2BasePriceUsd?: number;
   useFlatImageUnitFacts?: boolean;
+  useStandardDefinitionFacts?: boolean;
 };
 
 const ZERO_DISCOUNTS: PricingEngineDefinition['memberTierDiscounts'] = {
@@ -88,10 +89,51 @@ function resultFromExactFacts(params: {
   };
 }
 
+function buildStandardDefinitionFacts(
+  context: PublicPricingFactsContext,
+  currency: string
+): PublicPricingFactsResult {
+  const { engine, durationSec, resolution } = context;
+  const definition = buildPricingDefinition(engine);
+  if (!definition) throw new Error(`Pricing definition not found for engine ${engine.id}`);
+  const factualDefinition: PricingEngineDefinition = {
+    ...definition,
+    currency,
+    platformFeePct: 0,
+    platformFeeFlatCents: 0,
+    memberTierDiscounts: ZERO_DISCOUNTS,
+  };
+  const snapshot = computeKernelSnapshot(factualDefinition, {
+    engineId: engine.id,
+    durationSec,
+    resolution,
+    memberTier: 'member',
+    ...(context.addons ? { addons: context.addons } : {}),
+  }).snapshot;
+  const exactCents =
+    snapshot.base.amountCents + snapshot.addons.reduce((sum, addon) => sum + addon.amountCents, 0);
+  return {
+    facts: {
+      engineId: engine.id,
+      currency,
+      vendorSubtotalExactCents: exactCents,
+      unit: snapshot.base.unit ?? 'sec',
+      quantity: snapshot.base.seconds,
+    },
+    base: { ...snapshot.base },
+    addons: snapshot.addons.map((addon) => ({ ...addon })),
+    meta: { ...(snapshot.meta ?? {}) },
+    compatibilityProfileId: 'standard',
+  };
+}
+
 export function buildPublicPricingFacts(context: PublicPricingFactsContext): PublicPricingFactsResult {
   const { engine, durationSec, resolution } = context;
   const mode = context.mode ?? (engine.modes.includes('t2i') ? 't2i' : 't2v');
   const currency = (engine.pricingDetails?.currency ?? engine.pricing?.currency ?? 'USD').toUpperCase();
+  if (context.useStandardDefinitionFacts) {
+    return buildStandardDefinitionFacts(context, currency);
+  }
 
   if (isLumaAgentsImageEngineId(engine.id) && (mode === 't2i' || mode === 'i2i')) {
     const reference = calculateLumaAgentsImageReferencePrice({
@@ -212,37 +254,26 @@ export function buildPublicPricingFacts(context: PublicPricingFactsContext): Pub
     });
   }
 
-  const definition = buildPricingDefinition(engine);
-  if (!definition) throw new Error(`Pricing definition not found for engine ${engine.id}`);
-  const factualDefinition: PricingEngineDefinition = {
-    ...definition,
-    currency,
-    platformFeePct: 0,
-    platformFeeFlatCents: 0,
-    memberTierDiscounts: ZERO_DISCOUNTS,
-  };
-  const snapshot = computeKernelSnapshot(factualDefinition, {
-    engineId: engine.id,
-    durationSec,
-    resolution,
-    memberTier: 'member',
-    ...(context.addons ? { addons: context.addons } : {}),
-  }).snapshot;
-  const exactCents =
-    snapshot.base.amountCents + snapshot.addons.reduce((sum, addon) => sum + addon.amountCents, 0);
-  return {
-    facts: {
-      engineId: engine.id,
-      currency,
-      vendorSubtotalExactCents: exactCents,
-      unit: snapshot.base.unit ?? 'sec',
-      quantity: snapshot.base.seconds,
-    },
-    base: { ...snapshot.base },
-    addons: snapshot.addons.map((addon) => ({ ...addon })),
-    meta: { ...(snapshot.meta ?? {}) },
-    compatibilityProfileId: 'standard',
-  };
+  return buildStandardDefinitionFacts(context, currency);
+}
+
+export function buildPublicUnitPricingFacts(input: {
+  engineId: string;
+  currency: string;
+  unitPriceCents: number;
+  quantity?: number;
+  unit: string;
+}): PublicPricingFactsResult {
+  const quantity = Math.max(1, Math.round(input.quantity ?? 1));
+  return resultFromExactFacts({
+    engineId: input.engineId,
+    currency: input.currency.toUpperCase(),
+    exactCents: Math.max(0, input.unitPriceCents) * quantity,
+    quantity,
+    unit: input.unit,
+    compatibilityProfileId: 'public-rounded-vendor-current',
+    rate: input.unitPriceCents / 100,
+  });
 }
 
 export function buildAuthoredPublicOfferFacts(input: {

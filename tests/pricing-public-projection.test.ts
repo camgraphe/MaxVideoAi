@@ -104,6 +104,16 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
   }
 });
 
+test('public pricing baseline freezes the estimator per-image branch actually rendered in the browser', () => {
+  const fixture = JSON.parse(
+    readFileSync('tests/fixtures/pricing-public-projections.v1.json', 'utf8')
+  ) as PublicProjectionFixture;
+  const nanoBanana = fixture.rows.find(
+    (row) => row.id === 'estimator:nano-banana:member:default'
+  );
+  assert.equal(nanoBanana?.customerTotalCents, 7);
+});
+
 test('public pricing baseline ignores machine-specific pricing environment overrides', () => {
   const result = spawnSync('pnpm', ['--silent', 'pricing:public-baseline'], {
     cwd: process.cwd(),
@@ -306,4 +316,25 @@ test('canonical quote scaling preserves historical per-unit rounding for public 
   assert.equal(batch.marginCents, 8);
   assert.equal(batch.customerTotalCents, 24);
   assert.equal(batch.quantity, 4);
+});
+
+test('browser estimator and price chip delegate commercial totals to the public canonical adapter', () => {
+  const estimator = readFileSync('frontend/components/marketing/PriceEstimator.tsx', 'utf8');
+  const chip = readFileSync('frontend/components/marketing/PriceChip.tsx', 'utf8');
+  const options = readFileSync(
+    'frontend/components/marketing/price-estimator/price-estimator-options.ts',
+    'utf8'
+  );
+  for (const [path, source] of [
+    ['PriceEstimator.tsx', estimator],
+    ['PriceChip.tsx', chip],
+  ] as const) {
+    assert.match(source, /pricing-public-facts/, `${path} should build provider facts`);
+    assert.match(source, /pricing-public-quote/, `${path} should quote canonically`);
+    assert.doesNotMatch(source, /computePricingSnapshot/, `${path} should not call the legacy client kernel`);
+    assert.doesNotMatch(source, /platformFeePct:/, `${path} should not mutate commercial policy`);
+  }
+  assert.doesNotMatch(options, /applyPerImageDisplayMargin/);
+  assert.doesNotMatch(options, /defaultMultiplier/);
+  assert.doesNotMatch(options, /platformMultiplier/);
 });

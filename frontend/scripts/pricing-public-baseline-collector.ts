@@ -1,8 +1,14 @@
 import { computePricingSnapshot as computeKernelSnapshot, type PricingSnapshot } from '@maxvideoai/pricing';
+import {
+  buildAudioAddonPayload,
+  buildEngineOption,
+  PER_IMAGE_ENGINE_IDS,
+} from '@/components/marketing/price-estimator/price-estimator-options';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { supportsImageGeneration } from '@/lib/models/catalog';
 import { computePricingSnapshot as computeLegacyPricingSnapshot } from '@/lib/pricing';
+import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
 import type { EngineCaps, Mode } from '@/types/engines';
@@ -314,21 +320,88 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
   }
 
   for (const entry of entries.filter((candidate) => candidate.surfaces.pricing.includeInEstimator)) {
-    for (const memberTier of MEMBER_TIERS) {
-      await collectSnapshot({
-        id: `estimator:${entry.id}:${memberTier}:default`,
-        surface: 'estimator',
-        entry,
-        memberTier,
-      });
+    const option = buildEngineOption(
+      entry,
+      entry.engine,
+      entry.engine,
+      getPricingKernel(),
+      {},
+      undefined,
+      undefined
+    );
+    const activeResolution = option?.resolutions[0];
+    if (!option || !activeResolution) {
+      for (const memberTier of MEMBER_TIERS) {
+        rows.push(unavailableRow(`estimator:${entry.id}:${memberTier}:default`, 'estimator', entry.id));
+      }
+      continue;
     }
-    if (entry.engine.pricingDetails?.addons?.audio_off) {
-      await collectSnapshot({
-        id: `estimator:${entry.id}:member:audio-off`,
-        surface: 'estimator',
-        entry,
-        addons: { audio_off: true },
-      });
+
+    if (PER_IMAGE_ENGINE_IDS.has(option.id)) {
+      for (const memberTier of MEMBER_TIERS) {
+        rows.push({
+          id: `estimator:${entry.id}:${memberTier}:default`,
+          surface: 'estimator',
+          engineId: entry.id,
+          status: 'exact',
+          currency: option.currency.toUpperCase(),
+          customerTotalCents: Math.max(0, Math.round(activeResolution.rate * 100)),
+          unit: 'image',
+          quantity: 1,
+        });
+      }
+      continue;
+    }
+
+    const definition =
+      (option.pricingEngineCaps ? buildPricingDefinition(option.pricingEngineCaps) : null) ??
+      getPricingKernel().getDefinition(option.pricingEngineId);
+    if (!definition) {
+      for (const memberTier of MEMBER_TIERS) {
+        rows.push(unavailableRow(`estimator:${entry.id}:${memberTier}:default`, 'estimator', entry.id));
+      }
+      continue;
+    }
+    for (const memberTier of MEMBER_TIERS) {
+      try {
+        const { snapshot } = computeKernelSnapshot(definition, {
+          engineId: option.pricingEngineId,
+          durationSec: option.defaultDuration,
+          resolution: activeResolution.value,
+          memberTier,
+        });
+        rows.push(
+          snapshotRow({
+            id: `estimator:${entry.id}:${memberTier}:default`,
+            surface: 'estimator',
+            engineId: entry.id,
+            snapshot,
+          })
+        );
+      } catch {
+        rows.push(unavailableRow(`estimator:${entry.id}:${memberTier}:default`, 'estimator', entry.id));
+      }
+    }
+    if (option.audioAddonKey) {
+      try {
+        const { snapshot } = computeKernelSnapshot(definition, {
+          engineId: option.pricingEngineId,
+          durationSec: option.defaultDuration,
+          resolution: activeResolution.value,
+          memberTier: 'member',
+          addons: buildAudioAddonPayload(option.audioAddonKey, false),
+        });
+        rows.push(
+          snapshotRow({
+            id: `estimator:${entry.id}:member:audio-off`,
+            surface: 'estimator',
+            engineId: entry.id,
+            snapshot,
+          })
+        );
+      } catch {
+        rows.push(unavailableRow(`estimator:${entry.id}:member:audio-off`, 'estimator', entry.id));
+      }
     }
   }
 

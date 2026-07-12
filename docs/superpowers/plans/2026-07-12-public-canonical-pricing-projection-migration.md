@@ -256,14 +256,16 @@ git commit -m "feat: migrate public pricing hub projections"
 - Modify: `frontend/components/marketing/PriceEstimator.tsx`
 - Modify: `frontend/components/marketing/PriceChip.tsx`
 - Modify: `frontend/components/marketing/price-estimator/price-estimator-options.ts`
+- Modify: `frontend/scripts/pricing-public-baseline-collector.ts`
+- Modify: `tests/fixtures/pricing-public-projections.v1.json`
 - Modify: `tests/price-estimator-architecture.test.ts`
 - Modify: `tests/pricing-public-projection.test.ts`
 
-- [ ] **Step 1: Write failing browser authority tests**
+- [x] **Step 1: Write failing browser authority tests**
 
 Require both client components to delegate to `pricing-public-quote.ts`. Forbid direct `computePricingSnapshot()` calls, platform fee mutation, selected-rule commercial mutation, and manual margin multiplication. Require option-building code to describe raw provider rates/capabilities only.
 
-- [ ] **Step 2: Run focused tests and verify RED**
+- [x] **Step 2: Run focused tests and verify RED**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-public-projection.test.ts tests/price-estimator-architecture.test.ts
@@ -271,19 +273,19 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-public-proj
 
 Expected: FAIL against the legacy client kernel path.
 
-- [ ] **Step 3: Migrate estimator snapshots**
+- [x] **Step 3: Migrate estimator snapshots**
 
 Build factual inputs from the selected engine, duration, resolution, quality, image quantity, and audio toggle. Pass optional serialized rules to the canonical public adapter. Continue rendering the existing `PricingSnapshot` presentation fields so labels, member savings, itemization, empty states, and lazy loading do not change.
 
-- [ ] **Step 4: Migrate the price chip**
+- [x] **Step 4: Migrate the price chip**
 
 Use the same adapter and preserve engine label/version, duration/resolution, discount copy, formatted total, and breakdown interaction.
 
-- [ ] **Step 5: Remove commercial rate math from options**
+- [x] **Step 5: Remove commercial rate math from options**
 
 Per-image and per-second option rates must be raw factual display helpers only. The final selected price always comes from the canonical snapshot. Preserve option order, availability, duration constraints, and rate-unit copy.
 
-- [ ] **Step 6: Run client-focused parity and lint**
+- [x] **Step 6: Run client-focused parity and lint**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-public-projection.test.ts tests/price-estimator-architecture.test.ts
@@ -293,10 +295,10 @@ pnpm --prefix frontend run lint
 
 Expected: PASS with no frozen output change.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
-git add frontend/components/marketing/PriceEstimator.tsx frontend/components/marketing/PriceChip.tsx frontend/components/marketing/price-estimator/price-estimator-options.ts tests/price-estimator-architecture.test.ts tests/pricing-public-projection.test.ts
+git add frontend/components/marketing/PriceEstimator.tsx frontend/components/marketing/PriceChip.tsx frontend/components/marketing/price-estimator/price-estimator-options.ts frontend/scripts/pricing-public-baseline-collector.ts tests/fixtures/pricing-public-projections.v1.json tests/price-estimator-architecture.test.ts tests/pricing-public-projection.test.ts
 git commit -m "feat: migrate browser pricing projections"
 ```
 

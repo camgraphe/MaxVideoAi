@@ -2,7 +2,9 @@ import type { EngineAvailability, EngineCaps, EngineInputField, Mode } from '@/t
 import type { PricingKernel } from '@maxvideoai/pricing';
 import { getPartnerByEngineId } from '@/lib/brand-partners';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
-import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
+import { buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
+import { quotePublicPricing } from '@/lib/pricing-public-quote';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { formatResolutionLabel } from '@/lib/resolution-labels';
 
@@ -16,7 +18,7 @@ export interface EngineOption {
   maxDuration: number;
   durationOptions: Array<{ value: number; label: string }>;
   defaultDuration: number;
-  resolutions: Array<{ value: string; label: string; rate: number }>;
+  resolutions: Array<{ value: string; label: string; rate: number; providerRate: number }>;
   currency: string;
   availability: EngineAvailability;
   availabilityLink?: string | null;
@@ -122,17 +124,33 @@ function centsToDollars(cents?: number | null) {
   return cents / 100;
 }
 
-function applyPerImageDisplayMargin(baseRateUsd: number, marginPercent = 0, marginFlatCents = 0) {
-  const baseCents = Math.max(0, Math.round(baseRateUsd * 100));
-  if (!baseCents) return 0;
-  const normalizedMargin = Number.isFinite(marginPercent) ? Math.max(0, marginPercent) : 0;
-  const normalizedFlat = Number.isFinite(marginFlatCents) ? Math.max(0, marginFlatCents) : 0;
-  const marginCents = Math.ceil(baseCents * normalizedMargin + normalizedFlat - 1e-9);
-  const effectiveMargin =
-    (normalizedMargin > 0 || normalizedFlat > 0) && marginCents <= 0
-      ? 1
-      : Math.max(0, marginCents);
-  return (baseCents + effectiveMargin) / 100;
+function quoteCanonicalUnitRate(params: {
+  engineId: string;
+  resolution: string;
+  providerRate: number;
+  currency: string;
+  unit: 'image' | 'sec';
+  pricingRules?: PricingRuleLite[];
+}) {
+  const facts = buildPublicUnitPricingFacts({
+    engineId: params.engineId,
+    currency: params.currency,
+    unitPriceCents: params.providerRate * 100,
+    unit: params.unit,
+  });
+  return (
+    quotePublicPricing({
+      facts: facts.facts,
+      scenario: {
+        id: `estimator-rate:${params.engineId}:${params.resolution}`,
+        engineId: params.engineId,
+        resolution: params.resolution,
+        membershipTier: 'member',
+      },
+      compatibilityProfileId: facts.compatibilityProfileId,
+      pricingRules: params.pricingRules,
+    }).customerTotalCents / 100
+  );
 }
 
 function resolveAudioAddonKey(
@@ -268,9 +286,7 @@ export function buildEngineOption(
   const labelOverride = overrides?.labelOverride;
   const perSecond = pricingEngineCaps.pricingDetails?.perSecondCents ?? engineCaps.pricingDetails?.perSecondCents;
   const perSecondDefault = centsToDollars(perSecond?.default);
-  const engineRule = pricingRules ? selectPricingRule(pricingRules, pricingEngineId, null) : null;
-  const defaultMarginPct = engineRule?.marginPercent ?? definition?.platformFeePct ?? 0;
-  const defaultMultiplier = 1 + defaultMarginPct;
+  const currency = definition?.currency ?? pricingEngineCaps.pricingDetails?.currency ?? 'USD';
   const resolutionSources = engineCaps.resolutions?.length
     ? engineCaps.resolutions
     : definition
@@ -279,40 +295,66 @@ export function buildEngineOption(
 
   const perImageConfig = PER_IMAGE_ENGINE_CONFIG.get(entry.id);
 
-  let rates: Array<{ value: string; label: string; rate: number }>;
+  let rates: Array<{ value: string; label: string; rate: number; providerRate: number }>;
 
   if (perImageConfig) {
-    rates = perImageConfig.rates.map((rate) => ({
-      ...rate,
-      rate: applyPerImageDisplayMargin(rate.rate, defaultMarginPct, engineRule?.marginFlatCents ?? undefined),
+    rates = perImageConfig.rates.map((entryRate) => ({
+      ...entryRate,
+      providerRate: entryRate.rate,
+      rate: quoteCanonicalUnitRate({
+        engineId: pricingEngineId,
+        resolution: entryRate.value,
+        providerRate: entryRate.rate,
+        currency,
+        unit: 'image',
+        pricingRules,
+      }),
     }));
   } else {
     rates = resolutionSources
       .map((resolution) => {
-        const rule = pricingRules ? selectPricingRule(pricingRules, pricingEngineId, resolution) : null;
-        const platformMultiplier = 1 + (rule?.marginPercent ?? defaultMarginPct);
         const displayResolution = formatResolutionLabel(entry.id, resolution);
+        let providerRate: number | null = null;
         if (definition) {
           const multiplier =
             definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
-          const rate = (definition.baseUnitPriceCents * multiplier) / 100;
-          if (!rate) return null;
-          return { value: resolution, label: displayResolution.toUpperCase(), rate: rate * platformMultiplier };
+          providerRate = (definition.baseUnitPriceCents * multiplier) / 100;
+        } else {
+          const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
+          providerRate = centsToDollars(cents) ?? perSecondDefault;
         }
-        const cents = perSecond?.byResolution?.[resolution] ?? perSecond?.default;
-        const rate = centsToDollars(cents) ?? perSecondDefault;
-        if (!rate) return null;
-        return { value: resolution, label: displayResolution.toUpperCase(), rate: rate * platformMultiplier };
+        if (!providerRate) return null;
+        return {
+          value: resolution,
+          label: displayResolution.toUpperCase(),
+          providerRate,
+          rate: quoteCanonicalUnitRate({
+            engineId: pricingEngineId,
+            resolution,
+            providerRate,
+            currency,
+            unit: 'sec',
+            pricingRules,
+          }),
+        };
       })
-      .filter((rate): rate is { value: string; label: string; rate: number } => Boolean(rate));
+      .filter((rate): rate is { value: string; label: string; rate: number; providerRate: number } => Boolean(rate));
 
     if (!rates.length && definition) {
-      const fallbackRate = definition.baseUnitPriceCents / 100;
+      const providerRate = definition.baseUnitPriceCents / 100;
       rates = [
         {
           value: 'default',
           label: 'DEFAULT',
-          rate: fallbackRate * defaultMultiplier,
+          providerRate,
+          rate: quoteCanonicalUnitRate({
+            engineId: pricingEngineId,
+            resolution: 'default',
+            providerRate,
+            currency,
+            unit: 'sec',
+            pricingRules,
+          }),
         },
       ];
     }
@@ -371,7 +413,7 @@ export function buildEngineOption(
     durationOptions,
     defaultDuration,
     resolutions: rates,
-    currency: engineRule?.currency ?? definition?.currency ?? engineCaps.pricingDetails?.currency ?? 'USD',
+    currency,
     availability: entry.availability,
     availabilityLink,
     showResolution: !perImageConfig,

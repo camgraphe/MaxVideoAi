@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import clsx from 'clsx';
 import type { EngineCaps, EnginePricingDetails, Mode } from '@/types/engines';
-import { computePricingSnapshot, type MemberTier as PricingMemberTier } from '@maxvideoai/pricing';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { getEngineSelectFamilyRank } from '@/lib/engine-family-priority';
-import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
-import { applyEnginePricingOverride, buildPricingDefinition } from '@/lib/pricing-definition';
+import type { PricingRuleLite } from '@/lib/pricing-rules';
+import { applyEnginePricingOverride } from '@/lib/pricing-definition';
+import { buildPublicPricingFacts, buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
+import { projectPublicPricingSnapshot, quotePublicPricing, type PublicPricingMembershipTier } from '@/lib/pricing-public-quote';
 import { EngineSelect } from '@/components/ui/EngineSelect';
 import type { SelectOption } from '@/components/ui/SelectMenu';
 import { PriceEstimatorSelectGroup } from '@/components/marketing/price-estimator/PriceEstimatorSelectGroup';
@@ -27,7 +28,6 @@ import {
   type EngineOption,
   type MemberTier,
 } from '@/components/marketing/price-estimator/price-estimator-options';
-
 export interface PriceEstimatorProps {
   variant?: 'full' | 'lite';
   pricingRules?: PricingRuleLite[];
@@ -35,7 +35,6 @@ export interface PriceEstimatorProps {
   defaultEngineId?: string;
   defaultDurationSec?: number;
 }
-
 export function PriceEstimator({
   variant = 'full',
   pricingRules,
@@ -45,21 +44,18 @@ export function PriceEstimator({
 }: PriceEstimatorProps) {
   const { t, dictionary } = useI18n();
   const kernel = getPricingKernel();
-
   const fields = t('pricing.estimator.fields', {
     engine: 'Engine',
     resolution: 'Resolution',
     duration: 'Duration (seconds)',
     memberStatus: 'Member status',
   }) as Record<string, string>;
-
   const estimateLabels = t('pricing.estimator.estimateLabels', {
     heading: 'Estimate',
     base: 'Base',
     discount: 'Discount',
     memberChipPrefix: 'Member price - You save',
   }) as Record<string, string>;
-
   const descriptions = dictionary.pricing.estimator.descriptions;
   const pricingEngineMap = useMemo(() => {
     const map = new Map<string, EngineCaps>();
@@ -71,7 +67,6 @@ export function PriceEstimator({
     });
     return map;
   }, [enginePricingOverrides]);
-
   const engineOptions = useMemo(() => {
     const options: EngineOption[] = [];
     FAL_ENGINE_REGISTRY.forEach((entry) => {
@@ -206,7 +201,6 @@ export function PriceEstimator({
     selectedEngine?.resolutions.find((resolution) => resolution.value === selectedResolution) ??
     selectedEngine?.resolutions[0];
   const rate = activeResolution?.rate ?? 0;
-  const bypassPricing = selectedEngine ? PER_IMAGE_ENGINE_IDS.has(selectedEngine.id) : false;
   const filteredDurationOptions = useMemo(() => {
     if (!selectedEngine) return [];
     const cap =
@@ -240,56 +234,64 @@ export function PriceEstimator({
     }));
   }, [selectedEngine]);
 
-  const pricingMemberTier = (memberTier.toLowerCase() as PricingMemberTier);
-
-  const pricingRule = useMemo(() => {
-    if (!selectedEngine) return null;
-    return selectPricingRule(pricingRules, selectedEngine.pricingEngineId, selectedResolution);
-  }, [pricingRules, selectedEngine, selectedResolution]);
+  const pricingMemberTier = memberTier.toLowerCase() as PublicPricingMembershipTier;
 
   const pricingQuote = useMemo(() => {
-    if (!selectedEngine || bypassPricing) return null;
+    if (!selectedEngine || !activeResolution) return null;
     const pricingCaps = selectedEngine.pricingEngineCaps ?? null;
-    const baseDefinition = pricingCaps ? buildPricingDefinition(pricingCaps) : null;
-    const fallbackDefinition = baseDefinition ?? kernel.getDefinition(selectedEngine.pricingEngineId);
-    if (!fallbackDefinition) return null;
+    if (!pricingCaps) return null;
     try {
       const addons = buildAudioAddonPayload(selectedEngine.audioAddonKey, audioEnabled);
-      const definition = pricingRule
-        ? {
-            ...fallbackDefinition,
-            platformFeePct: pricingRule.marginPercent ?? fallbackDefinition.platformFeePct,
-            platformFeeFlatCents: pricingRule.marginFlatCents ?? fallbackDefinition.platformFeeFlatCents,
-            currency: pricingRule.currency ?? fallbackDefinition.currency,
-          }
-        : fallbackDefinition;
-      return computePricingSnapshot(definition, {
-        engineId: selectedEngine.pricingEngineId,
-        durationSec: duration,
-        resolution: selectedResolution,
-        memberTier: pricingMemberTier,
-        ...(addons ? { addons } : {}),
-      }).quote;
+      const perImage = PER_IMAGE_ENGINE_IDS.has(selectedEngine.id);
+      const mode = pricingCaps.modes.includes(engineMode)
+        ? engineMode
+        : pricingCaps.modes.find((candidate) => SUPPORTED_MODES.has(candidate)) ?? pricingCaps.modes[0];
+      const facts = perImage
+        ? buildPublicUnitPricingFacts({
+            engineId: selectedEngine.pricingEngineId,
+            currency: selectedEngine.currency,
+            unitPriceCents: activeResolution.providerRate * 100,
+            unit: 'image',
+          })
+        : buildPublicPricingFacts({
+            engine: pricingCaps,
+            durationSec: duration,
+            resolution: selectedResolution,
+            mode,
+            ...(addons ? { addons } : {}),
+            useStandardDefinitionFacts: true,
+          });
+      const quote = quotePublicPricing({
+        facts: facts.facts,
+        scenario: {
+          id: `estimator:${selectedEngine.pricingEngineId}:${duration}:${selectedResolution}`,
+          engineId: facts.facts.engineId,
+          ...(mode ? { mode } : {}),
+          resolution: selectedResolution,
+          membershipTier: pricingMemberTier,
+        },
+        compatibilityProfileId: perImage
+          ? facts.compatibilityProfileId
+          : 'public-rounded-vendor-current',
+        pricingRules,
+      });
+      return {
+        quote,
+        snapshot: projectPublicPricingSnapshot({
+          quote,
+          base: facts.base,
+          addons: facts.addons,
+          meta: facts.meta,
+        }),
+      };
     } catch {
       return null;
     }
-  }, [kernel, selectedEngine, duration, selectedResolution, pricingMemberTier, bypassPricing, audioEnabled, pricingRule]);
+  }, [selectedEngine, activeResolution, audioEnabled, engineMode, duration, selectedResolution, pricingMemberTier, pricingRules]);
 
-  const pricingSnapshot = bypassPricing ? null : pricingQuote?.snapshot ?? null;
-  const manualPricing = useMemo(() => {
-    if (!selectedEngine || !PER_IMAGE_ENGINE_IDS.has(selectedEngine.id)) return null;
-    return {
-      base: rate,
-      discountRate: 0,
-      discountValue: 0,
-      total: rate,
-    };
-  }, [selectedEngine, rate]);
+  const pricingSnapshot = pricingQuote?.snapshot ?? null;
 
   const pricing = useMemo(() => {
-    if (manualPricing) {
-      return manualPricing;
-    }
     if (!pricingSnapshot) {
       return {
         base: 0,
@@ -303,9 +305,9 @@ export function PriceEstimator({
     const discountValue = (pricingSnapshot.discount?.amountCents ?? 0) / 100;
     const total = pricingSnapshot.totalCents / 100;
     return { base, discountRate, discountValue, total };
-  }, [pricingSnapshot, manualPricing]);
+  }, [pricingSnapshot]);
 
-  const currency = bypassPricing ? 'USD' : pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
+  const currency = pricingSnapshot?.currency ?? selectedEngine?.currency ?? 'USD';
   const tiers = dictionary.pricing.member.tiers;
   const tooltip = dictionary.pricing.member.tooltip;
   const memberNames = useMemo(
