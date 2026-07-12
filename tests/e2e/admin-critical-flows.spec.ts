@@ -96,6 +96,9 @@ test.describe('admin critical flows', () => {
 
     await openAdminRoute(page, '/admin/pricing');
     const pricingState = await waitForPricingPolicyState(page);
+    if (pricingState === 'timeout') {
+      throw new Error('Timed out waiting for the pricing policy inventory to render.');
+    }
     if (pricingState === 'unavailable') {
       test.skip(true, 'requires configured pricing policy database access');
     }
@@ -116,7 +119,23 @@ test.describe('admin critical flows', () => {
     const flatMarginInput = page.getByLabel('Flat margin (cents)');
     const currentFlatMargin = Number(await flatMarginInput.inputValue());
     await flatMarginInput.fill(String(currentFlatMargin + 1));
+    let releasePreview!: () => void;
+    const previewGate = new Promise<void>((resolve) => {
+      releasePreview = resolve;
+    });
+    await page.route('**/api/admin/pricing/preview', async (route) => {
+      await previewGate;
+      await route.continue();
+    });
     await page.getByRole('button', { name: 'Preview policy change' }).click();
+    try {
+      await expect(flatMarginInput).toBeDisabled();
+      await expect(page.getByLabel('Search policy selectors')).toBeDisabled();
+      await expect(page.getByLabel('Policy source')).toBeDisabled();
+      await expect(firstRow.getByRole('button')).toBeDisabled();
+    } finally {
+      releasePreview();
+    }
 
     const dialog = page.getByRole('dialog', { name: /update|create/i });
     await expect(dialog).toBeVisible();
@@ -167,5 +186,5 @@ async function waitForPricingPolicyState(page: Page) {
     await page.waitForTimeout(250);
   }
 
-  return 'empty' as const;
+  return 'timeout' as const;
 }

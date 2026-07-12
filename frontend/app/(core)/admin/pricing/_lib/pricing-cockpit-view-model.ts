@@ -106,7 +106,24 @@ function selectorPart(value: string | undefined) {
 }
 
 export function pricingPolicyRowKey(row: PricingPolicyInventoryRow): string {
-  return [row.selector.engineId, row.selector.mode, row.selector.resolution].map(selectorPart).join('|');
+  return pricingPolicySelectorKey(row.selector);
+}
+
+export function pricingPolicySelectorKey(selector: PricingPolicySelector): string {
+  return [selector.engineId, selector.mode, selector.resolution].map(selectorPart).join('|');
+}
+
+export function reconcilePricingPolicySelection(
+  visibleRows: PricingPolicyInventoryRow[],
+  selectedKey: string | null
+): string | null {
+  if (!visibleRows.length) return null;
+  if (selectedKey && visibleRows.some((row) => pricingPolicyRowKey(row) === selectedKey)) return selectedKey;
+  return pricingPolicyRowKey(visibleRows[0]!);
+}
+
+export function pricingPolicyProposalSelectorKey(proposal: PricingPolicyProposal): string | null {
+  return proposal.operation === 'delete' ? null : pricingPolicySelectorKey(proposal.rule);
 }
 
 export function formatPricingSelector(selector: PricingPolicySelector): string {

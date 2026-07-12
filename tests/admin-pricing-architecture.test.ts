@@ -7,6 +7,9 @@ import {
   buildPricingPolicyProposal,
   createPricingPolicyDraft,
   filterPricingPolicyRows,
+  pricingPolicyProposalSelectorKey,
+  pricingPolicyRowKey,
+  reconcilePricingPolicySelection,
   type PricingPolicyInventoryRow,
 } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model';
 
@@ -18,6 +21,7 @@ const inspectorPath = join(root, 'frontend/app/(core)/admin/pricing/_components/
 const controllerPath = join(root, 'frontend/app/(core)/admin/pricing/_hooks/useAdminPricingCockpitController.ts');
 const viewModelPath = join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts');
 const previewDialogPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingChangePreviewDialog.tsx');
+const e2ePath = join(root, 'tests/e2e/admin-critical-flows.spec.ts');
 const cockpitPaths = [cockpitPath, tablePath, inspectorPath, controllerPath, viewModelPath, previewDialogPath];
 
 function readOrEmpty(path: string) {
@@ -92,6 +96,28 @@ test('controller enforces preview then fingerprint confirmation and refreshes on
   assert.match(controllerSource, /previewFingerprint:\s*preview\.previewFingerprint/);
   assert.match(controllerSource, /postJson<PricingConfirmApiResponse>\(\s*PRICING_CONFIRM_ENDPOINT/);
   assert.match(controllerSource, /draftSelectionKey/);
+  assert.match(controllerSource, /reconcilePricingPolicySelection\(filteredRows, selectedKey\)/);
+  assert.match(
+    controllerSource,
+    /filteredRows\.find\(\(row\) => pricingPolicyRowKey\(row\) === selectedKey\)/,
+    'selected row must come from the visible filtered inventory'
+  );
+  assert.match(controllerSource, /interactionLocked\s*=\s*previewing \|\| confirming \|\| Boolean\(preview\)/);
+  assert.match(
+    controllerSource,
+    /if \(interactionLocked\) return;\s*const nextSelection = reconcilePricingPolicySelection/,
+    'background inventory refreshes must not move selection while a preview snapshot is locked'
+  );
+  assert.match(controllerSource, /activeDraft\s*=\s*selectedKey === draftSelectionKey \? draft : null/);
+  assert.match(controllerSource, /if \(!selectedRow \|\| !activeDraft\) return/);
+  assert.match(controllerSource, /draft:\s*activeDraft/);
+  assert.match(controllerSource, /if \(interactionLocked\) return/);
+  assert.match(controllerSource, /pricingPolicyProposalSelectorKey\(previewProposal\)/);
+  assert.match(
+    controllerSource,
+    /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)[\s\S]*?setSelectedKey\(nextSelectionKey\)/,
+    'selector-changing confirmations should select the refreshed proposed selector'
+  );
   assert.match(
     controllerSource,
     /if \(!selectedRow \|\| selectedKey === draftSelectionKey\) return/,
@@ -119,7 +145,45 @@ test('generic preview dialog is read-only and requires explicit confirmation', (
   assert.match(dialogSource, /warnings/);
   assert.match(dialogSource, /error\?:\s*string\s*\|\s*null/);
   assert.match(dialogSource, /error\s*\?\s*<AdminNotice[^>]*tone="error"/);
+  assert.match(dialogSource, /role="alert"/);
+  assert.match(dialogSource, /aria-live="assertive"/);
   assert.doesNotMatch(dialogSource, /<input|<select|<textarea/);
+});
+
+test('selection reconciliation never leaves a hidden row editable', () => {
+  const visible = buildInventoryRow('veo-3-1', '1080p');
+  const hidden = buildInventoryRow('kling-3-pro', '720p');
+  const filtered = filterPricingPolicyRows([hidden, visible], { query: 'veo', source: 'all' });
+
+  assert.equal(reconcilePricingPolicySelection(filtered, pricingPolicyRowKey(hidden)), pricingPolicyRowKey(visible));
+  assert.equal(reconcilePricingPolicySelection([], pricingPolicyRowKey(hidden)), null);
+});
+
+test('proposal selector keys follow canonical selector-changing create and update proposals', () => {
+  const row = buildInventoryRow('kling-3-pro', '720p', true);
+  const draft = { ...createPricingPolicyDraft(row), engineId: 'veo-3-1', mode: 't2v', resolution: '1080p' };
+
+  assert.equal(pricingPolicyProposalSelectorKey(buildPricingPolicyProposal(row, draft)), 'veo-3-1|t2v|1080p');
+});
+
+test('preview and confirmation lock every mutable cockpit control', () => {
+  const cockpitSource = readOrEmpty(cockpitPath);
+  const tableSource = readOrEmpty(tablePath);
+  const inspectorSource = readOrEmpty(inspectorPath);
+  assert.match(cockpitSource, /locked=\{controller\.interactionLocked\}/);
+  assert.match(tableSource, /disabled:\s*boolean/);
+  assert.match(tableSource, /disabled=\{disabled\}/g);
+  assert.match(inspectorSource, /locked:\s*boolean/);
+  assert.match(inspectorSource, /disabled=\{locked\}/g);
+});
+
+test('pricing E2E treats render timeouts as failures, never empty inventory skips', () => {
+  const e2eSource = readOrEmpty(e2ePath);
+  assert.match(
+    e2eSource,
+    /async function waitForPricingPolicyState[\s\S]*?return 'timeout' as const\s*;\s*\}/
+  );
+  assert.match(e2eSource, /if \(pricingState === 'timeout'\) \{\s*throw new Error/);
 });
 
 test('cockpit view model preserves an inherited database override selector in update proposals', () => {
@@ -208,3 +272,31 @@ test('pricing confirmation performs a transaction-local locked preview check', (
   assert.match(storeSource, /LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE/);
   assert.match(storeSource, /options\.lock \? 'FOR UPDATE'/);
 });
+
+function buildInventoryRow(
+  engineId: string,
+  resolution: string,
+  databaseOverride = false
+): PricingPolicyInventoryRow {
+  const rule = {
+    id: `${engineId}-${resolution}`,
+    engineId,
+    mode: 't2v',
+    resolution,
+    marginPercent: 0.3,
+    marginFlatCents: 0,
+    surchargeAudioPercent: 0.2,
+    surchargeUpscalePercent: 0.5,
+    currency: 'USD',
+    compatibilityProfile: 'standard',
+  };
+  return {
+    selector: { engineId, mode: 't2v', resolution },
+    versionedRule: databaseOverride ? null : rule,
+    databaseOverride: databaseOverride ? rule : null,
+    effectiveProvenance: null,
+    representativeQuotes: [],
+    routingContext: null,
+    lastEvent: null,
+  };
+}

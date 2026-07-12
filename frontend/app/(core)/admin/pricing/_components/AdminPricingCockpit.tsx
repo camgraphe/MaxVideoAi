@@ -27,7 +27,7 @@ export function AdminPricingCockpit() {
         description="Inspect and propose canonical engine policy changes. Every mutation requires a fresh server-computed impact preview and explicit confirmation."
         actions={
           <>
-            <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing}>
+            <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.interactionLocked}>
               <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </AdminActionButton>
@@ -68,6 +68,7 @@ export function AdminPricingCockpit() {
                 onFiltersChange={controller.setFilters}
                 selectedKey={controller.selectedKey}
                 onSelect={controller.selectRow}
+                disabled={controller.interactionLocked}
               />
             ) : (
               <AdminEmptyState>No pricing policy rows match the current filters.</AdminEmptyState>
@@ -79,6 +80,7 @@ export function AdminPricingCockpit() {
               row={controller.selectedRow}
               draft={controller.draft}
               busy={controller.previewing || controller.confirming}
+              locked={controller.interactionLocked}
               onChange={controller.updateDraft}
               onPreview={() => void controller.openPreview('save')}
               onPreviewDelete={() => void controller.openPreview('delete')}

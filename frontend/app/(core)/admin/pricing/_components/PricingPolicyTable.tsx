@@ -17,6 +17,7 @@ type PricingPolicyTableProps = {
   onFiltersChange: (filters: PricingCockpitFilters) => void;
   selectedKey: string | null;
   onSelect: (key: string) => void;
+  disabled: boolean;
 };
 
 export function PricingPolicyTable({
@@ -25,6 +26,7 @@ export function PricingPolicyTable({
   onFiltersChange,
   selectedKey,
   onSelect,
+  disabled,
 }: PricingPolicyTableProps) {
   return (
     <div className="space-y-4">
@@ -34,6 +36,7 @@ export function PricingPolicyTable({
           <input
             aria-label="Search policy selectors"
             value={filters.query}
+            disabled={disabled}
             onChange={(event) => onFiltersChange({ ...filters, query: event.target.value })}
             placeholder="Engine, mode, resolution or rule ID"
             className="min-h-[40px] w-full rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
@@ -44,6 +47,7 @@ export function PricingPolicyTable({
           <select
             aria-label="Policy source"
             value={filters.source}
+            disabled={disabled}
             onChange={(event) => onFiltersChange({ ...filters, source: event.target.value as PricingCockpitFilters['source'] })}
             className="min-h-[40px] w-full rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
           >
@@ -74,11 +78,12 @@ export function PricingPolicyTable({
               <tr
                 key={key}
                 data-selected={selected ? 'true' : undefined}
-                className={`cursor-pointer border-t border-hairline transition hover:bg-bg ${selected ? 'bg-info-bg' : ''}`}
-                onClick={() => onSelect(key)}
+                aria-disabled={disabled}
+                className={`${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-bg'} border-t border-hairline transition ${selected ? 'bg-info-bg' : ''}`}
+                onClick={() => { if (!disabled) onSelect(key); }}
               >
                 <td className="px-4 py-3">
-                  <button type="button" className="text-left" onClick={() => onSelect(key)}>
+                  <button type="button" disabled={disabled} className="text-left" onClick={() => onSelect(key)}>
                     <span className="block font-medium text-text-primary">{formatPricingSelector(row.selector)}</span>
                     <span className="mt-1 block font-mono text-[11px] text-text-muted">{rule?.id ?? 'No rule'}</span>
                   </button>

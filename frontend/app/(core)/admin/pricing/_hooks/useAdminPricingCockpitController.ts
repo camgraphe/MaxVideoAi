@@ -8,7 +8,9 @@ import {
   buildPricingPolicyProposal,
   createPricingPolicyDraft,
   filterPricingPolicyRows,
+  pricingPolicyProposalSelectorKey,
   pricingPolicyRowKey,
+  reconcilePricingPolicySelection,
   type PricingCockpitError,
   type PricingCockpitFilters,
   type PricingConfirmApiResponse,
@@ -58,7 +60,7 @@ export function useAdminPricingCockpitController() {
   const historyQuery = useSWR<PricingHistoryApiResponse>(PRICING_HISTORY_ENDPOINT, apiFetcher);
   const refreshInventory = inventoryQuery.mutate;
   const refreshHistory = historyQuery.mutate;
-  const [filters, setFilters] = useState<PricingCockpitFilters>({ query: '', source: 'all' });
+  const [filters, setFilterState] = useState<PricingCockpitFilters>({ query: '', source: 'all' });
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<PricingPolicyDraft | null>(null);
   const [draftSelectionKey, setDraftSelectionKey] = useState<string | null>(null);
@@ -68,25 +70,23 @@ export function useAdminPricingCockpitController() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<PricingCockpitError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const interactionLocked = previewing || confirming || Boolean(preview);
 
   const inventory = inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
   const history = historyQuery.data?.ok ? historyQuery.data.events : [];
   const rows = useMemo(() => inventory?.rows ?? [], [inventory]);
   const filteredRows = useMemo(() => filterPricingPolicyRows(rows, filters), [filters, rows]);
   const selectedRow = useMemo(
-    () => rows.find((row) => pricingPolicyRowKey(row) === selectedKey) ?? null,
-    [rows, selectedKey]
+    () => filteredRows.find((row) => pricingPolicyRowKey(row) === selectedKey) ?? null,
+    [filteredRows, selectedKey]
   );
+  const activeDraft = selectedKey === draftSelectionKey ? draft : null;
 
   useEffect(() => {
-    if (!rows.length) {
-      setSelectedKey(null);
-      return;
-    }
-    if (!selectedKey || !rows.some((row) => pricingPolicyRowKey(row) === selectedKey)) {
-      setSelectedKey(pricingPolicyRowKey(rows[0]!));
-    }
-  }, [rows, selectedKey]);
+    if (interactionLocked) return;
+    const nextSelection = reconcilePricingPolicySelection(filteredRows, selectedKey);
+    if (nextSelection !== selectedKey) setSelectedKey(nextSelection);
+  }, [filteredRows, interactionLocked, selectedKey]);
 
   useEffect(() => {
     if (!selectedRow || selectedKey === draftSelectionKey) return;
@@ -95,24 +95,31 @@ export function useAdminPricingCockpitController() {
   }, [draftSelectionKey, selectedKey, selectedRow]);
 
   const selectRow = useCallback((key: string) => {
+    if (interactionLocked) return;
     setError(null);
     setNotice(null);
     setSelectedKey(key);
-  }, []);
+  }, [interactionLocked]);
+  const setFilters = useCallback((nextFilters: PricingCockpitFilters) => {
+    if (interactionLocked) return;
+    setFilterState(nextFilters);
+  }, [interactionLocked]);
   const updateDraft = useCallback((field: keyof PricingPolicyDraft, value: string) => {
+    if (interactionLocked) return;
     setDraft((current) => current ? { ...current, [field]: value } : current);
     setNotice(null);
-  }, []);
+  }, [interactionLocked]);
 
   const openPreview = useCallback(async (kind: 'save' | 'delete' = 'save') => {
-    if (!selectedRow) return;
+    if (interactionLocked) return;
+    if (!selectedRow || !activeDraft) return;
     setPreviewing(true);
     setError(null);
     setNotice(null);
     try {
       const proposal = kind === 'delete'
         ? { operation: 'delete' as const, targetId: selectedRow.databaseOverride?.id ?? '' }
-        : buildPricingPolicyProposal(selectedRow, draft!);
+        : buildPricingPolicyProposal(selectedRow, activeDraft);
       if (proposal.operation === 'delete' && !proposal.targetId) {
         throw new Error('Only database overrides can be deleted.');
       }
@@ -131,7 +138,7 @@ export function useAdminPricingCockpitController() {
     } finally {
       setPreviewing(false);
     }
-  }, [draft, selectedRow]);
+  }, [activeDraft, interactionLocked, selectedRow]);
 
   const cancelPreview = useCallback(() => {
     if (confirming) return;
@@ -141,6 +148,7 @@ export function useAdminPricingCockpitController() {
 
   const confirmPreview = useCallback(async () => {
     if (!preview || !previewProposal) return;
+    const nextSelectionKey = pricingPolicyProposalSelectorKey(previewProposal);
     setConfirming(true);
     setError(null);
     try {
@@ -160,6 +168,10 @@ export function useAdminPricingCockpitController() {
           : 'Pricing policy change applied.'
       );
       await Promise.all([refreshInventory(), refreshHistory()]);
+      if (nextSelectionKey && nextSelectionKey !== selectedKey) {
+        setFilterState({ query: '', source: 'all' });
+        setSelectedKey(nextSelectionKey);
+      }
       setDraftSelectionKey(null);
     } catch (caught) {
       setError(caught && typeof caught === 'object' && 'code' in caught
@@ -168,12 +180,13 @@ export function useAdminPricingCockpitController() {
     } finally {
       setConfirming(false);
     }
-  }, [preview, previewProposal, refreshHistory, refreshInventory]);
+  }, [preview, previewProposal, refreshHistory, refreshInventory, selectedKey]);
 
   const refresh = useCallback(async () => {
+    if (interactionLocked) return;
     setError(null);
     await Promise.all([refreshInventory(), refreshHistory()]);
-  }, [refreshHistory, refreshInventory]);
+  }, [interactionLocked, refreshHistory, refreshInventory]);
 
   const fetchError = inventoryQuery.error
     ? toCockpitError(inventoryQuery.error, 'Unable to load pricing policy.')
@@ -190,11 +203,12 @@ export function useAdminPricingCockpitController() {
     selectedKey,
     selectedRow,
     selectRow,
-    draft,
+    draft: activeDraft,
     updateDraft,
     preview,
     previewing,
     confirming,
+    interactionLocked,
     openPreview,
     cancelPreview,
     confirmPreview,

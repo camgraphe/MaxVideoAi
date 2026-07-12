@@ -12,6 +12,7 @@ type PricingPolicyInspectorProps = {
   row: PricingPolicyInventoryRow;
   draft: PricingPolicyDraft;
   busy: boolean;
+  locked: boolean;
   onChange: (field: keyof PricingPolicyDraft, value: string) => void;
   onPreview: () => void;
   onPreviewDelete: () => void;
@@ -38,6 +39,7 @@ export function PricingPolicyInspector({
   row,
   draft,
   busy,
+  locked,
   onChange,
   onPreview,
   onPreviewDelete,
@@ -55,6 +57,7 @@ export function PricingPolicyInspector({
           <span>Rule ID</span>
           <input
             value={draft.id}
+            disabled={locked}
             readOnly={Boolean(row.databaseOverride)}
             onChange={(event) => onChange('id', event.target.value)}
             className="min-h-[40px] w-full rounded-input border border-border bg-bg px-3 font-mono text-sm text-text-primary read-only:text-text-muted focus:outline-none focus:ring-2 focus:ring-ring"
@@ -72,6 +75,7 @@ export function PricingPolicyInspector({
                 min={type === 'number' ? 0 : undefined}
                 step={step}
                 value={draft[field]}
+                disabled={locked}
                 onChange={(event) => onChange(field, event.target.value)}
                 className="min-h-[40px] w-full rounded-input border border-border bg-bg px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
               />
@@ -86,11 +90,11 @@ export function PricingPolicyInspector({
         </AdminNotice>
 
         <div className="flex flex-wrap gap-2">
-          <AdminActionButton type="button" variant="primary" onClick={onPreview} disabled={busy}>
+          <AdminActionButton type="button" variant="primary" onClick={onPreview} disabled={locked}>
             {busy ? 'Building preview…' : 'Preview policy change'}
           </AdminActionButton>
           {canDelete ? (
-            <AdminActionButton type="button" onClick={onPreviewDelete} disabled={busy || Boolean(row.routingContext?.vendorAccountId)}>
+            <AdminActionButton type="button" onClick={onPreviewDelete} disabled={locked || Boolean(row.routingContext?.vendorAccountId)}>
               Preview override deletion
             </AdminActionButton>
           ) : null}

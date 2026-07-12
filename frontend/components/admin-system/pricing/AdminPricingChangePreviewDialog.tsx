@@ -54,7 +54,7 @@ export function AdminPricingChangePreviewDialog({
         </header>
 
         <div className="space-y-4 overflow-y-auto px-5 py-5">
-          {error ? <AdminNotice tone="error">{error}</AdminNotice> : null}
+          {error ? <AdminNotice tone="error"><span role="alert" aria-live="assertive">{error}</span></AdminNotice> : null}
           {preview.warnings.map((warning) => <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>)}
           <AdminDataTable tone="muted" tableClassName="min-w-[980px]">
             <thead className="bg-surface">
