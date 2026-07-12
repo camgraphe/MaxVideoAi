@@ -68,8 +68,10 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
   const [, startTransition] = useTransition();
 
   useEffect(() => {
-    setPendingLocale(locale);
-  }, [locale]);
+    const rawPathname =
+      typeof window !== 'undefined' && window.location?.pathname ? window.location.pathname : pathname;
+    setPendingLocale(resolveMarketingLocaleFromPathname(rawPathname, locale));
+  }, [locale, pathname]);
 
   const handleChange = (value: Locale) => {
     setPendingLocale(value);
@@ -82,6 +84,7 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
         typeof window !== 'undefined' && window.location?.pathname
           ? window.location.pathname
           : pathname;
+      const currentLocale = resolveMarketingLocaleFromPathname(rawPathname, locale);
       const slugParam = params?.slug;
       const usecaseParam = params?.usecase;
       let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
@@ -113,7 +116,7 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
       if (slugValue && isBlogPage) {
         const decodedSlug = decodePathSegment(slugValue);
         const canonicalSlug =
-          resolveBlogCanonicalSlug(locale as Locale, decodedSlug) ?? resolveBlogCanonicalSlug('en', decodedSlug) ?? decodedSlug;
+          resolveBlogCanonicalSlug(currentLocale, decodedSlug) ?? resolveBlogCanonicalSlug('en', decodedSlug) ?? decodedSlug;
         const targetSlug = resolveLocalizedBlogSlug(canonicalSlug, value) ?? canonicalSlug;
         router.replace({ pathname: '/blog/[slug]', params: { slug: targetSlug } }, { locale: value });
         return;
@@ -141,10 +144,16 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
         router.refresh();
         return;
       }
-      const englishPath = resolveEnglishPath(targetPath, locale as Locale);
+      const englishPath = resolveEnglishPath(targetPath, currentLocale);
       router.replace(englishPath as never, { locale: value });
     });
   };
+
+function resolveMarketingLocaleFromPathname(pathname: string | null | undefined, fallback: Locale): Locale {
+  if (!pathname) return fallback;
+  const match = pathname?.match(/^\/(fr|es)(?:\/|$)/i);
+  return match ? (match[1].toLowerCase() as Locale) : 'en';
+}
 
 function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
   if (currentLocale === 'en') {
