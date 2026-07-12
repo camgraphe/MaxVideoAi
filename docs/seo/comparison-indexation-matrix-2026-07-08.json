@@ -51,10 +51,10 @@
       "es": 292
     },
     "byClassification": {
-      "keep": 220,
-      "enrich": 49,
-      "review": 380,
-      "noindex_candidate": 227
+      "keep": 292,
+      "enrich": 28,
+      "review": 347,
+      "noindex_candidate": 209
     }
   },
   "rows": [
@@ -928,11 +928,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-2-5-turbo-vs-veo-3-1"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1004,11 +1004,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-2-5-turbo-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1042,11 +1042,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-kling-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1190,11 +1190,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-minimax-hailuo-02-text"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1393,11 +1393,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-2-6-pro-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1458,11 +1458,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-3-4k-vs-kling-3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -1648,11 +1648,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-3-4k-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -2332,11 +2332,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/kling-3-standard-vs-kling-o3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -2844,7 +2844,7 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override"
       ],
@@ -2852,6 +2852,7 @@
       "rationale": [
         "gsc_clicks",
         "gsc_high_impressions",
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -2867,11 +2868,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-luma-ray-2"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -2959,12 +2960,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -3024,11 +3026,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-sora-2-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -3104,12 +3106,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -3144,12 +3147,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-3-pro-vs-ltx-2-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -3466,11 +3470,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-fast-vs-minimax-hailuo-02-text"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -3706,12 +3710,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-vs-ltx-2-3-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -3726,12 +3731,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-vs-ltx-2-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -4027,7 +4033,7 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/ltx-2-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "use_case_bucket"
       ],
@@ -4035,6 +4041,7 @@
       "rationale": [
         "gsc_clicks",
         "gsc_high_impressions",
+        "localized_editorial_override",
         "english_strategic_surface"
       ]
     },
@@ -4279,11 +4286,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -4396,11 +4403,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/luma-ray-2-vs-seedance-2-0-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -4666,12 +4673,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/minimax-hailuo-02-text-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -4763,11 +4771,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/minimax-hailuo-02-text-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -4820,11 +4828,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/minimax-hailuo-02-text-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -5015,11 +5023,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/pika-text-to-video-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -5246,11 +5254,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/seedance-2-0-fast-vs-veo-3-1"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -5447,11 +5455,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -5485,12 +5493,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/seedance-2-0-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -5787,11 +5796,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/veo-3-1-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -5888,12 +5897,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/veo-3-1-vs-veo-3-1-lite"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
         "gsc_clicks",
-        "gsc_high_impressions"
+        "gsc_high_impressions",
+        "localized_editorial_override"
       ]
     },
     {
@@ -5908,11 +5918,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/ai-video-engines/veo-3-1-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -6781,11 +6791,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -6853,11 +6863,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -6891,11 +6901,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/kling-2-6-pro-vs-kling-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -7029,11 +7039,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -7227,11 +7237,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/kling-2-6-pro-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -7291,11 +7301,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/kling-3-4k-vs-kling-3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -7473,11 +7483,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/kling-3-4k-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8127,11 +8137,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/kling-3-standard-vs-kling-o3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8612,13 +8622,13 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override"
       ],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "strategic_localization_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8633,11 +8643,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-luma-ray-2"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8723,11 +8733,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8782,11 +8792,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-sora-2-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -8858,11 +8869,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-3-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -8897,11 +8908,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-3-pro-vs-ltx-2-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -9211,11 +9222,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -9437,11 +9448,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-vs-ltx-2-3-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -9456,11 +9467,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-vs-ltx-2-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -9740,14 +9752,13 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/ltx-2-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "use_case_bucket"
       ],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity",
-        "strategic_localization_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -9970,11 +9981,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10085,11 +10096,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/luma-ray-2-vs-seedance-2-0-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10337,11 +10348,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/minimax-hailuo-02-text-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10426,11 +10437,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10479,11 +10490,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10662,11 +10673,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -10877,11 +10888,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/seedance-2-0-fast-vs-veo-3-1"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11066,11 +11077,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11102,11 +11113,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11393,11 +11404,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/veo-3-1-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11490,11 +11501,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/fr/comparatif/veo-3-1-vs-veo-3-1-lite"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -11507,11 +11518,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12400,11 +12411,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12474,11 +12485,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-2-5-turbo-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12512,11 +12523,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-2-6-pro-vs-kling-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12654,11 +12665,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12853,11 +12864,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-2-6-pro-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -12918,11 +12929,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-3-4k-vs-kling-3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "low_demand_outside_top_10"
+        "localized_editorial_override"
       ]
     },
     {
@@ -13104,11 +13115,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-3-4k-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -13774,11 +13785,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/kling-3-standard-vs-kling-o3-standard"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -14287,13 +14299,14 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-ltx-2-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "opponent_override"
       ],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -14308,11 +14321,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-luma-ray-2"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -14404,11 +14418,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -14466,11 +14480,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-sora-2-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -14545,11 +14559,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -14586,11 +14600,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-3-pro-vs-ltx-2-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "low_demand_outside_top_10"
+        "localized_editorial_override"
       ]
     },
     {
@@ -14909,11 +14923,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-fast-vs-minimax-hailuo-02-text"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -15142,11 +15156,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-vs-ltx-2-3-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "enrich",
+      "classification": "keep",
       "rationale": [
-        "gsc_enrichment_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -15161,11 +15175,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-vs-ltx-2-3-pro"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -15456,13 +15470,14 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/ltx-2-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [
         "use_case_bucket"
       ],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -15687,11 +15702,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
@@ -15801,11 +15816,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/luma-ray-2-vs-seedance-2-0-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -16066,11 +16082,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/minimax-hailuo-02-text-vs-seedance-2-0"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16161,11 +16177,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/minimax-hailuo-02-text-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16218,11 +16234,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/minimax-hailuo-02-text-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16408,11 +16424,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/pika-text-to-video-vs-wan-2-6"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16629,11 +16645,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/seedance-2-0-fast-vs-veo-3-1"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16828,11 +16844,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/seedance-2-0-vs-veo-3-1-fast"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_review_opportunity"
+        "localized_editorial_override"
       ]
     },
     {
@@ -16866,11 +16882,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/seedance-2-0-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -17160,11 +17176,11 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/veo-3-1-fast-vs-wan-2-5"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "review",
+      "classification": "keep",
       "rationale": [
-        "gsc_top_10_review"
+        "localized_editorial_override"
       ]
     },
     {
@@ -17258,11 +17274,12 @@
       "gscSourceUrls": [
         "https://maxvideoai.com/es/comparativa/veo-3-1-vs-veo-3-1-lite"
       ],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
       "classification": "keep",
       "rationale": [
-        "gsc_clicks"
+        "gsc_clicks",
+        "localized_editorial_override"
       ]
     },
     {
@@ -17275,11 +17292,11 @@
       "position": 0,
       "hasGscRow": false,
       "gscSourceUrls": [],
-      "hasLocalizedOverride": false,
+      "hasLocalizedOverride": true,
       "strategicSignals": [],
-      "classification": "noindex_candidate",
+      "classification": "keep",
       "rationale": [
-        "no_gsc_row_or_editorial_signal"
+        "localized_editorial_override"
       ]
     },
     {
