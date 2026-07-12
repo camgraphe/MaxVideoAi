@@ -1,8 +1,25 @@
 import { comparePricingOutputs } from '@maxvideoai/pricing';
+import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 
-import { collectCanonicalPricingOutputs } from './canonical-collectors';
+import { collectCanonicalPricingOutputs, type CanonicalPricingAuditOutput } from './canonical-collectors';
 import { collectLegacyPricingOutputs } from './legacy-collectors';
-import type { PricingAuditSurface } from './types';
+import type { FrozenPricingOutput, PricingAuditSurface } from './types';
+
+export type PricingAuditErrorCode =
+  | 'duplicate_scenario'
+  | 'missing_scenario'
+  | 'invalid_quote'
+  | 'unapproved_compatibility_profile';
+
+export class PricingAuditError extends Error {
+  readonly code: PricingAuditErrorCode;
+
+  constructor(code: PricingAuditErrorCode, message: string) {
+    super(message);
+    this.name = 'PricingAuditError';
+    this.code = code;
+  }
+}
 
 export type PricingAuditMatrixRow = {
   scenarioId: string;
@@ -30,16 +47,57 @@ export type PricingAuditMatrix = {
   rows: PricingAuditMatrixRow[];
 };
 
-export async function buildPricingAuditMatrix(): Promise<PricingAuditMatrix> {
-  const current = await collectLegacyPricingOutputs();
-  const canonical = await collectCanonicalPricingOutputs();
+function assertUniqueRows(rows: Array<{ scenarioId: string }>, label: string): void {
+  const ids = new Set<string>();
+  for (const row of rows) {
+    if (ids.has(row.scenarioId)) {
+      throw new PricingAuditError('duplicate_scenario', `${label} contains duplicate scenario ${row.scenarioId}`);
+    }
+    ids.add(row.scenarioId);
+  }
+}
+
+function assertValidOutput(row: FrozenPricingOutput, label: string): void {
+  for (const field of ['vendorSubtotalCents', 'marginCents', 'surchargeCents', 'customerTotalCents'] as const) {
+    const value = row[field];
+    if (!Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+      throw new PricingAuditError('invalid_quote', `${label} ${row.scenarioId} has invalid ${field}`);
+    }
+  }
+  if (!Number.isFinite(row.quantity) || row.quantity < 0 || !row.currency.trim() || !row.unit.trim()) {
+    throw new PricingAuditError('invalid_quote', `${label} ${row.scenarioId} has invalid unit, quantity, or currency`);
+  }
+}
+
+export function buildPricingAuditMatrixFromOutputs(
+  current: FrozenPricingOutput[],
+  canonical: CanonicalPricingAuditOutput[],
+  approvedCompatibilityProfiles?: ReadonlySet<string>
+): PricingAuditMatrix {
+  assertUniqueRows(current, 'legacy outputs');
+  assertUniqueRows(canonical, 'canonical outputs');
+  current.forEach((row) => assertValidOutput(row, 'legacy output'));
+  canonical.forEach((row) => assertValidOutput(row, 'canonical output'));
   const currentById = new Map(current.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(canonical.map((row) => [row.scenarioId, row]));
   const ids = [...new Set([...currentById.keys(), ...canonicalById.keys()])].sort();
   const rows = ids.map((scenarioId): PricingAuditMatrixRow => {
     const currentRow = currentById.get(scenarioId);
     const canonicalRow = canonicalById.get(scenarioId);
-    if (!currentRow || !canonicalRow) throw new Error(`Missing pricing audit mapping for ${scenarioId}`);
+    if (!currentRow || !canonicalRow) {
+      throw new PricingAuditError('missing_scenario', `missing pricing audit mapping for ${scenarioId}`);
+    }
+    const compatibilityProfile = canonicalRow.compatibilityProfile ?? currentRow.compatibilityProfile;
+    if (
+      compatibilityProfile &&
+      approvedCompatibilityProfiles &&
+      !approvedCompatibilityProfiles.has(compatibilityProfile)
+    ) {
+      throw new PricingAuditError(
+        'unapproved_compatibility_profile',
+        `${scenarioId} uses unapproved compatibility profile ${compatibilityProfile}`
+      );
+    }
     const comparison = comparePricingOutputs(scenarioId, currentRow, canonicalRow);
     return {
       scenarioId,
@@ -50,7 +108,7 @@ export async function buildPricingAuditMatrix(): Promise<PricingAuditMatrix> {
       deltaCents: comparison.deltaCents,
       policySource: canonicalRow.policySource,
       policyRuleId: canonicalRow.policyRuleId,
-      ...(canonicalRow.compatibilityProfile ? { compatibilityProfile: canonicalRow.compatibilityProfile } : {}),
+      ...(compatibilityProfile ? { compatibilityProfile } : {}),
       migrationState:
         comparison.status === 'match'
           ? 'legacy-authoritative-shadow-match'
@@ -70,4 +128,13 @@ export async function buildPricingAuditMatrix(): Promise<PricingAuditMatrix> {
     },
     rows,
   };
+}
+
+export async function buildPricingAuditMatrix(): Promise<PricingAuditMatrix> {
+  const policy = getVersionedPricingPolicy();
+  return buildPricingAuditMatrixFromOutputs(
+    await collectLegacyPricingOutputs(),
+    await collectCanonicalPricingOutputs(),
+    new Set(policy.compatibilityProfiles.map((profile) => profile.id))
+  );
 }

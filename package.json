@@ -27,6 +27,7 @@
     "models:audit": "node scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
     "pricing:baseline:generate": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts --write",
+    "pricing:audit": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-audit.ts",
     "architecture:audit": "node scripts/audit-large-files.mjs",
     "db:migrate:neon": "bash scripts/apply-neon-migrations.sh",
     "neon:branches:check": "node scripts/neon-branch-guard.mjs",

@@ -62,7 +62,7 @@ The committed baseline is generated only from current authoritative paths and co
 pnpm pricing:baseline
 pnpm pricing:baseline:generate
 pnpm pricing:audit
-pnpm pricing:audit -- --json
+pnpm --silent pricing:audit -- --json
 ```
 
 `pricing:baseline:generate` is an intentional write operation. The other commands do not mutate pricing policy or application state.

@@ -33,3 +33,66 @@ test('every cross-surface pricing difference is explicitly profiled', async () =
   const current = await collectLegacyPricingOutputs();
   assert.deepEqual(findUnprofiledCrossSurfaceDifferences(current), []);
 });
+
+test('matrix validation rejects missing scenarios and invalid quote fields with stable codes', async () => {
+  const { PricingAuditError, buildPricingAuditMatrixFromOutputs } = await import(
+    '../frontend/src/lib/pricing-audit/matrix.ts'
+  );
+  const current = {
+    scenarioId: 'one',
+    surface: 'billing' as const,
+    currency: 'USD',
+    vendorSubtotalCents: 10,
+    marginCents: 3,
+    surchargeCents: 0,
+    customerTotalCents: 13,
+    unit: 'run',
+    quantity: 1,
+  };
+  const canonical = {
+    ...current,
+    engineId: 'engine-a',
+    policySource: 'versioned' as const,
+    policyRuleId: 'default',
+  };
+
+  assert.throws(
+    () => buildPricingAuditMatrixFromOutputs([current], []),
+    (error: unknown) => error instanceof PricingAuditError && error.code === 'missing_scenario'
+  );
+  assert.throws(
+    () =>
+      buildPricingAuditMatrixFromOutputs(
+        [{ ...current, customerTotalCents: Number.NaN }],
+        [{ ...canonical, customerTotalCents: Number.NaN }]
+      ),
+    (error: unknown) => error instanceof PricingAuditError && error.code === 'invalid_quote'
+  );
+});
+
+test('matrix validation rejects unapproved compatibility profiles', async () => {
+  const { PricingAuditError, buildPricingAuditMatrixFromOutputs } = await import(
+    '../frontend/src/lib/pricing-audit/matrix.ts'
+  );
+  const current = {
+    scenarioId: 'one',
+    surface: 'billing' as const,
+    currency: 'USD',
+    vendorSubtotalCents: 10,
+    marginCents: 3,
+    surchargeCents: 0,
+    customerTotalCents: 13,
+    unit: 'run',
+    quantity: 1,
+    compatibilityProfile: 'unapproved',
+  };
+  assert.throws(
+    () =>
+      buildPricingAuditMatrixFromOutputs(
+        [current],
+        [{ ...current, engineId: 'engine-a', policySource: 'versioned', policyRuleId: 'default' }],
+        new Set(['standard'])
+      ),
+    (error: unknown) => error instanceof PricingAuditError && error.code === 'unapproved_compatibility_profile'
+  );
+});
