@@ -130,7 +130,7 @@ export async function middleware(req: NextRequest) {
   }
 
   if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
-    const preferredLocale = detectedLocale ?? getPreferredLocale(req);
+    const preferredLocale = getPreferredLocale(req) ?? detectedLocale ?? defaultLocale;
     const prefix = localePathnames[preferredLocale];
     if (typeof prefix === 'string') {
       const suffix = pathname === '/' ? '' : pathname;

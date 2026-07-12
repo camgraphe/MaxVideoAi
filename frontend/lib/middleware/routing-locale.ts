@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import createMiddleware from 'next-intl/middleware';
 import { routing } from '@/i18n/routing';
-import { defaultLocale, localePathnames, locales, type AppLocale } from '@/i18n/locales';
+import { localePathnames, locales, type AppLocale } from '@/i18n/locales';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
 import localizedSlugConfig from '@/config/localized-slugs.json';
 
@@ -172,7 +172,7 @@ function resolveSharedLocaleCookieDomain(hostname: string): string | undefined {
     : undefined;
 }
 
-export function getPreferredLocale(req: NextRequest): (typeof locales)[number] {
+export function getPreferredLocale(req: NextRequest): (typeof locales)[number] | null {
   const cookieLocale = req.cookies.get(LOCALE_COOKIE)?.value;
   if (cookieLocale && LOCALE_SET.has(cookieLocale as (typeof locales)[number])) {
     return cookieLocale as (typeof locales)[number];
@@ -181,7 +181,7 @@ export function getPreferredLocale(req: NextRequest): (typeof locales)[number] {
   if (nextLocale && LOCALE_SET.has(nextLocale as (typeof locales)[number])) {
     return nextLocale as (typeof locales)[number];
   }
-  return defaultLocale;
+  return null;
 }
 
 export function splitLocaleFromPath(pathname: string) {
