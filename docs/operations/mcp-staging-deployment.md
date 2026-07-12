@@ -133,7 +133,9 @@ bash scripts/deploy-mcp-staging-vercel.sh --dry-run
 bash scripts/deploy-mcp-staging-vercel.sh
 ```
 
-The dry run exports tracked `HEAD` into an isolated temporary directory, makes
+Before either dry-run success or a real deployment, the wrapper rejects any
+tracked, staged, or untracked worktree change. The dry run exports tracked
+`HEAD` into an isolated temporary directory, makes
 `frontend/vercel.mcp-staging.json` the effective temporary
 `frontend/vercel.json`, and verifies the repo-root workspace and staging config
 without contacting Vercel.
@@ -141,10 +143,22 @@ without contacting Vercel.
 The real invocation repeats those checks, asserts the exact Vercel scope and
 project, links only the temporary directory, and creates a production-target
 candidate with `--skip-domain`. The stable alias is not changed at this point.
+The deployment receives only two sanitized provenance metadata values:
+`mcpApprovedGitSha`, containing the exact full tracked commit SHA, and
+`mcpTrackedArchiveSha256`, containing the SHA-256 digest of `git archive HEAD`.
 The wrapper waits for `READY` and rejects the candidate unless all pre-promotion
 checks pass: the deployment belongs to `maxvideoai-mcp-staging`, the API cron
-list is empty, and the direct candidate origin is anonymous and carries the
-exact global noindex header. Only then does it call `vercel promote`.
+list is empty, both metadata values exactly match the current clean approved
+`HEAD`, and the direct candidate origin is anonymous and carries the exact
+global noindex header. Missing or mismatched provenance aborts before
+promotion. Only then does it call `vercel promote`.
+
+To resume validation of an already-created unaliased candidate, use
+`bash scripts/deploy-mcp-staging-vercel.sh --candidate dpl_ID` from the same
+clean approved revision. Resume mode performs the identical deployment-API
+checks, including exact `mcpApprovedGitSha` and
+`mcpTrackedArchiveSha256` matching; it cannot promote legacy or unrelated
+candidates that lack those values.
 
 After promotion the wrapper proves that the stable alias resolves to the same
 candidate, rechecks the noindex header, OAuth protected-resource metadata, and
@@ -156,6 +170,8 @@ are removed by a trap. No environment-variable value is read or printed.
 The acceptance conditions are all mandatory:
 
 - the deployment belongs to `maxvideoai-mcp-staging`;
+- `mcpApprovedGitSha` and `mcpTrackedArchiveSha256` match the current clean
+  tracked revision exactly;
 - its cron list is empty;
 - every response includes `X-Robots-Tag: noindex, nofollow, noarchive`;
 - the stable alias resolves directly without Vercel Authentication;

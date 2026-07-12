@@ -39,6 +39,20 @@ while (($#)); do
 done
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+if ! git -C "$REPO_ROOT" diff --quiet || ! git -C "$REPO_ROOT" diff --cached --quiet; then
+  printf 'Refusing deployment: commit tracked changes first; this script exports tracked HEAD.\n' >&2
+  exit 65
+fi
+if test -n "$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)"; then
+  printf 'Refusing deployment: untracked files are present; review and commit or remove them first.\n' >&2
+  exit 65
+fi
+
+APPROVED_HEAD="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+[[ "$APPROVED_HEAD" =~ ^[0-9a-f]{40,64}$ ]]
+TRACKED_ARCHIVE_SHA256="$(git -C "$REPO_ROOT" archive HEAD | shasum -a 256 | awk '{print $1}')"
+[[ "$TRACKED_ARCHIVE_SHA256" =~ ^[0-9a-f]{64}$ ]]
+
 TEMP_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/maxvideoai-mcp-staging.XXXXXX")"
 cleanup() {
   rm -rf "$TEMP_ROOT"
@@ -85,15 +99,6 @@ if "$DRY_RUN"; then
       "$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
   fi
   exit 0
-fi
-
-if ! git -C "$REPO_ROOT" diff --quiet || ! git -C "$REPO_ROOT" diff --cached --quiet; then
-  printf 'Refusing deployment: commit tracked changes first; this script exports tracked HEAD.\n' >&2
-  exit 65
-fi
-if test -n "$(git -C "$REPO_ROOT" ls-files --others --exclude-standard)"; then
-  printf 'Refusing deployment: untracked files are present; review and commit or remove them first.\n' >&2
-  exit 65
 fi
 
 VERCEL=(npx --yes "vercel@${VERCEL_VERSION}")
@@ -162,6 +167,8 @@ else
     --scope "$STAGING_SCOPE" \
     --prod \
     --skip-domain \
+    --meta mcpApprovedGitSha="$APPROVED_HEAD" \
+    --meta mcpTrackedArchiveSha256="$TRACKED_ARCHIVE_SHA256" \
     --yes \
     --format json \
     --no-color >"$ARTIFACTS/deploy.json"
@@ -193,10 +200,14 @@ fi
   --raw >"$ARTIFACTS/candidate-api.json"
 jq -e \
   --arg project_id "$STAGING_PROJECT_ID" \
-  --arg stable "$STABLE_HOST" '
+  --arg stable "$STABLE_HOST" \
+  --arg approved_head "$APPROVED_HEAD" \
+  --arg archive_sha256 "$TRACKED_ARCHIVE_SHA256" '
     .projectId == $project_id and
     .readyState == "READY" and
     .target == "production" and
+    .meta.mcpApprovedGitSha == $approved_head and
+    .meta.mcpTrackedArchiveSha256 == $archive_sha256 and
     has("crons") and
     (.crons | type == "array") and
     (.crons | length == 0) and

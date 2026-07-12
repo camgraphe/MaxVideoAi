@@ -521,7 +521,8 @@ repository root run:
 bash scripts/deploy-mcp-staging-vercel.sh --dry-run
 ```
 
-The wrapper exports tracked `HEAD` to a temporary repo-root tree so
+Before it can print `SAFE_PACKAGE_OK`, the wrapper rejects staged, tracked, or
+untracked worktree changes. It then exports tracked `HEAD` to a temporary repo-root tree so
 `packages/pricing` is present. It makes
 `frontend/vercel.mcp-staging.json` the effective temporary
 `frontend/vercel.json`, then asserts that the config has no cron list and has
@@ -548,14 +549,24 @@ The wrapper performs these operations in order:
    `maxvideoai-mcp-staging`, and distinct project IDs;
 3. links only the isolated temporary tree to the staging project;
 4. creates a production-target candidate with `--prod --skip-domain`, leaving
-   the existing stable alias untouched;
+   the existing stable alias untouched, and sets sanitized deployment metadata
+   `mcpApprovedGitSha` to the exact full commit SHA plus
+   `mcpTrackedArchiveSha256` to the SHA-256 digest of `git archive HEAD`;
 5. waits for `READY` and verifies through the deployment API that the candidate
-   belongs to the staging project and has an empty cron list;
+   belongs to the staging project, has an empty cron list, and has both exact
+   provenance values matching the current clean approved `HEAD`;
 6. verifies the direct candidate URL is anonymous and carries the exact global
    noindex header.
 
 Any failure before promotion exits with the existing stable alias unchanged.
 Do not bypass a failed candidate check and do not redeploy by hand.
+
+If a READY unaliased candidate must be resumed, run
+`bash scripts/deploy-mcp-staging-vercel.sh --candidate dpl_ID` only from the
+same clean approved revision. The resume path must fetch the candidate API
+metadata and fail before promotion when `mcpApprovedGitSha` or
+`mcpTrackedArchiveSha256` is missing or differs; project, readiness, cron, and
+header checks alone are insufficient provenance.
 
 - [ ] **Step 9: Promote only the accepted candidate and prove isolation**
 

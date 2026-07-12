@@ -1,8 +1,47 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+
+function runGit(cwd: string, args: string[]) {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+}
+
+function createDeployFixture(): string {
+  const fixture = mkdtempSync(join(tmpdir(), 'mcp-staging-deploy-test-'));
+  mkdirSync(join(fixture, 'frontend'), { recursive: true });
+  mkdirSync(join(fixture, 'packages/pricing'), { recursive: true });
+  mkdirSync(join(fixture, 'scripts'), { recursive: true });
+  copyFileSync(
+    join(process.cwd(), 'frontend/vercel.mcp-staging.json'),
+    join(fixture, 'frontend/vercel.mcp-staging.json'),
+  );
+  copyFileSync(
+    join(process.cwd(), 'packages/pricing/package.json'),
+    join(fixture, 'packages/pricing/package.json'),
+  );
+  copyFileSync(
+    join(process.cwd(), 'scripts/deploy-mcp-staging-vercel.sh'),
+    join(fixture, 'scripts/deploy-mcp-staging-vercel.sh'),
+  );
+  runGit(fixture, ['init', '--quiet']);
+  runGit(fixture, ['config', 'user.email', 'test@example.invalid']);
+  runGit(fixture, ['config', 'user.name', 'MCP deploy test']);
+  runGit(fixture, ['add', '.']);
+  runGit(fixture, ['commit', '--quiet', '-m', 'fixture']);
+  return fixture;
+}
 
 test('MCP staging Vercel config has no crons and blocks indexing', () => {
   const path = join(process.cwd(), 'frontend/vercel.mcp-staging.json');
@@ -42,12 +81,20 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
   assert.match(script, /select\([\s\S]*\.readyState == "READY"[\s\S]*\) \| \.id/);
   assert.doesNotMatch(script, /\.name == \$name and \.id/);
   assert.match(script, /rm -f "\$TEMP_ROOT\/\.env\.local"/);
+  assert.match(script, /--meta[\s\S]*mcpApprovedGitSha/);
+  assert.match(script, /--meta[\s\S]*mcpTrackedArchiveSha256/);
+  assert.match(script, /\.meta\.mcpApprovedGitSha == \$approved_head/);
+  assert.match(script, /\.meta\.mcpTrackedArchiveSha256 == \$archive_sha256/);
   assert.ok(
     script.indexOf('--skip-domain') < script.indexOf('promote'),
     'the candidate must remain unaliased until after verification',
   );
   assert.doesNotMatch(script, /vercel deploy frontend/);
   assert.doesNotMatch(script, /--local-config/);
+  assert.ok(
+    script.indexOf('.meta.mcpApprovedGitSha') < script.indexOf('promote'),
+    'candidate provenance must be checked before promotion',
+  );
 
   const deploymentRefFilter = script.match(/^DEPLOYMENT_REF_FILTER='([^']+)'$/m)?.[1];
   assert.ok(deploymentRefFilter, 'the deploy wrapper must define its Vercel output parser once');
@@ -67,26 +114,38 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
     assert.match(parsed.stdout.trim(), /-candidate\.vercel\.app$/);
   }
 
-  const dryRun = spawnSync('bash', [scriptPath, '--dry-run'], {
-    cwd: process.cwd(),
-    encoding: 'utf8',
-  });
-  assert.equal(dryRun.status, 0, dryRun.stderr);
-  assert.match(dryRun.stdout, /SAFE_PACKAGE_OK/);
-  assert.match(dryRun.stdout, /project=maxvideoai-mcp-staging/);
-  assert.match(dryRun.stdout, /scope=camgraphes-projects/);
-
-  const resumeDryRun = spawnSync(
-    'bash',
-    [scriptPath, '--candidate', 'dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos', '--dry-run'],
-    {
-      cwd: process.cwd(),
+  const fixture = createDeployFixture();
+  const fixtureScript = join(fixture, 'scripts/deploy-mcp-staging-vercel.sh');
+  try {
+    const dryRun = spawnSync('bash', [fixtureScript, '--dry-run'], {
+      cwd: fixture,
       encoding: 'utf8',
-    },
-  );
-  assert.equal(resumeDryRun.status, 0, resumeDryRun.stderr);
-  assert.match(resumeDryRun.stdout, /mode=existing-candidate/);
-  assert.match(resumeDryRun.stdout, /candidate=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/);
+    });
+    assert.equal(dryRun.status, 0, dryRun.stderr);
+    assert.match(dryRun.stdout, /SAFE_PACKAGE_OK/);
+    assert.match(dryRun.stdout, /project=maxvideoai-mcp-staging/);
+    assert.match(dryRun.stdout, /scope=camgraphes-projects/);
+
+    const resumeDryRun = spawnSync(
+      'bash',
+      [fixtureScript, '--candidate', 'dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos', '--dry-run'],
+      { cwd: fixture, encoding: 'utf8' },
+    );
+    assert.equal(resumeDryRun.status, 0, resumeDryRun.stderr);
+    assert.match(resumeDryRun.stdout, /mode=existing-candidate/);
+    assert.match(resumeDryRun.stdout, /candidate=dpl_E8nXLZ2WH6jrmrvcm5AnBzdKoZos/);
+
+    writeFileSync(join(fixture, 'untracked-change.txt'), 'dirty\n');
+    const dirtyDryRun = spawnSync('bash', [fixtureScript, '--dry-run'], {
+      cwd: fixture,
+      encoding: 'utf8',
+    });
+    assert.equal(dirtyDryRun.status, 65);
+    assert.doesNotMatch(dirtyDryRun.stdout, /SAFE_PACKAGE_OK/);
+    assert.match(dirtyDryRun.stderr, /untracked files/i);
+  } finally {
+    rmSync(fixture, { recursive: true, force: true });
+  }
 
   const plan = readFileSync(
     join(process.cwd(), 'docs/superpowers/plans/2026-07-11-mcp-hosted-staging-claude-desktop.md'),
@@ -99,5 +158,7 @@ test('MCP staging deploy wrapper gates an unaliased candidate before promotion',
       document,
       /vercel deploy frontend[\s\S]{0,160}--local-config frontend\/vercel\.mcp-staging\.json/,
     );
+    assert.match(document, /mcpApprovedGitSha/);
+    assert.match(document, /mcpTrackedArchiveSha256/);
   }
 });
