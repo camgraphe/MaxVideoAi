@@ -117,14 +117,7 @@ export const ENV = {
     'false'
   ),
   GOOGLE_VERTEX_VEO_INPUT_GCS_URI: getOptionalEnv('GOOGLE_VERTEX_VEO_INPUT_GCS_URI'),
-  GOOGLE_GEMINI_IMAGE_API_KEY: getOptionalEnv('GOOGLE_GEMINI_IMAGE_API_KEY'),
   GEMINI_API_KEY: getOptionalEnv('GEMINI_API_KEY'),
-  GOOGLE_AI_API_KEY: getOptionalEnv('GOOGLE_AI_API_KEY'),
-  GOOGLE_GEMINI_IMAGE_BASE_URL: getOptionalEnv(
-    'GOOGLE_GEMINI_IMAGE_BASE_URL',
-    'https://generativelanguage.googleapis.com/v1beta'
-  ),
-  GOOGLE_GEMINI_IMAGE_TIMEOUT_MS: getOptionalEnv('GOOGLE_GEMINI_IMAGE_TIMEOUT_MS', '120000'),
   RESULT_PROVIDER:
     getOptionalEnv('NEXT_PUBLIC_RESULT_PROVIDER') ??
     getOptionalEnv('RESULT_PROVIDER'),

@@ -92,8 +92,8 @@ const NANO_BANANA_ENGINE: EngineCaps = {
   updatedAt: '2025-03-01T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
-    provider: 'fal.ai',
-    modelSlug: 'fal-ai/nano-banana',
+    provider: 'google_vertex_image',
+    modelSlug: 'gemini-2.5-flash-image',
   },
   availability: 'available',
   brandId: 'google',

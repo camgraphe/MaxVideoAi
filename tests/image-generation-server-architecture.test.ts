@@ -209,7 +209,7 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(providerPayloadSource, /export function buildCharacterReferencePrompt/);
   assert.match(providerPayloadSource, /export function extractImages/);
   assert.match(providerPayloadSource, /export function parseRequestId/);
-  assert.match(directProviderExecutionSource, /executeGoogleGeminiImageGeneration/);
+  assert.match(directProviderExecutionSource, /executeGoogleVertexImageGeneration/);
   assert.match(directProviderExecutionSource, /executeBytePlusSeedreamGeneration/);
   assert.match(bytePlusSeedreamExecutionSource, /callBytePlusSeedream/);
   assert.match(bytePlusSeedreamExecutionSource, /buildBytePlusSeedreamPayload/);

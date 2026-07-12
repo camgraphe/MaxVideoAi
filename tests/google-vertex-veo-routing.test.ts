@@ -39,13 +39,11 @@ test('Google Vertex Veo router selects admin-only direct routing for all public 
     assert.deepEqual(plan, {
       kind: 'google_vertex_veo_primary',
       primaryProvider: 'google_vertex_veo_direct',
-      fallbackProvider: 'fal',
-      fallbackEnabled: true,
     });
   }
 });
 
-test('Google Vertex Veo router keeps Fal for public users while public routing is disabled', () => {
+test('Google Vertex Veo router is unavailable for public users while public routing is disabled', () => {
   assert.deepEqual(
     resolveVideoProviderRoutingPlan({
       engineId: 'veo-3-1',
@@ -57,7 +55,7 @@ test('Google Vertex Veo router keeps Fal for public users while public routing i
         GOOGLE_VERTEX_VEO_ADMIN_ONLY: 'true',
       },
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    { kind: 'google_vertex_unavailable', reason: 'admin_only' }
   );
 });
 
@@ -80,7 +78,7 @@ test('Google Vertex Veo router enables public direct Extend only when input stag
         GOOGLE_VERTEX_VEO_INPUT_GCS_URI: 'gs://maxvideoai-veo-inputs/public-extend',
       },
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    { kind: 'google_vertex_unavailable', reason: 'admin_only' }
   );
 
   assert.deepEqual(
@@ -90,7 +88,7 @@ test('Google Vertex Veo router enables public direct Extend only when input stag
       isAdmin: false,
       env: baseEnv,
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    { kind: 'google_vertex_unavailable', reason: 'admin_only' }
   );
 
   assert.deepEqual(
@@ -106,8 +104,6 @@ test('Google Vertex Veo router enables public direct Extend only when input stag
     {
       kind: 'google_vertex_veo_primary',
       primaryProvider: 'google_vertex_veo_direct',
-      fallbackProvider: 'fal',
-      fallbackEnabled: true,
     }
   );
 });
@@ -129,8 +125,6 @@ test('Fal-routed Google Vertex Veo Extend uses 720p for route pricing and job me
       providerRoutingPlan: {
         kind: 'google_vertex_veo_primary',
         primaryProvider: 'google_vertex_veo_direct',
-        fallbackProvider: 'fal',
-        fallbackEnabled: true,
       },
       engineId: 'veo-3-1',
       mode: 'extend',

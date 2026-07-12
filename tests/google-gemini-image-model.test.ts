@@ -9,11 +9,11 @@ function getEntry(id: string) {
   return entry;
 }
 
-test('Nano Banana Lite exposes only the direct Google Lite image options', () => {
+test('Nano Banana Lite exposes only the Vertex Google Lite image options', () => {
   const entry = getEntry('nano-banana-lite');
 
   assert.equal(entry.modelSlug, 'nano-banana-lite');
-  assert.equal(entry.engine.providerMeta?.provider, 'google_gemini_image');
+  assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_image');
   assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-3.1-flash-lite-image');
   assert.deepEqual(entry.engine.modes, ['t2i', 'i2i']);
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, ['1k']);
@@ -23,10 +23,10 @@ test('Nano Banana Lite exposes only the direct Google Lite image options', () =>
   assert.doesNotMatch(entry.defaultFalModelId, /fal-ai/i);
 });
 
-test('Nano Banana 2 routes through direct Google with Flash-specific options', () => {
+test('Nano Banana 2 routes through Vertex with Flash-specific options', () => {
   const entry = getEntry('nano-banana-2');
 
-  assert.equal(entry.engine.providerMeta?.provider, 'google_gemini_image');
+  assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_image');
   assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-3.1-flash-image');
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
     '0.5k',
@@ -40,10 +40,10 @@ test('Nano Banana 2 routes through direct Google with Flash-specific options', (
   assert.doesNotMatch(entry.modes[1]?.falModelId ?? '', /fal-ai/i);
 });
 
-test('Nano Banana Pro routes through direct Google with Pro-only options', () => {
+test('Nano Banana Pro routes through Vertex with Pro-only options', () => {
   const entry = getEntry('nano-banana-pro');
 
-  assert.equal(entry.engine.providerMeta?.provider, 'google_gemini_image');
+  assert.equal(entry.engine.providerMeta?.provider, 'google_vertex_image');
   assert.equal(entry.engine.providerMeta?.modelSlug, 'gemini-3-pro-image');
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
     '1k',

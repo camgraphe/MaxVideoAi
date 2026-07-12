@@ -39,6 +39,7 @@ import { resolveImageGenerationRequestContext } from './image-generation-request
 import { prepareImageGenerationReferences } from './image-generation-references';
 import { copyGeneratedImagesToStorage } from './image-output-storage';
 import { executeDirectImageProviderIfAvailable } from './image-direct-provider-execution';
+import { assertGoogleVertexImageAvailable } from './google-vertex-image-execution';
 import { normalizeImageGenerationMetadata, normalizeOptionalBoolean } from './image-generation-normalization';
 import {
   executeImageProviderWithLumaAgentsDirectFallback,
@@ -87,6 +88,8 @@ export async function executeImageGeneration({
 
   const { engineEntry, engine, mode, modeConfig, resolvedAspectRatio, prompt, numImages, durationSec } =
     resolveImageGenerationRequestContext(body);
+
+  assertGoogleVertexImageAvailable(engine);
 
   const { characterReferences, normalizedImageUrls, combinedImageUrls, effectivePrompt, storedAssetInfoByUrl } =
     await prepareImageGenerationReferences({ userId, body, engineEntry, mode, prompt });

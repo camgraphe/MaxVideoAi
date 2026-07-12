@@ -48,8 +48,6 @@ test('Gemini Omni Flash routing is public when enabled and can be explicitly gat
     {
       kind: 'google_vertex_omni_primary',
       primaryProvider: 'google_vertex_omni_direct',
-      fallbackProvider: 'fal',
-      fallbackEnabled: false,
     }
   );
 
@@ -64,7 +62,7 @@ test('Gemini Omni Flash routing is public when enabled and can be explicitly gat
         GOOGLE_VERTEX_OMNI_ADMIN_ONLY: 'true',
       },
     }),
-    { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    { kind: 'google_vertex_unavailable', reason: 'admin_only' }
   );
 
   assert.deepEqual(
@@ -80,8 +78,6 @@ test('Gemini Omni Flash routing is public when enabled and can be explicitly gat
     {
       kind: 'google_vertex_omni_primary',
       primaryProvider: 'google_vertex_omni_direct',
-      fallbackProvider: 'fal',
-      fallbackEnabled: false,
     }
   );
 });

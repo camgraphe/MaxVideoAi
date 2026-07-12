@@ -131,7 +131,7 @@ const NANO_BANANA_LITE_ENGINE: EngineCaps = {
   updatedAt: '2026-06-30T00:00:00Z',
   ttlSec: 600,
   providerMeta: {
-    provider: 'google_gemini_image',
+    provider: 'google_vertex_image',
     modelSlug: 'gemini-3.1-flash-lite-image',
   },
   availability: 'available',

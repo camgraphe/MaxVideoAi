@@ -1,4 +1,3 @@
-import { ENV } from '@/lib/env';
 import { normalizeMediaUrl } from '@/lib/media';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { EngineCaps, PricingSnapshot } from '@/types/engines';
@@ -10,16 +9,11 @@ import {
   uploadImageToStorage,
 } from '@/server/storage';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';
-import { callGoogleGeminiImage } from './google-gemini-image-client';
-import { GoogleGeminiImageError } from './google-gemini-image-error';
-import {
-  buildGoogleGeminiImagePayload,
-  type GoogleGeminiReferenceImage,
-} from './google-gemini-image-payload';
-import {
-  extractGoogleGeminiImages,
-  parseGoogleGeminiRequestId,
-} from './google-gemini-image-response';
+import { uploadGoogleVertexGcsObject } from '@/server/video-providers/google-vertex-gcs';
+import { GoogleVertexImageClient, isGoogleVertexImageConfigured } from './google-vertex-image-client';
+import { GoogleVertexImageError } from './google-vertex-image-error';
+import { buildGoogleVertexImagePayload, type GoogleVertexReferenceImage } from './google-vertex-image-payload';
+import { extractGoogleVertexImages, parseGoogleVertexResponseId } from './google-vertex-image-response';
 import { persistCompletedImageGeneration } from './image-generation-completion';
 import { persistFailedImageGeneration } from './image-generation-failure';
 import type { PendingReceipt } from './image-generation-receipts';
@@ -27,10 +21,18 @@ import { ImageGenerationExecutionError } from './image-generation-error';
 
 const SIGNED_REFERENCE_URL_TTL_SECONDS = 60 * 60;
 const REFERENCE_FETCH_TIMEOUT_MS = 30_000;
-const GOOGLE_GEMINI_IMAGE_PROVIDER_MODE = 'google_gemini_image_direct';
+const GOOGLE_VERTEX_IMAGE_PROVIDER_MODE = 'google_vertex_image_direct';
+const MAX_INLINE_REFERENCE_BYTES = 7 * 1024 * 1024;
 
-function resolveApiKey(): string | undefined {
-  return ENV.GOOGLE_GEMINI_IMAGE_API_KEY ?? ENV.GEMINI_API_KEY ?? ENV.GOOGLE_AI_API_KEY;
+export function assertGoogleVertexImageAvailable(engine: EngineCaps): void {
+  if (engine.providerMeta?.provider !== 'google_vertex_image') return;
+  if (!engine.providerMeta.modelSlug || !isGoogleVertexImageConfigured()) {
+    throw new ImageGenerationExecutionError('Google Vertex image generation is unavailable.', {
+      code: 'google_vertex_image_unavailable',
+      status: 503,
+      extras: { engineId: engine.id, engineLabel: engine.label },
+    });
+  }
 }
 
 async function signReferenceUrl(url: string): Promise<string> {
@@ -39,32 +41,42 @@ async function signReferenceUrl(url: string): Promise<string> {
   try {
     return await createSignedDownloadUrl(key, { expiresInSeconds: SIGNED_REFERENCE_URL_TTL_SECONDS });
   } catch (error) {
-    console.warn('[images] failed to sign Google Gemini reference image URL', error);
+    console.warn('[images] failed to sign Google Vertex reference image URL', error);
     return url;
   }
 }
 
-async function fetchReferenceImage(url: string): Promise<GoogleGeminiReferenceImage> {
+async function fetchReferenceImage(url: string, client: GoogleVertexImageClient): Promise<GoogleVertexReferenceImage> {
   const signedUrl = await signReferenceUrl(url);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REFERENCE_FETCH_TIMEOUT_MS);
   try {
     const response = await fetch(signedUrl, { signal: controller.signal });
     if (!response.ok) {
-      throw new GoogleGeminiImageError(`Google Gemini reference image fetch failed (${response.status}).`, {
+      throw new GoogleVertexImageError(`Google Vertex reference image fetch failed (${response.status}).`, {
         code: 'GOOGLE_GEMINI_REFERENCE_FETCH_FAILED',
         status: 400,
       });
     }
     const data = Buffer.from(await response.arrayBuffer());
     if (!data.length) {
-      throw new GoogleGeminiImageError('Google Gemini reference image is empty.', {
+      throw new GoogleVertexImageError('Google Vertex reference image is empty.', {
         code: 'GOOGLE_GEMINI_REFERENCE_EMPTY',
         status: 400,
       });
     }
     const mimeType = response.headers.get('content-type')?.split(';')[0]?.trim() || 'image/png';
-    return { data: data.toString('base64'), mimeType };
+    if (data.length <= MAX_INLINE_REFERENCE_BYTES) return { data: data.toString('base64'), mimeType };
+    const prefix = process.env.GOOGLE_VERTEX_INPUT_GCS_URI ?? process.env.GOOGLE_VERTEX_VEO_INPUT_GCS_URI;
+    const fileUri = await uploadGoogleVertexGcsObject({
+      prefix: prefix ?? '',
+      data,
+      mime: mimeType,
+      extension: extensionFromMime(mimeType),
+      accessToken: await client.accessToken(),
+      objectNamespace: 'image-inputs',
+    });
+    return { fileUri, mimeType };
   } finally {
     clearTimeout(timer);
   }
@@ -77,12 +89,12 @@ function extensionFromMime(mimeType: string): string {
 }
 
 async function uploadInlineImages(params: {
-  images: ReturnType<typeof extractGoogleGeminiImages>;
+  images: ReturnType<typeof extractGoogleVertexImages>;
   jobId: string;
   userId: string;
 }): Promise<GeneratedImage[]> {
   if (!isStorageConfigured()) {
-    throw new GoogleGeminiImageError('Storage is required for Google Gemini inline image outputs.', {
+    throw new GoogleVertexImageError('Storage is required for Google Vertex inline image outputs.', {
       code: 'GOOGLE_GEMINI_IMAGE_STORAGE_MISSING',
       status: 503,
     });
@@ -107,7 +119,7 @@ async function uploadInlineImages(params: {
   );
 }
 
-export async function executeGoogleGeminiImageGeneration(params: {
+export async function executeGoogleVertexImageGeneration(params: {
   billingProductKey: BillingProductKey | null;
   characterReferenceCount: number;
   combinedImageUrls: string[];
@@ -141,44 +153,34 @@ export async function executeGoogleGeminiImageGeneration(params: {
   vendorAccountId: string | null;
   visibility: 'public' | 'private';
 }): Promise<ImageGenerationResponse> {
-  const apiKey = resolveApiKey();
   const modelId = params.engine.providerMeta?.modelSlug ?? params.engine.id;
   let providerJobId: string | null = null;
 
   try {
-    if (!apiKey) {
-      throw new GoogleGeminiImageError('Google Gemini image API key is not configured.', {
-        code: 'GOOGLE_GEMINI_IMAGE_API_KEY_MISSING',
-        status: 503,
-      });
-    }
+    assertGoogleVertexImageAvailable(params.engine);
+    const client = new GoogleVertexImageClient();
 
     const referenceImages =
-      params.mode === 'i2i' ? await Promise.all(params.combinedImageUrls.map((url) => fetchReferenceImage(url))) : [];
+      params.mode === 'i2i'
+        ? await Promise.all(params.combinedImageUrls.map((url) => fetchReferenceImage(url, client)))
+        : [];
     const requestedImages = Math.max(1, Math.round(params.numImages));
     const inlineImages = [];
     for (let index = 0; index < requestedImages; index += 1) {
-      const providerResponse = await callGoogleGeminiImage({
-        apiKey,
-        baseUrl: ENV.GOOGLE_GEMINI_IMAGE_BASE_URL,
-        timeoutMs: Number(ENV.GOOGLE_GEMINI_IMAGE_TIMEOUT_MS) || undefined,
-      }, buildGoogleGeminiImagePayload({
-        modelId,
+      const providerResponse = await client.generateContent(modelId, buildGoogleVertexImagePayload({
         prompt: params.effectivePrompt,
         referenceImages,
         aspectRatio: params.resolvedAspectRatio,
         imageSize: params.resolution,
-        outputFormat: params.outputFormat,
         enableWebSearch: params.enableWebSearch,
-        thinkingLevel: params.thinkingLevel,
       }));
-      providerJobId = providerJobId ?? parseGoogleGeminiRequestId(providerResponse);
-      inlineImages.push(...extractGoogleGeminiImages(providerResponse));
+      providerJobId = providerJobId ?? parseGoogleVertexResponseId(providerResponse);
+      inlineImages.push(...extractGoogleVertexImages(providerResponse));
     }
 
     if (!inlineImages.length) {
-      throw new GoogleGeminiImageError('Google Gemini did not return images.', {
-        code: 'GOOGLE_GEMINI_IMAGE_EMPTY_RESPONSE',
+      throw new GoogleVertexImageError('Google Vertex did not return images.', {
+        code: 'GOOGLE_VERTEX_IMAGE_EMPTY_RESPONSE',
         status: 502,
       });
     }
@@ -219,7 +221,7 @@ export async function executeGoogleGeminiImageGeneration(params: {
       pricing: params.pricing,
       pricingSnapshotJson: params.pricingSnapshotJson,
       providerJobId,
-      providerMode: GOOGLE_GEMINI_IMAGE_PROVIDER_MODE,
+      providerMode: GOOGLE_VERTEX_IMAGE_PROVIDER_MODE,
       quality: params.quality,
       resolvedAspectRatio: params.resolvedAspectRatio,
       resolution: params.resolution,
@@ -247,7 +249,7 @@ export async function executeGoogleGeminiImageGeneration(params: {
       resolution: params.resolution,
     } satisfies ImageGenerationResponse;
   } catch (error) {
-    console.error('[images] Google Gemini image generation failed', error);
+    console.error('[images] Google Vertex image generation failed', error);
     const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
       characterReferenceCount: params.characterReferenceCount,
       enableWebSearch: params.enableWebSearch,
@@ -265,7 +267,7 @@ export async function executeGoogleGeminiImageGeneration(params: {
       priceOnlyReceipts: params.priceOnlyReceipts,
       pricing: params.pricing,
       providerJobId,
-      providerMode: GOOGLE_GEMINI_IMAGE_PROVIDER_MODE,
+      providerMode: GOOGLE_VERTEX_IMAGE_PROVIDER_MODE,
       quality: params.quality,
       referenceImageUrls: params.combinedImageUrls,
       refundDescription: params.refundDescription,
@@ -276,7 +278,7 @@ export async function executeGoogleGeminiImageGeneration(params: {
 
     throw new ImageGenerationExecutionError(message, {
       mode: params.mode,
-      code: 'google_gemini_image_error',
+      code: 'google_vertex_image_error',
       status: 502,
       detail: { providerStatus, providerBody },
       extras: {

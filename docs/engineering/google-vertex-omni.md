@@ -20,7 +20,6 @@ When the route is enabled, Gemini Omni Flash is available to regular users by de
 GOOGLE_VERTEX_OMNI_ENABLED=false
 GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=true
 GOOGLE_VERTEX_OMNI_ADMIN_ONLY=false
-GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED=false
 ```
 
 Routing behavior:
@@ -29,7 +28,7 @@ Routing behavior:
 - `GOOGLE_VERTEX_OMNI_ENABLED=true`: enables the direct route for users unless a restriction flag below is set.
 - `GOOGLE_VERTEX_OMNI_ADMIN_ONLY=true`: restricts the route to admins.
 - `GOOGLE_VERTEX_OMNI_PUBLIC_ROUTING_ENABLED=false`: prevents non-admin traffic from using the route.
-- `GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED=false`: no fallback should be assumed for Omni unless a compatible fallback is explicitly validated.
+- Gemini Omni is Vertex-only. When the direct route is disabled or unavailable, the engine is unavailable; it does not fall back to Fal.
 
 ## Credentials And Region
 
