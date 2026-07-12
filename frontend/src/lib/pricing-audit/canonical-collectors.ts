@@ -25,14 +25,14 @@ export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricing
   const scenarios = buildPricingAuditScenarios();
   const currentById = new Map((await collectLegacyPricingOutputs()).map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(
-    quoteCanonicalAdminScenarios({ databaseRules: [], scenarios }).map((quote) => [quote.scenarioId, quote])
+    quoteCanonicalAdminScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])
   );
 
   return scenarios
     .map((scenario): CanonicalPricingAuditOutput => {
-      const quote = canonicalById.get(scenario.id);
+      const outcome = canonicalById.get(scenario.id);
       const current = currentById.get(scenario.id);
-      if (!quote) {
+      if (!outcome || outcome.status === 'unsupported') {
         if (!current) throw new Error(`Missing unsupported legacy pricing row ${scenario.id}`);
         const resolved = resolveCanonicalAdminScenarioPolicy({ databaseRules: [], scenario });
         return {
@@ -42,6 +42,7 @@ export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricing
           policyRuleId: resolved.sourceRuleId,
         };
       }
+      const quote = outcome;
       const displayedAmount =
         scenario.surface === 'pricing-hub' ||
         scenario.surface === 'model-page' ||

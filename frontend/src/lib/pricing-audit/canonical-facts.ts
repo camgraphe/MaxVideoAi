@@ -1,12 +1,10 @@
 import type { PricingFacts } from '@maxvideoai/pricing';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { buildAudioVendorCostFacts, type AudioPackId } from '@/lib/audio-generation';
-import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import {
   buildAuthoredPublicOfferFacts,
   buildPublicPricingFacts,
 } from '@/lib/pricing-public-facts';
-import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
 import { buildUpscalePricingPreview } from '@/lib/tools-upscale';
 import type { Mode } from '@/types/engines';
@@ -86,9 +84,6 @@ function buildScenarioPublicFacts(
     ...(scenario.mode ? { mode: scenario.mode as Mode } : {}),
     quality: typeof scenario.input.quality === 'string' ? scenario.input.quality : undefined,
     referenceImageCount: Number(scenario.input.referenceImageCount ?? 0),
-    ...(isLumaRay2EngineId(entry.engine.id)
-      ? { lumaRay2BasePriceUsd: Number(getLumaRay2BasePriceEnv(entry.engine.id)) }
-      : {}),
   });
   return { ...result.facts, engineId: scenario.engineId };
 }

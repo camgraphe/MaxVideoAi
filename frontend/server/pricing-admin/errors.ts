@@ -7,6 +7,7 @@ export type PricingAdminErrorCode =
   | 'unknown_compatibility_profile'
   | 'ambiguous_selector'
   | 'invalid_number'
+  | 'unsupported_scenario'
   | 'missing_target'
   | 'default_rule_delete_forbidden'
   | 'preview_stale'
@@ -22,6 +23,7 @@ const STATUS_BY_CODE: Record<PricingAdminErrorCode, number> = {
   unknown_compatibility_profile: 400,
   ambiguous_selector: 400,
   invalid_number: 400,
+  unsupported_scenario: 400,
   missing_target: 404,
   default_rule_delete_forbidden: 400,
   preview_stale: 409,

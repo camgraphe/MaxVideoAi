@@ -1,9 +1,48 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
 import test from 'node:test';
 
 const collectorPath = 'frontend/src/lib/pricing-audit/legacy-collectors.ts';
 const fixturePath = 'tests/fixtures/pricing-parity.v1.json';
+
+function resolveLocalImport(fromFile: string, specifier: string): string | null {
+  let candidates: string[];
+  if (specifier === '@maxvideoai/pricing') {
+    candidates = [resolve('packages/pricing/src/index.ts')];
+  } else if (specifier.startsWith('@maxvideoai/pricing/')) {
+    candidates = [resolve('packages/pricing/src', specifier.slice('@maxvideoai/pricing/'.length))];
+  } else if (specifier.startsWith('@/')) {
+    candidates = [resolve('frontend/src', specifier.slice(2)), resolve('frontend', specifier.slice(2))];
+  } else if (specifier.startsWith('.')) {
+    candidates = [resolve(dirname(fromFile), specifier)];
+  } else {
+    return null;
+  }
+  for (const candidate of candidates) {
+    for (const path of [candidate, `${candidate}.ts`, `${candidate}.tsx`, resolve(candidate, 'index.ts')]) {
+      if (existsSync(path) && statSync(path).isFile()) return path;
+    }
+  }
+  return null;
+}
+
+function collectLocalDependencies(entryFile: string): Set<string> {
+  const visited = new Set<string>();
+  const pending = [resolve(entryFile)];
+  const importPattern = /(?:import|export)\s+(?:type\s+)?(?:[^'";]*?\s+from\s+)?['"]([^'"]+)['"]/g;
+  while (pending.length) {
+    const file = pending.pop();
+    if (!file || visited.has(file)) continue;
+    visited.add(file);
+    const source = readFileSync(file, 'utf8');
+    for (const match of source.matchAll(importPattern)) {
+      const dependency = resolveLocalImport(file, match[1] ?? '');
+      if (dependency && !visited.has(dependency)) pending.push(dependency);
+    }
+  }
+  return visited;
+}
 
 test('committed pricing baseline exactly matches current authoritative outputs', async () => {
   assert.equal(existsSync(collectorPath), true, `${collectorPath} should exist`);
@@ -35,6 +74,14 @@ test('canonical audit delegates quote projection to the shared admin-safe projec
   assert.match(projectorSource, /buildCanonicalPricingFacts/);
   assert.match(projectorSource, /quoteCanonicalPricing/);
   assert.doesNotMatch(projectorSource, /@\/lib\/db|pricing-rule-store|process\.env|collectLegacyPricingOutputs/);
+});
+
+test('canonical admin scenario projection has no transitive dependency on the broad ENV object', () => {
+  const dependencies = collectLocalDependencies('frontend/server/pricing-admin/canonical-scenarios.ts');
+  const envPath = resolve('frontend/src/lib/env.ts');
+
+  assert.equal(dependencies.has(resolve('frontend/src/lib/pricing-audit/canonical-facts.ts')), true);
+  assert.equal(dependencies.has(envPath), false, `canonical scenario dependency graph reaches ${envPath}`);
 });
 
 test('every cross-surface pricing difference is explicitly profiled', async () => {
