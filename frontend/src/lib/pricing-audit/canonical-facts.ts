@@ -1,19 +1,15 @@
 import type { PricingFacts } from '@maxvideoai/pricing';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { buildAudioVendorCostFacts, type AudioPackId } from '@/lib/audio-generation';
-import { isLumaAgentsImageEngineId, isLumaRay32EngineId } from '@/lib/luma-agents';
-import {
-  calculateLumaAgentsImageReferencePrice,
-  calculateLumaRay32ReferencePrice,
-} from '@/lib/luma-agents-pricing';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
-import { calculateLumaRay2Price } from '@/lib/luma-ray2-pricing';
-import { buildPricingDefinition } from '@/lib/pricing-definition';
+import {
+  buildAuthoredPublicOfferFacts,
+  buildPublicPricingFacts,
+} from '@/lib/pricing-public-facts';
 import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
-import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
-import { normalizeGptImage2Quality, resolveGptImage2PricingTier } from '@/lib/image/gptImage2';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
 import { buildUpscalePricingPreview } from '@/lib/tools-upscale';
+import type { Mode } from '@/types/engines';
 
 import type { PricingAuditScenario } from './types';
 
@@ -77,95 +73,24 @@ function resolvePublicDimensions(
   return { resolution: exactResolution, durationSec };
 }
 
-function standardFacts(entry: FalEngineEntry, scenario: PricingAuditScenario, resolution: string, durationSec: number): PricingFacts {
-  const definition = buildPricingDefinition(entry.engine);
-  if (!definition) throw new Error(`Missing pricing definition for ${entry.id}`);
-  const multiplier = definition.resolutionMultipliers[resolution] ?? definition.resolutionMultipliers.default ?? 1;
-  const exact = Math.max(definition.minChargeCents ?? 0, definition.baseUnitPriceCents * multiplier * durationSec);
-  return {
-    engineId: scenario.engineId,
-    currency: definition.currency,
-    vendorSubtotalExactCents: exact,
-    unit: 'sec',
-    quantity: durationSec,
-  };
-}
-
-function engineFacts(
+function buildScenarioPublicFacts(
   entry: FalEngineEntry,
   scenario: PricingAuditScenario,
   resolution: string,
   durationSec: number
 ): PricingFacts {
-  const engine = entry.engine;
-  if (isLumaAgentsImageEngineId(engine.id) && (scenario.mode === 't2i' || scenario.mode === 'i2i')) {
-    const quote = calculateLumaAgentsImageReferencePrice({
-      engineId: engine.id,
-      mode: scenario.mode,
-      referenceImageCount: Number(scenario.input.referenceImageCount ?? 0),
-    });
-    return {
-      engineId: scenario.engineId,
-      currency: 'USD',
-      vendorSubtotalExactCents: quote.baseSubtotalUsd * 100,
-      unit: 'image',
-      quantity: 1,
-    };
-  }
-  if (isLumaRay32EngineId(engine.id) && (scenario.mode === 't2v' || scenario.mode === 'i2v')) {
-    const quote = calculateLumaRay32ReferencePrice({ duration: `${durationSec}s`, resolution });
-    return {
-      engineId: scenario.engineId,
-      currency: 'USD',
-      vendorSubtotalExactCents: quote.baseSubtotalUsd * 100,
-      unit: 'sec',
-      quantity: durationSec,
-    };
-  }
-  if (isLumaRay2EngineId(engine.id) && (scenario.mode === 't2v' || scenario.mode === 'i2v')) {
-    const baseUsd = Number(getLumaRay2BasePriceEnv(engine.id));
-    const quote = calculateLumaRay2Price({
-      engineId: engine.id === 'lumaRay2_flash' ? 'luma-ray2-flash' : 'luma-ray2',
-      baseUsd,
-      duration: durationSec,
-      resolution,
-    });
-    return {
-      engineId: scenario.engineId,
-      currency: 'USD',
-      vendorSubtotalExactCents: quote.baseSubtotalUsd * 100,
-      unit: 'sec',
-      quantity: durationSec,
-    };
-  }
-  if (engine.id === 'gpt-image-2') {
-    const tier = resolveGptImage2PricingTier(resolution);
-    const quality = normalizeGptImage2Quality(typeof scenario.input.quality === 'string' ? scenario.input.quality : undefined);
-    const count = Math.max(1, Math.round(durationSec));
-    return {
-      engineId: scenario.engineId,
-      currency: 'USD',
-      vendorSubtotalExactCents: tier.prices[quality] * count,
-      unit: 'image',
-      quantity: count,
-    };
-  }
-  if (isSeedance2TokenPricing(engine.pricingDetails)) {
-    const quote = computeSeedance2TokenQuote({
-      details: engine.pricingDetails,
-      durationSec,
-      resolution,
-      aspectRatio: engine.pricingDetails.tokenPricing.defaultAspectRatio,
-    });
-    return {
-      engineId: scenario.engineId,
-      currency: engine.pricingDetails.currency,
-      vendorSubtotalExactCents: quote.vendorCostUsd * 100,
-      unit: 'sec',
-      quantity: durationSec,
-    };
-  }
-  return standardFacts(entry, scenario, resolution, durationSec);
+  const result = buildPublicPricingFacts({
+    engine: entry.engine,
+    durationSec,
+    resolution,
+    ...(scenario.mode ? { mode: scenario.mode as Mode } : {}),
+    quality: typeof scenario.input.quality === 'string' ? scenario.input.quality : undefined,
+    referenceImageCount: Number(scenario.input.referenceImageCount ?? 0),
+    ...(isLumaRay2EngineId(entry.engine.id)
+      ? { lumaRay2BasePriceUsd: Number(getLumaRay2BasePriceEnv(entry.engine.id)) }
+      : {}),
+  });
+  return { ...result.facts, engineId: scenario.engineId };
 }
 
 function toolFacts(scenario: PricingAuditScenario): PricingFacts {
@@ -221,19 +146,22 @@ export function buildCanonicalPricingFacts(scenario: PricingAuditScenario): Pric
   if (scenario.surface === 'json-ld') {
     const hinted = entry.pricingHint?.amountCents;
     if (typeof hinted === 'number' && Number.isFinite(hinted) && hinted > 0) {
-      return {
+      return buildAuthoredPublicOfferFacts({
         engineId: scenario.engineId,
         currency: entry.pricingHint?.currency ?? 'USD',
-        vendorSubtotalExactCents: Math.round(hinted),
-        unit: 'offer',
-        quantity: 1,
-      };
+        amountCents: hinted,
+      }).facts;
     }
   }
   if (scenario.surface === 'pricing-hub' || scenario.surface === 'model-page') {
     const dimensions = resolvePublicDimensions(entry, scenario);
     if (!dimensions) return null;
-    return engineFacts(entry, scenario, dimensions.resolution, dimensions.durationSec);
+    return buildScenarioPublicFacts(entry, scenario, dimensions.resolution, dimensions.durationSec);
   }
-  return engineFacts(entry, scenario, scenario.resolution ?? 'default', scenario.durationSec ?? 1);
+  return buildScenarioPublicFacts(
+    entry,
+    scenario,
+    scenario.resolution ?? 'default',
+    scenario.durationSec ?? 1
+  );
 }

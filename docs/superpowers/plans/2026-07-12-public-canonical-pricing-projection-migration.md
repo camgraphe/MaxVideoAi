@@ -134,13 +134,13 @@ projectPublicPricingSnapshot(input): PricingSnapshot;
 computeCanonicalPublicSnapshot(context): Promise<PricingSnapshot>;
 ```
 
-- [ ] **Step 1: Write failing adapter tests**
+- [x] **Step 1: Write failing adapter tests**
 
 Cover standard fractional cents, audio addon facts, Luma Ray 2, Luma Ray 3.2, Luma Agents image, Seedance 2 token facts, GPT Image 2 qualities/sizes, fixed-product pass-through, `schema-current`, all three member tiers, exact/engine/global serialized overrides, fallback to versioned policy, and canonical provenance.
 
 Add a static browser-safety assertion that `pricing-public-facts.ts` and `pricing-public-quote.ts` do not import `@/server`, `pricing-rule-store`, `db`, `schema`, `env`, `node:`, `next/headers`, or billing/admin owners.
 
-- [ ] **Step 2: Run the tests and verify RED**
+- [x] **Step 2: Run the tests and verify RED**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-public-projection.test.ts
@@ -148,23 +148,23 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-public-proj
 
 Expected: FAIL because the public facts/quote modules do not exist.
 
-- [ ] **Step 3: Implement factual adapters only**
+- [x] **Step 3: Implement factual adapters only**
 
 Build vendor subtotal, unit, quantity, factual base/addons, and descriptive metadata. Use existing pure provider calculators. Accept explicit public Luma rate inputs where server-only environment overrides are required; use the current documented defaults in browser contexts. Do not calculate margin, discount, surcharge, total, platform fee, or vendor share.
 
-- [ ] **Step 4: Implement one canonical public quote path**
+- [x] **Step 4: Implement one canonical public quote path**
 
 Resolve the validated versioned policy. If serialized `PricingRuleLite[]` values are supplied, adapt only the selected effective rule into a complete canonical database rule by filling omitted fields from the resolved versioned rule. Select the explicit compatibility profile from facts, then call `quoteCanonicalPricing()`. Snapshot projection must use `projectCanonicalQuoteToSnapshot()` and must not recalculate commercial fields.
 
-- [ ] **Step 5: Implement DB-aware server orchestration**
+- [x] **Step 5: Implement DB-aware server orchestration**
 
 `computeCanonicalPublicSnapshot()` resolves the existing server policy, membership discount, provider facts, compatibility profile, quote, and projection. It preserves current database fallback warnings and does not introduce a second DB resolver.
 
-- [ ] **Step 6: Make the audit reuse production public facts**
+- [x] **Step 6: Make the audit reuse production public facts**
 
 Replace overlapping fact formulas in `pricing-audit/canonical-facts.ts` with calls to `pricing-public-facts.ts`. Audit-only scenario resolution stays in the audit module.
 
-- [ ] **Step 7: Run focused package, adapter, and audit tests**
+- [x] **Step 7: Run focused package, adapter, and audit tests**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -176,7 +176,7 @@ pnpm pricing:audit
 
 Expected: PASS; audit remains 178/178 with 0 mismatches.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add frontend/src/lib/pricing-public-facts.ts frontend/src/lib/pricing-public-quote.ts frontend/server/pricing/quote-public.ts frontend/src/lib/pricing-audit/canonical-facts.ts tests/pricing-public-projection.test.ts
