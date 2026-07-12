@@ -20,7 +20,7 @@ This guide explains where code should live in MaxVideoAI and how to decide when 
 | `frontend/components/marketing` | Marketing sections, model surfaces, examples, comparison UI, SEO-oriented components. |
 | `frontend/lib` | Pure helpers, route utilities, formatting, SEO builders, pricing helpers, browser-safe utilities. |
 | `frontend/server` | Server-only data access, admin fetchers, database-backed workflows, privileged integrations. |
-| `frontend/config` | Product/catalog configuration. |
+| `frontend/config` | Product/catalog configuration. Model policy is authored only in `frontend/config/model-registry.json`. |
 | `frontend/hooks` | Reusable client hooks. |
 | `frontend/i18n`, `frontend/messages` | Locale configuration and message dictionaries. |
 | `docs` | Engineering and operating guides. |
@@ -95,3 +95,8 @@ These are not hard rules, but they are useful triggers:
 
 For client files, be stricter because everything in the module participates in the browser bundle boundary.
 
+## Model Configuration
+
+`frontend/config/model-registry.json` is the only authored owner of model identity, aliases, family, category, publication, replacement, and model-route tombstones. Use `docs/engineering/model-registry.md` when adding, renaming, retiring, or publishing a model, then run `pnpm model:registry:check`.
+
+The runtime projection (`frontend/config/model-runtime.json`), engine catalog (`frontend/config/engine-catalog.json`), frontend roster (`frontend/config/model-roster.json`), and documentation rosters (`docs/model-roster.json` and `docs/model-roster.csv`) are generated. Do not edit these files directly; use the generation commands in the model registry guide.

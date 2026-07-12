@@ -235,8 +235,9 @@ async function main() {
   console.log('');
   console.log('Next steps:');
   console.log(`1. Review content/models/{en,fr,es}/${options.targetSlug}.json and replace template-specific specs and prompts.`);
-  console.log('2. If the target model is new in the engine catalog, add its catalog/config entries separately.');
-  console.log('3. Run locale QA and roster checks before shipping.');
+  console.log('2. Add the canonical model policy to frontend/config/model-registry.json.');
+  console.log('3. Add provider execution details to the relevant raw engine module.');
+  console.log('4. Generate projections, then run locale QA and registry checks before shipping.');
 }
 
 main().catch((error) => {

@@ -34,6 +34,7 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/page-architecture.md`: how route files, metadata, data builders, and page sections should be split.
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
+- `docs/engineering/model-registry.md`: required workflow for adding, renaming, retiring, or publishing models.
 - `frontend/app/(core)/(workspace)/app/AGENTS.md`: authenticated video workspace boundaries.
 - `frontend/app/(core)/(workspace)/app/image/AGENTS.md`: image workspace boundaries.
 
@@ -51,6 +52,12 @@ When instructions conflict, follow the nearest `AGENTS.md` for the files being e
 - `docs`: Human-facing engineering, deployment, SEO, pricing, licensing, and operating guides.
 - `neon/migrations`: Application database migrations. Do not put application database migrations in Supabase.
 - `supabase`: Supabase Auth configuration only.
+
+## Model Registry Ownership
+
+`frontend/config/model-registry.json` is the only authored source for model identity, aliases, family, category, publication, replacement, and model-route tombstones. Follow `docs/engineering/model-registry.md` for every model policy change and run `pnpm model:registry:check` before committing.
+
+`frontend/config/model-runtime.json`, `frontend/config/engine-catalog.json`, `frontend/config/model-roster.json`, and the roster files under `docs/` are generated projections. Do not edit them directly; regenerate them with the commands in the model registry guide.
 
 ## Page File Rule
 

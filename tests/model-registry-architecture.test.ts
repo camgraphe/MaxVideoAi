@@ -85,3 +85,28 @@ test('generated runtime projection is checked and never hand-authored', () => {
   assert.match(rootPackage, /model:registry:check/);
   assert.match(frontendPackage, /"prebuild":\s*"pnpm --dir \.\. model:registry:check"/);
 });
+
+test('engineering and agent guides point model policy changes to the canonical registry', () => {
+  for (const path of [
+    'AGENTS.md',
+    'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/AGENTS.md',
+    'docs/engineering/project-structure.md',
+    'docs/engineering/llm-working-guide.md',
+    'docs/engineering/model-registry.md',
+  ]) {
+    const source = readFileSync(path, 'utf8');
+    assert.match(source, /frontend\/config\/model-registry\.json/, path);
+    assert.match(source, /pnpm model:registry:check/, path);
+  }
+});
+
+test('model setup keeps generated stubs inside registry ownership boundaries', () => {
+  const source = readFileSync('scripts/model-setup.mjs', 'utf8');
+  const engineStub = source.slice(source.indexOf('function buildEngineStub'), source.indexOf('function buildRegistryEntry'));
+  const familyStub = source.slice(source.indexOf('function buildFamilyStub'), source.indexOf('function buildLaunchPacket'));
+
+  assert.match(engineStub, /Partial<RawFalEngineEntry>/);
+  assert.doesNotMatch(engineStub, /`\s+modelSlug:|`\s+family:|`\s+category:|`\s+surfaces:/);
+  assert.match(familyStub, /defaultModelId/);
+  assert.doesNotMatch(familyStub, /defaultModelSlug|publishedModelSlugs|currentModelSlugs/);
+});

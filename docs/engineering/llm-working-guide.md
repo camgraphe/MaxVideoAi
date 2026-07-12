@@ -11,6 +11,7 @@ Read these files before changing architecture or route structure:
 - `docs/engineering/page-architecture.md`
 - `docs/engineering/admin-routes.md` when touching admin pages
 - `docs/engineering/refactor-roadmap.md`
+- `docs/engineering/model-registry.md` when changing model identity, aliases, family membership, publication, replacement, or redirects
 
 Then run the large-file audit when choosing a cleanup target:
 
@@ -34,6 +35,8 @@ For a focused task, inspect the nearest route-local `AGENTS.md` if one exists.
 - Preserve public URLs, localized slugs, metadata, canonical URLs, hreflang, and JSON-LD behavior during SEO page refactors.
 - Do not introduce Zustand, TanStack Query, Redux, or another state library as part of a cleanup unless the task explicitly targets client state architecture.
 - The current server-data client cache is SWR. Prefer standardizing existing SWR hooks before considering a data-layer migration.
+- Author model policy only in `frontend/config/model-registry.json`, follow `docs/engineering/model-registry.md`, and run `pnpm model:registry:check` after any model policy change.
+- Never edit `frontend/config/model-runtime.json`, `frontend/config/engine-catalog.json`, `frontend/config/model-roster.json`, or the roster files under `docs/` directly; they are generated projections.
 
 ## Server And Client Boundaries
 

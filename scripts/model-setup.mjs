@@ -10,11 +10,12 @@ const DOCS_MODEL_LAUNCH_DIR = path.join(ROOT, 'docs', 'model-launch');
 
 const VALID_STAGES = new Set(['hidden', 'public_noindex', 'indexed']);
 const VALID_AVAILABILITY = new Set(['available', 'limited', 'waitlist', 'unavailable', 'paused']);
+const VALID_MODEL_CATEGORIES = new Set(['video', 'image', 'audio', 'multimodal']);
 
 function usage() {
   return [
     'Usage:',
-    '  npm run model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id> [options]',
+    '  pnpm model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id> [options]',
     '',
     'Required:',
     '  --from <slug>              Existing model page to clone as a base',
@@ -23,6 +24,7 @@ function usage() {
     '  --family <family-id>       Family id for examples / compare grouping',
     '',
     'Options:',
+    '  --category <video|image|audio|multimodal> Model category (default: video)',
     '  --stage <stage>            hidden | public_noindex | indexed (default: indexed, or hidden with --new-family)',
     '  --availability <status>    available | limited | waitlist | unavailable | paused (default: available)',
     '  --new-family               Emit a family stub for a brand-new examples family',
@@ -40,6 +42,7 @@ function parseArgs(argv) {
     stage: 'indexed',
     stageExplicit: false,
     availability: 'available',
+    category: 'video',
     newFamily: false,
     emitEngineStub: false,
     dryRun: false,
@@ -69,6 +72,10 @@ function parseArgs(argv) {
       case '--stage':
         options.stage = next;
         options.stageExplicit = true;
+        index += 1;
+        break;
+      case '--category':
+        options.category = next;
         index += 1;
         break;
       case '--availability':
@@ -111,6 +118,9 @@ function parseArgs(argv) {
 
   if (!options.fromSlug || !options.slug || !options.name || !options.family) {
     throw new Error(`Missing required arguments.\n\n${usage()}`);
+  }
+  if (!VALID_MODEL_CATEGORIES.has(options.category)) {
+    throw new Error('--category must be video, image, audio, or multimodal.');
   }
   if (options.newFamily && !options.stageExplicit) {
     options.stage = 'hidden';
@@ -156,63 +166,54 @@ function buildEngineStub(options) {
   const constantName = `${toPascalCase(options.slug)}Entry`;
   const showInNav = options.stage === 'indexed';
   return [
-    `const ${constantName}: Partial<FalEngineEntry> = {`,
+    `const ${constantName}: Partial<RawFalEngineEntry> = {`,
     `  id: '${options.engineId ?? options.slug}',`,
-    `  modelSlug: '${options.slug}',`,
     `  marketingName: '${options.name.replace(/'/g, "\\'")}',`,
-    `  family: '${options.family}',`,
     `  availability: '${options.availability}',`,
     `  versionLabel: '${options.version ?? ''}',`,
-    '  surfaces: {',
-    '    modelPage: {',
-    '      indexable: true,',
-    '      includeInSitemap: true,',
-    '    },',
-    '    examples: {',
-    '      includeInFamilyResolver: true,',
-    `      includeInFamilyCopy: ${options.stage !== 'hidden'},`,
-    '    },',
-    '    compare: {',
-    '      suggestOpponents: [],',
-    '      publishedPairs: [],',
-    '      includeInHub: false,',
-    '    },',
-    '    app: {',
-    '      enabled: true,',
-    '      discoveryRank: undefined,',
-    '      variantGroup: undefined,',
-    '      variantLabel: undefined,',
-    '    },',
-    '    pricing: {',
-    '      includeInEstimator: true,',
-    '      featuredScenario: undefined,',
-    '    },',
-    '  },',
     '};',
     '',
-    '// Insert this block into frontend/src/config/falEngines.ts and complete engine/spec details.',
-    showInNav ? '// Family stage is indexed, so decide separately when to add compare publication and examples copy exposure.' : '',
+    '// Insert this block into the relevant frontend/src/config/fal-engines provider module and complete execution/spec details.',
+    '// Keep model identity, family, category, aliases, and publication in frontend/config/model-registry.json.',
+    showInNav ? '// Family stage is indexed; publication still remains explicit in the registry entry.' : '',
   ]
     .filter(Boolean)
     .join('\n');
 }
 
+function buildRegistryEntry(options) {
+  return {
+    id: options.engineId ?? options.slug,
+    slug: options.slug,
+    family: options.family || null,
+    category: options.category ?? 'video',
+    aliases: { internal: [], publicSlugs: [] },
+    publication: {
+      model: { published: false, indexable: false },
+      examples: { published: false, includeInFamilyCopy: false, current: false },
+      compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+      app: { published: false },
+      pricing: { published: false },
+      sitemap: { published: false },
+    },
+    replacement: null,
+  };
+}
+
 function buildFamilyStub(options) {
-  const publishedModelSlugs = options.stage === 'indexed' ? `'${options.slug}'` : '';
   const showInNav = options.stage === 'indexed';
   return [
     '{',
     `  id: '${options.family}',`,
     `  label: '${(options.familyLabel ?? options.family).replace(/'/g, "\\'")}',`,
     `  navLabel: '${(options.familyNavLabel ?? options.familyLabel ?? options.name).replace(/'/g, "\\'")}',`,
-    `  defaultModelSlug: '${options.slug}',`,
+    `  defaultModelId: '${options.engineId ?? options.slug}',`,
     '  routeAliases: [],',
     '  aliases: [],',
     `  prefixes: ['${options.family}'],`,
     '  examplesPage: {',
     `    stage: '${options.stage}',`,
     `    showInNav: ${showInNav},`,
-    `    publishedModelSlugs: [${publishedModelSlugs}],`,
     '  },',
     '},',
     '',
@@ -223,10 +224,10 @@ function buildFamilyStub(options) {
 function buildLaunchPacket(options, paths) {
   const stageNote =
     options.stage === 'hidden'
-      ? 'Family route stays hidden by default. Keep examples exposure on `/examples?engine=<slug>` until the family is promoted.'
+      ? 'Family route stays hidden by default. Keep registry publication disabled until the family is promoted.'
       : options.stage === 'public_noindex'
         ? 'Family route can exist publicly, but it should remain `noindex,follow` until you explicitly promote it to `indexed`.'
-        : 'Family route is indexable. Keep `publishedModelSlugs` intentional so canonical examples copy does not drift automatically.';
+        : 'Family route is indexable. Keep examples publication and family-copy membership explicit in the canonical registry.';
 
   return [
     `# ${options.name} launch packet`,
@@ -241,31 +242,33 @@ function buildLaunchPacket(options, paths) {
     '',
     `- Marketing JSON scaffold: \`content/models/{en,fr,es}/${options.slug}.json\``,
     `- Engine stub: \`${path.relative(ROOT, paths.engineStubPath)}\``,
+    '- Registry entry: printed to stdout for insertion into `frontend/config/model-registry.json`',
     options.newFamily ? `- Family stub: \`${path.relative(ROOT, paths.familyStubPath)}\`` : '- Family stub: not generated (existing family)',
     `- Launch packet: \`${path.relative(ROOT, paths.launchPacketPath)}\``,
     '',
     '## Codex checklist',
     '',
-    '1. Complete the engine entry in `frontend/src/config/falEngines.ts` from real specs, modes, pricing, and provider ids.',
+    '1. Complete the raw execution entry in the relevant `frontend/src/config/fal-engines` provider module from real specs, modes, pricing, and provider IDs.',
     '2. Rewrite the EN model page with factual positioning, not template placeholders.',
     '3. Rewrite FR and ES as marketing adaptations, not literal translations.',
     '4. Verify title, meta description, canonical path, and locale coverage before promoting indexation.',
-    '5. Decide explicitly whether examples copy should mention this model by updating `publishedModelSlugs`.',
-    '6. Decide explicitly whether compare should publish any pairs by filling `surfaces.compare.publishedPairs`.',
-    '7. Decide explicitly whether pricing marketing should feature this model with `surfaces.pricing.featuredScenario`.',
+    '5. Insert the printed entry in `frontend/config/model-registry.json` and decide every publication field explicitly.',
+    '6. Keep historical engine inputs in `aliases.internal` and historical URLs in `aliases.publicSlugs`.',
+    '7. Keep provider IDs in provider adapters and mode definitions, never in registry aliases.',
     '',
     '## Publication notes',
     '',
     `- ${stageNote}`,
-    '- Model pages remain public quickly, but compare hub/sitemap should not expand unless publication is explicit.',
-    '- App and estimator can stay automatic as long as the engine entry is complete and `surfaces.app` / `surfaces.pricing` are left enabled.',
+    '- The registry skeleton keeps every surface unpublished; enable each surface only after its content and route prerequisites are ready.',
+    '- App and pricing-link exposure stay disabled until their registry publication fields are deliberately enabled.',
     '',
     '## After manual edits',
     '',
     '```bash',
-    'npm run engine:catalog',
-    'npm run model:generate:write',
-    'npm run models:audit',
+    'pnpm model:registry:generate',
+    'pnpm engine:catalog',
+    'pnpm model:generate:write',
+    'pnpm model:registry:check',
     '```',
   ].join('\n');
 }
@@ -284,8 +287,8 @@ async function writeText(filePath, content, dryRun) {
 }
 
 function runScaffold(options) {
-  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const result = spawnSync(npmCmd, ['run', 'model:scaffold', '--', ...buildScaffoldArgs(options)], {
+  const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  const result = spawnSync(pnpmCmd, ['model:scaffold', ...buildScaffoldArgs(options)], {
     cwd: ROOT,
     stdio: 'inherit',
   });
@@ -299,6 +302,7 @@ async function main() {
   runScaffold(options);
 
   const engineStub = buildEngineStub(options);
+  const registryEntry = buildRegistryEntry(options);
   const familyStub = options.newFamily ? buildFamilyStub(options) : null;
   const engineStubPath = path.join(DOCS_MODEL_LAUNCH_DIR, `${options.slug}.engine.stub.ts`);
   const familyStubPath = path.join(DOCS_MODEL_LAUNCH_DIR, `${options.slug}.family.stub.ts`);
@@ -316,6 +320,17 @@ async function main() {
     console.log('');
     console.log(engineStub);
   }
+
+  console.log('');
+  console.log('Registry entry skeleton for frontend/config/model-registry.json:');
+  console.log(JSON.stringify(registryEntry, null, 2));
+
+  console.log('');
+  console.log('After inserting and completing the registry entry:');
+  console.log('pnpm model:registry:generate');
+  console.log('pnpm engine:catalog');
+  console.log('pnpm model:generate:write');
+  console.log('pnpm model:registry:check');
 
   console.log('');
   console.log('Artifacts ready:');

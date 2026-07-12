@@ -12,6 +12,8 @@ This route renders localized SEO pages for individual AI video models.
 
 - Preserve localized paths for English, French, and Spanish.
 - Preserve canonical, hreflang, metadata, and JSON-LD behavior.
+- Make model identity, alias, family, category, publication, replacement, and tombstone changes only in `frontend/config/model-registry.json`; follow `docs/engineering/model-registry.md` and run `pnpm model:registry:check`.
+- Treat `frontend/config/model-runtime.json`, `frontend/config/engine-catalog.json`, `frontend/config/model-roster.json`, and the roster files under `docs/` as generated projections; never edit them directly.
 - Keep new model-page sections in `_components`.
 - Keep route-only helper logic in `_lib`.
 - Do not move helpers into shared `frontend/lib` unless another route actually reuses them.
