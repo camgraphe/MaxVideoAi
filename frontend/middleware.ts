@@ -1,19 +1,16 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { isbot as detectBot } from 'isbot';
-import { defaultLocale, localePathnames, locales } from '@/i18n/locales';
+import { defaultLocale, localePathnames } from '@/i18n/locales';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 import {
   LOGIN_PATH,
-  LOCALE_SET,
   LOCALE_STRIPPABLE_PREFIXES,
   PROTECTED_PREFIXES,
   applyMarketingEdgeCacheHeaders,
   containsLocalePlaceholder,
-  extractLocaleFromPathname,
   finalizeResponse,
-  getPreferredLocale,
   handleI18nRouting,
   handleMarketingSlug,
   hasLocalAdminBypass,
@@ -73,11 +70,6 @@ export async function middleware(req: NextRequest) {
 
   const originalPathname = req.nextUrl.pathname;
   let pathname = originalPathname;
-  const detectedLocale =
-    req.nextUrl.locale && LOCALE_SET.has(req.nextUrl.locale as (typeof locales)[number])
-      ? (req.nextUrl.locale as (typeof locales)[number])
-      : null;
-  let localeFromPath = extractLocaleFromPathname(pathname);
 
   if (containsLocalePlaceholder(pathname)) {
     const { localePrefix } = splitLocaleFromPath(pathname);
@@ -111,7 +103,6 @@ export async function middleware(req: NextRequest) {
   }
 
   pathname = normalizedPathname;
-  localeFromPath = extractLocaleFromPathname(pathname);
   const nonPrefixedLocalizedRedirect = resolveNonPrefixedLocalizedMarketingRedirect(req, pathname);
   if (nonPrefixedLocalizedRedirect) {
     return finalizeResponse(nonPrefixedLocalizedRedirect, hasLogoutIntentCookie);
@@ -130,26 +121,6 @@ export async function middleware(req: NextRequest) {
   const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
     return finalizeResponse(marketingResponse, hasLogoutIntentCookie, trackingNoindex, appNoindex);
-  }
-
-  if (isMarketingPath && !localeFromPath && !isBotRequest && !bypassLocaleRedirect) {
-    const preferredLocale = getPreferredLocale(req) ?? detectedLocale ?? defaultLocale;
-    const prefix = localePathnames[preferredLocale];
-    if (typeof prefix === 'string') {
-      const suffix = pathname === '/' ? '' : pathname;
-      const targetPath = prefix.length ? `/${prefix}${suffix}` : suffix || '/';
-      const normalizedTarget = targetPath.replace(/\/{2,}/g, '/') || '/';
-      if (normalizedTarget !== pathname) {
-        const redirectUrl = req.nextUrl.clone();
-        redirectUrl.pathname = normalizedTarget;
-        return finalizeResponse(
-          NextResponse.redirect(redirectUrl, 307),
-          hasLogoutIntentCookie,
-          trackingNoindex,
-          appNoindex
-        );
-      }
-    }
   }
 
   let response: NextResponse;

@@ -43,7 +43,7 @@ export const LOCALIZED_SEGMENT_VALUES = Array.from(
 
 export const handleI18nRouting = createMiddleware({
   ...routing,
-  localeDetection: true,
+  localeDetection: false,
   alternateLinks: false,
 });
 

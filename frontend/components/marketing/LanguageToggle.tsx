@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useRef, useState, useTransition } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import { Globe } from 'lucide-react';
-import { usePathname, useRouter } from '@/i18n/navigation';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import type { Locale } from '@/lib/i18n/types';
 import { LOCALE_COOKIE } from '@/lib/i18n/constants';
-import localizedSlugConfig from '@/config/localized-slugs.json';
-import { resolveBlogCanonicalSlug, resolveLocalizedBlogSlug } from '@/config/blog-slugs';
+import {
+  buildMarketingLocaleSwitchHref,
+  resolveMarketingLocaleFromPathname,
+} from '@/lib/i18n/marketing-locale-switch';
 import { Button } from '@/components/ui/Button';
 import { UIIcon } from '@/components/ui/UIIcon';
 
@@ -20,38 +20,15 @@ const FLAG_MAP: Record<Locale, string> = {
 };
 
 const LOCALE_BYPASS_PREFIXES = ['/video'];
-const LOCALE_PREFIXES: Record<Locale, string> = { en: '', fr: 'fr', es: 'es' } as const;
-const LOCALIZED_SEGMENT_TO_EN: Record<string, string> = Object.values(localizedSlugConfig).reduce(
-  (map, value) => {
-    Object.values(value).forEach((segment) => {
-      if (segment) {
-        map[segment] = value.en;
-      }
-    });
-    return map;
-  },
-  {} as Record<string, string>
-);
 
 function shouldBypassLocale(pathname: string | null | undefined) {
   if (!pathname) return false;
   return LOCALE_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
-function decodePathSegment(value: string) {
-  try {
-    return decodeURIComponent(value);
-  } catch {
-    return value;
-  }
-}
-
 type LanguageToggleVariant = 'select' | 'icon';
 
 export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggleVariant }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
   const { locale, t } = useI18n();
   const defaultOptions: Array<{ locale: Locale; label: string }> = [
     { locale: 'en', label: 'English' },
@@ -65,23 +42,10 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
   const [menuOpen, setMenuOpen] = useState(false);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
-  const [, startTransition] = useTransition();
 
   useEffect(() => {
-    const rawPathname =
-      typeof window !== 'undefined' && window.location?.pathname ? window.location.pathname : pathname;
-    const resolvedLocale = resolveMarketingLocaleFromPathname(rawPathname, locale);
-    setPendingLocale(resolvedLocale);
-    if (typeof window !== 'undefined' && resolvedLocale === 'en') {
-      const currentUrl = new URL(window.location.href);
-      if (currentUrl.searchParams.get('nolocale') === '1') {
-        currentUrl.searchParams.delete('nolocale');
-        const query = currentUrl.searchParams.toString();
-        const cleanHref = `${currentUrl.pathname}${query ? `?${query}` : ''}${currentUrl.hash}`;
-        window.history.replaceState(window.history.state, '', cleanHref);
-      }
-    }
-  }, [locale, pathname]);
+    setPendingLocale(resolveMarketingLocaleFromPathname(window.location.pathname, locale));
+  }, [locale]);
 
   const handleChange = (value: Locale) => {
     setPendingLocale(value);
@@ -89,124 +53,20 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
     const maxAge = 60 * 60 * 24 * 365;
     document.cookie = `${LOCALE_COOKIE}=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
     document.cookie = `NEXT_LOCALE=${value}; path=/; max-age=${maxAge}; SameSite=Lax`;
-    startTransition(() => {
-      const rawPathname =
-        typeof window !== 'undefined' && window.location?.pathname
-          ? window.location.pathname
-          : pathname;
-      const currentLocale = resolveMarketingLocaleFromPathname(rawPathname, locale);
-      const slugParam = params?.slug;
-      const usecaseParam = params?.usecase;
-      let slugValue = Array.isArray(slugParam) ? slugParam[0] : slugParam;
-      let usecaseValue = Array.isArray(usecaseParam) ? usecaseParam[0] : usecaseParam;
-      const isModelPage = typeof rawPathname === 'string'
-        ? /^\/(?:en|fr|es)?\/(?:models|modeles|modelos)\/[^\/?#]+/i.test(rawPathname)
-        : false;
-      const isBestForUsecasePage = typeof rawPathname === 'string'
-        ? /^\/(?:(?:en|fr|es)\/)?(?:ai-video-engines|comparatif|comparativa)\/best-for\/[^\/?#]+/i.test(rawPathname)
-        : false;
-      const isComparePage = typeof rawPathname === 'string'
-        ? /^\/(?:en|fr|es)?\/(?:ai-video-engines|comparatif|comparativa)\/[^\/?#]+/i.test(rawPathname)
-        : false;
-      const isBlogPage = typeof rawPathname === 'string'
-        ? /^\/(?:en|fr|es)?\/blog\/[^\/?#]+/i.test(rawPathname)
-        : false;
-      if (!usecaseValue && typeof rawPathname === 'string') {
-        const m = rawPathname.match(
-          /^\/(?:(?:en|fr|es)\/)?(?:ai-video-engines|comparatif|comparativa)\/best-for\/([^\/?#]+)/i
-        );
-        if (m && m[1]) usecaseValue = m[1];
-      }
-      if (!slugValue && typeof rawPathname === 'string') {
-        const m = rawPathname.match(
-          /^\/(?:en|fr|es)?\/(?:models|modeles|modelos|ai-video-engines|comparatif|comparativa|blog)\/([^\/?#]+)/i
-        );
-        if (m && m[1]) slugValue = m[1];
-      }
-      if (slugValue && isBlogPage) {
-        const decodedSlug = decodePathSegment(slugValue);
-        const canonicalSlug =
-          resolveBlogCanonicalSlug(currentLocale, decodedSlug) ?? resolveBlogCanonicalSlug('en', decodedSlug) ?? decodedSlug;
-        const targetSlug = resolveLocalizedBlogSlug(canonicalSlug, value) ?? canonicalSlug;
-        router.replace({ pathname: '/blog/[slug]', params: { slug: targetSlug } }, { locale: value });
-        return;
-      }
-      if (usecaseValue && isBestForUsecasePage) {
-        router.replace(
-          {
-            pathname: '/ai-video-engines/best-for/[usecase]',
-            params: { usecase: decodePathSegment(usecaseValue) },
-          },
-          { locale: value }
-        );
-        return;
-      }
-      if (slugValue && isComparePage) {
-        router.replace({ pathname: '/ai-video-engines/[slug]', params: { slug: slugValue } }, { locale: value });
-        return;
-      }
-      if (slugValue && isModelPage) {
-        router.replace({ pathname: '/models/[slug]', params: { slug: slugValue } }, { locale: value });
-        return;
-      }
-      const targetPath = rawPathname && rawPathname.length ? rawPathname : '/';
-      if (shouldBypassLocale(rawPathname)) {
-        router.refresh();
-        return;
-      }
-      const englishPath = resolveEnglishPath(targetPath, currentLocale);
-      const searchParams = new URLSearchParams(window.location.search);
-      searchParams.set('lang', value);
-      if (value === 'en') {
-        searchParams.set('nolocale', '1');
-      } else {
-        searchParams.delete('nolocale');
-      }
-      const localeSwitchHref = `${englishPath}?${searchParams.toString()}`;
-      window.location.assign(localeSwitchHref);
-    });
+    const rawPathname = window.location.pathname || '/';
+    if (shouldBypassLocale(rawPathname)) {
+      window.location.reload();
+      return;
+    }
+    window.location.assign(
+      buildMarketingLocaleSwitchHref({
+        pathname: rawPathname,
+        targetLocale: value,
+        search: window.location.search,
+        hash: window.location.hash,
+      })
+    );
   };
-
-function resolveMarketingLocaleFromPathname(pathname: string | null | undefined, fallback: Locale): Locale {
-  if (!pathname) return fallback;
-  const match = pathname?.match(/^\/(fr|es)(?:\/|$)/i);
-  return match ? (match[1].toLowerCase() as Locale) : 'en';
-}
-
-function resolveEnglishPath(pathname: string, currentLocale: Locale): string {
-  if (currentLocale === 'en') {
-    return pathname || '/';
-  }
-  const prefix = LOCALE_PREFIXES[currentLocale];
-  if (!prefix) {
-    return pathname || '/';
-  }
-  const normalized = pathname?.split('?')[0] ?? '/';
-  const prefixed = normalized.startsWith('/') ? normalized : `/${normalized}`;
-  const prefixToken = `/${prefix}`;
-  if (!prefixed.startsWith(prefixToken)) {
-    return prefixed || '/';
-  }
-  let remainder = prefixed.slice(prefixToken.length);
-  if (!remainder || remainder === '/') {
-    return '/';
-  }
-  if (remainder.startsWith('/')) {
-    remainder = remainder.slice(1);
-  }
-  const segments = remainder.split('/').filter(Boolean);
-  if (!segments.length) {
-    return '/';
-  }
-  const [first, ...rest] = segments;
-  const englishFirst = LOCALIZED_SEGMENT_TO_EN[first] ?? first;
-  if (englishFirst === 'blog' && rest.length > 0) {
-    const localizedSlug = decodePathSegment(rest[0]);
-    const englishSlug = resolveBlogCanonicalSlug(currentLocale, localizedSlug) ?? localizedSlug;
-    return `/${[englishFirst, englishSlug, ...rest.slice(1)].join('/')}`;
-  }
-  return `/${[englishFirst, ...rest].join('/')}`;
-}
 
   const displayFor = (code: Locale) => FLAG_MAP[code] ?? code.toUpperCase();
   const currentLabel = options.find((option) => option.locale === pendingLocale)?.label ?? pendingLocale.toUpperCase();
