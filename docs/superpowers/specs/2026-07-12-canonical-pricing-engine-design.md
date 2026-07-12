@@ -49,7 +49,7 @@ This design is the target architecture for a multi-batch program. It must not be
 
 The program is decomposed into these separately reviewed subprojects:
 
-1. **Pricing parity and policy foundation**: inventory current consumers, freeze outputs, add the deterministic audit matrix, add validated versioned defaults, normalize rule resolution, and run the canonical kernel in shadow mode. No consumer becomes authoritative and no admin behavior changes.
+1. **Pricing parity and policy foundation — complete 2026-07-12**: inventory current consumers, freeze outputs, add the deterministic audit matrix, add validated versioned defaults, normalize rule resolution, and run the canonical kernel in shadow mode. The completed audit covers 178 scenarios with 178 matches and 0 mismatches. No consumer became authoritative and no admin behavior changed.
 2. **Billing consumer migration**: move wallet, generation, image, audio, and tool billing to canonical quotes while preserving debits and transaction records.
 3. **Public projection migration**: move pricing pages, model pages, estimators, chips, and JSON-LD to canonical quotes.
 4. **Admin pricing cockpit**: replace the current raw rule editor with preview, provenance, history, rollback, and cache invalidation.

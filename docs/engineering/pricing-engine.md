@@ -2,7 +2,7 @@
 
 ## Current status
 
-Pricing is in a parity-foundation migration. Existing production consumers remain authoritative. The canonical quote path introduced by this batch is restricted to tests and the audit command until a separately approved billing-migration plan is complete.
+The pricing parity foundation is complete. The deterministic audit currently reports **178 scenarios, 178 matches, 0 mismatches, and 4 explicit compatibility profiles**. Existing production consumers remain authoritative. The canonical quote path introduced by this batch is restricted to tests and the audit command until a separately approved billing consumer migration plan is complete.
 
 No price, margin, surcharge, membership discount, currency, rounding rule, wallet debit, public display, structured-data offer, or admin mutation may change during this foundation batch.
 
@@ -78,3 +78,7 @@ Every current cross-surface difference is preserved and identified by a compatib
 - `fixed-product-current`: preserves seeded billing-product totals for tools without applying a second commercial margin or surcharge.
 
 These profiles document existing behavior only. They cannot be added implicitly by the audit command and they do not authorize new cross-surface differences.
+
+## Next migration
+
+The next approved architecture target is the billing consumer migration. It must have a separate implementation plan and must migrate wallet, generation, image, audio, and tool consumers incrementally. This foundation does not authorize that migration, public projection changes, or admin behavior changes by itself.
