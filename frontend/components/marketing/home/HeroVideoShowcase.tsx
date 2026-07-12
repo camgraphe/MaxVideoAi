@@ -96,7 +96,9 @@ export function HeroVideoShowcase({
   const [progress, setProgress] = useState(0);
   const [shouldAutoplayPreview, setShouldAutoplayPreview] = useState(false);
   const [shouldLoadVideo, setShouldLoadVideo] = useState(false);
+  const [shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const mobileThumbnailsRef = useRef<HTMLDivElement>(null);
   const selected = items[selectedIndex] ?? items[0];
 
   useEffect(() => {
@@ -111,6 +113,26 @@ export function HeroVideoShowcase({
     return () => {
       desktopQuery.removeEventListener('change', updatePlaybackPolicy);
       motionQuery.removeEventListener('change', updatePlaybackPolicy);
+    };
+  }, []);
+
+  useEffect(() => {
+    const mobileThumbnails = mobileThumbnailsRef.current;
+    if (!mobileThumbnails) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry?.isIntersecting) return;
+        setShouldLoadMobileThumbnails(true);
+        observer.disconnect();
+      },
+      { rootMargin: '64px 0px', threshold: 0.01 }
+    );
+
+    observer.observe(mobileThumbnails);
+
+    return () => {
+      observer.disconnect();
     };
   }, []);
 
@@ -362,7 +384,7 @@ export function HeroVideoShowcase({
       </div>
       </div>
 
-      <div className="relative z-20 mt-4">
+      <div ref={mobileThumbnailsRef} className="relative z-20 mt-4">
         <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-5">
           {items.map((item, index) => {
             const selectedThumb = index === selectedIndex;
@@ -383,10 +405,20 @@ export function HeroVideoShowcase({
                   src={item.posterSrc}
                   alt={item.imageAlt}
                   fill
-                  sizes="(max-width: 639px) 33vw, 118px"
-                  className="object-cover"
+                  sizes="118px"
+                  className="hidden object-cover md:block"
                   loading="lazy"
                 />
+                {shouldLoadMobileThumbnails ? (
+                  <Image
+                    src={item.posterSrc}
+                    alt={item.imageAlt}
+                    fill
+                    sizes="(max-width: 639px) 33vw, 118px"
+                    className="object-cover md:hidden"
+                    loading="lazy"
+                  />
+                ) : null}
                 <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.03)_0%,rgba(0,0,0,0.06)_40%,rgba(0,0,0,0.50)_72%,rgba(0,0,0,0.82)_100%)]" />
                 <div className="absolute inset-x-0 bottom-0 h-1/2 bg-[radial-gradient(ellipse_at_bottom,rgba(0,0,0,0.62),rgba(0,0,0,0.26)_48%,transparent_78%)]" />
                 <span className="absolute bottom-7 left-2.5 inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-white/94 text-[#151827] shadow-[0_6px_16px_-8px_rgba(0,0,0,0.9)]">

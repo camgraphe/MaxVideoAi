@@ -169,6 +169,20 @@ test('homepage hero avoids initial mobile video downloads', () => {
   assert.doesNotMatch(showcaseSource, /loading="eager"/);
 });
 
+test('homepage hero defers mobile thumbnail images without changing desktop thumbnails', () => {
+  const showcaseSource = readFileSync('frontend/components/marketing/home/HeroVideoShowcase.tsx', 'utf8');
+
+  assert.match(showcaseSource, /const \[shouldLoadMobileThumbnails, setShouldLoadMobileThumbnails\]/);
+  assert.match(showcaseSource, /const mobileThumbnailsRef = useRef<HTMLDivElement>\(null\)/);
+  assert.match(showcaseSource, /new IntersectionObserver/);
+  assert.match(showcaseSource, /observer\.observe\(mobileThumbnails\)/);
+  assert.match(showcaseSource, /rootMargin: '64px 0px'/);
+  assert.match(showcaseSource, /ref=\{mobileThumbnailsRef\}/);
+  assert.match(showcaseSource, /className="hidden object-cover md:block"/);
+  assert.match(showcaseSource, /shouldLoadMobileThumbnails \? \(/);
+  assert.match(showcaseSource, /className="object-cover md:hidden"/);
+});
+
 test('homepage hero model CTA says specs and pricing instead of open model', () => {
   const homeRouteDataSource = readFileSync(
     "frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-route-data/hero.ts",
