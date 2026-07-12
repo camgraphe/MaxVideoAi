@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "supportedCurrencies": ["USD"],
+  "compatibilityProfiles": [
+    {
+      "id": "standard",
+      "vendorSubtotalRounding": "preserve",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest"
+    },
+    {
+      "id": "audio-current",
+      "vendorSubtotalRounding": "nearest",
+      "marginRounding": "up",
+      "surchargeRounding": "up",
+      "discountRounding": "nearest",
+      "totalRounding": "nearest"
+    }
+  ],
+  "rules": [
+    {
+      "id": "default",
+      "marginPercent": 0.3,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0.2,
+      "surchargeUpscalePercent": 0.5,
+      "currency": "USD"
+    },
+    {
+      "id": "audio-current",
+      "engineId": "audio-generation",
+      "marginPercent": 1.5,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0.2,
+      "surchargeUpscalePercent": 0.5,
+      "currency": "USD",
+      "compatibilityProfile": "audio-current"
+    }
+  ]
+}
