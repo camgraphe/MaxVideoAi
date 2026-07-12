@@ -58,6 +58,12 @@ function requireStringArray(value: unknown, path: string): asserts value is stri
   if (new Set(value.map(normalized)).size !== value.length) fail(`${path} contains duplicates`);
 }
 
+function requireOptionalNonBlankString(value: unknown, path: string): asserts value is string | undefined {
+  if (value !== undefined && (typeof value !== 'string' || !value.trim())) {
+    fail(`${path} must be a non-blank string when provided`);
+  }
+}
+
 function rejectForbiddenFields(value: unknown, path = 'registry'): void {
   if (Array.isArray(value)) return value.forEach((item, index) => rejectForbiddenFields(item, `${path}[${index}]`));
   if (!value || typeof value !== 'object') return;
@@ -125,7 +131,19 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
       `${model.id}.publication.compare.publishedPairIds`
     );
     requireBoolean(model.publication?.app?.published, `${model.id}.publication.app.published`);
+    requireOptionalNonBlankString(
+      model.publication?.app?.variantGroup,
+      `${model.id}.publication.app.variantGroup`
+    );
+    requireOptionalNonBlankString(
+      model.publication?.app?.variantLabel,
+      `${model.id}.publication.app.variantLabel`
+    );
     requireBoolean(model.publication?.pricing?.published, `${model.id}.publication.pricing.published`);
+    requireOptionalNonBlankString(
+      model.publication?.pricing?.featuredScenario,
+      `${model.id}.publication.pricing.featuredScenario`
+    );
     requireBoolean(model.publication?.sitemap?.published, `${model.id}.publication.sitemap.published`);
     if (model.replacement !== null && (typeof model.replacement !== 'string' || !model.replacement.trim())) {
       fail(`invalid replacement for "${model.id}"`);

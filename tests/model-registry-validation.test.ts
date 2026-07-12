@@ -44,6 +44,43 @@ test('registry rejects duplicate identity and ambiguous aliases', () => {
   );
 });
 
+test('registry rejects ambiguity within the public alias namespace', () => {
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const aliasOwner = copy.models.find((model: any) => model.aliases.publicSlugs.length > 0);
+      const otherModel = copy.models.find((model: any) => model.id !== aliasOwner.id);
+      otherModel.aliases.publicSlugs.push(aliasOwner.aliases.publicSlugs[0]);
+    })),
+    /ambiguous public alias/i
+  );
+});
+
+test('registry rejects blank and non-string optional publication labels', () => {
+  const fields = [
+    {
+      path: 'variantGroup',
+      set: (copy: any, value: unknown) => { copy.models[0].publication.app.variantGroup = value; },
+    },
+    {
+      path: 'variantLabel',
+      set: (copy: any, value: unknown) => { copy.models[0].publication.app.variantLabel = value; },
+    },
+    {
+      path: 'featuredScenario',
+      set: (copy: any, value: unknown) => { copy.models[0].publication.pricing.featuredScenario = value; },
+    },
+  ];
+
+  for (const field of fields) {
+    for (const malformed of [' ', 42]) {
+      assert.throws(
+        () => validateModelRegistryDocument(mutate((copy) => { field.set(copy, malformed); })),
+        new RegExp(`${field.path} must be a non-blank string`, 'i')
+      );
+    }
+  }
+});
+
 test('registry rejects broken references, chains, and tombstone collisions', () => {
   assert.throws(
     () => validateModelRegistryDocument(mutate((copy) => {
