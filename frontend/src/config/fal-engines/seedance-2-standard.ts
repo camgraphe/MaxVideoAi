@@ -5,7 +5,6 @@ import {
   SEEDANCE_2_LAUNCH_CONFIG,
   SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
   buildSeedance2PricingDetails,
-  buildSeedance2Surfaces,
 } from './launch-config';
 
 const SEEDANCE_2_0_ENGINE: EngineCaps = {
@@ -181,12 +180,10 @@ const SEEDANCE_2_0_ENGINE: EngineCaps = {
 export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-2-0',
-    modelSlug: 'seedance-2-0',
     marketingName: 'Seedance 2.0',
     cardTitle: 'Seedance 2.0',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedance',
     versionLabel: '2.0',
     availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
     logoPolicy: 'textOnly',
@@ -336,7 +333,6 @@ export const SEEDANCE_2_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       amountCents: 0,
       label: 'Live quote in Generate',
     },
-    surfaces: buildSeedance2Surfaces('standard', 'Standard'),
     promptExample:
       'Three-shot cinematic sequence, 15 seconds total, director-style camera language, realistic physics, synchronized dialogue and ambience, 16:9.',
   },

@@ -5,7 +5,6 @@ import {
   SEEDANCE_2_LAUNCH_CONFIG,
   SEEDANCE_2_NORMALIZED_UNIT_PRICE_USD_PER_1K_TOKENS,
   buildSeedance2PricingDetails,
-  buildSeedance2Surfaces,
 } from './launch-config';
 
 const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
@@ -177,12 +176,10 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
 export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-2-0-fast',
-    modelSlug: 'seedance-2-0-fast',
     marketingName: 'Seedance 2.0 Fast',
     cardTitle: 'Seedance 2.0 Fast',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedance',
     versionLabel: '2.0 Fast',
     availability: SEEDANCE_2_LAUNCH_CONFIG.availability,
     logoPolicy: 'textOnly',
@@ -332,7 +329,6 @@ export const SEEDANCE_2_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       amountCents: 0,
       label: 'Live quote in Generate',
     },
-    surfaces: buildSeedance2Surfaces('fast', 'Fast'),
     promptExample:
       'Fast draft pass for a three-beat product story, simple camera language, audio on, built for iteration before pushing finals through standard Seedance 2.0.',
   },

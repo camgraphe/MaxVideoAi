@@ -154,12 +154,10 @@ const SEEDANCE_1_5_PRO_ENGINE: EngineCaps = {
 export const SEEDANCE_1_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-1-5-pro',
-    modelSlug: 'seedance-1-5-pro',
     marketingName: 'Seedance 1.5 Pro',
     cardTitle: 'Seedance 1.5 Pro – cinematic motion control',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedance',
     versionLabel: 'v1.5 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -234,11 +232,6 @@ export const SEEDANCE_1_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       durationSeconds: 5,
       resolution: '720p',
       label: 'Audio on',
-    },
-    surfaces: {
-      compare: {
-        includeInHub: true,
-      },
     },
     promptExample:
       'Locked camera shot of a neon alley, subtle rain, soft ambient audio, slow motion detail.',

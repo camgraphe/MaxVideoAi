@@ -103,12 +103,10 @@ const NANO_BANANA_ENGINE: EngineCaps = {
 export const NANO_BANANA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'nano-banana',
-    modelSlug: 'nano-banana',
     marketingName: 'Nano Banana (Image Generation)',
     cardTitle: 'Nano Banana',
     provider: 'Google',
     brandId: 'google',
-    family: 'nano-banana',
     versionLabel: 'Nano',
     availability: 'available',
     isLegacy: true,
@@ -187,6 +185,5 @@ pricingHint: {
 },
 promptExample:
       'Macro photo of a dew-covered leaf with neon reflections, depth-of-field bokeh, studio lighting',
-    category: 'image',
   },
 ];

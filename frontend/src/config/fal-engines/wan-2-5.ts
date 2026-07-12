@@ -138,12 +138,10 @@ const WAN_2_5_ENGINE: EngineCaps = {
 export const WAN_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'wan-2-5',
-    modelSlug: 'wan-2-5',
     marketingName: 'Wan 2.5 Text & Image to Video',
     cardTitle: 'Wan 2.5',
     provider: 'Wan',
     brandId: 'wan',
-    family: 'wan',
     versionLabel: 'Preview',
     availability: 'available',
     logoPolicy: 'textOnly',

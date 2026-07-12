@@ -125,12 +125,10 @@ const PIKA_TEXT_TO_VIDEO_ENGINE: EngineCaps = {
 export const PIKA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'pika-text-to-video',
-    modelSlug: 'pika-text-to-video',
     marketingName: 'Pika 2.2 Text & Image to Video',
     cardTitle: 'Pika 2.2',
     provider: 'Pika',
     brandId: 'pika',
-    family: 'pika',
     versionLabel: '2.2',
     availability: 'available',
     logoPolicy: 'textOnly',

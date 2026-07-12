@@ -197,12 +197,10 @@ const SORA_2_PRO_ENGINE: EngineCaps = {
 export const SORA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'sora-2',
-    modelSlug: 'sora-2',
     marketingName: 'OpenAI Sora 2',
     cardTitle: 'Sora 2',
     provider: 'OpenAI',
     brandId: 'openai',
-    family: 'sora',
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -284,12 +282,10 @@ export const SORA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   },
   {
     id: 'sora-2-pro',
-    modelSlug: 'sora-2-pro',
     marketingName: 'OpenAI Sora 2 Pro',
     cardTitle: 'Sora 2 Pro',
     provider: 'OpenAI',
     brandId: 'openai',
-    family: 'sora',
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',

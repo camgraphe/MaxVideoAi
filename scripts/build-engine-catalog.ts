@@ -3,11 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getModelFamilyExamplesPageConfig } from '../frontend/config/model-families';
 import { type ModelFamilyExamplesPageConfig } from '../frontend/config/model-publication';
-import {
-  hasExplicitFalEngineSurfaces,
-  listFalEngines,
-  type FalEngineEntry,
-} from '../frontend/src/config/falEngines';
+import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
 import { getEngineCatalogOverrides, type EngineCatalogOverride, type EngineCatalogFeature } from '../frontend/src/config/engineCatalog.overrides';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -27,7 +23,7 @@ type EngineCatalogEntry = {
   logoPolicy: string;
   isLegacy?: boolean;
   surfaces: FalEngineEntry['surfaces'];
-  surfacesSource: 'explicit' | 'default';
+  surfacesSource: 'registry';
   engine: FalEngineEntry['engine'];
   modes: FalEngineEntry['modes'];
   features: Record<string, EngineCatalogFeature>;
@@ -74,7 +70,7 @@ function toCatalogEntry(engine: FalEngineEntry, override?: EngineCatalogOverride
     logoPolicy: engine.logoPolicy,
     isLegacy: engine.isLegacy || undefined,
     surfaces: engine.surfaces,
-    surfacesSource: hasExplicitFalEngineSurfaces(engine.id) ? 'explicit' : 'default',
+    surfacesSource: 'registry',
     engine: engine.engine,
     modes: engine.modes,
     features,

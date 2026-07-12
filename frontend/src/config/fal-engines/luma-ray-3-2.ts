@@ -278,12 +278,10 @@ const LUMA_RAY_3_2_ENGINE: EngineCaps = {
 export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'luma-ray-3-2',
-    modelSlug: 'luma-ray-3-2',
     marketingName: 'Luma Ray 3.2',
     cardTitle: 'Luma Ray 3.2',
     provider: 'Luma AI',
     brandId: 'luma',
-    family: 'luma',
     versionLabel: 'Ray 3.2',
     availability: 'available',
     logoPolicy: 'logoAllowed',
@@ -367,39 +365,7 @@ export const LUMA_RAY_3_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         mode: 'v2v',
       },
     ],
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['seedance-2-0', 'kling-3-pro', 'veo-3-1', 'veo-3-1-fast', 'luma-ray-2'],
-        publishedPairs: [
-          'seedance-2-0',
-          'kling-3-pro',
-          'veo-3-1',
-          'veo-3-1-fast',
-          'dreamina-seedance-2-0-mini',
-          'luma-ray-2',
-        ],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 12,
-        variantGroup: 'luma-ray',
-        variantLabel: 'Ray 3.2',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
-    },
     promptExample:
       'Handheld cinematic shot of a designer chair in a sunlit studio, subtle parallax, soft fabric movement, 5s, 16:9.',
-    category: 'video',
   },
 ];

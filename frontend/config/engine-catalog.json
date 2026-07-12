@@ -65,7 +65,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "pika-text-to-video",
       "label": "Pika 2.2 Text & Image to Video",
@@ -383,7 +383,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "veo-3-1",
       "label": "Google Veo 3.1",
@@ -902,7 +902,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "veo-3-1-fast",
       "label": "Google Veo 3.1 Fast",
@@ -1424,7 +1424,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "veo-3-1-lite",
       "label": "Google Veo 3.1 Lite",
@@ -1874,7 +1874,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "gemini-omni-flash",
       "label": "Gemini Omni Flash",
@@ -2358,7 +2358,7 @@
         "includeInEstimator": false
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "lumaRay2",
       "label": "Luma Ray 2",
@@ -2851,7 +2851,7 @@
         "includeInEstimator": false
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "lumaRay2_flash",
       "label": "Luma Ray 2 Flash",
@@ -3330,7 +3330,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "luma-ray-3-2",
       "label": "Luma Ray 3.2",
@@ -3906,7 +3906,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "luma-uni-1",
       "label": "Luma Uni-1",
@@ -4167,7 +4167,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "luma-uni-1-max",
       "label": "Luma Uni-1 Max",
@@ -4462,7 +4462,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "sora-2",
       "label": "OpenAI Sora 2",
@@ -4731,7 +4731,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "sora-2-pro",
       "label": "OpenAI Sora 2 Pro",
@@ -5024,7 +5024,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-2-5-turbo",
       "label": "Kling 2.5 Turbo",
@@ -5351,7 +5351,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-2-6-pro",
       "label": "Kling 2.6 Pro",
@@ -5690,7 +5690,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-3-pro",
       "label": "Kling 3 Pro",
@@ -6077,7 +6077,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-3-standard",
       "label": "Kling 3 Standard",
@@ -6447,7 +6447,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-3-4k",
       "label": "Kling 3 4K",
@@ -6797,7 +6797,7 @@
         "featuredScenario": "reference-guided storyboard video"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-o3-standard",
       "label": "Kling 3.0 Omni Standard",
@@ -7433,7 +7433,7 @@
         "featuredScenario": "reference-guided storyboard video"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-o3-pro",
       "label": "Kling 3.0 Omni Pro",
@@ -8068,7 +8068,7 @@
         "featuredScenario": "reference-guided storyboard video"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "kling-o3-4k",
       "label": "Kling 3.0 Omni 4K",
@@ -8586,7 +8586,7 @@
         "featuredScenario": "happy-horse-1-1-native-audio-video"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "happy-horse-1-1",
       "label": "Happy Horse 1.1",
@@ -9164,7 +9164,7 @@
         "featuredScenario": "legacy happy-horse-video-edit"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "happy-horse-1-0",
       "label": "Happy Horse 1.0",
@@ -9822,7 +9822,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedance-1-5-pro",
       "label": "Seedance 1.5 Pro",
@@ -10206,7 +10206,7 @@
         "featuredScenario": "seedance-2-family"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedance-2-0",
       "label": "Seedance 2.0",
@@ -10921,7 +10921,7 @@
         "featuredScenario": "seedance-2-family"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedance-2-0-fast",
       "label": "Seedance 2.0 Fast",
@@ -11603,7 +11603,7 @@
         "featuredScenario": "seedance-2-family"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedance-2-0-mini",
       "label": "Dreamina Seedance 2.0 Mini",
@@ -12201,7 +12201,7 @@
         "includeInEstimator": false
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedance-2-0-fast-byteplus",
       "label": "Dreamina Seedance 2.0 Fast Direct",
@@ -12551,7 +12551,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "wan-2-5",
       "label": "Wan 2.5 Text & Image to Video",
@@ -12869,7 +12869,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "wan-2-6",
       "label": "Wan 2.6 Text & Image to Video",
@@ -13259,7 +13259,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "ltx-2-fast",
       "label": "LTX Video 2.0 Fast",
@@ -13572,7 +13572,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "ltx-2",
       "label": "LTX Video 2.0 Pro",
@@ -13875,7 +13875,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "ltx-2-3-fast",
       "label": "LTX 2.3 Fast",
@@ -14244,7 +14244,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "ltx-2-3",
       "label": "LTX 2.3 Pro",
@@ -14788,7 +14788,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "minimax-hailuo-02-text",
       "label": "MiniMax Hailuo 02 Standard",
@@ -15047,7 +15047,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "nano-banana",
       "label": "Nano Banana",
@@ -15195,8 +15195,8 @@
       "updatedAt": "2025-03-01T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "fal.ai",
-        "modelSlug": "fal-ai/nano-banana"
+        "provider": "google_vertex_image",
+        "modelSlug": "gemini-2.5-flash-image"
       },
       "availability": "available",
       "brandId": "google"
@@ -15306,7 +15306,7 @@
         "featuredScenario": "fast 1K image draft"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "nano-banana-lite",
       "label": "Nano Banana Lite",
@@ -15472,7 +15472,7 @@
       "updatedAt": "2026-06-30T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "google_gemini_image",
+        "provider": "google_vertex_image",
         "modelSlug": "gemini-3.1-flash-lite-image"
       },
       "availability": "available",
@@ -15587,7 +15587,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "nano-banana-pro",
       "label": "Nano Banana Pro",
@@ -15795,7 +15795,7 @@
       "updatedAt": "2025-03-05T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "google_gemini_image",
+        "provider": "google_vertex_image",
         "modelSlug": "gemini-3-pro-image"
       },
       "availability": "available",
@@ -15913,7 +15913,7 @@
         "includeInEstimator": true
       }
     },
-    "surfacesSource": "default",
+    "surfacesSource": "registry",
     "engine": {
       "id": "nano-banana-2",
       "label": "Nano Banana 2",
@@ -16131,7 +16131,7 @@
       "updatedAt": "2026-03-17T00:00:00Z",
       "ttlSec": 600,
       "providerMeta": {
-        "provider": "google_gemini_image",
+        "provider": "google_vertex_image",
         "modelSlug": "gemini-3.1-flash-image"
       },
       "availability": "available",
@@ -16264,7 +16264,7 @@
         "featuredScenario": "high-quality product still"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "gpt-image-2",
       "label": "GPT Image 2",
@@ -16644,7 +16644,7 @@
         "featuredScenario": "reference image before Seedance"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedream",
       "label": "Seedream",
@@ -16950,7 +16950,7 @@
         "featuredScenario": "professional image final"
       }
     },
-    "surfacesSource": "explicit",
+    "surfacesSource": "registry",
     "engine": {
       "id": "seedream-5-0-pro",
       "label": "Seedream 5.0 Pro",

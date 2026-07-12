@@ -28,29 +28,6 @@ const LEGACY_AVAILABILITY = new Set(['paused']);
 const VALID_STATUS = new Set(['live', 'early_access', 'busy', 'degraded', 'maintenance', 'paused', 'deprecated']);
 const VALID_EXAMPLES_STAGES = new Set(['hidden', 'public_noindex', 'indexed']);
 const TEMPLATE_MARKER_REGEX = /\{\{[^}]+\}\}/g;
-const GRANDFATHERED_DEFAULT_SURFACE_SLUGS = new Set([
-  'kling-2-5-turbo',
-  'kling-2-6-pro',
-  'kling-3-pro',
-  'kling-3-standard',
-  'ltx-2',
-  'ltx-2-3-fast',
-  'ltx-2-3-pro',
-  'ltx-2-fast',
-  'minimax-hailuo-02-text',
-  'nano-banana',
-  'nano-banana-2',
-  'nano-banana-pro',
-  'pika-text-to-video',
-  'seedance-1-5-pro',
-  'seedance-2-0',
-  'sora-2',
-  'sora-2-pro',
-  'veo-3-1',
-  'veo-3-1-fast',
-  'wan-2-5',
-  'wan-2-6',
-]);
 const GRANDFATHERED_PRELAUNCH_COMPARE_PUBLICATION_SLUGS = new Set(['seedance-2-0']);
 
 function parseArgs(argv) {
@@ -340,14 +317,13 @@ function validateCatalogEntries(catalog, issues) {
       return;
     }
 
-    const surfacesSource = typeof entry?.surfacesSource === 'string' ? entry.surfacesSource : 'unknown';
-    if (surfacesSource !== 'explicit' && !GRANDFATHERED_DEFAULT_SURFACE_SLUGS.has(modelSlug)) {
+    if (entry?.surfacesSource !== 'registry') {
       addIssue(
         issues,
         'critical',
-        'missing_explicit_surfaces',
-        `Catalog entry "${engineId || modelSlug}" still relies on default surfaces. New models must declare surfaces explicitly.`,
-        { modelSlug, surfacesSource }
+        'MODEL_SURFACES_NOT_REGISTRY_DERIVED',
+        'Model surfaces must come from model-registry.json.',
+        { modelSlug, surfacesSource: entry?.surfacesSource ?? 'unknown' }
       );
     }
 

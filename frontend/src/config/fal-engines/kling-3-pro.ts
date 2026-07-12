@@ -161,12 +161,10 @@ const KLING_3_PRO_ENGINE: EngineCaps = {
 export const KLING_3_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'kling-3-pro',
-    modelSlug: 'kling-3-pro',
     marketingName: 'Kling 3 Pro',
     cardTitle: 'Kling 3 Pro – Multi-prompt cinematic control',
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: 'v3 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',

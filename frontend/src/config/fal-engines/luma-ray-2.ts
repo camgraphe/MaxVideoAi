@@ -204,12 +204,10 @@ const LUMA_RAY2_ENGINE: EngineCaps = {
 export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'lumaRay2',
-    modelSlug: 'luma-ray-2',
     marketingName: 'Luma Ray 2',
     cardTitle: 'Ray 2',
     provider: 'Luma AI',
     brandId: 'luma',
-    family: 'luma',
     versionLabel: 'Ray 2',
     availability: 'available',
     logoPolicy: 'logoAllowed',
@@ -321,29 +319,6 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
           'Generate modes keep 5 s or 9 s duration, 540p to 1080p, cinematic aspect ratios, optional loop, and optional end image for image-driven shots. Modify adds adherence presets, and Reframe adds new aspect-ratio plus crop-window controls on a source clip.',
       },
     ],
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['veo-3-1-fast', 'kling-3-standard', 'seedance-1-5-pro'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 5,
-        variantGroup: 'luma-ray-2',
-        variantLabel: 'Ray 2',
-      },
-      pricing: {
-        includeInEstimator: false,
-      },
-    },
     promptExample:
       'Elegant dolly shot through a boutique hotel lobby at dusk, warm practical lighting, reflective marble floor, cinematic motion with restrained pacing.',
   },

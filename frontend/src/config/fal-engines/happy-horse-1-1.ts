@@ -194,57 +194,13 @@ const HAPPY_HORSE_1_1_ENGINE: EngineCaps = {
 export const HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'happy-horse-1-1',
-    modelSlug: 'happy-horse-1-1',
     marketingName: 'Happy Horse 1.1',
     cardTitle: 'Happy Horse 1.1 - Alibaba native-audio video model',
     provider: 'Alibaba',
     brandId: 'alibaba',
-    family: 'happy-horse',
     versionLabel: '1.1',
     availability: 'available',
     logoPolicy: 'logoAllowed',
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: [
-          'seedance-2-0',
-          'kling-3-pro',
-          'veo-3-1',
-          'kling-o3-pro',
-          'dreamina-seedance-2-0-mini',
-        ],
-        publishedPairs: [
-          'seedance-2-0',
-          'kling-3-pro',
-          'veo-3-1',
-          'sora-2-pro',
-          'happy-horse-1-0',
-          'kling-o3-pro',
-          'veo-3-1-fast',
-          'seedance-2-0-fast',
-          'dreamina-seedance-2-0-mini',
-          'ltx-2-3-pro',
-        ],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 6,
-        variantGroup: 'happy-horse',
-        variantLabel: '1.1',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'happy-horse-1-1-native-audio-video',
-      },
-    },
     engine: HAPPY_HORSE_1_1_ENGINE,
     modes: [
       {
@@ -325,6 +281,5 @@ export const HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     promptExample:
       '16:9 product launch presenter, natural lip-sync, warm studio light, slow camera push, synchronized room tone and subtle music, 5 seconds.',
-    category: 'video',
   },
 ];

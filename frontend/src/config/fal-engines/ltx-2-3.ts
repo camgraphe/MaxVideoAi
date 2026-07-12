@@ -241,12 +241,10 @@ const LTX_2_3_ENGINE: EngineCaps = {
 export const LTX_2_3_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'ltx-2-3',
-    modelSlug: 'ltx-2-3-pro',
     marketingName: 'LTX 2.3 Pro',
     cardTitle: 'LTX 2.3 Pro – text, image, audio, extend and retake',
     provider: 'Lightricks',
     brandId: 'lightricks',
-    family: 'ltx',
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',

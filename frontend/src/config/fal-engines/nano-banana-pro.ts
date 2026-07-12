@@ -151,12 +151,10 @@ const NANO_BANANA_PRO_ENGINE: EngineCaps = {
 export const NANO_BANANA_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'nano-banana-pro',
-    modelSlug: 'nano-banana-pro',
     marketingName: 'Nano Banana Pro',
     cardTitle: 'Nano Banana Pro',
     provider: 'Google',
     brandId: 'google',
-    family: 'nano-banana',
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -239,6 +237,5 @@ export const NANO_BANANA_PRO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     promptExample:
       '2K cinematic portrait of a founder delivering a keynote on stage, accurate LED wall text “NEXT QUARTER IS NOW”, shallow depth of field.',
-    category: 'image',
   },
 ];

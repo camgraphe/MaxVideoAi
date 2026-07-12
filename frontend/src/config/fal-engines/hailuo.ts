@@ -111,12 +111,10 @@ const HAILUO_ENGINE: EngineCaps = {
 export const HAILUO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'minimax-hailuo-02-text',
-    modelSlug: 'minimax-hailuo-02-text',
     marketingName: 'MiniMax Hailuo 02 Standard',
     cardTitle: 'MiniMax Hailuo 02',
     provider: 'MiniMax',
     brandId: 'minimax',
-    family: 'hailuo',
     versionLabel: 'Standard',
     availability: 'available',
     logoPolicy: 'textOnly',

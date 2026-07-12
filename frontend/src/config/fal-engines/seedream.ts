@@ -262,12 +262,10 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
 export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedream',
-    modelSlug: 'seedream',
     marketingName: 'Seedream',
     cardTitle: 'Seedream 5.0 Lite',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedream',
     versionLabel: '5.0 Lite',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -345,43 +343,15 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       resolution: '2K',
       label: 'Per image',
     },
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: [],
-        publishedPairs: [],
-        includeInHub: false,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 8,
-        variantGroup: 'seedream',
-        variantLabel: '5.0 Lite',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'reference image before Seedance',
-      },
-    },
     promptExample:
       'Clean cinematic reference image of a luxury watch on black stone, precise product shape, readable dial, controlled rim light, uncluttered background for Seedance animation.',
-    category: 'image',
   },
   {
     id: 'seedream-5-0-pro',
-    modelSlug: 'seedream-5-0-pro',
     marketingName: 'Seedream 5.0 Pro',
     cardTitle: 'Seedream 5.0 Pro',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedream',
     versionLabel: '5.0 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -459,33 +429,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       resolution: '2K',
       label: 'Per 2K image',
     },
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: [],
-        publishedPairs: [],
-        includeInHub: false,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 9,
-        variantGroup: 'seedream',
-        variantLabel: '5.0 Pro',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'professional image final',
-      },
-    },
     promptExample:
       '4K cinematic poster of a futuristic transport terminal, multilingual wayfinding, accurate small labels, glass reflections, editorial realism.',
-    category: 'image',
   },
 ];

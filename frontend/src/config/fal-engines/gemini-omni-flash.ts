@@ -177,12 +177,10 @@ const GEMINI_OMNI_FLASH_ENGINE: EngineCaps = {
 export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'gemini-omni-flash',
-    modelSlug: 'gemini-omni-flash',
     marketingName: 'Gemini Omni Flash',
     cardTitle: 'Gemini Omni Flash - conversational video generation',
     provider: 'Google',
     brandId: 'google-gemini',
-    family: 'veo',
     versionLabel: 'Preview',
     availability: 'limited',
     logoPolicy: 'textOnly',
@@ -313,30 +311,6 @@ export const GEMINI_OMNI_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       durationSeconds: 10,
       resolution: '720p',
       label: 'Preview estimate',
-    },
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: ['veo-3-1', 'veo-3-1-fast', 'sora-2', 'seedance-2-0'],
-        publishedPairs: ['veo-3-1', 'veo-3-1-fast', 'sora-2', 'seedance-2-0'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 8,
-        variantGroup: 'google-gemini-video',
-        variantLabel: 'Omni Flash',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
     },
     promptExample:
       'A designer revises a sneaker ad on a studio monitor, then the scene becomes the final polished product clip, crisp foley, soft music bed, 720p vertical.',

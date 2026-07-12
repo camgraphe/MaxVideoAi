@@ -93,12 +93,10 @@ const SEEDANCE_2_0_FAST_BYTEPLUS_ENGINE: EngineCaps = {
 export const SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-2-0-fast-byteplus',
-    modelSlug: 'seedance-2-0-fast-byteplus',
     marketingName: 'Dreamina Seedance 2.0 Fast Direct',
     cardTitle: 'Dreamina Seedance 2.0 Fast Direct',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedance',
     versionLabel: '2.0 Fast Direct',
     availability: 'limited',
     logoPolicy: 'textOnly',
@@ -136,13 +134,6 @@ export const SEEDANCE_2_BYTEPLUS_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       currency: 'USD',
       amountCents: 0,
       label: 'Admin-only live quote',
-    },
-    surfaces: {
-      modelPage: { indexable: false, includeInSitemap: false },
-      examples: { includeInFamilyResolver: false, includeInFamilyCopy: false },
-      compare: { suggestOpponents: [], publishedPairs: [], includeInHub: false },
-      app: { enabled: false },
-      pricing: { includeInEstimator: false },
     },
     promptExample: 'A clean cinematic five second product video, simple motion, no text overlays, 16:9.',
   },

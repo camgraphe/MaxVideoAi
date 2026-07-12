@@ -114,12 +114,10 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
 export const KLING_2_5_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'kling-2-5-turbo',
-    modelSlug: 'kling-2-5-turbo',
     marketingName: 'Kling 2.5 Turbo',
     cardTitle: 'Kling 2.5 Turbo',
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: '2.5 Turbo',
     availability: 'available',
     logoPolicy: 'textOnly',

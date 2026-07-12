@@ -141,12 +141,10 @@ const NANO_BANANA_LITE_ENGINE: EngineCaps = {
 export const NANO_BANANA_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'nano-banana-lite',
-    modelSlug: 'nano-banana-lite',
     marketingName: 'Nano Banana Lite',
     cardTitle: 'Nano Banana Lite',
     provider: 'Google',
     brandId: 'google',
-    family: 'nano-banana',
     versionLabel: 'Lite',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -224,25 +222,7 @@ export const NANO_BANANA_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       resolution: '1k',
       label: 'Per 1K image',
     },
-    surfaces: {
-      compare: {
-        includeInHub: false,
-        suggestOpponents: [],
-        publishedPairs: [],
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 7,
-        variantGroup: 'nano-banana',
-        variantLabel: 'Lite',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'fast 1K image draft',
-      },
-    },
     promptExample:
       '1K energetic street-fashion still at night, reflective rain, cyan and amber neon, dynamic low camera angle, editorial magazine lighting.',
-    category: 'image',
   },
 ];

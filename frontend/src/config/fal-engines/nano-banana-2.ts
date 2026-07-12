@@ -166,12 +166,10 @@ const NANO_BANANA_2_ENGINE: EngineCaps = {
 export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'nano-banana-2',
-    modelSlug: 'nano-banana-2',
     marketingName: 'Nano Banana 2',
     cardTitle: 'Nano Banana 2',
     provider: 'Google',
     brandId: 'google',
-    family: 'nano-banana',
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -274,6 +272,5 @@ export const NANO_BANANA_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     promptExample:
       '1K editorial still of a boutique hotel lobby at blue hour, polished travertine, warm sconces, clean signage, realistic reflections, premium travel-magazine look.',
-    category: 'image',
   },
 ];

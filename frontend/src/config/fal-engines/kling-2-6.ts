@@ -148,12 +148,10 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
 export const KLING_2_6_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'kling-2-6-pro',
-    modelSlug: 'kling-2-6-pro',
     marketingName: 'Kling 2.6 Pro',
     cardTitle: 'Kling 2.6 Pro – Cinematic video with native audio',
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: 'v2.6 Pro',
     availability: 'available',
     logoPolicy: 'textOnly',

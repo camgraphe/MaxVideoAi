@@ -141,12 +141,10 @@ const LTX_2_3_FAST_ENGINE: EngineCaps = {
 export const LTX_2_3_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'ltx-2-3-fast',
-    modelSlug: 'ltx-2-3-fast',
     marketingName: 'LTX 2.3 Fast',
     cardTitle: 'LTX 2.3 Fast – quick text and image video',
     provider: 'Lightricks',
     brandId: 'lightricks',
-    family: 'ltx',
     versionLabel: '2.3 Fast',
     availability: 'available',
     logoPolicy: 'textOnly',

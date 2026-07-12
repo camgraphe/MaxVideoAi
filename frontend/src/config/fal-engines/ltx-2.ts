@@ -122,12 +122,10 @@ const LTX_2_ENGINE: EngineCaps = {
 export const LTX_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'ltx-2',
-    modelSlug: 'ltx-2',
     marketingName: 'LTX Video 2.0 Pro',
     cardTitle: 'LTX-2 Pro – 4K cinematic video with audio',
     provider: 'Lightricks',
     brandId: 'lightricks',
-    family: 'ltx',
     versionLabel: 'Pro',
     availability: 'available',
     logoPolicy: 'textOnly',

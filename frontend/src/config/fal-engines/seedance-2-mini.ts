@@ -4,7 +4,6 @@ import {
   BYTEPLUS_SEEDANCE_2_MINI_ENDPOINTS,
   BYTEPLUS_SEEDANCE_2_MINI_MODEL_ID,
   buildSeedance2MiniPricingDetails,
-  buildSeedance2MiniSurfaces,
 } from './launch-config';
 
 const MINI_DURATION_OPTIONS = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15] as const;
@@ -197,12 +196,10 @@ function miniMode(mode: 't2v' | 'i2v' | 'ref2v' | 'v2v' | 'extend'): RawFalEngin
 export const SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'seedance-2-0-mini',
-    modelSlug: SEEDANCE_2_MINI_PUBLIC_SLUG,
     marketingName: 'Dreamina Seedance 2.0 Mini',
     cardTitle: 'Dreamina Seedance 2.0 Mini',
     provider: 'ByteDance',
     brandId: 'bytedance',
-    family: 'seedance',
     versionLabel: '2.0 Mini',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -232,7 +229,6 @@ export const SEEDANCE_2_MINI_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       amountCents: 0,
       label: 'Live quote in Generate',
     },
-    surfaces: buildSeedance2MiniSurfaces(),
     promptExample: 'Short Seedance 2.0 Mini video pass, 720p, 16:9, 5 seconds.',
   },
 ];

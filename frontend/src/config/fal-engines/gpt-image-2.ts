@@ -224,12 +224,10 @@ const GPT_IMAGE_2_ENGINE: EngineCaps = {
 export const GPT_IMAGE_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'gpt-image-2',
-    modelSlug: 'gpt-image-2',
     marketingName: 'GPT Image 2',
     cardTitle: 'GPT Image 2',
     provider: 'OpenAI',
     brandId: 'openai',
-    family: 'gpt-image',
     versionLabel: '2',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -346,33 +344,7 @@ export const GPT_IMAGE_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       resolution: '1024x768',
       label: 'High quality 1024x768',
     },
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: [],
-        publishedPairs: [],
-        includeInHub: false,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 7,
-        variantGroup: 'gpt-image',
-        variantLabel: '2',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'high-quality product still',
-      },
-    },
     promptExample:
       'High-quality product photo of a coffee bag labeled "Summit Roast", readable packaging text, rustic wood table, soft daylight, catalog-ready composition.',
-    category: 'image',
   },
 ];

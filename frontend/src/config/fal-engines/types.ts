@@ -1,5 +1,5 @@
 import type { EngineCaps, EngineAvailability, Mode } from '../../../types/engines';
-import type { ModelPublicationSurfaces, PartialModelPublicationSurfaces } from '../../../config/model-publication';
+import type { ModelPublicationSurfaces } from '../../../config/model-publication';
 
 export type EngineLogoPolicy = 'logoAllowed' | 'textOnly';
 
@@ -97,6 +97,7 @@ export interface FalEngineEntry {
   surfaces: ModelPublicationSurfaces;
 }
 
-export interface RawFalEngineEntry extends Omit<FalEngineEntry, 'surfaces'> {
-  surfaces?: PartialModelPublicationSurfaces;
-}
+// The interface keeps the existing public type shape while excluding registry-owned fields.
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface RawFalEngineEntry
+  extends Omit<FalEngineEntry, 'modelSlug' | 'family' | 'category' | 'surfaces'> {}

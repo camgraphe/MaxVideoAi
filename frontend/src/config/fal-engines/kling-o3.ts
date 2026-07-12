@@ -342,40 +342,13 @@ function buildKlingO3RegistryEntry(tier: KlingO3Tier): RawFalEngineEntry {
   const engine = buildKlingO3Engine(tier);
   return {
     id: tier.id,
-    modelSlug: tier.id,
     marketingName: tier.label,
     cardTitle: `${tier.label} - Reference-guided Kling video`,
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: tier.versionLabel,
     availability: 'available',
     logoPolicy: 'textOnly',
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['kling-3-pro', 'seedance-2-0', 'veo-3-1'],
-        publishedPairs: ['kling-3-pro', 'kling-3-standard', 'seedance-2-0', 'veo-3-1'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: tier.id === 'kling-o3-pro' ? 6 : undefined,
-        variantGroup: 'kling-o3',
-        variantLabel: tier.variantLabel,
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'reference-guided storyboard video',
-      },
-    },
     engine,
     modes: [
       {

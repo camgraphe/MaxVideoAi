@@ -145,38 +145,13 @@ const KLING_3_4K_ENGINE: EngineCaps = {
 export const KLING_3_4K_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'kling-3-4k',
-    modelSlug: 'kling-3-4k',
     marketingName: 'Kling 3 4K',
     cardTitle: 'Kling 3 4K - Native 4K video output',
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: 'v3 4K',
     availability: 'available',
     logoPolicy: 'textOnly',
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['kling-3-pro', 'veo-3-1', 'sora-2-pro'],
-        publishedPairs: ['kling-3-pro', 'kling-3-standard', 'veo-3-1', 'sora-2-pro'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        variantGroup: 'kling-3',
-        variantLabel: '4K',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
-    },
     engine: KLING_3_4K_ENGINE,
     modes: [
       {

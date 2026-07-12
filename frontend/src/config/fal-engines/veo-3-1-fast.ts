@@ -206,12 +206,10 @@ const VEO_3_1_FAST_ENGINE: EngineCaps = {
 export const VEO_3_1_FAST_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'veo-3-1-fast',
-    modelSlug: 'veo-3-1-fast',
     marketingName: 'Google Veo 3.1 Fast',
     cardTitle: 'Veo 3.1 Fast',
     provider: 'Google',
     brandId: 'google-veo',
-    family: 'veo',
     versionLabel: '3.1 Fast',
     availability: 'available',
     logoPolicy: 'textOnly',

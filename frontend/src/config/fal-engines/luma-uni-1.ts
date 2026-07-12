@@ -123,12 +123,10 @@ const LUMA_UNI_1_ENGINE: EngineCaps = {
 export const LUMA_UNI_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'luma-uni-1',
-    modelSlug: 'luma-uni-1',
     marketingName: 'Luma Uni-1',
     cardTitle: 'Luma Uni-1',
     provider: 'Luma AI',
     brandId: 'luma',
-    family: 'luma-uni',
     versionLabel: 'Uni-1',
     availability: 'available',
     logoPolicy: 'logoAllowed',
@@ -177,32 +175,7 @@ export const LUMA_UNI_1_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         mode: 't2i',
       },
     ],
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: [],
-        publishedPairs: [],
-        includeInHub: false,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 9,
-        variantGroup: 'luma-uni',
-        variantLabel: 'Uni-1',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
-    },
     promptExample:
       'Create a cinematic reference image of a minimalist perfume bottle on polished stone, precise label detail, soft rim light, 16:9.',
-    category: 'image',
   },
 ];

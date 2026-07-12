@@ -1,8 +1,4 @@
 import type { EngineAvailability, EnginePricingDetails } from '../../../types/engines';
-import {
-  LEGACY_COMPARE_INDEXED_ENGINE_SLUGS,
-  type PartialModelPublicationSurfaces,
-} from '../../../config/model-publication';
 
 // single confirmation pass when Fal publishes the final stable IDs.
 export const SEEDANCE_2_ENDPOINTS = {
@@ -190,75 +186,3 @@ export const SEEDANCE_2_LAUNCH_CONFIG = {
     publishedPairs: ['veo-3-1-fast', 'ltx-2-3-fast'],
   },
 } as const;
-
-export const SEEDANCE_COMPARE_PUBLISHED_SLUGS = Array.from(
-  new Set([...LEGACY_COMPARE_INDEXED_ENGINE_SLUGS, 'seedance-2-0-fast'])
-);
-
-export function getSeedancePublishedPairs(modelSlug: string): string[] {
-  return SEEDANCE_COMPARE_PUBLISHED_SLUGS.filter((slug) => slug !== modelSlug);
-}
-
-export function buildSeedance2Surfaces(
-  variant: 'standard' | 'fast',
-  variantLabel: 'Standard' | 'Fast'
-): PartialModelPublicationSurfaces {
-  const variantConfig = variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.standard : SEEDANCE_2_LAUNCH_CONFIG.fast;
-  const modelSlug = variant === 'standard' ? 'seedance-2-0' : 'seedance-2-0-fast';
-  const discoveryRank =
-    variant === 'standard' ? SEEDANCE_2_LAUNCH_CONFIG.app.standardRank : SEEDANCE_2_LAUNCH_CONFIG.app.fastRank;
-
-  return {
-    modelPage: {
-      indexable: SEEDANCE_2_LAUNCH_CONFIG.modelPage.indexable,
-      includeInSitemap: SEEDANCE_2_LAUNCH_CONFIG.modelPage.includeInSitemap,
-    },
-    examples: {
-      includeInFamilyResolver: SEEDANCE_2_LAUNCH_CONFIG.examples.includeInFamilyResolver,
-      includeInFamilyCopy: SEEDANCE_2_LAUNCH_CONFIG.examples.includeInFamilyCopy,
-    },
-    compare: {
-      suggestOpponents: [...variantConfig.suggestOpponents],
-      publishedPairs: getSeedancePublishedPairs(modelSlug),
-      includeInHub: SEEDANCE_2_LAUNCH_CONFIG.isLive,
-    },
-    app: {
-      enabled: SEEDANCE_2_LAUNCH_CONFIG.isLive,
-      discoveryRank,
-      variantGroup: SEEDANCE_2_LAUNCH_CONFIG.app.variantGroup,
-      variantLabel,
-    },
-    pricing: {
-      includeInEstimator: SEEDANCE_2_LAUNCH_CONFIG.pricing.includeInEstimator,
-      featuredScenario: SEEDANCE_2_LAUNCH_CONFIG.pricing.featuredScenario,
-    },
-  };
-}
-
-export function buildSeedance2MiniSurfaces(): PartialModelPublicationSurfaces {
-  return {
-    modelPage: {
-      indexable: true,
-      includeInSitemap: true,
-    },
-    examples: {
-      includeInFamilyResolver: true,
-      includeInFamilyCopy: true,
-    },
-    compare: {
-      suggestOpponents: ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1-fast'],
-      publishedPairs: ['seedance-2-0', 'seedance-2-0-fast', 'ltx-2-3-fast', 'veo-3-1-fast', 'luma-ray-3-2'],
-      includeInHub: true,
-    },
-    app: {
-      enabled: true,
-      discoveryRank: 0,
-      variantGroup: SEEDANCE_2_LAUNCH_CONFIG.app.variantGroup,
-      variantLabel: 'Mini',
-    },
-    pricing: {
-      includeInEstimator: true,
-      featuredScenario: SEEDANCE_2_LAUNCH_CONFIG.pricing.featuredScenario,
-    },
-  };
-}

@@ -161,12 +161,10 @@ const KLING_3_STANDARD_ENGINE: EngineCaps = {
 export const KLING_3_STANDARD_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'kling-3-standard',
-    modelSlug: 'kling-3-standard',
     marketingName: 'Kling 3 Standard',
     cardTitle: 'Kling 3 Standard – Multi-prompt at a lower rate',
     provider: 'Kling by Kuaishou',
     brandId: 'kling',
-    family: 'kling',
     versionLabel: 'v3 Standard',
     availability: 'available',
     logoPolicy: 'textOnly',

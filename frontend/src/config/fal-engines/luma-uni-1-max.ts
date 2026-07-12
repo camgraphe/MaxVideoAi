@@ -123,12 +123,10 @@ const LUMA_UNI_1_MAX_ENGINE: EngineCaps = {
 export const LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'luma-uni-1-max',
-    modelSlug: 'luma-uni-1-max',
     marketingName: 'Luma Uni-1 Max',
     cardTitle: 'Luma Uni-1 Max',
     provider: 'Luma AI',
     brandId: 'luma',
-    family: 'luma-uni',
     versionLabel: 'Uni-1 Max',
     availability: 'available',
     logoPolicy: 'logoAllowed',
@@ -177,32 +175,7 @@ export const LUMA_UNI_1_MAX_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         mode: 'i2i',
       },
     ],
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: false,
-        includeInFamilyCopy: false,
-      },
-      compare: {
-        suggestOpponents: [],
-        publishedPairs: [],
-        includeInHub: false,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 11,
-        variantGroup: 'luma-uni',
-        variantLabel: 'Uni-1 Max',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
-    },
     promptExample:
       'Create a high-detail 2K editorial image of a running shoe on a reflective plinth, crisp fabric texture, controlled highlights, 3:2.',
-    category: 'image',
   },
 ];

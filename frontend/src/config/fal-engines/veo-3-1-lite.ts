@@ -196,12 +196,10 @@ const VEO_3_1_LITE_ENGINE: EngineCaps = {
 export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   {
     id: 'veo-3-1-lite',
-    modelSlug: 'veo-3-1-lite',
     marketingName: 'Google Veo 3.1 Lite',
     cardTitle: 'Veo 3.1 Lite',
     provider: 'Google',
     brandId: 'google-veo',
-    family: 'veo',
     versionLabel: '3.1 Lite',
     availability: 'available',
     logoPolicy: 'textOnly',
@@ -313,29 +311,6 @@ export const VEO_3_1_LITE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       durationSeconds: 8,
       resolution: '720p',
       label: 'Audio optional',
-    },
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['veo-3-1-fast', 'veo-3-1', 'sora-2'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 4,
-        variantGroup: 'veo-3-1',
-        variantLabel: 'Lite',
-      },
-      pricing: {
-        includeInEstimator: true,
-      },
     },
     promptExample:
       'A cozy bakery kitchen at sunrise, soft dolly-in, flour dust in the light, baker plating one pastry, natural ambience and room tone.',

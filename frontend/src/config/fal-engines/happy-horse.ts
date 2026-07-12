@@ -243,41 +243,14 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
   ...HAPPY_HORSE_1_1_FAL_ENGINE_REGISTRY,
   {
     id: 'happy-horse-1-0',
-    modelSlug: 'happy-horse-1-0',
     marketingName: 'Happy Horse 1.0',
     cardTitle: 'Happy Horse 1.0 - Legacy video-edit route',
     provider: 'Alibaba',
     brandId: 'alibaba',
-    family: 'happy-horse',
     versionLabel: '1.0',
     isLegacy: true,
     availability: 'available',
     logoPolicy: 'logoAllowed',
-    surfaces: {
-      modelPage: {
-        indexable: true,
-        includeInSitemap: true,
-      },
-      examples: {
-        includeInFamilyResolver: true,
-        includeInFamilyCopy: true,
-      },
-      compare: {
-        suggestOpponents: ['happy-horse-1-1', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-        publishedPairs: ['happy-horse-1-1', 'seedance-2-0', 'kling-3-pro', 'veo-3-1'],
-        includeInHub: true,
-      },
-      app: {
-        enabled: true,
-        discoveryRank: 50,
-        variantGroup: 'happy-horse',
-        variantLabel: '1.0 legacy',
-      },
-      pricing: {
-        includeInEstimator: true,
-        featuredScenario: 'legacy happy-horse-video-edit',
-      },
-    },
     engine: HAPPY_HORSE_1_0_ENGINE,
     modes: [
       {
@@ -399,6 +372,5 @@ export const HAPPY_HORSE_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     },
     promptExample:
       '16:9 product launch spokesperson, natural lip-sync, warm studio light, slow camera push, synchronized room tone and subtle music, 5 seconds.',
-    category: 'video',
   },
 ];

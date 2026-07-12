@@ -1,8 +1,5 @@
 import { getPartnerByBrandId } from '../lib/brand-partners';
-import {
-  buildDefaultModelPublicationSurfaces,
-  mergeModelPublicationSurfaces,
-} from '../../config/model-publication';
+import { getRuntimeModelById, toLegacyModelSurfaces } from '../../config/model-runtime';
 import { RAW_FAL_ENGINE_REGISTRY } from './fal-engines/registry';
 import type { FalEngineEntry, RawFalEngineEntry } from './fal-engines/types';
 
@@ -21,17 +18,15 @@ export type {
 
 function materializeFalEngineEntry(entry: RawFalEngineEntry): FalEngineEntry {
   const partnerBrand = getPartnerByBrandId(entry.brandId);
-  const defaults = buildDefaultModelPublicationSurfaces({
-    id: entry.id,
-    modelSlug: entry.modelSlug,
-    family: entry.family,
-    category: entry.category,
-  });
-
+  const model = getRuntimeModelById(entry.id);
+  if (!model) throw new Error(`Missing model registry entry for engine "${entry.id}"`);
   return {
     ...entry,
+    modelSlug: model.slug,
+    family: model.family ?? undefined,
+    category: model.category,
     logoPolicy: partnerBrand?.policy.logoAllowed ? 'logoAllowed' : entry.logoPolicy,
-    surfaces: mergeModelPublicationSurfaces(defaults, entry.surfaces),
+    surfaces: toLegacyModelSurfaces(model),
   };
 }
 
@@ -39,10 +34,6 @@ export const FAL_ENGINE_REGISTRY: readonly FalEngineEntry[] = RAW_FAL_ENGINE_REG
 
 export function listFalEngines(): FalEngineEntry[] {
   return FAL_ENGINE_REGISTRY.slice();
-}
-
-export function hasExplicitFalEngineSurfaces(engineId: string): boolean {
-  return Boolean(RAW_FAL_ENGINE_REGISTRY.find((entry) => entry.id === engineId)?.surfaces);
 }
 
 export function getEngineAliases(entry: FalEngineEntry): string[] {
