@@ -150,9 +150,13 @@ export function setLocaleCookies(response: NextResponse, locale: string, sharedD
   for (const name of [LOCALE_COOKIE, NEXT_LOCALE_COOKIE]) {
     if (sharedDomain) {
       response.cookies.set(name, locale, { ...options, domain: sharedDomain });
-      response.headers.append('set-cookie', serializeHostLocaleCookie(name, locale, maxAge));
     } else {
       response.cookies.set(name, locale, options);
+    }
+  }
+  if (sharedDomain) {
+    for (const name of [LOCALE_COOKIE, NEXT_LOCALE_COOKIE]) {
+      response.headers.append('set-cookie', serializeHostLocaleCookie(name, locale, maxAge));
     }
   }
 }
