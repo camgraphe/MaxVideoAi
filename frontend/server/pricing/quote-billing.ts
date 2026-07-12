@@ -6,6 +6,7 @@ import {
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import { getPricingDetails } from '@/lib/fal-catalog';
+import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
@@ -64,7 +65,7 @@ export async function computeCanonicalBillingSnapshot(context: PricingContext): 
     policy,
     compatibilityProfile,
   });
-  return projectCanonicalQuoteToSnapshot({
+  const snapshot = projectCanonicalQuoteToSnapshot({
     quote,
     base: billingFacts.base,
     addons: billingFacts.addons,
@@ -78,4 +79,46 @@ export async function computeCanonicalBillingSnapshot(context: PricingContext): 
       membershipDiscounts: memberTierDiscounts,
     },
   });
+  return snapshot;
+}
+
+export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingInput): Promise<PricingSnapshot> {
+  const { policy, vendorAccountId } = await resolveServerBillingPolicy({
+    engineId: 'audio-generation',
+    mode: input.pack,
+    resolution: 'audio',
+  });
+  const policyDocument = getVersionedPricingPolicy();
+  const profileId = policy.rule.compatibilityProfile ?? 'audio-current';
+  const compatibilityProfile = policyDocument.compatibilityProfiles.find((profile) => profile.id === profileId);
+  if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
+  const presentation = buildAudioPricingPresentation(input);
+  const quote = quoteCanonicalPricing({
+    facts: {
+      engineId: 'audio-generation',
+      currency: policy.rule.currency,
+      vendorSubtotalExactCents: presentation.vendorSubtotalCents,
+      unit: presentation.base.unit ?? 'audio',
+      quantity: presentation.durationSec,
+    },
+    scenario: {
+      id: `billing:audio-generation:${input.pack}`,
+      engineId: 'audio-generation',
+      mode: input.pack,
+      resolution: 'audio',
+      membershipTier: 'member',
+      discountPercent: 0,
+    },
+    policy,
+    compatibilityProfile,
+  });
+  const snapshot = projectCanonicalQuoteToSnapshot({
+    quote,
+    base: presentation.base,
+    addons: presentation.addons,
+    vendorAccountId,
+    meta: presentation.meta,
+  });
+  delete snapshot.margin.ruleId;
+  return snapshot;
 }

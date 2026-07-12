@@ -36,7 +36,8 @@
       "totalRounding": "nearest",
       "marginPercentOverride": 0,
       "surchargeAudioPercentOverride": 0,
-      "surchargeUpscalePercentOverride": 0
+      "surchargeUpscalePercentOverride": 0,
+      "vendorShareMode": "zero"
     },
     {
       "id": "provider-reference-current",

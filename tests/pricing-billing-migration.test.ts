@@ -4,7 +4,12 @@ import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { computePricingSnapshot } from '../frontend/src/lib/pricing';
-import { computeCanonicalBillingSnapshot } from '../frontend/server/pricing/quote-billing';
+import {
+  computeCanonicalAudioBillingSnapshot,
+  computeCanonicalBillingSnapshot,
+} from '../frontend/server/pricing/quote-billing';
+import { buildAudioPricingSnapshot, type AudioPricingInput } from '../frontend/src/lib/audio-generation';
+import { repriceCanonicalFixedProductSnapshot } from '../frontend/src/lib/billing-products';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 
 const entriesById = new Map(listFalEngines().map((entry) => [entry.id, entry.engine]));
@@ -165,4 +170,55 @@ test('charge-authoritative video and image call sites use the server-only canoni
     const source = readFileSync(path, 'utf8');
     assert.doesNotMatch(source, /quote-billing/, `${path} should wait for the public projection migration`);
   }
+});
+
+const audioScenarios: AudioPricingInput[] = [
+  { pack: 'music_only', durationSec: 30, mood: 'epic', musicModel: 'clip', musicBpm: 110 },
+  { pack: 'voice_only', durationSec: 20, voiceMode: 'clone', script: 'Short cloned narration.' },
+  { pack: 'cinematic', durationSec: 3, mood: 'tense', musicEnabled: false },
+  { pack: 'cinematic_voice', durationSec: 45, mood: 'documentary', script: 'A concise narrated scene.' },
+];
+
+for (const input of audioScenarios) {
+  test(`canonical audio billing preserves ${input.pack} financial fields`, async () => {
+    const expected = buildAudioPricingSnapshot(input);
+    const actual = await computeCanonicalAudioBillingSnapshot(input);
+    assert.equal(actual.currency, expected.currency);
+    assert.equal(actual.totalCents, expected.totalCents);
+    assert.equal(actual.subtotalBeforeDiscountCents, expected.subtotalBeforeDiscountCents);
+    assert.deepEqual(actual.base, expected.base);
+    assert.deepEqual(actual.addons, expected.addons);
+    assert.equal(actual.margin.amountCents, expected.margin.amountCents);
+    assert.equal(actual.margin.percentApplied, expected.margin.percentApplied);
+    assert.equal(actual.margin.flatCents, expected.margin.flatCents);
+    assert.equal(actual.platformFeeCents, expected.platformFeeCents);
+    assert.equal(actual.vendorShareCents, expected.vendorShareCents);
+    assert.deepEqual(withoutCanonicalPolicy(actual).meta, expected.meta);
+    assert.equal(actual.meta?.pricingPolicy && typeof actual.meta.pricingPolicy, 'object');
+  });
+}
+
+test('canonical fixed-product repricing preserves the current zero settlement split', () => {
+  const repriced = repriceCanonicalFixedProductSnapshot(
+    {
+      currency: 'USD',
+      totalCents: 25,
+      subtotalBeforeDiscountCents: 25,
+      base: { seconds: 1, rate: 0.25, unit: 'run', amountCents: 25 },
+      addons: [],
+      margin: { amountCents: 0, flatCents: 0 },
+      membershipTier: 'member',
+      platformFeeCents: 0,
+      vendorShareCents: 0,
+      meta: { billingProductKey: 'tool-demo', engineId: 'tool-demo' },
+    },
+    40,
+    { pricingModel: 'dynamic-tool-demo', dynamicFloorCents: 25 }
+  );
+
+  assert.equal(repriced.totalCents, 40);
+  assert.equal(repriced.base.amountCents, 40);
+  assert.equal(repriced.platformFeeCents, 0);
+  assert.equal(repriced.vendorShareCents, 0);
+  assert.equal(repriced.meta?.pricingModel, 'dynamic-tool-demo');
 });

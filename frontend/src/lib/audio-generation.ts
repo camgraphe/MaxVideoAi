@@ -68,6 +68,17 @@ const AUDIO_PRICE_SEED_AUDIO_CENTS_PER_MINUTE = 18.75;
 export const AUDIO_PACK_VALUES = ['music_only', 'voice_only', 'cinematic', 'cinematic_voice'] as const;
 export type AudioPackId = (typeof AUDIO_PACK_VALUES)[number];
 
+export type AudioPricingInput = {
+  pack: AudioPackId;
+  durationSec: number;
+  voiceMode?: AudioVoiceMode | null;
+  mood?: AudioMood | null;
+  script?: string | null;
+  musicModel?: AudioLyria3Model | null;
+  musicBpm?: number | null;
+  musicEnabled?: boolean | null;
+};
+
 export const AUDIO_MOOD_VALUES = ['epic', 'tense', 'intimate', 'dark', 'dreamy', 'sci-fi', 'documentary'] as const;
 export type AudioMood = (typeof AUDIO_MOOD_VALUES)[number];
 
@@ -436,16 +447,13 @@ export function buildAudioVendorCostFacts(input: {
   };
 }
 
-export function buildAudioPricingSnapshot(input: {
-  pack: AudioPackId;
+export function buildAudioPricingPresentation(input: AudioPricingInput): {
+  vendorSubtotalCents: number;
   durationSec: number;
-  voiceMode?: AudioVoiceMode | null;
-  mood?: AudioMood | null;
-  script?: string | null;
-  musicModel?: AudioLyria3Model | null;
-  musicBpm?: number | null;
-  musicEnabled?: boolean | null;
-}): PricingSnapshot {
+  base: PricingSnapshot['base'];
+  addons: PricingSnapshot['addons'];
+  meta: Record<string, unknown>;
+} {
   const durationSec = normalizeAudioDuration(input.durationSec);
   const voiceMode = input.voiceMode ?? null;
   const vendorFacts = buildAudioVendorCostFacts({
@@ -456,18 +464,14 @@ export function buildAudioPricingSnapshot(input: {
     musicModel: input.musicModel,
     musicEnabled: input.musicEnabled,
   });
-  const vendorCostComponents = vendorFacts.components;
-  const baseComponent = vendorCostComponents[0]!;
-  const addonComponents = vendorCostComponents.slice(1);
-  const vendorSubtotalCents = vendorFacts.vendorSubtotalCents;
-  const marginAmountCents = computeRoundedUpMarginCents(vendorSubtotalCents);
-  const totalCents = vendorSubtotalCents + marginAmountCents;
-  const rate = durationSec > 0 ? Number((vendorSubtotalCents / 100 / durationSec).toFixed(4)) : vendorSubtotalCents / 100;
-
+  const baseComponent = vendorFacts.components[0]!;
+  const addonComponents = vendorFacts.components.slice(1);
+  const rate = durationSec > 0
+    ? Number((vendorFacts.vendorSubtotalCents / 100 / durationSec).toFixed(4))
+    : vendorFacts.vendorSubtotalCents / 100;
   return {
-    currency: 'USD',
-    totalCents,
-    subtotalBeforeDiscountCents: totalCents,
+    vendorSubtotalCents: vendorFacts.vendorSubtotalCents,
+    durationSec,
     base: {
       seconds: durationSec,
       rate,
@@ -478,6 +482,37 @@ export function buildAudioPricingSnapshot(input: {
       type: component.type,
       amountCents: component.amountCents,
     })),
+    meta: {
+      surface: AUDIO_SURFACE,
+      pack: input.pack,
+      mood: input.mood ?? null,
+      voiceMode,
+      pricingModel: 'audio_provider_cost_plus_margin',
+      vendorCostCents: vendorFacts.vendorSubtotalCents,
+      marginPercent: AUDIO_PRICING_MARGIN_PERCENT,
+      musicModel: input.musicModel ?? null,
+      musicBpm: input.musicBpm ?? null,
+      musicEnabled: input.musicEnabled ?? null,
+      scriptBillingCharacters: getAudioPackConfig(input.pack).includesVoice
+        ? countAudioBillingCharacters(input.script, durationSec)
+        : undefined,
+      vendorCostComponents: vendorFacts.components,
+    },
+  };
+}
+
+export function buildAudioPricingSnapshot(input: AudioPricingInput): PricingSnapshot {
+  const presentation = buildAudioPricingPresentation(input);
+  const vendorSubtotalCents = presentation.vendorSubtotalCents;
+  const marginAmountCents = computeRoundedUpMarginCents(vendorSubtotalCents);
+  const totalCents = vendorSubtotalCents + marginAmountCents;
+
+  return {
+    currency: 'USD',
+    totalCents,
+    subtotalBeforeDiscountCents: totalCents,
+    base: presentation.base,
+    addons: presentation.addons,
     margin: {
       amountCents: marginAmountCents,
       percentApplied: AUDIO_PRICING_MARGIN_PERCENT,
@@ -486,22 +521,7 @@ export function buildAudioPricingSnapshot(input: {
     membershipTier: 'member',
     platformFeeCents: marginAmountCents,
     vendorShareCents: vendorSubtotalCents,
-    meta: {
-      surface: AUDIO_SURFACE,
-      pack: input.pack,
-      mood: input.mood ?? null,
-      voiceMode,
-      pricingModel: 'audio_provider_cost_plus_margin',
-      vendorCostCents: vendorSubtotalCents,
-      marginPercent: AUDIO_PRICING_MARGIN_PERCENT,
-      musicModel: input.musicModel ?? null,
-      musicBpm: input.musicBpm ?? null,
-      musicEnabled: input.musicEnabled ?? null,
-      scriptBillingCharacters: getAudioPackConfig(input.pack).includesVoice
-        ? countAudioBillingCharacters(input.script, durationSec)
-        : undefined,
-      vendorCostComponents,
-    },
+    meta: presentation.meta,
   };
 }
 

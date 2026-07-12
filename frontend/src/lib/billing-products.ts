@@ -1,7 +1,13 @@
 import { isDatabaseConfigured, query } from '@/lib/db';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { ensureBillingSchema } from '@/lib/schema';
-import type { PricingSnapshot } from '@/types/engines';
+import {
+  projectCanonicalQuoteToSnapshot,
+  quoteCanonicalPricing,
+  resolvePricingPolicy,
+  type PricingSnapshot,
+} from '@maxvideoai/pricing';
+import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { BillingProductRecord, BillingProductUnitKind, JobSurface } from '@/types/billing';
 
 const CACHE_TTL_MS = 60_000;
@@ -190,34 +196,16 @@ export async function computeBillingProductSnapshot(params: {
   const memberTier = (params.membershipTier ?? 'member').toLowerCase();
   const discountMap = await getMembershipDiscountMap();
   const discountPercent = typeof discountMap[memberTier] === 'number' ? Math.max(0, discountMap[memberTier]) : 0;
-  const discountAmountCents = discountPercent > 0 ? Math.round(baseAmountCents * discountPercent) : 0;
-  const totalCents = Math.max(0, baseAmountCents - discountAmountCents);
-
-  return {
+  const engineId = params.engineId ?? product.productKey;
+  return buildCanonicalFixedProductSnapshot({
+    engineId,
     currency: product.currency,
-    totalCents,
-    subtotalBeforeDiscountCents: baseAmountCents,
-    base: {
-      seconds: quantity,
-      rate: Number((product.unitPriceCents / 100).toFixed(4)),
-      unit: product.unitKind,
-      amountCents: baseAmountCents,
-    },
-    addons: [],
-    margin: {
-      amountCents: 0,
-      flatCents: 0,
-    },
-    discount: discountAmountCents
-      ? {
-          amountCents: discountAmountCents,
-          percentApplied: discountPercent,
-          tier: memberTier,
-        }
-      : undefined,
-    membershipTier: memberTier,
-    platformFeeCents: 0,
-    vendorShareCents: 0,
+    amountCents: baseAmountCents,
+    quantity,
+    unit: product.unitKind,
+    unitRate: Number((product.unitPriceCents / 100).toFixed(4)),
+    memberTier: memberTier === 'plus' || memberTier === 'pro' ? memberTier : 'member',
+    discountPercent,
     meta: {
       pricingModel: 'billing-product',
       surface: product.surface,
@@ -227,5 +215,86 @@ export async function computeBillingProductSnapshot(params: {
       quantity,
       engineId: params.engineId ?? null,
     },
-  };
+  });
+}
+
+function buildCanonicalFixedProductSnapshot(input: {
+  engineId: string;
+  currency: string;
+  amountCents: number;
+  quantity: number;
+  unit: string;
+  unitRate: number;
+  memberTier: 'member' | 'plus' | 'pro';
+  discountPercent: number;
+  meta: Record<string, unknown>;
+}): PricingSnapshot {
+  const policyDocument = getVersionedPricingPolicy();
+  const policy = resolvePricingPolicy({
+    scenario: { engineId: input.engineId },
+    databaseRules: [],
+    versionedRules: policyDocument.rules,
+  });
+  const compatibilityProfile = policyDocument.compatibilityProfiles.find(
+    (profile) => profile.id === 'fixed-product-current'
+  );
+  if (!compatibilityProfile) throw new Error('Missing fixed-product-current compatibility profile');
+  const quote = quoteCanonicalPricing({
+    facts: {
+      engineId: input.engineId,
+      currency: input.currency,
+      vendorSubtotalExactCents: input.amountCents,
+      unit: input.unit,
+      quantity: input.quantity,
+    },
+    scenario: {
+      id: `billing-product:${input.engineId}`,
+      engineId: input.engineId,
+      membershipTier: input.memberTier,
+      discountPercent: input.discountPercent,
+    },
+    policy,
+    compatibilityProfile,
+  });
+  const snapshot = projectCanonicalQuoteToSnapshot({
+    quote,
+    base: {
+      seconds: input.quantity,
+      rate: input.unitRate,
+      unit: input.unit,
+      amountCents: input.amountCents,
+    },
+    addons: [],
+    meta: input.meta,
+  });
+  snapshot.margin = { amountCents: quote.marginCents, flatCents: quote.breakdown.marginFlatCents };
+  return snapshot;
+}
+
+export function repriceCanonicalFixedProductSnapshot(
+  pricing: PricingSnapshot,
+  dynamicTotalCents: number,
+  meta: Record<string, unknown>
+): PricingSnapshot {
+  const totalCents = Math.max(pricing.totalCents, Math.round(dynamicTotalCents));
+  const engineId =
+    typeof pricing.meta?.engineId === 'string' && pricing.meta.engineId
+      ? pricing.meta.engineId
+      : typeof pricing.meta?.billingProductKey === 'string' && pricing.meta.billingProductKey
+        ? pricing.meta.billingProductKey
+        : 'fixed-product';
+  return buildCanonicalFixedProductSnapshot({
+    engineId,
+    currency: pricing.currency,
+    amountCents: totalCents,
+    quantity: pricing.base.seconds,
+    unit: pricing.base.unit ?? 'run',
+    unitRate: Number((totalCents / 100).toFixed(4)),
+    memberTier:
+      pricing.membershipTier === 'plus' || pricing.membershipTier === 'pro'
+        ? pricing.membershipTier
+        : 'member',
+    discountPercent: 0,
+    meta: { ...(pricing.meta ?? {}), ...meta },
+  });
 }

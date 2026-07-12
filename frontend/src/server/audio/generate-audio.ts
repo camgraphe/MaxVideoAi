@@ -2,11 +2,11 @@ import { randomUUID } from 'node:crypto';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 
 import {
-  buildAudioPricingSnapshot,
   getAudioPackConfig,
   type AudioGenerateRequestBody,
   type AudioGenerateResponse,
 } from '@/lib/audio-generation';
+import { computeCanonicalAudioBillingSnapshot } from '@/server/pricing/quote-billing';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
@@ -100,7 +100,7 @@ export async function generateAudioRun(params: {
     sourceJob?.aspect_ratio ??
     resolveAudioAspectRatio(sourceProbe?.width ?? null, sourceProbe?.height ?? null) ??
     (isVideoBackedPack(normalized.pack) ? '16:9' : null);
-  const pricingSnapshot = buildAudioPricingSnapshot({
+  const pricingSnapshot = await computeCanonicalAudioBillingSnapshot({
     pack: normalized.pack,
     durationSec,
     mood: normalized.mood ?? null,

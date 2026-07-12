@@ -159,7 +159,10 @@ export function quoteCanonicalPricing(input: {
   const commercialCents = marginCents + surchargeCents;
   const discountAppliedToCommercial = Math.min(commercialCents, discountCents);
   const platformFeeCents = Math.max(0, commercialCents - discountAppliedToCommercial);
-  const vendorShareCents = Math.max(0, customerTotalCents - platformFeeCents);
+  const vendorShareCents =
+    compatibilityProfile.vendorShareMode === 'zero'
+      ? 0
+      : Math.max(0, customerTotalCents - platformFeeCents);
 
   return {
     engineId: facts.engineId,

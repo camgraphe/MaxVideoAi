@@ -24,6 +24,7 @@ export type PricingCompatibilityProfile = {
   surchargeAudioPercentOverride?: number;
   surchargeUpscalePercentOverride?: number;
   discountPercentOverride?: number;
+  vendorShareMode?: 'remainder' | 'zero';
 };
 
 export type PricingPolicyDocument = {
@@ -172,6 +173,10 @@ export function validatePricingPolicyDocument(
       profile.subtotalRounding == null
         ? undefined
         : roundingValue(profile.subtotalRounding, ['nearest', 'up', 'down'], `${id}.subtotalRounding`);
+    const vendorShareMode =
+      profile.vendorShareMode == null
+        ? undefined
+        : roundingValue(profile.vendorShareMode, ['remainder', 'zero'], `${id}.vendorShareMode`);
     return {
       id,
       vendorSubtotalRounding: roundingValue(profile.vendorSubtotalRounding, ['nearest', 'up', 'down', 'preserve'], `${id}.vendorSubtotalRounding`),
@@ -185,6 +190,7 @@ export function validatePricingPolicyDocument(
       ...(surchargeAudioPercentOverride != null ? { surchargeAudioPercentOverride } : {}),
       ...(surchargeUpscalePercentOverride != null ? { surchargeUpscalePercentOverride } : {}),
       ...(discountPercentOverride != null ? { discountPercentOverride } : {}),
+      ...(vendorShareMode ? { vendorShareMode } : {}),
     };
   });
 

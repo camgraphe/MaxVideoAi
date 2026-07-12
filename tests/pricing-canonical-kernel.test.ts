@@ -100,6 +100,25 @@ test('canonical compatibility profile can preserve a historical zero-margin surf
   assert.equal(quote.policyProvenance.compatibilityProfile, 'schema-current');
 });
 
+test('canonical compatibility profile can preserve an unallocated fixed-product total', async () => {
+  const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
+  const quote = quoteCanonicalPricing({
+    facts: { engineId: 'tool-product', currency: 'USD', vendorSubtotalExactCents: 25, unit: 'run', quantity: 1 },
+    scenario: { id: 'tool-product', engineId: 'tool-product', membershipTier: 'member', discountPercent: 0 },
+    policy: resolvedPolicy,
+    compatibilityProfile: {
+      ...standardProfile,
+      id: 'fixed-product-current',
+      marginPercentOverride: 0,
+      vendorShareMode: 'zero',
+    } as never,
+  });
+
+  assert.equal(quote.customerTotalCents, 25);
+  assert.equal(quote.platformFeeCents, 0);
+  assert.equal(quote.vendorShareCents, 0);
+});
+
 test('canonical compatibility can round the historical commercial subtotal before deriving margin', async () => {
   const { quoteCanonicalPricing } = await import('../packages/pricing/src/canonical.ts');
   const quote = quoteCanonicalPricing({

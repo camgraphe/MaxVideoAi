@@ -1,11 +1,10 @@
-import { computeBillingProductSnapshot } from '@/lib/billing-products';
+import { computeBillingProductSnapshot, repriceCanonicalFixedProductSnapshot } from '@/lib/billing-products';
 import { buildBackgroundRemovalPricingPreview } from '@/lib/tools-background-removal';
 import type { PricingSnapshot } from '@/types/engines';
 import type { BackgroundRemovalOutputCodec, BackgroundRemovalToolEngineDefinition } from '@/types/tools-background-removal';
 import { BackgroundRemovalToolError } from './background-removal-errors';
 import {
   BACKGROUND_REMOVAL_SURFACE,
-  cloneBackgroundRemovalPricingWithDynamicTotal,
   type BackgroundRemovalVideoMetadata,
 } from './background-removal-request-utils';
 
@@ -34,7 +33,11 @@ export async function resolveBackgroundRemovalPricingContext(params: {
       outputCodec: params.outputCodec,
     });
     const dynamicCents = Math.max(1, preview.totalCents ?? pricing.totalCents);
-    pricing = cloneBackgroundRemovalPricingWithDynamicTotal(pricing, dynamicCents, {
+    const dynamicFloorCents = pricing.totalCents;
+    pricing = repriceCanonicalFixedProductSnapshot(pricing, dynamicCents, {
+      ...(dynamicCents > dynamicFloorCents
+        ? { pricingModel: 'dynamic-background-removal-video', dynamicFloorCents }
+        : {}),
       surface: BACKGROUND_REMOVAL_SURFACE,
       billingProductKey: params.billingProductKey,
       estimatedCostUsd: preview.estimate?.estimatedCostUsd ?? null,

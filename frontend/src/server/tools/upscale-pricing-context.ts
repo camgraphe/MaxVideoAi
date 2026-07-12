@@ -1,4 +1,4 @@
-import { computeBillingProductSnapshot } from '@/lib/billing-products';
+import { computeBillingProductSnapshot, repriceCanonicalFixedProductSnapshot } from '@/lib/billing-products';
 import {
   UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER,
   estimateImageUpscaleCostUsd,
@@ -8,7 +8,6 @@ import type { PricingSnapshot } from '@/types/engines';
 import type { UpscaleToolEngineDefinition, UpscaleToolRequest } from '@/types/tools-upscale';
 import {
   UPSCALE_SURFACE,
-  cloneUpscalePricingWithDynamicTotal,
   type VideoMetadata,
 } from './upscale-request-utils';
 import { UpscaleToolError } from './upscale-errors';
@@ -57,7 +56,11 @@ export async function resolveUpscalePricingContext({
         factor: upscaleFactor,
       });
       const dynamicCents = Math.max(1, Math.ceil(estimate.costUsd * 100 * UPSCALE_VIDEO_DYNAMIC_MARGIN_MULTIPLIER));
-      pricing = cloneUpscalePricingWithDynamicTotal(pricing, dynamicCents, {
+      const dynamicFloorCents = pricing.totalCents;
+      pricing = repriceCanonicalFixedProductSnapshot(pricing, dynamicCents, {
+        ...(dynamicCents > dynamicFloorCents
+          ? { pricingModel: 'dynamic-upscale-video', dynamicFloorCents }
+          : {}),
         surface: UPSCALE_SURFACE,
         billingProductKey,
         providerEstimateUsd: estimate.costUsd,
