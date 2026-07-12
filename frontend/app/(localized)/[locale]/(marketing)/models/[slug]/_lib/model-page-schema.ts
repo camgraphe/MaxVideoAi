@@ -114,7 +114,7 @@ function resolveOfferResolution(engine: EngineCaps, hintResolution?: string): st
   return Array.from(allowed)[0] ?? null;
 }
 
-function resolveOfferAmountCents(engine: FalEngineEntry, pricingEngine: EngineCaps): number | null {
+export function resolveModelOfferAmountCents(engine: FalEngineEntry, pricingEngine: EngineCaps): number | null {
   const hint = engine.pricingHint;
   if (typeof hint?.amountCents === 'number' && Number.isFinite(hint.amountCents) && hint.amountCents > 0) {
     return Math.round(hint.amountCents);
@@ -184,7 +184,7 @@ function resolveLumaAgentsOfferAmountCents(engine: FalEngineEntry): number | nul
 }
 
 function buildProductOffer(engine: FalEngineEntry, pricingEngine: EngineCaps, canonical: string) {
-  const amountCents = resolveOfferAmountCents(engine, pricingEngine);
+  const amountCents = resolveModelOfferAmountCents(engine, pricingEngine);
   if (amountCents == null || amountCents < 0) return undefined;
   const currency = engine.pricingHint?.currency ?? pricingEngine.pricingDetails?.currency ?? pricingEngine.pricing?.currency ?? 'USD';
   return {

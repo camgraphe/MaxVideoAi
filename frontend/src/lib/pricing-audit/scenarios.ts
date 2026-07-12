@@ -163,7 +163,12 @@ export function buildPricingAuditScenarios(): PricingAuditScenario[] {
       surface: 'tool',
       engineId: product,
       membershipTier: 'member',
-      input: { product },
+      input:
+        product === 'angle'
+          ? { product, unitPriceCents: 4, engineId: 'flux-multiple-angles', width: 1024, height: 1024 }
+          : product === 'background-removal'
+            ? { product, unitPriceCents: 5, durationSec: 10, outputCodec: 'webm_vp9' }
+            : { product, unitPriceCents: 4, mediaType: 'image', engineId: 'seedvr-image', width: 1024, height: 1024, factor: 2 },
     });
   }
 
