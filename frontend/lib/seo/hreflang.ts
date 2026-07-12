@@ -12,6 +12,7 @@ const HREFLANG_GROUP_PATHS = {
   company: '/company',
   contact: '/contact',
   about: '/about',
+  editorialStandards: '/editorial-standards',
   compare: '/ai-video-engines',
   workflows: '/workflows',
   changelog: '/changelog',

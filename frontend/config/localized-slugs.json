@@ -13,6 +13,11 @@
   "workflows": { "en": "workflows", "fr": "workflows", "es": "workflows" },
   "company": { "en": "company", "fr": "entreprise", "es": "empresa" },
   "about": { "en": "about", "fr": "a-propos", "es": "acerca-de" },
+  "editorialStandards": {
+    "en": "editorial-standards",
+    "fr": "normes-editoriales",
+    "es": "estandares-editoriales"
+  },
   "contact": { "en": "contact", "fr": "contact", "es": "contact" },
   "status": { "en": "status", "fr": "statut", "es": "estado" },
   "changelog": { "en": "changelog", "fr": "changelog", "es": "changelog" },

@@ -113,6 +113,11 @@ export const routing = defineRouting({
       fr: '/a-propos',
       es: '/acerca-de',
     },
+    '/editorial-standards': {
+      en: '/editorial-standards',
+      fr: '/normes-editoriales',
+      es: '/estandares-editoriales',
+    },
     '/status': {
       en: '/status',
       fr: '/statut',
