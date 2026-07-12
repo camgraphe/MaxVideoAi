@@ -1,11 +1,8 @@
 import {
-  quoteCanonicalPricing,
-  resolvePricingPolicy,
-  type PricingCompatibilityProfile,
-} from '@maxvideoai/pricing';
-import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
+  quoteCanonicalAdminScenarios,
+  resolveCanonicalAdminScenarioPolicy,
+} from '@/server/pricing-admin/canonical-scenarios';
 
-import { buildCanonicalPricingFacts } from './canonical-facts';
 import { collectLegacyPricingOutputs } from './legacy-collectors';
 import { buildPricingAuditScenarios } from './scenarios';
 import type { FrozenPricingOutput } from './types';
@@ -25,26 +22,19 @@ function formatUsd(cents: number): string {
 }
 
 export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricingAuditOutput[]> {
-  const policyDocument = getVersionedPricingPolicy();
-  const profiles = new Map(policyDocument.compatibilityProfiles.map((profile) => [profile.id, profile]));
-  const standardProfile = profiles.get('standard');
-  if (!standardProfile) throw new Error('Missing standard pricing compatibility profile');
+  const scenarios = buildPricingAuditScenarios();
   const currentById = new Map((await collectLegacyPricingOutputs()).map((row) => [row.scenarioId, row]));
+  const canonicalById = new Map(
+    quoteCanonicalAdminScenarios({ databaseRules: [], scenarios }).map((quote) => [quote.scenarioId, quote])
+  );
 
-  return buildPricingAuditScenarios()
+  return scenarios
     .map((scenario): CanonicalPricingAuditOutput => {
-      const resolved = resolvePricingPolicy({
-        scenario: { engineId: scenario.engineId, mode: scenario.mode, resolution: scenario.resolution },
-        databaseRules: [],
-        versionedRules: policyDocument.rules,
-      });
-      const profileId = scenario.compatibilityProfile ?? resolved.rule.compatibilityProfile ?? 'standard';
-      const compatibilityProfile: PricingCompatibilityProfile | undefined = profiles.get(profileId);
-      if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
-      const facts = buildCanonicalPricingFacts(scenario);
+      const quote = canonicalById.get(scenario.id);
       const current = currentById.get(scenario.id);
-      if (!facts) {
+      if (!quote) {
         if (!current) throw new Error(`Missing unsupported legacy pricing row ${scenario.id}`);
+        const resolved = resolveCanonicalAdminScenarioPolicy({ databaseRules: [], scenario });
         return {
           ...current,
           engineId: scenario.engineId,
@@ -52,20 +42,6 @@ export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricing
           policyRuleId: resolved.sourceRuleId,
         };
       }
-      const discountPercent = scenario.membershipTier === 'plus' ? 0.05 : scenario.membershipTier === 'pro' ? 0.1 : 0;
-      const quote = quoteCanonicalPricing({
-        facts,
-        scenario: {
-          id: scenario.id,
-          engineId: scenario.engineId,
-          mode: scenario.mode,
-          resolution: scenario.resolution,
-          membershipTier: scenario.membershipTier ?? 'member',
-          discountPercent,
-        },
-        policy: resolved,
-        compatibilityProfile,
-      });
       const displayedAmount =
         scenario.surface === 'pricing-hub' ||
         scenario.surface === 'model-page' ||
@@ -85,8 +61,8 @@ export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricing
         customerTotalCents: quote.customerTotalCents,
         unit: quote.unit,
         quantity: quote.quantity,
-        policySource: resolved.source,
-        policyRuleId: resolved.sourceRuleId,
+        policySource: quote.policyProvenance.source,
+        policyRuleId: quote.policyProvenance.sourceRuleId,
         ...(displayedAmount ? { displayedAmount } : {}),
         ...(structuredDataAmount ? { structuredDataAmount } : {}),
         ...(scenario.equivalenceKey ? { equivalenceKey: scenario.equivalenceKey } : {}),

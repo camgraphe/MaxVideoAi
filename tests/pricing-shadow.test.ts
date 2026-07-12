@@ -26,6 +26,17 @@ test('canonical shadow quotes match every frozen current output', async () => {
   );
 });
 
+test('canonical audit delegates quote projection to the shared admin-safe projector', () => {
+  const collectorSource = readFileSync('frontend/src/lib/pricing-audit/canonical-collectors.ts', 'utf8');
+  const projectorSource = readFileSync('frontend/server/pricing-admin/canonical-scenarios.ts', 'utf8');
+
+  assert.match(collectorSource, /quoteCanonicalAdminScenarios/);
+  assert.doesNotMatch(collectorSource, /quoteCanonicalPricing|resolvePricingPolicy|buildCanonicalPricingFacts/);
+  assert.match(projectorSource, /buildCanonicalPricingFacts/);
+  assert.match(projectorSource, /quoteCanonicalPricing/);
+  assert.doesNotMatch(projectorSource, /@\/lib\/db|pricing-rule-store|process\.env|collectLegacyPricingOutputs/);
+});
+
 test('every cross-surface pricing difference is explicitly profiled', async () => {
   const { collectLegacyPricingOutputs, findUnprofiledCrossSurfaceDifferences } = await import(
     '../frontend/src/lib/pricing-audit/legacy-collectors.ts'
