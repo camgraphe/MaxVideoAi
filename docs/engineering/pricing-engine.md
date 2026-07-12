@@ -2,9 +2,9 @@
 
 ## Current status
 
-The pricing parity foundation is complete. The deterministic audit currently reports **178 scenarios, 178 matches, 0 mismatches, and 4 explicit compatibility profiles**. Existing production consumers remain authoritative. The canonical quote path introduced by this batch is restricted to tests and the audit command until a separately approved billing consumer migration plan is complete.
+The pricing parity foundation and billing consumer migration are complete. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 explicit compatibility profiles**. New wallet/direct generation, image, audio, and tool charges are canonical-authoritative. Public pricing pages, model pages, estimators, chips, and JSON-LD remain on their frozen legacy projection until a separately reviewed public projection migration.
 
-No price, margin, surcharge, membership discount, currency, rounding rule, wallet debit, public display, structured-data offer, or admin mutation may change during this foundation batch.
+The billing migration did not change any price, margin, surcharge, membership discount, currency, rounding rule, wallet debit, direct-payment comparison, public display, structured-data offer, or admin mutation.
 
 ## Ownership model
 
@@ -20,28 +20,29 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 
 | Owner | Current responsibility | Foundation status | Intended destination |
 | --- | --- | --- | --- |
-| `packages/pricing` | Shared kernel, definitions, and snapshot types | Existing kernel remains active | Sole pure commercial kernel |
-| `frontend/src/lib/pricing.ts` | Server billing orchestration and rule selection | Legacy-authoritative | Billing projection over canonical quotes |
-| `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, selection, and cache | Legacy selection preserved | DB override loader feeding one resolver |
-| `frontend/src/lib/pricing-specialized-snapshots.ts` | Luma, Seedance, GPT Image, and specialized billing math | Legacy-authoritative | Provider-fact adapters plus canonical kernel |
-| `frontend/src/lib/audio-generation.ts` | Audio vendor components and a dedicated margin calculation | Legacy-authoritative | Audio facts plus canonical policy |
+| `packages/pricing` | Canonical policy, quote, provenance, and snapshot projection | Canonical-authoritative for billing | Sole pure commercial kernel |
+| `frontend/server/pricing/quote-billing.ts` | Server billing orchestration for video, image, and audio | Canonical-authoritative | Stable billing owner |
+| `frontend/src/lib/pricing-billing-facts.ts` | Billing provider facts and descriptive snapshot metadata | Canonical billing input | Stable factual adapter layer |
+| `frontend/src/lib/pricing.ts` | Shared legacy pricing facade | Legacy-authoritative for public projections only | Public migration compatibility facade |
+| `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input; legacy admin API retained | One resolver input |
+| `frontend/src/lib/pricing-specialized-snapshots.ts` | Specialized legacy public projection helpers | Legacy public reference | Removed after public migration |
+| `frontend/src/lib/audio-generation.ts` | Audio vendor facts plus deterministic legacy projection helper | Facts used by canonical production audio | Keep factual builder; retire duplicate public math later |
+| `frontend/src/lib/billing-products.ts` | Fixed-product loading and tool quote projection | Canonical-authoritative for tools | Stable fixed-product billing owner |
 | `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts` | Video/image display calculations and formatting inputs | Legacy-authoritative | Scenario selection and presentation only |
 | `frontend/components/marketing/PriceEstimator.tsx` | Interactive browser quote | Legacy-authoritative | Browser projection over canonical kernel |
 | `frontend/components/marketing/PriceChip.tsx` | Compact browser quote | Legacy-authoritative | Browser projection over canonical kernel |
 | `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts` | Server model-page price | Legacy-authoritative | Canonical model scenario projection |
 | `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-pricing.ts` | Model decision-card price | Legacy-authoritative | Canonical public projection |
 | `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema.ts` | Product Offer amount | Legacy-authoritative | JSON-LD projection from canonical quote |
-| `frontend/src/server/tools/angle.ts` | Angle tool billing | Legacy-authoritative | Canonical tool quote |
-| `frontend/src/server/tools/background-removal.ts` | Background-removal billing | Legacy-authoritative | Canonical tool quote |
-| `frontend/src/server/tools/upscale.ts` | Upscale billing | Legacy-authoritative | Canonical tool quote |
+| `frontend/src/server/tools/angle.ts` | Angle tool billing | Canonical fixed-product quote | Stable consumer |
+| `frontend/src/server/tools/background-removal.ts` | Background-removal billing | Canonical fixed-product and dynamic quote | Stable consumer |
+| `frontend/src/server/tools/upscale.ts` | Upscale billing | Canonical fixed-product and dynamic quote | Stable consumer |
 | `frontend/app/(core)/admin/pricing` | Raw pricing-rule UI | Unchanged in foundation | Operational preview/confirm/history cockpit |
 | `frontend/app/api/admin/pricing` | Raw pricing-rule mutations | Unchanged in foundation | Validated preview and mutation API |
 
 ## Policy precedence
 
-Current billing selection remains exact engine and resolution, then engine, then global, then the historical in-code default.
-
-The canonical resolver uses this deterministic precedence:
+Canonical billing uses this deterministic precedence:
 
 ```text
 precise DB override
@@ -56,7 +57,7 @@ The canonical result always carries the source, match specificity, source rule I
 
 ## Audit workflow
 
-The committed baseline is generated only from current authoritative paths and contains no database or timestamp data.
+The committed baseline remains the frozen pre-migration reference and contains no database or timestamp data. The audit compares canonical outputs against that reference; it is not a second production pricing owner.
 
 ```bash
 pnpm pricing:baseline
@@ -75,10 +76,14 @@ Every current cross-surface difference is preserved and identified by a compatib
 - `provider-reference-current`: preserves the existing Luma and Seedance behavior that rounds the provider share and the commercial subtotal upward before deriving the margin component.
 - `audio-current`: preserves the existing 150% audio margin and integer vendor components.
 - `schema-current`: preserves structured-data offers that currently use an already-authored offer amount without adding another margin.
-- `fixed-product-current`: preserves seeded billing-product totals for tools without applying a second commercial margin or surcharge.
+- `fixed-product-current`: preserves seeded billing-product totals without a second margin or surcharge and retains the historical zero platform/vendor allocation fields.
 
 These profiles document existing behavior only. They cannot be added implicitly by the audit command and they do not authorize new cross-surface differences.
 
+## Billing authority
+
+New charges enter through `frontend/server/pricing/quote-billing.ts` or the canonical fixed-product functions in `frontend/src/lib/billing-products.ts`. API routes and tool runners do not call the pure kernel directly. Wallet and receipt persistence consume the projected snapshot without recalculating it, and refunds use stored charged amounts.
+
 ## Next migration
 
-The next approved architecture target is the billing consumer migration. It must have a separate implementation plan and must migrate wallet, generation, image, audio, and tool consumers incrementally. This foundation does not authorize that migration, public projection changes, or admin behavior changes by itself.
+The next architecture target is the public projection migration. It must separately migrate pricing pages, model pages, estimators, chips, and JSON-LD while preserving the same 178-row reference. Admin pricing behavior remains outside that batch.

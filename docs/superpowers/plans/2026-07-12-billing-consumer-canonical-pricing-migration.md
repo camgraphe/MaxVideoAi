@@ -328,9 +328,9 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-billing-aut
 
 Expected: FAIL against the previous shadow-only authority contract.
 
-- [ ] **Step 4: Add provenance assertion at the persistence boundary**
+- [ ] **Step 4: Lock provenance at the persistence boundary**
 
-Reject a billing snapshot missing canonical provenance before creating a new charge, while leaving dependency-injected unit-test snapshots explicitly markable as trusted test fixtures. Do not recompute in the route.
+Require every production quote producer used by a new charge to return canonical provenance and cover that contract with direct quote tests plus static call-site guards. Do not add a new runtime rejection in persistence: refunds and historical jobs must continue accepting stored legacy snapshots, and route-level recomputation remains forbidden.
 
 - [ ] **Step 5: Update architecture contracts**
 

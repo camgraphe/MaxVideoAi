@@ -5,6 +5,7 @@ import test from 'node:test';
 const pureModules = [
   'packages/pricing/src/canonical.ts',
   'packages/pricing/src/policy.ts',
+  'packages/pricing/src/projection.ts',
   'packages/pricing/src/shadow.ts',
 ] as const;
 const productionOwners = [
@@ -43,7 +44,7 @@ test('versioned pricing policy contains commercial policy but no provider facts 
   }
 });
 
-test('production pricing consumers remain legacy-authoritative during shadow foundation', () => {
+test('public pricing consumers remain legacy-authoritative after billing migration', () => {
   for (const path of productionOwners) {
     const source = readFileSync(path, 'utf8');
     assert.doesNotMatch(source, /quoteCanonicalPricing|canonical-collectors|pricing-audit/);
@@ -51,6 +52,15 @@ test('production pricing consumers remain legacy-authoritative during shadow fou
   const pricingSource = readFileSync('frontend/src/lib/pricing.ts', 'utf8');
   assert.match(pricingSource, /export async function computePricingSnapshot/);
   assert.match(pricingSource, /selectPricingRuleForBilling/);
+});
+
+test('billing quote owners are canonical-authoritative after migration', () => {
+  const serverBilling = readFileSync('frontend/server/pricing/quote-billing.ts', 'utf8');
+  const fixedProducts = readFileSync('frontend/src/lib/billing-products.ts', 'utf8');
+  assert.match(serverBilling, /quoteCanonicalPricing/);
+  assert.match(serverBilling, /projectCanonicalQuoteToSnapshot/);
+  assert.match(fixedProducts, /quoteCanonicalPricing/);
+  assert.match(fixedProducts, /fixed-product-current/);
 });
 
 test('only the server resolver combines database overrides with versioned defaults', () => {
@@ -82,10 +92,11 @@ test('pricing baseline ids are unique and all cent fields are non-negative integ
   }
 });
 
-test('pricing engineering guide records completed foundation and the separate next migration', () => {
+test('pricing engineering guide records completed billing and the separate public migration', () => {
   const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
   assert.match(guide, /178 scenarios/);
   assert.match(guide, /178 matches/);
   assert.match(guide, /0 mismatches/);
-  assert.match(guide, /billing consumer migration/i);
+  assert.match(guide, /billing consumer migration are complete/i);
+  assert.match(guide, /public projection migration/i);
 });
