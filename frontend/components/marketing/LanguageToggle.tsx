@@ -145,7 +145,10 @@ export function LanguageToggle({ variant = 'select' }: { variant?: LanguageToggl
         return;
       }
       const englishPath = resolveEnglishPath(targetPath, currentLocale);
-      router.replace(englishPath as never, { locale: value });
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set('lang', value);
+      const localeSwitchHref = `${englishPath}?${searchParams.toString()}`;
+      window.location.assign(localeSwitchHref);
     });
   };
 

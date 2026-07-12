@@ -263,5 +263,7 @@ export function resolveLangParamRedirect(req: NextRequest, pathname: string): Ne
   const redirectUrl = req.nextUrl.clone();
   redirectUrl.pathname = localizedPath;
   redirectUrl.searchParams.delete('lang');
-  return NextResponse.redirect(redirectUrl, 301);
+  const response = NextResponse.redirect(redirectUrl, 307);
+  setLocaleCookies(response, targetLocale);
+  return response;
 }
