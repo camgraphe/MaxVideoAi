@@ -15,6 +15,7 @@ import {
   handleMarketingSlug,
   hasLocalAdminBypass,
   hasLocalePrefix,
+  isDottedLocalizedEnglishModelCompatibilityPath,
   isLoopbackHost,
   mergeResponseCookies,
   normalizeLeadingLocaleSegments,
@@ -27,6 +28,8 @@ import {
   shouldMarkTrackingNoindex,
   splitLocaleFromPath,
 } from '@/lib/middleware/routing-helpers';
+
+const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[^/]*$/;
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
@@ -69,6 +72,12 @@ export async function middleware(req: NextRequest) {
   }
 
   const originalPathname = req.nextUrl.pathname;
+  const isDottedModelMatcherCandidate = DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE.test(originalPathname);
+  const isDottedModelCompatibilityPath =
+    isDottedModelMatcherCandidate && isDottedLocalizedEnglishModelCompatibilityPath(originalPathname);
+  if (isDottedModelMatcherCandidate && !isDottedModelCompatibilityPath) {
+    return finalizeResponse(NextResponse.next(), hasLogoutIntentCookie);
+  }
   let pathname = originalPathname;
 
   if (containsLocalePlaceholder(pathname)) {
@@ -118,7 +127,8 @@ export async function middleware(req: NextRequest) {
   const isMarketingPath = shouldHandleLocale(pathname);
   const isBotRequest = detectBot(userAgent);
 
-  const marketingResponse = isMarketingPath ? handleMarketingSlug(req, pathname) : null;
+  const marketingResponse =
+    isMarketingPath || isDottedModelCompatibilityPath ? handleMarketingSlug(req, pathname) : null;
   if (marketingResponse) {
     return finalizeResponse(marketingResponse, hasLogoutIntentCookie, trackingNoindex, appNoindex);
   }
@@ -217,5 +227,9 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/((?!_next|.*\\..*|api).*)'],
+  matcher: [
+    '/admin/:path*',
+    '/:locale(fr|es)/models/:slug([^/]*\\.[^/]*)',
+    '/((?!_next|.*\\..*|api).*)',
+  ],
 };

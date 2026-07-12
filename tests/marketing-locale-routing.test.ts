@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import { NextRequest } from 'next/server';
+import registry from '../frontend/config/model-registry.json' with { type: 'json' };
 import { handleMarketingSlug } from '../frontend/lib/middleware/routing-marketing.ts';
+import { config as middlewareConfig, middleware } from '../frontend/middleware.ts';
 
 const helperPath = 'frontend/lib/i18n/marketing-locale-switch.ts';
 const togglePath = 'frontend/components/marketing/LanguageToggle.tsx';
@@ -121,4 +123,41 @@ test('wrong localized model segments resolve aliases directly in one hop', () =>
     resolveRedirectLocation('https://maxvideoai.com/es/models/pika-2-2?utm_source=locale'),
     'https://maxvideoai.com/es/modelos/pika-text-to-video?utm_source=locale'
   );
+});
+
+test('real middleware resolves every dotted public alias in localized English model segments', async () => {
+  const dottedAliases = registry.models.flatMap((model) =>
+    model.aliases.publicSlugs
+      .filter((alias) => alias.includes('.'))
+      .map((alias) => ({ alias, canonicalSlug: model.slug }))
+  );
+
+  assert.equal(dottedAliases.length, 6);
+  assert.ok(
+    middlewareConfig.matcher.includes('/:locale(fr|es)/models/:slug([^/]*\\.[^/]*)'),
+    'the middleware matcher must admit only single-slug dotted FR/ES English model compatibility paths'
+  );
+
+  for (const { alias, canonicalSlug } of dottedAliases) {
+    for (const locale of ['fr', 'es'] as const) {
+      const localizedBase = locale === 'fr' ? 'modeles' : 'modelos';
+      const request = new NextRequest(
+        `https://maxvideoai.com/${locale}/models/${alias}?utm_source=dotted-alias`
+      );
+      const response = await middleware(request);
+      assert.equal(response.status, 301, `${locale}/${alias} should redirect permanently`);
+      assert.equal(
+        response.headers.get('location'),
+        `https://maxvideoai.com/${locale}/${localizedBase}/${canonicalSlug}?utm_source=dotted-alias`,
+        `${locale}/${alias} should resolve directly to its localized canonical model path`
+      );
+    }
+  }
+
+  const staticAssetResponse = await middleware(
+    new NextRequest('https://maxvideoai.com/fr/models/preview.png?cache=1')
+  );
+  assert.equal(staticAssetResponse.status, 200);
+  assert.equal(staticAssetResponse.headers.get('location'), null);
+  assert.equal(staticAssetResponse.headers.get('x-middleware-next'), '1');
 });

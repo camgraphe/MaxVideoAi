@@ -140,6 +140,16 @@ function resolveLocalizedEnglishModelSegment(
   return NextResponse.redirect(redirectUrl, 301);
 }
 
+export function isDottedLocalizedEnglishModelCompatibilityPath(pathname: string): boolean {
+  const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
+  if (localePrefix !== '/fr' && localePrefix !== '/es') return false;
+  const normalizedPath = normalizePath(pathWithoutLocale);
+  if (!normalizedPath.startsWith('/models/')) return false;
+  const slug = normalizedPath.slice('/models/'.length);
+  if (!slug || slug.includes('/') || !slug.includes('.')) return false;
+  return resolveRuntimePublicSlug(slug) !== null;
+}
+
 export function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   const normalizedPath = normalizePath(pathWithoutLocale);
