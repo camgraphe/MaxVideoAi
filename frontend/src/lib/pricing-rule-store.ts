@@ -94,7 +94,7 @@ export async function loadPricingRules(): Promise<PricingRule[]> {
 }
 
 export type PricingPolicyOverrideLoadResult =
-  | { status: 'loaded'; rules: PricingPolicyRule[] }
+  | { status: 'loaded'; rules: PricingPolicyRule[]; routingRules?: PricingRule[] }
   | { status: 'unavailable'; rules: []; errorCode: 'pricing_rules_query_failed' };
 
 function toPricingPolicyRule(rule: PricingRule): PricingPolicyRule {
@@ -120,7 +120,8 @@ export async function loadPricingPolicyOverrides(): Promise<PricingPolicyOverrid
        FROM app_pricing_rules
        ORDER BY engine_id NULLS LAST, resolution NULLS LAST, effective_from DESC`
     );
-    return { status: 'loaded', rules: rows.map(normaliseRule).map(toPricingPolicyRule) };
+    const routingRules = rows.map(normaliseRule);
+    return { status: 'loaded', rules: routingRules.map(toPricingPolicyRule), routingRules };
   } catch {
     return { status: 'unavailable', rules: [], errorCode: 'pricing_rules_query_failed' };
   }

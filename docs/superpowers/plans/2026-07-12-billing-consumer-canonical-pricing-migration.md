@@ -15,7 +15,7 @@
 - Do not modify public pricing pages, model pages, estimators, price chips, JSON-LD, `/admin/pricing`, admin mutation APIs, top-up tiers, wallet top-up behavior, or Stripe product configuration.
 - Provider adapters may calculate provider facts and descriptive metadata only. Commercial margin, surcharge, discount, total, platform fee, and vendor share must come from `quoteCanonicalPricing()`.
 - Keep database fallback behavior explicit. Versioned defaults remain safe when pricing-rule overrides cannot be loaded.
-- Keep current production imports stable: `computePricingSnapshot()`, `buildAudioPricingSnapshot()`, and `computeBillingProductSnapshot()` remain callable while their financial authority changes internally.
+- Keep shared/public imports stable: `computePricingSnapshot()` remains the legacy public projection until the later public-pricing subproject. Add a server-only `computeCanonicalBillingSnapshot()` and migrate only charge-authoritative call sites. `buildAudioPricingSnapshot()` and `computeBillingProductSnapshot()` remain callable while production audio/tool authority changes through server entry points.
 - Do not delete the frozen audit baseline or compatibility profiles. No new compatibility profile may be added without an explicit fixture review.
 - Use TDD for every production behavior change: failing test, observed failure, minimal implementation, passing focused test.
 - Use `apply_patch` for authored edits. Run focused tests after every task and the complete verification gate at the end.
@@ -39,7 +39,7 @@
 - `packages/pricing/src/index.ts` — export the pure snapshot projector.
 - `frontend/server/pricing/resolve-pricing-policy.ts` — expose a billing resolution result containing canonical policy plus the separately selected vendor account, without putting settlement routing into commercial policy.
 - `frontend/src/lib/pricing-rule-store.ts` — provide the rule metadata required by the server billing resolver from one load; retain current admin exports.
-- `frontend/src/lib/pricing.ts` — remain the stable public facade and delegate financial authority to the canonical server billing quote.
+- `frontend/src/lib/pricing.ts` — remain the stable legacy public facade during this batch; billing call sites stop importing it for quote authority.
 - `frontend/src/lib/pricing-specialized-snapshots.ts` — retain provider-fact builders and metadata compatibility, remove commercial arithmetic from migrated builders.
 - `frontend/src/lib/audio-generation.ts` — use the canonical quote/projector with `audio-current`; retain the current synchronous public function by passing validated versioned policy explicitly.
 - `frontend/src/lib/billing-products.ts` — use the canonical fixed-product profile after loading the product and membership discount.
@@ -144,7 +144,7 @@ git commit -m "feat: project canonical billing snapshots"
 **Interfaces:**
 
 - Consumes: the existing `PricingContext`, configured engine facts, membership discounts, canonical policy, compatibility profiles, and vendor-account routing metadata.
-- Produces: `quoteCanonicalBillingSnapshot(context): Promise<PricingSnapshot>`; `computePricingSnapshot(context)` delegates to it.
+- Produces: `computeCanonicalBillingSnapshot(context): Promise<PricingSnapshot>` for charge-authoritative server consumers. The legacy `computePricingSnapshot(context)` remains unchanged for public projection consumers.
 
 - [ ] **Step 1: Write failing parity tests for representative billing families**
 
@@ -166,7 +166,7 @@ Run:
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-billing-migration.test.ts
 ```
 
-Expected: FAIL because the canonical server billing orchestrator does not exist and `computePricingSnapshot()` remains legacy-authoritative.
+Expected: FAIL because the canonical server billing orchestrator does not exist and charge-authoritative call sites still import the shared legacy facade.
 
 - [ ] **Step 3: Build factual adapters**
 
@@ -190,7 +190,7 @@ Extend the server resolver so one rule-store load yields canonical policy plus t
 
 - [ ] **Step 5: Implement canonical billing orchestration**
 
-`quoteCanonicalBillingSnapshot()` must resolve membership discount, provider facts, policy/profile, canonical quote, and projection in that order. `computePricingSnapshot()` becomes a compatibility facade that delegates to this function and retains its current exports.
+`computeCanonicalBillingSnapshot()` must resolve membership discount, provider facts, policy/profile, canonical quote, and projection in that order. Migrate `frontend/app/api/generate/_lib/billing-preflight.ts`, direct-run pricing in `frontend/app/api/wallet/route.ts`, `frontend/src/server/images/execute-image-generation.ts`, and the charged storyboard helper to this server-only entry point. Keep `frontend/src/server/engines.ts`, `frontend/app/api/images/estimate/route.ts`, model pages, estimators, chips, and JSON-LD on the legacy facade until the public-projection plan.
 
 - [ ] **Step 6: Prove existing video/image and pricing tests pass**
 

@@ -2,7 +2,8 @@ import type { NextRequest } from 'next/server';
 import Stripe from 'stripe';
 
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
-import { computePricingSnapshot, getPlatformFeeCents } from '@/lib/pricing';
+import { getPlatformFeeCents } from '@/lib/pricing';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { convertCents } from '@/lib/exchange';
 import { buildEngineAddonInput, applyEngineVariantPricing } from '@/lib/pricing-addons';
 import {
@@ -33,7 +34,7 @@ type BillingPreflightDeps = {
   resolveCurrencyFn?: typeof resolveCurrency;
   applyEngineVariantPricingFn?: typeof applyEngineVariantPricing;
   buildEngineAddonInputFn?: typeof buildEngineAddonInput;
-  computePricingSnapshotFn?: typeof computePricingSnapshot;
+  computePricingSnapshotFn?: typeof computeCanonicalBillingSnapshot;
   convertCentsFn?: typeof convertCents;
   receiptsPriceOnlyEnabledFn?: typeof receiptsPriceOnlyEnabled;
   buildReceiptSnapshotFn?: typeof buildReceiptSnapshot;
@@ -106,7 +107,7 @@ export async function resolveGenerateBillingPreflight(params: {
   const resolveCurrencyFn = deps.resolveCurrencyFn ?? resolveCurrency;
   const applyEngineVariantPricingFn = deps.applyEngineVariantPricingFn ?? applyEngineVariantPricing;
   const buildEngineAddonInputFn = deps.buildEngineAddonInputFn ?? buildEngineAddonInput;
-  const computePricingSnapshotFn = deps.computePricingSnapshotFn ?? computePricingSnapshot;
+  const computePricingSnapshotFn = deps.computePricingSnapshotFn ?? computeCanonicalBillingSnapshot;
   const convertCentsFn = deps.convertCentsFn ?? convertCents;
   const receiptsPriceOnlyEnabledFn = deps.receiptsPriceOnlyEnabledFn ?? receiptsPriceOnlyEnabled;
   const buildReceiptSnapshotFn = deps.buildReceiptSnapshotFn ?? buildReceiptSnapshot;

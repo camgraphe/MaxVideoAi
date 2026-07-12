@@ -1,5 +1,5 @@
 import { query } from '@/lib/db';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import {
   STORYBOARD_KLING_FIRST_FRAME_JOB_PREFIX,
   STORYBOARD_SOURCE,
@@ -141,7 +141,7 @@ export async function applyStoryboardImagePricing(params: {
     aspectRatio: resolvedAspectRatio,
   });
   const firstFramePricing = applyStoryboardPricing(
-    await computePricingSnapshot({
+    await computeCanonicalBillingSnapshot({
       engine,
       durationSec: 1,
       resolution: firstFrameConfig.resolution,

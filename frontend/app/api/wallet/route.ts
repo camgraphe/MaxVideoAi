@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import Stripe from 'stripe';
 import { ENV } from '@/lib/env';
-import { computePricingSnapshot } from '@/lib/pricing';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { randomUUID } from 'crypto';
 import { ensureBillingSchema } from '@/lib/schema';
 import { applyMockWalletTopUp } from '@/lib/wallet';
@@ -343,7 +343,7 @@ export async function POST(req: NextRequest) {
     }
 
     const pricingEngine = applyEngineVariantPricing(engine, mode);
-    const pricing = await computePricingSnapshot({
+    const pricing = await computeCanonicalBillingSnapshot({
       engine: pricingEngine,
       durationSec,
       resolution,
