@@ -17,6 +17,7 @@ import {
   MODELS_BASE_PATH_MAP,
 } from './_lib/model-page-links';
 import { buildModelDecisionData } from './_lib/model-page-decision-data';
+import { isPublishedModelPage } from './_lib/model-page-publication';
 import {
   buildPricePerImageLabel,
   buildPricePerImageRows,
@@ -68,7 +69,7 @@ export function generateStaticParams() {
   const engines = listFalEngines();
   return locales.flatMap((locale) =>
     engines
-      .filter((entry) => entry.surfaces.modelPage.includeInSitemap !== false)
+      .filter(isPublishedModelPage)
       .map((entry) => ({ locale, slug: entry.modelSlug }))
   );
 }
@@ -77,7 +78,7 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
   const params = await props.params;
   const { slug, locale } = params;
   const engine = getFalEngineBySlug(slug);
-  if (!engine || engine.surfaces.modelPage.includeInSitemap === false) {
+  if (!isPublishedModelPage(engine)) {
     return {
       title: 'Model not found - MaxVideo AI',
       robots: { index: false, follow: false },
@@ -440,7 +441,7 @@ export default async function ModelDetailPage(props: PageParams) {
   const { slug, locale: routeLocale } = params;
   const localizedModelsBase = (MODELS_BASE_PATH_MAP[routeLocale ?? 'en'] ?? 'models').replace(/^\/+|\/+$/g, '');
   const engine = getFalEngineBySlug(slug);
-  if (!engine || engine.surfaces.modelPage.includeInSitemap === false) {
+  if (!isPublishedModelPage(engine)) {
     notFound();
   }
 

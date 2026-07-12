@@ -5,10 +5,11 @@ import LocaleLayout from '../../(localized)/[locale]/layout';
 import MarketingLayout from '../../(localized)/[locale]/(marketing)/layout';
 import { DEFAULT_LOCALE } from '../../default-locale-wrapper';
 import { listFalEngines } from '@/config/falEngines';
+import { isPublishedModelPage } from '../../(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-publication';
 
 export function generateStaticParams() {
   return listFalEngines()
-    .filter((entry) => entry.surfaces.modelPage.includeInSitemap !== false)
+    .filter(isPublishedModelPage)
     .map((entry) => ({ slug: entry.modelSlug }));
 }
 

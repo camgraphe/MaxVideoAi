@@ -1,5 +1,6 @@
 const path = require('path');
 const modelRegistry = require('./config/model-registry.json');
+const { buildModelRegistryRedirects } = require('./config/model-registry-redirects.cjs');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
 const MARKETING_CDN_CACHE_HEADERS = [
@@ -39,36 +40,6 @@ const SITEMAP_RUNTIME_GLOBS = [
   '.next/app-path-routes-manifest.json',
   '.next/routes-manifest.json',
 ];
-const MODEL_ROUTE_BASES = [
-  { prefix: '/models', index: '/models' },
-  { prefix: '/fr/modeles', index: '/fr/modeles' },
-  { prefix: '/es/modelos', index: '/es/modelos' },
-];
-
-function buildModelRegistryRedirects() {
-  const redirects = [];
-  for (const model of modelRegistry.models) {
-    for (const alias of model.aliases.publicSlugs) {
-      for (const route of MODEL_ROUTE_BASES) {
-        redirects.push({
-          source: `${route.prefix}/${alias}`,
-          destination: `${route.prefix}/${model.slug}`,
-          statusCode: 301,
-        });
-      }
-    }
-  }
-  for (const tombstone of modelRegistry.tombstones) {
-    for (const route of MODEL_ROUTE_BASES) {
-      redirects.push({
-        source: `${route.prefix}/${tombstone.slug}`,
-        destination: route.index,
-        statusCode: 301,
-      });
-    }
-  }
-  return redirects;
-}
 const FFPROBE_NON_RUNTIME_BINARIES = [
   'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/darwin/**/*',
   'node_modules/.pnpm/ffprobe-static@*/node_modules/ffprobe-static/bin/win32/**/*',
@@ -201,7 +172,7 @@ const nextConfig = {
         destination: '/docs/get-started',
         permanent: true,
       },
-      ...buildModelRegistryRedirects(),
+      ...buildModelRegistryRedirects(modelRegistry),
       {
         source: '/examples/ltx-2-fast',
         destination: '/examples/ltx',

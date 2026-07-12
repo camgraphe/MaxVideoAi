@@ -201,6 +201,23 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
 
   const familyRanks = new Map<string, string>();
   const appRanks = new Map<string, string>();
+
+  for (const start of document.models.filter((model) => model.replacement)) {
+    const visited = new Set<string>([normalized(start.id)]);
+    let cursor = start;
+    let edgeCount = 0;
+    while (cursor.replacement) {
+      edgeCount += 1;
+      const targetKey = normalized(cursor.replacement);
+      const target = byId.get(targetKey);
+      if (!target) fail(`missing model reference "${cursor.replacement}" from ${cursor.id}.replacement`);
+      if (visited.has(targetKey)) fail(`replacement cycle starts at "${start.id}"`);
+      visited.add(targetKey);
+      cursor = target;
+    }
+    if (edgeCount > 1) fail(`replacement chain starts at "${start.id}"`);
+  }
+
   for (const model of document.models) {
     for (const target of model.publication.compare.suggestedOpponentIds) {
       requireId(model.id, target, 'suggestedOpponentIds');
@@ -210,9 +227,31 @@ export function validateModelRegistryDocument(value: unknown): ModelRegistryDocu
     }
     if (model.replacement) {
       requireId(model.id, model.replacement, 'replacement');
-      const replacement = byId.get(normalized(model.replacement));
-      if (replacement?.replacement) fail(`replacement chain starts at "${model.id}"`);
       if (normalized(model.replacement) === normalized(model.id)) fail(`replacement self-reference at "${model.id}"`);
+      const publication = model.publication;
+      const fullyRetired =
+        !publication.model.published &&
+        !publication.model.indexable &&
+        !publication.examples.published &&
+        !publication.examples.includeInFamilyCopy &&
+        !publication.examples.current &&
+        publication.examples.familyRank === undefined &&
+        !publication.compare.published &&
+        !publication.compare.indexed &&
+        publication.compare.suggestedOpponentIds.length === 0 &&
+        publication.compare.publishedPairIds.length === 0 &&
+        !publication.app.published &&
+        publication.app.discoveryRank === undefined &&
+        publication.app.variantGroup === undefined &&
+        publication.app.variantLabel === undefined &&
+        !publication.pricing.published &&
+        publication.pricing.featuredScenario === undefined &&
+        !publication.sitemap.published;
+      if (!fullyRetired) fail(`replacement model "${model.id}" must be retired on every publication surface`);
+      const replacement = byId.get(normalized(model.replacement))!;
+      if (!replacement.publication.model.published) {
+        fail(`replacement target "${replacement.id}" must publish a model page`);
+      }
     }
     if (model.publication.sitemap.published && !model.publication.model.published) {
       fail(`sitemap publication requires model publication for "${model.id}"`);

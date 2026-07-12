@@ -21,6 +21,63 @@ function objectPropertyName(node: any) {
   return name && ts.isIdentifier(name) ? name.text : name && ts.isStringLiteral(name) ? name.text : null;
 }
 
+const publicationSurfaceKeys = new Set(['model', 'modelPage', 'examples', 'compare', 'app', 'pricing', 'sitemap']);
+const publicationLeafKeys = new Set([
+  'published',
+  'indexed',
+  'current',
+  'indexable',
+  'includeInSitemap',
+  'includeInFamilyResolver',
+  'includeInFamilyCopy',
+  'suggestOpponents',
+  'publishedPairs',
+  'includeInHub',
+  'discoveryRank',
+  'variantGroup',
+  'variantLabel',
+  'includeInEstimator',
+  'featuredScenario',
+]);
+
+function authoredPublicationObjects(path: string, source: string): string[] {
+  const tree = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const findings: string[] = [];
+  const isAuthoredValue = (node: any): boolean =>
+    ts.isStringLiteral(node) ||
+    ts.isNumericLiteral(node) ||
+    node.kind === ts.SyntaxKind.TrueKeyword ||
+    node.kind === ts.SyntaxKind.FalseKeyword ||
+    node.kind === ts.SyntaxKind.NullKeyword ||
+    (ts.isPrefixUnaryExpression(node) && isAuthoredValue(node.operand)) ||
+    (ts.isArrayLiteralExpression(node) && node.elements.every(isAuthoredValue)) ||
+    (ts.isObjectLiteralExpression(node) && node.properties.every((property: any) =>
+      ts.isPropertyAssignment(property) && isAuthoredValue(property.initializer)
+    ));
+
+  function visit(node: any) {
+    if (ts.isObjectLiteralExpression(node)) {
+      const direct = node.properties.map(objectPropertyName).filter(Boolean) as string[];
+      const surfaceCount = direct.filter((name) => publicationSurfaceKeys.has(name)).length;
+      let authoredLeafCount = 0;
+      function countAuthoredLeaves(child: any) {
+        if (ts.isPropertyAssignment(child)) {
+          const name = objectPropertyName(child);
+          if (name && publicationLeafKeys.has(name) && isAuthoredValue(child.initializer)) authoredLeafCount += 1;
+        }
+        ts.forEachChild(child, countAuthoredLeaves);
+      }
+      countAuthoredLeaves(node);
+      if (surfaceCount >= 2 && authoredLeafCount >= 3) {
+        findings.push(`${path}:${tree.getLineAndCharacterOfPosition(node.pos).line + 1}`);
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+  return findings;
+}
+
 test('raw engine definitions do not own model identity or publication', () => {
   for (const name of readdirSync(engineDir).filter((file) => file.endsWith('.ts') && file !== 'types.ts')) {
     const path = `${engineDir}/${name}`;
@@ -71,6 +128,23 @@ test('legacy model policy tables cannot return outside the canonical registry', 
   }
 });
 
+test('semantic guard rejects authored publication-shaped config outside the canonical registry', () => {
+  const mutation = `const duplicatePolicy = {
+    availability: 'available' as EngineAvailability,
+    modelPage: { indexable: true, includeInSitemap: true },
+    examples: { includeInFamilyResolver: true, includeInFamilyCopy: true },
+    pricing: { includeInEstimator: true, featuredScenario: 'launch' },
+    app: { discoveryRank: -2 },
+  };`;
+  assert.equal(authoredPublicationObjects('mutation.ts', mutation).length, 1);
+
+  const sourceFiles = [...walk('frontend/config'), ...walk('frontend/src/config'), ...walk('frontend/lib'), ...walk('frontend/src/lib'), ...walk('scripts')]
+    // The setup command is authorized registry I/O: it emits an unpublished skeleton into the canonical JSON.
+    .filter((file) => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file) && file !== 'scripts/model-setup.mjs');
+  const findings = sourceFiles.flatMap((path) => authoredPublicationObjects(path, readFileSync(path, 'utf8')));
+  assert.deepEqual(findings, []);
+});
+
 test('browser-safe runtime facade cannot import full registry, validation, or redirects', () => {
   const source = readFileSync('frontend/config/model-runtime.ts', 'utf8');
   assert.doesNotMatch(source, /from ['"].*model-registry(?:\.json|['"])/);
@@ -83,6 +157,7 @@ test('generated runtime projection is checked and never hand-authored', () => {
   const rootPackage = readFileSync('package.json', 'utf8');
   const frontendPackage = readFileSync('frontend/package.json', 'utf8');
   assert.match(rootPackage, /model:registry:check/);
+  assert.match(rootPackage, /model:registry:check[^\n]*engine:catalog[^\n]*--check[^\n]*model:generate/);
   assert.match(frontendPackage, /"prebuild":\s*"pnpm --dir \.\. model:registry:check"/);
 });
 

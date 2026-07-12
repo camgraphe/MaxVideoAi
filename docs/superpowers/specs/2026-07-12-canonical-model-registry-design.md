@@ -118,6 +118,8 @@ The source is JSON so it can be consumed by `frontend/next.config.js` without im
 
 `next.config.js` is the sole build-time projector for historical public model redirects. It reads the same JSON and expands public slugs into locale-specific redirect objects; it does not own model data. The production build runs the typed registry validator as an explicit preflight before Next.js evaluates the redirect output, avoiding a second JavaScript validation policy in `next.config.js`.
 
+The projector treats a replacement entry as retired URL identity: its canonical slug and every historical public alias become direct localized HTTP 301 sources to the replacement model's canonical slug. Replacement entries must have every publication surface disabled, and replacement targets must publish a model page. Missing targets, chains, cycles, and redirect-source collisions are invalid. A small pure build-only helper keeps this projection mutation-testable; `next.config.js` remains its only production consumer.
+
 A conceptual document has this shape:
 
 ```ts
@@ -195,6 +197,8 @@ Provider adapters continue to map a canonical product ID to the provider-specifi
 ### Route and SEO builders
 
 Model, examples, comparison, pricing, sitemap, canonical, and hreflang builders consume registry selectors. They continue to own route-specific rendering and SEO assembly, but cannot maintain separate model eligibility or slug maps.
+
+Model-route publication, indexation, and sitemap membership are separate signals. `publication.model.published` gates rendering, `publication.model.indexable` controls robots metadata, and `publication.sitemap.published` controls sitemap output. A published noindex model is routable even when absent from the sitemap.
 
 ### Redirect layers
 

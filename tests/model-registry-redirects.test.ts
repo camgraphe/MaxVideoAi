@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import registry from '../frontend/config/model-registry.json' with { type: 'json' };
+import { buildModelRegistryRedirects } from '../frontend/config/model-registry-redirects.cjs';
+import { validateModelRegistryDocument } from '../frontend/config/model-registry-validation.ts';
 
 const require = createRequire(import.meta.url);
 const nextConfig = require('../frontend/next.config.js');
@@ -54,5 +56,38 @@ test('next config projects every model alias and tombstone in all locales as one
   for (const source of expectedSources) {
     const destination = bySource.get(source).destination;
     assert.equal(expectedSources.has(destination), false, `redirect chain: ${source} -> ${destination}`);
+  }
+});
+
+test('replacement canonical slugs and aliases redirect directly to the localized replacement', () => {
+  const fixture = structuredClone(registry) as any;
+  const retired = fixture.models.find((model: any) => model.aliases.publicSlugs.length > 0);
+  const target = fixture.models.find((model: any) => model.id !== retired.id && model.replacement === null);
+  retired.replacement = target.id;
+  retired.publication = {
+    model: { published: false, indexable: false },
+    examples: { published: false, includeInFamilyCopy: false, current: false },
+    compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+    app: { published: false },
+    pricing: { published: false },
+    sitemap: { published: false },
+  };
+
+  const validated = validateModelRegistryDocument(fixture);
+  const redirects = buildModelRegistryRedirects(validated);
+  const bySource = new Map(redirects.map((rule: any) => [rule.source, rule]));
+
+  for (const route of Object.values(bases)) {
+    for (const sourceSlug of [retired.slug, ...retired.aliases.publicSlugs]) {
+      assert.deepEqual(bySource.get(`${route.prefix}/${sourceSlug}`), {
+        source: `${route.prefix}/${sourceSlug}`,
+        destination: `${route.prefix}/${target.slug}`,
+        statusCode: 301,
+      });
+    }
+  }
+  const sources = new Set(redirects.map((rule: any) => rule.source));
+  for (const rule of redirects) {
+    assert.equal(sources.has(rule.destination), false, `${rule.source} must redirect in one hop`);
   }
 });

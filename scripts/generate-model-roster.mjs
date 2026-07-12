@@ -2,6 +2,10 @@ import { spawnSync } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  assertGeneratedTextCurrent,
+  serializeGeneratedJson,
+} from './lib/generated-projection-check.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
@@ -21,14 +25,15 @@ function parseArgs(argv) {
   };
 }
 
-function runEngineCatalog() {
-  const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-  const result = spawnSync(npmCmd, ['run', 'engine:catalog'], {
+function runEngineCatalog(write) {
+  const pnpmCmd = process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm';
+  const args = write ? ['engine:catalog'] : ['engine:catalog', '--', '--check'];
+  const result = spawnSync(pnpmCmd, args, {
     cwd: ROOT,
     stdio: 'inherit',
   });
   if (result.status !== 0) {
-    throw new Error('Failed to run "engine:catalog" before roster generation.');
+    throw new Error(`Failed to run engine catalog ${write ? 'generation' : 'check'} before roster generation.`);
   }
 }
 
@@ -46,6 +51,13 @@ async function loadCurrentRoster() {
     }
     throw error;
   }
+}
+
+async function loadText(filePath) {
+  return fs.readFile(filePath, 'utf8').catch((error) => {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return '';
+    throw error;
+  });
 }
 
 function normalizeAvailability(value, engineId) {
@@ -188,7 +200,7 @@ async function writeOutputs(roster) {
 
 async function main() {
   const { write } = parseArgs(process.argv.slice(2));
-  runEngineCatalog();
+  runEngineCatalog(write);
 
   const [catalog, registry, currentRoster] = await Promise.all([
     loadJson(ENGINE_CATALOG_PATH),
@@ -226,9 +238,17 @@ async function main() {
     });
 
   ensureNoShrink(currentRoster, roster, allowedRemovedSlugs);
-  const currentJson = JSON.stringify(currentRoster, null, 2);
-  const generatedJson = JSON.stringify(roster, null, 2);
-  const hasChanges = currentJson !== generatedJson;
+  const generatedJson = serializeGeneratedJson(roster);
+  const generatedCsv = toCsv(roster);
+  const [frontendCurrent, docsCurrent, docsCsvCurrent] = await Promise.all([
+    loadText(FRONTEND_ROSTER_PATH),
+    loadText(DOCS_ROSTER_PATH),
+    loadText(DOCS_ROSTER_CSV_PATH),
+  ]);
+  const hasChanges =
+    frontendCurrent !== generatedJson ||
+    docsCurrent !== generatedJson ||
+    docsCsvCurrent !== generatedCsv;
   const diff = summarizeDiff(currentRoster, roster);
 
   if (!hasChanges) {
@@ -237,6 +257,18 @@ async function main() {
   }
 
   if (!write) {
+    const failures = [];
+    for (const [name, expected, current] of [
+      ['frontend model roster', generatedJson, frontendCurrent],
+      ['docs model roster JSON', generatedJson, docsCurrent],
+      ['docs model roster CSV', generatedCsv, docsCsvCurrent],
+    ]) {
+      try {
+        assertGeneratedTextCurrent(name, expected, current);
+      } catch (error) {
+        failures.push(error instanceof Error ? error.message : String(error));
+      }
+    }
     console.error('[model-roster] Drift detected in check mode. Re-run with "--write" to apply.');
     console.error(
       `[model-roster] Summary: +${diff.added.length} added, -${diff.removed.length} removed, ~${diff.changed.length} changed.`
@@ -244,6 +276,7 @@ async function main() {
     if (diff.added.length) console.error(`[model-roster] Added slugs: ${diff.added.join(', ')}`);
     if (diff.removed.length) console.error(`[model-roster] Removed slugs: ${diff.removed.join(', ')}`);
     if (diff.changed.length) console.error(`[model-roster] Changed slugs: ${diff.changed.join(', ')}`);
+    for (const failure of failures) console.error(`[model-roster] ${failure}`);
     process.exitCode = 1;
     return;
   }

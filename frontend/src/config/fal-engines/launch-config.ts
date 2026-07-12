@@ -158,31 +158,5 @@ export function buildSeedance2MiniPricingDetails(): EnginePricingDetails {
 }
 
 export const SEEDANCE_2_LAUNCH_CONFIG = {
-  isLive: true,
   availability: 'available' as EngineAvailability,
-  modelPage: {
-    indexable: true,
-    includeInSitemap: true,
-  },
-  examples: {
-    includeInFamilyResolver: true,
-    includeInFamilyCopy: true,
-  },
-  pricing: {
-    includeInEstimator: true,
-    featuredScenario: 'seedance-2-family',
-  },
-  app: {
-    variantGroup: 'seedance-2-0',
-    standardRank: -2,
-    fastRank: -1,
-  },
-  standard: {
-    suggestOpponents: ['veo-3-1', 'kling-3-pro', 'sora-2'],
-    publishedPairs: ['veo-3-1', 'kling-3-pro', 'sora-2'],
-  },
-  fast: {
-    suggestOpponents: ['veo-3-1-fast', 'ltx-2-3-fast', 'sora-2'],
-    publishedPairs: ['veo-3-1-fast', 'ltx-2-3-fast'],
-  },
 } as const;

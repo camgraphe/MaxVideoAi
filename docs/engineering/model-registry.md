@@ -10,6 +10,8 @@ The following files are generated projections and must not be edited directly:
 - `docs/model-roster.json`
 - `docs/model-roster.csv`
 
+`pnpm model:registry:check` validates the authored registry and then compares every generated projection exactly: runtime JSON, engine catalog, frontend roster, docs roster JSON, and docs roster CSV. Check mode is read-only; it never regenerates files or changes timestamps.
+
 ## Add a model
 
 1. Add the provider/execution definition with its canonical `id` only. Keep provider-specific IDs in the adapter or mode definition.
@@ -26,11 +28,15 @@ Keep the old slug in `aliases.publicSlugs`, change `slug`, regenerate the projec
 
 ## Retire a model
 
-Keep a canonical replacement ID in `replacement` when another model is the destination. Use a registry tombstone with `destination: "models-index"` only when the final destination is the localized catalogue. A tombstone is for a retired model-shaped URL, not a general redirect.
+Set `replacement` to the canonical ID of the active destination model. A replacement entry is a retained URL identity, not a published model: turn off every publication surface, clear comparison relationships and ranks/labels, and keep its canonical slug plus all historical public aliases in the entry. The replacement target must publish a model page and cannot itself have a replacement. Chains, cycles, missing targets, and source collisions fail validation.
+
+The Next.js redirect projection sends both the retired canonical slug and all of its historical public aliases directly to the replacement's canonical localized slug in English, French, and Spanish. Every generated rule is an explicit HTTP 301 and is one hop. Use a registry tombstone with `destination: "models-index"` only when the final destination is the localized catalogue. A tombstone is for a retired model-shaped URL, not a general redirect.
 
 ## Change publication
 
 Change only the registry `publication` object. Do not add surface overrides to engine modules, family configs, pricing code, sitemap code, middleware, or route files. Regenerate projections and run `pnpm model:registry:check` so content and cross-surface invariants are validated.
+
+`publication.model.published` controls whether the model route renders. `publication.model.indexable` controls robots metadata, and `publication.sitemap.published` controls sitemap inclusion. A published model may intentionally be noindex and absent from the sitemap; it must still render. An unpublished model returns the hidden/not-found route decision.
 
 ## Provider identifiers
 

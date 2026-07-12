@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { assertGeneratedJsonCurrent, serializeGeneratedJson } from './lib/generated-projection-check.mjs';
 import { getModelFamilyExamplesPageConfig } from '../frontend/config/model-families';
 import { type ModelFamilyExamplesPageConfig } from '../frontend/config/model-publication';
 import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
@@ -98,6 +99,7 @@ function validateCatalog(catalog: EngineCatalogEntry[]) {
 }
 
 async function main() {
+  const check = process.argv.includes('--check');
   const overrides = getEngineCatalogOverrides();
   const engines = listFalEngines();
   const catalog = engines.map((engine) => toCatalogEntry(engine, overrides[engine.id]));
@@ -109,8 +111,15 @@ async function main() {
 
   validateCatalog(catalog);
 
+  if (check) {
+    const current = await fs.readFile(OUTPUT_PATH, 'utf8').catch(() => '');
+    assertGeneratedJsonCurrent('engine catalog', catalog, current);
+    console.log(`[engine-catalog] projection current (${catalog.length} entries).`);
+    return;
+  }
+
   await fs.mkdir(path.dirname(OUTPUT_PATH), { recursive: true });
-  await fs.writeFile(OUTPUT_PATH, JSON.stringify(catalog, null, 2), 'utf8');
+  await fs.writeFile(OUTPUT_PATH, serializeGeneratedJson(catalog), 'utf8');
   console.log(`Generated engine catalog with ${catalog.length} entries.`);
 }
 

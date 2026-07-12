@@ -40,6 +40,11 @@ export function resolveRuntimePublicSlug(slug: string): RuntimeModelEntry | null
   return byPublicSlug.get(slug.trim().toLowerCase()) ?? null;
 }
 
+export function isRuntimeModelPagePublished(modelOrId: RuntimeModelEntry | string | null | undefined): boolean {
+  const model = typeof modelOrId === 'string' ? getRuntimeModelById(modelOrId) : modelOrId;
+  return model?.publication.model.published === true;
+}
+
 export function toLegacyModelSurfaces(model: RuntimeModelEntry): ModelPublicationSurfaces {
   const slugById = (id: string) => byId.get(id.toLowerCase())?.slug ?? id;
   return {

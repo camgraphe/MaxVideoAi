@@ -188,3 +188,67 @@ test('registry rejects broken references, chains, and tombstone collisions', () 
     /tombstone collision/i
   );
 });
+
+test('replacement models are fully retired and point directly to an active model page', () => {
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      copy.models[0].replacement = 'missing-model';
+    })),
+    /missing model reference .*replacement/i
+  );
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      copy.models[0].replacement = copy.models[1].id;
+    })),
+    /replacement model .* must be retired/i
+  );
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      const retired = copy.models[0];
+      const target = copy.models[1];
+      retired.replacement = target.id;
+      retired.publication = {
+        model: { published: false, indexable: false },
+        examples: { published: false, includeInFamilyCopy: false, current: false },
+        compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+        app: { published: false },
+        pricing: { published: false },
+        sitemap: { published: false },
+      };
+      target.publication.model.published = false;
+      target.publication.model.indexable = false;
+      target.publication.sitemap.published = false;
+    })),
+    /replacement target .* must publish a model page/i
+  );
+});
+
+test('registry rejects replacement cycles as well as longer chains', () => {
+  const retire = (model: any, replacement: string) => {
+    model.replacement = replacement;
+    model.publication = {
+      model: { published: false, indexable: false },
+      examples: { published: false, includeInFamilyCopy: false, current: false },
+      compare: { published: false, indexed: false, suggestedOpponentIds: [], publishedPairIds: [] },
+      app: { published: false },
+      pricing: { published: false },
+      sitemap: { published: false },
+    };
+  };
+
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      retire(copy.models[0], copy.models[1].id);
+      retire(copy.models[1], copy.models[0].id);
+    })),
+    /replacement cycle/i
+  );
+  assert.throws(
+    () => validateModelRegistryDocument(mutate((copy) => {
+      retire(copy.models[0], copy.models[1].id);
+      retire(copy.models[1], copy.models[2].id);
+    })),
+    /replacement chain/i
+  );
+});
