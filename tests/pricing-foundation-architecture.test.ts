@@ -94,11 +94,12 @@ test('pricing baseline ids are unique and all cent fields are non-negative integ
   }
 });
 
-test('pricing engineering guide records completed billing and the separate public migration', () => {
+test('pricing engineering guide records completed billing and public authority', () => {
   const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
   assert.match(guide, /178 scenarios/);
   assert.match(guide, /178 matches/);
   assert.match(guide, /0 mismatches/);
-  assert.match(guide, /billing consumer migration are complete/i);
-  assert.match(guide, /public projection migration/i);
+  assert.match(guide, /492 unchanged rows/i);
+  assert.match(guide, /billing migration, and public projection migration are complete/i);
+  assert.match(guide, /public pricing pages.*canonical-authoritative/i);
 });

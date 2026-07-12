@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: approved design
+Status: foundation, billing, and public projection migrations complete
 
 ## Context
 
@@ -51,13 +51,11 @@ The program is decomposed into these separately reviewed subprojects:
 
 1. **Pricing parity and policy foundation — complete 2026-07-12**: inventory current consumers, freeze outputs, add the deterministic audit matrix, add validated versioned defaults, normalize rule resolution, and run the canonical kernel in shadow mode. The completed audit covers 178 scenarios with 178 matches and 0 mismatches. No consumer became authoritative and no admin behavior changed.
 2. **Billing consumer migration — complete 2026-07-12**: wallet/direct generation, charged image execution, production audio, and tool billing now use canonical quotes. Public projections remain legacy-authoritative. Verification completed with 1,946 passing tests, the unchanged 178-row baseline, 178 canonical matches, 0 mismatches, 4 compatibility profiles, lint, exposure, TypeScript, and a successful production build.
-3. **Public projection migration**: move pricing pages, model pages, estimators, chips, and JSON-LD to canonical quotes.
+3. **Public projection migration — complete 2026-07-12**: pricing pages, model pages, estimator, chip, JSON-LD, workspace preflight, and image estimates now use canonical quotes. The 492-row frozen public contract is unchanged. Verification completed with 1,962 passing tests, 75 focused architecture/public tests, the unchanged 178-row audit at 178 matches and 0 mismatches, lint, exposure, TypeScript, two successful production builds, and production-server smoke tests across 12 localized pricing/model pages plus four live estimate scenarios.
 4. **Admin pricing cockpit**: replace the current raw rule editor with preview, provenance, history, rollback, and cache invalidation.
 5. **Legacy deletion and guardrails**: remove superseded formulas and rule selectors, then activate semantic one-owner guards.
 
-The next implementation plan is limited to subproject 1. Subprojects 2–5 require their own focused plan and review gate after the foundation has produced a trustworthy parity report.
-
-Subproject 1 is complete only when it can prove current behavior without switching any production consumer. Its deliverables are observational and foundational, not a pricing change.
+Subprojects 1–3 are complete. Subproject 4 remains separately scoped because admin mutations and operational controls require their own preview, audit, and rollback contract. Subproject 5 follows only after the remaining compatibility consumers are inventoried and migrated.
 
 ## Binding safety contract
 

@@ -83,6 +83,7 @@ test('refund paths use persisted charged amounts and never recompute pricing', (
 
 test('pricing guide records canonical billing authority as complete', () => {
   const guide = read('docs/engineering/pricing-engine.md');
-  assert.match(guide, /billing consumer migration are complete/i);
-  assert.match(guide, /public projection migration/i);
+  assert.match(guide, /billing migration, and public projection migration are complete/i);
+  assert.match(guide, /## Billing authority/i);
+  assert.match(guide, /## Public authority/i);
 });

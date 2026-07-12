@@ -416,7 +416,7 @@ Before committing, stage named focused test files rather than unrelated files ca
 - Modify: `docs/engineering/pricing-engine.md`
 - Modify: `docs/superpowers/specs/2026-07-12-canonical-pricing-engine-design.md`
 
-- [ ] **Step 1: Run pricing invariants**
+- [x] **Step 1: Run pricing invariants**
 
 ```bash
 pnpm pricing:baseline
@@ -427,7 +427,7 @@ pnpm --silent pricing:audit -- --json
 
 Expected: existing audit remains 178 scenarios, 178 matches, 0 mismatches, 4 compatibility profiles; exhaustive public fixture check reports no change; JSON output parses cleanly.
 
-- [ ] **Step 2: Run all focused architecture and public suites**
+- [x] **Step 2: Run all focused architecture and public suites**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -444,7 +444,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: PASS.
 
-- [ ] **Step 3: Run complete repository verification**
+- [x] **Step 3: Run complete repository verification**
 
 ```bash
 pnpm test:validate
@@ -457,7 +457,7 @@ git diff --check
 
 Expected: every command exits 0 and the production build completes all localized static pages.
 
-- [ ] **Step 4: Smoke-test public routes**
+- [x] **Step 4: Smoke-test public routes**
 
 Start the production build on an available local port and verify at minimum:
 
@@ -467,7 +467,7 @@ Start the production build on an available local port and verify at minimum:
 - image estimate for GPT Image 2 and one Luma image route
 - rendered canonical, hreflang, Product Offer JSON-LD, and client hydration without console errors
 
-- [ ] **Step 5: Inspect scope and commercial policy diff**
+- [x] **Step 5: Inspect scope and commercial policy diff**
 
 ```bash
 git diff HEAD~7..HEAD -- frontend/config/pricing-policy.json frontend/src/lib/schema/billing-products-schema.ts frontend/app/'(core)'/admin frontend/app/api/admin
@@ -476,11 +476,11 @@ git status --short --branch
 
 Expected: no policy value, seeded product price, admin UI, or admin API behavior changed; branch is `main`; worktree contains only intentional changes.
 
-- [ ] **Step 6: Document the resulting single rule**
+- [x] **Step 6: Document the resulting single rule**
 
 Record that public and billing totals now use `quoteCanonicalPricing()`, provider adapters own facts only, the server resolver is the only DB/versioned merge point, browser projections receive only safe serialized overrides, and the legacy facade remains solely for the separately planned admin/legacy-removal phase.
 
-- [ ] **Step 7: Commit documentation**
+- [x] **Step 7: Commit documentation**
 
 ```bash
 git add docs/engineering/pricing-engine.md docs/superpowers/specs/2026-07-12-canonical-pricing-engine-design.md
