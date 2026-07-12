@@ -30,6 +30,7 @@
 - `frontend/src/lib/pricing-public-quote.ts` — browser-safe policy/profile selection, optional serialized-rule adaptation, canonical quote invocation, and optional snapshot projection.
 - `frontend/server/pricing/quote-public.ts` — server-only public quote orchestration for surfaces that already honor database policy and membership overrides.
 - `frontend/scripts/pricing-public-baseline.ts` — deterministic exhaustive public-projection baseline collector with a read-only check mode and explicit `--write` mode.
+- `frontend/scripts/pricing-public-baseline-collector.ts` — legacy-authoritative scenario collector loaded only after the deterministic environment bootstrap.
 - `tests/fixtures/pricing-public-projections.v1.json` — frozen pre-migration values for every exact pricing-hub scenario, model-page price projection, estimator engine/tier sample, price-chip sample, JSON-LD offer, workspace preflight sample, and image estimate sample.
 - `tests/pricing-public-projection.test.ts` — canonical public adapter parity, browser-safety, override precedence, and projection invariants.
 - `tests/pricing-public-authority.test.ts` — static boundary guard proving all public consumers delegate commercial calculation to canonical owners.
@@ -55,6 +56,7 @@
 **Files:**
 
 - Create: `frontend/scripts/pricing-public-baseline.ts`
+- Create: `frontend/scripts/pricing-public-baseline-collector.ts`
 - Create: `tests/fixtures/pricing-public-projections.v1.json`
 - Modify: `package.json`
 - Create: `tests/pricing-public-projection.test.ts`
@@ -67,11 +69,11 @@
 - JSON-LD: every indexable model with an Offer.
 - Live previews: representative standard, Luma, Seedance, GPT Image 2, addon, and storyboard inputs.
 
-- [ ] **Step 1: Write the deterministic collector**
+- [x] **Step 1: Write the deterministic collector**
 
 The default command reads current legacy owners and compares their stable JSON representation to the committed fixture. `--write` is the only mode allowed to update the fixture. Exclude timestamps, database state, localized currency glyph variance, and runtime secrets; store integer cents, normalized currency, unit, quantity, scenario ID, compatibility profile, and structured-data amount where applicable.
 
-- [ ] **Step 2: Generate and inspect the pre-migration fixture**
+- [x] **Step 2: Generate and inspect the pre-migration fixture**
 
 Run:
 
@@ -82,11 +84,11 @@ pnpm pricing:public-baseline
 
 Expected: the generated IDs are unique; all cent fields are non-negative integers; the read-only check exits 0.
 
-- [ ] **Step 3: Add fixture integrity tests**
+- [x] **Step 3: Add fixture integrity tests**
 
 Assert the fixture covers every currently eligible catalog entry and every required surface. Fail on duplicate IDs, missing catalog entries, non-integer cents, non-USD unexpected currency, or a collector/fixture difference.
 
-- [ ] **Step 4: Prove the existing 178-row audit is unchanged**
+- [x] **Step 4: Prove the existing 178-row audit is unchanged**
 
 Run:
 
@@ -97,10 +99,10 @@ pnpm pricing:audit
 
 Expected: 178 scenarios, 178 matches, 0 mismatches, 4 compatibility profiles.
 
-- [ ] **Step 5: Commit the frozen public contract**
+- [x] **Step 5: Commit the frozen public contract**
 
 ```bash
-git add package.json frontend/scripts/pricing-public-baseline.ts tests/fixtures/pricing-public-projections.v1.json tests/pricing-public-projection.test.ts
+git add package.json frontend/scripts/pricing-public-baseline.ts frontend/scripts/pricing-public-baseline-collector.ts tests/fixtures/pricing-public-projections.v1.json tests/pricing-public-projection.test.ts
 git commit -m "test: freeze public pricing projections"
 ```
 
@@ -476,4 +478,3 @@ Record that public and billing totals now use `quoteCanonicalPricing()`, provide
 git add docs/engineering/pricing-engine.md docs/superpowers/specs/2026-07-12-canonical-pricing-engine-design.md
 git commit -m "docs: record canonical public pricing authority"
 ```
-
