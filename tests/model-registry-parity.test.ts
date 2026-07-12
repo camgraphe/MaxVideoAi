@@ -72,8 +72,14 @@ test('runtime facade normalizes canonical lookups and rejects missing inputs', (
 
 test('generated runtime document excludes registry-only replacement and tombstone data', () => {
   const runtime = JSON.parse(readFileSync('frontend/config/model-runtime.json', 'utf8'));
+  const registry = JSON.parse(readFileSync('frontend/config/model-registry.json', 'utf8'));
+  const registryById = new Map(registry.models.map((model: any) => [model.id, model]));
   assert.equal(Object.hasOwn(runtime, 'tombstones'), false);
   assert.equal(runtime.models.every((model: object) => !Object.hasOwn(model, 'replacement')), true);
+  for (const model of runtime.models) {
+    const source = registryById.get(model.id) as any;
+    assert.equal(Object.hasOwn(model, 'publicTargetId'), Boolean(source.replacement), model.id);
+  }
 });
 
 test('legacy facades resolve the frozen registry compatibility matrix', () => {

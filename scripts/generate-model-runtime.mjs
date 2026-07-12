@@ -1,12 +1,10 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { buildModelRuntimeProjection } from './lib/model-runtime-projection.mjs';
 
 const sourcePath = new URL('../frontend/config/model-registry.json', import.meta.url);
 const outputPath = new URL('../frontend/config/model-runtime.json', import.meta.url);
 const source = JSON.parse(await readFile(sourcePath, 'utf8'));
-const runtime = {
-  schemaVersion: source.schemaVersion,
-  models: source.models.map(({ replacement, ...model }) => model),
-};
+const runtime = buildModelRuntimeProjection(source);
 const expected = `${JSON.stringify(runtime, null, 2)}\n`;
 const write = process.argv.includes('--write');
 

@@ -12,6 +12,8 @@ The following files are generated projections and must not be edited directly:
 
 `pnpm model:registry:check` validates the authored registry and then compares every generated projection exactly: runtime JSON, engine catalog, frontend roster, docs roster JSON, and docs roster CSV. Check mode is read-only; it never regenerates files or changes timestamps.
 
+The browser-safe runtime projection omits the replacement graph. A retired replacement identity contains only an optional flattened `publicTargetId` for the final active model; active models need no extra field and resolve to themselves. Public-slug resolution uses that flattened target so middleware can send `/fr/models/*` and `/es/models/*` compatibility paths directly to the localized active canonical slug. Engine/input aliases still resolve to their original canonical product ID.
+
 ## Add a model
 
 1. Add the provider/execution definition with its canonical `id` only. Keep provider-specific IDs in the adapter or mode definition.
@@ -30,7 +32,7 @@ Keep the old slug in `aliases.publicSlugs`, change `slug`, regenerate the projec
 
 Set `replacement` to the canonical ID of the active destination model. A replacement entry is a retained URL identity, not a published model: turn off every publication surface, clear comparison relationships and ranks/labels, and keep its canonical slug plus all historical public aliases in the entry. The replacement target must publish a model page and cannot itself have a replacement. Chains, cycles, missing targets, and source collisions fail validation.
 
-The Next.js redirect projection sends both the retired canonical slug and all of its historical public aliases directly to the replacement's canonical localized slug in English, French, and Spanish. Every generated rule is an explicit HTTP 301 and is one hop. Use a registry tombstone with `destination: "models-index"` only when the final destination is the localized catalogue. A tombstone is for a retired model-shaped URL, not a general redirect.
+The Next.js redirect projection sends both the retired canonical slug and all of its historical public aliases directly to the replacement's canonical localized slug in English, French, and Spanish. The middleware applies the same flattened destination to wrong-English localized compatibility paths such as `/fr/models/*` and `/es/models/*`, including dotted historical aliases, while preserving the query string. Every generated rule is an explicit HTTP 301 and is one hop. Use a registry tombstone with `destination: "models-index"` only when the final destination is the localized catalogue. A tombstone is for a retired model-shaped URL, not a general redirect.
 
 ## Change publication
 

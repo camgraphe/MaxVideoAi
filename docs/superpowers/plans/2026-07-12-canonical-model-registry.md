@@ -23,6 +23,7 @@
 - Use `pnpm`; do not run `npm install`.
 - Do not mix pricing-calculation, editorial-content, provider-routing, job-finalization, or polling refactors into these commits.
 - Treat replacement entries as fully retired: every publication surface is off, the target is a directly active model page, and chains or cycles are invalid. Generate localized HTTP 301 rules for the retired canonical slug and every historical public alias directly to the replacement canonical slug.
+- Project only a flattened `publicTargetId` into the browser-safe runtime so wrong-English FR/ES model compatibility paths also resolve replacement canonical slugs and aliases in one hop without exposing the replacement graph or changing engine-input resolution.
 - Gate model-page rendering on `publication.model.published`, robots metadata on `publication.model.indexable`, and sitemap output on `publication.sitemap.published`; a published noindex model remains routable.
 - Make `pnpm model:registry:check` a read-only exact drift check for runtime JSON, engine catalog, frontend roster, docs roster JSON, and docs roster CSV.
 

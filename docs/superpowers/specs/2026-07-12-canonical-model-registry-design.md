@@ -120,6 +120,8 @@ The source is JSON so it can be consumed by `frontend/next.config.js` without im
 
 The projector treats a replacement entry as retired URL identity: its canonical slug and every historical public alias become direct localized HTTP 301 sources to the replacement model's canonical slug. Replacement entries must have every publication surface disabled, and replacement targets must publish a model page. Missing targets, chains, cycles, and redirect-source collisions are invalid. A small pure build-only helper keeps this projection mutation-testable; `next.config.js` remains its only production consumer.
 
+The generated browser runtime does not contain `replacement` or a replacement graph. Retired replacement identities carry only an optional flattened `publicTargetId` for the final active model; active identities implicitly target themselves. Public URL resolution follows that final target, including defensive `/fr/models/*` and `/es/models/*` middleware compatibility redirects; engine/input resolution continues to return the source model identity.
+
 A conceptual document has this shape:
 
 ```ts

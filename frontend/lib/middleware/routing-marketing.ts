@@ -52,6 +52,8 @@ const NON_PREFIXED_LOCALIZED_EXAMPLES_PREFIXES = {
   fr: '/galerie',
   es: '/galeria',
 } as const;
+
+type PublicModelResolver = typeof resolveRuntimePublicSlug;
 const NON_PREFIXED_LOCALIZED_BLOG_SLUGS = {
   fr: new Set([
     'acceder-a-sora-2-sans-invitation',
@@ -126,13 +128,14 @@ const EXACT_LOCALE_REDIRECTS: Record<string, string> = {
 function resolveLocalizedEnglishModelSegment(
   req: NextRequest,
   normalizedPath: string,
-  localePrefix: string
+  localePrefix: string,
+  resolvePublicSlug: PublicModelResolver
 ): NextResponse | null {
   if (localePrefix !== '/fr' && localePrefix !== '/es') return null;
   if (!normalizedPath.startsWith('/models/')) return null;
   const slug = normalizedPath.slice('/models/'.length);
   if (!slug || slug.includes('/')) return null;
-  const model = resolveRuntimePublicSlug(slug);
+  const model = resolvePublicSlug(slug);
   if (!model) return null;
   const localizedBase = localePrefix === '/fr' ? 'modeles' : 'modelos';
   const redirectUrl = req.nextUrl.clone();
@@ -140,20 +143,32 @@ function resolveLocalizedEnglishModelSegment(
   return NextResponse.redirect(redirectUrl, 301);
 }
 
-export function isDottedLocalizedEnglishModelCompatibilityPath(pathname: string): boolean {
+export function isDottedLocalizedEnglishModelCompatibilityPath(
+  pathname: string,
+  resolvePublicSlug: PublicModelResolver = resolveRuntimePublicSlug
+): boolean {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   if (localePrefix !== '/fr' && localePrefix !== '/es') return false;
   const normalizedPath = normalizePath(pathWithoutLocale);
   if (!normalizedPath.startsWith('/models/')) return false;
   const slug = normalizedPath.slice('/models/'.length);
   if (!slug || slug.includes('/') || !slug.includes('.')) return false;
-  return resolveRuntimePublicSlug(slug) !== null;
+  return resolvePublicSlug(slug) !== null;
 }
 
-export function handleMarketingSlug(req: NextRequest, pathname: string): NextResponse | null {
+export function handleMarketingSlug(
+  req: NextRequest,
+  pathname: string,
+  resolvePublicSlug: PublicModelResolver = resolveRuntimePublicSlug
+): NextResponse | null {
   const { localePrefix, pathWithoutLocale } = splitLocaleFromPath(pathname);
   const normalizedPath = normalizePath(pathWithoutLocale);
-  const localizedEnglishModelRedirect = resolveLocalizedEnglishModelSegment(req, normalizedPath, localePrefix);
+  const localizedEnglishModelRedirect = resolveLocalizedEnglishModelSegment(
+    req,
+    normalizedPath,
+    localePrefix,
+    resolvePublicSlug
+  );
   if (localizedEnglishModelRedirect) {
     return localizedEnglishModelRedirect;
   }

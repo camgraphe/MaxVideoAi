@@ -8,11 +8,14 @@ const require = createRequire(import.meta.url);
 const ts = require('../frontend/node_modules/typescript');
 const engineDir = 'frontend/src/config/fal-engines';
 const registryOwnedProperties = new Set(['modelSlug', 'family', 'category', 'surfaces']);
+const ignoredSourceDirectories = new Set(['.next', 'node_modules', 'coverage', '.turbo']);
 
 function walk(directory: string): string[] {
   return readdirSync(directory).flatMap((name) => {
     const path = join(directory, name);
-    return statSync(path).isDirectory() ? walk(path) : [path];
+    return statSync(path).isDirectory()
+      ? ignoredSourceDirectories.has(name) ? [] : walk(path)
+      : [path];
   });
 }
 
@@ -138,9 +141,12 @@ test('semantic guard rejects authored publication-shaped config outside the cano
   };`;
   assert.equal(authoredPublicationObjects('mutation.ts', mutation).length, 1);
 
-  const sourceFiles = [...walk('frontend/config'), ...walk('frontend/src/config'), ...walk('frontend/lib'), ...walk('frontend/src/lib'), ...walk('scripts')]
+  const sourceFiles = [...walk('frontend'), ...walk('scripts')]
     // The setup command is authorized registry I/O: it emits an unpublished skeleton into the canonical JSON.
     .filter((file) => /\.(?:ts|tsx|js|mjs|cjs)$/.test(file) && file !== 'scripts/model-setup.mjs');
+  for (const directory of ['frontend/app/', 'frontend/components/', 'frontend/server/']) {
+    assert.ok(sourceFiles.some((path) => path.startsWith(directory)), `${directory} must be guarded`);
+  }
   const findings = sourceFiles.flatMap((path) => authoredPublicationObjects(path, readFileSync(path, 'utf8')));
   assert.deepEqual(findings, []);
 });
