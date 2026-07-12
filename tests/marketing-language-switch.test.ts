@@ -22,4 +22,5 @@ test('server locale redirects persist the selected locale without a permanent re
   assert.match(source, /const response = NextResponse\.redirect\(redirectUrl, 307\);/);
   assert.match(source, /resolveSharedLocaleCookieDomain\(req\.nextUrl\.hostname\)/);
   assert.match(source, /setLocaleCookies\(response, targetLocale, sharedCookieDomain\);/);
+  assert.match(source, /response\.headers\.append\('set-cookie', serializeHostLocaleCookie/);
 });

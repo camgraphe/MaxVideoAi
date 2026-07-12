@@ -148,11 +148,17 @@ export function setLocaleCookies(response: NextResponse, locale: string, sharedD
     sameSite: 'lax' as const,
   };
   for (const name of [LOCALE_COOKIE, NEXT_LOCALE_COOKIE]) {
-    response.cookies.set(name, locale, options);
     if (sharedDomain) {
       response.cookies.set(name, locale, { ...options, domain: sharedDomain });
+      response.headers.append('set-cookie', serializeHostLocaleCookie(name, locale, maxAge));
+    } else {
+      response.cookies.set(name, locale, options);
     }
   }
+}
+
+function serializeHostLocaleCookie(name: string, locale: string, maxAge: number): string {
+  return `${name}=${encodeURIComponent(locale)}; Path=/; Max-Age=${maxAge}; SameSite=Lax`;
 }
 
 function resolveSharedLocaleCookieDomain(hostname: string): string | undefined {
