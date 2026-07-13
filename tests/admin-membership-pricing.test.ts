@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import type { PricingPolicyRule } from '@maxvideoai/pricing';
+
 import type {
   InsertPricingChangeEventInput,
   PricingChangeEvent,
@@ -36,8 +38,10 @@ function eventFromInput(input: InsertPricingChangeEventInput, id: string): Prici
 function buildHarness(input: {
   tiers?: MembershipTierConfig[];
   databaseStatus?: 'loaded' | 'unavailable';
+  rules?: PricingPolicyRule[];
 } = {}) {
   let tiers = cloneTiers(input.tiers ?? DEFAULT_MEMBERSHIP_TIERS);
+  let rules = (input.rules ?? []).map((rule) => ({ ...rule }));
   const events: PricingChangeEvent[] = [];
   const order: string[] = [];
   let inTransaction = false;
@@ -52,7 +56,7 @@ function buildHarness(input: {
     },
     loadRules: async () => ({
       status: input.databaseStatus ?? 'loaded',
-      rules: [],
+      rules: rules.map((rule) => ({ ...rule })),
       routingRules: [],
       warnings: [],
     }),
@@ -102,8 +106,21 @@ function buildHarness(input: {
     get tiers() {
       return cloneTiers(tiers);
     },
+    setRules(nextRules: PricingPolicyRule[]) {
+      rules = nextRules.map((rule) => ({ ...rule }));
+    },
   };
 }
+
+const CONCURRENT_GLOBAL_RULE: PricingPolicyRule = {
+  id: 'concurrent-global',
+  marginPercent: 0.31,
+  marginFlatCents: 0,
+  surchargeAudioPercent: 0.2,
+  surchargeUpscalePercent: 0.5,
+  currency: 'USD',
+  compatibilityProfile: 'standard',
+};
 
 test('membership inventory exposes exactly the canonical member, plus, and pro tiers', async () => {
   const harness = buildHarness();
@@ -202,6 +219,22 @@ test('threshold-only change produces an explicit eligibility preview row even wh
   assert.match(preview.warnings.join('\n'), /threshold.*5,000.*6,000/i);
 });
 
+test('threshold-only preview becomes stale when its displayed eligibility quote changes concurrently', async () => {
+  const harness = buildHarness();
+  const proposed = cloneTiers(DEFAULT_MEMBERSHIP_TIERS);
+  proposed[1] = { ...proposed[1]!, spendThresholdCents: 6_000 };
+  const proposal = { tiers: proposed };
+  const preview = await previewMembershipChange(proposal, harness.deps);
+
+  harness.setRules([CONCURRENT_GLOBAL_RULE]);
+
+  await assert.rejects(
+    () => confirmMembershipChange(proposal, preview.previewFingerprint, ACTOR_ID, harness.deps),
+    (error: unknown) => error instanceof Error && /stale/i.test(error.message)
+  );
+  assert.equal(harness.events.length, 0);
+});
+
 test('confirmation recomputes the fingerprint, persists all tiers and one immutable event transactionally', async () => {
   const harness = buildHarness();
   const proposed = cloneTiers(DEFAULT_MEMBERSHIP_TIERS);
@@ -267,6 +300,37 @@ test('rollback derives tiers from immutable event state and appends a rollback e
   assert.deepEqual(harness.tiers, DEFAULT_MEMBERSHIP_TIERS);
   assert.equal(harness.events.length, 2);
   assert.equal(harness.events[1]?.operation, 'rollback');
+});
+
+test('rollback fingerprint cannot be substituted between events with identical previous state', async () => {
+  const harness = buildHarness();
+  for (const id of ['rollback-source-a', 'rollback-source-b']) {
+    harness.events.push(eventFromInput({
+      domain: 'membership',
+      operation: 'update',
+      targetId: 'membership-tiers',
+      actorId: ACTOR_ID,
+      previousState: DEFAULT_MEMBERSHIP_TIERS,
+      nextState: DEFAULT_MEMBERSHIP_TIERS,
+      previewSummary: {},
+      affectedScenarioIds: [],
+    }, id));
+  }
+  const preview = await previewMembershipChange(
+    { operation: 'rollback', eventId: 'rollback-source-a' },
+    harness.deps
+  );
+
+  await assert.rejects(
+    () => confirmMembershipChange(
+      { operation: 'rollback', eventId: 'rollback-source-b' },
+      preview.previewFingerprint,
+      ACTOR_ID,
+      harness.deps
+    ),
+    (error: unknown) => error instanceof Error && /stale/i.test(error.message)
+  );
+  assert.equal(harness.events.length, 2);
 });
 
 test('membership history is fixed to the membership domain', async () => {

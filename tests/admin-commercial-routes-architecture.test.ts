@@ -56,6 +56,14 @@ test('membership controller enforces preview-fingerprint-confirm and refreshes o
   assert.match(source, /operation:\s*'rollback'/);
 });
 
+test('membership refresh replaces the draft from the resolved SWR inventory without exposing cached values', () => {
+  const source = read(controllerPath);
+  const refreshBlock = source.match(/const refresh = useCallback\(async \(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
+  assert.doesNotMatch(refreshBlock, /setDraft\(\[\]\)/);
+  assert.match(refreshBlock, /const \[refreshedInventory\][\s\S]*await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
+  assert.match(refreshBlock, /setDraft\(createMembershipDraft\(refreshedInventory\.inventory\.tiers\)\)/);
+});
+
 test('membership client stays browser-safe, membership-only, and contains no commercial formulas', () => {
   const source = [viewPath, controllerPath, viewModelPath].map(read).join('\n');
   assert.doesNotMatch(source, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy/);

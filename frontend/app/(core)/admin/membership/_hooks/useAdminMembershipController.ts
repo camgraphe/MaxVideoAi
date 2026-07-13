@@ -145,8 +145,15 @@ export function useAdminMembershipController() {
 
   const refresh = useCallback(async () => {
     if (interactionLocked) return;
-    setDraft([]);
-    await Promise.all([refreshInventory(), refreshHistory()]);
+    setError(null);
+    try {
+      const [refreshedInventory] = await Promise.all([refreshInventory(), refreshHistory()]);
+      if (refreshedInventory?.ok) {
+        setDraft(createMembershipDraft(refreshedInventory.inventory.tiers));
+      }
+    } catch (caught) {
+      setError(toMembershipError(caught, 'Unable to refresh membership pricing.'));
+    }
   }, [interactionLocked, refreshHistory, refreshInventory]);
 
   const fetchError = inventoryQuery.error

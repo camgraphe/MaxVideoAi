@@ -259,6 +259,21 @@ function quoteProjectionState(quotes: AdminCanonicalScenarioQuote[]): PricingCha
   })) as PricingChangeJsonValue;
 }
 
+function previewRowsProjection(rows: PricingChangePreviewRow[]): PricingChangeJsonValue {
+  return rows.map((row) => ({
+    scenarioId: row.scenarioId,
+    engineId: row.engineId,
+    surface: row.surface,
+    currentTotalCents: row.currentTotalCents,
+    proposedTotalCents: row.proposedTotalCents,
+    deltaCents: row.deltaCents,
+    deltaPercent: row.deltaPercent,
+    currentProvenance: row.currentProvenance,
+    proposedProvenance: row.proposedProvenance,
+    compatibilityProfile: row.compatibilityProfile,
+  })) as PricingChangeJsonValue;
+}
+
 function firstQuoted(outcomes: ReturnType<typeof quoteCanonicalAdminScenarios>): AdminCanonicalScenarioQuote {
   const quote = outcomes.find((outcome): outcome is AdminCanonicalScenarioQuote => outcome.status === 'quoted');
   if (!quote) throw new PricingAdminError('unsupported_scenario', 'No canonical membership scenario can be quoted');
@@ -345,6 +360,8 @@ async function previewMembershipChangeWithExecutor(
   const projectionState: PricingChangeJsonValue = {
     current: quoteProjectionState(currentQuotes),
     proposed: quoteProjectionState(proposedQuotes),
+    displayedRows: previewRowsProjection(rows),
+    ...(context.rollbackEventId ? { rollbackEventId: context.rollbackEventId } : {}),
   };
   const previewFingerprint = buildPricingPreviewFingerprint({
     domain: 'membership',
