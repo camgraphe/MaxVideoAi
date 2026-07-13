@@ -16,6 +16,10 @@ const previewDockPath = join(root, 'frontend/components/groups/ImageCompositePre
 const toolsPagePath = join(root, 'frontend/src/components/tools/ToolsWorkspacePage.tsx');
 const storyboardRoutePath = join(root, 'frontend/app/(core)/(workspace)/app/tools/storyboard/page.tsx');
 const storyboardWorkspacePath = join(root, 'frontend/src/components/tools/StoryboardWorkspace.tsx');
+const storyboardPricingHookPath = join(
+  root,
+  'frontend/src/components/tools/storyboard/_hooks/useStoryboardPricing.ts'
+);
 const storyboardWorkspaceConfigPath = join(
   root,
   'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-config.ts'
@@ -108,6 +112,7 @@ test('image workspace hydrates storyboard tool query and keeps result actions ro
 test('storyboard tool is reachable from the tools hub as its own workspace', () => {
   assert.equal(existsSync(storyboardRoutePath), true, 'storyboard tool route should exist');
   assert.equal(existsSync(storyboardWorkspacePath), true, 'storyboard workspace should be a dedicated app tool');
+  assert.equal(existsSync(storyboardPricingHookPath), true, 'storyboard pricing should have one hook owner');
   assert.equal(existsSync(storyboardWorkspaceConfigPath), true, 'storyboard static config should stay colocated');
   assert.equal(existsSync(storyboardKlingStoragePath), true, 'storyboard Kling first-frame storage should stay colocated');
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
@@ -135,6 +140,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const routeSource = readFileSync(storyboardRoutePath, 'utf8');
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
+  const pricingHookSource = readFileSync(storyboardPricingHookPath, 'utf8');
   const configSource = readFileSync(storyboardWorkspaceConfigPath, 'utf8');
   const klingStorageSource = readFileSync(storyboardKlingStoragePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
@@ -161,6 +167,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(toolsPageSource, /storyboardTitle/);
   assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
   assert.match(workspaceSource, /runImageGeneration/);
+  assert.match(workspaceSource, /useStoryboardPricing/);
   assert.match(workspaceSource, /storyboard-workspace-config/);
   assert.match(workspaceSource, /storyboard-kling-first-frame-storage/);
   assert.match(configSource, /STORYBOARD_STYLE_OPTIONS/);
@@ -183,12 +190,20 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /STORYBOARD_EDIT_SOURCE/);
   assert.match(workspaceSource, /source:\s*edit \? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE/);
   assert.match(workspaceSource, /source:\s*STORYBOARD_SOURCE/);
+  assert.match(pricingHookSource, /authFetch\('\/api\/images\/estimate'/);
+  assert.match(pricingHookSource, /STORYBOARD_SOURCE/);
+  assert.match(pricingHookSource, /STORYBOARD_EDIT_SOURCE/);
+  assert.match(pricingHookSource, /resolveStoryboardVisiblePrice/);
+  assert.match(pricingHookSource, /getStoryboardOutputConfig/);
+  assert.match(pricingHookSource, /getStoryboardEditOutputConfig/);
+  assert.doesNotMatch(workspaceSource, /authFetch\('\/api\/images\/estimate'/);
+  assert.doesNotMatch(workspaceSource, /const \[tierPrices|const \[editPrice/);
+  assert.doesNotMatch(pricingHookSource, /pricePer|fallbackPrice|hardcodedPrice/);
   assert.match(workspaceSource, /storyboardTier/);
   assert.match(workspaceSource, /storyboardOrientation/);
   assert.match(workspaceSource, /setStoryboardOrientation/);
   assert.match(workspaceSource, /previewingTemplate/);
   assert.match(workspaceSource, /setPreviewingTemplate/);
-  assert.match(workspaceSource, /const \[editPrice, setEditPrice\]/);
   assert.match(workspaceSource, /editPriceLabel/);
   assert.match(workspaceSource, /lengthPresetId/);
   assert.match(workspaceSource, /visualNotes/);
@@ -204,7 +219,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /getTierLabel/);
   assert.doesNotMatch(workspaceSource, /getTierMeta/);
   assert.match(workspaceSource, /getStoryboardOutputConfig/);
-  assert.match(workspaceSource, /getStoryboardEditOutputConfig/);
+  assert.match(pricingHookSource, /getStoryboardEditOutputConfig/);
   assert.match(workspaceSource, /getAbsoluteStoryboardTemplateUrl/);
   assert.match(workspaceSource, /getStoryboardTemplatePath/);
   assert.match(workspaceSource, /useStoryboardRecentOutputs/);

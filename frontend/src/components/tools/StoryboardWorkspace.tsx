@@ -15,7 +15,6 @@ import { Card } from '@/components/ui/Card';
 import { FEATURES } from '@/content/feature-flags';
 import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { hideJob, runImageGeneration, saveImageToLibrary } from '@/lib/api';
-import { authFetch } from '@/lib/authFetch';
 import { buildLoginHref } from '@/lib/auth-entry-href';
 import { suggestDownloadFilename, triggerAppDownload } from '@/lib/download';
 import { useI18n } from '@/lib/i18n/I18nProvider';
@@ -29,6 +28,7 @@ import type { ImageGenerationResponse } from '@/types/image-generation';
 import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
 import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
 import { useStoryboardReferences } from './storyboard/_hooks/useStoryboardReferences';
+import { useStoryboardPricing } from './storyboard/_hooks/useStoryboardPricing';
 import {
   useStoryboardRecentOutputs,
   type StoryboardRecentOutput,
@@ -44,7 +44,6 @@ import {
   writeStoredKlingFirstFrame,
   type KlingFirstFrameState,
 } from './storyboard/_lib/storyboard-kling-first-frame-storage';
-import { resolveStoryboardVisiblePrice } from './storyboard/_lib/storyboard-price-display';
 import {
   buildStoryboardPrompt,
   type StoryboardStyle,
@@ -66,7 +65,6 @@ import {
   STORYBOARD_TEMPLATE_SIZES,
   STORYBOARD_TIER_OPTIONS,
   getAbsoluteStoryboardTemplateUrl,
-  getStoryboardEditOutputConfig,
   getStoryboardOutputConfig,
   getStoryboardLengthPreset,
   getStoryboardTemplatePath,
@@ -76,18 +74,6 @@ import {
 } from './storyboard/_lib/storyboard-templates';
 
 type StoryboardOptionalField = 'action' | 'dialogue' | 'visualNotes';
-
-type PriceValue = { cents: number; currency: string } | null;
-type PriceState = Record<StoryboardTier, PriceValue>;
-
-function formatPrice(value: PriceValue, locale: string): string {
-  if (!value) return '...';
-  try {
-    return new Intl.NumberFormat(locale, { style: 'currency', currency: value.currency }).format(value.cents / 100);
-  } catch {
-    return `${value.currency} ${(value.cents / 100).toFixed(2)}`;
-  }
-}
 
 export default function StoryboardWorkspace() {
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -117,8 +103,6 @@ export default function StoryboardWorkspace() {
   const [storyboardOrientation, setStoryboardOrientation] = useState<StoryboardOrientation>('landscape');
   const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>(DEFAULT_STORYBOARD_TIER);
   const [editInstruction, setEditInstruction] = useState('');
-  const [tierPrices, setTierPrices] = useState<PriceState>({ hd: null, '4k': null, ultra: null });
-  const [editPrice, setEditPrice] = useState<PriceValue>(null);
   const [result, setResult] = useState<ImageGenerationResponse | null>(null);
   const [previewingTemplate, setPreviewingTemplate] = useState(false);
   const [klingFirstFrame, setKlingFirstFrame] = useState<KlingFirstFrameState | null>(null);
@@ -162,49 +146,6 @@ export default function StoryboardWorkspace() {
     }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    async function loadPrices() {
-      const entries = await Promise.all(
-        STORYBOARD_TIER_OPTIONS.map(async (tier) => {
-          const config = getStoryboardOutputConfig(tier, storyboardOrientation);
-          const response = await authFetch('/api/images/estimate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              engineId: 'gpt-image-2',
-              mode: 'i2i',
-              numImages: 1,
-              referenceImageSizes: [STORYBOARD_TEMPLATE_SIZES[storyboardOrientation]],
-              resolution: config.resolution,
-              customImageSize: config.customImageSize,
-              quality: config.quality,
-              source: STORYBOARD_SOURCE,
-            }),
-          });
-          const payload = (await response.json().catch(() => null)) as {
-            ok?: boolean;
-            pricing?: { totalCents?: number; currency?: string };
-          } | null;
-          return [
-            tier,
-            payload?.ok && payload.pricing?.totalCents != null
-              ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD' }
-              : null,
-          ] as const;
-        })
-      );
-      if (!active) return;
-      setTierPrices(Object.fromEntries(entries) as PriceState);
-    }
-    void loadPrices().catch(() => {
-      if (active) setTierPrices({ hd: null, '4k': null, ultra: null });
-    });
-    return () => {
-      active = false;
-    };
-  }, [storyboardOrientation]);
-
   const lengthPreset = useMemo(() => getStoryboardLengthPreset(lengthPresetId), [lengthPresetId]);
   const durationSec = lengthPreset.durationSec;
   const frameCount = lengthPreset.frameCount;
@@ -225,16 +166,13 @@ export default function StoryboardWorkspace() {
     : null;
   const selectedImage = previewingTemplate ? null : selectedRecentImage ?? generatedImage;
   const selectedImageJobId = previewingTemplate ? null : selectedRecentOutput?.jobId ?? result?.jobId ?? null;
-  const tierConfig = getStoryboardOutputConfig(storyboardTier, storyboardOrientation);
-  const editOutputConfig = getStoryboardEditOutputConfig();
-  const klingFirstFramePrice = tierPrices.hd;
-  const activePriceValue = resolveStoryboardVisiblePrice({
+  const { activePrice, editOutputConfig, editPriceLabel, tierConfig, tierPriceLabels } = useStoryboardPricing({
+    locale,
+    storyboardOrientation,
+    storyboardTier,
     targetModel,
-    tierPrice: tierPrices[storyboardTier],
-    klingFirstFramePrice,
+    selectedImage,
   });
-  const activePrice = formatPrice(activePriceValue, locale);
-  const editPriceLabel = useMemo(() => formatPrice(editPrice, locale), [editPrice, locale]);
   const selectedKlingFirstFrame = useMemo(() => {
     if (!selectedImage?.url || previewingTemplate) return null;
     if (selectedRecentOutput) {
@@ -250,56 +188,6 @@ export default function StoryboardWorkspace() {
     }
     return getStoredKlingFirstFrame(selectedImageJobId, selectedImage.url);
   }, [klingFirstFrame, previewingTemplate, selectedImage?.url, selectedImageJobId, selectedRecentOutput]);
-
-  useEffect(() => {
-    if (!selectedImage?.url) {
-      setEditPrice(null);
-      return;
-    }
-
-    let active = true;
-    const selectedImageWidth = selectedImage.width ?? null;
-    const selectedImageHeight = selectedImage.height ?? null;
-    async function loadEditPrice() {
-      const response = await authFetch('/api/images/estimate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          engineId: 'gpt-image-2',
-          mode: 'i2i',
-          numImages: 1,
-          referenceImageSizes: [{ width: selectedImageWidth, height: selectedImageHeight }],
-          resolution: editOutputConfig.resolution,
-          customImageSize: editOutputConfig.customImageSize,
-          quality: editOutputConfig.quality,
-          source: STORYBOARD_EDIT_SOURCE,
-        }),
-      });
-      const payload = (await response.json().catch(() => null)) as {
-        ok?: boolean;
-        pricing?: { totalCents?: number; currency?: string };
-      } | null;
-      if (!active) return;
-      setEditPrice(
-        payload?.ok && payload.pricing?.totalCents != null
-          ? { cents: payload.pricing.totalCents, currency: payload.pricing.currency ?? 'USD' }
-          : null
-      );
-    }
-    void loadEditPrice().catch(() => {
-      if (active) setEditPrice(null);
-    });
-    return () => {
-      active = false;
-    };
-  }, [
-    selectedImage?.height,
-    selectedImage?.url,
-    selectedImage?.width,
-    editOutputConfig.customImageSize,
-    editOutputConfig.quality,
-    editOutputConfig.resolution,
-  ]);
 
   const shotPlan = useMemo(
     () =>
@@ -820,14 +708,7 @@ export default function StoryboardWorkspace() {
                           key={tier}
                           active={storyboardTier === tier}
                           label={getTierLabel(copy, tier)}
-                          price={formatPrice(
-                            resolveStoryboardVisiblePrice({
-                              targetModel,
-                              tierPrice: tierPrices[tier],
-                              klingFirstFramePrice,
-                            }),
-                            locale
-                          )}
+                          price={tierPriceLabels[tier]}
                           onClick={() => setStoryboardTier(tier)}
                         />
                       ))}
