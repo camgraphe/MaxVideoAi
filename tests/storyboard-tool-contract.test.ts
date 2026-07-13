@@ -20,6 +20,10 @@ const storyboardWorkspaceConfigPath = join(
   root,
   'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-config.ts'
 );
+const storyboardKlingStoragePath = join(
+  root,
+  'frontend/src/components/tools/storyboard/_lib/storyboard-kling-first-frame-storage.ts'
+);
 const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-copy.ts');
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
 const storyboardTargetPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
@@ -104,6 +108,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(storyboardRoutePath), true, 'storyboard tool route should exist');
   assert.equal(existsSync(storyboardWorkspacePath), true, 'storyboard workspace should be a dedicated app tool');
   assert.equal(existsSync(storyboardWorkspaceConfigPath), true, 'storyboard static config should stay colocated');
+  assert.equal(existsSync(storyboardKlingStoragePath), true, 'storyboard Kling first-frame storage should stay colocated');
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
   assert.equal(existsSync(storyboardTargetPath), true, 'storyboard target recommendation rules should stay colocated');
@@ -129,6 +134,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
   const configSource = readFileSync(storyboardWorkspaceConfigPath, 'utf8');
+  const klingStorageSource = readFileSync(storyboardKlingStoragePath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
   const targetSource = readFileSync(storyboardTargetPath, 'utf8');
   const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
@@ -153,6 +159,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
   assert.match(workspaceSource, /runImageGeneration/);
   assert.match(workspaceSource, /storyboard-workspace-config/);
+  assert.match(workspaceSource, /storyboard-kling-first-frame-storage/);
   assert.match(configSource, /STORYBOARD_STYLE_OPTIONS/);
   assert.match(configSource, /STORYBOARD_TARGET_OPTIONS/);
   assert.match(configSource, /STORYBOARD_TARGET_LOGOS/);
@@ -160,6 +167,13 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
   assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
   assert.doesNotMatch(configSource, /useState|useEffect|authFetch|localStorage/);
+  assert.match(klingStorageSource, /KLING_FIRST_FRAME_STORAGE_KEY/);
+  assert.match(klingStorageSource, /readStoredKlingFirstFrames/);
+  assert.match(klingStorageSource, /writeStoredKlingFirstFrame/);
+  assert.match(klingStorageSource, /getStoredKlingFirstFrame/);
+  assert.match(klingStorageSource, /buildKlingFirstFrameFromRecentOutput/);
+  assert.doesNotMatch(workspaceSource, /maxvideoai\.storyboard\.klingFirstFrames\.v1/);
+  assert.doesNotMatch(workspaceSource, /window\.localStorage|JSON\.parse/);
   assert.doesNotMatch(workspaceSource, /const STYLE_OPTIONS|const TARGET_OPTIONS/);
   assert.doesNotMatch(workspaceSource, /const STORYBOARD_REFERENCE_FIELD|const STORYBOARD_REFERENCE_ENGINE/);
   assert.match(workspaceSource, /STORYBOARD_SOURCE/);

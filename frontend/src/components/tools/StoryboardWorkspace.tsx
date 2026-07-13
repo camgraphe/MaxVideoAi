@@ -38,6 +38,12 @@ import {
   KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX,
   buildKlingStoryboardFirstFramePrompt,
 } from './storyboard/_lib/storyboard-first-frame';
+import {
+  buildKlingFirstFrameFromRecentOutput,
+  getStoredKlingFirstFrame,
+  writeStoredKlingFirstFrame,
+  type KlingFirstFrameState,
+} from './storyboard/_lib/storyboard-kling-first-frame-storage';
 import { resolveStoryboardVisiblePrice } from './storyboard/_lib/storyboard-price-display';
 import {
   cleanupStoryboardReferenceImage,
@@ -86,15 +92,6 @@ type StoryboardOptionalField = 'action' | 'dialogue' | 'visualNotes';
 
 type PriceValue = { cents: number; currency: string } | null;
 type PriceState = Record<StoryboardTier, PriceValue>;
-type StoryboardGeneratedImage = ImageGenerationResponse['images'][number];
-type KlingFirstFrameState = {
-  storyboardJobId: string | null;
-  storyboardUrl: string;
-  image: StoryboardGeneratedImage;
-  jobId: string | null;
-};
-
-const KLING_FIRST_FRAME_STORAGE_KEY = 'maxvideoai.storyboard.klingFirstFrames.v1';
 
 function formatPrice(value: PriceValue, locale: string): string {
   if (!value) return '...';
@@ -103,48 +100,6 @@ function formatPrice(value: PriceValue, locale: string): string {
   } catch {
     return `${value.currency} ${(value.cents / 100).toFixed(2)}`;
   }
-}
-
-function readStoredKlingFirstFrames(): Record<string, KlingFirstFrameState> {
-  if (typeof window === 'undefined') return {};
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(KLING_FIRST_FRAME_STORAGE_KEY) ?? '{}') as unknown;
-    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
-    return parsed as Record<string, KlingFirstFrameState>;
-  } catch {
-    return {};
-  }
-}
-
-function writeStoredKlingFirstFrame(frame: KlingFirstFrameState) {
-  if (!frame.storyboardJobId || typeof window === 'undefined') return;
-  const frames = readStoredKlingFirstFrames();
-  frames[frame.storyboardJobId] = frame;
-  window.localStorage.setItem(KLING_FIRST_FRAME_STORAGE_KEY, JSON.stringify(frames));
-}
-
-function getStoredKlingFirstFrame(storyboardJobId: string | null, storyboardUrl: string): KlingFirstFrameState | null {
-  if (!storyboardJobId) return null;
-  const frame = readStoredKlingFirstFrames()[storyboardJobId];
-  if (!frame?.image?.url || frame.storyboardUrl !== storyboardUrl) return null;
-  return frame;
-}
-
-function buildKlingFirstFrameFromRecentOutput(output: StoryboardRecentOutput): KlingFirstFrameState | null {
-  const firstFrame = output.klingFirstFrame;
-  if (!firstFrame?.url) return null;
-  return {
-    storyboardJobId: output.jobId,
-    storyboardUrl: output.url,
-    image: {
-      url: firstFrame.url,
-      thumbUrl: firstFrame.thumbUrl ?? firstFrame.previewUrl ?? null,
-      width: firstFrame.width,
-      height: firstFrame.height,
-      mimeType: firstFrame.mime,
-    },
-    jobId: firstFrame.jobId,
-  };
 }
 
 export default function StoryboardWorkspace() {
