@@ -61,6 +61,7 @@ export type {
 } from './byteplus-modelark-payload';
 export {
   getBytePlusUserSafeErrorMessage,
+  getBytePlusUserSafeTaskFailureMessage,
   normalizeBytePlusTask,
   scrubBytePlusError,
 } from './byteplus-modelark-response';

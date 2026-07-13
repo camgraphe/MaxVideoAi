@@ -7,9 +7,12 @@ const SEEDANCE_REFERENCE_REFUND_REASON = 'Reference image was blocked by Seedanc
 const SEEDANCE_START_FAILURE_MESSAGE =
   'Seedance could not start this render. Remove recognizable people from reference images, reduce media complexity, or retry in a few moments.';
 const SEEDANCE_START_REFUND_REASON = 'Seedance render could not start.';
+const SEEDANCE_TASK_FAILURE_MESSAGE =
+  'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.';
+const SEEDANCE_TASK_REFUND_REASON = 'Seedance started the render but did not deliver a video.';
 
 type FailureCategory = 'busy' | 'no_output' | 'safety' | 'start' | 'storage' | 'timeout' | 'unsupported';
-type SeedanceSpecificFailure = 'reference_safety' | 'start';
+type SeedanceSpecificFailure = 'reference_safety' | 'start' | 'task_output';
 
 const PROVIDER_OR_INTERNAL_PATTERN =
   /\b(?:fal(?:\.ai)?|fail\.ai|byteplus|modelark|google\s+vertex|vertex\s+veo|google\s+veo\s+direct|kling\s+direct|provider|providers|provider_job_id|request_id|webhook|polling|api\s*key)\b/i;
@@ -133,6 +136,9 @@ function classifySeedanceSpecificFailure(message: string | null): SeedanceSpecif
   if (!message) return null;
   const lower = message.toLowerCase();
   if (!lower.includes('seedance')) return null;
+  if (lower.includes('started this render') && lower.includes('did not deliver a video')) {
+    return 'task_output';
+  }
   if (containsAny(lower, ['could not start', 'start failed', 'request failed', 'sync failed'])) {
     return 'start';
   }
@@ -218,6 +224,7 @@ export function toUserFacingFailureMessage(message: string | null | undefined): 
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
   if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_FAILURE_MESSAGE;
   if (seedanceFailure === 'start') return SEEDANCE_START_FAILURE_MESSAGE;
+  if (seedanceFailure === 'task_output') return SEEDANCE_TASK_FAILURE_MESSAGE;
   const category = classifyFailure(normalized);
   if (category) return messageForCategory(category);
   if (normalized && canReuseMessage(normalized)) return normalized;
@@ -229,6 +236,7 @@ export function toUserFacingRefundReason(message: string | null | undefined): st
   const seedanceFailure = classifySeedanceSpecificFailure(normalized);
   if (seedanceFailure === 'reference_safety') return SEEDANCE_REFERENCE_REFUND_REASON;
   if (seedanceFailure === 'start') return SEEDANCE_START_REFUND_REASON;
+  if (seedanceFailure === 'task_output') return SEEDANCE_TASK_REFUND_REASON;
   const category = classifyFailure(normalized);
   if (category) return refundReasonForCategory(category);
   if (normalized && canReuseMessage(normalized)) return normalized;

@@ -98,7 +98,12 @@ export function scrubBytePlusError(error: unknown): string {
     .replace(/([?&](?:X-Amz-Signature|Signature|Expires|X-Amz-Credential)=)[^&\s]+/gi, '$1[redacted]');
 }
 
-export function getBytePlusUserSafeErrorMessage(providerMessage: string): string {
+const SEEDANCE_START_FAILURE_MESSAGE =
+  'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.';
+const SEEDANCE_TASK_FAILURE_MESSAGE =
+  'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.';
+
+function getBytePlusUserSafeFailureMessage(providerMessage: string, fallbackMessage: string): string {
   const normalized = providerMessage.toLowerCase();
   if (
     normalized.includes('real person') ||
@@ -134,7 +139,15 @@ export function getBytePlusUserSafeErrorMessage(providerMessage: string): string
   ) {
     return 'The selected Seedance prompt, media, or settings were not accepted. Adjust the reference media or settings and try again.';
   }
-  return 'Seedance could not start this render. Check that reference images do not show recognizable people, reduce reference complexity, then retry.';
+  return fallbackMessage;
+}
+
+export function getBytePlusUserSafeErrorMessage(providerMessage: string): string {
+  return getBytePlusUserSafeFailureMessage(providerMessage, SEEDANCE_START_FAILURE_MESSAGE);
+}
+
+export function getBytePlusUserSafeTaskFailureMessage(providerMessage: string | null | undefined): string {
+  return getBytePlusUserSafeFailureMessage(providerMessage ?? '', SEEDANCE_TASK_FAILURE_MESSAGE);
 }
 
 export async function parseJsonResponse(response: Response): Promise<BytePlusTaskResponse> {

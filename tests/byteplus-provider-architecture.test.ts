@@ -7,6 +7,7 @@ import {
   applyBytePlusSeedanceRuntimeOptions,
   buildBytePlusSeedancePayload,
   getBytePlusUserSafeErrorMessage,
+  getBytePlusUserSafeTaskFailureMessage,
   getBytePlusSeedanceAllowedResolutions,
   shouldRoutePublicSeedanceFastToBytePlus,
   shouldRoutePublicSeedanceMiniToBytePlus,
@@ -100,6 +101,16 @@ test('BytePlus ModelArk non-safety start failures stay specific without provider
     getBytePlusUserSafeErrorMessage('Quota exceeded: resource pack exhausted.'),
     'The render queue is temporarily busy. Please retry in a few moments.'
   );
+});
+
+test('BytePlus ModelArk task failures say when a Seedance render stopped after starting', () => {
+  const message = getBytePlusUserSafeTaskFailureMessage('Request failed.');
+
+  assert.equal(
+    message,
+    'Seedance started this render but did not deliver a video. Retry with a simpler prompt or fewer reference assets.'
+  );
+  assert.doesNotMatch(message, /BytePlus|ModelArk|request failed/i);
 });
 
 test('BytePlus Mini runtime uses Mini caps and input-specific accounting rates', () => {

@@ -14,6 +14,7 @@ import {
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   isBytePlusModelArkEnabled,
+  getBytePlusUserSafeTaskFailureMessage,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -255,7 +256,7 @@ export async function runBytePlusPoll() {
       }
 
       if (task.status === 'failed') {
-        await markJobFailed(job, task.message ?? 'The render failed before producing a usable output.', task.rawStatus);
+        await markJobFailed(job, getBytePlusUserSafeTaskFailureMessage(task.message), task.rawStatus);
         updates += 1;
         continue;
       }
