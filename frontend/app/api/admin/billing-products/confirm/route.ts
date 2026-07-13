@@ -17,6 +17,7 @@ function pickProposal(value: unknown): BillingProductChangeProposal {
     : {};
   return {
     operation: proposal.operation,
+    targetId: proposal.targetId,
     productKey: proposal.productKey,
     label: proposal.label,
     currency: proposal.currency,

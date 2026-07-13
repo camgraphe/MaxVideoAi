@@ -149,6 +149,7 @@ export function AdminBillingProductsView() {
         title="Immutable billing product history"
         description="Rollback derives historical state on the server and always opens a fresh impact preview."
         emptyLabel="No billing product changes have been recorded."
+        loading={controller.historyLoading}
         locked={controller.interactionLocked}
         onPreviewRollback={controller.previewRollback}
       />

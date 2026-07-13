@@ -17,6 +17,7 @@ function pickProposal(value: unknown): MembershipChangeProposal {
     : {};
   return {
     operation: proposal.operation,
+    targetId: proposal.targetId,
     tiers: proposal.tiers,
     eventId: proposal.eventId,
   } as MembershipChangeProposal;

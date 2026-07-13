@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic';
 function pickProposal(payload: Record<string, unknown>): MembershipChangeProposal {
   return {
     operation: payload.operation,
+    targetId: payload.targetId,
     tiers: payload.tiers,
     eventId: payload.eventId,
   } as MembershipChangeProposal;

@@ -14,6 +14,7 @@ export const dynamic = 'force-dynamic';
 function pickProposal(value: Record<string, unknown>): BillingProductChangeProposal {
   return {
     operation: value.operation,
+    targetId: value.targetId,
     productKey: value.productKey,
     label: value.label,
     currency: value.currency,

@@ -278,6 +278,37 @@ test('rollback derives the proposal from immutable event previousState and ignor
   assert.ok(harness.events.some((event) => event.id === sourceEvent.id));
 });
 
+test('rollback of a policy create event restores its null previous state by deleting the created override', async () => {
+  const current = policyRule('db-created');
+  const sourceEvent: PricingChangeEvent = {
+    id: 'event-create',
+    domain: 'policy_rule',
+    operation: 'create',
+    targetId: current.id,
+    actorId,
+    previousState: null,
+    nextState: current,
+    previewSummary: {},
+    affectedScenarioIds: [],
+    createdAt: '2026-07-12T00:00:00.000Z',
+  };
+  const harness = createMemoryHarness([current], [sourceEvent]);
+
+  const proposal: PricingPolicyChangeProposal = {
+    operation: 'rollback',
+    targetId: current.id,
+    eventId: sourceEvent.id,
+  };
+  const preview = await previewPricingPolicyChange(proposal, harness.deps);
+  assert.equal(preview.proposedState, null);
+  assert.equal(preview.operation, 'rollback');
+
+  await confirmPricingPolicyChange(proposal, preview.previewFingerprint, actorId, harness.deps);
+  assert.equal(harness.rules.length, 0);
+  assert.equal(harness.events[0]?.operation, 'rollback');
+  assert.ok(harness.events.some((event) => event.id === sourceEvent.id));
+});
+
 test('rollback rejects a target identifier that does not match immutable event history', async () => {
   const current = policyRule('db-kling');
   const sourceEvent: PricingChangeEvent = {

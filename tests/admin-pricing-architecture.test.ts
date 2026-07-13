@@ -100,7 +100,12 @@ test('shared immutable history renders operation, actor, time, target, and previ
   assert.match(source, /deltaCents/);
   assert.match(source, /minimumDeltaCents/);
   assert.match(source, /maximumDeltaCents/);
-  assert.match(source, /event\.previousState\s*\?/);
+  assert.match(source, /loading:\s*boolean/);
+  assert.match(source, /AdminLoadingPanel/);
+  assert.match(source, /event\.domain\s*===\s*'policy_rule'/);
+  assert.match(source, /event\.operation\s*===\s*'create'/);
+  assert.doesNotMatch(source, /event\.previousState\s*\?/);
+  assert.match(source, /aria-label=\{`Preview rollback for \$\{event\.targetId\} \(\$\{event\.operation\}, event \$\{event\.id\}\)`\}/);
   assert.match(source, /Preview rollback/);
 });
 
@@ -109,6 +114,7 @@ test('policy cockpit uses shared history and rollback sends identifiers only', (
   const controllerSource = readOrEmpty(controllerPath);
   assert.match(cockpitSource, /AdminPricingHistory/);
   assert.match(cockpitSource, /onPreviewRollback=\{controller\.previewRollback\}/);
+  assert.match(cockpitSource, /loading=\{controller\.historyLoading\}/);
   assert.match(controllerSource, /operation:\s*'rollback',\s*targetId:\s*event\.targetId,\s*eventId:\s*event\.id/);
   assert.doesNotMatch(controllerSource, /previousState|nextState/);
 });
@@ -239,6 +245,12 @@ test('pricing E2E treats render timeouts as failures, never empty inventory skip
     /async function waitForPricingPolicyState[\s\S]*?return 'timeout' as const\s*;\s*\}/
   );
   assert.match(e2eSource, /if \(pricingState === 'timeout'\) \{\s*throw new Error/);
+  const flow = e2eSource.match(/test\('pricing policy filters[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
+  const state = e2eSource.match(/async function waitForPricingPolicyState[\s\S]*?\n\}/)?.[0] ?? '';
+  assert.match(flow, /getByTestId\('pricing-policy-inventory'\)/);
+  assert.doesNotMatch(flow, /page\.locator\('tbody tr'\)/);
+  assert.match(state, /getByTestId\('pricing-policy-inventory'\)/);
+  assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
 });
 
 test('cockpit view model preserves an inherited database override selector in update proposals', () => {

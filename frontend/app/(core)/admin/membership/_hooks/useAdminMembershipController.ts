@@ -171,6 +171,7 @@ export function useAdminMembershipController() {
     confirming,
     interactionLocked,
     loading: inventoryQuery.isLoading,
+    historyLoading: historyQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
     error: error ?? fetchError,
     notice,

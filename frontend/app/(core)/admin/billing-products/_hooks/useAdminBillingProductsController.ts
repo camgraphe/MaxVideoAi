@@ -213,6 +213,7 @@ export function useAdminBillingProductsController() {
     interactionLocked,
     refreshLocked,
     loading: inventoryQuery.isLoading,
+    historyLoading: historyQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
     error: error ?? (postCommitWarning ? null : fetchError),
     notice,

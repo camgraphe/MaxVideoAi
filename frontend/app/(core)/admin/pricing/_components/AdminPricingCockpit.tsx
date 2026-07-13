@@ -99,6 +99,7 @@ export function AdminPricingCockpit() {
         title="Immutable pricing policy history"
         description="Rollback derives historical state on the server and always opens a fresh impact preview."
         emptyLabel="No pricing policy change has been recorded yet."
+        loading={controller.historyLoading}
         locked={controller.interactionLocked}
         onPreviewRollback={controller.previewRollback}
       />

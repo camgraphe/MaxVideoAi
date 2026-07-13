@@ -58,50 +58,52 @@ export function PricingPolicyTable({
         </label>
       </AdminFilterBar>
 
-      <AdminDataTable tone="muted" tableClassName="min-w-[920px]">
-        <thead className="bg-surface">
-          <tr className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
-            <th className="px-4 py-3 font-semibold">Selector</th>
-            <th className="px-4 py-3 font-semibold">Source</th>
-            <th className="px-4 py-3 font-semibold">Margin</th>
-            <th className="px-4 py-3 font-semibold">Flat</th>
-            <th className="px-4 py-3 font-semibold">Profile</th>
-            <th className="px-4 py-3 font-semibold">Representative total</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => {
-            const key = pricingPolicyRowKey(row);
-            const rule = row.databaseOverride ?? row.versionedRule;
-            const selected = selectedKey === key;
-            return (
-              <tr
-                key={key}
-                data-selected={selected ? 'true' : undefined}
-                aria-disabled={disabled}
-                className={`${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-bg'} border-t border-hairline transition ${selected ? 'bg-info-bg' : ''}`}
-                onClick={() => { if (!disabled) onSelect(key); }}
-              >
-                <td className="px-4 py-3">
-                  <button type="button" disabled={disabled} className="text-left" onClick={() => onSelect(key)}>
-                    <span className="block font-medium text-text-primary">{formatPricingSelector(row.selector)}</span>
-                    <span className="mt-1 block font-mono text-[11px] text-text-muted">{rule?.id ?? 'No rule'}</span>
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-text-secondary">
-                  {row.databaseOverride ? 'Database override' : 'Versioned policy'}
-                </td>
-                <td className="px-4 py-3 text-text-secondary">{rule ? formatPercentRatio(rule.marginPercent) : '—'}</td>
-                <td className="px-4 py-3 text-text-secondary">{rule ? formatUsdCents(rule.marginFlatCents) : '—'}</td>
-                <td className="px-4 py-3 text-text-secondary">{rule?.compatibilityProfile ?? 'standard'}</td>
-                <td className="px-4 py-3 text-text-secondary">
-                  {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].totalCents) : 'Unavailable'}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </AdminDataTable>
+      <div data-testid="pricing-policy-inventory">
+        <AdminDataTable tone="muted" tableClassName="min-w-[920px]">
+          <thead className="bg-surface">
+            <tr className="text-[11px] uppercase tracking-[0.16em] text-text-muted">
+              <th className="px-4 py-3 font-semibold">Selector</th>
+              <th className="px-4 py-3 font-semibold">Source</th>
+              <th className="px-4 py-3 font-semibold">Margin</th>
+              <th className="px-4 py-3 font-semibold">Flat</th>
+              <th className="px-4 py-3 font-semibold">Profile</th>
+              <th className="px-4 py-3 font-semibold">Representative total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const key = pricingPolicyRowKey(row);
+              const rule = row.databaseOverride ?? row.versionedRule;
+              const selected = selectedKey === key;
+              return (
+                <tr
+                  key={key}
+                  data-selected={selected ? 'true' : undefined}
+                  aria-disabled={disabled}
+                  className={`${disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer hover:bg-bg'} border-t border-hairline transition ${selected ? 'bg-info-bg' : ''}`}
+                  onClick={() => { if (!disabled) onSelect(key); }}
+                >
+                  <td className="px-4 py-3">
+                    <button type="button" disabled={disabled} className="text-left" onClick={() => onSelect(key)}>
+                      <span className="block font-medium text-text-primary">{formatPricingSelector(row.selector)}</span>
+                      <span className="mt-1 block font-mono text-[11px] text-text-muted">{rule?.id ?? 'No rule'}</span>
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-text-secondary">
+                    {row.databaseOverride ? 'Database override' : 'Versioned policy'}
+                  </td>
+                  <td className="px-4 py-3 text-text-secondary">{rule ? formatPercentRatio(rule.marginPercent) : '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary">{rule ? formatUsdCents(rule.marginFlatCents) : '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary">{rule?.compatibilityProfile ?? 'standard'}</td>
+                  <td className="px-4 py-3 text-text-secondary">
+                    {row.representativeQuotes[0] ? formatUsdCents(row.representativeQuotes[0].totalCents) : 'Unavailable'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </AdminDataTable>
+      </div>
     </div>
   );
 }

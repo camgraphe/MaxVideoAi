@@ -57,6 +57,17 @@ test('membership routes are thin, node-only, authorized, and delegate all commer
   }
 });
 
+test('membership preview and confirm adapters preserve rollback target identity', () => {
+  const controller = read(controllerPath);
+  const service = read(membershipServicePath);
+  assert.match(controller, /targetId:\s*event\.targetId/);
+  assert.match(service, /requiredText\(proposal\.targetId,\s*'targetId'\)/);
+  for (const path of [routePaths[1]!, routePaths[2]!]) {
+    const source = read(path);
+    assert.match(source, /targetId:\s*(?:payload|proposal)\.targetId/, `${path} must preserve rollback targetId`);
+  }
+});
+
 test('membership controller enforces preview-fingerprint-confirm and refreshes only after commit', () => {
   const source = read(controllerPath);
   assert.match(source, /useSWR[^\n]*MEMBERSHIP_INVENTORY_ENDPOINT/);
@@ -76,6 +87,7 @@ test('membership renders the shared immutable history surface', () => {
   assert.match(source, /AdminPricingHistory/);
   assert.match(source, /onPreviewRollback=\{controller\.previewRollback\}/);
   assert.doesNotMatch(source, /controller\.history\.map/);
+  assert.match(source, /loading=\{controller\.historyLoading\}/);
 });
 
 test('membership refresh replaces the draft from the resolved SWR inventory without exposing cached values', () => {
@@ -128,6 +140,17 @@ test('billing product routes are thin, node-only, authorized, and inventory is G
   assert.doesNotMatch(read(billingProductRoutePaths[0]!), /export async function PUT/);
 });
 
+test('billing product preview and confirm adapters preserve rollback target identity', () => {
+  const controller = read(billingProductsControllerPath);
+  const service = read(billingProductServicePath);
+  assert.match(controller, /targetId:\s*event\.targetId/);
+  assert.match(service, /requiredText\(proposal\.targetId,\s*'targetId'\)/);
+  for (const path of [billingProductRoutePaths[1]!, billingProductRoutePaths[2]!]) {
+    const source = read(path);
+    assert.match(source, /targetId:\s*(?:value|proposal)\.targetId/, `${path} must preserve rollback targetId`);
+  }
+});
+
 test('billing product controller requires preview fingerprint before confirm and refreshes after commit', () => {
   const source = read(billingProductsControllerPath);
   assert.match(source, /useSWR[^\n]*BILLING_PRODUCTS_INVENTORY_ENDPOINT/);
@@ -147,6 +170,7 @@ test('billing products render the shared immutable history surface', () => {
   assert.match(source, /AdminPricingHistory/);
   assert.match(source, /onPreviewRollback=\{controller\.previewRollback\}/);
   assert.doesNotMatch(source, /controller\.history\.map/);
+  assert.match(source, /loading=\{controller\.historyLoading\}/);
 });
 
 test('commercial inventory routes expose no direct PUT or DELETE mutations', () => {

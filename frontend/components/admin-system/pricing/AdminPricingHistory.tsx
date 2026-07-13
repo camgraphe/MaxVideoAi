@@ -3,6 +3,7 @@
 import type { PricingChangeEvent } from '@/lib/admin/pricing-change-contract';
 import { Button } from '@/components/ui/Button';
 import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptyState';
+import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
 import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 
@@ -11,9 +12,15 @@ type AdminPricingHistoryProps = {
   title: string;
   description: string;
   emptyLabel: string;
+  loading: boolean;
   locked: boolean;
   onPreviewRollback: (event: PricingChangeEvent) => void;
 };
+
+function isRestorable(event: PricingChangeEvent): boolean {
+  if (event.previousState !== null) return true;
+  return event.domain === 'policy_rule' && event.operation === 'create';
+}
 
 function formatDelta(event: PricingChangeEvent): string {
   const minimumDeltaCents = event.previewSummary.minimumDeltaCents;
@@ -38,12 +45,15 @@ export function AdminPricingHistory({
   title,
   description,
   emptyLabel,
+  loading,
   locked,
   onPreviewRollback,
 }: AdminPricingHistoryProps) {
   return (
     <AdminSection title={title} description={description}>
-      {events.length ? (
+      {loading ? (
+        <AdminLoadingPanel rows={3} />
+      ) : events.length ? (
         <AdminDataTable tableClassName="min-w-[900px]">
           <thead>
             <tr className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
@@ -64,8 +74,14 @@ export function AdminPricingHistory({
                 <td className="px-4 py-3 font-mono text-xs text-text-muted">{event.actorId}</td>
                 <td className="px-4 py-3 text-text-secondary">{formatDelta(event)}</td>
                 <td className="px-4 py-3">
-                  {event.previousState ? (
-                    <Button type="button" variant="outline" onClick={() => onPreviewRollback(event)} disabled={locked}>
+                  {isRestorable(event) ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      aria-label={`Preview rollback for ${event.targetId} (${event.operation}, event ${event.id})`}
+                      onClick={() => onPreviewRollback(event)}
+                      disabled={locked}
+                    >
                       Preview rollback
                     </Button>
                   ) : (

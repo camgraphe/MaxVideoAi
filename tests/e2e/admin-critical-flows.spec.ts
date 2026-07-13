@@ -105,14 +105,15 @@ test.describe('admin critical flows', () => {
     if (pricingState === 'empty') {
       test.skip(true, 'requires canonical pricing inventory data');
     }
-    const firstRow = page.locator('tbody tr').first();
+    const inventoryTable = page.getByTestId('pricing-policy-inventory');
+    const firstRow = inventoryTable.locator('tbody tr').first();
     await firstRow.click();
 
     const engineInput = page.getByLabel('Engine');
     const engine = await engineInput.inputValue();
     if (engine) {
       await page.getByLabel('Search policy selectors').fill(engine);
-      await expect(page.locator('tbody tr').first()).toContainText(engine);
+      await expect(inventoryTable.locator('tbody tr').first()).toContainText(engine);
       await page.getByLabel('Search policy selectors').fill('');
     }
 
@@ -206,12 +207,13 @@ async function waitForUserDirectoryState(page: Page) {
 
 async function waitForPricingPolicyState(page: Page) {
   const deadline = Date.now() + 10_000;
+  const inventoryTable = page.getByTestId('pricing-policy-inventory');
 
   while (Date.now() < deadline) {
     if (await page.getByText(/Unable to load pricing policy|database is unavailable/i).first().isVisible().catch(() => false)) {
       return 'unavailable' as const;
     }
-    if ((await page.locator('tbody tr').count()) > 0) {
+    if ((await inventoryTable.locator('tbody tr').count()) > 0) {
       return 'rows' as const;
     }
     if (await page.getByText('No canonical pricing policy rows are available.').isVisible().catch(() => false)) {
