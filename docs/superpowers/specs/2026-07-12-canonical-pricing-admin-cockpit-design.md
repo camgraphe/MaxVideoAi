@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: implemented and repository-verified; configured-database acceptance pending
+Status: implemented, repository-verified, and operationally accepted on an isolated database
 
 ## Context
 
@@ -18,7 +18,7 @@ The current rule editor is also incomplete relative to `PricingPolicyRule`. It c
 
 Implementation note (2026-07-13): the three-domain split, transactional preview/confirmation services, shared immutable history, previewed rollback, canonical navigation, and obsolete-flow deletion described below are implemented. The paragraphs above document the pre-implementation state that motivated the design.
 
-Verification note (2026-07-13): repository checks pass with 2,084 tests, including 153 focused admin/pricing tests; the billing baseline remains 178 rows, the public baseline remains 492 rows, and the audit reports 178 matches, 0 mismatches, and 4 compatibility profiles. Lint, public-exposure checks, TypeScript, architecture audit, production build, the public pricing route, workspace preflight, and image estimate also pass. This worktree has no `DATABASE_URL`, Supabase runtime credentials, local admin, or isolated test database, so authenticated inventory/preview/cancel and isolated confirm/history/stale/rollback smoke steps were not run. No operational database was mutated. Operational closure requires those remaining smoke steps in an explicitly isolated configured environment.
+Verification note (2026-07-13): repository checks pass with 2,091 tests; the billing baseline remains 178 rows, the public baseline remains 492 rows, and the audit reports 178 matches, 0 mismatches, and 4 compatibility profiles. Lint, public-exposure checks, TypeScript, architecture audit, production build, the public pricing route, workspace preflight, and image estimate also pass. Authenticated browser smoke passed for all three admin domains against a disposable local PostgreSQL database. Each domain completed confirmation, immutable-history, stale-fingerprint rejection, rollback, and strict state-restoration checks. Database-unavailable confirmation returned explicit HTTP 503 errors for all three domains, and the shared PostgreSQL pool handled the idle-client disconnect without an uncaught exception. No production database or authored commercial value was changed.
 
 ## Goals
 

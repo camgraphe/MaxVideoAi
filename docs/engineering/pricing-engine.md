@@ -2,7 +2,7 @@
 
 ## Current status
 
-The pricing parity foundation, billing migration, and public projection migration are complete. The three-domain admin cockpit implementation and repository verification are complete; authenticated confirmation/history/rollback smoke testing against a configured isolated database remains an environment acceptance step. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
+The pricing parity foundation, billing migration, and public projection migration are complete. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
 The commercial values and pricing results remain unchanged: no price, margin, surcharge, membership discount, currency, rounding outcome, wallet debit, direct-payment comparison, public display, structured-data offer, or seeded product value changed. The admin mutation workflow changed from direct mutation to a server-owned `preview → explicit confirmation → transactional apply` protocol. The public batch added one named rounding-only compatibility profile after the frozen fixture demonstrated the historical behavior it preserves.
 
@@ -40,10 +40,10 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/server/tools/angle.ts` | Angle tool billing | Canonical fixed-product quote | Stable consumer |
 | `frontend/src/server/tools/background-removal.ts` | Background-removal billing | Canonical fixed-product and dynamic quote | Stable consumer |
 | `frontend/src/server/tools/upscale.ts` | Upscale billing | Canonical fixed-product and dynamic quote | Stable consumer |
-| `frontend/app/(core)/admin/pricing` | Canonical engine-policy inventory, preview, confirmation, history, and rollback | Implemented/repository-verified; configured-DB acceptance pending | Stable policy-domain owner |
-| `frontend/app/(core)/admin/membership` | Membership threshold and discount preview, confirmation, history, and rollback | Implemented/repository-verified; configured-DB acceptance pending | Stable membership-domain owner |
-| `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Implemented/repository-verified; configured-DB acceptance pending | Stable billing-product-domain owner |
-| `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads and preview-fingerprint-confirm mutations | Implemented/repository-verified; configured-DB acceptance pending | Stable thin route adapters |
+| `frontend/app/(core)/admin/pricing` | Canonical engine-policy inventory, preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable policy-domain owner |
+| `frontend/app/(core)/admin/membership` | Membership threshold and discount preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable membership-domain owner |
+| `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Operationally accepted on isolated DB | Stable billing-product-domain owner |
+| `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads and preview-fingerprint-confirm mutations | Operationally accepted on isolated DB | Stable thin route adapters |
 
 ## Policy precedence
 
@@ -112,6 +112,12 @@ The admin navigation exposes exactly three commercial owners: `Pricing policy`, 
 Routing fields are excluded from commercial proposals: `vendorAccountId` is read-only context, an update preserves the stored routing value, and a new policy rule cannot create a routing override. Rollback creates a new immutable event and is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.
 
 Read-only public quote resolution may fall back to validated versioned policy when the database is unavailable. Admin inventory surfaces must show the outage, while every database-unavailable admin mutation fails explicitly and leaves policy, history, and caches unchanged.
+
+## Operational acceptance record
+
+On 2026-07-13, the three commercial domains were exercised through authenticated localhost admin routes against a disposable PostgreSQL database containing migration 27. Inventory loaded 49 policy selectors, the three canonical membership tiers, and all 13 referenced active billing products with no missing product key. Browser preview/cancel and post-history render smoke tests passed for `/admin/pricing`, `/admin/membership`, and `/admin/billing-products` without client errors.
+
+Each domain then completed a controlled `preview → confirmation → history → rollback` cycle. A deliberately stale fingerprint was rejected with HTTP 409 before persistence, both the update and rollback remained in immutable history with the authenticated actor, and the final state was strictly restored to its pre-test value. With PostgreSQL stopped, all three confirmation routes rejected the mutation with `database_unavailable` and HTTP 503; the database was then restarted successfully. The acceptance database was local and disposable. No production database, authored pricing policy, frozen parity fixture, or applied commercial value was changed.
 
 ## Safe price-change runbook
 

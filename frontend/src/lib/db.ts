@@ -26,7 +26,15 @@ export function getDb() {
         // Ignore stale pool shutdown failures.
       });
     }
-    pool = new Pool({ connectionString });
+    const nextPool = new Pool({ connectionString });
+    nextPool.on('error', (error) => {
+      const code = (error as Error & { code?: unknown }).code;
+      console.error('[db] Database pool idle client error', {
+        message: error.message,
+        ...(typeof code === 'string' ? { code } : {}),
+      });
+    });
+    pool = nextPool;
     activeConnectionString = connectionString;
   }
   return pool;

@@ -115,12 +115,14 @@ test('pricing engineering guide records completed canonical pricing authorities 
   }
 });
 
-test('pricing engineering guide reports admin readiness without overstating configured-database acceptance', () => {
+test('pricing engineering guide records completed isolated-database admin acceptance', () => {
   const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
-  const pendingStatus = 'Implemented/repository-verified; configured-DB acceptance pending';
+  const acceptedStatus = 'Operationally accepted on isolated DB';
 
-  assert.equal(guide.split(pendingStatus).length - 1, 4);
-  assert.doesNotMatch(guide, /\| Operational \|/);
+  assert.equal(guide.split(acceptedStatus).length - 1, 4);
+  assert.match(guide, /stale[^.]*409/i);
+  assert.match(guide, /database_unavailable[^.]*503/i);
+  assert.match(guide, /final state[^.]*restored/i);
   assert.match(guide, /commercial values and pricing results remain unchanged/i);
   assert.match(guide, /admin mutation workflow changed from direct mutation to[^.]*preview[^.]*confirmation/i);
   assert.doesNotMatch(guide, /did not change[^.]*admin mutation/i);
