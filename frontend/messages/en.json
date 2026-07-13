@@ -5929,10 +5929,10 @@
           {
             "title": "Give a product shot a hero viewpoint",
             "body": "Turn a clean catalog frame into a more dimensional product image without changing the product, styling, or scene.",
-            "sourceLabel": "Straight-on source",
-            "outputLabel": "Selected angle",
+            "sourceLabel": "Front view · 0°",
+            "outputLabel": "Three-quarter · 45°",
             "sourceAlt": "Straight-on studio product image of black headphones on a pedestal.",
-            "outputAlt": "Alternate camera angle generated from the same black headphones product image."
+            "outputAlt": "Three-quarter camera angle generated from the same black headphones product image."
           },
           {
             "title": "Test coverage before the storyboard is locked",

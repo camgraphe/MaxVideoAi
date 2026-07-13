@@ -5964,10 +5964,10 @@
           {
             "title": "Donner un angle hero à un packshot produit",
             "body": "Transformez un visuel catalogue propre en image produit plus dimensionnelle sans changer le produit, le styling ni la scène.",
-            "sourceLabel": "Source de face",
-            "outputLabel": "Angle retenu",
+            "sourceLabel": "Vue de face · 0°",
+            "outputLabel": "Trois-quarts · 45°",
             "sourceAlt": "Photo studio de face d'un casque noir posé sur un socle.",
-            "outputAlt": "Angle de caméra alternatif généré depuis la même image de casque noir."
+            "outputAlt": "Vue caméra trois-quarts générée depuis la même image de casque noir."
           },
           {
             "title": "Tester la couverture avant de verrouiller le storyboard",

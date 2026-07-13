@@ -14,7 +14,7 @@ export const ANGLE_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/angle-workspace.pn
 export const ANGLE_INTENT_EXAMPLE_ASSETS = [
   {
     source: '/assets/tools/angle-example-product-source.jpeg',
-    output: '/assets/tools/angle-example-product-output.webp',
+    output: '/assets/tools/angle-example-product-output.jpeg',
   },
   {
     source: '/assets/tools/angle-example-storyboard-source.webp',

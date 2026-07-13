@@ -5956,10 +5956,10 @@
           {
             "title": "Dar a un producto un ángulo protagonista",
             "body": "Convierte una toma limpia de catálogo en una imagen de producto más dimensional sin cambiar el producto, el estilo ni la escena.",
-            "sourceLabel": "Fuente frontal",
-            "outputLabel": "Ángulo elegido",
+            "sourceLabel": "Vista frontal · 0°",
+            "outputLabel": "Tres cuartos · 45°",
             "sourceAlt": "Foto de estudio frontal de unos auriculares negros sobre un pedestal.",
-            "outputAlt": "Ángulo de cámara alternativo generado desde la misma imagen de auriculares negros."
+            "outputAlt": "Vista de cámara en tres cuartos generada desde la misma imagen de auriculares negros."
           },
           {
             "title": "Probar cobertura antes de cerrar el storyboard",
