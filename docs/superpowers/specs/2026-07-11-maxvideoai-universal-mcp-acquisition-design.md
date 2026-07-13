@@ -2,7 +2,7 @@
 
 ## Status
 
-Validated conversational design, ready for written review before implementation planning.
+Validated conversational and visual design, ready for written review before implementation planning.
 
 This document contains no delivery dates. It defines scope, architecture, safety, acquisition, SEO/GEO, measurement, and release gates.
 
@@ -401,6 +401,72 @@ Errors must not expose stack traces, SQL, provider secrets, internal account-ris
 
 ## SEO and GEO Strategy
 
+### Prospect-facing message hierarchy
+
+The public acquisition pages lead with the outcome, not the protocol. In the first two visible screens, use the language of a prospective creator:
+
+- turn a brief into a usable prompt;
+- prepare or generate reference images;
+- compare suitable AI video models;
+- choose the least expensive route that satisfies the brief;
+- see the price before generation;
+- generate and continue the result in MaxVideoAI.
+
+Do not lead with `MCP`, OAuth, scopes, endpoints, tool names, staging, or internal credit mechanics. The term `MCP` remains present in the page title, explanatory content, installation section, and technical documentation so the page owns the relevant search intent without making the protocol the value proposition.
+
+The approved primary hero copy is:
+
+> Turn your brief into the right model, prompt and budget.
+
+The supporting copy explains that the user can start in Claude or Codex, shape the idea, prepare reference images, compare the strongest suitable models, and see what each option will cost before MaxVideoAI generates it. The visible trust labels are:
+
+- `FIRST VIDEO INCLUDED`;
+- `LOW-COST MODELS FIRST`;
+- `PRICE BEFORE YOU GENERATE`.
+
+The page title, metadata, opening paragraph, section headings, captions, and factual answer blocks must naturally include the descriptive terms omitted from the concise H1, including `AI video generator`, `Claude`, `Codex`, `text to video`, `reference images`, `AI video model`, `prompt`, `price`, and `budget`. Do not repeat keywords mechanically.
+
+### Approved visual direction
+
+The MCP acquisition page extends the existing MaxVideoAI marketing system rather than introducing a separate integration aesthetic:
+
+- light mode is the default, with the same white and pale-gray surfaces, near-black typography, thin neutral borders, restrained corner radii, and dark primary actions used by the current MaxVideoAI homepage;
+- the existing public navigation and MaxVideoAI identity remain intact;
+- Claude and Codex use their official source logos, rendered at equal optical height, with equal button dimensions, contrast, hierarchy, and placement;
+- neither client is described as the preferred or primary integration;
+- the hero is a two-column composition with proposition and equal client actions on the left and a real MaxVideoAI video output on the right;
+- the proof media includes a visible `Real MaxVideoAI output` label and an accessible caption containing the real model, mode, duration, ratio, resolution, price snapshot, and generation or verification date;
+- image and video assets must be real MaxVideoAI outputs. Placeholder artwork, approximate brand marks, synthetic testimonials, and unverified proof labels are prohibited;
+- light mode remains the default presentation, while dark mode is a complete supported variant built from the existing MaxVideoAI theme tokens rather than a separate MCP-only aesthetic.
+
+Dark-mode parity is a release requirement for every new public MCP component. The hero, client actions, trust labels, workflow strip, budget shortlist, proof-media frame, captions, documentation callouts, code blocks, focus states, and footer links must retain the same information hierarchy and interaction behavior in both themes. Use the official light or dark logo asset supplied by each brand when contrast requires it; do not recolor or approximate either mark. Proof images and videos keep their original color treatment, with theme-specific controls, labels, and overlays that remain legible without obscuring the evidence.
+
+Visual QA covers both themes at the same representative desktop and mobile viewports. It verifies text and UI contrast, borders against their surfaces, hover/focus/disabled states, selected budget options, logo parity, media controls, reduced-motion behavior, and the absence of theme flashes during initial rendering. Theme selection continues to use the site's existing control and persistence behavior.
+
+The approved above-the-fold sequence is:
+
+1. state the prompt/model/budget outcome;
+2. offer equal `Start with Claude` and `Start with Codex` actions;
+3. state that the first Seedance 2 Mini text-to-video trial is included, only when the trial feature flag and eligibility flow are live;
+4. show the three-step flow: `Describe your video` → `Compare the best low-cost routes` → `Confirm price & generate`;
+5. show a compact budget-first model shortlist directly beneath the workflow.
+
+Client actions may deep-link only when that client's installation mechanism has been verified. Otherwise, each action scrolls or routes to its factual client-specific setup guide. Public copy must not say `one click` until the corresponding installation path is proven in that host.
+
+### Budget-first model presentation
+
+The shortlist is a decision aid, not a subscription-pricing table. MaxVideoAI remains pay-as-you-go and the page must not imply recurring plans. The visual hierarchy is:
+
+1. **Included trial:** Dreamina Seedance 2.0 Mini, fixed to the approved trial preset.
+2. **Lowest paid cost:** the cheapest currently compatible public route for the requested brief.
+3. **Affordable upgrade:** a stronger route shown only when its additional capability justifies the extra cost.
+
+For the approved visual scenario, the current examples are Seedance 2 Mini as the included trial, LTX 2.3 Fast at `$0.31` for a 6-second 1080p clip, and Wan 2.6 at `$0.65` for a 5-second 720p clip. These figures are illustrative snapshots of the current public scenarios, not authored marketing constants.
+
+Production UI obtains model availability, scenario settings, currency, and displayed totals from the canonical public pricing path. It must not duplicate pricing formulas or hard-code the mockup amounts. If a model is disabled, incompatible, or no longer occupies the intended price tier, the shortlist is recomputed or the claim is hidden. Display duration, resolution, mode, audio behavior, and `from` qualifiers wherever they materially affect the comparison.
+
+The first two economic options may receive a subtle pale-blue or pale-indigo surface treatment within the existing design tokens. Do not turn the shortlist into loud pricing cards, use false discounts, strike-through prices, urgency, or savings claims without a real comparable baseline.
+
 ### Canonical intent ownership
 
 - `/mcp`: product and installation hub for MaxVideoAI MCP.
@@ -424,6 +490,7 @@ Each MCP acquisition page must be:
 - linked from relevant product, docs, pay-as-you-go, examples, and footer surfaces without sitewide over-optimization;
 - written with direct, factual answers and visible last-updated information;
 - supported by real screenshots or videos showing brief, reference generation, quote, confirmation, and final output;
+- led by a budget-first proof block showing an included trial and current low-cost routes without implying a subscription;
 - explicit about supported clients, models, trial restrictions, pricing, privacy, and limitations;
 - free of unverified API, webhook, team, shared-wallet, or workflow claims.
 
@@ -450,16 +517,16 @@ Before public promotion, reconcile the existing Docs feature flags and copy with
 
 The MCP landing page should show:
 
-1. a concise promise;
-2. supported clients;
-3. a real end-to-end demo;
-4. Connect with Codex and Connect with Claude instructions;
-5. the free Seedance Mini trial contract;
-6. model choice and exact-price confirmation;
-7. reference-image workflows;
-8. privacy, permissions, revocation, and spending controls;
-9. a compact supported-tool list;
-10. troubleshooting and support links.
+1. the approved prompt, model, and budget promise;
+2. equal Claude and Codex actions using official logos;
+3. a real MaxVideoAI output with its model, settings, cost, and date;
+4. the three-step brief, low-cost comparison, and price-confirmation flow;
+5. the free Seedance Mini trial contract and current budget-first paid alternatives;
+6. a real end-to-end demonstration of prompt and reference preparation through generation;
+7. client-specific Claude and Codex installation instructions;
+8. reference-image workflows and reusable MaxVideoAI assets;
+9. privacy, permissions, revocation, and spending controls;
+10. a compact supported-tool list, troubleshooting, and support links.
 
 Avoid claiming one-click installation until a client-specific deep link is verified. Provide copyable endpoint configuration and platform-specific instructions as the universal fallback.
 
