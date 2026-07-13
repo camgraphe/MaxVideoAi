@@ -1,6 +1,6 @@
 # Angle Orbit visual generation log
 
-Generated and audited on 2026-07-13 for the localized Angle landing page. All six published source photographs were created with the built-in ImageGen tool. All eight published transformed views were produced in the authenticated MaxVideoAI Angle workspace; no transformed view is an ImageGen substitute. The video-preparation pair was replaced after visual review while keeping the human-model use case.
+Generated and audited on 2026-07-13 for the localized Angle landing page. All six published source photographs were created with the built-in ImageGen tool. All eight published transformed views were produced in the authenticated MaxVideoAI Angle workspace; no transformed view is an ImageGen substitute. The video-preparation pair was replaced after visual review while keeping the human-model use case, and the original cinema-camera hero was later replaced with the approved two-actor dialogue coverage sequence documented below.
 
 ## Source generation
 
@@ -60,6 +60,33 @@ The original committed hero elevated and storyboard elevated outputs were explic
 | Storyboard elevated review retry 1 | FLUX Multiple Angles | 35° | 15° | 1.2 | 16,880 ms | $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/a3ccb9d9-2443-419c-b703-96732d6b7a46.webp` | Rejected at 1152 × 864 original detail: face/ear became translucent and disconnected under the hair, worsening identity and geometry. Preserved as `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/story-elevated-review-retry-1-severe-face-geometry.png`. |
 | Storyboard elevated review retry 2 | Qwen Multiple Angles | 35° | 15° | 1.2 | 9,911 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/e0906a15-a91c-4448-9c58-1c69a64fca58.webp` | Accepted at original detail: sharp anatomically coherent eyes/nose/cheeks, matching hair/beard/coat identity, complete subject, and clear elevated viewpoint. Full PNG: `.superpowers/sdd/angle-orbit/task-4-sources/angle/accepted/story-elevated-review-replacement.png`. |
 
+## Hero dialogue replacement
+
+The cinema-camera packshot was superseded on 2026-07-13 after user review. The replacement is a four-frame cinematic dialogue sequence built from one new ImageGen source and three genuine Qwen Multiple Angles transformations. The original packshot assets remain recoverable from git history; no additional public asset path was introduced.
+
+### Replacement ImageGen source
+
+Built-in ImageGen was called once with this full prompt:
+
+```text
+Use case: photorealistic-natural. Asset type: premium 4:3 landing-page hero source image demonstrating cinematic camera-angle generation through dialogue coverage. Primary request: create one coherent side-on master two-shot of two fictional adult actors in a quiet conversation, designed so later camera rotations can produce a clear field and reverse-field pair. Scene: a refined contemporary hotel bar at blue hour, warm amber practical lamps inside, large cool-blue window in the background, dark walnut and pale limestone materials, elegant but uncluttered, no signage and no other people. Actor A: adult woman seated screen-left, chin-length dark wavy hair, burnt-sienna tailored jacket over an ivory blouse, calm focused expression. Actor B: adult man seated screen-right, short salt-and-pepper hair, deep teal tailored jacket over a charcoal shirt, calm focused expression. Blocking: actors sit opposite each other at a small round dark-walnut table, bodies and faces in readable three-quarter profile, matching eyelines, Actor A remains screen-left and Actor B screen-right, hands separated and resting naturally, two identical clear water glasses only. Style: premium contemporary cinematic editorial photography, natural skin texture, restrained color grade, realistic fabrics and architecture, sophisticated human drama rather than advertising. Composition: landscape 4:3, medium-wide waist-up two-shot, both complete heads and shoulders comfortably inside face-safe margins, actors occupy about 70 percent of the frame together, enough depth behind each shoulder for later over-the-shoulder views, 50 mm cinema lens character, no exaggerated bokeh. Lighting: soft warm key light on both faces balanced with cool blue-hour window light, luminous and readable rather than dark. Constraints: exactly two fictional adult people, stable neutral seated poses, no celebrity likeness, no waiter, no crowd, no extra limbs, no merged hands, no duplicate props, no alcohol branding, no logo, no text, no watermark, no production equipment, no product packshot, no surreal geometry.
+```
+
+The accepted generated PNG is `/Users/adrienmillot/.codex/generated_images/019f5a77-03ca-7320-a5a4-a641aae33caf/exec-914f1a96-70ad-4f2e-8f8b-75d86d802db5.png`; its preserved project evidence is `.superpowers/sdd/angle-hero-dialogue/imagegen/accepted/source.png`. It is 1448 × 1086 and passed the pre-Angle audit for exactly two actors, two glasses, readable hands, matching eyelines, distinct wardrobe, no text, and face-safe 4:3 framing. The authenticated upload URL was `https://media.maxvideoai.com/user-assets/301cc489-d689-477f-94c4-0b051deda0bc/c36e5444-ea61-4fa7-81d3-6baf454e3ffa.png`.
+
+### Replacement Angle generations
+
+All attempts used Qwen Multiple Angles, safe mode, single-output generation, and the same uploaded source. The public `45` and `90` filenames remain stable internal URLs; the table records the actual accepted rotations.
+
+| Attempt | Rotation | Tilt | Zoom | Latency | Cost | Render URL | Preserved file | Result |
+| --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
+| Field attempt 1 | 56° | 2° | 1.2 | 9,315 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/c70cec6f-8e31-4c30-81f0-01fea3548901.webp` | `.superpowers/sdd/angle-hero-dialogue/angle/rejected/field-56-qwen-wide-two-shot.png` | Rejected: identity and wardrobe were stable, but the view remained a wide two-shot rather than a legible over-the-shoulder field. |
+| Reverse on Actor A | 92° | 2° | 1.2 | 12,428 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/ab479933-930e-4d75-8922-cef256dc4fdc.webp` | `.superpowers/sdd/angle-hero-dialogue/angle/accepted/reverse.png` | Accepted at 1440 × 1072: genuine over-Actor-B reverse, sharp Actor A face, matching wardrobe and eyeline, coherent table and hotel-bar setting. |
+| Field on Actor B | 272° | 2° | 1.2 | 10,546 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/045e7e62-f03e-4946-a023-085d80aa07f3.webp` | `.superpowers/sdd/angle-hero-dialogue/angle/accepted/field.png` | Accepted at 1440 × 1072: complementary over-Actor-A field, sharp Actor B face, matching screen direction, wardrobe, window light, and furniture. |
+| Elevated dialogue view | 20° | 18° | 1.2 | 9,958 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/9aedaff6-ff00-4a3f-a5a4-d2829db2c1bb.webp` | `.superpowers/sdd/angle-hero-dialogue/angle/accepted/elevated.png` | Accepted at 1440 × 1072 with cinema-safe guardrails: clearly elevated composition, both actors, two glasses, round table, stable costumes, faces, and hotel-bar architecture. |
+
+Original-detail review confirmed that the accepted field and reverse form an unmistakable shot/reverse-shot pair. The actors retain their hair, burnt-sienna/deep-teal wardrobe split, seated relationship, and eyelines. The elevated view preserves the same table, two glasses, chairs, and blue-hour environment without text, watermark, duplicated people, malformed hands, or furniture distortion.
+
 ## Authenticated workspace capture
 
 The accepted hero source was loaded in `https://maxvideoai.com/app/tools/angle` with a clean FLUX 45° / 3° / 1.2 result visible. A Playwright screenshot from the authenticated Chrome tab captured page coordinates `x=215, y=180, width=1320, height=811` into `.superpowers/sdd/angle-orbit/task-4-sources/workspace/workspace-main-raw.png` (117,577 bytes). The sticky 68 px navigation strip was then removed locally, yielding the exact workspace-only source crop `left=0, top=68, width=1320, height=743` before resizing to 1600 × 900.
@@ -76,10 +103,10 @@ The public filename `angle-orbit-video-45.webp` is retained as a stable internal
 | --- | ---: | ---: |
 | `angle-orbit-ad-45.webp` | 1600 × 1200 | 77,552 |
 | `angle-orbit-ad-source.webp` | 1600 × 1200 | 76,560 |
-| `angle-orbit-hero-45.webp` | 1600 × 1200 | 62,280 |
-| `angle-orbit-hero-90.webp` | 1600 × 1200 | 46,928 |
-| `angle-orbit-hero-elevated.webp` | 1600 × 1200 | 72,558 |
-| `angle-orbit-hero-source.webp` | 1600 × 1200 | 81,096 |
+| `angle-orbit-hero-45.webp` | 1600 × 1200 | 57,086 |
+| `angle-orbit-hero-90.webp` | 1600 × 1200 | 65,184 |
+| `angle-orbit-hero-elevated.webp` | 1600 × 1200 | 123,536 |
+| `angle-orbit-hero-source.webp` | 1600 × 1200 | 82,860 |
 | `angle-orbit-product-45.webp` | 1600 × 1200 | 96,468 |
 | `angle-orbit-product-source.webp` | 1600 × 1200 | 132,828 |
 | `angle-orbit-proof-45.webp` | 1600 × 1200 | 120,548 |
@@ -90,4 +117,4 @@ The public filename `angle-orbit-video-45.webp` is retained as a stable internal
 | `angle-orbit-video-source.webp` | 1600 × 1200 | 83,002 |
 | `angle-orbit-workspace.webp` | 1600 × 900 | 76,816 |
 
-All files are below the 500 KB hard limit. Fourteen are below the 200 KB target; `angle-orbit-proof-source.webp` is 266,278 bytes and remains below the hard limit at the required quality 82. The hero and storyboard post-review replacements were inspected independently at original detail before conversion and again at 1600 × 1200 after WebP encoding; the accepted files have no visible mesh flap, melted body detail, pseudo-text artifact, facial deformation, identity drift, watermark, or weak viewpoint change. The replacement video pair was likewise inspected at original detail and after encoding: the model remains prominent, anatomically coherent, and consistently dressed and posed across a clearly different viewpoint.
+All files are below the 500 KB hard limit. Fourteen are below the 200 KB target; `angle-orbit-proof-source.webp` is 266,278 bytes and remains below the hard limit at the required quality 82. The current dialogue hero source and three Angle outputs were inspected at original detail before conversion and again at 1600 × 1200 after WebP encoding; the field/reverse pair has stable identities, wardrobe, eyelines, and no text, watermark, malformed hands, or weak viewpoint change. The storyboard replacement remains anatomically coherent, and the replacement video pair remains prominent, consistently dressed, and posed across a clearly different viewpoint.
