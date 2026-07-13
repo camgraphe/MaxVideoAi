@@ -8,6 +8,7 @@ import {
   type PricingPolicyRule,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
+import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/audio-generation';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import { selectPricingRule, type PricingRuleLite } from '@/lib/pricing-rules';
 
@@ -132,4 +133,38 @@ export function scalePublicPricingQuote(
   factor: number
 ): CanonicalPricingQuote {
   return scaleCanonicalPricingQuote(quote, factor);
+}
+
+export function quotePublicAudioPricingSnapshot(input: AudioPricingInput): PricingSnapshot {
+  const presentation = buildAudioPricingPresentation(input);
+  const quote = quotePublicPricing({
+    facts: {
+      engineId: 'audio-generation',
+      currency: 'USD',
+      vendorSubtotalExactCents: presentation.vendorSubtotalCents,
+      unit: presentation.base.unit ?? 'audio',
+      quantity: presentation.durationSec,
+    },
+    scenario: {
+      id: `public:audio-generation:${input.pack}`,
+      engineId: 'audio-generation',
+      mode: input.pack,
+      resolution: 'audio',
+      membershipTier: 'member',
+      discountPercent: 0,
+    },
+    compatibilityProfileId: 'audio-current',
+  });
+  const snapshot = projectPublicPricingSnapshot({
+    quote,
+    base: presentation.base,
+    addons: presentation.addons,
+    meta: {
+      ...presentation.meta,
+      marginPercent: quote.breakdown.marginPercent,
+    },
+  });
+  delete snapshot.margin.ruleId;
+  if (snapshot.meta) delete snapshot.meta.pricingPolicy;
+  return snapshot;
 }

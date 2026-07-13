@@ -6,7 +6,6 @@ export const AUDIO_MAX_DURATION_SEC = 184;
 export const AUDIO_PROMPT_MAX_LENGTH = 2000;
 export const AUDIO_SCRIPT_MAX_LENGTH = 5000;
 export const AUDIO_VOICE_ESTIMATE_WORDS_PER_MINUTE = 150;
-export const AUDIO_PRICING_MARGIN_PERCENT = 1.5;
 export const AUDIO_SEED_AUDIO_MODEL_ID = 'bytedance/seed-audio-1.0';
 export const AUDIO_LYRIA3_CLIP_MODEL_ID = 'lyria-3-clip-preview';
 export const AUDIO_LYRIA3_PRO_MODEL_ID = 'lyria-3-pro-preview';
@@ -324,12 +323,6 @@ export function estimateVoiceScriptDurationSec(script: string): number {
   return normalizeAudioDuration(estimatedSeconds);
 }
 
-function computeRoundedUpMarginCents(baseCents: number): number {
-  const normalizedBase = Number.isFinite(baseCents) ? Math.max(0, Math.round(baseCents)) : 0;
-  if (normalizedBase <= 0) return 0;
-  return Math.max(1, Math.ceil(normalizedBase * AUDIO_PRICING_MARGIN_PERCENT - 1e-9));
-}
-
 function countAudioBillingCharacters(script?: string | null, fallbackDurationSec?: number | null): number {
   const characterCount = script?.trim().length ?? 0;
   if (characterCount > 0) return characterCount;
@@ -489,7 +482,6 @@ export function buildAudioPricingPresentation(input: AudioPricingInput): {
       voiceMode,
       pricingModel: 'audio_provider_cost_plus_margin',
       vendorCostCents: vendorFacts.vendorSubtotalCents,
-      marginPercent: AUDIO_PRICING_MARGIN_PERCENT,
       musicModel: input.musicModel ?? null,
       musicBpm: input.musicBpm ?? null,
       musicEnabled: input.musicEnabled ?? null,
@@ -498,30 +490,6 @@ export function buildAudioPricingPresentation(input: AudioPricingInput): {
         : undefined,
       vendorCostComponents: vendorFacts.components,
     },
-  };
-}
-
-export function buildAudioPricingSnapshot(input: AudioPricingInput): PricingSnapshot {
-  const presentation = buildAudioPricingPresentation(input);
-  const vendorSubtotalCents = presentation.vendorSubtotalCents;
-  const marginAmountCents = computeRoundedUpMarginCents(vendorSubtotalCents);
-  const totalCents = vendorSubtotalCents + marginAmountCents;
-
-  return {
-    currency: 'USD',
-    totalCents,
-    subtotalBeforeDiscountCents: totalCents,
-    base: presentation.base,
-    addons: presentation.addons,
-    margin: {
-      amountCents: marginAmountCents,
-      percentApplied: AUDIO_PRICING_MARGIN_PERCENT,
-      flatCents: 0,
-    },
-    membershipTier: 'member',
-    platformFeeCents: marginAmountCents,
-    vendorShareCents: vendorSubtotalCents,
-    meta: presentation.meta,
   };
 }
 

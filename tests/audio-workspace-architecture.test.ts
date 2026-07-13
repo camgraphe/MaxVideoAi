@@ -236,7 +236,7 @@ test('audio history renders playable audio files inline', () => {
 test('audio workspace keeps voice script duration estimates internal for pricing', () => {
   const generationDockSource = readFileSync(generationDockPath, 'utf8');
 
-  assert.match(workspaceSource, /buildAudioPricingSnapshot\(\{[\s\S]*durationSec: estimatedDurationSec/, 'pricing should keep using the internal estimated duration');
+  assert.match(workspaceSource, /quotePublicAudioPricingSnapshot\(\{[\s\S]*durationSec: estimatedDurationSec/, 'pricing should keep using the internal estimated duration');
   assert.match(workspaceSource, /const displayDurationSec = pack === 'voice_only' \? null : estimatedDurationSec/, 'voice-only duration estimates should be hidden from the UI');
   assert.doesNotMatch(composerSurfaceSource, /copy\.controls\.estimatedDuration/, 'script composer should not display estimated read duration');
   assert.match(generationDockSource, /\{durationLabel \? \(/, 'generation dock should render the duration card only when a display duration exists');

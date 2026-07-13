@@ -6,12 +6,10 @@ import {
   AUDIO_LYRIA3_BPM_VALUES,
   AUDIO_LYRIA3_MODEL_VALUES,
   AUDIO_MUSIC_DURATION_OPTIONS_SEC,
-  AUDIO_PRICING_MARGIN_PERCENT,
   AUDIO_MIN_DURATION_SEC,
   AUDIO_PROMPT_MAX_LENGTH,
   AUDIO_SCRIPT_MAX_LENGTH,
   AUDIO_SEED_AUDIO_VOICE_VALUES,
-  buildAudioPricingSnapshot,
   clampAudioDuration,
   coerceAudioIntensity,
   coerceAudioLanguage,
@@ -30,9 +28,10 @@ import {
   resolveAudioOutputKind,
   resolveAudioVoiceMode,
 } from '../frontend/src/lib/audio-generation';
+import { quotePublicAudioPricingSnapshot } from '../frontend/src/lib/pricing-public-quote';
 
 test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', () => {
-  const pricing = buildAudioPricingSnapshot({
+  const pricing = quotePublicAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
     durationSec: 30,
@@ -71,7 +70,7 @@ test('audio pricing charges 2.5x provider cost for Lyria 3 Clip music renders', 
 });
 
 test('audio pricing uses Lyria 3 Pro song pricing for long music renders', () => {
-  const pricing = buildAudioPricingSnapshot({
+  const pricing = quotePublicAudioPricingSnapshot({
     pack: 'music_only',
     mood: 'epic',
     durationSec: 180,
@@ -93,7 +92,7 @@ test('audio pricing uses Lyria 3 Pro song pricing for long music renders', () =>
 });
 
 test('audio pricing uses voice clone request and preview costs', () => {
-  const pricing = buildAudioPricingSnapshot({
+  const pricing = quotePublicAudioPricingSnapshot({
     pack: 'voice_only',
     durationSec: 20,
     voiceMode: 'clone',
@@ -156,7 +155,6 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
   assert.equal(AUDIO_MAX_DURATION_SEC, 184);
   assert.deepEqual([...AUDIO_LYRIA3_MODEL_VALUES], ['clip', 'pro']);
   assert.deepEqual([...AUDIO_LYRIA3_BPM_VALUES], [70, 90, 110, 130, 150]);
-  assert.equal(AUDIO_PRICING_MARGIN_PERCENT, 1.5);
   assert.ok(AUDIO_MUSIC_DURATION_OPTIONS_SEC.includes(184));
 
   assert.equal(clampAudioDuration(Number.NaN), AUDIO_MIN_DURATION_SEC);
@@ -172,7 +170,7 @@ test('audio helpers normalize packs, moods, voice mode, output kind, and duratio
 test('audio pricing does not cap voice script estimates at the music duration limit', () => {
   const longScript = Array.from({ length: 1000 }, () => 'word').join(' ');
   const estimatedDuration = estimateVoiceScriptDurationSec(longScript);
-  const pricing = buildAudioPricingSnapshot({
+  const pricing = quotePublicAudioPricingSnapshot({
     pack: 'voice_only',
     durationSec: estimatedDuration,
     voiceMode: 'standard',
@@ -187,13 +185,13 @@ test('audio pricing does not cap voice script estimates at the music duration li
 });
 
 test('audio pricing includes sound design and optional music for cinematic renders', () => {
-  const withMusic = buildAudioPricingSnapshot({
+  const withMusic = quotePublicAudioPricingSnapshot({
     pack: 'cinematic',
     mood: 'tense',
     durationSec: 30,
     musicEnabled: true,
   });
-  const withoutMusic = buildAudioPricingSnapshot({
+  const withoutMusic = quotePublicAudioPricingSnapshot({
     pack: 'cinematic',
     mood: 'tense',
     durationSec: 30,
@@ -209,7 +207,7 @@ test('audio pricing includes sound design and optional music for cinematic rende
 });
 
 test('audio pricing rounds fractional 150 percent margins up to the next cent', () => {
-  const pricing = buildAudioPricingSnapshot({
+  const pricing = quotePublicAudioPricingSnapshot({
     pack: 'cinematic',
     mood: 'tense',
     durationSec: 3,

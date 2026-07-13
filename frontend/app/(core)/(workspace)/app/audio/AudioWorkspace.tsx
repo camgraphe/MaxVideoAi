@@ -17,7 +17,6 @@ import {
   DEFAULT_SEED_AUDIO_SPEED,
   DEFAULT_SEED_AUDIO_VOICE,
   DEFAULT_SEED_AUDIO_VOLUME,
-  buildAudioPricingSnapshot,
   estimateVoiceScriptDurationSec,
   formatAudioDurationLabel,
   getAudioPackConfig,
@@ -33,6 +32,7 @@ import {
   type AudioVoiceGender,
   type AudioVoiceProfile,
 } from '@/lib/audio-generation';
+import { quotePublicAudioPricingSnapshot } from '@/lib/pricing-public-quote';
 import AudioLatestRendersRail from './AudioLatestRendersRail';
 import { AudioGeneratedVideoPickerModal } from './_components/audio-generated-video-picker';
 import { AudioWorkspaceComposerSurface } from './_components/audio-workspace-composer-surface';
@@ -219,7 +219,7 @@ export default function AudioWorkspace() {
 
   const quote = useMemo(() => {
     if (!estimatedDurationSec) return null;
-    return buildAudioPricingSnapshot({
+    return quotePublicAudioPricingSnapshot({
       pack,
       mood: showMood ? mood : null,
       durationSec: estimatedDurationSec,

@@ -1,6 +1,7 @@
 import { computePricingSnapshot as computeKernelSnapshot, type PricingEngineDefinition, type PricingSnapshot } from '@maxvideoai/pricing';
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
-import { buildAudioPricingSnapshot, type AudioPackId } from '@/lib/audio-generation';
+import type { AudioPackId } from '@/lib/audio-generation';
+import { quotePublicAudioPricingSnapshot } from '@/lib/pricing-public-quote';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { isLumaRay2EngineId } from '@/lib/luma-ray2';
 import { buildPricingDefinition } from '@/lib/pricing-definition';
@@ -273,7 +274,7 @@ export async function collectLegacyPricingOutputs(): Promise<FrozenPricingOutput
     if (scenario.surface === 'audio') {
       return snapshotToFrozen(
         scenario,
-        buildAudioPricingSnapshot({
+        quotePublicAudioPricingSnapshot({
           pack: String(scenario.input.pack) as AudioPackId,
           durationSec: scenario.durationSec ?? 3,
           script: scenario.mode === 'voice_only' || scenario.mode === 'cinematic_voice' ? 'Audit voice script' : undefined,

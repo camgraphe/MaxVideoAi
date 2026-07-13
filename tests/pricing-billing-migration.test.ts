@@ -8,7 +8,8 @@ import {
   computeCanonicalAudioBillingSnapshot,
   computeCanonicalBillingSnapshot,
 } from '../frontend/server/pricing/quote-billing';
-import { buildAudioPricingSnapshot, type AudioPricingInput } from '../frontend/src/lib/audio-generation';
+import type { AudioPricingInput } from '../frontend/src/lib/audio-generation';
+import { quotePublicAudioPricingSnapshot } from '../frontend/src/lib/pricing-public-quote';
 import { repriceCanonicalFixedProductSnapshot } from '../frontend/src/lib/billing-products';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 
@@ -181,7 +182,7 @@ const audioScenarios: AudioPricingInput[] = [
 
 for (const input of audioScenarios) {
   test(`canonical audio billing preserves ${input.pack} financial fields`, async () => {
-    const expected = buildAudioPricingSnapshot(input);
+    const expected = quotePublicAudioPricingSnapshot(input);
     const actual = await computeCanonicalAudioBillingSnapshot(input);
     assert.equal(actual.currency, expected.currency);
     assert.equal(actual.totalCents, expected.totalCents);

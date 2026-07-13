@@ -5,14 +5,18 @@ import { listAngleToolEngines } from '@/config/tools-angle-engines';
 import { listUpscaleToolEngines } from '@/config/tools-upscale-engines';
 import type { EngineCaps, Resolution } from '@/types/engines';
 import { CHARACTER_FORMAT_OPTIONS } from '@/lib/character-builder';
-import { buildAudioPricingSnapshot, type AudioPackId, type AudioVoiceMode } from '@/lib/audio-generation';
+import type { AudioPackId, AudioVoiceMode } from '@/lib/audio-generation';
 import type { GptImage2Quality } from '@/lib/image/gptImage2';
 import { supportsImageGeneration, supportsVideoGeneration } from '@/lib/models/catalog';
 import {
   buildFixedPublicProductFacts,
   buildPublicPricingFacts,
 } from '@/lib/pricing-public-facts';
-import { quotePublicPricing, scalePublicPricingQuote } from '@/lib/pricing-public-quote';
+import {
+  quotePublicAudioPricingSnapshot,
+  quotePublicPricing,
+  scalePublicPricingQuote,
+} from '@/lib/pricing-public-quote';
 import { getLumaRay2BasePriceUsd } from '@/lib/luma-ray2-pricing-config';
 import { isLumaAgentsImageEngineId, isLumaRay32EngineId, type LumaAgentsImageMode } from '@/lib/luma-agents';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
@@ -947,7 +951,7 @@ function buildImagePricingRows(locale: AppLocale): ImagePricingRow[] {
 }
 
 function audioPrice(locale: AppLocale, pack: AudioPackId, durationSec: number, voiceMode?: AudioVoiceMode) {
-  const snapshot = buildAudioPricingSnapshot({
+  const snapshot = quotePublicAudioPricingSnapshot({
     pack,
     durationSec,
     voiceMode,

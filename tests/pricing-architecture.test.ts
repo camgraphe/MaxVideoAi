@@ -86,3 +86,14 @@ test('canonical billing facts contain provider facts but no specialized commerci
   assert.match(factsSource, /computeSeedance2TokenQuote/);
   assert.match(factsSource, /resolveGptImage2PricingTier/);
 });
+
+test('audio generation owns provider facts while canonical quote owners own commercial math', () => {
+  const audioSource = readFileSync('frontend/src/lib/audio-generation.ts', 'utf8');
+  const publicQuoteSource = readFileSync('frontend/src/lib/pricing-public-quote.ts', 'utf8');
+
+  assert.doesNotMatch(audioSource, /AUDIO_PRICING_MARGIN_PERCENT/);
+  assert.doesNotMatch(audioSource, /buildAudioPricingSnapshot/);
+  assert.doesNotMatch(audioSource, /computeRoundedUpMarginCents/);
+  assert.match(publicQuoteSource, /export function quotePublicAudioPricingSnapshot/);
+  assert.match(publicQuoteSource, /quotePublicPricing/);
+});

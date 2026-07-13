@@ -124,7 +124,10 @@ export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingIn
     base: presentation.base,
     addons: presentation.addons,
     vendorAccountId,
-    meta: presentation.meta,
+    meta: {
+      ...presentation.meta,
+      marginPercent: quote.breakdown.marginPercent,
+    },
   });
   delete snapshot.margin.ruleId;
   return snapshot;
