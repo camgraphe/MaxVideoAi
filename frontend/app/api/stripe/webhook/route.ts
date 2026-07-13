@@ -8,6 +8,11 @@ import { ensureUserPreferredCurrency, normalizeCurrencyCode } from '@/lib/curren
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
 import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
 import { lockAndResolveFirstWalletTopup } from '@/server/wallet-first-topup';
+import {
+  beginStripeEvent,
+  markStripeEventProcessed,
+  rollbackStripeEvent,
+} from './_lib/stripe-webhook-event-state';
 
 const stripeSecret = ENV.STRIPE_SECRET_KEY;
 const webhookSecret = ENV.STRIPE_WEBHOOK_SECRET;
@@ -92,33 +97,6 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ received: true });
-}
-
-async function beginStripeEvent(event: Stripe.Event): Promise<boolean> {
-  if (!process.env.DATABASE_URL) {
-    return true;
-  }
-
-  try {
-    await ensureBillingSchema();
-  } catch (error) {
-    console.warn('[stripe-webhook] ensureBillingSchema failed for event idempotency', error);
-    return true;
-  }
-
-  try {
-    const rows = await query<{ event_id: string }>(
-      `INSERT INTO stripe_webhook_events (event_id, event_type)
-       VALUES ($1, $2)
-       ON CONFLICT (event_id) DO NOTHING
-       RETURNING event_id`,
-      [event.id, event.type]
-    );
-    return rows.length > 0;
-  } catch (error) {
-    console.warn('[stripe-webhook] Failed to record event id', { eventId: event.id, error });
-    return true;
-  }
 }
 
 type TopupTrackingMetadata = {
@@ -563,35 +541,6 @@ async function handleChargeRefunded(event: Stripe.Event) {
       topup_tier_label: metadata.topupTierLabel ?? undefined,
     },
   });
-}
-
-async function markStripeEventProcessed(eventId: string) {
-  if (!process.env.DATABASE_URL) {
-    return;
-  }
-
-  try {
-    await query(
-      `UPDATE stripe_webhook_events
-       SET processed_at = NOW()
-       WHERE event_id = $1`,
-      [eventId]
-    );
-  } catch (error) {
-    console.warn('[stripe-webhook] Failed to mark event processed', { eventId, error });
-  }
-}
-
-async function rollbackStripeEvent(eventId: string) {
-  if (!process.env.DATABASE_URL) {
-    return;
-  }
-
-  try {
-    await query(`DELETE FROM stripe_webhook_events WHERE event_id = $1`, [eventId]);
-  } catch (error) {
-    console.warn('[stripe-webhook] Failed to rollback event record', { eventId, error });
-  }
 }
 
 type TopupDocumentFields = {
