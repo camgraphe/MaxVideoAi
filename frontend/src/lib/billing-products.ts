@@ -1,4 +1,4 @@
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured, query, type QueryExecutor } from '@/lib/db';
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { ensureBillingSchema } from '@/lib/schema';
 import {
@@ -65,7 +65,7 @@ export function invalidateBillingProductsCache(): void {
   cacheLoadedAt = 0;
 }
 
-function mapBillingProductRow(row: {
+type RawBillingProductRow = {
   product_key: string;
   surface: string;
   label: string;
@@ -74,7 +74,22 @@ function mapBillingProductRow(row: {
   unit_price_cents: number | string;
   active: boolean | null;
   metadata: unknown;
-}): BillingProductRecord {
+};
+
+export type BillingProductLoadResult = {
+  status: 'loaded' | 'unavailable';
+  products: BillingProductRecord[];
+};
+
+export type BillingProductMutationInput = {
+  productKey: string;
+  label: string;
+  currency: string;
+  unitPriceCents: number;
+  active: boolean;
+};
+
+function mapBillingProductRow(row: RawBillingProductRow): BillingProductRecord {
   return {
     productKey: row.product_key,
     surface: normalizeSurface(row.surface),
@@ -87,6 +102,18 @@ function mapBillingProductRow(row: {
   };
 }
 
+export async function loadBillingProductsWithExecutor(
+  executor: QueryExecutor,
+  options: { lock?: boolean } = {}
+): Promise<BillingProductRecord[]> {
+  const rows = await executor.query<RawBillingProductRow>(
+    `SELECT product_key, surface, label, currency, unit_kind, unit_price_cents, active, metadata
+       FROM app_billing_products
+      ORDER BY surface, product_key${options.lock ? '\n      FOR UPDATE' : ''}`
+  );
+  return rows.map(mapBillingProductRow);
+}
+
 export async function listBillingProducts(): Promise<BillingProductRecord[]> {
   if (!isDatabaseConfigured()) return [];
   await ensureBillingSchema();
@@ -94,22 +121,7 @@ export async function listBillingProducts(): Promise<BillingProductRecord[]> {
     return cachedProducts;
   }
 
-  const rows = await query<{
-    product_key: string;
-    surface: string;
-    label: string;
-    currency: string;
-    unit_kind: string;
-    unit_price_cents: number | string;
-    active: boolean | null;
-    metadata: unknown;
-  }>(
-    `SELECT product_key, surface, label, currency, unit_kind, unit_price_cents, active, metadata
-     FROM app_billing_products
-     ORDER BY surface, product_key`
-  );
-
-  cachedProducts = rows.map(mapBillingProductRow);
+  cachedProducts = await loadBillingProductsWithExecutor({ query });
   cacheLoadedAt = Date.now();
   return cachedProducts;
 }
@@ -150,16 +162,23 @@ export async function updateBillingProduct(input: {
       : existing.unitPriceCents;
   const active = typeof input.active === 'boolean' ? input.active : existing.active;
 
-  const rows = await query<{
-    product_key: string;
-    surface: string;
-    label: string;
-    currency: string;
-    unit_kind: string;
-    unit_price_cents: number | string;
-    active: boolean | null;
-    metadata: unknown;
-  }>(
+  const updated = await updateBillingProductWithExecutor({ query }, {
+    productKey: input.productKey,
+    label,
+    currency,
+    unitPriceCents,
+    active,
+  });
+
+  invalidateBillingProductsCache();
+  return updated;
+}
+
+export async function updateBillingProductWithExecutor(
+  executor: QueryExecutor,
+  input: BillingProductMutationInput
+): Promise<BillingProductRecord> {
+  const rows = await executor.query<RawBillingProductRow>(
     `UPDATE app_billing_products
         SET label = $2,
             currency = $3,
@@ -168,16 +187,14 @@ export async function updateBillingProduct(input: {
             updated_at = NOW()
       WHERE product_key = $1
       RETURNING product_key, surface, label, currency, unit_kind, unit_price_cents, active, metadata`,
-    [input.productKey, label, currency, unitPriceCents, active]
+    [input.productKey, input.label, input.currency, input.unitPriceCents, input.active]
   );
 
-  const updated = rows[0];
-  if (!updated) {
+  const row = rows[0];
+  if (!row) {
     throw new Error(`Failed to update billing product: ${input.productKey}`);
   }
-
-  invalidateBillingProductsCache();
-  return mapBillingProductRow(updated);
+  return mapBillingProductRow(row);
 }
 
 export async function computeBillingProductSnapshot(params: {
@@ -218,7 +235,7 @@ export async function computeBillingProductSnapshot(params: {
   });
 }
 
-function buildCanonicalFixedProductSnapshot(input: {
+export function buildCanonicalFixedProductSnapshot(input: {
   engineId: string;
   currency: string;
   amountCents: number;

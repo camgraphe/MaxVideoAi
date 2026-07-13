@@ -33,6 +33,11 @@ const smokeRoutes: SmokeRoute[] = [
     heading: 'Video SEO watch pages',
     section: 'Indexed Watch Pages',
   },
+  {
+    path: '/admin/billing-products',
+    heading: 'Billing products',
+    section: 'Live fixed-product inventory',
+  },
 ];
 
 test.describe('admin smoke', () => {

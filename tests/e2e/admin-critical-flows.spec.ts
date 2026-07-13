@@ -146,6 +146,39 @@ test.describe('admin critical flows', () => {
 
     assertNoClientErrors(errors);
   });
+
+  test('billing products filter, preview, and cancel without applying', async ({ page }) => {
+    const errors = trackClientErrors(page);
+
+    await openAdminRoute(page, '/admin/billing-products');
+    const productState = await waitForBillingProductState(page);
+    if (productState === 'timeout') throw new Error('Timed out waiting for billing products to render.');
+    if (productState === 'unavailable') test.skip(true, 'requires configured billing product database access');
+    if (productState === 'empty') test.skip(true, 'requires live billing product rows');
+
+    const firstRow = page.locator('tbody tr').first();
+    await firstRow.click();
+    const productKey = (await firstRow.locator('span.font-mono').textContent())?.trim() ?? '';
+    if (productKey) {
+      await page.getByLabel('Search billing products').fill(productKey);
+      await expect(page.locator('tbody tr').first()).toContainText(productKey);
+      await page.getByLabel('Search billing products').fill('');
+    }
+
+    const priceInput = page.getByLabel('Billing product unit price (cents)');
+    const currentPrice = Number(await priceInput.inputValue());
+    await priceInput.fill(String(currentPrice + 1));
+    await page.getByRole('button', { name: 'Preview billing product change' }).click();
+
+    const dialog = page.getByRole('dialog', { name: /update/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
+    await expect(dialog.getByRole('button', { name: 'Confirm and apply now' })).toBeVisible();
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+
+    assertNoClientErrors(errors);
+  });
 });
 
 async function waitForUserDirectoryState(page: Page) {
@@ -186,5 +219,20 @@ async function waitForPricingPolicyState(page: Page) {
     await page.waitForTimeout(250);
   }
 
+  return 'timeout' as const;
+}
+
+async function waitForBillingProductState(page: Page) {
+  const deadline = Date.now() + 10_000;
+  while (Date.now() < deadline) {
+    if (await page.getByText(/billing product database is unavailable/i).first().isVisible().catch(() => false)) {
+      return 'unavailable' as const;
+    }
+    if ((await page.locator('tbody tr').count()) > 0) return 'rows' as const;
+    if (await page.getByText('No billing product inventory is available.').isVisible().catch(() => false)) {
+      return 'empty' as const;
+    }
+    await page.waitForTimeout(250);
+  }
   return 'timeout' as const;
 }
