@@ -1,7 +1,7 @@
 import { revalidatePath } from 'next/cache';
 
 import { listFalEngines } from '@/config/falEngines';
-import type { PricingChangePreview } from './policy-service';
+import type { PricingChangePreview } from '@/lib/admin/pricing-change-contract';
 
 const PRICING_PATHS = ['/pricing', '/fr/tarifs', '/es/precios'] as const;
 const MODEL_SURFACES = new Set(['model-page', 'json-ld', 'estimator', 'price-chip']);

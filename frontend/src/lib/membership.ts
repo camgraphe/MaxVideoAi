@@ -1,4 +1,4 @@
-import { isDatabaseConfigured, query } from '@/lib/db';
+import { isDatabaseConfigured, query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 
 export type MembershipTierConfig = {
@@ -6,6 +6,10 @@ export type MembershipTierConfig = {
   spendThresholdCents: number;
   discountPercent: number;
 };
+
+export type MembershipTierLoadResult =
+  | { status: 'loaded'; tiers: MembershipTierConfig[] }
+  | { status: 'unavailable'; tiers: MembershipTierConfig[] };
 
 type MembershipRow = {
   tier: string;
@@ -42,6 +46,18 @@ function normaliseRow(row: MembershipRow): MembershipTierConfig {
     spendThresholdCents: Math.max(0, Math.round(toNumber(row.spend_threshold_cents))),
     discountPercent: Math.max(0, Number(toNumber(row.discount_percent).toFixed(6))),
   };
+}
+
+export async function loadMembershipTiersWithExecutor(
+  executor: QueryExecutor,
+  options: { lock?: boolean } = {}
+): Promise<MembershipTierConfig[]> {
+  const rows = await executor.query<MembershipRow>(
+    `SELECT tier, spend_threshold_cents, discount_percent
+       FROM app_membership_tiers
+       ${options.lock ? 'FOR UPDATE' : ''}`
+  );
+  return sortTiers(rows.length ? rows.map(normaliseRow) : DEFAULT_MEMBERSHIP_TIERS);
 }
 
 async function loadTiers(): Promise<MembershipTierConfig[]> {
@@ -100,20 +116,22 @@ export type UpsertMembershipTierInput = {
   updatedBy?: string | null;
 };
 
-export async function upsertMembershipTiers(tiers: UpsertMembershipTierInput[]): Promise<MembershipTierConfig[]> {
-  if (!isDatabaseConfigured()) {
-    throw new Error('Database not configured');
-  }
-  await ensureBillingSchema();
-
-  const updates = tiers.map((tier) => ({
-    ...tier,
+function normaliseTierInput(tier: UpsertMembershipTierInput): MembershipTierConfig {
+  return {
+    tier: tier.tier.trim().toLowerCase(),
     spendThresholdCents: Math.max(0, Math.round(tier.spendThresholdCents)),
     discountPercent: Math.max(0, Number(tier.discountPercent.toFixed(6))),
-  }));
+  };
+}
 
+export async function upsertMembershipTiersWithExecutor(
+  executor: QueryExecutor,
+  tiers: UpsertMembershipTierInput[],
+  actorId: string
+): Promise<MembershipTierConfig[]> {
+  const updates = tiers.map(normaliseTierInput);
   for (const tier of updates) {
-    await query(
+    await executor.query(
       `INSERT INTO app_membership_tiers (tier, spend_threshold_cents, discount_percent, updated_at, updated_by)
        VALUES ($1, $2, $3, NOW(), $4)
        ON CONFLICT (tier)
@@ -122,10 +140,25 @@ export async function upsertMembershipTiers(tiers: UpsertMembershipTierInput[]):
          discount_percent = EXCLUDED.discount_percent,
          updated_at = NOW(),
          updated_by = EXCLUDED.updated_by`,
-      [tier.tier, tier.spendThresholdCents, tier.discountPercent, tier.updatedBy ?? null]
+      [tier.tier, tier.spendThresholdCents, tier.discountPercent, actorId]
     );
   }
+  return sortTiers(updates);
+}
 
+export async function upsertMembershipTiers(tiers: UpsertMembershipTierInput[]): Promise<MembershipTierConfig[]> {
+  if (!isDatabaseConfigured()) {
+    throw new Error('Database not configured');
+  }
+  await ensureBillingSchema();
+
+  const actors = new Set(tiers.map((tier) => tier.updatedBy ?? null));
+  if (actors.size !== 1) throw new Error('Membership tier updates require one actor');
+  const actorId = [...actors][0];
+  if (!actorId) throw new Error('Membership tier updates require an actor');
+  const updates = await withDbTransaction((executor) =>
+    upsertMembershipTiersWithExecutor(executor, tiers, actorId)
+  );
   invalidateMembershipCache();
-  return getMembershipTiers();
+  return updates;
 }
