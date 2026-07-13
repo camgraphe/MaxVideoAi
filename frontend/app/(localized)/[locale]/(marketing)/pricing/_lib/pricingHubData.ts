@@ -13,7 +13,7 @@ import {
   buildPublicPricingFacts,
 } from '@/lib/pricing-public-facts';
 import { quotePublicPricing, scalePublicPricingQuote } from '@/lib/pricing-public-quote';
-import { getLumaRay2BasePriceEnv } from '@/lib/pricing-specialized-snapshots';
+import { getLumaRay2BasePriceUsd } from '@/lib/luma-ray2-pricing-config';
 import { isLumaAgentsImageEngineId, isLumaRay32EngineId, type LumaAgentsImageMode } from '@/lib/luma-agents';
 import { buildSlugMap, type LocalizedSlugKey } from '@/lib/i18nSlugs';
 import { formatCurrencyForLocale } from './pricingPageContent';
@@ -391,7 +391,7 @@ function quoteVideoScenarioCents(
   audioMode: AudioRateMode = 'default'
 ) {
   try {
-    const lumaBasePriceUsd = Number(getLumaRay2BasePriceEnv(engine.id));
+    const lumaBasePriceUsd = getLumaRay2BasePriceUsd(engine.id);
     const facts = buildPublicPricingFacts({
       engine,
       durationSec,

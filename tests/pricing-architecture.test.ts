@@ -73,3 +73,16 @@ test('specialized pricing snapshots own provider-specific quote builders', () =>
   assert.match(snapshotsSource, /resolveGptImage2PricingTier/);
   assert.doesNotMatch(snapshotsSource, /INSERT INTO app_pricing_rules/);
 });
+
+test('canonical billing facts contain provider facts but no specialized commercial snapshots', () => {
+  const factsSource = readFileSync('frontend/src/lib/pricing-billing-facts.ts', 'utf8');
+  const lumaConfigPath = 'frontend/src/lib/luma-ray2-pricing-config.ts';
+
+  assert.equal(existsSync(lumaConfigPath), true, `${lumaConfigPath} should exist`);
+  assert.doesNotMatch(factsSource, /pricing-specialized-snapshots/);
+  assert.doesNotMatch(factsSource, /build(?:Luma|Seedance|GptImage).*Snapshot/);
+  assert.match(factsSource, /calculateLumaAgentsImageReferencePrice/);
+  assert.match(factsSource, /calculateLumaRay2Price/);
+  assert.match(factsSource, /computeSeedance2TokenQuote/);
+  assert.match(factsSource, /resolveGptImage2PricingTier/);
+});
