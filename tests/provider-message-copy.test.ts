@@ -16,6 +16,10 @@ test('Seedance runtime user messages do not expose provider names', () => {
     path.join(process.cwd(), 'frontend/src/server/video-providers/byteplus-modelark.ts'),
     'utf8'
   );
+  const providerResponseSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/video-providers/byteplus-modelark-response.ts'),
+    'utf8'
+  );
   const byteplusSubmission = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/generate/_lib/byteplus-submission.ts'),
     'utf8'
@@ -34,12 +38,12 @@ test('Seedance runtime user messages do not expose provider names', () => {
     'BytePlus does not support',
   ];
 
-  const runtimeCopy = [generateRoute, byteplusPoll, providerSource, byteplusSubmission].join('\n');
+  const runtimeCopy = [generateRoute, byteplusPoll, providerSource, providerResponseSource, byteplusSubmission].join('\n');
   forbiddenUserCopy.forEach((copy) => {
     assert.doesNotMatch(runtimeCopy, new RegExp(copy.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   });
 
   assert.match(runtimeCopy, /Render submitted\./);
   assert.match(runtimeCopy, /Render is in progress\./);
-  assert.match(runtimeCopy, /The render failed before producing a usable output\./);
+  assert.match(runtimeCopy, /Seedance started this render but did not deliver a video\./);
 });

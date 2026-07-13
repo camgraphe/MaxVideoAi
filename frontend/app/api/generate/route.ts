@@ -2,7 +2,7 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server';
 import { validateExtraInputValues } from './_lib/extra-input-values';
 import { processGenerationAttachments } from './_lib/attachments';
-import { deriveGenerationAttachmentReferences, resolveSourceVideoDurationSec } from './_lib/attachment-references';
+import { deriveGenerationAttachmentReferences } from './_lib/attachment-references';
 import { createGenerateMetricLogger } from './_lib/metric-logger';
 import { buildFalRequestParts } from './_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from './_lib/settings-snapshot';
@@ -24,6 +24,7 @@ import { resolveGenerateRouteContext } from './_lib/route-context';
 import { normalizeProviderRoutedResolution } from './_lib/provider-resolution';
 import { buildMissingProviderJobIdResponse } from './_lib/missing-provider-job';
 import { validateGenerationImageDimensions } from './_lib/generation-image-dimensions';
+import { resolveGenerateSourceVideoContext } from './_lib/source-video-context';
 export async function POST(req: NextRequest) {
   const requestStartedAt = Date.now();
   const { state: metricState, log: logMetric } = createGenerateMetricLogger({ requestStartedAt });
@@ -147,39 +148,21 @@ export async function POST(req: NextRequest) {
     reference_images: body.reference_images,
     rawAudioUrl,
   });
-  const sourceVideoDuration = resolveSourceVideoDurationSec({
+  const sourceVideoContext = resolveGenerateSourceVideoContext({
     mode,
     attachments: processedAttachments,
     sourceInputVideoUrl,
+    videoUrls,
     fallbackDurationSec: durationSec,
+    fallbackDurationLabel: durationLabel,
     maxDurationSec: engine.inputLimits?.videoMaxDurationSec ?? engine.maxDurationSec ?? null,
+    engineLabel: engine.label,
   });
-  if (sourceVideoDuration.exceedsMax) {
-    const maxDurationSec = sourceVideoDuration.maxDurationSec ?? 30;
-    logMetric('rejected', {
-      errorCode: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
-      meta: {
-        sourceDurationSec: sourceVideoDuration.sourceDurationSec,
-        maxDurationSec,
-        mode,
-      },
-    });
-    return NextResponse.json(
-      {
-        ok: false,
-        error: 'SOURCE_VIDEO_DURATION_UNSUPPORTED',
-        message: `Source video must be ${maxDurationSec}s or shorter for ${engine.label}.`,
-      },
-      { status: 422 }
-    );
+  if (!sourceVideoContext.ok) {
+    logMetric('rejected', sourceVideoContext.metric);
+    return NextResponse.json(sourceVideoContext.body, { status: sourceVideoContext.status });
   }
-  const effectiveDurationSec = sourceVideoDuration.durationSec;
-  const effectiveDurationLabel = sourceVideoDuration.durationLabel ?? durationLabel;
-  const hasVideoInput =
-    videoUrls.length > 0 ||
-    Boolean(sourceInputVideoUrl) ||
-    mode === 'v2v' ||
-    mode === 'extend';
+  const { durationSec: effectiveDurationSec, durationLabel: effectiveDurationLabel, hasVideoInput } = sourceVideoContext;
   metricState.durationSec = effectiveDurationSec;
   const validationPayloadResult = buildGenerateValidationPayload({
     engineId: engine.id,
@@ -287,13 +270,7 @@ export async function POST(req: NextRequest) {
         ? '/assets/frames/thumb-1x1.svg'
         : '/assets/frames/thumb-16x9.svg';
 
-  const {
-    falInputs,
-    falInputSummary,
-    falDurationOption,
-    clampedFps,
-    falPayload,
-  } = buildFalRequestParts({
+  const { falInputs, falInputSummary, falDurationOption, clampedFps, falPayload } = buildFalRequestParts({
     attachments: processedAttachments,
     engineId: engine.id,
     prompt,

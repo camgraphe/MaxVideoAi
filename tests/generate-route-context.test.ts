@@ -6,6 +6,7 @@ import test from 'node:test';
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/route-context.ts');
+const sourceVideoContextPath = join(root, 'frontend/app/api/generate/_lib/source-video-context.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
@@ -36,4 +37,16 @@ test('route context helper exposes the expected guard contract', () => {
   assert.match(directProviderAdminGuard, /isGoogleVertexOmniEngine\(engine\.id\)/);
   assert.match(helperSource, /providerRoutingPlan\.kind === 'google_vertex_unavailable'/);
   assert.doesNotMatch(helperSource, /GOOGLE_VERTEX_OMNI_FALLBACK_TO_FAL_ENABLED/);
+});
+
+test('generate route delegates source-video duration and input context', () => {
+  assert.ok(existsSync(sourceVideoContextPath), 'source-video context should live in the generate route _lib folder');
+  const sourceVideoContextSource = readFileSync(sourceVideoContextPath, 'utf8');
+
+  assert.match(routeSource, /from '\.\/_lib\/source-video-context'/);
+  assert.match(routeSource, /resolveGenerateSourceVideoContext\(\{/);
+  assert.doesNotMatch(routeSource, /resolveSourceVideoDurationSec/);
+  assert.doesNotMatch(routeSource, /SOURCE_VIDEO_DURATION_UNSUPPORTED/);
+  assert.match(sourceVideoContextSource, /export function resolveGenerateSourceVideoContext/);
+  assert.match(sourceVideoContextSource, /resolveSourceVideoDurationSec/);
 });
