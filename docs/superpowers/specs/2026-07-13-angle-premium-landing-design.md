@@ -57,7 +57,7 @@ The final CTA presents a new, separate visual treatment and repeats the primary 
 - Keep `AngleLandingSections.tsx` as section orchestration only.
 - Extract the client-only interaction to a route-local `AngleHeroStudio.client.tsx` and keep static hero copy/SEO in a server-rendered hero section.
 - Add a pure `angle-hero-studio.ts` module for the canonical angle stops, labels, and display state so the interaction can be tested without DOM rendering.
-- Store English-only hero and section copy under the existing English tool-marketing content boundary. Do not alter French or Spanish messages in this phase.
+- Route the premium landing view only when the resolved locale is `en`. Store its English-only presentation copy in a route-local typed config, because the shared dictionary type requires all locale dictionaries to share a shape. French and Spanish keep the current localized landing view and their messages remain untouched in this phase.
 - Extend `angle-landing-assets.ts` with typed, section-specific asset groups. The type and a contract test must enforce that paths cannot be shared across groups.
 
 ## SEO
