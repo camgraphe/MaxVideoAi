@@ -1,7 +1,7 @@
 # Angle Landing Dark Mode Design
 
-Date: 2026-07-13  
-Status: Approved design direction  
+Date: 2026-07-13
+Status: Approved design direction
 Branch: `codex/angle-dark-mode`
 
 ## Objective
