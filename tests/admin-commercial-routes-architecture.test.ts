@@ -142,6 +142,27 @@ test('billing product committed success isolates SWR refresh failures as operati
   assert.ok(confirmationFailureReturn >= 0 && refreshStart > confirmationFailureReturn);
 });
 
+test('billing product recovery warning is durable, visible, and blocks stale edits until manual refresh succeeds', () => {
+  const controller = read(billingProductsControllerPath);
+  const view = read(billingProductsViewPath);
+  assert.match(controller, /interactionLocked\s*=\s*[^;]*Boolean\(postCommitWarning\)/);
+  assert.match(controller, /refreshLocked\s*=\s*previewing\s*\|\|\s*confirming\s*\|\|\s*Boolean\(preview\)/);
+  assert.match(controller, /if \(refreshLocked\) return;/);
+  assert.match(controller, /postCommitWarning,\s*\n/);
+  assert.match(view, /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/);
+  assert.match(view, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
+
+  const hydrationEffect = controller.match(/useEffect\(\(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
+  assert.match(hydrationEffect, /if \(!inventory \|\| interactionLocked \|\| selectedProductKey\) return;/);
+  const requestPreview = controller.match(/const requestPreview = useCallback[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
+  assert.match(requestPreview, /if \(interactionLocked\) return;/);
+
+  assert.equal(controller.match(/setPostCommitWarning\(null\)/g)?.length, 1);
+  const refreshBlock = controller.match(/const refresh = useCallback\(async \(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
+  assert.match(refreshBlock, /setPostCommitWarning\(null\)/);
+  assert.match(refreshBlock, /setPostCommitWarning\(null\)[\s\S]*\} catch/);
+});
+
 test('billing product client stays browser-safe and contains no commercial calculations', () => {
   const source = [billingProductsViewPath, billingProductsControllerPath, billingProductsViewModelPath].map(read).join('\n');
   assert.doesNotMatch(source, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy|@\/lib\/billing-products/);

@@ -29,7 +29,7 @@ export function AdminBillingProductsView() {
         title="Billing products"
         description="Manage only fixed products referenced by live product flows. Every update requires a canonical server preview and applies transactionally."
         actions={
-          <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.interactionLocked}>
+          <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
             <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </AdminActionButton>
@@ -49,6 +49,9 @@ export function AdminBillingProductsView() {
       {controller.inventory?.warnings.map((warning) => <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>)}
       {controller.error ? <AdminNotice tone="error">{controller.error.message}</AdminNotice> : null}
       {controller.notice ? <AdminNotice tone="success">{controller.notice}</AdminNotice> : null}
+      {controller.postCommitWarning ? (
+        <AdminNotice tone="warning">{controller.postCommitWarning.message}</AdminNotice>
+      ) : null}
 
       {controller.loading ? <AdminLoadingPanel rows={6} /> : controller.inventory ? (
         <div className="grid gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)]">

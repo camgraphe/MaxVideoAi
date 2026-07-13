@@ -69,7 +69,8 @@ export function useAdminBillingProductsController() {
   const [error, setError] = useState<BillingProductAdminError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [postCommitWarning, setPostCommitWarning] = useState<BillingProductOperationalWarning | null>(null);
-  const interactionLocked = previewing || confirming || Boolean(preview);
+  const refreshLocked = previewing || confirming || Boolean(preview);
+  const interactionLocked = refreshLocked || Boolean(postCommitWarning);
   const products = useMemo(() => inventory?.products ?? [], [inventory]);
   const filteredProducts = useMemo(() => filterBillingProducts(products, query), [products, query]);
   const selectedProduct = products.find((product) => product.productKey === selectedProductKey) ?? null;
@@ -145,7 +146,6 @@ export function useAdminBillingProductsController() {
     if (!preview || !previewProposal) return;
     setConfirming(true);
     setError(null);
-    setPostCommitWarning(null);
     let confirmation: BillingProductConfirmApiResponse['confirmation'];
     try {
       const response = await postJson<BillingProductConfirmApiResponse>(BILLING_PRODUCTS_CONFIRM_ENDPOINT, { proposal: previewProposal, previewFingerprint: preview.previewFingerprint }, 'Unable to apply billing product change.');
@@ -172,7 +172,6 @@ export function useAdminBillingProductsController() {
         message: 'Billing product change was committed, but refreshing the local view failed. Refresh manually before making another change.',
       };
       setPostCommitWarning(refreshWarning);
-      operationalWarnings.push(refreshWarning);
     }
     setNotice(operationalWarnings.length
       ? `Billing product change applied. ${operationalWarnings.map((warning) => warning.message).join(' ')}`
@@ -181,7 +180,7 @@ export function useAdminBillingProductsController() {
   }, [preview, previewProposal, refreshHistory, refreshInventory]);
 
   const refresh = useCallback(async () => {
-    if (interactionLocked) return;
+    if (refreshLocked) return;
     setError(null);
     try {
       const [refreshedInventory] = await Promise.all([refreshInventory(), refreshHistory()]);
@@ -192,7 +191,7 @@ export function useAdminBillingProductsController() {
     } catch (caught) {
       setError(toBillingProductError(caught, 'Unable to refresh billing products.'));
     }
-  }, [interactionLocked, refreshHistory, refreshInventory]);
+  }, [refreshHistory, refreshInventory, refreshLocked]);
 
   const fetchError = inventoryQuery.error
     ? toBillingProductError(inventoryQuery.error, 'Unable to load billing products.')
@@ -212,10 +211,12 @@ export function useAdminBillingProductsController() {
     previewing,
     confirming,
     interactionLocked,
+    refreshLocked,
     loading: inventoryQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
     error: error ?? (postCommitWarning ? null : fetchError),
     notice,
+    postCommitWarning,
     setQuery,
     selectProduct,
     updateDraft,
