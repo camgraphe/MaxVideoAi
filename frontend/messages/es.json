@@ -5701,7 +5701,7 @@
           "fotograma inicial image-to-video",
           "first frame image-to-video"
         ],
-        "imageAlt": "Ángulos de cámara alternativos generados con IA a partir de una imagen fuente.",
+        "imageAlt": "Campo sobre el hombro generado por IA en un diálogo cinematográfico entre dos actores.",
         "schemaName": "Cambiar ángulo de cámara con IA",
         "schemaDescription": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor fotograma inicial para image-to-video, storyboards, anuncios y fotos de producto.",
         "schemaFeatures": [
@@ -5734,27 +5734,27 @@
           "views": [
             {
               "id": "front",
-              "label": "Vista frontal",
-              "degreeLabel": "Fuente · 0°",
-              "alt": "Vista frontal de una cámara de cine compacta sobre un pedestal de estudio color marfil."
+              "label": "Plano de dos",
+              "degreeLabel": "Fuente · Dos actores",
+              "alt": "Plano fuente de dos actores en una conversación frente a frente en una mesa de un bar de hotel contemporáneo."
             },
             {
               "id": "threeQuarter",
-              "label": "Vista de tres cuartos",
-              "degreeLabel": "Rotación · 45°",
-              "alt": "Vista en tres cuartos generada a partir de la misma imagen de una cámara de cine compacta."
+              "label": "Campo sobre el actor B",
+              "degreeLabel": "Generado · Campo",
+              "alt": "Ángulo de cámara generado por IA sobre el hombro de la actriz A hacia el actor B en el mismo diálogo."
             },
             {
               "id": "profile",
-              "label": "Vista de perfil",
-              "degreeLabel": "Rotación · 90°",
-              "alt": "Vista de perfil generada a partir de la misma imagen de una cámara de cine compacta."
+              "label": "Contracampo sobre la actriz A",
+              "degreeLabel": "Generado · Contracampo",
+              "alt": "Contracampo generado por IA sobre el hombro del actor B hacia la actriz A en el mismo diálogo."
             },
             {
               "id": "elevated",
-              "label": "Vista elevada",
-              "degreeLabel": "Tres cuartos elevado",
-              "alt": "Vista elevada en tres cuartos generada a partir de la misma imagen de una cámara de cine compacta."
+              "label": "Plano alto del diálogo",
+              "degreeLabel": "Generado · Ángulo alto",
+              "alt": "Ángulo alto generado por IA con los dos actores y el bar de hotel durante la misma conversación."
             }
           ]
         },

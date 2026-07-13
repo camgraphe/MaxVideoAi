@@ -5709,7 +5709,7 @@
           "premier plan image-to-video",
           "first frame image-to-video"
         ],
-        "imageAlt": "Angles de caméra alternatifs générés par IA à partir d'une image source.",
+        "imageAlt": "Champ par-dessus l’épaule généré par IA dans un dialogue cinématographique à deux acteurs.",
         "schemaName": "Changer l'angle de caméra avec l'IA",
         "schemaDescription": "Importez une image, changez l'angle de caméra sans reconstruire la scène et créez un meilleur premier plan pour l'image-to-video, le storyboard, la pub ou le packshot.",
         "schemaFeatures": [
@@ -5742,27 +5742,27 @@
           "views": [
             {
               "id": "front",
-              "label": "Vue de face",
-              "degreeLabel": "Source · 0°",
-              "alt": "Vue de face d’une caméra de cinéma compacte sur un socle de studio ivoire."
+              "label": "Plan à deux",
+              "degreeLabel": "Source · Face-à-face",
+              "alt": "Plan source de deux acteurs en pleine conversation autour d’une table dans un bar d’hôtel contemporain."
             },
             {
               "id": "threeQuarter",
-              "label": "Vue trois-quarts",
-              "degreeLabel": "Rotation · 45°",
-              "alt": "Vue en trois-quarts générée à partir de la même image d’une caméra de cinéma compacte."
+              "label": "Champ sur l’acteur B",
+              "degreeLabel": "Généré · Champ",
+              "alt": "Champ généré par IA par-dessus l’épaule de l’actrice A vers l’acteur B dans le même dialogue."
             },
             {
               "id": "profile",
-              "label": "Vue de profil",
-              "degreeLabel": "Rotation · 90°",
-              "alt": "Vue de profil générée à partir de la même image d’une caméra de cinéma compacte."
+              "label": "Contrechamp sur l’actrice A",
+              "degreeLabel": "Généré · Contrechamp",
+              "alt": "Contrechamp généré par IA par-dessus l’épaule de l’acteur B vers l’actrice A dans le même dialogue."
             },
             {
               "id": "elevated",
-              "label": "Vue surélevée",
-              "degreeLabel": "Trois-quarts surélevé",
-              "alt": "Vue surélevée en trois-quarts générée à partir de la même image d’une caméra de cinéma compacte."
+              "label": "Plan dialogue surélevé",
+              "degreeLabel": "Généré · Plongée légère",
+              "alt": "Angle surélevé généré par IA montrant les deux acteurs et le bar d’hôtel pendant la même conversation."
             }
           ]
         },

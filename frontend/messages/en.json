@@ -5674,7 +5674,7 @@
           "first frame for ai video",
           "image to video first frame"
         ],
-        "imageAlt": "AI-generated alternate camera angles from one source image.",
+        "imageAlt": "AI-generated over-the-shoulder camera angle from a cinematic two-actor dialogue.",
         "schemaName": "Change Camera Angle with AI",
         "schemaDescription": "Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.",
         "schemaFeatures": [
@@ -5707,27 +5707,27 @@
           "views": [
             {
               "id": "front",
-              "label": "Front view",
-              "degreeLabel": "Source · 0°",
-              "alt": "Front view of a compact cinema camera on an ivory studio plinth."
+              "label": "Dialogue two-shot",
+              "degreeLabel": "Source · Two-shot",
+              "alt": "Source two-shot of two actors in conversation across a table in a contemporary hotel bar."
             },
             {
               "id": "threeQuarter",
-              "label": "Three-quarter view",
-              "degreeLabel": "Rotation · 45°",
-              "alt": "Three-quarter camera angle generated from the same compact cinema camera image."
+              "label": "Field on Actor B",
+              "degreeLabel": "Generated · Field",
+              "alt": "AI-generated over-the-shoulder camera angle looking past Actor A toward Actor B in the same dialogue."
             },
             {
               "id": "profile",
-              "label": "Profile view",
-              "degreeLabel": "Rotation · 90°",
-              "alt": "Profile camera angle generated from the same compact cinema camera image."
+              "label": "Reverse on Actor A",
+              "degreeLabel": "Generated · Reverse",
+              "alt": "AI-generated reverse over-the-shoulder camera angle looking past Actor B toward Actor A in the same dialogue."
             },
             {
               "id": "elevated",
-              "label": "Elevated view",
-              "degreeLabel": "Elevated three-quarter",
-              "alt": "Elevated three-quarter camera angle generated from the same compact cinema camera image."
+              "label": "Elevated dialogue view",
+              "degreeLabel": "Generated · High angle",
+              "alt": "AI-generated elevated camera angle showing both actors and the hotel-bar setting during the same conversation."
             }
           ]
         },
