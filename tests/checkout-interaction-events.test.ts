@@ -73,15 +73,18 @@ const routeSource = readFileSync('frontend/app/api/checkout-events/route.ts', 'u
 assert.match(routeSource, /recordCheckoutInteractionEvent/);
 assert.match(routeSource, /getRouteAuthContext\(req\)/);
 
-const stripeWebhookSource = readFileSync('frontend/app/api/stripe/webhook/route.ts', 'utf8');
+const stripeWebhookProcessorSource = readFileSync(
+  'frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-processor.ts',
+  'utf8'
+);
 const stripeFailedPaymentsSource = readFileSync(
   'frontend/app/api/stripe/webhook/_lib/stripe-webhook-failed-payments.ts',
   'utf8'
 );
-assert.match(stripeWebhookSource, /charge\.failed/);
-assert.match(stripeWebhookSource, /payment_intent\.payment_failed/);
-assert.match(stripeWebhookSource, /handleChargeFailed/);
-assert.match(stripeWebhookSource, /handlePaymentIntentFailed/);
+assert.match(stripeWebhookProcessorSource, /charge\.failed/);
+assert.match(stripeWebhookProcessorSource, /payment_intent\.payment_failed/);
+assert.match(stripeWebhookProcessorSource, /handleChargeFailed/);
+assert.match(stripeWebhookProcessorSource, /handlePaymentIntentFailed/);
 assert.match(stripeFailedPaymentsSource, /expireCheckoutSessionForFailedCards/);
 
 const hostedCheckoutHookSource = readFileSync('frontend/hooks/useHostedWalletCheckout.ts', 'utf8');

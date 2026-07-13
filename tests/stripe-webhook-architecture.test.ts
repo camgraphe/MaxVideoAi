@@ -9,13 +9,16 @@ const refundsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-refunds
 const documentsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-documents.ts';
 const topupEventsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-events.ts';
 const topupPersistencePath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts';
+const processorPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-processor.ts';
 
 test('Stripe webhook event idempotency has one route-local owner', () => {
   assert.equal(existsSync(eventStatePath), true);
+  assert.equal(existsSync(processorPath), true);
   const route = readFileSync(routePath, 'utf8');
+  const processor = readFileSync(processorPath, 'utf8');
   const eventState = readFileSync(eventStatePath, 'utf8');
 
-  assert.match(route, /from ['"]\.\/_lib\/stripe-webhook-event-state['"]/);
+  assert.match(processor, /from ['"]\.\/stripe-webhook-event-state['"]/);
   assert.doesNotMatch(route, /stripe_webhook_events/);
   assert.match(eventState, /export async function beginStripeEvent/);
   assert.match(eventState, /export async function markStripeEventProcessed/);
@@ -26,12 +29,14 @@ test('Stripe webhook event idempotency has one route-local owner', () => {
 test('failed-payment protection and refund analytics have separate owners', () => {
   assert.equal(existsSync(failedPaymentsPath), true);
   assert.equal(existsSync(refundsPath), true);
+  assert.equal(existsSync(processorPath), true);
   const route = readFileSync(routePath, 'utf8');
+  const processor = readFileSync(processorPath, 'utf8');
   const failedPayments = readFileSync(failedPaymentsPath, 'utf8');
   const refunds = readFileSync(refundsPath, 'utf8');
 
-  assert.match(route, /stripe-webhook-failed-payments/);
-  assert.match(route, /stripe-webhook-refunds/);
+  assert.match(processor, /stripe-webhook-failed-payments/);
+  assert.match(processor, /stripe-webhook-refunds/);
   assert.doesNotMatch(route, /FAILED_CARD_ATTEMPT_LIMIT|topup_refunded/);
   assert.match(failedPayments, /const FAILED_CARD_ATTEMPT_LIMIT = 5/);
   assert.match(failedPayments, /stripe_checkout_session_expired_for_failed_cards/);
@@ -52,4 +57,34 @@ test('successful Stripe events share one canonical top-up persistence owner', ()
   assert.match(persistence, /name: 'topup_completed'/);
   assert.match(persistence, /name: 'purchase'/);
   assert.doesNotMatch(route, /recordStripeTopup|withDbTransaction|topup_completed/);
+});
+
+test('Stripe webhook route owns only verification and HTTP mapping', () => {
+  assert.equal(existsSync(processorPath), true);
+  const route = readFileSync(routePath, 'utf8');
+  const lineCount = route.split('\n').length;
+
+  assert.ok(lineCount < 140, `route.ts must stay below 140 lines, got ${lineCount}`);
+  assert.match(route, /request\.arrayBuffer\(\)/);
+  assert.match(route, /request\.headers\.get\('stripe-signature'\)/);
+  assert.match(route, /stripe\.webhooks\.constructEvent/);
+  assert.match(route, /processStripeWebhookEvent/);
+  assert.doesNotMatch(route, /\b(?:SELECT|INSERT|UPDATE|DELETE)\b/);
+  assert.doesNotMatch(route, /sendGa4Event|recordMockWalletTopUp|withDbTransaction/);
+});
+
+test('Stripe webhook modules stay focused instead of creating a new catch-all', () => {
+  for (const path of [
+    eventStatePath,
+    failedPaymentsPath,
+    refundsPath,
+    documentsPath,
+    topupEventsPath,
+    topupPersistencePath,
+    processorPath,
+  ]) {
+    assert.equal(existsSync(path), true);
+    const lineCount = readFileSync(path, 'utf8').split('\n').length;
+    assert.ok(lineCount < 500, `${path} must stay below 500 lines, got ${lineCount}`);
+  }
 });
