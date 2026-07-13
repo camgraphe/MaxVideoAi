@@ -1,111 +1,41 @@
-# Final review fixes report
+# Final Pricing Admin Review Fixes
 
-## Scope
+Date: 2026-07-13
+Base reviewed head: `47489595`
+Branch: `main`
+Push: none
 
-Resolved all four Important findings from the final branch review in one implementation commit:
+## Findings closed
 
-- removed the stale Seedance publication-shaped launch policy and added a semantic one-owner guard;
-- implemented validated replacement retirement and direct localized replacement redirects;
-- separated model-page publication from indexation and sitemap route decisions while preserving the legacy surface shape;
-- made the registry/prebuild check compare every generated model projection exactly without writes.
+1. Policy rollback fingerprints now bind `rollbackEventId` in server-owned projection state. A regression proves that a fingerprint previewed for event A cannot confirm event B when both events otherwise carry identical target and historical state.
+2. Policy and Membership now use durable post-commit refresh recovery matching Billing Products: committed state is reported separately from refresh failure, stale selection/draft/preview state is removed, edits/preview/rollback/hydration remain locked behind a visible warning, manual refresh remains available, and only successful inventory plus history refresh clears the warning.
+3. Policy renders the server-supplied operational context: representative supplier subtotals, billing/public canonical totals, effective source/specificity/rule ID, matched versioned and database rule state, last actor/timestamp, and read-only vendor routing. The new projection-status filter distinguishes quoted from unavailable server projections and performs no client pricing calculation.
+4. Membership rejects normalized update no-ops with typed `invalid_payload` before a preview can be confirmed.
+5. Membership has a non-mutating Playwright preview/cancel flow covering all three tiers, a strict timeout, inventory-scoped selectors, pending-preview locks, cancellation, and zero confirm requests.
 
 ## TDD evidence
 
-### RED
-
-Command:
-
-```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-registry-validation.test.ts tests/model-registry-redirects.test.ts tests/model-page-publication.test.ts tests/model-generated-projections.test.ts tests/model-registry-architecture.test.ts
-```
-
-Result: 17 passed, 6 failed as expected. Failures covered the missing replacement retirement contract, cycle classification, replacement redirect projector, route publication helper, exact generated-projection helper, and the stale Seedance publication policy detected by the new semantic guard.
-
-### GREEN
-
-Focused command:
-
-```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-registry-validation.test.ts tests/model-registry-redirects.test.ts tests/model-page-publication.test.ts tests/model-generated-projections.test.ts tests/model-registry-architecture.test.ts tests/model-registry-parity.test.ts tests/model-page-static-architecture.test.ts tests/fal-engine-catalog-architecture.test.ts tests/public-engines.test.ts
-```
-
-Result: 43/43 passed. The redirect baseline remains exactly 141 generated rules because the current registry has no replacement entries; mutation fixtures cover canonical and historical replacement sources in EN/FR/ES.
-
-Full suite:
-
-```bash
-pnpm test:validate
-```
-
-Result: 1892/1892 passed, 0 failed.
+- Policy rollback substitution regression: RED with “Missing expected rejection”; GREEN 25/25 policy-service tests.
+- Policy/Membership recovery contracts: RED with missing `post_commit_refresh_failed`; GREEN 40/40 commercial architecture tests plus TypeScript.
+- Policy operational context/status: RED in inspector, filter, and representative-surface assertions; GREEN 46/46 policy service/architecture tests.
+- Membership normalized no-op: RED with “Missing expected rejection”; GREEN 15/15 membership service tests.
+- Membership E2E contract: RED with missing flow; GREEN 21/21 commercial route architecture tests and Playwright discovery lists the new flow.
 
 ## Verification
 
-All passed:
+- Focused pricing admin suites: 96/96 passed.
+- `pnpm test:validate`: 2089/2089 passed.
+- `pnpm --prefix frontend run lint`: passed.
+- `pnpm lint:exposure`: passed.
+- `pnpm --prefix frontend exec tsc --noEmit --pretty false`: passed.
+- `pnpm architecture:audit --min-lines 500`: passed and reported current inventory.
+- `pnpm pricing:baseline`: current, 178 rows.
+- `pnpm pricing:public-baseline`: current, 492 rows.
+- `pnpm pricing:audit`: 178 scenarios, 178 matches, 0 mismatches, 4 compatibility profiles.
+- `pnpm --prefix frontend run build`: passed, including registry/catalog/roster checks and 713 static pages.
+- `pnpm exec playwright test tests/e2e/admin-critical-flows.spec.ts --list`: passed; 7 flows discovered including Membership preview/cancel.
+- `git diff --check`: passed.
+- Pricing policy and both frozen fixtures are unchanged from `47489595`.
+- Obsolete references remain absent except intentional guide/test guards and canonical membership target IDs.
 
-```bash
-pnpm --prefix frontend run lint
-pnpm lint:exposure
-pnpm --prefix frontend exec tsc --noEmit --pretty false
-pnpm model:registry:check
-pnpm model:check
-pnpm --prefix frontend run build
-git diff --check
-```
-
-Production build emitted `frontend/.next/BUILD_ID` value `RTCBSQsDTWGpqiqw_OSRG`.
-
-The registry check was run between two SHA-1 snapshots of all five generated projections. Every hash was unchanged:
-
-- runtime: `ed8cc174389747aacf558618d472711bc62145b7`
-- engine catalog: `801a3a8f3b374c3ab951ddf600a0f73d0145e714`
-- frontend roster: `0ef7da61a4b3f07ff2e75327a9cc04f2f95dd6e5`
-- docs roster JSON: `0ef7da61a4b3f07ff2e75327a9cc04f2f95dd6e5`
-- docs roster CSV: `093e56ba1c974442bcf1b3396b43d353c1541e86`
-
-Incidental dated SEO matrix updates and the model-roster report timestamp produced by verification were reversed. `model:check` retained its pre-existing 12 non-blocking content/family warnings and reported 0 critical findings.
-
-## Commits
-
-- Final-review base: `804db073f76de1e933495cf5c4d11d296039486f`
-- Implementation: `972b11821684c57e2984dd4fa74d8bbfa6896879` (`fix: harden model registry contracts`)
-- Report: committed immediately after this file.
-
-## Remaining concerns
-
-No known correctness blocker. The live registry currently exercises replacement behavior only through mutation fixtures; the first real retirement will be protected by the same validator, redirect, one-hop, and exact-projection checks.
-
-## Final re-review follow-up
-
-The subsequent re-review found one Important middleware chain and one Minor architecture-guard coverage gap. Both are resolved in `b3f6f1de8832b92c6007e524378c9718af7b63a8` (`fix: flatten replacement middleware routing`).
-
-### RED
-
-```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-runtime-replacement-routing.test.ts tests/model-registry-architecture.test.ts
-```
-
-Result: 7 passed, 2 failed as expected. The new runtime projection helper was absent, and the semantic guard proved that `frontend/app` was not yet scanned.
-
-### GREEN
-
-```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-runtime-replacement-routing.test.ts tests/model-registry-architecture.test.ts tests/model-registry-parity.test.ts tests/marketing-locale-routing.test.ts tests/model-registry-redirects.test.ts
-```
-
-Result: 27/27 passed. Mutation coverage retires `happy-horse-1-0`, including dotted alias `happy-horse-1.0`, and proves:
-
-- engine IDs and internal aliases continue to resolve to the retired source identity;
-- canonical and public aliases resolve through an optional flattened `publicTargetId` only;
-- no `replacement` graph enters the browser runtime;
-- `/fr/models/*` and `/es/models/*` preserve queries and return one HTTP 301 directly to the active localized canonical slug;
-- native redirect sources remain unique and one hop.
-
-The semantic guard now recursively scans all source files under `frontend` and `scripts`, including `app`, `components`, and `server`. It skips only dependency/build directories and the authorized registry scaffold.
-
-Final verification:
-
-- `pnpm test:validate`: 1894/1894 passed.
-- frontend lint, exposure lint, TypeScript, registry check, model check, and `git diff --check`: passed.
-- production build: passed with `BUILD_ID=9RnjdCb0HrkX80FVXukon`.
-- incidental SEO matrices and generated report timestamps were reversed.
+No authenticated database write or push was performed.

@@ -334,6 +334,40 @@ test('rollback rejects a target identifier that does not match immutable event h
   );
 });
 
+test('rollback fingerprint cannot be substituted between policy events with identical historical state', async () => {
+  const current = policyRule('db-kling', { marginFlatCents: 9 });
+  const previous = policyRule('db-kling', { marginFlatCents: 2 });
+  const events = ['rollback-source-a', 'rollback-source-b'].map((id): PricingChangeEvent => ({
+    id,
+    domain: 'policy_rule',
+    operation: 'update',
+    targetId: current.id,
+    actorId,
+    previousState: previous,
+    nextState: current,
+    previewSummary: {},
+    affectedScenarioIds: [],
+    createdAt: '2026-07-12T00:00:00.000Z',
+  }));
+  const harness = createMemoryHarness([current], events);
+  const preview = await previewPricingPolicyChange(
+    { operation: 'rollback', targetId: current.id, eventId: events[0]!.id },
+    harness.deps
+  );
+
+  await assert.rejects(
+    confirmPricingPolicyChange(
+      { operation: 'rollback', targetId: current.id, eventId: events[1]!.id },
+      preview.previewFingerprint,
+      actorId,
+      harness.deps
+    ),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'preview_stale'
+  );
+  assert.equal(harness.events.length, 2);
+  assert.equal(harness.persistActors.length, 0);
+});
+
 test('surcharge-only previews request selector-aware canonical coverage', async () => {
   const current = policyRule('db-kling');
   const harness = createMemoryHarness([current]);
@@ -594,6 +628,9 @@ test('inventory and history expose policy provenance, routing context, represent
   assert.equal(row?.versionedRule?.id, 'default');
   assert.equal(row?.routingContext?.vendorAccountId, 'acct-routing');
   assert.ok(row?.representativeQuotes.length);
+  assert.ok(row?.representativeQuotes.some((quote) => quote.surface === 'billing'));
+  assert.ok(row?.representativeQuotes.some((quote) => quote.surface !== 'billing'));
+  assert.ok(row?.representativeQuotes.every((quote) => Number.isFinite(quote.vendorSubtotalCents)));
   assert.equal(row?.lastEvent?.id, event.id);
   assert.equal(versionedOnlyRow?.databaseOverride, null);
   assert.equal(versionedOnlyRow?.versionedRule?.id, 'default');

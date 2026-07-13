@@ -318,6 +318,9 @@ async function previewMembershipChangeWithExecutor(
   const thresholdChanged = MEMBERSHIP_TIER_NAMES.filter(
     (tier) => currentByTier.get(tier)!.spendThresholdCents !== proposedByTier.get(tier)!.spendThresholdCents
   );
+  if (context.operation === 'update' && !discountChanged.length && !thresholdChanged.length) {
+    throw new PricingAdminError('invalid_payload', 'Membership proposal has no change after normalization');
+  }
   const scenarios = buildPricingAuditScenarios().filter(
     (scenario) => scenario.surface === 'billing' && discountChanged.includes(scenario.membershipTier ?? 'member')
   );

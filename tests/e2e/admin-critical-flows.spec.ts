@@ -148,6 +148,67 @@ test.describe('admin critical flows', () => {
     assertNoClientErrors(errors);
   });
 
+  test('membership tiers preview and cancel without applying', async ({ page }) => {
+    const errors = trackClientErrors(page);
+    let confirmRequests = 0;
+    page.on('request', (request) => {
+      if (request.url().includes('/api/admin/membership/confirm') && request.method() === 'POST') {
+        confirmRequests += 1;
+      }
+    });
+
+    await openAdminRoute(page, '/admin/membership');
+    const membershipState = await waitForMembershipState(page);
+    if (membershipState === 'timeout') {
+      throw new Error('Timed out waiting for the membership tier inventory to render.');
+    }
+    if (membershipState === 'unavailable') {
+      test.skip(true, 'requires configured membership database access');
+    }
+    if (membershipState === 'empty') {
+      test.skip(true, 'requires canonical membership tier data');
+    }
+
+    const inventory = page.getByTestId('membership-tier-inventory');
+    const discountInputs = ['member', 'plus', 'pro'].map((tier) =>
+      inventory.getByLabel(`${tier} discount fraction (0–1)`)
+    );
+    for (const input of discountInputs) {
+      const current = Number(await input.inputValue());
+      await input.fill(String(current + 0.01));
+    }
+
+    let previewRequests = 0;
+    let releasePreview!: () => void;
+    const previewGate = new Promise<void>((resolve) => {
+      releasePreview = resolve;
+    });
+    await page.route('**/api/admin/membership/preview', async (route) => {
+      if (route.request().method() === 'POST') previewRequests += 1;
+      await previewGate;
+      await route.continue();
+    });
+
+    await page.getByRole('button', { name: 'Preview all tier changes' }).click();
+    try {
+      for (const input of discountInputs) await expect(input).toBeDisabled();
+      await expect(page.getByRole('button', { name: 'Previewing…' })).toBeDisabled();
+    } finally {
+      releasePreview();
+    }
+
+    const dialog = page.getByRole('dialog', { name: /update/i });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText('Canonical server preview')).toBeVisible();
+    expect(previewRequests).toBe(1);
+    await dialog.getByRole('button', { name: 'Cancel' }).click();
+    await expect(dialog).toBeHidden();
+    for (const input of discountInputs) await expect(input).toBeEnabled();
+    expect(confirmRequests).toBe(0);
+
+    assertNoClientErrors(errors);
+  });
+
   test('billing products filter, preview, and cancel without applying', async ({ page }) => {
     const errors = trackClientErrors(page);
 
@@ -217,6 +278,24 @@ async function waitForPricingPolicyState(page: Page) {
       return 'rows' as const;
     }
     if (await page.getByText('No canonical pricing policy rows are available.').isVisible().catch(() => false)) {
+      return 'empty' as const;
+    }
+    await page.waitForTimeout(250);
+  }
+
+  return 'timeout' as const;
+}
+
+async function waitForMembershipState(page: Page) {
+  const deadline = Date.now() + 10_000;
+  const inventory = page.getByTestId('membership-tier-inventory');
+
+  while (Date.now() < deadline) {
+    if (await page.getByText(/membership database is unavailable/i).first().isVisible().catch(() => false)) {
+      return 'unavailable' as const;
+    }
+    if ((await inventory.locator('fieldset').count()) === 3) return 'rows' as const;
+    if (await page.getByText('No membership inventory is available.').isVisible().catch(() => false)) {
       return 'empty' as const;
     }
     await page.waitForTimeout(250);

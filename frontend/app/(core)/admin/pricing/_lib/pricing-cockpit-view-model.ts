@@ -24,6 +24,7 @@ export type PricingPolicyRepresentativeQuote = {
   scenarioId: string;
   engineId: string;
   surface: string;
+  vendorSubtotalCents: number;
   totalCents: number;
   policyProvenance: PricingChangePreviewProvenance;
 };
@@ -72,10 +73,16 @@ export type PricingPolicyProposal =
 export type PricingCockpitFilters = {
   query: string;
   source: 'all' | 'database' | 'versioned';
+  status: 'all' | 'quoted' | 'unavailable';
 };
 
 export type PricingCockpitError = {
   code: string;
+  message: string;
+};
+
+export type PricingCockpitOperationalWarning = {
+  code: 'post_commit_refresh_failed';
   message: string;
 };
 
@@ -139,6 +146,11 @@ export function formatUsdCents(cents: number): string {
 
 export function formatPercentRatio(value: number): string {
   return new Intl.NumberFormat('en-US', { style: 'percent', maximumFractionDigits: 2 }).format(value);
+}
+
+export function formatAdminTimestamp(value: string): string {
+  const timestamp = new Date(value);
+  return Number.isNaN(timestamp.getTime()) ? value : timestamp.toLocaleString('en-US');
 }
 
 function ratioToPercentInput(value: number): string {
@@ -230,6 +242,10 @@ export function filterPricingPolicyRows(
       filters.source === 'all' ||
       (filters.source === 'database' ? Boolean(row.databaseOverride) : !row.databaseOverride);
     if (!sourceMatches) return false;
+    const statusMatches =
+      filters.status === 'all' ||
+      (filters.status === 'quoted' ? row.representativeQuotes.length > 0 : row.representativeQuotes.length === 0);
+    if (!statusMatches) return false;
     if (!query) return true;
     return [
       row.databaseOverride?.id,

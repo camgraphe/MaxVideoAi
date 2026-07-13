@@ -42,6 +42,10 @@ export type MembershipConfirmApiResponse = {
 };
 
 export type MembershipAdminError = { code: string; message: string };
+export type MembershipOperationalWarning = {
+  code: 'post_commit_refresh_failed';
+  message: string;
+};
 
 export function createMembershipDraft(tiers: MembershipTierDto[]): MembershipTierDraft[] {
   const byTier = new Map(tiers.map((tier) => [tier.tier, tier]));

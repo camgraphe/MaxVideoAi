@@ -13,6 +13,7 @@ import {
   reconcilePricingPolicySelection,
   type PricingCockpitError,
   type PricingCockpitFilters,
+  type PricingCockpitOperationalWarning,
   type PricingConfirmApiResponse,
   type PricingHistoryApiResponse,
   type PricingInventoryApiResponse,
@@ -60,7 +61,7 @@ export function useAdminPricingCockpitController() {
   const historyQuery = useSWR<PricingHistoryApiResponse>(PRICING_HISTORY_ENDPOINT, apiFetcher);
   const refreshInventory = inventoryQuery.mutate;
   const refreshHistory = historyQuery.mutate;
-  const [filters, setFilterState] = useState<PricingCockpitFilters>({ query: '', source: 'all' });
+  const [filters, setFilterState] = useState<PricingCockpitFilters>({ query: '', source: 'all', status: 'all' });
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [draft, setDraft] = useState<PricingPolicyDraft | null>(null);
   const [draftSelectionKey, setDraftSelectionKey] = useState<string | null>(null);
@@ -70,7 +71,9 @@ export function useAdminPricingCockpitController() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<PricingCockpitError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const interactionLocked = previewing || confirming || Boolean(preview);
+  const [postCommitWarning, setPostCommitWarning] = useState<PricingCockpitOperationalWarning | null>(null);
+  const refreshLocked = previewing || confirming || Boolean(preview);
+  const interactionLocked = refreshLocked || Boolean(postCommitWarning);
 
   const inventory = inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
   const history = historyQuery.data?.ok ? historyQuery.data.events : [];
@@ -179,6 +182,7 @@ export function useAdminPricingCockpitController() {
     const nextSelectionKey = pricingPolicyProposalSelectorKey(previewProposal);
     setConfirming(true);
     setError(null);
+    let confirmation: Extract<PricingConfirmApiResponse, { ok: true }>['confirmation'];
     try {
       const response = await postJson<PricingConfirmApiResponse>(
         PRICING_CONFIRM_ENDPOINT,
@@ -186,35 +190,63 @@ export function useAdminPricingCockpitController() {
         'Unable to apply this pricing change.'
       );
       if (!response.ok) throw toCockpitError(response, 'Unable to apply this pricing change.');
-      const confirmation = response.confirmation;
+      confirmation = response.confirmation;
       if (!confirmation.committed) throw new Error('Pricing change was not committed.');
-      setPreview(null);
-      setPreviewProposal(null);
-      setNotice(
-        confirmation.operationalWarnings.length
-          ? `Change applied. ${confirmation.operationalWarnings.map((warning) => warning.message).join(' ')}`
-          : 'Pricing policy change applied.'
-      );
-      await Promise.all([refreshInventory(), refreshHistory()]);
-      if (nextSelectionKey && nextSelectionKey !== selectedKey) {
-        setFilterState({ query: '', source: 'all' });
-        setSelectedKey(nextSelectionKey);
-      }
-      setDraftSelectionKey(null);
     } catch (caught) {
       setError(caught && typeof caught === 'object' && 'code' in caught
         ? caught as PricingCockpitError
         : { code: 'request_failed', message: caught instanceof Error ? caught.message : 'Unable to apply change.' });
-    } finally {
       setConfirming(false);
+      return;
     }
-  }, [preview, previewProposal, refreshHistory, refreshInventory, selectedKey]);
+
+    setPreview(null);
+    setPreviewProposal(null);
+    setSelectedKey(null);
+    setDraft(null);
+    setDraftSelectionKey(null);
+    setNotice(
+      confirmation.operationalWarnings.length
+        ? `Change applied. ${confirmation.operationalWarnings.map((warning) => warning.message).join(' ')}`
+        : 'Pricing policy change applied.'
+    );
+    try {
+      const [refreshedInventory, refreshedHistory] = await Promise.all([refreshInventory(), refreshHistory()]);
+      if (!refreshedInventory?.ok || !refreshedHistory?.ok) {
+        throw new Error('Pricing policy refresh returned no authoritative server data.');
+      }
+      const refreshedRows = refreshedInventory.inventory.rows;
+      const desiredKey = nextSelectionKey && refreshedRows.some((row) => pricingPolicyRowKey(row) === nextSelectionKey)
+        ? nextSelectionKey
+        : reconcilePricingPolicySelection(refreshedRows, null);
+      if (nextSelectionKey) setFilterState({ query: '', source: 'all', status: 'all' });
+      setSelectedKey(desiredKey);
+    } catch {
+      setPostCommitWarning({
+        code: 'post_commit_refresh_failed',
+        message: 'Pricing policy change was committed, but refreshing the local view failed. Refresh manually before making another change.',
+      });
+    }
+    setConfirming(false);
+  }, [preview, previewProposal, refreshHistory, refreshInventory]);
 
   const refresh = useCallback(async () => {
-    if (interactionLocked) return;
+    if (refreshLocked) return;
     setError(null);
-    await Promise.all([refreshInventory(), refreshHistory()]);
-  }, [interactionLocked, refreshHistory, refreshInventory]);
+    try {
+      const [refreshedInventory, refreshedHistory] = await Promise.all([refreshInventory(), refreshHistory()]);
+      if (!refreshedInventory?.ok || !refreshedHistory?.ok) {
+        throw new Error('Pricing policy refresh returned no authoritative server data.');
+      }
+      const refreshedRows = filterPricingPolicyRows(refreshedInventory.inventory.rows, filters);
+      setSelectedKey(reconcilePricingPolicySelection(refreshedRows, selectedKey));
+      setDraft(null);
+      setDraftSelectionKey(null);
+      setPostCommitWarning(null);
+    } catch (caught) {
+      setError(toCockpitError(caught, 'Unable to refresh pricing policy.'));
+    }
+  }, [filters, refreshHistory, refreshInventory, refreshLocked, selectedKey]);
 
   const fetchError = inventoryQuery.error
     ? toCockpitError(inventoryQuery.error, 'Unable to load pricing policy.')
@@ -245,7 +277,9 @@ export function useAdminPricingCockpitController() {
     loading: inventoryQuery.isLoading,
     historyLoading: historyQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
-    error: error ?? fetchError,
+    error: error ?? (postCommitWarning ? null : fetchError),
     notice,
+    postCommitWarning,
+    refreshLocked,
   };
 }

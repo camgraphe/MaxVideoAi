@@ -94,8 +94,22 @@ test('membership refresh replaces the draft from the resolved SWR inventory with
   const source = read(controllerPath);
   const refreshBlock = source.match(/const refresh = useCallback\(async \(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
   assert.doesNotMatch(refreshBlock, /setDraft\(\[\]\)/);
-  assert.match(refreshBlock, /const \[refreshedInventory\][\s\S]*await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
+  assert.match(refreshBlock, /const \[refreshedInventory, refreshedHistory\][\s\S]*await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
   assert.match(refreshBlock, /setDraft\(createMembershipDraft\(refreshedInventory\.inventory\.tiers\)\)/);
+});
+
+test('membership post-commit refresh recovery is durable and blocks stale tier state', () => {
+  const controller = read(controllerPath);
+  const view = read(viewPath);
+
+  assert.match(controller, /post_commit_refresh_failed/);
+  assert.match(controller, /interactionLocked\s*=\s*[^;]*Boolean\(postCommitWarning\)/);
+  assert.match(controller, /refreshLocked\s*=\s*previewing\s*\|\|\s*confirming\s*\|\|\s*Boolean\(preview\)/);
+  assert.match(controller, /if \(refreshLocked\) return;/);
+  assert.match(controller, /setDraft\(\[\]\)/);
+  assert.equal(controller.match(/setPostCommitWarning\(null\)/g)?.length, 1);
+  assert.match(view, /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/);
+  assert.match(view, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
 });
 
 test('membership client stays browser-safe, membership-only, and contains no commercial formulas', () => {
@@ -236,4 +250,22 @@ test('billing product E2E scopes row discovery and selection to the live invento
   const state = source.match(/async function waitForBillingProductState[\s\S]*?\n\}/)?.[0] ?? '';
   assert.match(state, /getByTestId\('billing-products-inventory'\)/);
   assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
+});
+
+test('membership E2E previews all tiers, locks controls, cancels, and never confirms', () => {
+  const source = read(adminCriticalFlowsPath);
+  const flow = source.match(/test\('membership tiers preview and cancel without applying'[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
+  const state = source.match(/async function waitForMembershipState[\s\S]*?\n\}/)?.[0] ?? '';
+
+  assert.match(flow, /getByTestId\('membership-tier-inventory'\)/);
+  assert.match(flow, /\['member', 'plus', 'pro'\]\.map/);
+  assert.match(flow, /inventory\.getByLabel\(`\$\{tier\} discount fraction \(0–1\)`\)/);
+  assert.match(flow, /MEMBERSHIP_PREVIEW_ENDPOINT|\/api\/admin\/membership\/preview/);
+  assert.match(flow, /request\.method\(\) === 'POST'/);
+  assert.match(flow, /toBeDisabled\(\)/);
+  assert.match(flow, /getByRole\('button', \{ name: 'Cancel' \}\)\.click\(\)/);
+  assert.match(flow, /confirmRequests\)\.toBe\(0\)/);
+  assert.doesNotMatch(flow, /getByRole\('button', \{ name: 'Confirm and apply now' \}\)\.click/);
+  assert.match(state, /return 'timeout' as const/);
+  assert.match(flow, /if \(membershipState === 'timeout'\) \{\s*throw new Error/);
 });

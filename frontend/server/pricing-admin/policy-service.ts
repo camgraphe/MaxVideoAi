@@ -464,6 +464,7 @@ export async function previewPricingPolicyChange(
       currentOutcomes,
       proposedOutcomes,
       rows,
+      ...(context.rollbackEventId ? { rollbackEventId: context.rollbackEventId } : {}),
     }),
   });
   if (!rows.length) throw new PricingAdminError('invalid_payload', 'Pricing proposal has no observable canonical impact');
@@ -657,10 +658,24 @@ export async function loadPricingPolicyInventory(
 
   const rows = [...bySelector.values()].map(({ selector, versionedRule, databaseOverride }): PricingPolicyInventoryRow => {
     const scenarios = selectAffectedPricingScenarios(selector);
-    const outcomes = quoteCanonicalAdminScenarios({ databaseRules, scenarios: scenarios.slice(0, 6) });
+    const representativeSurfaces = [
+      'billing',
+      'pricing-hub',
+      'estimator',
+      'price-chip',
+      'model-page',
+      'json-ld',
+      'audio',
+      'tool',
+    ] as const;
+    const representativeScenarios = representativeSurfaces.flatMap((surface) => {
+      const scenario = scenarios.find((candidate) => candidate.surface === surface);
+      return scenario ? [scenario] : [];
+    }).slice(0, 6);
+    const outcomes = quoteCanonicalAdminScenarios({ databaseRules, scenarios: representativeScenarios });
     const representativeQuotes = outcomes.filter(
       (outcome): outcome is AdminCanonicalScenarioQuote => outcome.status === 'quoted'
-    ).slice(0, 3);
+    ).slice(0, 4);
     const representativeScenario = scenarios[0];
     const matchedVersionedRule =
       versionedRule ??

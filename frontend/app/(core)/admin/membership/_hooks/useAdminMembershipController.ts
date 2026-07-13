@@ -13,6 +13,7 @@ import {
   type MembershipConfirmApiResponse,
   type MembershipHistoryApiResponse,
   type MembershipInventoryApiResponse,
+  type MembershipOperationalWarning,
   type MembershipPreviewApiResponse,
   type MembershipTierDraft,
   type MembershipTierName,
@@ -64,7 +65,9 @@ export function useAdminMembershipController() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<MembershipAdminError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const interactionLocked = previewing || confirming || Boolean(preview);
+  const [postCommitWarning, setPostCommitWarning] = useState<MembershipOperationalWarning | null>(null);
+  const refreshLocked = previewing || confirming || Boolean(preview);
+  const interactionLocked = refreshLocked || Boolean(postCommitWarning);
   const inventory = inventoryQuery.data?.ok ? inventoryQuery.data.inventory : null;
   const history = historyQuery.data?.ok ? historyQuery.data.events : [];
 
@@ -123,38 +126,54 @@ export function useAdminMembershipController() {
     if (!preview || !previewProposal) return;
     setConfirming(true);
     setError(null);
+    let confirmation: MembershipConfirmApiResponse['confirmation'];
     try {
       const response = await postJson<MembershipConfirmApiResponse>(MEMBERSHIP_CONFIRM_ENDPOINT, { proposal: previewProposal, previewFingerprint: preview.previewFingerprint }, 'Unable to apply membership change.');
-      const confirmation = response.confirmation;
+      confirmation = response.confirmation;
       if (!confirmation.committed) throw new Error('Membership change was not committed.');
-      setPreview(null);
-      setPreviewProposal(null);
-      setDraft([]);
-      setNotice(confirmation.operationalWarnings.length
-        ? `Membership change applied. ${confirmation.operationalWarnings.map((warning) => warning.message).join(' ')}`
-        : 'Membership change applied.');
-      await Promise.all([refreshInventory(), refreshHistory()]);
     } catch (caught) {
       setError(caught && typeof caught === 'object' && 'code' in caught
         ? caught as MembershipAdminError
         : { code: 'request_failed', message: caught instanceof Error ? caught.message : 'Unable to apply membership change.' });
-    } finally {
       setConfirming(false);
+      return;
     }
+
+    setPreview(null);
+    setPreviewProposal(null);
+    setDraft([]);
+    setNotice(confirmation.operationalWarnings.length
+      ? `Membership change applied. ${confirmation.operationalWarnings.map((warning) => warning.message).join(' ')}`
+      : 'Membership change applied.');
+    try {
+      const [refreshedInventory, refreshedHistory] = await Promise.all([refreshInventory(), refreshHistory()]);
+      if (!refreshedInventory?.ok || !refreshedHistory?.ok) {
+        throw new Error('Membership refresh returned no authoritative server data.');
+      }
+      setDraft(createMembershipDraft(refreshedInventory.inventory.tiers));
+    } catch {
+      setPostCommitWarning({
+        code: 'post_commit_refresh_failed',
+        message: 'Membership change was committed, but refreshing the local view failed. Refresh manually before making another change.',
+      });
+    }
+    setConfirming(false);
   }, [preview, previewProposal, refreshHistory, refreshInventory]);
 
   const refresh = useCallback(async () => {
-    if (interactionLocked) return;
+    if (refreshLocked) return;
     setError(null);
     try {
-      const [refreshedInventory] = await Promise.all([refreshInventory(), refreshHistory()]);
-      if (refreshedInventory?.ok) {
-        setDraft(createMembershipDraft(refreshedInventory.inventory.tiers));
+      const [refreshedInventory, refreshedHistory] = await Promise.all([refreshInventory(), refreshHistory()]);
+      if (!refreshedInventory?.ok || !refreshedHistory?.ok) {
+        throw new Error('Membership refresh returned no authoritative server data.');
       }
+      setDraft(createMembershipDraft(refreshedInventory.inventory.tiers));
+      setPostCommitWarning(null);
     } catch (caught) {
       setError(toMembershipError(caught, 'Unable to refresh membership pricing.'));
     }
-  }, [interactionLocked, refreshHistory, refreshInventory]);
+  }, [refreshHistory, refreshInventory, refreshLocked]);
 
   const fetchError = inventoryQuery.error
     ? toMembershipError(inventoryQuery.error, 'Unable to load membership pricing.')
@@ -173,8 +192,10 @@ export function useAdminMembershipController() {
     loading: inventoryQuery.isLoading,
     historyLoading: historyQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
-    error: error ?? fetchError,
+    error: error ?? (postCommitWarning ? null : fetchError),
     notice,
+    postCommitWarning,
+    refreshLocked,
     updateDraft,
     previewDraft,
     previewRollback,

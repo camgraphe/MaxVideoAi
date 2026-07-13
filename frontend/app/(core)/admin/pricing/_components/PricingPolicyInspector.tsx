@@ -7,6 +7,7 @@ import type {
   PricingPolicyDraft,
   PricingPolicyInventoryRow,
 } from '../_lib/pricing-cockpit-view-model';
+import { formatAdminTimestamp, formatUsdCents } from '../_lib/pricing-cockpit-view-model';
 
 type PricingPolicyInspectorProps = {
   row: PricingPolicyInventoryRow;
@@ -88,6 +89,54 @@ export function PricingPolicyInspector({
           <span className="mt-1 block break-all font-mono text-xs">{vendorAccount}</span>
           <span className="mt-2 block text-xs">Routing context is read-only and is never sent by this editor.</span>
         </AdminNotice>
+
+        <div className="space-y-3 rounded-xl border border-hairline bg-surface p-4 text-xs text-text-secondary">
+          <h3 className="text-sm font-semibold text-text-primary">Effective policy context</h3>
+          <dl className="grid gap-2">
+            <div>
+              <dt className="font-medium text-text-muted">Matched versioned rule</dt>
+              <dd className="font-mono">{row.versionedRule?.id ?? 'No matched versioned rule'}</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-text-muted">Database override</dt>
+              <dd className="font-mono">{row.databaseOverride?.id ?? 'No database override — versioned policy is effective'}</dd>
+            </div>
+            <div>
+              <dt className="font-medium text-text-muted">Effective provenance</dt>
+              <dd>
+                {row.effectiveProvenance
+                  ? `${row.effectiveProvenance?.source} · ${row.effectiveProvenance?.matchedBy} · ${row.effectiveProvenance?.sourceRuleId}`
+                  : 'Unavailable'}
+              </dd>
+            </div>
+            <div>
+              <dt className="font-medium text-text-muted">Last mutation</dt>
+              <dd>
+                {row.lastEvent
+                  ? `${row.lastEvent?.actorId} · ${formatAdminTimestamp(row.lastEvent?.createdAt)}`
+                  : 'No mutation event recorded'}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div className="space-y-3 rounded-xl border border-hairline bg-surface p-4">
+          <h3 className="text-sm font-semibold text-text-primary">Representative canonical projections</h3>
+          {row.representativeQuotes.length ? (
+            <ul className="space-y-3">
+              {row.representativeQuotes.map((quote) => (
+                <li key={quote.scenarioId} className="rounded-lg border border-hairline bg-bg p-3 text-xs text-text-secondary">
+                  <span className="block font-medium text-text-primary">{quote.surface}</span>
+                  <span className="mt-1 block break-all font-mono text-[11px] text-text-muted">{quote.scenarioId}</span>
+                  <span className="mt-2 block">Supplier subtotal: {formatUsdCents(quote.vendorSubtotalCents)}</span>
+                  <span className="block">Billing/public total: {formatUsdCents(quote.totalCents)}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-xs text-text-muted">Representative projections are unavailable for this selector.</p>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-2">
           <AdminActionButton type="button" variant="primary" onClick={onPreview} disabled={locked}>

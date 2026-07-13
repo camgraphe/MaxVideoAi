@@ -30,7 +30,7 @@ export function PricingPolicyTable({
 }: PricingPolicyTableProps) {
   return (
     <div className="space-y-4">
-      <AdminFilterBar onSubmit={(event) => event.preventDefault()} fieldsClassName="sm:grid-cols-[minmax(0,1fr)_220px]">
+      <AdminFilterBar onSubmit={(event) => event.preventDefault()} fieldsClassName="sm:grid-cols-[minmax(0,1fr)_220px_220px]">
         <label className="space-y-1 text-xs text-text-secondary">
           <span>Search policy selectors</span>
           <input
@@ -54,6 +54,23 @@ export function PricingPolicyTable({
             <option value="all">All sources</option>
             <option value="database">Database overrides</option>
             <option value="versioned">Versioned policy</option>
+          </select>
+        </label>
+        <label className="space-y-1 text-xs text-text-secondary">
+          <span>Projection status</span>
+          <select
+            aria-label="Projection status"
+            value={filters.status}
+            disabled={disabled}
+            onChange={(event) => onFiltersChange({
+              ...filters,
+              status: event.target.value as PricingCockpitFilters['status'],
+            })}
+            className="min-h-[40px] w-full rounded-input border border-border bg-surface px-3 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="all">All statuses</option>
+            <option value="quoted">Quoted projections</option>
+            <option value="unavailable">Unavailable projections</option>
           </select>
         </label>
       </AdminFilterBar>

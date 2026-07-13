@@ -20,6 +20,7 @@ import {
   previewMembershipChange,
   type MembershipPricingServiceDependencies,
 } from '../frontend/server/pricing-admin/membership-service';
+import { PricingAdminError } from '../frontend/server/pricing-admin/errors';
 
 const ACTOR_ID = '00000000-0000-0000-0000-000000000005';
 
@@ -180,16 +181,17 @@ test('membership proposals reject negative, unordered, fractional thresholds and
   }
 });
 
-test('membership preview normalizes discount precision exactly like persistence', async () => {
+test('membership preview rejects a proposal that becomes a no-op after persistence normalization', async () => {
   const harness = buildHarness();
   const proposed = cloneTiers(DEFAULT_MEMBERSHIP_TIERS);
   proposed[1] = { ...proposed[1]!, discountPercent: 0.05000009 };
 
-  const preview = await previewMembershipChange({ tiers: proposed }, harness.deps);
-  const proposedState = preview.proposedState as Array<{ tier: string; discountPercent: number }>;
-
-  assert.equal(proposedState.find((tier) => tier.tier === 'plus')?.discountPercent, 0.05);
-  assert.equal(preview.rows.length, 0);
+  await assert.rejects(
+    previewMembershipChange({ tiers: proposed }, harness.deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'invalid_payload'
+  );
+  assert.equal(harness.events.length, 0);
+  assert.deepEqual(harness.tiers, DEFAULT_MEMBERSHIP_TIERS);
 });
 
 test('discount preview reports canonical current and proposed totals only for affected tiers', async () => {

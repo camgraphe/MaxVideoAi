@@ -24,7 +24,7 @@ export function AdminMembershipView() {
         title="Membership pricing"
         description="Edit member, plus, and pro eligibility and discounts as one transactional change. Every update requires a canonical server preview."
         actions={
-          <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.interactionLocked}>
+          <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
             <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </AdminActionButton>
@@ -42,6 +42,9 @@ export function AdminMembershipView() {
 
       {controller.inventory?.warnings.map((warning) => <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>)}
       {controller.error ? <AdminNotice tone="error">{controller.error.message}</AdminNotice> : null}
+      {controller.postCommitWarning ? (
+        <AdminNotice tone="warning">{controller.postCommitWarning.message}</AdminNotice>
+      ) : null}
       {controller.notice ? <AdminNotice tone="success">{controller.notice}</AdminNotice> : null}
 
       {controller.loading ? <AdminLoadingPanel rows={3} /> : controller.draft.length ? (
@@ -54,13 +57,14 @@ export function AdminMembershipView() {
             </Button>
           }
         >
-          <div className="grid gap-4 lg:grid-cols-3">
+          <div data-testid="membership-tier-inventory" className="grid gap-4 lg:grid-cols-3">
             {controller.draft.map((tier) => (
               <fieldset key={tier.tier} disabled={controller.interactionLocked} className="rounded-xl border border-hairline bg-surface p-4">
                 <legend className="px-1 text-sm font-semibold capitalize text-text-primary">{tier.tier}</legend>
                 <label className="mt-3 block text-xs font-medium text-text-secondary">
                   Spend threshold (cents)
                   <input
+                    aria-label={`${tier.tier} spend threshold (cents)`}
                     type="number"
                     min="0"
                     step="1"
@@ -72,6 +76,7 @@ export function AdminMembershipView() {
                 <label className="mt-3 block text-xs font-medium text-text-secondary">
                   Discount fraction (0–1)
                   <input
+                    aria-label={`${tier.tier} discount fraction (0–1)`}
                     type="number"
                     min="0"
                     max="1"

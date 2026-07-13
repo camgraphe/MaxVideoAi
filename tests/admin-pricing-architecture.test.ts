@@ -140,6 +140,22 @@ test('policy inspector owns every canonical field and keeps vendor routing read-
     /name=["']vendorAccountId["']|onChange[^\n]*vendorAccountId/,
     'vendor account must never be editable'
   );
+  for (const context of [
+    'Supplier subtotal',
+    'Effective provenance',
+    'Matched versioned rule',
+    'Database override',
+    'Last mutation',
+  ]) {
+    assert.match(inspectorSource, new RegExp(context), `policy inspector should expose ${context}`);
+  }
+  assert.match(inspectorSource, /vendorSubtotalCents/);
+  assert.match(inspectorSource, /representativeQuotes\.map/);
+  assert.match(inspectorSource, /effectiveProvenance\?\.source/);
+  assert.match(inspectorSource, /effectiveProvenance\?\.matchedBy/);
+  assert.match(inspectorSource, /effectiveProvenance\?\.sourceRuleId/);
+  assert.match(inspectorSource, /lastEvent\?\.actorId/);
+  assert.match(inspectorSource, /lastEvent\?\.createdAt/);
 });
 
 test('client cockpit stays browser-safe and policy-domain-only', () => {
@@ -163,7 +179,8 @@ test('controller enforces preview then fingerprint confirmation and refreshes on
     /filteredRows\.find\(\(row\) => pricingPolicyRowKey\(row\) === selectedKey\)/,
     'selected row must come from the visible filtered inventory'
   );
-  assert.match(controllerSource, /interactionLocked\s*=\s*previewing \|\| confirming \|\| Boolean\(preview\)/);
+  assert.match(controllerSource, /refreshLocked\s*=\s*previewing \|\| confirming \|\| Boolean\(preview\)/);
+  assert.match(controllerSource, /interactionLocked\s*=\s*refreshLocked \|\| Boolean\(postCommitWarning\)/);
   assert.match(
     controllerSource,
     /if \(interactionLocked\) return;\s*const nextSelection = reconcilePricingPolicySelection/,
@@ -176,7 +193,7 @@ test('controller enforces preview then fingerprint confirmation and refreshes on
   assert.match(controllerSource, /pricingPolicyProposalSelectorKey\(previewProposal\)/);
   assert.match(
     controllerSource,
-    /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)[\s\S]*?setSelectedKey\(nextSelectionKey\)/,
+    /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)[\s\S]*?refreshedRows\.some[\s\S]*?setSelectedKey\(desiredKey\)/,
     'selector-changing confirmations should select the refreshed proposed selector'
   );
   assert.match(
@@ -189,6 +206,22 @@ test('controller enforces preview then fingerprint confirmation and refreshes on
     /if \(!confirmation\.committed\)[\s\S]*?throw[\s\S]*?await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/,
     'inventory and history may refresh only after committed confirmation'
   );
+});
+
+test('policy post-commit refresh recovery is durable and blocks stale cockpit state', () => {
+  const controllerSource = readOrEmpty(controllerPath);
+  const cockpitSource = readOrEmpty(cockpitPath);
+
+  assert.match(controllerSource, /post_commit_refresh_failed/);
+  assert.match(controllerSource, /interactionLocked\s*=\s*[^;]*Boolean\(postCommitWarning\)/);
+  assert.match(controllerSource, /refreshLocked\s*=\s*previewing\s*\|\|\s*confirming\s*\|\|\s*Boolean\(preview\)/);
+  assert.match(controllerSource, /if \(refreshLocked\) return;/);
+  assert.match(controllerSource, /setSelectedKey\(null\)/);
+  assert.match(controllerSource, /setDraft\(null\)/);
+  assert.match(controllerSource, /setDraftSelectionKey\(null\)/);
+  assert.equal(controllerSource.match(/setPostCommitWarning\(null\)/g)?.length, 1);
+  assert.match(cockpitSource, /controller\.postCommitWarning[\s\S]*tone="warning"[\s\S]*controller\.postCommitWarning\.message/);
+  assert.match(cockpitSource, /disabled=\{controller\.refreshing \|\| controller\.refreshLocked\}/);
 });
 
 test('generic preview dialog is read-only and requires explicit confirmation', () => {
@@ -214,7 +247,7 @@ test('generic preview dialog is read-only and requires explicit confirmation', (
 test('selection reconciliation never leaves a hidden row editable', () => {
   const visible = buildInventoryRow('veo-3-1', '1080p');
   const hidden = buildInventoryRow('kling-3-pro', '720p');
-  const filtered = filterPricingPolicyRows([hidden, visible], { query: 'veo', source: 'all' });
+  const filtered = filterPricingPolicyRows([hidden, visible], { query: 'veo', source: 'all', status: 'all' });
 
   assert.equal(reconcilePricingPolicySelection(filtered, pricingPolicyRowKey(hidden)), pricingPolicyRowKey(visible));
   assert.equal(reconcilePricingPolicySelection([], pricingPolicyRowKey(hidden)), null);
@@ -304,8 +337,21 @@ test('cockpit view model creates selector-scoped drafts and filters inventory wi
   const draft = createPricingPolicyDraft(row);
   assert.equal(draft.id, 'admin-kling-3-pro-t2v-1080p');
   assert.equal(draft.marginPercent, '30');
-  assert.deepEqual(filterPricingPolicyRows([row], { query: '1080P', source: 'versioned' }), [row]);
-  assert.equal(filterPricingPolicyRows([row], { query: 'veo', source: 'all' }).length, 0);
+  assert.deepEqual(filterPricingPolicyRows([row], { query: '1080P', source: 'versioned', status: 'all' }), [row]);
+  assert.equal(filterPricingPolicyRows([row], { query: 'veo', source: 'all', status: 'all' }).length, 0);
+  assert.deepEqual(
+    filterPricingPolicyRows([row], { query: '', source: 'all', status: 'unavailable' }),
+    [row]
+  );
+  assert.equal(filterPricingPolicyRows([row], { query: '', source: 'all', status: 'quoted' }).length, 0);
+});
+
+test('policy table exposes a canonical projection status filter', () => {
+  const tableSource = readOrEmpty(tablePath);
+  assert.match(tableSource, /aria-label="Projection status"/);
+  assert.match(tableSource, /All statuses/);
+  assert.match(tableSource, /Quoted projections/);
+  assert.match(tableSource, /Unavailable projections/);
 });
 
 test('preview-required pricing policy routes exist and stay thin, authorized service adapters', () => {

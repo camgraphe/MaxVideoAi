@@ -28,7 +28,7 @@ export function AdminPricingCockpit() {
         description="Inspect and propose canonical engine policy changes. Every mutation requires a fresh server-computed impact preview and explicit confirmation."
         actions={
           <>
-            <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.interactionLocked}>
+            <AdminActionButton type="button" onClick={() => void controller.refresh()} disabled={controller.refreshing || controller.refreshLocked}>
               <RefreshCw className={`h-4 w-4 ${controller.refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </AdminActionButton>
@@ -52,6 +52,9 @@ export function AdminPricingCockpit() {
         <AdminNotice key={warning} tone="warning">{warning}</AdminNotice>
       ))}
       {controller.error ? <AdminNotice tone="error">{controller.error.message}</AdminNotice> : null}
+      {controller.postCommitWarning ? (
+        <AdminNotice tone="warning">{controller.postCommitWarning.message}</AdminNotice>
+      ) : null}
       {controller.notice ? <AdminNotice tone="success">{controller.notice}</AdminNotice> : null}
 
       {controller.loading ? (
