@@ -57,3 +57,20 @@ export function projectCanonicalQuoteToSnapshot(
     },
   };
 }
+
+export function getPlatformFeeCents(snapshot: PricingSnapshot): number {
+  if (typeof snapshot.platformFeeCents === 'number') {
+    return Math.max(0, snapshot.platformFeeCents);
+  }
+  const margin = snapshot.margin?.amountCents ?? 0;
+  const discount = snapshot.discount?.amountCents ?? 0;
+  const discountAppliedToMargin = Math.min(margin, discount);
+  return Math.max(0, margin - discountAppliedToMargin);
+}
+
+export function getVendorShareCents(snapshot: PricingSnapshot): number {
+  if (typeof snapshot.vendorShareCents === 'number') {
+    return Math.max(0, snapshot.vendorShareCents);
+  }
+  return Math.max(0, snapshot.totalCents - getPlatformFeeCents(snapshot));
+}

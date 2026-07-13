@@ -10,7 +10,7 @@ import { buildAudioPricingPresentation, type AudioPricingInput } from '@/lib/aud
 import { getMembershipDiscountMap } from '@/lib/membership';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
-import type { PricingContext } from '@/lib/pricing';
+import type { PricingContext } from '@/lib/pricing-context';
 
 import {
   resolveServerBillingPolicy,

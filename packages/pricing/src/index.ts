@@ -21,6 +21,8 @@ export {
   type PricingScenario,
 } from './canonical';
 export {
+  getPlatformFeeCents,
+  getVendorShareCents,
   projectCanonicalQuoteToSnapshot,
   type CanonicalSnapshotProjectionInput,
 } from './projection';

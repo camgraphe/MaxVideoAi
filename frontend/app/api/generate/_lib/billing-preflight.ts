@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import Stripe from 'stripe';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 
 import { ENV, receiptsPriceOnlyEnabled } from '@/lib/env';
-import { getPlatformFeeCents } from '@/lib/pricing';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import { convertCents } from '@/lib/exchange';
 import { buildEngineAddonInput, applyEngineVariantPricing } from '@/lib/pricing-addons';

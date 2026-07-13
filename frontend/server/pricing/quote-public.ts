@@ -1,5 +1,5 @@
 import type { PricingSnapshot } from '@maxvideoai/pricing';
-import type { PricingContext } from '@/lib/pricing';
+import type { PricingContext } from '@/lib/pricing-context';
 
 import { computeCanonicalBillingSnapshot } from './quote-billing';
 

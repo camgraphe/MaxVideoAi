@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
-import { getPlatformFeeCents } from '@/lib/pricing';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
 import type { PricingSnapshot } from '@/types/engines';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';

@@ -5,7 +5,7 @@ import {
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import type { EnginePricingDetails } from '@/types/engines';
-import type { PricingContext } from '@/lib/pricing';
+import type { PricingContext } from '@/lib/pricing-context';
 import { getPricingKernel } from '@/lib/pricing-kernel';
 import { isLumaAgentsImageEngineId, isLumaRay32EngineId, isLumaRay32PublicMode } from '@/lib/luma-agents';
 import {

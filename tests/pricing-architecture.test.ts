@@ -5,6 +5,25 @@ import test from 'node:test';
 const pricingPath = 'frontend/src/lib/pricing.ts';
 const ruleStorePath = 'frontend/src/lib/pricing-rule-store.ts';
 const snapshotsPath = 'frontend/src/lib/pricing-specialized-snapshots.ts';
+const contextPath = 'frontend/src/lib/pricing-context.ts';
+
+test('pricing context and settlement helpers have narrow owners outside the compatibility facade', () => {
+  assert.equal(existsSync(contextPath), true, `${contextPath} should exist`);
+
+  const runtimeConsumers = [
+    'frontend/server/pricing/quote-billing.ts',
+    'frontend/server/pricing/quote-public.ts',
+    'frontend/src/lib/pricing-billing-facts.ts',
+    'frontend/app/api/generate/_lib/billing-preflight.ts',
+    'frontend/src/server/images/execute-image-generation.ts',
+    'frontend/src/server/tools/angle.ts',
+    'frontend/src/server/tools/upscale.ts',
+    'frontend/src/server/tools/background-removal.ts',
+  ];
+  for (const path of runtimeConsumers) {
+    assert.doesNotMatch(readFileSync(path, 'utf8'), /from ['"]@\/lib\/pricing['"]/);
+  }
+});
 
 test('pricing module stays a public orchestration facade', () => {
   assert.equal(existsSync(pricingPath), true);

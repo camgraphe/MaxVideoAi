@@ -4,7 +4,7 @@ import { getAngleToolEngine } from '@/config/tools-angle-engines';
 import { query } from '@/lib/db';
 import { getFalClient } from '@/lib/fal-client';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
-import { getPlatformFeeCents } from '@/lib/pricing';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { createImageThumbnailBatch } from '@/server/image-thumbnails';

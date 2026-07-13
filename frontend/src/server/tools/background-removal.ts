@@ -3,7 +3,7 @@ import { ApiError, ValidationError } from '@fal-ai/client';
 import { getBackgroundRemovalToolEngine } from '@/config/tools-background-removal-engines';
 import { query } from '@/lib/db';
 import { getFalClient } from '@/lib/fal-client';
-import { getPlatformFeeCents } from '@/lib/pricing';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import {

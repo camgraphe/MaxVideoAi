@@ -4,7 +4,7 @@ import { getUpscaleToolEngine } from '@/config/tools-upscale-engines';
 import { query } from '@/lib/db';
 import { getFalClient } from '@/lib/fal-client';
 import { buildStoredImageRenderEntries, resolveHeroThumbFromRenders } from '@/lib/image-renders';
-import { getPlatformFeeCents } from '@/lib/pricing';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { getUserPreferredCurrency } from '@/lib/currency';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureReusableAsset, upsertLegacyJobOutputs } from '@/server/media-library';

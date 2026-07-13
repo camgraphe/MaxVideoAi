@@ -7,6 +7,7 @@ import {
   type PricingCompatibilityProfile,
   type ResolvedPricingPolicy,
 } from '@maxvideoai/pricing';
+import * as pricingPackage from '@maxvideoai/pricing';
 
 const resolvedPolicy: ResolvedPricingPolicy = {
   rule: {
@@ -111,5 +112,25 @@ test('canonical snapshot projection rejects invalid provider presentation facts'
         addons: [{ type: 'audio', amountCents: -1 }],
       }),
     /addons\[0\]\.amountCents/
+  );
+});
+
+test('pricing package owns settlement projections for current and historical snapshots', () => {
+  const helpers = pricingPackage as typeof pricingPackage & {
+    getPlatformFeeCents?: (snapshot: { totalCents: number; margin?: { amountCents?: number }; discount?: { amountCents?: number }; platformFeeCents?: number }) => number;
+    getVendorShareCents?: (snapshot: { totalCents: number; margin?: { amountCents?: number }; discount?: { amountCents?: number }; platformFeeCents?: number; vendorShareCents?: number }) => number;
+  };
+
+  assert.equal(typeof helpers.getPlatformFeeCents, 'function');
+  assert.equal(typeof helpers.getVendorShareCents, 'function');
+  assert.equal(helpers.getPlatformFeeCents?.({ totalCents: 130, platformFeeCents: 30 }), 30);
+  assert.equal(
+    helpers.getPlatformFeeCents?.({ totalCents: 115, margin: { amountCents: 30 }, discount: { amountCents: 15 } }),
+    15
+  );
+  assert.equal(helpers.getVendorShareCents?.({ totalCents: 115, vendorShareCents: 100 }), 100);
+  assert.equal(
+    helpers.getVendorShareCents?.({ totalCents: 115, margin: { amountCents: 30 }, discount: { amountCents: 15 } }),
+    100
   );
 });
