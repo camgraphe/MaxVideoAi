@@ -1,22 +1,42 @@
-# MaxVideoAI MCP Acquisition, SEO/GEO, and Operations Implementation Plan
+# MaxVideoAI MCP Acquisition, Marketing, SEO/GEO, and Operations Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn the working universal MCP into a measurable acquisition channel with authoritative landing/integration/docs pages, real workflow evidence, accurate public claims, SEO/GEO discoverability, operational dashboards, support materials, and distribution gates.
+**Goal:** Turn the universal MCP into a measurable acquisition channel with a light-first/dark-compatible MaxVideoAI landing experience, equal Claude and Codex entry points, real workflow evidence, canonical budget-first pricing, authoritative SEO/GEO pages, and a measurable trial-to-wallet funnel.
 
-**Architecture:** Four pages own four distinct intents: product/install at `/mcp`, Codex setup at `/integrations/codex`, Claude setup at `/integrations/claude`, and protocol/security reference at `/docs/mcp`. Server-side MCP events are the authoritative conversion ledger; GA4 and GSC measure public acquisition. Public pages use the existing localized marketing architecture and only expose claims verified by live feature flags and compatibility evidence.
+**Architecture:** Four server-rendered pages own four distinct intents: product/conversion at `/mcp`, Codex setup at `/integrations/codex`, Claude setup at `/integrations/claude`, and protocol/security reference at `/docs/mcp`. Route-local builders own copy, proof data, and presentation while canonical catalog/pricing services remain authoritative for model availability and amounts. Server-side MCP events are the conversion ledger; GA4 and GSC measure public acquisition. Publication and indexation stay gated until OAuth, paid generation, trial, references, and host compatibility are verified.
 
-**Tech Stack:** Next.js 15 Server Components, next-intl, Markdown docs, existing SEO metadata/JSON-LD/sitemap helpers, GA4 Measurement Protocol, GSC admin data, Neon MCP audit events, Playwright, Node test runner.
+**Tech Stack:** Next.js 15 Server Components, TypeScript, existing Tailwind/theme tokens, next-intl, canonical MaxVideoAI pricing, Markdown docs, SEO metadata/JSON-LD/sitemap helpers, GA4, GSC, Neon MCP audit events, Playwright, and the Node test runner.
 
 ## Global Constraints
 
 - Do not publish or index acquisition pages until OAuth, paid generation, trial, and reference workflows meet their respective completion gates.
+- Work only on `codex/mcp-foundation-clean` or a descendant `codex/` branch. Do not merge or push to `main` without a new explicit instruction.
+- Light mode is the default. Every new component must have complete dark-mode parity using the existing theme tokens and persistence behavior.
+- Use official Claude and OpenAI/Codex assets at equal optical height. Never draw, recolor, approximate, or generate either logo.
+- Keep the approved H1: `Turn your brief into the right model, prompt and budget.`
+- In the first two screens, speak about briefs, prompts, reference images, model choice, budget, price, and results. Do not lead with MCP, OAuth, scopes, endpoints, tools, staging, or internal credit mechanics.
+- Keep Claude and Codex CTAs equal in dimensions, contrast, hierarchy, and placement.
+- Do not hard-code `$0.31`, `$0.65`, or another paid price in copy or JSX. Resolve every amount through the canonical public pricing path.
+- The trial may say `Included` only while the Seedance 2 Mini trial flag and eligibility workflow are live.
 - English is the primary research and evidence language. FR/ES pages may be indexed only when fully translated and technically equivalent; fallback English pages remain noindex under the existing localized-fallback contract.
 - No page may claim REST API keys, SDKs, customer webhooks, teams, shared wallets, invoices, one-click install, directory approval, model support, or trial availability unless that capability is live and verified.
 - Use real MaxVideoAI screenshots/videos, exact settings, result dates, and prices. Do not use synthetic testimonials, ratings, install counts, or fabricated benchmarks.
 - Keep `api.maxvideoai.com/mcp`, OAuth consent, uploads, account, and MCP resources out of all sitemaps and indexation.
 - Prompts and private reference URLs never enter analytics, GA4, GSC annotations, screenshots without consent, or admin exports.
 - Avoid programmatic pages for query variants. Add new intent owners only from measured GSC/referral/conversion evidence.
+- Keep route `page.tsx` files below 250 lines and use route-local `_components` and `_lib` owners.
+- Do not add a second theme provider or a new UI/state dependency for these pages.
+
+## Scope and prerequisites
+
+This is sub-project 5 from the approved universal MCP design. It does not reimplement provider submission, wallet reservation, trial entitlement, or reference ingestion. Before any claim using those capabilities becomes visible or indexable, complete and verify these plans in order:
+
+1. `2026-07-11-mcp-paid-generation-facade.md`;
+2. `2026-07-11-mcp-seedance-mini-trial.md`;
+3. `2026-07-11-mcp-reference-media-workflow.md`.
+
+The working read-only OAuth/discovery foundation may be used for local page and documentation development. Production MCP remains disabled until the cross-plan release gates pass.
 
 ---
 
@@ -25,7 +45,9 @@
 **Files:**
 
 - Create: `docs/marketing/mcp-public-claims-matrix.md`
+- Create: `frontend/config/mcp-publication.json`
 - Modify: `frontend/content/feature-flags.ts`
+- Create: `frontend/lib/mcp-publication.ts`
 - Modify: `content/docs/get-started.mdx`
 - Modify: `content/fr/docs/get-started.mdx`
 - Modify: `content/es/docs/get-started.mdx`
@@ -33,6 +55,49 @@
 - Modify: `frontend/messages/fr.json`
 - Modify: `frontend/messages/es.json`
 - Create: `tests/public-product-claims.test.ts`
+- Create: `tests/mcp-publication.test.ts`
+
+**Interfaces:**
+
+- Produces `McpPublicationState` and `getMcpPublicationState()` for route rendering, metadata, sitemap, `llms.txt`, and visible-claim decisions.
+- `frontend/config/mcp-publication.json` is the common build-time source used by both TypeScript runtime code and `next-sitemap.config.js`.
+
+- [ ] Write the failing publication-state test before adding the resolver:
+
+```ts
+assert.deepEqual(getMcpPublicationState({
+  publicMarketing: true,
+  publicIndexing: true,
+  transport: true,
+  oauth: true,
+  discovery: true,
+  paidGeneration: false,
+  trial: false,
+  referenceUploads: false,
+}), {
+  renderPublicPage: true,
+  indexable: false,
+  showTrialClaim: false,
+  showPaidGenerationClaim: false,
+  showReferenceClaim: false,
+});
+```
+
+- [ ] Create the JSON source with both `publicMarketing` and `publicIndexing` set to `false`. Import those values into `FEATURES.mcp`; update the exact rollout assertion in `tests/mcp-config.test.ts`.
+
+- [ ] Implement the browser-safe publication result:
+
+```ts
+export type McpPublicationState = {
+  renderPublicPage: boolean;
+  indexable: boolean;
+  showTrialClaim: boolean;
+  showPaidGenerationClaim: boolean;
+  showReferenceClaim: boolean;
+};
+```
+
+`indexable` is true only when public indexing, transport, OAuth, discovery, paid generation, trial, and reference uploads are all true. Preview rendering and individual claims remain independently gated.
 
 - [ ] Write a failing content contract that searches indexable docs/messages for unsupported assertions around public API credentials, webhook callbacks, SDK examples, shared wallets, team roles, invoice/wire funding, white-label docs, and live integrations.
 
@@ -48,6 +113,7 @@
 
 ```bash
 ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/public-product-claims.test.ts
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/mcp-publication.test.ts tests/mcp-config.test.ts
 npm --prefix frontend run i18n:check
 npm --prefix frontend run seo:check
 git diff --check
@@ -57,13 +123,28 @@ git diff --check
 
 **Files:**
 
+- Create from an official Anthropic source: `frontend/public/brand/partners/anthropic/claude-mark-light.svg`
+- Create from an official Anthropic source when supplied: `frontend/public/brand/partners/anthropic/claude-mark-dark.svg`
+- Reuse: `frontend/public/brand/partners/openai/openai-mark-light.svg`
+- Reuse: `frontend/public/brand/partners/openai/openai-mark-dark.svg`
 - Create: `frontend/public/mcp/mcp-brief.webp`
 - Create: `frontend/public/mcp/mcp-reference.webp`
 - Create: `frontend/public/mcp/mcp-quote.webp`
 - Create: `frontend/public/mcp/mcp-result-poster.webp`
 - Create: `frontend/public/mcp/mcp-result.mp4`
 - Create: `docs/marketing/mcp-demo-evidence.md`
+- Create: `docs/marketing/mcp-asset-provenance.md`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-proof.ts`
 - Create: `tests/mcp-demo-assets.test.ts`
+
+**Interfaces:**
+
+- Produces `McpProof` and `getMcpProof(locale)` with poster/video paths, accessible text, engine, mode, duration, ratio, resolution, canonical price snapshot, currency, and verification date.
+- The proof component consumes this typed record and never composes evidence labels from unverified prose.
+
+- [ ] Write failing asset tests that require non-empty official mark files, source URL, usage note, retrieval date, and SHA-256 in the provenance document. The test must reject a Claude file whose source is ImageGen, a handcrafted SVG, or an unknown CDN.
+
+- [ ] Acquire Claude assets only from an official Anthropic brand source. Do not edit path geometry or synthesize a dark logo. If only one mark is supplied, place that official mark on the same neutral theme-safe tile in both themes.
 
 - [ ] Run the controlled MCP flow in a non-production/approved account: creative brief → host-authored prompt → generated reference image → stable asset ID → model recommendation → exact quote → explicit confirmation → completed video.
 
@@ -73,24 +154,74 @@ git diff --check
 
 - [ ] Optimize images and produce a short muted MP4 plus poster. Validate dimensions, byte budgets, stable paths, and absence of EXIF/private metadata in `tests/mcp-demo-assets.test.ts`.
 
-- [ ] Do not substitute mockups for the result. If the verified flow changes, regenerate evidence before updating claims. Commit assets and evidence together.
+- [ ] Implement the proof contract:
+
+```ts
+export type McpProof = {
+  posterSrc: string;
+  videoSrc: string;
+  alt: string;
+  badge: string;
+  caption: string;
+  engineId: string;
+  mode: string;
+  durationSeconds: number;
+  aspectRatio: string;
+  resolution: string;
+  amountCents: number;
+  currency: string;
+  verifiedAt: string;
+};
+```
+
+- [ ] Do not substitute mockups for the result. Until the complete MCP flow exists, an existing verified MaxVideoAI output may be labelled only `Real MaxVideoAI output`, never `Generated through MCP`. If the verified flow changes, regenerate evidence before updating claims. Commit official assets, proof media, typed data, and evidence together.
 
 ## Task 3: Add dedicated localized route architecture for MCP and integrations
 
 **Files:**
 
 - Modify: `frontend/config/localized-slugs.json`
+- Modify: `frontend/i18n/routing.ts`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/page.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-types.ts`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-jsonld.ts`
-- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPageView.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpHeroSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpClientActions.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpProofMedia.client.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpWorkflowStrip.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpBudgetShortlist.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpEvidenceSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpReferenceWorkflowSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpTrustSections.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpJsonLdScripts.tsx`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/codex/page.tsx`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/claude/page.tsx`
 - Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts`
-- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationHeroSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationSetupSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationWorkflowSection.tsx`
+- Create: `frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationTroubleshootingSection.tsx`
 - Create: `tests/mcp-marketing-route-architecture.test.ts`
+- Create: `tests/mcp-marketing-copy.test.ts`
+- Create: `tests/mcp-marketing-visual-contract.test.ts`
+
+**Interfaces:**
+
+- Produces `McpPageCopy`, `getMcpPageCopy(locale)`, `buildMcpWebApplicationJsonLd()`, and `buildMcpBreadcrumbJsonLd()`.
+- Consumes `getMcpPublicationState()`, `buildMcpBudgetOptions()`, `getMcpProof()`, `buildSeoMetadata()`, and the existing marketing layout/theme.
 
 - [ ] Add slug mappings for `mcp` and `integrations`; keep `mcp`, `codex`, and `claude` brand/protocol terms unchanged while localizing the `integrations` segment only if the resulting URL is stable and maintainable.
+
+The route contract is:
+
+```text
+EN /mcp                         /integrations/claude      /integrations/codex
+FR /fr/mcp                      /fr/integrations/claude   /fr/integrations/codex
+ES /es/mcp                      /es/integraciones/claude  /es/integraciones/codex
+```
 
 - [ ] Write failing architecture tests requiring server-rendered page orchestrators, route-local copy/data/schema builders, named sections, metadata via `buildSeoMetadata`, canonical/hreflang, and no client-only hero/content shell.
 
@@ -103,6 +234,28 @@ Integration: host-specific connection, OAuth flow, example workflow,
              file/reference behavior, troubleshooting, disconnect
 ```
 
+- [ ] Keep the approved above-the-fold content exact in English, with native FR/ES translations:
+
+```text
+FIRST VIDEO INCLUDED
+LOW-COST MODELS FIRST
+PRICE BEFORE YOU GENERATE
+
+Turn your brief into the right model, prompt and budget.
+
+Start with Claude | Start with Codex
+
+Describe your video → Compare the best low-cost routes → Confirm price & generate
+```
+
+Hide the trial label when the trial claim gate is false. Keep the two client actions present and equal, routing to their factual setup guides until verified client deep links exist.
+
+- [ ] Build the hero from existing MaxVideoAI design tokens: white/pale-gray default surfaces, near-black light typography, thin borders, restrained radii, and the existing dark inverse. Do not introduce gradients, a dark-by-default MCP theme, or a second theme provider.
+
+- [ ] Make the proof video poster-backed with native controls, `preload="metadata"`, captions, and no autoplay with sound. Keep original proof colors in both themes; theme only the frame, labels, controls, and overlays.
+
+- [ ] Require the visual source contract to find official Claude/OpenAI paths, equal action component usage, `dark:` variants, three workflow steps, budget options, and the real evidence caption. Reject `OAuth`, `scope`, `endpoint`, `staging`, and `API key` in hero component source.
+
 - [ ] Write complete EN/FR/ES copy in dedicated typed modules. Do not index a locale until native copy, screenshots/captions, setup steps, and metadata pass editorial review.
 
 - [ ] Use `SoftwareApplication`/`WebApplication` JSON-LD only for visible live facts, without `AggregateRating`, fabricated `Offer`, or unsupported operating systems. Add `BreadcrumbList`; do not depend on FAQ/HowTo rich results.
@@ -110,6 +263,97 @@ Integration: host-specific connection, OAuth flow, example workflow,
 - [ ] Add visible “Last verified” dates sourced from the compatibility evidence, not hard-coded marketing claims.
 
 - [ ] Run route architecture, locale, metadata, schema, and no-JS render tests; commit.
+
+Run the focused page gate first:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-marketing-route-architecture.test.ts \
+  tests/mcp-marketing-copy.test.ts \
+  tests/mcp-marketing-visual-contract.test.ts \
+  tests/marketing-locale-routing.test.ts
+npm --prefix frontend run i18n:check
+git diff --check
+```
+
+## Task 3A: Build canonical budget-first model options
+
+**Files:**
+
+- Create: `frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-budget-options.ts`
+- Create: `tests/mcp-budget-options.test.ts`
+- Modify: `tests/pricing-public-authority.test.ts`
+
+**Interfaces:**
+
+- Produces `McpBudgetOption` and `buildMcpBudgetOptions(locale, publication)`.
+- Consumes `listFalEngines()`, public model roster fields, `buildPublicPricingFacts()`, `quotePublicPricing()`, and locale-aware currency formatting.
+
+- [ ] Write the failing ordering/parity test:
+
+```ts
+const livePublication = {
+  renderPublicPage: true,
+  indexable: true,
+  showTrialClaim: true,
+  showPaidGenerationClaim: true,
+  showReferenceClaim: true,
+};
+const options = buildMcpBudgetOptions('en', livePublication);
+assert.equal(options[0].slot, 'included_trial');
+assert.equal(options[0].engineId, 'dreamina-seedance-2-0-mini');
+assert.equal(options[0].amountCents, null);
+assert.equal(options[1].slot, 'lowest_paid');
+assert.ok(options[1].amountCents! <= options[2].amountCents!);
+assert.equal(options[1].priceSource, 'canonical_public_quote');
+```
+
+Also lock the current canonical scenarios: LTX 2.3 Fast 6s/1080p resolves to 31 cents and Wan 2.6 5s/720p resolves to 65 cents. These are pricing parity assertions, not marketing constants.
+
+- [ ] Define the presentation-only contract:
+
+```ts
+export type McpBudgetOption = {
+  slot: 'included_trial' | 'lowest_paid' | 'affordable_upgrade';
+  engineId: string;
+  modelSlug: string;
+  name: string;
+  mode: 't2v';
+  durationSeconds: number;
+  resolution: string;
+  audioIncluded: boolean;
+  amountCents: number | null;
+  currency: string;
+  priceLabel: string;
+  scenarioLabel: string;
+  modelHref: string;
+  priceSource: 'included_trial' | 'canonical_public_quote';
+};
+```
+
+- [ ] Build candidates from current, public, text-to-video engines only. Exclude hidden, disabled, legacy, and incompatible entries. Quote through canonical public facts/policy, select the lowest exact paid route, then select an affordable route that adds a material capability such as structured multi-shot or reference support.
+
+- [ ] Include Seedance 2 Mini as `Included` only when `publication.showTrialClaim` is true. If any slot becomes unavailable or cannot produce an exact quote, hide or recompute it instead of showing a stale amount.
+
+- [ ] Prohibit provider-cost literals, margin formulas, `$0.31`, and `$0.65` from `mcp-budget-options.ts`; only integer quote results may reach the formatter.
+
+- [ ] Run pricing authority and frozen-public-baseline checks:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-budget-options.test.ts \
+  tests/pricing-public-authority.test.ts \
+  tests/pricing-public-projection.test.ts
+pnpm pricing:public-baseline
+git diff --check
+```
+
+- [ ] Commit the builder and tests independently:
+
+```bash
+git add frontend/app/'(localized)'/'[locale]'/'(marketing)'/mcp/_lib/mcp-budget-options.ts tests/mcp-budget-options.test.ts tests/pricing-public-authority.test.ts
+git commit -m "feat: add canonical MCP budget options"
+```
 
 ## Task 4: Publish the technical MCP documentation
 
@@ -119,8 +363,15 @@ Integration: host-specific connection, OAuth flow, example workflow,
 - Create: `content/fr/docs/mcp.mdx`
 - Create: `content/es/docs/mcp.mdx`
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/docs/_lib/docs-index-data.ts`
-- Modify: relevant docs index copy in `frontend/messages/*.json`
+- Modify: `frontend/messages/en.json`
+- Modify: `frontend/messages/fr.json`
+- Modify: `frontend/messages/es.json`
 - Create: `tests/mcp-docs-content.test.ts`
+
+**Interfaces:**
+
+- Produces three localized `mcp.mdx` documents and docs-index entries.
+- Consumes the canonical endpoint from MCP config, the typed/public compatibility evidence, the live tool registry, and the public claims matrix.
 
 - [ ] Write failing content tests for exact endpoint, OAuth requirement, supported clients, tool list, tool annotations, quote/confirmation, trial preset, references, status polling, spending limits, revocation, privacy, errors, troubleshooting, and non-goals.
 
@@ -148,6 +399,11 @@ https://api.maxvideoai.com/mcp
 - Modify: `frontend/src/server/mcp/oauth-adapter.ts`
 - Create: `tests/mcp-acquisition-attribution.test.ts`
 
+**Interfaces:**
+
+- Produces a short-lived signed acquisition ID and allowlisted `source`, `medium`, `campaign`, and `client` context.
+- Consumes no user identity until OAuth succeeds; the OAuth adapter binds the coarse context to the authenticated connection event.
+
 - [ ] Write failing tests for allowlisted source/medium/campaign/client values, signed acquisition IDs, expiry, cookie privacy, direct endpoint connections, and event redaction.
 
 - [ ] On a connect/copy action, create a short-lived signed acquisition ID and a first-party `SameSite=Lax` cookie containing only coarse campaign fields. Never place user ID, prompt, email, or access token in it.
@@ -165,19 +421,39 @@ https://api.maxvideoai.com/mcp
 - Modify: `frontend/next-sitemap.config.js`
 - Modify: `frontend/public/robots.txt`
 - Modify: `frontend/public/llms.txt`
-- Modify: selected relevant marketing/docs/footer components
+- Modify: `frontend/components/marketing/MarketingFooter.tsx`
+- Modify: `frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_components/PayAsYouGoPageView.tsx`
+- Modify: `frontend/app/(localized)/[locale]/(marketing)/models/_components/ModelsCatalogPricingLimitsSection.tsx`
+- Modify: `frontend/app/(localized)/[locale]/(marketing)/examples/_components/examples-route-sections.tsx`
+- Create: `docs/marketing/mcp-gsc-baseline.md`
 - Create: `tests/mcp-seo-signals.test.ts`
 - Modify: `tests/schema-sitemap-architecture.test.ts`
 
-- [ ] Write failing tests requiring public locale URLs in sitemaps only when their copy is complete, self-canonical/hreflang signals, and explicit exclusion of API/consent/upload/account URLs.
+**Interfaces:**
 
-- [ ] Add `/mcp`, `/integrations/codex`, `/integrations/claude`, and `/docs/mcp` to `MARKETING_CORE_PATHS`/content collection with appropriate priority. Do not add `api.maxvideoai.com/mcp`.
+- Consumes `frontend/config/mcp-publication.json` as the single build/runtime indexation decision.
+- Produces conditional public URL inclusion and permanent exclusion of protocol/private surfaces.
+
+- [ ] Write failing tests requiring public locale URLs in sitemaps only when their copy is complete and `frontend/config/mcp-publication.json` enables indexing. Require self-canonical/hreflang signals and explicit exclusion of API/consent/upload/account URLs.
+
+- [ ] Add `/mcp`, `/integrations/codex`, `/integrations/claude`, and `/docs/mcp` to `MARKETING_CORE_PATHS`/content collection only when the shared JSON source enables indexing. Do not add `api.maxvideoai.com/mcp`.
 
 - [ ] Add the four authoritative pages to `llms.txt` only after the public-promotion feature flag is enabled. State their distinct intent and keep the technical endpoint out of source-page lists.
 
 - [ ] Keep named AI search/answer crawlers allowed on public MCP/docs routes while `/api`, `/oauth`, `/account`, and upload paths remain blocked/noindex.
 
-- [ ] Add contextual links from pay-as-you-go, models, relevant examples, docs, and footer surfaces. Use natural labels and avoid repeating exact-match “MCP AI video generator” sitewide.
+- [ ] Add one contextual link from pay-as-you-go, the models pricing/limits section, examples route sections, docs, and the footer. Use natural labels and avoid repeating exact-match “MCP AI video generator” sitewide.
+
+- [ ] Use this English metadata intent, with native FR/ES equivalents:
+
+```text
+Title: AI Video Generator for Claude & Codex | MaxVideoAI MCP
+Description: Plan prompts and reference images in Claude or Codex, compare AI video models, see the price before generation, and create through MaxVideoAI.
+```
+
+- [ ] Add visible, self-contained answer passages for what the integration does, how prices are calculated, which references work, why confirmation is separate, and how to disconnect. Keep them factual and visibly dated; do not add FAQ rich-result markup.
+
+- [ ] Record the existing GSC baseline plus relevant `price`, `best`, Claude, Codex, MCP, prompt, and reference query groups. Assign primary intent ownership across `/mcp`, both integration pages, `/docs/mcp`, pricing, model pages, and pay-as-you-go to prevent cannibalization.
 
 - [ ] Run `seo:check`, sitemap/schema tests, a generated sitemap inspection, and canonical host QA; commit.
 
@@ -185,11 +461,40 @@ https://api.maxvideoai.com/mcp
 
 **Files:**
 
+- Create after prerequisite migrations: `neon/migrations/33_mcp_acquisition_funnel.sql`
 - Modify: `frontend/src/server/agent-api/audit-events.ts`
 - Create: `frontend/src/server/agent-api/mcp-funnel.ts`
 - Modify: Stripe webhook/top-up attribution through a focused helper
 - Create: `tests/mcp-funnel.test.ts`
 - Create: `tests/mcp-topup-attribution.test.ts`
+
+**Interfaces:**
+
+- Produces `recordMcpFunnelEvent()` and `getMcpFunnelSummary()` using acquisition ID, OAuth client ID, quote ID, job ID, user ID, amount cents, and currency.
+- Consumes only confirmed Stripe wallet-funding receipts and server-owned MCP quote/job identifiers.
+
+```ts
+export type McpFunnelStage =
+  | 'oauth_connected'
+  | 'trial_prepared'
+  | 'trial_completed'
+  | 'wallet_funded'
+  | 'first_paid_generation'
+  | 'repeat_paid_generation';
+```
+
+- [ ] Reserve migration order across the prerequisite MCP plans:
+
+```text
+30_mcp_paid_generation.sql
+31_mcp_trial_entitlements.sql
+32_mcp_reference_uploads.sql
+33_mcp_acquisition_funnel.sql
+```
+
+Immediately before implementation, audit `neon/migrations` again. If a number is occupied, update all dependent plan references together before creating a file.
+
+- [ ] Write a migration contract requiring nullable `acquisition_id`, `quote_id`, `job_id`, `amount_cents`, and `currency` plus time/user/client/quote/job indexes. Reject prompt, email, token, raw URL, provider body, payment method, and fraud-signal columns.
 
 - [ ] Define allowlisted events:
 
@@ -216,6 +521,17 @@ distinct users with trial_completed
 
 - [ ] Add redaction tests that fail on prompt, token, raw URL, email, Stripe client secret, provider body, or payment method keys. Commit.
 
+- [ ] Run the database guard and focused funnel tests without applying anything to production:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-funnel.test.ts \
+  tests/mcp-topup-attribution.test.ts \
+  tests/mcp-audit-events.test.ts
+npm run neon:branches:check
+git diff --check
+```
+
 ## Task 8: Add admin MCP acquisition and operations dashboard
 
 **Files:**
@@ -228,11 +544,37 @@ distinct users with trial_completed
 - Create: `tests/admin-mcp-architecture.test.ts`
 - Create: `tests/admin-mcp-metrics.test.ts`
 
+**Interfaces:**
+
+- Produces `loadAdminMcpMetrics(range)` with this presentation contract:
+
+```ts
+export type AdminMcpMetrics = {
+  funnel: Record<McpFunnelStage, number>;
+  trialToWalletRate: number | null;
+  clientSplit: Array<{ client: 'claude' | 'codex' | 'other'; connections: number }>;
+  quoteToConfirmRate: number | null;
+  firstPaidUsers: number;
+  repeatPaidUsers: number;
+  revenueCents: number;
+  providerCostCents: number;
+  trialCostCents: number;
+  refundsCents: number;
+  errors: Array<{ code: string; count: number }>;
+  pollingCalls: number;
+  featureFlags: Record<string, boolean>;
+};
+```
+
 - [ ] Write failing metric tests for each funnel step, trial→top-up KPI, Codex/Claude/other split, quote→confirm, recommendation→quote, first paid/repeat generation, revenue, internal provider cost, refund/release rate, error codes, polling load, and revocation rate.
+
+Zero denominators return `null`, never `Infinity`, `NaN`, or a fabricated 0%.
 
 - [ ] Query aggregated, privacy-safe metrics by range and client. Exclude prompts and private media. Separate trial provider cost from user revenue.
 
 - [ ] Build server-rendered KPI cards, funnel, cohort conversion, client split, error table, cost guardrails, and flag status. Keep page orchestration under 200 lines and add architecture contracts.
+
+- [ ] Add `{ id: 'mcp', label: 'MCP acquisition', href: '/admin/mcp', icon: 'insights' }` to the existing Analytics navigation group.
 
 - [ ] Add alerts through existing operations channels for abnormal trial volume, provider cost, quote confirmation rate, auth errors, polling rate, upload failures, and refund/restoration failures. Thresholds remain configurable server-side.
 
@@ -247,6 +589,11 @@ distinct users with trial_completed
 - Create: `docs/marketing/mcp-tool-selection-scorecard.md`
 - Modify: `frontend/package.json`
 
+**Interfaces:**
+
+- Produces deterministic precision, recall, forbidden-confirm, quote-before-confirm, and unsupported-claim scores per host.
+- Consumes labelled public fixtures and recorded Claude/Codex decisions without private customer prompts.
+
 - [ ] Create a labelled prompt set with at least:
 
   - direct requests naming MaxVideoAI/MCP;
@@ -258,6 +605,19 @@ distinct users with trial_completed
   - negative cases for unrelated coding, research, or local image editing.
 
 - [ ] Add expected tool sequence, allowed alternatives, prohibited tools, and rationale to each fixture. Do not include private customer prompts.
+
+Use this exact fixture shape:
+
+```json
+{
+  "id": "budget-video-with-reference",
+  "prompt": "Help me plan a low-cost product video from this reference image and show the price first.",
+  "expectedTools": ["recommend_models", "prepare_generation"],
+  "allowedAlternatives": ["list_models"],
+  "prohibitedTools": ["confirm_generation"],
+  "reason": "The user asked for planning and price, not spending."
+}
+```
 
 - [ ] Implement a QA runner that validates server/tool descriptions and can import recorded decisions from Codex and Claude test runs. Calculate selection precision, recall, forbidden-confirm rate, and correct quote-before-confirm rate by host.
 
@@ -271,10 +631,22 @@ distinct users with trial_completed
 
 - Create: `docs/operations/mcp-support-runbook.md`
 - Create: `docs/marketing/mcp-directory-submissions.md`
-- Modify: relevant privacy, acceptable-use, terms, changelog, and status content
+- Modify after owner review: `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEn.tsx`
+- Modify after owner review: `frontend/app/(core)/legal/privacy/_components/PrivacyArticleFr.tsx`
+- Modify after owner review: `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEs.tsx`
+- Modify after owner review if the readiness test proves a missing disclosure: `frontend/app/(localized)/[locale]/legal/acceptable-use/page.tsx`
+- Modify after a live MCP capability changes: `frontend/app/(localized)/[locale]/(marketing)/changelog/page.tsx`
+- Modify only when backed by live operational data: `frontend/app/(localized)/[locale]/(marketing)/status/page.tsx`
 - Create: `tests/mcp-legal-support-readiness.test.ts`
 
+**Interfaces:**
+
+- Produces user/support decision trees, reviewed disclosures, and evidence-based directory packages.
+- Consumes the claims matrix, compatibility evidence, public tool permissions, and live operational owners.
+
 - [ ] Document user-facing permissions, OAuth revocation, data categories, media retention, trial abuse prevention, spending controls, provider processing, incident handling, and support escalation in visible legal/help copy.
+
+Do not change binding legal meaning without the document owner's approval. Before approval, the implementation may add only factual links and a readiness test that identifies the missing disclosure.
 
 - [ ] Build support decision trees for OAuth, email verification, quote expiry, insufficient funds, spending limit, upload, reference validation, provider failure, wallet refund, trial restoration, and revoked connection.
 
@@ -291,14 +663,37 @@ distinct users with trial_completed
 - Create: `tests/e2e/mcp-acquisition.spec.ts`
 - Create: `docs/marketing/mcp-launch-evidence.md`
 - Modify: `docs/operations/mcp-host-compatibility-matrix.md`
+- Modify only after every release gate passes: `frontend/config/mcp-publication.json`
 
-- [ ] Test EN/FR/ES public pages with JavaScript disabled: visible H1/promise/setup, self-canonical, correct hreflang, JSON-LD, indexable 200, internal links, and no auth wall.
+**Interfaces:**
+
+- Produces the final launch evidence and the only reviewed commit allowed to enable public indexation.
+- Consumes every earlier task plus completed paid-generation, trial, and reference workflow plans.
+
+- [ ] Capture and compare the approved page at these minimum states:
+
+```text
+1440×1000 light
+1440×1000 dark
+390×844 light
+390×844 dark
+trial available / unavailable
+paid budget quotes available / unavailable
+proof poster / active controls
+Claude and Codex keyboard focus / activation
+```
+
+Compare against the current MaxVideoAI homepage reference and the approved option-2 direction. Fix visible spacing, crop, border, typography, logo, and contrast differences before accepting screenshots.
+
+- [ ] Test EN/FR/ES public pages with JavaScript disabled: visible H1/promise/setup, self-canonical, correct hreflang, JSON-LD, internal links, and no auth wall. Assert noindex in the default gated state and indexable 200 only in an explicit all-gates-green fixture.
 
 - [ ] Test that API endpoint, OAuth, upload, account, and resource routes are private/no-store/noindex and absent from all sitemap variants.
 
 - [ ] Run Lighthouse on `/mcp` and both integration pages. Keep demo media lazy, poster-backed, captioned, and within existing Core Web Vitals budgets.
 
 - [ ] In Codex and Claude-compatible hosts, follow only the published instructions from a clean account. Verify OAuth, trial, reference, quote/confirmation, result, top-up, paid generation, revocation, and recovery.
+
+Record requested scopes. The Codex default `phone` scope mismatch must be resolved or remain an explicit production-promotion blocker.
 
 - [ ] Verify the full event chain in the admin dashboard and raw privacy-safe ledger. Reconcile wallet funding and provider cost with existing receipts.
 
@@ -322,11 +717,16 @@ npm --prefix frontend run build
 
 - [ ] Inspect GSC after deployment for indexation, canonical selection, queries, countries, CTR, and intent cannibalization among the four pages. Preserve the initial baseline in launch evidence and adjust titles/internal links only from observed data.
 
-- [ ] Enable public promotion only when all claims, legal/support, host compatibility, analytics, cost, abuse, refund/trial restoration, and SEO/GEO gates are green.
+- [ ] Enable public promotion only when all claims, official assets, light/dark desktop/mobile QA, legal/support, host compatibility, analytics, cost, abuse, refund/trial restoration, and SEO/GEO gates are green. Changing `publicIndexing` to `true` requires a separate reviewed commit and explicit user approval.
 
 ## Completion Criteria
 
 - Four distinct, accurate, server-rendered intent owners explain and prove the live MCP workflow.
+- `/mcp` uses the approved MaxVideoAI light-first visual direction with complete dark-mode parity.
+- Claude and Codex are visually/functionally equal and use official assets.
+- The hero speaks to prospects and makes prompt, reference, model, budget, and price-before-generation value explicit without internal jargon.
+- The included trial and low-cost paid routes are prominent, canonically priced, and hidden or recomputed when their claims become invalid.
+- Real proof media exposes accessible model, settings, price, and verification-date evidence.
 - Public docs no longer contradict product reality; translations and structured data match visible capabilities.
 - Search and answer engines can crawl authoritative public pages while all protocol/private surfaces remain excluded.
 - The full landing→OAuth→trial→top-up→paid funnel is measurable without prompts or private media.

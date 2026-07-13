@@ -113,7 +113,7 @@ export async function storeImageUpload(params: {
 
 **Files:**
 
-- Create: `neon/migrations/30_mcp_reference_uploads.sql`
+- Create: `neon/migrations/32_mcp_reference_uploads.sql`
 - Modify: `frontend/src/lib/schema/mcp-schema.ts`
 - Create: `frontend/src/server/agent-api/reference-upload-sessions.ts`
 - Create: `tests/mcp-reference-upload-migration.test.ts`

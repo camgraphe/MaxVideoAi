@@ -158,7 +158,7 @@ type AgentGenerationStatus = {
 
 **Files:**
 
-- Create: `neon/migrations/28_mcp_paid_generation.sql`
+- Create: `neon/migrations/30_mcp_paid_generation.sql`
 - Modify: `frontend/src/lib/schema/mcp-schema.ts`
 - Create: `frontend/src/server/agent-api/quote-repository.ts`
 - Create: `frontend/src/server/agent-api/spending-limits.ts`

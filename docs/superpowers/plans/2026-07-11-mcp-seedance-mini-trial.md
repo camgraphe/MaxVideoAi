@@ -60,7 +60,7 @@ git commit -m "feat: define MCP Seedance Mini trial preset"
 
 **Files:**
 
-- Create: `neon/migrations/29_mcp_trial_entitlements.sql`
+- Create: `neon/migrations/31_mcp_trial_entitlements.sql`
 - Modify: `frontend/src/lib/schema/mcp-schema.ts`
 - Create: `frontend/src/server/agent-api/trial-entitlement-repository.ts`
 - Create: `frontend/src/server/agent-api/trial-risk-repository.ts`
@@ -151,7 +151,7 @@ type TrialStatus =
 - Modify: `frontend/src/server/agent-api/quote-repository.ts`
 - Create: `tests/mcp-trial-quote.test.ts`
 
-- [ ] Extend internal funding mode to `'wallet' | 'trial'`; update the database constraint through a small additive statement in `29_mcp_trial_entitlements.sql` before applying it.
+- [ ] Extend internal funding mode to `'wallet' | 'trial'`; update the database constraint through a small additive statement in `31_mcp_trial_entitlements.sql` before applying it.
 
 - [ ] Write failing tests proving a qualifying request gets `fundingMode: 'trial'`, `price.amountCents: 0` for the user-facing charge, and a separate internal provider-cost snapshot; no wallet balance projection is reduced.
 
