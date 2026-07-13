@@ -106,6 +106,15 @@ async function decodeImageFile(file: File): Promise<DecodeResult> {
   }
 }
 
+export async function readImageFileDimensions(file: File): Promise<{ width: number; height: number }> {
+  const decoded = await decodeImageFile(file);
+  try {
+    return { width: decoded.width, height: decoded.height };
+  } finally {
+    decoded.dispose();
+  }
+}
+
 async function canvasToBlob(
   canvas: HTMLCanvasElement,
   mime: string,

@@ -174,6 +174,7 @@ export interface EngineInputSchema {
   constraints?: {
     supportedFormats?: string[];
     maxImageSizeMB?: number;
+    minImageSidePx?: number;
     maxVideoSizeMB?: number;
     maxAudioSizeMB?: number;
     [key: string]: unknown;

@@ -33,4 +33,6 @@ export type AssetFieldConfig = {
 
 export type AssetUploadMeta = {
   durationSec?: number;
+  width?: number;
+  height?: number;
 };

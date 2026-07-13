@@ -1,5 +1,7 @@
 import type { EngineInputField } from '@/types/engines';
 import type { getLocalizedAssetDropzoneCopy } from '@/lib/ltx-localization';
+import { readImageFileDimensions } from '@/lib/client-image-upload';
+import { getImageDimensionViolation } from '@/lib/image-dimension-constraints';
 import type { AssetFieldRole } from './asset-dropzone-types';
 
 export const VEO_REFERENCE_WARNING_ENGINES = new Set(['veo-3-1', 'veo-3-1-fast', 'veo-3-1-lite']);
@@ -98,4 +100,44 @@ export function readMediaDuration(file: File, type: 'audio' | 'video') {
     };
     element.src = objectUrl;
   });
+}
+
+export async function validateEngineImageFile(params: {
+  file: File;
+  acceptFormats: string[];
+  minimumSidePx: number | null;
+  engineLabel: string;
+  assetCopy: ReturnType<typeof getLocalizedAssetDropzoneCopy>;
+}): Promise<{ ok: true; dimensions?: { width: number; height: number } } | { ok: false; message: string }> {
+  if (!params.file.type.startsWith('image/')) {
+    return { ok: false, message: params.assetCopy.dropImageFile };
+  }
+  if (params.acceptFormats.length) {
+    const extension = params.file.name.split('.').pop()?.toLowerCase();
+    if (!extension || !params.acceptFormats.includes(extension)) {
+      return {
+        ok: false,
+        message: params.assetCopy.formatNotSupported(
+          params.acceptFormats.map((entry) => entry.toUpperCase()).join(', ')
+        ),
+      };
+    }
+  }
+  if (params.minimumSidePx == null) return { ok: true };
+
+  let dimensions: { width: number; height: number };
+  try {
+    dimensions = await readImageFileDimensions(params.file);
+  } catch {
+    return {
+      ok: false,
+      message: 'Unable to read this image\'s dimensions. Choose another image and try again.',
+    };
+  }
+  const violation = getImageDimensionViolation({
+    ...dimensions,
+    minimumSidePx: params.minimumSidePx,
+    engineLabel: params.engineLabel,
+  });
+  return violation ? { ok: false, message: violation.message } : { ok: true, dimensions };
 }

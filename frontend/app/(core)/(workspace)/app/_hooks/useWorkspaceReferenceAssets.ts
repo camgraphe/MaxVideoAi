@@ -196,7 +196,12 @@ export function useWorkspaceReferenceAssets({
   );
 
   const handleAssetAdd = useCallback(
-    (field: EngineInputField, file: File, slotIndex?: number, meta?: { durationSec?: number }) => {
+    (
+      field: EngineInputField,
+      file: File,
+      slotIndex?: number,
+      meta?: { durationSec?: number; width?: number; height?: number }
+    ) => {
       const blockedMessage = getSeedanceFieldBlockedMessage(field);
       if (blockedMessage) {
         showNotice(blockedMessage);
@@ -212,6 +217,8 @@ export function useWorkspaceReferenceAssets({
         name: file.name,
         size: file.size,
         type: file.type,
+        width: typeof meta?.width === 'number' ? meta.width : null,
+        height: typeof meta?.height === 'number' ? meta.height : null,
         durationSec: typeof meta?.durationSec === 'number' ? meta.durationSec : null,
         status: 'uploading' as const,
       };

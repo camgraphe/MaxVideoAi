@@ -7,6 +7,7 @@ import type { EngineCaps, EngineInputField, EngineModeUiCaps as CapabilityCaps }
 import { getVisibleAssetSlots } from '@/lib/asset-slot-layout';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { getLocalizedAssetDropzoneCopy, normalizeUiLocale } from '@/lib/ltx-localization';
+import { normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
 import { AssetFieldTooltip } from '@/components/asset-dropzone/AssetFieldTooltip';
 import { AssetFieldGuidance } from '@/components/asset-dropzone/AssetFieldGuidance';
 import { AssetFieldDisabledBadge, AssetFieldDisabledNotice } from '@/components/asset-dropzone/AssetFieldDisabledState';
@@ -17,6 +18,7 @@ import {
   resolveAssetFieldTitle,
   resolveAssetRoleDescription,
   resolveSlotLabel,
+  validateEngineImageFile,
   VEO_REFERENCE_WARNING_ENGINES,
 } from '@/components/asset-dropzone/asset-dropzone-helpers';
 import type { AssetDisabledPresentation, AssetFieldGuidance as AssetFieldGuidanceCopy, AssetFieldRole, AssetSlotAttachment, AssetUploadMeta } from '@/components/asset-dropzone/asset-dropzone-types';
@@ -75,6 +77,7 @@ export function AssetDropzone({
   const minCount = required ? (field.minCount ?? 1) : 0;
   const limits = engine.inputLimits;
   const constraints = engine.inputSchema?.constraints ?? {};
+  const minimumImageSidePx = normalizeMinimumImageSide(constraints.minImageSidePx);
   const acceptFormats = useMemo(() => {
     const configuredFormats = caps?.acceptsImageFormats?.length ? caps.acceptsImageFormats : constraints.supportedFormats;
     return configuredFormats?.map((format) => format.toLowerCase()) ?? [];
@@ -121,17 +124,12 @@ export function AssetDropzone({
     async (file: File, slotIndex: number) => {
       if (!onSelect) return;
       if (field.type === 'image') {
-        if (!file.type.startsWith('image/')) {
-          onError?.(assetCopy.dropImageFile);
-          return;
-        }
-        if (acceptFormats.length) {
-          const ext = file.name.split('.').pop()?.toLowerCase();
-          if (!ext || !acceptFormats.includes(ext)) {
-            onError?.(assetCopy.formatNotSupported(acceptFormats.map((entry) => entry.toUpperCase()).join(', ')));
-            return;
-          }
-        }
+        const validation = await validateEngineImageFile({
+          file, acceptFormats, minimumSidePx: minimumImageSidePx, engineLabel: engine.label, assetCopy,
+        });
+        if (!validation.ok) return onError?.(validation.message);
+        onSelect(field, file, slotIndex, validation.dimensions);
+        return;
       }
       if (field.type === 'video' && !file.type.startsWith('video/')) {
         onError?.(assetCopy.dropVideoFile);
@@ -179,23 +177,18 @@ export function AssetDropzone({
         onSelect(field, file, slotIndex, { durationSec: duration });
         return;
       }
-      const maxSizeMB = field.type === 'image'
-        ? null
-        : constraints.maxVideoSizeMB ?? limits.videoMaxMB;
-      if (maxSizeMB && file.size > maxSizeMB * 1024 * 1024) {
-        onError?.(assetCopy.fileTooLarge(maxSizeMB));
-        return;
-      }
       onSelect(field, file, slotIndex);
     },
     [
       acceptFormats,
       assetCopy,
       constraints.maxVideoSizeMB,
+      engine.label,
       field,
       limits.audioMaxDurationSec,
       limits.videoMaxDurationSec,
       limits.videoMaxMB,
+      minimumImageSidePx,
       onError,
       onSelect,
     ]
@@ -261,6 +254,7 @@ export function AssetDropzone({
       }
       const maxImage = caps?.maxUploadMB ?? constraints.maxImageSizeMB ?? limits.imageMaxMB;
       if (maxImage) lines.push(assetCopy.mbMax(maxImage));
+      if (minimumImageSidePx != null) lines.push(`${minimumImageSidePx} x ${minimumImageSidePx} px min`);
     } else if (field.type === 'video') {
       lines.push(assetCopy.formats('MP4, MOV'));
       const maxVideo = constraints.maxVideoSizeMB ?? limits.videoMaxMB;
@@ -307,6 +301,7 @@ export function AssetDropzone({
     limits.imageMaxMB,
     limits.videoMaxDurationSec,
     limits.videoMaxMB,
+    minimumImageSidePx,
   ]);
 
   const fieldTitle = resolveAssetFieldTitle(field, role, assetCopy);

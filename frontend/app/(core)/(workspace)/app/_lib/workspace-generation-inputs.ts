@@ -8,6 +8,7 @@ import {
   shouldIgnoreKlingO3FrameAssets,
 } from './kling-o3-unified-workflow';
 import { isHappyHorseEngineId, supportsHappyHorseVideoEdit } from '@/lib/happy-horse-workflow';
+import { getImageDimensionViolation, normalizeMinimumImageSide } from '@/lib/image-dimension-constraints';
 import type { ReferenceAsset } from './workspace-assets';
 import { normalizeExtraInputValue, type FormState } from './workspace-form-state';
 import type { WorkspaceInputFieldEntry, WorkspaceInputSchemaSummary } from './workspace-input-schema';
@@ -58,6 +59,7 @@ export type GenerationInputPreparationResult =
 
 export type PrepareGenerationInputsOptions = {
   selectedEngineId: string;
+  selectedEngineLabel?: string;
   activeMode: Mode;
   submissionMode: string;
   form: FormState;
@@ -187,6 +189,9 @@ function buildKlingElementsPayload(
 }
 
 export function prepareGenerationInputs(options: PrepareGenerationInputsOptions): GenerationInputPreparationResult {
+  const minimumImageSidePx = normalizeMinimumImageSide(
+    options.inputSchema?.constraints?.minImageSidePx
+  );
   const fieldIndex = new Map<string, { id: string; label?: string }>();
   if (options.inputSchema) {
     [...(options.inputSchema.required ?? []), ...(options.inputSchema.optional ?? [])].forEach((field) => {
@@ -226,6 +231,17 @@ export function prepareGenerationInputs(options: PrepareGenerationInputsOptions)
       }
       if (asset.status === 'error' || !assetUrl) {
         return { ok: false, message: 'One of your reference files is unavailable. Remove it and try again.' };
+      }
+      if (asset.kind === 'image' && minimumImageSidePx != null) {
+        const violation = getImageDimensionViolation({
+          width: asset.width,
+          height: asset.height,
+          minimumSidePx: minimumImageSidePx,
+          engineLabel: options.selectedEngineLabel ?? options.selectedEngineId,
+        });
+        if (violation) {
+          return { ok: false, message: violation.message };
+        }
       }
       collected.push(buildAttachmentPayload(field, { ...asset, url: assetUrl }));
     }

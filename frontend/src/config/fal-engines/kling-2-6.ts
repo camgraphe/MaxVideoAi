@@ -115,6 +115,7 @@ const KLING_2_6_PRO_ENGINE: EngineCaps = {
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
       maxImageSizeMB: 25,
+      minImageSidePx: 300,
     },
   },
   pricingDetails: {

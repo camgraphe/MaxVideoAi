@@ -126,13 +126,13 @@ test('skips dimension lookup for non-Kling engines', async () => {
   assert.equal(queried, false);
 });
 
-test('validates Kling element dimensions before billing preflight', () => {
+test('validates all constrained image dimensions before billing preflight', () => {
   const source = readFileSync(join(process.cwd(), 'frontend/app/api/generate/route.ts'), 'utf8');
 
-  assert.match(source, /validateKlingElementImageDimensions/);
+  assert.match(source, /validateGenerationImageDimensions/);
   assert.ok(
-    source.indexOf('await validateKlingElementImageDimensions') <
+    source.indexOf('await validateGenerationImageDimensions') <
       source.indexOf('await resolveGenerateBillingPreflight'),
-    'Kling element dimensions must be validated before billing preflight'
+    'image dimensions must be validated before billing preflight'
   );
 });

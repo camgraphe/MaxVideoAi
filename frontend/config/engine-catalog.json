@@ -5167,7 +5167,8 @@
             "jpeg",
             "png",
             "webp"
-          ]
+          ],
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -5525,7 +5526,8 @@
             "png",
             "webp"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 25,
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -5887,7 +5889,8 @@
             "png",
             "webp"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 25,
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -6274,7 +6277,8 @@
             "png",
             "webp"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 25,
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -6626,7 +6630,8 @@
             "png",
             "webp"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 25,
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -10008,7 +10013,8 @@
             "png",
             "webp"
           ],
-          "maxImageSizeMB": 25
+          "maxImageSizeMB": 25,
+          "minImageSidePx": 300
         }
       },
       "pricingDetails": {
@@ -10454,6 +10460,7 @@
             "wav"
           ],
           "maxImageSizeMB": 30,
+          "minImageSidePx": 300,
           "maxVideoSizeMB": 50,
           "maxAudioSizeMB": 15
         }
@@ -11166,6 +11173,7 @@
             "wav"
           ],
           "maxImageSizeMB": 30,
+          "minImageSidePx": 300,
           "maxVideoSizeMB": 50,
           "maxAudioSizeMB": 15
         }
@@ -11844,6 +11852,7 @@
             "wav"
           ],
           "maxImageSizeMB": 30,
+          "minImageSidePx": 300,
           "maxVideoSizeMB": 50,
           "maxAudioSizeMB": 15
         }

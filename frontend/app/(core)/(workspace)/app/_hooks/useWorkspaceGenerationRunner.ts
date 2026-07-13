@@ -252,6 +252,7 @@ export function useWorkspaceGenerationRunner({
 
     const generationInputs = prepareGenerationInputs({
       selectedEngineId: selectedEngine.id,
+      selectedEngineLabel: selectedEngine.label,
       activeMode,
       submissionMode,
       form,

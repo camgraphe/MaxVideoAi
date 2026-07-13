@@ -86,6 +86,7 @@ const KLING_2_5_TURBO_ENGINE: EngineCaps = {
     ],
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      minImageSidePx: 300,
     },
   },
   pricingDetails: {

@@ -714,3 +714,39 @@ test('prepareGenerationInputs promotes a Kling 3.0 Omni subject video reference 
   ]);
   assert.deepEqual(result.referenceVideoUrls, ['https://cdn.example.com/subject.mp4']);
 });
+
+test('prepareGenerationInputs rejects a known undersized library image before generation', () => {
+  const primary = field('image_url', 'image', 'Start image');
+  const result = prepareGenerationInputs({
+    selectedEngineId: 'seedance-2-0-mini',
+    selectedEngineLabel: 'Dreamina Seedance 2.0 Mini',
+    activeMode: 'i2v',
+    submissionMode: 'i2v',
+    form: baseForm({ engineId: 'seedance-2-0-mini', mode: 'i2v' }),
+    inputSchema: {
+      required: [primary],
+      optional: [],
+      constraints: { minImageSidePx: 300 },
+    },
+    inputSchemaSummary: { assetFields: [{ field: primary, required: true, role: 'primary' }] },
+    extraInputFields: [],
+    inputAssets: {
+      image_url: [asset({ fieldId: 'image_url', width: 648, height: 157 })],
+    },
+    primaryAssetFieldIds: new Set(['image_url']),
+    referenceAssetFieldIds: new Set(),
+    genericImageFieldIds: new Set(),
+    frameAssetFieldIds: new Set(),
+    referenceAudioFieldIds: new Set(),
+    supportsKlingV3Controls: false,
+    klingElements: [],
+    multiPromptActive: false,
+    multiPromptScenes: [],
+  });
+
+  assert.deepEqual(result, {
+    ok: false,
+    message:
+      'This image is 648 x 157 px. Dreamina Seedance 2.0 Mini requires at least 300 x 300 px. Choose a larger image and try again.',
+  });
+});

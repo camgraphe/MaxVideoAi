@@ -152,6 +152,7 @@ const SEEDANCE_2_0_FAST_ENGINE: EngineCaps = {
     constraints: {
       supportedFormats: ['jpg', 'jpeg', 'png', 'webp', 'mp4', 'mov', 'mp3', 'wav'],
       maxImageSizeMB: 30,
+      minImageSidePx: 300,
       maxVideoSizeMB: 50,
       maxAudioSizeMB: 15,
     },
