@@ -6,7 +6,7 @@ import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { applyEngineVariantPricing } from '../frontend/src/lib/pricing-addons.ts';
 import { buildPricingDefinition } from '../frontend/src/lib/pricing-definition.ts';
-import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
+import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public.ts';
 
 test('LTX 2.3 Pro pricing definition uses standard generate duration caps', () => {
   const engine = listFalEngines().find((entry) => entry.id === 'ltx-2-3')?.engine;

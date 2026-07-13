@@ -1,11 +1,12 @@
 import { query } from '@/lib/db';
-import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
+import {
+  computeCanonicalBillingSnapshot,
+  computeCanonicalStoryboardBillingSnapshot,
+} from '@/server/pricing/quote-billing';
 import {
   STORYBOARD_KLING_FIRST_FRAME_JOB_PREFIX,
   STORYBOARD_SOURCE,
-  applyStoryboardEditPricing,
   applyStoryboardKlingBundlePricing,
-  applyStoryboardPricing,
   createIncludedStoryboardKlingFirstFramePricing,
   getKlingStoryboardFirstFrameParentJobId,
   getStoryboardKlingFirstFramePricingConfig,
@@ -129,19 +130,26 @@ export async function applyStoryboardImagePricing(params: {
     return createIncludedStoryboardKlingFirstFramePricing(pricing, includedKlingFirstFrameParentJobId);
   }
   if (source === STORYBOARD_EDIT_SOURCE) {
-    return applyStoryboardEditPricing(pricing);
+    return computeCanonicalStoryboardBillingSnapshot({
+      snapshot: pricing,
+      operation: STORYBOARD_EDIT_SOURCE,
+    });
   }
 
   const storyboardTier = resolveStoryboardTier({ customImageSize, resolution, quality });
-  let storyboardPricing = applyStoryboardPricing(pricing, storyboardTier);
+  let storyboardPricing = await computeCanonicalStoryboardBillingSnapshot({
+    snapshot: pricing,
+    operation: STORYBOARD_SOURCE,
+    tier: storyboardTier,
+  });
   if (!isKlingStoryboardBoardMetadata(metadata)) return storyboardPricing;
 
   const firstFrameConfig = getStoryboardKlingFirstFramePricingConfig({
     customImageSize,
     aspectRatio: resolvedAspectRatio,
   });
-  const firstFramePricing = applyStoryboardPricing(
-    await computeCanonicalBillingSnapshot({
+  const firstFramePricing = await computeCanonicalStoryboardBillingSnapshot({
+    snapshot: await computeCanonicalBillingSnapshot({
       engine,
       durationSec: 1,
       resolution: firstFrameConfig.resolution,
@@ -150,8 +158,9 @@ export async function applyStoryboardImagePricing(params: {
       membershipTier,
       currency,
     }),
-    'hd'
-  );
+    operation: STORYBOARD_SOURCE,
+    tier: 'hd',
+  });
   storyboardPricing = applyStoryboardKlingBundlePricing(storyboardPricing, firstFramePricing);
   return storyboardPricing;
 }

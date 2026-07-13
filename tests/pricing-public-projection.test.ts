@@ -50,7 +50,7 @@ test('public pricing baseline exhaustively covers eligible catalog and public su
     readFileSync('tests/fixtures/pricing-public-projections.v1.json', 'utf8')
   ) as PublicProjectionFixture;
   assert.equal(fixture.version, 1);
-  assert.equal(fixture.generatedFrom, 'legacy-authoritative-public-pricing-paths');
+  assert.equal(fixture.generatedFrom, 'canonical-public-pricing-paths');
   assert.ok(fixture.rows.length >= 250, `expected at least 250 public projection rows, got ${fixture.rows.length}`);
 
   const ids = fixture.rows.map((row) => row.id);

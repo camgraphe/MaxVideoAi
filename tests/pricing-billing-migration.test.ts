@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
-import { computePricingSnapshot } from '../frontend/src/lib/pricing';
+import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public';
 import {
   computeCanonicalAudioBillingSnapshot,
   computeCanonicalBillingSnapshot,
@@ -134,7 +134,7 @@ for (const scenario of scenarios) {
     for (const field of financialFields) {
       assert.deepEqual(actual[field], expected[field], `${scenario.id}.${field}`);
     }
-    assert.deepEqual(withoutCanonicalPolicy(actual).meta, expected.meta, `${scenario.id}.meta`);
+    assert.deepEqual(withoutCanonicalPolicy(actual).meta, withoutCanonicalPolicy(expected).meta, `${scenario.id}.meta`);
     assert.deepEqual(actual.meta?.pricingPolicy, {
       source: 'versioned',
       matchedBy: 'global',

@@ -7,11 +7,6 @@ export interface DurationSteps {
   default?: number;
 }
 
-export interface RoundingRule {
-  mode: 'nearest' | 'up' | 'down';
-  incrementCents: number;
-}
-
 export interface PricingAddonRule {
   perSecondCents?: number;
   perSecondCentsByResolution?: Record<string, number>;
@@ -26,23 +21,11 @@ export interface PricingEngineDefinition {
   baseUnitPriceCents: number;
   durationSteps: DurationSteps;
   resolutionMultipliers: Record<string, number>;
-  memberTierDiscounts: Record<MemberTier, number>;
   minChargeCents?: number;
-  rounding?: RoundingRule;
   taxPolicyHint?: string;
   addons?: Record<string, PricingAddonRule | undefined>;
-  platformFeePct?: number;
-  platformFeeFlatCents?: number;
   availability?: string;
   metadata?: Record<string, unknown>;
-}
-
-export interface PricingInput {
-  engineId: string;
-  durationSec: number;
-  resolution: string;
-  memberTier?: MemberTier;
-  addons?: Record<string, boolean | number | undefined>;
 }
 
 export interface PricingAddonLine {
@@ -83,18 +66,8 @@ export interface PricingSnapshot {
   meta?: Record<string, unknown>;
 }
 
-export interface PricingQuote {
-  engineId: string;
-  resolution: string;
-  memberTier: MemberTier;
-  snapshot: PricingSnapshot;
-  definition: PricingEngineDefinition;
-  effectiveDurationSec: number;
-}
-
 export interface PricingKernel {
   listDefinitions(): PricingEngineDefinition[];
   getDefinition(engineId: string): PricingEngineDefinition | undefined;
   getDurations(engineId: string): DurationSteps | undefined;
-  quote(input: PricingInput): PricingQuote;
 }

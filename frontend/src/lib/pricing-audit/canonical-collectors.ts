@@ -3,7 +3,6 @@ import {
   resolveCanonicalAdminScenarioPolicy,
 } from '@/server/pricing-admin/canonical-scenarios';
 
-import { collectLegacyPricingOutputs } from './legacy-collectors';
 import { buildPricingAuditScenarios } from './scenarios';
 import type { FrozenPricingOutput } from './types';
 
@@ -21,9 +20,11 @@ function formatUsd(cents: number): string {
   }).format(cents / 100);
 }
 
-export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricingAuditOutput[]> {
+export function collectCanonicalPricingOutputs(
+  baselineRows: FrozenPricingOutput[]
+): CanonicalPricingAuditOutput[] {
   const scenarios = buildPricingAuditScenarios();
-  const currentById = new Map((await collectLegacyPricingOutputs()).map((row) => [row.scenarioId, row]));
+  const baselineById = new Map(baselineRows.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(
     quoteCanonicalAdminScenarios({ databaseRules: [], scenarios }).map((outcome) => [outcome.scenarioId, outcome])
   );
@@ -31,12 +32,12 @@ export async function collectCanonicalPricingOutputs(): Promise<CanonicalPricing
   return scenarios
     .map((scenario): CanonicalPricingAuditOutput => {
       const outcome = canonicalById.get(scenario.id);
-      const current = currentById.get(scenario.id);
+      const baseline = baselineById.get(scenario.id);
       if (!outcome || outcome.status === 'unsupported') {
-        if (!current) throw new Error(`Missing unsupported legacy pricing row ${scenario.id}`);
+        if (!baseline) throw new Error(`Missing unsupported frozen pricing row ${scenario.id}`);
         const resolved = resolveCanonicalAdminScenarioPolicy({ databaseRules: [], scenario });
         return {
-          ...current,
+          ...baseline,
           engineId: scenario.engineId,
           policySource: resolved.source,
           policyRuleId: resolved.sourceRuleId,

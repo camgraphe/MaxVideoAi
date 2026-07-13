@@ -26,7 +26,6 @@
     "model:setup": "node scripts/model-setup.mjs",
     "models:audit": "node scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
-    "pricing:baseline:generate": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts --write",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",
     "pricing:audit": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-audit.ts",

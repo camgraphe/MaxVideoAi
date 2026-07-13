@@ -1,6 +1,5 @@
 import {
-  computePricingSnapshot as computeKernelSnapshot,
-  type PricingEngineDefinition,
+  computePricingDefinitionFacts,
   type PricingFacts,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
@@ -38,12 +37,6 @@ export type BillingPricingFacts = {
   addons: PricingSnapshot['addons'];
   meta: Record<string, unknown>;
   compatibilityProfileId: string;
-};
-
-const ZERO_DISCOUNTS: PricingEngineDefinition['memberTierDiscounts'] = {
-  member: 0,
-  plus: 0,
-  pro: 0,
 };
 
 function booleanAddon(value: unknown): boolean {
@@ -316,27 +309,21 @@ export function buildBillingPricingFacts(
       };
     }
   }
-  const factualDefinition: PricingEngineDefinition = {
+  const factualDefinition = {
     ...definition,
     currency,
-    platformFeePct: 0,
-    platformFeeFlatCents: 0,
-    memberTierDiscounts: ZERO_DISCOUNTS,
   };
-  const snapshot = computeKernelSnapshot(factualDefinition, {
-    engineId: engine.id,
+  const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
-    memberTier: 'member',
     ...(context.addons ? { addons: context.addons } : {}),
-  }).snapshot;
-  const exactSubtotal = snapshot.base.amountCents + snapshot.addons.reduce((sum, addon) => sum + addon.amountCents, 0);
+  });
   return resultFromFacts({
     engineId: engine.id,
     currency,
-    vendorSubtotalExactCents: exactSubtotal,
-    base: snapshot.base,
-    addons: snapshot.addons,
-    meta: snapshot.meta,
+    vendorSubtotalExactCents: definitionFacts.vendorSubtotalExactCents,
+    base: definitionFacts.base,
+    addons: definitionFacts.addons,
+    meta: definitionFacts.meta,
   });
 }

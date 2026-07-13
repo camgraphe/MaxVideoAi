@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { computeCanonicalPublicSnapshot } from '../frontend/server/pricing/quote-public';
@@ -42,9 +42,9 @@ test('browser canonical pricing modules cannot cross server or admin boundaries'
   }
 });
 
-test('legacy pricing facade is retained outside migrated public consumers for the later admin cleanup', () => {
-  const source = read('frontend/src/lib/pricing.ts');
-  assert.match(source, /export async function computePricingSnapshot/);
+test('legacy pricing facade is deleted after public and billing migration', () => {
+  assert.equal(existsSync('frontend/src/lib/pricing.ts'), false);
+  assert.equal(existsSync('frontend/src/lib/pricing-specialized-snapshots.ts'), false);
   assert.doesNotMatch(read('frontend/app/(core)/admin/pricing/page.tsx'), /pricing-public-quote/);
 });
 

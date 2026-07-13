@@ -1,14 +1,17 @@
 export type {
   PricingEngineDefinition,
-  PricingInput,
-  PricingQuote,
   PricingSnapshot,
   PricingKernel,
   MemberTier,
   DurationSteps,
   PricingAddonRule,
 } from './types';
-export { createPricingKernel, computePricingSnapshot } from './kernel';
+export { createPricingKernel } from './kernel';
+export {
+  computePricingDefinitionFacts,
+  type PricingDefinitionFacts,
+  type PricingDefinitionFactsInput,
+} from './facts';
 export { buildPricingDefinitionsFromFixtures } from './definitions';
 export { STANDARD_PAYMENT_MESSAGES } from './messages';
 export {

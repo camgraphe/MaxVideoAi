@@ -129,6 +129,26 @@ export async function ensureBillingCoreSchema(): Promise<void> {
     `);
 
     await query(`
+      INSERT INTO app_pricing_rules (
+        id,
+        engine_id,
+        mode,
+        margin_percent,
+        margin_flat_cents,
+        surcharge_audio_percent,
+        surcharge_upscale_percent,
+        currency,
+        effective_from,
+        created_at,
+        updated_at
+      )
+      VALUES
+        ('storyboard-generate', 'storyboarder', 'storyboard', 2, 0, 0.2, 0.5, 'USD', NOW(), NOW(), NOW()),
+        ('storyboard-edit', 'storyboarder', 'storyboard_edit', 1, 0, 0.2, 0.5, 'USD', NOW(), NOW(), NOW())
+      ON CONFLICT (id) DO NOTHING;
+    `);
+
+    await query(`
       CREATE TABLE IF NOT EXISTS app_membership_tiers (
         tier TEXT PRIMARY KEY,
         spend_threshold_cents BIGINT NOT NULL DEFAULT 0,

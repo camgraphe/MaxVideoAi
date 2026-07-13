@@ -1,6 +1,5 @@
 import {
-  computePricingSnapshot as computeKernelSnapshot,
-  type PricingEngineDefinition,
+  computePricingDefinitionFacts,
   type PricingFacts,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
@@ -38,12 +37,6 @@ export type PublicPricingFactsContext = {
   lumaRay2BasePriceUsd?: number;
   useFlatImageUnitFacts?: boolean;
   useStandardDefinitionFacts?: boolean;
-};
-
-const ZERO_DISCOUNTS: PricingEngineDefinition['memberTierDiscounts'] = {
-  member: 0,
-  plus: 0,
-  pro: 0,
 };
 
 const DEFAULT_LUMA_RAY2_BASE_PRICE_USD = {
@@ -96,33 +89,26 @@ function buildStandardDefinitionFacts(
   const { engine, durationSec, resolution } = context;
   const definition = buildPricingDefinition(engine);
   if (!definition) throw new Error(`Pricing definition not found for engine ${engine.id}`);
-  const factualDefinition: PricingEngineDefinition = {
+  const factualDefinition = {
     ...definition,
     currency,
-    platformFeePct: 0,
-    platformFeeFlatCents: 0,
-    memberTierDiscounts: ZERO_DISCOUNTS,
   };
-  const snapshot = computeKernelSnapshot(factualDefinition, {
-    engineId: engine.id,
+  const definitionFacts = computePricingDefinitionFacts(factualDefinition, {
     durationSec,
     resolution,
-    memberTier: 'member',
     ...(context.addons ? { addons: context.addons } : {}),
-  }).snapshot;
-  const exactCents =
-    snapshot.base.amountCents + snapshot.addons.reduce((sum, addon) => sum + addon.amountCents, 0);
+  });
   return {
     facts: {
       engineId: engine.id,
       currency,
-      vendorSubtotalExactCents: exactCents,
-      unit: snapshot.base.unit ?? 'sec',
-      quantity: snapshot.base.seconds,
+      vendorSubtotalExactCents: definitionFacts.vendorSubtotalExactCents,
+      unit: definitionFacts.base.unit ?? 'sec',
+      quantity: definitionFacts.base.seconds,
     },
-    base: { ...snapshot.base },
-    addons: snapshot.addons.map((addon) => ({ ...addon })),
-    meta: { ...(snapshot.meta ?? {}) },
+    base: { ...definitionFacts.base },
+    addons: definitionFacts.addons.map((addon) => ({ ...addon })),
+    meta: { ...definitionFacts.meta },
     compatibilityProfileId: 'standard',
   };
 }

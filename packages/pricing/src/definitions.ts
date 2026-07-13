@@ -6,12 +6,6 @@ import { listFalEngines } from '../../../frontend/src/config/falEngines';
 import type { EngineCaps } from '../../../frontend/types/engines';
 import type { PricingAddonRule, PricingEngineDefinition } from './types';
 
-const DEFAULT_MEMBER_DISCOUNTS = {
-  member: 0,
-  plus: 0.05,
-  pro: 0.1,
-} as const;
-
 function resolveDurationSteps(engine: EngineCaps) {
   const durationField =
     engine.inputSchema?.optional?.find((field) => field.id === 'duration_seconds') ??
@@ -150,17 +144,9 @@ export function buildPricingDefinitionsFromFixtures(): PricingEngineDefinition[]
       baseUnitPriceCents: baseInfo.baseUnitPriceCents,
       durationSteps,
       resolutionMultipliers,
-      memberTierDiscounts: {
-        member: DEFAULT_MEMBER_DISCOUNTS.member,
-        plus: DEFAULT_MEMBER_DISCOUNTS.plus,
-        pro: DEFAULT_MEMBER_DISCOUNTS.pro,
-      },
       minChargeCents: 0,
-      rounding: { mode: 'nearest', incrementCents: 1 },
       taxPolicyHint: 'standard',
       addons: engine.pricingDetails?.addons ?? undefined,
-      platformFeePct: 0.3,
-      platformFeeFlatCents: 0,
       availability: engine.availability,
       metadata: {
         source: 'falEngines.ts',

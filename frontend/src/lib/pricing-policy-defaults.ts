@@ -3,7 +3,7 @@ import policySource from '@/config/pricing-policy.json';
 import { listFalEngines } from '@/config/falEngines';
 
 const entries = listFalEngines();
-const engineIds = new Set<string>(['audio-generation', 'angle', 'background-removal', 'upscale']);
+const engineIds = new Set<string>(['audio-generation', 'angle', 'background-removal', 'storyboarder', 'upscale']);
 const modesByEngineId = new Map<string, ReadonlySet<string>>();
 const resolutionsByEngineId = new Map<string, ReadonlySet<string>>();
 
@@ -19,6 +19,7 @@ for (const entry of entries) {
   resolutionsByEngineId.set(entry.id, resolutions);
   resolutionsByEngineId.set(entry.engine.id, resolutions);
 }
+modesByEngineId.set('storyboarder', new Set(['storyboard', 'storyboard_edit']));
 
 const validatedPolicy = validatePricingPolicyDocument(policySource, {
   engineIds,

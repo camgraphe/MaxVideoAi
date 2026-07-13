@@ -1,8 +1,8 @@
 import {
   projectCanonicalQuoteToSnapshot,
   quoteCanonicalPricing,
+  type MemberTier,
   type PricingCompatibilityProfile,
-  type PricingEngineDefinition,
   type PricingSnapshot,
 } from '@maxvideoai/pricing';
 import { getPricingDetails } from '@/lib/fal-catalog';
@@ -11,6 +11,12 @@ import { getMembershipDiscountMap } from '@/lib/membership';
 import { buildBillingPricingFacts } from '@/lib/pricing-billing-facts';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 import type { PricingContext } from '@/lib/pricing-context';
+import {
+  buildStoryboardPricingProjection,
+  STORYBOARD_BILLING_ENGINE_ID,
+  type StoryboardPricingOperation,
+  type StoryboardTier,
+} from '@/lib/storyboard-pricing';
 
 import {
   resolveServerBillingPolicy,
@@ -39,7 +45,7 @@ export async function computeCanonicalBillingSnapshot(
   const currency = (context.currency ?? policy.rule.currency ?? pricingDetails?.currency ?? context.engine.pricing?.currency ?? 'USD').toUpperCase();
   const memberTier = normalizeMembershipTier(context.membershipTier);
   const membershipDiscounts = await getMembershipDiscountMap();
-  const memberTierDiscounts: PricingEngineDefinition['memberTierDiscounts'] = {
+  const memberTierDiscounts: Record<MemberTier, number> = {
     member: 0,
     plus: 0.05,
     pro: 0.1,
@@ -131,4 +137,53 @@ export async function computeCanonicalAudioBillingSnapshot(input: AudioPricingIn
   });
   delete snapshot.margin.ruleId;
   return snapshot;
+}
+
+export type CanonicalStoryboardSnapshotInput = {
+  snapshot: PricingSnapshot;
+  operation: StoryboardPricingOperation;
+  tier?: StoryboardTier;
+};
+
+export async function computeCanonicalStoryboardBillingSnapshot(
+  input: CanonicalStoryboardSnapshotInput,
+  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}
+): Promise<PricingSnapshot> {
+  const projection = buildStoryboardPricingProjection(input);
+  const { policy, vendorAccountId } = await resolveServerBillingPolicy(
+    {
+      engineId: STORYBOARD_BILLING_ENGINE_ID,
+      mode: input.operation,
+      resolution: projection.resolution,
+    },
+    input.snapshot.vendorAccountId,
+    dependencies.pricingPolicy
+  );
+  const policyDocument = getVersionedPricingPolicy();
+  const profileId = policy.rule.compatibilityProfile ?? 'standard';
+  const compatibilityProfile = policyDocument.compatibilityProfiles.find((profile) => profile.id === profileId);
+  if (!compatibilityProfile) throw new Error(`Missing pricing compatibility profile ${profileId}`);
+  const quote = quoteCanonicalPricing({
+    facts: {
+      ...projection.facts,
+      currency: policy.rule.currency,
+    },
+    scenario: {
+      id: `billing:${STORYBOARD_BILLING_ENGINE_ID}:${input.operation}:${projection.resolution}`,
+      engineId: STORYBOARD_BILLING_ENGINE_ID,
+      mode: input.operation,
+      resolution: projection.resolution,
+      membershipTier: projection.membershipTier,
+      discountPercent: projection.discountPercent,
+    },
+    policy,
+    compatibilityProfile,
+  });
+  return projectCanonicalQuoteToSnapshot({
+    quote,
+    base: projection.base,
+    addons: projection.addons,
+    vendorAccountId,
+    meta: projection.meta,
+  });
 }

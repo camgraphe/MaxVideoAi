@@ -8,7 +8,7 @@ import {
 } from '../frontend/src/lib/luma-agents-pricing';
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
+import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public.ts';
 
 function getEngine(id: string) {
   const engine = listFalEngines().find((entry) => entry.id === id)?.engine;

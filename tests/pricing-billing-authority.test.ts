@@ -66,7 +66,6 @@ test('public projections use their canonical owner without importing billing int
     assert.match(read(path), new RegExp(symbol), `${path} should use ${symbol}`);
     assert.doesNotMatch(read(path), /quote-billing/, `${path} should not import billing internals directly`);
   }
-  assert.doesNotMatch(read('frontend/src/lib/pricing.ts'), /quoteCanonicalPricing/);
 });
 
 test('refund paths use persisted charged amounts and never recompute pricing', () => {

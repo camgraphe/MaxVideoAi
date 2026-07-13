@@ -2,12 +2,6 @@ import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails 
 import type { PricingAddonRule, PricingEngineDefinition } from '@maxvideoai/pricing';
 import { computeSeedance2TokenQuote, isSeedance2TokenPricing } from '@/lib/seedance-2-pricing';
 
-const DEFAULT_MEMBER_DISCOUNTS = {
-  member: 0,
-  plus: 0.05,
-  pro: 0.1,
-} as const;
-
 const STANDARD_PRICING_MODES = new Set(['t2v', 'i2v', 't2i', 'i2i']);
 
 function parseDurationValue(value: number | string | undefined): number | null {
@@ -225,17 +219,9 @@ export function buildPricingDefinition(engine: EngineCaps): PricingEngineDefinit
     baseUnitPriceCents: baseInfo.baseUnitPriceCents,
     durationSteps,
     resolutionMultipliers,
-    memberTierDiscounts: {
-      member: DEFAULT_MEMBER_DISCOUNTS.member,
-      plus: DEFAULT_MEMBER_DISCOUNTS.plus,
-      pro: DEFAULT_MEMBER_DISCOUNTS.pro,
-    },
     minChargeCents: 0,
-    rounding: { mode: 'nearest', incrementCents: 1 },
     taxPolicyHint: 'standard',
     addons: resolveAddonPricing(engine),
-    platformFeePct: 0.3,
-    platformFeeFlatCents: 0,
     availability: engine.availability,
     metadata: {
       source: 'engine-caps',

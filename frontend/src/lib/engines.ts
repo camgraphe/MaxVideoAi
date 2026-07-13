@@ -1,17 +1,13 @@
 import { listFalEngines } from '@/config/falEngines';
 import { getModelRoster } from '@/lib/model-roster';
-import { getPricingKernel } from '@/lib/pricing-kernel';
 import type {
   EngineCaps,
   EngineInputField,
   EngineModeUiCaps,
   ItemizationLine,
-  PreflightRequest,
   PreflightResponse,
-  Resolution,
 } from '@/types/engines';
 import type { MemberTier, PricingSnapshot } from '@maxvideoai/pricing';
-import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
 
 export type EngineCategory = 'video' | 'image' | 'all';
 
@@ -194,98 +190,4 @@ export async function getEngineById(engineId: string): Promise<EngineCaps | unde
   const normalized = engineId.trim().toLowerCase();
   const engine = ENGINES_BASE.find((entry) => entry.id.toLowerCase() === normalized);
   return engine ? cloneEngine(engine) : undefined;
-}
-
-export async function computePreflight(request: PreflightRequest): Promise<PreflightResponse> {
-  const engineId = typeof request.engine === 'string' ? request.engine : '';
-  const engine = await getEngineById(engineId);
-  if (!engine) {
-    return {
-      ok: false,
-      messages: ['Unknown engine selection'],
-      error: {
-        code: 'ENGINE_NOT_FOUND',
-        message: 'Unknown engine',
-      },
-    };
-  }
-
-  const kernel = getPricingKernel();
-  const definition = kernel.getDefinition(engine.id);
-  if (!definition) {
-    return {
-      ok: false,
-      messages: ['Pricing not available for this engine'],
-      error: {
-        code: 'PRICING_UNAVAILABLE',
-        message: 'Pricing definition missing',
-      },
-    };
-  }
-
-  const requestedResolution: Resolution =
-    request.resolution === 'auto'
-      ? (engine.resolutions.find((value) => value !== 'auto') ?? engine.resolutions[0] ?? '1080p')
-      : request.resolution;
-
-  const availableResolutions = Object.keys(definition.resolutionMultipliers);
-  let effectiveResolution: Resolution = requestedResolution;
-  if (!availableResolutions.includes(effectiveResolution)) {
-    const fallbackResolution =
-      availableResolutions.find((value) => value !== 'default') ??
-      availableResolutions[0] ??
-      engine.resolutions[0] ??
-      '1080p';
-    effectiveResolution = fallbackResolution as Resolution;
-  }
-
-  const durationSec = Number.isFinite(request.durationSec) ? Math.max(1, Math.round(request.durationSec)) : 4;
-  const memberTier = normalizeMemberTier(request.user?.memberTier);
-  const pricingEngine = applyEngineVariantPricing(engine, request.mode);
-  const audioEnabled = typeof request.audio === 'boolean' ? request.audio : undefined;
-  const addons = buildEngineAddonInput(pricingEngine, {
-    audioEnabled,
-    voiceControl: request.voiceControl,
-  });
-  let snapshot: PricingSnapshot;
-  try {
-    const quote = kernel.quote({
-      engineId: pricingEngine.id,
-      durationSec,
-      resolution: effectiveResolution,
-      memberTier,
-      ...(addons ? { addons } : {}),
-    });
-    snapshot = quote.snapshot;
-  } catch (error) {
-    return {
-      ok: false,
-      messages: ['Unable to compute pricing'],
-      error: {
-        code: 'PRICING_ERROR',
-        message: error instanceof Error ? error.message : 'Pricing calculation failed',
-      },
-    };
-  }
-
-  return {
-    ok: true,
-    currency: snapshot.currency,
-    total: snapshot.totalCents,
-    itemization: toItemization(snapshot, memberTier),
-    pricing: snapshot,
-    caps: {
-      id: engine.id,
-      label: engine.label,
-      maxDurationSec: engine.maxDurationSec,
-      resolutions: engine.resolutions,
-      aspectRatios: engine.aspectRatios,
-      fps: engine.fps,
-      params: engine.params,
-      inputLimits: engine.inputLimits,
-      inputSchema: engine.inputSchema,
-      pricing: pricingEngine.pricing,
-      pricingDetails: pricingEngine.pricingDetails,
-    },
-  };
 }

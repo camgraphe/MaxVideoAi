@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { listFalEngines } from '@/config/falEngines';
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
-import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
+import {
+  computeCanonicalPublicSnapshot,
+  computeCanonicalPublicStoryboardSnapshot,
+} from '@/server/pricing/quote-public';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import {
-  applyStoryboardEditPricing,
   applyStoryboardKlingBundlePricing,
-  applyStoryboardPricing,
   getStoryboardKlingFirstFramePricingConfig,
   isKlingStoryboardBoardMetadata,
   resolveStoryboardTier,
@@ -138,21 +139,22 @@ export async function POST(req: NextRequest) {
     });
     let finalPricing = pricing;
     if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_SOURCE) {
-      finalPricing = applyStoryboardPricing(
-        pricing,
-        resolveStoryboardTier({
+      finalPricing = await computeCanonicalPublicStoryboardSnapshot({
+        snapshot: pricing,
+        operation: STORYBOARD_SOURCE,
+        tier: resolveStoryboardTier({
           customImageSize,
           resolution: resolutionResult.resolution,
           quality: body?.quality,
-        })
-      );
+        }),
+      });
       if (isKlingStoryboardBoardMetadata(body.metadata)) {
         const firstFrameConfig = getStoryboardKlingFirstFramePricingConfig({
           customImageSize,
           aspectRatio: typeof body.aspectRatio === 'string' ? body.aspectRatio : null,
         });
-        const firstFramePricing = applyStoryboardPricing(
-          await computeCanonicalPublicSnapshot({
+        const firstFramePricing = await computeCanonicalPublicStoryboardSnapshot({
+          snapshot: await computeCanonicalPublicSnapshot({
             engine: engineCaps,
             durationSec: 1,
             resolution: firstFrameConfig.resolution,
@@ -160,12 +162,16 @@ export async function POST(req: NextRequest) {
             quality: firstFrameConfig.quality,
             currency: engineCaps.pricing?.currency ?? 'USD',
           }),
-          'hd'
-        );
+          operation: STORYBOARD_SOURCE,
+          tier: 'hd',
+        });
         finalPricing = applyStoryboardKlingBundlePricing(finalPricing, firstFramePricing);
       }
     } else if (engineCaps.id === 'gpt-image-2' && body?.source === STORYBOARD_EDIT_SOURCE) {
-      finalPricing = applyStoryboardEditPricing(pricing);
+      finalPricing = await computeCanonicalPublicStoryboardSnapshot({
+        snapshot: pricing,
+        operation: STORYBOARD_EDIT_SOURCE,
+      });
     }
 
     return NextResponse.json({ ok: true, pricing: finalPricing });

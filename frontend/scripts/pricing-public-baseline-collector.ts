@@ -1,4 +1,4 @@
-import { computePricingSnapshot as computeKernelSnapshot, type PricingSnapshot } from '@maxvideoai/pricing';
+import type { PricingSnapshot } from '@maxvideoai/pricing';
 import {
   buildAudioAddonPayload,
   buildEngineOption,
@@ -7,10 +7,11 @@ import {
 import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { normalizeEngineId } from '@/lib/engine-alias';
 import { supportsImageGeneration } from '@/lib/models/catalog';
-import { computePricingSnapshot as computeLegacyPricingSnapshot } from '@/lib/pricing';
-import { buildPricingDefinition } from '@/lib/pricing-definition';
 import { getPricingKernel } from '@/lib/pricing-kernel';
+import { buildPublicPricingFacts, buildPublicUnitPricingFacts } from '@/lib/pricing-public-facts';
+import { projectPublicPricingSnapshot, quotePublicPricing } from '@/lib/pricing-public-quote';
 import { DEFAULT_MARKETING_SCENARIO } from '@/lib/pricing-scenarios';
+import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import type { EngineCaps, Mode } from '@/types/engines';
 import {
   buildPricingHubData,
@@ -285,7 +286,7 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
     mode?: Mode;
   }): Promise<void> {
     try {
-      const snapshot = await computeLegacyPricingSnapshot({
+      const snapshot = await computeCanonicalPublicSnapshot({
         engine: params.entry.engine,
         durationSec: params.durationSec ?? resolveDefaultDuration(params.entry),
         resolution: params.resolution ?? resolveDefaultResolution(params.entry.engine),
@@ -337,39 +338,49 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
       continue;
     }
 
-    if (PER_IMAGE_ENGINE_IDS.has(option.id)) {
-      for (const memberTier of MEMBER_TIERS) {
-        rows.push({
-          id: `estimator:${entry.id}:${memberTier}:default`,
-          surface: 'estimator',
-          engineId: entry.id,
-          status: 'exact',
-          currency: option.currency.toUpperCase(),
-          customerTotalCents: Math.max(0, Math.round(activeResolution.rate * 100)),
-          unit: 'image',
-          quantity: 1,
-        });
-      }
-      continue;
-    }
-
-    const definition =
-      (option.pricingEngineCaps ? buildPricingDefinition(option.pricingEngineCaps) : null) ??
-      getPricingKernel().getDefinition(option.pricingEngineId);
-    if (!definition) {
+    const pricingCaps = option.pricingEngineCaps;
+    if (!pricingCaps) {
       for (const memberTier of MEMBER_TIERS) {
         rows.push(unavailableRow(`estimator:${entry.id}:${memberTier}:default`, 'estimator', entry.id));
       }
       continue;
     }
+    const perImage = PER_IMAGE_ENGINE_IDS.has(option.id);
+    const mode = pricingCaps.modes.includes('t2v')
+      ? 't2v'
+      : pricingCaps.modes.find((candidate) => candidate === 'i2v' || candidate === 't2i' || candidate === 'i2i');
+    const buildEstimatorSnapshot = (memberTier: (typeof MEMBER_TIERS)[number], addons?: Record<string, boolean>) => {
+      const facts = perImage
+        ? buildPublicUnitPricingFacts({
+            engineId: option.pricingEngineId,
+            currency: option.currency,
+            unitPriceCents: activeResolution.providerRate * 100,
+            unit: 'image',
+          })
+        : buildPublicPricingFacts({
+            engine: pricingCaps,
+            durationSec: option.defaultDuration,
+            resolution: activeResolution.value,
+            ...(mode ? { mode } : {}),
+            ...(addons ? { addons } : {}),
+            useStandardDefinitionFacts: true,
+          });
+      const quote = quotePublicPricing({
+        facts: facts.facts,
+        scenario: {
+          id: `estimator:${option.pricingEngineId}:${option.defaultDuration}:${activeResolution.value}`,
+          engineId: facts.facts.engineId,
+          ...(mode ? { mode } : {}),
+          resolution: activeResolution.value,
+          membershipTier: memberTier,
+        },
+        compatibilityProfileId: perImage ? facts.compatibilityProfileId : 'public-rounded-vendor-current',
+      });
+      return projectPublicPricingSnapshot({ quote, base: facts.base, addons: facts.addons, meta: facts.meta });
+    };
     for (const memberTier of MEMBER_TIERS) {
       try {
-        const { snapshot } = computeKernelSnapshot(definition, {
-          engineId: option.pricingEngineId,
-          durationSec: option.defaultDuration,
-          resolution: activeResolution.value,
-          memberTier,
-        });
+        const snapshot = buildEstimatorSnapshot(memberTier);
         rows.push(
           snapshotRow({
             id: `estimator:${entry.id}:${memberTier}:default`,
@@ -384,13 +395,10 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
     }
     if (option.audioAddonKey) {
       try {
-        const { snapshot } = computeKernelSnapshot(definition, {
-          engineId: option.pricingEngineId,
-          durationSec: option.defaultDuration,
-          resolution: activeResolution.value,
-          memberTier: 'member',
-          addons: buildAudioAddonPayload(option.audioAddonKey, false),
-        });
+        const snapshot = buildEstimatorSnapshot(
+          'member',
+          buildAudioAddonPayload(option.audioAddonKey, false)
+        );
         rows.push(
           snapshotRow({
             id: `estimator:${entry.id}:member:audio-off`,
@@ -407,14 +415,31 @@ export async function collectPublicPricingProjectionRows(): Promise<PublicProjec
 
   const chipEngineId = normalizeEngineId(DEFAULT_MARKETING_SCENARIO.engineId) ?? DEFAULT_MARKETING_SCENARIO.engineId;
   const chipDefinition = getPricingKernel().getDefinition(chipEngineId);
-  if (chipDefinition) {
+  const chipEntry = entries.find((entry) => entry.id === chipEngineId || entry.engine.id === chipEngineId);
+  if (chipDefinition && chipEntry) {
     try {
-      const { snapshot } = computeKernelSnapshot(chipDefinition, {
-        engineId: chipEngineId,
+      const mode = chipEntry.engine.modes.includes('t2v')
+        ? 't2v'
+        : chipEntry.engine.modes.find((candidate) => candidate === 'i2v' || candidate === 't2i' || candidate === 'i2i');
+      const facts = buildPublicPricingFacts({
+        engine: chipEntry.engine,
         durationSec: DEFAULT_MARKETING_SCENARIO.durationSec,
         resolution: DEFAULT_MARKETING_SCENARIO.resolution,
-        memberTier: 'member',
+        ...(mode ? { mode } : {}),
+        useStandardDefinitionFacts: true,
       });
+      const quote = quotePublicPricing({
+        facts: facts.facts,
+        scenario: {
+          id: `price-chip:${chipEngineId}:${DEFAULT_MARKETING_SCENARIO.durationSec}:${DEFAULT_MARKETING_SCENARIO.resolution}`,
+          engineId: facts.facts.engineId,
+          ...(mode ? { mode } : {}),
+          resolution: DEFAULT_MARKETING_SCENARIO.resolution,
+          membershipTier: 'member',
+        },
+        compatibilityProfileId: 'public-rounded-vendor-current',
+      });
+      const snapshot = projectPublicPricingSnapshot({ quote, base: facts.base, addons: facts.addons, meta: facts.meta });
       rows.push(
         snapshotRow({
           id: `price-chip:${chipEngineId}:default`,

@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
-const pricingPath = 'frontend/src/lib/pricing.ts';
 const ruleStorePath = 'frontend/src/lib/pricing-rule-store.ts';
-const snapshotsPath = 'frontend/src/lib/pricing-specialized-snapshots.ts';
 const contextPath = 'frontend/src/lib/pricing-context.ts';
+const retiredPricingPaths = [
+  'frontend/src/lib/pricing.ts',
+  'frontend/src/lib/pricing-specialized-snapshots.ts',
+  'frontend/src/lib/pricing-audit/legacy-collectors.ts',
+] as const;
 
 test('pricing context and settlement helpers have narrow owners outside the compatibility facade', () => {
   assert.equal(existsSync(contextPath), true, `${contextPath} should exist`);
@@ -25,24 +28,11 @@ test('pricing context and settlement helpers have narrow owners outside the comp
   }
 });
 
-test('pricing module stays a public orchestration facade', () => {
-  assert.equal(existsSync(pricingPath), true);
+test('retired pricing compatibility and commercial snapshot layers are deleted', () => {
   assert.equal(existsSync(ruleStorePath), true);
-  assert.equal(existsSync(snapshotsPath), true);
-
-  const pricingSource = readFileSync(pricingPath, 'utf8');
-  const pricingLines = pricingSource.split('\n').length;
-
-  assert.ok(pricingLines < 360, `expected pricing.ts to stay under 360 lines, got ${pricingLines}`);
-  assert.match(pricingSource, /export async function computePricingSnapshot/);
-  assert.match(pricingSource, /from '@maxvideoai\/pricing'/);
-  assert.match(pricingSource, /from '@\/lib\/pricing-rule-store'/);
-  assert.match(pricingSource, /from '@\/lib\/pricing-specialized-snapshots'/);
-  assert.match(pricingSource, /export type \{ RawPricingRule, PricingRule, UpsertPricingRuleInput \}/);
-  assert.match(pricingSource, /export \{\s*deletePricingRule,/);
-  assert.doesNotMatch(pricingSource, /SELECT id, engine_id, resolution/);
-  assert.doesNotMatch(pricingSource, /function buildLumaRay2Snapshot/);
-  assert.doesNotMatch(pricingSource, /function buildGptImage2Snapshot/);
+  for (const path of retiredPricingPaths) {
+    assert.equal(existsSync(path), false, `${path} should be deleted`);
+  }
 });
 
 test('pricing rule store owns DB persistence and rule cache', () => {
@@ -58,20 +48,6 @@ test('pricing rule store owns DB persistence and rule cache', () => {
   assert.match(ruleStoreSource, /SELECT id, engine_id, resolution/);
   assert.match(ruleStoreSource, /INSERT INTO app_pricing_rules/);
   assert.doesNotMatch(ruleStoreSource, /computePricingSnapshot as computeKernelSnapshot/);
-});
-
-test('specialized pricing snapshots own provider-specific quote builders', () => {
-  const snapshotsSource = readFileSync(snapshotsPath, 'utf8');
-
-  assert.match(snapshotsSource, /export function buildLumaRay2Snapshot/);
-  assert.match(snapshotsSource, /export function buildLumaRay2EditSnapshot/);
-  assert.match(snapshotsSource, /export function buildSeedance2Snapshot/);
-  assert.match(snapshotsSource, /export function buildGptImage2Snapshot/);
-  assert.match(snapshotsSource, /export function buildDefinitionFromEngine/);
-  assert.match(snapshotsSource, /calculateLumaRay2Price/);
-  assert.match(snapshotsSource, /computeSeedance2TokenQuote/);
-  assert.match(snapshotsSource, /resolveGptImage2PricingTier/);
-  assert.doesNotMatch(snapshotsSource, /INSERT INTO app_pricing_rules/);
 });
 
 test('canonical billing facts contain provider facts but no specialized commercial snapshots', () => {
@@ -96,4 +72,29 @@ test('audio generation owns provider facts while canonical quote owners own comm
   assert.doesNotMatch(audioSource, /computeRoundedUpMarginCents/);
   assert.match(publicQuoteSource, /export function quotePublicAudioPricingSnapshot/);
   assert.match(publicQuoteSource, /quotePublicPricing/);
+});
+
+test('canonical quote is the sole commercial formula owner', () => {
+  const canonicalSource = readFileSync('packages/pricing/src/canonical.ts', 'utf8');
+  const definitionCatalogSource = readFileSync('packages/pricing/src/kernel.ts', 'utf8');
+  const utilitySource = readFileSync('packages/pricing/src/utils.ts', 'utf8');
+  const typesSource = readFileSync('packages/pricing/src/types.ts', 'utf8');
+  const definitionSource = readFileSync('frontend/src/lib/pricing-definition.ts', 'utf8');
+  const storyboardSource = readFileSync('frontend/src/lib/storyboard-pricing.ts', 'utf8');
+  const serverBillingSource = readFileSync('frontend/server/pricing/quote-billing.ts', 'utf8');
+  const serverPublicSource = readFileSync('frontend/server/pricing/quote-public.ts', 'utf8');
+  const imageEstimateSource = readFileSync('frontend/app/api/images/estimate/route.ts', 'utf8');
+  const enginesSource = readFileSync('frontend/src/lib/engines.ts', 'utf8');
+
+  assert.match(canonicalSource, /export function quoteCanonicalPricing/);
+  assert.doesNotMatch(definitionCatalogSource, /margin|discount|platformFeeCents|vendorShareCents/);
+  assert.doesNotMatch(utilitySource, /computeRoundedUpMarginCents|applyRounding|toMemberTier/);
+  assert.doesNotMatch(typesSource, /RoundingRule|rounding\?:/);
+  assert.doesNotMatch(definitionSource, /rounding:\s*\{/);
+  assert.doesNotMatch(storyboardSource, /discountAmountCents|discountAppliedToMargin|marginAmountCents/);
+  assert.doesNotMatch(storyboardSource, /pricing-public-quote|quotePublicPricing/);
+  assert.match(serverBillingSource, /export async function computeCanonicalStoryboardBillingSnapshot/);
+  assert.match(serverPublicSource, /computeCanonicalStoryboardBillingSnapshot/);
+  assert.match(imageEstimateSource, /computeCanonicalPublicStoryboardSnapshot/);
+  assert.doesNotMatch(enginesSource, /export async function computePreflight/);
 });

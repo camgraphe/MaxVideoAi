@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const policyModulePath = 'packages/pricing/src/policy.ts';
@@ -22,6 +22,28 @@ test('committed pricing policy validates and keeps current global defaults', asy
     surchargeUpscalePercent: 0.5,
     currency: 'USD',
   });
+  assert.deepEqual(
+    policy.rules
+      .filter((rule) => rule.engineId === 'storyboarder')
+      .map((rule) => ({ id: rule.id, mode: rule.mode, marginPercent: rule.marginPercent })),
+    [
+      { id: 'storyboard-generate', mode: 'storyboard', marginPercent: 2 },
+      { id: 'storyboard-edit', mode: 'storyboard_edit', marginPercent: 1 },
+    ]
+  );
+});
+
+test('database seeds preserve the versioned storyboard prices before admin overrides', () => {
+  const schemaSource = readFileSync('frontend/src/lib/schema/billing-core-schema.ts', 'utf8');
+  const migrationPath = 'neon/migrations/28_storyboard_pricing_policy.sql';
+
+  assert.equal(existsSync(migrationPath), true);
+  for (const source of [schemaSource, readFileSync(migrationPath, 'utf8')]) {
+    assert.match(source, /storyboard-generate/);
+    assert.match(source, /storyboard-edit/);
+    assert.match(source, /storyboarder/);
+    assert.match(source, /storyboard_edit/);
+  }
 });
 
 test('policy validation rejects invalid numbers and ambiguous selectors', async () => {

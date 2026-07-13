@@ -1,4 +1,4 @@
-import type { PricingSnapshot } from '@/types/engines';
+import type { PricingFacts, PricingSnapshot } from '@maxvideoai/pricing';
 import type { ImageGenerationRequest } from '@/types/image-generation';
 
 export const STORYBOARD_PRICING_MULTIPLIER = 3;
@@ -92,64 +92,75 @@ export function getStoryboardKlingFirstFramePricingConfig(params: {
       };
 }
 
-function applyStoryboardMultiplierPricing(params: {
-  snapshot: PricingSnapshot;
-  multiplier: number;
-  meta: Record<string, string | number>;
-}): PricingSnapshot {
-  const { snapshot, multiplier, meta } = params;
-  const baseAmountCents = Math.max(0, Math.round(snapshot.base?.amountCents ?? 0));
-  const marginAmountCents = Math.max(0, baseAmountCents * (multiplier - 1));
-  const subtotalBeforeDiscountCents = baseAmountCents + marginAmountCents;
-  const discountPercent = snapshot.discount?.percentApplied ?? 0;
-  const discountAmountCents =
-    discountPercent > 0 ? Math.round(subtotalBeforeDiscountCents * discountPercent) : 0;
-  const totalCents = Math.max(0, subtotalBeforeDiscountCents - discountAmountCents);
-  const discountAppliedToMargin = Math.min(marginAmountCents, discountAmountCents);
-  const platformFeeCents = Math.max(0, marginAmountCents - discountAppliedToMargin);
-  const vendorShareCents = Math.max(0, totalCents - platformFeeCents);
+export type StoryboardPricingOperation = typeof STORYBOARD_SOURCE | typeof STORYBOARD_EDIT_SOURCE;
 
-  return {
-    ...snapshot,
-    totalCents,
-    subtotalBeforeDiscountCents,
-    margin: {
-      amountCents: marginAmountCents,
-      percentApplied: multiplier - 1,
-      flatCents: 0,
-    },
-    discount: discountAmountCents
-      ? {
-          amountCents: discountAmountCents,
-          percentApplied: discountPercent,
-          tier: snapshot.discount?.tier ?? snapshot.membershipTier ?? 'member',
-        }
-      : undefined,
-    platformFeeCents,
-    vendorShareCents,
-    meta: {
-      ...(snapshot.meta ?? {}),
-      ...meta,
-    },
-  };
+export type StoryboardPricingProjection = {
+  facts: PricingFacts;
+  membershipTier: 'member' | 'plus' | 'pro';
+  discountPercent: number;
+  resolution: string;
+  base: PricingSnapshot['base'];
+  addons: PricingSnapshot['addons'];
+  meta: Record<string, unknown>;
+};
+
+function normalizeStoryboardMembershipTier(value: string | null | undefined): 'member' | 'plus' | 'pro' {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === 'plus' || normalized === 'pro' ? normalized : 'member';
 }
 
-export function applyStoryboardPricing(snapshot: PricingSnapshot, tier: StoryboardTier): PricingSnapshot {
-  return applyStoryboardMultiplierPricing({
-    snapshot,
-    multiplier: STORYBOARD_PRICING_MULTIPLIER,
-    meta: {
-      pricing_model: 'storyboarder_x3',
-      source: STORYBOARD_SOURCE,
+export function buildStoryboardPricingProjection(input: {
+  snapshot: PricingSnapshot;
+  operation: StoryboardPricingOperation;
+  tier?: StoryboardTier;
+}): StoryboardPricingProjection {
+  const { snapshot, operation } = input;
+  const isEdit = operation === STORYBOARD_EDIT_SOURCE;
+  const membershipTier = normalizeStoryboardMembershipTier(
+    snapshot.membershipTier ?? snapshot.discount?.tier
+  );
+  const resolution = input.tier ?? 'default';
+  const operationMeta: Record<string, unknown> = isEdit
+    ? {
+        pricing_model: 'storyboarder_edit_x2',
+        source: STORYBOARD_EDIT_SOURCE,
+        engineId: STORYBOARD_BILLING_ENGINE_ID,
+        engineLabel: STORYBOARD_BILLING_LABEL,
+        billingEngineId: STORYBOARD_BILLING_ENGINE_ID,
+        billingEngineLabel: STORYBOARD_BILLING_LABEL,
+        billingProductLabel: STORYBOARD_EDIT_BILLING_LABEL,
+        storyboard_edit_multiplier: STORYBOARD_EDIT_PRICING_MULTIPLIER,
+      }
+    : {
+        pricing_model: 'storyboarder_x3',
+        source: STORYBOARD_SOURCE,
+        engineId: STORYBOARD_BILLING_ENGINE_ID,
+        engineLabel: STORYBOARD_BILLING_LABEL,
+        billingEngineId: STORYBOARD_BILLING_ENGINE_ID,
+        billingEngineLabel: STORYBOARD_BILLING_LABEL,
+        billingProductLabel: STORYBOARD_BILLING_LABEL,
+        storyboard_multiplier: STORYBOARD_PRICING_MULTIPLIER,
+        storyboard_tier: input.tier ?? 'hd',
+      };
+
+  return {
+    facts: {
       engineId: STORYBOARD_BILLING_ENGINE_ID,
-      engineLabel: STORYBOARD_BILLING_LABEL,
-      billingEngineId: STORYBOARD_BILLING_ENGINE_ID,
-      billingEngineLabel: STORYBOARD_BILLING_LABEL,
-      billingProductLabel: STORYBOARD_BILLING_LABEL,
-      storyboard_multiplier: STORYBOARD_PRICING_MULTIPLIER,
-      storyboard_tier: tier,
+      currency: snapshot.currency,
+      vendorSubtotalExactCents: Math.max(0, snapshot.base.amountCents),
+      unit: snapshot.base.unit ?? 'image',
+      quantity: snapshot.base.seconds,
     },
-  });
+    membershipTier,
+    discountPercent: snapshot.discount?.percentApplied ?? 0,
+    resolution,
+    base: { ...snapshot.base },
+    addons: snapshot.addons.map((addon) => ({ ...addon })),
+    meta: {
+      ...(snapshot.meta ?? {}),
+      ...operationMeta,
+    },
+  };
 }
 
 function sumCents(...values: Array<number | null | undefined>): number {
@@ -166,7 +177,7 @@ export function applyStoryboardKlingBundlePricing(
 ): PricingSnapshot {
   const boardTotalCents = Math.max(0, Math.round(boardPricing.totalCents));
   const firstFrameTotalCents = Math.max(0, Math.round(firstFramePricing.totalCents));
-  const discountAmountCents = sumCents(boardPricing.discount?.amountCents, firstFramePricing.discount?.amountCents);
+  const combinedDiscountCents = sumCents(boardPricing.discount?.amountCents, firstFramePricing.discount?.amountCents);
 
   return {
     ...boardPricing,
@@ -184,10 +195,10 @@ export function applyStoryboardKlingBundlePricing(
       ...boardPricing.margin,
       amountCents: sumCents(boardPricing.margin?.amountCents, firstFramePricing.margin?.amountCents),
     },
-    discount: discountAmountCents
+    discount: combinedDiscountCents
       ? {
           ...(boardPricing.discount ?? firstFramePricing.discount),
-          amountCents: discountAmountCents,
+          amountCents: combinedDiscountCents,
         }
       : undefined,
     platformFeeCents: sumCents(boardPricing.platformFeeCents, firstFramePricing.platformFeeCents),
@@ -240,21 +251,4 @@ export function createIncludedStoryboardKlingFirstFramePricing(
       storyboard_provider_cost_cents_included: Math.max(0, Math.round(snapshot.base?.amountCents ?? 0)),
     },
   };
-}
-
-export function applyStoryboardEditPricing(snapshot: PricingSnapshot): PricingSnapshot {
-  return applyStoryboardMultiplierPricing({
-    snapshot,
-    multiplier: STORYBOARD_EDIT_PRICING_MULTIPLIER,
-    meta: {
-      pricing_model: 'storyboarder_edit_x2',
-      source: STORYBOARD_EDIT_SOURCE,
-      engineId: STORYBOARD_BILLING_ENGINE_ID,
-      engineLabel: STORYBOARD_BILLING_LABEL,
-      billingEngineId: STORYBOARD_BILLING_ENGINE_ID,
-      billingEngineLabel: STORYBOARD_BILLING_LABEL,
-      billingProductLabel: STORYBOARD_EDIT_BILLING_LABEL,
-      storyboard_edit_multiplier: STORYBOARD_EDIT_PRICING_MULTIPLIER,
-    },
-  });
 }

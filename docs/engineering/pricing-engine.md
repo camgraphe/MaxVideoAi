@@ -2,7 +2,7 @@
 
 ## Current status
 
-The pricing parity foundation, billing migration, and public projection migration are complete. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
+The pricing parity foundation, billing migration, and public projection migration are complete. The legacy pricing facade and specialized commercial snapshot layer are deleted, and an architecture contract now enforces one commercial formula owner. The three-domain admin cockpit is also complete, repository-verified, and operationally accepted against a configured isolated PostgreSQL database. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, storyboard, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
 The commercial values and pricing results remain unchanged: no price, margin, surcharge, membership discount, currency, rounding outcome, wallet debit, direct-payment comparison, public display, structured-data offer, or seeded product value changed. The admin mutation workflow changed from direct mutation to a server-owned `preview → explicit confirmation → transactional apply` protocol. The public batch added one named rounding-only compatibility profile after the frozen fixture demonstrated the historical behavior it preserves.
 
@@ -20,16 +20,18 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 
 | Owner | Current responsibility | Foundation status | Intended destination |
 | --- | --- | --- | --- |
-| `packages/pricing` | Canonical policy, quote, provenance, scaling, and snapshot projection | Canonical-authoritative | Sole pure commercial kernel |
-| `frontend/server/pricing/quote-billing.ts` | Server billing orchestration for video, image, and audio | Canonical-authoritative | Stable billing owner |
+| `packages/pricing/src/canonical.ts` | The only margin, surcharge, discount, total, platform-fee, and vendor-share formulas | Canonical-authoritative | Sole pure commercial calculator |
+| `packages/pricing/src/facts.ts` | Provider subtotal facts derived from standard engine definitions | Factual only | Stable pure factual adapter |
+| `packages/pricing` | Definition catalog, canonical policy, provenance, scaling, and snapshot projection | Canonical-authoritative | Stable package boundary |
+| `frontend/server/pricing/quote-billing.ts` | Server billing orchestration for video, image, audio, and storyboard | Canonical-authoritative | Stable billing owner |
+| `frontend/src/lib/pricing-context.ts` | Narrow shared input contract for billing/public quote orchestration | Canonical input | Stable context contract |
 | `frontend/src/lib/pricing-billing-facts.ts` | Billing provider facts and descriptive snapshot metadata | Canonical billing input | Stable factual adapter layer |
 | `frontend/src/lib/pricing-public-facts.ts` | Browser-safe provider and fixed-product facts | Canonical public input | Stable factual adapter layer |
 | `frontend/src/lib/pricing-public-quote.ts` | Browser-safe policy selection, canonical quote, and projection | Canonical-authoritative for deterministic public projections | Stable public quote owner |
 | `frontend/server/pricing/quote-public.ts` | DB-aware public and live-preview orchestration | Canonical-authoritative | Stable server public quote owner |
-| `frontend/src/lib/pricing.ts` | Shared legacy pricing facade | Compatibility only outside migrated public/billing paths | Remove in the legacy-deletion batch |
 | `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input | One resolver and admin-service input |
-| `frontend/src/lib/pricing-specialized-snapshots.ts` | Specialized legacy helpers | No longer public-authoritative | Remove after remaining legacy consumers migrate |
-| `frontend/src/lib/audio-generation.ts` | Audio vendor facts plus deterministic legacy projection helper | Facts used by canonical production audio | Keep factual builder; retire duplicate public math later |
+| `frontend/src/lib/audio-generation.ts` | Audio provider facts and presentation metadata | Factual only | Stable factual adapter |
+| `frontend/src/lib/storyboard-pricing.ts` | Storyboard facts, metadata, and composition of already-canonical bundle/included projections | No commercial formulas | Stable storyboard adapter |
 | `frontend/src/lib/billing-products.ts` | Fixed-product loading and tool quote projection | Canonical-authoritative for tools | Stable fixed-product billing owner |
 | `frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts` | Scenario selection, notes, sorting, links, and formatting | Canonical public consumer | Presentation only |
 | `frontend/components/marketing/PriceEstimator.tsx` | Interactive browser quote presentation | Canonical public consumer | Presentation only |
@@ -60,20 +62,21 @@ precise DB override
 
 The canonical result always carries the source, match specificity, source rule ID, and compatibility profile. Database unavailability falls back to validated versioned policy and emits a structured operational warning.
 
+Storyboard generation and editing are explicit `storyboarder` rules with margins of `2` and `1`, preserving the existing customer totals of exactly 3× and 2× provider cost. Migration 28 and the runtime schema seed create matching database overrides with `ON CONFLICT DO NOTHING`, so deployment preserves current prices while later admin edits remain simple and auditable.
+
 ## Audit workflow
 
 The committed billing and public baselines remain frozen pre-migration references and contain no database or timestamp data. The audits compare canonical outputs against those references; neither fixture nor collector is a production pricing owner.
 
 ```bash
 pnpm pricing:baseline
-pnpm pricing:baseline:generate
 pnpm pricing:public-baseline
 pnpm pricing:public-baseline:generate
 pnpm pricing:audit
 pnpm --silent pricing:audit -- --json
 ```
 
-The two `*:generate` commands are intentional fixture write operations. The other commands do not mutate pricing policy or application state.
+The 178-row pre-canonical billing baseline is immutable; there is no generation command for it. `pricing:public-baseline:generate` is the only fixture write operation and is reserved for an explicitly reviewed public-contract update. The other commands do not mutate pricing policy or application state.
 
 Every current cross-surface difference is preserved and identified by a compatibility profile. Updating `frontend/config/pricing-policy.json` is a commercial change after this foundation batch and requires an intentional matrix review; it must never be bundled into an unrelated refactor.
 
@@ -98,12 +101,13 @@ Deterministic browser and marketing projections enter through `frontend/src/lib/
 
 The pricing hub, model decision cards, estimator, chip, model price rows, Product Offer JSON-LD, workspace preflight, and image estimate routes are protected by `tests/pricing-public-authority.test.ts`. The exhaustive 492-row fixture protects the cent-level output of every migrated public surface.
 
-## Remaining migrations
+## Final one-owner state
 
-The remaining work is intentionally separate:
+`quoteCanonicalPricing` is the sole commercial formula. Definition catalogs and provider adapters can derive factual vendor subtotals, units, durations, resolutions, and addons, but they cannot apply margins, membership discounts, customer-total rounding, or settlement allocation. Storyboard and audio use the same canonical quote as every other live surface. The removed compatibility facade, specialized commercial snapshots, legacy audit collector, dead client preflight, and old kernel quote method must not be reintroduced.
 
-1. Migrate any non-public compatibility consumers, then delete `frontend/src/lib/pricing.ts` and superseded specialized commercial helpers.
-2. Tighten the semantic one-owner guard once those compatibility paths are gone.
+Two non-quote projections remain intentionally narrow: storyboard bundle code adds already-canonical snapshots and the included first-frame path zeroes an already-canonical snapshot. Settlement getters may infer missing allocation fields when reading historical stored snapshots; they never create a customer quote or change its total.
+
+`tests/pricing-architecture.test.ts` locks this boundary semantically. The immutable 178-row fixture proves parity with the removed implementation, while the canonical 492-row public fixture protects current public behavior.
 
 ## Admin commercial mutation workflow
 
@@ -138,7 +142,7 @@ pnpm pricing:audit
 pnpm --silent pricing:audit -- --json
 ```
 
-Do not run `pricing:baseline:generate` or `pricing:public-baseline:generate` during an ordinary price change: those commands rewrite the frozen references. After the previewed change is confirmed, verify the affected billing/public scenarios and run:
+Do not regenerate the public baseline during an ordinary price change. The billing baseline cannot be regenerated, and the public fixture may be rewritten only after a separate explicit review of the changed public contract. After the previewed change is confirmed, verify the affected billing/public scenarios and run:
 
 ```bash
 pnpm test:validate

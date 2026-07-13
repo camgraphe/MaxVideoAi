@@ -15,15 +15,25 @@ function assertFiniteNonNegative(value: number, label: string): void {
   }
 }
 
+function assertProviderAddonAmount(addon: PricingSnapshot['addons'][number], index: number): void {
+  if (!Number.isFinite(addon.amountCents)) {
+    throw new Error(`addons[${index}].amountCents must be finite`);
+  }
+  if (addon.amountCents < 0 && addon.type !== 'audio_off') {
+    throw new Error(`addons[${index}].amountCents must be non-negative unless it is audio_off`);
+  }
+}
+
 export function projectCanonicalQuoteToSnapshot(
   input: CanonicalSnapshotProjectionInput
 ): PricingSnapshot {
   assertFiniteNonNegative(input.base.seconds, 'base.seconds');
   assertFiniteNonNegative(input.base.rate, 'base.rate');
   assertFiniteNonNegative(input.base.amountCents, 'base.amountCents');
-  input.addons.forEach((addon, index) => {
-    assertFiniteNonNegative(addon.amountCents, `addons[${index}].amountCents`);
-  });
+  input.addons.forEach(assertProviderAddonAmount);
+  const presentedVendorSubtotal =
+    input.base.amountCents + input.addons.reduce((sum, addon) => sum + addon.amountCents, 0);
+  assertFiniteNonNegative(presentedVendorSubtotal, 'presentedVendorSubtotal');
 
   const { quote } = input;
   const discount = quote.discountCents

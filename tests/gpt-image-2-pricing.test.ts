@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { computePricingSnapshot } from '../frontend/src/lib/pricing.ts';
+import { computeCanonicalPublicSnapshot as computePricingSnapshot } from '../frontend/server/pricing/quote-public.ts';
 import { computeMarketingPricePoints, computeMarketingPriceRange } from '../frontend/src/lib/pricing-marketing.ts';
 import { POST as estimateImagePricing } from '../frontend/app/api/images/estimate/route.ts';
 import { resolveGptImage2AutoInputImageSize } from '../frontend/lib/image/gptImage2.ts';

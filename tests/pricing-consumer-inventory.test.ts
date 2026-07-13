@@ -6,8 +6,10 @@ const guidePath = 'docs/engineering/pricing-engine.md';
 const scenariosPath = 'frontend/src/lib/pricing-audit/scenarios.ts';
 
 const requiredOwners = [
-  'frontend/src/lib/pricing.ts',
-  'frontend/src/lib/pricing-specialized-snapshots.ts',
+  'packages/pricing/src/canonical.ts',
+  'frontend/src/lib/pricing-context.ts',
+  'frontend/src/lib/pricing-billing-facts.ts',
+  'frontend/src/lib/pricing-public-quote.ts',
   'frontend/src/lib/audio-generation.ts',
   'frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts',
   'frontend/components/marketing/PriceEstimator.tsx',

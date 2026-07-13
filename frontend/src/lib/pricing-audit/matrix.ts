@@ -2,7 +2,6 @@ import { comparePricingOutputs } from '@maxvideoai/pricing';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
 
 import { collectCanonicalPricingOutputs, type CanonicalPricingAuditOutput } from './canonical-collectors';
-import { collectLegacyPricingOutputs } from './legacy-collectors';
 import type { FrozenPricingOutput, PricingAuditSurface } from './types';
 
 export type PricingAuditErrorCode =
@@ -31,7 +30,7 @@ export type PricingAuditMatrixRow = {
   policySource: 'database' | 'versioned';
   policyRuleId: string;
   compatibilityProfile?: string;
-  migrationState: 'legacy-authoritative-shadow-match' | 'legacy-authoritative-shadow-mismatch';
+  migrationState: 'frozen-baseline-match' | 'frozen-baseline-mismatch';
   status: 'match' | 'mismatch';
   fieldDeltas: Record<string, { current: string | number | undefined; canonical: string | number | undefined }>;
 };
@@ -74,9 +73,9 @@ export function buildPricingAuditMatrixFromOutputs(
   canonical: CanonicalPricingAuditOutput[],
   approvedCompatibilityProfiles?: ReadonlySet<string>
 ): PricingAuditMatrix {
-  assertUniqueRows(current, 'legacy outputs');
+  assertUniqueRows(current, 'frozen baseline outputs');
   assertUniqueRows(canonical, 'canonical outputs');
-  current.forEach((row) => assertValidOutput(row, 'legacy output'));
+  current.forEach((row) => assertValidOutput(row, 'frozen baseline output'));
   canonical.forEach((row) => assertValidOutput(row, 'canonical output'));
   const currentById = new Map(current.map((row) => [row.scenarioId, row]));
   const canonicalById = new Map(canonical.map((row) => [row.scenarioId, row]));
@@ -111,8 +110,8 @@ export function buildPricingAuditMatrixFromOutputs(
       ...(compatibilityProfile ? { compatibilityProfile } : {}),
       migrationState:
         comparison.status === 'match'
-          ? 'legacy-authoritative-shadow-match'
-          : 'legacy-authoritative-shadow-mismatch',
+          ? 'frozen-baseline-match'
+          : 'frozen-baseline-mismatch',
       status: comparison.status,
       fieldDeltas: comparison.fieldDeltas,
     };
@@ -130,11 +129,36 @@ export function buildPricingAuditMatrixFromOutputs(
   };
 }
 
-export async function buildPricingAuditMatrix(): Promise<PricingAuditMatrix> {
+export function findUnprofiledCrossSurfaceDifferences(rows: FrozenPricingOutput[]): string[] {
+  const groups = new Map<string, FrozenPricingOutput[]>();
+  for (const row of rows) {
+    if (!row.equivalenceKey) continue;
+    const group = groups.get(row.equivalenceKey) ?? [];
+    group.push(row);
+    groups.set(row.equivalenceKey, group);
+  }
+  const missing: string[] = [];
+  for (const [key, group] of groups) {
+    if (new Set(group.map((row) => row.customerTotalCents)).size <= 1) continue;
+    for (const row of group) {
+      if (!row.compatibilityProfile) missing.push(`${key}:${row.scenarioId}`);
+    }
+  }
+  return missing.sort();
+}
+
+export function validateFrozenPricingBaseline(rows: FrozenPricingOutput[]): void {
+  assertUniqueRows(rows, 'frozen baseline outputs');
+  rows.forEach((row) => assertValidOutput(row, 'frozen baseline output'));
+}
+
+export async function buildPricingAuditMatrix(
+  frozenBaseline: FrozenPricingOutput[]
+): Promise<PricingAuditMatrix> {
   const policy = getVersionedPricingPolicy();
   return buildPricingAuditMatrixFromOutputs(
-    await collectLegacyPricingOutputs(),
-    await collectCanonicalPricingOutputs(),
+    frozenBaseline,
+    collectCanonicalPricingOutputs(frozenBaseline),
     new Set(policy.compatibilityProfiles.map((profile) => profile.id))
   );
 }

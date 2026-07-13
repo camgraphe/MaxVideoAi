@@ -1,7 +1,12 @@
+import { readFile } from 'node:fs/promises';
+
 import { buildPricingAuditMatrix } from '../frontend/src/lib/pricing-audit/matrix';
+import type { FrozenPricingOutput } from '../frontend/src/lib/pricing-audit/types';
 
 async function main(): Promise<void> {
-  const matrix = await buildPricingAuditMatrix();
+  const fixturePath = new URL('../tests/fixtures/pricing-parity.v1.json', import.meta.url);
+  const fixture = JSON.parse(await readFile(fixturePath, 'utf8')) as { rows: FrozenPricingOutput[] };
+  const matrix = await buildPricingAuditMatrix(fixture.rows);
   if (process.argv.includes('--json')) {
     process.stdout.write(`${JSON.stringify(matrix, null, 2)}\n`);
   } else {

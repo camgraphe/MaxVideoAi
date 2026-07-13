@@ -18,7 +18,7 @@ async function main(): Promise<void> {
   const expected = `${JSON.stringify(
     {
       version: 1,
-      generatedFrom: 'legacy-authoritative-public-pricing-paths',
+      generatedFrom: 'canonical-public-pricing-paths',
       rows,
     },
     null,

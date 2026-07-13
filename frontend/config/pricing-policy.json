@@ -75,6 +75,26 @@
       "surchargeUpscalePercent": 0.5,
       "currency": "USD",
       "compatibilityProfile": "audio-current"
+    },
+    {
+      "id": "storyboard-generate",
+      "engineId": "storyboarder",
+      "mode": "storyboard",
+      "marginPercent": 2,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0.2,
+      "surchargeUpscalePercent": 0.5,
+      "currency": "USD"
+    },
+    {
+      "id": "storyboard-edit",
+      "engineId": "storyboarder",
+      "mode": "storyboard_edit",
+      "marginPercent": 1,
+      "marginFlatCents": 0,
+      "surchargeAudioPercent": 0.2,
+      "surchargeUpscalePercent": 0.5,
+      "currency": "USD"
     }
   ]
 }

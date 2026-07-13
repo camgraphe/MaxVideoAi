@@ -40,7 +40,7 @@ test('versioned pricing policy contains commercial policy but no provider facts 
   }
 });
 
-test('public pricing consumers are canonical-authoritative while the compatibility facade remains', () => {
+test('public pricing consumers are canonical-authoritative with no compatibility facade', () => {
   for (const path of publicProjectionOwners) {
     const source = readFileSync(path, 'utf8');
     assert.match(source, /pricing-public|quote-public/);
@@ -51,9 +51,8 @@ test('public pricing consumers are canonical-authoritative while the compatibili
     'utf8'
   );
   assert.match(decisionPricing, /get(?:Image)?PresetQuote/);
-  const pricingSource = readFileSync('frontend/src/lib/pricing.ts', 'utf8');
-  assert.match(pricingSource, /export async function computePricingSnapshot/);
-  assert.match(pricingSource, /selectPricingRuleForBilling/);
+  assert.equal(existsSync('frontend/src/lib/pricing.ts'), false);
+  assert.equal(existsSync('frontend/src/lib/pricing-specialized-snapshots.ts'), false);
 });
 
 test('billing quote owners are canonical-authoritative after migration', () => {
