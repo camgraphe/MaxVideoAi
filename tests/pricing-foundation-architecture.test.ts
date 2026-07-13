@@ -114,3 +114,14 @@ test('pricing engineering guide records completed canonical pricing authorities 
     assert.match(guide, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   }
 });
+
+test('pricing engineering guide reports admin readiness without overstating configured-database acceptance', () => {
+  const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
+  const pendingStatus = 'Implemented/repository-verified; configured-DB acceptance pending';
+
+  assert.equal(guide.split(pendingStatus).length - 1, 4);
+  assert.doesNotMatch(guide, /\| Operational \|/);
+  assert.match(guide, /commercial values and pricing results remain unchanged/i);
+  assert.match(guide, /admin mutation workflow changed from direct mutation to[^.]*preview[^.]*confirmation/i);
+  assert.doesNotMatch(guide, /did not change[^.]*admin mutation/i);
+});
