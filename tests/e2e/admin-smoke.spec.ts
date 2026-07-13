@@ -104,7 +104,7 @@ test.describe('admin smoke', () => {
     await expect(page.locator('body')).toContainText('payments in 90d');
 
     await page.getByRole('link', { name: 'Last 24 hours' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=24h$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/admin\?range=24h$/);
     await expect(page.locator('body')).toContainText('payments in 24h');
 
     assertNoClientErrors(errors);
@@ -116,11 +116,11 @@ test.describe('admin smoke', () => {
 
     await expect(page.getByRole('link', { name: 'Admin excluded' })).toBeVisible();
     await page.getByRole('link', { name: 'Admin excluded' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=90d&excludeAdmin=0$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/admin\?range=90d&excludeAdmin=0$/);
     await expect(page.getByRole('link', { name: 'Include admin' })).toBeVisible();
 
     await page.getByRole('link', { name: 'Last 24 hours' }).click();
-    await expect(page).toHaveURL(/\/admin\?range=24h&excludeAdmin=0$/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/admin\?range=24h&excludeAdmin=0$/);
     await expect(page.locator('body')).toContainText('payments in 24h');
 
     assertNoClientErrors(errors);
