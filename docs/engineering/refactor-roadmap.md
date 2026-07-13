@@ -56,9 +56,9 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-07-14:
 | --- | ---: | --- |
 | `model-page-template-copy-additional.ts` | 6278 | content organization |
 | `ModelDecisionPromptingSection.tsx` | 3114 | large marketing component |
-| `compare-model-overrides-en.ts` | 2840 | localized content organization |
-| `compare-model-overrides-es.ts` | 2757 | localized content organization |
-| `compare-model-overrides-fr.ts` | 2757 | localized content organization |
+| `compare-page-overrides-en.ts` | 2840 | localized content organization |
+| `compare-page-overrides-es.ts` | 2757 | localized content organization |
+| `compare-page-overrides-fr.ts` | 2757 | localized content organization |
 | `model-page-template-copy.ts` | 1887 | content organization |
 | `ModelExamplesSection.tsx` | 1589 | large marketing component |
 | `StoryboardWorkspace.tsx` | 1318 | active balanced refactor |
