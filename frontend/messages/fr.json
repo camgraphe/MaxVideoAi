@@ -5694,8 +5694,8 @@
     },
     "angle": {
       "meta": {
-        "title": "Changer l'angle de caméra avec l'IA | Nouvelles vues depuis une image",
-        "description": "Importez une image, changez l'angle de caméra sans reconstruire la scène et créez un meilleur premier plan pour l'image-to-video, le storyboard, la pub ou le packshot.",
+        "title": "Changer l’angle d’une image avec l’IA | MaxVideoAI",
+        "description": "Changez l’angle de caméra d’une image avec l’IA. Créez des vues produit, des cadrages storyboard et de meilleures premières images vidéo.",
         "keywords": [
           "changer l'angle de caméra IA",
           "changer la perspective d'une image avec l'IA",
@@ -5728,11 +5728,44 @@
       },
       "hero": {
         "eyebrow": "Une image en entrée. Un nouvel angle en sortie.",
-        "title": "Changer l'angle de caméra sans reconstruire l'image",
+        "title": "Changez l’angle de caméra d’une image avec l’IA",
         "body": "Créez d'autres points de vue à partir d'un seul visuel et gardez le meilleur comme première image avant l'image-to-video.",
         "primaryCta": "Ouvrir l'outil",
         "secondaryCta": "Voir des exemples",
         "supportText": "Idéal quand le sujet est déjà bon et que seul le point de vue doit changer.",
+        "orbit": {
+          "dragLabel": "Faites glisser pour explorer de vrais angles de caméra",
+          "previousLabel": "Afficher l’angle précédent",
+          "nextLabel": "Afficher l’angle suivant",
+          "livePrefix": "Vue caméra sélectionnée",
+          "fallbackNote": "Quatre vues générées depuis une seule image",
+          "views": [
+            {
+              "id": "front",
+              "label": "Vue de face",
+              "degreeLabel": "Source · 0°",
+              "alt": "Vue de face d’une caméra de cinéma compacte sur un socle de studio ivoire."
+            },
+            {
+              "id": "threeQuarter",
+              "label": "Vue trois-quarts",
+              "degreeLabel": "Rotation · 45°",
+              "alt": "Vue en trois-quarts générée à partir de la même image d’une caméra de cinéma compacte."
+            },
+            {
+              "id": "profile",
+              "label": "Vue de profil",
+              "degreeLabel": "Rotation · 90°",
+              "alt": "Vue de profil générée à partir de la même image d’une caméra de cinéma compacte."
+            },
+            {
+              "id": "elevated",
+              "label": "Vue surélevée",
+              "degreeLabel": "Trois-quarts surélevé",
+              "alt": "Vue surélevée en trois-quarts générée à partir de la même image d’une caméra de cinéma compacte."
+            }
+          ]
+        },
         "panel": {
           "topLeft": "Source -> angle -> résultat",
           "topRight": "Gardez l'image, changez le point de vue",
@@ -5760,6 +5793,15 @@
             "Gardez la vue choisie comme première image avant l'image-to-video"
           ]
         }
+      },
+      "videoPrep": {
+        "eyebrow": "Préparation image-to-video",
+        "title": "Choisissez l’angle de caméra avant de lancer le mouvement",
+        "body": "Angle modifie le point de vue d’une image fixe. Utilisez le résultat retenu comme première image avant d’ouvrir un workflow image-to-video.",
+        "sourceLabel": "Première image d’origine",
+        "outputLabel": "Angle vidéo retenu",
+        "sourceAlt": "Première image cinématographique d’origine avant de changer le point de vue de la caméra.",
+        "outputAlt": "Point de vue alternatif de la caméra préparé comme première image pour l’image-to-video."
       },
       "problemSolution": {
         "eyebrow": "Problème + solution",
@@ -6037,6 +6079,7 @@
         "eyebrow": "FAQ",
         "title": "FAQ angle caméra",
         "body": "Des réponses courtes avant de commencer.",
+        "limits": "Les résultats dépendent de la qualité et de la lisibilité de l'image source. Les détails, les proportions et l'arrière-plan peuvent varier entre les angles générés : vérifiez donc la cohérence de chaque vue avant de la réutiliser. Angle sert à explorer le point de vue d'images fixes et à préparer de premières images pour les produits, storyboards, publicités et l'image-to-video ; il ne change pas l'angle de caméra dans une vidéo existante.",
         "items": [
           {
             "question": "L'IA peut-elle changer l'angle de caméra d'une photo ?",

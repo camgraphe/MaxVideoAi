@@ -5686,8 +5686,8 @@
     },
     "angle": {
       "meta": {
-        "title": "Cambiar ángulo de cámara con IA | Nuevas vistas desde una imagen",
-        "description": "Sube una imagen, cambia el ángulo de cámara sin reconstruir la escena y consigue un mejor fotograma inicial para image-to-video, storyboards, anuncios y fotos de producto.",
+        "title": "Cambiar el ángulo de una imagen con IA | MaxVideoAI",
+        "description": "Cambia el ángulo de cámara de una imagen con IA. Crea vistas de producto, encuadres de storyboard y mejores fotogramas para image-to-video.",
         "keywords": [
           "cambiar ángulo de cámara IA",
           "cambiar la perspectiva de una imagen con IA",
@@ -5720,11 +5720,44 @@
       },
       "hero": {
         "eyebrow": "Entra una imagen. Sale un nuevo ángulo.",
-        "title": "Cambia el ángulo de cámara sin reconstruir la imagen",
+        "title": "Cambia el ángulo de cámara de una imagen con IA",
         "body": "Genera puntos de vista alternativos desde una sola toma y conserva el mejor como fotograma de apertura antes de image-to-video.",
         "primaryCta": "Abrir herramienta",
         "secondaryCta": "Ver ejemplos",
         "supportText": "Funciona mejor cuando el sujeto ya está bien y solo hace falta cambiar el punto de vista.",
+        "orbit": {
+          "dragLabel": "Arrastra para explorar ángulos de cámara reales",
+          "previousLabel": "Mostrar el ángulo anterior",
+          "nextLabel": "Mostrar el ángulo siguiente",
+          "livePrefix": "Vista de cámara seleccionada",
+          "fallbackNote": "Cuatro vistas generadas desde una sola imagen",
+          "views": [
+            {
+              "id": "front",
+              "label": "Vista frontal",
+              "degreeLabel": "Fuente · 0°",
+              "alt": "Vista frontal de una cámara de cine compacta sobre un pedestal de estudio color marfil."
+            },
+            {
+              "id": "threeQuarter",
+              "label": "Vista de tres cuartos",
+              "degreeLabel": "Rotación · 45°",
+              "alt": "Vista en tres cuartos generada a partir de la misma imagen de una cámara de cine compacta."
+            },
+            {
+              "id": "profile",
+              "label": "Vista de perfil",
+              "degreeLabel": "Rotación · 90°",
+              "alt": "Vista de perfil generada a partir de la misma imagen de una cámara de cine compacta."
+            },
+            {
+              "id": "elevated",
+              "label": "Vista elevada",
+              "degreeLabel": "Tres cuartos elevado",
+              "alt": "Vista elevada en tres cuartos generada a partir de la misma imagen de una cámara de cine compacta."
+            }
+          ]
+        },
         "panel": {
           "topLeft": "Fuente -> ángulo -> resultado",
           "topRight": "Conserva la imagen, cambia el punto de vista",
@@ -5752,6 +5785,15 @@
             "Conserva el fotograma elegido antes de image-to-video"
           ]
         }
+      },
+      "videoPrep": {
+        "eyebrow": "Preparación para image-to-video",
+        "title": "Elige el ángulo de cámara antes de iniciar el movimiento",
+        "body": "Angle cambia el punto de vista de una imagen fija. Usa el resultado elegido como primer fotograma antes de abrir un flujo image-to-video.",
+        "sourceLabel": "Primer fotograma original",
+        "outputLabel": "Ángulo de vídeo elegido",
+        "sourceAlt": "Primer fotograma cinematográfico original antes de cambiar el punto de vista de la cámara.",
+        "outputAlt": "Punto de vista alternativo de la cámara preparado como primer fotograma para image-to-video."
       },
       "problemSolution": {
         "eyebrow": "Problema + solución",
@@ -6029,6 +6071,7 @@
         "eyebrow": "FAQ",
         "title": "FAQ sobre ángulo de cámara",
         "body": "Respuestas cortas antes de empezar.",
+        "limits": "Los resultados dependen de la calidad y la claridad de la imagen fuente. Los detalles, las proporciones y el fondo pueden variar entre los ángulos generados, así que revisa la coherencia de cada vista antes de reutilizarla. Angle sirve para explorar puntos de vista en imágenes fijas y preparar primeros fotogramas para productos, storyboards, anuncios e image-to-video; no cambia el ángulo de cámara dentro de un video existente.",
         "items": [
           {
             "question": "¿La IA puede cambiar el ángulo de cámara de una foto?",

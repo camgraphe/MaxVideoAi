@@ -60,7 +60,7 @@ export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale)
           body: 'Verrouillez le personnage, corrigez l’angle ou construisez l’image source avant de dépenser des crédits en motion.',
           links: [
             { href: '/tools/character-builder', label: 'Conserver le même personnage' },
-            { href: '/tools/angle', label: 'Changer le point de vue avant la vidéo' },
+            { href: '/tools/angle', label: 'Changer l’angle de caméra avant la vidéo' },
             { href: '/app/image', label: "Construire l'image source dans Image" },
           ],
         };
@@ -84,7 +84,7 @@ export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale)
           body: 'Fija el personaje, corrige el ángulo o construye la imagen base antes de gastar créditos en motion.',
           links: [
             { href: '/tools/character-builder', label: 'Mantener el mismo personaje' },
-            { href: '/tools/angle', label: 'Cambiar el punto de vista antes del video' },
+            { href: '/tools/angle', label: 'Cambiar el ángulo de cámara antes del video' },
             { href: '/app/image', label: 'Construir la imagen base en Image' },
           ],
         };
@@ -107,7 +107,7 @@ export function buildModelPrepLinksSection(modelSlug: string, locale: AppLocale)
         body: 'Lock the character, fix the viewpoint, or build the source still before you spend credits on motion.',
         links: [
           { href: '/tools/character-builder', label: 'Keep the character consistent' },
-          { href: '/tools/angle', label: 'Change the viewpoint before video' },
+          { href: '/tools/angle', label: 'Change the camera angle before video' },
           { href: '/app/image', label: 'Build the source still in Image' },
         ],
       };

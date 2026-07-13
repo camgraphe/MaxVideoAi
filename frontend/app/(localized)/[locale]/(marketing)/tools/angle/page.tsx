@@ -5,11 +5,18 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { AngleLandingPage } from '@/components/tools/AngleLandingPage';
 
 const AVAILABLE_LOCALES: AppLocale[] = ['en', 'fr', 'es'];
+const ANGLE_SOCIAL_IMAGE_URL = 'https://maxvideoai.com/assets/tools/angle-orbit-hero-45.webp';
 
 export async function generateMetadata(props: { params: Promise<{ locale: AppLocale }> }): Promise<Metadata> {
   const params = await props.params;
   const { dictionary } = await resolveDictionary({ locale: params.locale });
   const content = dictionary.toolMarketing.angle;
+  const angleSocialImage = {
+    url: ANGLE_SOCIAL_IMAGE_URL,
+    width: 1600,
+    height: 1200,
+    alt: content.meta.imageAlt,
+  };
 
   return buildSeoMetadata({
     locale: params.locale,
@@ -18,9 +25,11 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
     englishPath: '/tools/angle',
     availableLocales: AVAILABLE_LOCALES,
     keywords: content.meta.keywords,
-    image:
-      'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp',
+    image: ANGLE_SOCIAL_IMAGE_URL,
     imageAlt: content.meta.imageAlt,
+    titleBranding: 'none',
+    openGraph: { images: [angleSocialImage] },
+    twitter: { images: [angleSocialImage] },
   });
 }
 

@@ -5659,8 +5659,8 @@
     },
     "angle": {
       "meta": {
-        "title": "Change Camera Angle with AI | Generate New Views from One Image",
-        "description": "Upload one image, change camera angle without rebuilding the scene, and generate better first frames for image-to-video, storyboards, ads, and product shots.",
+        "title": "AI Camera Angle Generator | New Views from One Image",
+        "description": "Change a camera angle with AI from one image. Create product views, storyboard coverage, ad perspectives, and stronger image-to-video first frames.",
         "keywords": [
           "change camera angle ai",
           "change image perspective ai",
@@ -5693,11 +5693,44 @@
       },
       "hero": {
         "eyebrow": "One image in. New camera angle out.",
-        "title": "Change Camera Angle Without Rebuilding the Image",
+        "title": "Change Camera Angle with AI from One Image",
         "body": "Generate alternate viewpoints from a single shot and keep the best result as your first frame before image-to-video.",
         "primaryCta": "Open Tool",
         "secondaryCta": "View Angle Examples",
         "supportText": "Best when the subject is already right and only the viewpoint needs to change.",
+        "orbit": {
+          "dragLabel": "Drag to explore real camera angles",
+          "previousLabel": "Show previous camera angle",
+          "nextLabel": "Show next camera angle",
+          "livePrefix": "Selected camera view",
+          "fallbackNote": "Four generated views from one source image",
+          "views": [
+            {
+              "id": "front",
+              "label": "Front view",
+              "degreeLabel": "Source · 0°",
+              "alt": "Front view of a compact cinema camera on an ivory studio plinth."
+            },
+            {
+              "id": "threeQuarter",
+              "label": "Three-quarter view",
+              "degreeLabel": "Rotation · 45°",
+              "alt": "Three-quarter camera angle generated from the same compact cinema camera image."
+            },
+            {
+              "id": "profile",
+              "label": "Profile view",
+              "degreeLabel": "Rotation · 90°",
+              "alt": "Profile camera angle generated from the same compact cinema camera image."
+            },
+            {
+              "id": "elevated",
+              "label": "Elevated view",
+              "degreeLabel": "Elevated three-quarter",
+              "alt": "Elevated three-quarter camera angle generated from the same compact cinema camera image."
+            }
+          ]
+        },
         "panel": {
           "topLeft": "Source -> Angle -> Output",
           "topRight": "Keep the image, shift the viewpoint",
@@ -5725,6 +5758,15 @@
             "Keep the chosen frame before image-to-video"
           ]
         }
+      },
+      "videoPrep": {
+        "eyebrow": "Image-to-video preparation",
+        "title": "Choose the video camera angle before motion starts",
+        "body": "Angle changes the viewpoint of a still image. Use the selected result as a stronger first frame before you open an image-to-video workflow.",
+        "sourceLabel": "Original first frame",
+        "outputLabel": "Selected video angle",
+        "sourceAlt": "Original cinematic first frame before changing the camera viewpoint.",
+        "outputAlt": "Alternate camera viewpoint prepared as an image-to-video first frame."
       },
       "problemSolution": {
         "eyebrow": "Problem + solution",
@@ -6002,6 +6044,7 @@
         "eyebrow": "FAQ",
         "title": "Camera Angle FAQ",
         "body": "Short answers before you start.",
+        "limits": "Results depend on the quality and clarity of the source image. Details, proportions, and backgrounds can vary between generated angles, so review each view for consistency before reuse. Angle supports viewpoint exploration for still images and first frames for products, storyboards, ads, and image-to-video; it does not change the camera angle inside an existing video.",
         "items": [
           {
             "question": "Can AI change the camera angle of a photo?",

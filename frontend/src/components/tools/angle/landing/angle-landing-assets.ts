@@ -1,5 +1,35 @@
 import type { Dictionary } from '@/lib/i18n/types';
 
+export const ANGLE_ORBIT_ASSETS = {
+  hero: {
+    front: '/assets/tools/angle-orbit-hero-source.webp',
+    threeQuarter: '/assets/tools/angle-orbit-hero-45.webp',
+    profile: '/assets/tools/angle-orbit-hero-90.webp',
+    elevated: '/assets/tools/angle-orbit-hero-elevated.webp',
+  },
+  proof: {
+    source: '/assets/tools/angle-orbit-proof-source.webp',
+    output: '/assets/tools/angle-orbit-proof-45.webp',
+  },
+  product: {
+    source: '/assets/tools/angle-orbit-product-source.webp',
+    output: '/assets/tools/angle-orbit-product-45.webp',
+  },
+  storyboard: {
+    source: '/assets/tools/angle-orbit-story-source.webp',
+    output: '/assets/tools/angle-orbit-story-elevated.webp',
+  },
+  adCreative: {
+    source: '/assets/tools/angle-orbit-ad-source.webp',
+    output: '/assets/tools/angle-orbit-ad-45.webp',
+  },
+  videoPrep: {
+    source: '/assets/tools/angle-orbit-video-source.webp',
+    output: '/assets/tools/angle-orbit-video-45.webp',
+  },
+  workspace: '/assets/tools/angle-orbit-workspace.webp',
+} as const;
+
 export const ANGLE_SOURCE_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/b2358480-cc56-4fcf-9376-cf010d7222ac.webp';
 export const ANGLE_OUTPUT_URL =
