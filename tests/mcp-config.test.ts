@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
+import mcpPublication from '../frontend/config/mcp-publication.json';
 import { FEATURES } from '../frontend/content/feature-flags';
 import { resolveMcpConfig } from '../frontend/src/server/mcp/config';
 
-test('MCP rollout flags are independently disabled by default', () => {
-  assert.deepEqual(FEATURES.mcp, {
+test('the common MCP publication source owns every disabled rollout flag', () => {
+  const expected = {
     publicMarketing: false,
     publicIndexing: false,
     transport: false,
@@ -14,7 +15,10 @@ test('MCP rollout flags are independently disabled by default', () => {
     paidGeneration: false,
     trial: false,
     referenceUploads: false,
-  });
+  };
+
+  assert.deepEqual(mcpPublication, expected);
+  assert.deepEqual(FEATURES.mcp, expected);
 });
 
 test('public REST API references stay disabled while MCP is the only protocol integration', () => {

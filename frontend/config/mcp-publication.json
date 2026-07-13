@@ -1,4 +1,10 @@
 {
   "publicMarketing": false,
-  "publicIndexing": false
+  "publicIndexing": false,
+  "transport": false,
+  "oauth": false,
+  "discovery": false,
+  "paidGeneration": false,
+  "trial": false,
+  "referenceUploads": false
 }

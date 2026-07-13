@@ -26,11 +26,12 @@ test('public MCP previews do not become indexable before every public capability
   );
 });
 
-test('the sitemap consumes the common publication source without indexing MCP by default', () => {
+test('the sitemap composes every publication prerequisite from the common build-time source', () => {
   const sitemapConfig = readFileSync('frontend/next-sitemap.config.js', 'utf8');
   assert.match(sitemapConfig, /require\('\.\/config\/mcp-publication\.json'\)/);
   assert.match(
     sitemapConfig,
-    /if \(mcpPublication\.publicIndexing\) \{\s*marketingPaths\.add\('\/mcp'\);\s*\}/
+    /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.trial &&\s*mcpPublication\.referenceUploads;/
   );
+  assert.match(sitemapConfig, /if \(mcpIndexable\) \{\s*marketingPaths\.add\('\/mcp'\);\s*\}/);
 });

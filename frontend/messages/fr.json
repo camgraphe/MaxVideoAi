@@ -1532,7 +1532,7 @@
       "badges": [
         "Sans abonnement",
         "Prévisualisation invité",
-        "Crédits dès 10 $",
+        "Recharge du portefeuille dans Facturation",
         "Remboursement des générations échouées"
       ],
       "link": {
@@ -1591,16 +1591,16 @@
     },
     "wallet": {
       "title": "Portefeuille",
-      "description": "Alimentez votre portefeuille avec des Crédits de démarrage (10 $) ou ajoutez $10 / $25 / $50 à la fois. Une recharge automatique optionnelle maintient les rendus en cours.",
+      "description": "Rechargez votre portefeuille individuel depuis Facturation avec le paiement sécurisé Stripe Checkout.",
       "points": [
-        "Crédits de démarrage (10 $) pour démarrer instantanément.",
-        "Ajoutez des fonds par tranches de $10, $25 ou $50 quand vous en avez besoin.",
-        "Recharge automatique optionnelle avec alertes lorsque le solde passe en dessous de votre seuil."
+        "Choisissez l’un des montants proposés sur la page Facturation.",
+        "Vérifiez la devise, les taxes et le montant final dans Stripe Checkout avant de payer.",
+        "La carte et les options de paiement express éligibles apparaissent lorsqu’elles sont disponibles pour votre appareil et votre région."
       ],
       "balanceLabel": "Solde du portefeuille",
-      "balanceHelper": "Les Crédits de démarrage commencent à 10 $ dans votre wallet individuel.",
-      "autoTopUpLabel": "Recharge automatique lorsque le solde descend en dessous de 10 $",
-      "autoTopUpHint": "Des e-mails d’état quotidiens tiennent le service financier informé.",
+      "balanceHelper": "Ouvrez Facturation pour consulter le solde de votre portefeuille et les options de recharge disponibles.",
+      "autoTopUpLabel": "Options de recharge dans Facturation",
+      "autoTopUpHint": "Les contrôles du portefeuille disponibles sont affichés sur la page Facturation.",
       "addLabel": "Ajouter ${amount}"
     },
     "examples": {
@@ -2516,7 +2516,7 @@
         "title": "Système tarifaire",
         "items": [
           "Prévisualisez le prix exact avant de générer. La pastille évolue selon durée, résolution et remises automatiques.",
-          "Les Starter Credits (10 $) et les statuts Membre / Plus / Pro sont recalculés quotidiennement."
+          "Les options de recharge du portefeuille et votre statut Membre sont affichés dans Facturation."
         ]
       },
       {
@@ -3017,7 +3017,7 @@
       {
         "date": "2024-06-05",
         "title": "Automatisation des remboursements",
-        "body": "Les remboursements automatiques se déclenchent désormais en moins de 90 secondes lorsqu'un rendu échoue ou qu'un fournisseur retourne une erreur."
+        "body": "Les générations payantes échouées sont automatiquement remboursées lorsqu’un rendu échoue ou qu’un fournisseur retourne une erreur."
       },
       {
         "date": "2024-05-29",

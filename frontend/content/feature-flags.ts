@@ -40,13 +40,6 @@ export const FEATURES = {
     apiPublicRefs: false,
   },
   mcp: {
-    publicMarketing: mcpPublication.publicMarketing,
-    publicIndexing: mcpPublication.publicIndexing,
-    transport: false,
-    oauth: false,
-    discovery: false,
-    paidGeneration: false,
-    trial: false,
-    referenceUploads: false,
+    ...mcpPublication,
   },
 } as const;

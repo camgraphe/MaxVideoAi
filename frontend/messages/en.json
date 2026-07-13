@@ -1428,7 +1428,7 @@
       "badges": [
         "No subscription",
         "Guest preview",
-        "Starter credits from $10",
+        "Wallet funding in Billing",
         "Refunds on failed generations"
       ],
       "link": {
@@ -1487,16 +1487,16 @@
     },
     "wallet": {
       "title": "Wallet",
-      "description": "Fund your wallet with Starter Credits ($10) or add $10 / $25 / $50 at a time. Optional auto top-up keeps renders moving.",
+      "description": "Top up your individual wallet from Billing through secure Stripe Checkout.",
       "points": [
-        "Starter Credits ($10) to get rolling instantly.",
-        "Add funds in $10, $25, or $50 increments when you need them.",
-        "Optional auto top-up with alerts when balance drops below your threshold."
+        "Choose an available top-up amount on the Billing page.",
+        "Review the currency, taxes, and final amount in Stripe Checkout before payment.",
+        "Card and eligible express payment options appear when available for your device and region."
       ],
       "balanceLabel": "Wallet balance",
-      "balanceHelper": "Starter Credits begin at $10 in your individual wallet.",
-      "autoTopUpLabel": "Auto top-up when balance dips below $10",
-      "autoTopUpHint": "Daily status emails keep finance in the loop.",
+      "balanceHelper": "Open Billing to review your wallet balance and available top-up options.",
+      "autoTopUpLabel": "Wallet funding options in Billing",
+      "autoTopUpHint": "Available wallet controls are shown on the Billing page.",
       "addLabel": "Add ${amount}"
     },
     "examples": {
@@ -2481,7 +2481,7 @@
         "title": "Price system",
         "items": [
           "Preview the exact price before you generate. The price chip updates with duration, resolution, and automatic discounts.",
-          "Starter Credits ($10) and rolling Member status (Member / Plus / Pro) update daily."
+          "Wallet funding options and your Member status are shown in Billing."
         ]
       },
       {
@@ -2982,7 +2982,7 @@
       {
         "date": "2024-06-05",
         "title": "Refund automation",
-        "body": "Automatic refunds now trigger within 90 seconds when renders fail or providers error out."
+        "body": "Failed paid generations are automatically refunded when a render fails or a provider returns an error."
       },
       {
         "date": "2024-05-29",

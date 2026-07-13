@@ -1531,7 +1531,7 @@
       "badges": [
         "Sin suscripción",
         "Vista previa invitado",
-        "Créditos desde $10",
+        "Recarga de billetera en Facturación",
         "Reembolso de generaciones fallidas"
       ],
       "link": {
@@ -1590,16 +1590,16 @@
     },
     "wallet": {
       "title": "Billetera",
-      "description": "Financia tu billetera con Créditos iniciales ($10) o añade $10 / $25 / $50 a la vez. La recarga automática opcional mantiene los renders en marcha.",
+      "description": "Recarga tu billetera individual desde Facturación mediante el pago seguro de Stripe Checkout.",
       "points": [
-        "Créditos iniciales ($10) para empezar al instante.",
-        "Añade fondos en incrementos de $10, $25 o $50 cuando los necesites.",
-        "Recarga automática opcional con alertas cuando el saldo cae por debajo de tu umbral."
+        "Elige uno de los importes disponibles en la página de Facturación.",
+        "Revisa la divisa, los impuestos y el importe final en Stripe Checkout antes de pagar.",
+        "La tarjeta y las opciones de pago exprés elegibles aparecen cuando están disponibles para tu dispositivo y región."
       ],
       "balanceLabel": "Saldo de la billetera",
-      "balanceHelper": "Los Créditos iniciales empiezan en $10 en tu billetera individual.",
-      "autoTopUpLabel": "Recarga automática cuando el saldo baja de $10",
-      "autoTopUpHint": "Los correos diarios de estado mantienen a finanzas informadas.",
+      "balanceHelper": "Abre Facturación para consultar el saldo de tu billetera y las opciones de recarga disponibles.",
+      "autoTopUpLabel": "Opciones de recarga en Facturación",
+      "autoTopUpHint": "Los controles de billetera disponibles se muestran en la página de Facturación.",
       "addLabel": "Añadir ${amount}"
     },
     "examples": {
@@ -2508,7 +2508,7 @@
         "title": "Sistema de precios",
         "items": [
           "Previsualiza el precio exacto antes de generar. La pastilla se ajusta con duración, resolución y descuentos automáticos.",
-          "Los Starter Credits (10 $) y los estados Miembro / Plus / Pro se recalculan a diario."
+          "Las opciones de recarga de la billetera y tu estado de Miembro se muestran en Facturación."
         ]
       },
       {
@@ -3009,7 +3009,7 @@
       {
         "date": "2024-06-05",
         "title": "Automatización de reembolsos",
-        "body": "Los reembolsos automáticos ahora se disparan en menos de 90 segundos cuando un render falla o un proveedor devuelve error."
+        "body": "Las generaciones de pago fallidas se reembolsan automáticamente cuando falla un render o un proveedor devuelve un error."
       },
       {
         "date": "2024-05-29",

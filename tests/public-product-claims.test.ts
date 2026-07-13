@@ -1,15 +1,12 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import test from 'node:test';
 
 const locales = ['en', 'fr', 'es'] as const;
-const docsPaths = [
-  'content/docs/get-started.mdx',
-  'content/docs/brand-safety.mdx',
-  'content/fr/docs/get-started.mdx',
-  'content/fr/docs/brand-safety.mdx',
-  'content/es/docs/get-started.mdx',
-  'content/es/docs/brand-safety.mdx',
+const docsDirectories = [
+  'content/docs',
+  'content/fr/docs',
+  'content/es/docs',
 ] as const;
 
 const privateMessageNamespaces = new Set([
@@ -42,8 +39,32 @@ function collectStrings(value: unknown, source: string, result: PublicCopy[]): v
   }
 }
 
+function discoverDocsPaths(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .flatMap((entry) => {
+      const entryPath = `${directory}/${entry.name}`;
+
+      if (entry.isDirectory()) {
+        return discoverDocsPaths(entryPath);
+      }
+
+      return entry.isFile() && /\.mdx?$/i.test(entry.name) ? [entryPath] : [];
+    })
+    .sort();
+}
+
+function loadDocsClaimBlocks(path: string): PublicCopy[] {
+  return readFileSync(path, 'utf8')
+    .split(/\r?\n\s*\r?\n/)
+    .map((value) => value.trim())
+    .filter(Boolean)
+    .map((value, index) => ({ source: `${path}#block-${index + 1}`, value }));
+}
+
 function loadIndexableCopy(): PublicCopy[] {
-  const copy = docsPaths.map((path) => ({ source: path, value: readFileSync(path, 'utf8') }));
+  const copy = docsDirectories
+    .flatMap((directory) => discoverDocsPaths(directory))
+    .flatMap((path) => loadDocsClaimBlocks(path));
 
   for (const locale of locales) {
     const messages = JSON.parse(readFileSync(`frontend/messages/${locale}.json`, 'utf8')) as Record<
@@ -95,7 +116,16 @@ const prohibitedAssertions = [
   {
     claim: 'guaranteed refund timing',
     pattern:
-      /refunded within minutes|credited within minutes|processed automatically within minutes|en quelques minutes|en cuestión de minutos|reembols(?:a|an|os).*en minutos|acreditada en minutos/i,
+      /refunded within minutes|credited within minutes|processed automatically within minutes|refund[^.]*\b(?:within|under|in)\s+\d+\s+(?:seconds?|minutes?)|en quelques minutes|rembours[^.]*\b(?:moins de|dans)\s+\d+\s+(?:secondes?|minutes?)|en cuestión de minutos|reembols(?:a|an|os).*en minutos|reembols[^.]*\b(?:menos de|en)\s+\d+\s+(?:segundos?|minutos?)|acreditada en minutos/i,
+  },
+  {
+    claim: 'hard-coded wallet funding amounts',
+    pattern:
+      /(?:starter credits?|crédits de démarrage|créditos iniciales|wallet|portefeuille|billetera|add funds|ajoutez des fonds|añade fondos)[^.\n]*(?:\$(?:10|25|50)|(?:10|25|50)[\s\u00a0]*\$)/i,
+  },
+  {
+    claim: 'unsupported auto-top-up promise',
+    pattern: /auto[ -]?top[ -]?up|recharge automatique|recarga automática/i,
   },
 ] as const;
 
@@ -124,6 +154,24 @@ test('indexable docs and messages contain no unsupported live-product assertions
   assert.deepEqual(violations, []);
 });
 
+test('the refund timing rule rejects numeric seconds and minutes in every public locale', () => {
+  const refundTimingRule = prohibitedAssertions.find(
+    ({ claim }) => claim === 'guaranteed refund timing'
+  );
+  assert.ok(refundTimingRule);
+
+  for (const unsupportedClaim of [
+    'Refunds are processed within 90 seconds.',
+    'Refunds are processed within 5 minutes.',
+    'Les remboursements sont traités dans 90 secondes.',
+    'Les remboursements sont traités dans 5 minutes.',
+    'Los reembolsos se procesan en 90 segundos.',
+    'Los reembolsos se procesan en 5 minutos.',
+  ]) {
+    assert.match(unsupportedClaim, refundTimingRule.pattern);
+  }
+});
+
 test('the public claims matrix covers every required acquisition claim family', () => {
   const matrixPath = 'docs/marketing/mcp-public-claims-matrix.md';
   assert.equal(existsSync(matrixPath), true, 'public claims matrix must exist');
@@ -145,5 +193,24 @@ test('the public claims matrix covers every required acquisition claim family', 
     'Client compatibility',
   ]) {
     assert.match(matrix, new RegExp(`\\| ${claimFamily}[^|]*\\|`, 'i'), `${claimFamily} claim row is required`);
+  }
+});
+
+test('the claims contract discovers localized docs instead of hard-coding filenames', () => {
+  const source = readFileSync('tests/public-product-claims.test.ts', 'utf8');
+  const hardCodedListPattern = new RegExp(['const', 'docsPaths'].join('\\s+'));
+  const directoryDiscoveryPattern = new RegExp(['readdir', 'Sync'].join(''));
+
+  assert.doesNotMatch(source, hardCodedListPattern);
+  assert.match(source, directoryDiscoveryPattern);
+});
+
+test('localized MDX copy is evaluated as claim-local blocks', () => {
+  const docsCopy = loadIndexableCopy().filter((entry) => entry.source.startsWith('content/'));
+  const sourceFiles = new Set(docsCopy.map((entry) => entry.source.split('#')[0]));
+
+  assert.ok(docsCopy.length > sourceFiles.size, 'each docs file should produce multiple claim blocks');
+  for (const entry of docsCopy) {
+    assert.doesNotMatch(entry.value, /\r?\n\s*\r?\n/, `${entry.source} should contain one local claim block`);
   }
 });

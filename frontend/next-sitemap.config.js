@@ -12,6 +12,14 @@ const SITE_URL = 'https://maxvideoai.com';
 const LOCALES = ['en', 'fr', 'es'];
 const LOCALE_PREFIXES = { en: '', fr: 'fr', es: 'es' };
 const ENGLISH_ONLY_PATHS = new Set(['/return-policy']);
+const mcpIndexable =
+  mcpPublication.publicIndexing &&
+  mcpPublication.transport &&
+  mcpPublication.oauth &&
+  mcpPublication.discovery &&
+  mcpPublication.paidGeneration &&
+  mcpPublication.trial &&
+  mcpPublication.referenceUploads;
 const MARKETING_CORE_PATHS = [
   '/',
   '/models',
@@ -280,7 +288,7 @@ module.exports = {
   additionalPaths: async (config) => {
     const marketingPaths = new Set(MARKETING_CORE_PATHS);
 
-    if (mcpPublication.publicIndexing) {
+    if (mcpIndexable) {
       marketingPaths.add('/mcp');
     }
 
