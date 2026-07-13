@@ -24,12 +24,35 @@ test('all customer-visible pricing surfaces delegate to canonical public owners'
     ],
     ['frontend/src/server/engines.ts', 'computeCanonicalPublicSnapshot'],
     ['frontend/app/api/images/estimate/route.ts', 'computeCanonicalPublicSnapshot'],
+    [
+      'frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-budget-options.ts',
+      'quotePublicPricing',
+    ],
   ]);
   for (const [path, symbol] of canonicalConsumers) {
     const source = read(path);
     assert.match(source, new RegExp(symbol), `${path} should use ${symbol}`);
     assert.doesNotMatch(source, /from ['"]@\/lib\/pricing['"]/, `${path} should not import the legacy facade`);
   }
+});
+
+test('MCP budget options use public catalog, roster, pricing, and localized-route authorities', () => {
+  const source = read(
+    'frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-budget-options.ts'
+  );
+
+  for (const symbol of [
+    'listFalEngines',
+    'getModelByEngineId',
+    'getRuntimeModelById',
+    'buildPublicPricingFacts',
+    'quotePublicPricing',
+    'buildLocalizedModelPath',
+  ]) {
+    assert.match(source, new RegExp(symbol), `MCP budget options should use ${symbol}`);
+  }
+  assert.doesNotMatch(source, /pricingHint|providerMeta|vendorSubtotal|marginPercent/);
+  assert.doesNotMatch(source, /\$0\.31|\$0\.65|amountCents:\s*\d/);
 });
 
 test('browser canonical pricing modules cannot cross server or admin boundaries', () => {
