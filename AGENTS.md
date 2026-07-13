@@ -35,6 +35,7 @@ Use these guides as context before changing the related areas:
 - `docs/engineering/admin-routes.md`: admin route and admin UI conventions.
 - `docs/engineering/refactor-roadmap.md`: cleanup strategy and historical context; confirm current line counts with the audit.
 - `docs/engineering/model-registry.md`: required workflow for adding, renaming, retiring, or publishing models.
+- `docs/engineering/stripe-webhook.md`: Stripe webhook security, idempotency, handler ownership, and validation gates.
 - `frontend/app/(core)/(workspace)/app/AGENTS.md`: authenticated video workspace boundaries.
 - `frontend/app/(core)/(workspace)/app/image/AGENTS.md`: image workspace boundaries.
 

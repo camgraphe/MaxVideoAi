@@ -49,16 +49,22 @@ session-state guards.
 Run the focused webhook checks first:
 
 ```bash
-pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/stripe-webhook-architecture.test.ts tests/stripe-webhook-documents.test.ts tests/stripe-topup-analytics-contract.test.ts tests/stripe-receipt-documents.test.ts
+pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/stripe-webhook-event-processor.test.ts tests/stripe-webhook-topup-events.test.ts tests/stripe-webhook-architecture.test.ts tests/stripe-webhook-documents.test.ts tests/stripe-topup-analytics-contract.test.ts tests/stripe-receipt-documents.test.ts
 pnpm --prefix frontend exec tsc --noEmit --pretty false
 npm run architecture:audit -- --min-lines 500
 git diff --check
 ```
 
-Then run the repository validation suite once before committing:
+Then run every repository gate once before committing:
 
 ```bash
 pnpm test:validate
+pnpm --prefix frontend exec tsc --noEmit --pretty false
+pnpm --prefix frontend run lint
+pnpm lint:exposure
+git diff --check
+npm run architecture:audit -- --min-lines 500
+pnpm --prefix frontend run build
 ```
 
 ## Stripe upgrades
