@@ -471,6 +471,8 @@ test('Angle landing consumes theme tokens across every premium section', () => {
     ['.finalCta', '--angle-final-shadow'],
     ['.finalEyebrow', '--angle-accent-soft'],
     ['.finalCopy > p:not(.finalEyebrow)', '--angle-final-copy'],
+    ['.finalOrbit span', '--angle-accent-soft'],
+    ['.finalOrbit span', '--angle-final-orbit-node-border'],
     ['.finalOrbit i', '--angle-accent-soft'],
     ['.finalOrbit i', '--angle-final-orbit-node-border'],
   ] as const;
