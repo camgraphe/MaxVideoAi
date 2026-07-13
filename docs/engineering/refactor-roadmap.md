@@ -50,27 +50,33 @@ tests/docs-index-route-architecture.test.ts
 
 ## Current High-Signal Candidates
 
-Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-05-08:
+Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-07-14:
 
-| File | Lines | Recommended approach |
+| File | Lines | Risk and responsibility |
 | --- | ---: | --- |
-| `frontend/src/config/falEngines.ts` | 7677 | Split only with strong model-registry tests. High blast radius. |
-| `frontend/middleware.ts` | 983 | Split locale/auth/legal helpers only with redirect regression tests. |
-| `frontend/src/lib/schema.ts` | 975 | Split schema builders by domain when touching SEO/schema work. |
-| `frontend/src/lib/pricing.ts` | 969 | Split pricing helpers only with pricing acceptance coverage. |
-| `frontend/lib/i18n/dictionaries.ts` | 958 | Split dictionary loading helpers carefully; localization blast radius. |
-| `frontend/app/(localized)/[locale]/(marketing)/models/_lib/models-catalog-utils.ts` | 896 | Split catalog copy/filter/metadata helpers. |
-| `frontend/app/api/jobs/route.ts` | 836 | Split handlers and query builders with API contract tests. |
-| `frontend/components/groups/CompositePreviewDock.tsx` | 818 | Split preview rendering, status controls, and media actions. |
-| `frontend/app/(core)/(workspace)/app/library/_components/LibraryPageClient.tsx` | 445 | Optional follow-up: extract `AssetLibraryBrowser` prop assembly if the page grows again. |
+| `model-page-template-copy-additional.ts` | 6278 | content organization |
+| `ModelDecisionPromptingSection.tsx` | 3114 | large marketing component |
+| `compare-model-overrides-en.ts` | 2840 | localized content organization |
+| `compare-model-overrides-es.ts` | 2757 | localized content organization |
+| `compare-model-overrides-fr.ts` | 2757 | localized content organization |
+| `model-page-template-copy.ts` | 1887 | content organization |
+| `ModelExamplesSection.tsx` | 1589 | large marketing component |
+| `StoryboardWorkspace.tsx` | 1318 | active balanced refactor |
+| `pricingHubData.ts` | 1226 | pricing-sensitive configuration |
+| `admin-transactions.ts` | 793 | next medium-risk server split |
+| `pricingHubCopy.ts` | 737 | localized pricing content |
+| `policy-service.ts` | 735 | server policy boundary |
 
-Line counts change over time. Treat the table as a dated snapshot, not source of truth.
+Line counts change over time. The audit command, not this dated table, is authoritative.
 
 ## Next Cleanup Sequence
 
 Prefer this order unless product work changes the risk profile:
 
-1. Higher-blast-radius helpers (`middleware.ts`, `pricing.ts`, `schema.ts`, `falEngines.ts`) only after dedicated regression plans.
+1. Continue the active, balanced `StoryboardWorkspace.tsx` cleanup.
+2. Treat `admin-transactions.ts` as the next medium-risk server split.
+3. Approach pricing and pricing-admin work as price-sensitive, with dedicated pricing acceptance coverage before changing configuration or policy boundaries.
+4. Treat the large locale and model copy files as content-organization work rather than immediate runtime refactors.
 
 ## Definition Of Done
 
