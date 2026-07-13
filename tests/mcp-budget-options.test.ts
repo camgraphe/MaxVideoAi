@@ -5,9 +5,10 @@ import { buildLocalizedModelPath } from '../frontend/config/model-registry';
 import { getRuntimeModelById } from '../frontend/config/model-runtime';
 import { localeRegions, type AppLocale } from '../frontend/i18n/locales';
 import type { McpPublicationState } from '../frontend/lib/mcp-publication';
-import { listFalEngines } from '../frontend/src/config/falEngines';
+import { listFalEngines, type FalEngineEntry } from '../frontend/src/config/falEngines';
 import {
   buildMcpBudgetOptions,
+  type McpBudgetOptionsDependencies,
   type McpBudgetOption,
 } from '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-budget-options';
 import { buildPublicPricingFacts } from '../frontend/src/lib/pricing-public-facts';
@@ -49,6 +50,369 @@ function option(options: McpBudgetOption[], slot: McpBudgetOption['slot']): McpB
   assert.ok(match, `missing ${slot} option`);
   return match;
 }
+
+function defaultDependencies(): McpBudgetOptionsDependencies {
+  return {
+    listEngines: listFalEngines,
+    getRosterByEngineId: getModelByEngineId,
+    getRuntimeByEngineId: getRuntimeModelById,
+    buildPricingFacts: buildPublicPricingFacts,
+    quotePricing: quotePublicPricing,
+  };
+}
+
+function withMutatedEngine(
+  engineId: string,
+  mutate: (entry: FalEngineEntry) => void,
+): McpBudgetOptionsDependencies {
+  const dependencies = defaultDependencies();
+  const engines = dependencies.listEngines().map((entry) => {
+    if (entry.id !== engineId) return entry;
+    const copy = structuredClone(entry);
+    mutate(copy);
+    return copy;
+  });
+  return { ...dependencies, listEngines: () => engines };
+}
+
+type AuthoritativePaidRoute = {
+  engineId: string;
+  durationSeconds: number;
+  resolution: string;
+  amountCents: number;
+  currency: string;
+};
+
+function parseAuthoritativeDuration(value: number | string | null | undefined): number | null {
+  if (typeof value === 'number') return Number.isFinite(value) && value > 0 ? value : null;
+  if (typeof value !== 'string') return null;
+  const match = value.match(/\d+(?:\.\d+)?/);
+  const parsed = match ? Number(match[0]) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function collectAuthoritativePaidRoutes(
+  dependencies: McpBudgetOptionsDependencies,
+): AuthoritativePaidRoute[] {
+  const nonPublicApi = /\b(admin|internal|private|hidden|disabled|unavailable)\b/i;
+  const routes: AuthoritativePaidRoute[] = [];
+
+  for (const entry of dependencies.listEngines()) {
+    const roster = dependencies.getRosterByEngineId(entry.id);
+    const runtime = dependencies.getRuntimeByEngineId(entry.id);
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    if (
+      entry.id === 'seedance-2-0-mini' ||
+      !roster ||
+      !runtime ||
+      !t2v ||
+      (entry.category ?? 'video') !== 'video' ||
+      entry.isLegacy ||
+      entry.engine.isLab ||
+      entry.availability !== 'available' ||
+      entry.engine.availability !== 'available' ||
+      entry.engine.status !== 'live' ||
+      (entry.engine.apiAvailability && nonPublicApi.test(entry.engine.apiAvailability)) ||
+      !entry.engine.modes.includes('t2v') ||
+      !entry.surfaces.app.enabled ||
+      !entry.surfaces.pricing.includeInEstimator ||
+      !entry.surfaces.modelPage.indexable ||
+      roster.availability !== 'available' ||
+      roster.surfaces?.modelPage?.indexable !== true ||
+      !runtime.publication.model.published ||
+      !runtime.publication.examples.current ||
+      !runtime.publication.app.published ||
+      !runtime.publication.pricing.published ||
+      typeof t2v.ui.audioToggle !== 'boolean' ||
+      t2v.ui.audioToggle !== entry.engine.audio
+    ) {
+      continue;
+    }
+
+    const durationConfig = t2v.ui.duration;
+    const durationValues =
+      durationConfig && 'options' in durationConfig
+        ? durationConfig.options
+        : [durationConfig?.default];
+    const durations = [...new Set(durationValues.map(parseAuthoritativeDuration))]
+      .filter((value): value is number => Number.isSafeInteger(value) && value > 0);
+    const engineResolutions = new Map(
+      entry.engine.resolutions.map((resolution) => [
+        String(resolution).toLowerCase(),
+        String(resolution),
+      ]),
+    );
+    const resolutionValues = t2v.ui.resolution?.length
+      ? t2v.ui.resolution
+      : entry.engine.resolutions.map(String);
+    const resolutions = [...new Set(resolutionValues.flatMap((resolution) => {
+      const exact = engineResolutions.get(String(resolution).toLowerCase());
+      return exact && exact.toLowerCase() !== 'auto' ? [exact] : [];
+    }))];
+
+    for (const durationSeconds of durations) {
+      for (const resolution of resolutions) {
+        const scenarioId = `mcp-budget-authority:${entry.id}:${durationSeconds}:${resolution}`;
+        try {
+          const facts = dependencies.buildPricingFacts({
+            engine: entry.engine,
+            durationSec: durationSeconds,
+            resolution,
+            mode: 't2v',
+          });
+          const quote = dependencies.quotePricing({
+            facts: facts.facts,
+            scenario: {
+              id: scenarioId,
+              engineId: entry.id,
+              mode: 't2v',
+              resolution,
+              membershipTier: 'member',
+            },
+            compatibilityProfileId: facts.compatibilityProfileId,
+          });
+          if (
+            facts.facts.engineId !== entry.id ||
+            facts.facts.quantity !== durationSeconds ||
+            facts.base.seconds !== durationSeconds ||
+            quote.engineId !== entry.id ||
+            quote.scenarioId !== scenarioId ||
+            quote.quantity !== durationSeconds ||
+            quote.unit !== facts.facts.unit ||
+            quote.currency !== facts.facts.currency ||
+            !Number.isSafeInteger(quote.customerTotalCents) ||
+            quote.customerTotalCents <= 0
+          ) {
+            continue;
+          }
+          routes.push({
+            engineId: entry.id,
+            durationSeconds,
+            resolution,
+            amountCents: quote.customerTotalCents,
+            currency: quote.currency,
+          });
+        } catch {
+          // An authoritative quote failure makes this route ineligible.
+        }
+      }
+    }
+  }
+
+  return routes.sort(
+    (left, right) =>
+      left.amountCents - right.amountCents ||
+      left.engineId.localeCompare(right.engineId) ||
+      left.durationSeconds - right.durationSeconds ||
+      left.resolution.localeCompare(right.resolution),
+  );
+}
+
+function assertLowestMatchesAuthoritativeMinimum(
+  dependencies: McpBudgetOptionsDependencies,
+): void {
+  const expected = collectAuthoritativePaidRoutes(dependencies)[0];
+  assert.ok(expected, 'missing independently derived eligible paid route');
+  const selected = option(
+    buildMcpBudgetOptions('en', livePublication, dependencies),
+    'lowest_paid',
+  );
+  assert.deepEqual(
+    {
+      engineId: selected.engineId,
+      durationSeconds: selected.durationSeconds,
+      resolution: selected.resolution,
+      amountCents: selected.amountCents,
+      currency: selected.currency,
+    },
+    expected,
+  );
+}
+
+test('budget selection accepts injectable authoritative catalog and quote dependencies', () => {
+  let catalogReads = 0;
+  const dependencies = defaultDependencies();
+  const options = buildMcpBudgetOptions('en', livePublication, {
+    ...dependencies,
+    listEngines: () => {
+      catalogReads += 1;
+      return dependencies.listEngines();
+    },
+  });
+
+  assert.equal(catalogReads, 1);
+  assert.deepEqual(options, buildMcpBudgetOptions('en', livePublication));
+});
+
+test('lowest paid is the independently derived minimum across exact eligible routes', () => {
+  const dependencies = defaultDependencies();
+  const expected = collectAuthoritativePaidRoutes(dependencies)[0];
+  assert.ok(expected);
+  assert.equal(expected.engineId, 'pika-text-to-video');
+  assertLowestMatchesAuthoritativeMinimum(dependencies);
+});
+
+test('unavailable and disabled candidates are excluded and the minimum is recomputed', () => {
+  const unavailable = withMutatedEngine('pika-text-to-video', (entry) => {
+    entry.availability = 'unavailable';
+  });
+  const disabled = withMutatedEngine('pika-text-to-video', (entry) => {
+    entry.surfaces.app.enabled = false;
+  });
+
+  for (const dependencies of [unavailable, disabled]) {
+    assertLowestMatchesAuthoritativeMinimum(dependencies);
+    assert.notEqual(
+      option(
+        buildMcpBudgetOptions('en', livePublication, dependencies),
+        'lowest_paid',
+      ).engineId,
+      'pika-text-to-video',
+    );
+  }
+});
+
+test('quote failures recompute the minimum or hide paid options when none remain', () => {
+  const dependencies = defaultDependencies();
+  const withoutPika: McpBudgetOptionsDependencies = {
+    ...dependencies,
+    quotePricing: (input) => {
+      if (input.scenario.engineId === 'pika-text-to-video') {
+        throw new Error('injected quote failure');
+      }
+      return dependencies.quotePricing(input);
+    },
+  };
+  assertLowestMatchesAuthoritativeMinimum(withoutPika);
+  assert.notEqual(
+    option(buildMcpBudgetOptions('en', livePublication, withoutPika), 'lowest_paid').engineId,
+    'pika-text-to-video',
+  );
+
+  const withoutPaidQuotes: McpBudgetOptionsDependencies = {
+    ...dependencies,
+    quotePricing: (input) => {
+      if (input.scenario.engineId !== 'seedance-2-0-mini') {
+        throw new Error('injected paid quote failure');
+      }
+      return dependencies.quotePricing(input);
+    },
+  };
+  assert.deepEqual(
+    buildMcpBudgetOptions('en', livePublication, withoutPaidQuotes).map((candidate) => candidate.slot),
+    ['included_trial'],
+  );
+});
+
+test('clamped canonical facts cannot be displayed as the requested duration', () => {
+  const dependencies = withMutatedEngine('pika-text-to-video', (entry) => {
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.duration = { options: [1], default: 1 };
+  });
+  const options = buildMcpBudgetOptions('en', livePublication, dependencies);
+
+  assert.equal(
+    options.some(
+      (candidate) =>
+        candidate.engineId === 'pika-text-to-video' && candidate.durationSeconds === 1,
+    ),
+    false,
+  );
+  assertLowestMatchesAuthoritativeMinimum(dependencies);
+});
+
+test('noninteger duration presets fail closed instead of being normalized', () => {
+  const dependencies = withMutatedEngine('pika-text-to-video', (entry) => {
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.duration = { options: [5.5], default: 5.5 };
+  });
+  const options = buildMcpBudgetOptions('en', livePublication, dependencies);
+
+  assert.equal(options.some((candidate) => candidate.durationSeconds === 5.5), false);
+  assertLowestMatchesAuthoritativeMinimum(dependencies);
+});
+
+test('the included trial is hidden when its exact duration preset is removed', () => {
+  const dependencies = withMutatedEngine('seedance-2-0-mini', (entry) => {
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.duration = { options: [4, 6], default: 4 };
+  });
+
+  assert.equal(
+    buildMcpBudgetOptions('en', livePublication, dependencies).some(
+      (candidate) => candidate.slot === 'included_trial',
+    ),
+    false,
+  );
+});
+
+test('the included trial is hidden when its exact resolution preset is removed', () => {
+  const dependencies = withMutatedEngine('seedance-2-0-mini', (entry) => {
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.resolution = ['720p'];
+  });
+
+  assert.equal(
+    buildMcpBudgetOptions('en', livePublication, dependencies).some(
+      (candidate) => candidate.slot === 'included_trial',
+    ),
+    false,
+  );
+});
+
+test('canonical quote scenario mismatches fail closed for the displayed resolution', () => {
+  const dependencies = defaultDependencies();
+  const mismatchedQuote: McpBudgetOptionsDependencies = {
+    ...dependencies,
+    quotePricing: (input) => {
+      const quote = dependencies.quotePricing(input);
+      if (
+        input.scenario.engineId === 'pika-text-to-video' &&
+        input.scenario.resolution === '720p'
+      ) {
+        return { ...quote, scenarioId: `${input.scenario.id}:1080p` };
+      }
+      return quote;
+    },
+  };
+
+  assert.notEqual(
+    option(buildMcpBudgetOptions('en', livePublication, mismatchedQuote), 'lowest_paid').engineId,
+    'pika-text-to-video',
+  );
+  assertLowestMatchesAuthoritativeMinimum(mismatchedQuote);
+});
+
+test('catalog audio mismatches fail closed for the displayed T2V scenario', () => {
+  const dependencies = withMutatedEngine('pika-text-to-video', (entry) => {
+    entry.engine.audio = true;
+  });
+
+  assert.notEqual(
+    option(buildMcpBudgetOptions('en', livePublication, dependencies), 'lowest_paid').engineId,
+    'pika-text-to-video',
+  );
+  assertLowestMatchesAuthoritativeMinimum(dependencies);
+});
+
+test('catalog resolution mismatches are excluded before pricing', () => {
+  const dependencies = withMutatedEngine('pika-text-to-video', (entry) => {
+    entry.engine.resolutions = ['1080p'];
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.resolution = ['720p'];
+  });
+
+  assert.notEqual(
+    option(buildMcpBudgetOptions('en', livePublication, dependencies), 'lowest_paid').engineId,
+    'pika-text-to-video',
+  );
+  assertLowestMatchesAuthoritativeMinimum(dependencies);
+});
 
 test('budget options use the current canonical trial, lowest paid route, and capability upgrade', () => {
   const options = buildMcpBudgetOptions('en', livePublication);

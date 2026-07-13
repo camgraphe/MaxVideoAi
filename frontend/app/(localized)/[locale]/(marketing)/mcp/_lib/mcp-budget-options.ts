@@ -6,6 +6,7 @@ import { listFalEngines, type FalEngineEntry } from '@/config/falEngines';
 import { buildPublicPricingFacts } from '@/lib/pricing-public-facts';
 import { quotePublicPricing } from '@/lib/pricing-public-quote';
 import { getModelByEngineId, type ModelRosterEntry } from '@/lib/model-roster';
+import type { EngineInputField } from '@/types/engines';
 
 export type McpBudgetOption = {
   slot: 'included_trial' | 'lowest_paid' | 'affordable_upgrade';
@@ -24,6 +25,14 @@ export type McpBudgetOption = {
   priceSource: 'included_trial' | 'canonical_public_quote';
 };
 
+export type McpBudgetOptionsDependencies = {
+  listEngines: typeof listFalEngines;
+  getRosterByEngineId: typeof getModelByEngineId;
+  getRuntimeByEngineId: typeof getRuntimeModelById;
+  buildPricingFacts: typeof buildPublicPricingFacts;
+  quotePricing: typeof quotePublicPricing;
+};
+
 type BudgetCandidate = {
   entry: FalEngineEntry;
   roster: ModelRosterEntry;
@@ -39,6 +48,13 @@ const TRIAL_ENGINE_ID = 'seedance-2-0-mini';
 const TRIAL_DURATION_SECONDS = 5;
 const TRIAL_RESOLUTION = '480p';
 const NON_PUBLIC_API_MARKERS = /\b(admin|internal|private|hidden|disabled|unavailable)\b/i;
+const DEFAULT_DEPENDENCIES: McpBudgetOptionsDependencies = {
+  listEngines: listFalEngines,
+  getRosterByEngineId: getModelByEngineId,
+  getRuntimeByEngineId: getRuntimeModelById,
+  buildPricingFacts: buildPublicPricingFacts,
+  quotePricing: quotePublicPricing,
+};
 
 const COPY: Record<
   AppLocale,
@@ -72,16 +88,76 @@ function listResolutions(entry: FalEngineEntry): string[] {
     entry.engine.resolutions.map((resolution) => [String(resolution).toLowerCase(), String(resolution)])
   );
   const modeResolutions = entry.modes.find((mode) => mode.mode === 't2v')?.ui.resolution;
-  const values = modeResolutions?.length ? modeResolutions : entry.engine.resolutions.map(String);
+  if (!modeResolutions?.length) return [];
+  const values = modeResolutions;
   return [...new Set(values.flatMap((resolution) => {
     const canonical = engineResolutions.get(String(resolution).toLowerCase());
     return canonical && canonical.toLowerCase() !== 'auto' ? [canonical] : [];
   }))];
 }
 
-function isCurrentPublicEntry(entry: FalEngineEntry): entry is FalEngineEntry {
-  const roster = getModelByEngineId(entry.id);
-  const runtime = getRuntimeModelById(entry.id);
+function findT2vInputField(entry: FalEngineEntry, ids: string[]): EngineInputField | undefined {
+  const fields = [
+    ...(entry.engine.inputSchema?.required ?? []),
+    ...(entry.engine.inputSchema?.optional ?? []),
+  ];
+  return fields.find(
+    (field) => ids.includes(field.id) && (!field.modes?.length || field.modes.includes('t2v'))
+  );
+}
+
+function inputFieldSupportsDuration(entry: FalEngineEntry, durationSeconds: number): boolean {
+  const field = findT2vInputField(entry, ['duration_seconds', 'duration']);
+  if (!field) return true;
+  const values = field.values
+    ?.map(parseDurationSeconds)
+    .filter((value): value is number => value !== null);
+  if (values?.length && !values.includes(durationSeconds)) return false;
+  if (typeof field.min === 'number' && durationSeconds < field.min) return false;
+  if (typeof field.max === 'number' && durationSeconds > field.max) return false;
+  if (typeof field.step === 'number' && field.step > 0) {
+    const origin = typeof field.min === 'number' ? field.min : 0;
+    if ((durationSeconds - origin) % field.step !== 0) return false;
+  }
+  return true;
+}
+
+function inputFieldSupportsResolution(entry: FalEngineEntry, resolution: string): boolean {
+  const field = findT2vInputField(entry, ['resolution']);
+  if (!field?.values?.length) return true;
+  return field.values.some(
+    (value) => String(value).toLowerCase() === resolution.toLowerCase()
+  );
+}
+
+function hasExactT2vScenario(
+  entry: FalEngineEntry,
+  durationSeconds: number,
+  resolution: string
+): boolean {
+  const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+  return Boolean(
+    t2v &&
+      entry.id === entry.engine.id &&
+      entry.engine.modes.includes('t2v') &&
+      t2v.ui.modes.includes('t2v') &&
+      Number.isSafeInteger(durationSeconds) &&
+      durationSeconds > 0 &&
+      listDurations(entry).includes(durationSeconds) &&
+      listResolutions(entry).includes(resolution) &&
+      typeof t2v.ui.audioToggle === 'boolean' &&
+      t2v.ui.audioToggle === entry.engine.audio &&
+      inputFieldSupportsDuration(entry, durationSeconds) &&
+      inputFieldSupportsResolution(entry, resolution)
+  );
+}
+
+function isCurrentPublicEntry(
+  entry: FalEngineEntry,
+  dependencies: McpBudgetOptionsDependencies
+): entry is FalEngineEntry {
+  const roster = dependencies.getRosterByEngineId(entry.id);
+  const runtime = dependencies.getRuntimeByEngineId(entry.id);
   const apiAvailability = entry.engine.apiAvailability;
   return Boolean(
     roster &&
@@ -134,19 +210,22 @@ function quoteCandidate(
   entry: FalEngineEntry,
   roster: ModelRosterEntry,
   durationSeconds: number,
-  resolution: string
+  resolution: string,
+  dependencies: McpBudgetOptionsDependencies
 ): BudgetCandidate | null {
+  if (!hasExactT2vScenario(entry, durationSeconds, resolution)) return null;
   try {
-    const facts = buildPublicPricingFacts({
+    const scenarioId = `mcp-budget:${entry.id}:${durationSeconds}:${resolution}`;
+    const facts = dependencies.buildPricingFacts({
       engine: entry.engine,
       durationSec: durationSeconds,
       resolution,
       mode: 't2v',
     });
-    const quote = quotePublicPricing({
+    const quote = dependencies.quotePricing({
       facts: facts.facts,
       scenario: {
-        id: `mcp-budget:${entry.id}:${durationSeconds}:${resolution}`,
+        id: scenarioId,
         engineId: entry.id,
         mode: 't2v',
         resolution,
@@ -154,7 +233,22 @@ function quoteCandidate(
       },
       compatibilityProfileId: facts.compatibilityProfileId,
     });
-    if (!Number.isSafeInteger(quote.customerTotalCents) || quote.customerTotalCents <= 0) return null;
+    if (
+      facts.facts.engineId !== entry.id ||
+      facts.facts.quantity !== durationSeconds ||
+      facts.base.seconds !== durationSeconds ||
+      (facts.base.unit != null && facts.base.unit !== facts.facts.unit) ||
+      quote.engineId !== entry.id ||
+      quote.scenarioId !== scenarioId ||
+      quote.membershipTier !== 'member' ||
+      quote.quantity !== durationSeconds ||
+      quote.unit !== facts.facts.unit ||
+      quote.currency !== facts.facts.currency ||
+      !Number.isSafeInteger(quote.customerTotalCents) ||
+      quote.customerTotalCents <= 0
+    ) {
+      return null;
+    }
     return {
       entry,
       roster,
@@ -170,15 +264,21 @@ function quoteCandidate(
   }
 }
 
-function buildCandidates(): BudgetCandidate[] {
-  return listFalEngines()
-    .filter(isCurrentPublicEntry)
+function buildCandidates(dependencies: McpBudgetOptionsDependencies): BudgetCandidate[] {
+  return dependencies.listEngines()
+    .filter((entry) => isCurrentPublicEntry(entry, dependencies))
     .flatMap((entry) => {
-      const roster = getModelByEngineId(entry.id);
+      const roster = dependencies.getRosterByEngineId(entry.id);
       if (!roster) return [];
       const scenarios = listDurations(entry).flatMap((durationSeconds) =>
         listResolutions(entry).flatMap((resolution) => {
-          const candidate = quoteCandidate(entry, roster, durationSeconds, resolution);
+          const candidate = quoteCandidate(
+            entry,
+            roster,
+            durationSeconds,
+            resolution,
+            dependencies
+          );
           return candidate ? [candidate] : [];
         })
       );
@@ -238,14 +338,19 @@ function toPaidOption(
   };
 }
 
-function toTrialOption(locale: AppLocale, candidates: BudgetCandidate[]): McpBudgetOption | null {
+function toTrialOption(
+  locale: AppLocale,
+  candidates: BudgetCandidate[],
+  dependencies: McpBudgetOptionsDependencies
+): McpBudgetOption | null {
   const source = candidates.find((item) => item.entry.id === TRIAL_ENGINE_ID);
   const candidate = source
     ? quoteCandidate(
         source.entry,
         source.roster,
         TRIAL_DURATION_SECONDS,
-        TRIAL_RESOLUTION
+        TRIAL_RESOLUTION,
+        dependencies
       )
     : null;
   if (!candidate) return null;
@@ -287,11 +392,12 @@ function addsMaterialCapability(
 
 export function buildMcpBudgetOptions(
   locale: AppLocale,
-  publication: McpPublicationState
+  publication: McpPublicationState,
+  dependencies: McpBudgetOptionsDependencies = DEFAULT_DEPENDENCIES
 ): McpBudgetOption[] {
   if (!publication.renderPublicPage) return [];
-  const candidates = buildCandidates();
-  const trial = publication.showTrialClaim ? toTrialOption(locale, candidates) : null;
+  const candidates = buildCandidates(dependencies);
+  const trial = publication.showTrialClaim ? toTrialOption(locale, candidates, dependencies) : null;
   const options: McpBudgetOption[] = trial ? [trial] : [];
   if (!publication.showPaidGenerationClaim) return options;
 
