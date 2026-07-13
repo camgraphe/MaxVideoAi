@@ -18,7 +18,7 @@ export type BillingProductChangeProposal =
       unitPriceCents: number;
       active: boolean;
     }
-  | { operation: 'rollback'; productKey: string; eventId: string };
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type BillingProductInventoryApiResponse = {
   ok: true;

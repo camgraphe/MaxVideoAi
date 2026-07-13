@@ -20,7 +20,7 @@ export type MembershipTierDraft = {
 
 export type MembershipChangeProposal =
   | { operation: 'update'; tiers: MembershipTierDto[] }
-  | { operation: 'rollback'; eventId: string };
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type MembershipInventoryApiResponse = {
   ok: true;

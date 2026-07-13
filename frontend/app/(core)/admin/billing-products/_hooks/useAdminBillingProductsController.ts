@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
-import type { PricingChangePreview } from '@/lib/admin/pricing-change-contract';
+import type { PricingChangeEvent, PricingChangePreview } from '@/lib/admin/pricing-change-contract';
 import {
   buildBillingProductProposal,
   createBillingProductDraft,
@@ -132,8 +132,8 @@ export function useAdminBillingProductsController() {
     }
   }, [draft, requestPreview]);
 
-  const previewRollback = useCallback((eventId: string, productKey: string) => {
-    void requestPreview({ operation: 'rollback', productKey, eventId });
+  const previewRollback = useCallback((event: PricingChangeEvent) => {
+    void requestPreview({ operation: 'rollback', targetId: event.targetId, eventId: event.id });
   }, [requestPreview]);
 
   const cancelPreview = useCallback(() => {

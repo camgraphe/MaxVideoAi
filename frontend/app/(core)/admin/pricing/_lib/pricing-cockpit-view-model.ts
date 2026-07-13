@@ -66,7 +66,8 @@ export type PricingPolicyDraft = {
 export type PricingPolicyProposal =
   | { operation: 'create'; rule: PricingPolicyRuleView }
   | { operation: 'update'; targetId: string; rule: PricingPolicyRuleView }
-  | { operation: 'delete'; targetId: string };
+  | { operation: 'delete'; targetId: string }
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type PricingCockpitFilters = {
   query: string;
@@ -123,7 +124,9 @@ export function reconcilePricingPolicySelection(
 }
 
 export function pricingPolicyProposalSelectorKey(proposal: PricingPolicyProposal): string | null {
-  return proposal.operation === 'delete' ? null : pricingPolicySelectorKey(proposal.rule);
+  return proposal.operation === 'create' || proposal.operation === 'update'
+    ? pricingPolicySelectorKey(proposal.rule)
+    : null;
 }
 
 export function formatPricingSelector(selector: PricingPolicySelector): string {

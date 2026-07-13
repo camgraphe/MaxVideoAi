@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: foundation, billing, and public projection migrations complete
+Status: foundation, billing, public projection, and admin cockpit migrations complete
 
 ## Context
 
@@ -22,6 +22,8 @@ The current repository includes at least these pricing owners or partial owners:
 - `/admin/pricing`: a database-rule editor whose API and UI do not fully cover the rule model and which is not the normal operating path today.
 
 This creates the exact failure mode the architecture cleanup is intended to eliminate: price formulas, margin application, rule precedence, formatting inputs, and specialized-provider handling can drift even when every individual file is internally correct.
+
+Implementation note (2026-07-13): the admin cockpit phase is now implemented as three domain-owned surfaces with canonical preview, explicit confirmation, immutable history, and previewed rollback. The inventory above remains the original migration context.
 
 ## Goals
 

@@ -48,7 +48,7 @@ type MembershipTierName = (typeof MEMBERSHIP_TIER_NAMES)[number];
 
 export type MembershipChangeProposal =
   | { operation?: 'update'; tiers: unknown }
-  | { operation: 'rollback'; eventId: string };
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type MembershipInventory = {
   databaseStatus: MembershipTierLoadResult['status'];
@@ -228,9 +228,15 @@ async function buildPreviewContext(
   const currentTiers = loadedTiers(await dependencies.loadTiers(executor));
   const rules = databaseRules(await dependencies.loadRules(executor));
   if (proposal.operation === 'rollback') {
+    const targetId = requiredText(proposal.targetId, 'targetId');
+    if (targetId !== MEMBERSHIP_TARGET_ID) {
+      throw new PricingAdminError('missing_target', 'Membership change event not found');
+    }
     const eventId = requiredText(proposal.eventId, 'eventId');
     const event = await dependencies.getEvent(eventId, 'membership', executor);
-    if (!event) throw new PricingAdminError('missing_target', 'Membership change event not found');
+    if (!event || event.targetId !== targetId) {
+      throw new PricingAdminError('missing_target', 'Membership change event not found');
+    }
     return {
       operation: 'rollback',
       currentTiers,
@@ -397,10 +403,14 @@ export function previewMembershipChange(
 }
 
 function previewSummary(preview: PricingChangePreview): PricingChangeJsonObject {
+  const deltas = preview.rows.map((row) => row.deltaCents);
   return {
     previewFingerprint: preview.previewFingerprint,
     affectedSurfaces: preview.affectedSurfaces,
     rowCount: preview.rows.length,
+    deltaCents: preview.rows.reduce((sum, row) => sum + row.deltaCents, 0),
+    minimumDeltaCents: deltas.length ? Math.min(...deltas) : 0,
+    maximumDeltaCents: deltas.length ? Math.max(...deltas) : 0,
     ...(preview.rollbackEventId ? { rollbackEventId: preview.rollbackEventId } : {}),
   };
 }

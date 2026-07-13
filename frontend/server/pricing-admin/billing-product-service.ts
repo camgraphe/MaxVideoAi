@@ -46,7 +46,7 @@ export type BillingProductChangeProposal =
       unitPriceCents?: unknown;
       active?: unknown;
     }
-  | { operation: 'rollback'; productKey: string; eventId: string };
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type BillingProductInventory = {
   databaseStatus: BillingProductLoadResult['status'];
@@ -231,19 +231,19 @@ async function buildPreviewContext(
   if (!proposal || typeof proposal !== 'object' || Array.isArray(proposal)) {
     throw new PricingAdminError('invalid_payload', 'Billing product proposal must be an object');
   }
-  const productKey = requiredText(proposal.productKey, 'productKey');
   const rollbackEventId = proposal.operation === 'rollback'
     ? requiredText(proposal.eventId, 'eventId')
     : null;
   if (rollbackEventId && !UUID_PATTERN.test(rollbackEventId)) {
     throw new PricingAdminError('invalid_payload', 'eventId must be a UUID');
   }
-  const current = findEditableProduct(loadedProducts(await dependencies.loadProducts(executor)), productKey);
   if (proposal.operation === 'rollback') {
+    const targetId = requiredText(proposal.targetId, 'targetId');
     const event = await dependencies.getEvent(rollbackEventId!, 'billing_product', executor);
-    if (!event || event.targetId !== productKey || !event.previousState) {
+    if (!event || event.targetId !== targetId || !event.previousState) {
       throw new PricingAdminError('missing_target', 'Billing product change event not found');
     }
+    const current = findEditableProduct(loadedProducts(await dependencies.loadProducts(executor)), targetId);
     return {
       operation: 'rollback',
       current,
@@ -254,6 +254,8 @@ async function buildPreviewContext(
   if (proposal.operation !== undefined && proposal.operation !== 'update') {
     throw new PricingAdminError('invalid_payload', 'Unsupported billing product operation');
   }
+  const productKey = requiredText(proposal.productKey, 'productKey');
+  const current = findEditableProduct(loadedProducts(await dependencies.loadProducts(executor)), productKey);
   return { operation: 'update', current, proposed: normalizeUpdate(proposal, current) };
 }
 
@@ -378,10 +380,14 @@ export function previewBillingProductChange(
 }
 
 function previewSummary(preview: PricingChangePreview): PricingChangeJsonObject {
+  const deltas = preview.rows.map((row) => row.deltaCents);
   return {
     previewFingerprint: preview.previewFingerprint,
     affectedSurfaces: preview.affectedSurfaces,
     rowCount: preview.rows.length,
+    deltaCents: preview.rows.reduce((sum, row) => sum + row.deltaCents, 0),
+    minimumDeltaCents: deltas.length ? Math.min(...deltas) : 0,
+    maximumDeltaCents: deltas.length ? Math.max(...deltas) : 0,
     ...(preview.rollbackEventId ? { rollbackEventId: preview.rollbackEventId } : {}),
   };
 }

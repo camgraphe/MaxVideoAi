@@ -6,6 +6,7 @@ import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptySt
 import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPricingChangePreviewDialog } from '@/components/admin-system/pricing/AdminPricingChangePreviewDialog';
+import { AdminPricingHistory } from '@/components/admin-system/pricing/AdminPricingHistory';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminInspectorPanel } from '@/components/admin-system/shell/AdminInspectorPanel';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
@@ -143,39 +144,14 @@ export function AdminBillingProductsView() {
         </div>
       ) : <AdminEmptyState>No billing product inventory is available.</AdminEmptyState>}
 
-      <AdminSection
+      <AdminPricingHistory
+        events={controller.history}
         title="Immutable billing product history"
-        description="Rollback restores the previous mutable state through the same preview and confirmation protocol."
-      >
-        {controller.history.length ? (
-          <AdminDataTable tableClassName="min-w-[760px]">
-            <thead>
-              <tr className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
-                <th className="px-4 py-3 font-semibold">Created</th>
-                <th className="px-4 py-3 font-semibold">Product</th>
-                <th className="px-4 py-3 font-semibold">Operation</th>
-                <th className="px-4 py-3 font-semibold">Actor</th>
-                <th className="px-4 py-3 font-semibold">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {controller.history.map((event) => (
-                <tr key={event.id} className="border-t border-hairline">
-                  <td className="px-4 py-3 text-text-secondary">{new Date(event.createdAt).toLocaleString()}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-text-primary">{event.targetId}</td>
-                  <td className="px-4 py-3 text-text-secondary">{event.operation}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-text-muted">{event.actorId}</td>
-                  <td className="px-4 py-3">
-                    <AdminActionButton type="button" onClick={() => controller.previewRollback(event.id, event.targetId)} disabled={controller.interactionLocked || !event.previousState}>
-                      Preview rollback
-                    </AdminActionButton>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </AdminDataTable>
-        ) : <AdminEmptyState>No billing product changes have been recorded.</AdminEmptyState>}
-      </AdminSection>
+        description="Rollback derives historical state on the server and always opens a fresh impact preview."
+        emptyLabel="No billing product changes have been recorded."
+        locked={controller.interactionLocked}
+        onPreviewRollback={controller.previewRollback}
+      />
 
       {controller.preview ? (
         <AdminPricingChangePreviewDialog

@@ -250,6 +250,10 @@ test('confirmation recomputes the fingerprint, persists all tiers and one immuta
   assert.equal(harness.events[0]?.actorId, ACTOR_ID);
   assert.equal(harness.events[0]?.domain, 'membership');
   assert.equal(harness.events[0]?.operation, 'update');
+  assert.equal(
+    harness.events[0]?.previewSummary.deltaCents,
+    preview.rows.reduce((sum, row) => sum + row.deltaCents, 0)
+  );
   assert.deepEqual(harness.events[0]?.previousState, DEFAULT_MEMBERSHIP_TIERS);
   assert.deepEqual(harness.events[0]?.nextState, proposed);
   assert.deepEqual(harness.order.slice(-5), [
@@ -291,7 +295,11 @@ test('rollback derives tiers from immutable event state and appends a rollback e
   const firstPreview = await previewMembershipChange({ tiers: changed }, harness.deps);
   await confirmMembershipChange({ tiers: changed }, firstPreview.previewFingerprint, ACTOR_ID, harness.deps);
 
-  const rollbackProposal = { operation: 'rollback' as const, eventId: harness.events[0]!.id };
+  const rollbackProposal = {
+    operation: 'rollback' as const,
+    targetId: 'membership-tiers',
+    eventId: harness.events[0]!.id,
+  };
   const rollbackPreview = await previewMembershipChange(rollbackProposal, harness.deps);
   assert.deepEqual(rollbackPreview.proposedState, DEFAULT_MEMBERSHIP_TIERS);
   assert.equal(rollbackPreview.rollbackEventId, harness.events[0]!.id);
@@ -300,6 +308,28 @@ test('rollback derives tiers from immutable event state and appends a rollback e
   assert.deepEqual(harness.tiers, DEFAULT_MEMBERSHIP_TIERS);
   assert.equal(harness.events.length, 2);
   assert.equal(harness.events[1]?.operation, 'rollback');
+});
+
+test('rollback rejects a client target that does not match membership history', async () => {
+  const harness = buildHarness();
+  harness.events.push(eventFromInput({
+    domain: 'membership',
+    operation: 'update',
+    targetId: 'membership-tiers',
+    actorId: ACTOR_ID,
+    previousState: DEFAULT_MEMBERSHIP_TIERS,
+    nextState: DEFAULT_MEMBERSHIP_TIERS,
+    previewSummary: {},
+    affectedScenarioIds: [],
+  }, 'rollback-source'));
+
+  await assert.rejects(
+    () => previewMembershipChange(
+      { operation: 'rollback', targetId: 'different-target', eventId: 'rollback-source' },
+      harness.deps
+    ),
+    /not found/i
+  );
 });
 
 test('rollback fingerprint cannot be substituted between events with identical previous state', async () => {
@@ -317,13 +347,13 @@ test('rollback fingerprint cannot be substituted between events with identical p
     }, id));
   }
   const preview = await previewMembershipChange(
-    { operation: 'rollback', eventId: 'rollback-source-a' },
+    { operation: 'rollback', targetId: 'membership-tiers', eventId: 'rollback-source-a' },
     harness.deps
   );
 
   await assert.rejects(
     () => confirmMembershipChange(
-      { operation: 'rollback', eventId: 'rollback-source-b' },
+      { operation: 'rollback', targetId: 'membership-tiers', eventId: 'rollback-source-b' },
       preview.previewFingerprint,
       ACTOR_ID,
       harness.deps

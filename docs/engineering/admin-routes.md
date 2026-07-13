@@ -62,6 +62,20 @@ Use shared admin-system components for shell and surfaces:
 - `AdminStatTable`
 - `AdminNotice`
 - `AdminEmptyState`
+- `AdminPricingChangePreviewDialog`
+- `AdminPricingHistory`
+
+## Commercial Pricing Domains
+
+Commercial administration has exactly three active route owners:
+
+- `/admin/pricing` owns canonical engine pricing policy;
+- `/admin/membership` owns membership thresholds and discounts;
+- `/admin/billing-products` owns fixed products referenced by live billing consumers.
+
+Do not add membership or product controls back to `/admin/pricing`. Do not add direct-save commercial routes. Each domain uses authorized inventory/history reads and a server-owned `preview → explicit confirmation → immediate apply` mutation protocol. Confirmation recomputes the preview fingerprint inside the transaction boundary before persistence.
+
+All three views share `AdminPricingHistory`. Rollback callbacks send only `targetId` and `eventId`; historical state is resolved server-side and enters the same fresh preview and confirmation flow. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims.
 
 ## What Belongs Where
 

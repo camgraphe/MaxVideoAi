@@ -6,6 +6,7 @@ import clsx from 'clsx';
 import type { LucideIcon } from 'lucide-react';
 import {
   BadgeDollarSign,
+  BadgePercent,
   Bell,
   ClipboardList,
   Cpu,
@@ -19,6 +20,7 @@ import {
   ListVideo,
   MailCheck,
   Palette,
+  Package,
   Receipt,
   Scale,
   Search,
@@ -42,6 +44,8 @@ const ADMIN_ICON_MAP: Record<string, LucideIcon> = {
   audit: ClipboardList,
   engines: Cpu,
   pricing: BadgeDollarSign,
+  membership: BadgePercent,
+  'billing-products': Package,
   moderation: FileText,
   playlists: ListVideo,
   homepage: Home,

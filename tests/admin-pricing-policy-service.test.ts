@@ -231,7 +231,7 @@ test('rollback refuses to recreate routing from historical pricing state', async
   const harness = createMemoryHarness([], [event]);
 
   await assert.rejects(
-    previewPricingPolicyChange({ operation: 'rollback', eventId: event.id }, harness.deps),
+    previewPricingPolicyChange({ operation: 'rollback', targetId: event.targetId, eventId: event.id }, harness.deps),
     (error: unknown) => error instanceof PricingAdminError && error.code === 'routing_conflict'
   );
   assert.equal(harness.rules.length, 0);
@@ -255,6 +255,7 @@ test('rollback derives the proposal from immutable event previousState and ignor
   const harness = createMemoryHarness([current], [sourceEvent]);
   const proposal = {
     operation: 'rollback',
+    targetId: sourceEvent.targetId,
     eventId: sourceEvent.id,
     rule: policyRule('client-forgery', { marginFlatCents: 999 }),
   } as unknown as PricingPolicyChangeProposal;
@@ -275,6 +276,31 @@ test('rollback derives the proposal from immutable event previousState and ignor
   assert.equal(harness.rules[0]?.marginFlatCents, 2);
   assert.equal(harness.events.length, 2, 'rollback appends one event without rewriting history');
   assert.ok(harness.events.some((event) => event.id === sourceEvent.id));
+});
+
+test('rollback rejects a target identifier that does not match immutable event history', async () => {
+  const current = policyRule('db-kling');
+  const sourceEvent: PricingChangeEvent = {
+    id: 'event-source',
+    domain: 'policy_rule',
+    operation: 'update',
+    targetId: current.id,
+    actorId,
+    previousState: current,
+    nextState: current,
+    previewSummary: {},
+    affectedScenarioIds: [],
+    createdAt: '2026-07-12T00:00:00.000Z',
+  };
+  const harness = createMemoryHarness([current], [sourceEvent]);
+
+  await assert.rejects(
+    previewPricingPolicyChange(
+      { operation: 'rollback', targetId: 'different-rule', eventId: sourceEvent.id },
+      harness.deps
+    ),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'missing_target'
+  );
 });
 
 test('surcharge-only previews request selector-aware canonical coverage', async () => {
@@ -438,6 +464,18 @@ test('confirmation commits one actor-owned event, preserves routing, then invali
   assert.equal(confirmation.committed, true);
   assert.deepEqual(confirmation.operationalWarnings, []);
   assert.equal(confirmation.event.operation, 'update');
+  assert.equal(
+    confirmation.event.previewSummary.deltaCents,
+    preview.rows.reduce((sum, row) => sum + row.deltaCents, 0)
+  );
+  assert.equal(
+    confirmation.event.previewSummary.minimumDeltaCents,
+    Math.min(...preview.rows.map((row) => row.deltaCents))
+  );
+  assert.equal(
+    confirmation.event.previewSummary.maximumDeltaCents,
+    Math.max(...preview.rows.map((row) => row.deltaCents))
+  );
   assert.equal(harness.events.length, 1);
   assert.deepEqual(harness.persistActors, [actorId]);
   assert.equal(harness.rules[0]?.vendorAccountId, 'acct-routing');
@@ -641,6 +679,7 @@ test('rollback uses direct event lookup beyond the 200-row history window and re
   const harness = createMemoryHarness([], [...newer, source]);
   const forged = {
     operation: 'rollback',
+    targetId: source.targetId,
     eventId: source.id,
     vendorAccountId: 'client-routing-forgery',
   } as unknown as PricingPolicyChangeProposal;

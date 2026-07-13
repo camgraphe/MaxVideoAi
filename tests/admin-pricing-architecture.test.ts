@@ -12,6 +12,7 @@ import {
   reconcilePricingPolicySelection,
   type PricingPolicyInventoryRow,
 } from '../frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model';
+import { ADMIN_NAV_GROUPS } from '../frontend/lib/admin/navigation';
 
 const root = process.cwd();
 const pagePath = join(root, 'frontend/app/(core)/admin/pricing/page.tsx');
@@ -21,8 +22,20 @@ const inspectorPath = join(root, 'frontend/app/(core)/admin/pricing/_components/
 const controllerPath = join(root, 'frontend/app/(core)/admin/pricing/_hooks/useAdminPricingCockpitController.ts');
 const viewModelPath = join(root, 'frontend/app/(core)/admin/pricing/_lib/pricing-cockpit-view-model.ts');
 const previewDialogPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingChangePreviewDialog.tsx');
+const historyPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingHistory.tsx');
 const e2ePath = join(root, 'tests/e2e/admin-critical-flows.spec.ts');
-const cockpitPaths = [cockpitPath, tablePath, inspectorPath, controllerPath, viewModelPath, previewDialogPath];
+const cockpitPaths = [cockpitPath, tablePath, inspectorPath, controllerPath, viewModelPath, previewDialogPath, historyPath];
+const obsoletePaths = [
+  'frontend/app/api/admin/membership-tiers/route.ts',
+  'frontend/app/api/admin/pricing/rules/route.ts',
+  'frontend/app/api/admin/pricing/rules/[ruleId]/route.ts',
+  'frontend/app/(core)/admin/pricing/_components/BillingProductCard.tsx',
+  'frontend/app/(core)/admin/pricing/_components/NewPricingRuleCard.tsx',
+  'frontend/app/(core)/admin/pricing/_components/PricingRuleCard.tsx',
+  'frontend/app/(core)/admin/pricing/_components/PricingAdminField.tsx',
+  'frontend/app/(core)/admin/pricing/_lib/pricing-admin-helpers.ts',
+  'frontend/app/(core)/admin/pricing/_lib/pricing-admin-types.ts',
+].map((path) => join(root, path));
 
 function readOrEmpty(path: string) {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
@@ -56,6 +69,48 @@ test('canonical pricing cockpit modules exist and compose shared admin-system su
   assert.match(tableSource, /AdminDataTable/, 'policy inventory should use AdminDataTable');
   assert.match(tableSource, /AdminFilterBar/, 'policy inventory should use AdminFilterBar');
   assert.match(inspectorSource, /AdminInspectorPanel/, 'policy editor should use AdminInspectorPanel');
+});
+
+test('admin navigation exposes exactly the three canonical commercial surfaces', () => {
+  const commercialItems = ADMIN_NAV_GROUPS
+    .flatMap((group) => group.items)
+    .filter((item) => ['/admin/pricing', '/admin/membership', '/admin/billing-products'].includes(item.href));
+
+  assert.deepEqual(commercialItems, [
+    { id: 'pricing', label: 'Pricing policy', href: '/admin/pricing', icon: 'pricing' },
+    { id: 'membership', label: 'Membership', href: '/admin/membership', icon: 'membership' },
+    { id: 'billing-products', label: 'Billing products', href: '/admin/billing-products', icon: 'billing-products' },
+  ]);
+});
+
+test('obsolete mixed pricing components and direct mutation routes are deleted', () => {
+  for (const path of obsoletePaths) {
+    assert.equal(existsSync(path), false, `${path} must be permanently removed`);
+  }
+});
+
+test('shared immutable history renders operation, actor, time, target, and preview delta', () => {
+  const source = readOrEmpty(historyPath);
+  assert.match(source, /events:\s*PricingChangeEvent\[\]/);
+  assert.match(source, /event\.operation/);
+  assert.match(source, /event\.actorId/);
+  assert.match(source, /event\.createdAt/);
+  assert.match(source, /event\.targetId/);
+  assert.match(source, /event\.previewSummary/);
+  assert.match(source, /deltaCents/);
+  assert.match(source, /minimumDeltaCents/);
+  assert.match(source, /maximumDeltaCents/);
+  assert.match(source, /event\.previousState\s*\?/);
+  assert.match(source, /Preview rollback/);
+});
+
+test('policy cockpit uses shared history and rollback sends identifiers only', () => {
+  const cockpitSource = readOrEmpty(cockpitPath);
+  const controllerSource = readOrEmpty(controllerPath);
+  assert.match(cockpitSource, /AdminPricingHistory/);
+  assert.match(cockpitSource, /onPreviewRollback=\{controller\.previewRollback\}/);
+  assert.match(controllerSource, /operation:\s*'rollback',\s*targetId:\s*event\.targetId,\s*eventId:\s*event\.id/);
+  assert.doesNotMatch(controllerSource, /previousState|nextState/);
 });
 
 test('policy inspector owns every canonical field and keeps vendor routing read-only', () => {

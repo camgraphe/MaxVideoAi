@@ -2,7 +2,7 @@
 
 ## Current status
 
-The pricing parity foundation, billing migration, and public projection migration are complete. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
+The pricing parity foundation, billing migration, and public projection migration are complete. The three-domain admin cockpit is also complete. The deterministic audit reports **178 scenarios, 178 matches, 0 mismatches, and 4 compatibility profiles in use**. The exhaustive public contract reports **492 unchanged rows**. Wallet/direct generation, image, audio, tool charges, public pricing pages, model pages, estimators, chips, JSON-LD, workspace preflight, and image estimates are canonical-authoritative.
 
 These migrations did not change any price, margin, surcharge, membership discount, currency, rounding outcome, wallet debit, direct-payment comparison, public display, structured-data offer, seeded product, or admin mutation. The public batch added one named rounding-only compatibility profile after the frozen fixture demonstrated the historical behavior it preserves.
 
@@ -27,7 +27,7 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/lib/pricing-public-quote.ts` | Browser-safe policy selection, canonical quote, and projection | Canonical-authoritative for deterministic public projections | Stable public quote owner |
 | `frontend/server/pricing/quote-public.ts` | DB-aware public and live-preview orchestration | Canonical-authoritative | Stable server public quote owner |
 | `frontend/src/lib/pricing.ts` | Shared legacy pricing facade | Compatibility only outside migrated public/billing paths | Remove in the legacy-deletion batch |
-| `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input; legacy admin API retained | One resolver input |
+| `frontend/src/lib/pricing-rule-store.ts` | DB rule persistence, fallback, routing metadata, and cache | Canonical override input | One resolver and admin-service input |
 | `frontend/src/lib/pricing-specialized-snapshots.ts` | Specialized legacy helpers | No longer public-authoritative | Remove after remaining legacy consumers migrate |
 | `frontend/src/lib/audio-generation.ts` | Audio vendor facts plus deterministic legacy projection helper | Facts used by canonical production audio | Keep factual builder; retire duplicate public math later |
 | `frontend/src/lib/billing-products.ts` | Fixed-product loading and tool quote projection | Canonical-authoritative for tools | Stable fixed-product billing owner |
@@ -40,8 +40,10 @@ Provider facts include vendor rates, units, duration, resolution, provider tiers
 | `frontend/src/server/tools/angle.ts` | Angle tool billing | Canonical fixed-product quote | Stable consumer |
 | `frontend/src/server/tools/background-removal.ts` | Background-removal billing | Canonical fixed-product and dynamic quote | Stable consumer |
 | `frontend/src/server/tools/upscale.ts` | Upscale billing | Canonical fixed-product and dynamic quote | Stable consumer |
-| `frontend/app/(core)/admin/pricing` | Raw pricing-rule UI | Unchanged in foundation | Operational preview/confirm/history cockpit |
-| `frontend/app/api/admin/pricing` | Raw pricing-rule mutations | Unchanged in foundation | Validated preview and mutation API |
+| `frontend/app/(core)/admin/pricing` | Canonical engine-policy inventory, preview, confirmation, history, and rollback | Operational | Stable policy-domain owner |
+| `frontend/app/(core)/admin/membership` | Membership threshold and discount preview, confirmation, history, and rollback | Operational | Stable membership-domain owner |
+| `frontend/app/(core)/admin/billing-products` | Referenced fixed-product preview, confirmation, history, and rollback | Operational | Stable billing-product-domain owner |
+| `frontend/app/api/admin/pricing`, `membership`, `billing-products` | Authorized inventory/history reads and preview-fingerprint-confirm mutations | Operational | Stable thin route adapters |
 
 ## Policy precedence
 
@@ -100,6 +102,11 @@ The pricing hub, model decision cards, estimator, chip, model price rows, Produc
 
 The remaining work is intentionally separate:
 
-1. Replace the raw admin rule editor with a preview/provenance/history/rollback cockpit without changing current prices.
-2. Migrate any non-public compatibility consumers, then delete `frontend/src/lib/pricing.ts` and superseded specialized commercial helpers.
-3. Tighten the semantic one-owner guard once those compatibility paths are gone.
+1. Migrate any non-public compatibility consumers, then delete `frontend/src/lib/pricing.ts` and superseded specialized commercial helpers.
+2. Tighten the semantic one-owner guard once those compatibility paths are gone.
+
+## Admin commercial mutation workflow
+
+The admin navigation exposes exactly three commercial owners: `Pricing policy`, `Membership`, and `Billing products`. Each domain loads its own inventory and immutable history. A mutation must follow `preview → explicit confirmation → immediate transactional apply`; confirmation recomputes the preview and rejects a stale fingerprint.
+
+Rollback is a new mutation, never a history rewrite. Clients send only the target and immutable event identifiers. The server reads the event, derives the historical state, computes a fresh canonical preview, and requires the normal explicit confirmation. Event history renders actor, timestamp, operation, target, and the server-recorded scenario delta range. The former direct membership-tier and raw pricing-rule mutation routes have been removed.

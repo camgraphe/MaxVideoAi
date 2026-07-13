@@ -27,6 +27,7 @@ const billingProductRoutePaths = [
   join(root, 'frontend/app/api/admin/billing-products/history/route.ts'),
 ];
 const adminCriticalFlowsPath = join(root, 'tests/e2e/admin-critical-flows.spec.ts');
+const sharedHistoryPath = join(root, 'frontend/components/admin-system/pricing/AdminPricingHistory.tsx');
 
 function read(path: string): string {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
@@ -65,7 +66,16 @@ test('membership controller enforces preview-fingerprint-confirm and refreshes o
   assert.match(source, /postJson[^\n]*MEMBERSHIP_CONFIRM_ENDPOINT/);
   assert.match(source, /if \(!confirmation\.committed\)/);
   assert.match(source, /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
-  assert.match(source, /operation:\s*'rollback'/);
+  assert.match(source, /operation:\s*'rollback',\s*targetId:\s*event\.targetId,\s*eventId:\s*event\.id/);
+  assert.doesNotMatch(source, /previousState|nextState/);
+});
+
+test('membership renders the shared immutable history surface', () => {
+  const source = read(viewPath);
+  assert.ok(existsSync(sharedHistoryPath));
+  assert.match(source, /AdminPricingHistory/);
+  assert.match(source, /onPreviewRollback=\{controller\.previewRollback\}/);
+  assert.doesNotMatch(source, /controller\.history\.map/);
 });
 
 test('membership refresh replaces the draft from the resolved SWR inventory without exposing cached values', () => {
@@ -127,7 +137,23 @@ test('billing product controller requires preview fingerprint before confirm and
   assert.match(source, /postJson[^\n]*BILLING_PRODUCTS_CONFIRM_ENDPOINT/);
   assert.match(source, /if \(!confirmation\.committed\)/);
   assert.match(source, /await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\)/);
-  assert.match(source, /operation:\s*'rollback'/);
+  assert.match(source, /operation:\s*'rollback',\s*targetId:\s*event\.targetId,\s*eventId:\s*event\.id/);
+  assert.doesNotMatch(source, /previousState|nextState/);
+});
+
+test('billing products render the shared immutable history surface', () => {
+  const source = read(billingProductsViewPath);
+  assert.ok(existsSync(sharedHistoryPath));
+  assert.match(source, /AdminPricingHistory/);
+  assert.match(source, /onPreviewRollback=\{controller\.previewRollback\}/);
+  assert.doesNotMatch(source, /controller\.history\.map/);
+});
+
+test('commercial inventory routes expose no direct PUT or DELETE mutations', () => {
+  for (const path of [routePaths[0]!, billingProductRoutePaths[0]!]) {
+    const source = read(path);
+    assert.doesNotMatch(source, /export async function (?:PUT|DELETE)/);
+  }
 });
 
 test('billing product committed success isolates SWR refresh failures as operational warnings', () => {

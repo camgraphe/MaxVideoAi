@@ -6,6 +6,7 @@ import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptySt
 import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPricingChangePreviewDialog } from '@/components/admin-system/pricing/AdminPricingChangePreviewDialog';
+import { AdminPricingHistory } from '@/components/admin-system/pricing/AdminPricingHistory';
 import { AdminActionButton, AdminActionLink } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
@@ -92,6 +93,15 @@ export function AdminPricingCockpit() {
       ) : (
         <AdminEmptyState>No canonical pricing policy rows are available.</AdminEmptyState>
       )}
+
+      <AdminPricingHistory
+        events={controller.history}
+        title="Immutable pricing policy history"
+        description="Rollback derives historical state on the server and always opens a fresh impact preview."
+        emptyLabel="No pricing policy change has been recorded yet."
+        locked={controller.interactionLocked}
+        onPreviewRollback={controller.previewRollback}
+      />
 
       {controller.preview ? (
         <AdminPricingChangePreviewDialog

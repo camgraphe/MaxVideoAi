@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: approved design
+Status: implemented; final operational verification tracked separately
 
 ## Context
 
@@ -15,6 +15,8 @@ The current `/admin/pricing` page predates that architecture. It mixes three ind
 - fixed billing products.
 
 The current rule editor is also incomplete relative to `PricingPolicyRule`. It cannot express `mode`, audio surcharge, upscale surcharge, or compatibility profile. It exposes `vendorAccountId`, which is settlement routing rather than commercial policy. Its create, update, and delete operations persist immediately without a canonical impact preview, stale-preview protection, immutable pricing history, or rollback workflow.
+
+Implementation note (2026-07-13): the three-domain split, transactional preview/confirmation services, shared immutable history, previewed rollback, canonical navigation, and obsolete-flow deletion described below are implemented. The paragraphs above document the pre-implementation state that motivated the design.
 
 ## Goals
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSWR from 'swr';
 
-import type { PricingChangePreview } from '@/lib/admin/pricing-change-contract';
+import type { PricingChangeEvent, PricingChangePreview } from '@/lib/admin/pricing-change-contract';
 import {
   buildPricingPolicyProposal,
   createPricingPolicyDraft,
@@ -140,6 +140,34 @@ export function useAdminPricingCockpitController() {
     }
   }, [activeDraft, interactionLocked, selectedRow]);
 
+  const previewRollback = useCallback((event: PricingChangeEvent) => {
+    if (interactionLocked) return;
+    void (async () => {
+      setPreviewing(true);
+      setError(null);
+      setNotice(null);
+      try {
+        const proposal: PricingPolicyProposal = {
+          operation: 'rollback', targetId: event.targetId, eventId: event.id,
+        };
+        const response = await postJson<PricingPreviewApiResponse>(
+          PRICING_PREVIEW_ENDPOINT,
+          proposal,
+          'Unable to preview this pricing rollback.'
+        );
+        if (!response.ok) throw toCockpitError(response, 'Unable to preview this pricing rollback.');
+        setPreviewProposal(proposal);
+        setPreview(response.preview);
+      } catch (caught) {
+        setError(caught && typeof caught === 'object' && 'code' in caught
+          ? caught as PricingCockpitError
+          : { code: 'request_failed', message: caught instanceof Error ? caught.message : 'Unable to preview rollback.' });
+      } finally {
+        setPreviewing(false);
+      }
+    })();
+  }, [interactionLocked]);
+
   const cancelPreview = useCallback(() => {
     if (confirming) return;
     setPreview(null);
@@ -210,6 +238,7 @@ export function useAdminPricingCockpitController() {
     confirming,
     interactionLocked,
     openPreview,
+    previewRollback,
     cancelPreview,
     confirmPreview,
     refresh,

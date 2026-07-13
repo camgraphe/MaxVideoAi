@@ -55,7 +55,7 @@ export type PricingPolicyChangeProposal =
   | { operation: 'create'; rule: unknown }
   | { operation: 'update'; targetId: string; rule: unknown }
   | { operation: 'delete'; targetId: string }
-  | { operation: 'rollback'; eventId: string };
+  | { operation: 'rollback'; targetId: string; eventId: string };
 
 export type PricingChangePreview = {
   previewFingerprint: string;
@@ -274,9 +274,13 @@ async function buildPreviewContext(
   const { rules: currentRules, routingRules: currentRoutingRules } = await loadDatabaseRules(deps);
 
   if (operation === 'rollback') {
+    const requestedTargetId = requiredText(proposal.targetId, 'targetId');
     const eventId = requiredText(proposal.eventId, 'eventId');
     const event = await deps.getEvent(eventId, 'policy_rule');
     if (!event) throw new PricingAdminError('missing_target', 'Pricing change event not found');
+    if (event.targetId !== requestedTargetId) {
+      throw new PricingAdminError('missing_target', 'Pricing change event does not match the requested target');
+    }
     const targetId = event.targetId;
     const currentRule = currentRules.find((rule) => rule.id === targetId) ?? null;
     const currentRouting = currentRoutingRules.find((rule) => rule.id === targetId);
@@ -479,10 +483,14 @@ export async function previewPricingPolicyChange(
 }
 
 function previewSummary(preview: PricingChangePreview): PricingChangeJsonObject {
+  const deltas = preview.rows.map((row) => row.deltaCents);
   return {
     previewFingerprint: preview.previewFingerprint,
     affectedSurfaces: preview.affectedSurfaces,
     rowCount: preview.rows.length,
+    deltaCents: preview.rows.reduce((sum, row) => sum + row.deltaCents, 0),
+    minimumDeltaCents: deltas.length ? Math.min(...deltas) : 0,
+    maximumDeltaCents: deltas.length ? Math.max(...deltas) : 0,
     ...(preview.rollbackEventId ? { rollbackEventId: preview.rollbackEventId } : {}),
   };
 }

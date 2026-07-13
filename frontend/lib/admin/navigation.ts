@@ -42,7 +42,9 @@ export const ADMIN_NAV_GROUPS: AdminNavGroup[] = [
       { id: 'infra-costs', label: 'Infra costs', href: '/admin/infra-costs', icon: 'costs' },
       { id: 'audit-log', label: 'Audit log', href: '/admin/audit', icon: 'audit' },
       { id: 'engines', label: 'Engines', href: '/admin/engines', icon: 'engines' },
-      { id: 'pricing', label: 'Pricing rules', href: '/admin/pricing', icon: 'pricing' },
+      { id: 'pricing', label: 'Pricing policy', href: '/admin/pricing', icon: 'pricing' },
+      { id: 'membership', label: 'Membership', href: '/admin/membership', icon: 'membership' },
+      { id: 'billing-products', label: 'Billing products', href: '/admin/billing-products', icon: 'billing-products' },
     ],
   },
   {

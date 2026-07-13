@@ -6,10 +6,10 @@ import { AdminEmptyState } from '@/components/admin-system/feedback/AdminEmptySt
 import { AdminLoadingPanel } from '@/components/admin-system/feedback/AdminLoadingPanel';
 import { AdminNotice } from '@/components/admin-system/feedback/AdminNotice';
 import { AdminPricingChangePreviewDialog } from '@/components/admin-system/pricing/AdminPricingChangePreviewDialog';
+import { AdminPricingHistory } from '@/components/admin-system/pricing/AdminPricingHistory';
 import { AdminActionButton } from '@/components/admin-system/shell/AdminActionLink';
 import { AdminPageHeader } from '@/components/admin-system/shell/AdminPageHeader';
 import { AdminSection } from '@/components/admin-system/shell/AdminSection';
-import { AdminDataTable } from '@/components/admin-system/surfaces/AdminDataTable';
 import { AdminMetricGrid } from '@/components/admin-system/surfaces/AdminMetricGrid';
 import { Button } from '@/components/ui/Button';
 import { useAdminMembershipController } from '../_hooks/useAdminMembershipController';
@@ -87,36 +87,14 @@ export function AdminMembershipView() {
         </AdminSection>
       ) : <AdminEmptyState>No membership inventory is available.</AdminEmptyState>}
 
-      <AdminSection title="Immutable history" description="Rollback always opens a fresh server preview before it can be confirmed.">
-        {controller.history.length ? (
-          <AdminDataTable tone="muted">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-text-muted">
-                <th className="px-4 py-3">Operation</th>
-                <th className="px-4 py-3">Actor</th>
-                <th className="px-4 py-3">Time</th>
-                <th className="px-4 py-3">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {controller.history.map((event) => (
-                <tr key={event.id} className="border-t border-hairline text-sm">
-                  <td className="px-4 py-3 font-medium text-text-primary">{event.operation}</td>
-                  <td className="px-4 py-3 text-text-secondary">{event.actorId}</td>
-                  <td className="px-4 py-3 text-text-secondary">{new Date(event.createdAt).toLocaleString()}</td>
-                  <td className="px-4 py-3">
-                    {event.previousState ? (
-                      <Button type="button" variant="outline" onClick={() => controller.previewRollback(event.id)} disabled={controller.interactionLocked}>
-                        Preview rollback
-                      </Button>
-                    ) : 'Not restorable'}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </AdminDataTable>
-        ) : <AdminEmptyState>No membership change has been recorded yet.</AdminEmptyState>}
-      </AdminSection>
+      <AdminPricingHistory
+        events={controller.history}
+        title="Immutable membership history"
+        description="Rollback derives historical state on the server and always opens a fresh impact preview."
+        emptyLabel="No membership change has been recorded yet."
+        locked={controller.interactionLocked}
+        onPreviewRollback={controller.previewRollback}
+      />
 
       {controller.preview ? (
         <AdminPricingChangePreviewDialog

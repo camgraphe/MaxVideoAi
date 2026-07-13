@@ -34,6 +34,16 @@ const smokeRoutes: SmokeRoute[] = [
     section: 'Indexed Watch Pages',
   },
   {
+    path: '/admin/pricing',
+    heading: 'Canonical pricing policy',
+    section: 'Policy inventory',
+  },
+  {
+    path: '/admin/membership',
+    heading: 'Membership pricing',
+    section: 'All membership tiers',
+  },
+  {
     path: '/admin/billing-products',
     heading: 'Billing products',
     section: 'Live fixed-product inventory',

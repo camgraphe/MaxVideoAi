@@ -243,7 +243,7 @@ test('rollback rejects a non-UUID event ID before event-store access', async () 
   const harness = buildHarness();
   await assert.rejects(
     () => previewBillingProductChange(
-      { operation: 'rollback', productKey: 'character-draft', eventId: 'not-a-uuid' },
+      { operation: 'rollback', targetId: 'character-draft', eventId: 'not-a-uuid' },
       harness.dependencies
     ),
     (error: unknown) => error instanceof PricingAdminError && error.code === 'invalid_payload' && /uuid/i.test(error.message)
@@ -263,6 +263,10 @@ test('confirmation recomputes in transaction and commits one product plus one im
   );
 
   assert.equal(confirmation.committed, true);
+  assert.equal(
+    confirmation.event.previewSummary.deltaCents,
+    preview.rows.reduce((sum, row) => sum + row.deltaCents, 0)
+  );
   assert.equal(harness.liveProduct.unitPriceCents, 9);
   assert.equal(harness.events.length, 1);
   assert.equal(harness.events[0]?.actorId, ACTOR_ID);
@@ -353,7 +357,11 @@ test('rollback restores immutable previous state through preview and appends a r
   const updatePreview = await previewBillingProductChange(update, harness.dependencies);
   await confirmBillingProductChange(update, updatePreview.previewFingerprint, ACTOR_ID, harness.dependencies);
 
-  const rollback = { operation: 'rollback' as const, productKey: 'character-draft', eventId: harness.events[0]!.id };
+  const rollback = {
+    operation: 'rollback' as const,
+    targetId: 'character-draft',
+    eventId: harness.events[0]!.id,
+  };
   const rollbackPreview = await previewBillingProductChange(rollback, harness.dependencies);
   assert.equal((rollbackPreview.proposedState as { unitPriceCents: number }).unitPriceCents, 8);
   await confirmBillingProductChange(rollback, rollbackPreview.previewFingerprint, ACTOR_ID, harness.dependencies);
@@ -363,6 +371,21 @@ test('rollback restores immutable previous state through preview and appends a r
   assert.equal(harness.events[1]?.operation, 'rollback');
   assert.equal(harness.events[1]?.previewSummary.rollbackEventId, harness.events[0]?.id);
   assert.equal((await loadBillingProductHistory({}, harness.dependencies)).length, 2);
+});
+
+test('rollback rejects a client target that does not match billing product history', async () => {
+  const harness = buildHarness();
+  const update = { productKey: 'character-draft', unitPriceCents: 9 };
+  const updatePreview = await previewBillingProductChange(update, harness.dependencies);
+  await confirmBillingProductChange(update, updatePreview.previewFingerprint, ACTOR_ID, harness.dependencies);
+
+  await assert.rejects(
+    () => previewBillingProductChange(
+      { operation: 'rollback', targetId: 'different-product', eventId: harness.events[0]!.id },
+      harness.dependencies
+    ),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'missing_target'
+  );
 });
 
 test('executor mutation owns SQL persistence but never invalidates its caller cache', async () => {
