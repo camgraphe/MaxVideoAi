@@ -39,3 +39,11 @@ Push: none
 - Obsolete references remain absent except intentional guide/test guards and canonical membership target IDs.
 
 No authenticated database write or push was performed.
+
+## Residual review round — 2026-07-13
+
+- Membership now rejects every normalized no-effect preview, including rollback whose immutable `previousState` already equals current tier state.
+- Preview and confirmation both return typed `invalid_payload` before transaction, upsert, event insertion, cache invalidation, or path revalidation.
+- The rollback event-ID substitution regression now uses a genuine historical change (`plus` discount 0.06 versus current 0.05), preserving fingerprint coverage without relying on a no-op preview.
+- TDD evidence: the new rollback test was RED with “Missing expected rejection”, then GREEN at 16/16 Membership tests.
+- Full verification after the residual fix: `pnpm test:validate` 2090/2090; lint, exposure, TypeScript, architecture audit and build passed; pricing baseline 178, public baseline 492, pricing audit 178/178 with 0 mismatches.

@@ -334,15 +334,53 @@ test('rollback rejects a client target that does not match membership history', 
   );
 });
 
+test('membership rejects a rollback that is already applied before confirmation side effects', async () => {
+  const harness = buildHarness();
+  const source = eventFromInput({
+    domain: 'membership',
+    operation: 'update',
+    targetId: 'membership-tiers',
+    actorId: ACTOR_ID,
+    previousState: DEFAULT_MEMBERSHIP_TIERS,
+    nextState: DEFAULT_MEMBERSHIP_TIERS,
+    previewSummary: {},
+    affectedScenarioIds: [],
+  }, 'rollback-already-applied');
+  harness.events.push(source);
+  const proposal = {
+    operation: 'rollback' as const,
+    targetId: source.targetId,
+    eventId: source.id,
+  };
+
+  await assert.rejects(
+    previewMembershipChange(proposal, harness.deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'invalid_payload'
+  );
+  await assert.rejects(
+    confirmMembershipChange(proposal, 'unused-fingerprint', ACTOR_ID, harness.deps),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'invalid_payload'
+  );
+  assert.deepEqual(harness.tiers, DEFAULT_MEMBERSHIP_TIERS);
+  assert.deepEqual(harness.events, [source]);
+  assert.equal(harness.order.includes('transaction:begin'), false);
+  assert.equal(harness.order.includes('tiers:upsert'), false);
+  assert.equal(harness.order.includes('event:insert'), false);
+  assert.equal(harness.order.includes('cache:invalidate'), false);
+  assert.equal(harness.order.includes('paths:revalidate'), false);
+});
+
 test('rollback fingerprint cannot be substituted between events with identical previous state', async () => {
   const harness = buildHarness();
+  const historicalTiers = cloneTiers(DEFAULT_MEMBERSHIP_TIERS);
+  historicalTiers[1] = { ...historicalTiers[1]!, discountPercent: 0.06 };
   for (const id of ['rollback-source-a', 'rollback-source-b']) {
     harness.events.push(eventFromInput({
       domain: 'membership',
       operation: 'update',
       targetId: 'membership-tiers',
       actorId: ACTOR_ID,
-      previousState: DEFAULT_MEMBERSHIP_TIERS,
+      previousState: historicalTiers,
       nextState: DEFAULT_MEMBERSHIP_TIERS,
       previewSummary: {},
       affectedScenarioIds: [],
