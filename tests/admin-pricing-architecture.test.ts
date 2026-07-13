@@ -340,6 +340,19 @@ test('pricing confirmation performs a transaction-local locked preview check', (
   assert.match(storeSource, /options\.lock \? 'FOR UPDATE'/);
 });
 
+test('admin route guide locks the one-owner commercial mutation workflow', () => {
+  const guide = readFileSync(join(root, 'docs/engineering/admin-routes.md'), 'utf8');
+  for (const route of ['/admin/pricing', '/admin/membership', '/admin/billing-products']) {
+    assert.match(guide, new RegExp(route.replaceAll('/', '\\/')));
+  }
+  assert.match(guide, /preview → explicit confirmation → immediate apply/);
+  assert.match(guide, /stale.*fingerprint/i);
+  assert.match(guide, /immutable event/i);
+  assert.match(guide, /rollback.*new mutation/i);
+  assert.match(guide, /database.*unavailable.*must fail/i);
+  assert.match(guide, /vendorAccountId.*read-only/i);
+});
+
 function buildInventoryRow(
   engineId: string,
   resolution: string,

@@ -86,4 +86,7 @@ test('pricing guide records canonical billing authority as complete', () => {
   assert.match(guide, /billing migration, and public projection migration are complete/i);
   assert.match(guide, /## Billing authority/i);
   assert.match(guide, /## Public authority/i);
+  assert.match(guide, /routing fields are excluded from commercial proposals/i);
+  assert.match(guide, /database-unavailable.*mutation.*fails explicitly/i);
+  assert.match(guide, /rollback.*new immutable event/i);
 });

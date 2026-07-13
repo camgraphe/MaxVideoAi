@@ -2,7 +2,7 @@
 
 Date: 2026-07-12
 
-Status: foundation, billing, public projection, and admin cockpit migrations complete
+Status: foundation, billing, and public projection complete; admin cockpit implemented and repository-verified, configured-database acceptance pending
 
 ## Context
 
@@ -54,10 +54,10 @@ The program is decomposed into these separately reviewed subprojects:
 1. **Pricing parity and policy foundation — complete 2026-07-12**: inventory current consumers, freeze outputs, add the deterministic audit matrix, add validated versioned defaults, normalize rule resolution, and run the canonical kernel in shadow mode. The completed audit covers 178 scenarios with 178 matches and 0 mismatches. No consumer became authoritative and no admin behavior changed.
 2. **Billing consumer migration — complete 2026-07-12**: wallet/direct generation, charged image execution, production audio, and tool billing now use canonical quotes. Public projections remain legacy-authoritative. Verification completed with 1,946 passing tests, the unchanged 178-row baseline, 178 canonical matches, 0 mismatches, 4 compatibility profiles, lint, exposure, TypeScript, and a successful production build.
 3. **Public projection migration — complete 2026-07-12**: pricing pages, model pages, estimator, chip, JSON-LD, workspace preflight, and image estimates now use canonical quotes. The 492-row frozen public contract is unchanged. Verification completed with 1,962 passing tests, 75 focused architecture/public tests, the unchanged 178-row audit at 178 matches and 0 mismatches, lint, exposure, TypeScript, two successful production builds, and production-server smoke tests across 12 localized pricing/model pages plus four live estimate scenarios.
-4. **Admin pricing cockpit**: replace the current raw rule editor with preview, provenance, history, rollback, and cache invalidation.
+4. **Admin pricing cockpit — implementation and repository verification complete 2026-07-13; configured-database acceptance pending**: the raw rule editor is replaced by three domain-owned surfaces with canonical preview, explicit confirmation, provenance, immutable history, previewed rollback, transactional persistence, and post-commit cache invalidation. Verification completed with 2,083 passing repository tests, 153 focused admin/pricing tests, unchanged 178- and 492-row baselines, 178 canonical matches, 0 mismatches, 4 compatibility profiles, lint, exposure, TypeScript, architecture audit, and a successful production build. Authenticated confirm/history/rollback smoke testing still requires a configured admin plus an explicitly isolated database.
 5. **Legacy deletion and guardrails**: remove superseded formulas and rule selectors, then activate semantic one-owner guards.
 
-Subprojects 1–3 are complete. Subproject 4 remains separately scoped because admin mutations and operational controls require their own preview, audit, and rollback contract. Subproject 5 follows only after the remaining compatibility consumers are inventoried and migrated.
+Subprojects 1–3 are complete. Subproject 4 is implemented and repository-verified, but is not marked operationally closed until authenticated confirmation, history, stale-conflict, and rollback smoke tests run against a configured isolated database. Subproject 5 follows only after that acceptance step and after the remaining compatibility consumers are inventoried and migrated.
 
 ## Binding safety contract
 

@@ -75,7 +75,11 @@ Commercial administration has exactly three active route owners:
 
 Do not add membership or product controls back to `/admin/pricing`. Do not add direct-save commercial routes. Each domain uses authorized inventory/history reads and a server-owned `preview → explicit confirmation → immediate apply` mutation protocol. Confirmation recomputes the preview fingerprint inside the transaction boundary before persistence.
 
-All three views share `AdminPricingHistory`. Rollback callbacks send only `targetId` and `eventId`; historical state is resolved server-side and enters the same fresh preview and confirmation flow. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims.
+The server rejects a stale preview fingerprint without persistence or cache invalidation. Every successful mutation and its immutable event commit in one transaction. Rollback is a new mutation: callbacks send only `targetId` and `eventId`, historical state is resolved server-side, and restoration enters the same fresh preview and confirmation flow. History is never updated or deleted.
+
+Pricing proposals exclude settlement routing. `vendorAccountId` may appear only as read-only operational context; policy updates preserve its stored value and creates cannot set it. When the database is unavailable, public quote resolution may use versioned fallback policy, but commercial admin inventory must show the outage and every mutation must fail explicitly.
+
+All three views share `AdminPricingHistory`. The old `/api/admin/membership-tiers` and `/api/admin/pricing/rules` endpoints are intentionally absent and must not be recreated as compatibility shims. The detailed operating procedure and verification commands live in `docs/engineering/pricing-engine.md` under **Safe price-change runbook**.
 
 ## What Belongs Where
 

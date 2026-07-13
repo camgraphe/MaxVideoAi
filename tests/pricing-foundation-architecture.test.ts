@@ -94,7 +94,7 @@ test('pricing baseline ids are unique and all cent fields are non-negative integ
   }
 });
 
-test('pricing engineering guide records completed billing and public authority', () => {
+test('pricing engineering guide records completed canonical pricing authorities and safe operations', () => {
   const guide = readFileSync('docs/engineering/pricing-engine.md', 'utf8');
   assert.match(guide, /178 scenarios/);
   assert.match(guide, /178 matches/);
@@ -102,4 +102,15 @@ test('pricing engineering guide records completed billing and public authority',
   assert.match(guide, /492 unchanged rows/i);
   assert.match(guide, /billing migration, and public projection migration are complete/i);
   assert.match(guide, /public pricing pages.*canonical-authoritative/i);
+  assert.match(guide, /## Safe price-change runbook/i);
+  assert.match(guide, /\/admin\/pricing[\s\S]*\/admin\/membership[\s\S]*\/admin\/billing-products/);
+  for (const command of [
+    'pnpm pricing:baseline',
+    'pnpm pricing:public-baseline',
+    'pnpm pricing:audit',
+    'pnpm test:validate',
+    'pnpm --prefix frontend run build',
+  ]) {
+    assert.match(guide, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
 });
