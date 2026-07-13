@@ -310,6 +310,7 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
     '--angle-surface-inset',
     '--angle-media-matte',
     '--angle-media-placeholder',
+    '--angle-use-case-media-border',
     '--angle-orbit-placeholder',
     '--angle-hero-border',
     '--angle-controls-text',
@@ -329,16 +330,51 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
     '--angle-workspace-border',
     '--angle-workspace-text',
     '--angle-workspace-muted',
+    '--angle-workspace-background',
+    '--angle-workspace-shadow',
+    '--angle-workspace-window-border',
+    '--angle-workspace-chrome-dot',
+    '--angle-workspace-window-muted',
+    '--angle-workspace-placeholder',
+    '--angle-limits-text',
+    '--angle-limits-background',
+    '--angle-benefit-border',
+    '--angle-related-border',
     '--angle-final-section',
     '--angle-final-background',
     '--angle-final-border',
     '--angle-final-copy',
+    '--angle-final-shadow',
+    '--angle-final-orbit-node-border',
   ];
 
   for (const token of requiredTokens) {
     const declaration = new RegExp(`${token}:`);
     assert.match(pageBlock, declaration, `${token} should have a light value`);
     assert.match(darkPageBlock, declaration, `${token} should have a graphite dark value`);
+  }
+
+  for (const [token, lightValue, darkValue] of [
+    ['--angle-use-case-media-border', '#d3c8ba', 'rgb(174 191 255 / 22%)'],
+    [
+      '--angle-workspace-background',
+      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 8%), transparent 25rem), #ece5da',
+      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 10%), transparent 25rem), var(--angle-surface-elevated)',
+    ],
+    ['--angle-workspace-shadow', '0 38px 100px rgb(41 39 36 / 18%)', '0 38px 100px rgb(0 0 0 / 44%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-workspace-window-border', '#6a6d75', 'rgb(174 191 255 / 20%)'],
+    ['--angle-workspace-chrome-dot', '#c4bcb1', '#909baa'],
+    ['--angle-workspace-window-muted', '#736d65', '#909baa'],
+    ['--angle-workspace-placeholder', '#dfd8cd', '#111c29'],
+    ['--angle-limits-text', '#514c46', '#d0d6df'],
+    ['--angle-limits-background', '#fffaf1', '#0c131e'],
+    ['--angle-benefit-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
+    ['--angle-related-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
+    ['--angle-final-shadow', '0 34px 100px rgb(41 39 36 / 20%)', '0 34px 100px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-final-orbit-node-border', '#2a2d36', '#070b12'],
+  ] as const) {
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
   }
 
   assert.match(darkPageBlock, /--angle-canvas:\s*#050910/);
@@ -363,6 +399,47 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
     const declarations = angleStylesSource.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))?.[1];
     assert.ok(declarations, `${selector} should have a style block`);
     assert.match(declarations, new RegExp(`var\\(${token}\\)`), `${selector} should consume ${token}`);
+  }
+});
+
+test('Angle landing consumes theme tokens across every premium section', () => {
+  const tokenizedSelectors = [
+    ['.useCaseCollection', '--angle-canvas'],
+    ['.useCaseSection:nth-of-type(even)', '--angle-canvas-alt'],
+    ['.useCaseMedia', '--angle-media-matte'],
+    ['.useCaseMedia', '--angle-use-case-media-border'],
+    ['.useCaseMedia figure', '--angle-surface'],
+    ['.useCaseImage', '--angle-media-placeholder'],
+    ['.workspaceSection', '--angle-workspace-background'],
+    ['.workspaceFrame', '--angle-workspace-shell'],
+    ['.workspaceFrame', '--angle-workspace-shadow'],
+    ['.workspaceWindow', '--angle-surface'],
+    ['.workspaceWindow', '--angle-workspace-window-border'],
+    ['.workspaceChrome span', '--angle-workspace-chrome-dot'],
+    ['.workspaceWindow > p', '--angle-workspace-window-muted'],
+    ['.workspaceImage', '--angle-workspace-placeholder'],
+    ['.conversionSection', '--angle-canvas'],
+    ['.benefitList', '--angle-benefit-border'],
+    ['.benefitList li', '--angle-benefit-border'],
+    ['.questionsSection', '--angle-canvas-alt'],
+    ['.limitsParagraph', '--angle-limits-text'],
+    ['.limitsParagraph', '--angle-limits-background'],
+    ['.relatedSection', '--angle-canvas'],
+    ['.relatedColumns > div', '--angle-related-border'],
+    ['.finalSection', '--angle-final-section'],
+    ['.finalCta', '--angle-final-background'],
+    ['.finalCta', '--angle-final-shadow'],
+    ['.finalOrbit i', '--angle-final-orbit-node-border'],
+  ] as const;
+
+  for (const [selector, token] of tokenizedSelectors) {
+    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const styleBlocks = [...angleStylesSource.matchAll(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`, 'g'))];
+    assert.ok(styleBlocks.length > 0, `${selector} should have a style block`);
+    assert.ok(
+      styleBlocks.some((match) => new RegExp(`var\\(${token}\\)`).test(match[1])),
+      `${selector} should consume ${token}`,
+    );
   }
 });
 
