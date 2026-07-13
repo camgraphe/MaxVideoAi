@@ -76,7 +76,7 @@ The accepted generated PNG is `/Users/adrienmillot/.codex/generated_images/019f5
 
 ### Replacement Angle generations
 
-All attempts used Qwen Multiple Angles, safe mode, single-output generation, and the same uploaded source. The public `45` and `90` filenames remain stable internal URLs; the table records the actual accepted rotations.
+All attempts used Qwen Multiple Angles, safe mode, single-output generation, and the same uploaded source. The published dialogue filenames describe their editorial role and create fresh Next Image and social-card cache keys; the four superseded cinema-camera filenames were removed rather than retained as duplicates.
 
 | Attempt | Rotation | Tilt | Zoom | Latency | Cost | Render URL | Preserved file | Result |
 | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |
@@ -103,10 +103,10 @@ The public filename `angle-orbit-video-45.webp` is retained as a stable internal
 | --- | ---: | ---: |
 | `angle-orbit-ad-45.webp` | 1600 × 1200 | 77,552 |
 | `angle-orbit-ad-source.webp` | 1600 × 1200 | 76,560 |
-| `angle-orbit-hero-45.webp` | 1600 × 1200 | 57,086 |
-| `angle-orbit-hero-90.webp` | 1600 × 1200 | 65,184 |
-| `angle-orbit-hero-elevated.webp` | 1600 × 1200 | 123,536 |
-| `angle-orbit-hero-source.webp` | 1600 × 1200 | 82,860 |
+| `angle-orbit-hero-dialogue-field.webp` | 1600 × 1200 | 57,086 |
+| `angle-orbit-hero-dialogue-reverse.webp` | 1600 × 1200 | 65,184 |
+| `angle-orbit-hero-dialogue-elevated.webp` | 1600 × 1200 | 123,536 |
+| `angle-orbit-hero-dialogue-source.webp` | 1600 × 1200 | 82,860 |
 | `angle-orbit-product-45.webp` | 1600 × 1200 | 96,468 |
 | `angle-orbit-product-source.webp` | 1600 × 1200 | 132,828 |
 | `angle-orbit-proof-45.webp` | 1600 × 1200 | 120,548 |
@@ -118,3 +118,28 @@ The public filename `angle-orbit-video-45.webp` is retained as a stable internal
 | `angle-orbit-workspace.webp` | 1600 × 900 | 76,816 |
 
 All files are below the 500 KB hard limit. Fourteen are below the 200 KB target; `angle-orbit-proof-source.webp` is 266,278 bytes and remains below the hard limit at the required quality 82. The current dialogue hero source and three Angle outputs were inspected at original detail before conversion and again at 1600 × 1200 after WebP encoding; the field/reverse pair has stable identities, wardrobe, eyelines, and no text, watermark, malformed hands, or weak viewpoint change. The storyboard replacement remains anatomically coherent, and the replacement video pair remains prominent, consistently dressed, and posed across a clearly different viewpoint.
+
+## Hero dialogue QA evidence
+
+Matched captures use a 1440 × 1000 browser viewport:
+
+- Full-page before: `/Users/adrienmillot/.codex/visualizations/2026/07/13/019f5a77-03ca-7320-a5a4-a641aae33caf/angle-hero-dialogue-before.png`
+- Hero viewport before: `/Users/adrienmillot/.codex/visualizations/2026/07/13/019f5a77-03ca-7320-a5a4-a641aae33caf/angle-hero-dialogue-before-viewport.png`
+- Full-page after: `/Users/adrienmillot/.codex/visualizations/2026/07/13/019f5a77-03ca-7320-a5a4-a641aae33caf/angle-hero-dialogue-after.png`
+- Hero viewport after: `/Users/adrienmillot/.codex/visualizations/2026/07/13/019f5a77-03ca-7320-a5a4-a641aae33caf/angle-hero-dialogue-after-viewport.png`
+
+The first after-capture exposed a stale browser copy of the old Next Image optimization response: the public WebP and fresh server optimization both matched the new dialogue hash, while the open browser retained the old packshot under the unchanged optimized URL. The four public hero files were therefore renamed to dialogue-specific paths and the four superseded filenames were removed. Reloading then displayed the accepted `Field on Actor B` frame immediately; the automated asset contract locks these cache-invalidating paths.
+
+Browser smoke results:
+
+- `/tools/angle`: initial `Field on Actor B`; both buttons reached source, field, reverse, and elevated views; ArrowLeft/ArrowRight changed one stop; horizontal drags beyond 64 px changed one stop in both directions.
+- `/fr/outils/angle`: initial `Champ sur l’acteur B`, next view `Contrechamp sur l’actrice A`, localized drag instruction present.
+- `/es/herramientas/angle`: initial `Campo sobre el actor B`, next view `Contracampo sobre la actriz A`, localized drag instruction present.
+- All routes loaded the same four dialogue assets with localized accessible names and no failed image state.
+
+Validation results:
+
+- Focused Node tests: 23 passed, 0 failed across `angle-orbit-assets`, `angle-orbit-state`, and `tool-marketing-landing-architecture`.
+- Frontend ESLint: 0 errors and 2 unrelated pre-existing hook-dependency warnings in Studio workspace files.
+- `git diff --check`: passed.
+- `lint:exposure`: still reports pre-existing private-key fixture patterns in `docs/superpowers/plans/2026-07-12-google-models-vertex-only.md` and `tests/google-vertex-auth.test.ts`; neither file is modified by this Angle work.

@@ -169,7 +169,7 @@ test('Angle metadata and Orbit labels are complete in every locale', () => {
 
 test('Angle metadata resolves exact localized titles and the 1600 by 1200 social hero', () => {
   const socialImage = {
-    url: 'https://maxvideoai.com/assets/tools/angle-orbit-hero-45.webp',
+    url: 'https://maxvideoai.com/assets/tools/angle-orbit-hero-dialogue-field.webp',
     width: 1600,
     height: 1200,
   };

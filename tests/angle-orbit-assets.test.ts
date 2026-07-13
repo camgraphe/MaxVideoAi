@@ -55,3 +55,12 @@ test('Angle hero describes one localized dialogue coverage sequence', () => {
     }
   }
 });
+
+test('Angle hero uses dialogue-specific asset URLs to invalidate stale image caches', () => {
+  assert.deepEqual(ANGLE_ORBIT_ASSETS.hero, {
+    front: '/assets/tools/angle-orbit-hero-dialogue-source.webp',
+    threeQuarter: '/assets/tools/angle-orbit-hero-dialogue-field.webp',
+    profile: '/assets/tools/angle-orbit-hero-dialogue-reverse.webp',
+    elevated: '/assets/tools/angle-orbit-hero-dialogue-elevated.webp',
+  });
+});

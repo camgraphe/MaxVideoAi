@@ -2,10 +2,10 @@ import type { Dictionary } from '@/lib/i18n/types';
 
 export const ANGLE_ORBIT_ASSETS = {
   hero: {
-    front: '/assets/tools/angle-orbit-hero-source.webp',
-    threeQuarter: '/assets/tools/angle-orbit-hero-45.webp',
-    profile: '/assets/tools/angle-orbit-hero-90.webp',
-    elevated: '/assets/tools/angle-orbit-hero-elevated.webp',
+    front: '/assets/tools/angle-orbit-hero-dialogue-source.webp',
+    threeQuarter: '/assets/tools/angle-orbit-hero-dialogue-field.webp',
+    profile: '/assets/tools/angle-orbit-hero-dialogue-reverse.webp',
+    elevated: '/assets/tools/angle-orbit-hero-dialogue-elevated.webp',
   },
   proof: {
     source: '/assets/tools/angle-orbit-proof-source.webp',
