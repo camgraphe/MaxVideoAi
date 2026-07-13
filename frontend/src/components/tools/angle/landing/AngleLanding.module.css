@@ -10,7 +10,15 @@
   --angle-media-placeholder: #ded6cb;
   --angle-use-case-media-border: #d3c8ba;
   --angle-orbit-placeholder: #e8e0d4;
+  --angle-proof-media-placeholder: #e8e0d4;
+  --angle-proof-label: #766f67;
+  --angle-proof-output-border: #b9caff;
+  --angle-proof-output-shadow: 0 30px 80px rgba(41,39,36,0.08);
   --angle-hero-border: rgb(188 178 164 / 72%);
+  --angle-hero-breadcrumb: #716c65;
+  --angle-hero-breadcrumb-current: #4d4944;
+  --angle-hero-support-border: #b9afa1;
+  --angle-hero-support-copy: #68625b;
   --angle-controls-text: #5d5852;
   --angle-button-border: #cfc6ba;
   --angle-link-decoration: #a59c91;
@@ -43,6 +51,8 @@
   --angle-final-copy: #d4d2d0;
   --angle-final-shadow: 0 34px 100px rgb(41 39 36 / 20%);
   --angle-final-orbit-node-border: #2a2d36;
+  --angle-workflow-number: #777169;
+  --angle-workflow-soft-accent: #dce6ff;
   overflow: clip;
   color: var(--angle-text);
   background: var(--angle-canvas);
@@ -60,7 +70,15 @@
   --angle-media-placeholder: #111c29;
   --angle-use-case-media-border: rgb(174 191 255 / 22%);
   --angle-orbit-placeholder: #111c29;
+  --angle-proof-media-placeholder: #111c29;
+  --angle-proof-label: #909baa;
+  --angle-proof-output-border: rgb(112 153 255 / 60%);
+  --angle-proof-output-shadow: 0 30px 80px rgb(0 0 0 / 36%), inset 0 1px 0 rgb(255 255 255 / 4%);
   --angle-hero-border: rgb(38 56 77 / 88%);
+  --angle-hero-breadcrumb: #909baa;
+  --angle-hero-breadcrumb-current: #c2c9d3;
+  --angle-hero-support-border: rgb(174 191 255 / 24%);
+  --angle-hero-support-copy: #a7b1bf;
   --angle-controls-text: #a7b1bf;
   --angle-button-border: #26384d;
   --angle-link-decoration: #758196;
@@ -93,9 +111,27 @@
   --angle-final-copy: #cbd3df;
   --angle-final-shadow: 0 34px 100px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%);
   --angle-final-orbit-node-border: #070b12;
+  --angle-workflow-number: #909baa;
+  --angle-workflow-soft-accent: #20345f;
 }
 
 .hero { position: relative; overflow: hidden; color: var(--angle-text); background: var(--angle-hero-background); border-bottom: 1px solid; border-bottom-color: var(--angle-border); }
+
+.heroBreadcrumb { color: var(--angle-hero-breadcrumb); }
+
+.heroBreadcrumbLink:hover { color: var(--angle-text); }
+
+.heroBreadcrumbLink:focus-visible { --tw-ring-color: var(--angle-accent); }
+
+.heroBreadcrumbCurrent { color: var(--angle-hero-breadcrumb-current); }
+
+.heroEyebrow { color: var(--angle-accent); }
+
+.heroTitle { color: var(--angle-text); }
+
+.heroBody { color: var(--angle-controls-text); }
+
+.heroSupport { color: var(--angle-hero-support-copy); border-left-color: var(--angle-hero-support-border); }
 
 .heroStage { position: relative; min-width: 0; padding: clamp(0.65rem, 1.6vw, 1.15rem); background: var(--angle-surface-translucent); border: 1px solid; border-color: var(--angle-hero-border); border-radius: clamp(1.5rem, 4vw, 2.75rem); box-shadow: var(--angle-shadow-elevated); transition: transform 420ms cubic-bezier(0.2, 0.75, 0.25, 1); }
 
@@ -121,7 +157,50 @@
 
 .orbitButton:focus-visible { outline: 3px solid; outline-color: var(--angle-accent); outline-offset: 3px; }
 
+.problemSection { background: var(--angle-canvas-alt); }
+
+.workflowSection { background: var(--angle-canvas); }
+
+.leadEyebrow { color: var(--angle-accent); }
+
+.leadTitle { color: var(--angle-text); }
+
+.leadBody { color: var(--angle-text-secondary); }
+
 .proofGrid { display: grid; gap: clamp(1rem, 2.5vw, 2rem); }
+
+.proofCard { background: var(--angle-surface); border-color: var(--angle-border); }
+
+.proofMedia { background: var(--angle-proof-media-placeholder); }
+
+.proofLabel { color: var(--angle-proof-label); }
+
+.proofTitle { color: var(--angle-text); }
+
+.proofBody { color: var(--angle-text-secondary); }
+
+.proofOutputCard { border-color: var(--angle-proof-output-border); box-shadow: var(--angle-proof-output-shadow); }
+
+.proofOutputLabel { color: var(--angle-accent); }
+
+.proofCaption { color: var(--angle-hero-breadcrumb-current); }
+
+.workflowList,
+.workflowStep { border-color: var(--angle-border); }
+
+.workflowNumber { color: var(--angle-workflow-number); }
+
+.workflowTitle { color: var(--angle-text); }
+
+.workflowBody { color: var(--angle-text-secondary); }
+
+.workflowMarkPanel { fill: var(--angle-surface); stroke: var(--angle-border); }
+
+.workflowMarkAccent { fill: var(--angle-accent); }
+
+.workflowMarkSoftAccent { fill: var(--angle-workflow-soft-accent); }
+
+.workflowMarkDivider { stroke: var(--angle-border); }
 
 .sectionRule { border-top: 1px solid; border-top-color: var(--angle-border); }
 

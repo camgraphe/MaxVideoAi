@@ -406,6 +406,92 @@ test('Angle landing owns a page-scoped graphite dark theme contract', () => {
   }
 });
 
+test('Angle lead sections consume semantic theme colors instead of light palette utilities', () => {
+  assert.doesNotMatch(
+    angleLeadSectionsSource,
+    /(?:hover:)?(?:text|bg|border|ring)-\[#[0-9a-f]{3,8}\]/i,
+    'Angle lead sections should not own Tailwind light-palette color utilities',
+  );
+
+  const literalLeadColors = [...new Set(angleLeadSectionsSource.match(/#[0-9a-f]{6}\b/gi) ?? [])].sort();
+  assert.deepEqual(
+    literalLeadColors,
+    ['#6abf91', '#f3c650', '#ff7b54'],
+    'only the three semantic workflow status-dot fills should remain literal in the lead component',
+  );
+
+  const pageBlock = angleStylesSource.match(/\.page\s*\{([^}]*)\}/)?.[1];
+  const darkPageBlock = angleStylesSource.match(/:global\(\[data-theme='dark'\]\)\s+\.page\s*\{([^}]*)\}/)?.[1];
+  assert.ok(pageBlock, 'Angle styles should define light theme properties on .page');
+  assert.ok(darkPageBlock, 'Angle styles should override those properties under the global dark theme');
+
+  for (const [token, lightValue, darkValue] of [
+    ['--angle-hero-breadcrumb', '#716c65', '#909baa'],
+    ['--angle-hero-breadcrumb-current', '#4d4944', '#c2c9d3'],
+    ['--angle-hero-support-border', '#b9afa1', 'rgb(174 191 255 / 24%)'],
+    ['--angle-hero-support-copy', '#68625b', '#a7b1bf'],
+    ['--angle-proof-label', '#766f67', '#909baa'],
+    ['--angle-proof-output-border', '#b9caff', 'rgb(112 153 255 / 60%)'],
+    ['--angle-proof-output-shadow', '0 30px 80px rgba(41,39,36,0.08)', '0 30px 80px rgb(0 0 0 / 36%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-proof-media-placeholder', '#e8e0d4', '#111c29'],
+    ['--angle-workflow-number', '#777169', '#909baa'],
+    ['--angle-workflow-soft-accent', '#dce6ff', '#20345f'],
+  ] as const) {
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
+  }
+
+  const tokenizedLeadSelectors = [
+    ['.heroBreadcrumb', '--angle-hero-breadcrumb'],
+    ['.heroBreadcrumbLink:hover', '--angle-text'],
+    ['.heroBreadcrumbLink:focus-visible', '--angle-accent'],
+    ['.heroBreadcrumbCurrent', '--angle-hero-breadcrumb-current'],
+    ['.heroEyebrow', '--angle-accent'],
+    ['.heroTitle', '--angle-text'],
+    ['.heroBody', '--angle-controls-text'],
+    ['.heroSupport', '--angle-hero-support-border'],
+    ['.heroSupport', '--angle-hero-support-copy'],
+    ['.problemSection', '--angle-canvas-alt'],
+    ['.workflowSection', '--angle-canvas'],
+    ['.leadEyebrow', '--angle-accent'],
+    ['.leadTitle', '--angle-text'],
+    ['.leadBody', '--angle-text-secondary'],
+    ['.proofCard', '--angle-border'],
+    ['.proofCard', '--angle-surface'],
+    ['.proofMedia', '--angle-proof-media-placeholder'],
+    ['.proofLabel', '--angle-proof-label'],
+    ['.proofTitle', '--angle-text'],
+    ['.proofBody', '--angle-text-secondary'],
+    ['.proofOutputCard', '--angle-proof-output-border'],
+    ['.proofOutputCard', '--angle-proof-output-shadow'],
+    ['.proofOutputLabel', '--angle-accent'],
+    ['.proofCaption', '--angle-hero-breadcrumb-current'],
+    ['.workflowList', '--angle-border'],
+    ['.workflowStep', '--angle-border'],
+    ['.workflowNumber', '--angle-workflow-number'],
+    ['.workflowTitle', '--angle-text'],
+    ['.workflowBody', '--angle-text-secondary'],
+    ['.workflowMarkPanel', '--angle-surface'],
+    ['.workflowMarkPanel', '--angle-border'],
+    ['.workflowMarkAccent', '--angle-accent'],
+    ['.workflowMarkSoftAccent', '--angle-workflow-soft-accent'],
+    ['.workflowMarkDivider', '--angle-border'],
+  ] as const;
+  const styleRules = [...angleStylesSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+    selectors: match[1].split(',').map((selector) => selector.trim()),
+    declarations: match[2],
+  }));
+
+  for (const [selector, token] of tokenizedLeadSelectors) {
+    const declarations = styleRules.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations);
+    assert.ok(declarations.length > 0, `${selector} should have a style block`);
+    assert.ok(
+      declarations.some((block) => new RegExp(`var\\(${token}\\)`).test(block)),
+      `${selector} should consume ${token}`,
+    );
+  }
+});
+
 test('Angle landing consumes theme tokens across every premium section', () => {
   const tokenizedSelectors = [
     ['.useCaseCollection', '--angle-canvas'],
