@@ -12,7 +12,10 @@ test('wallet validates once and copies attribution to Stripe metadata', () => {
 });
 
 test('Stripe completion emits accepted attribution and first-topup state', () => {
-  const source = readFileSync('frontend/app/api/stripe/webhook/route.ts', 'utf8');
+  const source = readFileSync(
+    'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts',
+    'utf8'
+  );
   assert.match(source, /buildTopupAttributionGa4Params/);
   assert.match(source, /\.\.\.attributionParams/);
   assert.match(source, /funnel_stage: 'topup_completed'/);

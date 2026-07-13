@@ -1,5 +1,6 @@
 import Stripe from 'stripe';
 import { query } from '@/lib/db';
+import { normalizeStripeId } from './stripe-webhook-documents';
 
 type FailedTopupPaymentMetadata = {
   kind: string | null;
@@ -38,18 +39,6 @@ function parseFailedTopupPaymentMetadata(metadata: Stripe.Metadata | null | unde
     firstWalletTopup: readMetadataBoolean(metadata, 'first_wallet_topup'),
     checkoutUiMode: readMetadataString(metadata, 'checkout_ui_mode'),
   };
-}
-
-function normalizeStripeId(value: unknown): string | null {
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    return trimmed ? trimmed : null;
-  }
-  if (typeof value === 'object' && value && 'id' in value) {
-    const id = (value as { id?: unknown }).id;
-    return typeof id === 'string' && id.trim() ? id.trim() : null;
-  }
-  return null;
 }
 
 async function resolveFailedTopupMetadataFromCharge(

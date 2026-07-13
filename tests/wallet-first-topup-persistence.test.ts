@@ -33,7 +33,10 @@ test('an existing positive top-up makes the next receipt non-first', async () =>
 });
 
 test('Stripe receipt insertion owns the transaction and GA4 uses its authoritative first flag', () => {
-  const source = readFileSync('frontend/app/api/stripe/webhook/route.ts', 'utf8');
+  const source = readFileSync(
+    'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts',
+    'utf8'
+  );
   assert.match(source, /withDbTransaction\(async \(executor\) =>/);
   assert.match(source, /lockAndResolveFirstWalletTopup\(executor, userId\)/);
   assert.match(source, /first_wallet_topup:\s*String\(isFirstWalletTopup\)/);
