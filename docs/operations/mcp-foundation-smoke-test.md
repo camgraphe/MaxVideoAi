@@ -6,7 +6,7 @@ Use this runbook on a non-production deployment first. The foundation is read-on
 
 1. Confirm the Git branch and Vercel preview URL.
 2. Run `npm run neon:branches:check` and stop unless it identifies the intended non-production Neon branch.
-3. Apply `neon/migrations/27_mcp_audit_events.sql` with the repository migration command only after the guard succeeds.
+3. Apply `neon/migrations/29_mcp_audit_events.sql` with the repository migration command only after the guard succeeds.
 4. Configure `MCP_API_HOST` and `MCP_RESOURCE_URL` for the tested API host.
 5. Confirm TLS, DNS, and the API-host rewrite while checking that the main-domain `/mcp` remains the marketing page.
 

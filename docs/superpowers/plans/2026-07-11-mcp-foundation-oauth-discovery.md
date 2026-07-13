@@ -401,7 +401,7 @@ if (isMcpApiHost(host) && req.nextUrl.pathname === '/mcp') {
 
 **Files:**
 
-- Create: `neon/migrations/27_mcp_audit_events.sql`
+- Create: `neon/migrations/29_mcp_audit_events.sql`
 - Create: `frontend/src/lib/schema/mcp-schema.ts`
 - Modify: `frontend/src/lib/schema.ts`
 - Create: `frontend/src/server/agent-api/audit-events.ts`

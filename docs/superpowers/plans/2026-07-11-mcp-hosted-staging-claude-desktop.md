@@ -415,7 +415,7 @@ Do not echo `DATABASE_URL`.
 npm run db:migrate:neon
 ```
 
-Expected: every repository migration, including `27_mcp_audit_events.sql`, applies only to `preview/mcp-staging`.
+Expected: every repository migration, including `29_mcp_audit_events.sql`, applies only to `preview/mcp-staging`.
 
 - [ ] **Step 5: Verify only the required empty tables**
 

@@ -1,12 +1,25 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
 import type { QueryExecutor } from '../frontend/src/lib/db';
 import { recordMcpEvent } from '../frontend/src/server/agent-api/audit-events';
 
-const migrationPath = join(process.cwd(), 'neon/migrations/27_mcp_audit_events.sql');
+const migrationPath = join(process.cwd(), 'neon/migrations/29_mcp_audit_events.sql');
+
+test('MCP audit storage uses an unclaimed Neon migration number', () => {
+  const migrationNames = readdirSync(join(process.cwd(), 'neon/migrations'))
+    .filter((name) => /^\d+_.+\.sql$/.test(name));
+  const mcpMigrationName = migrationNames.find((name) => name.endsWith('_mcp_audit_events.sql'));
+  assert.ok(mcpMigrationName);
+
+  const migrationNumber = mcpMigrationName.slice(0, mcpMigrationName.indexOf('_'));
+  const conflictingNames = migrationNames.filter(
+    (name) => name !== mcpMigrationName && name.startsWith(`${migrationNumber}_`)
+  );
+  assert.deepEqual(conflictingNames, []);
+});
 
 test('MCP audit migration stores only coarse allowlisted event dimensions', () => {
   const migration = readFileSync(migrationPath, 'utf8');
