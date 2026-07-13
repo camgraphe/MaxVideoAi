@@ -293,6 +293,79 @@ test('Angle Orbit rejects secondary pointers and active-drag takeover before poi
   assert.ok(pointerGuard < pointerCapture, 'Orbit should reject pointer takeover before capturing it');
 });
 
+test('Angle landing owns a page-scoped graphite dark theme contract', () => {
+  const pageBlock = angleStylesSource.match(/\.page\s*\{([^}]*)\}/)?.[1];
+  const darkPageBlock = angleStylesSource.match(/:global\(\[data-theme='dark'\]\)\s+\.page\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(pageBlock, 'Angle styles should define light theme properties on .page');
+  assert.ok(darkPageBlock, 'Angle styles should override those properties under the global dark theme');
+
+  const requiredTokens = [
+    '--angle-canvas',
+    '--angle-canvas-alt',
+    '--angle-hero-background',
+    '--angle-surface',
+    '--angle-surface-translucent',
+    '--angle-surface-elevated',
+    '--angle-surface-inset',
+    '--angle-media-matte',
+    '--angle-media-placeholder',
+    '--angle-orbit-placeholder',
+    '--angle-hero-border',
+    '--angle-controls-text',
+    '--angle-button-border',
+    '--angle-link-decoration',
+    '--angle-text',
+    '--angle-text-secondary',
+    '--angle-text-muted',
+    '--angle-border',
+    '--angle-border-strong',
+    '--angle-output-border',
+    '--angle-accent',
+    '--angle-accent-soft',
+    '--angle-shadow-soft',
+    '--angle-shadow-elevated',
+    '--angle-workspace-shell',
+    '--angle-workspace-border',
+    '--angle-workspace-text',
+    '--angle-workspace-muted',
+    '--angle-final-section',
+    '--angle-final-background',
+    '--angle-final-border',
+    '--angle-final-copy',
+  ];
+
+  for (const token of requiredTokens) {
+    const declaration = new RegExp(`${token}:`);
+    assert.match(pageBlock, declaration, `${token} should have a light value`);
+    assert.match(darkPageBlock, declaration, `${token} should have a graphite dark value`);
+  }
+
+  assert.match(darkPageBlock, /--angle-canvas:\s*#050910/);
+  assert.match(darkPageBlock, /--angle-text:\s*#f4f1ea/);
+  assert.doesNotMatch(darkPageBlock, /#fffaf1|#f3eee5|#ece5da/);
+
+  for (const [selector, token] of [
+    ['.hero', '--angle-hero-background'],
+    ['.heroStage', '--angle-surface-translucent'],
+    ['.heroStage', '--angle-hero-border'],
+    ['.orbitTrack', '--angle-orbit-placeholder'],
+    ['.orbitControls', '--angle-controls-text'],
+    ['.orbitButton', '--angle-surface'],
+    ['.orbitButton', '--angle-button-border'],
+    ['.sectionRule', '--angle-border'],
+    ['.sectionIntro h2', '--angle-text'],
+    ['.sectionIntroBody', '--angle-text-secondary'],
+    ['.textLink', '--angle-text'],
+    ['.textLink', '--angle-link-decoration'],
+  ] as const) {
+    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const declarations = angleStylesSource.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))?.[1];
+    assert.ok(declarations, `${selector} should have a style block`);
+    assert.match(declarations, new RegExp(`var\\(${token}\\)`), `${selector} should consume ${token}`);
+  }
+});
+
 test('Angle reduced motion neutralizes Orbit controls and hover transforms explicitly', () => {
   const reducedMotionBlock = angleStylesSource.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]+)\}\s*$/)?.[1];
   assert.ok(reducedMotionBlock, 'Angle styles should include a final reduced-motion media block');
