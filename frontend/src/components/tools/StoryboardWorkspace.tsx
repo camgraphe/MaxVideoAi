@@ -25,7 +25,7 @@ import {
   buildStoryboardGeneratorHandoffUrl,
 } from '@/lib/storyboard-generator-handoff';
 import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
-import type { EngineCaps, EngineInputField } from '@/types/engines';
+import type { EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
 import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
@@ -51,7 +51,6 @@ import {
 } from './storyboard/_lib/storyboard-prompt';
 import {
   CLOSED_STORYBOARD_LIBRARY_MODAL,
-  STORYBOARD_REFERENCE_SUPPORTED_FORMATS,
   createStoryboardReferenceImageFromLibraryAsset,
   resolveStoryboardReferenceLibrarySlotIndex,
   type StoryboardLibraryAsset,
@@ -59,6 +58,14 @@ import {
 } from './storyboard/_lib/storyboard-reference-library';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
 import { isStoryboardTargetRecommended } from './storyboard/_lib/storyboard-target';
+import {
+  STORYBOARD_REFERENCE_ENGINE,
+  STORYBOARD_REFERENCE_FIELD,
+  STORYBOARD_REFERENCE_SLOT_COUNT,
+  STORYBOARD_STYLE_OPTIONS,
+  STORYBOARD_TARGET_LOGOS,
+  STORYBOARD_TARGET_OPTIONS,
+} from './storyboard/_lib/storyboard-workspace-config';
 import {
   DEFAULT_STORYBOARD_TIER,
   STORYBOARD_LENGTH_PRESETS,
@@ -76,45 +83,6 @@ import {
 } from './storyboard/_lib/storyboard-templates';
 
 type StoryboardOptionalField = 'action' | 'dialogue' | 'visualNotes';
-
-const STYLE_OPTIONS: StoryboardStyle[] = ['realistic', 'anime', 'ugc', 'cinema'];
-const TARGET_OPTIONS: StoryboardTargetModel[] = ['seedance', 'kling'];
-const STORYBOARD_TARGET_LOGOS: Record<StoryboardTargetModel, { src: string }> = {
-  seedance: { src: '/brand/partners/bytedance/bytedance-mark-light.svg' },
-  kling: { src: '/brand/partners/kling/kling-mark-light.png' },
-};
-const STORYBOARD_REFERENCE_SLOT_COUNT = 4;
-const STORYBOARD_REFERENCE_FIELD: EngineInputField = {
-  id: 'storyboard_reference_images',
-  type: 'image',
-  label: 'Reference images',
-  description: 'Upload character, product, object, packaging, scene or style references.',
-  maxCount: STORYBOARD_REFERENCE_SLOT_COUNT,
-  minCount: 0,
-};
-const STORYBOARD_REFERENCE_ENGINE: EngineCaps = {
-  id: 'gpt-image-2',
-  label: 'Storyboarder',
-  provider: 'MaxVideoAI',
-  status: 'live',
-  latencyTier: 'standard',
-  modes: ['i2i'],
-  maxDurationSec: 0,
-  resolutions: ['1k'],
-  aspectRatios: ['4:3'],
-  fps: [],
-  audio: false,
-  upscale4k: false,
-  extend: false,
-  motionControls: false,
-  keyframes: false,
-  params: {},
-  inputLimits: { imageMaxMB: 25 },
-  inputSchema: { constraints: { supportedFormats: STORYBOARD_REFERENCE_SUPPORTED_FORMATS, maxImageSizeMB: 25 } },
-  updatedAt: '2026-06-03',
-  ttlSec: 3600,
-  availability: 'available',
-};
 
 type PriceValue = { cents: number; currency: string } | null;
 type PriceState = Record<StoryboardTier, PriceValue>;
@@ -897,7 +865,7 @@ export default function StoryboardWorkspace() {
 
                   <BuilderGroup>
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {STYLE_OPTIONS.map((option) => (
+                      {STORYBOARD_STYLE_OPTIONS.map((option) => (
                         <ChoiceButton key={option} active={style === option} onClick={() => setStyle(option)}>
                           <StyleIcon style={option} />
                           {copy.styles[option]}
@@ -907,7 +875,7 @@ export default function StoryboardWorkspace() {
                     <div className="space-y-2">
                       <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/[0.50]">{copy.modelStepTitle}</p>
                       <div className="grid gap-2 sm:grid-cols-2">
-                        {TARGET_OPTIONS.map((option) => (
+                        {STORYBOARD_TARGET_OPTIONS.map((option) => (
                           <ChoiceButton
                             key={option}
                             active={targetModel === option}

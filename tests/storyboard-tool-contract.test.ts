@@ -16,6 +16,10 @@ const previewDockPath = join(root, 'frontend/components/groups/ImageCompositePre
 const toolsPagePath = join(root, 'frontend/src/components/tools/ToolsWorkspacePage.tsx');
 const storyboardRoutePath = join(root, 'frontend/app/(core)/(workspace)/app/tools/storyboard/page.tsx');
 const storyboardWorkspacePath = join(root, 'frontend/src/components/tools/StoryboardWorkspace.tsx');
+const storyboardWorkspaceConfigPath = join(
+  root,
+  'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-config.ts'
+);
 const storyboardCopyPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-workspace-copy.ts');
 const storyboardPromptPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-prompt.ts');
 const storyboardTargetPath = join(root, 'frontend/src/components/tools/storyboard/_lib/storyboard-target.ts');
@@ -99,6 +103,7 @@ test('image workspace hydrates storyboard tool query and keeps result actions ro
 test('storyboard tool is reachable from the tools hub as its own workspace', () => {
   assert.equal(existsSync(storyboardRoutePath), true, 'storyboard tool route should exist');
   assert.equal(existsSync(storyboardWorkspacePath), true, 'storyboard workspace should be a dedicated app tool');
+  assert.equal(existsSync(storyboardWorkspaceConfigPath), true, 'storyboard static config should stay colocated');
   assert.equal(existsSync(storyboardCopyPath), true, 'storyboard copy should stay colocated');
   assert.equal(existsSync(storyboardPromptPath), true, 'storyboard prompt building should stay colocated');
   assert.equal(existsSync(storyboardTargetPath), true, 'storyboard target recommendation rules should stay colocated');
@@ -123,6 +128,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const routeSource = readFileSync(storyboardRoutePath, 'utf8');
   const toolsPageSource = readFileSync(toolsPagePath, 'utf8');
   const workspaceSource = readFileSync(storyboardWorkspacePath, 'utf8');
+  const configSource = readFileSync(storyboardWorkspaceConfigPath, 'utf8');
   const promptSource = readFileSync(storyboardPromptPath, 'utf8');
   const targetSource = readFileSync(storyboardTargetPath, 'utf8');
   const referenceImageSource = readFileSync(storyboardReferenceImagePath, 'utf8');
@@ -146,6 +152,16 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(toolsPageSource, /storyboardTitle/);
   assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
   assert.match(workspaceSource, /runImageGeneration/);
+  assert.match(workspaceSource, /storyboard-workspace-config/);
+  assert.match(configSource, /STORYBOARD_STYLE_OPTIONS/);
+  assert.match(configSource, /STORYBOARD_TARGET_OPTIONS/);
+  assert.match(configSource, /STORYBOARD_TARGET_LOGOS/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_SLOT_COUNT\s*=\s*4/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
+  assert.doesNotMatch(configSource, /useState|useEffect|authFetch|localStorage/);
+  assert.doesNotMatch(workspaceSource, /const STYLE_OPTIONS|const TARGET_OPTIONS/);
+  assert.doesNotMatch(workspaceSource, /const STORYBOARD_REFERENCE_FIELD|const STORYBOARD_REFERENCE_ENGINE/);
   assert.match(workspaceSource, /STORYBOARD_SOURCE/);
   assert.match(workspaceSource, /STORYBOARD_EDIT_SOURCE/);
   assert.match(workspaceSource, /source:\s*edit \? STORYBOARD_EDIT_SOURCE : STORYBOARD_SOURCE/);
@@ -192,9 +208,9 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /AssetDropzone/);
   assert.match(workspaceSource, /StoryboardLibraryModalState/);
   assert.match(workspaceSource, /StoryboardLibraryAsset/);
-  assert.match(workspaceSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
-  assert.match(workspaceSource, /STORYBOARD_REFERENCE_FIELD/);
-  assert.match(workspaceSource, /STORYBOARD_REFERENCE_ENGINE/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
+  assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
   assert.match(workspaceSource, /referenceImages/);
   assert.match(workspaceSource, /libraryModal/);
   assert.match(workspaceSource, /openReferenceLibrary/);
