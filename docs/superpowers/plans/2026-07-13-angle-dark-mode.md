@@ -499,3 +499,46 @@ git log --oneline -3
 ```
 
 Expected: 25 tests pass; lint, exposure, and diff checks exit 0; the worktree is clean; the latest commits are the two dark-mode implementation commits and the design/plan documentation commits.
+
+### Task 4: Correct browser-discovered lead-section theme gaps
+
+**Files:**
+- Modify: `frontend/src/components/tools/angle/landing/AngleLandingLeadSections.tsx`
+- Modify: `frontend/src/components/tools/angle/landing/AngleLanding.module.css`
+- Modify: `tests/tool-marketing-landing-architecture.test.ts`
+
+**Interfaces:**
+- Consumes: the existing page-scoped Angle semantic token contract.
+- Produces: theme-aware hero copy, Problem/Solution, How it works, proof cards, and workflow diagram while preserving every historical light value.
+
+- [ ] **Step 1: Add a failing architecture contract**
+
+Add a test that rejects theme palette utilities such as `text-[#…]`, `bg-[#…]`, `border-[#…]`, `ring-[#…]`, and `hover:text-[#…]` in `AngleLandingLeadSections.tsx`. Permit only the three semantic workflow status-dot fills. Require explicit selector-to-token bindings for the hero breadcrumb/title/body/support copy, lead section backgrounds and copy, proof cards/media/output state, workflow borders/copy, and workflow SVG panel/accent/divider.
+
+Run the focused architecture test and confirm RED because the lead component still owns hard-coded light colors.
+
+- [ ] **Step 2: Add exact light and graphite token values**
+
+Reuse existing tokens only where their light values exactly match the historical JSX color. Add dedicated semantic tokens for every distinct historical value, including breadcrumb/current text, support border/copy, proof labels/output border/shadow, workflow number, media placeholder, and workflow soft accent. Provide graphite values under `:global([data-theme='dark']) .page`.
+
+- [ ] **Step 3: Move lead-section color ownership into the CSS module**
+
+Keep layout and responsive Tailwind utilities in `AngleLandingLeadSections.tsx`, but replace hard-coded palette utilities with semantic CSS-module classes. Move workflow SVG theme colors to CSS-module classes; retain the three semantic red/yellow/green status-dot fills unchanged. Do not change content, markup hierarchy, layout, typography, radii, image assets, or interactions.
+
+- [ ] **Step 4: Verify RED/GREEN and static checks**
+
+Run:
+
+```bash
+npx tsx --tsconfig frontend/tsconfig.json --test tests/tool-marketing-landing-architecture.test.ts
+npx tsx --tsconfig frontend/tsconfig.json --test tests/angle-orbit-assets.test.ts tests/angle-orbit-state.test.ts tests/tool-marketing-landing-architecture.test.ts
+npm --prefix frontend run lint
+npm run lint:exposure
+git diff --check
+```
+
+Expected: the architecture contract and all focused Angle tests pass; lint, exposure, and diff checks exit 0.
+
+- [ ] **Step 5: Commit and repeat Task 3 browser verification**
+
+Commit the three-file correction, then repeat the full production/browser verification. The hero H1 must compute to `rgb(244, 241, 234)` in dark mode; Problem and How it works must use graphite backgrounds with readable text; all four final screenshots must be regenerated.
