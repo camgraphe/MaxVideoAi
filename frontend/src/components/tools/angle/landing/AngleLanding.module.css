@@ -5,7 +5,7 @@
   --angle-surface: #fffdf8;
   --angle-surface-translucent: rgb(255 253 248 / 72%);
   --angle-surface-elevated: #ece5da;
-  --angle-surface-inset: #e9e1d5;
+  --angle-surface-inset: #fffaf1;
   --angle-media-matte: #e7dfd3;
   --angle-media-placeholder: #ded6cb;
   --angle-use-case-media-border: #d3c8ba;
@@ -35,7 +35,6 @@
   --angle-workspace-window-muted: #736d65;
   --angle-workspace-placeholder: #dfd8cd;
   --angle-limits-text: #514c46;
-  --angle-limits-background: #fffaf1;
   --angle-benefit-border: #d8d0c5;
   --angle-related-border: #d8d0c5;
   --angle-final-section: #e9e1d5;
@@ -86,7 +85,6 @@
   --angle-workspace-window-muted: #909baa;
   --angle-workspace-placeholder: #111c29;
   --angle-limits-text: #d0d6df;
-  --angle-limits-background: #0c131e;
   --angle-benefit-border: rgb(174 191 255 / 14%);
   --angle-related-border: rgb(174 191 255 / 14%);
   --angle-final-section: #060a11;
@@ -247,7 +245,7 @@
 
 .questionsSection { background: var(--angle-canvas-alt); }
 
-.limitsParagraph { max-width: 51rem; margin-top: clamp(2rem, 4vw, 3rem); padding: clamp(1.25rem, 3vw, 2rem); color: var(--angle-limits-text); font-size: 0.9375rem; line-height: 1.85; background: var(--angle-limits-background); border-left: 3px solid; border-left-color: var(--angle-accent); }
+.limitsParagraph { max-width: 51rem; margin-top: clamp(2rem, 4vw, 3rem); padding: clamp(1.25rem, 3vw, 2rem); color: var(--angle-limits-text); font-size: 0.9375rem; line-height: 1.85; background: var(--angle-surface-inset); border-left: 3px solid; border-left-color: var(--angle-accent); }
 
 .questionList { margin-top: clamp(2rem, 4vw, 3.5rem); border-top: 1px solid; }
 
