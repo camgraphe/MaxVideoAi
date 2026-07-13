@@ -156,12 +156,13 @@ test.describe('admin critical flows', () => {
     if (productState === 'unavailable') test.skip(true, 'requires configured billing product database access');
     if (productState === 'empty') test.skip(true, 'requires live billing product rows');
 
-    const firstRow = page.locator('tbody tr').first();
+    const inventoryTable = page.getByTestId('billing-products-inventory');
+    const firstRow = inventoryTable.locator('tbody tr').first();
     await firstRow.click();
     const productKey = (await firstRow.locator('span.font-mono').textContent())?.trim() ?? '';
     if (productKey) {
       await page.getByLabel('Search billing products').fill(productKey);
-      await expect(page.locator('tbody tr').first()).toContainText(productKey);
+      await expect(inventoryTable.locator('tbody tr').first()).toContainText(productKey);
       await page.getByLabel('Search billing products').fill('');
     }
 
@@ -224,11 +225,12 @@ async function waitForPricingPolicyState(page: Page) {
 
 async function waitForBillingProductState(page: Page) {
   const deadline = Date.now() + 10_000;
+  const inventoryTable = page.getByTestId('billing-products-inventory');
   while (Date.now() < deadline) {
     if (await page.getByText(/billing product database is unavailable/i).first().isVisible().catch(() => false)) {
       return 'unavailable' as const;
     }
-    if ((await page.locator('tbody tr').count()) > 0) return 'rows' as const;
+    if ((await inventoryTable.locator('tbody tr').count()) > 0) return 'rows' as const;
     if (await page.getByText('No billing product inventory is available.').isVisible().catch(() => false)) {
       return 'empty' as const;
     }

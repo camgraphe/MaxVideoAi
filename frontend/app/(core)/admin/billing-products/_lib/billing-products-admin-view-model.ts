@@ -41,6 +41,10 @@ export type BillingProductConfirmApiResponse = {
   };
 };
 export type BillingProductAdminError = { code: string; message: string };
+export type BillingProductOperationalWarning = {
+  code: 'post_commit_refresh_failed';
+  message: string;
+};
 
 export function createBillingProductDraft(product: BillingProductRecord): BillingProductDraft {
   return {
@@ -54,8 +58,8 @@ export function createBillingProductDraft(product: BillingProductRecord): Billin
 
 export function buildBillingProductProposal(draft: BillingProductDraft): BillingProductChangeProposal {
   const unitPriceCents = Number(draft.unitPriceCents);
-  if (!Number.isInteger(unitPriceCents) || unitPriceCents < 0) {
-    throw new Error('Unit price must be a non-negative integer number of cents.');
+  if (!Number.isSafeInteger(unitPriceCents) || unitPriceCents < 0 || unitPriceCents > 2_147_483_647) {
+    throw new Error('Unit price must be a PostgreSQL INTEGER between 0 and 2147483647 cents.');
   }
   return {
     operation: 'update',

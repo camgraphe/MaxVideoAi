@@ -24,6 +24,7 @@ import {
   previewBillingProductChange,
   type BillingProductPricingServiceDependencies,
 } from '../frontend/server/pricing-admin/billing-product-service';
+import { PricingAdminError } from '../frontend/server/pricing-admin/errors';
 
 const ACTOR_ID = '00000000-0000-0000-0000-000000000006';
 
@@ -71,7 +72,10 @@ function buildHarness(input: { databaseStatus?: 'loaded' | 'unavailable' } = {})
         ? { status: 'unavailable', products: [] }
         : { status: 'loaded', products: products.map(cloneProduct) };
     },
-    getEvent: async (id, domain) => events.find((event) => event.id === id && event.domain === domain) ?? null,
+    getEvent: async (id, domain) => {
+      order.push('event:load');
+      return events.find((event) => event.id === id && event.domain === domain) ?? null;
+    },
     listEvents: async (filter) => events.filter((event) => event.domain === filter?.domain),
     withTransaction: async (callback) => {
       order.push('transaction:begin');
@@ -102,7 +106,10 @@ function buildHarness(input: { databaseStatus?: 'loaded' | 'unavailable' } = {})
       assert.equal(receivedExecutor, executor);
       assert.equal(inTransaction, true);
       order.push('event:insert');
-      const event = eventFromInput(input, `event-${events.length + 1}`);
+      const event = eventFromInput(
+        input,
+        `00000000-0000-4000-8000-${String(events.length + 1).padStart(12, '0')}`
+      );
       events.push(event);
       return event;
     },
@@ -212,12 +219,36 @@ test('proposals reject unreferenced product IDs, unsupported currencies and inva
     () => previewBillingProductChange({ productKey: 'character-draft', currency: 'EUR' }, harness.dependencies),
     /currency/i
   );
-  for (const unitPriceCents of [-1, 1.5, Number.NaN]) {
+  for (const unitPriceCents of [-1, 1.5, Number.NaN, 2_147_483_648, 9_007_199_254_740_992, 1e100]) {
     await assert.rejects(
       () => previewBillingProductChange({ productKey: 'character-draft', unitPriceCents }, harness.dependencies),
-      /non-negative integer/i
+      /postgresql integer|non-negative integer/i
     );
   }
+});
+
+test('unit price accepts both PostgreSQL INTEGER storage boundaries', async () => {
+  for (const unitPriceCents of [0, 2_147_483_647]) {
+    const harness = buildHarness();
+    const preview = await previewBillingProductChange(
+      { productKey: 'character-draft', unitPriceCents },
+      harness.dependencies
+    );
+    assert.equal((preview.proposedState as { unitPriceCents: number }).unitPriceCents, unitPriceCents);
+    assert.equal(preview.rows[0]?.proposedTotalCents, unitPriceCents);
+  }
+});
+
+test('rollback rejects a non-UUID event ID before event-store access', async () => {
+  const harness = buildHarness();
+  await assert.rejects(
+    () => previewBillingProductChange(
+      { operation: 'rollback', productKey: 'character-draft', eventId: 'not-a-uuid' },
+      harness.dependencies
+    ),
+    (error: unknown) => error instanceof PricingAdminError && error.code === 'invalid_payload' && /uuid/i.test(error.message)
+  );
+  assert.deepEqual(harness.order, []);
 });
 
 test('confirmation recomputes in transaction and commits one product plus one immutable event', async () => {

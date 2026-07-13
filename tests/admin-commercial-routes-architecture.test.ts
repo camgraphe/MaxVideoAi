@@ -26,6 +26,7 @@ const billingProductRoutePaths = [
   join(root, 'frontend/app/api/admin/billing-products/confirm/route.ts'),
   join(root, 'frontend/app/api/admin/billing-products/history/route.ts'),
 ];
+const adminCriticalFlowsPath = join(root, 'tests/e2e/admin-critical-flows.spec.ts');
 
 function read(path: string): string {
   return existsSync(path) ? readFileSync(path, 'utf8') : '';
@@ -129,6 +130,18 @@ test('billing product controller requires preview fingerprint before confirm and
   assert.match(source, /operation:\s*'rollback'/);
 });
 
+test('billing product committed success isolates SWR refresh failures as operational warnings', () => {
+  const source = read(billingProductsControllerPath);
+  assert.match(source, /post_commit_refresh_failed/);
+  assert.match(source, /Billing product change was committed, but refreshing the local view failed/);
+  assert.match(source, /postCommitWarning\s*\?\s*null\s*:\s*fetchError/);
+  const confirmBlock = source.match(/const confirmPreview = useCallback\(async \(\) => \{[\s\S]*?\n  \}, \[[^\]]+\]\);/)?.[0] ?? '';
+  assert.match(confirmBlock, /try \{\s*await Promise\.all\(\[refreshInventory\(\), refreshHistory\(\)\]\);\s*\} catch/);
+  const confirmationFailureReturn = confirmBlock.indexOf('setConfirming(false);\n      return;');
+  const refreshStart = confirmBlock.indexOf('await Promise.all([refreshInventory(), refreshHistory()]);');
+  assert.ok(confirmationFailureReturn >= 0 && refreshStart > confirmationFailureReturn);
+});
+
 test('billing product client stays browser-safe and contains no commercial calculations', () => {
   const source = [billingProductsViewPath, billingProductsControllerPath, billingProductsViewModelPath].map(read).join('\n');
   assert.doesNotMatch(source, /@\/server\/|@maxvideoai\/pricing|quoteCanonicalPricing|resolvePricingPolicy|@\/lib\/billing-products/);
@@ -142,4 +155,14 @@ test('billing product service owns fixed-product projection and transactional pe
   assert.match(source, /domain:\s*'billing_product'/);
   assert.match(source, /updateBillingProductWithExecutor/);
   assert.doesNotMatch(source, /upsertPricingRule|upsertMembershipTier/);
+});
+
+test('billing product E2E scopes row discovery and selection to the live inventory table', () => {
+  const source = read(adminCriticalFlowsPath);
+  const flow = source.match(/test\('billing products filter[\s\S]*?assertNoClientErrors\(errors\);\s*\}\);/)?.[0] ?? '';
+  assert.match(flow, /getByTestId\('billing-products-inventory'\)/);
+  assert.doesNotMatch(flow, /page\.locator\('tbody tr'\)/);
+  const state = source.match(/async function waitForBillingProductState[\s\S]*?\n\}/)?.[0] ?? '';
+  assert.match(state, /getByTestId\('billing-products-inventory'\)/);
+  assert.doesNotMatch(state, /page\.locator\('tbody tr'\)/);
 });

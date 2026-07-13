@@ -64,37 +64,39 @@ export function AdminBillingProductsView() {
                 onChange={(event) => controller.setQuery(event.target.value)}
                 disabled={controller.interactionLocked}
               />
-              {controller.filteredProducts.length ? (
-                <AdminDataTable tableClassName="min-w-[720px]">
-                  <thead className="bg-surface">
-                    <tr className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
-                      <th className="px-4 py-3 font-semibold">Product</th>
-                      <th className="px-4 py-3 font-semibold">Surface</th>
-                      <th className="px-4 py-3 font-semibold">Unit price</th>
-                      <th className="px-4 py-3 font-semibold">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {controller.filteredProducts.map((product) => (
-                      <tr
-                        key={product.productKey}
-                        className={`cursor-pointer border-t border-hairline ${controller.selectedProductKey === product.productKey ? 'bg-surface-hover' : ''}`}
-                        onClick={() => controller.selectProduct(product.productKey)}
-                      >
-                        <td className="px-4 py-3">
-                          <button type="button" className="text-left" disabled={controller.interactionLocked}>
-                            <span className="block font-medium text-text-primary">{product.label}</span>
-                            <span className="mt-1 block font-mono text-xs text-text-muted">{product.productKey}</span>
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 text-text-secondary">{product.surface} · {product.unitKind}</td>
-                        <td className="px-4 py-3 font-medium text-text-primary">{formatCents(product.unitPriceCents, product.currency)}</td>
-                        <td className="px-4 py-3 text-text-secondary">{product.active ? 'Active' : 'Inactive'}</td>
+              <div data-testid="billing-products-inventory">
+                {controller.filteredProducts.length ? (
+                  <AdminDataTable tableClassName="min-w-[720px]">
+                    <thead className="bg-surface">
+                      <tr className="text-[11px] uppercase tracking-[0.14em] text-text-muted">
+                        <th className="px-4 py-3 font-semibold">Product</th>
+                        <th className="px-4 py-3 font-semibold">Surface</th>
+                        <th className="px-4 py-3 font-semibold">Unit price</th>
+                        <th className="px-4 py-3 font-semibold">Status</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </AdminDataTable>
-              ) : <AdminEmptyState>No live billing products match this filter.</AdminEmptyState>}
+                    </thead>
+                    <tbody>
+                      {controller.filteredProducts.map((product) => (
+                        <tr
+                          key={product.productKey}
+                          className={`cursor-pointer border-t border-hairline ${controller.selectedProductKey === product.productKey ? 'bg-surface-hover' : ''}`}
+                          onClick={() => controller.selectProduct(product.productKey)}
+                        >
+                          <td className="px-4 py-3">
+                            <button type="button" className="text-left" disabled={controller.interactionLocked}>
+                              <span className="block font-medium text-text-primary">{product.label}</span>
+                              <span className="mt-1 block font-mono text-xs text-text-muted">{product.productKey}</span>
+                            </button>
+                          </td>
+                          <td className="px-4 py-3 text-text-secondary">{product.surface} · {product.unitKind}</td>
+                          <td className="px-4 py-3 font-medium text-text-primary">{formatCents(product.unitPriceCents, product.currency)}</td>
+                          <td className="px-4 py-3 text-text-secondary">{product.active ? 'Active' : 'Inactive'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </AdminDataTable>
+                ) : <AdminEmptyState>No live billing products match this filter.</AdminEmptyState>}
+              </div>
             </div>
           </AdminSection>
 

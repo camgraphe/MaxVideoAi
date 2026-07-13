@@ -14,6 +14,7 @@ import {
   type BillingProductDraft,
   type BillingProductHistoryApiResponse,
   type BillingProductInventoryApiResponse,
+  type BillingProductOperationalWarning,
   type BillingProductPreviewApiResponse,
 } from '../_lib/billing-products-admin-view-model';
 
@@ -67,6 +68,7 @@ export function useAdminBillingProductsController() {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<BillingProductAdminError | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [postCommitWarning, setPostCommitWarning] = useState<BillingProductOperationalWarning | null>(null);
   const interactionLocked = previewing || confirming || Boolean(preview);
   const products = useMemo(() => inventory?.products ?? [], [inventory]);
   const filteredProducts = useMemo(() => filterBillingProducts(products, query), [products, query]);
@@ -143,25 +145,39 @@ export function useAdminBillingProductsController() {
     if (!preview || !previewProposal) return;
     setConfirming(true);
     setError(null);
+    setPostCommitWarning(null);
+    let confirmation: BillingProductConfirmApiResponse['confirmation'];
     try {
       const response = await postJson<BillingProductConfirmApiResponse>(BILLING_PRODUCTS_CONFIRM_ENDPOINT, { proposal: previewProposal, previewFingerprint: preview.previewFingerprint }, 'Unable to apply billing product change.');
-      const confirmation = response.confirmation;
+      confirmation = response.confirmation;
       if (!confirmation.committed) throw new Error('Billing product change was not committed.');
-      setPreview(null);
-      setPreviewProposal(null);
-      setDraft(null);
-      setSelectedProductKey(null);
-      setNotice(confirmation.operationalWarnings.length
-        ? `Billing product change applied. ${confirmation.operationalWarnings.map((warning) => warning.message).join(' ')}`
-        : 'Billing product change applied.');
-      await Promise.all([refreshInventory(), refreshHistory()]);
     } catch (caught) {
       setError(caught && typeof caught === 'object' && 'code' in caught
         ? caught as BillingProductAdminError
         : { code: 'request_failed', message: caught instanceof Error ? caught.message : 'Unable to apply billing product change.' });
-    } finally {
       setConfirming(false);
+      return;
     }
+
+    setPreview(null);
+    setPreviewProposal(null);
+    setDraft(null);
+    setSelectedProductKey(null);
+    const operationalWarnings = [...confirmation.operationalWarnings];
+    try {
+      await Promise.all([refreshInventory(), refreshHistory()]);
+    } catch {
+      const refreshWarning: BillingProductOperationalWarning = {
+        code: 'post_commit_refresh_failed',
+        message: 'Billing product change was committed, but refreshing the local view failed. Refresh manually before making another change.',
+      };
+      setPostCommitWarning(refreshWarning);
+      operationalWarnings.push(refreshWarning);
+    }
+    setNotice(operationalWarnings.length
+      ? `Billing product change applied. ${operationalWarnings.map((warning) => warning.message).join(' ')}`
+      : 'Billing product change applied.');
+    setConfirming(false);
   }, [preview, previewProposal, refreshHistory, refreshInventory]);
 
   const refresh = useCallback(async () => {
@@ -172,6 +188,7 @@ export function useAdminBillingProductsController() {
       const first = refreshedInventory?.ok ? refreshedInventory.inventory.products[0] : null;
       setSelectedProductKey(first?.productKey ?? null);
       setDraft(first ? createBillingProductDraft(first) : null);
+      setPostCommitWarning(null);
     } catch (caught) {
       setError(toBillingProductError(caught, 'Unable to refresh billing products.'));
     }
@@ -197,7 +214,7 @@ export function useAdminBillingProductsController() {
     interactionLocked,
     loading: inventoryQuery.isLoading,
     refreshing: inventoryQuery.isValidating || historyQuery.isValidating,
-    error: error ?? fetchError,
+    error: error ?? (postCommitWarning ? null : fetchError),
     notice,
     setQuery,
     selectProduct,

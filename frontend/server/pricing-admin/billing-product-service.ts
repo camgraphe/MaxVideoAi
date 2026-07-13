@@ -34,6 +34,9 @@ import {
 import { buildPricingPreviewFingerprint } from './fingerprint';
 import { revalidatePricingChangeSurfaces } from './revalidation';
 
+const POSTGRES_INTEGER_MAX = 2_147_483_647;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export type BillingProductChangeProposal =
   | {
       operation?: 'update';
@@ -175,8 +178,15 @@ function normalizeUpdate(
     throw new PricingAdminError('unsupported_currency', `Unsupported billing product currency: ${currency}`);
   }
   const unitPriceCents = proposal.unitPriceCents === undefined ? current.unitPriceCents : proposal.unitPriceCents;
-  if (!Number.isInteger(unitPriceCents) || (unitPriceCents as number) < 0) {
-    throw new PricingAdminError('invalid_number', 'unitPriceCents must be a non-negative integer');
+  if (
+    !Number.isSafeInteger(unitPriceCents) ||
+    (unitPriceCents as number) < 0 ||
+    (unitPriceCents as number) > POSTGRES_INTEGER_MAX
+  ) {
+    throw new PricingAdminError(
+      'invalid_number',
+      `unitPriceCents must be a safe PostgreSQL INTEGER between 0 and ${POSTGRES_INTEGER_MAX}`
+    );
   }
   if (proposal.active !== undefined && typeof proposal.active !== 'boolean') {
     throw new PricingAdminError('invalid_payload', 'active must be a boolean');
@@ -222,10 +232,15 @@ async function buildPreviewContext(
     throw new PricingAdminError('invalid_payload', 'Billing product proposal must be an object');
   }
   const productKey = requiredText(proposal.productKey, 'productKey');
+  const rollbackEventId = proposal.operation === 'rollback'
+    ? requiredText(proposal.eventId, 'eventId')
+    : null;
+  if (rollbackEventId && !UUID_PATTERN.test(rollbackEventId)) {
+    throw new PricingAdminError('invalid_payload', 'eventId must be a UUID');
+  }
   const current = findEditableProduct(loadedProducts(await dependencies.loadProducts(executor)), productKey);
   if (proposal.operation === 'rollback') {
-    const eventId = requiredText(proposal.eventId, 'eventId');
-    const event = await dependencies.getEvent(eventId, 'billing_product', executor);
+    const event = await dependencies.getEvent(rollbackEventId!, 'billing_product', executor);
     if (!event || event.targetId !== productKey || !event.previousState) {
       throw new PricingAdminError('missing_target', 'Billing product change event not found');
     }
@@ -233,7 +248,7 @@ async function buildPreviewContext(
       operation: 'rollback',
       current,
       proposed: mutableStateFrom(event.previousState, current),
-      rollbackEventId: eventId,
+      rollbackEventId: rollbackEventId!,
     };
   }
   if (proposal.operation !== undefined && proposal.operation !== 'update') {
