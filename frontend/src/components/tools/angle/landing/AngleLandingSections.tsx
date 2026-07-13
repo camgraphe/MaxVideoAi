@@ -22,6 +22,7 @@ import {
   SectionHeader,
   WorkspaceShowcase,
 } from './AngleLandingPrimitives';
+import { AngleLandingIntentExamplesSection } from './AngleLandingIntentExamplesSection';
 
 function AngleHeroSection({ content }: { content: AngleLandingContent }) {
   return (
@@ -375,6 +376,7 @@ export function AngleLandingSections({ content }: { content: AngleLandingContent
       <AngleHowItWorksSection content={content} />
       <AngleWorkspaceSection content={content} />
       <AngleBenefitsSection content={content} />
+      <AngleLandingIntentExamplesSection content={content} />
       <AngleUseCasesSection content={content} />
       <AngleRelatedSection content={content} />
       <AngleFinalCtaSection content={content} />

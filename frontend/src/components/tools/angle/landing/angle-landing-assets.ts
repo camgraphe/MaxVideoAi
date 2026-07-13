@@ -11,6 +11,20 @@ export const ANGLE_STORY_SOURCE_URL =
 export const ANGLE_HERO_OUTPUT_URL =
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/44d08767-2bba-4ece-9e37-00991db207af.webp';
 export const ANGLE_WORKSPACE_SCREENSHOT_PATH = '/assets/tools/angle-workspace.png';
+export const ANGLE_INTENT_EXAMPLE_ASSETS = [
+  {
+    source: '/assets/tools/angle-example-product-source.jpeg',
+    output: '/assets/tools/angle-example-product-output.webp',
+  },
+  {
+    source: '/assets/tools/angle-example-storyboard-source.webp',
+    output: '/assets/tools/angle-example-storyboard-output.webp',
+  },
+  {
+    source: '/assets/tools/angle-example-creative-source.webp',
+    output: '/assets/tools/angle-example-creative-output.webp',
+  },
+] as const;
 export const ANGLE_LATEST_BATCH_URLS = [
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/6ad2e206-588e-4f08-80e7-cf4a18d045bf.webp',
   'https://media.maxvideoai.com/rendersthumbs/301cc489-d689-477f-94c4-0b051deda0bc/3164706b-97b3-4407-980c-2195dfd7181d.webp',

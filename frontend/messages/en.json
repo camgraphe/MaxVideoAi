@@ -5433,7 +5433,7 @@
         "angle": {
           "eyebrow": "Perspective control",
           "title": "Generate stronger first frames from one image",
-          "body": "Change viewpoint, explore alternative compositions, and generate motion-ready frames without rebuilding the whole image from scratch.",
+          "body": "Choose a new camera angle from one image for product shots, storyboards, ad creative, or a stronger image-to-video first frame.",
           "cta": "Explore Tool",
           "imageAlt": "Angle workspace screenshot from MaxVideoAI."
         },
@@ -5668,6 +5668,8 @@
           "photo angle editor ai",
           "camera angle control ai",
           "ai camera angle generator",
+          "video camera angle change ai",
+          "camera angle change ai",
           "multiple angles from one image",
           "first frame for ai video",
           "image to video first frame"
@@ -5915,6 +5917,38 @@
           {
             "title": "More coverage from one asset",
             "body": "Get extra product, portrait, or scene views from a single source image."
+          }
+        ]
+      },
+      "intentExamples": {
+        "eyebrow": "Practical examples",
+        "title": "Use a better angle for the job in front of you",
+        "body": "Start from an image you already trust, then steer the viewpoint for product presentation, story coverage, or a stronger ad frame.",
+        "primaryCta": "Try your own image",
+        "items": [
+          {
+            "title": "Give a product shot a hero viewpoint",
+            "body": "Turn a clean catalog frame into a more dimensional product image without changing the product, styling, or scene.",
+            "sourceLabel": "Straight-on source",
+            "outputLabel": "Selected angle",
+            "sourceAlt": "Straight-on studio product image of black headphones on a pedestal.",
+            "outputAlt": "Alternate camera angle generated from the same black headphones product image."
+          },
+          {
+            "title": "Test coverage before the storyboard is locked",
+            "body": "Keep the scene and subject, then compare a raised three-quarter view before you commit a board or first frame.",
+            "sourceLabel": "Scene source",
+            "outputLabel": "Raised view",
+            "sourceAlt": "Original scene still used as the source for storyboard framing.",
+            "outputAlt": "Raised three-quarter storyboard frame generated from the same scene still."
+          },
+          {
+            "title": "Find a more persuasive ad composition",
+            "body": "Explore a different camera viewpoint when the offer is right but the creative needs more depth or presence.",
+            "sourceLabel": "Original creative",
+            "outputLabel": "Alternate view",
+            "sourceAlt": "Original ad creative image before the camera angle changes.",
+            "outputAlt": "Alternate camera view generated from the same ad creative image."
           }
         ]
       },

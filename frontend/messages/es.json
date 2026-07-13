@@ -5460,7 +5460,7 @@
         "angle": {
           "eyebrow": "Control de perspectiva",
           "title": "Genera mejores encuadres desde una imagen",
-          "body": "Cambia el punto de vista, prueba composiciones alternativas y genera imágenes listas para animación sin tener que rehacer la imagen completa.",
+          "body": "Elige un nuevo ángulo de cámara desde una imagen para producto, storyboard, creatividad publicitaria o un mejor primer fotograma image-to-video.",
           "cta": "Explorar herramienta",
           "imageAlt": "Captura de la interfaz Angle de MaxVideoAI."
         },
@@ -5692,6 +5692,8 @@
           "cambiar ángulo de cámara IA",
           "cambiar la perspectiva de una imagen con IA",
           "generador de ángulo de cámara IA",
+          "cambiar ángulo de vídeo con IA",
+          "cambiar ángulo de cámara IA",
           "editor de perspectiva de foto con IA",
           "control de cámara IA",
           "generador de perspectiva IA",
@@ -5942,6 +5944,38 @@
           {
             "title": "Más cobertura desde una sola imagen",
             "body": "Consigue vistas extra de producto, retrato o escena a partir de una sola imagen fuente."
+          }
+        ]
+      },
+      "intentExamples": {
+        "eyebrow": "Ejemplos prácticos",
+        "title": "Usa el ángulo que necesita tu próxima pieza",
+        "body": "Parte de una imagen que ya funciona y ajusta el punto de vista para presentar un producto, cubrir un storyboard o reforzar una creatividad publicitaria.",
+        "primaryCta": "Probar con tu imagen",
+        "items": [
+          {
+            "title": "Dar a un producto un ángulo protagonista",
+            "body": "Convierte una toma limpia de catálogo en una imagen de producto más dimensional sin cambiar el producto, el estilo ni la escena.",
+            "sourceLabel": "Fuente frontal",
+            "outputLabel": "Ángulo elegido",
+            "sourceAlt": "Foto de estudio frontal de unos auriculares negros sobre un pedestal.",
+            "outputAlt": "Ángulo de cámara alternativo generado desde la misma imagen de auriculares negros."
+          },
+          {
+            "title": "Probar cobertura antes de cerrar el storyboard",
+            "body": "Conserva la escena y el sujeto, y compara una vista elevada en tres cuartos antes de aprobar un plano o primer fotograma.",
+            "sourceLabel": "Fuente de escena",
+            "outputLabel": "Vista elevada",
+            "sourceAlt": "Plano de escena original usado para el encuadre del storyboard.",
+            "outputAlt": "Fotograma de storyboard elevado en tres cuartos generado desde la misma escena."
+          },
+          {
+            "title": "Encontrar una composición publicitaria más persuasiva",
+            "body": "Explora otro punto de vista cuando la oferta funciona pero la creatividad necesita más profundidad o presencia.",
+            "sourceLabel": "Creatividad original",
+            "outputLabel": "Vista alternativa",
+            "sourceAlt": "Imagen publicitaria original antes de cambiar el ángulo de cámara.",
+            "outputAlt": "Vista de cámara alternativa generada desde la misma creatividad publicitaria."
           }
         ]
       },

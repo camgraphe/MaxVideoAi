@@ -5468,7 +5468,7 @@
         "angle": {
           "eyebrow": "Contrôle de perspective",
           "title": "Générez un meilleur premier plan à partir d'une image",
-          "body": "Changez le point de vue, testez d'autres compositions et obtenez des images prêtes pour le mouvement sans refaire tout le visuel.",
+          "body": "Choisissez un nouvel angle de caméra depuis une image pour vos packshots, storyboards, publicités ou un meilleur premier frame image-to-video.",
           "cta": "Explorer l'outil",
           "imageAlt": "Capture de l'interface Angle de MaxVideoAI."
         },
@@ -5700,6 +5700,8 @@
           "changer l'angle de caméra IA",
           "changer la perspective d'une image avec l'IA",
           "générateur d'angle de caméra IA",
+          "changer l'angle d'une vidéo avec IA",
+          "changer angle caméra IA",
           "éditeur de perspective photo IA",
           "contrôle de caméra IA",
           "générateur de perspective IA",
@@ -5950,6 +5952,38 @@
           {
             "title": "Plus de variantes à partir d'un seul visuel",
             "body": "Obtenez des vues supplémentaires produit, portrait ou scène à partir d'une seule image."
+          }
+        ]
+      },
+      "intentExamples": {
+        "eyebrow": "Exemples pratiques",
+        "title": "Choisissez l'angle adapté à votre prochain livrable",
+        "body": "Partez d'une image déjà fiable, puis ajustez le point de vue pour un produit, une couverture de storyboard ou une publicité plus impactante.",
+        "primaryCta": "Essayer avec votre image",
+        "items": [
+          {
+            "title": "Donner un angle hero à un packshot produit",
+            "body": "Transformez un visuel catalogue propre en image produit plus dimensionnelle sans changer le produit, le styling ni la scène.",
+            "sourceLabel": "Source de face",
+            "outputLabel": "Angle retenu",
+            "sourceAlt": "Photo studio de face d'un casque noir posé sur un socle.",
+            "outputAlt": "Angle de caméra alternatif généré depuis la même image de casque noir."
+          },
+          {
+            "title": "Tester la couverture avant de verrouiller le storyboard",
+            "body": "Conservez la scène et le sujet, puis comparez une vue trois-quarts surélevée avant de valider un plan ou un premier frame.",
+            "sourceLabel": "Source de scène",
+            "outputLabel": "Vue surélevée",
+            "sourceAlt": "Plan de scène original utilisé pour le cadrage du storyboard.",
+            "outputAlt": "Plan de storyboard en trois-quarts surélevé généré depuis la même scène."
+          },
+          {
+            "title": "Trouver une composition publicitaire plus convaincante",
+            "body": "Explorez un autre point de vue quand l'offre est bonne mais que la création doit gagner en profondeur ou en présence.",
+            "sourceLabel": "Création originale",
+            "outputLabel": "Vue alternative",
+            "sourceAlt": "Création publicitaire originale avant le changement d'angle de caméra.",
+            "outputAlt": "Vue de caméra alternative générée depuis la même création publicitaire."
           }
         ]
       },

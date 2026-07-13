@@ -11,6 +11,10 @@ const angleViewPath = join(root, 'frontend/src/components/tools/angle/landing/An
 const angleSectionsPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingSections.tsx');
 const anglePrimitivesPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingPrimitives.tsx');
 const angleAssetsPath = join(root, 'frontend/src/components/tools/angle/landing/angle-landing-assets.ts');
+const angleIntentExamplesSectionPath = join(root, 'frontend/src/components/tools/angle/landing/AngleLandingIntentExamplesSection.tsx');
+const englishMessagesPath = join(root, 'frontend/messages/en.json');
+const frenchMessagesPath = join(root, 'frontend/messages/fr.json');
+const spanishMessagesPath = join(root, 'frontend/messages/es.json');
 const characterViewPath = join(root, 'frontend/src/components/tools/character-builder/landing/CharacterBuilderLandingView.tsx');
 const characterSectionsPath = join(root, 'frontend/src/components/tools/character-builder/landing/CharacterBuilderLandingSections.tsx');
 const characterLeadSectionsPath = join(root, 'frontend/src/components/tools/character-builder/landing/CharacterBuilderLandingLeadSections.tsx');
@@ -43,6 +47,7 @@ const landingFiles = [
   angleSectionsPath,
   anglePrimitivesPath,
   angleAssetsPath,
+  angleIntentExamplesSectionPath,
   characterViewPath,
   characterSectionsPath,
   characterLeadSectionsPath,
@@ -110,6 +115,27 @@ test('tool marketing landing sections preserve CTAs and stay split by responsibi
   for (const filePath of landingFiles) {
     const lineCount = readFileSync(filePath, 'utf8').split('\n').length;
     assert.ok(lineCount <= 500, `${filePath} should stay below 500 lines after section extraction, got ${lineCount}`);
+  }
+});
+
+test('angle landing keeps its practical examples local, localized, and independently rendered', () => {
+  assert.ok(existsSync(angleIntentExamplesSectionPath), 'angle intent examples should live in their own section component');
+  const intentExamplesSource = readFileSync(angleIntentExamplesSectionPath, 'utf8');
+
+  assert.match(angleSectionsSource, /AngleLandingIntentExamplesSection/, 'angle sections should compose the practical examples section');
+  assert.match(intentExamplesSource, /ANGLE_INTENT_EXAMPLE_ASSETS/, 'angle examples should use the local asset registry');
+  assert.match(intentExamplesSource, /data-analytics-event="tool_cta_click"/, 'angle examples should preserve CTA analytics');
+
+  for (const messagePath of [englishMessagesPath, frenchMessagesPath, spanishMessagesPath]) {
+    const messages = JSON.parse(readFileSync(messagePath, 'utf8')) as {
+      toolMarketing: { angle: { intentExamples: { items: Array<{ title: string; body: string; sourceLabel: string; outputLabel: string; sourceAlt: string; outputAlt: string }> } } };
+    };
+    const examples = messages.toolMarketing.angle.intentExamples.items;
+
+    assert.equal(examples.length, 3, `${messagePath} should expose three angle examples`);
+    for (const example of examples) {
+      assert.ok(example.title && example.body && example.sourceLabel && example.outputLabel && example.sourceAlt && example.outputAlt, `${messagePath} should fully localize each angle example`);
+    }
   }
 });
 
