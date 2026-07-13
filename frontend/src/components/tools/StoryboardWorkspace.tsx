@@ -5,10 +5,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Clapperboard, Film, ImagePlus, Loader2, Sparkles, Smartphone, UserRound } from 'lucide-react';
 import { AppSidebar } from '@/components/AppSidebar';
-import { AssetDropzone, type AssetSlotAttachment } from '@/components/AssetDropzone';
+import { AssetDropzone } from '@/components/AssetDropzone';
 import { HeaderBar } from '@/components/HeaderBar';
 import { Button, ButtonLink } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -25,10 +25,10 @@ import {
   buildStoryboardGeneratorHandoffUrl,
 } from '@/lib/storyboard-generator-handoff';
 import { STORYBOARD_EDIT_SOURCE, STORYBOARD_SOURCE } from '@/lib/storyboard-pricing';
-import type { EngineInputField } from '@/types/engines';
 import type { ImageGenerationResponse } from '@/types/image-generation';
 import { StoryboardReferenceLibraryModal } from './storyboard/_components/StoryboardReferenceLibraryModal';
 import { StoryboardResultPanel } from './storyboard/_components/StoryboardResultPanel';
+import { useStoryboardReferences } from './storyboard/_hooks/useStoryboardReferences';
 import {
   useStoryboardRecentOutputs,
   type StoryboardRecentOutput,
@@ -46,28 +46,15 @@ import {
 } from './storyboard/_lib/storyboard-kling-first-frame-storage';
 import { resolveStoryboardVisiblePrice } from './storyboard/_lib/storyboard-price-display';
 import {
-  cleanupStoryboardReferenceImage,
-  uploadStoryboardReferenceImage,
-  type StoryboardReferenceImage,
-} from './storyboard/_lib/storyboard-reference-image';
-import {
   buildStoryboardPrompt,
   type StoryboardStyle,
   type StoryboardTargetModel,
 } from './storyboard/_lib/storyboard-prompt';
-import {
-  CLOSED_STORYBOARD_LIBRARY_MODAL,
-  createStoryboardReferenceImageFromLibraryAsset,
-  resolveStoryboardReferenceLibrarySlotIndex,
-  type StoryboardLibraryAsset,
-  type StoryboardLibraryModalState,
-} from './storyboard/_lib/storyboard-reference-library';
 import { buildStoryboardShotPlan } from './storyboard/_lib/storyboard-shot-plan';
 import { isStoryboardTargetRecommended } from './storyboard/_lib/storyboard-target';
 import {
   STORYBOARD_REFERENCE_ENGINE,
   STORYBOARD_REFERENCE_FIELD,
-  STORYBOARD_REFERENCE_SLOT_COUNT,
   STORYBOARD_STYLE_OPTIONS,
   STORYBOARD_TARGET_LOGOS,
   STORYBOARD_TARGET_OPTIONS,
@@ -129,9 +116,6 @@ export default function StoryboardWorkspace() {
   const [lengthPresetId, setLengthPresetId] = useState<StoryboardLengthPresetId>('medium');
   const [storyboardOrientation, setStoryboardOrientation] = useState<StoryboardOrientation>('landscape');
   const [storyboardTier, setStoryboardTier] = useState<StoryboardTier>(DEFAULT_STORYBOARD_TIER);
-  const [referenceImages, setReferenceImages] = useState<(StoryboardReferenceImage | null)[]>(
-    () => Array.from({ length: STORYBOARD_REFERENCE_SLOT_COUNT }, () => null)
-  );
   const [editInstruction, setEditInstruction] = useState('');
   const [tierPrices, setTierPrices] = useState<PriceState>({ hd: null, '4k': null, ultra: null });
   const [editPrice, setEditPrice] = useState<PriceValue>(null);
@@ -141,18 +125,35 @@ export default function StoryboardWorkspace() {
   const [running, setRunning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [libraryModal, setLibraryModal] = useState<StoryboardLibraryModalState>(CLOSED_STORYBOARD_LIBRARY_MODAL);
   const [selectedRecentOutput, setSelectedRecentOutput] = useState<StoryboardRecentOutput | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const referenceImagesRef = useRef(referenceImages);
   const {
     outputs: recentOutputs,
     loading: recentOutputsLoading,
     refresh: refreshRecentOutputs,
   } = useStoryboardRecentOutputs(Boolean(user));
-
-  referenceImagesRef.current = referenceImages;
+  const {
+    readyReferenceImages,
+    referenceUploading,
+    storyboardReferenceField,
+    storyboardReferenceAssets,
+    libraryModal,
+    handleReferenceFile,
+    handleRemoveReferenceSlot,
+    openReferenceLibrary,
+    closeReferenceLibrary,
+    handleReferenceLibrarySelect,
+  } = useStoryboardReferences({
+    authenticated: Boolean(user),
+    copy,
+    onAuthRequired: () => setAuthModalOpen(true),
+    onError: setError,
+    onFeedbackReset: () => {
+      setError(null);
+      setMessage(null);
+    },
+  });
 
   useEffect(() => {
     const requestedTarget = new URLSearchParams(window.location.search).get('target');
@@ -204,12 +205,6 @@ export default function StoryboardWorkspace() {
     };
   }, [storyboardOrientation]);
 
-  useEffect(() => {
-    return () => {
-      referenceImagesRef.current.forEach(cleanupStoryboardReferenceImage);
-    };
-  }, []);
-
   const lengthPreset = useMemo(() => getStoryboardLengthPreset(lengthPresetId), [lengthPresetId]);
   const durationSec = lengthPreset.durationSec;
   const frameCount = lengthPreset.frameCount;
@@ -240,11 +235,6 @@ export default function StoryboardWorkspace() {
   });
   const activePrice = formatPrice(activePriceValue, locale);
   const editPriceLabel = useMemo(() => formatPrice(editPrice, locale), [editPrice, locale]);
-  const referenceUploading = referenceImages.some((image) => image?.status === 'uploading');
-  const readyReferenceImages = useMemo(
-    () => referenceImages.filter((image): image is StoryboardReferenceImage => Boolean(image?.url && image.status === 'ready')),
-    [referenceImages]
-  );
   const selectedKlingFirstFrame = useMemo(() => {
     if (!selectedImage?.url || previewingTemplate) return null;
     if (selectedRecentOutput) {
@@ -311,32 +301,6 @@ export default function StoryboardWorkspace() {
     editOutputConfig.resolution,
   ]);
 
-  const storyboardReferenceField = useMemo<EngineInputField>(
-    () => ({
-      ...STORYBOARD_REFERENCE_FIELD,
-      label: copy.referenceImageLabel,
-      description: copy.referenceImageBody,
-    }),
-    [copy.referenceImageBody, copy.referenceImageLabel]
-  );
-  const storyboardReferenceAssets = useMemo<Record<string, (AssetSlotAttachment | null)[]>>(
-    () => ({
-      [STORYBOARD_REFERENCE_FIELD.id]: referenceImages.map((image) =>
-        image
-          ? {
-              kind: 'image',
-              name: image.name ?? copy.referenceSlotNameFallback,
-              size: image.size ?? 0,
-              type: image.type ?? 'image/*',
-              previewUrl: image.previewUrl,
-              status: image.status,
-              error: image.error ?? undefined,
-            }
-          : null
-      ),
-    }),
-    [copy.referenceSlotNameFallback, referenceImages]
-  );
   const shotPlan = useMemo(
     () =>
       buildStoryboardShotPlan({
@@ -362,100 +326,6 @@ export default function StoryboardWorkspace() {
       }
       return nextValue;
     });
-  }
-
-  async function handleReferenceFile(_field: EngineInputField, file: File, slotIndex = 0) {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-
-    const previewUrl = URL.createObjectURL(file);
-    setError(null);
-    setMessage(null);
-    setReferenceImages((current) => {
-      const next = current.slice();
-      cleanupStoryboardReferenceImage(next[slotIndex] ?? null);
-      next[slotIndex] = {
-        url: previewUrl,
-        previewUrl,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        status: 'uploading',
-      };
-      return next;
-    });
-    try {
-      const uploaded = await uploadStoryboardReferenceImage(file, copy);
-      setReferenceImages((current) => {
-        const next = current.slice();
-        next[slotIndex] = { ...uploaded, previewUrl, size: file.size, type: file.type, status: 'ready' };
-        return next;
-      });
-    } catch (uploadError) {
-      const messageText = uploadError instanceof Error ? uploadError.message : copy.uploadFailed;
-      setReferenceImages((current) => {
-        const next = current.slice();
-        next[slotIndex] = {
-          url: previewUrl,
-          previewUrl,
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          status: 'error',
-          error: messageText,
-        };
-        return next;
-      });
-      setError(messageText);
-    }
-  }
-
-  function handleRemoveReferenceSlot(_field: EngineInputField, index: number) {
-    setReferenceImages((current) => {
-      const next = current.slice();
-      cleanupStoryboardReferenceImage(next[index] ?? null);
-      next[index] = null;
-      return next;
-    });
-  }
-
-  function openReferenceLibrary(_field: EngineInputField, slotIndex = 0) {
-    if (!user) {
-      setAuthModalOpen(true);
-      return;
-    }
-    setError(null);
-    setMessage(null);
-    setLibraryModal({
-      open: true,
-      slotIndex,
-      selectionMode: 'reference',
-      initialSource: 'all',
-    });
-  }
-
-  function closeReferenceLibrary() {
-    setLibraryModal(CLOSED_STORYBOARD_LIBRARY_MODAL);
-  }
-
-  function handleReferenceLibrarySelect(asset: StoryboardLibraryAsset) {
-    if (!asset.url) return;
-    const slotIndex = resolveStoryboardReferenceLibrarySlotIndex(
-      referenceImages,
-      libraryModal.slotIndex,
-      STORYBOARD_REFERENCE_SLOT_COUNT
-    );
-    setError(null);
-    setMessage(null);
-    setReferenceImages((current) => {
-      const next = current.slice();
-      cleanupStoryboardReferenceImage(next[slotIndex] ?? null);
-      next[slotIndex] = createStoryboardReferenceImageFromLibraryAsset(asset, copy.referenceSlotNameFallback);
-      return next;
-    });
-    closeReferenceLibrary();
   }
 
   function handleSelectRecentOutput(output: StoryboardRecentOutput) {
