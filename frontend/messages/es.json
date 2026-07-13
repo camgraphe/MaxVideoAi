@@ -412,7 +412,7 @@
               "name": "Seedance 2.0",
               "provider": "ByteDance",
               "bestFor": "Realismo cinematográfico",
-              "fallbackPrice": "desde 0,36 $ / 5 s",
+              "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
                   "label": "Movimiento",
@@ -438,7 +438,7 @@
               "name": "Veo 3.1 Lite",
               "provider": "Google",
               "bestFor": "Movimiento realista",
-              "fallbackPrice": "desde 0,45 $ / 5 s",
+              "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
                   "label": "Movimiento",
@@ -464,7 +464,7 @@
               "name": "Kling 3 Pro",
               "provider": "Kuaishou",
               "bestFor": "Movimiento de cámara",
-              "fallbackPrice": "desde 0,29 $ / 5 s",
+              "fallbackPrice": "Precio actualizado",
               "selected": true,
               "scores": [
                 {
@@ -491,7 +491,7 @@
               "name": "LTX 2.3 Pro",
               "provider": "Lightricks",
               "bestFor": "Audio y retakes",
-              "fallbackPrice": "desde 0,47 $ / 6 s",
+              "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
                   "label": "Movimiento",
@@ -517,7 +517,7 @@
               "name": "Happy Horse 1.1",
               "provider": "Alibaba",
               "bestFor": "Audio + referencias",
-              "fallbackPrice": "desde 0,91 $ / 5 s",
+              "fallbackPrice": "Precio actualizado",
               "scores": [
                 {
                   "label": "Movimiento",
@@ -540,7 +540,7 @@
             }
           ],
           "quoteLabel": "Precio para generar este video",
-          "quoteValue": "0,34 $",
+          "quoteValue": "Estimación actualizada",
           "quoteMeta": "5 s · 1080p · imagen a video",
           "outputLabel": "Previsualizaciones",
           "queueLabel": "Estado de generación",
@@ -645,7 +645,7 @@
             "modelSlug": "seedance-2-0",
             "mode": "Referencia a video",
             "duration": "12 s",
-            "price": "4,72 US$",
+            "price": "Precio actualizado",
             "useCase": "Realismo cinematográfico",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -661,7 +661,7 @@
             "modelSlug": "kling-3-pro",
             "mode": "Imagen a video",
             "duration": "15 s",
-            "price": "4,37 US$",
+            "price": "Precio actualizado",
             "useCase": "Movimiento de cámara",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -677,7 +677,7 @@
             "modelSlug": "veo-3-1",
             "mode": "Imagen a video",
             "duration": "6 s",
-            "price": "3,12 US$",
+            "price": "Precio actualizado",
             "useCase": "Realismo premium",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -693,7 +693,7 @@
             "modelSlug": "happy-horse-1-1",
             "mode": "Texto/imagen/referencia a video",
             "duration": "10 s",
-            "price": "2,34 US$",
+            "price": "Precio actualizado",
             "useCase": "Flujos con audio nativo",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -709,7 +709,7 @@
             "modelSlug": "ltx-2-3-fast",
             "mode": "Texto a video",
             "duration": "10 s",
-            "price": "0,52 US$",
+            "price": "Precio actualizado",
             "useCase": "Borradores rápidos",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -725,7 +725,7 @@
             "modelSlug": "wan-2-6",
             "mode": "Texto/imagen a video",
             "duration": "5 s",
-            "price": "0,65 US$",
+            "price": "Precio actualizado",
             "useCase": "Flujos de video estructurados",
             "cta": "Ejemplos y prompts",
             "modelCta": "Especificaciones y precios",
@@ -1365,7 +1365,7 @@
       "footnote": "3.000+ renders internos de prueba",
       "quote": {
         "eyebrow": "Ejemplo de cotización",
-        "value": "$0.47",
+        "value": "Estimación actualizada",
         "status": "Visible antes de lanzar",
         "meta": [
           "LTX 2.3 Pro",
@@ -1389,7 +1389,7 @@
         },
         {
           "q": "¿Cómo funciona el precio?",
-          "a": "Ves la ficha “Esta generación” antes de lanzar. Carga 10 $ para empezar y recarga cuando quieras. Cada generación tiene un recibo detallado."
+          "a": "Ves el precio actualizado antes de generar. Abre Facturación para elegir un importe de recarga disponible y completar el pago en Stripe Checkout. Cada generación tiene un recibo detallado."
         },
         {
           "q": "¿Cuál es la política de reembolso?",

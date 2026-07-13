@@ -119,9 +119,9 @@ const prohibitedAssertions = [
       /refunded within minutes|credited within minutes|processed automatically within minutes|refund[^.]*\b(?:within|under|in)\s+\d+\s+(?:seconds?|minutes?)|en quelques minutes|rembours[^.]*\b(?:moins de|dans)\s+\d+\s+(?:secondes?|minutes?)|en cuestión de minutos|reembols(?:a|an|os).*en minutos|reembols[^.]*\b(?:menos de|en)\s+\d+\s+(?:segundos?|minutos?)|acreditada en minutos/i,
   },
   {
-    claim: 'hard-coded wallet funding amounts',
+    claim: 'hard-coded public prices',
     pattern:
-      /(?:starter credits?|crédits de démarrage|créditos iniciales|wallet|portefeuille|billetera|add funds|ajoutez des fonds|añade fondos)[^.\n]*(?:\$(?:10|25|50)|(?:10|25|50)[\s\u00a0]*\$)/i,
+      /(?:[$€£]\s*\d+(?:[.,]\d+)?|(?:USD|EUR|GBP)\s*\d+(?:[.,]\d+)?|\d+(?:[.,]\d+)?[\s\u00a0]*(?:(?:US)?[$€£]|USD|EUR|GBP))/i,
   },
   {
     claim: 'unsupported auto-top-up promise',
@@ -169,6 +169,30 @@ test('the refund timing rule rejects numeric seconds and minutes in every public
     'Los reembolsos se procesan en 5 minutos.',
   ]) {
     assert.match(unsupportedClaim, refundTimingRule.pattern);
+  }
+});
+
+test('the public price rule catches localized currency claims without matching ordinary numbers', () => {
+  const publicPriceRule = prohibitedAssertions.find(({ claim }) => claim === 'hard-coded public prices');
+  assert.ok(publicPriceRule);
+
+  for (const unsupportedClaim of [
+    'Load $10 to start.',
+    'Starting at USD 1.25.',
+    'Prix dès 0,65 $.',
+    'Precio desde 0,65 US$.',
+  ]) {
+    assert.match(unsupportedClaim, publicPriceRule.pattern);
+  }
+
+  for (const legitimateNumber of [
+    'Generate a 10s video.',
+    'Export at 1080p.',
+    '3,000+ internal test renders.',
+    'Save 10% with an eligible tier.',
+    'Compare Model 2.0.',
+  ]) {
+    assert.doesNotMatch(legitimateNumber, publicPriceRule.pattern);
   }
 });
 

@@ -309,7 +309,7 @@
               "name": "Seedance 2.0",
               "provider": "ByteDance",
               "bestFor": "Cinematic realism",
-              "fallbackPrice": "from $0.36 / 5s",
+              "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
@@ -335,7 +335,7 @@
               "name": "Veo 3.1 Lite",
               "provider": "Google",
               "bestFor": "Realistic motion",
-              "fallbackPrice": "from $0.45 / 5s",
+              "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
@@ -361,7 +361,7 @@
               "name": "Kling 3 Pro",
               "provider": "Kuaishou",
               "bestFor": "Camera movement",
-              "fallbackPrice": "from $0.29 / 5s",
+              "fallbackPrice": "Live price",
               "selected": true,
               "scores": [
                 {
@@ -388,7 +388,7 @@
               "name": "LTX 2.3 Pro",
               "provider": "Lightricks",
               "bestFor": "Audio and retakes",
-              "fallbackPrice": "from $0.47 / 6s",
+              "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
@@ -414,7 +414,7 @@
               "name": "Happy Horse 1.1",
               "provider": "Alibaba",
               "bestFor": "Audio + references",
-              "fallbackPrice": "from $0.91 / 5s",
+              "fallbackPrice": "Live price",
               "scores": [
                 {
                   "label": "Motion",
@@ -437,7 +437,7 @@
             }
           ],
           "quoteLabel": "Cost to generate this video",
-          "quoteValue": "$0.34",
+          "quoteValue": "Live estimate",
           "quoteMeta": "5s · 1080p · image-to-video",
           "outputLabel": "Output previews",
           "queueLabel": "Generation status",
@@ -542,7 +542,7 @@
             "modelSlug": "seedance-2-0",
             "mode": "Reference-to-video",
             "duration": "12s",
-            "price": "$4.72",
+            "price": "Live price",
             "useCase": "Cinematic realism",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -558,7 +558,7 @@
             "modelSlug": "kling-3-pro",
             "mode": "Image-to-video",
             "duration": "15s",
-            "price": "$4.37",
+            "price": "Live price",
             "useCase": "Camera motion",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -574,7 +574,7 @@
             "modelSlug": "veo-3-1",
             "mode": "Image-to-video",
             "duration": "6s",
-            "price": "$3.12",
+            "price": "Live price",
             "useCase": "Premium realism",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -590,7 +590,7 @@
             "modelSlug": "happy-horse-1-1",
             "mode": "Text/image/reference-to-video",
             "duration": "10s",
-            "price": "$2.34",
+            "price": "Live price",
             "useCase": "Audio-native workflows",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -606,7 +606,7 @@
             "modelSlug": "ltx-2-3-fast",
             "mode": "Text-to-video",
             "duration": "10s",
-            "price": "$0.52",
+            "price": "Live price",
             "useCase": "Fast drafts",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -622,7 +622,7 @@
             "modelSlug": "wan-2-6",
             "mode": "Text/image-to-video",
             "duration": "5s",
-            "price": "$0.65",
+            "price": "Live price",
             "useCase": "Structured video workflows",
             "cta": "Examples & prompts",
             "modelCta": "Specs & pricing",
@@ -1262,7 +1262,7 @@
       "footnote": "3,000+ internal test renders",
       "quote": {
         "eyebrow": "Example quote",
-        "value": "$0.47",
+        "value": "Live estimate",
         "status": "Shown before launch",
         "meta": [
           "LTX 2.3 Pro",
@@ -1286,7 +1286,7 @@
         },
         {
           "q": "How does pricing work?",
-          "a": "You see a live price chip before you generate. Load $10 to start and top up anytime. Itemised receipts for each job."
+          "a": "You see the current price before you generate. Open Billing to choose an available top-up amount and complete payment through Stripe Checkout. Each generation has an itemised receipt."
         },
         {
           "q": "What’s the refund policy?",

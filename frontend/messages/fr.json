@@ -412,7 +412,7 @@
               "name": "Seedance 2.0",
               "provider": "ByteDance",
               "bestFor": "Réalisme cinéma",
-              "fallbackPrice": "dès 0,36 $ / 5 s",
+              "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
@@ -438,7 +438,7 @@
               "name": "Veo 3.1 Lite",
               "provider": "Google",
               "bestFor": "Motion réaliste",
-              "fallbackPrice": "dès 0,45 $ / 5 s",
+              "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
@@ -464,7 +464,7 @@
               "name": "Kling 3 Pro",
               "provider": "Kuaishou",
               "bestFor": "Mouvement caméra",
-              "fallbackPrice": "dès 0,29 $ / 5 s",
+              "fallbackPrice": "Prix actualisé",
               "selected": true,
               "scores": [
                 {
@@ -491,7 +491,7 @@
               "name": "LTX 2.3 Pro",
               "provider": "Lightricks",
               "bestFor": "Audio et retakes",
-              "fallbackPrice": "dès 0,47 $ / 6 s",
+              "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
@@ -517,7 +517,7 @@
               "name": "Happy Horse 1.1",
               "provider": "Alibaba",
               "bestFor": "Audio + références",
-              "fallbackPrice": "dès 0,91 $ / 5 s",
+              "fallbackPrice": "Prix actualisé",
               "scores": [
                 {
                   "label": "Motion",
@@ -540,7 +540,7 @@
             }
           ],
           "quoteLabel": "Coût pour générer cette vidéo",
-          "quoteValue": "0,34 $",
+          "quoteValue": "Estimation actualisée",
           "quoteMeta": "5 s · 1080p · image-vers-vidéo",
           "outputLabel": "Aperçus de sortie",
           "queueLabel": "Statut de génération",
@@ -645,7 +645,7 @@
             "modelSlug": "seedance-2-0",
             "mode": "Référence vers vidéo",
             "duration": "12 s",
-            "price": "4,72 $",
+            "price": "Prix actualisé",
             "useCase": "Réalisme cinématographique",
             "cta": "Exemples & prompts",
             "modelCta": "Specs et tarifs",
@@ -661,7 +661,7 @@
             "modelSlug": "kling-3-pro",
             "mode": "Image vers vidéo",
             "duration": "15 s",
-            "price": "4,37 $",
+            "price": "Prix actualisé",
             "useCase": "Mouvements caméra",
             "cta": "Exemples & prompts",
             "modelCta": "Specs et tarifs",
@@ -677,7 +677,7 @@
             "modelSlug": "veo-3-1",
             "mode": "Image vers vidéo",
             "duration": "6 s",
-            "price": "3,12 $",
+            "price": "Prix actualisé",
             "useCase": "Réalisme premium",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
@@ -693,7 +693,7 @@
             "modelSlug": "happy-horse-1-1",
             "mode": "Texte/image/référence vers vidéo",
             "duration": "10 s",
-            "price": "2,34 $",
+            "price": "Prix actualisé",
             "useCase": "Audio natif intégré",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
@@ -709,7 +709,7 @@
             "modelSlug": "ltx-2-3-fast",
             "mode": "Texte vers vidéo",
             "duration": "10 s",
-            "price": "0,52 $",
+            "price": "Prix actualisé",
             "useCase": "Tests rapides",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
@@ -725,7 +725,7 @@
             "modelSlug": "wan-2-6",
             "mode": "Texte/image vers vidéo",
             "duration": "5 s",
-            "price": "0,65 $",
+            "price": "Prix actualisé",
             "useCase": "Workflows vidéo guidés",
             "cta": "Exemples & prompts",
             "modelCta": "Specs & pricing",
@@ -1366,7 +1366,7 @@
       "footnote": "3 000+ rendus de test internes",
       "quote": {
         "eyebrow": "Exemple de devis",
-        "value": "$0.47",
+        "value": "Estimation actualisée",
         "status": "Visible avant lancement",
         "meta": [
           "LTX 2.3 Pro",
@@ -1390,7 +1390,7 @@
         },
         {
           "q": "Comment fonctionne la tarification ?",
-          "a": "Vous voyez la pastille de prix avant de générer. Chargez 10 $ pour démarrer et rechargez lorsque vous avez besoin de nouveaux essais. Chaque génération inclut un reçu détaillé."
+          "a": "Vous voyez le prix actualisé avant de générer. Ouvrez Facturation pour choisir un montant de recharge disponible et finaliser le paiement dans Stripe Checkout. Chaque génération dispose d’un reçu détaillé."
         },
         {
           "q": "Quelle est la politique de remboursement ?",

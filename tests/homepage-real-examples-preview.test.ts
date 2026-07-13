@@ -50,12 +50,12 @@ test('homepage real examples preview uses compact decision-oriented copy and CTA
   assert.deepEqual(
     cards.map((card) => [card.title, card.useCase, card.mode, card.duration ?? null, card.price ?? null]),
     [
-      ['Seedance 2.0', 'Cinematic realism', 'Reference-to-video', '12s', '$4.72'],
-      ['Kling 3 Pro', 'Camera motion', 'Image-to-video', '15s', '$4.37'],
-      ['Veo 3.1', 'Premium realism', 'Image-to-video', '6s', '$3.12'],
-      ['Happy Horse 1.1', 'Audio-native workflows', 'Text/image/reference-to-video', '10s', '$2.34'],
-      ['LTX 2.3 Fast', 'Fast drafts', 'Text-to-video', '10s', '$0.52'],
-      ['Wan 2.6', 'Structured video workflows', 'Text/image-to-video', '5s', '$0.65'],
+      ['Seedance 2.0', 'Cinematic realism', 'Reference-to-video', '12s', 'Live price'],
+      ['Kling 3 Pro', 'Camera motion', 'Image-to-video', '15s', 'Live price'],
+      ['Veo 3.1', 'Premium realism', 'Image-to-video', '6s', 'Live price'],
+      ['Happy Horse 1.1', 'Audio-native workflows', 'Text/image/reference-to-video', '10s', 'Live price'],
+      ['LTX 2.3 Fast', 'Fast drafts', 'Text-to-video', '10s', 'Live price'],
+      ['Wan 2.6', 'Structured video workflows', 'Text/image-to-video', '5s', 'Live price'],
     ]
   );
 
