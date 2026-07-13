@@ -1,10 +1,10 @@
 # Angle Orbit visual generation log
 
-Generated and audited on 2026-07-13 for the localized Angle landing page. All six source photographs were created with the built-in ImageGen tool. All eight transformed views were produced in the authenticated MaxVideoAI Angle workspace; no transformed view is an ImageGen substitute.
+Generated and audited on 2026-07-13 for the localized Angle landing page. All six published source photographs were created with the built-in ImageGen tool. All eight published transformed views were produced in the authenticated MaxVideoAI Angle workspace; no transformed view is an ImageGen substitute. The video-preparation pair was replaced after visual review while keeping the human-model use case.
 
 ## Source generation
 
-Every prompt uses this exact common suffix: `landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials`.
+The five non-video prompts use this exact common suffix: `landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials`. The replacement video-preparation prompt is recorded in full because it adds explicit pose and identity constraints.
 
 | Section | Full ImageGen prompt | Accepted raw source | Result |
 | --- | --- | --- | --- |
@@ -13,13 +13,13 @@ Every prompt uses this exact common suffix: `landscape 4:3, no logo, no text, no
 | Product | `cobalt and off-white technical running shoe on a transparent low stand, straight-on commerce view, warm gray seamless studio. landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials` | `.superpowers/sdd/angle-orbit/task-4-sources/imagegen/accepted/product-source.png` | Accepted first generation; complete silhouette and clean sole geometry. |
 | Storyboard | `solitary actor in a rust coat standing at the edge of a windswept coastal road, eye-level cinematic frame, overcast natural light. landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials` | `.superpowers/sdd/angle-orbit/task-4-sources/imagegen/accepted/story-source.png` | Accepted first generation; clear subject and distinct cinematic setting. |
 | Ad creative | `faceted clear fragrance bottle with a deep red glass cap, straight-on campaign frame, saturated burgundy and cream set. landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials` | `.superpowers/sdd/angle-orbit/task-4-sources/imagegen/accepted/ad-source.png` | Accepted first generation; centered bottle, credible facets, no label text. |
-| Video prep | `dancer in a tailored yellow coat at an empty modern railway platform, eye-level cinematic first frame, cool morning light. landscape 4:3, no logo, no text, no watermark, subject occupies 65–75% of the frame, premium photoreal editorial photography, physically credible materials` | `.superpowers/sdd/angle-orbit/task-4-sources/imagegen/accepted/video-source.png` | Accepted first generation; prominent dancer and coherent station geometry. |
+| Video prep | `Use case: photorealistic-natural; Asset type: premium landing-page source image demonstrating camera-angle generation for fashion models; Primary request: create a convincing editorial first frame of one adult fashion model whose identity, outfit, pose, and environment can remain stable when a camera is rotated around them; Scene/backdrop: quiet minimalist architectural pavilion built from pale limestone, brushed steel, and tall ribbed-glass panels; clean geometric lines; no signage, no other people; Subject: one adult fashion model wearing a sculptural cobalt-blue tailored coat with distinctive ivory piping and matte black ankle boots; upright composed stance, feet planted, torso straight, one hand resting lightly on the coat lapel, other arm relaxed; calm neutral expression; face clearly visible; natural anatomy and realistic skin texture; Style/medium: premium photoreal editorial fashion photography, sophisticated contemporary campaign, physically credible fabric and materials, restrained and timeless rather than flashy; Composition/framing: landscape 4:3; eye-level front three-quarter view at roughly 10 degrees; model fills about 70 percent of the frame; full coat silhouette and nearly full body visible with no cropped hands or feet; enough architectural depth cues around the subject to make a later 45-degree camera rotation obvious; Lighting/mood: soft directional morning light with subtle shadow definition, elegant calm atmosphere, accurate skin tone and fabric texture; Color palette: cobalt blue, warm limestone, brushed silver, soft ivory, matte black; Constraints: a stable static pose suitable for viewpoint transformation; one person only; keep limbs separated and readable; no dance, no walking, no action pose, no twisted torso, no wind-blown clothing, no props, no logos, no text, no watermark, no signage, no duplicate person, no cropped limbs, no exaggerated lens distortion, no surreal geometry` | `.superpowers/sdd/angle-orbit/task-4-sources/imagegen/accepted/video-source-v2.png` | Accepted first replacement generation at 1448 × 1086; stable pose, prominent model, readable asymmetric coat piping, clean architecture, and no text or logo. |
 
 All accepted raw sources are 1448 × 1086 PNG files stored outside `frontend/public` until their genuine Angle derivatives were accepted.
 
 ## Authenticated Angle generations
 
-Zoom `1.2` is the actual displayed workspace value for every accepted result. The URLs below are the MaxVideoAI render URLs exposed by the authenticated tool.
+Zoom `1.2` is the actual displayed workspace value for the original accepted results; the replacement video-preparation result uses the explicitly logged `1.5` value. The URLs below are the MaxVideoAI render URLs exposed by the authenticated tool.
 
 | Asset | Engine | Rotation | Tilt | Zoom | Latency | Cost | Render URL | Result status |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |
@@ -30,19 +30,22 @@ Zoom `1.2` is the actual displayed workspace value for every accepted result. Th
 | Product 45 | FLUX Multiple Angles | 45° | 3° | 1.2 | 12,495 ms | $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/4041d65c-a6da-45da-8ae2-7fff18f6805c.webp` | Accepted: clear commerce three-quarter and intact shoe geometry. |
 | Storyboard elevated (original) | FLUX Multiple Angles | 35° | 15° | 1.2 | 16,240 ms | $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/7fad8a0a-d71c-4e07-a767-5ead13aa9d5a.webp` | Rejected by post-commit review: smeared/deformed eye, nose, and cheek caused identity drift. Removed from the public asset. |
 | Ad 45 | Qwen Multiple Angles | 45° | 2° | 1.2 | 11,466 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/22995160-c14b-4e71-834a-c1985b235747.webp` | Accepted: visible three-quarter facets and preserved bottle volume. |
-| Video prep 45 | FLUX Multiple Angles | 35° | 5° | 1.2 | 21,184 ms | $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/3f3143e0-0990-4a4c-a5bc-e53282cfd5a7.webp` | Accepted: strong side/front change with coherent coat, face, and station. |
+| Video prep selected angle | Qwen Multiple Angles | 69° | 3° | 1.5 | 14,230 ms | $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/777bbce8-51e1-43ec-978d-c50d93ee1865.webp` | Accepted after original-detail review: unmistakable profile change with stable face, lapel hand, boots, coat silhouette, ivory piping, and architectural identity. Full PNG: `.superpowers/sdd/angle-orbit/task-4-sources/angle/accepted/video-69-v2-qwen.png`. |
 
 The accepted full-resolution outputs are persisted under `.superpowers/sdd/angle-orbit/task-4-sources/angle/accepted/` as PNG files. The generated thumbnail URL was not used as the final public asset; each accepted result was downloaded through the workspace Download control.
 
 ## Rejection evidence
 
-Rejected results were retained rather than overwritten:
+New replacement attempts were retained rather than overwritten. The superseded published video pair remains recoverable from git history.
 
 | Attempt | Engine and settings | Render URL | Preserved file | Rejection reason |
 | --- | --- | --- | --- | --- |
 | Ad 45 attempt 1 | FLUX, 45° / 2° / 1.2; 24,270 ms; $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/ceab1508-4dc2-4220-a8ea-35046363ba6a.webp` | `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/ad-45-attempt-1-weak-viewpoint.png` | Quasi-front framing; viewpoint change was too weak. |
 | Ad 45 attempt 2 | FLUX, 45° / 2° / 1.2; 30,277 ms; $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/ca65f72f-7208-4d02-9ae5-cd095214127b.webp` | `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/ad-45-attempt-2-weak-viewpoint.png` | Second quasi-front result; still insufficient viewpoint change. |
 | Workspace preview attempt 1 | FLUX, 45° / 3° / 1.2; 23,227 ms; $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/506f5e43-1d86-4438-93c9-44d9e415c46e.webp` | `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/workspace-preview-attempt-1-text-artifact.png` | Tiny generated text-like artifact on the camera; not used in the screenshot. |
+| Original video-prep pair | FLUX, 35° / 5° / 1.2; 21,184 ms; $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/3f3143e0-0990-4a4c-a5bc-e53282cfd5a7.webp` | Superseded public WebPs recoverable from git history | Rejected after user visual review: the dancer changed pose between frames, so the pair did not clearly prove a camera-only viewpoint change. |
+| Video prep replacement attempt 1 | FLUX, 45° / 3° / 1.2; 17,878 ms; $0.04 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/d3283446-a91f-4f7d-9264-aa35804c780d.webp` | `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/video-45-v2-flux-composition-drift.png` | Rejected at 1152 × 864 original detail: the mannequin became too small and the hand/coat composition drifted. |
+| Video prep replacement attempt 2 | Qwen, 45° / 3° / 1.5; 10,426 ms; $0.08 | `https://media.maxvideoai.com/renders/thumbs/301cc489-d689-477f-94c4-0b051deda0bc/6790f8ae-99d5-4bad-bded-0bf7cbf452e8.webp` | `.superpowers/sdd/angle-orbit/task-4-sources/angle/rejected/video-45-v2-qwen-weaker-viewpoint.png` | Rejected only in favor of the stronger final: excellent identity and composition fidelity, but the viewpoint change was less immediately legible than the accepted 69° result. |
 
 ## Post-commit visual-review remediation
 
@@ -67,6 +70,8 @@ Privacy audit: the final crop contains the source upload, camera selector, accep
 
 All public assets were encoded by the installed frontend Sharp runtime as WebP at quality 82. Fourteen assets are 1600 × 1200 and the workspace capture is 1600 × 900.
 
+The public filename `angle-orbit-video-45.webp` is retained as a stable internal asset URL even though the selected replacement was generated at 69°.
+
 | Public file | Dimensions | Bytes |
 | --- | ---: | ---: |
 | `angle-orbit-ad-45.webp` | 1600 × 1200 | 77,552 |
@@ -81,8 +86,8 @@ All public assets were encoded by the installed frontend Sharp runtime as WebP a
 | `angle-orbit-proof-source.webp` | 1600 × 1200 | 266,278 |
 | `angle-orbit-story-elevated.webp` | 1600 × 1200 | 89,618 |
 | `angle-orbit-story-source.webp` | 1600 × 1200 | 86,264 |
-| `angle-orbit-video-45.webp` | 1600 × 1200 | 53,222 |
-| `angle-orbit-video-source.webp` | 1600 × 1200 | 75,358 |
+| `angle-orbit-video-45.webp` | 1600 × 1200 | 58,208 |
+| `angle-orbit-video-source.webp` | 1600 × 1200 | 83,002 |
 | `angle-orbit-workspace.webp` | 1600 × 900 | 76,816 |
 
-All files are below the 500 KB hard limit. Fourteen are below the 200 KB target; `angle-orbit-proof-source.webp` is 266,278 bytes and remains below the hard limit at the required quality 82. The two post-review replacements were inspected independently at original detail before conversion and again at 1600 × 1200 after WebP encoding; the accepted files have no visible mesh flap, melted body detail, pseudo-text artifact, facial deformation, identity drift, watermark, or weak viewpoint change.
+All files are below the 500 KB hard limit. Fourteen are below the 200 KB target; `angle-orbit-proof-source.webp` is 266,278 bytes and remains below the hard limit at the required quality 82. The hero and storyboard post-review replacements were inspected independently at original detail before conversion and again at 1600 × 1200 after WebP encoding; the accepted files have no visible mesh flap, melted body detail, pseudo-text artifact, facial deformation, identity drift, watermark, or weak viewpoint change. The replacement video pair was likewise inspected at original detail and after encoding: the model remains prominent, anatomically coherent, and consistently dressed and posed across a clearly different viewpoint.
