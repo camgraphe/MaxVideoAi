@@ -1,3 +1,5 @@
+import mcpPublication from '../config/mcp-publication.json';
+
 export const FEATURES = {
   delivery: {
     drive: true,
@@ -35,9 +37,11 @@ export const FEATURES = {
   },
   docs: {
     libraryDocs: false,
-    apiPublicRefs: true,
+    apiPublicRefs: false,
   },
   mcp: {
+    publicMarketing: mcpPublication.publicMarketing,
+    publicIndexing: mcpPublication.publicIndexing,
     transport: false,
     oauth: false,
     discovery: false,

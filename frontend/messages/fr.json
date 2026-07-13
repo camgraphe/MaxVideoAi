@@ -220,8 +220,8 @@
     "faqTitle": "FAQ sur le routage vidéo IA",
     "faq": [
       {
-        "question": "Proposez-vous une facturation européenne pour les moteurs vidéo IA ?",
-        "answer": "Oui. Nous facturons en EUR ou GBP et rapprochons ces lignes avec l’usage du workspace afin que les finances n’aient pas besoin de filiale US ni de cartes prépayées."
+        "question": "Comment recharger le wallet pour utiliser les moteurs vidéo IA ?",
+        "answer": "Rechargez votre wallet individuel avec le paiement sécurisé Stripe Checkout. La carte et les options de paiement express disponibles sont affichées avant le paiement."
       },
       {
         "question": "En combien de temps une équipe peut‑elle lancer Sora 2 ?",
@@ -1598,7 +1598,7 @@
         "Recharge automatique optionnelle avec alertes lorsque le solde passe en dessous de votre seuil."
       ],
       "balanceLabel": "Solde du portefeuille",
-      "balanceHelper": "Les Crédits de démarrage commencent à 10 $. Les portefeuilles partagés se synchronisent automatiquement.",
+      "balanceHelper": "Les Crédits de démarrage commencent à 10 $ dans votre wallet individuel.",
       "autoTopUpLabel": "Recharge automatique lorsque le solde descend en dessous de 10 $",
       "autoTopUpHint": "Des e-mails d’état quotidiens tiennent le service financier informé.",
       "addLabel": "Ajouter ${amount}"
@@ -1672,9 +1672,9 @@
       "description": "Approbations par rôle, portefeuilles partagés et transferts de livrables arrivent bientôt. Rejoignez la bêta pour tester en avant-première les contrôles d’équipe.",
       "comingSoonNote": "Les fonctionnalités Équipes sont en bêta privée. Contactez support@maxvideoai.com pour rejoindre le déploiement.",
       "points": [
-        "Portefeuilles partagés basés sur les rôles avec approbations entre les services financiers, les producteurs et les parties prenantes.",
-        "Résumés quotidiens automatisés couvrant les dépenses, les remboursements et la santé de la file d'attente.",
-        "Transferts de livrables vers Google Drive, OneDrive et Dropbox."
+        "Prévu : portefeuilles partagés basés sur les rôles avec approbations entre les services financiers, les producteurs et les parties prenantes.",
+        "Prévu : résumés quotidiens automatisés couvrant les dépenses, les remboursements et la santé de la file d'attente.",
+        "Prévu : transferts d’équipe vers les destinations de stockage prises en charge."
       ]
     },
     "member": {
@@ -2486,14 +2486,14 @@
   },
   "docs": {
     "meta": {
-      "title": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
-      "description": "Commencez ici pour l’onboarding, le système tarifaire et les remboursements. Découvrez les filtres de sécurité de marque et les références webhook/API. Les guides avancés sont dans l’espace authentifié.",
+      "title": "Docs — Bien démarrer, prix, jobs et remboursements",
+      "description": "Commencez ici pour le compte individuel, le prix avant génération, les jobs, les médias enregistrés, la sécurité de marque et les remboursements.",
       "imageAlt": "Docs — MaxVideoAI",
       "notFoundTitle": "Document introuvable"
     },
     "hero": {
       "title": "Documentation MaxVideoAI",
-      "subtitle": "Commencez ici pour l'intégration, la sécurité de la marque, les avis de compatibilité et les politiques de remboursement. Des guides d'intégration plus approfondis se trouvent dans l'espace de travail authentifié."
+      "subtitle": "Commencez ici pour le compte individuel, le prix avant génération, les jobs, les médias enregistrés, la sécurité de marque et les remboursements."
     },
     "toc": {
       "title": "Sur cette page",
@@ -2501,15 +2501,15 @@
       "pricing": "Système tarifaire",
       "refunds": "Remboursements",
       "safety": "Sécurité de marque",
-      "api": "Références API",
+      "api": "Accès au produit",
       "library": "Bibliothèque"
     },
     "sections": [
       {
-        "title": "Brief marque",
+        "title": "Compte individuel",
         "items": [
-          "Remplissez le brief une seule fois pour que les valeurs par défaut et indices de routage servent à tout le monde.",
-          "Partagez ton, contexte et livrables afin que chaque coéquipier puisse rendre sans aller-retour."
+          "Créez votre compte et connectez-vous pour utiliser les espaces Vidéo et Image.",
+          "Votre wallet, vos jobs et vos médias enregistrés restent associés à votre compte."
         ]
       },
       {
@@ -2522,7 +2522,7 @@
       {
         "title": "Remboursements",
         "items": [
-          "Si un rendu échoue, votre portefeuille est recrédité en quelques minutes avec une note d’incident dans le job.",
+          "Les générations payantes échouées sont automatiquement remboursées, avec une note d’incident dans le job.",
           "Les reçus détaillent modèle, durée, résolution et ID de job pour un transfert facile vers la finance.",
           {
             "type": "link",
@@ -2543,17 +2543,17 @@
         ]
       },
       {
-        "title": "Références API",
+        "title": "Accès au produit",
         "items": [
-          "Callbacks webhook pour rendus, remboursements et mises à jour de file.",
-          "Les références REST et GraphQL se trouvent dans la documentation authentifiée.",
-          "Des exemples SDK couvrent Node.js, Python et la vérification directe des webhooks."
+          "Utilisez l’espace web pour les fonctionnalités décrites dans cette documentation.",
+          "Les instructions de connexion MCP apparaissent uniquement pour les comptes inclus dans un déploiement activé.",
+          "Les interfaces programmatiques ne sont publiées qu’après validation de leurs propres preuves et critères de déploiement."
         ]
       }
     ],
     "apiNotice": {
-      "public": "Résumé public ci-dessous.",
-      "private": "Les docs API complètes nécessitent une authentification dans l’espace de travail."
+      "public": "La disponibilité actuelle du produit est décrite ci-dessous.",
+      "private": "Seules les fonctionnalités activées sont présentées comme disponibles."
     },
     "onboardingChecklist": {
       "title": "Checklist d’onboarding",
@@ -2562,19 +2562,19 @@
         "✅ Ajouter 1–3 prompts d’exemple et des assets de référence.",
         "✅ Définir les ratios par défaut et la préférence audio."
       ],
-      "note": "Vous pouvez modifier le brief à tout moment; les mises à jour s’appliquent à tout l’espace de travail."
+      "note": "Vous pouvez modifier vos entrées et préférences avant chaque génération."
     },
     "pricingCallout": "✅ Vous voyez toujours le prix avant de générer.",
     "refundsTimeline": {
       "title": "Chronologie des remboursements",
       "steps": [
         "1) Le job échoue → le système signale l’incident.",
-        "2) Remboursement automatique → portefeuille crédité en quelques minutes.",
+        "2) Remboursement automatique → portefeuille recrédité automatiquement.",
         "3) Reçu → relevé détaillé avec une courte note d’incident."
       ],
       "note": "Vous ne payez que les jobs réussis. Les remboursements apparaissent dans le feed et les reçus."
     },
-    "refundsCallout": "✅ Les jobs échoués sont remboursés automatiquement en quelques minutes; les reçus incluent une courte note d’incident.",
+    "refundsCallout": "✅ Les générations payantes échouées sont automatiquement remboursées; les reçus incluent une courte note d’incident.",
     "safetyQuick": {
       "title": "Aperçu rapide",
       "items": [
@@ -2634,7 +2634,7 @@
         },
         {
           "href": "/fr/galerie",
-          "label": "Exemples de payloads"
+          "label": "Exemples de générations"
         }
       ],
       "library": [
@@ -2652,7 +2652,7 @@
       "heading": "Bibliothèque",
       "liveLabel": "En ligne",
       "comingSoonLabel": "À venir",
-      "summaryLive": "Parcourez des assets réutilisables, des presets et des prompts de référence pour votre équipe.",
+      "summaryLive": "Parcourez les assets, presets et prompts de référence enregistrés dans votre compte.",
       "summarySoon": "Documentation à venir."
     },
     "feedback": {
@@ -2664,32 +2664,32 @@
     },
     "lastUpdatedLabel": "Dernière mise à jour :",
     "jsonLd": {
-      "collectionName": "Docs — Onboarding, sécurité de marque, remboursements & webhooks API",
+      "collectionName": "Docs — Bien démarrer, prix, jobs et remboursements",
       "hasPart": {
         "onboarding": "Onboarding",
         "pricing": "Système tarifaire",
         "refunds": "Remboursements",
         "safety": "Sécurité de marque",
-        "api": "Références API",
+        "api": "Accès au produit",
         "library": "Bibliothèque"
       },
       "about": [
         "onboarding",
         "politique de remboursement",
         "sécurité de marque",
-        "webhooks",
-        "références api"
+        "jobs",
+        "accès au produit"
       ],
       "breadcrumbHome": "Accueil",
       "breadcrumbDocs": "Docs",
       "faq": [
         {
           "question": "Les Starter Credits expirent-ils ?",
-          "answer": "Non. Les crédits se reportent de mois en mois et se synchronisent entre coéquipiers avec accès."
+          "answer": "Non. Les crédits non utilisés restent dans votre wallet individuel tant que le compte reste actif."
         },
         {
-          "question": "À quelle vitesse les rendus échoués sont-ils remboursés ?",
-          "answer": "Les remboursements sont traités automatiquement en quelques minutes; chaque job inclut une courte note d’incident pour la finance."
+          "question": "Comment les générations payantes échouées sont-elles remboursées ?",
+          "answer": "Les générations payantes échouées sont automatiquement remboursées; chaque job inclut une courte note d’incident."
         },
         {
           "question": "Peut-on contourner le brand-safety pour des projets spécifiques ?",
@@ -2860,7 +2860,7 @@
         },
         "partnerships": {
           "title": "Partenariats",
-          "body": "Les agences et studios peuvent demander des SLA sur mesure, des wallets partagés ou une documentation white-label via ce formulaire ou en écrivant à {email}."
+          "body": "Les agences et studios peuvent discuter de besoins de support sur mesure ou d’une future collaboration via ce formulaire ou en écrivant à {email}."
         },
         "press": {
           "title": "Presse",
@@ -3012,7 +3012,7 @@
       {
         "date": "2024-06-12",
         "title": "Templates Veo + transparence de file",
-        "body": "Ajout du routage Veo V2, indicateur de longueur de file sur la pastille Prix-Avant et notifications de wallet partagé."
+        "body": "Ajout du routage Veo V2, d’un indicateur de longueur de file sur la pastille Prix-Avant et de notifications de solde plus claires."
       },
       {
         "date": "2024-06-05",

@@ -6,6 +6,8 @@ import { resolveMcpConfig } from '../frontend/src/server/mcp/config';
 
 test('MCP rollout flags are independently disabled by default', () => {
   assert.deepEqual(FEATURES.mcp, {
+    publicMarketing: false,
+    publicIndexing: false,
     transport: false,
     oauth: false,
     discovery: false,
@@ -13,6 +15,10 @@ test('MCP rollout flags are independently disabled by default', () => {
     trial: false,
     referenceUploads: false,
   });
+});
+
+test('public REST API references stay disabled while MCP is the only protocol integration', () => {
+  assert.equal(FEATURES.docs.apiPublicRefs, false);
 });
 
 test('production MCP config defaults to the canonical API resource', () => {

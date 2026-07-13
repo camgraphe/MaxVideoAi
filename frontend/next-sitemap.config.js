@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const matter = require('gray-matter');
 const modelRoster = require('./config/model-roster.json');
+const mcpPublication = require('./config/mcp-publication.json');
 const localizedSlugConfig = require('./config/localized-slugs.json');
 
 const { Client } = require('pg');
@@ -278,6 +279,10 @@ module.exports = {
   },
   additionalPaths: async (config) => {
     const marketingPaths = new Set(MARKETING_CORE_PATHS);
+
+    if (mcpPublication.publicIndexing) {
+      marketingPaths.add('/mcp');
+    }
 
     for (const entry of modelRoster) {
       if (entry?.modelSlug) {
