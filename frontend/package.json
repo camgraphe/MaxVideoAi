@@ -36,6 +36,7 @@
     "qa:examples-locales": "tsx scripts/qa/examples-locales.ts",
     "qa:tools-locales": "tsx scripts/qa/tools-locales.ts",
     "qa:models-locales": "tsx scripts/qa/models-locales.ts",
+    "qa:mcp-tool-selection": "tsx --tsconfig tsconfig.scripts.json scripts/qa/mcp-tool-selection-eval.ts",
     "qa:compare-en": "tsx scripts/qa/compare-en-prod.ts",
     "qa:image-alt": "node ../scripts/check-image-alt.mjs",
     "audit:images": "node ../scripts/audit-images.mjs",
