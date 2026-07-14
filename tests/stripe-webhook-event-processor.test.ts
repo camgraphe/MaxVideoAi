@@ -23,7 +23,7 @@ function stripeEvent(type: string): Stripe.Event {
 
 function recordingDependencies(
   calls: string[],
-  options: { claimed?: boolean; handlerError?: Error } = {}
+  options: { claimed?: boolean; handlerError?: Error; replayError?: Error } = {}
 ): StripeWebhookEventProcessorDependencies {
   const recordHandler = async (name: string) => {
     calls.push(`dispatch:${name}`);
@@ -40,6 +40,11 @@ function recordingDependencies(
     },
     rollbackStripeEvent: async (eventId) => {
       calls.push(`rollback:${eventId}`);
+    },
+    replayMcpTopupAttribution: async (event) => {
+      calls.push(`replay:${event.id}`);
+      if (options.replayError) throw options.replayError;
+      return true;
     },
     handleCheckoutSessionCompleted: async () => recordHandler('checkout.session.completed'),
     handlePaymentIntentSucceeded: async () => recordHandler('payment_intent.succeeded'),
@@ -64,7 +69,7 @@ test('unsupported events are unhandled without claiming them', async () => {
   assert.deepEqual(calls, []);
 });
 
-test('duplicate events stop after the claim without dispatching or marking', async () => {
+test('duplicate events replay measurement without dispatching wallet handlers or marking', async () => {
   const calls: string[] = [];
   const event = stripeEvent('checkout.session.completed');
   const processEvent = createStripeWebhookEventProcessor(
@@ -74,7 +79,23 @@ test('duplicate events stop after the claim without dispatching or marking', asy
   const result = await processEvent(event, processorOptions);
 
   assert.equal(result, 'duplicate');
-  assert.deepEqual(calls, [`claim:${event.id}`]);
+  assert.deepEqual(calls, [`claim:${event.id}`, `replay:${event.id}`]);
+});
+
+test('duplicate measurement replay failures remain acknowledged without rollback or handler retry', async () => {
+  const calls: string[] = [];
+  const event = stripeEvent('payment_intent.succeeded');
+  const processEvent = createStripeWebhookEventProcessor(
+    recordingDependencies(calls, {
+      claimed: false,
+      replayError: new Error('measurement table missing'),
+    })
+  );
+
+  const result = await processEvent(event, processorOptions);
+
+  assert.equal(result, 'duplicate');
+  assert.deepEqual(calls, [`claim:${event.id}`, `replay:${event.id}`]);
 });
 
 test('handled events dispatch before they are marked processed', async () => {

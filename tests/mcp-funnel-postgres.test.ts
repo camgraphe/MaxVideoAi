@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 import { Client } from 'pg';
+import type Stripe from 'stripe';
 
 import type { QueryExecutor } from '../frontend/src/lib/db';
 
@@ -18,7 +19,7 @@ function commandFailure(result: CommandResult): string {
   return `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim();
 }
 
-test('migration 33 and funnel helpers enforce constraints, canonical int8, retries, and OAuth races in real PostgreSQL', async (t) => {
+test('migration 33 and funnel helpers enforce constraints, canonical receipt replay, and OAuth races in real PostgreSQL', async (t) => {
   for (const command of ['initdb', 'pg_ctl', 'psql']) {
     if (!commandExists(command)) {
       t.skip(`${command} is unavailable`);
@@ -37,7 +38,7 @@ test('migration 33 and funnel helpers enforce constraints, canonical int8, retri
   ], { encoding: 'utf8' });
   assert.equal(init.status, 0, commandFailure(init));
 
-  const serverOptions = `-F -k ${socketDirectory}`;
+  const serverOptions = `-F -k ${socketDirectory} -c listen_addresses=''`;
   const start = spawnSync('pg_ctl', [
     '-D', dataDirectory, '-o', serverOptions, '-w', 'start',
   ], { encoding: 'utf8', stdio: 'ignore' });
@@ -262,6 +263,208 @@ test('migration 33 and funnel helpers enforce constraints, canonical int8, retri
       currency: 'USD',
       receipt_hash: '4333adeed0bfcf534edfd61bc0b428cd6496c97e12c15cc6025db79f952bb4ff',
     }]);
+
+    const replayModulePath = join(
+      root,
+      'frontend/app/api/stripe/webhook/_lib/stripe-webhook-mcp-attribution.ts',
+    );
+    assert.equal(
+      existsSync(replayModulePath),
+      true,
+      'processed Stripe events need a measurement-only canonical receipt replay owner',
+    );
+    const { replayMcpTopupAttributionForProcessedEvent } = await import(
+      '../frontend/app/api/stripe/webhook/_lib/stripe-webhook-mcp-attribution'
+    );
+    const { createStripeWebhookEventProcessor } = await import(
+      '../frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-processor'
+    );
+
+    await client.query(`
+      CREATE TABLE app_receipts (
+        id BIGSERIAL PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        type TEXT NOT NULL,
+        amount_cents INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        created_at TIMESTAMPTZ NOT NULL,
+        stripe_payment_intent_id TEXT UNIQUE,
+        stripe_charge_id TEXT UNIQUE,
+        stripe_checkout_session_id TEXT UNIQUE,
+        stripe_invoice_id TEXT UNIQUE
+      );
+      CREATE TABLE stripe_webhook_events (
+        event_id TEXT PRIMARY KEY,
+        event_type TEXT NOT NULL,
+        processed_at TIMESTAMPTZ
+      );
+      INSERT INTO mcp_funnel_events (
+        occurred_at, event_type, stage, user_id, source, medium, campaign,
+        acquisition_client, idempotency_key
+      ) VALUES (
+        '2026-07-14T12:00:00.000Z', 'trial_generation_completed', 'trial_completed',
+        'pg-stripe-replay-user', 'direct_mcp', 'mcp', 'none', 'other',
+        'pg-stripe-replay-trial'
+      );
+    `);
+
+    const stripeReplayEvent = {
+      id: 'evt_mcp_receipt_replay',
+      object: 'event',
+      api_version: '2023-10-16',
+      created: 1_784_035_200,
+      data: {
+        object: {
+          id: 'pi_mcp_receipt_replay',
+          object: 'payment_intent',
+          metadata: { kind: 'topup', user_id: 'pg-stripe-replay-user' },
+          latest_charge: 'ch_mcp_receipt_replay',
+          invoice: null,
+        },
+      },
+      livemode: false,
+      pending_webhooks: 0,
+      request: null,
+      type: 'payment_intent.succeeded',
+    } as Stripe.Event;
+    let failInitialFunnelWrite = true;
+    const initialFunnelExecutor: QueryExecutor = {
+      async query<TRecord>(sql, params) {
+        if (failInitialFunnelWrite) {
+          failInitialFunnelWrite = false;
+          throw new Error('simulated funnel outage after canonical receipt commit');
+        }
+        return executor.query<TRecord>(sql, params);
+      },
+    };
+    const stripeProcessor = createStripeWebhookEventProcessor({
+      async beginStripeEvent(event) {
+        const rows = await executor.query<{ event_id: string }>(
+          `INSERT INTO stripe_webhook_events (event_id, event_type)
+           VALUES ($1, $2)
+           ON CONFLICT (event_id) DO NOTHING
+           RETURNING event_id`,
+          [event.id, event.type],
+        );
+        return rows.length === 1;
+      },
+      async markStripeEventProcessed(eventId) {
+        await executor.query(
+          'UPDATE stripe_webhook_events SET processed_at = NOW() WHERE event_id = $1',
+          [eventId],
+        );
+      },
+      async rollbackStripeEvent(eventId) {
+        await executor.query('DELETE FROM stripe_webhook_events WHERE event_id = $1', [eventId]);
+      },
+      async replayMcpTopupAttribution(event) {
+        return replayMcpTopupAttributionForProcessedEvent(event, {
+          executor,
+          conversionWindowSeconds: 3600,
+        });
+      },
+      async handleCheckoutSessionCompleted() {
+        throw new Error('unexpected checkout handler');
+      },
+      async handlePaymentIntentSucceeded() {
+        const inserted = await executor.query<{
+          id: string;
+          user_id: string;
+          amount_cents: number;
+          currency: string;
+          created_at: Date;
+        }>(
+          `INSERT INTO app_receipts (
+             user_id, type, amount_cents, currency, created_at,
+             stripe_payment_intent_id, stripe_charge_id
+           ) VALUES ($1, 'topup', $2, $3, $4, $5, $6)
+           RETURNING id::text AS id, user_id, amount_cents, currency, created_at`,
+          [
+            'pg-stripe-replay-user',
+            2500,
+            'USD',
+            new Date('2026-07-14T13:00:00.000Z'),
+            'pi_mcp_receipt_replay',
+            'ch_mcp_receipt_replay',
+          ],
+        );
+        assert.equal(await recordConfirmedMcpWalletFunding({
+          receiptId: inserted[0].id,
+          userId: inserted[0].user_id,
+          amountCents: inserted[0].amount_cents,
+          currency: inserted[0].currency,
+          occurredAt: inserted[0].created_at,
+        }, { executor: initialFunnelExecutor, conversionWindowSeconds: 3600 }), false);
+      },
+      async handlePaymentIntentFailed() {
+        throw new Error('unexpected failed-payment handler');
+      },
+      async handleChargeRefunded() {
+        throw new Error('unexpected refund handler');
+      },
+      async handleChargeFailed() {
+        throw new Error('unexpected failed-charge handler');
+      },
+    });
+    const stripeProcessorOptions = { stripe: {} as Stripe, receiptsPriceOnly: false };
+
+    assert.equal(
+      await stripeProcessor(stripeReplayEvent, stripeProcessorOptions),
+      'handled',
+    );
+    const initialReplayState = await client.query<{
+      processed: boolean;
+      receipt_count: number;
+      credited_cents: number;
+      funnel_count: number;
+    }>(`
+      SELECT
+        (SELECT processed_at IS NOT NULL FROM stripe_webhook_events
+          WHERE event_id = 'evt_mcp_receipt_replay') AS processed,
+        (SELECT count(*)::int FROM app_receipts
+          WHERE stripe_payment_intent_id = 'pi_mcp_receipt_replay') AS receipt_count,
+        (SELECT coalesce(sum(amount_cents), 0)::int FROM app_receipts
+          WHERE stripe_payment_intent_id = 'pi_mcp_receipt_replay') AS credited_cents,
+        (SELECT count(*)::int FROM mcp_funnel_events
+          WHERE event_type = 'wallet_funded' AND user_id = 'pg-stripe-replay-user') AS funnel_count
+    `);
+    assert.deepEqual(initialReplayState.rows, [{
+      processed: true,
+      receipt_count: 1,
+      credited_cents: 2500,
+      funnel_count: 0,
+    }]);
+
+    assert.equal(
+      await stripeProcessor(stripeReplayEvent, stripeProcessorOptions),
+      'duplicate',
+    );
+    assert.equal(
+      await stripeProcessor(stripeReplayEvent, stripeProcessorOptions),
+      'duplicate',
+    );
+    const replayedState = await client.query<{
+      receipt_count: number;
+      credited_cents: number;
+      funnel_count: number;
+    }>(`
+      SELECT
+        (SELECT count(*)::int FROM app_receipts
+          WHERE stripe_payment_intent_id = 'pi_mcp_receipt_replay') AS receipt_count,
+        (SELECT coalesce(sum(amount_cents), 0)::int FROM app_receipts
+          WHERE stripe_payment_intent_id = 'pi_mcp_receipt_replay') AS credited_cents,
+        (SELECT count(*)::int FROM mcp_funnel_events
+          WHERE event_type = 'wallet_funded' AND user_id = 'pg-stripe-replay-user') AS funnel_count
+    `);
+    assert.deepEqual(replayedState.rows, [{
+      receipt_count: 1,
+      credited_cents: 2500,
+      funnel_count: 1,
+    }]);
+    assert.equal(await replayMcpTopupAttributionForProcessedEvent(stripeReplayEvent, {
+      executor: { async query() { throw new Error('relation does not exist'); } },
+      conversionWindowSeconds: 3600,
+    }), false);
 
     const bindingSecret = 'real-postgres-approval-binding-secret-32-bytes';
     const createAcquisition = (acquisitionId: string) => ({

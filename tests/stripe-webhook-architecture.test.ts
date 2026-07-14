@@ -9,6 +9,7 @@ const refundsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-refunds
 const documentsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-documents.ts';
 const topupEventsPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-events.ts';
 const topupPersistencePath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts';
+const mcpAttributionPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-mcp-attribution.ts';
 const processorPath = 'frontend/app/api/stripe/webhook/_lib/stripe-webhook-event-processor.ts';
 
 test('Stripe webhook event idempotency has one route-local owner', () => {
@@ -59,6 +60,18 @@ test('successful Stripe events share one canonical top-up persistence owner', ()
   assert.doesNotMatch(route, /recordStripeTopup|withDbTransaction|topup_completed/);
 });
 
+test('processed event replay is measurement-only and cannot mutate wallet receipts', () => {
+  assert.equal(existsSync(mcpAttributionPath), true);
+  const processor = readFileSync(processorPath, 'utf8');
+  const replay = readFileSync(mcpAttributionPath, 'utf8');
+
+  assert.match(processor, /replayMcpTopupAttributionForProcessedEvent/);
+  assert.match(replay, /SELECT id::text AS id[\s\S]*FROM app_receipts/i);
+  assert.match(replay, /recordConfirmedMcpWalletFunding/);
+  assert.doesNotMatch(replay, /(?:INSERT INTO|UPDATE|DELETE FROM) app_receipts/i);
+  assert.doesNotMatch(replay, /recordStripeTopup|recordMockWalletTopUp|stripe\.charges/);
+});
+
 test('Stripe webhook route owns only verification and HTTP mapping', () => {
   assert.equal(existsSync(processorPath), true);
   const route = readFileSync(routePath, 'utf8');
@@ -81,6 +94,7 @@ test('Stripe webhook modules stay focused instead of creating a new catch-all', 
     documentsPath,
     topupEventsPath,
     topupPersistencePath,
+    mcpAttributionPath,
     processorPath,
   ]) {
     assert.equal(existsSync(path), true);

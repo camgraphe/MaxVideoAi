@@ -11,6 +11,7 @@ import {
   handleCheckoutSessionCompleted,
   handlePaymentIntentSucceeded,
 } from './stripe-webhook-topup-events';
+import { replayMcpTopupAttributionForProcessedEvent } from './stripe-webhook-mcp-attribution';
 
 const HANDLED_EVENT_TYPES = new Set([
   'checkout.session.completed',
@@ -26,6 +27,7 @@ export type StripeWebhookEventProcessorDependencies = {
   beginStripeEvent: typeof beginStripeEvent;
   markStripeEventProcessed: typeof markStripeEventProcessed;
   rollbackStripeEvent: typeof rollbackStripeEvent;
+  replayMcpTopupAttribution: typeof replayMcpTopupAttributionForProcessedEvent;
   handleCheckoutSessionCompleted: typeof handleCheckoutSessionCompleted;
   handlePaymentIntentSucceeded: typeof handlePaymentIntentSucceeded;
   handlePaymentIntentFailed: typeof handlePaymentIntentFailed;
@@ -57,6 +59,14 @@ export function createStripeWebhookEventProcessor(
 
     if (!(await dependencies.beginStripeEvent(event))) {
       console.log('[stripe-webhook] Skipping duplicate event', { eventId: event.id, type: event.type });
+      try {
+        await dependencies.replayMcpTopupAttribution(event);
+      } catch (error) {
+        console.warn('[stripe-webhook] MCP attribution replay unavailable', {
+          eventId: event.id,
+          error,
+        });
+      }
       return 'duplicate';
     }
 
@@ -98,6 +108,7 @@ export const processStripeWebhookEvent = createStripeWebhookEventProcessor({
   beginStripeEvent,
   markStripeEventProcessed,
   rollbackStripeEvent,
+  replayMcpTopupAttribution: replayMcpTopupAttributionForProcessedEvent,
   handleCheckoutSessionCompleted,
   handlePaymentIntentSucceeded,
   handlePaymentIntentFailed,

@@ -75,16 +75,20 @@ The current landing remains GA-only and endpoint copy is never treated as connec
 1. The real nonlocalized `/oauth/consent` Server Component obtains Supabase claims, fetches a fresh
    Auth user, requires exact subject equality, and loads authoritative authorization details.
 2. Only then does it read the path-scoped HttpOnly cookie, resolve the dedicated signing secret,
-   verify the signed coarse payload, and record `oauth_connection_started` using the authoritative
-   authorization-details client ID.
-3. The row is idempotent by opaque acquisition ID. The signed cookie, authorization ID, user
-   metadata, token, and access-token hash are never persisted.
+   verify the signed coarse payload, and create an opaque grant-specific pending binding using the
+   authoritative authorization-details client ID. Its start event remains idempotent by acquisition
+   ID.
+3. The decision route repeats the fresh user and authorization-details checks. Only after Supabase
+   approves that exact grant does its signed hidden handle mark the matching pending row approved.
+   The signed cookie, authorization ID, handle, user metadata, token, and access-token hash are never
+   persisted.
 4. MCP bearer authentication independently retains `getClaims(accessToken)`, fresh
    `getUser(accessToken)`, and exact subject equality.
-5. After a successful `initialize` or `tools/list` response, one CTE statement selects the latest
-   same-user/same-client start in the 15-minute binding window. It inserts an attributed
-   `oauth_connection_completed`, or a once-only `direct_mcp` completion when no eligible start
-   exists. Unique idempotency makes initialize/list retries safe.
+5. After a successful `initialize` or `tools/list` response, one CTE statement locks an approved,
+   unconsumed same-user/same-client pending binding in the 15-minute window. It atomically inserts
+   and consumes an attributed `oauth_connection_completed`, or inserts `direct_mcp` when no approved
+   binding is eligible. Both paths share one canonical completion key, so concurrent initialize/list
+   calls and direct-then-attributed retries cannot double count or steal an unapproved grant.
 
 Ordinary tool calls do not run the binding query. Revocation remains an allowed ledger event but is
 not emitted: no verified existing revoke route safely exposes a once-only post-revocation hook, so
@@ -100,9 +104,14 @@ future explicit domain projection, but Task 7 does not double-count the current 
 
 ## Stripe attribution semantics
 
-The focused helper is invoked only after the canonical Stripe persistence transaction returns a
-newly inserted positive wallet receipt. Duplicate receipts return before the hook. Checkout
-creation, payment failure, unrelated wallet requests, and mock funding do not invoke it.
+The focused helper is invoked after the canonical Stripe persistence transaction returns either a
+newly inserted positive wallet receipt or the authoritative stored row for a duplicate receipt. If
+the receipt commit succeeds but the fail-open funnel write is transiently unavailable, the Stripe
+event may still be marked processed. A redelivery of that same processed event therefore runs a
+measurement-only replay: it reads the canonical receipt and retries only the idempotent funnel
+insert. It never invokes the wallet handler, inserts or updates a receipt, calls Stripe, changes
+credit, or turns missing measurement tables into an endless Stripe retry. Checkout creation,
+payment failure, unrelated wallet requests, and mock funding do not emit wallet-funding measurement.
 
 The helper hashes `mcp-funnel-wallet-v1:<internal receipt id>` with SHA-256, then performs one
 `INSERT ... SELECT`. It inserts `wallet_funded` only when the same user has a prior
@@ -158,9 +167,9 @@ and reports database failure to its caller rather than manufacturing metrics.
 
 Fresh pre-commit verification produced:
 
-- required focused Task 7 funnel/top-up/audit contracts: 18/18 passed;
-- full MCP test selection: 188/188 passed;
-- full Stripe/wallet/checkout filename selection: 62/62 passed;
+- focused funnel/PostgreSQL/webhook replay and architecture contracts: 29/29 passed;
+- full MCP test selection: 192/192 passed;
+- full Stripe/wallet/checkout filename selection: 64/64 passed;
 - `./frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json`: passed;
 - `npm --prefix frontend run lint`: passed;
 - `npm run lint:exposure`: passed;

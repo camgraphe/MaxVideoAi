@@ -14,8 +14,11 @@ After verification, the route passes the `Stripe.Event` to
 idempotency record. Unsupported events are acknowledged without a database write.
 
 For a supported event, `beginStripeEvent` inserts its event ID. An existing ID returns `duplicate`,
-which the route acknowledges with `{ received: true, duplicate: true }`. A successful handler is
-followed by `markStripeEventProcessed`. If a handler throws, `rollbackStripeEvent` removes the event
+which the route acknowledges with `{ received: true, duplicate: true }`. Before that acknowledgement,
+successful top-up event types get one measurement-only MCP attribution replay from their canonical
+stored receipt; this path never dispatches a wallet handler or changes credit, and measurement
+unavailability remains fail-open. A successful first-delivery handler is followed by
+`markStripeEventProcessed`. If a product handler throws, `rollbackStripeEvent` removes the event
 record before the error reaches the route, allowing Stripe's later delivery retry to process the
 event again.
 
