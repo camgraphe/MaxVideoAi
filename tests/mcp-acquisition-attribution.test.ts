@@ -15,6 +15,7 @@ const routePath = 'frontend/app/api/mcp/acquisition/route.ts';
 const actionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpConnectActions.client.tsx';
 const actionFlagsPath = 'frontend/config/mcp-client-actions.json';
+const reportPath = '.superpowers/sdd/task-5-report.md';
 const secret = 'task-5-test-signing-secret-with-32-bytes';
 const validInput = {
   action: 'connect',
@@ -125,6 +126,21 @@ test('signed acquisition cookies verify exact context and fail closed on tamper,
   }));
   const wrongVersion = `v2.${wrongVersionPayload}.${signRaw('v2', wrongVersionPayload)}`;
   assert.equal(verifySignedMcpAcquisitionCookie(wrongVersion, { secret, nowSeconds: 1_001 }), null);
+
+  const nonCanonicalTokens = [
+    `${prefix}.${payload}.${signature}=`,
+    `${prefix}.${payload}.${signature.slice(0, 8)} ${signature.slice(8)}`,
+    `${prefix}.${payload}.${signature.slice(0, 8)}!${signature.slice(8)}`,
+    `${prefix}.${payload}=.${signRaw(prefix, `${payload}=`)}`,
+    `${prefix}.${payload.slice(0, 8)} ${payload.slice(8)}.${signRaw(prefix, `${payload.slice(0, 8)} ${payload.slice(8)}`)}`,
+  ];
+  for (const token of nonCanonicalTokens) {
+    assert.equal(
+      verifySignedMcpAcquisitionCookie(token, { secret, nowSeconds: 1_001 }),
+      null,
+      token,
+    );
+  }
 });
 
 test('acquisition signing requires a dedicated strong secret and produces an opaque id', async () => {
@@ -195,16 +211,30 @@ test('acquisition endpoint validates origin, content type, body size, and never 
   process.env.MCP_ACQUISITION_SIGNING_SECRET = secret;
   try {
     const { POST } = await import('../frontend/app/api/mcp/acquisition/route.ts');
-    const request = (body: unknown, options: { origin?: string; contentLength?: string; contentType?: string } = {}) =>
-      new Request('https://maxvideoai.com/api/mcp/acquisition', {
+    const request = (
+      body: unknown,
+      options: {
+        origin?: string;
+        contentLength?: string | null;
+        contentType?: string;
+        transferEncoding?: string;
+      } = {},
+    ) => {
+      const rawBody = JSON.stringify(body);
+      const contentLength = options.contentLength === undefined
+        ? Buffer.byteLength(rawBody, 'utf8').toString()
+        : options.contentLength;
+      return new Request('https://maxvideoai.com/api/mcp/acquisition', {
         method: 'POST',
         headers: {
           origin: options.origin ?? 'https://maxvideoai.com',
           'content-type': options.contentType ?? 'application/json',
-          ...(options.contentLength ? { 'content-length': options.contentLength } : {}),
+          ...(contentLength === null ? {} : { 'content-length': contentLength }),
+          ...(options.transferEncoding ? { 'transfer-encoding': options.transferEncoding } : {}),
         },
-        body: JSON.stringify(body),
+        body: rawBody,
       });
+    };
 
     const accepted = await POST(request(validInput) as never);
     assert.equal(accepted.status, 204);
@@ -221,18 +251,90 @@ test('acquisition endpoint validates origin, content type, body size, and never 
     assert.equal((await POST(request(validInput, { contentType: 'text/plain' }) as never)).status, 415);
     assert.equal((await POST(request(validInput, { contentLength: '5000' }) as never)).status, 413);
     assert.equal((await POST(request({ ...validInput, client: 'attacker' }) as never)).status, 400);
+    assert.equal((await POST(request(validInput, { contentLength: null }) as never)).status, 411);
+    assert.equal((await POST(request(validInput, { contentLength: '-1' }) as never)).status, 400);
+    assert.equal((await POST(request(validInput, { contentLength: 'not-a-number' }) as never)).status, 400);
+    assert.equal((await POST(request(validInput, { contentLength: '1' }) as never)).status, 400);
+    assert.equal((await POST(request(validInput, { transferEncoding: 'chunked' }) as never)).status, 400);
   } finally {
     if (previousSecret === undefined) delete process.env.MCP_ACQUISITION_SIGNING_SECRET;
     else process.env.MCP_ACQUISITION_SIGNING_SECRET = previousSecret;
   }
 });
 
-test('OAuth connection resolution keeps real claims and user checks before direct_mcp classification', async () => {
-  const { resolveAuthenticatedMcpConnection } = await import(
+test('acquisition endpoint incrementally caps streamed bodies, cancels overflow, and rejects invalid UTF-8', async () => {
+  requireFile(routePath);
+  const previousSecret = process.env.MCP_ACQUISITION_SIGNING_SECRET;
+  process.env.MCP_ACQUISITION_SIGNING_SECRET = secret;
+  const encoder = new TextEncoder();
+  const makeStreamRequest = (
+    chunks: Uint8Array[],
+    options: { contentLength?: string; transferEncoding?: string } = {},
+  ) => {
+    let index = 0;
+    let cancelled = false;
+    const stream = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        const chunk = chunks[index];
+        index += 1;
+        if (chunk) controller.enqueue(chunk);
+        else controller.close();
+      },
+      cancel() {
+        cancelled = true;
+      },
+    });
+    const request = new Request('https://maxvideoai.com/api/mcp/acquisition', {
+      method: 'POST',
+      headers: {
+        origin: 'https://maxvideoai.com',
+        'content-type': 'application/json',
+        ...(options.contentLength ? { 'content-length': options.contentLength } : {}),
+        ...(options.transferEncoding ? { 'transfer-encoding': options.transferEncoding } : {}),
+      },
+      body: stream,
+      duplex: 'half',
+    } as RequestInit & { duplex: 'half' });
+    return { request, wasCancelled: () => cancelled, pulls: () => index };
+  };
+
+  try {
+    const { POST } = await import('../frontend/app/api/mcp/acquisition/route.ts');
+    const overflowing = makeStreamRequest(
+      [encoder.encode('a'.repeat(700)), encoder.encode('b'.repeat(700))],
+      { contentLength: '100' },
+    );
+    assert.equal((await POST(overflowing.request as never)).status, 413);
+    assert.equal(overflowing.wasCancelled(), true);
+    assert.equal(overflowing.pulls(), 2);
+
+    const missingLength = makeStreamRequest([encoder.encode(JSON.stringify(validInput))]);
+    assert.equal((await POST(missingLength.request as never)).status, 411);
+    assert.equal(missingLength.request.body?.locked, false);
+
+    const chunked = makeStreamRequest([encoder.encode(JSON.stringify(validInput))], {
+      transferEncoding: 'chunked',
+    });
+    assert.equal((await POST(chunked.request as never)).status, 400);
+    assert.equal(chunked.request.body?.locked, false);
+
+    const invalidUtf8 = makeStreamRequest([Uint8Array.from([0xc3, 0x28])], { contentLength: '2' });
+    assert.equal((await POST(invalidUtf8.request as never)).status, 400);
+  } finally {
+    if (previousSecret === undefined) delete process.env.MCP_ACQUISITION_SIGNING_SECRET;
+    else process.env.MCP_ACQUISITION_SIGNING_SECRET = previousSecret;
+  }
+});
+
+test('direct_mcp classification is an explicit post-auth seam, not a live-looking resolver', async () => {
+  const {
+    createDirectAuthenticatedMcpConnection,
+    resolveAgentPrincipal,
+  } = await import(
     '../frontend/src/server/mcp/oauth-adapter.ts'
   );
   const calls: string[] = [];
-  const resolved = await resolveAuthenticatedMcpConnection(
+  const principal = await resolveAgentPrincipal(
     new Request('https://api.maxvideoai.com/mcp', {
       headers: { authorization: 'Bearer access-token' },
     }),
@@ -267,6 +369,7 @@ test('OAuth connection resolution keeps real claims and user checks before direc
       },
     },
   );
+  const resolved = createDirectAuthenticatedMcpConnection(principal);
 
   assert.deepEqual(calls, ['claims:access-token', 'user:access-token']);
   assert.deepEqual(resolved.principal, {
@@ -282,6 +385,7 @@ test('OAuth connection resolution keeps real claims and user checks before direc
     campaign: 'none',
     client: 'other',
   });
+  assert.doesNotMatch(requireFile('frontend/src/server/mcp/oauth-adapter.ts'), /resolveAuthenticatedMcpConnection/);
 });
 
 test('current audit storage fails closed instead of inventing an acquisition binding before Task 7', async () => {
@@ -314,17 +418,18 @@ test('current audit storage fails closed instead of inventing an acquisition bin
   assert.equal(queryCount, 0);
 });
 
-test('CTA and endpoint-copy analytics are distinct, consent-aware, and never claim success', () => {
+test('CTA source contains no private fields or invented connection-success event', () => {
   const source = requireFile(actionsPath);
-  assert.match(source, /dispatchGaEvent/);
-  assert.match(source, /mcp_landing_cta_clicked/);
-  assert.match(source, /mcp_endpoint_copy_clicked/);
-  assert.match(source, /navigator\.clipboard\.writeText/);
-  assert.match(source, /aria-live=["']polite["']/);
-  assert.match(source, /event\.preventDefault\(\)/);
-  assert.equal((source.match(/window\.location\.assign\(/g) ?? []).length, 1);
   assert.doesNotMatch(source, /mcp_connection_completed|connection_success|copy_success/i);
   assert.doesNotMatch(source, /authorization_id|access.?token|email|prompt/i);
+});
+
+test('Task 5 is formally partial until Task 7 binds acquisitionId rather than the raw signed token', () => {
+  const report = requireFile(reportPath);
+  assert.match(report, /PARTIAL/i);
+  assert.match(report, /FOUNDATION COMPLETE\s*[—-]\s*BLOCKED ON TASK 7/i);
+  assert.doesNotMatch(report, /## Status\s+DONE\b/i);
+  assert.match(report, /deduplicat(?:e|ion).*acquisitionId.*(?:not|never).*raw signed (?:cookie|token)/is);
 });
 
 test('client deep links remain disabled and localized setup plus endpoint copy always render', async () => {

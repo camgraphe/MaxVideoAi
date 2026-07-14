@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, type MouseEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 
 import clientActionFlagsJson from '@/config/mcp-client-actions.json';
 import { dispatchGaEvent } from '@/lib/analytics/ga-events';
@@ -29,9 +29,12 @@ function resolvedActions(actions: McpClientActionCopy[]): McpClientActionCopy[] 
   });
 }
 
-function isPlainPrimaryClick(event: MouseEvent<HTMLDivElement>): boolean {
+function isPlainPrimaryClick(event: MouseEvent<HTMLAnchorElement>): boolean {
+  const target = event.currentTarget.getAttribute('target');
   return (
     event.button === 0 &&
+    (!target || target === '_self') &&
+    !event.currentTarget.hasAttribute('download') &&
     !event.altKey &&
     !event.ctrlKey &&
     !event.metaKey &&
@@ -65,23 +68,36 @@ export function McpConnectActions({
   copy,
   resourceUrl,
   locale,
+  navigate = (href) => window.location.assign(href),
 }: {
   actions: McpClientActionCopy[];
   copy: McpConnectActionsCopy;
   resourceUrl: string;
   locale: AppLocale;
+  navigate?: (href: string) => void;
 }) {
   const [copyStatus, setCopyStatus] = useState<CopyStatus>(null);
+  const mountedRef = useRef(true);
+  const pendingNavigationRef = useRef<{
+    href: string;
+    navigated: boolean;
+    timerId: number | null;
+  } | null>(null);
   const renderedActions = resolvedActions(actions);
 
-  function handleActionClick(event: MouseEvent<HTMLDivElement>) {
-    if (!isPlainPrimaryClick(event) || !(event.target instanceof Element)) return;
-    const anchor = event.target.closest<HTMLAnchorElement>('a[data-client]');
-    if (!anchor || !event.currentTarget.contains(anchor)) return;
-    const client = anchor.dataset.client;
-    if (client !== 'claude' && client !== 'codex') return;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      const pending = pendingNavigationRef.current;
+      if (pending?.timerId !== null && pending?.timerId !== undefined) {
+        window.clearTimeout(pending.timerId);
+      }
+      pendingNavigationRef.current = null;
+    };
+  }, []);
 
-    event.preventDefault();
+  function trackConnectAction(client: McpClientId) {
     const usesDeepLink =
       clientActionFlags[client].deepLinkEnabled && Boolean(clientActionFlags[client].deepLink);
     void dispatchGaEvent('mcp_landing_cta_clicked', {
@@ -90,18 +106,35 @@ export function McpConnectActions({
       destination: usesDeepLink ? 'verified_deep_link' : 'setup_guide',
       locale,
     });
+    return recordAcquisition(client, 'connect');
+  }
 
-    let navigated = false;
-    const navigate = () => {
-      if (navigated) return;
-      navigated = true;
-      window.location.assign(anchor.href);
+  function handleActionClick(action: McpClientActionCopy) {
+    return (event: MouseEvent<HTMLAnchorElement>) => {
+      if (!isPlainPrimaryClick(event)) {
+        void trackConnectAction(action.client);
+        return;
+      }
+
+      event.preventDefault();
+      if (pendingNavigationRef.current) return;
+
+      const pending = {
+        href: event.currentTarget.href,
+        navigated: false,
+        timerId: null as number | null,
+      };
+      pendingNavigationRef.current = pending;
+
+      const navigateOnce = () => {
+        if (!mountedRef.current || pending.navigated) return;
+        pending.navigated = true;
+        if (pending.timerId !== null) window.clearTimeout(pending.timerId);
+        navigate(pending.href);
+      };
+      pending.timerId = window.setTimeout(navigateOnce, NAVIGATION_WAIT_MS);
+      void trackConnectAction(action.client).finally(navigateOnce);
     };
-    const timeout = window.setTimeout(navigate, NAVIGATION_WAIT_MS);
-    void recordAcquisition(client, 'connect').finally(() => {
-      window.clearTimeout(timeout);
-      navigate();
-    });
   }
 
   async function copyEndpoint(client: McpClientId) {
@@ -123,9 +156,7 @@ export function McpConnectActions({
 
   return (
     <div className="rounded-[12px] border border-hairline bg-bg p-3 text-text-primary dark:border-white/[0.12] dark:bg-bg dark:text-white">
-      <div onClick={handleActionClick}>
-        <McpClientActions actions={renderedActions} />
-      </div>
+      <McpClientActions actions={renderedActions} onActionClick={handleActionClick} />
       <div className="mt-3 rounded-[10px] border border-hairline bg-surface p-3 dark:border-white/[0.12] dark:bg-white/[0.045]">
         <p className="text-xs font-semibold text-text-secondary dark:text-white/70">
           {copy.endpointLabel}

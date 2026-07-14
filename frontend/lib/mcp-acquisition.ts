@@ -7,6 +7,9 @@ export const MCP_ACQUISITION_REQUEST_MAX_BYTES = 1024;
 
 const COOKIE_PREFIX = 'v1';
 const CLOCK_SKEW_SECONDS = 30;
+const BASE64URL_SEGMENT_PATTERN = /^[A-Za-z0-9_-]+$/;
+const SHA256_SIGNATURE_BYTES = 32;
+const SHA256_SIGNATURE_BASE64URL_LENGTH = 43;
 const ACQUISITION_ID_PATTERN = /^acq_[A-Za-z0-9_-]{24}$/;
 const REQUEST_KEYS = new Set(['action', 'source', 'medium', 'campaign', 'client']);
 const SIGNED_KEYS = new Set([
@@ -90,6 +93,14 @@ function signature(signingInput: string, secret: string): Buffer {
   return createHmac('sha256', secret).update(signingInput, 'utf8').digest();
 }
 
+function decodeCanonicalBase64Url(segment: string, expectedBytes?: number): Buffer | null {
+  if (!BASE64URL_SEGMENT_PATTERN.test(segment)) return null;
+  const decoded = Buffer.from(segment, 'base64url');
+  if (decoded.toString('base64url') !== segment) return null;
+  if (expectedBytes !== undefined && decoded.length !== expectedBytes) return null;
+  return decoded;
+}
+
 function nowInSeconds(value?: number): number {
   return value ?? Math.floor(Date.now() / 1000);
 }
@@ -161,8 +172,15 @@ export function verifySignedMcpAcquisitionCookie(
     if (parts.length !== 3) return null;
     const [prefix, encodedPayload, encodedSignature] = parts;
     if (!prefix || !encodedPayload || !encodedSignature) return null;
+    if (prefix !== COOKIE_PREFIX) return null;
+    if (encodedSignature.length !== SHA256_SIGNATURE_BASE64URL_LENGTH) return null;
 
-    const actualSignature = Buffer.from(encodedSignature, 'base64url');
+    const payload = decodeCanonicalBase64Url(encodedPayload);
+    const actualSignature = decodeCanonicalBase64Url(
+      encodedSignature,
+      SHA256_SIGNATURE_BYTES,
+    );
+    if (!payload || !actualSignature) return null;
     const expectedSignature = signature(`${prefix}.${encodedPayload}`, options.secret);
     if (
       actualSignature.length !== expectedSignature.length ||
@@ -170,9 +188,8 @@ export function verifySignedMcpAcquisitionCookie(
     ) {
       return null;
     }
-    if (prefix !== COOKIE_PREFIX) return null;
 
-    const parsed = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as unknown;
+    const parsed = JSON.parse(payload.toString('utf8')) as unknown;
     if (
       !isPlainRecord(parsed) ||
       !hasExactKeys(parsed, SIGNED_KEYS) ||

@@ -112,11 +112,13 @@ export type AuthenticatedMcpConnection = {
   acquisition: McpConnectionAcquisition;
 };
 
-export async function resolveAuthenticatedMcpConnection(
-  request: Request,
-  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
-): Promise<AuthenticatedMcpConnection> {
-  const principal = await resolveAgentPrincipal(request, deps);
+/**
+ * Classifies a host connection only after the caller has resolved a normalized OAuth principal.
+ * Task 7 will own any durable landing-acquisition binding; this seam never reads browser state.
+ */
+export function createDirectAuthenticatedMcpConnection(
+  principal: AgentPrincipal,
+): AuthenticatedMcpConnection {
   return {
     principal,
     acquisition: createDirectMcpAcquisition(),
