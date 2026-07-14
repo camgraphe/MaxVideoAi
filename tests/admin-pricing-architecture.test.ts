@@ -48,6 +48,18 @@ const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/
 const pricingPolicyPreviewPath = join(root, 'frontend/server/pricing-admin/policy-preview.ts');
 const pricingPolicyReadModelPath = join(root, 'frontend/server/pricing-admin/policy-read-model.ts');
 const pricingPolicyRulesPath = join(root, 'frontend/server/pricing-admin/policy-rules.ts');
+const pricingPolicyConfirmationPath = join(
+  root,
+  'frontend/server/pricing-admin/policy-confirmation.ts'
+);
+const pricingPolicyFocusedPaths = [
+  pricingPolicyContractPath,
+  pricingPolicyDependenciesPath,
+  pricingPolicyRulesPath,
+  pricingPolicyPreviewPath,
+  pricingPolicyReadModelPath,
+  pricingPolicyConfirmationPath,
+];
 const pricingPolicyRoutePaths = [
   join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
   join(root, 'frontend/app/api/admin/pricing/preview/route.ts'),
@@ -442,6 +454,49 @@ test('pricing policy read model owns inventory and history without mutation comm
   );
 });
 
+test('pricing policy confirmation owns the locked mutation and post-commit side effects', () => {
+  assert.ok(existsSync(pricingPolicyConfirmationPath), 'pricing policy confirmation module should exist');
+  const source = readOrEmpty(pricingPolicyConfirmationPath);
+
+  assert.match(source, /export async function confirmPricingPolicyChange/);
+  assert.match(source, /transactionPreview\s*=\s*await previewPricingPolicyChange/);
+  assert.match(source, /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/);
+  assert.match(source, /dependencies\.insertEvent\(executor/);
+  assert.match(source, /dependencies\.invalidateCache\(\)/);
+  assert.match(source, /dependencies\.revalidate\(preview\)/);
+});
+
+test('pricing policy service is a thin stable facade over focused modules', () => {
+  const facadeSource = readOrEmpty(pricingPolicyServicePath);
+  assert.ok(facadeSource.split('\n').length <= 30, 'policy facade should stay at or below 30 lines');
+  assert.doesNotMatch(
+    facadeSource,
+    /function |withTransaction|resolvePricingPolicy|quoteCanonicalAdminScenarios|buildPricingPreviewFingerprint/,
+    'policy facade must contain re-exports only'
+  );
+
+  pricingPolicyFocusedPaths.forEach((path) => {
+    assert.ok(existsSync(path), `${path} should exist`);
+    const source = readOrEmpty(path);
+    assert.ok(source.split('\n').length <= 350, `${path} should stay at or below 350 lines`);
+    assert.doesNotMatch(
+      source,
+      /from ['"]\.\/policy-service['"]/,
+      'focused modules must not import the facade'
+    );
+  });
+
+  for (const routePath of pricingPolicyRoutePaths) {
+    const source = readOrEmpty(routePath);
+    assert.match(source, /@\/server\/pricing-admin\/policy-service/);
+    assert.doesNotMatch(
+      source,
+      /@\/server\/pricing-admin\/policy-(contract|dependencies|rules|preview|read-model|confirmation)/,
+      'routes must not bypass the stable facade'
+    );
+  }
+});
+
 test('preview-required pricing policy routes exist and stay thin, authorized service adapters', () => {
   assert.ok(existsSync(pricingPolicyServicePath), 'canonical pricing policy service should exist');
   for (const routePath of pricingPolicyRoutePaths) {
@@ -465,11 +520,22 @@ test('preview-required pricing policy routes exist and stay thin, authorized ser
 });
 
 test('pricing confirmation performs a transaction-local locked preview check', () => {
-  const serviceSource = readFileSync(pricingPolicyServicePath, 'utf8');
+  const confirmationSource = readOrEmpty(pricingPolicyConfirmationPath);
+  const dependenciesSource = readOrEmpty(pricingPolicyDependenciesPath);
   const storeSource = readFileSync(join(root, 'frontend/src/lib/pricing-rule-store.ts'), 'utf8');
 
-  assert.match(serviceSource, /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/);
-  assert.match(serviceSource, /transactionPreview\s*=\s*await previewPricingPolicyChange/);
+  assert.match(
+    confirmationSource,
+    /loadOverrides:\s*\(\)\s*=>\s*dependencies\.loadOverrides\(executor\)/
+  );
+  assert.match(
+    confirmationSource,
+    /transactionPreview\s*=\s*await previewPricingPolicyChange/
+  );
+  assert.match(
+    dependenciesSource,
+    /loadPricingPolicyOverridesWithExecutor\(executor, \{ lock: true \}\)/
+  );
   assert.match(storeSource, /LOCK TABLE app_pricing_rules IN SHARE ROW EXCLUSIVE MODE/);
   assert.match(storeSource, /options\.lock \? 'FOR UPDATE'/);
 });
