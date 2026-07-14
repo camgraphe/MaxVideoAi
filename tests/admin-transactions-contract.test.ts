@@ -10,6 +10,11 @@ import {
   mapAdminTransactionRow,
   normalizeTransactionLimit,
 } from '../frontend/server/admin-transactions/read-model.ts';
+import {
+  issueManualWalletRefund,
+  issueManualWalletRefundByReceipt,
+  type AdminRefundDependencies,
+} from '../frontend/server/admin-transactions/refunds.ts';
 import { issueManualWalletTopUp } from '../frontend/server/admin-transactions/topups.ts';
 import type { RawTransactionRow } from '../frontend/server/admin-transactions/types.ts';
 import type { QueryExecutor } from '../frontend/src/lib/db.ts';
@@ -164,4 +169,151 @@ test('manual top-up rejects unavailable database and invalid values before SQL',
     ),
     /Invalid amountCents/
   );
+});
+
+type SqlCall = { text: string; params?: ReadonlyArray<unknown> };
+
+function refundHarness(responses: Array<unknown[] | Error>) {
+  const calls: SqlCall[] = [];
+  let transactions = 0;
+  let rollbacks = 0;
+  const executor: QueryExecutor = {
+    query: async <TRecord>(text: string, params?: ReadonlyArray<unknown>) => {
+      calls.push({ text, params });
+      const response = responses.shift() ?? [];
+      if (response instanceof Error) throw response;
+      return response as TRecord[];
+    },
+  };
+  const dependencies: AdminRefundDependencies = {
+    databaseConfigured: () => true,
+    ensureSchema: async () => undefined,
+    withTransaction: async (callback) => {
+      transactions += 1;
+      try {
+        return await callback(executor);
+      } catch (error) {
+        rollbacks += 1;
+        throw error;
+      }
+    },
+    now: () => 'fallback-time',
+  };
+  return {
+    calls,
+    dependencies,
+    transactionCount: () => transactions,
+    rollbackCount: () => rollbacks,
+  };
+}
+
+test('job refund locks the latest charge and performs every write in one transaction', async () => {
+  const harness = refundHarness([
+    [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: { total: 900 }, vendor_account_id: 'vendor', message: null, engine_label: 'Veo', duration_sec: 8, currency: 'usd' }],
+    [{ id: 10, amount_cents: '900', currency: 'usd', description: 'Generation' }],
+    [],
+    [{ id: 20, created_at: '2026-07-14T12:00:00.000Z' }],
+    [],
+  ]);
+
+  const result = await issueManualWalletRefund(
+    { jobId: ' job_1 ', adminUserId: 'admin_1', adminEmail: 'admin@example.com', note: ' support ' },
+    harness.dependencies
+  );
+
+  assert.deepEqual(result, { refundReceiptId: 20, createdAt: '2026-07-14T12:00:00.000Z' });
+  assert.equal(harness.transactionCount(), 1);
+  assert.equal(harness.calls.length, 5);
+  assert.match(harness.calls[1]!.text, /FOR UPDATE/);
+  assert.match(harness.calls[2]!.text, /type = 'refund'/);
+  assert.match(harness.calls[3]!.text, /INSERT INTO app_receipts/);
+  assert.match(harness.calls[4]!.text, /UPDATE app_jobs/);
+  const metadata = JSON.parse(String(harness.calls[3]!.params?.[7]));
+  assert.deepEqual(metadata, {
+    reason: 'manual_admin_refund',
+    admin_user_id: 'admin_1',
+    admin_email: 'admin@example.com',
+    original_receipt_id: 10,
+    note: 'support',
+  });
+});
+
+test('receipt refund preserves orphan-charge fallback and skips job update', async () => {
+  const harness = refundHarness([
+    [{ id: 30, user_id: 'user_2', job_id: null, amount_cents: 500, currency: null, description: null, vendor_account_id: null, pricing_snapshot: null }],
+    [],
+    [{ id: 31, created_at: '2026-07-14T13:00:00.000Z' }],
+  ]);
+
+  const result = await issueManualWalletRefundByReceipt(
+    { receiptId: 30, adminUserId: 'admin_1' },
+    harness.dependencies
+  );
+
+  assert.deepEqual(result, { refundReceiptId: 31, createdAt: '2026-07-14T13:00:00.000Z' });
+  assert.equal(harness.transactionCount(), 1);
+  assert.equal(harness.calls.length, 3);
+  assert.match(harness.calls[0]!.text, /FOR UPDATE/);
+  assert.match(harness.calls[2]!.text, /INSERT INTO app_receipts/);
+  assert.equal(harness.calls.some((call) => /UPDATE app_jobs/.test(call.text)), false);
+  assert.equal(harness.calls[2]!.params?.[3], 'Manual refund for receipt 30');
+});
+
+test('duplicate refund is rejected after the charge lock and before insert', async () => {
+  const harness = refundHarness([
+    [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],
+    [{ id: 10, amount_cents: 900, currency: 'USD', description: null }],
+    [{ id: 99 }],
+  ]);
+
+  await assert.rejects(
+    issueManualWalletRefund({ jobId: 'job_1', adminUserId: 'admin_1' }, harness.dependencies),
+    /Job or wallet charge not found, or refund already issued\./
+  );
+  assert.match(harness.calls[1]!.text, /FOR UPDATE/);
+  assert.equal(harness.calls.some((call) => /INSERT INTO app_receipts/.test(call.text)), false);
+});
+
+test('receipt selector preserves null-status acceptance and non-wallet rejection', async () => {
+  const nullable = refundHarness([
+    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
+    [],
+    [{ payment_status: null }],
+    [{ id: 41, created_at: 'created' }],
+    [],
+  ]);
+  await issueManualWalletRefundByReceipt(
+    { receiptId: 40, adminUserId: 'admin' },
+    nullable.dependencies
+  );
+
+  const nonWallet = refundHarness([
+    [{ id: 40, user_id: 'user', job_id: 'job', amount_cents: 100, currency: 'USD', description: null, vendor_account_id: null, pricing_snapshot: null }],
+    [],
+    [{ payment_status: 'paid_stripe' }],
+  ]);
+  await assert.rejects(
+    issueManualWalletRefundByReceipt(
+      { receiptId: 40, adminUserId: 'admin' },
+      nonWallet.dependencies
+    ),
+    /This charge is not a wallet payment or has already been refunded\./
+  );
+});
+
+test('refund write failure propagates through the transaction without updating the job', async () => {
+  const harness = refundHarness([
+    [{ job_id: 'job_1', user_id: 'user_1', payment_status: 'paid_wallet', pricing_snapshot: null, vendor_account_id: null, message: null, engine_label: null, duration_sec: null, currency: 'USD' }],
+    [{ id: 10, amount_cents: 900, currency: 'USD', description: null }],
+    [],
+    new Error('insert failed'),
+  ]);
+
+  await assert.rejects(
+    issueManualWalletRefund({ jobId: 'job_1', adminUserId: 'admin_1' }, harness.dependencies),
+    /insert failed/
+  );
+  assert.equal(harness.transactionCount(), 1);
+  assert.equal(harness.rollbackCount(), 1);
+  assert.equal(harness.calls.some((call) => /UPDATE app_jobs/.test(call.text)), false);
 });
