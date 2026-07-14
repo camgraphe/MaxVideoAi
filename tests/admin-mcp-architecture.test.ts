@@ -61,6 +61,8 @@ test('server metrics stay privacy-safe, read-only, and externally inert', () => 
   assert.match(server, /export async function loadAdminMcpMetrics/);
   assert.match(server, /export function evaluateMcpOperationsAlerts/);
   assert.match(server, /export async function routeMcpOperationsAlerts/);
+  assert.match(server, /MCP_METRIC_PRODUCER_CAPABILITIES/);
+  assert.match(server, /recommendationToQuote: MetricAvailability/);
   assert.match(server, /to_regclass/);
   assert.match(server, /from '@\/server\/admin-mcp-metrics-queries'/);
   assert.match(queries, /provider_attempts/);

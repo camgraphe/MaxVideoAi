@@ -22,7 +22,13 @@ A second RED/GREEN cycle addressed issues found during self-review:
 - recommendation-to-quote was an unrelated event-count ratio instead of a causal user cohort.
 
 The new tests failed for those reasons, then passed after explicit capability availability and the
-dedicated aggregate cohort query were added. Final focused result: 12 of 12 passed.
+dedicated aggregate cohort query were added.
+
+An independent review then found four important boundary defects. A third RED/GREEN cycle added a
+real temporary-PostgreSQL fixture plus loader contracts before changing production code. The RED
+run failed 13 of 21 tests, including all five executable SQL subtests: reversed confirmation,
+earlier-plus-later recommendation conversion, non-tool audit noise, range-coupled accounting
+provenance, and hidden missing provider costs. The GREEN run passed 21 of 21 tests.
 
 ## Implemented dashboard
 
@@ -48,33 +54,49 @@ No query returns a user identity or private payload column.
   `wallet_funded` event inside the configured conversion window, divided by distinct completed-trial
   users. Wallet events may be read beyond `to` only for that immutable trial cohort.
 - Quote confirmation uses confirmed quote identifiers that belong to the prepared-quote cohort in
-  the selected range.
+  the selected range and have a strictly later acceptance timestamp. Trial release likewise
+  requires a release strictly later than a causally valid trial acceptance.
 - Recommendation-to-quote uses distinct users with a successful `recommend_models` audit event and
-  a later prepared quote in the same reporting range.
+  any later prepared quote in the same reporting range. An earlier quote does not suppress a later
+  valid conversion.
 - First and repeat paid users come from the authoritative funnel stages.
 - Revenue and refunds come only from `app_receipts` charge/refund rows linked to MCP job identifiers.
-  Mixed/non-USD receipt data is reported unavailable rather than summed as if currencies matched.
+  The canonical receipt timestamp owns `[from,to)` while MCP job provenance is range-independent.
+  Refund rate is the distinct refunded-job receipt count divided by the distinct charged-job
+  receipt count in that same canonical receipt window. Null, mixed, lowercase, or otherwise
+  non-normalized currencies are reported unavailable rather than summed as USD.
 - Provider and trial costs come only from recorded `provider_attempts.provider_cost_usd` rows linked
-  through authoritative `app_jobs` and MCP job identifiers. The UI labels this as recorded
-  provider-attempt cost; it does not manufacture missing image/provider cost data.
+  through authoritative `app_jobs` and range-independent MCP job provenance. The canonical attempt
+  timestamp owns `[from,to)`. Any included attempt without a recorded cost makes the whole cost
+  section explicitly partial/unavailable; missing costs are never coerced to zero. The UI labels
+  this as recorded provider-attempt cost.
 - Error, authentication, polling, upload, and restoration counts use coarse allowlisted
-  `mcp_audit_events` dimensions only.
+  `mcp_audit_events` dimensions only. Tool metrics and error groups are restricted to
+  `event_type = 'tool_call'`, matching the existing `(event_type, created_at)` index.
 - Zero denominators return `null`/`Unavailable`, never `0%`, `Infinity`, or `NaN`.
 
 ## Availability and current blockers
 
-The loader first checks relations with `to_regclass` and keeps availability separate for funnel,
-audit, receipts, provider costs, polling, uploads, restorations, authentication errors, and revocation. A successfully run
-aggregate may return a genuine zero. A missing relation, failed query, unsupported producer, or
-non-normalized currency returns an explicit unavailable state and `null` values instead.
+The loader first checks relations with `to_regclass`, then separately checks an explicit
+server-controlled producer-capability map. Table existence alone never makes a metric available.
+Availability is separate for funnel, audit, recommendation-to-quote, receipts, provider costs,
+polling, uploads, restorations, authentication errors, and revocation. A successfully run aggregate
+may return a genuine zero. A missing relation, failed query, unsupported producer, partial cost
+recording, or non-normalized currency returns an explicit unavailable state and `null` values.
+
+The current server capability map marks only the coarse existing audit producer ready. The complete
+trial/paid funnel, recommendation-to-quote, paid receipt attribution, provider cost attribution,
+polling, upload, and restoration producers remain false until their real tool/runtime producers are
+implemented and verified. This is independent from the eight publication flags, which remain false.
 
 Current branch blockers are unchanged:
 
 - migrations 30 (`mcp_generation_quotes`), 31 (`mcp_trial_entitlements`), and 32
   (`mcp_reference_upload_sessions`) do not exist;
 - migration 33 remains reserved and unapplied;
-- therefore authoritative funnel, receipt-scoped revenue, provider-cost, polling, upload, and
-  restoration sections will remain explicitly unavailable in a real environment;
+- therefore authoritative funnel, receipt-scoped revenue, provider-cost, recommendation-to-quote,
+  polling, upload, and restoration sections remain explicitly unavailable until both their tables
+  and verified producer capabilities are ready;
 - Task 7 has no verified once-only revocation event producer, so revocation rate is explicitly
   unavailable even if a historical event-shaped row could exist;
 - the current HTTP boundary returns authentication failures before a principal-scoped audit event
@@ -110,17 +132,17 @@ email addresses, and exported user identities. Error output contains coarse code
 
 ## Verification
 
-Fresh verification before commit:
+Fresh verification for the review fix before commit:
 
-- Task 8 metric/architecture contracts: 12/12 passed;
+- Task 8 metric/architecture contracts, including executable PostgreSQL fixtures: 21/21 passed;
 - focused admin navigation/architecture, infra operations, Task 7 funnel/PostgreSQL, audit, and
-  top-up attribution selection: 58/58 passed;
+  top-up attribution selection: 76/76 passed;
 - `./frontend/node_modules/.bin/tsc --noEmit -p frontend/tsconfig.json`: passed;
 - `npm --prefix frontend run lint`: passed;
 - `npm run lint:exposure`: passed;
 - `git diff --check`: passed;
-- `npm run architecture:audit -- --min-lines 500`: passed; new server owners are 457 and 130 lines,
-  and the route is 27 lines;
+- `npm run architecture:audit -- --min-lines 500`: passed; new server owners are 498, 155, and 21
+  lines, and the route is 27 lines;
 - `npm --prefix frontend run build`: passed, generated 729 static pages, and included dynamic route
   `/admin/mcp`.
 

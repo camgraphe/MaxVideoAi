@@ -6,6 +6,7 @@ import {
   loadAdminMcpMetrics,
   routeMcpOperationsAlerts,
   type AdminMcpMetrics,
+  type McpMetricProducerCapabilities,
   type McpOperationsAlertThresholds,
 } from '../frontend/server/admin-mcp-metrics.ts';
 
@@ -27,9 +28,26 @@ const FLAGS = {
   referenceUploads: false,
 };
 
+const ALL_PRODUCERS: McpMetricProducerCapabilities = {
+  funnel: true,
+  audit: true,
+  recommendationToQuote: true,
+  receipts: true,
+  providerCosts: true,
+  polling: true,
+  uploads: true,
+  restorations: true,
+};
+
 type QueryCall = { sql: string; params?: ReadonlyArray<unknown> };
 
-function createMetricsHarness(options: { relations?: Record<string, boolean>; zeroDenominators?: boolean } = {}) {
+function createMetricsHarness(options: {
+  relations?: Record<string, boolean>;
+  zeroDenominators?: boolean;
+  failRecommendation?: boolean;
+  nonUsdReceipts?: number;
+  missingProviderCosts?: number;
+} = {}) {
   const calls: QueryCall[] = [];
   const relations = {
     mcp_funnel_events: true,
@@ -65,7 +83,6 @@ function createMetricsHarness(options: { relations?: Record<string, boolean>; ze
           trial_volume: options.zeroDenominators ? 0 : 5,
           trial_accepted: options.zeroDenominators ? 0 : 5,
           trial_released: options.zeroDenominators ? 0 : 1,
-          paid_accepted: options.zeroDenominators ? 0 : 2,
           connection_completed: options.zeroDenominators ? 0 : 10,
           connection_revoked: options.zeroDenominators ? 0 : 1,
         }] as T[];
@@ -80,6 +97,7 @@ function createMetricsHarness(options: { relations?: Record<string, boolean>; ze
         }] as T[];
       }
       if (sql.includes('admin-mcp:recommendation-to-quote')) {
+        if (options.failRecommendation) throw new Error('simulated recommendation cohort failure');
         return [{
           recommended_users: options.zeroDenominators ? 0 : 10,
           recommended_to_quote_users: options.zeroDenominators ? 0 : 8,
@@ -97,12 +115,16 @@ function createMetricsHarness(options: { relations?: Record<string, boolean>; ze
         return [{
           revenue_cents: options.zeroDenominators ? 0 : 1234,
           refunds_cents: options.zeroDenominators ? 0 : 200,
+          charged_jobs: options.zeroDenominators ? 0 : 2,
           refunded_jobs: options.zeroDenominators ? 0 : 1,
-          non_usd_receipts: 0,
+          non_usd_receipts: options.nonUsdReceipts ?? 0,
         }] as T[];
       }
       if (sql.includes('admin-mcp:provider-costs')) {
         return [{
+          attempt_count: options.zeroDenominators ? 0 : 3,
+          trial_attempt_count: options.zeroDenominators ? 0 : 1,
+          missing_cost_attempts: options.missingProviderCosts ?? 0,
           provider_cost_cents: options.zeroDenominators ? 0 : 456,
           trial_cost_cents: options.zeroDenominators ? 0 : 123,
         }] as T[];
@@ -114,12 +136,16 @@ function createMetricsHarness(options: { relations?: Record<string, boolean>; ze
   return { calls, executor };
 }
 
-async function loadHarnessMetrics(harness = createMetricsHarness()): Promise<AdminMcpMetrics> {
+async function loadHarnessMetrics(
+  harness = createMetricsHarness(),
+  producerCapabilities: McpMetricProducerCapabilities = ALL_PRODUCERS,
+): Promise<AdminMcpMetrics> {
   return loadAdminMcpMetrics(RANGE, {
     executor: harness.executor,
     isDatabaseConfigured: () => true,
     featureFlags: FLAGS,
     alertThresholds: {},
+    producerCapabilities,
   });
 }
 
@@ -161,6 +187,7 @@ test('loads every available funnel, cohort, client, economics, error, polling, a
   assert.equal(metrics.availability.audit.status, 'available');
   assert.equal(metrics.availability.receipts.status, 'available');
   assert.equal(metrics.availability.providerCosts.status, 'available');
+  assert.equal(metrics.availability.recommendationToQuote.status, 'available');
   assert.equal(metrics.availability.revocation.status, 'unavailable');
   assert.match(metrics.availability.revocation.reason ?? '', /producer|revocation/i);
   assert.equal(metrics.authErrors, null, 'the current protocol has no privacy-safe pre-auth error producer');
@@ -221,6 +248,63 @@ test('recommendation to quote is a user-cohort conversion query rather than unre
   assert.match(call.sql, /recommend_models/);
   assert.match(call.sql, /paid_quote_prepared|trial_quote_prepared/);
   assert.equal(metrics.recommendationToQuoteRate, 0.8);
+  assert.equal(metrics.availability.recommendationToQuote.status, 'available');
+});
+
+test('present tables do not make metrics available when their server-side producers are not ready', async () => {
+  const harness = createMetricsHarness();
+  const metrics = await loadHarnessMetrics(harness, {
+    funnel: false,
+    audit: false,
+    recommendationToQuote: false,
+    receipts: false,
+    providerCosts: false,
+    polling: false,
+    uploads: false,
+    restorations: false,
+  });
+
+  for (const section of [
+    'funnel',
+    'audit',
+    'recommendationToQuote',
+    'receipts',
+    'providerCosts',
+    'polling',
+    'uploads',
+    'restorations',
+  ] as const) {
+    assert.equal(metrics.availability[section].status, 'unavailable', section);
+    assert.match(metrics.availability[section].reason ?? '', /producer/i, section);
+  }
+  assert.equal(metrics.funnel, null);
+  assert.equal(metrics.errors, null);
+  assert.equal(metrics.recommendationToQuoteRate, null);
+  assert.equal(metrics.revenueCents, null);
+  assert.equal(metrics.providerCostCents, null);
+  assert.equal(harness.calls.length, 1, 'only the prerequisite query may run without live producers');
+});
+
+test('a failed recommendation cohort query is unavailable rather than an empty cohort', async () => {
+  const metrics = await loadHarnessMetrics(createMetricsHarness({ failRecommendation: true }));
+
+  assert.equal(metrics.recommendationToQuoteRate, null);
+  assert.equal(metrics.availability.recommendationToQuote.status, 'unavailable');
+  assert.match(metrics.availability.recommendationToQuote.reason ?? '', /query failed/i);
+});
+
+test('partial provider accounting and non-normalized receipt currencies stay unavailable', async () => {
+  const partialCosts = await loadHarnessMetrics(createMetricsHarness({ missingProviderCosts: 1 }));
+  assert.equal(partialCosts.availability.providerCosts.status, 'unavailable');
+  assert.match(partialCosts.availability.providerCosts.reason ?? '', /missing|partial/i);
+  assert.equal(partialCosts.providerCostCents, null);
+  assert.equal(partialCosts.trialCostCents, null);
+
+  const nonNormalizedReceipts = await loadHarnessMetrics(createMetricsHarness({ nonUsdReceipts: 1 }));
+  assert.equal(nonNormalizedReceipts.availability.receipts.status, 'unavailable');
+  assert.equal(nonNormalizedReceipts.revenueCents, null);
+  assert.equal(nonNormalizedReceipts.refundsCents, null);
+  assert.equal(nonNormalizedReceipts.refundRate, null);
 });
 
 test('all reporting queries are parameterized UTC [from,to) aggregates and exclude private payload columns', async () => {
@@ -242,6 +326,18 @@ test('all reporting queries are parameterized UTC [from,to) aggregates and exclu
   assert.doesNotMatch(sql, /SELECT\s+(?:\w+\.)?user_id\b/i, 'queries must return aggregates, not identities');
   const receiptCall = metricCalls.find((call) => call.sql.includes('admin-mcp:receipts'));
   assert.match(receiptCall?.sql ?? '', /event_type\s*=\s*'paid_generation_accepted'/, 'refund rate and revenue use the accepted paid-job cohort');
+  assert.match(receiptCall?.sql ?? '', /receipt\.created_at\s*>=\s*\$1[\s\S]*receipt\.created_at\s*<\s*\$2/i);
+  assert.doesNotMatch(receiptCall?.sql ?? '', /mcp_funnel_events[\s\S]*occurred_at\s*>=\s*\$1/i, 'MCP job provenance is range-independent');
+
+  const providerCall = metricCalls.find((call) => call.sql.includes('admin-mcp:provider-costs'));
+  assert.match(providerCall?.sql ?? '', /attempt\.created_at\s*>=\s*\$1[\s\S]*attempt\.created_at\s*<\s*\$2/i);
+  assert.doesNotMatch(providerCall?.sql ?? '', /COALESCE\(attempt\.provider_cost_usd,\s*0\)/i);
+
+  const auditSql = metricCalls
+    .filter((call) => call.sql.includes('mcp_audit_events'))
+    .map((call) => call.sql)
+    .join('\n');
+  assert.match(auditSql, /event_type\s*=\s*'tool_call'/i);
 });
 
 test('evaluates all configured MCP alert classes and routes them only through injected operations channels', async () => {
