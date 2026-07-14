@@ -21,5 +21,7 @@
   "contact": { "en": "contact", "fr": "contact", "es": "contact" },
   "status": { "en": "status", "fr": "statut", "es": "estado" },
   "changelog": { "en": "changelog", "fr": "changelog", "es": "changelog" },
-  "docs": { "en": "docs", "fr": "docs", "es": "docs" }
+  "docs": { "en": "docs", "fr": "docs", "es": "docs" },
+  "mcp": { "en": "mcp", "fr": "mcp", "es": "mcp" },
+  "integrations": { "en": "integrations", "fr": "integrations", "es": "integraciones" }
 }

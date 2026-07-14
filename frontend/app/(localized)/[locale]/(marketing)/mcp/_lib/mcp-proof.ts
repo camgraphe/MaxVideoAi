@@ -10,6 +10,8 @@ export type McpProofEvidence = {
 export type McpProof = {
   posterSrc: string;
   videoSrc: string;
+  captionsSrc: string;
+  captionsLocale: AppLocale;
   alt: string;
   badge: string;
   caption: string;

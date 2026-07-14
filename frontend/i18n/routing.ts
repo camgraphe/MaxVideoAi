@@ -178,5 +178,20 @@ export const routing = defineRouting({
       fr: '/docs/[slug]',
       es: '/docs/[slug]',
     },
+    '/mcp': {
+      en: '/mcp',
+      fr: '/mcp',
+      es: '/mcp',
+    },
+    '/integrations/claude': {
+      en: '/integrations/claude',
+      fr: '/integrations/claude',
+      es: '/integraciones/claude',
+    },
+    '/integrations/codex': {
+      en: '/integrations/codex',
+      fr: '/integrations/codex',
+      es: '/integraciones/codex',
+    },
   },
 });

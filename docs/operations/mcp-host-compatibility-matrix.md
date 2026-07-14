@@ -1,5 +1,7 @@
 # MaxVideoAI MCP host compatibility matrix
 
+Last verified: 2026-07-12
+
 This matrix separates protocol evidence from real hosted OAuth evidence. Do not mark a host as compatible until the preview deployment, consent, refresh, revocation, and reconnect checks have all been completed without copying credentials or user data into this file.
 
 ## Foundation under test
