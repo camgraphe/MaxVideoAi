@@ -24,11 +24,34 @@ function publicationState(): McpPublicationState {
   return getMcpPublicationState(FEATURES.mcp);
 }
 
+export function resolveDocsEntryPublication(slug: string, publication: McpPublicationState) {
+  if (slug !== 'mcp') {
+    return {
+      discoverable: true,
+      renderable: true,
+      robots: null,
+    };
+  }
+
+  return {
+    discoverable: publication.indexable,
+    renderable: publication.renderPublicPage,
+    robots: { index: publication.indexable, follow: publication.renderPublicPage },
+  };
+}
+
 export function filterDocsEntriesForPublication<T extends { slug: string }>(
   entries: T[],
   publication: McpPublicationState
 ): T[] {
-  return publication.indexable ? entries : entries.filter((entry) => entry.slug !== 'mcp');
+  return entries.filter((entry) => resolveDocsEntryPublication(entry.slug, publication).discoverable);
+}
+
+export function filterDocsEntriesForStaticParams<T extends { slug: string }>(
+  entries: T[],
+  publication: McpPublicationState
+): T[] {
+  return entries.filter((entry) => resolveDocsEntryPublication(entry.slug, publication).renderable);
 }
 
 export async function getDocsEntries(locale: AppLocale) {

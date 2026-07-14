@@ -203,3 +203,86 @@ After the minimal production changes, the same command exited 0 with 21 passed a
 
 No push, pull request, merge, deployment, external message, database change, publication-flag change, or other external
 mutation was performed during remediation.
+
+## Final re-review remediation: preview route gate
+
+The final review found that `generateStaticParams()` used the indexability filter while `dynamicParams` is disabled.
+That made the intended preview state (`renderPublicPage: true`, `indexable: false`) impossible to render: MCP was omitted
+from the static manifest before the page-level render gate could allow it.
+
+### Corrected gate ownership
+
+- `renderPublicPage` now controls MCP page renderability and inclusion in docs static parameters.
+- `indexable` still controls docs-index discovery, the MCP docs card, related-doc discovery, and MCP `TechArticle`
+  schema.
+- MCP robots metadata remains state-specific: a renderable preview is `noindex,follow`; the all-false state is
+  `noindex,nofollow` and returns not found.
+- Non-MCP documents retain their existing route, metadata, discovery, attribution, and schema behavior.
+- The explicit preview state is injected only into pure route-policy tests. No environment variable, publication flag,
+  or checked-in configuration was changed.
+
+### Final re-review RED/GREEN evidence
+
+The route-publication matrix was added before the production route policy existed:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-docs-content.test.ts
+```
+
+RED result: exit 1; 13 tests, 12 passed and 1 failed because the route had no explicit
+`resolveDocsEntryPublication` policy and no renderability-specific static-parameter filter.
+
+After the focused implementation, the same command exited 0 with 13 passed and 0 failed. The test proves that an
+explicit renderable/noindex preview receives an MCP static parameter and `noindex,follow` route policy while remaining
+absent from the docs index card, discovery/related-doc inputs, and `TechArticle` schema. The checked-in all-false state
+remains absent from static parameters and the actual page still rejects it with not found.
+
+### Final re-review verification
+
+1. Complete MCP/docs/route/schema/public-claims regressions:
+
+   ```bash
+   ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+     tests/mcp-*.test.ts \
+     tests/docs-index-route-architecture.test.ts \
+     tests/public-product-claims.test.ts \
+     tests/localized-fallback-seo.test.ts \
+     tests/marketing-jsonld-schema-audit.test.ts
+   ```
+
+   Result: exit 0; 153 passed, 0 failed.
+
+2. Types, lint, localization, SEO, exposure, and diff hygiene:
+
+   ```bash
+   pnpm --prefix frontend exec tsc --noEmit --pretty false
+   npm --prefix frontend run lint
+   npm --prefix frontend run i18n:check
+   npm --prefix frontend run seo:check
+   npm run lint:exposure
+   git diff --check
+   ```
+
+   Result: all commands exited 0. French parity is 4,156 keys and Spanish parity is 4,150 keys.
+
+3. Production build:
+
+   ```bash
+   npm --prefix frontend run build
+   ```
+
+   Result: exit 0 after registry/catalog validation, Next.js compilation, lint/type validation, generation of 727
+   static pages, and sitemap generation. With the checked-in all-false state, MCP remains absent from the generated docs
+   paths.
+
+4. All-false production-server smoke on port 3130:
+
+   - `/docs/mcp`, `/fr/docs/mcp`, and `/es/docs/mcp` returned 404 with `noindex`, no redirect, and no author leak.
+   - `/docs/get-started` returned 200 without `noindex` and without an Adrien Millot attribution.
+   - The server was stopped cleanly.
+
+5. Publication audit:
+
+   `frontend/config/mcp-publication.json` has no diff. No push, pull request, merge, deployment, external message,
+   database change, publication-flag change, environment mutation, or other external state change was performed.

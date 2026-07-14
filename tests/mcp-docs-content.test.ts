@@ -643,6 +643,91 @@ test('the actual docs route, metadata, and static params fail closed behind MCP 
   );
 });
 
+test('a renderable noindex preview gets a static route without entering docs discovery or schema', async () => {
+  const indexModule = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/docs/_lib/docs-index-data.ts'
+  );
+  assert.equal(
+    typeof indexModule.resolveDocsEntryPublication,
+    'function',
+    'docs routes need an explicit renderability/indexability state owner'
+  );
+  assert.equal(
+    typeof indexModule.filterDocsEntriesForStaticParams,
+    'function',
+    'static params need a renderability-specific filter'
+  );
+  if (
+    typeof indexModule.resolveDocsEntryPublication !== 'function' ||
+    typeof indexModule.filterDocsEntriesForStaticParams !== 'function'
+  ) return;
+
+  const entries = [
+    { slug: 'get-started', title: 'Get started' },
+    { slug: 'mcp', title: 'MCP' },
+  ];
+  const allFalse = getMcpPublicationState(mcpPublication);
+  const preview = { ...allFalse, renderPublicPage: true, indexable: false };
+
+  assert.deepEqual(indexModule.resolveDocsEntryPublication('mcp', preview), {
+    discoverable: false,
+    renderable: true,
+    robots: { index: false, follow: true },
+  });
+  assert.deepEqual(
+    indexModule.filterDocsEntriesForStaticParams(entries, preview).map((entry: { slug: string }) => entry.slug),
+    ['get-started', 'mcp']
+  );
+  assert.deepEqual(
+    indexModule.filterDocsEntriesForPublication(entries, preview).map((entry: { slug: string }) => entry.slug),
+    ['get-started'],
+    'preview MCP docs must stay out of indexes and related-doc discovery'
+  );
+
+  const englishMessages = JSON.parse(readFileSync('frontend/messages/en.json', 'utf8')) as {
+    docs: Record<string, unknown>;
+  };
+  assert.equal(indexModule.buildDocsIndexViewModel(englishMessages.docs, entries, preview).mcpGuide, null);
+
+  const schemaModule = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/docs/_lib/docs-article-jsonld.ts'
+  );
+  assert.equal(
+    schemaModule.buildDocsTechArticleJsonLd({
+      author: { name: 'Adrien Millot', url: 'https://maxvideoai.com/about#adrien-millot' },
+      canonicalUrl: 'https://maxvideoai.com/docs/mcp',
+      description: 'Technical MCP reference',
+      docsIndexUrl: 'https://maxvideoai.com/docs',
+      inLanguage: 'en-US',
+      isMcpDoc: true,
+      modifiedIso: '2026-07-14T00:00:00.000Z',
+      overviewLabel: 'Docs overview',
+      publication: preview,
+      publishedIso: '2026-07-14T00:00:00.000Z',
+      title: 'MaxVideoAI MCP technical guide',
+    }),
+    null,
+    'preview MCP docs must not emit TechArticle schema'
+  );
+
+  assert.deepEqual(indexModule.resolveDocsEntryPublication('mcp', allFalse), {
+    discoverable: false,
+    renderable: false,
+    robots: { index: false, follow: false },
+  });
+  assert.deepEqual(
+    indexModule.filterDocsEntriesForStaticParams(entries, allFalse).map((entry: { slug: string }) => entry.slug),
+    ['get-started']
+  );
+
+  const pageSource = readFileSync(docsArticlePagePath, 'utf8');
+  assert.match(pageSource, /filterDocsEntriesForStaticParams/);
+  assert.match(pageSource, /resolveDocsEntryPublication/);
+  assert.match(pageSource, /robots:\s*entryPublication\.robots/);
+  assert.match(pageSource, /if \(!entryPublication\.renderable\)/);
+  assert.match(pageSource, /const docs = filterDocsEntriesForPublication/);
+});
+
 test('verified MCP attribution is visible while legacy docs keep their prior anonymous behavior', async () => {
   assert.equal(
     existsSync(docsArticleAttributionPath),
@@ -825,6 +910,7 @@ test('the docs index and TechArticle schema fail closed and attribute only verif
   const pageSource = readFileSync(docsArticlePagePath, 'utf8');
   assert.match(pageSource, /getEditorialProfile/);
   assert.match(pageSource, /buildDocsTechArticleJsonLd/);
-  assert.match(pageSource, /publication\.renderPublicPage/);
-  assert.match(pageSource, /publication\.indexable/);
+  assert.match(pageSource, /resolveDocsEntryPublication/);
+  assert.match(indexSource, /renderable:\s*publication\.renderPublicPage/);
+  assert.match(indexSource, /discoverable:\s*publication\.indexable/);
 });

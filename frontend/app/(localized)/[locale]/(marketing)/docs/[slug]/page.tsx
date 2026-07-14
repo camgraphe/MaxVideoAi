@@ -13,7 +13,11 @@ import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 import { buildDocsTechArticleJsonLd } from '../_lib/docs-article-jsonld';
-import { filterDocsEntriesForPublication } from '../_lib/docs-index-data';
+import {
+  filterDocsEntriesForPublication,
+  filterDocsEntriesForStaticParams,
+  resolveDocsEntryPublication,
+} from '../_lib/docs-index-data';
 import { DocsArticleAttribution } from '../_components/DocsArticleAttribution';
 
 interface Params {
@@ -107,7 +111,7 @@ export async function generateStaticParams(): Promise<Params[]> {
   const params: Params[] = [];
   const publication = publicationState();
   for (const locale of locales) {
-    const docs = filterDocsEntriesForPublication(await getDocsEntriesForLocale(locale), publication);
+    const docs = filterDocsEntriesForStaticParams(await getDocsEntriesForLocale(locale), publication);
     docs.forEach((entry) => params.push({ locale, slug: entry.slug }));
   }
   return params;
@@ -132,6 +136,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     availableLocales: await resolveDocLocales(doc.slug),
   });
   const publication = publicationState();
+  const entryPublication = resolveDocsEntryPublication(doc.slug, publication);
   return buildSeoMetadata({
     locale,
     title: `${doc.title} — MaxVideo AI Docs`,
@@ -142,10 +147,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     englishPath: `/docs/${doc.slug}`,
     availableLocales: seo.availableLocales,
     canonicalOverride: seo.canonicalOverride,
-    robots:
-      doc.slug === 'mcp'
-        ? { index: publication.indexable, follow: publication.renderPublicPage }
-        : seo.robots,
+    robots: entryPublication.robots ?? seo.robots,
     keywords: doc.keywords,
   });
 }
@@ -158,7 +160,8 @@ export default async function DocPage(props: { params: Promise<Params> }) {
     notFound();
   }
   const publication = publicationState();
-  if (doc.slug === 'mcp' && !publication.renderPublicPage) {
+  const entryPublication = resolveDocsEntryPublication(doc.slug, publication);
+  if (!entryPublication.renderable) {
     notFound();
   }
   const docs = filterDocsEntriesForPublication(await getDocsEntriesForLocale(locale), publication);
