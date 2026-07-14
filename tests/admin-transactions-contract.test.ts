@@ -10,7 +10,9 @@ import {
   mapAdminTransactionRow,
   normalizeTransactionLimit,
 } from '../frontend/server/admin-transactions/read-model.ts';
+import { issueManualWalletTopUp } from '../frontend/server/admin-transactions/topups.ts';
 import type { RawTransactionRow } from '../frontend/server/admin-transactions/types.ts';
+import type { QueryExecutor } from '../frontend/src/lib/db.ts';
 
 function rawTransaction(overrides: Partial<RawTransactionRow> = {}): RawTransactionRow {
   return {
@@ -83,4 +85,83 @@ test('ledger limit remains clamped to the public 1 through 500 range', () => {
   assert.equal(normalizeTransactionLimit(-1), 1);
   assert.equal(normalizeTransactionLimit(100), 100);
   assert.equal(normalizeTransactionLimit(900), 500);
+});
+
+test('manual top-up preserves validation, metadata, normalization, and response shape', async () => {
+  const calls: Array<{ text: string; params?: ReadonlyArray<unknown> }> = [];
+  const executor: QueryExecutor = {
+    query: async <TRecord>(text: string, params?: ReadonlyArray<unknown>) => {
+      calls.push({ text, params });
+      return [{ id: 77, created_at: '2026-07-14T12:00:00.000Z', amount_cents: '1250', currency: 'eur' }] as TRecord[];
+    },
+  };
+  let schemaCalls = 0;
+
+  const result = await issueManualWalletTopUp(
+    {
+      userId: ' user_1 ',
+      amountCents: 1249.7,
+      currency: 'eur',
+      description: null,
+      adminUserId: 'admin_1',
+      adminEmail: 'admin@example.com',
+      note: ' goodwill ',
+    },
+    {
+      databaseConfigured: () => true,
+      ensureSchema: async () => { schemaCalls += 1; },
+      executor,
+      now: () => 'fallback-time',
+    }
+  );
+
+  assert.equal(schemaCalls, 1);
+  assert.deepEqual(result, {
+    receiptId: 77,
+    createdAt: '2026-07-14T12:00:00.000Z',
+    amountCents: 1250,
+    currency: 'EUR',
+  });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]!.text, /INSERT INTO app_receipts/);
+  assert.equal(calls[0]!.params?.[0], 'user_1');
+  assert.equal(calls[0]!.params?.[1], 1250);
+  assert.equal(calls[0]!.params?.[2], 'EUR');
+  assert.match(String(calls[0]!.params?.[3]), /Manual wallet credit issued by admin@example\.com/);
+  assert.deepEqual(JSON.parse(String(calls[0]!.params?.[4])), {
+    reason: 'manual_admin_topup',
+    admin_user_id: 'admin_1',
+    admin_email: 'admin@example.com',
+    note: 'goodwill',
+  });
+});
+
+test('manual top-up rejects unavailable database and invalid values before SQL', async () => {
+  const executor: QueryExecutor = { query: async () => { throw new Error('must not query'); } };
+  const base = {
+    ensureSchema: async () => undefined,
+    executor,
+    now: () => 'fallback-time',
+  };
+  await assert.rejects(
+    issueManualWalletTopUp(
+      { userId: 'user', amountCents: 100, adminUserId: 'admin' },
+      { ...base, databaseConfigured: () => false }
+    ),
+    /Database unavailable/
+  );
+  await assert.rejects(
+    issueManualWalletTopUp(
+      { userId: ' ', amountCents: 100, adminUserId: 'admin' },
+      { ...base, databaseConfigured: () => true }
+    ),
+    /Missing userId/
+  );
+  await assert.rejects(
+    issueManualWalletTopUp(
+      { userId: 'user', amountCents: 0, adminUserId: 'admin' },
+      { ...base, databaseConfigured: () => true }
+    ),
+    /Invalid amountCents/
+  );
 });

@@ -30,3 +30,10 @@ test('admin transaction reads have one focused owner', () => {
   assert.match(source, /export async function fetchAdminTransactions/);
   assert.match(source, /export async function fetchTransactionAnomalies/);
 });
+
+test('manual top-ups have one focused owner', () => {
+  const source = readModule('topups.ts');
+  assert.ok(source.split('\n').length <= 350, 'topups.ts should stay below 350 lines');
+  assert.match(source, /export async function issueManualWalletTopUp/);
+  assert.doesNotMatch(source, /\bBEGIN\b|\bCOMMIT\b|\bROLLBACK\b/);
+});
