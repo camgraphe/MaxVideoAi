@@ -31,9 +31,9 @@ function clientActions(
 const COPY: Record<AppLocale, McpPageCopy> = {
   en: {
     meta: {
-      title: 'MaxVideoAI MCP: AI Video Generator for Claude and Codex',
+      title: 'AI Video Generator for Claude & Codex | MaxVideoAI MCP',
       description:
-        'Turn an AI video brief into a prompt, compare suitable models and budgets, review the price, and continue the result in MaxVideoAI.',
+        'Plan prompts and reference images in Claude or Codex, compare AI video models, see the price before generation, and create through MaxVideoAI.',
     },
     breadcrumb: { home: 'Home', current: 'MaxVideoAI MCP' },
     hero: {
@@ -105,6 +105,48 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         { title: 'Check model support', body: 'Compare only models whose current public facts support the required reference mode.' },
         { title: 'Review before generation', body: 'Confirm the chosen image, prompt, model settings and displayed price together.' },
       ],
+    },
+    answers: {
+      eyebrow: 'Direct answers',
+      title: 'How the Claude and Codex workflow works',
+      updatedLabel: 'Evidence last verified',
+      items: {
+        integration: {
+          title: 'What does the MaxVideoAI integration do?',
+          liveBody:
+            'MaxVideoAI MCP lets Claude or Codex help clarify an AI video brief, formulate the prompt, compare compatible public models and prepare the selected route for MaxVideoAI. The assistant owns the conversation; MaxVideoAI remains the source for model facts, price calculation, account rules, generation and saved results.',
+          gatedBody:
+            'MaxVideoAI MCP is currently a controlled, read-only integration for Claude and Codex. Recorded tests cover account status, public model facts and factual recommendations; public connection, exact MCP quotes, reference transfer and generation remain disabled. Claude or Codex can still help shape the brief and prompt, while the MaxVideoAI web product remains the place to review prices and generate.',
+        },
+        price: {
+          title: 'How is the generation price calculated?',
+          liveBody:
+            'MaxVideoAI calculates a short-lived exact quote from the selected model, mode, duration, resolution, audio choice and supported reference inputs, using the current public pricing rules. The quote shows the settings and total before generation. A recommendation only compares model fit; it is not an exact quote and cannot spend the wallet.',
+          gatedBody:
+            'The MaxVideoAI web product calculates the displayed price from the selected model, mode, duration, resolution, audio choice and supported inputs before generation. The controlled MCP preview does not expose an exact quote or generation tool. A model recommendation is not an exact quote, so the current price must be reviewed in the web product.',
+        },
+        references: {
+          title: 'Which reference images work?',
+          liveBody:
+            'A reference can come from an account-owned MaxVideoAI asset, an allowed HTTPS image or a secure MaxVideoAI upload handoff. MaxVideoAI validates ownership and file support, and the chosen model must advertise the required reference mode. Claude or Codex may help plan the image and prompt, but that planning is not proof that a file was created or transferred.',
+          gatedBody:
+            'Connected reference transfer is not publicly enabled. In the MaxVideoAI web product, a person may add a reference image only when the selected model supports that reference mode. Claude or Codex can help describe the subject, composition and consistency goal, but the assistant must not claim it created or transferred an image without a live, verified file flow.',
+        },
+        confirmation: {
+          title: 'Why is confirmation a separate step?',
+          liveBody:
+            'A separate confirmation keeps model selection and spending distinct. MaxVideoAI first returns the exact settings, total and projected account effect; only a later confirmation may accept the generation. The server still applies ownership, spending-limit and idempotency checks, so reviewing a recommendation or quote cannot start a paid job by itself.',
+          gatedBody:
+            'Separate confirmation is the approved safety design for future paid MCP generation: first review the model, settings and exact price, then explicitly approve the spend. Paid MCP generation is not publicly enabled today. In the current web product, the displayed price is reviewed before the person submits the generation.',
+        },
+        disconnect: {
+          title: 'How do I disconnect MaxVideoAI?',
+          liveBody:
+            'Remove MaxVideoAI from the client, then open MaxVideoAI account connections and revoke that client authorization. Revocation ends the saved grant; a later protected action must start a new browser approval. Removing the client entry and revoking the account grant are separate actions, so complete both steps.',
+          gatedBody:
+            'For a controlled test connection, the recorded procedure is to remove MaxVideoAI from the client and revoke its authorization from MaxVideoAI account connections. A later protected action should then require a new approval. This is version-specific compatibility evidence, not a claim that public connection is currently available in every client.',
+        },
+      },
     },
     trust: {
       definition: {
@@ -187,9 +229,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
   },
   fr: {
     meta: {
-      title: 'Générateur vidéo IA MaxVideoAI avec MCP, Claude et Codex',
+      title: 'Générateur vidéo IA pour Claude et Codex | MCP MaxVideoAI',
       description:
-        'Transformez un brief vidéo IA en prompt, comparez les modèles et budgets adaptés, vérifiez le prix et retrouvez le résultat dans MaxVideoAI.',
+        'Préparez des prompts et des images de référence dans Claude ou Codex, comparez les modèles vidéo IA, vérifiez le prix avant la génération et créez avec MaxVideoAI.',
     },
     breadcrumb: { home: 'Accueil', current: 'MCP MaxVideoAI' },
     hero: {
@@ -262,6 +304,48 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         { title: 'Relisez avant de générer', body: 'Confirmez ensemble l’image, le prompt, les réglages du modèle et le prix affiché.' },
       ],
     },
+    answers: {
+      eyebrow: 'Réponses directes',
+      title: 'Fonctionnement du parcours avec Claude et Codex',
+      updatedLabel: 'Preuves vérifiées le',
+      items: {
+        integration: {
+          title: 'Que fait l’intégration MaxVideoAI ?',
+          liveBody:
+            'Le MCP MaxVideoAI permet à Claude ou Codex de clarifier un brief vidéo IA, de formuler le prompt, de comparer les modèles publics compatibles et de préparer le parcours retenu dans MaxVideoAI. L’assistant gère la conversation ; MaxVideoAI reste la source des données modèles, du calcul du prix, des règles de compte, de la génération et des résultats enregistrés.',
+          gatedBody:
+            'Le MCP MaxVideoAI est actuellement une intégration contrôlée en lecture seule pour Claude et Codex. Les tests enregistrés couvrent l’état du compte, les données des modèles publics et les recommandations factuelles ; la connexion publique, les devis MCP exacts, le transfert de références et la génération restent désactivés. Le produit web MaxVideoAI reste l’endroit où vérifier les prix et générer.',
+        },
+        price: {
+          title: 'Comment le prix de génération est-il calculé ?',
+          liveBody:
+            'MaxVideoAI calcule un devis exact et temporaire à partir du modèle, du mode, de la durée, de la résolution, du choix audio et des références compatibles, selon les règles tarifaires publiques actuelles. Le devis affiche les réglages et le total avant la génération. Une recommandation compare seulement l’adéquation des modèles ; ce n’est pas un devis exact et elle ne peut pas débiter le portefeuille.',
+          gatedBody:
+            'Le produit web MaxVideoAI calcule le prix affiché à partir du modèle, du mode, de la durée, de la résolution, du choix audio et des entrées compatibles avant la génération. L’aperçu MCP contrôlé ne fournit ni devis exact ni outil de génération. Une recommandation de modèle n’est pas un devis exact ; le prix actuel doit donc être vérifié dans le produit web.',
+        },
+        references: {
+          title: 'Quelles images de référence sont acceptées ?',
+          liveBody:
+            'Une référence peut provenir d’une ressource MaxVideoAI liée au compte, d’une image HTTPS autorisée ou d’un transfert sécurisé MaxVideoAI. MaxVideoAI vérifie la propriété et le format, et le modèle choisi doit prendre en charge le mode de référence demandé. Claude ou Codex peut aider à préparer l’image et le prompt, sans prétendre qu’un fichier a été créé ou transféré sans preuve.',
+          gatedBody:
+            'Le transfert connecté de références n’est pas activé publiquement. Dans le produit web MaxVideoAI, une image peut être ajoutée uniquement si le modèle choisi prend en charge ce mode de référence. Claude ou Codex peut aider à décrire le sujet, la composition et l’objectif de cohérence, mais ne doit pas prétendre avoir créé ou transféré un fichier sans parcours vérifié.',
+        },
+        confirmation: {
+          title: 'Pourquoi la confirmation est-elle séparée ?',
+          liveBody:
+            'Une confirmation séparée distingue le choix du modèle de la dépense. MaxVideoAI présente d’abord les réglages exacts, le total et l’effet prévu sur le compte ; seule une confirmation ultérieure peut accepter la génération. Le serveur applique encore les contrôles de propriété, de limite de dépenses et d’idempotence, donc consulter un devis ne peut pas lancer seul un job payant.',
+          gatedBody:
+            'La confirmation séparée est la règle de sécurité prévue pour une future génération MCP payante : vérifiez d’abord le modèle, les réglages et le prix exact, puis approuvez explicitement la dépense. La génération MCP payante n’est pas activée publiquement. Dans le produit web actuel, le prix affiché est vérifié avant l’envoi de la génération.',
+        },
+        disconnect: {
+          title: 'Comment déconnecter MaxVideoAI ?',
+          liveBody:
+            'Supprimez MaxVideoAI du client, puis ouvrez les connexions du compte MaxVideoAI et révoquez l’autorisation du client. La révocation ferme l’accès enregistré ; une future action protégée doit ouvrir une nouvelle approbation dans le navigateur. La suppression côté client et la révocation côté compte sont deux actions distinctes, à effectuer toutes les deux.',
+          gatedBody:
+            'Pour une connexion de test contrôlée, la procédure enregistrée consiste à supprimer MaxVideoAI du client puis à révoquer son autorisation depuis les connexions du compte MaxVideoAI. Une future action protégée doit ensuite demander une nouvelle approbation. Cette preuve dépend de la version testée et ne signifie pas que la connexion publique est disponible dans tous les clients.',
+        },
+      },
+    },
     trust: {
       definition: {
         eyebrow: 'Définition',
@@ -333,9 +417,9 @@ const COPY: Record<AppLocale, McpPageCopy> = {
   },
   es: {
     meta: {
-      title: 'Generador de video con IA MaxVideoAI con MCP, Claude y Codex',
+      title: 'Generador de video con IA: Claude y Codex | MCP MaxVideoAI',
       description:
-        'Convierte una idea de video con IA en un prompt, compara modelos y presupuestos adecuados, revisa el precio y continúa con el resultado en MaxVideoAI.',
+        'Prepara prompts e imágenes de referencia en Claude o Codex, compara modelos de video con IA, revisa el precio antes de generar y crea con MaxVideoAI.',
     },
     breadcrumb: { home: 'Inicio', current: 'MCP de MaxVideoAI' },
     hero: {
@@ -407,6 +491,48 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         { title: 'Comprueba la compatibilidad', body: 'Compara solo modelos cuyos datos públicos admitan el modo de referencia requerido.' },
         { title: 'Revisa antes de generar', body: 'Confirma en conjunto la imagen, el prompt, los ajustes del modelo y el precio mostrado.' },
       ],
+    },
+    answers: {
+      eyebrow: 'Respuestas directas',
+      title: 'Cómo funciona el flujo con Claude y Codex',
+      updatedLabel: 'Evidencia verificada el',
+      items: {
+        integration: {
+          title: '¿Qué hace la integración de MaxVideoAI?',
+          liveBody:
+            'El MCP de MaxVideoAI permite que Claude o Codex ayude a aclarar una idea de video con IA, formular el prompt, comparar modelos públicos compatibles y preparar la ruta elegida en MaxVideoAI. El agente lleva la conversación; MaxVideoAI sigue siendo la fuente de los datos de modelos, el cálculo del precio, las reglas de la cuenta, la generación y los resultados guardados.',
+          gatedBody:
+            'El MCP de MaxVideoAI es actualmente una integración controlada de solo lectura para Claude y Codex. Las pruebas registradas cubren el estado de la cuenta, los datos de modelos públicos y las recomendaciones factuales; la conexión pública, las cotizaciones MCP exactas, la transferencia de referencias y la generación siguen deshabilitadas. El producto web de MaxVideoAI sigue siendo el lugar para revisar precios y generar.',
+        },
+        price: {
+          title: '¿Cómo se calcula el precio de generación?',
+          liveBody:
+            'MaxVideoAI calcula una cotización exacta y temporal a partir del modelo, modo, duración, resolución, opción de audio y referencias compatibles, según las reglas públicas de precios vigentes. La cotización muestra los ajustes y el total antes de generar. Una recomendación solo compara la adecuación de modelos; no es una cotización exacta y no puede gastar fondos de la billetera.',
+          gatedBody:
+            'El producto web de MaxVideoAI calcula el precio mostrado a partir del modelo, modo, duración, resolución, opción de audio y entradas compatibles antes de generar. La vista previa controlada del MCP no ofrece una cotización exacta ni una herramienta de generación. Una recomendación de modelo no es una cotización exacta, así que el precio actual debe revisarse en el producto web.',
+        },
+        references: {
+          title: '¿Qué imágenes de referencia funcionan?',
+          liveBody:
+            'Una referencia puede provenir de un recurso de MaxVideoAI asociado a la cuenta, una imagen HTTPS permitida o una transferencia segura de MaxVideoAI. MaxVideoAI valida la propiedad y el archivo, y el modelo elegido debe admitir el modo de referencia necesario. Claude o Codex puede ayudar a planificar la imagen y el prompt, sin afirmar que creó o transfirió un archivo sin evidencia.',
+          gatedBody:
+            'La transferencia conectada de referencias no está habilitada públicamente. En el producto web de MaxVideoAI, una persona puede agregar una imagen solo cuando el modelo elegido admite ese modo de referencia. Claude o Codex puede ayudar a describir el sujeto, la composición y el objetivo de consistencia, pero no debe afirmar que creó o transfirió un archivo sin un flujo verificado.',
+        },
+        confirmation: {
+          title: '¿Por qué la confirmación es un paso separado?',
+          liveBody:
+            'Una confirmación separada distingue la elección del modelo del gasto. MaxVideoAI muestra primero los ajustes exactos, el total y el efecto previsto en la cuenta; solo una confirmación posterior puede aceptar la generación. El servidor todavía aplica controles de propiedad, límite de gasto e idempotencia, por lo que revisar una cotización no inicia por sí solo un trabajo pagado.',
+          gatedBody:
+            'La confirmación separada es el diseño de seguridad aprobado para una futura generación MCP pagada: primero revisa el modelo, los ajustes y el precio exacto, y después aprueba el gasto de forma explícita. La generación MCP pagada no está habilitada públicamente. En el producto web actual, el precio mostrado se revisa antes de enviar la generación.',
+        },
+        disconnect: {
+          title: '¿Cómo desconecto MaxVideoAI?',
+          liveBody:
+            'Elimina MaxVideoAI del cliente y después abre las conexiones de la cuenta de MaxVideoAI para revocar la autorización de ese cliente. La revocación termina el acceso guardado; una acción protegida posterior debe abrir una nueva aprobación en el navegador. Eliminar la entrada del cliente y revocar el acceso en la cuenta son acciones distintas, por lo que debes completar ambas.',
+          gatedBody:
+            'Para una conexión de prueba controlada, el procedimiento registrado consiste en eliminar MaxVideoAI del cliente y revocar su autorización desde las conexiones de la cuenta de MaxVideoAI. Una acción protegida posterior deberá solicitar una aprobación nueva. Esta evidencia corresponde a versiones concretas y no significa que la conexión pública esté disponible en todos los clientes.',
+        },
+      },
     },
     trust: {
       definition: {

@@ -2,9 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { AppLocale } from '@/i18n/locales';
 import modelRoster from '@/config/model-roster.json';
+import mcpPublication from '@/config/mcp-publication.json';
 import { INDEXED_MARKETING_EXAMPLE_CANONICAL_SLUGS } from '@/config/model-families';
 import { BLOG_ENTRIES } from '@/lib/i18n/paths';
 import { getContentEntries } from '@/lib/content/markdown';
+import { getMcpPublicationState } from '@/lib/mcp-publication';
 import compareConfig from '@/config/compare-config.json';
 import { getHubComparisonSlugsForSitemap } from '@/lib/compare-hub/data';
 import { getIndexableComparisonLocales } from '@/lib/compare-hub/indexation';
@@ -30,6 +32,13 @@ const IGNORED_ROUTE_TEMPLATES = new Set([
   '/v/[videoId]',
   '/legal/cookies',
 ]);
+const MCP_PUBLIC_INDEXABLE_PATHS = new Set([
+  '/mcp',
+  '/integrations/claude',
+  '/integrations/codex',
+  '/docs/mcp',
+]);
+const MCP_INDEXABLE = getMcpPublicationState(mcpPublication).indexable;
 let cachedAppPathsManifest: Record<string, string> | null = null;
 
 const parsedTolerance = Number(process.env.SITEMAP_LOCALE_TOLERANCE ?? '3');
@@ -55,6 +64,9 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
       return;
     }
     const normalizedTemplate = normalizeCompareEnglishPath(template.template);
+    if (MCP_PUBLIC_INDEXABLE_PATHS.has(normalizedTemplate) && !MCP_INDEXABLE) {
+      return;
+    }
     if (seen.has(normalizedTemplate)) {
       return;
     }
@@ -81,6 +93,9 @@ async function resolveCanonicalPathEntries(): Promise<CanonicalPathEntry[]> {
         return;
       }
       const normalizedPath = normalizeCompareEnglishPath(entry.englishPath);
+      if (MCP_PUBLIC_INDEXABLE_PATHS.has(normalizedPath) && !MCP_INDEXABLE) {
+        return;
+      }
       if (seen.has(normalizedPath)) {
         return;
       }

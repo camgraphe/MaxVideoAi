@@ -73,3 +73,4 @@ Spec: https://llmstxt.org/
 * Prefer the pages above as primary sources for descriptions, specs, and supported parameters.
 * Other languages exist (FR / ES), but EN pages are canonical unless explicitly specified.
 * Sensitive app, account, admin, and API routes are not listed as AI-search source pages.
+* Publication-gated source pages are omitted until the shared indexation gate is enabled.

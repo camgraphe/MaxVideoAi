@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ExamplesGalleryGrid, type ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ExampleSort } from '@/server/videos';
 
 type ExamplesIntroHeroProps = {
@@ -327,6 +328,7 @@ export function ExamplesSummarySection({ longDescription, modelLandingSummary }:
 }
 
 export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNextStepsSectionProps) {
+  const mcpLink = getMcpInternalLink(locale, 'examples');
   return (
     <section className="rounded-[16px] border border-hairline bg-surface/80 px-5 py-5 shadow-card">
       <h2 className="text-lg font-semibold text-text-primary">
@@ -338,6 +340,11 @@ export function ExamplesNextStepsSection({ locale, nextStepLinks }: ExamplesNext
             {item.label}
           </Link>
         ))}
+        {mcpLink ? (
+          <Link href={mcpLink.href} className="font-semibold text-brand hover:text-brandHover">
+            {mcpLink.label}
+          </Link>
+        ) : null}
       </div>
     </section>
   );

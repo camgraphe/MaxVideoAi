@@ -1,13 +1,18 @@
+import { Link } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
+import type { AppLocale } from '@/i18n/locales';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import type { ModelsCatalogPricingLimitItem } from '../_lib/models-catalog-decision-data';
 
 type ModelsCatalogPricingLimitsSectionProps = {
   title: string;
   body: string;
   items: ModelsCatalogPricingLimitItem[];
+  locale: AppLocale;
 };
 
-export function ModelsCatalogPricingLimitsSection({ title, body, items }: ModelsCatalogPricingLimitsSectionProps) {
+export function ModelsCatalogPricingLimitsSection({ title, body, items, locale }: ModelsCatalogPricingLimitsSectionProps) {
+  const mcpLink = getMcpInternalLink(locale, 'models');
   return (
     <section
       id="pricing-limits"
@@ -26,6 +31,11 @@ export function ModelsCatalogPricingLimitsSection({ title, body, items }: Models
           </article>
         ))}
       </div>
+      {mcpLink ? (
+        <Link href={mcpLink.href} className="mt-5 inline-flex text-sm font-semibold text-brand hover:text-brandHover">
+          {mcpLink.label} →
+        </Link>
+      ) : null}
     </section>
   );
 }

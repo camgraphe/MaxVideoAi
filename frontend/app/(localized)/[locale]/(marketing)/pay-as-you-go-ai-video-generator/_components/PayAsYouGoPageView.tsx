@@ -13,6 +13,7 @@ import {
 import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
+import { getMcpInternalLink } from '@/lib/mcp-internal-links';
 import { PayAsYouGoVideoShowcase } from './PayAsYouGoVideoShowcase';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
 import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
@@ -684,6 +685,27 @@ function FaqSection({ data }: PayAsYouGoPageDataProps) {
   );
 }
 
+function McpPlanningLink({ locale, copy }: { locale: AppLocale; copy: PaygViewCopy }) {
+  const link = getMcpInternalLink(locale, 'payg');
+  if (!link) return null;
+  return (
+    <section className="border-b border-hairline bg-surface">
+      <div className={`${containerClassName} flex flex-col gap-3 py-8 sm:flex-row sm:items-center sm:justify-between`}>
+        <p className="max-w-3xl text-sm leading-6 text-text-secondary">
+          {copy.text(
+            'Starting from a creative brief? Compare suitable models and review the budget before a connected generation.',
+            '¿Empiezas con una idea creativa? Compara modelos adecuados y revisa el presupuesto antes de una generación conectada.',
+            'Vous partez d’un brief créatif ? Comparez les modèles adaptés et vérifiez le budget avant une génération connectée.',
+          )}
+        </p>
+        <Link href={link.href} className="shrink-0 text-sm font-semibold text-brand hover:text-brandHover">
+          {link.label} →
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export function PayAsYouGoPageView({ locale, data, showcaseVideos }: PayAsYouGoPageViewProps) {
   const copy = getPayAsYouGoViewCopy(locale);
   return (
@@ -696,6 +718,7 @@ export function PayAsYouGoPageView({ locale, data, showcaseVideos }: PayAsYouGoP
       <AudienceFitSection copy={copy} />
       <SubscriptionComparisonSection copy={copy} />
       <WorkflowSection copy={copy} />
+      <McpPlanningLink locale={locale} copy={copy} />
       <QuoteFactorsSection copy={copy} />
       <PricePerModelSection data={data} copy={copy} />
       <PriceLookupShortcutsSection data={data} copy={copy} />

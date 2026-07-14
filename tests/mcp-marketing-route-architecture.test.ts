@@ -26,6 +26,7 @@ const requiredFiles = [
   `${mcpRoot}/_components/McpBudgetShortlist.tsx`,
   `${mcpRoot}/_components/McpEvidenceSection.tsx`,
   `${mcpRoot}/_components/McpReferenceWorkflowSection.tsx`,
+  `${mcpRoot}/_components/McpAnswerPassagesSection.tsx`,
   `${mcpRoot}/_components/McpTrustSections.tsx`,
   `${mcpRoot}/_components/McpJsonLdScripts.tsx`,
   `${integrationsRoot}/claude/page.tsx`,
@@ -69,6 +70,7 @@ test('MCP acquisition routes have focused server-rendered owners', () => {
     'McpWorkflowStrip',
     'McpBudgetShortlist',
     'McpReferenceWorkflowSection',
+    'McpAnswerPassagesSection',
     'McpTrustSections',
   ]) {
     assert.match(view, new RegExp(owner));

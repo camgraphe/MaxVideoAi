@@ -62,5 +62,13 @@ test('the sitemap composes every publication prerequisite from the common build-
     sitemapConfig,
     /const mcpIndexable =\s*mcpPublication\.publicIndexing &&\s*mcpPublication\.transport &&\s*mcpPublication\.oauth &&\s*mcpPublication\.discovery &&\s*mcpPublication\.paidGeneration &&\s*mcpPublication\.trial &&\s*mcpPublication\.referenceUploads;/
   );
-  assert.match(sitemapConfig, /if \(mcpIndexable\) \{\s*marketingPaths\.add\('\/mcp'\);\s*\}/);
+  assert.match(
+    sitemapConfig,
+    /const MCP_PUBLIC_INDEXABLE_PATHS = \[\s*'\/mcp',\s*'\/integrations\/claude',\s*'\/integrations\/codex',\s*'\/docs\/mcp',\s*\];/
+  );
+  assert.match(
+    sitemapConfig,
+    /if \(mcpIndexable\) \{\s*MCP_PUBLIC_INDEXABLE_PATHS\.forEach\(\(publicPath\) => marketingPaths\.add\(publicPath\)\);\s*\}/
+  );
+  assert.match(sitemapConfig, /if \(slug === '\/docs\/mcp' && !mcpIndexable\)/);
 });

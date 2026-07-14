@@ -64,6 +64,15 @@ export type McpPageCopy = {
     gatedBody: string;
     steps: Array<{ title: string; body: string }>;
   };
+  answers: {
+    eyebrow: string;
+    title: string;
+    updatedLabel: string;
+    items: Record<
+      'integration' | 'price' | 'references' | 'confirmation' | 'disconnect',
+      { title: string; liveBody: string; gatedBody: string }
+    >;
+  };
   trust: {
     definition: { eyebrow: string; title: string; body: string };
     availability: { title: string; liveBody: string; gatedBody: string };

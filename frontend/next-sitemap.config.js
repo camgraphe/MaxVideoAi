@@ -20,6 +20,28 @@ const mcpIndexable =
   mcpPublication.paidGeneration &&
   mcpPublication.trial &&
   mcpPublication.referenceUploads;
+const MCP_PUBLIC_INDEXABLE_PATHS = [
+  '/mcp',
+  '/integrations/claude',
+  '/integrations/codex',
+  '/docs/mcp',
+];
+const MCP_PRIVATE_EXCLUDE_PATTERNS = [
+  '/api/*',
+  '/oauth',
+  '/oauth/*',
+  '/account',
+  '/account/*',
+  '/uploads/*',
+  '/app',
+  '/app/*',
+  '/workspace',
+  '/workspace/*',
+  '/library',
+  '/library/*',
+  '/media-library/*',
+  '/docs/private/*',
+];
 const MARKETING_CORE_PATHS = [
   '/',
   '/models',
@@ -263,7 +285,7 @@ module.exports = {
   // overwrites and to allow fine-grained Allow rules for Next assets.
   generateRobotsTxt: false,
   sitemapSize: 7000,
-  exclude: ['/api/*', '/_next/*'],
+  exclude: ['/_next/*', ...MCP_PRIVATE_EXCLUDE_PATTERNS],
   changefreq: 'weekly',
   priority: 0.8,
   // robotsTxtOptions no longer used (manual robots.txt)
@@ -289,7 +311,7 @@ module.exports = {
     const marketingPaths = new Set(MARKETING_CORE_PATHS);
 
     if (mcpIndexable) {
-      marketingPaths.add('/mcp');
+      MCP_PUBLIC_INDEXABLE_PATHS.forEach((publicPath) => marketingPaths.add(publicPath));
     }
 
     for (const entry of modelRoster) {
@@ -299,6 +321,9 @@ module.exports = {
     }
 
     for (const slug of collectContentSlugs('docs')) {
+      if (slug === '/docs/mcp' && !mcpIndexable) {
+        continue;
+      }
       marketingPaths.add(slug);
     }
 

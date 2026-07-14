@@ -5,6 +5,7 @@ import type { McpBudgetOption } from '../_lib/mcp-budget-options';
 import type { McpCompatibilityEvidence } from '../_lib/mcp-compatibility';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 import type { McpProof } from '../_lib/mcp-proof';
+import { McpAnswerPassagesSection } from './McpAnswerPassagesSection';
 import { McpBudgetShortlist } from './McpBudgetShortlist';
 import { McpHeroSection } from './McpHeroSection';
 import { McpReferenceWorkflowSection } from './McpReferenceWorkflowSection';
@@ -39,6 +40,12 @@ export function McpPageView({
       <McpWorkflowStrip copy={copy.workflow} />
       <McpBudgetShortlist copy={copy.budget} options={budgetOptions} />
       <McpReferenceWorkflowSection copy={copy.references} showReferenceClaim={publication.showReferenceClaim} />
+      <McpAnswerPassagesSection
+        copy={copy.answers}
+        lastVerified={compatibility.lastVerified}
+        locale={locale}
+        publication={publication}
+      />
       <McpTrustSections compatibility={compatibility} copy={copy} locale={locale} publication={publication} />
     </div>
   );

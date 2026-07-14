@@ -231,6 +231,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
                 title={decisionCopy.pricingLimitsTitle ?? scopeDefaults.reliabilityTitle}
                 body={decisionCopy.pricingLimitsBody ?? scopeDefaults.reliabilitySubtitle}
                 items={decisionData.pricingLimits}
+                locale={activeLocale}
               />
             </>
           ) : null}
