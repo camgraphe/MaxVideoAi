@@ -22,3 +22,11 @@ test('admin transaction shared contracts live in focused modules', () => {
   assert.match(readModule('normalizers.ts'), /export function normalizeCurrency/);
   assert.match(readModule('normalizers.ts'), /export function isRefundablePaymentStatus/);
 });
+
+test('admin transaction reads have one focused owner', () => {
+  const source = readModule('read-model.ts');
+  assert.ok(source.split('\n').length <= 350, 'read-model.ts should stay below 350 lines');
+  assert.match(source, /export function mapAdminTransactionRow/);
+  assert.match(source, /export async function fetchAdminTransactions/);
+  assert.match(source, /export async function fetchTransactionAnomalies/);
+});
