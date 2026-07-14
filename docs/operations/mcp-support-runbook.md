@@ -52,11 +52,35 @@ entries, or status notices.
 
 ## Live versus reserved error vocabulary
 
-The three-tool registry has only two documented observable failure shapes:
+Current errors exist at three different layers. Do not describe a transport or SDK rejection as a MaxVideoAI
+application error, and do not infer a provider or wallet state from a generic protocol failure.
 
-- **HTTP 401 / JSON-RPC `-32001`**: no valid bearer grant; follow the authentication challenge and obtain fresh consent.
-- **`INTERNAL_ERROR`**: unexpected details are redacted; retain the returned `correlationId`, stop repeated calls, and
-  escalate if the failure persists.
+### Transport and protocol errors
+
+The following safe envelopes are produced by the current handler or SDK and are covered by executable tests:
+
+| Source | HTTP / JSON-RPC envelope | Current safe meaning |
+| --- | --- | --- |
+| Authentication challenge | HTTP 401, JSON-RPC `-32001`, exact response `{"jsonrpc":"2.0","error":{"code":-32001,"message":"Authentication required."},"id":null}` | No valid bearer principal. Follow protected-resource discovery and obtain fresh consent. |
+| Unsupported HTTP verb | HTTP 405, `{"jsonrpc":"2.0","error":{"code":-32600,"message":"Unsupported HTTP method."},"id":null}` | Use GET, POST, or DELETE as required by Streamable HTTP. |
+| Response negotiation | HTTP 406, JSON-RPC `-32600`, message `MCP requires JSON or event-stream response negotiation.` | The request accepted only browser HTML; retry from an MCP client with JSON/event-stream negotiation. |
+| Oversized body | HTTP 413, JSON-RPC `-32600`, message `Request body is too large.` | Reduce the protocol request below the handler limit; never send media or base64 in this request. |
+| Malformed JSON | HTTP 400, JSON-RPC `-32700`, exact response `{"jsonrpc":"2.0","error":{"code":-32700,"message":"Invalid JSON."},"id":null}` | Correct the JSON syntax; do not treat it as a tool failure. |
+| Unknown JSON-RPC method | JSON-RPC `-32601`, message `Method not found`, with the request ID preserved | The SDK does not implement that protocol method. Do not retry it as a MaxVideoAI tool. |
+| Handler/auth exception | HTTP 500, JSON-RPC `-32603`; safe messages are `Authentication could not be completed.` or `MCP request handling failed.` | Unexpected transport/auth processing failed without exposing the private exception. Retain only sanitized time/client context and escalate. |
+
+These are current checked handler/SDK examples, **not an exhaustive catalogue of every private SDK message**. SDK
+versions can reject other malformed JSON-RPC requests. Support may quote only the safe response returned to the user;
+never expose an internal exception, schema dump, stack, token, request body, or provider response.
+
+### Tool-level failures
+
+SDK validation of invalid live-tool arguments returns a JSON-RPC result with `isError: true` and safe text such as
+`Invalid arguments for tool list_models`; it is a tool-level `isError` result, not a provider rejection and not the
+future application code `PARAMETER_INVALID`. Ask the user to correct only the documented public argument.
+
+An unexpected operation inside a registered tool returns **`INTERNAL_ERROR`** with a redacted message and a generated
+`correlationId`. Retain that identifier, stop repeated calls, and escalate if the failure persists.
 
 Every uppercase application code used below is a **reserved contract code; not observable from the three-tool
 registry**. It exists in the checked-in agent error type for future generation work. Do not tell a user that the current
@@ -279,15 +303,16 @@ is not a public release.
 
 **LEGAL OWNER REVIEW REQUIRED. No binding legal text was changed in Task 10.**
 
-The current Privacy Policy provides broad service categories but predates the proposed connected-agent flow. The AUP
-already governs prompts, uploads, outputs, abuse, privacy, and platform safeguards, but it does not expressly address
-automated connected clients or trial-evasion behavior. The following patch is deliberately not applied:
+The current Privacy Policy provides broad service categories but predates the proposed connected-agent flow. The
+current Terms and AUP govern accounts, user inputs/outputs, payment, abuse, privacy, and platform safeguards, but do not
+expressly allocate connected-agent authority or responsibility. Legal may decide that existing language is sufficient,
+but that decision needs an **approved sufficiency rationale**. The following patch is deliberately not applied:
 
-| Locale | Privacy owner file | Required review before a patch |
-| --- | --- | --- |
-| English | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEn.tsx` | Add connected-client permissions, OAuth/grant and minimized ledger categories, host/provider processing, revocation, and exact retention only after owners approve. |
-| French | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleFr.tsx` | Native legal review of the same approved meaning; do not translate an unapproved English draft. |
-| Spanish | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEs.tsx` | Native legal review of the same approved meaning; do not translate an unapproved English draft. |
+| Locale | Privacy owner file | Terms owner file | Required review before a patch |
+| --- | --- | --- | --- |
+| English | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEn.tsx` | `frontend/app/(core)/legal/terms/_components/TermsArticleEn.tsx` | Review connected-client permissions/data, connected-agent authority and responsibility, spending/confirmation, host/provider processing, revocation, and retention. |
+| French | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleFr.tsx` | `frontend/app/(core)/legal/terms/_components/TermsArticleFr.tsx` | Native legal review of the same approved meaning; do not translate an unapproved English draft. |
+| Spanish | `frontend/app/(core)/legal/privacy/_components/PrivacyArticleEs.tsx` | `frontend/app/(core)/legal/terms/_components/TermsArticleEs.tsx` | Native legal review of the same approved meaning; do not translate an unapproved English draft. |
 
 Acceptable-use candidate owner: `frontend/app/(core)/legal/acceptable-use/page.tsx` (re-exported by the localized
 `legal/acceptable-use/page.tsx`). Legal/Risk must decide whether automated abuse, trial circumvention, excessive
@@ -295,13 +320,18 @@ polling, and credential sharing need explicit prohibitions or are already suffic
 
 Owner decisions required before editing any legal document:
 
-1. controller/processor roles for the connected host, MaxVideoAI, each inference provider, and storage/auth vendors;
-2. lawful basis and purpose for OAuth identifiers, security logs, audit events, attribution, and trial-risk processing;
-3. exact retention period and deletion mechanism for grants/bindings, audit/funnel data, quotes, uploads/references,
+1. whether current Terms already allocate connected-agent authority and responsibility for user-directed agent actions,
+   or which narrow amendment is required;
+2. whether preparing a quote creates no spending authority, which explicit quote and confirmation action authorizes
+   wallet spending, and how idempotency, limits, refunds, and disputed agent actions are allocated;
+3. whether MCP revocation ends only future access or also changes pending jobs, receipts, media, retention, or deletion;
+4. how MaxVideoAI Terms interact with third-party host terms and whether host instructions/approvals can bind the user;
+5. controller/processor roles for the connected host, MaxVideoAI, each inference provider, and storage/auth vendors;
+6. lawful basis and purpose for OAuth identifiers, security logs, audit events, attribution, and trial-risk processing;
+7. exact retention period and deletion mechanism for grants/bindings, audit/funnel data, quotes, uploads/references,
    generated media, jobs, receipts, and security exceptions;
-4. whether user-facing revocation also triggers deletion, de-identification, or only future-access termination;
-5. provider/subprocessor names, regions, transfers, and notice requirements;
-6. legal-document version, effective date, re-consent mode, grace period, and native-language sign-off.
+8. provider/subprocessor names, regions, transfers, and notice requirements;
+9. legal-document version, effective date, re-consent mode, grace period, and native-language sign-off.
 
 After approval, follow the existing legal-document rollout guide; do not silently change effective meaning or skip
 version/re-consent handling.

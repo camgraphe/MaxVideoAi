@@ -50,10 +50,12 @@ The runbook contains explicit decision trees for:
 9. trial restoration;
 10. a revoked connection.
 
-Only the current HTTP 401 / JSON-RPC `-32001` authentication challenge and `INTERNAL_ERROR` are described as observable
-from the three-tool registry. Application codes such as `QUOTE_EXPIRED`, `INSUFFICIENT_FUNDS`,
-`SPENDING_LIMIT_EXCEEDED`, `REFERENCE_INVALID`, `PROVIDER_REJECTED`, and `JOB_FAILED` are explicitly marked reserved
-and future-gated.
+The runbook now separates handler/protocol envelopes (`-32001`, `-32600`, `-32700`, `-32601`, and `-32603`), SDK
+tool-argument validation returned as `isError: true`, and application/tool failures. The handler-owned envelopes and
+representative SDK paths are executed in the readiness test. Unexpected live-tool operations may return
+`INTERNAL_ERROR`; generation application codes such as `QUOTE_EXPIRED`, `INSUFFICIENT_FUNDS`,
+`SPENDING_LIMIT_EXCEEDED`, `REFERENCE_INVALID`, `PROVIDER_REJECTED`, and `JOB_FAILED` remain explicitly reserved and
+future-gated. The runbook does not claim an exhaustive private SDK error catalogue.
 
 The disclosure inventory separates normal service processing of prompts, inputs, outputs, and uploads from minimized
 MCP audit/funnel ledgers. Support intake forbids requesting or copying access/refresh tokens, credentials, full payment
@@ -64,9 +66,12 @@ handling, and escalation owners without claiming that unavailable ledgers or flo
 ## Legal, status, and changelog boundary
 
 There is no repository evidence of document-owner approval for a new binding privacy, terms, or acceptable-use
-promise. The runbook therefore prepares a Legal-owner review matrix for English, French, and Spanish only. It identifies
-controller/processor roles, purposes and lawful bases, category-specific retention/deletion, OAuth revocation,
-provider/subprocessor flows, trial-risk signals, support/incident data, and directory terms as owner decisions.
+promise. The runbook therefore prepares Privacy and Terms owner matrices for English, French, and Spanish, plus the AUP
+owner. It identifies connected-agent authority and responsibility, agent actions, quote versus confirmation, wallet
+spending, revocation effects, third-party host terms, controller/processor roles, purposes and lawful bases,
+category-specific retention/deletion, provider/subprocessor flows, trial-risk signals, support/incident data, and
+directory terms as owner decisions. Legal may instead approve current-language sufficiency, but must record that
+rationale.
 
 No legal application file changed. No MCP status component was added because there is no live MCP-specific health
 source, monitored component mapping, incident owner, or update cadence. No changelog entry was added because there is
@@ -80,9 +85,13 @@ Official documentation checked on 2026-07-14 supports a direct Streamable HTTP/O
 Codex clients. That path is not a directory listing and does not establish automatic tool selection or “available in
 the Codex library.”
 
-OpenAI currently packages MCP-backed public apps as plugins. The prepared package records the working-public-server,
-identity/role, legal URL, scanned-tool metadata, test case, test-account, country, and owned-listing-material
-requirements. It remains blocked and unsubmitted. A future ChatGPT plugin approval would not prove Codex host behavior.
+OpenAI currently packages MCP-backed public apps as plugins. Its App Guidelines also currently restrict app commerce
+to physical goods and prohibit directly or indirectly selling digital products/services, including digital content,
+tokens, or credits. The package records a **DO NOT SUBMIT** blocker: MaxVideoAI infers that wallet-funded media
+generation and top-ups materially connect the intended plugin to those categories. This is a qualified MaxVideoAI
+eligibility inference, not a written OpenAI eligibility decision. Submission requires written OpenAI clarification for
+the exact scope or a policy change followed by re-review. Direct Codex MCP configuration remains a separate path, and a
+future ChatGPT plugin approval would not prove Codex host behavior.
 
 ### Anthropic and Claude
 
@@ -125,10 +134,30 @@ then added to the contract before the listing payload; the run remained red unti
 
 ### GREEN
 
-The focused readiness contract now passes 10/10. It verifies all required decision trees and disclosures, the eight
+The initial focused readiness contract passed 10/10. It verifies all required decision trees and disclosures, the eight
 false gates, three locales, exact current tools, negative cases, legal-owner boundaries, no false status/changelog or
 approval claim, private-data exclusions, official OpenAI/Anthropic domains, neutral registry evidence, and current host
 and migration blockers.
+
+### Review-remediation RED/GREEN
+
+The review contract was strengthened before documentation changes. The first run executed 13 tests: 9 passed and 4
+failed on the incomplete error vocabulary, omitted localized Terms owners/agent authority decisions, missing OpenAI
+commerce blocker, and unsupported registry moderation-retention statement. The handler assertions in that RED run
+already executed successfully and established the real safe envelopes before the prose changed.
+
+The corrected 13/13 contract now:
+
+- executes malformed JSON, unsupported HTTP, authentication exception, unknown JSON-RPC method, and invalid live-tool
+  argument paths through `handleMcpHttpRequest`;
+- lists the real MCP server through a linked in-memory SDK client and compares the runbook/package tool rows to that
+  observed registry rather than a duplicated expected array;
+- derives EN/FR/ES listing URLs from the application's localized route owner and compares exact package rows;
+- locks separate OpenAI commerce and Anthropic media-generation **DO NOT SUBMIT** states while preserving direct Codex
+  and Claude connector paths;
+- requires Privacy and Terms owner files and the connected-agent legal decision set; and
+- replaces the unsourced registry moderation-retention shorthand with the official moderation-policy URL and its exact
+  distinction between publisher unpublish, registry removal status, and metadata accessibility.
 
 ## Verification
 
@@ -145,13 +174,14 @@ and migration blockers.
      tests/mcp-publication.test.ts \
      tests/mcp-docs-content.test.ts \
      tests/mcp-oauth-discovery.test.ts \
+     tests/mcp-transport-contract.test.ts \
      tests/mcp-seo-signals.test.ts \
      tests/mcp-seo-review-remediation.test.ts \
      tests/mcp-marketing-copy.test.ts \
      tests/mcp-marketing-route-architecture.test.ts
    ```
 
-   Result: exit 0; 89 passed, 0 failed.
+   Result after review remediation: exit 0; 103 passed, 0 failed.
 
 2. Complete MCP regression:
 
@@ -159,7 +189,7 @@ and migration blockers.
    ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/mcp-*.test.ts
    ```
 
-   Result: exit 0; 212 passed, 0 failed.
+   Result after review remediation: exit 0; 215 passed, 0 failed.
 
 3. Static, localization, SEO, and exposure validation:
 
@@ -206,6 +236,8 @@ and migration blockers.
 5. An authorized owner must verify domain/organization identity and perform any future portal or registry action.
 6. Anthropic Connectors Directory submission remains prohibited by the current media-generation policy unless the
    policy or MaxVideoAI's eligible submitted scope materially changes and is re-reviewed.
+7. OpenAI plugin submission remains blocked by the current digital commerce rule unless written OpenAI clarification
+   covers the exact MaxVideoAI scope or the policy changes and the package is re-reviewed.
 
 ## External-state audit
 

@@ -76,19 +76,25 @@ Owner action:
 
 ## OpenAI: public plugin containing an MCP-backed app
 
-Package state: **NOT SUBMITTED — BLOCKED**.
+Package state: **DO NOT SUBMIT — CURRENT COMMERCE ELIGIBILITY BLOCKER**.
 
 | Evidence field | Value |
 | --- | --- |
 | Source URL | [OpenAI app preparation](https://developers.openai.com/apps-sdk/deploy/submission), [OpenAI plugin submission](https://learn.chatgpt.com/docs/submit-plugins), and [OpenAI app guidelines](https://developers.openai.com/apps-sdk/app-guidelines) |
 | Checked | 2026-07-14 |
-| Evidence state | Verified official documentation says MCP-backed apps are submitted as plugins. An app-only plugin can use an MCP server and custom UI is optional. The portal requires identity/role checks, a public working server, accurate scanned tool metadata, listing/legal URLs, prompts/test cases, availability, and policy attestations. No MaxVideoAI draft or submission was created. |
-| Uncertainty | Portal fields, geographic availability, review policy, plugin/app packaging, and distribution surfaces can change. Passing review would establish only the reviewed plugin experience, not all Codex hosts or future generation tools. |
+| Evidence state | Verified official documentation says MCP-backed apps are submitted as plugins. The current App Guidelines allow app commerce only for physical goods and disallow selling digital products or services, including digital content, tokens, or credits, directly or indirectly. No MaxVideoAI draft or submission was created. |
+| Uncertainty | **This is a MaxVideoAI eligibility inference, not an OpenAI eligibility decision:** wallet-funded media generation produces digital content/services, and web top-ups fund credits that would indirectly enable that workflow. Whether a permanently read-only comparison connector could qualify is not established. Portal fields, review policy, packaging, and distribution surfaces can change. |
 
 OpenAI currently asks for a verified individual/business identity, Apps Management write access, a real public MCP
 endpoint (not local/test), appropriate CSP, exact annotations, logo/listing/legal material, test credentials when
 authentication is required, five positive and three negative test cases, and selected countries. Scanning imports the
 server's actual tools and annotations; prose cannot override incorrect metadata.
+
+The current commerce rule is a threshold blocker for the intended MaxVideoAI product, independently of technical
+readiness. Wallet-funded media generation and top-ups materially connect the proposed plugin to digital content,
+services, and credits. This is a MaxVideoAI eligibility inference from the published rule, not a written OpenAI ruling.
+**Do not submit** a MaxVideoAI plugin unless OpenAI provides written clarification covering the exact submitted
+read-only and intended paid-generation scope, or a policy change removes the blocker and Legal re-reviews it.
 
 The current blockers are all release-critical:
 
@@ -98,6 +104,7 @@ The current blockers are all release-critical:
 - only three read-only tools are present, while the intended generation/trial/reference product is unimplemented;
 - Codex/Claude/other host-selection scorecards have no real decision evidence;
 - production monitoring, status ownership, refresh evidence, and migration prerequisites are incomplete.
+- written OpenAI clarification or a policy change has not resolved the commerce eligibility inference.
 
 ChatGPT plugin approval is not a Codex host decision test. A future approval must not be described as “listed in
 Codex” unless the exact Codex distribution surface and behavior are separately verified.
@@ -158,10 +165,10 @@ Package state: **NOT SUBMITTED — BLOCKED**.
 
 | Evidence field | Value |
 | --- | --- |
-| Source URL | [Official registry overview](https://modelcontextprotocol.io/registry/about), [remote-server metadata](https://modelcontextprotocol.io/registry/remote-servers), [namespace authentication](https://modelcontextprotocol.io/registry/authentication), [registry terms](https://modelcontextprotocol.io/registry/terms-of-service), and [registry FAQ](https://modelcontextprotocol.io/registry/faq) |
+| Source URL | [Official registry overview](https://modelcontextprotocol.io/registry/about), [remote-server metadata](https://modelcontextprotocol.io/registry/remote-servers), [namespace authentication](https://modelcontextprotocol.io/registry/authentication), [registry terms](https://modelcontextprotocol.io/registry/terms-of-service), [registry FAQ](https://modelcontextprotocol.io/registry/faq), and [registry moderation policy](https://modelcontextprotocol.io/registry/moderation-policy) |
 | Checked | 2026-07-14 |
 | Evidence state | Verified owner documentation describes a preview centralized metadata registry for publicly accessible MCP servers. It supports Streamable HTTP remote URLs and reverse-DNS/domain ownership. No `server.json`, registry login, DNS/HTTP challenge, publication, or API lookup was performed for MaxVideoAI. |
-| Uncertainty | The registry is in preview, is primarily a source for downstream aggregators, and does not guarantee discovery in Codex, Claude, ChatGPT, or another host. Metadata versions are immutable; the FAQ says unpublish/delete is not currently available, while moderation may retain deleted metadata. |
+| Uncertainty | The registry is in preview, is primarily a source for downstream aggregators, and does not guarantee discovery in Codex, Claude, ChatGPT, or another host. Metadata versions are immutable; the FAQ says publisher unpublish/delete is not currently available. Separately, the moderation policy says a registry removal normally sets status to `"deleted"` while the metadata remains accessible through the API, except that metadata may be overwritten or erased in extreme cases. |
 
 The proposed neutral metadata identity is:
 
