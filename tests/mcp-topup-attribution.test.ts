@@ -23,7 +23,7 @@ test('confirmed receipt attribution inserts wallet funding only from an eligible
     },
   };
   const recorded = await recordConfirmedMcpWalletFunding({
-    receiptId: 42,
+    receiptId: '42',
     userId: 'user-1',
     amountCents: 2500,
     currency: 'USD',
@@ -55,7 +55,7 @@ test('missing trial/cohort, duplicate receipt, unrelated user, pre-trial, and ou
     },
   };
   assert.equal(await recordConfirmedMcpWalletFunding({
-    receiptId: 43,
+    receiptId: '43',
     userId: 'unrelated-user',
     amountCents: 1000,
     currency: 'EUR',
@@ -77,7 +77,7 @@ test('wallet attribution rejects non-confirmed or private payment-shaped inputs 
     },
   };
   const base = {
-    receiptId: 44,
+    receiptId: '44',
     userId: 'user-1',
     amountCents: 1000,
     currency: 'USD',
@@ -87,7 +87,10 @@ test('wallet attribution rejects non-confirmed or private payment-shaped inputs 
     { ...base, amountCents: -1 },
     { ...base, amountCents: 1.5 },
     { ...base, currency: 'usd' },
-    { ...base, receiptId: 0 },
+    { ...base, receiptId: '0' },
+    { ...base, receiptId: '01' },
+    { ...base, receiptId: '-1' },
+    { ...base, receiptId: '9223372036854775808' },
     { ...base, stripePaymentIntentId: 'pi_private' },
     { ...base, paymentMethod: 'card' },
     { ...base, clientSecret: 'secret' },
@@ -101,15 +104,17 @@ test('wallet attribution rejects non-confirmed or private payment-shaped inputs 
   assert.equal(queryCount, 0);
 });
 
-test('Stripe invokes MCP attribution only after a newly inserted canonical wallet receipt', () => {
+test('Stripe replays MCP attribution from canonical inserted or duplicate receipt rows', () => {
   const persistence = readFileSync(
     'frontend/app/api/stripe/webhook/_lib/stripe-webhook-topup-persistence.ts',
     'utf8',
   );
   assert.match(persistence, /recordConfirmedMcpWalletFunding/);
+  assert.match(persistence, /RETURNING\s+id::text\s+AS\s+id,\s*user_id,\s*amount_cents,\s*currency,\s*created_at/i);
+  assert.match(persistence, /SELECT\s+id::text\s+AS\s+id,\s*user_id,\s*amount_cents,\s*currency,\s*created_at[\s\S]*FROM app_receipts/i);
   assert.match(
     persistence,
-    /if \(persistenceResult\.kind === 'duplicate'\)[\s\S]*return;[\s\S]*recordConfirmedMcpWalletFunding\([\s\S]*receiptId:\s*persistenceResult\.receiptId/,
+    /recordConfirmedMcpWalletFunding\([\s\S]*receiptId:\s*persistenceResult\.receipt\.id[\s\S]*if \(persistenceResult\.kind === 'duplicate'\)/,
   );
   assert.doesNotMatch(
     readFileSync('frontend/app/api/stripe/webhook/_lib/stripe-webhook-failed-payments.ts', 'utf8'),

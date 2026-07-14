@@ -1,5 +1,16 @@
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
@@ -12,6 +23,8 @@ const consentPagePath = join(root, 'frontend/app/(core)/oauth/consent/page.tsx')
 const decisionRoutePath = join(root, 'frontend/app/api/oauth/decision/route.ts');
 const migrationRunnerPath = join(root, 'scripts/apply-neon-migrations.sh');
 const migrationReadmePath = join(migrationDirectory, 'README.md');
+const consentFormPath = join(root, 'frontend/app/(core)/oauth/consent/_components/OAuthConsentForm.tsx');
+const bindingSecret = 'task-7-approval-binding-secret-with-32-bytes';
 
 type FunnelModule = typeof import('../frontend/src/server/agent-api/mcp-funnel');
 
@@ -40,6 +53,51 @@ test('migration 33 is reserved after absent prerequisites and fails closed until
   assert.match(readFileSync(migrationRunnerPath, 'utf8'), /DATABASE_URL_UNPOOLED|pooler|direct/i);
   assert.match(readFileSync(migrationReadmePath, 'utf8'), /30_mcp_paid_generation[\s\S]*31_mcp_trial_entitlements[\s\S]*32_mcp_reference_uploads[\s\S]*33_mcp_acquisition_funnel/i);
   assert.match(readFileSync(migrationReadmePath, 'utf8'), /reserved|unapplied|prerequisite/i);
+});
+
+test('migration runner parses a lowercase direct Neon host and wraps every file in one transaction', (t) => {
+  const temporaryRoot = mkdtempSync(join(tmpdir(), 'mcp-migration-runner-'));
+  const fakeBin = join(temporaryRoot, 'bin');
+  const fakePsql = join(fakeBin, 'psql');
+  mkdirSync(fakeBin);
+  writeFileSync(fakePsql, '#!/bin/sh\nprintf "%s\\n" "$*"\n', 'utf8');
+  chmodSync(fakePsql, 0o755);
+  t.after(() => rmSync(temporaryRoot, { recursive: true, force: true }));
+
+  const run = (databaseUrl: string) => spawnSync('bash', [migrationRunnerPath], {
+    cwd: root,
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      PATH: `${fakeBin}:${process.env.PATH ?? ''}`,
+      DATABASE_URL: '',
+      DATABASE_URL_UNPOOLED: databaseUrl,
+    },
+  });
+
+  const pooled = run(
+    'postgresql://user:pass@EP-EXAMPLE-POOLER.US-EAST-2.AWS.NEON.TECH/database?sslmode=require',
+  );
+  assert.notEqual(pooled.status, 0);
+  assert.match(pooled.stderr, /pooled|direct/i);
+
+  const nonNeon = run('postgresql://user:pass@db.example.supabase.co/database?sslmode=require');
+  assert.notEqual(nonNeon.status, 0);
+  assert.match(nonNeon.stderr, /Neon/i);
+
+  const malformed = run('not-a-postgresql-url');
+  assert.notEqual(malformed.status, 0);
+  assert.match(malformed.stderr, /valid|URL/i);
+
+  const direct = run(
+    'postgresql://user:pass@EP-EXAMPLE.US-EAST-2.AWS.NEON.TECH/database?sslmode=require',
+  );
+  assert.equal(direct.status, 0, direct.stderr);
+  const psqlInvocations = direct.stdout
+    .split('\n')
+    .filter((line) => line.includes('postgresql://'));
+  assert.ok(psqlInvocations.length > 0);
+  assert.ok(psqlInvocations.every((line) => line.includes('--single-transaction')));
 });
 
 test('funnel migration creates a constrained explicit immutable ledger without sensitive columns', () => {
@@ -95,6 +153,8 @@ test('funnel migration has exact event and stage allowlists, indexes, and databa
   assert.match(migration, /medium[\s\S]*'owned'[\s\S]*'mcp'/i);
   assert.match(migration, /campaign[\s\S]*'mcp_connect'[\s\S]*'none'/i);
   assert.match(migration, /acquisition_client[\s\S]*'claude'[\s\S]*'codex'[\s\S]*'other'/i);
+  assert.match(migration, /CREATE TABLE(?: IF NOT EXISTS)? mcp_oauth_connection_bindings/i);
+  assert.doesNotMatch(migration, /^\s*(?:authorization_id|access_token|binding_token)\s+/im);
 });
 
 test('recordMcpFunnelEvent validates an exact DTO and inserts only positional explicit columns', async () => {
@@ -223,9 +283,10 @@ test('KPI returns null for a zero denominator and keeps raw attribution window c
   assert.equal(config.conversionWindowSeconds, 900);
 });
 
-test('consent start uses the signed HttpOnly cookie only after fresh user and authoritative client checks', () => {
+test('consent creates an approval-specific binding only after fresh user and authoritative client checks', () => {
   const page = readFileSync(consentPagePath, 'utf8');
   const decision = readFileSync(decisionRoutePath, 'utf8');
+  const form = readFileSync(consentFormPath, 'utf8');
   assert.match(page, /cookies\(\)/);
   assert.match(page, /MCP_ACQUISITION_COOKIE_NAME/);
   assert.match(page, /verifySignedMcpAcquisitionCookie/);
@@ -234,16 +295,105 @@ test('consent start uses the signed HttpOnly cookie only after fresh user and au
   assert.match(page, /auth\.getUser\(\)/);
   assert.match(page, /user\.id\s*!==\s*subject/);
   assert.match(page, /data\.client\.id/);
-  assert.match(page, /recordMcpOAuthConnectionStarted/);
+  assert.match(page, /createMcpOAuthApprovalBinding/);
+  assert.match(page, /authorizationId/);
+  assert.match(page, /connectionBindingToken/);
+  assert.match(form, /name="mcp_binding"/);
   assert.doesNotMatch(page, /oauth_connection_completed/);
   assert.doesNotMatch(page, /user_metadata/);
   assert.match(decision, /auth\.getClaims\(\)/);
   assert.match(decision, /auth\.getUser\(\)/);
   assert.match(decision, /user\.id\s*!==\s*subject/);
+  assert.match(decision, /oauth\.getAuthorizationDetails\(authorizationId\)/);
+  assert.match(decision, /approveMcpOAuthConnectionBinding/);
+  assert.ok(
+    decision.indexOf('oauth.getAuthorizationDetails(authorizationId)')
+      < decision.indexOf('oauth.approveAuthorization(authorizationId'),
+  );
+  assert.ok(
+    decision.indexOf('oauth.approveAuthorization(authorizationId')
+      < decision.indexOf('approveMcpOAuthConnectionBinding'),
+  );
   assert.doesNotMatch(decision, /user_metadata/);
 });
 
-test('post-auth connection binding uses one idempotent query with latest same-user/client start or direct fallback', async () => {
+test('approval binding token is authorization/user/client specific without persisting authorization material', async () => {
+  const funnel = await loadFunnel() as FunnelModule & {
+    createMcpOAuthApprovalBinding: (...args: any[]) => Promise<string | null>;
+    approveMcpOAuthConnectionBinding: (...args: any[]) => Promise<boolean>;
+  };
+  let createSql = '';
+  let createParams: ReadonlyArray<unknown> | undefined;
+  const createExecutor: QueryExecutor = {
+    async query<TRecord>(sql, params) {
+      createSql = sql;
+      createParams = params;
+      return [{
+        binding_id: 'mcpb_ABCDEFGHIJKLMNOPQRSTUVWX',
+        expires_at: new Date('2026-07-14T10:15:00.000Z'),
+      }] as TRecord[];
+    },
+  };
+  const acquisition = {
+    version: 1 as const,
+    acquisitionId: 'acq_ABCDEFGHIJKLMNOPQRSTUVWX',
+    source: 'mcp_landing' as const,
+    medium: 'owned' as const,
+    campaign: 'mcp_connect' as const,
+    client: 'claude' as const,
+    issuedAt: 1_752_490_000,
+    expiresAt: 1_752_490_600,
+  };
+  const token = await funnel.createMcpOAuthApprovalBinding({
+    authorizationId: 'authz_approval_specific_A',
+    userId: 'user-approval',
+    oauthClientId: 'client-approval',
+    acquisition,
+  }, {
+    executor: createExecutor,
+    secret: bindingSecret,
+    now: new Date('2026-07-14T10:00:00.000Z'),
+    bindingId: 'mcpb_ABCDEFGHIJKLMNOPQRSTUVWX',
+  });
+  assert.match(token ?? '', /^mcpb1\./);
+  assert.doesNotMatch(token ?? '', /authz_approval_specific_A/);
+  assert.match(createSql, /mcp_oauth_connection_bindings/);
+  assert.match(createSql, /oauth_connection_started/);
+  assert.doesNotMatch(createSql, /authorization_id|access_token|binding_token/i);
+  assert.equal(createParams?.includes('authz_approval_specific_A'), false);
+
+  let approvalQueries = 0;
+  let approvalSql = '';
+  const approvalExecutor: QueryExecutor = {
+    async query<TRecord>(sql) {
+      approvalQueries += 1;
+      approvalSql = sql;
+      return [{ binding_id: 'mcpb_ABCDEFGHIJKLMNOPQRSTUVWX' }] as TRecord[];
+    },
+  };
+  assert.equal(await funnel.approveMcpOAuthConnectionBinding({
+    token,
+    authorizationId: 'authz_different_grant_B',
+    userId: 'user-approval',
+    oauthClientId: 'client-approval',
+    approvedAt: new Date('2026-07-14T10:01:00.000Z'),
+  }, { executor: approvalExecutor, secret: bindingSecret }), false);
+  assert.equal(approvalQueries, 0);
+
+  assert.equal(await funnel.approveMcpOAuthConnectionBinding({
+    token,
+    authorizationId: 'authz_approval_specific_A',
+    userId: 'user-approval',
+    oauthClientId: 'client-approval',
+    approvedAt: new Date('2026-07-14T10:01:00.000Z'),
+  }, { executor: approvalExecutor, secret: bindingSecret }), true);
+  assert.equal(approvalQueries, 1);
+  assert.match(approvalSql, /UPDATE mcp_oauth_connection_bindings/i);
+  assert.match(approvalSql, /approved_at/i);
+  assert.doesNotMatch(approvalSql, /authorization_id|access_token|binding_token/i);
+});
+
+test('post-auth connection binding atomically consumes approved pending state under one canonical key', async () => {
   const { bindAuthenticatedMcpConnection } = await loadFunnel();
   let sql = '';
   let params: ReadonlyArray<unknown> | undefined;
@@ -259,13 +409,34 @@ test('post-auth connection binding uses one idempotent query with latest same-us
     { executor, now: new Date('2026-07-14T10:00:00.000Z'), bindingWindowSeconds: 900 },
   );
   assert.equal(outcome, 'attributed');
-  assert.match(sql, /oauth_connection_started/);
+  assert.match(sql, /mcp_oauth_connection_bindings/);
   assert.match(sql, /oauth_connection_completed/);
-  assert.match(sql, /ORDER BY occurred_at DESC/);
+  assert.match(sql, /approved_at IS NOT NULL/);
+  assert.match(sql, /consumed_at IS NULL/);
+  assert.match(sql, /FOR UPDATE/);
+  assert.match(sql, /UPDATE mcp_oauth_connection_bindings[\s\S]*consumed_at/i);
   assert.match(sql, /user_id\s*=\s*\$\d+/);
   assert.match(sql, /oauth_client_id\s+IS NOT DISTINCT FROM\s+\$\d+/);
   assert.match(sql, /ON CONFLICT \(idempotency_key\)/);
   assert.match(sql, /direct_mcp/);
+  assert.doesNotMatch(sql, /oauth_connection_started|ORDER BY occurred_at DESC/);
   assert.doesNotMatch(sql, /authorization_id|access_token|token_hash|user_metadata/i);
   assert.ok(params?.includes(900));
+  assert.equal(
+    params?.filter((value) => typeof value === 'string' && value.startsWith('oauth-completed:')).length,
+    1,
+  );
+});
+
+test('post-auth connection binding preserves missing-table isolation', async () => {
+  const { bindAuthenticatedMcpConnection } = await loadFunnel();
+  const outcome = await bindAuthenticatedMcpConnection(
+    { userId: 'user-1', clientId: 'oauth-client-1', emailVerified: true, authMethod: 'oauth' },
+    {
+      executor: { async query() { throw new Error('relation does not exist'); } },
+      now: new Date('2026-07-14T10:00:00.000Z'),
+      bindingWindowSeconds: 900,
+    },
+  );
+  assert.equal(outcome, 'unavailable');
 });

@@ -66,40 +66,34 @@ CREATE TABLE IF NOT EXISTS mcp_funnel_events (
     )
   ),
   CONSTRAINT mcp_funnel_events_stage_mapping CHECK (
-    (event_type = 'oauth_connection_completed' AND stage = 'oauth_connected')
-    OR (event_type = 'trial_quote_prepared' AND stage = 'trial_prepared')
-    OR (event_type = 'trial_generation_completed' AND stage = 'trial_completed')
-    OR (event_type = 'wallet_funded' AND stage = 'wallet_funded')
-    OR (
-      event_type = 'paid_generation_completed'
-      AND stage IN ('first_paid_generation', 'repeat_paid_generation')
-    )
-    OR (
-      event_type NOT IN (
-        'oauth_connection_completed',
-        'trial_quote_prepared',
-        'trial_generation_completed',
-        'wallet_funded',
-        'paid_generation_completed'
-      )
-      AND stage IS NULL
-    )
+    (
+      CASE event_type
+        WHEN 'oauth_connection_completed' THEN stage = 'oauth_connected'
+        WHEN 'trial_quote_prepared' THEN stage = 'trial_prepared'
+        WHEN 'trial_generation_completed' THEN stage = 'trial_completed'
+        WHEN 'wallet_funded' THEN stage = 'wallet_funded'
+        WHEN 'paid_generation_completed' THEN
+          stage IN ('first_paid_generation', 'repeat_paid_generation')
+        ELSE stage IS NULL
+      END
+    ) IS TRUE
   ),
   CONSTRAINT mcp_funnel_events_attribution_allowlist CHECK (
     (
-      source = 'mcp_landing'
-      AND medium = 'owned'
-      AND campaign = 'mcp_connect'
-      AND acquisition_client IN ('claude', 'codex')
-      AND acquisition_id IS NOT NULL
-    )
-    OR (
-      source = 'direct_mcp'
-      AND medium = 'mcp'
-      AND campaign = 'none'
-      AND acquisition_client = 'other'
-      AND acquisition_id IS NULL
-    )
+      CASE source
+        WHEN 'mcp_landing' THEN
+          medium = 'owned'
+          AND campaign = 'mcp_connect'
+          AND acquisition_client IN ('claude', 'codex')
+          AND acquisition_id IS NOT NULL
+        WHEN 'direct_mcp' THEN
+          medium = 'mcp'
+          AND campaign = 'none'
+          AND acquisition_client = 'other'
+          AND acquisition_id IS NULL
+        ELSE FALSE
+      END
+    ) IS TRUE
   ),
   CONSTRAINT mcp_funnel_events_acquisition_id_format CHECK (
     acquisition_id IS NULL OR acquisition_id ~ '^acq_[A-Za-z0-9_-]{24}$'
@@ -107,37 +101,93 @@ CREATE TABLE IF NOT EXISTS mcp_funnel_events (
   CONSTRAINT mcp_funnel_events_job_id_format CHECK (
     job_id IS NULL OR (length(job_id) BETWEEN 1 AND 256 AND job_id = btrim(job_id))
   ),
-  CONSTRAINT mcp_funnel_events_amount_currency_pair CHECK (
-    (amount_cents IS NULL AND currency IS NULL)
-    OR (
-      amount_cents IS NOT NULL
-      AND amount_cents >= 0
-      AND currency ~ '^[A-Z]{3}$'
-      AND event_type IN ('trial_quote_prepared', 'paid_quote_prepared', 'wallet_funded')
-    )
-  ),
-  CONSTRAINT mcp_funnel_events_wallet_receipt CHECK (
+  CONSTRAINT mcp_funnel_events_financial_shape CHECK (
     (
-      event_type = 'wallet_funded'
-      AND amount_cents > 0
-      AND receipt_hash ~ '^[a-f0-9]{64}$'
-    )
-    OR (event_type <> 'wallet_funded' AND receipt_hash IS NULL)
+      CASE
+        WHEN event_type = 'wallet_funded' THEN
+          amount_cents IS NOT NULL
+          AND amount_cents > 0
+          AND currency IS NOT NULL
+          AND currency ~ '^[A-Z]{3}$'
+          AND receipt_hash IS NOT NULL
+          AND receipt_hash ~ '^[a-f0-9]{64}$'
+        WHEN event_type IN ('trial_quote_prepared', 'paid_quote_prepared') THEN
+          (
+            (amount_cents IS NULL AND currency IS NULL)
+            OR (
+              amount_cents IS NOT NULL
+              AND amount_cents >= 0
+              AND currency IS NOT NULL
+              AND currency ~ '^[A-Z]{3}$'
+            )
+          )
+          AND receipt_hash IS NULL
+        ELSE
+          amount_cents IS NULL
+          AND currency IS NULL
+          AND receipt_hash IS NULL
+      END
+    ) IS TRUE
   ),
   CONSTRAINT mcp_funnel_events_identity_requirement CHECK (
-    (event_type = 'landing_cta_clicked' AND acquisition_id IS NOT NULL)
-    OR (event_type <> 'landing_cta_clicked' AND user_id IS NOT NULL)
+    (
+      CASE event_type
+        WHEN 'landing_cta_clicked' THEN acquisition_id IS NOT NULL
+        ELSE user_id IS NOT NULL
+      END
+    ) IS TRUE
   ),
   CONSTRAINT mcp_funnel_events_started_context CHECK (
-    event_type <> 'oauth_connection_started'
-    OR (oauth_client_id IS NOT NULL AND source = 'mcp_landing')
+    (
+      CASE event_type
+        WHEN 'oauth_connection_started' THEN
+          oauth_client_id IS NOT NULL AND source = 'mcp_landing'
+        ELSE TRUE
+      END
+    ) IS TRUE
   ),
   CONSTRAINT mcp_funnel_events_idempotency_format CHECK (
     length(idempotency_key) BETWEEN 1 AND 256
     AND idempotency_key ~ '^[A-Za-z0-9:_-]+$'
+  )
+);
+
+CREATE TABLE IF NOT EXISTS mcp_oauth_connection_bindings (
+  binding_id TEXT PRIMARY KEY,
+  created_at TIMESTAMPTZ NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  approved_at TIMESTAMPTZ,
+  consumed_at TIMESTAMPTZ,
+  user_id TEXT NOT NULL,
+  oauth_client_id TEXT NOT NULL,
+  acquisition_id TEXT NOT NULL,
+  source TEXT NOT NULL,
+  medium TEXT NOT NULL,
+  campaign TEXT NOT NULL,
+  acquisition_client TEXT NOT NULL,
+
+  CONSTRAINT mcp_oauth_connection_bindings_id_format CHECK (
+    binding_id ~ '^mcpb_[A-Za-z0-9_-]{24}$'
   ),
-  CONSTRAINT mcp_funnel_events_receipt_hash_format CHECK (
-    receipt_hash IS NULL OR receipt_hash ~ '^[a-f0-9]{64}$'
+  CONSTRAINT mcp_oauth_connection_bindings_user_format CHECK (
+    length(user_id) BETWEEN 1 AND 128 AND user_id = btrim(user_id)
+  ),
+  CONSTRAINT mcp_oauth_connection_bindings_client_format CHECK (
+    length(oauth_client_id) BETWEEN 1 AND 256 AND oauth_client_id = btrim(oauth_client_id)
+  ),
+  CONSTRAINT mcp_oauth_connection_bindings_acquisition_format CHECK (
+    acquisition_id ~ '^acq_[A-Za-z0-9_-]{24}$'
+  ),
+  CONSTRAINT mcp_oauth_connection_bindings_attribution CHECK (
+    source = 'mcp_landing'
+    AND medium = 'owned'
+    AND campaign = 'mcp_connect'
+    AND acquisition_client IN ('claude', 'codex')
+  ),
+  CONSTRAINT mcp_oauth_connection_bindings_time_order CHECK (
+    expires_at > created_at
+    AND (approved_at IS NULL OR (approved_at >= created_at AND approved_at <= expires_at))
+    AND (consumed_at IS NULL OR (approved_at IS NOT NULL AND consumed_at >= approved_at))
   )
 );
 
@@ -155,6 +205,12 @@ CREATE INDEX IF NOT EXISTS mcp_funnel_events_job_occurred_idx
   ON mcp_funnel_events (job_id, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS mcp_funnel_events_type_occurred_idx
   ON mcp_funnel_events (event_type, occurred_at DESC);
+
+CREATE INDEX IF NOT EXISTS mcp_oauth_connection_bindings_pending_idx
+  ON mcp_oauth_connection_bindings (user_id, oauth_client_id, approved_at, binding_id)
+  WHERE approved_at IS NOT NULL AND consumed_at IS NULL;
+CREATE INDEX IF NOT EXISTS mcp_oauth_connection_bindings_acquisition_idx
+  ON mcp_oauth_connection_bindings (acquisition_id);
 
 CREATE UNIQUE INDEX IF NOT EXISTS mcp_funnel_events_idempotency_unique_idx
   ON mcp_funnel_events (idempotency_key)

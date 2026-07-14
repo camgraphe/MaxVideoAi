@@ -1,8 +1,14 @@
 import { createHash } from 'node:crypto';
 
-import type { SignedMcpAcquisition } from '@/lib/mcp-acquisition';
 import { query, type QueryExecutor } from '@/lib/db';
-import type { AgentPrincipal } from '@/server/agent-api/principal';
+
+export {
+  approveMcpOAuthConnectionBinding,
+  bindAuthenticatedMcpConnection,
+  createMcpOAuthApprovalBinding,
+  MCP_CONNECTION_BINDING_WINDOW_SECONDS,
+  type McpConnectionBindingResult,
+} from '@/server/agent-api/mcp-oauth-funnel';
 
 export type McpFunnelStage =
   | 'oauth_connected'
@@ -59,6 +65,8 @@ const defaultDeps: FunnelDeps = { executor: { query } };
 const ACQUISITION_ID_PATTERN = /^acq_[A-Za-z0-9_-]{24}$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const CURRENCY_PATTERN = /^[A-Z]{3}$/;
+const POSITIVE_PG_BIGINT_PATTERN = /^[1-9]\d{0,18}$/;
+const MAX_PG_BIGINT = '9223372036854775807';
 const RECEIPT_HASH_PATTERN = /^[a-f0-9]{64}$/;
 const IDEMPOTENCY_PATTERN = /^[A-Za-z0-9:_-]+$/;
 const EVENT_KEYS = new Set<keyof McpFunnelEvent>([
@@ -183,97 +191,8 @@ export async function recordMcpFunnelEvent(
   }
 }
 
-export async function recordMcpOAuthConnectionStarted(
-  input: {
-    userId: string;
-    oauthClientId: string;
-    acquisition: SignedMcpAcquisition;
-    occurredAt?: Date;
-  },
-  deps: FunnelDeps = defaultDeps,
-): Promise<boolean> {
-  return recordMcpFunnelEvent({
-    eventType: 'oauth_connection_started',
-    stage: null,
-    occurredAt: input.occurredAt ?? new Date(),
-    userId: input.userId,
-    oauthClientId: input.oauthClientId,
-    acquisitionId: input.acquisition.acquisitionId,
-    quoteId: null,
-    jobId: null,
-    amountCents: null,
-    currency: null,
-    source: input.acquisition.source,
-    medium: input.acquisition.medium,
-    campaign: input.acquisition.campaign,
-    client: input.acquisition.client,
-    idempotencyKey: `oauth-started:${input.acquisition.acquisitionId}`,
-    receiptHash: null,
-  }, deps);
-}
-
-export const MCP_CONNECTION_BINDING_WINDOW_SECONDS = 15 * 60;
-
-export type McpConnectionBindingResult = 'attributed' | 'direct' | 'duplicate' | 'unavailable';
-
 function sha256(value: string): string {
   return createHash('sha256').update(value, 'utf8').digest('hex');
-}
-
-export async function bindAuthenticatedMcpConnection(
-  principal: AgentPrincipal,
-  options: FunnelDeps & { now?: Date; bindingWindowSeconds?: number } = {
-    ...defaultDeps,
-  },
-): Promise<McpConnectionBindingResult> {
-  const now = options.now ?? new Date();
-  const windowSeconds = options.bindingWindowSeconds ?? MCP_CONNECTION_BINDING_WINDOW_SECONDS;
-  if (!Number.isSafeInteger(windowSeconds) || windowSeconds <= 0 || windowSeconds > 24 * 60 * 60) {
-    return 'unavailable';
-  }
-  const directIdempotency = `oauth-completed:direct:${sha256(`${principal.userId}\0${principal.clientId ?? ''}`)}`;
-  try {
-    const rows = await options.executor.query<{ acquisition_id: string | null; source: McpFunnelSource }>(
-      `WITH eligible AS (
-        SELECT acquisition_id, source, medium, campaign, acquisition_client
-          FROM mcp_funnel_events
-         WHERE event_type = 'oauth_connection_started'
-           AND user_id = $1
-           AND oauth_client_id IS NOT DISTINCT FROM $2
-           AND occurred_at <= $3
-           AND occurred_at >= $3 - ($4 * INTERVAL '1 second')
-         ORDER BY occurred_at DESC
-         LIMIT 1
-      ), candidate AS (
-        SELECT acquisition_id, source, medium, campaign, acquisition_client
-          FROM eligible
-        UNION ALL
-        SELECT NULL::text, 'direct_mcp', 'mcp', 'none', 'other'
-         WHERE NOT EXISTS (SELECT 1 FROM eligible)
-      )
-      INSERT INTO mcp_funnel_events (
-        event_type, stage, occurred_at, user_id, oauth_client_id, acquisition_id, quote_id,
-        job_id, amount_cents, currency, source, medium, campaign, acquisition_client,
-        idempotency_key, receipt_hash
-      )
-      SELECT
-        'oauth_connection_completed', 'oauth_connected', $3, $1, $2, acquisition_id,
-        NULL, NULL, NULL, NULL, source, medium, campaign, acquisition_client,
-        CASE
-          WHEN acquisition_id IS NOT NULL THEN 'oauth-completed:' || acquisition_id
-          ELSE $5
-        END,
-        NULL
-      FROM candidate
-      ON CONFLICT (idempotency_key) WHERE idempotency_key IS NOT NULL DO NOTHING
-      RETURNING acquisition_id, source`,
-      [principal.userId, principal.clientId, now, windowSeconds, directIdempotency],
-    );
-    if (rows.length === 0) return 'duplicate';
-    return rows[0].source === 'mcp_landing' ? 'attributed' : 'direct';
-  } catch {
-    return 'unavailable';
-  }
 }
 
 export type McpFunnelSummaryConfig = {
@@ -458,7 +377,7 @@ export function resolveMcpTrialToWalletWindowSeconds(
 
 export async function recordConfirmedMcpWalletFunding(
   input: {
-    receiptId: number;
+    receiptId: string;
     userId: string;
     amountCents: number;
     currency: string;
@@ -468,8 +387,9 @@ export async function recordConfirmedMcpWalletFunding(
 ): Promise<boolean> {
   if (!isPlainRecord(input)
     || !hasExactKeys(input, CONFIRMED_WALLET_KEYS)
-    || !Number.isSafeInteger(input.receiptId)
-    || input.receiptId <= 0
+    || typeof input.receiptId !== 'string'
+    || !POSITIVE_PG_BIGINT_PATTERN.test(input.receiptId)
+    || (input.receiptId.length === MAX_PG_BIGINT.length && input.receiptId > MAX_PG_BIGINT)
     || !boundedNullable(input.userId, 128)
     || !Number.isSafeInteger(input.amountCents)
     || input.amountCents <= 0

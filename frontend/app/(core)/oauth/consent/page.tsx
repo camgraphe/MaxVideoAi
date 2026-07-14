@@ -7,7 +7,7 @@ import {
 } from '@/lib/mcp-acquisition';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
-import { recordMcpOAuthConnectionStarted } from '@/server/agent-api/mcp-funnel';
+import { createMcpOAuthApprovalBinding } from '@/server/agent-api/mcp-funnel';
 import {
   buildConsentLoginPath,
   isValidAuthorizationId,
@@ -67,27 +67,28 @@ export default async function OAuthConsentPage({ searchParams }: ConsentPageProp
 
   const cookieStore = await cookies();
   const signedCookie = cookieStore.get(MCP_ACQUISITION_COOKIE_NAME)?.value;
+  let connectionBindingToken: string | null = null;
   if (signedCookie) {
-    let acquisition = null;
     try {
-      acquisition = verifySignedMcpAcquisitionCookie(signedCookie, {
-        secret: resolveMcpAcquisitionSigningSecret(),
-      });
+      const secret = resolveMcpAcquisitionSigningSecret();
+      const acquisition = verifySignedMcpAcquisitionCookie(signedCookie, { secret });
+      if (acquisition) {
+        connectionBindingToken = await createMcpOAuthApprovalBinding({
+          authorizationId,
+          userId: user.id,
+          oauthClientId: data.client.id,
+          acquisition,
+        }, { secret });
+      }
     } catch {
-      acquisition = null;
-    }
-    if (acquisition) {
-      await recordMcpOAuthConnectionStarted({
-        userId: user.id,
-        oauthClientId: data.client.id,
-        acquisition,
-      });
+      connectionBindingToken = null;
     }
   }
 
   return (
     <OAuthConsentForm
       authorizationId={data.authorization_id}
+      connectionBindingToken={connectionBindingToken}
       clientName={data.client.name}
       clientUri={data.client.uri}
       redirectUri={data.redirect_uri}

@@ -39,6 +39,54 @@ export type CanonicalStripeTopupInput = {
   stripeReceiptUrl?: string | null;
 };
 
+type CanonicalStripeTopupReceiptRow = {
+  id: string;
+  user_id: string;
+  amount_cents: number;
+  currency: string;
+  created_at: Date;
+};
+
+type CanonicalStripeTopupReceipt = {
+  id: string;
+  userId: string;
+  amountCents: number;
+  currency: string;
+  occurredAt: Date;
+};
+
+type ReceiptIdentityColumn =
+  | 'stripe_payment_intent_id'
+  | 'stripe_charge_id'
+  | 'stripe_checkout_session_id'
+  | 'stripe_invoice_id';
+
+function toCanonicalReceipt(row: CanonicalStripeTopupReceiptRow): CanonicalStripeTopupReceipt {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    amountCents: row.amount_cents,
+    currency: row.currency,
+    occurredAt: row.created_at,
+  };
+}
+
+async function findCanonicalTopupReceipt(
+  executor: QueryExecutor,
+  column: ReceiptIdentityColumn,
+  value: string,
+): Promise<CanonicalStripeTopupReceipt | null> {
+  const rows = await executor.query<CanonicalStripeTopupReceiptRow>(
+    `SELECT id::text AS id, user_id, amount_cents, currency, created_at
+       FROM app_receipts
+      WHERE type = 'topup'
+        AND ${column} = $1
+      LIMIT 1`,
+    [value],
+  );
+  return rows[0] ? toCanonicalReceipt(rows[0]) : null;
+}
+
 function minorToMajorAmount(amountMinor: number): number {
   return amountMinor / 100;
 }
@@ -163,36 +211,18 @@ export async function recordStripeTopup(
     const persistenceResult = await withDbTransaction(async (executor) => {
       const isFirstWalletTopup = await lockAndResolveFirstWalletTopup(executor, userId);
 
-      if (paymentIntentId) {
-        const existing = await executor.query<{ id: string }>(
-          `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
-          [paymentIntentId]
-        );
-        if (existing.length > 0) {
-          await updateTopupDocumentFields(existing[0].id, documentFields, executor);
-          return { kind: 'duplicate' as const };
-        }
-      }
-
-      if (chargeId) {
-        const existingCharge = await executor.query<{ id: string }>(
-          `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
-          [chargeId]
-        );
-        if (existingCharge.length > 0) {
-          await updateTopupDocumentFields(existingCharge[0].id, documentFields, executor);
-          return { kind: 'duplicate' as const };
-        }
-      }
-
-      if (stripeCheckoutSessionId) {
-        const existingSession = await executor.query<{ id: string }>(
-          `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
-          [stripeCheckoutSessionId]
-        );
-        if (existingSession.length > 0) {
-          await updateTopupDocumentFields(existingSession[0].id, documentFields, executor);
-          return { kind: 'duplicate' as const };
+      const receiptIdentities: ReadonlyArray<readonly [ReceiptIdentityColumn, string | null | undefined]> = [
+        ['stripe_payment_intent_id', paymentIntentId],
+        ['stripe_charge_id', chargeId],
+        ['stripe_checkout_session_id', stripeCheckoutSessionId],
+        ['stripe_invoice_id', stripeInvoiceId],
+      ];
+      for (const [column, value] of receiptIdentities) {
+        if (!value) continue;
+        const existing = await findCanonicalTopupReceipt(executor, column, value);
+        if (existing) {
+          await updateTopupDocumentFields(existing.id, documentFields, executor);
+          return { kind: 'duplicate' as const, receipt: existing };
         }
       }
 
@@ -205,7 +235,7 @@ export async function recordStripeTopup(
         settlement_currency: settlementCurrencyUpper,
       };
 
-      const rows = await executor.query<{ id: number }>(
+      const rows = await executor.query<CanonicalStripeTopupReceiptRow>(
         `INSERT INTO app_receipts (
          user_id,
          type,
@@ -232,7 +262,7 @@ export async function recordStripeTopup(
        )
        VALUES ($1, 'topup', $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, CASE WHEN $15::text IS NOT NULL OR $16::text IS NOT NULL OR $17::text IS NOT NULL OR $18::text IS NOT NULL OR $19::text IS NOT NULL OR $20::text IS NOT NULL THEN NOW() ELSE NULL END)
        ON CONFLICT DO NOTHING
-       RETURNING id`,
+       RETURNING id::text AS id, user_id, amount_cents, currency, created_at`,
         [
           userId,
           normalizedWalletAmount,
@@ -258,35 +288,37 @@ export async function recordStripeTopup(
       );
 
       if (rows.length === 0) {
-        const fallbackExisting = paymentIntentId
-          ? await executor.query<{ id: string }>(
-              `SELECT id FROM app_receipts WHERE stripe_payment_intent_id = $1 LIMIT 1`,
-              [paymentIntentId]
-            )
-          : chargeId
-            ? await executor.query<{ id: string }>(
-                `SELECT id FROM app_receipts WHERE stripe_charge_id = $1 LIMIT 1`,
-                [chargeId]
-              )
-            : stripeCheckoutSessionId
-              ? await executor.query<{ id: string }>(
-                  `SELECT id FROM app_receipts WHERE stripe_checkout_session_id = $1 LIMIT 1`,
-                  [stripeCheckoutSessionId]
-                )
-              : [];
-        if (fallbackExisting.length > 0) {
-          await updateTopupDocumentFields(fallbackExisting[0].id, documentFields, executor);
+        for (const [column, value] of receiptIdentities) {
+          if (!value) continue;
+          const existing = await findCanonicalTopupReceipt(executor, column, value);
+          if (existing) {
+            await updateTopupDocumentFields(existing.id, documentFields, executor);
+            return { kind: 'duplicate' as const, receipt: existing };
+          }
         }
-        return { kind: 'duplicate' as const };
+        return { kind: 'duplicate' as const, receipt: null };
       }
 
       return {
         kind: 'inserted' as const,
-        receiptId: rows[0].id,
+        receipt: toCanonicalReceipt(rows[0]),
         combinedMetadata,
         isFirstWalletTopup,
       };
     });
+
+    if (persistenceResult.receipt) {
+      await recordConfirmedMcpWalletFunding({
+        receiptId: persistenceResult.receipt.id,
+        userId: persistenceResult.receipt.userId,
+        amountCents: persistenceResult.receipt.amountCents,
+        currency: persistenceResult.receipt.currency,
+        occurredAt: persistenceResult.receipt.occurredAt,
+      }, {
+        executor: { query },
+        conversionWindowSeconds: resolveMcpTrialToWalletWindowSeconds(),
+      });
+    }
 
     if (persistenceResult.kind === 'duplicate') {
       console.log('[stripe-webhook] Skipped duplicate wallet top-up', {
@@ -298,17 +330,6 @@ export async function recordStripeTopup(
       });
       return;
     }
-
-    await recordConfirmedMcpWalletFunding({
-      receiptId: persistenceResult.receiptId,
-      userId,
-      amountCents: normalizedWalletAmount,
-      currency: walletCurrencyUpper,
-      occurredAt: new Date(),
-    }, {
-      executor: { query },
-      conversionWindowSeconds: resolveMcpTrialToWalletWindowSeconds(),
-    });
 
     const { combinedMetadata } = persistenceResult;
 
@@ -330,7 +351,7 @@ export async function recordStripeTopup(
       const topupTierLabel =
         typeof metadataRecord.topup_tier_label === 'string' ? metadataRecord.topup_tier_label : null;
       const fxSource = typeof metadataRecord.fx_source === 'string' ? metadataRecord.fx_source : null;
-      const transactionId = paymentIntentId ?? chargeId ?? `topup_${persistenceResult.receiptId}`;
+      const transactionId = paymentIntentId ?? chargeId ?? `topup_${persistenceResult.receipt.id}`;
       const purchaseValueMinor = normalizedSettlementAmount ?? normalizedWalletAmount;
       const purchaseCurrency = settlementCurrencyUpper;
       const commonParams = {

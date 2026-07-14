@@ -15,8 +15,10 @@ pnpm db:migrate:neon
 ```
 
 `DATABASE_URL_UNPOOLED` (preferred) or `DATABASE_URL` must be a direct Neon connection. The
-runner rejects `-pooler` PgBouncer URLs because schema migrations require session-safe direct
-connections. Do not use the Supabase project connection string for these files.
+runner parses and normalizes the URL hostname, accepts only direct `*.neon.tech` hosts, and rejects
+`-pooler` PgBouncer URLs because schema migrations require session-safe direct connections. Each
+migration file runs with `ON_ERROR_STOP` inside a single transaction. Do not use the Supabase
+project connection string for these files.
 
 ## Reserved MCP migration order
 

@@ -3,6 +3,7 @@ import { MCP_OAUTH_CONSENT_COPY as copy } from '../_lib/consent-copy';
 
 type OAuthConsentFormProps = {
   authorizationId: string;
+  connectionBindingToken?: string | null;
   clientName: string;
   clientUri: string;
   redirectUri: string;
@@ -11,6 +12,7 @@ type OAuthConsentFormProps = {
 
 export function OAuthConsentForm({
   authorizationId,
+  connectionBindingToken,
   clientName,
   clientUri,
   redirectUri,
@@ -39,6 +41,9 @@ export function OAuthConsentForm({
 
         <form action="/api/oauth/decision" method="post" className="mt-6 flex flex-wrap gap-3">
           <input type="hidden" name="authorization_id" value={authorizationId} />
+          {connectionBindingToken ? (
+            <input type="hidden" name="mcp_binding" value={connectionBindingToken} />
+          ) : null}
           <Button type="submit" name="decision" value="approve">
             {copy.approve}
           </Button>
