@@ -281,22 +281,25 @@ module.exports = {
   siteUrl: SITE_URL,
   // Keep generated XML under a namespaced folder so the runtime sitemap route owns /sitemap.xml.
   outDir: './.next/generated-sitemaps',
-  // We manage robots.txt manually in public/robots.txt to avoid accidental
-  // overwrites and to allow fine-grained Allow rules for Next assets.
+  // The host-aware app route owns robots.txt; next-sitemap must not overwrite it.
   generateRobotsTxt: false,
   sitemapSize: 7000,
   exclude: ['/_next/*', ...MCP_PRIVATE_EXCLUDE_PATTERNS],
   changefreq: 'weekly',
   priority: 0.8,
-  // robotsTxtOptions no longer used (manual robots.txt)
+  // robotsTxtOptions are no longer used (robots.txt is route-owned).
   transform: async (config, path) => {
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     const englishPath = toEnglishPath(normalizedPath);
     const loc = `${SITE_URL}${normalizedPath === '/' ? '/' : normalizedPath}`;
     const publishableLocales = ENGLISH_ONLY_PATHS.has(englishPath) ? ['en'] : LOCALES;
     const alternateRefs = [
-      ...publishableLocales.map((locale) => ({ href: buildLocaleHref(locale, englishPath), hreflang: locale })),
-      { href: buildLocaleHref('en', englishPath), hreflang: 'x-default' },
+      ...publishableLocales.map((locale) => ({
+        href: buildLocaleHref(locale, englishPath),
+        hreflang: locale,
+        hrefIsAbsolute: true,
+      })),
+      { href: buildLocaleHref('en', englishPath), hreflang: 'x-default', hrefIsAbsolute: true },
     ];
 
     return {
@@ -311,7 +314,9 @@ module.exports = {
     const marketingPaths = new Set(MARKETING_CORE_PATHS);
 
     if (mcpIndexable) {
-      MCP_PUBLIC_INDEXABLE_PATHS.forEach((publicPath) => marketingPaths.add(publicPath));
+      MCP_PUBLIC_INDEXABLE_PATHS.forEach((englishPath) => {
+        LOCALES.forEach((locale) => marketingPaths.add(localizePathFromEnglish(locale, englishPath)));
+      });
     }
 
     for (const entry of modelRoster) {

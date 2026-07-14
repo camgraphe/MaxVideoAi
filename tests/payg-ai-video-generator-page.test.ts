@@ -3,6 +3,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import { buildPayAsYouGoPageData } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
+import mcpPublication from '../frontend/config/mcp-publication.json';
+import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
 
 const root = process.cwd();
 const routeRoot = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator');
@@ -17,7 +19,7 @@ const middlewarePath = join(root, 'frontend/lib/middleware/routing-marketing.ts'
 const queryPath = join(root, 'frontend/lib/middleware/routing-query.ts');
 const localizedSlugsPath = join(root, 'frontend/config/localized-slugs.json');
 const routingPath = join(root, 'frontend/i18n/routing.ts');
-const llmsPath = join(root, 'frontend/public/llms.txt');
+const llmsText = buildLlmsText(mcpPublication);
 
 function read(path: string) {
   return readFileSync(path, 'utf8');
@@ -124,7 +126,7 @@ test('pay-as-you-go route is discoverable by middleware and query cleanup', () =
   assert.match(read(routingPath), /\/pay-as-you-go-ai-video-generator/);
   assert.match(read(middlewarePath), /pay-as-you-go-ai-video-generator/);
   assert.match(read(queryPath), /pay-as-you-go-ai-video-generator/);
-  assert.match(read(llmsPath), /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
+  assert.match(llmsText, /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
 });
 
 test('pay-as-you-go page localizes its metadata and every route-local content surface', () => {

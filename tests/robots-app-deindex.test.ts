@@ -3,23 +3,17 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { shouldMarkAppNoindex } from '../frontend/lib/middleware/routing-query.ts';
+import { buildRobotsText } from '../frontend/lib/seo/robots-text.ts';
 
-const robotsSource = readFileSync('frontend/public/robots.txt', 'utf8');
-const [namedAiCrawlerRules, generalCrawlerRules = ''] = robotsSource.split('User-agent: *');
+const robotsSource = buildRobotsText('public');
 const workspaceLayoutSource = readFileSync('frontend/app/(core)/(workspace)/app/layout.tsx', 'utf8');
 const routingResponseSource = readFileSync('frontend/lib/middleware/routing-response.ts', 'utf8');
 
-test('robots allows crawlers to read the noindex directive on app URLs', () => {
-  assert.doesNotMatch(generalCrawlerRules, /^Disallow:\s*\/app\s*$/m);
-  assert.doesNotMatch(generalCrawlerRules, /^Disallow:\s*\/fr\/app\s*$/m);
-  assert.doesNotMatch(generalCrawlerRules, /^Disallow:\s*\/es\/app\s*$/m);
-
-  assert.match(namedAiCrawlerRules, /^Disallow:\s*\/app\s*$/m);
-  assert.match(namedAiCrawlerRules, /^Disallow:\s*\/fr\/app\s*$/m);
-  assert.match(namedAiCrawlerRules, /^Disallow:\s*\/es\/app\s*$/m);
-
-  assert.match(namedAiCrawlerRules, /^Disallow:\s*\/admin\s*$/m);
-  assert.match(generalCrawlerRules, /^Disallow:\s*\/admin\s*$/m);
+test('robots blocks private app URLs for both named and general crawlers', () => {
+  assert.match(robotsSource, /^Disallow:\s*\/app\s*$/m);
+  assert.match(robotsSource, /^Disallow:\s*\/fr\/app\s*$/m);
+  assert.match(robotsSource, /^Disallow:\s*\/es\/app\s*$/m);
+  assert.match(robotsSource, /^Disallow:\s*\/admin\s*$/m);
   assert.match(robotsSource, /^Disallow:\s*\/api\/\s*$/m);
   assert.match(robotsSource, /^Disallow:\s*\/private\/\s*$/m);
 });

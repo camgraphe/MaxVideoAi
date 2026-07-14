@@ -1,5 +1,4 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
@@ -7,6 +6,8 @@ import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 
 import { buildCompareShowdownSlots } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
 import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
+import mcpPublication from '../frontend/config/mcp-publication.json';
+import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
 
 type EngineCatalogEntry = (typeof engineCatalog)[number];
 
@@ -90,7 +91,7 @@ test('Seedance Mini vs Happy Horse stays scoreboard-only without comparison vide
 });
 
 test('llms.txt lists the new Happy Horse and Seedance Mini SEO surfaces', () => {
-  const llmsSource = readFileSync('frontend/public/llms.txt', 'utf8');
+  const llmsSource = buildLlmsText(mcpPublication);
 
   [
     'https://maxvideoai.com/models/happy-horse-1-1',

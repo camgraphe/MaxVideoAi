@@ -9,6 +9,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import mcpPublication from '../frontend/config/mcp-publication.json';
 import { buildMetadataUrls } from '../frontend/lib/metadataUrls.ts';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication.ts';
+import { buildLlmsText } from '../frontend/lib/seo/llms-text.ts';
+import { buildRobotsText } from '../frontend/lib/seo/robots-text.ts';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
@@ -30,7 +32,7 @@ const enabledPublication = {
 };
 
 type SitemapConfig = {
-  additionalPaths: (config: SitemapConfig) => Promise<Array<{ loc: string; alternateRefs?: Array<{ href: string; hreflang: string }> }>>;
+  additionalPaths: (config: SitemapConfig) => Promise<Array<{ loc: string; alternateRefs?: Array<{ href: string; hreflang: string; hrefIsAbsolute?: boolean }> }>>;
   exclude: string[];
   transform: (config: SitemapConfig, path: string) => Promise<unknown>;
 };
@@ -108,7 +110,7 @@ test('checked-in false publication removes every MCP source page from generated 
   }
 });
 
-test('enabled publication fixture emits the four canonical owners with exact EN FR ES hreflang URLs', async () => {
+test('enabled publication fixture emits 12 localized owners with exact absolute EN FR ES hreflang URLs', async () => {
   const config = loadSitemapConfig(enabledPublication);
   const entries = await config.additionalPaths(config);
   const byLoc = new Map(entries.map((entry) => [entry.loc, entry]));
@@ -136,15 +138,16 @@ test('enabled publication fixture emits the four canonical owners with exact EN 
   } as const;
 
   assert.equal(
-    entries.filter((entry) => Object.hasOwn(expected, entry.loc)).length,
-    4,
-    'each canonical MCP intent owner should be emitted exactly once',
+    entries.filter((entry) => Object.values(expected).some((locales) => Object.values(locales).includes(entry.loc as never))).length,
+    12,
+    'each localized MCP intent owner should be emitted exactly once',
   );
   for (const [canonical, locales] of Object.entries(expected)) {
     const entry = byLoc.get(canonical);
     assert.ok(entry, `${canonical} should be emitted by the enabled fixture`);
     const alternates = Object.fromEntries((entry.alternateRefs ?? []).map((item) => [item.hreflang, item.href]));
     assert.deepEqual(alternates, { ...locales, 'x-default': locales.en });
+    assert.ok(entry.alternateRefs?.every((item) => item.hrefIsAbsolute === true));
   }
   assert.equal(entries.some((entry) => entry.loc.includes('api.maxvideoai.com/mcp')), false);
 });
@@ -218,7 +221,7 @@ test('SSR answer passages cover the integration, price, references, confirmation
 });
 
 test('AI search crawlers can read public content while training crawlers and private surfaces remain blocked', () => {
-  const groups = parseRobotsGroups(readFileSync('frontend/public/robots.txt', 'utf8'));
+  const groups = parseRobotsGroups(buildRobotsText('public'));
   const groupFor = (agent: string) => groups.find((group) => group.agents.includes(agent));
   const privateRules = ['Disallow: /api/', 'Disallow: /oauth', 'Disallow: /account', 'Disallow: /uploads', 'Disallow: /library'];
 
@@ -235,13 +238,13 @@ test('AI search crawlers can read public content while training crawlers and pri
   }
 });
 
-test('static llms.txt stays aligned with the false promotion gate', () => {
-  const source = readFileSync('frontend/public/llms.txt', 'utf8');
+test('served llms text stays aligned with the false promotion gate', () => {
+  const source = buildLlmsText(mcpPublication);
   for (const path of ['/mcp', '/integrations/claude', '/integrations/codex', '/docs/mcp']) {
     assert.equal(source.includes(`https://maxvideoai.com${path}`), false, `${path} must remain absent while indexable=false`);
   }
   assert.doesNotMatch(source, /api\.maxvideoai\.com\/mcp/);
-  assert.match(source, /Publication-gated source pages are omitted until the shared indexation gate is enabled\./);
+  assert.match(source, /MCP acquisition sources are omitted because the shared publication gate is closed\./);
 });
 
 test('contextual MCP links are localized, varied, and absent until the shared gate is enabled', async () => {

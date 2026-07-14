@@ -68,7 +68,8 @@ test('the sitemap composes every publication prerequisite from the common build-
   );
   assert.match(
     sitemapConfig,
-    /if \(mcpIndexable\) \{\s*MCP_PUBLIC_INDEXABLE_PATHS\.forEach\(\(publicPath\) => marketingPaths\.add\(publicPath\)\);\s*\}/
+    /if \(mcpIndexable\) \{\s*MCP_PUBLIC_INDEXABLE_PATHS\.forEach\(\(englishPath\) => \{\s*LOCALES\.forEach\(\(locale\) => marketingPaths\.add\(localizePathFromEnglish\(locale, englishPath\)\)\);\s*\}\);\s*\}/
   );
+  assert.match(sitemapConfig, /hrefIsAbsolute:\s*true/);
   assert.match(sitemapConfig, /if \(slug === '\/docs\/mcp' && !mcpIndexable\)/);
 });

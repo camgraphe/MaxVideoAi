@@ -4,6 +4,7 @@ import { getMcpRequestHost } from '@/lib/mcp-host-routing';
 import { resolveMcpConfig } from '@/server/mcp/config';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { buildProtectedResourceMetadata } from '@/server/mcp/oauth-resource-metadata';
+import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 
 export const runtime = 'nodejs';
 
@@ -12,7 +13,7 @@ export function GET(request: Request) {
   if (!isMcpFoundationFeatureEnabled('discovery', process.env, requestHost)) {
     return new NextResponse(null, {
       status: 404,
-      headers: { 'Cache-Control': 'private, no-store' },
+      headers: withMcpNoindexHeaders({ 'Cache-Control': 'private, no-store' }),
     });
   }
 
@@ -26,12 +27,12 @@ export function GET(request: Request) {
       supabaseUrl: ENV.NEXT_PUBLIC_SUPABASE_URL,
     });
     return NextResponse.json(metadata, {
-      headers: { 'Cache-Control': 'public, max-age=300' },
+      headers: withMcpNoindexHeaders({ 'Cache-Control': 'public, max-age=300' }),
     });
   } catch {
     return NextResponse.json(
       { error: 'oauth_discovery_unavailable' },
-      { status: 503, headers: { 'Cache-Control': 'private, no-store' } }
+      { status: 503, headers: withMcpNoindexHeaders({ 'Cache-Control': 'private, no-store' }) }
     );
   }
 }

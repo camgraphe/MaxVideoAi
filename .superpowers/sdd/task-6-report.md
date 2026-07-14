@@ -13,8 +13,9 @@ DONE — implementation, fail-closed publication behavior, production build, and
   media-library, and private-documentation surfaces. `https://api.maxvideoai.com/mcp` is never a source-page entry.
 - Split training crawlers from public search/answer and user-requested retrieval crawlers in `robots.txt`. Public
   content remains readable to named answer engines, while protocol and private surfaces remain disallowed.
-- Kept all four future source pages out of the checked-in static `llms.txt` while promotion is false, documented the
-  gate there, and kept the technical MCP endpoint out of its source-page list.
+- Made the route-owned `llms.txt` consume the shared publication state directly. It deterministically omits all four
+  sources while promotion is false and adds the four distinct canonical owners when every prerequisite is true;
+  the technical MCP endpoint is never a source-page entry.
 - Added publication-gated, localized contextual links from pay-as-you-go, the model pricing/limits section, examples,
   and the footer. The existing docs-index link remains governed by the same publication state. Labels vary naturally
   by placement and locale instead of repeating one exact-match anchor.
@@ -120,7 +121,7 @@ Production build:
 npm --prefix frontend run build
 ```
 
-Result: exit 0. Model registry/catalog validation, Next.js compilation and type validation, 728 static pages, and
+Result: exit 0. Model registry/catalog validation, Next.js compilation and type validation, 729 static pages, and
 `next-sitemap` postbuild generation completed successfully.
 
 ## Sitemap and canonical inspection
@@ -181,10 +182,76 @@ publication gate, indexable metadata, sitemap inclusion, source listing, and con
 
 - All seven publication prerequisites must be true before the four owners become indexable. Changing
   `publicIndexing` or another publication flag requires separate explicit approval and review.
-- Because `frontend/public/llms.txt` is a checked-in static file, activation must add all four source-page entries in
-  the reviewed promotion commit, with distinct hub, Claude setup, Codex setup, and technical-reference labels. Never
-  list `https://api.maxvideoai.com/mcp` as a source page.
+- The route-owned `llms.txt` automatically adds or removes the four distinct source-page entries from the shared
+  publication JSON. No manual source-list edit is required during activation, and
+  `https://api.maxvideoai.com/mcp` is never listed as a source page.
 - After an approved deployment, inspect GSC indexation, selected canonicals, queries, countries, CTR, and
   cannibalization against the preserved baseline. This task intentionally made no GSC write or submission.
 - Do not infer launch demand from the zero Claude/Codex filters or the one MCP impression. GSC explicitly warns that
   filtered totals and query rows can be partial.
+
+## Review remediation
+
+Status: DONE — all five review findings were reproduced by tests, fixed, and verified in both the checked-false and
+isolated all-enabled states without changing the repository's rollout flags.
+
+The remediation makes five boundaries explicit:
+
+1. The postbuild sitemap now emits all 12 localized MCP owner URLs (four owners across EN/FR/ES). Every entry has
+   reciprocal absolute EN/FR/ES alternates plus `x-default`, using `hrefIsAbsolute: true`.
+2. `llms.txt` is a route backed by a pure builder that consumes `mcp-publication.json`. The false state reports zero
+   MCP acquisition sources and an accurate closed-gate note. The enabled state reports exactly four distinct
+   canonical owner entries and never the API endpoint. There is no tracked generated/static-file conflict.
+3. `robots.txt` is host-aware from the authoritative `Host` header. The public host receives the documented crawler
+   policy; the API/protocol host blocks all paths and ignores a spoofed `X-Forwarded-Host`. MCP protocol responses and
+   protected-resource discovery responses carry `X-Robots-Tag: noindex,nofollow` on success and error paths.
+4. `Google-Extended` deliberately allows public content while blocking private paths. This couples Gemini grounding
+   with Google's stated control over future Gemini training, a tradeoff that must be reconsidered if the product
+   wants one without the other. Google says this token does not affect Google Search.
+5. `OAI-AdsBot` has its own ads landing-page validation group and is not classified as a search/answer crawler.
+
+The review-focused contract was written before the remediation:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-seo-review-remediation.test.ts \
+  tests/mcp-transport-contract.test.ts \
+  tests/mcp-oauth-discovery.test.ts
+```
+
+Initial result: exit 1; 17 tests, 10 passed and 7 failed. The failures covered the real postbuild localized count,
+state-aware `llms.txt`, host-aware robots, and protocol/discovery noindex headers. Final result: exit 0; 17 passed,
+0 failed. The affected compatibility set passed 42/42, and the final combined MCP/SEO regression passed 325/325.
+
+The checked-false state was verified with a real production build and local production server:
+
+- build completed with 729 generated pages and postbuild sitemap generation;
+- runtime and postbuild sitemaps contained zero MCP owners;
+- `llms.txt` contained zero MCP sources and one accurate closed-gate note;
+- the API host's `robots.txt` blocked all paths even when `X-Forwarded-Host` named the public host;
+- MCP and protected-resource discovery returned fail-closed 404 responses with `X-Robots-Tag: noindex,nofollow`;
+- `/`, `/fr`, and `/es` passed canonical-host QA.
+
+An isolated fixture made all eight publication flags true without editing the working tree, then ran the real build,
+postbuild CLI, and local production server:
+
+- build completed with 733 generated pages;
+- postbuild XML contained exactly 12 localized MCP `<loc>` entries and 48 absolute alternate `href` values;
+- each locale runtime sitemap contained its four localized canonical owners;
+- `llms.txt` contained exactly four canonical owner sources and zero API endpoint sources;
+- all four source routes returned 200 and `/mcp` exposed one canonical plus four reciprocal hreflang links;
+- the API MCP route returned 401 with the noindex header; protected-resource discovery returned its expected
+  missing-Supabase-config 503 with the noindex header; API-host robots still blocked all paths;
+- canonical-host QA passed.
+
+The isolated build logged an expected Edge/Supabase warning because dependencies were symlinked into the temporary
+fixture, and protected-resource discovery could not become healthy without Supabase configuration. Neither affected
+the build result or the behavior under review. No deployment, GSC mutation, publication flag change, external write,
+push, or pull request was performed.
+
+Current first-party policy sources checked on 2026-07-14:
+
+- Google common crawlers (`Google-Extended` grounding/training coupling and no Search effect):
+  <https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers>
+- OpenAI advertiser guidance (`OAI-AdsBot` landing-page validation role):
+  <https://help.openai.com/en/articles/20001243-advertiser-guidance-for-allowing-openai-web-crawlers>

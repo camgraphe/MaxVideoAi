@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import { buildProtectedResourceMetadata } from '../frontend/src/server/mcp/oauth-resource-metadata';
+import { GET as getProtectedResourceMetadata } from '../frontend/app/.well-known/oauth-protected-resource/mcp/route';
 
 test('protected resource metadata identifies MaxVideoAI and Supabase OAuth', () => {
   assert.deepEqual(
@@ -63,4 +64,14 @@ test('protected resource route is flag-gated and publicly cacheable only when en
   assert.match(source, /public, max-age=300/);
   assert.match(source, /buildProtectedResourceMetadata/);
   assert.doesNotMatch(source, /SERVICE_ROLE|SUPABASE_SECRET|accessToken/);
+});
+
+test('disabled protected-resource discovery is noindex and ignores forwarded-host spoofing', () => {
+  const response = getProtectedResourceMetadata(
+    new Request('https://maxvideoai.com/.well-known/oauth-protected-resource/mcp', {
+      headers: { host: 'maxvideoai.com', 'x-forwarded-host': 'api.maxvideoai.com' },
+    }),
+  );
+  assert.equal(response.status, 404);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
 });

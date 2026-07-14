@@ -76,6 +76,7 @@ test('disabled transport is indistinguishable from an absent endpoint', async ()
 
   assert.equal(response.status, 404);
   assert.equal(response.headers.get('www-authenticate'), null);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
 });
 
 test('unauthenticated requests receive RFC 9728 resource metadata guidance', async () => {
@@ -94,6 +95,7 @@ test('unauthenticated requests receive RFC 9728 resource metadata guidance', asy
     'Bearer resource_metadata="https://api.maxvideoai.com/.well-known/oauth-protected-resource/mcp"'
   );
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
   assert.doesNotMatch(await response.text(), /access-token|Bearer authentication is required/);
 });
 
@@ -123,6 +125,7 @@ test('authenticated initialize uses stateless Streamable HTTP and private cachin
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
   assert.equal(response.headers.get('mcp-session-id'), null);
+  assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
   assert.equal(payload.jsonrpc, '2.0');
   assert.equal(payload.id, 1);
   assert.equal(payload.result.serverInfo.name, 'maxvideoai');

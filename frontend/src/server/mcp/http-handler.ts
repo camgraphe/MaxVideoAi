@@ -12,6 +12,7 @@ import {
   createMaxVideoAiMcpServer,
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
+import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
 
 const MAX_BODY_BYTES = 128 * 1024;
 const PRIVATE_CACHE_CONTROL = 'private, no-store';
@@ -30,16 +31,19 @@ function jsonRpcError(status: number, code: number, message: string, headers?: H
     { jsonrpc: '2.0', error: { code, message }, id: null },
     {
       status,
-      headers: {
+      headers: withMcpNoindexHeaders({
         'Cache-Control': PRIVATE_CACHE_CONTROL,
         ...headers,
-      },
+      }),
     }
   );
 }
 
 function notFound(): Response {
-  return Response.json({ error: 'not_found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+  return Response.json(
+    { error: 'not_found' },
+    { status: 404, headers: withMcpNoindexHeaders({ 'Cache-Control': 'no-store' }) },
+  );
 }
 
 function rejectsHtmlNegotiation(request: Request): boolean {
@@ -113,11 +117,11 @@ async function recordProtocolDiscovery(
 function withPrivateCaching(response: Response): Response {
   const headers = new Headers(response.headers);
   headers.set('Cache-Control', PRIVATE_CACHE_CONTROL);
-  headers.set('X-Content-Type-Options', 'nosniff');
+  const privateHeaders = withMcpNoindexHeaders(headers);
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
-    headers,
+    headers: privateHeaders,
   });
 }
 
