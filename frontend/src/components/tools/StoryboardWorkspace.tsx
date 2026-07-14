@@ -23,7 +23,7 @@ import { StoryboardBuilderPanel, type StoryboardOptionalField } from './storyboa
 import { useStoryboardReferences } from './storyboard/_hooks/useStoryboardReferences';
 import { useStoryboardPricing } from './storyboard/_hooks/useStoryboardPricing';
 import { useStoryboardRecentOutputs, type StoryboardRecentOutput } from './storyboard/_hooks/useStoryboardRecentOutputs';
-import { DEFAULT_STORYBOARD_COPY } from './storyboard/_lib/storyboard-workspace-copy';
+import { resolveStoryboardWorkspaceCopy } from './storyboard/_lib/storyboard-workspace-copy';
 import { KLING_STORYBOARD_FIRST_FRAME_JOB_PREFIX, buildKlingStoryboardFirstFramePrompt } from './storyboard/_lib/storyboard-first-frame';
 import { buildKlingFirstFrameFromRecentOutput, getStoredKlingFirstFrame, writeStoredKlingFirstFrame, type KlingFirstFrameState } from './storyboard/_lib/storyboard-kling-first-frame-storage';
 import { buildStoryboardPrompt, type StoryboardStyle, type StoryboardTargetModel } from './storyboard/_lib/storyboard-prompt';
@@ -35,18 +35,7 @@ export default function StoryboardWorkspace() {
   const { loading: authLoading, user } = useRequireAuth({ redirectIfLoggedOut: false });
   const router = useRouter();
   const { locale, t } = useI18n();
-  const copy = {
-    ...DEFAULT_STORYBOARD_COPY,
-    ...((t('workspace.storyboard') ?? {}) as Partial<typeof DEFAULT_STORYBOARD_COPY>),
-    targetNotes: {
-      ...DEFAULT_STORYBOARD_COPY.targetNotes,
-      ...(((t('workspace.storyboard') as Partial<typeof DEFAULT_STORYBOARD_COPY> | undefined)?.targetNotes) ?? {}),
-    },
-    styles: {
-      ...DEFAULT_STORYBOARD_COPY.styles,
-      ...(((t('workspace.storyboard') as Partial<typeof DEFAULT_STORYBOARD_COPY> | undefined)?.styles) ?? {}),
-    },
-  };
+  const copy = resolveStoryboardWorkspaceCopy(t('workspace.storyboard'));
   const [subject, setSubject] = useState('');
   const [action, setAction] = useState('');
   const [dialogue, setDialogue] = useState('');

@@ -167,10 +167,11 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const recentRailSource = readFileSync(storyboardRecentRailPath, 'utf8');
   const referenceLibraryModalSource = readFileSync(storyboardReferenceLibraryModalPath, 'utf8');
   const firstFrameSource = readFileSync(storyboardFirstFramePath, 'utf8');
-  const workspaceLineCount = workspaceSource.trimEnd().split(/\r?\n/).length;
+  const workspaceLineCount = workspaceSource.split('\n').length;
 
   assert.equal(existsSync(storyboardBuilderPanelPath), true, 'storyboard builder should have a focused component');
-  assert.ok(workspaceLineCount <= 500, `StoryboardWorkspace.tsx should stay at or below 500 lines, received ${workspaceLineCount}`);
+  assert.ok(workspaceLineCount < 500, `StoryboardWorkspace.tsx should stay below 500 audit lines, received ${workspaceLineCount}`);
+  assert.match(workspaceSource, /resolveStoryboardWorkspaceCopy\(t\('workspace\.storyboard'\)\)/);
   assert.match(workspaceSource, /StoryboardBuilderPanel/);
   assert.match(builderPanelSource, /AssetDropzone/);
   assert.match(builderPanelSource, /BuilderStep/);

@@ -103,3 +103,20 @@ export const DEFAULT_STORYBOARD_COPY = {
 } as const;
 
 export type StoryboardCopy = typeof DEFAULT_STORYBOARD_COPY;
+
+export function resolveStoryboardWorkspaceCopy(localizedCopy: unknown): StoryboardCopy {
+  const localizedValues = (localizedCopy ?? {}) as Partial<StoryboardCopy>;
+
+  return {
+    ...DEFAULT_STORYBOARD_COPY,
+    ...localizedValues,
+    targetNotes: {
+      ...DEFAULT_STORYBOARD_COPY.targetNotes,
+      ...(localizedValues.targetNotes ?? {}),
+    },
+    styles: {
+      ...DEFAULT_STORYBOARD_COPY.styles,
+      ...(localizedValues.styles ?? {}),
+    },
+  };
+}
