@@ -65,6 +65,14 @@ type RefundAuditParams = {
   note?: string | null;
 };
 
+async function lockRefundJobScope(executor: QueryExecutor, jobId: string | null) {
+  if (!jobId) return;
+  await executor.query(
+    `SELECT pg_advisory_xact_lock(hashtextextended($1, 0))`,
+    [jobId]
+  );
+}
+
 async function resolveJobRefundContext(
   executor: QueryExecutor,
   jobId: string
@@ -96,6 +104,8 @@ async function resolveJobRefundContext(
   if (!charge) {
     throw new Error('Job or wallet charge not found, or refund already issued.');
   }
+
+  await lockRefundJobScope(executor, jobId);
 
   const refundRows = await executor.query<{ id: number }>(
     `SELECT id
@@ -143,6 +153,7 @@ async function resolveReceiptRefundContext(
   );
   const charge = chargeRows.at(0);
   if (!charge) throw new Error('Charge receipt not found.');
+  await lockRefundJobScope(executor, charge.job_id);
   if (!charge.user_id) throw new Error('Charge does not belong to a wallet user.');
 
   const existingRefund = await executor.query<{ id: number }>(

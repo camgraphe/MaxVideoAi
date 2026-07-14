@@ -44,6 +44,8 @@ test('refund commands use one focused real transaction owner', () => {
   assert.match(source, /withDbTransaction/);
   assert.match(source, /QueryExecutor/);
   assert.match(source, /FOR UPDATE/);
+  assert.match(source, /lockRefundJobScope/);
+  assert.match(source, /pg_advisory_xact_lock\(hashtextextended\(\$1, 0\)\)/);
   assert.match(source, /export async function issueManualWalletRefund/);
   assert.match(source, /export async function issueManualWalletRefundByReceipt/);
   assert.doesNotMatch(source, /query\(['"]BEGIN|query\(['"]COMMIT|query\(['"]ROLLBACK/);
