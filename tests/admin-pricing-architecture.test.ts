@@ -45,6 +45,7 @@ const pageSource = readOrEmpty(pagePath);
 const pricingPolicyServicePath = join(root, 'frontend/server/pricing-admin/policy-service.ts');
 const pricingPolicyContractPath = join(root, 'frontend/server/pricing-admin/policy-contract.ts');
 const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/policy-dependencies.ts');
+const pricingPolicyPreviewPath = join(root, 'frontend/server/pricing-admin/policy-preview.ts');
 const pricingPolicyRulesPath = join(root, 'frontend/server/pricing-admin/policy-rules.ts');
 const pricingPolicyRoutePaths = [
   join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
@@ -404,6 +405,23 @@ test('pricing policy rule helpers are deterministic and side-effect free', () =>
     source,
     /@\/lib\/db|event-store|revalidation|withDbTransaction|insertPricingChangeEvent/,
     'rule helper module must not own persistence or side effects'
+  );
+});
+
+test('pricing policy preview owns canonical projection and fingerprinting without persistence', () => {
+  assert.ok(existsSync(pricingPolicyPreviewPath), 'pricing policy preview module should exist');
+  const source = readOrEmpty(pricingPolicyPreviewPath);
+
+  assert.match(source, /export function deriveRequestedPricingSurcharges/);
+  assert.match(source, /export async function previewPricingPolicyChange/);
+  assert.match(source, /selectAffectedPricingScenarios/);
+  assert.match(source, /quoteCanonicalAdminScenarios/);
+  assert.match(source, /compareCanonicalAdminScenarios/);
+  assert.match(source, /buildPricingPreviewFingerprint/);
+  assert.doesNotMatch(
+    source,
+    /withDbTransaction|upsertPricingRuleWithExecutor|deletePricingRuleWithExecutor|insertPricingChangeEvent/,
+    'preview must not own persistence'
   );
 });
 
