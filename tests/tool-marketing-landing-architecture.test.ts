@@ -293,6 +293,297 @@ test('Angle Orbit rejects secondary pointers and active-drag takeover before poi
   assert.ok(pointerGuard < pointerCapture, 'Orbit should reject pointer takeover before capturing it');
 });
 
+test('Angle landing owns a page-scoped graphite dark theme contract', () => {
+  const pageBlock = angleStylesSource.match(/\.page\s*\{([^}]*)\}/)?.[1];
+  const darkPageBlock = angleStylesSource.match(/:global\(\[data-theme='dark'\]\)\s+\.page\s*\{([^}]*)\}/)?.[1];
+
+  assert.ok(pageBlock, 'Angle styles should define light theme properties on .page');
+  assert.ok(darkPageBlock, 'Angle styles should override those properties under the global dark theme');
+
+  const requiredTokens = [
+    '--angle-canvas',
+    '--angle-canvas-alt',
+    '--angle-hero-background',
+    '--angle-surface',
+    '--angle-surface-translucent',
+    '--angle-surface-elevated',
+    '--angle-surface-inset',
+    '--angle-media-matte',
+    '--angle-media-placeholder',
+    '--angle-use-case-media-border',
+    '--angle-orbit-placeholder',
+    '--angle-hero-border',
+    '--angle-controls-text',
+    '--angle-button-border',
+    '--angle-link-decoration',
+    '--angle-text',
+    '--angle-text-secondary',
+    '--angle-text-muted',
+    '--angle-border',
+    '--angle-border-strong',
+    '--angle-output-border',
+    '--angle-accent',
+    '--angle-accent-soft',
+    '--angle-shadow-soft',
+    '--angle-shadow-elevated',
+    '--angle-workspace-shell',
+    '--angle-workspace-border',
+    '--angle-workspace-text',
+    '--angle-workspace-muted',
+    '--angle-workspace-background',
+    '--angle-workspace-shadow',
+    '--angle-workspace-window-border',
+    '--angle-workspace-chrome-dot',
+    '--angle-workspace-window-muted',
+    '--angle-workspace-placeholder',
+    '--angle-limits-text',
+    '--angle-benefit-border',
+    '--angle-related-border',
+    '--angle-final-section',
+    '--angle-final-background',
+    '--angle-final-border',
+    '--angle-final-copy',
+    '--angle-final-shadow',
+    '--angle-final-orbit-node-border',
+  ];
+
+  for (const token of requiredTokens) {
+    const declaration = new RegExp(`${token}:`);
+    assert.match(pageBlock, declaration, `${token} should have a light value`);
+    assert.match(darkPageBlock, declaration, `${token} should have a graphite dark value`);
+  }
+
+  for (const [token, lightValue, darkValue] of [
+    ['--angle-surface-inset', '#fffaf1', '#0c131e'],
+    ['--angle-use-case-media-border', '#d3c8ba', 'rgb(174 191 255 / 22%)'],
+    [
+      '--angle-workspace-background',
+      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 8%), transparent 25rem), #ece5da',
+      'radial-gradient(circle at 86% 14%, rgb(23 105 255 / 10%), transparent 25rem), var(--angle-surface-elevated)',
+    ],
+    ['--angle-workspace-shadow', '0 38px 100px rgb(41 39 36 / 18%)', '0 38px 100px rgb(0 0 0 / 44%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-workspace-window-border', '#6a6d75', 'rgb(174 191 255 / 20%)'],
+    ['--angle-workspace-chrome-dot', '#c4bcb1', '#909baa'],
+    ['--angle-workspace-window-muted', '#736d65', '#909baa'],
+    ['--angle-workspace-placeholder', '#dfd8cd', '#111c29'],
+    ['--angle-limits-text', '#514c46', '#d0d6df'],
+    ['--angle-benefit-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
+    ['--angle-related-border', '#d8d0c5', 'rgb(174 191 255 / 14%)'],
+    ['--angle-final-shadow', '0 34px 100px rgb(41 39 36 / 20%)', '0 34px 100px rgb(0 0 0 / 48%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-final-orbit-node-border', '#2a2d36', '#070b12'],
+  ] as const) {
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
+  }
+
+  const declaredThemeTokens = [...pageBlock.matchAll(/(--angle-[\w-]+):/g)].map((match) => match[1]);
+  for (const token of declaredThemeTokens) {
+    assert.match(angleStylesSource, new RegExp(`var\\(${token}\\)`), `${token} should be consumed by Angle styles`);
+  }
+
+  assert.match(darkPageBlock, /--angle-canvas:\s*#050910/);
+  assert.match(darkPageBlock, /--angle-text:\s*#f4f1ea/);
+  assert.doesNotMatch(darkPageBlock, /#fffaf1|#f3eee5|#ece5da/);
+
+  for (const [selector, token] of [
+    ['.hero', '--angle-hero-background'],
+    ['.heroStage', '--angle-surface-translucent'],
+    ['.heroStage', '--angle-hero-border'],
+    ['.orbitTrack', '--angle-orbit-placeholder'],
+    ['.orbitControls', '--angle-controls-text'],
+    ['.orbitButton', '--angle-surface'],
+    ['.orbitButton', '--angle-button-border'],
+    ['.sectionRule', '--angle-border'],
+    ['.sectionIntro h2', '--angle-text'],
+    ['.sectionIntroBody', '--angle-text-secondary'],
+    ['.textLink', '--angle-text'],
+    ['.textLink', '--angle-link-decoration'],
+  ] as const) {
+    const escapedSelector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const declarations = angleStylesSource.match(new RegExp(`${escapedSelector}\\s*\\{([^}]*)\\}`))?.[1];
+    assert.ok(declarations, `${selector} should have a style block`);
+    assert.match(declarations, new RegExp(`var\\(${token}\\)`), `${selector} should consume ${token}`);
+  }
+});
+
+test('Angle lead sections consume semantic theme colors instead of light palette utilities', () => {
+  assert.doesNotMatch(
+    angleLeadSectionsSource,
+    /(?:hover:)?(?:text|bg|border|ring)-\[#[0-9a-f]{3,8}\]/i,
+    'Angle lead sections should not own Tailwind light-palette color utilities',
+  );
+
+  const literalLeadColors = [...new Set(angleLeadSectionsSource.match(/#[0-9a-f]{6}\b/gi) ?? [])].sort();
+  assert.deepEqual(
+    literalLeadColors,
+    ['#6abf91', '#f3c650', '#ff7b54'],
+    'only the three semantic workflow status-dot fills should remain literal in the lead component',
+  );
+
+  const pageBlock = angleStylesSource.match(/\.page\s*\{([^}]*)\}/)?.[1];
+  const darkPageBlock = angleStylesSource.match(/:global\(\[data-theme='dark'\]\)\s+\.page\s*\{([^}]*)\}/)?.[1];
+  assert.ok(pageBlock, 'Angle styles should define light theme properties on .page');
+  assert.ok(darkPageBlock, 'Angle styles should override those properties under the global dark theme');
+
+  for (const [token, lightValue, darkValue] of [
+    ['--angle-hero-breadcrumb', '#716c65', '#909baa'],
+    ['--angle-hero-breadcrumb-current', '#4d4944', '#c2c9d3'],
+    ['--angle-hero-support-border', '#b9afa1', 'rgb(174 191 255 / 24%)'],
+    ['--angle-hero-support-copy', '#68625b', '#a7b1bf'],
+    ['--angle-proof-label', '#766f67', '#909baa'],
+    ['--angle-proof-output-border', '#b9caff', 'rgb(112 153 255 / 60%)'],
+    ['--angle-proof-output-shadow', '0 30px 80px rgba(41,39,36,0.08)', '0 30px 80px rgb(0 0 0 / 36%), inset 0 1px 0 rgb(255 255 255 / 4%)'],
+    ['--angle-proof-media-placeholder', '#e8e0d4', '#111c29'],
+    ['--angle-workflow-number', '#777169', '#909baa'],
+    ['--angle-workflow-soft-accent', '#dce6ff', '#20345f'],
+  ] as const) {
+    assert.ok(pageBlock.includes(`${token}: ${lightValue};`), `${token} should preserve its exact historical light value`);
+    assert.ok(darkPageBlock.includes(`${token}: ${darkValue};`), `${token} should define its intended graphite value`);
+  }
+
+  const tokenizedLeadSelectors = [
+    ['.heroBreadcrumb', '--angle-hero-breadcrumb'],
+    ['.heroBreadcrumbLink:hover', '--angle-text'],
+    ['.heroBreadcrumbLink:focus-visible', '--angle-accent'],
+    ['.heroBreadcrumbCurrent', '--angle-hero-breadcrumb-current'],
+    ['.heroEyebrow', '--angle-accent'],
+    ['.heroTitle', '--angle-text'],
+    ['.heroBody', '--angle-controls-text'],
+    ['.heroSupport', '--angle-hero-support-border'],
+    ['.heroSupport', '--angle-hero-support-copy'],
+    ['.problemSection', '--angle-canvas-alt'],
+    ['.workflowSection', '--angle-canvas'],
+    ['.leadEyebrow', '--angle-accent'],
+    ['.leadTitle', '--angle-text'],
+    ['.leadBody', '--angle-text-secondary'],
+    ['.proofCard', '--angle-border'],
+    ['.proofCard', '--angle-surface'],
+    ['.proofMedia', '--angle-proof-media-placeholder'],
+    ['.proofLabel', '--angle-proof-label'],
+    ['.proofTitle', '--angle-text'],
+    ['.proofBody', '--angle-text-secondary'],
+    ['.proofOutputCard', '--angle-proof-output-border'],
+    ['.proofOutputCard', '--angle-proof-output-shadow'],
+    ['.proofOutputLabel', '--angle-accent'],
+    ['.proofCaption', '--angle-hero-breadcrumb-current'],
+    ['.workflowList', '--angle-border'],
+    ['.workflowStep', '--angle-border'],
+    ['.workflowNumber', '--angle-workflow-number'],
+    ['.workflowTitle', '--angle-text'],
+    ['.workflowBody', '--angle-text-secondary'],
+    ['.workflowMarkPanel', '--angle-surface'],
+    ['.workflowMarkPanel', '--angle-border'],
+    ['.workflowMarkAccent', '--angle-accent'],
+    ['.workflowMarkSoftAccent', '--angle-workflow-soft-accent'],
+    ['.workflowMarkDivider', '--angle-border'],
+  ] as const;
+  const styleRules = [...angleStylesSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+    selectors: match[1].split(',').map((selector) => selector.trim()),
+    declarations: match[2],
+  }));
+
+  for (const [selector, token] of tokenizedLeadSelectors) {
+    const declarations = styleRules.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations);
+    assert.ok(declarations.length > 0, `${selector} should have a style block`);
+    assert.ok(
+      declarations.some((block) => new RegExp(`var\\(${token}\\)`).test(block)),
+      `${selector} should consume ${token}`,
+    );
+  }
+});
+
+test('Angle landing consumes theme tokens across every premium section', () => {
+  const tokenizedSelectors = [
+    ['.useCaseCollection', '--angle-canvas'],
+    ['.useCasePreludeTitle', '--angle-text'],
+    ['.useCasePrelude > :last-child', '--angle-text-secondary'],
+    ['.useCaseSection', '--angle-border'],
+    ['.useCaseSection:nth-of-type(even)', '--angle-canvas-alt'],
+    ['.useCaseCopy h2', '--angle-text'],
+    ['.useCaseCopy > p:nth-of-type(2)', '--angle-text-secondary'],
+    ['.useCaseMedia', '--angle-media-matte'],
+    ['.useCaseMedia', '--angle-use-case-media-border'],
+    ['.useCaseMedia', '--angle-shadow-soft'],
+    ['.useCaseMedia figure', '--angle-surface'],
+    ['.useCaseMedia figure', '--angle-border'],
+    [".useCaseMedia figure[data-output='true']", '--angle-output-border'],
+    ['.useCaseMedia figcaption', '--angle-text-muted'],
+    [".useCaseMedia figure[data-output='true'] figcaption", '--angle-accent'],
+    ['.useCaseImage', '--angle-media-placeholder'],
+    ['.useCaseImage', '--angle-border'],
+    ['.workspaceSection', '--angle-border'],
+    ['.workspaceSection', '--angle-workspace-background'],
+    ['.conversionSection', '--angle-border'],
+    ['.questionsSection', '--angle-border'],
+    ['.relatedSection', '--angle-border'],
+    ['.finalSection', '--angle-border'],
+    ['.workspaceFrame', '--angle-workspace-shell'],
+    ['.workspaceFrame', '--angle-workspace-border'],
+    ['.workspaceFrame', '--angle-workspace-shadow'],
+    ['.workspaceTopline', '--angle-workspace-text'],
+    ['.workspaceTopline span:last-child', '--angle-workspace-muted'],
+    ['.workspaceWindow', '--angle-surface'],
+    ['.workspaceWindow', '--angle-workspace-window-border'],
+    ['.workspaceChrome span', '--angle-workspace-chrome-dot'],
+    ['.workspaceWindow > p', '--angle-workspace-window-muted'],
+    ['.workspaceImage', '--angle-workspace-placeholder'],
+    ['.workspaceImage', '--angle-border'],
+    ['.workspaceCallouts', '--angle-border-strong'],
+    ['.workspaceCallouts li', '--angle-border-strong'],
+    ['.workspaceCallouts li > span', '--angle-accent'],
+    ['.benefitList li > span', '--angle-accent'],
+    ['.workspaceCallouts h3', '--angle-text'],
+    ['.benefitList h3', '--angle-text'],
+    ['.relatedColumns h3', '--angle-text'],
+    ['.workspaceCallouts p', '--angle-text-secondary'],
+    ['.benefitList p', '--angle-text-secondary'],
+    ['.conversionSection', '--angle-canvas'],
+    ['.benefitList', '--angle-benefit-border'],
+    ['.benefitList li', '--angle-benefit-border'],
+    ['.benefitList svg', '--angle-accent'],
+    ['.questionsSection', '--angle-canvas-alt'],
+    ['.limitsParagraph', '--angle-limits-text'],
+    ['.limitsParagraph', '--angle-surface-inset'],
+    ['.limitsParagraph', '--angle-accent'],
+    ['.questionList', '--angle-border-strong'],
+    ['.questionList details', '--angle-border-strong'],
+    ['.questionList summary', '--angle-text'],
+    ['.questionList details > p', '--angle-text-secondary'],
+    ['.relatedSection', '--angle-canvas'],
+    ['.relatedColumns > div', '--angle-related-border'],
+    ['.finalSection', '--angle-final-section'],
+    ['.finalCta', '--angle-final-background'],
+    ['.finalCta', '--angle-final-border'],
+    ['.finalCta', '--angle-final-shadow'],
+    ['.finalEyebrow', '--angle-accent-soft'],
+    ['.finalCopy > p:not(.finalEyebrow)', '--angle-final-copy'],
+    ['.finalOrbit span', '--angle-accent-soft'],
+    ['.finalOrbit span', '--angle-final-orbit-node-border'],
+    ['.finalOrbit i', '--angle-accent-soft'],
+    ['.finalOrbit i', '--angle-final-orbit-node-border'],
+  ] as const;
+
+  const styleRules = [...angleStylesSource.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map((match) => ({
+    selectors: match[1].split(',').map((selector) => selector.trim()),
+    declarations: match[2],
+  }));
+
+  for (const [selector, token] of tokenizedSelectors) {
+    const declarations = styleRules.filter((rule) => rule.selectors.includes(selector)).map((rule) => rule.declarations);
+    assert.ok(declarations.length > 0, `${selector} should have a style block`);
+    assert.ok(
+      declarations.some((block) => new RegExp(`var\\(${token}\\)`).test(block)),
+      `${selector} should consume ${token}`,
+    );
+  }
+
+  const desktopRules = angleStylesSource.match(/@media \(min-width: 768px\) \{([\s\S]*?)\n\}\n\n@media \(max-width: 1023px\)/)?.[1];
+  assert.ok(desktopRules, 'Angle styles should define desktop-only premium rules');
+  const desktopCalloutDivider = desktopRules.match(/\.workspaceCallouts li\s*\{([^}]*)\}/)?.[1];
+  assert.ok(desktopCalloutDivider, 'desktop workspace callouts should have a style block');
+  assert.match(desktopCalloutDivider, /border-right-color:\s*var\(--angle-border-strong\)/);
+});
+
 test('Angle reduced motion neutralizes Orbit controls and hover transforms explicitly', () => {
   const reducedMotionBlock = angleStylesSource.match(/@media \(prefers-reduced-motion: reduce\) \{([\s\S]+)\}\s*$/)?.[1];
   assert.ok(reducedMotionBlock, 'Angle styles should include a final reduced-motion media block');
