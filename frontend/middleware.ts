@@ -33,6 +33,17 @@ import {
 } from '@/lib/middleware/routing-helpers';
 
 const DOTTED_LOCALIZED_ENGLISH_MODEL_CANDIDATE = /^\/(?:fr|es)\/models\/[^/]*\.[^/]*$/;
+const MCP_GATED_NOT_FOUND_SEGMENT = '__mcp-publication-gated__';
+
+function rewriteGatedMcpRouteToNotFound(req: NextRequest, localePrefix: string) {
+  const notFoundUrl = req.nextUrl.clone();
+  const localePath = localePrefix || `/${defaultLocale}`;
+  notFoundUrl.pathname = `${localePath}/${MCP_GATED_NOT_FOUND_SEGMENT}`.replace(/\/{2,}/g, '/');
+  notFoundUrl.search = '';
+  const response = NextResponse.rewrite(notFoundUrl, { status: 404 });
+  response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+  return response;
+}
 
 export async function middleware(req: NextRequest) {
   const host = req.headers.get('host') ?? '';
@@ -126,7 +137,7 @@ export async function middleware(req: NextRequest) {
 
   pathname = normalizedPathname;
   if (!mcpPublication.publicMarketing && isMcpPublicSourcePath(pathname)) {
-    return finalizeResponse(rewriteToNotFound(req, localePrefix), hasLogoutIntentCookie);
+    return finalizeResponse(rewriteGatedMcpRouteToNotFound(req, localePrefix), hasLogoutIntentCookie);
   }
   const nonPrefixedLocalizedRedirect = resolveNonPrefixedLocalizedMarketingRedirect(req, pathname);
   if (nonPrefixedLocalizedRedirect) {

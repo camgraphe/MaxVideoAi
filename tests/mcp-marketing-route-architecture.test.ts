@@ -175,11 +175,12 @@ test('checked-false publication returns a terminal localized 404 instead of redi
   ]) {
     const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
     assert.equal(response.status, 404, `${path} should fail closed at the middleware boundary`);
+    assert.equal(response.headers.get('x-robots-tag'), 'noindex, nofollow');
     assert.equal(response.headers.get('location'), null, `${path} must not enter a redirect loop`);
     assert.match(
       response.headers.get('x-middleware-rewrite') ?? '',
-      /(?:^|\/)404(?:$|\?)/,
-      `${path} should rewrite directly to the locale-owned not-found route`,
+      /\/(?:en|fr|es)\/__mcp-publication-gated__(?:$|\?)/,
+      `${path} should rewrite to a genuinely missing locale-owned path`,
     );
   }
 });

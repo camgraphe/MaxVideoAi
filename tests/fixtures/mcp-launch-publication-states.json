@@ -1,0 +1,32 @@
+{
+  "gated": {
+    "publicMarketing": false,
+    "publicIndexing": false,
+    "transport": false,
+    "oauth": false,
+    "discovery": false,
+    "paidGeneration": false,
+    "trial": false,
+    "referenceUploads": false
+  },
+  "preview": {
+    "publicMarketing": true,
+    "publicIndexing": false,
+    "transport": true,
+    "oauth": true,
+    "discovery": true,
+    "paidGeneration": false,
+    "trial": false,
+    "referenceUploads": false
+  },
+  "enabled": {
+    "publicMarketing": true,
+    "publicIndexing": true,
+    "transport": true,
+    "oauth": true,
+    "discovery": true,
+    "paidGeneration": true,
+    "trial": true,
+    "referenceUploads": true
+  }
+}

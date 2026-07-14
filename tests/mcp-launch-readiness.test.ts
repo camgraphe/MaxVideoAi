@@ -6,6 +6,8 @@ const launchEvidencePath = 'docs/marketing/mcp-launch-evidence.md';
 const compatibilityPath = 'docs/operations/mcp-host-compatibility-matrix.md';
 const e2ePath = 'tests/e2e/mcp-acquisition.spec.ts';
 const publicationPath = 'frontend/config/mcp-publication.json';
+const fixtureConfigPath = 'tests/fixtures/mcp-launch-publication-states.json';
+const fixtureRunnerPath = 'scripts/run-mcp-launch-fixture.mjs';
 
 test('Task 11 keeps every MCP publication gate fail closed', () => {
   const publication = JSON.parse(readFileSync(publicationPath, 'utf8')) as Record<string, boolean>;
@@ -58,6 +60,75 @@ test('the MCP browser contract covers localized no-JS SEO, visual states, and pr
   assert.match(source, /api\/wallet/);
   assert.match(source, /llms\.txt/);
   assert.match(source, /sitemap-en\.xml/);
+  assert.match(source, /setViewportSize\(\{\s*width:\s*1440,\s*height:\s*1000\s*\}\)/);
+  assert.match(source, /window\.innerWidth/);
+  assert.match(source, /preview-budget-unavailable-light-1440x1000\.png/);
+  assert.match(source, /enabled-budget-trial-paid-light-1440x1000\.png/);
+  assert.match(source, /x-middleware-rewrite/);
+  assert.match(source, /__mcp-publication-gated__/);
+  assert.match(source, /apiHostHeaders[\s\S]*?request\.get\('\/mcp'/);
+});
+
+test('tracked fixture config and runner reproduce all launch modes without mutating checked-in flags', () => {
+  for (const path of [fixtureConfigPath, fixtureRunnerPath]) {
+    assert.equal(existsSync(path), true, `${path} should exist`);
+  }
+
+  const fixtureConfig = JSON.parse(readFileSync(fixtureConfigPath, 'utf8')) as Record<
+    string,
+    Record<string, boolean>
+  >;
+  assert.deepEqual(fixtureConfig, {
+    gated: {
+      publicMarketing: false,
+      publicIndexing: false,
+      transport: false,
+      oauth: false,
+      discovery: false,
+      paidGeneration: false,
+      trial: false,
+      referenceUploads: false,
+    },
+    preview: {
+      publicMarketing: true,
+      publicIndexing: false,
+      transport: true,
+      oauth: true,
+      discovery: true,
+      paidGeneration: false,
+      trial: false,
+      referenceUploads: false,
+    },
+    enabled: {
+      publicMarketing: true,
+      publicIndexing: true,
+      transport: true,
+      oauth: true,
+      discovery: true,
+      paidGeneration: true,
+      trial: true,
+      referenceUploads: true,
+    },
+  });
+
+  const runner = readFileSync(fixtureRunnerPath, 'utf8');
+  assert.match(runner, /git[\s\S]*?ls-files/);
+  assert.match(runner, /mkdtemp/);
+  assert.match(runner, /node_modules/);
+  assert.match(runner, /frontend\/config\/mcp-publication\.json/);
+  assert.match(runner, /createHash\(['"]sha256['"]\)/);
+  assert.match(runner, /findAvailablePort/);
+  assert.match(runner, /MCP_E2E_MODE/);
+  assert.match(runner, /MCP_E2E_BASE_URL/);
+  assert.match(runner, /playwright[\s\S]*?mcp-acquisition\.spec\.ts/);
+  assert.match(runner, /--lighthouse/);
+  assert.match(runner, /lhci[\s\S]*?\/mcp[\s\S]*?\/integrations\/claude[\s\S]*?\/integrations\/codex/);
+  assert.match(runner, /process\.kill\(-server\.pid/);
+  assert.match(runner, /rmSync\(fixtureRoot/);
+  assert.doesNotMatch(runner, /frontend\/\.tmp\/mcp-launch/);
+
+  const packageJson = readFileSync('package.json', 'utf8');
+  assert.match(packageJson, /"qa:mcp-launch:lighthouse":\s*"node scripts\/run-mcp-launch-fixture\.mjs --mode enabled --lighthouse"/);
 });
 
 test('launch evidence records local states, artifacts, exact limitations, and future evidence', () => {
@@ -80,6 +151,10 @@ test('launch evidence records local states, artifacts, exact limitations, and fu
   assert.match(evidence, /GSC[^\n]+post-deployment/i);
   assert.match(evidence, /no production|production[^\n]+not probed/i);
   assert.match(evidence, /not ready for public promotion/i);
+  assert.match(evidence, /qa:mcp-launch:gated/);
+  assert.match(evidence, /qa:mcp-launch:preview/);
+  assert.match(evidence, /qa:mcp-launch:enabled/);
+  assert.doesNotMatch(evidence, /frontend\/\.tmp\/mcp-launch/);
 });
 
 test('the compatibility matrix distinguishes local QA from real host evidence', () => {

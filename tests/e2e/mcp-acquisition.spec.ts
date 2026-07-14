@@ -100,14 +100,18 @@ async function dismissCookieBanner(page: Page) {
 test('checked-in gated build returns noindex 404s and emits no MCP discovery entries', async ({ page, request }) => {
   onlyMode('gated');
 
-  for (const path of localizedOwners.map(({ path }) => path)) {
-    const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
-    expect(response?.status(), path).toBe(404);
+  for (const owner of localizedOwners) {
+    const response = await page.goto(owner.path, { waitUntil: 'domcontentloaded' });
+    expect(response?.status(), owner.path).toBe(404);
+    expect(response?.headers()['x-robots-tag'], owner.path).toBe('noindex, nofollow');
+    expect(response?.headers()['x-middleware-rewrite'], owner.path).toContain(
+      `/${owner.locale}/__mcp-publication-gated__`,
+    );
     const robotValues = await page.locator('meta[name="robots"]').evaluateAll((nodes) =>
       nodes.map((node) => node.getAttribute('content') ?? ''),
     );
-    expect(robotValues.length, path).toBeGreaterThan(0);
-    expect(robotValues.every((value) => /noindex/i.test(value)), path).toBeTruthy();
+    expect(robotValues.length, owner.path).toBeGreaterThan(0);
+    expect(robotValues.every((value) => /noindex/i.test(value)), owner.path).toBeTruthy();
   }
 
   for (const discoveryPath of ['/sitemap-en.xml', '/sitemap-fr.xml', '/sitemap-es.xml', '/llms.txt']) {
@@ -120,15 +124,31 @@ test('checked-in gated build returns noindex 404s and emits no MCP discovery ent
 test('renderable preview is noindex and hides trial, paid budget cards, and proof', async ({ page }) => {
   onlyMode('preview');
 
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  expect(page.viewportSize()).toEqual({ width: 1440, height: 1000 });
   const response = await page.goto('/mcp', { waitUntil: 'load' });
   expect(response?.status()).toBe(200);
+  expect(await page.evaluate(() => ({ width: window.innerWidth, height: window.innerHeight }))).toEqual({
+    width: 1440,
+    height: 1000,
+  });
   await dismissCookieBanner(page);
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/i);
   await expect(page.getByText('FIRST VIDEO INCLUDED')).toHaveCount(0);
   await expect(page.locator('[data-budget-slot]')).toHaveCount(0);
+  const unavailableBudget = page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'Start with the lowest-cost model that fits the brief' }),
+  });
+  await expect(unavailableBudget.getByText('Connected pricing is not published')).toBeVisible();
   await expectNoFakeProof(page);
   mkdirSync(artifactDir, { recursive: true });
-  await page.screenshot({ path: resolve(artifactDir, 'preview-no-trial-no-paid-light-1440x1000.png') });
+  await page.screenshot({
+    path: resolve(artifactDir, 'preview-no-trial-no-paid-light-1440x1000.png'),
+    fullPage: true,
+  });
+  await unavailableBudget.screenshot({
+    path: resolve(artifactDir, 'preview-budget-unavailable-light-1440x1000.png'),
+  });
 });
 
 test('enabled fixture captures MCP, Claude, and Codex at desktop/mobile in light/dark', async ({ browser }) => {
@@ -168,7 +188,9 @@ test('enabled fixture captures MCP, Claude, and Codex at desktop/mobile in light
 
 test('landing presents equal official client actions and honest budget-first content', async ({ page }) => {
   onlyMode('enabled');
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/mcp', { waitUntil: 'load' });
+  await dismissCookieBanner(page);
 
   await expect(page.getByRole('heading', {
     level: 1,
@@ -180,6 +202,12 @@ test('landing presents equal official client actions and honest budget-first con
   await expect(page.locator('[data-budget-slot="lowest_paid"]')).toBeVisible();
   await expect(page.locator('[data-budget-slot="affordable_upgrade"]')).toBeVisible();
   await expectNoFakeProof(page);
+  const availableBudget = page.locator('section').filter({
+    has: page.getByRole('heading', { name: 'Start with the lowest-cost model that fits the brief' }),
+  });
+  await availableBudget.screenshot({
+    path: resolve(artifactDir, 'enabled-budget-trial-paid-light-1440x1000.png'),
+  });
 
   const claude = page.locator('main [data-client="claude"]').first();
   const codex = page.locator('main [data-client="codex"]').first();
@@ -250,6 +278,11 @@ test('protocol and discovery responses stay private and absent from public disco
   onlyMode('enabled');
 
   const apiHostHeaders = { Host: 'api.maxvideoai.com' };
+  const canonicalProtocol = await request.get('/mcp', { headers: apiHostHeaders });
+  expect(canonicalProtocol.status()).toBe(401);
+  expect(canonicalProtocol.headers()['cache-control']).toBe('private, no-store');
+  expect(canonicalProtocol.headers()['x-robots-tag']).toBe('noindex, nofollow');
+
   const protocol = await request.get('/api/mcp', { headers: apiHostHeaders });
   expect(protocol.status()).toBe(401);
   expect(protocol.headers()['cache-control']).toBe('private, no-store');

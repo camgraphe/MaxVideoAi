@@ -57,15 +57,16 @@ Anthropic documents `claude mcp add --transport http <name> <url>` and browser O
 ## Task 11 local launch verification
 
 Checked: 2026-07-14. These results are local acquisition and boundary QA, not new real-host compatibility evidence.
-Temporary ignored publication fixtures were used; every checked-in MCP publication flag remained false and no production
-endpoint, account, grant, provider, credit, or user-wide client configuration was touched.
+Tracked deterministic publication fixtures were applied only inside temporary copied worktrees; every checked-in MCP
+publication flag remained false and no production endpoint, account, grant, provider, credit, or user-wide client
+configuration was touched.
 
 | Verification | State | Evidence or blocker |
 | --- | --- | --- |
-| Clean isolated all-gates-green production build | Pass | MCP, Claude, and Codex pages render in light/dark at desktop/mobile; equal marks/actions, keyboard activation, and no-JS EN/FR/ES SEO checks pass. |
-| Checked-in all-false production build | Pass | MCP owners return terminal 404/noindex and stay out of sitemap and `llms.txt`. |
-| Preview without trial/paid/reference | Pass | Page stays noindex and hides trial, paid budget cards, reference claims, and proof. |
-| Protocol/private boundaries | Pass | Unauthenticated MCP is 401 private/no-store; discovery fails closed without auth env; consent is noindex/private; wallet and upload reject unauthenticated/invalid input. |
+| Clean isolated all-gates-green production build | Pass | MCP, Claude, and Codex pages render in light/dark at desktop/mobile; equal marks/actions, keyboard activation, targeted trial/paid budget capture, honest proof absence, and no-JS EN/FR/ES SEO checks pass. |
+| Checked-in all-false production build | Pass | All 12 MCP owners return terminal 404 with header and rendered noindex through a genuinely missing locale path, without redirects; they stay out of sitemaps and `llms.txt`. |
+| Preview without trial/paid/reference | Pass | An asserted 1440×1000 viewport stays noindex and shows no trial/proof plus a targeted unavailable-budget state. |
+| Protocol/private boundaries | Pass | Canonical API-host `/mcp` and internal `/api/mcp` are 401 private/no-store/noindex; discovery fails closed without auth env; consent is noindex/private; wallet and upload reject unauthenticated/invalid input. |
 | Codex default OAuth `phone` request | Blocked | The default first-run scope mismatch remains unresolved; explicit least-privilege login does not make the default flow safe. |
 | Claude Desktop token-expiry refresh | Blocked | Revocation and reconnect evidence exists, but automatic refresh still lacks a recorded exact-version hosted result. |
 | Real-host end-to-end trial/paid/reference decision | Not run | Task 11 intentionally performed no authentication, grant, purchase, spend, upload, provider, or production action. |
