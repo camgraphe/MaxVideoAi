@@ -1,9 +1,6 @@
 import {
-  PricingPolicyValidationError,
   resolvePricingPolicy,
-  validatePricingPolicyOverrides,
   type PricingPolicyDocument,
-  type PricingPolicyReferences,
   type PricingPolicyRule,
   type PricingPolicyScenario,
 } from '@maxvideoai/pricing';
@@ -40,6 +37,18 @@ import type {
   PricingPolicyServiceDependencies,
 } from './policy-contract';
 import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
+import {
+  asRecord,
+  canonicalRule,
+  jsonRule,
+  projectionJson,
+  requiredText,
+  scenarioSelectorKey,
+  selectorKey,
+  selectorOf,
+  sortRules,
+  validateOverrides,
+} from './policy-rules';
 
 export type {
   PricingChangeConfirmation,
@@ -49,108 +58,6 @@ export type {
   PricingPolicyInventoryRow,
   PricingPolicyServiceDependencies,
 } from './policy-contract';
-
-function asRecord(value: unknown, label: string): Record<string, unknown> {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    throw new PricingAdminError('invalid_payload', `${label} must be an object`);
-  }
-  return value as Record<string, unknown>;
-}
-
-function requiredText(value: unknown, label: string): string {
-  if (typeof value !== 'string' || !value.trim()) {
-    throw new PricingAdminError('invalid_payload', `${label} is required`);
-  }
-  return value.trim();
-}
-
-function canonicalRule(rule: PricingPolicyRule): PricingPolicyRule {
-  return {
-    id: rule.id,
-    ...(rule.engineId ? { engineId: rule.engineId } : {}),
-    ...(rule.mode ? { mode: rule.mode } : {}),
-    ...(rule.resolution ? { resolution: rule.resolution } : {}),
-    marginPercent: rule.marginPercent,
-    marginFlatCents: rule.marginFlatCents,
-    surchargeAudioPercent: rule.surchargeAudioPercent,
-    surchargeUpscalePercent: rule.surchargeUpscalePercent,
-    currency: rule.currency,
-    ...(rule.compatibilityProfile ? { compatibilityProfile: rule.compatibilityProfile } : {}),
-  };
-}
-
-function jsonRule(rule: PricingPolicyRule | null): PricingChangeJsonValue | null {
-  return rule ? (canonicalRule(rule) as unknown as PricingChangeJsonValue) : null;
-}
-
-function selectorOf(rule: PricingPolicyRule): PricingScenarioSelector {
-  return {
-    ...(rule.engineId ? { engineId: rule.engineId } : {}),
-    ...(rule.mode ? { mode: rule.mode } : {}),
-    ...(rule.resolution ? { resolution: rule.resolution } : {}),
-  };
-}
-
-function selectorKey(rule: PricingPolicyRule): string {
-  return `${rule.engineId ?? '*'}|${rule.mode ?? '*'}|${rule.resolution ?? '*'}`;
-}
-
-function scenarioSelectorKey(selector: PricingScenarioSelector): string {
-  return `${selector.engineId ?? '*'}|${selector.mode ?? '*'}|${selector.resolution ?? '*'}`;
-}
-
-function buildReferences(policy: PricingPolicyDocument): PricingPolicyReferences {
-  const engineIds = new Set<string>();
-  const modesByEngineId = new Map<string, Set<string>>();
-  const resolutionsByEngineId = new Map<string, Set<string>>();
-  const add = (engineId: string, mode?: string, resolution?: string) => {
-    engineIds.add(engineId);
-    if (mode) {
-      const modes = modesByEngineId.get(engineId) ?? new Set<string>();
-      modes.add(mode);
-      modesByEngineId.set(engineId, modes);
-    }
-    if (resolution) {
-      const resolutions = resolutionsByEngineId.get(engineId) ?? new Set<string>();
-      resolutions.add(resolution);
-      resolutionsByEngineId.set(engineId, resolutions);
-    }
-  };
-  listFalEngines().forEach((entry) => {
-    const ids = new Set([entry.id, entry.engine.id]);
-    ids.forEach((id) => {
-      add(id);
-      entry.modes.forEach((mode) => add(id, mode.mode));
-      entry.engine.resolutions?.forEach((resolution) => add(id, undefined, resolution));
-    });
-  });
-  buildPricingAuditScenarios().forEach((scenario) => add(scenario.engineId, scenario.mode, scenario.resolution));
-  policy.rules.forEach((rule) => rule.engineId && add(rule.engineId, rule.mode, rule.resolution));
-  return { engineIds, modesByEngineId, resolutionsByEngineId };
-}
-
-function mapValidationError(error: unknown): never {
-  if (!(error instanceof PricingPolicyValidationError)) throw error;
-  const mapped = {
-    invalid_number: 'invalid_number',
-    unsupported_currency: 'unsupported_currency',
-    unknown_engine: 'unknown_engine',
-    unknown_mode: 'unknown_mode',
-    unknown_resolution: 'unknown_resolution',
-    unknown_compatibility_profile: 'unknown_compatibility_profile',
-    ambiguous_selector: 'ambiguous_selector',
-  } as const;
-  const code = mapped[error.code as keyof typeof mapped] ?? 'invalid_payload';
-  throw new PricingAdminError(code, error.message);
-}
-
-function validateOverrides(rules: unknown[], policy: PricingPolicyDocument): PricingPolicyRule[] {
-  try {
-    return validatePricingPolicyOverrides(rules, policy, buildReferences(policy));
-  } catch (error) {
-    return mapValidationError(error);
-  }
-}
 
 async function loadDatabaseRules(deps: PricingPolicyServiceDependencies): Promise<{
   rules: PricingPolicyRule[];
@@ -297,16 +204,6 @@ export function deriveRequestedPricingSurcharges(input: {
     affectedEngineIds
       .filter((engineId) => supports(engineId, kind))
       .map((engineId) => ({ kind, selector: { engineId } }))
-  );
-}
-
-function projectionJson(value: unknown): PricingChangeJsonValue {
-  return JSON.parse(JSON.stringify(value)) as PricingChangeJsonValue;
-}
-
-function sortRules<T extends PricingPolicyRule>(rules: T[]): T[] {
-  return [...rules].sort((left, right) =>
-    `${selectorKey(left)}|${left.id}`.localeCompare(`${selectorKey(right)}|${right.id}`)
   );
 }
 

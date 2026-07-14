@@ -45,6 +45,7 @@ const pageSource = readOrEmpty(pagePath);
 const pricingPolicyServicePath = join(root, 'frontend/server/pricing-admin/policy-service.ts');
 const pricingPolicyContractPath = join(root, 'frontend/server/pricing-admin/policy-contract.ts');
 const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/policy-dependencies.ts');
+const pricingPolicyRulesPath = join(root, 'frontend/server/pricing-admin/policy-rules.ts');
 const pricingPolicyRoutePaths = [
   join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
   join(root, 'frontend/app/api/admin/pricing/preview/route.ts'),
@@ -377,6 +378,32 @@ test('pricing policy contracts and production dependencies have focused owners',
     dependenciesSource,
     /resolvePricingPolicy|quoteCanonicalAdminScenarios|compareCanonicalAdminScenarios/,
     'dependency adapter must not own commercial policy decisions'
+  );
+});
+
+test('pricing policy rule helpers are deterministic and side-effect free', () => {
+  assert.ok(existsSync(pricingPolicyRulesPath), 'pricing policy rule helper module should exist');
+  const source = readOrEmpty(pricingPolicyRulesPath);
+
+  for (const helper of [
+    'asRecord',
+    'requiredText',
+    'canonicalRule',
+    'jsonRule',
+    'selectorOf',
+    'selectorKey',
+    'scenarioSelectorKey',
+    'validateOverrides',
+    'projectionJson',
+    'sortRules',
+  ]) {
+    assert.match(source, new RegExp(`export function ${helper}`), `${helper} should be exported`);
+  }
+
+  assert.doesNotMatch(
+    source,
+    /@\/lib\/db|event-store|revalidation|withDbTransaction|insertPricingChangeEvent/,
+    'rule helper module must not own persistence or side effects'
   );
 });
 
