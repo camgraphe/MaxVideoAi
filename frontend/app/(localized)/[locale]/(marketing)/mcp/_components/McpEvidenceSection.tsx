@@ -1,6 +1,6 @@
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 import type { McpProof } from '../_lib/mcp-proof';
-import { McpProofMedia } from './McpProofMedia.client';
+import { McpProofMedia } from './McpProofMedia';
 
 export function McpEvidenceSection({
   copy,

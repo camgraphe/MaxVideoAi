@@ -1,4 +1,6 @@
+import { localePathnames, type AppLocale } from '@/i18n/locales';
 import type { McpPublicationState } from '@/lib/mcp-publication';
+import { SITE_BASE_URL } from '@/lib/metadataUrls';
 import type { McpPageCopy } from './mcp-page-types';
 
 type McpSchemaInput = {
@@ -22,7 +24,6 @@ export function buildMcpWebApplicationJsonLd({
     name: copy.breadcrumb.current,
     description: copy.meta.description,
     applicationCategory: 'MultimediaApplication',
-    operatingSystem: 'Web browser',
     inLanguage,
     url: canonicalUrl,
     provider: {
@@ -33,7 +34,13 @@ export function buildMcpWebApplicationJsonLd({
   } as const;
 }
 
-export function buildMcpBreadcrumbJsonLd({ canonicalUrl, copy }: McpSchemaInput) {
+export function buildMcpBreadcrumbJsonLd({
+  canonicalUrl,
+  copy,
+  locale,
+}: McpSchemaInput & { locale: AppLocale }) {
+  const localePrefix = localePathnames[locale] ? `/${localePathnames[locale]}` : '';
+  const homeUrl = `${SITE_BASE_URL}${localePrefix}`;
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -42,7 +49,7 @@ export function buildMcpBreadcrumbJsonLd({ canonicalUrl, copy }: McpSchemaInput)
         '@type': 'ListItem',
         position: 1,
         name: copy.breadcrumb.home,
-        item: 'https://maxvideoai.com',
+        item: homeUrl,
       },
       {
         '@type': 'ListItem',

@@ -27,7 +27,7 @@ function McpClientAction({ action }: { action: McpClientActionCopy }) {
       data-client={action.client}
       data-visual-tone="neutral"
     >
-      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-white">
+      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[10px] border border-hairline bg-white dark:border-white/[0.14] dark:bg-neutral-900">
         <Image className="h-6 w-6 object-contain dark:hidden" src={mark.light} alt="" width={24} height={24} />
         <Image className="hidden h-6 w-6 object-contain dark:block" src={mark.dark} alt="" width={24} height={24} />
       </span>

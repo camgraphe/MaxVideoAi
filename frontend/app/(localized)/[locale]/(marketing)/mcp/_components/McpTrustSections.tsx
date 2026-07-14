@@ -29,7 +29,7 @@ export function McpTrustSections({
         <article className="rounded-[12px] border border-hairline bg-surface p-5 dark:border-white/[0.14] dark:bg-white/[0.04]">
           <h2 className="text-2xl font-semibold text-text-primary dark:text-white">{copy.trust.availability.title}</h2>
           <p className="mt-3 text-sm leading-6 text-text-secondary dark:text-white/68">
-            {publication.indexable ? copy.trust.availability.liveBody : copy.trust.availability.gatedBody}
+            {publication.connectionAvailable ? copy.trust.availability.liveBody : copy.trust.availability.gatedBody}
           </p>
         </article>
       </section>
@@ -39,16 +39,13 @@ export function McpTrustSections({
           <h2 className="text-2xl font-semibold text-text-primary dark:text-white">{copy.trust.compatibility.title}</h2>
           <p className="mt-2 max-w-[760px] text-sm leading-6 text-text-secondary dark:text-white/68">{copy.trust.compatibility.body}</p>
           <p className="mt-2 text-xs font-medium text-text-muted dark:text-white/55">{copy.trust.compatibility.lastVerifiedLabel}: {verified}</p>
-          <div className="mt-5 grid gap-3 md:grid-cols-2">
-            {(['claude', 'codex'] as const).map((client) => {
-              const evidence = compatibility.clients[client];
-              return (
-                <article key={client} className="rounded-[12px] border border-hairline bg-bg p-4 dark:border-white/[0.14] dark:bg-white/[0.04]">
-                  <h3 className="font-semibold text-text-primary dark:text-white">{evidence.hostLabel} {evidence.version}</h3>
-                  <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{copy.trust.compatibility.statuses[client]}</p>
-                </article>
-              );
-            })}
+          <div className="mt-5 grid gap-3 md:grid-cols-3">
+            {Object.values(compatibility.clients).flatMap((client) => client.hosts).map((host) => (
+              <article key={host.id} className="rounded-[12px] border border-hairline bg-bg p-4 dark:border-white/[0.14] dark:bg-white/[0.04]">
+                <h3 className="font-semibold text-text-primary dark:text-white">{host.hostLabel} {host.version}</h3>
+                <p className="mt-2 text-sm leading-6 text-text-secondary dark:text-white/68">{copy.trust.compatibility.statuses[host.id]}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>

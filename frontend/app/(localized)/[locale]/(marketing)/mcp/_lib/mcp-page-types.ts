@@ -1,4 +1,5 @@
 export type McpClientId = 'claude' | 'codex';
+export type McpCompatibilityHostId = 'claudeDesktop' | 'claudeCode' | 'codexCli';
 
 export type McpClientActionCopy = {
   client: McpClientId;
@@ -25,6 +26,7 @@ export type McpPageCopy = {
     title: string;
     intro: string;
     previewIntro: string;
+    trialDisclosure: string;
     actions: McpClientActionCopy[];
   };
   workflow: {
@@ -62,7 +64,7 @@ export type McpPageCopy = {
       body: string;
       lastVerifiedLabel: string;
       sourceLabel: string;
-      statuses: Record<McpClientId, string>;
+      statuses: Record<McpCompatibilityHostId, string>;
     };
     confirmation: {
       title: string;

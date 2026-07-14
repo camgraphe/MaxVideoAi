@@ -1,12 +1,18 @@
 import compatibility from '@/config/mcp-compatibility.json';
 import type { AppLocale } from '@/i18n/locales';
-import type { McpClientId } from './mcp-page-types';
+import type { McpClientId, McpCompatibilityHostId } from './mcp-page-types';
 
-export type McpCompatibilityClientEvidence = {
+export type McpCompatibilityHostEvidence = {
+  id: McpCompatibilityHostId;
   client: McpClientId;
   hostLabel: string;
   lastVerified: string;
   version: string;
+};
+
+export type McpCompatibilityClientEvidence = {
+  client: McpClientId;
+  hosts: McpCompatibilityHostEvidence[];
 };
 
 export type McpCompatibilityEvidence = {
@@ -16,21 +22,24 @@ export type McpCompatibilityEvidence = {
 };
 
 export function getMcpCompatibilityEvidence(): McpCompatibilityEvidence {
+  const host = (id: McpCompatibilityHostId): McpCompatibilityHostEvidence => ({
+    id,
+    client: compatibility.hosts[id].client as McpClientId,
+    hostLabel: compatibility.hosts[id].hostLabel,
+    lastVerified: compatibility.lastVerified,
+    version: compatibility.hosts[id].version,
+  });
   return {
     lastVerified: compatibility.lastVerified,
     sourceEvidence: compatibility.sourceEvidence,
     clients: {
       claude: {
         client: 'claude',
-        hostLabel: compatibility.clients.claude.hostLabel,
-        lastVerified: compatibility.lastVerified,
-        version: compatibility.clients.claude.version,
+        hosts: [host('claudeDesktop'), host('claudeCode')],
       },
       codex: {
         client: 'codex',
-        hostLabel: compatibility.clients.codex.hostLabel,
-        lastVerified: compatibility.lastVerified,
-        version: compatibility.clients.codex.version,
+        hosts: [host('codexCli')],
       },
     },
   };

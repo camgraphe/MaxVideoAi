@@ -8,6 +8,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)/mcp';
 const componentsRoot = `${routeRoot}/_components`;
+const integrationComponentsRoot = 'frontend/app/(localized)/[locale]/(marketing)/integrations/_components';
 
 function requireFile(path: string): string {
   assert.equal(existsSync(path), true, `${path} should exist`);
@@ -16,6 +17,9 @@ function requireFile(path: string): string {
 
 test('Claude and Codex use official marks through one equal neutral action component', () => {
   const source = requireFile(`${componentsRoot}/McpClientActions.tsx`);
+  const integrationHero = requireFile(`${integrationComponentsRoot}/IntegrationHeroSection.tsx`);
+  const openAiDark = requireFile('frontend/public/brand/partners/openai/openai-mark-dark.svg');
+  const claudeDark = requireFile('frontend/public/brand/partners/anthropic/claude-mark-dark.svg');
   assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-light\.svg/);
   assert.match(source, /\/brand\/partners\/anthropic\/claude-mark-dark\.svg/);
   assert.match(source, /\/brand\/partners\/openai\/openai-mark-light\.svg/);
@@ -23,6 +27,13 @@ test('Claude and Codex use official marks through one equal neutral action compo
   assert.match(source, /function McpClientAction/);
   assert.match(source, /clients\.map/);
   assert.match(source, /neutral|bg-surface/);
+  assert.match(openAiDark, /fill="#FFFFFF"/i);
+  assert.match(claudeDark, /fill="#D97757"/i);
+  assert.match(source, /bg-white[^"\n]*dark:bg-neutral-900/);
+  assert.match(integrationHero, /bg-white[^"\n]*dark:bg-neutral-900/);
+  assert.doesNotMatch(source, /bg-white[^"\n]*dark:bg-white/);
+  assert.doesNotMatch(integrationHero, /bg-white[^"\n]*dark:bg-white/);
+  assert.equal((source.match(/h-6 w-6 object-contain/g) ?? []).length, 2);
   assert.doesNotMatch(source, /preferred|primaryClient|OpenAI['"]/);
 });
 
@@ -31,7 +42,7 @@ test('new MCP surfaces remain light-first, restrained, gradient-free, and dark-c
     'McpPageView.tsx',
     'McpHeroSection.tsx',
     'McpClientActions.tsx',
-    'McpProofMedia.client.tsx',
+    'McpProofMedia.tsx',
     'McpWorkflowStrip.tsx',
     'McpBudgetShortlist.tsx',
     'McpEvidenceSection.tsx',
@@ -83,11 +94,11 @@ test('workflow and canonical budget options render as the three-step budget-firs
       mode: 't2v',
       durationSeconds: 5,
       resolution: '480p',
-      audioIncluded: true,
+      audioState: 'enabled',
       amountCents: null,
       currency: 'USD',
       priceLabel: 'Included',
-      scenarioLabel: '5s · 480p · Audio included',
+      scenarioLabel: '5s · 480p · Audio enabled',
       modelHref: '/models/dreamina-seedance-2-0-mini',
       priceSource: 'included_trial',
     },
@@ -99,7 +110,7 @@ test('workflow and canonical budget options render as the three-step budget-firs
       mode: 't2v',
       durationSeconds: 5,
       resolution: '720p',
-      audioIncluded: false,
+      audioState: 'silent',
       amountCents: 26,
       currency: 'USD',
       priceLabel: '$0.26',
@@ -117,8 +128,9 @@ test('workflow and canonical budget options render as the three-step budget-firs
 });
 
 test('proof media is poster-backed, controlled, captioned, and never auto-plays', () => {
-  const source = requireFile(`${componentsRoot}/McpProofMedia.client.tsx`);
-  assert.match(source, /['"]use client['"]/);
+  const source = requireFile(`${componentsRoot}/McpProofMedia.tsx`);
+  assert.equal(existsSync(`${componentsRoot}/McpProofMedia.client.tsx`), false);
+  assert.doesNotMatch(source, /['"]use client['"]/);
   assert.match(source, /<video/);
   assert.match(source, /controls/);
   assert.match(source, /preload="metadata"/);

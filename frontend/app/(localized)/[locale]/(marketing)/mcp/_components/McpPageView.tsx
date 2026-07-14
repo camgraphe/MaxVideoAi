@@ -26,12 +26,12 @@ export function McpPageView({
   publication: McpPublicationState;
 }) {
   return (
-    <main className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
+    <div className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
       <McpHeroSection copy={copy.hero} evidenceCopy={copy.evidence} proof={proof} publication={publication} />
       <McpWorkflowStrip copy={copy.workflow} />
       <McpBudgetShortlist copy={copy.budget} options={budgetOptions} />
       <McpReferenceWorkflowSection copy={copy.references} showReferenceClaim={publication.showReferenceClaim} />
       <McpTrustSections compatibility={compatibility} copy={copy} locale={locale} publication={publication} />
-    </main>
+    </div>
   );
 }

@@ -60,7 +60,7 @@ export default async function McpPage({
     inLanguage: localeRegions[locale],
     publication,
   });
-  const breadcrumb = buildMcpBreadcrumbJsonLd({ canonicalUrl, copy });
+  const breadcrumb = buildMcpBreadcrumbJsonLd({ canonicalUrl, copy, locale });
 
   return (
     <>

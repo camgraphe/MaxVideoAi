@@ -8,6 +8,8 @@ import { quotePublicPricing } from '@/lib/pricing-public-quote';
 import { getModelByEngineId, type ModelRosterEntry } from '@/lib/model-roster';
 import type { EngineInputField } from '@/types/engines';
 
+export type McpBudgetAudioState = 'enabled' | 'optional' | 'silent';
+
 export type McpBudgetOption = {
   slot: 'included_trial' | 'lowest_paid' | 'affordable_upgrade';
   engineId: string;
@@ -16,7 +18,7 @@ export type McpBudgetOption = {
   mode: 't2v';
   durationSeconds: number;
   resolution: string;
-  audioIncluded: boolean;
+  audioState: McpBudgetAudioState;
   amountCents: number | null;
   currency: string;
   priceLabel: string;
@@ -40,6 +42,7 @@ type BudgetCandidate = {
   resolution: string;
   amountCents: number;
   currency: string;
+  audioState: McpBudgetAudioState;
   supportsReferenceImages: boolean;
   supportsStructuredMultiShot: boolean;
 };
@@ -58,11 +61,11 @@ const DEFAULT_DEPENDENCIES: McpBudgetOptionsDependencies = {
 
 const COPY: Record<
   AppLocale,
-  { included: string; audioIncluded: string; silent: string }
+  { included: string; audioEnabled: string; audioOptional: string; silent: string }
 > = {
-  en: { included: 'Included', audioIncluded: 'Audio included', silent: 'Silent' },
-  fr: { included: 'Inclus', audioIncluded: 'Audio inclus', silent: 'Sans audio' },
-  es: { included: 'Incluido', audioIncluded: 'Audio incluido', silent: 'Sin audio' },
+  en: { included: 'Included', audioEnabled: 'Audio enabled', audioOptional: 'Optional audio', silent: 'Silent' },
+  fr: { included: 'Inclus', audioEnabled: 'Audio activé', audioOptional: 'Audio en option', silent: 'Sans audio' },
+  es: { included: 'Incluido', audioEnabled: 'Audio activado', audioOptional: 'Audio opcional', silent: 'Sin audio' },
 };
 
 function parseDurationSeconds(value: number | string | null | undefined): number | null {
@@ -197,6 +200,24 @@ function supportsReferenceImages(entry: FalEngineEntry): boolean {
   return entry.modes.some((mode) => mode.mode === 'i2v' || mode.mode === 'ref2v');
 }
 
+function resolveT2vAudioState(entry: FalEngineEntry): McpBudgetAudioState {
+  const fields = [
+    ...(entry.engine.inputSchema?.required ?? []),
+    ...(entry.engine.inputSchema?.optional ?? []),
+  ].filter((field) => !field.modes?.length || field.modes.includes('t2v'));
+  const audioControl = fields.find(
+    (field) =>
+      field.type === 'boolean' &&
+      ['audio', 'generate_audio', 'audio_enabled', 'enable_audio'].includes(field.id),
+  );
+  if (audioControl) return audioControl.default === true ? 'enabled' : 'optional';
+
+  const audioInput = fields.find(
+    (field) => field.type === 'audio' || /^(?:audio|soundtrack)(?:_|$)/.test(field.id),
+  );
+  return audioInput ? 'optional' : 'silent';
+}
+
 function compareCandidates(left: BudgetCandidate, right: BudgetCandidate): number {
   return (
     left.amountCents - right.amountCents ||
@@ -256,6 +277,7 @@ function quoteCandidate(
       resolution,
       amountCents: quote.customerTotalCents,
       currency: quote.currency,
+      audioState: resolveT2vAudioState(entry),
       supportsReferenceImages: supportsReferenceImages(entry),
       supportsStructuredMultiShot: hasStructuredMultiShot(entry),
     };
@@ -300,13 +322,17 @@ function formatScenario(
   locale: AppLocale,
   durationSeconds: number,
   resolution: string,
-  audioIncluded: boolean
+  audioState: McpBudgetAudioState
 ): string {
   const duration = new Intl.NumberFormat(localeRegions[locale]).format(durationSeconds);
   const durationLabel = locale === 'en' ? `${duration}s` : `${duration} s`;
   const resolutionLabel = resolution.toLowerCase() === '4k' ? '4K' : resolution;
   return `${durationLabel} · ${resolutionLabel} · ${
-    audioIncluded ? COPY[locale].audioIncluded : COPY[locale].silent
+    audioState === 'enabled'
+      ? COPY[locale].audioEnabled
+      : audioState === 'optional'
+        ? COPY[locale].audioOptional
+        : COPY[locale].silent
   }`;
 }
 
@@ -323,7 +349,7 @@ function toPaidOption(
     mode: 't2v',
     durationSeconds: candidate.durationSeconds,
     resolution: candidate.resolution,
-    audioIncluded: candidate.entry.engine.audio,
+    audioState: candidate.audioState,
     amountCents: candidate.amountCents,
     currency: candidate.currency,
     priceLabel: formatPrice(locale, candidate.currency, candidate.amountCents),
@@ -331,7 +357,7 @@ function toPaidOption(
       locale,
       candidate.durationSeconds,
       candidate.resolution,
-      candidate.entry.engine.audio
+      candidate.audioState
     ),
     modelHref: buildLocalizedModelPath(locale, candidate.roster.modelSlug),
     priceSource: 'canonical_public_quote',
@@ -362,7 +388,7 @@ function toTrialOption(
     mode: 't2v',
     durationSeconds: candidate.durationSeconds,
     resolution: candidate.resolution,
-    audioIncluded: candidate.entry.engine.audio,
+    audioState: candidate.audioState,
     amountCents: null,
     currency: candidate.currency,
     priceLabel: COPY[locale].included,
@@ -370,7 +396,7 @@ function toTrialOption(
       locale,
       candidate.durationSeconds,
       candidate.resolution,
-      candidate.entry.engine.audio
+      candidate.audioState
     ),
     modelHref: buildLocalizedModelPath(locale, candidate.roster.modelSlug),
     priceSource: 'included_trial',

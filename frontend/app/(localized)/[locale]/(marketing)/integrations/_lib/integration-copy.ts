@@ -1,5 +1,16 @@
 import { localePathnames, type AppLocale } from '@/i18n/locales';
-import type { McpClientId } from '../../mcp/_lib/mcp-page-types';
+import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-page-types';
+
+type IntegrationHostGuide = {
+  hostId: McpCompatibilityHostId;
+  title: string;
+  intro: string;
+  steps: Array<{ title: string; body: string }>;
+  commandLabel?: string;
+  commands: string[];
+  authTrigger?: string;
+  limitation: string;
+};
 
 export type IntegrationPageCopy = {
   client: McpClientId;
@@ -15,22 +26,18 @@ export type IntegrationPageCopy = {
     backHref: string;
   };
   compatibility: {
-    hostLabel: string;
     lastVerifiedLabel: string;
     versionLabel: string;
-    status: string;
+    statuses: Record<McpCompatibilityHostId, string>;
   };
   setup: {
     eyebrow: string;
     title: string;
     intro: string;
-    steps: Array<{ title: string; body: string }>;
-    commandLabel: string;
-    commands: string[];
+    hostGuides: IntegrationHostGuide[];
     oauthTitle: string;
     oauthBody: string;
     oauthSteps: string[];
-    limitation: string;
   };
   workflow: {
     eyebrow: string;
@@ -80,45 +87,72 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       backHref: '/mcp',
     },
     compatibility: {
-      hostLabel: claude ? 'Claude Desktop' : 'Codex CLI',
       lastVerifiedLabel: 'Last verified',
       versionLabel: 'Tested host version',
-      status: claude
-        ? 'Hosted read-only connection, revocation and reconnect checks passed. Token-expiry refresh remains pending.'
-        : 'Explicit-scope hosted read-only login passed. The default add flow remains blocked by a permissions mismatch.',
+      statuses: {
+        claudeDesktop: 'Hosted read-only connection, revocation and reconnect checks passed. Token-expiry refresh remains pending.',
+        claudeCode: 'Local OAuth, revocation and reapproval passed. A hosted tool call remains pending because the test client had no Anthropic session.',
+        codexCli: 'Explicit-scope hosted read-only login passed. The default add flow remains blocked by a permissions mismatch.',
+      },
     },
     setup: {
       eyebrow: 'Connection',
       title: `Connect ${label} to MaxVideoAI`,
       intro: claude
-        ? 'The recorded paths use a custom remote connector in Claude Desktop or the HTTP connection command in Claude Code. Public access remains disabled.'
+        ? 'Claude Desktop and Claude Code use different recorded connection paths. Follow the guide for the client you actually use; public access remains disabled.'
         : 'The recorded path uses Codex CLI with an explicit least-privilege login command. The default first-run add flow is not approved for public use.',
-      steps: claude
+      hostGuides: claude
         ? [
-            { title: 'Open remote connector settings', body: 'In Claude Desktop, create a custom remote connector. In Claude Code, use the recorded HTTP command below.' },
-            { title: 'Add the MaxVideoAI server address', body: 'Use the documented remote address exactly; do not paste a user credential into the configuration.' },
-            { title: 'Complete browser approval', body: 'Sign in to MaxVideoAI, review the requested account access, and return to Claude only after approval.' },
+            {
+              hostId: 'claudeDesktop',
+              title: 'Claude Desktop remote connector',
+              intro: 'Create a custom remote connector in Claude Desktop with the MaxVideoAI server address.',
+              steps: [
+                { title: 'Open remote connector settings', body: 'In Claude Desktop, create a custom remote connector.' },
+                { title: 'Add the MaxVideoAI server address', body: 'Use the documented remote address exactly; do not paste a user credential into the configuration.' },
+                { title: 'Complete browser approval', body: 'Sign in to MaxVideoAI, review the requested account access, and return to Claude Desktop only after approval.' },
+              ],
+              commands: [],
+              limitation: 'Hosted read-only tools, revocation and reconnect passed on the recorded version. Automatic refresh after access expiry has not yet been recorded.',
+            },
+            {
+              hostId: 'claudeCode',
+              title: 'Claude Code HTTP connection',
+              intro: 'Register the HTTP server from Claude Code, then start authorization from its MCP panel.',
+              steps: [
+                { title: 'Add the HTTP connection', body: 'Run the recorded command below to register MaxVideoAI.' },
+                { title: 'Open the MCP panel', body: 'Open /mcp in Claude Code and choose the MaxVideoAI connection to start browser authorization.' },
+                { title: 'Complete browser approval', body: 'Review the requested identity access, approve it, and return to Claude Code.' },
+              ],
+              commandLabel: 'Recorded Claude Code commands',
+              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              authTrigger: 'After adding the server, open /mcp in Claude Code to authenticate.',
+              limitation: 'Local OAuth, revocation and reapproval passed. A hosted tool call remains pending, so this evidence does not prove hosted tool execution.',
+            },
           ]
         : [
-            { title: 'Add the remote connection', body: 'Use the current Codex CLI command below to register the MaxVideoAI server address.' },
-            { title: 'Start explicit login', body: 'Use the separate login command with only the three recorded identity permissions.' },
-            { title: 'Verify read-only access', body: 'Confirm the registered connection and test model discovery before relying on any later workflow.' },
-          ],
-      commandLabel: claude ? 'Recorded Claude Code command' : 'Recorded Codex CLI commands',
-      commands: claude
-        ? ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai']
-        : [
-            'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
-            'codex mcp login maxvideoai --scopes openid,email,profile',
-            'codex mcp get maxvideoai',
+            {
+              hostId: 'codexCli',
+              title: 'Codex CLI explicit-scope connection',
+              intro: 'Register the remote server, then use the explicit least-privilege login path.',
+              steps: [
+                { title: 'Add the remote connection', body: 'Use the current Codex CLI command below to register the MaxVideoAI server address.' },
+                { title: 'Start explicit login', body: 'Use the separate login command with only the three recorded identity permissions.' },
+                { title: 'Verify read-only access', body: 'Confirm the registered connection and test model discovery before relying on any later workflow.' },
+              ],
+              commandLabel: 'Recorded Codex CLI commands',
+              commands: [
+                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                'codex mcp login maxvideoai --scopes openid,email,profile',
+                'codex mcp get maxvideoai',
+              ],
+              limitation: 'The default Codex add flow requested an extra permission and was stopped. Only the explicit login path above passed the recorded read-only test.',
+            },
           ],
       oauthTitle: 'What happens during OAuth authorization',
       oauthBody:
         'A browser window opens MaxVideoAI sign-in and consent. Approval identifies the account to the remote connection; it does not give the host direct database access or payment details.',
       oauthSteps: ['Sign in with the intended MaxVideoAI account', 'Review the requested identity access', `Approve or deny, then return to ${label}`],
-      limitation: claude
-        ? 'Claude Desktop evidence is read-only and version-specific. Automatic refresh after access expiry has not yet been recorded.'
-        : 'The default Codex add flow requested an extra permission and was stopped. Only the explicit login path above passed the recorded read-only test.',
     },
     workflow: {
       eyebrow: 'Example workflow',
@@ -188,46 +222,79 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       backHref: '/fr/mcp',
     },
     compatibility: {
-      hostLabel: copy.compatibility.hostLabel,
       lastVerifiedLabel: 'Dernière vérification',
-      versionLabel: 'Version hôte testée',
-      status: claude
-        ? 'Les tests hébergés en lecture seule, de révocation et de reconnexion ont réussi. L’actualisation après expiration reste à vérifier.'
-        : 'La connexion hébergée en lecture seule avec autorisations explicites a réussi. Le parcours d’ajout par défaut reste bloqué par une incompatibilité d’autorisations.',
+      versionLabel: 'Version du client testée',
+      statuses: {
+        claudeDesktop: 'Les tests hébergés en lecture seule, de révocation et de reconnexion ont réussi. L’actualisation après expiration reste à vérifier.',
+        claudeCode: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi. L’appel hébergé d’un outil reste à effectuer, car le client de test n’avait pas de session Anthropic.',
+        codexCli: 'La connexion hébergée en lecture seule avec autorisations explicites a réussi. Le parcours d’ajout par défaut reste bloqué par une incompatibilité d’autorisations.',
+      },
     },
     setup: {
-      ...copy.setup,
       eyebrow: 'Connexion',
       title: `Connecter ${label} à MaxVideoAI`,
       intro: claude
-        ? 'Les parcours enregistrés utilisent un connecteur distant personnalisé dans Claude Desktop ou la commande HTTP dans Claude Code. L’accès public reste désactivé.'
+        ? 'Claude Desktop et Claude Code suivent deux parcours de connexion enregistrés différents. Utilisez le guide correspondant à votre client ; l’accès public reste désactivé.'
         : 'Le parcours enregistré utilise Codex CLI avec une commande de connexion aux autorisations explicites. Le premier parcours d’ajout par défaut n’est pas approuvé pour le public.',
-      steps: claude
+      hostGuides: claude
         ? [
-            { title: 'Ouvrez les réglages de connexion distante', body: 'Dans Claude Desktop, créez un connecteur distant personnalisé. Dans Claude Code, utilisez la commande HTTP enregistrée ci-dessous.' },
-            { title: 'Ajoutez l’adresse du serveur MaxVideoAI', body: 'Utilisez exactement l’adresse documentée et ne collez aucun identifiant utilisateur dans la configuration.' },
-            { title: 'Terminez l’approbation dans le navigateur', body: 'Connectez-vous à MaxVideoAI, vérifiez l’accès demandé et revenez dans Claude après approbation.' },
+            {
+              hostId: 'claudeDesktop',
+              title: 'Connecteur distant Claude Desktop',
+              intro: 'Créez un connecteur distant personnalisé dans Claude Desktop avec l’adresse du serveur MaxVideoAI.',
+              steps: [
+                { title: 'Ouvrez les réglages de connexion distante', body: 'Dans Claude Desktop, créez un connecteur distant personnalisé.' },
+                { title: 'Ajoutez l’adresse du serveur MaxVideoAI', body: 'Utilisez exactement l’adresse documentée et ne collez aucun identifiant utilisateur dans la configuration.' },
+                { title: 'Terminez l’approbation dans le navigateur', body: 'Connectez-vous à MaxVideoAI, vérifiez l’accès demandé et revenez dans Claude Desktop après approbation.' },
+              ],
+              commands: [],
+              limitation: 'Les outils hébergés en lecture seule, la révocation et la reconnexion ont réussi sur la version enregistrée. L’actualisation automatique après expiration reste à vérifier.',
+            },
+            {
+              hostId: 'claudeCode',
+              title: 'Connexion HTTP Claude Code',
+              intro: 'Enregistrez le serveur HTTP depuis Claude Code, puis lancez l’autorisation depuis son panneau MCP.',
+              steps: [
+                { title: 'Ajoutez la connexion HTTP', body: 'Exécutez la commande enregistrée ci-dessous pour ajouter MaxVideoAI.' },
+                { title: 'Ouvrez le panneau MCP', body: 'Ouvrez /mcp dans Claude Code et choisissez la connexion MaxVideoAI pour lancer l’autorisation dans le navigateur.' },
+                { title: 'Terminez l’approbation', body: 'Vérifiez l’accès d’identité demandé, approuvez-le et revenez dans Claude Code.' },
+              ],
+              commandLabel: 'Commandes Claude Code enregistrées',
+              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              authTrigger: 'Après l’ajout du serveur, ouvrez /mcp dans Claude Code pour vous authentifier.',
+              limitation: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi. L’appel hébergé d’un outil reste à effectuer ; cette preuve ne valide donc pas l’exécution hébergée des outils.',
+            },
           ]
         : [
-            { title: 'Ajoutez la connexion distante', body: 'Utilisez la commande Codex CLI ci-dessous pour enregistrer l’adresse du serveur MaxVideoAI.' },
-            { title: 'Lancez la connexion explicite', body: 'Utilisez la commande distincte avec uniquement les trois autorisations d’identité enregistrées.' },
-            { title: 'Vérifiez l’accès en lecture seule', body: 'Contrôlez la connexion enregistrée et testez la découverte des modèles avant tout autre parcours.' },
+            {
+              hostId: 'codexCli',
+              title: 'Connexion Codex CLI aux autorisations explicites',
+              intro: 'Enregistrez le serveur distant, puis utilisez le parcours de connexion explicite avec le minimum d’autorisations.',
+              steps: [
+                { title: 'Ajoutez la connexion distante', body: 'Utilisez la commande Codex CLI ci-dessous pour enregistrer l’adresse du serveur MaxVideoAI.' },
+                { title: 'Lancez la connexion explicite', body: 'Utilisez la commande distincte avec uniquement les trois autorisations d’identité enregistrées.' },
+                { title: 'Vérifiez l’accès en lecture seule', body: 'Contrôlez la connexion enregistrée et testez la découverte des modèles avant tout autre parcours.' },
+              ],
+              commandLabel: 'Commandes Codex CLI enregistrées',
+              commands: [
+                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                'codex mcp login maxvideoai --scopes openid,email,profile',
+                'codex mcp get maxvideoai',
+              ],
+              limitation: 'Le parcours d’ajout par défaut de Codex a demandé une autorisation supplémentaire et a été interrompu. Seul le parcours explicite ci-dessus a réussi en lecture seule.',
+            },
           ],
-      commandLabel: claude ? 'Commande Claude Code enregistrée' : 'Commandes Codex CLI enregistrées',
       oauthTitle: 'Déroulement de l’autorisation OAuth',
-      oauthBody: 'Une fenêtre de navigateur ouvre la connexion et le consentement MaxVideoAI. L’approbation identifie le compte pour la connexion distante ; elle ne donne pas à l’hôte un accès direct à la base de données ni aux informations de paiement.',
+      oauthBody: 'Une fenêtre de navigateur ouvre la connexion et le consentement MaxVideoAI. L’approbation identifie le compte pour la connexion distante ; elle ne donne pas au client un accès direct à la base de données ni aux informations de paiement.',
       oauthSteps: ['Connectez-vous au compte MaxVideoAI prévu', 'Vérifiez l’accès d’identité demandé', `Approuvez ou refusez, puis revenez dans ${label}`],
-      limitation: claude
-        ? 'La preuve Claude Desktop est en lecture seule et liée à une version précise. L’actualisation automatique après expiration n’a pas encore été enregistrée.'
-        : 'Le parcours d’ajout par défaut de Codex a demandé une autorisation supplémentaire et a été interrompu. Seul le parcours explicite ci-dessus a réussi en lecture seule.',
     },
     workflow: {
       eyebrow: 'Exemple de parcours',
       title: `Du brief ${label} à une décision MaxVideoAI vérifiée`,
-      intro: 'L’hôte peut structurer la réflexion créative ; MaxVideoAI reste la source des données modèles, du prix et de l’état d’exécution.',
+      intro: 'Le client peut structurer la réflexion créative ; MaxVideoAI reste la source des données modèles, du prix et de l’état d’exécution.',
       previewSteps: [
         { title: 'Précisez le brief', body: `${label} peut poser des questions sur le sujet, le mouvement, le format, le style, l’intention audio et le budget.` },
-        { title: 'Formulez le prompt et les références', body: `${label} peut rédiger le texte et préparer une référence sans laisser entendre que l’hôte a créé l’image.` },
+        { title: 'Formulez le prompt et les références', body: `${label} peut rédiger le texte et préparer une référence sans laisser entendre que le client a créé l’image.` },
         { title: 'Comparez les données en lecture seule', body: 'Les preuves contrôlées couvrent uniquement la découverte des modèles et leurs compromis factuels.' },
         { title: 'Poursuivez dans MaxVideoAI', body: 'Tant que la génération connectée n’est pas publiée, vérifiez le modèle et le prix affiché dans le produit web.' },
       ],
@@ -289,46 +356,79 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       backHref: '/es/mcp',
     },
     compatibility: {
-      hostLabel: copy.compatibility.hostLabel,
       lastVerifiedLabel: 'Última verificación',
-      versionLabel: 'Versión del host probada',
-      status: claude
-        ? 'Las pruebas alojadas de solo lectura, revocación y reconexión pasaron. Queda pendiente la renovación tras el vencimiento del acceso.'
-        : 'El acceso alojado de solo lectura con permisos explícitos pasó. El flujo predeterminado para agregar la conexión sigue bloqueado por una incompatibilidad de permisos.',
+      versionLabel: 'Versión del cliente probada',
+      statuses: {
+        claudeDesktop: 'Las pruebas alojadas de solo lectura, revocación y reconexión pasaron. Queda pendiente la renovación tras el vencimiento del acceso.',
+        claudeCode: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron. Queda pendiente una llamada alojada a las herramientas porque el cliente de prueba no tenía una sesión de Anthropic.',
+        codexCli: 'El acceso alojado de solo lectura con permisos explícitos pasó. El flujo predeterminado para agregar la conexión sigue bloqueado por una incompatibilidad de permisos.',
+      },
     },
     setup: {
-      ...copy.setup,
       eyebrow: 'Conexión',
       title: `Conecta ${label} con MaxVideoAI`,
       intro: claude
-        ? 'Las rutas registradas usan un conector remoto personalizado en Claude Desktop o el comando HTTP en Claude Code. El acceso público sigue deshabilitado.'
+        ? 'Claude Desktop y Claude Code siguen rutas de conexión registradas diferentes. Usa la guía del cliente que utilizas; el acceso público sigue deshabilitado.'
         : 'La ruta registrada usa Codex CLI con un comando de inicio de sesión de permisos explícitos. El flujo predeterminado inicial no está aprobado para uso público.',
-      steps: claude
+      hostGuides: claude
         ? [
-            { title: 'Abre la configuración de conectores remotos', body: 'En Claude Desktop, crea un conector remoto personalizado. En Claude Code, usa el comando HTTP registrado que aparece abajo.' },
-            { title: 'Agrega la dirección del servidor de MaxVideoAI', body: 'Usa exactamente la dirección documentada y no pegues credenciales de usuario en la configuración.' },
-            { title: 'Completa la aprobación en el navegador', body: 'Inicia sesión en MaxVideoAI, revisa el acceso solicitado y vuelve a Claude después de aprobar.' },
+            {
+              hostId: 'claudeDesktop',
+              title: 'Conector remoto de Claude Desktop',
+              intro: 'Crea un conector remoto personalizado en Claude Desktop con la dirección del servidor de MaxVideoAI.',
+              steps: [
+                { title: 'Abre la configuración de conectores remotos', body: 'En Claude Desktop, crea un conector remoto personalizado.' },
+                { title: 'Agrega la dirección del servidor de MaxVideoAI', body: 'Usa exactamente la dirección documentada y no pegues credenciales de usuario en la configuración.' },
+                { title: 'Completa la aprobación en el navegador', body: 'Inicia sesión en MaxVideoAI, revisa el acceso solicitado y vuelve a Claude Desktop después de aprobar.' },
+              ],
+              commands: [],
+              limitation: 'Las herramientas alojadas de solo lectura, la revocación y la reconexión pasaron en la versión registrada. Queda pendiente comprobar la renovación automática después del vencimiento.',
+            },
+            {
+              hostId: 'claudeCode',
+              title: 'Conexión HTTP de Claude Code',
+              intro: 'Registra el servidor HTTP desde Claude Code y después inicia la autorización desde su panel MCP.',
+              steps: [
+                { title: 'Agrega la conexión HTTP', body: 'Ejecuta el comando registrado que aparece abajo para agregar MaxVideoAI.' },
+                { title: 'Abre el panel MCP', body: 'Abre /mcp en Claude Code y elige la conexión de MaxVideoAI para iniciar la autorización en el navegador.' },
+                { title: 'Completa la aprobación', body: 'Revisa el acceso de identidad solicitado, apruébalo y vuelve a Claude Code.' },
+              ],
+              commandLabel: 'Comandos registrados de Claude Code',
+              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              authTrigger: 'Después de agregar el servidor, abre /mcp en Claude Code para autenticarte.',
+              limitation: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron. Queda pendiente una llamada alojada a las herramientas, por lo que esta evidencia no confirma su ejecución alojada.',
+            },
           ]
         : [
-            { title: 'Agrega la conexión remota', body: 'Usa el comando actual de Codex CLI que aparece abajo para registrar la dirección del servidor de MaxVideoAI.' },
-            { title: 'Inicia la sesión explícita', body: 'Usa el comando separado con solo los tres permisos de identidad registrados.' },
-            { title: 'Comprueba el acceso de solo lectura', body: 'Confirma la conexión registrada y prueba la consulta de modelos antes de depender de cualquier flujo posterior.' },
+            {
+              hostId: 'codexCli',
+              title: 'Conexión de Codex CLI con permisos explícitos',
+              intro: 'Registra el servidor remoto y después usa la ruta de inicio de sesión explícita con los permisos mínimos.',
+              steps: [
+                { title: 'Agrega la conexión remota', body: 'Usa el comando actual de Codex CLI que aparece abajo para registrar la dirección del servidor de MaxVideoAI.' },
+                { title: 'Inicia la sesión explícita', body: 'Usa el comando separado con solo los tres permisos de identidad registrados.' },
+                { title: 'Comprueba el acceso de solo lectura', body: 'Confirma la conexión registrada y prueba la consulta de modelos antes de depender de cualquier flujo posterior.' },
+              ],
+              commandLabel: 'Comandos registrados de Codex CLI',
+              commands: [
+                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                'codex mcp login maxvideoai --scopes openid,email,profile',
+                'codex mcp get maxvideoai',
+              ],
+              limitation: 'El flujo predeterminado de Codex solicitó un permiso adicional y se detuvo. Solo la ruta explícita anterior pasó la prueba registrada de solo lectura.',
+            },
           ],
-      commandLabel: claude ? 'Comando registrado de Claude Code' : 'Comandos registrados de Codex CLI',
       oauthTitle: 'Qué sucede durante la autorización OAuth',
-      oauthBody: 'Una ventana del navegador abre el inicio de sesión y el consentimiento de MaxVideoAI. La aprobación identifica la cuenta para la conexión remota; no da al host acceso directo a la base de datos ni a los datos de pago.',
+      oauthBody: 'Una ventana del navegador abre el inicio de sesión y el consentimiento de MaxVideoAI. La aprobación identifica la cuenta para la conexión remota; no da al cliente acceso directo a la base de datos ni a los datos de pago.',
       oauthSteps: ['Inicia sesión con la cuenta de MaxVideoAI prevista', 'Revisa el acceso de identidad solicitado', `Aprueba o rechaza y vuelve a ${label}`],
-      limitation: claude
-        ? 'La evidencia de Claude Desktop es de solo lectura y corresponde a una versión concreta. La renovación automática tras vencer el acceso aún no se ha registrado.'
-        : 'El flujo predeterminado de Codex solicitó un permiso adicional y se detuvo. Solo la ruta explícita anterior pasó la prueba registrada de solo lectura.',
     },
     workflow: {
       eyebrow: 'Flujo de ejemplo',
       title: `De una idea en ${label} a una decisión revisada en MaxVideoAI`,
-      intro: 'El host puede organizar el razonamiento creativo; MaxVideoAI sigue siendo la fuente de los datos actuales de modelos, el precio y el estado de ejecución.',
+      intro: 'El cliente puede organizar el razonamiento creativo; MaxVideoAI sigue siendo la fuente de los datos actuales de modelos, el precio y el estado de ejecución.',
       previewSteps: [
         { title: 'Aclara la idea', body: `${label} puede preguntar por el sujeto, el movimiento, el formato, el estilo, la intención de audio y el presupuesto.` },
-        { title: 'Formula el prompt y las referencias', body: `${label} puede redactar el texto y ayudar a planificar una referencia sin insinuar que el host creó la imagen.` },
+        { title: 'Formula el prompt y las referencias', body: `${label} puede redactar el texto y ayudar a planificar una referencia sin insinuar que el cliente creó la imagen.` },
         { title: 'Compara datos de solo lectura', body: 'La evidencia controlada cubre únicamente el descubrimiento de modelos y sus diferencias factuales.' },
         { title: 'Continúa en MaxVideoAI', body: 'Hasta que se publique la generación conectada, revisa el modelo y el precio mostrado en el producto web.' },
       ],

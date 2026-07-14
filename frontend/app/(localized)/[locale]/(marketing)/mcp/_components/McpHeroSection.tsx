@@ -38,6 +38,11 @@ export function McpHeroSection({
           <p className="mt-5 max-w-[680px] text-base leading-7 text-text-secondary dark:text-white/70 sm:text-lg">
             {publication.showPaidGenerationClaim ? copy.intro : copy.previewIntro}
           </p>
+          {publication.showTrialClaim ? (
+            <p className="mt-4 max-w-[680px] rounded-[12px] border border-hairline bg-surface px-4 py-3 text-sm leading-6 text-text-secondary dark:border-white/[0.14] dark:bg-white/[0.045] dark:text-white/70">
+              {copy.trialDisclosure}
+            </p>
+          ) : null}
           <div className="mt-7">
             <McpClientActions actions={copy.actions} />
           </div>

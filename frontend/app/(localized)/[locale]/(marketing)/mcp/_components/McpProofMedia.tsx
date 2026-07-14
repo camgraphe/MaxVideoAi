@@ -1,5 +1,3 @@
-'use client';
-
 import type { McpProof } from '../_lib/mcp-proof';
 
 export function McpProofMedia({ proof }: { proof: McpProof }) {

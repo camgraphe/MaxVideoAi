@@ -1,5 +1,6 @@
 export type McpPublicationState = {
   renderPublicPage: boolean;
+  connectionAvailable: boolean;
   indexable: boolean;
   showTrialClaim: boolean;
   showPaidGenerationClaim: boolean;
@@ -29,6 +30,7 @@ export function getMcpPublicationState({
 }: McpPublicationInputs): McpPublicationState {
   return {
     renderPublicPage: publicMarketing,
+    connectionAvailable: publicMarketing && transport && oauth && discovery,
     indexable:
       publicIndexing &&
       transport &&

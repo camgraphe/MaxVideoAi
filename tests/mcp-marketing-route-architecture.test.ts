@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+import { NextRequest } from 'next/server';
+import * as React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { middleware } from '../frontend/middleware.ts';
+
+(globalThis as typeof globalThis & { React: typeof React }).React = React;
 
 const routeRoot = 'frontend/app/(localized)/[locale]/(marketing)';
 const mcpRoot = `${routeRoot}/mcp`;
@@ -15,7 +21,7 @@ const requiredFiles = [
   `${mcpRoot}/_components/McpPageView.tsx`,
   `${mcpRoot}/_components/McpHeroSection.tsx`,
   `${mcpRoot}/_components/McpClientActions.tsx`,
-  `${mcpRoot}/_components/McpProofMedia.client.tsx`,
+  `${mcpRoot}/_components/McpProofMedia.tsx`,
   `${mcpRoot}/_components/McpWorkflowStrip.tsx`,
   `${mcpRoot}/_components/McpBudgetShortlist.tsx`,
   `${mcpRoot}/_components/McpEvidenceSection.tsx`,
@@ -123,6 +129,76 @@ test('localized routing owns the exact MCP and integration route contract', asyn
   });
 });
 
+test('real middleware resolves exact MCP routes without redirects or not-found rewrites', async () => {
+  for (const path of [
+    '/mcp',
+    '/fr/mcp',
+    '/es/mcp',
+    '/integrations/claude',
+    '/fr/integrations/codex',
+    '/es/integraciones/claude',
+  ]) {
+    const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
+    assert.equal(response.status, 200, `${path} should resolve through middleware`);
+    assert.equal(response.headers.get('location'), null, `${path} should not redirect`);
+    assert.doesNotMatch(
+      response.headers.get('x-middleware-rewrite') ?? '',
+      /(?:^|\/)404(?:$|\?)/,
+      `${path} should not rewrite to not found`,
+    );
+  }
+});
+
+test('route views preserve the single marketing-layout main landmark in server output', async () => {
+  const marketingLayout = requireFile('frontend/app/(localized)/[locale]/(marketing)/layout.tsx');
+  assert.equal((marketingLayout.match(/<main\b/g) ?? []).length, 1);
+
+  const { McpPageView } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_components/McpPageView.tsx'
+  );
+  const { getMcpPageCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-page-copy.ts'
+  );
+  const { getMcpCompatibilityEvidence } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-compatibility.ts'
+  );
+  const { IntegrationPageView } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationPageView.tsx'
+  );
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const publication = {
+    renderPublicPage: true,
+    connectionAvailable: false,
+    indexable: false,
+    showTrialClaim: false,
+    showPaidGenerationClaim: false,
+    showReferenceClaim: false,
+  };
+  const compatibility = getMcpCompatibilityEvidence();
+  const mcpHtml = renderToStaticMarkup(
+    React.createElement(McpPageView, {
+      budgetOptions: [],
+      compatibility,
+      copy: getMcpPageCopy('en'),
+      locale: 'en',
+      proof: null,
+      publication,
+    }),
+  );
+  const integrationHtml = renderToStaticMarkup(
+    React.createElement(IntegrationPageView, {
+      compatibility: compatibility.clients.codex,
+      copy: getIntegrationCopy('en', 'codex'),
+      locale: 'en',
+      publication,
+    }),
+  );
+  assert.doesNotMatch(mcpHtml, /<main\b/);
+  assert.doesNotMatch(integrationHtml, /<main\b/);
+});
+
 test('metadata is reciprocal but fails closed while publication gates are false', async () => {
   requireFile(`${mcpRoot}/page.tsx`);
   requireFile(`${integrationsRoot}/claude/page.tsx`);
@@ -185,6 +261,7 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
   const copy = getMcpPageCopy('en');
   const gated = {
     renderPublicPage: true,
+    connectionAvailable: true,
     indexable: false,
     showTrialClaim: false,
     showPaidGenerationClaim: false,
@@ -192,6 +269,7 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
   };
   const live = {
     renderPublicPage: true,
+    connectionAvailable: true,
     indexable: true,
     showTrialClaim: true,
     showPaidGenerationClaim: true,
@@ -212,26 +290,37 @@ test('MCP schema builders fail closed and emit only factual live schema types', 
     inLanguage: 'en-US',
     publication: live,
   });
-  const breadcrumb = buildMcpBreadcrumbJsonLd({
-    canonicalUrl: 'https://maxvideoai.com/mcp',
-    copy,
-  });
+  const breadcrumb = buildMcpBreadcrumbJsonLd({ canonicalUrl: 'https://maxvideoai.com/mcp', copy, locale: 'en' });
   assert.equal(application?.['@type'], 'WebApplication');
-  assert.equal(application?.operatingSystem, 'Web browser');
+  assert.equal(application && 'operatingSystem' in application, false);
   assert.equal(breadcrumb['@type'], 'BreadcrumbList');
   const schemas = JSON.stringify([application, breadcrumb]);
   assert.doesNotMatch(schemas, /AggregateRating|Offer|FAQPage|HowTo/);
+
+  for (const [locale, home] of [
+    ['en', 'https://maxvideoai.com'],
+    ['fr', 'https://maxvideoai.com/fr'],
+    ['es', 'https://maxvideoai.com/es'],
+  ] as const) {
+    const localized = buildMcpBreadcrumbJsonLd({
+      canonicalUrl: `https://maxvideoai.com${locale === 'en' ? '' : `/${locale}`}/mcp`,
+      copy: getMcpPageCopy(locale),
+      locale,
+    });
+    assert.equal(localized.itemListElement[0]?.item, home);
+  }
 });
 
 test('visible compatibility dates are sourced from the recorded evidence config', () => {
   const config = JSON.parse(requireFile('frontend/config/mcp-compatibility.json')) as {
     lastVerified: string;
     sourceEvidence: string;
-    clients: Record<string, { version: string }>;
+    hosts: Record<string, { version: string }>;
   };
   assert.match(config.lastVerified, /^\d{4}-\d{2}-\d{2}$/);
   assert.equal(config.sourceEvidence, 'docs/operations/mcp-host-compatibility-matrix.md');
   assert.match(requireFile(config.sourceEvidence), new RegExp(`Last verified: ${config.lastVerified}`));
-  assert.equal(config.clients.claude?.version, '1.20186.1');
-  assert.equal(config.clients.codex?.version, '0.144.1');
+  assert.equal(config.hosts.claudeDesktop?.version, '1.20186.1');
+  assert.equal(config.hosts.claudeCode?.version, '2.1.207');
+  assert.equal(config.hosts.codexCli?.version, '0.144.1');
 });

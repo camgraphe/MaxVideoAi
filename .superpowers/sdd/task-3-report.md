@@ -129,3 +129,66 @@ All commands below were run after the final production edit unless explicitly id
 - Publication, OAuth, transport, discovery, paid generation, trial, references, and indexation remain outside this task and disabled. The pages are ready behind those existing gates, not publicly launched.
 
 No push, pull request, merge, deployment, external message, database change, feature-flag change, or other external mutation was performed.
+
+## Review remediation: 2026-07-14
+
+The post-implementation review identified seven important findings and four minor findings. They were addressed as one test-driven remediation without changing feature flags, deploying, or contacting external systems.
+
+### Remediation outcomes
+
+- Official OpenAI marks now remain visible in both themes. Their invariant white fill is paired with a neutral dark tile in dark mode, and the visual contract reads the pinned SVG fill while rejecting an invariant white tile.
+- Visible connection availability now follows a dedicated capability gate (`publicMarketing && transport && oauth && discovery`) instead of SEO indexation. A renderable noindex preview can therefore describe a live connection truthfully while live `WebApplication` schema remains suppressed.
+- Budget options expose an exact T2V audio state: `enabled`, `optional`, or `silent`. The state is derived from mode-applicable input fields and their defaults. Seedance Mini's default-enabled audio, Wan's optional `audio_url`, and Pika's silent route are locked by mutation tests.
+- The included-trial claim now renders its eligibility, verification, Seedance Mini, 5-second, 480p, promotional, and wallet-balance conditions only while the trial gate is enabled.
+- Claude Desktop 1.20186.1 and Claude Code 2.1.207 now have separate evidence records, compatibility statuses, and localized setup guides. Claude Code includes the required `/mcp` authorization trigger and explicitly keeps its hosted tool smoke pending; the Claude Desktop hosted read-only pass is no longer attributed to Claude Code.
+- `WebApplication` schema no longer invents an operating-system value, and MCP breadcrumbs use the localized EN/FR/ES home URL.
+- Route views no longer nest a second `<main>` inside the marketing layout's landmark. A server-rendered structure contract locks the single-owner boundary.
+- Native proof media is now a server component; the unnecessary client boundary was removed without changing controls, captions, poster, or playback behavior.
+- EN/FR/ES metadata uses natural AI-video-generator search language. French and Spanish acquisition copy also replaces internal publication/pricing vocabulary with prospect-facing terms; Spanish integration copy uses `cliente`/`agente` instead of the English internal word `host`.
+- Route tests now exercise the real middleware for exact EN/FR/ES MCP and integration URLs, and visual tests inspect official mark fills and theme tile classes instead of relying only on file presence.
+
+### Remediation RED evidence
+
+The remediation contracts were added before the production fixes:
+
+1. Visual and route-structure contracts: 14 tests ran; 9 passed and 5 failed on the white-on-white dark tile, client-only proof component, and nested route landmarks.
+2. Publication, copy, schema, and host contracts: 22 tests ran; 11 passed and 11 failed on the missing capability gate, trial disclosure, localized breadcrumb, native metadata/copy, and split Claude evidence.
+3. Exact audio presentation: all 3 targeted tests failed while the builder still exposed the coarse `audioIncluded` boolean.
+
+The failures matched the reviewed production behavior and became green only after the corresponding implementation changes.
+
+### Remediation final verification
+
+1. Complete MCP suite:
+
+   ```bash
+   ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test tests/mcp-*.test.ts
+   ```
+
+   Result: exit 0; 123 passed, 0 failed.
+
+2. TypeScript, lint, exposure, localization, and diff hygiene:
+
+   ```bash
+   ./frontend/node_modules/.bin/tsc --project frontend/tsconfig.json --noEmit --pretty false
+   npm --prefix frontend run lint
+   npm run lint:exposure
+   npm --prefix frontend run i18n:check
+   git diff --check
+   ```
+
+   Result: all exit 0. Public exposure passed; FR parity is 4,153 keys and ES parity is 4,147 keys.
+
+3. Production build:
+
+   ```bash
+   npm --prefix frontend run build
+   ```
+
+   Result: exit 0. Registry/catalog checks, Next.js compilation and type validation, generation of 727 static pages, route manifest generation, and the postbuild sitemap step passed.
+
+4. Gated production-server smoke:
+
+   The completed build was started on port 3127. `/mcp`, `/fr/mcp`, `/es/mcp`, `/integrations/claude`, `/fr/integrations/codex`, and `/es/integraciones/claude` each returned 404 with `noindex`, no redirect, and no feature-flag weakening. The server was then stopped cleanly. The runtime middleware contract separately confirms that all six exact public route forms resolve without a not-found rewrite before the route-level publication gate runs.
+
+No push, pull request, merge, deployment, external message, database change, feature-flag change, or other external mutation was performed during remediation.

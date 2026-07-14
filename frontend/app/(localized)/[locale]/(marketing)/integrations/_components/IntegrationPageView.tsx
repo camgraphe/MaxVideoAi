@@ -19,11 +19,11 @@ export function IntegrationPageView({
   publication: McpPublicationState;
 }) {
   return (
-    <main className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
+    <div className="border-t border-hairline bg-bg text-text-primary dark:border-white/[0.08] dark:bg-bg dark:text-white">
       <IntegrationHeroSection copy={copy} publication={publication} />
       <IntegrationSetupSection compatibility={compatibility} copy={copy} locale={locale} />
       <IntegrationWorkflowSection copy={copy} publication={publication} />
       <IntegrationTroubleshootingSection copy={copy} />
-    </main>
+    </div>
   );
 }

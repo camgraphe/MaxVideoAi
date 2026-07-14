@@ -17,6 +17,7 @@ import { getModelByEngineId } from '../frontend/src/lib/model-roster';
 
 const livePublication: McpPublicationState = {
   renderPublicPage: true,
+  connectionAvailable: true,
   indexable: true,
   showTrialClaim: true,
   showPaidGenerationClaim: true,
@@ -426,15 +427,48 @@ test('budget options use the current canonical trial, lowest paid route, and cap
   assert.equal(options[0].modelSlug, 'dreamina-seedance-2-0-mini');
   assert.equal(options[0].amountCents, null);
   assert.equal(options[0].priceSource, 'included_trial');
+  assert.equal(options[0].audioState, 'enabled');
 
   assert.equal(options[1].engineId, 'pika-text-to-video');
   assert.equal(options[1].amountCents, 26);
   assert.equal(options[1].amountCents, quoteScenario('pika-text-to-video', 5, '720p'));
   assert.equal(options[1].priceSource, 'canonical_public_quote');
+  assert.equal(options[1].audioState, 'silent');
 
   assert.equal(options[2].engineId, 'wan-2-6');
   assert.equal(options[2].amountCents, quoteScenario('wan-2-6', 5, '720p'));
+  assert.equal(options[2].audioState, 'optional');
+  assert.match(options[2].scenarioLabel, /Optional audio/);
+  assert.doesNotMatch(options[2].scenarioLabel, /Audio included/);
   assert.ok(options[1].amountCents! <= options[2].amountCents!);
+});
+
+test('audio presentation follows exact T2V defaults and optional inputs instead of engine capability', () => {
+  const seedanceDefaultOff = withMutatedEngine('seedance-2-0-mini', (entry) => {
+    const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
+    assert.ok(audio);
+    audio.default = false;
+  });
+  assert.equal(
+    option(buildMcpBudgetOptions('en', livePublication, seedanceDefaultOff), 'included_trial').audioState,
+    'optional',
+  );
+
+  const wanWithoutAudioInput = withMutatedEngine('wan-2-6', (entry) => {
+    entry.engine.inputSchema!.optional = entry.engine.inputSchema!.optional!.filter(
+      (field) => field.id !== 'audio_url',
+    );
+    entry.engine.audio = false;
+    const t2v = entry.modes.find((mode) => mode.mode === 't2v');
+    assert.ok(t2v);
+    t2v.ui.audioToggle = false;
+  });
+  const wan = buildMcpBudgetOptions('en', livePublication, wanWithoutAudioInput).find(
+    (candidate) => candidate.engineId === 'wan-2-6',
+  );
+  assert.ok(wan);
+  assert.equal(wan.audioState, 'silent');
+  assert.match(wan.scenarioLabel, /Silent/);
 });
 
 test('the named public pricing scenarios stay locked to current canonical totals', () => {
@@ -556,6 +590,7 @@ test('labels, currency, and model links are stable and localized in English, Fre
       }).format(paid.amountCents! / 100),
     );
     assert.match(paid.scenarioLabel, expected.silent);
+    assert.equal(paid.audioState, 'silent');
     assert.doesNotMatch(paid.scenarioLabel, /provider|fal-ai|margin|token/i);
   }
 });

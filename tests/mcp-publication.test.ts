@@ -18,12 +18,41 @@ test('public MCP previews do not become indexable before every public capability
     }),
     {
       renderPublicPage: true,
+      connectionAvailable: true,
       indexable: false,
       showTrialClaim: false,
       showPaidGenerationClaim: false,
       showReferenceClaim: false,
     }
   );
+});
+
+test('connection availability is capability-derived and independent from SEO indexation', () => {
+  const preview = getMcpPublicationState({
+    publicMarketing: true,
+    publicIndexing: false,
+    transport: true,
+    oauth: true,
+    discovery: true,
+    paidGeneration: false,
+    trial: false,
+    referenceUploads: false,
+  });
+  assert.equal(preview.connectionAvailable, true);
+  assert.equal(preview.indexable, false);
+
+  const missingOAuth = getMcpPublicationState({
+    publicMarketing: true,
+    publicIndexing: true,
+    transport: true,
+    oauth: false,
+    discovery: true,
+    paidGeneration: true,
+    trial: true,
+    referenceUploads: true,
+  });
+  assert.equal(missingOAuth.connectionAvailable, false);
+  assert.equal(missingOAuth.indexable, false);
 });
 
 test('the sitemap composes every publication prerequisite from the common build-time source', () => {
