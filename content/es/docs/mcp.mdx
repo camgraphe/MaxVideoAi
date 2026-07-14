@@ -56,12 +56,24 @@ sesión de Anthropic.
 
 ### Codex CLI 0.144.1
 
-El flujo predeterminado para agregar la conexión solicitó un permiso adicional y sigue bloqueado. Solo esta ruta
-explícita con permisos mínimos pasó la prueba alojada de solo lectura:
+El flujo predeterminado para agregar la conexión solicita el permiso adicional `phone` y sigue bloqueado. Primero,
+registra la conexión:
 
 ```bash
 codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
+```
+
+Ese comando abre inmediatamente el consentimiento predeterminado. Cancela o rechaza ese consentimiento sin aprobar
+`phone`, pero conserva la entrada registrada de MaxVideoAI. Después inicia por separado la ruta con permisos mínimos
+que pasó la prueba alojada de solo lectura:
+
+```bash
 codex mcp login maxvideoai --scopes openid,email,profile
+```
+
+Tras aprobar solo esos tres permisos, verifica la entrada conservada:
+
+```bash
 codex mcp get maxvideoai
 ```
 
@@ -113,12 +125,12 @@ Tampoco existen `get_generation_status` ni `list_recent_generations`. Sigue el t
 `create_topup_link` no está publicado. La recarga de la billetera y el pago directo permanecen en el producto web de
 MaxVideoAI. Después de recargar, revisa un precio nuevo en vez de confiar en información anterior.
 
-## Contrato de prueba Seedance 2 Mini sujeto al gate
+## Condiciones previstas para la prueba de Seedance 2 Mini
 
-La prueba MCP no está disponible mientras su gate de publicación esté apagado. El contrato cerrado es un derecho promocional único, no es dinero de la billetera ni un saldo reutilizable. Para ser apto se exige una cuenta OAuth apta
-con correo verificado, ninguna prueba consumida previamente por ese usuario, ninguna restricción de la cuenta activa y
-límites de frecuencia y controles de riesgo aceptables. Solo se puede usar una vez por usuario cuando el gate está
-habilitado.
+La prueba MCP no está disponible en el estado de publicación actual. Las condiciones previstas definen un derecho promocional único; no es dinero de la billetera ni un saldo reutilizable. Para ser apto se exige una cuenta OAuth apta con
+correo verificado, ninguna prueba consumida previamente por ese usuario, ninguna restricción de la cuenta activa y
+límites de frecuencia y controles de riesgo aceptables. Solo podrá usarse una vez por usuario si se publica esta
+función.
 
 El preset impuesto por el servidor es Dreamina Seedance 2.0 Mini (Seedance 2 Mini), texto a video, 5 segundos, 480p,
 con ratio `16:9`, `9:16` o `1:1`, audio a elección del usuario y una salida. Ninguna entrada puede cambiar estas
@@ -155,12 +167,12 @@ La revocación invalida el acceso; una reconexión no debe reutilizarlo en silen
 
 ## Errores estables y recuperación
 
-Solo se indican los errores estables de la aplicación que actualmente devuelve o cubre la envoltura publicada.
+Solo se indican las fallas estables observables mediante el gestor de autenticación publicado o la envoltura activa de
+las herramientas.
 
-| Código | Significado | Acción de recuperación |
+| Falla observable | Significado | Acción de recuperación |
 | --- | --- | --- |
-| `AUTH_REQUIRED` | El recurso protegido no tiene una autorización OAuth válida. | Inicia otra vez la autorización en el navegador. Después de revocar, aprueba un acceso nuevo antes de reintentar. |
-| `RATE_LIMITED` | Una operación protegida pide al cliente que espere. | Espera `retryAfterSeconds` cuando esté presente y luego reintenta una vez en lugar de llamar continuamente. |
+| `HTTP 401 / JSON-RPC -32001` | La solicitud protegida no tiene una autorización OAuth válida. La respuesta incluye un desafío `WWW-Authenticate` cuyo `resource_metadata` indica el descubrimiento del recurso protegido. | Deja que el cliente siga el desafío y completa la autorización en el navegador. Después de revocar, aprueba un acceso nuevo antes de reintentar. |
 | `INTERNAL_ERROR` | Se ocultó una falla inesperada. | Conserva el `correlationId`, detén las llamadas repetidas y contacta al soporte de MaxVideoAI si el problema continúa. |
 
 La validación MCP puede rechazar una entrada mal formada, pero esta guía no le asigna un código de aplicación

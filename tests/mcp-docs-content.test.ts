@@ -4,13 +4,18 @@ import test from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 
 import compatibility from '../frontend/config/mcp-compatibility.json';
 import mcpPublication from '../frontend/config/mcp-publication.json';
+import { getEditorialProfile } from '../frontend/lib/editorial/profile';
 import { getMcpPublicationState } from '../frontend/lib/mcp-publication';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import type { AgentAccountStatus, AgentModel } from '../frontend/src/server/agent-api/types';
-import { MCP_PRODUCTION_RESOURCE_URL } from '../frontend/src/server/mcp/config';
+import { MCP_PRODUCTION_RESOURCE_URL, type McpConfig } from '../frontend/src/server/mcp/config';
+import { handleMcpHttpRequest } from '../frontend/src/server/mcp/http-handler';
+import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
 import {
   createMaxVideoAiMcpServer,
   type MaxVideoAiMcpServices,
@@ -31,6 +36,8 @@ const docsArticlePagePath =
   'frontend/app/(localized)/[locale]/(marketing)/docs/[slug]/page.tsx';
 const docsArticleJsonLdPath =
   'frontend/app/(localized)/[locale]/(marketing)/docs/_lib/docs-article-jsonld.ts';
+const docsArticleAttributionPath =
+  'frontend/app/(localized)/[locale]/(marketing)/docs/_components/DocsArticleAttribution.tsx';
 const docsSectionsPath =
   'frontend/app/(localized)/[locale]/(marketing)/docs/_components/DocsSectionsGrid.tsx';
 
@@ -49,6 +56,77 @@ function tableNames(markdown: string, pattern: RegExp): string[] {
     .split('\n')
     .map((line) => line.match(pattern)?.[1] ?? null)
     .filter((value): value is string => Boolean(value));
+}
+
+function section(markdown: string, start: RegExp, end: RegExp): string {
+  const startMatch = markdown.match(start);
+  assert.ok(startMatch?.index != null, `missing section ${start}`);
+  const fromStart = markdown.slice(startMatch.index);
+  const endMatch = fromStart.slice(startMatch[0].length).match(end);
+  return endMatch?.index == null
+    ? fromStart
+    : fromStart.slice(0, startMatch[0].length + endMatch.index);
+}
+
+function bashBlocks(markdown: string): string[] {
+  return Array.from(markdown.matchAll(/```bash\n([\s\S]*?)\n```/g), (match) => match[1].trim());
+}
+
+type ParsedToolRow = {
+  name: string;
+  useWhen: string;
+  purpose: string;
+  sideEffects: string;
+  destructive: string;
+  openWorld: string;
+  idempotent: string;
+  auth: string;
+  confirmationAndNegativeCase: string;
+};
+
+function parsedToolRows(markdown: string): ParsedToolRow[] {
+  return markdown
+    .split('\n')
+    .filter((line) => /^\|\s*`[a-z_]+`\s*\|/.test(line))
+    .map((line) => {
+      const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+      assert.equal(cells.length, 9, `unexpected MCP tool-table shape: ${line}`);
+      return {
+        name: cells[0].replaceAll('`', ''),
+        useWhen: cells[1],
+        purpose: cells[2],
+        sideEffects: cells[3],
+        destructive: cells[4],
+        openWorld: cells[5],
+        idempotent: cells[6],
+        auth: cells[7],
+        confirmationAndNegativeCase: cells[8],
+      };
+    });
+}
+
+function parsedErrorRows(markdown: string, locale: Locale): Array<{ identifier: string; meaning: string; recovery: string }> {
+  const errors = section(
+    markdown,
+    locale === 'fr'
+      ? /^## Erreurs stables et récupération$/m
+      : locale === 'es'
+        ? /^## Errores estables y recuperación$/m
+        : /^## Stable errors and recovery$/m,
+    /^## /m
+  );
+  return errors
+    .split('\n')
+    .filter((line) => /^\|\s*`[^`]+`\s*\|/.test(line))
+    .map((line) => {
+      const cells = line.split('|').slice(1, -1).map((cell) => cell.trim());
+      assert.equal(cells.length, 3, `unexpected MCP error-table shape: ${line}`);
+      return {
+        identifier: cells[0].replaceAll('`', ''),
+        meaning: cells[1],
+        recovery: cells[2],
+      };
+    });
 }
 
 function escapeRegExp(value: string): string {
@@ -100,6 +178,82 @@ const services: MaxVideoAiMcpServices = {
     return { recommendations: [], nextAction: 'clarify_requirements' };
   },
 };
+
+const httpConfig: McpConfig = {
+  apiHost: 'api.maxvideoai.com',
+  resourceUrl: MCP_PRODUCTION_RESOURCE_URL,
+  protectedResourceMetadataUrl:
+    'https://api.maxvideoai.com/.well-known/oauth-protected-resource/mcp',
+  accountUrl: 'https://maxvideoai.com/account/connections',
+};
+
+function protocolRequestWithoutAuthorization(): Request {
+  return new Request(MCP_PRODUCTION_RESOURCE_URL, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json, text/event-stream',
+      'content-type': 'application/json',
+      host: httpConfig.apiHost,
+    },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'initialize',
+      params: {
+        protocolVersion: '2025-06-18',
+        capabilities: {},
+        clientInfo: { name: 'docs-auth-contract', version: '1.0.0' },
+      },
+    }),
+  });
+}
+
+async function observeReachableProductionErrors() {
+  const unauthorized = await handleMcpHttpRequest(protocolRequestWithoutAuthorization(), {
+    enabled: true,
+    config: httpConfig,
+    resolvePrincipal: resolveAgentPrincipal,
+  });
+  const unauthorizedPayload = await unauthorized.clone().json() as {
+    error: { code: number; message: string };
+  };
+
+  const failingServer = createMaxVideoAiMcpServer(principal, {
+    ...services,
+    async listModels() {
+      throw new Error('private upstream detail');
+    },
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  await failingServer.connect(serverTransport);
+  const client = new Client({ name: 'mcp-docs-error-contract', version: '1.0.0' });
+  await client.connect(clientTransport);
+  let internalResult: Awaited<ReturnType<Client['callTool']>>;
+  const originalConsoleError = console.error;
+  console.error = () => undefined;
+  try {
+    internalResult = await client.callTool({ name: 'list_models', arguments: {} });
+  } finally {
+    console.error = originalConsoleError;
+    await client.close();
+    await failingServer.close();
+  }
+  const internal = internalResult.structuredContent as {
+    error: { code: string; correlationId?: string };
+  };
+
+  return {
+    unauthorized: {
+      identifier: `HTTP ${unauthorized.status} / JSON-RPC ${unauthorizedPayload.error.code}`,
+      message: unauthorizedPayload.error.message,
+      challenge: unauthorized.headers.get('www-authenticate'),
+    },
+    internal: {
+      identifier: internal.error.code,
+      correlationId: internal.error.correlationId,
+    },
+  };
+}
 
 async function listPublishedTools() {
   const server = createMaxVideoAiMcpServer(principal, services);
@@ -154,9 +308,47 @@ test('client setup is limited to the recorded hosts, versions, and OAuth paths',
   assert.match(body('en'), /Codex CLI.*default.*blocked/is);
 });
 
-test('the tool table mirrors the complete live registry and its safety annotations', async () => {
+test('Codex setup preserves the evidence-backed consent interruption before least-privilege login', () => {
+  assert.match(compatibility.hosts.codexCli.status, /default-flow-blocked/);
+  const evidence = readFileSync(compatibility.sourceEvidence, 'utf8');
+  assert.match(evidence, /current CLI starts OAuth\s+as part of `mcp add`/i);
+  assert.match(evidence, /default request included `phone` and was stopped\s+before approval/i);
+  assert.match(evidence, /Keeping the registered entry and then running explicit\s+`mcp login --scopes openid,email,profile`/i);
+  const evidenceCommands = section(evidence, /^Codex CLI:$/m, /^Claude Code:$/m)
+    .split('\n')
+    .filter((line) => line.startsWith('codex mcp '));
+  assert.deepEqual(evidenceCommands.map((line) => line.split(' ')[2]), ['add', 'login', 'get']);
+
+  const interruptionPatterns: Record<Locale, RegExp> = {
+    en: /(?:cancel|deny)[\s\S]*`phone`[\s\S]*(?:keep|retain)[\s\S]*(?:entry|connection)/i,
+    fr: /(?:annulez|refusez)[\s\S]*`phone`[\s\S]*conserv[\s\S]*(?:entrée|connexion)/i,
+    es: /(?:cancela|rechaza)[\s\S]*`phone`[\s\S]*conserv[\s\S]*(?:entrada|conexión)/i,
+  };
+
+  for (const locale of locales) {
+    const codexSection = section(body(locale), /^### Codex CLI 0\.144\.1$/m, /^## /m);
+    const blocks = bashBlocks(codexSection);
+    const addBlock = blocks.find((block) => block.includes(evidenceCommands[0]));
+    const loginBlock = blocks.find((block) => block.includes(evidenceCommands[1]));
+    const getBlock = blocks.find((block) => block.includes(evidenceCommands[2]));
+    assert.equal(addBlock, evidenceCommands[0], `${locale} should isolate the add command`);
+    assert.equal(loginBlock, evidenceCommands[1], `${locale} should isolate the least-privilege login command`);
+    assert.equal(getBlock, evidenceCommands[2], `${locale} should isolate the verification command`);
+    assert.notEqual(addBlock, loginBlock);
+
+    const addIndex = codexSection.indexOf(evidenceCommands[0]);
+    const loginIndex = codexSection.indexOf(evidenceCommands[1]);
+    const getIndex = codexSection.indexOf(evidenceCommands[2]);
+    assert.ok(addIndex >= 0 && addIndex < loginIndex && loginIndex < getIndex);
+    assert.match(codexSection.slice(addIndex + evidenceCommands[0].length, loginIndex), interruptionPatterns[locale]);
+  }
+});
+
+test('each localized tool row semantically mirrors the live registry and authenticated handler boundary', async () => {
   const tools = await listPublishedTools();
   const expectedNames = tools.map((tool) => tool.name);
+  const observedErrors = await observeReachableProductionErrors();
+  assert.match(observedErrors.unauthorized.identifier, /^HTTP 401 \/ JSON-RPC -32001$/);
 
   assert.deepEqual(expectedNames, ['get_account_status', 'list_models', 'recommend_models']);
   for (const tool of tools) {
@@ -167,21 +359,65 @@ test('the tool table mirrors the complete live registry and its safety annotatio
     assert.match(tool.description ?? '', /Do not use/i);
   }
 
+  const semantics: Record<Locale, {
+    readOnly: RegExp;
+    nonDestructive: RegExp;
+    closedWorld: RegExp;
+    idempotent: RegExp;
+    oauthRequired: RegExp;
+    noConfirmation: RegExp;
+    negativeCase: RegExp;
+  }> = {
+    en: {
+      readOnly: /none; read-only/i,
+      nonDestructive: /^No\.?$/i,
+      closedWorld: /closed world/i,
+      idempotent: /yes.*no writ/i,
+      oauthRequired: /OAuth required/i,
+      noConfirmation: /No confirmation/i,
+      negativeCase: /Negative case:/i,
+    },
+    fr: {
+      readOnly: /aucun.*lecture seule/i,
+      nonDestructive: /^Non\.?$/i,
+      closedWorld: /monde fermé/i,
+      idempotent: /oui.*aucune écriture/i,
+      oauthRequired: /OAuth requis/i,
+      noConfirmation: /Aucune confirmation/i,
+      negativeCase: /Cas négatif\s*:/i,
+    },
+    es: {
+      readOnly: /ninguno.*solo lectura/i,
+      nonDestructive: /^No\.?$/i,
+      closedWorld: /mundo cerrado/i,
+      idempotent: /sí.*no escribe/i,
+      oauthRequired: /OAuth obligatorio/i,
+      noConfirmation: /Sin confirmación/i,
+      negativeCase: /Caso negativo\s*:/i,
+    },
+  };
+
   for (const locale of locales) {
     const markdown = body(locale);
-    const documentedNames = tableNames(markdown, /^\|\s*`([a-z_]+)`\s*\|/);
-    assert.deepEqual(documentedNames, expectedNames, `${locale} should document only the live registry`);
+    const rows = parsedToolRows(markdown);
+    assert.deepEqual(rows.map((row) => row.name), expectedNames, `${locale} should document only the live registry`);
 
-    for (const name of expectedNames) {
-      const row = markdown.split('\n').find((line) => line.startsWith(`| \`${name}\` |`));
-      assert.ok(row, `${locale} should include the ${name} row`);
-      assert.equal(row.split('|').length, 11, `${name} should include every safety column`);
+    for (const [index, tool] of tools.entries()) {
+      const row = rows[index];
+      assert.equal(row.name, tool.name);
+      assert.ok(row.useWhen.length > 20, `${locale}/${tool.name} should explain when to use the tool`);
+      assert.ok(row.purpose.length > 20, `${locale}/${tool.name} should explain the tool purpose`);
+      if (tool.annotations?.readOnlyHint) assert.match(row.sideEffects, semantics[locale].readOnly);
+      if (tool.annotations?.destructiveHint === false) assert.match(row.destructive, semantics[locale].nonDestructive);
+      if (tool.annotations?.openWorldHint === false) assert.match(row.openWorld, semantics[locale].closedWorld);
+      if (tool.annotations?.readOnlyHint && tool.annotations?.destructiveHint === false) {
+        assert.match(row.idempotent, semantics[locale].idempotent);
+        assert.match(row.confirmationAndNegativeCase, semantics[locale].noConfirmation);
+      }
+      assert.match(row.auth, semantics[locale].oauthRequired);
+      assert.match(row.confirmationAndNegativeCase, semantics[locale].negativeCase);
+      assert.match(tool.description ?? '', /Use this when.*Do not use/is);
     }
-
-    assert.match(markdown, locale === 'fr' ? /Lecture seule/ : locale === 'es' ? /Solo lectura/ : /Read-only/);
-    assert.match(markdown, locale === 'fr' ? /Monde fermé/ : locale === 'es' ? /Mundo cerrado/ : /Closed world/);
-    assert.match(markdown, locale === 'fr' ? /Idempotent/ : locale === 'es' ? /Idempotente/ : /Idempotent/);
-    assert.match(markdown, locale === 'fr' ? /Cas négatif/ : locale === 'es' ? /Caso negativo/ : /Negative case/);
   }
 });
 
@@ -322,8 +558,18 @@ test('prompt and reference guidance preserves host and persisted-asset boundarie
   }
 });
 
-test('spending, revocation, privacy, troubleshooting, and live errors match implemented behavior', () => {
-  const expectedErrorCodes = ['AUTH_REQUIRED', 'RATE_LIMITED', 'INTERNAL_ERROR'];
+test('spending, revocation, privacy, troubleshooting, and reachable production errors match implemented behavior', async () => {
+  const observedErrors = await observeReachableProductionErrors();
+  assert.equal(observedErrors.unauthorized.message, 'Authentication required.');
+  assert.equal(
+    observedErrors.unauthorized.challenge,
+    'Bearer resource_metadata="https://api.maxvideoai.com/.well-known/oauth-protected-resource/mcp"'
+  );
+  assert.match(observedErrors.internal.correlationId ?? '', /^[0-9a-f-]{36}$/i);
+  const observedIdentifiers = [
+    observedErrors.unauthorized.identifier,
+    observedErrors.internal.identifier,
+  ];
 
   for (const locale of locales) {
     const markdown = body(locale);
@@ -340,10 +586,17 @@ test('spending, revocation, privacy, troubleshooting, and live errors match impl
     assert.match(markdown, /private, no-store/);
     assert.match(markdown, locale === 'fr' ? /Dépannage/ : locale === 'es' ? /Solución de problemas/ : /Troubleshooting/);
 
-    const errorCodes = tableNames(markdown, /^\|\s*`([A-Z_]+)`\s*\|/);
-    assert.deepEqual(errorCodes, expectedErrorCodes, `${locale} should document only surfaced stable errors`);
-    assert.match(markdown, /retryAfterSeconds/);
+    const errorRows = parsedErrorRows(markdown, locale);
+    assert.deepEqual(
+      errorRows.map((row) => row.identifier),
+      observedIdentifiers,
+      `${locale} should document only errors reached through the real auth handler and live tool wrapper`
+    );
+    assert.ok(errorRows.every((row) => row.meaning.length > 20 && row.recovery.length > 20));
+    assert.match(markdown, /WWW-Authenticate/);
+    assert.match(markdown, /resource_metadata/);
     assert.match(markdown, /correlationId/);
+    assert.doesNotMatch(markdown, /AUTH_REQUIRED|RATE_LIMITED|retryAfterSeconds/);
     assert.doesNotMatch(markdown, /fal\.ai|BytePlus|Vertex|provider routing|SQL statement|stack trace/i);
   }
 });
@@ -361,9 +614,110 @@ test('every locale states current non-goals without static prices or unsupported
     assert.doesNotMatch(markdown, /(?:[$€£]\s*\d|(?:USD|EUR|GBP)\s*\d)/);
     assert.doesNotMatch(markdown, /one[- ]click|deep link|directory (?:listing|approval)|available in the Codex (?:app|library)/i);
   }
+
+  assert.doesNotMatch(body('fr'), /soumis au gate|gate de publication|contrat fermé/i);
+  assert.doesNotMatch(body('es'), /sujeto al gate|gate de publicación|contrato cerrado/i);
 });
 
-test('the docs index and TechArticle schema fail closed behind MCP publication gates', async () => {
+test('the actual docs route, metadata, and static params fail closed behind MCP publication gates', async () => {
+  const routeModule = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/docs/[slug]/page.tsx'
+  );
+  const params = { locale: 'en' as const, slug: 'mcp' };
+  const metadata = await routeModule.generateMetadata({ params: Promise.resolve(params) });
+  const robots = metadata.robots as { index?: boolean; follow?: boolean };
+  assert.equal(robots.index, false);
+  assert.equal(robots.follow, false);
+  await assert.rejects(
+    () => routeModule.default({ params: Promise.resolve(params) }),
+    (error: unknown) => {
+      const digest = (error as { digest?: unknown })?.digest;
+      return typeof digest === 'string' && digest.includes('404');
+    }
+  );
+  const staticParams = await routeModule.generateStaticParams();
+  assert.equal(
+    staticParams.some((entry) => entry.slug === 'mcp'),
+    false,
+    'gated MCP docs must not enter the static build manifest'
+  );
+});
+
+test('verified MCP attribution is visible while legacy docs keep their prior anonymous behavior', async () => {
+  assert.equal(
+    existsSync(docsArticleAttributionPath),
+    true,
+    'docs attribution should have a focused, render-testable owner'
+  );
+  if (!existsSync(docsArticleAttributionPath)) return;
+
+  const attributionModule = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/docs/_components/DocsArticleAttribution.tsx'
+  );
+  const authorId = source('en').match(/^authorId:\s*["']([^"']+)["']$/m)?.[1];
+  assert.equal(authorId, 'adrien-millot');
+  const profile = getEditorialProfile('en', authorId);
+  const runtimeGlobal = globalThis as typeof globalThis & { React?: typeof React };
+  const previousReact = runtimeGlobal.React;
+  runtimeGlobal.React = React;
+  let mcpHtml: string;
+  let legacyHtml: string;
+  try {
+    mcpHtml = renderToStaticMarkup(
+      React.createElement(attributionModule.DocsArticleAttribution, {
+        author: { name: profile.name, aboutHref: profile.aboutHref },
+        date: '2026-07-14',
+        locale: 'en',
+        updatedAt: '2026-07-14',
+      })
+    );
+    legacyHtml = renderToStaticMarkup(
+      React.createElement(attributionModule.DocsArticleAttribution, {
+        author: null,
+        date: '2024-06-01',
+        locale: 'en',
+      })
+    );
+  } finally {
+    runtimeGlobal.React = previousReact;
+  }
+  assert.match(mcpHtml, /By/);
+  assert.match(mcpHtml, /Adrien Millot/);
+  assert.match(mcpHtml, /Published/);
+  assert.match(mcpHtml, /Updated/);
+  assert.doesNotMatch(mcpHtml, /Founder &amp; Product Lead/);
+
+  assert.doesNotMatch(legacyHtml, /Adrien Millot|\bBy\b|Published|Updated/);
+  assert.match(legacyHtml, /Jun 1, 2024/);
+
+  const routeModule = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/docs/[slug]/page.tsx'
+  );
+  runtimeGlobal.React = React;
+  let legacyTree: React.ReactElement;
+  try {
+    legacyTree = await routeModule.default({
+      params: Promise.resolve({ locale: 'en' as const, slug: 'get-started' }),
+    });
+  } finally {
+    runtimeGlobal.React = previousReact;
+  }
+  function findAttribution(node: React.ReactNode): React.ReactElement | null {
+    if (!React.isValidElement(node)) return null;
+    if (node.type === attributionModule.DocsArticleAttribution) return node;
+    const children = (node.props as { children?: React.ReactNode }).children;
+    for (const child of React.Children.toArray(children)) {
+      const match = findAttribution(child);
+      if (match) return match;
+    }
+    return null;
+  }
+  const legacyAttribution = findAttribution(legacyTree);
+  assert.ok(legacyAttribution, 'legacy docs route should use the shared attribution owner');
+  assert.equal((legacyAttribution.props as { author?: unknown }).author, null);
+});
+
+test('the docs index and TechArticle schema fail closed and attribute only verified frontmatter authors', async () => {
   const indexSource = readFileSync(docsIndexDataPath, 'utf8');
   assert.match(indexSource, /getMcpPublicationState/);
   assert.match(indexSource, /filterDocsEntriesForPublication/);
@@ -437,7 +791,6 @@ test('the docs index and TechArticle schema fail closed behind MCP publication g
     title: 'MaxVideoAI MCP technical guide',
     author: {
       name: 'Adrien Millot',
-      jobTitle: 'Founder & Product Lead',
       url: 'https://maxvideoai.com/about#adrien-millot',
     },
   };
@@ -450,11 +803,24 @@ test('the docs index and TechArticle schema fail closed behind MCP publication g
   assert.deepEqual(liveSchema?.author, {
     '@type': 'Person',
     name: 'Adrien Millot',
-    jobTitle: 'Founder & Product Lead',
     url: 'https://maxvideoai.com/about#adrien-millot',
   });
+  assert.equal(JSON.stringify(liveSchema).includes('jobTitle'), false);
   assert.equal(liveSchema?.datePublished, schemaInput.publishedIso);
   assert.equal(liveSchema?.dateModified, schemaInput.modifiedIso);
+
+  let legacySchema: Record<string, unknown> | null = null;
+  assert.doesNotThrow(() => {
+    legacySchema = schemaModule.buildDocsTechArticleJsonLd({
+      ...schemaInput,
+      author: null,
+      canonicalUrl: 'https://maxvideoai.com/docs/get-started',
+      isMcpDoc: false,
+      title: 'Getting started with MaxVideo AI',
+    });
+  });
+  assert.ok(legacySchema);
+  assert.equal(Object.prototype.hasOwnProperty.call(legacySchema, 'author'), false);
 
   const pageSource = readFileSync(docsArticlePagePath, 'utf8');
   assert.match(pageSource, /getEditorialProfile/);

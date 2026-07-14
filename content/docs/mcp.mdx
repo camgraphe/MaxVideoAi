@@ -52,12 +52,22 @@ Code hosted tool call is pending because the test client had no Anthropic sessio
 
 ### Codex CLI 0.144.1
 
-The default add flow requested an extra permission and remains blocked. Only this explicit least-privilege login path
-passed the hosted read-only test:
+The default add flow requested the extra `phone` permission and remains blocked. Start by registering the entry:
 
 ```bash
 codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
+```
+
+That command immediately opens the default consent flow. Cancel or deny that consent without approving `phone`; keep
+the registered MaxVideoAI entry. Then start the separate least-privilege login that passed the hosted read-only test:
+
+```bash
 codex mcp login maxvideoai --scopes openid,email,profile
+```
+
+After approving only those three scopes, verify the retained entry:
+
+```bash
 codex mcp get maxvideoai
 ```
 
@@ -149,12 +159,11 @@ Revocation invalidates the grant; reconnecting must not silently reuse it.
 
 ## Stable errors and recovery
 
-Only the stable application errors currently surfaced or covered by the published wrapper are listed here.
+Only the stable failures reached through the published authentication handler or live tool wrapper are listed here.
 
-| Code | Meaning | Recovery action |
+| Observable failure | Meaning | Recovery action |
 | --- | --- | --- |
-| `AUTH_REQUIRED` | The protected resource has no valid OAuth bearer grant. | Start browser authorization again. If access was revoked, approve a fresh grant before retrying. |
-| `RATE_LIMITED` | A protected operation asked the caller to pause. | Wait for `retryAfterSeconds` when present, then retry once instead of polling continuously. |
+| `HTTP 401 / JSON-RPC -32001` | The protected request has no valid OAuth bearer grant. The response includes a `WWW-Authenticate` challenge whose `resource_metadata` points to protected-resource discovery. | Let the client follow the challenge and complete browser authorization. If access was revoked, approve a fresh grant before retrying. |
 | `INTERNAL_ERROR` | An unexpected failure was redacted. | Keep the returned `correlationId`, stop repeated calls, and contact MaxVideoAI support if the failure persists. |
 
 Input-shape failures may be returned by the MCP protocol validation layer, but this guide does not assign them a

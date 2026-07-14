@@ -56,12 +56,24 @@ Anthropic.
 
 ### Codex CLI 0.144.1
 
-Le parcours d’ajout par défaut a demandé une autorisation supplémentaire et reste bloqué. Seul ce parcours explicite
-aux autorisations minimales a réussi lors du test hébergé en lecture seule :
+Le parcours d’ajout par défaut demande l’autorisation supplémentaire `phone` et reste bloqué. Commencez par enregistrer
+la connexion :
 
 ```bash
 codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
+```
+
+Cette commande ouvre immédiatement le consentement par défaut. Annulez ou refusez ce consentement sans approuver
+`phone`, mais conservez l’entrée MaxVideoAI enregistrée. Lancez ensuite la connexion distincte aux autorisations
+minimales, qui a réussi lors du test hébergé en lecture seule :
+
+```bash
 codex mcp login maxvideoai --scopes openid,email,profile
+```
+
+Après avoir approuvé uniquement ces trois autorisations, vérifiez l’entrée conservée :
+
+```bash
 codex mcp get maxvideoai
 ```
 
@@ -116,10 +128,11 @@ n’est publié.
 `create_topup_link` n’est pas publié. L’approvisionnement du portefeuille et le paiement direct restent dans le produit
 web MaxVideoAI. Après l’approvisionnement, vérifiez un nouveau prix plutôt que de réutiliser une information ancienne.
 
-## Contrat d’essai Seedance 2 Mini soumis au gate
+## Conditions prévues pour l’essai Seedance 2 Mini
 
-L’essai MCP n’est pas disponible tant que son gate de publication est désactivé. Son contrat fermé prévoit un droit promotionnel unique, pas de l’argent du portefeuille ni un solde réutilisable. L’éligibilité exige un compte OAuth éligible avec une adresse e-mail vérifiée, aucun essai déjà consommé par cet utilisateur, aucune restriction du compte
-active, ainsi que des limites de débit et des contrôles de risque acceptables. Il ne peut être accordé qu’une fois par utilisateur lorsque le gate est activé.
+L’essai MCP n’est pas disponible dans l’état actuel de publication. Les conditions prévues définissent un droit promotionnel unique, pas de l’argent du portefeuille ni un solde réutilisable. L’éligibilité exige un compte OAuth éligible
+avec une adresse e-mail vérifiée, aucun essai déjà consommé par cet utilisateur, aucune restriction du compte
+active, ainsi que des limites de débit et des contrôles de risque acceptables. Il ne pourra être accordé qu’une fois par utilisateur si cette fonctionnalité est publiée.
 
 Le preset imposé par le serveur est Dreamina Seedance 2.0 Mini (Seedance 2 Mini), texte vers vidéo, 5 secondes, 480p,
 au format `16:9`, `9:16` ou `1:1`, avec l’audio au choix de l’utilisateur et une sortie. Aucune entrée ne peut modifier
@@ -156,12 +169,12 @@ La révocation invalide l’autorisation ; une reconnexion ne doit pas la réuti
 
 ## Erreurs stables et récupération
 
-Seules les erreurs applicatives stables actuellement renvoyées ou couvertes par l’enveloppe publiée sont listées ici.
+Seuls les échecs stables observables par le gestionnaire d’authentification publié ou l’enveloppe active des outils sont
+listés ici.
 
-| Code | Signification | Action de récupération |
+| Échec observable | Signification | Action de récupération |
 | --- | --- | --- |
-| `AUTH_REQUIRED` | La ressource protégée ne dispose pas d’une autorisation OAuth valide. | Relancez l’autorisation dans le navigateur. Après une révocation, approuvez une nouvelle autorisation avant de réessayer. |
-| `RATE_LIMITED` | Une opération protégée demande au client de patienter. | Attendez `retryAfterSeconds` lorsqu’il est présent, puis réessayez une fois au lieu de lancer des appels continus. |
+| `HTTP 401 / JSON-RPC -32001` | La requête protégée ne dispose pas d’une autorisation OAuth valide. La réponse contient un défi `WWW-Authenticate` dont le champ `resource_metadata` indique la découverte de la ressource protégée. | Laissez le client suivre ce défi et terminez l’autorisation dans le navigateur. Après une révocation, approuvez une nouvelle autorisation avant de réessayer. |
 | `INTERNAL_ERROR` | Une erreur inattendue a été expurgée. | Conservez le `correlationId`, arrêtez les appels répétés et contactez le support MaxVideoAI si l’erreur persiste. |
 
 La validation MCP peut refuser une entrée mal formée, mais ce guide ne lui attribue pas un code applicatif MaxVideoAI

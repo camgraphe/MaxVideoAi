@@ -14,6 +14,7 @@ import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
 import { buildDocsTechArticleJsonLd } from '../_lib/docs-article-jsonld';
 import { filterDocsEntriesForPublication } from '../_lib/docs-index-data';
+import { DocsArticleAttribution } from '../_components/DocsArticleAttribution';
 
 interface Params {
   locale?: AppLocale;
@@ -104,8 +105,9 @@ async function resolveDocLocales(slug: string): Promise<AppLocale[]> {
 
 export async function generateStaticParams(): Promise<Params[]> {
   const params: Params[] = [];
+  const publication = publicationState();
   for (const locale of locales) {
-    const docs = await getDocsEntriesForLocale(locale);
+    const docs = filterDocsEntriesForPublication(await getDocsEntriesForLocale(locale), publication);
     docs.forEach((entry) => params.push({ locale, slug: entry.slug }));
   }
   return params;
@@ -169,7 +171,6 @@ export default async function DocPage(props: { params: Promise<Params> }) {
     ...neighborDocs,
     ...docs.filter((entry) => entry.slug !== doc.slug && !neighborDocs.some((neighbor) => neighbor.slug === entry.slug)),
   ].slice(0, 3);
-  const dateLocale = localeRegions[locale] ?? 'en-US';
   const overviewLabel =
     locale === 'fr' ? 'Vue d’ensemble Docs' : locale === 'es' ? 'Resumen de Docs' : 'Docs overview';
   const availableLocales = await resolveDocLocales(doc.slug);
@@ -189,13 +190,14 @@ export default async function DocPage(props: { params: Promise<Params> }) {
   const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
   const publishedIso = toIsoDate(doc.date) ?? doc.date;
   const modifiedIso = toIsoDate(doc.updatedAt ?? doc.date) ?? publishedIso;
-  const editorialProfile = getEditorialProfile(locale, doc.authorId);
+  const editorialProfile = doc.authorId ? getEditorialProfile(locale, doc.authorId) : null;
   const docJsonLd = buildDocsTechArticleJsonLd({
-    author: {
-      name: editorialProfile.name,
-      jobTitle: editorialProfile.jobTitle,
-      url: getEditorialProfileAbsoluteUrl(editorialProfile),
-    },
+    author: editorialProfile
+      ? {
+          name: editorialProfile.name,
+          url: getEditorialProfileAbsoluteUrl(editorialProfile),
+        }
+      : null,
     canonicalUrl,
     description: doc.description,
     docsIndexUrl,
@@ -243,28 +245,16 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           </Link>
         </nav>
         <header className="stack-gap-sm">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
-            <span>
-              {locale === 'fr' ? 'Par' : locale === 'es' ? 'Por' : 'By'}{' '}
-              <Link href={editorialProfile.aboutHref} className="font-semibold text-text-primary hover:text-brand">
-                {editorialProfile.name}
-              </Link>
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>
-              {locale === 'fr' ? 'Publié le' : locale === 'es' ? 'Publicado el' : 'Published'}{' '}
-              {new Date(doc.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>
-              {locale === 'fr' ? 'Mis à jour le' : locale === 'es' ? 'Actualizado el' : 'Updated'}{' '}
-              {new Date(doc.updatedAt ?? doc.date).toLocaleDateString(dateLocale, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </span>
-          </div>
+          <DocsArticleAttribution
+            author={
+              editorialProfile
+                ? { name: editorialProfile.name, aboutHref: editorialProfile.aboutHref }
+                : null
+            }
+            date={doc.date}
+            locale={locale}
+            updatedAt={doc.updatedAt}
+          />
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>

@@ -8,6 +8,7 @@ import {
   handleMcpHttpRequest,
   type McpHttpHandlerDeps,
 } from '../frontend/src/server/mcp/http-handler';
+import { resolveAgentPrincipal } from '../frontend/src/server/mcp/oauth-adapter';
 
 const principal: AgentPrincipal = {
   userId: 'user-1',
@@ -42,6 +43,18 @@ function protocolRequest(body: object, extraHeaders: Record<string, string> = {}
       'content-type': 'application/json',
       host: 'api.maxvideoai.com',
       ...extraHeaders,
+    },
+    body: JSON.stringify(body),
+  });
+}
+
+function protocolRequestWithoutAuthorization(body: object): Request {
+  return new Request('https://api.maxvideoai.com/mcp', {
+    method: 'POST',
+    headers: {
+      accept: 'application/json, text/event-stream',
+      'content-type': 'application/json',
+      host: 'api.maxvideoai.com',
     },
     body: JSON.stringify(body),
   });
@@ -82,6 +95,25 @@ test('unauthenticated requests receive RFC 9728 resource metadata guidance', asy
   );
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
   assert.doesNotMatch(await response.text(), /access-token|Bearer authentication is required/);
+});
+
+test('the real OAuth adapter produces the stable HTTP and JSON-RPC authentication challenge', async () => {
+  const response = await handleMcpHttpRequest(
+    protocolRequestWithoutAuthorization(initializeRequest),
+    deps({ resolvePrincipal: resolveAgentPrincipal })
+  );
+  const payload = await response.json();
+
+  assert.equal(response.status, 401);
+  assert.deepEqual(payload, {
+    jsonrpc: '2.0',
+    error: { code: -32001, message: 'Authentication required.' },
+    id: null,
+  });
+  assert.equal(
+    response.headers.get('www-authenticate'),
+    'Bearer resource_metadata="https://api.maxvideoai.com/.well-known/oauth-protected-resource/mcp"'
+  );
 });
 
 test('authenticated initialize uses stateless Streamable HTTP and private caching', async () => {

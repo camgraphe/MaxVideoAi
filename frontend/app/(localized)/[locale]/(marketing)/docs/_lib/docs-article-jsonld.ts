@@ -3,12 +3,11 @@ import { SITE_BASE_URL } from '@/lib/metadataUrls';
 
 type DocsArticleAuthor = {
   name: string;
-  jobTitle: string;
   url: string;
 };
 
 type DocsTechArticleInput = {
-  author: DocsArticleAuthor;
+  author?: DocsArticleAuthor | null;
   canonicalUrl: string;
   description: string;
   docsIndexUrl: string;
@@ -60,12 +59,15 @@ export function buildDocsTechArticleJsonLd({
       '@id': docsIndexUrl,
       name: overviewLabel,
     },
-    author: {
-      '@type': 'Person',
-      name: author.name,
-      jobTitle: author.jobTitle,
-      url: author.url,
-    },
+    ...(author
+      ? {
+          author: {
+            '@type': 'Person',
+            name: author.name,
+            url: author.url,
+          },
+        }
+      : {}),
     publisher: {
       '@type': 'Organization',
       name: 'MaxVideoAI',

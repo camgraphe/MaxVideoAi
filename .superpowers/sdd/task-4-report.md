@@ -35,10 +35,10 @@ After the minimal implementation, the same command exited 0 with 9 passed and 0 
 | --- | --- |
 | Canonical endpoint | `frontend/src/server/mcp/config.ts`; `tests/mcp-config.test.ts` |
 | Host names, versions, commands, and known limitations | `frontend/config/mcp-compatibility.json`; `docs/operations/mcp-host-compatibility-matrix.md`; Task 3 integration copy/contracts |
-| Exact live public tool registry and annotations | `frontend/server/mcp/server.ts`; `frontend/server/mcp/tools/account-status.ts`; `frontend/server/mcp/tools/list-models.ts`; `frontend/server/mcp/tools/recommend-models.ts`; MCP registry/tool tests |
-| OAuth scopes, connection state, and revocation | MCP OAuth adapter/connection modules and their focused tests |
-| Account status, disabled trial, nullable spending limits, and omitted email | MCP account-status response types, implementation, and tests |
-| Stable errors and private/no-store behavior | MCP error/result helpers, HTTP handler, audit logger, and focused tests |
+| Exact live public tool registry and annotations | `frontend/src/server/mcp/server.ts`; `frontend/src/server/mcp/tools/get-account-status.ts`; `frontend/src/server/mcp/tools/list-models.ts`; `frontend/src/server/mcp/tools/recommend-models.ts`; MCP registry/tool tests |
+| OAuth scopes, connection state, and revocation | `frontend/src/server/mcp/oauth-adapter.ts`; account-connections route owners; focused OAuth and connection tests |
+| Account status, disabled trial, nullable spending limits, and omitted email | `frontend/src/server/agent-api/account-status.ts`; `frontend/src/server/agent-api/types.ts`; focused account-status and tool tests |
+| Stable errors and private/no-store behavior | `frontend/src/server/mcp/http-handler.ts`; `frontend/src/server/mcp/tool-result.ts`; `frontend/src/server/agent-api/errors.ts`; focused transport and tool tests |
 | Quote, generation, trial, reference, status, and media availability | `frontend/config/mcp-publication.json`; approved MCP design/claims matrix; live tool registry |
 | Docs visibility and article schema | `frontend/lib/mcp-publication.ts`; docs route/index owners; editorial profile and JSON-LD contracts |
 
@@ -102,3 +102,104 @@ This keeps the technical material ready behind the established gates without mak
 - Claude Desktop token refresh and Claude Code hosted-tool smoke remain pending in the compatibility evidence. Codex CLI's default add flow remains blocked by an extra phone scope, while the explicit-scope read-only path is the verified path. The Codex app/library has not been validated.
 
 No push, pull request, merge, deployment, external message, database change, publication-flag change, or other external mutation was performed.
+
+## Review remediation: 2026-07-14
+
+The post-implementation review identified four important findings and two minor findings. All six were addressed in one
+focused test-driven remediation without changing publication flags or exposing the guides.
+
+### Corrected behavior
+
+- Codex CLI setup now mirrors the recorded consent interruption. `codex mcp add` is isolated as its own step; the guide
+  says that it immediately opens the default consent, instructs the user to cancel or deny the request containing
+  `phone` while retaining the registered entry, and only then presents the separate
+  `codex mcp login --scopes openid,email,profile` path. Verification with `codex mcp get` is a third step. EN, FR, and ES
+  no longer present the commands as one uninterrupted copy/paste sequence.
+- The public error table now contains only failures observed through reachable runtime paths. Missing bearer access is
+  documented as `HTTP 401 / JSON-RPC -32001`, including the `WWW-Authenticate` `resource_metadata` challenge.
+  `INTERNAL_ERROR` remains because the live tool wrapper returns it with a redacted `correlationId` for unexpected tool
+  failures. The unreachable `RATE_LIMITED`/`retryAfterSeconds` claim and the internal `AUTH_REQUIRED` type name were
+  removed.
+- Tool-table tests parse every EN/FR/ES row and compare its name, read-only/destructive/open-world annotations, auth
+  boundary, side-effect statement, idempotency, confirmation behavior, and negative-case shape with the actual
+  `client.listTools()` registry and authenticated HTTP boundary.
+- MCP metadata, route rendering, and static parameters are now exercised directly. With the checked-in flags, robots are
+  noindex/nofollow, the route returns not found, and MCP never enters `generateStaticParams`.
+- Authorship is resolved only when frontmatter provides `authorId`. The three MCP documents retain the verified
+  `adrien-millot` metadata and show the author plus published/updated dates. Legacy docs without `authorId` preserve their
+  prior date-only header and omit schema authorship. `jobTitle` was removed from `TechArticle` because it is not visibly
+  rendered.
+- French and Spanish trial copy now uses native publication-state wording instead of the reviewed gate/closed-contract
+  calques.
+
+### Remediation RED evidence
+
+The strengthened contracts were written before the remediation changes:
+
+```bash
+./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+  tests/mcp-docs-content.test.ts \
+  tests/mcp-transport-contract.test.ts
+```
+
+Initial result: exit 1; 21 tests, 15 passed and 6 failed. The failures matched the reviewed behavior:
+
+1. Codex add/login/get appeared in one command block with no consent interruption.
+2. Error docs listed `AUTH_REQUIRED`, unreachable `RATE_LIMITED`, and `retryAfterSeconds` instead of the observed
+   transport challenge.
+3. French and Spanish contained the reviewed publication-state calques.
+4. Gated MCP entries still appeared in `generateStaticParams`.
+5. No focused attribution owner existed, so legacy docs inherited the default editorial profile.
+6. `TechArticle` included an unrendered `jobTitle` and could not omit authorship for a legacy article.
+
+After the minimal production changes, the same command exited 0 with 21 passed and 0 failed.
+
+### Remediation final verification
+
+1. Complete MCP, docs, auth, tools, routes, schemas, SEO, and public-claims regression set:
+
+   ```bash
+   ./frontend/node_modules/.bin/tsx --tsconfig frontend/tsconfig.json --test \
+     tests/mcp-*.test.ts \
+     tests/docs-index-route-architecture.test.ts \
+     tests/public-product-claims.test.ts \
+     tests/localized-fallback-seo.test.ts \
+     tests/marketing-jsonld-schema-audit.test.ts
+   ```
+
+   Result: exit 0; 152 passed, 0 failed.
+
+2. Localization, types, lint, SEO, and exposure:
+
+   ```bash
+   npm --prefix frontend run i18n:check
+   pnpm --prefix frontend exec tsc --noEmit --pretty false
+   npm --prefix frontend run lint
+   npm --prefix frontend run seo:check
+   npm run lint:exposure
+   ```
+
+   Result: all exit 0. French parity is 4,156 keys and Spanish parity is 4,150 keys.
+
+3. Production build:
+
+   ```bash
+   npm --prefix frontend run build
+   ```
+
+   Result: exit 0 after registry/catalog validation, Next.js compilation, lint/type validation, generation of 727 static
+   pages, and postbuild sitemap generation. MCP is absent from the generated localized and default docs paths.
+
+4. Gated production-server smoke on port 3129:
+
+   - `/docs/mcp`, `/fr/docs/mcp`, and `/es/docs/mcp` each returned 404 with `noindex`, no redirect, and no author leak.
+   - `/docs/get-started` returned 200 without `noindex` and without an Adrien Millot attribution.
+   - The server was stopped cleanly after the checks.
+
+5. Diff and publication audit:
+
+   `git diff --check` exits 0, and `frontend/config/mcp-publication.json` has no diff. The public registry remains exactly
+   `get_account_status`, `list_models`, and `recommend_models`.
+
+No push, pull request, merge, deployment, external message, database change, publication-flag change, or other external
+mutation was performed during remediation.
