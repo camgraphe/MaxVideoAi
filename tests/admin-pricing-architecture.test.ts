@@ -46,6 +46,7 @@ const pricingPolicyServicePath = join(root, 'frontend/server/pricing-admin/polic
 const pricingPolicyContractPath = join(root, 'frontend/server/pricing-admin/policy-contract.ts');
 const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/policy-dependencies.ts');
 const pricingPolicyPreviewPath = join(root, 'frontend/server/pricing-admin/policy-preview.ts');
+const pricingPolicyReadModelPath = join(root, 'frontend/server/pricing-admin/policy-read-model.ts');
 const pricingPolicyRulesPath = join(root, 'frontend/server/pricing-admin/policy-rules.ts');
 const pricingPolicyRoutePaths = [
   join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
@@ -422,6 +423,22 @@ test('pricing policy preview owns canonical projection and fingerprinting withou
     source,
     /withDbTransaction|upsertPricingRuleWithExecutor|deletePricingRuleWithExecutor|insertPricingChangeEvent/,
     'preview must not own persistence'
+  );
+});
+
+test('pricing policy read model owns inventory and history without mutation commands', () => {
+  assert.ok(existsSync(pricingPolicyReadModelPath), 'pricing policy read model should exist');
+  const source = readOrEmpty(pricingPolicyReadModelPath);
+
+  assert.match(source, /export async function loadPricingPolicyHistory/);
+  assert.match(source, /export async function loadPricingPolicyInventory/);
+  assert.match(source, /listLatestEventsByTargets\('policy_rule'/);
+  assert.match(source, /representativeQuotes/);
+  assert.match(source, /databaseStatus/);
+  assert.doesNotMatch(
+    source,
+    /withTransaction|upsertRule|deleteRule|insertEvent/,
+    'read model must not own mutations'
   );
 });
 
