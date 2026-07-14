@@ -1,7 +1,8 @@
 import type { McpPublicationState } from '@/lib/mcp-publication';
+import type { AppLocale } from '@/i18n/locales';
 import type { McpPageCopy } from '../_lib/mcp-page-types';
 import type { McpProof } from '../_lib/mcp-proof';
-import { McpClientActions } from './McpClientActions';
+import { McpConnectActions } from './McpConnectActions.client';
 import { McpEvidenceSection } from './McpEvidenceSection';
 
 export function McpHeroSection({
@@ -9,11 +10,15 @@ export function McpHeroSection({
   evidenceCopy,
   proof,
   publication,
+  locale = 'en',
+  resourceUrl = '',
 }: {
   copy: McpPageCopy['hero'];
   evidenceCopy?: McpPageCopy['evidence'];
   proof: McpProof | null;
   publication: McpPublicationState;
+  locale?: AppLocale;
+  resourceUrl?: string;
 }) {
   const labels = [
     ...(publication.showTrialClaim ? [copy.eyebrows.trial] : []),
@@ -44,7 +49,12 @@ export function McpHeroSection({
             </p>
           ) : null}
           <div className="mt-7">
-            <McpClientActions actions={copy.actions} />
+            <McpConnectActions
+              actions={copy.actions}
+              copy={copy.connectActions}
+              resourceUrl={resourceUrl}
+              locale={locale}
+            />
           </div>
         </div>
         {evidenceCopy ? <McpEvidenceSection copy={evidenceCopy} proof={proof} /> : null}

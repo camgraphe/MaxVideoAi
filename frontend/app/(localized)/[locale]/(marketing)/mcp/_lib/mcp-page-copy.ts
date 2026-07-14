@@ -54,6 +54,12 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         codex: 'Start with Codex',
         supporting: 'Open setup guide',
       }),
+      connectActions: {
+        endpointLabel: 'Connection endpoint',
+        copyEndpoint: 'Copy endpoint',
+        copied: 'Endpoint copied. Continue with the setup guide for this client.',
+        copyError: 'Unable to copy. Select the endpoint above and copy it manually.',
+      },
     },
     workflow: {
       ariaLabel: 'AI video planning workflow',
@@ -204,6 +210,12 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         codex: 'Commencer avec Codex',
         supporting: 'Ouvrir le guide de configuration',
       }),
+      connectActions: {
+        endpointLabel: 'Adresse de connexion',
+        copyEndpoint: 'Copier l’adresse',
+        copied: 'Adresse copiée. Poursuivez avec le guide de configuration de ce client.',
+        copyError: 'Copie impossible. Sélectionnez l’adresse ci-dessus et copiez-la manuellement.',
+      },
     },
     workflow: {
       ariaLabel: 'Parcours de préparation d’une vidéo IA',
@@ -344,6 +356,12 @@ const COPY: Record<AppLocale, McpPageCopy> = {
         codex: 'Empezar con Codex',
         supporting: 'Abrir guía de configuración',
       }),
+      connectActions: {
+        endpointLabel: 'Dirección de conexión',
+        copyEndpoint: 'Copiar dirección',
+        copied: 'Dirección copiada. Continúa con la guía de configuración de este cliente.',
+        copyError: 'No se pudo copiar. Selecciona la dirección anterior y cópiala manualmente.',
+      },
     },
     workflow: {
       ariaLabel: 'Flujo de preparación de video con IA',

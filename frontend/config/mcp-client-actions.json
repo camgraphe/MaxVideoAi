@@ -1,0 +1,10 @@
+{
+  "claude": {
+    "deepLinkEnabled": false,
+    "deepLink": null
+  },
+  "codex": {
+    "deepLinkEnabled": false,
+    "deepLink": null
+  }
+}

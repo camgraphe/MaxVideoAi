@@ -8,6 +8,13 @@ export type McpClientActionCopy = {
   supportingLabel: string;
 };
 
+export type McpConnectActionsCopy = {
+  endpointLabel: string;
+  copyEndpoint: string;
+  copied: string;
+  copyError: string;
+};
+
 export type McpPageCopy = {
   meta: {
     title: string;
@@ -28,6 +35,7 @@ export type McpPageCopy = {
     previewIntro: string;
     trialDisclosure: string;
     actions: McpClientActionCopy[];
+    connectActions: McpConnectActionsCopy;
   };
   workflow: {
     ariaLabel: string;

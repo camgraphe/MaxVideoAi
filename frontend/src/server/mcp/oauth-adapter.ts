@@ -2,6 +2,10 @@ import { AgentApiError } from '@/server/agent-api/errors';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { readRequestBearerAccessToken } from '@/lib/request-auth';
 import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import {
+  createDirectMcpAcquisition,
+  type McpConnectionAcquisition,
+} from '@/lib/mcp-acquisition';
 
 export type OAuthClaims = {
   sub?: unknown;
@@ -100,5 +104,21 @@ export async function resolveAgentPrincipal(
     emailVerified:
       typeof user.email_confirmed_at === 'string' && user.email_confirmed_at.trim().length > 0,
     authMethod: 'oauth',
+  };
+}
+
+export type AuthenticatedMcpConnection = {
+  principal: AgentPrincipal;
+  acquisition: McpConnectionAcquisition;
+};
+
+export async function resolveAuthenticatedMcpConnection(
+  request: Request,
+  deps: OAuthAdapterDeps = defaultOAuthAdapterDeps,
+): Promise<AuthenticatedMcpConnection> {
+  const principal = await resolveAgentPrincipal(request, deps);
+  return {
+    principal,
+    acquisition: createDirectMcpAcquisition(),
   };
 }

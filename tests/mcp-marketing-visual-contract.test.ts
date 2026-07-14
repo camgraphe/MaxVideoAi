@@ -42,6 +42,7 @@ test('new MCP surfaces remain light-first, restrained, gradient-free, and dark-c
     'McpPageView.tsx',
     'McpHeroSection.tsx',
     'McpClientActions.tsx',
+    'McpConnectActions.client.tsx',
     'McpProofMedia.tsx',
     'McpWorkflowStrip.tsx',
     'McpBudgetShortlist.tsx',
@@ -63,7 +64,7 @@ test('new MCP surfaces remain light-first, restrained, gradient-free, and dark-c
 test('the hero stays prospect-facing and contains no internal setup vocabulary', () => {
   const source = requireFile(`${componentsRoot}/McpHeroSection.tsx`);
   assert.doesNotMatch(source, /OAuth|scope|endpoint|staging|API key/i);
-  assert.match(source, /McpClientActions/);
+  assert.match(source, /McpConnectActions/);
   assert.match(source, /showTrialClaim/);
 });
 

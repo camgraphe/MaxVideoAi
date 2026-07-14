@@ -33,9 +33,13 @@ Configure these as server-side values. `NEXT_PUBLIC_SUPABASE_URL` and the existi
 ```text
 MCP_API_HOST=api.maxvideoai.com
 MCP_RESOURCE_URL=https://api.maxvideoai.com/mcp
+MCP_ACQUISITION_SIGNING_SECRET=<at-least-32-random-bytes>
 ```
 
-For local development, both values are required explicitly and must use a loopback host.
+For local development, the host and resource values are required explicitly and must use a loopback host.
+The acquisition signing value is server-only, must contain at least 32 random bytes, and must not reuse a Supabase,
+OAuth-client, Stripe, or provider credential. Rotate it independently if exposure is suspected; rotation deliberately
+invalidates the short-lived acquisition cookies already issued.
 
 ## Verification
 
