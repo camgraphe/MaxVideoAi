@@ -31,6 +31,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Client workspace/billing/library routes: workspace app bootstrap, load-state, ready view, job refresh, and route-form hooks; billing session/receipts/top-up quote hooks; billing currency/top-up selection hooks; and library SWR/mutation hooks.
 - Admin audit/jobs routes: server pages now delegate filters, shortcut metrics, tables, and page views to route-local modules.
 - Localized docs index route: server page now delegates docs fallback loading, TOC view-models, section rendering, library/feedback sections, and JSON-LD builders to route-local modules.
+- Storyboard workspace: `StoryboardWorkspace.tsx` is now 488 physical lines (489 by the live audit metric) and remains the workflow orchestrator. Focused owners now cover the builder UI (`StoryboardBuilderPanel.tsx`), reference state and uploads (`useStoryboardReferences.ts`), pricing estimates (`useStoryboardPricing.ts`), workspace configuration (`storyboard-workspace-config.ts`), and Kling first-frame persistence (`storyboard-kling-first-frame-storage.ts`).
 
 Representative contract tests:
 
@@ -61,11 +62,11 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-07-14:
 | `compare-page-overrides-fr.ts` | 2757 | localized content organization |
 | `model-page-template-copy.ts` | 1887 | content organization |
 | `ModelExamplesSection.tsx` | 1589 | large marketing component |
-| `StoryboardWorkspace.tsx` | 1318 | active balanced refactor |
 | `pricingHubData.ts` | 1226 | pricing-sensitive configuration |
 | `admin-transactions.ts` | 793 | next medium-risk server split |
 | `pricingHubCopy.ts` | 737 | localized pricing content |
 | `policy-service.ts` | 735 | server policy boundary |
+| `StoryboardBuilderPanel.tsx` | 519 | focused Storyboard builder UI |
 
 Line counts change over time. The audit command, not this dated table, is authoritative.
 
@@ -73,10 +74,9 @@ Line counts change over time. The audit command, not this dated table, is author
 
 Prefer this order unless product work changes the risk profile:
 
-1. Continue the active, balanced `StoryboardWorkspace.tsx` cleanup.
-2. Treat `admin-transactions.ts` as the next medium-risk server split.
-3. Approach pricing and pricing-admin work as price-sensitive, with dedicated pricing acceptance coverage before changing configuration or policy boundaries.
-4. Treat the large locale and model copy files as content-organization work rather than immediate runtime refactors.
+1. Treat `admin-transactions.ts` as the next medium-risk server split.
+2. Approach pricing and pricing-admin work as price-sensitive: require dedicated price acceptance tests, and do not change live prices incidentally while moving configuration or policy boundaries.
+3. Treat the large locale and model copy files as content-organization work rather than immediate runtime refactors.
 
 ## Definition Of Done
 
