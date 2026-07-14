@@ -6,11 +6,18 @@ import { DocsSeeAlsoLinks as SeeAlsoLinks } from './DocsSeeAlsoLinks';
 type DocsSectionsGridProps = {
   apiNoticeLabel?: string;
   content: DocsContent;
+  mcpGuide: DocsContent['mcpGuide'] | null;
   sectionOrder: readonly DocsSectionId[];
   seeAlsoLinks: DocsSeeAlsoLinks;
 };
 
-export function DocsSectionsGrid({ apiNoticeLabel, content, sectionOrder, seeAlsoLinks }: DocsSectionsGridProps) {
+export function DocsSectionsGrid({
+  apiNoticeLabel,
+  content,
+  mcpGuide,
+  sectionOrder,
+  seeAlsoLinks,
+}: DocsSectionsGridProps) {
   const onboardingChecklist = content.onboardingChecklist ?? {};
   const refundsTimeline = content.refundsTimeline ?? {};
   const safetyQuick = content.safetyQuick ?? {};
@@ -33,6 +40,15 @@ export function DocsSectionsGrid({ apiNoticeLabel, content, sectionOrder, seeAls
                 <DocsSectionItem key={itemIndex} item={item} />
               ))}
             </ul>
+            {sectionId === 'api' && mcpGuide ? (
+              <Link
+                href={mcpGuide.href}
+                className="mt-4 block rounded-card border border-hairline bg-surface-muted p-4 hover:border-brand"
+              >
+                <h3 className="text-sm font-semibold text-text-primary">{mcpGuide.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-text-muted">{mcpGuide.description}</p>
+              </Link>
+            ) : null}
             {sectionId === 'onboarding' ? (
               <section aria-labelledby="onboarding-checklist" className="mt-4">
                 <h3 id="onboarding-checklist" className="text-base font-semibold text-text-primary">

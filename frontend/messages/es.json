@@ -2487,6 +2487,11 @@
       "title": "Documentación",
       "subtitle": "Empieza aquí con la cuenta individual, el precio antes de generar, los trabajos, los medios guardados, la seguridad de marca y los reembolsos."
     },
+    "mcpGuide": {
+      "href": "/es/docs/mcp",
+      "title": "Guía técnica del MCP de MaxVideoAI",
+      "description": "Clientes verificados, OAuth, registro de herramientas de solo lectura, privacidad, límites y recuperación."
+    },
     "toc": {
       "title": "En esta página",
       "onboarding": "Primeros pasos",

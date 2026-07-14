@@ -34,6 +34,7 @@ export function DocsIndexView({ content, docs, metadataUrls, site }: DocsIndexVi
             <DocsSectionsGrid
               apiNoticeLabel={viewModel.apiNoticeLabel}
               content={content}
+              mcpGuide={viewModel.mcpGuide}
               sectionOrder={viewModel.sectionOrder}
               seeAlsoLinks={viewModel.seeAlsoLinks}
             />

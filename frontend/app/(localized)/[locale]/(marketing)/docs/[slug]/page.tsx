@@ -1,14 +1,19 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { notFound } from 'next/navigation';
+import { FEATURES } from '@/content/feature-flags';
 import { Link } from '@/i18n/navigation';
 import { getContentEntries, getEntryBySlug } from '@/lib/content/markdown';
+import { getEditorialProfile, getEditorialProfileAbsoluteUrl } from '@/lib/editorial/profile';
 import { buildMetadataUrls, SITE_BASE_URL } from '@/lib/metadataUrls';
+import { getMcpPublicationState } from '@/lib/mcp-publication';
 import { defaultLocale, localePathnames, locales, localeRegions, type AppLocale } from '@/i18n/locales';
 import { resolveDictionary } from '@/lib/i18n/server';
 import { buildSlugMap } from '@/lib/i18nSlugs';
 import { buildSeoMetadata } from '@/lib/seo/metadata';
 import { resolveLocalizedFallbackSeo } from '@/lib/seo/localizedFallback';
+import { buildDocsTechArticleJsonLd } from '../_lib/docs-article-jsonld';
+import { filterDocsEntriesForPublication } from '../_lib/docs-index-data';
 
 interface Params {
   locale?: AppLocale;
@@ -17,6 +22,10 @@ interface Params {
 
 const DOCS_FALLBACK_ROOT = 'content/docs';
 const DOCS_SLUG_MAP = buildSlugMap('docs');
+
+function publicationState() {
+  return getMcpPublicationState(FEATURES.mcp);
+}
 
 function toIsoDate(value?: string | null): string | null {
   if (!value) {
@@ -120,6 +129,7 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     englishPath: `/docs/${doc.slug}`,
     availableLocales: await resolveDocLocales(doc.slug),
   });
+  const publication = publicationState();
   return buildSeoMetadata({
     locale,
     title: `${doc.title} — MaxVideo AI Docs`,
@@ -130,7 +140,10 @@ export async function generateMetadata(props: { params: Promise<Params> }): Prom
     englishPath: `/docs/${doc.slug}`,
     availableLocales: seo.availableLocales,
     canonicalOverride: seo.canonicalOverride,
-    robots: seo.robots,
+    robots:
+      doc.slug === 'mcp'
+        ? { index: publication.indexable, follow: publication.renderPublicPage }
+        : seo.robots,
     keywords: doc.keywords,
   });
 }
@@ -142,7 +155,11 @@ export default async function DocPage(props: { params: Promise<Params> }) {
   if (!doc) {
     notFound();
   }
-  const docs = await getDocsEntriesForLocale(locale);
+  const publication = publicationState();
+  if (doc.slug === 'mcp' && !publication.renderPublicPage) {
+    notFound();
+  }
+  const docs = filterDocsEntriesForPublication(await getDocsEntriesForLocale(locale), publication);
   const currentIndex = docs.findIndex((entry) => entry.slug === doc.slug);
   const neighborDocs = [
     currentIndex > 0 ? docs[currentIndex - 1] : null,
@@ -172,36 +189,26 @@ export default async function DocPage(props: { params: Promise<Params> }) {
   const homeUrl = `${SITE_BASE_URL}${localePrefix || ''}`;
   const publishedIso = toIsoDate(doc.date) ?? doc.date;
   const modifiedIso = toIsoDate(doc.updatedAt ?? doc.date) ?? publishedIso;
-  const docJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'TechArticle',
-    headline: doc.title,
+  const editorialProfile = getEditorialProfile(locale, doc.authorId);
+  const docJsonLd = buildDocsTechArticleJsonLd({
+    author: {
+      name: editorialProfile.name,
+      jobTitle: editorialProfile.jobTitle,
+      url: getEditorialProfileAbsoluteUrl(editorialProfile),
+    },
+    canonicalUrl,
     description: doc.description,
-    url: canonicalUrl,
-    datePublished: publishedIso,
-    dateModified: modifiedIso,
+    docsIndexUrl,
+    imageUrl: toAbsoluteUrl(doc.image),
     inLanguage: localeRegions[locale],
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': canonicalUrl,
-    },
-    isPartOf: {
-      '@type': 'CollectionPage',
-      '@id': docsIndexUrl,
-      name: overviewLabel,
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: 'MaxVideoAI',
-      url: SITE_BASE_URL,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${SITE_BASE_URL}/favicon-512.png`,
-      },
-    },
-    ...(doc.image ? { image: toAbsoluteUrl(doc.image) } : {}),
-    ...(doc.keywords?.length ? { keywords: doc.keywords } : {}),
-  };
+    isMcpDoc: doc.slug === 'mcp',
+    keywords: doc.keywords,
+    modifiedIso,
+    overviewLabel,
+    publication,
+    publishedIso,
+    title: doc.title,
+  });
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -236,9 +243,28 @@ export default async function DocPage(props: { params: Promise<Params> }) {
           </Link>
         </nav>
         <header className="stack-gap-sm">
-          <p className="text-xs font-semibold uppercase tracking-micro text-text-muted">
-            {new Date(doc.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-text-muted">
+            <span>
+              {locale === 'fr' ? 'Par' : locale === 'es' ? 'Por' : 'By'}{' '}
+              <Link href={editorialProfile.aboutHref} className="font-semibold text-text-primary hover:text-brand">
+                {editorialProfile.name}
+              </Link>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {locale === 'fr' ? 'Publié le' : locale === 'es' ? 'Publicado el' : 'Published'}{' '}
+              {new Date(doc.date).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {locale === 'fr' ? 'Mis à jour le' : locale === 'es' ? 'Actualizado el' : 'Updated'}{' '}
+              {new Date(doc.updatedAt ?? doc.date).toLocaleDateString(dateLocale, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </span>
+          </div>
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{doc.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{doc.description}</p>
         </header>
@@ -266,17 +292,19 @@ export default async function DocPage(props: { params: Promise<Params> }) {
       <Script id={`docs-breadcrumb-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
         {JSON.stringify(breadcrumbJsonLd)}
       </Script>
-      <Script id={`docs-article-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
-        {JSON.stringify(docJsonLd)}
-      </Script>
-      {doc.structuredData?.map((json, index) => (
+      {docJsonLd ? (
+        <Script id={`docs-article-${locale}-${doc.slug}-jsonld`} type="application/ld+json">
+          {JSON.stringify(docJsonLd)}
+        </Script>
+      ) : null}
+      {(doc.slug !== 'mcp' || publication.indexable) ? doc.structuredData?.map((json, index) => (
         <Script
           key={`docs-jsonld-${doc.slug}-${index}`}
           id={`docs-jsonld-${doc.slug}-${index}`}
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: json }}
         />
-      ))}
+      )) : null}
     </div>
   );
 }

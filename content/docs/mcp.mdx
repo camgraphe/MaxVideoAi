@@ -1,0 +1,193 @@
+---
+title: "MaxVideoAI MCP technical guide"
+description: "Verified setup, OAuth, read-only tools, privacy, limitations, and recovery guidance for the MaxVideoAI MCP foundation."
+date: "2026-07-14"
+updatedAt: "2026-07-14"
+authorId: "adrien-millot"
+image: "/og/price-before.png"
+keywords:
+  - "MaxVideoAI MCP"
+  - "Claude Desktop MCP"
+  - "Claude Code MCP"
+  - "Codex CLI MCP"
+slug: "mcp"
+---
+
+This reference describes the controlled, read-only rollout verified on 2026-07-12. Public connection is not currently
+available. It documents only the production address, clients, tools, and recovery behavior backed by the current code
+and recorded compatibility evidence.
+
+## Production MCP address
+
+The universal configuration value is:
+
+```text
+https://api.maxvideoai.com/mcp
+```
+
+This is the MCP Streamable HTTP resource, not a browser page or a general public REST API. Do not add an access token,
+query string, or user credential to the address. OAuth 2.1 authorization is required when the rollout is enabled.
+
+## Verified client paths
+
+The three paths below are separate. A pass for one client is not evidence for another. Last verified: 2026-07-12.
+
+### Claude Desktop 1.20186.1
+
+The recorded hosted test used a custom remote connector. Add the production MCP address in Claude Desktop, then review
+the `openid,email,profile` identity permissions in the MaxVideoAI browser approval. Read-only tool calls, revocation,
+and reconnect passed. Token refresh after expiry remains pending.
+
+### Claude Code 2.1.207
+
+The recorded local path is:
+
+```bash
+claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp
+claude mcp get maxvideoai
+```
+
+Open `/mcp` in Claude Code to start browser authorization. Local OAuth, revocation, and reapproval passed. The Claude
+Code hosted tool call is pending because the test client had no Anthropic session.
+
+### Codex CLI 0.144.1
+
+The default add flow requested an extra permission and remains blocked. Only this explicit least-privilege login path
+passed the hosted read-only test:
+
+```bash
+codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
+codex mcp login maxvideoai --scopes openid,email,profile
+codex mcp get maxvideoai
+```
+
+The Codex app and library have not been validated. Do not infer their compatibility from the Codex CLI evidence.
+
+## OAuth and account access
+
+OAuth 2.1 uses browser sign-in and consent. The host receives permission to call the published MaxVideoAI tools for
+the approved account; it does not receive database access, payment details, or the account password. Denying consent
+leaves the connection unauthenticated.
+
+The live registry requires OAuth for every tool. `get_account_status` returns account connection state, verified-email
+state, wallet summary, disabled trial state, nullable spending-limit fields, and the account-connections URL. It omits
+the account email and payment details.
+
+## Complete published tool table
+
+The current public registry contains exactly these three tools. All are Read-only, non-destructive, Closed world, and
+idempotent with respect to account state: repeating a call performs no write, although current results can change.
+
+| Tool | Use this when | Purpose | Side effects / read-only | Destructive | Open-world annotation | Idempotent | Auth | Confirmation and Negative case |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `get_account_status` | Use this when the user asks whether MaxVideoAI is connected, verified, or funded. | Read the account, wallet summary, disabled-trial state, limit slots, and connections URL. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not charge, start a trial, reveal an email, or generate media. |
+| `list_models` | Use this when the user needs current public image or video model capabilities. | Filter public models by surface, mode, format, duration, audio, or reference-image support. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not generate, quote an exact price, expose private models, or promise capacity. |
+| `recommend_models` | Use this when the user wants a short factual model shortlist for stated creative constraints. | Rank up to three public models with reasons, trade-offs, and a next action. | None; Read-only. | No. | Closed world. | Idempotent: yes, no write. | OAuth required. | No confirmation. Negative case: do not treat a recommendation as a quote, generation command, or acceptance promise. |
+
+## Prompts and reference images
+
+Claude or Codex clarifies the brief and writes the prompt. MaxVideoAI supplies current catalog facts and factual model
+trade-offs in this read-only rollout. It does not run another model merely to rewrite the prompt.
+
+A host may later prepare an image with the host's own image tool or through a verified MaxVideoAI image-model flow.
+That does not mean every host can create images. Before a video request can use it, MaxVideoAI must validate and persist
+the image; only a persisted MaxVideoAI asset ID reaches video generation. The current registry has no `list_media` or
+`create_reference_upload_link` tool, so connected reference transfer is not currently available.
+
+## Price, quote, confirmation, and job status
+
+The MaxVideoAI web product shows the displayed price before generation. This read-only rollout does not expose an exact
+price, debit a wallet, or submit media. `recommend_models` is not a price quote.
+
+The public registry has no `prepare_generation` or `confirm_generation` tool. A later generation contract must prepare
+a short-lived, server-owned immutable quote and require a separate explicit confirmation before spending. Because that
+contract is not implemented in this rollout, there is no public quote fingerprint or expiry to rely on today, and this
+guide contains no static price examples.
+
+There is also no `get_generation_status` or `list_recent_generations` tool. Follow current work in Jobs in the MaxVideoAI web product and recover completed output from the web library. No MCP polling interval is published.
+
+`create_topup_link` is not published. Wallet funding and direct payment remain in the MaxVideoAI web product; prepare a
+new web price review after funding rather than relying on stale information.
+
+## Gated Seedance 2 Mini trial contract
+
+The MCP trial is not available while its publication gate is off. The gated contract is one promotional entitlement,
+not wallet money and not a reusable balance. Eligibility requires an eligible OAuth account with a verified email, no
+prior consumed trial for that user, no active account restriction, and acceptable rate and risk checks. It is available
+at most one time per user when the gate is enabled.
+
+The server-fixed preset is Dreamina Seedance 2.0 Mini (Seedance 2 Mini), text-to-video, 5 seconds, 480p, one of `16:9`,
+`9:16`, or `1:1`, audio user-selectable, and one output. No input may change those terms. The current account tool
+returns `trial.status: disabled`; there is no trial preparation or reservation tool in the published registry.
+
+## Spending limits and confirmation safety
+
+The account result includes `perGenerationCents`, `dailyCents`, and `webApprovalAboveCents`. In the current read-only
+foundation, each value is `null`: no MCP spending-limit control or spending action is active. A null value is not a
+promise of unlimited spending; no connected generation is available at all.
+
+Host-level automatic approval cannot be overridden by server copy. If paid tools are later published, the separate
+quote and explicit confirmation, server-side limits, idempotency, and a web approval handoff must all be verified first.
+
+## Disconnect and revoke access
+
+1. Remove or clear the MaxVideoAI connection in the client.
+2. Open [MaxVideoAI account connections](/account/connections).
+3. Revoke the grant for that client.
+4. Verify that the next protected call requires a fresh browser approval.
+
+Revocation invalidates the grant; reconnecting must not silently reuse it.
+
+## Privacy and data handling
+
+- The account email is omitted from tool results.
+- Audit events allow only coarse connection, client, tool, outcome, surface, model, and error dimensions.
+- Prompt text, access tokens, secrets, full reference URLs, private media, and payment information are excluded from the
+  MCP audit payload.
+- Authenticated MCP responses use `Cache-Control: private, no-store`.
+- The MCP does not imply that generated content is automatically safe to publish or commercially cleared.
+
+## Stable errors and recovery
+
+Only the stable application errors currently surfaced or covered by the published wrapper are listed here.
+
+| Code | Meaning | Recovery action |
+| --- | --- | --- |
+| `AUTH_REQUIRED` | The protected resource has no valid OAuth bearer grant. | Start browser authorization again. If access was revoked, approve a fresh grant before retrying. |
+| `RATE_LIMITED` | A protected operation asked the caller to pause. | Wait for `retryAfterSeconds` when present, then retry once instead of polling continuously. |
+| `INTERNAL_ERROR` | An unexpected failure was redacted. | Keep the returned `correlationId`, stop repeated calls, and contact MaxVideoAI support if the failure persists. |
+
+Input-shape failures may be returned by the MCP protocol validation layer, but this guide does not assign them a
+MaxVideoAI application code that the live code does not provide.
+
+## Troubleshooting
+
+### Authentication is requested again
+
+The grant may have been revoked or expired. Reopen the client connection and complete a fresh MaxVideoAI browser
+approval. Never paste a bearer token into the MCP address.
+
+### Codex asks for more than the three recorded identity permissions
+
+Stop the default flow. Use the explicit `codex mcp login` command above with `openid,email,profile`. The default flow is
+not approved by the current evidence.
+
+### Claude shows only three read-only tools
+
+That is the complete current registry. Do not expect generation, upload, trial, quote, wallet mutation, or polling
+actions from this rollout.
+
+### A model recommendation has no exact price
+
+That is expected. Continue to the MaxVideoAI web product, choose supported settings, and review the displayed price
+before generation.
+
+## Current non-goals
+
+- A general public REST API or API credentials.
+- Customer callback endpoints.
+- Direct payment or payment-data collection through MCP.
+- Source-video editing, video extension, or audio-file transfer.
+- Studio timeline, sequence, project, or export control.
+- Hidden, disabled, administrative, or experimental models.
+- Automatic approval of media for publication or commercial use.

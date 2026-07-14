@@ -2460,6 +2460,11 @@
       "title": "Documentation",
       "subtitle": "Start here for individual-account onboarding, price-before-generation, jobs, saved media, brand safety, and refunds."
     },
+    "mcpGuide": {
+      "href": "/docs/mcp",
+      "title": "MaxVideoAI MCP technical guide",
+      "description": "Recorded clients, OAuth, the read-only tool registry, privacy, limitations, and recovery guidance."
+    },
     "toc": {
       "title": "On this page",
       "onboarding": "Onboarding",

@@ -1,0 +1,200 @@
+---
+title: "Guide technique du MCP MaxVideoAI"
+description: "Configuration vérifiée, OAuth, outils en lecture seule, confidentialité, limites et récupération pour le socle MCP MaxVideoAI."
+date: "2026-07-14"
+updatedAt: "2026-07-14"
+authorId: "adrien-millot"
+image: "/og/price-before.png"
+keywords:
+  - "MCP MaxVideoAI"
+  - "MCP Claude Desktop"
+  - "MCP Claude Code"
+  - "MCP Codex CLI"
+slug: "mcp"
+---
+
+Cette référence décrit le déploiement en lecture seule contrôlé et vérifié le 2026-07-12. La connexion publique n’est
+pas disponible actuellement. Elle documente uniquement l’adresse de production, les clients, les outils et les actions
+de récupération confirmés par le code et les preuves de compatibilité actuels.
+
+## Adresse MCP de production
+
+La valeur de configuration universelle est :
+
+```text
+https://api.maxvideoai.com/mcp
+```
+
+Il s’agit de la ressource MCP Streamable HTTP, et non d’une page web ni d’une API REST publique généraliste. N’ajoutez
+ni token, ni paramètre de requête, ni identifiant utilisateur à cette adresse. Une autorisation OAuth 2.1 est requise
+lorsque le déploiement est activé.
+
+## Parcours clients vérifiés
+
+Les trois parcours suivants sont distincts. Un test réussi pour un client ne valide pas les autres. Dernière
+vérification : 2026-07-12.
+
+### Claude Desktop 1.20186.1
+
+Le test hébergé enregistré a utilisé un connecteur distant personnalisé. Ajoutez l’adresse MCP de production dans
+Claude Desktop, puis vérifiez les autorisations d’identité `openid,email,profile` dans l’approbation MaxVideoAI ouverte
+dans le navigateur. Les outils en lecture seule, la révocation et la reconnexion ont réussi. L’actualisation du token
+après expiration reste à vérifier.
+
+### Claude Code 2.1.207
+
+Le parcours local enregistré est :
+
+```bash
+claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp
+claude mcp get maxvideoai
+```
+
+Ouvrez `/mcp` dans Claude Code pour lancer l’autorisation dans le navigateur. OAuth local, la révocation et la nouvelle
+approbation ont réussi ; l’appel hébergé d’un outil reste en attente, car le client de test n’avait pas de session
+Anthropic.
+
+### Codex CLI 0.144.1
+
+Le parcours d’ajout par défaut a demandé une autorisation supplémentaire et reste bloqué. Seul ce parcours explicite
+aux autorisations minimales a réussi lors du test hébergé en lecture seule :
+
+```bash
+codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp
+codex mcp login maxvideoai --scopes openid,email,profile
+codex mcp get maxvideoai
+```
+
+L’application Codex et sa bibliothèque n’ont pas été validées. Leur compatibilité ne peut pas être déduite des preuves
+de Codex CLI.
+
+## OAuth et accès au compte
+
+OAuth 2.1 passe par la connexion et le consentement dans le navigateur. Le client reçoit l’autorisation d’appeler les
+outils MaxVideoAI publiés pour le compte approuvé ; il ne reçoit ni accès direct à la base de données, ni données de
+paiement, ni mot de passe. Refuser le consentement laisse la connexion non authentifiée.
+
+Tous les outils du registre actuel exigent OAuth. `get_account_status` renvoie l’état de connexion, la vérification de
+l’e-mail, un résumé du portefeuille, l’état désactivé de l’essai, les champs de limite facultatifs et l’URL des
+connexions du compte. L’adresse e-mail est omise, tout comme les données de paiement.
+
+## Tableau complet des outils publiés
+
+Le registre public actuel contient exactement ces trois outils. Ils sont tous en Lecture seule, non destructifs, en
+Monde fermé et idempotents vis-à-vis de l’état du compte : répéter un appel n’écrit rien, même si le résultat courant
+peut évoluer.
+
+| Outil | Quand l’utiliser | But | Effets / lecture seule | Destructif | Annotation monde ouvert | Idempotent | Auth | Confirmation et Cas négatif |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `get_account_status` | À utiliser quand la personne demande si MaxVideoAI est connecté, vérifié ou approvisionné. | Lire le compte, le portefeuille, l’essai désactivé, les emplacements de limite et l’URL des connexions. | Aucun ; Lecture seule. | Non. | Monde fermé. | Idempotent : oui, aucune écriture. | OAuth requis. | Aucune confirmation. Cas négatif : ne pas débiter, démarrer un essai, révéler un e-mail ni générer un média. |
+| `list_models` | À utiliser pour consulter les capacités actuelles des modèles publics d’image ou de vidéo. | Filtrer les modèles publics par surface, mode, format, durée, audio ou prise en charge des images de référence. | Aucun ; Lecture seule. | Non. | Monde fermé. | Idempotent : oui, aucune écriture. | OAuth requis. | Aucune confirmation. Cas négatif : ne pas générer, annoncer un prix exact, exposer des modèles privés ni promettre une capacité. |
+| `recommend_models` | À utiliser pour obtenir une courte sélection factuelle selon les contraintes créatives indiquées. | Classer jusqu’à trois modèles publics avec raisons, compromis et prochaine action. | Aucun ; Lecture seule. | Non. | Monde fermé. | Idempotent : oui, aucune écriture. | OAuth requis. | Aucune confirmation. Cas négatif : ne pas traiter la recommandation comme un devis, une commande de génération ou une promesse d’acceptation. |
+
+## Prompts et images de référence
+
+Claude ou Codex précise le brief et rédige le prompt. Dans ce déploiement en lecture seule, MaxVideoAI fournit les
+données actuelles du catalogue et les compromis factuels entre modèles. Aucun autre modèle n’est lancé uniquement pour
+réécrire le prompt.
+
+Un client pourra préparer une image avec l’outil d’image du client ou avec le parcours vérifié d’un modèle d’image MaxVideoAI. Cela ne signifie pas que tous les clients savent créer des images. Avant son utilisation par une demande
+vidéo, MaxVideoAI doit valider et conserver l’image ; seul l’identifiant d’un asset conservé par MaxVideoAI atteint la génération vidéo. Le registre actuel ne contient ni `list_media` ni `create_reference_upload_link` : le transfert de
+références connecté n’est pas disponible actuellement.
+
+## Prix, devis, confirmation et état des jobs
+
+Le produit web MaxVideoAI montre le prix affiché avant la génération. Ce déploiement en lecture seule ne renvoie aucun
+prix exact, ne débite pas le portefeuille et ne soumet aucun média. Ces capacités ne sont pas disponibles actuellement.
+`recommend_models` n’est pas un devis.
+
+Le registre public ne contient ni `prepare_generation` ni `confirm_generation`. Un futur contrat de génération devra
+préparer un devis immuable, de courte durée et détenu par le serveur, puis demander une confirmation explicite séparée
+avant toute dépense. Ce contrat n’étant pas implémenté dans ce déploiement, il n’existe aujourd’hui aucune empreinte ni expiration publique de devis sur laquelle s’appuyer. Ce guide ne contient aucun exemple de prix statique.
+
+Il n’existe pas non plus d’outil `get_generation_status` ou `list_recent_generations`. Suivez le travail dans Jobs dans le produit web MaxVideoAI et retrouvez les résultats terminés dans la bibliothèque web. Aucun intervalle de polling MCP
+n’est publié.
+
+`create_topup_link` n’est pas publié. L’approvisionnement du portefeuille et le paiement direct restent dans le produit
+web MaxVideoAI. Après l’approvisionnement, vérifiez un nouveau prix plutôt que de réutiliser une information ancienne.
+
+## Contrat d’essai Seedance 2 Mini soumis au gate
+
+L’essai MCP n’est pas disponible tant que son gate de publication est désactivé. Son contrat fermé prévoit un droit promotionnel unique, pas de l’argent du portefeuille ni un solde réutilisable. L’éligibilité exige un compte OAuth éligible avec une adresse e-mail vérifiée, aucun essai déjà consommé par cet utilisateur, aucune restriction du compte
+active, ainsi que des limites de débit et des contrôles de risque acceptables. Il ne peut être accordé qu’une fois par utilisateur lorsque le gate est activé.
+
+Le preset imposé par le serveur est Dreamina Seedance 2.0 Mini (Seedance 2 Mini), texte vers vidéo, 5 secondes, 480p,
+au format `16:9`, `9:16` ou `1:1`, avec l’audio au choix de l’utilisateur et une sortie. Aucune entrée ne peut modifier
+ces conditions. L’outil de compte renvoie actuellement `trial.status: disabled` et le registre publié ne contient aucun
+outil de préparation ou de réservation d’essai.
+
+## Limites de dépense et sécurité de la confirmation
+
+Le résultat du compte inclut `perGenerationCents`, `dailyCents` et `webApprovalAboveCents`. Dans le socle actuel en
+lecture seule, chaque valeur vaut `null` : aucun contrôle de dépense MCP ni aucune action payante ne sont actifs. Une
+valeur nulle ne promet pas une dépense illimitée ; la génération connectée n’est pas disponible.
+
+Le texte du serveur ne peut pas annuler l’approbation automatique configurée dans un client. Si des outils payants sont
+publiés plus tard, le devis séparé, la confirmation explicite, les limites serveur, l’idempotence et une approbation web
+devront d’abord être vérifiés.
+
+## Déconnexion et révocation de l’accès
+
+1. Supprimez ou effacez la connexion MaxVideoAI dans le client.
+2. Ouvrez [les connexions du compte MaxVideoAI](/account/connections).
+3. Révoquez l’autorisation de ce client.
+4. Vérifiez que le prochain appel protégé exige une nouvelle approbation dans le navigateur.
+
+La révocation invalide l’autorisation ; une reconnexion ne doit pas la réutiliser silencieusement.
+
+## Confidentialité et traitement des données
+
+- L’e-mail du compte est omis des résultats des outils.
+- L’audit conserve uniquement des dimensions générales de connexion, client, outil, résultat, surface, modèle et erreur.
+- Le prompt, les tokens d’accès, les secrets, les URL complètes de référence, les médias privés et les informations de
+  paiement sont exclus de la charge d’audit MCP.
+- Les réponses MCP authentifiées utilisent `Cache-Control: private, no-store`.
+- Le MCP ne signifie pas qu’un contenu généré est automatiquement sûr à publier ou autorisé pour un usage commercial.
+
+## Erreurs stables et récupération
+
+Seules les erreurs applicatives stables actuellement renvoyées ou couvertes par l’enveloppe publiée sont listées ici.
+
+| Code | Signification | Action de récupération |
+| --- | --- | --- |
+| `AUTH_REQUIRED` | La ressource protégée ne dispose pas d’une autorisation OAuth valide. | Relancez l’autorisation dans le navigateur. Après une révocation, approuvez une nouvelle autorisation avant de réessayer. |
+| `RATE_LIMITED` | Une opération protégée demande au client de patienter. | Attendez `retryAfterSeconds` lorsqu’il est présent, puis réessayez une fois au lieu de lancer des appels continus. |
+| `INTERNAL_ERROR` | Une erreur inattendue a été expurgée. | Conservez le `correlationId`, arrêtez les appels répétés et contactez le support MaxVideoAI si l’erreur persiste. |
+
+La validation MCP peut refuser une entrée mal formée, mais ce guide ne lui attribue pas un code applicatif MaxVideoAI
+que le code actuel ne fournit pas.
+
+## Dépannage
+
+### L’authentification est de nouveau demandée
+
+L’autorisation a pu être révoquée ou expirer. Rouvrez la connexion du client et terminez une nouvelle approbation
+MaxVideoAI dans le navigateur. Ne collez jamais un token dans l’adresse MCP.
+
+### Codex demande plus que les trois autorisations d’identité enregistrées
+
+Interrompez le parcours par défaut. Utilisez la commande explicite `codex mcp login` ci-dessus avec
+`openid,email,profile`. Le parcours par défaut n’est pas approuvé par les preuves actuelles.
+
+### Claude ne montre que trois outils en lecture seule
+
+Il s’agit du registre actuel complet. N’attendez pas d’action de génération, de transfert, d’essai, de devis, de débit
+ou de polling dans ce déploiement.
+
+### Une recommandation ne contient aucun prix exact
+
+C’est le comportement prévu. Poursuivez dans le produit web MaxVideoAI, choisissez des réglages compatibles, puis
+vérifiez le prix affiché avant la génération.
+
+## Fonctions actuellement hors périmètre
+
+- Une API REST publique généraliste ou des identifiants d’API.
+- Des points de rappel clients.
+- Le paiement direct ou la collecte de données de paiement par le MCP.
+- Le montage de vidéo source, l’extension vidéo ou le transfert de fichier audio.
+- Le contrôle de la timeline Studio, des séquences, des projets ou des exports.
+- Les modèles masqués, désactivés, administratifs ou expérimentaux.
+- L’approbation automatique d’un média pour publication ou usage commercial.

@@ -2495,6 +2495,11 @@
       "title": "Documentation MaxVideoAI",
       "subtitle": "Commencez ici pour le compte individuel, le prix avant génération, les jobs, les médias enregistrés, la sécurité de marque et les remboursements."
     },
+    "mcpGuide": {
+      "href": "/fr/docs/mcp",
+      "title": "Guide technique du MCP MaxVideoAI",
+      "description": "Clients vérifiés, OAuth, registre d’outils en lecture seule, confidentialité, limites et récupération."
+    },
     "toc": {
       "title": "Sur cette page",
       "onboarding": "Onboarding",
