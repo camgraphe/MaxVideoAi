@@ -27,12 +27,12 @@ export function McpAnswerPassagesSection({
   return (
     <section className="border-y border-hairline bg-surface py-12 dark:border-white/[0.1] dark:bg-white/[0.025]">
       <div className="container-page max-w-[1120px]">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">
           {copy.eyebrow}
         </p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <h2 className="text-3xl font-semibold text-text-primary dark:text-white">{copy.title}</h2>
-          <p className="text-xs font-medium text-text-muted dark:text-white/55">
+          <p className="text-xs font-medium text-text-secondary dark:text-white/68">
             {copy.updatedLabel}:{' '}
             <time dateTime={lastVerified}>{formatMcpVerifiedDate(locale, lastVerified)}</time>
           </p>

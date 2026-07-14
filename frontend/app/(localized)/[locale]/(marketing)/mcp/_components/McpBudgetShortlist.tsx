@@ -12,7 +12,7 @@ export function McpBudgetShortlist({
   return (
     <section className="border-b border-hairline bg-bg py-12 text-text-primary dark:border-white/[0.1] dark:bg-bg dark:text-white">
       <div className="container-page max-w-[1120px]">
-        <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">{copy.eyebrow}</p>
+        <p className="text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">{copy.eyebrow}</p>
         <div className="mt-2 grid gap-3 lg:grid-cols-[0.8fr_1.2fr] lg:items-end">
           <h2 className="text-3xl font-semibold leading-tight text-text-primary dark:text-white">{copy.title}</h2>
           <p className="text-sm leading-6 text-text-secondary dark:text-white/68">{copy.intro}</p>
@@ -25,7 +25,7 @@ export function McpBudgetShortlist({
                 data-budget-slot={option.slot}
                 className={`rounded-[12px] border border-hairline p-4 shadow-card dark:border-white/[0.14] ${index < 2 ? 'bg-blue-50/70 dark:bg-blue-400/[0.07]' : 'bg-surface dark:bg-white/[0.04]'}`}
               >
-                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">
+                <p className="text-[11px] font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">
                   {copy.slotLabels[option.slot]}
                 </p>
                 <div className="mt-3 flex items-start justify-between gap-3">

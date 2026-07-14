@@ -2,8 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { isbot as detectBot } from 'isbot';
 import { defaultLocale, localePathnames } from '@/i18n/locales';
+import mcpPublication from '@/config/mcp-publication.json';
 import { LOGOUT_INTENT_COOKIE } from '@/lib/logout-intent-cookie';
 import { getMcpApiRewritePath } from '@/lib/mcp-host-routing';
+import { isMcpPublicSourcePath } from '@/lib/mcp-publication';
 import { canVisitorBrowseWorkspacePath } from '@/lib/visitor-access';
 import {
   LOGIN_PATH,
@@ -123,11 +125,15 @@ export async function middleware(req: NextRequest) {
   }
 
   pathname = normalizedPathname;
+  if (!mcpPublication.publicMarketing && isMcpPublicSourcePath(pathname)) {
+    return finalizeResponse(rewriteToNotFound(req, localePrefix), hasLogoutIntentCookie);
+  }
   const nonPrefixedLocalizedRedirect = resolveNonPrefixedLocalizedMarketingRedirect(req, pathname);
   if (nonPrefixedLocalizedRedirect) {
     return finalizeResponse(nonPrefixedLocalizedRedirect, hasLogoutIntentCookie);
   }
   const isAdminRoute = pathname.toLowerCase() === '/admin' || pathname.toLowerCase().startsWith('/admin/');
+  const isOAuthConsentRoute = pathname.toLowerCase() === '/oauth/consent';
   const appNoindex = shouldMarkAppNoindex(pathname);
   const trackingNoindex = shouldMarkTrackingNoindex(req, pathname, isAdminRoute);
   const queryCleanup = normalizePublicQueryParams(req, pathname);
@@ -165,6 +171,11 @@ export async function middleware(req: NextRequest) {
     }
   } else {
     response = NextResponse.next();
+  }
+
+  if (isOAuthConsentRoute) {
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Cache-Control', 'private, no-store, max-age=0');
   }
 
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));

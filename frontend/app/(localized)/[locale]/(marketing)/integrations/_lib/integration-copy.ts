@@ -106,7 +106,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'Connection',
       title: `Connect ${label} to MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop and Claude Code use different recorded connection paths. Follow the guide for the client you actually use; public access remains disabled.'
+        ? 'Claude Desktop and Claude Code use different recorded connection paths. Follow the guide for the client you actually use, then check the recorded host status below.'
         : 'The recorded path uses Codex CLI with an explicit least-privilege login command. The default first-run add flow is not approved for public use.',
       hostGuides: claude
         ? [
@@ -244,7 +244,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'Connexion',
       title: `Connecter ${label} à MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop et Claude Code suivent deux parcours de connexion enregistrés différents. Utilisez le guide correspondant à votre client ; l’accès public reste désactivé.'
+        ? 'Claude Desktop et Claude Code suivent deux parcours de connexion enregistrés différents. Utilisez le guide correspondant à votre client, puis vérifiez ci-dessous l’état enregistré de sa compatibilité.'
         : 'Le parcours enregistré utilise Codex CLI avec une commande de connexion aux autorisations explicites. Le premier parcours d’ajout par défaut n’est pas approuvé pour le public.',
       hostGuides: claude
         ? [
@@ -381,7 +381,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
       eyebrow: 'Conexión',
       title: `Conecta ${label} con MaxVideoAI`,
       intro: claude
-        ? 'Claude Desktop y Claude Code siguen rutas de conexión registradas diferentes. Usa la guía del cliente que utilizas; el acceso público sigue deshabilitado.'
+        ? 'Claude Desktop y Claude Code siguen rutas de conexión registradas diferentes. Usa la guía del cliente que utilizas y revisa abajo su estado de compatibilidad registrado.'
         : 'La ruta registrada usa Codex CLI con un comando de inicio de sesión de permisos explícitos. El flujo predeterminado inicial no está aprobado para uso público.',
       hostGuides: claude
         ? [

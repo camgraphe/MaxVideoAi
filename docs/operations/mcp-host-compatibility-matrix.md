@@ -54,6 +54,30 @@ a new three-scope consent page and required fresh approval. A post-reconnect
 
 Anthropic documents `claude mcp add --transport http <name> <url>` and browser OAuth through `/mcp`, including automatic refresh and a clear-authentication control: [Claude Code MCP documentation](https://docs.anthropic.com/en/docs/claude-code/mcp).
 
+## Task 11 local launch verification
+
+Checked: 2026-07-14. These results are local acquisition and boundary QA, not new real-host compatibility evidence.
+Temporary ignored publication fixtures were used; every checked-in MCP publication flag remained false and no production
+endpoint, account, grant, provider, credit, or user-wide client configuration was touched.
+
+| Verification | State | Evidence or blocker |
+| --- | --- | --- |
+| Clean isolated all-gates-green production build | Pass | MCP, Claude, and Codex pages render in light/dark at desktop/mobile; equal marks/actions, keyboard activation, and no-JS EN/FR/ES SEO checks pass. |
+| Checked-in all-false production build | Pass | MCP owners return terminal 404/noindex and stay out of sitemap and `llms.txt`. |
+| Preview without trial/paid/reference | Pass | Page stays noindex and hides trial, paid budget cards, reference claims, and proof. |
+| Protocol/private boundaries | Pass | Unauthenticated MCP is 401 private/no-store; discovery fails closed without auth env; consent is noindex/private; wallet and upload reject unauthenticated/invalid input. |
+| Codex default OAuth `phone` request | Blocked | The default first-run scope mismatch remains unresolved; explicit least-privilege login does not make the default flow safe. |
+| Claude Desktop token-expiry refresh | Blocked | Revocation and reconnect evidence exists, but automatic refresh still lacks a recorded exact-version hosted result. |
+| Real-host end-to-end trial/paid/reference decision | Not run | Task 11 intentionally performed no authentication, grant, purchase, spend, upload, provider, or production action. |
+| Paid generation | Blocked | Mutation tools and quote/confirmation/result/refund evidence are unavailable. |
+| Trial | Blocked | Allocation, abuse, failure restoration, and exact-host evidence are unavailable. |
+| Reference workflow | Blocked | Upload handoff, retention, model support, and exact-host transfer evidence are unavailable. |
+| Funnel/admin reconciliation | Blocked | Migrations 30–32 are absent and migration 33 remains unapplied; deterministic repository tests cannot replace the live ledger. |
+| Public proof and directory promotion | Blocked | No owned publishable MCP generation proof or complete host decision bundle exists. |
+
+Local artifacts, Lighthouse limitations, commands, and the promotion verdict are recorded in
+`docs/marketing/mcp-launch-evidence.md`. These rows do not supersede the host-specific evidence above.
+
 ## Commands for preview verification
 
 Codex CLI:

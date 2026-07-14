@@ -391,6 +391,21 @@ const nextConfig = {
       ],
     });
 
+    // OAuth consent is account-scoped and must never become a public search result.
+    rules.push({
+      source: '/oauth/consent',
+      headers: [
+        {
+          key: 'X-Robots-Tag',
+          value: 'noindex, nofollow',
+        },
+        {
+          key: 'Cache-Control',
+          value: 'private, no-store, max-age=0',
+        },
+      ],
+    });
+
     // In preview deployments, block indexing site-wide
     if (isPreviewDeployment) {
       rules.push({

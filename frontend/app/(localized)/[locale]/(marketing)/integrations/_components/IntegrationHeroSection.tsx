@@ -29,7 +29,7 @@ export function IntegrationHeroSection({
           <Image src={mark.light} alt="" width={28} height={28} className="h-7 w-7 object-contain dark:hidden" />
           <Image src={mark.dark} alt="" width={28} height={28} className="hidden h-7 w-7 object-contain dark:block" />
         </div>
-        <p className="mt-5 text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">{copy.hero.eyebrow}</p>
+        <p className="mt-5 text-xs font-semibold uppercase tracking-micro text-text-secondary dark:text-white/68">{copy.hero.eyebrow}</p>
         <h1 className="mt-3 max-w-[760px] text-[38px] font-semibold leading-[1.04] tracking-tight text-text-primary dark:text-white sm:text-[52px]">{copy.hero.title}</h1>
         <p className="mt-4 max-w-[760px] text-base leading-7 text-text-secondary dark:text-white/70">{copy.hero.intro}</p>
         <p className="mt-5 max-w-[760px] rounded-[12px] border border-hairline bg-surface px-4 py-3 text-sm font-medium leading-6 text-text-primary dark:border-white/[0.14] dark:bg-white/[0.045] dark:text-white">

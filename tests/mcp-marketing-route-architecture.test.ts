@@ -5,6 +5,7 @@ import { NextRequest } from 'next/server';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { middleware } from '../frontend/middleware.ts';
+import { isMcpPublicSourcePath } from '../frontend/lib/mcp-publication.ts';
 
 (globalThis as typeof globalThis & { React: typeof React }).React = React;
 
@@ -103,6 +104,16 @@ test('Claude and Codex guides are equal thin server orchestrators', () => {
   }
 });
 
+test('client setup copy does not contradict the publication status shown above it', async () => {
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const intro = getIntegrationCopy(locale, 'claude').setup.intro;
+    assert.doesNotMatch(intro, /public access remains disabled|accès public reste désactivé|acceso público sigue deshabilitado/i);
+  }
+});
+
 test('localized routing owns the exact MCP and integration route contract', async () => {
   requireFile('frontend/config/localized-slugs.json');
   requireFile('frontend/i18n/routing.ts');
@@ -131,7 +142,7 @@ test('localized routing owns the exact MCP and integration route contract', asyn
   });
 });
 
-test('real middleware resolves exact MCP routes without redirects or not-found rewrites', async () => {
+test('the MCP publication boundary recognizes exact localized source routes', () => {
   for (const path of [
     '/mcp',
     '/fr/mcp',
@@ -139,14 +150,36 @@ test('real middleware resolves exact MCP routes without redirects or not-found r
     '/integrations/claude',
     '/fr/integrations/codex',
     '/es/integraciones/claude',
+    '/docs/mcp',
+    '/fr/docs/mcp',
+    '/es/docs/mcp',
+  ]) {
+    assert.equal(isMcpPublicSourcePath(path), true, `${path} should be gate-owned`);
+  }
+  assert.equal(isMcpPublicSourcePath('/models'), false);
+  assert.equal(isMcpPublicSourcePath('/es/integraciones/not-a-client'), false);
+});
+
+test('checked-false publication returns a terminal localized 404 instead of redirecting rewritten integration paths', async () => {
+  for (const path of [
+    '/mcp',
+    '/fr/mcp',
+    '/es/mcp',
+    '/integrations/claude',
+    '/fr/integrations/codex',
+    '/es/integraciones/claude',
+    '/es/integraciones/codex',
+    '/docs/mcp',
+    '/fr/docs/mcp',
+    '/es/docs/mcp',
   ]) {
     const response = await middleware(new NextRequest(`https://maxvideoai.com${path}`));
-    assert.equal(response.status, 200, `${path} should resolve through middleware`);
-    assert.equal(response.headers.get('location'), null, `${path} should not redirect`);
-    assert.doesNotMatch(
+    assert.equal(response.status, 404, `${path} should fail closed at the middleware boundary`);
+    assert.equal(response.headers.get('location'), null, `${path} must not enter a redirect loop`);
+    assert.match(
       response.headers.get('x-middleware-rewrite') ?? '',
       /(?:^|\/)404(?:$|\?)/,
-      `${path} should not rewrite to not found`,
+      `${path} should rewrite directly to the locale-owned not-found route`,
     );
   }
 });

@@ -178,7 +178,7 @@ export function McpConnectActions({
           ))}
         </div>
         <p
-          className="mt-2 min-h-5 text-xs text-text-muted dark:text-white/60"
+          className="mt-2 min-h-5 text-xs text-text-secondary dark:text-white/68"
           role="status"
           aria-live="polite"
         >
