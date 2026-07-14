@@ -76,6 +76,18 @@ function withMutatedEngine(
   return { ...dependencies, listEngines: () => engines };
 }
 
+function withOnlyEngine(
+  engineId: string,
+  mutate?: (entry: FalEngineEntry) => void,
+): McpBudgetOptionsDependencies {
+  const dependencies = defaultDependencies();
+  const source = dependencies.listEngines().find((entry) => entry.id === engineId);
+  assert.ok(source, `missing engine ${engineId}`);
+  const entry = structuredClone(source);
+  mutate?.(entry);
+  return { ...dependencies, listEngines: () => [entry] };
+}
+
 type AuthoritativePaidRoute = {
   engineId: string;
   durationSeconds: number;
@@ -469,6 +481,48 @@ test('audio presentation follows exact T2V defaults and optional inputs instead 
   assert.ok(wan);
   assert.equal(wan.audioState, 'silent');
   assert.match(wan.scenarioLabel, /Silent/);
+});
+
+test('enum-backed T2V audio controls use only schema-proven boolean strings', () => {
+  const selectedLtx = option(
+    buildMcpBudgetOptions('en', livePublication, withOnlyEngine('ltx-2-3-fast')),
+    'lowest_paid',
+  );
+  assert.equal(selectedLtx.amountCents, quoteScenario('ltx-2-3-fast', 6, '1080p'));
+  assert.equal(selectedLtx.audioState, 'enabled');
+  assert.match(selectedLtx.scenarioLabel, /Audio enabled/);
+
+  const defaultOff = withOnlyEngine('ltx-2-3-fast', (entry) => {
+    const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
+    assert.ok(audio);
+    audio.default = 'false';
+  });
+  const optional = option(buildMcpBudgetOptions('en', livePublication, defaultOff), 'lowest_paid');
+  assert.equal(optional.amountCents, selectedLtx.amountCents);
+  assert.equal(optional.audioState, 'optional');
+  assert.match(optional.scenarioLabel, /Optional audio/);
+
+  const falseOnly = withOnlyEngine('ltx-2-3-fast', (entry) => {
+    const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
+    assert.ok(audio);
+    audio.values = ['false'];
+    audio.default = 'false';
+  });
+  assert.equal(
+    option(buildMcpBudgetOptions('en', livePublication, falseOnly), 'lowest_paid').audioState,
+    'silent',
+  );
+
+  const unprovenTruthyDefault = withOnlyEngine('ltx-2-3-fast', (entry) => {
+    const audio = entry.engine.inputSchema?.optional?.find((field) => field.id === 'generate_audio');
+    assert.ok(audio);
+    audio.values = ['yes', 'no'];
+    audio.default = 'true';
+  });
+  assert.equal(
+    option(buildMcpBudgetOptions('en', livePublication, unprovenTruthyDefault), 'lowest_paid').audioState,
+    'silent',
+  );
 });
 
 test('the named public pricing scenarios stay locked to current canonical totals', () => {

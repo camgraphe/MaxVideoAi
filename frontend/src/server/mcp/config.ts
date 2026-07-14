@@ -1,5 +1,5 @@
 const PRODUCTION_API_HOST = 'api.maxvideoai.com';
-const PRODUCTION_RESOURCE_URL = `https://${PRODUCTION_API_HOST}/mcp`;
+export const MCP_PRODUCTION_RESOURCE_URL = `https://${PRODUCTION_API_HOST}/mcp`;
 const PRODUCTION_ACCOUNT_URL = 'https://maxvideoai.com/account/connections';
 const PROTECTED_RESOURCE_PATH = '/.well-known/oauth-protected-resource/mcp';
 
@@ -49,7 +49,7 @@ export function resolveMcpConfig(env: McpConfigEnv = process.env): McpConfig {
     throw new Error('Development MCP config requires explicit MCP_RESOURCE_URL and MCP_API_HOST values.');
   }
 
-  const resourceUrl = configuredResourceUrl ?? PRODUCTION_RESOURCE_URL;
+  const resourceUrl = configuredResourceUrl ?? MCP_PRODUCTION_RESOURCE_URL;
   const apiHost = configuredApiHost ?? PRODUCTION_API_HOST;
   const parsed = parseResourceUrl(resourceUrl);
 

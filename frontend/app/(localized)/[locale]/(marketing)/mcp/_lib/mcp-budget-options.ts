@@ -200,6 +200,14 @@ function supportsReferenceImages(entry: FalEngineEntry): boolean {
   return entry.modes.some((mode) => mode.mode === 'i2v' || mode.mode === 'ref2v');
 }
 
+function resolveAudioControlState(field: EngineInputField): McpBudgetAudioState | null {
+  if (field.type === 'boolean') return field.default === true ? 'enabled' : 'optional';
+  if (field.type !== 'enum' || !field.values?.length) return null;
+  if (field.values.some((value) => value !== 'true' && value !== 'false')) return null;
+  if (!field.values.includes('true')) return 'silent';
+  return field.default === 'true' ? 'enabled' : 'optional';
+}
+
 function resolveT2vAudioState(entry: FalEngineEntry): McpBudgetAudioState {
   const fields = [
     ...(entry.engine.inputSchema?.required ?? []),
@@ -207,10 +215,13 @@ function resolveT2vAudioState(entry: FalEngineEntry): McpBudgetAudioState {
   ].filter((field) => !field.modes?.length || field.modes.includes('t2v'));
   const audioControl = fields.find(
     (field) =>
-      field.type === 'boolean' &&
+      (field.type === 'boolean' || field.type === 'enum') &&
       ['audio', 'generate_audio', 'audio_enabled', 'enable_audio'].includes(field.id),
   );
-  if (audioControl) return audioControl.default === true ? 'enabled' : 'optional';
+  if (audioControl) {
+    const controlState = resolveAudioControlState(audioControl);
+    if (controlState) return controlState;
+  }
 
   const audioInput = fields.find(
     (field) => field.type === 'audio' || /^(?:audio|soundtrack)(?:_|$)/.test(field.id),

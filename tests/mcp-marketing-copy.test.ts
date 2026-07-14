@@ -244,6 +244,43 @@ test('Claude Desktop and Claude Code keep separate evidence-backed setup paths',
   }
 });
 
+test('Claude Desktop renders the authoritative MCP server URL as a configuration value', async () => {
+  const { resolveMcpConfig } = await import('../frontend/src/server/mcp/config.ts');
+  const { getIntegrationCopy } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'
+  );
+  const { IntegrationSetupSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/integrations/_components/IntegrationSetupSection.tsx'
+  );
+  const resourceUrl = resolveMcpConfig({ NODE_ENV: 'production' }).resourceUrl;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const copy = getIntegrationCopy(locale, 'claude');
+    const desktop = copy.setup.hostGuides.find((guide) => guide.hostId === 'claudeDesktop');
+    const code = copy.setup.hostGuides.find((guide) => guide.hostId === 'claudeCode');
+    assert.ok(desktop);
+    assert.ok(code);
+    assert.deepEqual(desktop.commands, []);
+    assert.ok(desktop.setupValues, `${locale} Desktop guide should expose setup values`);
+    assert.ok(code.setupValues, `${locale} Code guide should expose setup values`);
+    assert.deepEqual(desktop.setupValues.map((item) => item.value), [resourceUrl]);
+    assert.equal(code.setupValues.length, 0);
+    assert.match(code.authTrigger ?? '', /\/mcp/);
+
+    const html = renderToStaticMarkup(React.createElement(IntegrationSetupSection, {
+      compatibility: getCompatibility('claude'),
+      copy,
+      locale,
+    }));
+    assert.ok(html.includes(resourceUrl), `${locale} should render the production MCP URL`);
+    assert.match(html, /<code[^>]*>https:\/\/api\.maxvideoai\.com\/mcp<\/code>/);
+  }
+
+  const source = requireFile(integrationCopyPath);
+  assert.match(source, /MCP_PRODUCTION_RESOURCE_URL/);
+  assert.doesNotMatch(source, /https:\/\/api\.maxvideoai\.com\/mcp/);
+});
+
 test('rendered-but-noindex previews show connection availability without emitting live schema', async () => {
   const { getIntegrationCopy } = await import(
     '../frontend/app/(localized)/[locale]/(marketing)/integrations/_lib/integration-copy.ts'

@@ -1,5 +1,11 @@
 import { localePathnames, type AppLocale } from '@/i18n/locales';
+import { MCP_PRODUCTION_RESOURCE_URL } from '@/server/mcp/config';
 import type { McpClientId, McpCompatibilityHostId } from '../../mcp/_lib/mcp-page-types';
+
+type IntegrationSetupValue = {
+  label: string;
+  value: string;
+};
 
 type IntegrationHostGuide = {
   hostId: McpCompatibilityHostId;
@@ -8,6 +14,7 @@ type IntegrationHostGuide = {
   steps: Array<{ title: string; body: string }>;
   commandLabel?: string;
   commands: string[];
+  setupValues: IntegrationSetupValue[];
   authTrigger?: string;
   limitation: string;
 };
@@ -113,6 +120,7 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Complete browser approval', body: 'Sign in to MaxVideoAI, review the requested account access, and return to Claude Desktop only after approval.' },
               ],
               commands: [],
+              setupValues: [{ label: 'MCP server URL', value: MCP_PRODUCTION_RESOURCE_URL }],
               limitation: 'Hosted read-only tools, revocation and reconnect passed on the recorded version. Automatic refresh after access expiry has not yet been recorded.',
             },
             {
@@ -125,7 +133,8 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Complete browser approval', body: 'Review the requested identity access, approve it, and return to Claude Code.' },
               ],
               commandLabel: 'Recorded Claude Code commands',
-              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
+              setupValues: [],
               authTrigger: 'After adding the server, open /mcp in Claude Code to authenticate.',
               limitation: 'Local OAuth, revocation and reapproval passed. A hosted tool call remains pending, so this evidence does not prove hosted tool execution.',
             },
@@ -142,10 +151,11 @@ function englishCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commandLabel: 'Recorded Codex CLI commands',
               commands: [
-                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
                 'codex mcp login maxvideoai --scopes openid,email,profile',
                 'codex mcp get maxvideoai',
               ],
+              setupValues: [],
               limitation: 'The default Codex add flow requested an extra permission and was stopped. Only the explicit login path above passed the recorded read-only test.',
             },
           ],
@@ -248,6 +258,7 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Terminez l’approbation dans le navigateur', body: 'Connectez-vous à MaxVideoAI, vérifiez l’accès demandé et revenez dans Claude Desktop après approbation.' },
               ],
               commands: [],
+              setupValues: [{ label: 'URL du serveur MCP', value: MCP_PRODUCTION_RESOURCE_URL }],
               limitation: 'Les outils hébergés en lecture seule, la révocation et la reconnexion ont réussi sur la version enregistrée. L’actualisation automatique après expiration reste à vérifier.',
             },
             {
@@ -260,7 +271,8 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Terminez l’approbation', body: 'Vérifiez l’accès d’identité demandé, approuvez-le et revenez dans Claude Code.' },
               ],
               commandLabel: 'Commandes Claude Code enregistrées',
-              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
+              setupValues: [],
               authTrigger: 'Après l’ajout du serveur, ouvrez /mcp dans Claude Code pour vous authentifier.',
               limitation: 'Les tests locaux OAuth, de révocation et de nouvelle approbation ont réussi. L’appel hébergé d’un outil reste à effectuer ; cette preuve ne valide donc pas l’exécution hébergée des outils.',
             },
@@ -277,10 +289,11 @@ function frenchCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commandLabel: 'Commandes Codex CLI enregistrées',
               commands: [
-                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
                 'codex mcp login maxvideoai --scopes openid,email,profile',
                 'codex mcp get maxvideoai',
               ],
+              setupValues: [],
               limitation: 'Le parcours d’ajout par défaut de Codex a demandé une autorisation supplémentaire et a été interrompu. Seul le parcours explicite ci-dessus a réussi en lecture seule.',
             },
           ],
@@ -382,6 +395,7 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Completa la aprobación en el navegador', body: 'Inicia sesión en MaxVideoAI, revisa el acceso solicitado y vuelve a Claude Desktop después de aprobar.' },
               ],
               commands: [],
+              setupValues: [{ label: 'URL del servidor MCP', value: MCP_PRODUCTION_RESOURCE_URL }],
               limitation: 'Las herramientas alojadas de solo lectura, la revocación y la reconexión pasaron en la versión registrada. Queda pendiente comprobar la renovación automática después del vencimiento.',
             },
             {
@@ -394,7 +408,8 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
                 { title: 'Completa la aprobación', body: 'Revisa el acceso de identidad solicitado, apruébalo y vuelve a Claude Code.' },
               ],
               commandLabel: 'Comandos registrados de Claude Code',
-              commands: ['claude mcp add --transport http maxvideoai https://api.maxvideoai.com/mcp', 'claude mcp get maxvideoai'],
+              commands: [`claude mcp add --transport http maxvideoai ${MCP_PRODUCTION_RESOURCE_URL}`, 'claude mcp get maxvideoai'],
+              setupValues: [],
               authTrigger: 'Después de agregar el servidor, abre /mcp en Claude Code para autenticarte.',
               limitation: 'Las pruebas locales de OAuth, revocación y nueva aprobación pasaron. Queda pendiente una llamada alojada a las herramientas, por lo que esta evidencia no confirma su ejecución alojada.',
             },
@@ -411,10 +426,11 @@ function spanishCopy(client: McpClientId): IntegrationPageCopy {
               ],
               commandLabel: 'Comandos registrados de Codex CLI',
               commands: [
-                'codex mcp add maxvideoai --url https://api.maxvideoai.com/mcp',
+                `codex mcp add maxvideoai --url ${MCP_PRODUCTION_RESOURCE_URL}`,
                 'codex mcp login maxvideoai --scopes openid,email,profile',
                 'codex mcp get maxvideoai',
               ],
+              setupValues: [],
               limitation: 'El flujo predeterminado de Codex solicitó un permiso adicional y se detuvo. Solo la ruta explícita anterior pasó la prueba registrada de solo lectura.',
             },
           ],

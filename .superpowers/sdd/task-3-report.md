@@ -138,7 +138,7 @@ The post-implementation review identified seven important findings and four mino
 
 - Official OpenAI marks now remain visible in both themes. Their invariant white fill is paired with a neutral dark tile in dark mode, and the visual contract reads the pinned SVG fill while rejecting an invariant white tile.
 - Visible connection availability now follows a dedicated capability gate (`publicMarketing && transport && oauth && discovery`) instead of SEO indexation. A renderable noindex preview can therefore describe a live connection truthfully while live `WebApplication` schema remains suppressed.
-- Budget options expose an exact T2V audio state: `enabled`, `optional`, or `silent`. The state is derived from mode-applicable input fields and their defaults. Seedance Mini's default-enabled audio, Wan's optional `audio_url`, and Pika's silent route are locked by mutation tests.
+- Budget options expose a T2V audio state of `enabled`, `optional`, or `silent`. The state is derived only from mode-applicable boolean controls, schema-proven boolean-like enum controls, and audio inputs. Seedance Mini's default-enabled audio, Wan's optional `audio_url`, Pika's silent route, and exact-string enum behavior are locked by mutation tests; unrecognized encodings fail closed as silent.
 - The included-trial claim now renders its eligibility, verification, Seedance Mini, 5-second, 480p, promotional, and wallet-balance conditions only while the trial gate is enabled.
 - Claude Desktop 1.20186.1 and Claude Code 2.1.207 now have separate evidence records, compatibility statuses, and localized setup guides. Claude Code includes the required `/mcp` authorization trigger and explicitly keeps its hosted tool smoke pending; the Claude Desktop hosted read-only pass is no longer attributed to Claude Code.
 - `WebApplication` schema no longer invents an operating-system value, and MCP breadcrumbs use the localized EN/FR/ES home URL.
@@ -192,3 +192,33 @@ The failures matched the reviewed production behavior and became green only afte
    The completed build was started on port 3127. `/mcp`, `/fr/mcp`, `/es/mcp`, `/integrations/claude`, `/fr/integrations/codex`, and `/es/integraciones/claude` each returned 404 with `noindex`, no redirect, and no feature-flag weakening. The server was then stopped cleanly. The runtime middleware contract separately confirms that all six exact public route forms resolve without a not-found rewrite before the route-level publication gate runs.
 
 No push, pull request, merge, deployment, external message, database change, feature-flag change, or other external mutation was performed during remediation.
+
+## Re-review remediation: enum audio and Desktop setup URL
+
+Two remaining review findings were reproduced and fixed in a second strict RED/GREEN cycle.
+
+### Corrected behavior
+
+- LTX 2.3 Fast encodes its mode-applicable `generate_audio` control as an enum with `values: ['true', 'false']` and `default: 'true'`. The audio parser now recognizes only exact string values when every declared enum value is boolean-like. A schema-proven default `'true'` is `enabled`; a default `'false'` is `optional` when `'true'` remains available; a false-only enum is `silent`. Unrelated values such as `yes`/`no` are not truthy-coerced and fail closed as `silent`.
+- The enum state is presentation-only. The selected LTX 2.3 Fast scenario remains the exact canonical 6-second/1080p quote at 32 cents; no price, ordering, quote input, or pricing policy changed.
+- Claude Desktop now has a typed setup value separate from shell commands. Every EN/FR/ES Desktop guide renders the canonical production MCP resource URL from `MCP_PRODUCTION_RESOURCE_URL` in the shared server configuration as selectable server-rendered `<code>`. The copy module no longer hard-codes that URL.
+- Claude Code remains a separate guide with its own commands and explicit `/mcp` authorization trigger. Claude Desktop still renders no shell command.
+
+### RED evidence
+
+1. The selected LTX regression failed with `actual: 'silent'`, `expected: 'enabled'` while its exact canonical quote remained available.
+2. The rendered Desktop setup regression failed with `Desktop guide should expose setup values` because the guide had no configuration value to render.
+
+Both failures were observed before their production changes. The same targeted tests then passed after the minimal implementations.
+
+### Final verification
+
+1. Focused Task 3, Task 3A, pricing, schema, routing, render, and MCP configuration gate: 81 passed, 0 failed.
+2. Complete MCP suite: 125 passed, 0 failed.
+3. `tsc --noEmit`, the 492-row public pricing baseline, ESLint, public-exposure checks, FR/ES localization parity, and `git diff --check` all exited 0.
+4. `npm --prefix frontend run build` exited 0 after registry/catalog checks, Next.js compilation and type validation, generation of 727 static pages, and sitemap generation.
+5. The completed build was started on port 3127. The six exact EN/FR/ES MCP and integration routes returned the expected gated 404 with `noindex` and no redirect. The server was stopped cleanly.
+
+The deliberate remaining parser boundary is conservative: case variants, numeric encodings, and enums containing non-boolean values are not inferred as audio controls. Supporting a future encoding requires its own authoritative schema evidence and regression test.
+
+No push, pull request, merge, deployment, external message, database change, feature-flag change, or other external mutation was performed during this re-review remediation.

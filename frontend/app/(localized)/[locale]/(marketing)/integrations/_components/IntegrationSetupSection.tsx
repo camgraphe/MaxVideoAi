@@ -40,6 +40,18 @@ export function IntegrationSetupSection({
                     </li>
                   ))}
                 </ol>
+                {guide.setupValues.length > 0 ? (
+                  <dl className="mt-4 space-y-3">
+                    {guide.setupValues.map((item) => (
+                      <div key={item.label}>
+                        <dt className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">{item.label}</dt>
+                        <dd className="mt-2 overflow-x-auto rounded-[8px] border border-hairline bg-surface p-3 text-xs text-text-primary dark:border-white/[0.14] dark:bg-black/25 dark:text-white">
+                          <code className="select-all">{item.value}</code>
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                ) : null}
                 {guide.commands.length > 0 ? (
                   <div className="mt-4">
                     {guide.commandLabel ? <p className="text-xs font-semibold uppercase tracking-micro text-text-muted dark:text-white/55">{guide.commandLabel}</p> : null}
