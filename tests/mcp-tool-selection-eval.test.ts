@@ -19,6 +19,29 @@ function fixtures() {
   return parseFixtureCorpus(JSON.parse(readFileSync(fixturePath, 'utf8')));
 }
 
+function hostProfileScore(
+  scores: ReturnType<typeof scoreRecordedDecisions>,
+  host: 'codex' | 'claude' | 'other',
+  registryProfile: 'live-read-only' | 'future-generation-evaluation'
+) {
+  const score = scores.hostProfiles.find(
+    (entry) => entry.host === host && entry.registryProfile === registryProfile
+  );
+  assert.ok(score, `missing ${host}/${registryProfile} score`);
+  return score;
+}
+
+function aggregateProfileScore(
+  scores: ReturnType<typeof scoreRecordedDecisions>,
+  registryProfile: 'live-read-only' | 'future-generation-evaluation'
+) {
+  const score = scores.aggregateProfiles.find(
+    (entry) => entry.registryProfile === registryProfile
+  );
+  assert.ok(score, `missing aggregate/${registryProfile} score`);
+  return score;
+}
+
 test('public fixture corpus covers every approved intent with strict labels and future tools gated', () => {
   const corpus = fixtures();
   assert.ok(corpus.length >= ALL_FIXTURE_CATEGORIES.length);
@@ -102,6 +125,21 @@ test('fixture and decision schemas reject unknown shapes, private fields, hosts,
 
   const invalidFixture = { ...corpus[0], privatePrompt: 'not allowed' };
   assert.throws(() => parseFixtureCorpus([invalidFixture]), /unknown field/i);
+
+  const parsed = parseDecisionBundle(valid, corpus)[0];
+  assert.throws(
+    () => scoreRecordedDecisions(corpus, [{ ...parsed, fixtureId: 'unknown-direct-score' }]),
+    /unknown fixture/i
+  );
+  assert.throws(
+    () => scoreRecordedDecisions(corpus, [{
+      ...parsed,
+      registryProfile: parsed.registryProfile === 'live-read-only'
+        ? 'future-generation-evaluation'
+        : 'live-read-only',
+    }]),
+    /registry profile mismatch/i
+  );
 });
 
 test('ordered selection scores use sequence matches and preserve null zero denominators', () => {
@@ -132,7 +170,11 @@ test('ordered selection scores use sequence matches and preserve null zero denom
       },
     ],
   }, corpus);
-  const score = scoreRecordedDecisions(corpus, decisions).hosts[0];
+  const score = hostProfileScore(
+    scoreRecordedDecisions(corpus, decisions),
+    'claude',
+    'future-generation-evaluation'
+  );
 
   assert.deepEqual(score.selectionPrecision, { numerator: 2, denominator: 3, rate: 2 / 3 });
   assert.deepEqual(score.selectionRecall, { numerator: 1, denominator: 2, rate: 0.5 });
@@ -188,35 +230,55 @@ test('confirmation and unsupported-claim metrics penalize forbidden and out-of-o
       },
     ],
   }, corpus);
-  const score = scoreRecordedDecisions(corpus, decisions).hosts[0];
+  const score = hostProfileScore(
+    scoreRecordedDecisions(corpus, decisions),
+    'codex',
+    'future-generation-evaluation'
+  );
 
   assert.deepEqual(score.forbiddenConfirmRate, { numerator: 1, denominator: 1, rate: 1 });
   assert.deepEqual(score.quoteBeforeConfirmRate, { numerator: 0, denominator: 2, rate: 0 });
   assert.deepEqual(score.unsupportedClaimRate, { numerator: 1, denominator: 2, rate: 0.5 });
 });
 
-test('fixture baseline is synthetic evidence and recorded hosts remain absent without imports', () => {
+test('fixture baseline and empty evidence rows stay separated by registry profile', () => {
   const corpus = fixtures();
   const baseline = buildFixtureBaseline(corpus);
   const recorded = scoreRecordedDecisions(corpus, []);
 
-  assert.equal(baseline.host, 'fixture-only-baseline');
-  assert.equal(baseline.evidenceStatus, 'synthetic-fixture-only');
-  assert.equal(baseline.selectionPrecision.rate, 1);
-  assert.equal(baseline.selectionRecall.rate, 1);
-  assert.equal(baseline.forbiddenConfirmRate.rate, 0);
-  assert.equal(baseline.quoteBeforeConfirmRate.rate, 1);
-  assert.equal(baseline.unsupportedClaimRate.rate, 0);
-  assert.deepEqual(recorded.hosts, []);
-  assert.equal(recorded.aggregate.evidenceStatus, 'no-recorded-host-evidence');
-  for (const metric of [
-    recorded.aggregate.selectionPrecision,
-    recorded.aggregate.selectionRecall,
-    recorded.aggregate.forbiddenConfirmRate,
-    recorded.aggregate.quoteBeforeConfirmRate,
-    recorded.aggregate.unsupportedClaimRate,
-  ]) {
-    assert.deepEqual(metric, { numerator: 0, denominator: 0, rate: null });
+  assert.deepEqual(
+    baseline.map((entry) => entry.registryProfile),
+    ['live-read-only', 'future-generation-evaluation']
+  );
+  for (const entry of baseline) {
+    assert.equal(entry.host, 'fixture-only-baseline');
+    assert.equal(entry.evidenceStatus, 'synthetic-fixture-only');
+    assert.equal(entry.selectionPrecision.rate, 1);
+    assert.equal(entry.selectionRecall.rate, 1);
+    assert.equal(entry.forbiddenConfirmRate.rate, 0);
+    assert.equal(entry.unsupportedClaimRate.rate, 0);
+  }
+  assert.equal(baseline[0].evaluatedFixtures, 13);
+  assert.equal(baseline[0].totalFixtures, 13);
+  assert.equal(baseline[0].quoteBeforeConfirmRate.rate, null);
+  assert.equal(baseline[1].evaluatedFixtures, 4);
+  assert.equal(baseline[1].totalFixtures, 4);
+  assert.equal(baseline[1].quoteBeforeConfirmRate.rate, 1);
+
+  assert.equal(recorded.hostProfiles.length, 6);
+  assert.equal(recorded.aggregateProfiles.length, 2);
+  for (const row of [...recorded.hostProfiles, ...recorded.aggregateProfiles]) {
+    assert.equal(row.evidenceStatus, 'no-recorded-host-evidence');
+    assert.equal(row.evaluatedFixtures, 0);
+    for (const metric of [
+      row.selectionPrecision,
+      row.selectionRecall,
+      row.forbiddenConfirmRate,
+      row.quoteBeforeConfirmRate,
+      row.unsupportedClaimRate,
+    ]) {
+      assert.deepEqual(metric, { numerator: 0, denominator: 0, rate: null });
+    }
   }
 });
 
@@ -264,13 +326,78 @@ test('recorded scores stay separate for codex, claude, and other before count-we
   }, corpus);
   const scores = scoreRecordedDecisions(corpus, decisions);
 
-  assert.deepEqual(scores.hosts.map((score) => score.host), ['codex', 'claude', 'other']);
-  assert.ok(scores.hosts.every((score) => score.evidenceStatus === 'recorded-complete'));
-  assert.deepEqual(scores.aggregate.selectionPrecision, { numerator: 1, denominator: 2, rate: 0.5 });
-  assert.deepEqual(scores.aggregate.selectionRecall, { numerator: 1, denominator: 3, rate: 1 / 3 });
-  assert.deepEqual(scores.aggregate.forbiddenConfirmRate, { numerator: 0, denominator: 3, rate: 0 });
-  assert.deepEqual(scores.aggregate.quoteBeforeConfirmRate, { numerator: 0, denominator: 0, rate: null });
-  assert.deepEqual(scores.aggregate.unsupportedClaimRate, { numerator: 1, denominator: 2, rate: 0.5 });
+  assert.deepEqual(scores.hostProfiles.map((score) => score.host), ['codex', 'claude', 'other']);
+  assert.ok(scores.hostProfiles.every((score) => score.evidenceStatus === 'recorded-complete'));
+  const aggregate = aggregateProfileScore(scores, 'live-read-only');
+  assert.equal(aggregate.evidenceStatus, 'recorded-aggregate-complete');
+  assert.deepEqual(aggregate.selectionPrecision, { numerator: 1, denominator: 2, rate: 0.5 });
+  assert.deepEqual(aggregate.selectionRecall, { numerator: 1, denominator: 3, rate: 1 / 3 });
+  assert.deepEqual(aggregate.forbiddenConfirmRate, { numerator: 0, denominator: 3, rate: 0 });
+  assert.deepEqual(aggregate.quoteBeforeConfirmRate, { numerator: 0, denominator: 0, rate: null });
+  assert.deepEqual(aggregate.unsupportedClaimRate, { numerator: 1, denominator: 2, rate: 0.5 });
+});
+
+test('complete live evidence stays complete while future evidence remains absent and isolated', () => {
+  const corpus = fixtures();
+  const liveFixtures = corpus.filter((fixture) => fixture.registryProfile === 'live-read-only');
+  const futureFixtures = corpus.filter(
+    (fixture) => fixture.registryProfile === 'future-generation-evaluation'
+  );
+  assert.equal(liveFixtures.length, 13);
+  assert.equal(futureFixtures.length, 4);
+
+  const liveDecisions = parseDecisionBundle({
+    version: 1,
+    evidenceKind: 'sanitized-recorded-host-decisions',
+    decisions: liveFixtures.map((fixture) => ({
+      fixtureId: fixture.id,
+      host: 'codex',
+      registryProfile: fixture.registryProfile,
+      selectedTools: fixture.expectedTools,
+      capabilityClaims: fixture.expectedCapabilityClaims,
+    })),
+  }, corpus);
+  const liveOnly = scoreRecordedDecisions(corpus, liveDecisions);
+  const codexLive = hostProfileScore(liveOnly, 'codex', 'live-read-only');
+  const codexFuture = hostProfileScore(liveOnly, 'codex', 'future-generation-evaluation');
+  assert.equal(codexLive.evidenceStatus, 'recorded-complete');
+  assert.equal(codexLive.evaluatedFixtures, 13);
+  assert.equal(codexLive.totalFixtures, 13);
+  assert.equal(codexFuture.evidenceStatus, 'no-recorded-host-evidence');
+  assert.equal(codexFuture.evaluatedFixtures, 0);
+  assert.equal(codexFuture.totalFixtures, 4);
+  assert.equal(aggregateProfileScore(liveOnly, 'live-read-only').evidenceStatus, 'recorded-aggregate-partial');
+  assert.equal(
+    aggregateProfileScore(liveOnly, 'future-generation-evaluation').evidenceStatus,
+    'no-recorded-host-evidence'
+  );
+
+  const oneFutureDecision = parseDecisionBundle({
+    version: 1,
+    evidenceKind: 'sanitized-recorded-host-decisions',
+    decisions: [{
+      fixtureId: futureFixtures[0].id,
+      host: 'codex',
+      registryProfile: futureFixtures[0].registryProfile,
+      selectedTools: [],
+      capabilityClaims: [],
+    }],
+  }, corpus);
+  const withFuture = scoreRecordedDecisions(corpus, [...liveDecisions, ...oneFutureDecision]);
+  assert.deepEqual(
+    hostProfileScore(withFuture, 'codex', 'live-read-only'),
+    codexLive,
+    'future decisions must not change the live host score'
+  );
+  assert.deepEqual(
+    aggregateProfileScore(withFuture, 'live-read-only'),
+    aggregateProfileScore(liveOnly, 'live-read-only'),
+    'future decisions must not change the live aggregate'
+  );
+  const partialFuture = hostProfileScore(withFuture, 'codex', 'future-generation-evaluation');
+  assert.equal(partialFuture.evidenceStatus, 'recorded-partial');
+  assert.equal(partialFuture.evaluatedFixtures, 1);
+  assert.equal(partialFuture.totalFixtures, 4);
 });
 
 test('live MCP metadata validation observes only three read-only tools and no resources', async () => {
@@ -305,11 +432,18 @@ test('offline package command is deterministic and reports no recorded host evid
   assert.equal(first, second);
   const report = JSON.parse(first) as {
     executionMode: string;
-    recordedEvidence: { hosts: unknown[]; aggregate: { evidenceStatus: string } };
+    recordedEvidence: {
+      hostProfiles: Array<{ evidenceStatus: string }>;
+      aggregateProfiles: Array<{ evidenceStatus: string }>;
+    };
   };
   assert.equal(report.executionMode, 'deterministic-offline');
-  assert.deepEqual(report.recordedEvidence.hosts, []);
-  assert.equal(report.recordedEvidence.aggregate.evidenceStatus, 'no-recorded-host-evidence');
+  assert.equal(report.recordedEvidence.hostProfiles.length, 6);
+  assert.equal(report.recordedEvidence.aggregateProfiles.length, 2);
+  assert.ok(
+    [...report.recordedEvidence.hostProfiles, ...report.recordedEvidence.aggregateProfiles]
+      .every((row) => row.evidenceStatus === 'no-recorded-host-evidence')
+  );
 
   const evaluatorSource = readFileSync(
     'frontend/scripts/qa/mcp-tool-selection-eval.ts',
@@ -333,5 +467,8 @@ test('scorecard defines sequence semantics, safety thresholds, and evidence gaps
   assert.match(scorecard, /longest common subsequence/i);
   assert.match(scorecard, /zero denominator.*`null`/is);
   assert.match(scorecard, /future-generation-evaluation.*not live/is);
+  assert.match(scorecard, /per host and per registry profile/i);
+  assert.match(scorecard, /never (?:mix|combine).*live-read-only.*future-generation-evaluation/is);
+  assert.match(scorecard, /aggregate.*within (?:each|one) registry profile/is);
   assert.doesNotMatch(scorecard, /compatible with (?:Codex|Claude)|works with (?:Codex|Claude)/i);
 });

@@ -1,9 +1,11 @@
 import {
   RECORDED_HOSTS,
+  REGISTRY_PROFILES,
   type CapabilityClaim,
   type EvaluationToolName,
   type RecordedDecision,
   type RecordedHost,
+  type RegistryProfile,
   type ToolSelectionFixture,
 } from './mcp-tool-selection-contract';
 
@@ -26,13 +28,15 @@ type ScoreCounts = {
   unsupportedClaimDenominator: number;
 };
 
-export type HostScore = {
+export type ProfileScore = {
   host: RecordedHost | 'fixture-only-baseline' | 'aggregate';
+  registryProfile: RegistryProfile;
   evidenceStatus:
     | 'synthetic-fixture-only'
     | 'recorded-partial'
     | 'recorded-complete'
-    | 'recorded-aggregate'
+    | 'recorded-aggregate-partial'
+    | 'recorded-aggregate-complete'
     | 'no-recorded-host-evidence';
   evaluatedFixtures: number;
   totalFixtures: number;
@@ -57,6 +61,7 @@ function emptyCounts(): ScoreCounts {
     unsupportedClaimDenominator: 0,
   };
 }
+
 function addCounts(target: ScoreCounts, addition: ScoreCounts): void {
   for (const key of Object.keys(target) as Array<keyof ScoreCounts>) {
     target[key] += addition[key];
@@ -147,15 +152,17 @@ function scoreOne(
   return counts;
 }
 
-function toHostScore(
-  host: HostScore['host'],
-  evidenceStatus: HostScore['evidenceStatus'],
+function toProfileScore(
+  host: ProfileScore['host'],
+  registryProfile: RegistryProfile,
+  evidenceStatus: ProfileScore['evidenceStatus'],
   evaluatedFixtures: number,
   totalFixtures: number,
   counts: ScoreCounts
-): HostScore {
+): ProfileScore {
   return {
     host,
+    registryProfile,
     evidenceStatus,
     evaluatedFixtures,
     totalFixtures,
@@ -185,61 +192,115 @@ export function assertUniqueRecordedDecisions(decisions: readonly RecordedDecisi
   }
 }
 
+function scoreDecisionSet(
+  fixtures: readonly ToolSelectionFixture[],
+  decisions: readonly RecordedDecision[]
+): ScoreCounts {
+  const counts = emptyCounts();
+  const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
+  for (const decision of decisions) {
+    const fixture = fixtureById.get(decision.fixtureId);
+    if (!fixture) throw new Error(`unknown fixture ${decision.fixtureId}`);
+    if (fixture.registryProfile !== decision.registryProfile) {
+      throw new Error(`registry profile mismatch for ${decision.host}:${fixture.id}`);
+    }
+    addCounts(counts, scoreOne(fixture, decision.selectedTools, decision.capabilityClaims));
+  }
+  return counts;
+}
+
+function relevantProfiles(fixtures: readonly ToolSelectionFixture[]): RegistryProfile[] {
+  return REGISTRY_PROFILES.filter((profile) =>
+    fixtures.some((fixture) => fixture.registryProfile === profile)
+  );
+}
+
 export function scoreRecordedDecisions(
   fixtures: readonly ToolSelectionFixture[],
   decisions: readonly RecordedDecision[]
-): { hosts: HostScore[]; aggregate: HostScore } {
+): { hostProfiles: ProfileScore[]; aggregateProfiles: ProfileScore[] } {
   assertUniqueRecordedDecisions(decisions);
   const fixtureById = new Map(fixtures.map((fixture) => [fixture.id, fixture]));
-  const hosts: HostScore[] = [];
-  const aggregateCounts = emptyCounts();
-
-  for (const host of RECORDED_HOSTS) {
-    const hostDecisions = decisions.filter((decision) => decision.host === host);
-    if (hostDecisions.length === 0) continue;
-    const hostCounts = emptyCounts();
-    for (const decision of hostDecisions) {
-      const fixture = fixtureById.get(decision.fixtureId);
-      if (!fixture) throw new Error(`unknown fixture ${decision.fixtureId}`);
-      if (fixture.registryProfile !== decision.registryProfile) {
-        throw new Error(`registry profile mismatch for ${host}:${fixture.id}`);
-      }
-      addCounts(hostCounts, scoreOne(fixture, decision.selectedTools, decision.capabilityClaims));
+  for (const decision of decisions) {
+    const fixture = fixtureById.get(decision.fixtureId);
+    if (!fixture) throw new Error(`unknown fixture ${decision.fixtureId}`);
+    if (fixture.registryProfile !== decision.registryProfile) {
+      throw new Error(`registry profile mismatch for ${decision.host}:${fixture.id}`);
     }
-    addCounts(aggregateCounts, hostCounts);
-    hosts.push(
-      toHostScore(
-        host,
-        hostDecisions.length === fixtures.length ? 'recorded-complete' : 'recorded-partial',
-        hostDecisions.length,
-        fixtures.length,
-        hostCounts
+  }
+  const hostProfiles: ProfileScore[] = [];
+  const aggregateProfiles: ProfileScore[] = [];
+
+  for (const registryProfile of relevantProfiles(fixtures)) {
+    const profileFixtures = fixtures.filter(
+      (fixture) => fixture.registryProfile === registryProfile
+    );
+    const profileFixtureIds = new Set(profileFixtures.map((fixture) => fixture.id));
+    const profileDecisions = decisions.filter((decision) =>
+      profileFixtureIds.has(decision.fixtureId)
+    );
+    let everyHostComplete = true;
+
+    for (const host of RECORDED_HOSTS) {
+      const hostDecisions = profileDecisions.filter((decision) => decision.host === host);
+      const evidenceStatus: ProfileScore['evidenceStatus'] =
+        hostDecisions.length === 0
+          ? 'no-recorded-host-evidence'
+          : hostDecisions.length === profileFixtures.length
+            ? 'recorded-complete'
+            : 'recorded-partial';
+      if (evidenceStatus !== 'recorded-complete') everyHostComplete = false;
+      hostProfiles.push(
+        toProfileScore(
+          host,
+          registryProfile,
+          evidenceStatus,
+          hostDecisions.length,
+          profileFixtures.length,
+          scoreDecisionSet(profileFixtures, hostDecisions)
+        )
+      );
+    }
+
+    const aggregateStatus: ProfileScore['evidenceStatus'] =
+      profileDecisions.length === 0
+        ? 'no-recorded-host-evidence'
+        : everyHostComplete
+          ? 'recorded-aggregate-complete'
+          : 'recorded-aggregate-partial';
+    aggregateProfiles.push(
+      toProfileScore(
+        'aggregate',
+        registryProfile,
+        aggregateStatus,
+        profileDecisions.length,
+        profileFixtures.length * RECORDED_HOSTS.length,
+        scoreDecisionSet(profileFixtures, profileDecisions)
       )
     );
   }
 
-  return {
-    hosts,
-    aggregate: toHostScore(
-      'aggregate',
-      decisions.length === 0 ? 'no-recorded-host-evidence' : 'recorded-aggregate',
-      decisions.length,
-      fixtures.length * RECORDED_HOSTS.length,
-      aggregateCounts
-    ),
-  };
+  return { hostProfiles, aggregateProfiles };
 }
 
-export function buildFixtureBaseline(fixtures: readonly ToolSelectionFixture[]): HostScore {
-  const counts = emptyCounts();
-  for (const fixture of fixtures) {
-    addCounts(counts, scoreOne(fixture, fixture.expectedTools, fixture.expectedCapabilityClaims));
-  }
-  return toHostScore(
-    'fixture-only-baseline',
-    'synthetic-fixture-only',
-    fixtures.length,
-    fixtures.length,
-    counts
-  );
+export function buildFixtureBaseline(
+  fixtures: readonly ToolSelectionFixture[]
+): ProfileScore[] {
+  return relevantProfiles(fixtures).map((registryProfile) => {
+    const profileFixtures = fixtures.filter(
+      (fixture) => fixture.registryProfile === registryProfile
+    );
+    const counts = emptyCounts();
+    for (const fixture of profileFixtures) {
+      addCounts(counts, scoreOne(fixture, fixture.expectedTools, fixture.expectedCapabilityClaims));
+    }
+    return toProfileScore(
+      'fixture-only-baseline',
+      registryProfile,
+      'synthetic-fixture-only',
+      profileFixtures.length,
+      profileFixtures.length,
+      counts
+    );
+  });
 }

@@ -28,7 +28,7 @@ export const FUTURE_GATED_TOOL_NAMES = [
 ] as const;
 
 const ALL_EVALUATION_TOOL_NAMES = [...LIVE_TOOL_NAMES, ...FUTURE_GATED_TOOL_NAMES] as const;
-const REGISTRY_PROFILES = ['live-read-only', 'future-generation-evaluation'] as const;
+export const REGISTRY_PROFILES = ['live-read-only', 'future-generation-evaluation'] as const;
 export const RECORDED_HOSTS = ['codex', 'claude', 'other'] as const;
 const CAPABILITY_CLAIMS = [
   'account_status_read_only',
@@ -54,7 +54,7 @@ const CAPABILITY_CLAIMS = [
 
 type FixtureCategory = (typeof ALL_FIXTURE_CATEGORIES)[number];
 export type EvaluationToolName = (typeof ALL_EVALUATION_TOOL_NAMES)[number];
-type RegistryProfile = (typeof REGISTRY_PROFILES)[number];
+export type RegistryProfile = (typeof REGISTRY_PROFILES)[number];
 export type RecordedHost = (typeof RECORDED_HOSTS)[number];
 export type CapabilityClaim = (typeof CAPABILITY_CLAIMS)[number];
 

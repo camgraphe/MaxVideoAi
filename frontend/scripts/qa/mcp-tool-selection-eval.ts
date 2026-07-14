@@ -40,7 +40,7 @@ export {
   buildFixtureBaseline,
   scoreRecordedDecisions,
 } from './mcp-tool-selection-scoring';
-export type { HostScore } from './mcp-tool-selection-scoring';
+export type { ProfileScore } from './mcp-tool-selection-scoring';
 
 export type RegistryEvidence = {
   liveTools: string[];
