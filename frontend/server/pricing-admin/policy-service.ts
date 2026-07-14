@@ -10,26 +10,14 @@ import {
 
 import { listFalEngines } from '@/config/falEngines';
 import type {
-  InsertPricingChangeEventInput,
   ListPricingChangeEventsInput,
-  PricingChangeDomain,
   PricingChangeEvent,
   PricingChangeJsonObject,
   PricingChangeJsonValue,
-  PricingChangeOperation,
 } from '@/lib/admin/pricing-change-contract';
-import { withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { buildPricingAuditScenarios } from '@/lib/pricing-audit/scenarios';
 import { getVersionedPricingPolicy } from '@/lib/pricing-policy-defaults';
-import {
-  deletePricingRuleWithExecutor,
-  invalidatePricingRulesCache,
-  loadPricingPolicyOverrides,
-  loadPricingPolicyOverridesWithExecutor,
-  upsertPricingRuleWithExecutor,
-  type PricingPolicyOverrideLoadResult,
-  type PricingRule,
-} from '@/lib/pricing-rule-store';
+import type { PricingRule } from '@/lib/pricing-rule-store';
 
 import {
   compareCanonicalAdminScenarios,
@@ -37,107 +25,30 @@ import {
   resolveCanonicalAdminScenarioPolicy,
   selectAffectedPricingScenarios,
   type AdminCanonicalScenarioQuote,
-  type PricingChangePreviewRow,
   type PricingScenarioSelector,
   type RequestedPricingSurcharge,
 } from './canonical-scenarios';
 import { PricingAdminError } from './errors';
-import {
-  getPricingChangeEventById,
-  insertPricingChangeEvent,
-  listLatestPricingChangeEventsByTargets,
-  listPricingChangeEvents,
-} from './event-store';
 import { buildPricingPreviewFingerprint } from './fingerprint';
-import { revalidatePricingChangeSurfaces } from './revalidation';
+import type {
+  PreviewContext,
+  PricingChangeConfirmation,
+  PricingChangePreview,
+  PricingPolicyChangeProposal,
+  PricingPolicyInventoryResponse,
+  PricingPolicyInventoryRow,
+  PricingPolicyServiceDependencies,
+} from './policy-contract';
+import { DEFAULT_POLICY_SERVICE_DEPENDENCIES } from './policy-dependencies';
 
-export type PricingPolicyChangeProposal =
-  | { operation: 'create'; rule: unknown }
-  | { operation: 'update'; targetId: string; rule: unknown }
-  | { operation: 'delete'; targetId: string }
-  | { operation: 'rollback'; targetId: string; eventId: string };
-
-export type PricingChangePreview = {
-  previewFingerprint: string;
-  domain: 'policy_rule';
-  operation: PricingChangeOperation;
-  targetId: string;
-  currentState: PricingChangeJsonValue | null;
-  proposedState: PricingChangeJsonValue | null;
-  affectedScenarioIds: string[];
-  affectedSurfaces: string[];
-  rows: PricingChangePreviewRow[];
-  warnings: string[];
-  rollbackEventId?: string;
-};
-
-export type PricingChangeConfirmation = {
-  committed: true;
-  preview: PricingChangePreview;
-  persistedState: PricingChangeJsonValue | null;
-  event: PricingChangeEvent;
-  operationalWarnings: Array<{
-    code: 'cache_invalidation_failed' | 'path_revalidation_failed';
-    message: string;
-  }>;
-};
-
-export type PricingPolicyInventoryRow = {
-  selector: PricingScenarioSelector;
-  versionedRule: PricingPolicyRule | null;
-  databaseOverride: PricingPolicyRule | null;
-  effectiveProvenance: AdminCanonicalScenarioQuote['policyProvenance'] | null;
-  representativeQuotes: AdminCanonicalScenarioQuote[];
-  routingContext: Pick<PricingRule, 'vendorAccountId' | 'effectiveFrom' | 'updatedAt' | 'updatedBy'> | null;
-  lastEvent: PricingChangeEvent | null;
-};
-
-export type PricingPolicyInventoryResponse = {
-  versionedPolicyVersion: number;
-  databaseStatus: PricingPolicyOverrideLoadResult['status'];
-  warnings: string[];
-  rows: PricingPolicyInventoryRow[];
-};
-
-export type PricingPolicyServiceDependencies = {
-  loadOverrides(executor?: QueryExecutor): Promise<PricingPolicyOverrideLoadResult>;
-  getEvent(id: string, domain: PricingChangeDomain, executor?: QueryExecutor): Promise<PricingChangeEvent | null>;
-  listLatestEventsByTargets(domain: PricingChangeDomain, targetIds: string[]): Promise<PricingChangeEvent[]>;
-  listEvents(input?: ListPricingChangeEventsInput): Promise<PricingChangeEvent[]>;
-  withTransaction<TResult>(callback: (executor: QueryExecutor) => Promise<TResult>): Promise<TResult>;
-  upsertRule(executor: QueryExecutor, rule: PricingPolicyRule, actorId: string): Promise<PricingRule>;
-  deleteRule(executor: QueryExecutor, id: string): Promise<PricingRule>;
-  insertEvent(executor: QueryExecutor, input: InsertPricingChangeEventInput): Promise<PricingChangeEvent>;
-  invalidateCache(): void;
-  revalidate(preview: PricingChangePreview): void;
-};
-
-const DEFAULT_DEPENDENCIES: PricingPolicyServiceDependencies = {
-  loadOverrides: (executor) =>
-    executor
-      ? loadPricingPolicyOverridesWithExecutor(executor, { lock: true })
-      : loadPricingPolicyOverrides(),
-  getEvent: (id, domain, executor) => getPricingChangeEventById(id, domain, executor),
-  listLatestEventsByTargets: listLatestPricingChangeEventsByTargets,
-  listEvents: listPricingChangeEvents,
-  withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
-  upsertRule: (executor, rule, actorId) => upsertPricingRuleWithExecutor(executor, rule, actorId),
-  deleteRule: deletePricingRuleWithExecutor,
-  insertEvent: insertPricingChangeEvent,
-  invalidateCache: invalidatePricingRulesCache,
-  revalidate: revalidatePricingChangeSurfaces,
-};
-
-type PreviewContext = {
-  operation: PricingChangeOperation;
-  targetId: string;
-  currentRule: PricingPolicyRule | null;
-  proposedRule: PricingPolicyRule | null;
-  currentRules: PricingPolicyRule[];
-  proposedRules: PricingPolicyRule[];
-  currentRoutingRules: PricingRule[];
-  rollbackEventId?: string;
-};
+export type {
+  PricingChangeConfirmation,
+  PricingChangePreview,
+  PricingPolicyChangeProposal,
+  PricingPolicyInventoryResponse,
+  PricingPolicyInventoryRow,
+  PricingPolicyServiceDependencies,
+} from './policy-contract';
 
 function asRecord(value: unknown, label: string): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
@@ -401,7 +312,7 @@ function sortRules<T extends PricingPolicyRule>(rules: T[]): T[] {
 
 export async function previewPricingPolicyChange(
   proposal: PricingPolicyChangeProposal,
-  dependencies: PricingPolicyServiceDependencies = DEFAULT_DEPENDENCIES
+  dependencies: PricingPolicyServiceDependencies = DEFAULT_POLICY_SERVICE_DEPENDENCIES
 ): Promise<PricingChangePreview> {
   const policy = getVersionedPricingPolicy();
   const context = await buildPreviewContext(proposal, dependencies, policy);
@@ -500,7 +411,7 @@ export async function confirmPricingPolicyChange(
   proposal: PricingPolicyChangeProposal,
   fingerprint: string,
   actorId: string,
-  dependencies: PricingPolicyServiceDependencies = DEFAULT_DEPENDENCIES
+  dependencies: PricingPolicyServiceDependencies = DEFAULT_POLICY_SERVICE_DEPENDENCIES
 ): Promise<PricingChangeConfirmation> {
   const serverActorId = requiredText(actorId, 'actorId');
   const preview = await previewPricingPolicyChange(proposal, dependencies);
@@ -571,13 +482,13 @@ export async function confirmPricingPolicyChange(
 
 export async function loadPricingPolicyHistory(
   filter: Omit<ListPricingChangeEventsInput, 'domain'> = {},
-  dependencies: PricingPolicyServiceDependencies = DEFAULT_DEPENDENCIES
+  dependencies: PricingPolicyServiceDependencies = DEFAULT_POLICY_SERVICE_DEPENDENCIES
 ): Promise<PricingChangeEvent[]> {
   return dependencies.listEvents({ ...filter, domain: 'policy_rule' });
 }
 
 export async function loadPricingPolicyInventory(
-  dependencies: PricingPolicyServiceDependencies = DEFAULT_DEPENDENCIES
+  dependencies: PricingPolicyServiceDependencies = DEFAULT_POLICY_SERVICE_DEPENDENCIES
 ): Promise<PricingPolicyInventoryResponse> {
   const policy = getVersionedPricingPolicy();
   const loaded = await dependencies.loadOverrides();

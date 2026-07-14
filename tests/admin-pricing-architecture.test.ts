@@ -43,6 +43,8 @@ function readOrEmpty(path: string) {
 
 const pageSource = readOrEmpty(pagePath);
 const pricingPolicyServicePath = join(root, 'frontend/server/pricing-admin/policy-service.ts');
+const pricingPolicyContractPath = join(root, 'frontend/server/pricing-admin/policy-contract.ts');
+const pricingPolicyDependenciesPath = join(root, 'frontend/server/pricing-admin/policy-dependencies.ts');
 const pricingPolicyRoutePaths = [
   join(root, 'frontend/app/api/admin/pricing/inventory/route.ts'),
   join(root, 'frontend/app/api/admin/pricing/preview/route.ts'),
@@ -352,6 +354,30 @@ test('policy table exposes a canonical projection status filter', () => {
   assert.match(tableSource, /All statuses/);
   assert.match(tableSource, /Quoted projections/);
   assert.match(tableSource, /Unavailable projections/);
+});
+
+test('pricing policy contracts and production dependencies have focused owners', () => {
+  assert.ok(existsSync(pricingPolicyContractPath), 'pricing policy contract module should exist');
+  assert.ok(existsSync(pricingPolicyDependenciesPath), 'pricing policy dependency module should exist');
+
+  const contractSource = readOrEmpty(pricingPolicyContractPath);
+  const dependenciesSource = readOrEmpty(pricingPolicyDependenciesPath);
+
+  assert.match(contractSource, /export type PricingPolicyChangeProposal/);
+  assert.match(contractSource, /export type PricingPolicyServiceDependencies/);
+  assert.doesNotMatch(contractSource, /^import (?!type)/m, 'contract module must have type-only imports');
+
+  assert.match(dependenciesSource, /export const DEFAULT_POLICY_SERVICE_DEPENDENCIES/);
+  assert.match(dependenciesSource, /withDbTransaction/);
+  assert.match(dependenciesSource, /loadPricingPolicyOverridesWithExecutor\(executor, \{ lock: true \}\)/);
+  assert.match(dependenciesSource, /insertPricingChangeEvent/);
+  assert.match(dependenciesSource, /invalidatePricingRulesCache/);
+  assert.match(dependenciesSource, /revalidatePricingChangeSurfaces/);
+  assert.doesNotMatch(
+    dependenciesSource,
+    /resolvePricingPolicy|quoteCanonicalAdminScenarios|compareCanonicalAdminScenarios/,
+    'dependency adapter must not own commercial policy decisions'
+  );
 });
 
 test('preview-required pricing policy routes exist and stay thin, authorized service adapters', () => {
