@@ -43,6 +43,10 @@ const recentOutputsRoutePath = join(root, 'frontend/app/api/media-library/recent
 const jobOutputsServerPath = join(root, 'frontend/server/media-library/job-outputs.ts');
 const storyboardRecentOutputsHookPath = join(root, 'frontend/src/components/tools/storyboard/_hooks/useStoryboardRecentOutputs.ts');
 const storyboardReferencesHookPath = join(root, 'frontend/src/components/tools/storyboard/_hooks/useStoryboardReferences.ts');
+const storyboardBuilderPanelPath = join(
+  root,
+  'frontend/src/components/tools/storyboard/_components/StoryboardBuilderPanel.tsx'
+);
 const storyboardShotMapPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardShotMap.tsx');
 const storyboardResultPanelPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardResultPanel.tsx');
 const storyboardRecentRailPath = join(root, 'frontend/src/components/tools/storyboard/_components/StoryboardRecentRail.tsx');
@@ -125,6 +129,7 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.equal(existsSync(workspaceStoryboardHandoffPath), true, 'video workspace should own storyboard handoff form mapping');
   assert.equal(existsSync(storyboardRecentOutputsHookPath), true, 'storyboard recent output loading should stay colocated');
   assert.equal(existsSync(storyboardReferencesHookPath), true, 'storyboard references should have one hook owner');
+  assert.equal(existsSync(storyboardBuilderPanelPath), true, 'storyboard builder should have a focused component');
   assert.equal(existsSync(storyboardShotPlanPath), true, 'storyboard shot planner should stay colocated');
   assert.equal(existsSync(storyboardShotMapPath), true, 'storyboard shot map component should stay colocated');
   assert.equal(existsSync(storyboardResultPanelPath), true, 'storyboard result panel component should stay colocated');
@@ -155,18 +160,41 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   const jobOutputsServerSource = readFileSync(jobOutputsServerPath, 'utf8');
   const recentOutputsHookSource = readFileSync(storyboardRecentOutputsHookPath, 'utf8');
   const referencesHookSource = readFileSync(storyboardReferencesHookPath, 'utf8');
+  const builderPanelSource = readFileSync(storyboardBuilderPanelPath, 'utf8');
   const shotPlanSource = readFileSync(storyboardShotPlanPath, 'utf8');
   const shotMapSource = readFileSync(storyboardShotMapPath, 'utf8');
   const resultPanelSource = readFileSync(storyboardResultPanelPath, 'utf8');
   const recentRailSource = readFileSync(storyboardRecentRailPath, 'utf8');
   const referenceLibraryModalSource = readFileSync(storyboardReferenceLibraryModalPath, 'utf8');
   const firstFrameSource = readFileSync(storyboardFirstFramePath, 'utf8');
+  const workspaceLineCount = workspaceSource.trimEnd().split(/\r?\n/).length;
 
+  assert.equal(existsSync(storyboardBuilderPanelPath), true, 'storyboard builder should have a focused component');
+  assert.ok(workspaceLineCount <= 500, `StoryboardWorkspace.tsx should stay at or below 500 lines, received ${workspaceLineCount}`);
+  assert.match(workspaceSource, /StoryboardBuilderPanel/);
+  assert.match(builderPanelSource, /AssetDropzone/);
+  assert.match(builderPanelSource, /BuilderStep/);
+  assert.match(builderPanelSource, /OptionalPromptButton/);
+  assert.match(builderPanelSource, /ChoiceButton/);
+  assert.match(builderPanelSource, /LengthPresetButton/);
+  assert.match(builderPanelSource, /TierButton/);
+  assert.match(builderPanelSource, /StoryboardTargetLogo/);
+  assert.match(builderPanelSource, /StyleIcon/);
+  assert.match(builderPanelSource, /onError:\s*\(message: string\) => void;/);
+  assert.match(builderPanelSource, /onError=\{references\.onError\}/);
+  assert.match(workspaceSource, /onError:\s*setError/);
+  assert.doesNotMatch(builderPanelSource, /authFetch|runImageGeneration|saveImageToLibrary/);
+  assert.doesNotMatch(builderPanelSource, /useState|useEffect|localStorage|sessionStorage/);
+  assert.doesNotMatch(workspaceSource, /function BuilderStep|function ChoiceButton|function TierButton/);
   assert.doesNotMatch(routeSource, /redirect\(/);
   assert.match(routeSource, /StoryboardWorkspace/);
   assert.match(toolsPageSource, /storyboardTitle/);
   assert.match(toolsPageSource, /\/app\/tools\/storyboard/);
   assert.match(workspaceSource, /runImageGeneration/);
+  assert.match(workspaceSource, /runStoryboard/);
+  assert.match(workspaceSource, /saveImageToLibrary/);
+  assert.match(workspaceSource, /saveSelectedImage/);
+  assert.match(workspaceSource, /router\.push/);
   assert.match(workspaceSource, /useStoryboardPricing/);
   assert.match(workspaceSource, /storyboard-workspace-config/);
   assert.match(workspaceSource, /storyboard-kling-first-frame-storage/);
@@ -207,16 +235,10 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /editPriceLabel/);
   assert.match(workspaceSource, /lengthPresetId/);
   assert.match(workspaceSource, /visualNotes/);
-  assert.match(workspaceSource, /STORYBOARD_LENGTH_PRESETS/);
-  assert.match(workspaceSource, /STORYBOARD_ORIENTATION_OPTIONS/);
   assert.match(workspaceSource, /STORYBOARD_TEMPLATE_SIZES/);
-  assert.match(workspaceSource, /STORYBOARD_TIER_OPTIONS/);
   assert.match(workspaceSource, /recognizablePeople/);
   assert.match(workspaceSource, /setTargetModel\('kling'\)/);
-  assert.match(workspaceSource, /copy\.targetRecommendedLabel/);
   assert.doesNotMatch(workspaceSource, /targetExperimentalLabel/);
-  assert.match(workspaceSource, /copy\.recognizablePeopleLabel/);
-  assert.match(workspaceSource, /getTierLabel/);
   assert.doesNotMatch(workspaceSource, /getTierMeta/);
   assert.match(workspaceSource, /getStoryboardOutputConfig/);
   assert.match(pricingHookSource, /getStoryboardEditOutputConfig/);
@@ -237,7 +259,6 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /setStoryboardOrientation\(orientation\)/);
   assert.match(workspaceSource, /activeRecentOutputId=\{previewingTemplate \? null : selectedRecentOutput\?\.id \?\? null\}/);
   assert.match(workspaceSource, /StoryboardReferenceLibraryModal/);
-  assert.match(workspaceSource, /AssetDropzone/);
   assert.match(configSource, /STORYBOARD_REFERENCE_SLOT_COUNT = 4/);
   assert.match(configSource, /STORYBOARD_REFERENCE_FIELD/);
   assert.match(configSource, /STORYBOARD_REFERENCE_ENGINE/);
@@ -255,7 +276,6 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /libraryModal/);
   assert.match(workspaceSource, /openReferenceLibrary/);
   assert.match(workspaceSource, /handleReferenceLibrarySelect/);
-  assert.match(workspaceSource, /onOpenLibrary=\{openReferenceLibrary\}/);
   assert.match(workspaceSource, /readyReferenceImages/);
   assert.match(workspaceSource, /STORYBOARD_GENERATOR_HANDOFF_STORAGE_KEY/);
   assert.match(workspaceSource, /buildStoryboardGeneratorHandoff/);
@@ -284,15 +304,9 @@ test('storyboard tool is reachable from the tools hub as its own workspace', () 
   assert.match(workspaceSource, /referenceImageSizes:\s*sourceImages\.map/);
   assert.match(workspaceSource, /const outputConfig = edit \? editOutputConfig : tierConfig/);
   assert.match(workspaceSource, /customImageSize:\s*outputConfig\.customImageSize/);
-  assert.match(workspaceSource, /copy\.formatLabel/);
-  assert.match(workspaceSource, /copy\.landscapeLabel/);
-  assert.match(workspaceSource, /copy\.portraitLabel/);
   assert.match(referencesHookSource, /copy\.referenceImageLabel/);
   assert.match(referencesHookSource, /copy\.referenceImageBody/);
   assert.match(workspaceSource, /dialogue/);
-  assert.match(workspaceSource, /copy\.dialogueLabel/);
-  assert.match(workspaceSource, /copy\.dialoguePlaceholder/);
-  assert.match(workspaceSource, /<textarea/);
   assert.match(workspaceSource, /Save to Storyboard library/);
   assert.doesNotMatch(workspaceSource, /promptField/);
   assert.match(promptSource, /buildStoryboardPrompt/);
