@@ -2,7 +2,7 @@
 
 ## Status
 
-PARTIAL — FOUNDATION COMPLETE — BLOCKED ON TASK 7 for authoritative connection binding.
+PARTIAL — DURABLE BINDING COMPLETE IN CODE — DEPLOYMENT BLOCKED ON PREREQUISITE MIGRATIONS 30–32 AND UNAPPLIED MIGRATION 33.
 
 ## Implementation summary
 
@@ -80,7 +80,10 @@ No general-purpose, repository-approved rate limiter exists for this cheap same-
 - OAuth access tokens expose a `client_id` claim, but client identity is not inferred from the landing CTA: <https://supabase.com/docs/guides/auth/oauth-server/token-security>.
 - Supabase's OAuth token endpoint changed from HTTP 201 to 200 effective June 1, 2026. Task 5 adds no token-exchange status assumption and no hard-coded 201 contract: <https://supabase.com/changelog/45468-breaking-change-oauth-token-endpoint-will-return-http-200-instead-of-201>.
 
-## Durable binding boundary and Task 7 handoff
+## Historical durable binding boundary and Task 7 handoff (superseded)
+
+This section records the Task 5 boundary before Task 7 implementation. The Task 7 update below
+supersedes it for the current tree.
 
 The signed cookie can safely reach the first-party `/oauth/consent` browser route, including the login return, because its path is scoped there. It cannot reach a Claude/Codex host's later bearer-authenticated request to `api.maxvideoai.com/mcp`: browsers do not transfer a first-party web cookie into an external MCP client's Authorization flow.
 
@@ -130,7 +133,7 @@ Until that schema/flow lands, the adapter exposes only the honest authenticated 
 
 - Set a dedicated `MCP_ACQUISITION_SIGNING_SECRET` in each deployment environment before exercising landing acquisition. The route intentionally returns 503 if it is missing or weak.
 - Keep both deep-link flags disabled until a named client/version/destination has been compatibility-tested and the checked-in evidence is reviewed.
-- Complete Task 7's durable, idempotent funnel binding before using landing-to-connection conversion as an authoritative KPI.
+- Apply prerequisite migrations 30–32 and then migration 33 in a reviewed non-production branch before using landing-to-connection conversion as an authoritative KPI.
 - Preserve generic 2xx acceptance in any later Supabase token-exchange test; do not reintroduce a 201-only assumption.
 
 No push, pull request, merge, deployment, external message, database change, publication-flag change, deep-link enablement, or other external mutation was performed.
@@ -161,9 +164,29 @@ The strengthened acquisition contract was then run before the server changes. It
 - The old live-looking `resolveAuthenticatedMcpConnection()` helper was removed. `createDirectAuthenticatedMcpConnection()` accepts only a normalized principal and labels the post-auth direct fallback; Task 7 remains responsible for durable browser-to-OAuth correlation.
 - `jsdom` is an exact-pinned test-only dependency (`26.1.0`). It was necessary to run the actual React/Next component without weakening the all-false publication gates or adding a production test route. No runtime dependency was added.
 
-### Formal remaining dependency
+### Historical formal remaining dependency (superseded)
 
 Task 5 remains **PARTIAL — FOUNDATION COMPLETE — BLOCKED ON TASK 7**. It does not bind the signed landing ID to a host connection and does not emit `mcp_connection_completed`. Task 7 must provide the durable schema, OAuth-safe correlation, authenticated once-only binding, and `acquisitionId`-based idempotency. The raw signed cookie/token must never be a deduplication or database key.
+
+### Task 7 durable binding update
+
+Durable binding is complete in production code and covered by focused tests. The real nonlocalized
+`/oauth/consent` route now verifies the signed HttpOnly acquisition cookie only after Supabase
+`getClaims()`, a fresh `getUser()`, exact subject equality, and authoritative authorization details
+provide the OAuth client ID. It records an idempotent `oauth_connection_started` row keyed by the
+opaque `acquisitionId`; neither the signed cookie nor `authorization_id` is stored.
+
+After the MCP bearer path repeats `getClaims(accessToken)` plus fresh `getUser(accessToken)` and
+exact subject equality, the first successful `initialize` or `tools/list` response runs a single
+idempotent database statement. It binds the latest eligible same-user/same-client start inside the
+short configured window, or records the once-only `direct_mcp` fallback when no start exists.
+Ordinary tool calls do not run the binding query. Deduplication uses the opaque `acquisitionId`, not
+the raw signed token, and direct deduplication uses a SHA-256 key over the normalized principal.
+
+Task 5 remains partial only because migration 33 is intentionally unapplied: reserved migrations
+30–32 and their tables are absent. Migration 33 fails closed until those prerequisites exist. No
+production or external database has been changed, so authoritative live conversion reporting must
+remain disabled until the ordered migrations are reviewed and applied outside this branch.
 
 ### Remediation final verification
 

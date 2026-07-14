@@ -99,7 +99,17 @@ test('audit rejects sensitive or unknown keys before querying', async () => {
     errorCode: null,
   };
 
-  for (const forbidden of ['prompt', 'accessToken', 'secret', 'referenceUrl', 'paymentMethod']) {
+  for (const forbidden of [
+    'prompt',
+    'accessToken',
+    'secret',
+    'referenceUrl',
+    'rawUrl',
+    'email',
+    'providerBody',
+    'paymentMethod',
+    'fraudSignal',
+  ]) {
     const recorded = await recordMcpEvent(
       { ...base, [forbidden]: 'sensitive' } as typeof base,
       { executor, ensureSchema: async () => undefined }

@@ -16,8 +16,15 @@ load_env_file() {
 load_env_file "$ROOT_DIR/.env.local"
 load_env_file "$ROOT_DIR/frontend/.env.local"
 
-if [[ -z "${DATABASE_URL:-}" ]]; then
-  echo "DATABASE_URL is required. It must point to Neon, not Supabase." >&2
+MIGRATION_DATABASE_URL="${DATABASE_URL_UNPOOLED:-${DATABASE_URL:-}}"
+
+if [[ -z "$MIGRATION_DATABASE_URL" ]]; then
+  echo "DATABASE_URL_UNPOOLED or DATABASE_URL is required. It must point to Neon, not Supabase." >&2
+  exit 1
+fi
+
+if [[ "$MIGRATION_DATABASE_URL" =~ -pooler\. ]]; then
+  echo "Neon migrations require a direct connection; pooled PgBouncer URLs are rejected." >&2
   exit 1
 fi
 
@@ -29,5 +36,5 @@ fi
 echo "Applying Neon migrations from $ROOT_DIR/neon/migrations"
 for file in "$ROOT_DIR"/neon/migrations/*.sql; do
   echo "==> $(basename "$file")"
-  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file"
+  psql "$MIGRATION_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$file"
 done

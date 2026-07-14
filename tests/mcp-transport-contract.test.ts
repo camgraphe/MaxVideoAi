@@ -157,6 +157,95 @@ test('successful initialize and tools/list responses are audited after SDK handl
   ]);
 });
 
+test('successful initialize/list binds the authenticated funnel once while ordinary tool calls do not rebinding-query', async () => {
+  const bound: AgentPrincipal[] = [];
+  const options = deps({
+    async recordConnection(connectionPrincipal) {
+      bound.push(connectionPrincipal);
+      return 'direct';
+    },
+    accountStatusDeps: {
+      async getWalletSummary() {
+        return { balanceCents: 0, currency: 'USD', pendingCents: 0, hasCompletedTopUp: false };
+      },
+    },
+  });
+
+  await handleMcpHttpRequest(protocolRequest(initializeRequest), options);
+  await handleMcpHttpRequest(
+    protocolRequest({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+    options,
+  );
+  await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0',
+      id: 3,
+      method: 'tools/call',
+      params: { name: 'get_account_status', arguments: {} },
+    }),
+    options,
+  );
+
+  assert.deepEqual(bound, [principal, principal]);
+});
+
+test('tool audit records only the allowlisted name and success/failure projection without arguments', async () => {
+  const events: McpAuditEvent[] = [];
+  const recordEvent = async (event: McpAuditEvent) => {
+    events.push(event);
+    return true;
+  };
+  const success = await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0', id: 4, method: 'tools/call',
+      params: { name: 'get_account_status', arguments: { prompt: 'private', accessToken: 'private' } },
+    }),
+    deps({
+      recordEvent,
+      accountStatusDeps: {
+        async getWalletSummary() {
+          return { balanceCents: 0, currency: 'USD', pendingCents: 0, hasCompletedTopUp: false };
+        },
+      },
+    }),
+  );
+  const failed = await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0', id: 5, method: 'tools/call',
+      params: { name: 'get_account_status', arguments: {} },
+    }),
+    deps({
+      recordEvent,
+      accountStatusDeps: {
+        async getWalletSummary() {
+          throw new Error('private provider body');
+        },
+      },
+    }),
+  );
+  await handleMcpHttpRequest(
+    protocolRequest({
+      jsonrpc: '2.0', id: 6, method: 'tools/call',
+      params: { name: 'unknown_private_tool', arguments: { prompt: 'private' } },
+    }),
+    deps({ recordEvent }),
+  );
+
+  assert.equal(success.status, 200);
+  assert.equal(failed.status, 200);
+  assert.deepEqual(events, [
+    {
+      eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
+      tool: 'get_account_status', outcome: 'success', surface: null, engineId: null, errorCode: null,
+    },
+    {
+      eventType: 'tool_call', userId: 'user-1', oauthClientId: 'client-1',
+      tool: 'get_account_status', outcome: 'failure', surface: null, engineId: null, errorCode: null,
+    },
+  ]);
+  assert.doesNotMatch(JSON.stringify(events), /private|prompt|token|provider/i);
+});
+
 test('rejected initialize responses never create success audit events', async () => {
   const events: McpAuditEvent[] = [];
   const response = await handleMcpHttpRequest(

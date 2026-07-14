@@ -34,12 +34,15 @@ Configure these as server-side values. `NEXT_PUBLIC_SUPABASE_URL` and the existi
 MCP_API_HOST=api.maxvideoai.com
 MCP_RESOURCE_URL=https://api.maxvideoai.com/mcp
 MCP_ACQUISITION_SIGNING_SECRET=<at-least-32-random-bytes>
+MCP_FUNNEL_TRIAL_TO_WALLET_WINDOW_SECONDS=2592000
 ```
 
 For local development, the host and resource values are required explicitly and must use a loopback host.
 The acquisition signing value is server-only, must contain at least 32 random bytes, and must not reuse a Supabase,
 OAuth-client, Stripe, or provider credential. Rotate it independently if exposure is suspected; rotation deliberately
 invalidates the short-lived acquisition cookies already issued.
+The optional funnel window is a UTC query-time cohort setting, defaults to 30 days, and does not
+mutate raw events. Keep it a positive whole number no larger than 365 days.
 
 ## Verification
 

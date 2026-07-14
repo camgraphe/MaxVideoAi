@@ -424,11 +424,10 @@ test('CTA source contains no private fields or invented connection-success event
   assert.doesNotMatch(source, /authorization_id|access.?token|email|prompt/i);
 });
 
-test('Task 5 is formally partial until Task 7 binds acquisitionId rather than the raw signed token', () => {
+test('Task 5 reports durable Task 7 binding through acquisitionId rather than the raw signed token', () => {
   const report = requireFile(reportPath);
-  assert.match(report, /PARTIAL/i);
-  assert.match(report, /FOUNDATION COMPLETE\s*[—-]\s*BLOCKED ON TASK 7/i);
-  assert.doesNotMatch(report, /## Status\s+DONE\b/i);
+  assert.match(report, /DURABLE BINDING COMPLETE/i);
+  assert.doesNotMatch(report, /## Status[\s\S]{0,120}BLOCKED ON TASK 7/i);
   assert.match(report, /deduplicat(?:e|ion).*acquisitionId.*(?:not|never).*raw signed (?:cookie|token)/is);
 });
 

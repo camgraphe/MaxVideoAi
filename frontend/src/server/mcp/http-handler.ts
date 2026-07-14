@@ -4,6 +4,10 @@ import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
 import { AgentApiError } from '@/server/agent-api/errors';
 import { recordMcpEvent, type McpAuditEvent } from '@/server/agent-api/audit-events';
+import {
+  bindAuthenticatedMcpConnection,
+  type McpConnectionBindingResult,
+} from '@/server/agent-api/mcp-funnel';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import { resolveMcpConfig, type McpConfig } from '@/server/mcp/config';
 import { resolveAgentPrincipal } from '@/server/mcp/oauth-adapter';
@@ -23,6 +27,7 @@ export type McpHttpHandlerDeps = {
   config: McpConfig;
   resolvePrincipal(request: Request): Promise<AgentPrincipal>;
   recordEvent?(event: McpAuditEvent): Promise<boolean>;
+  recordConnection?(principal: AgentPrincipal): Promise<McpConnectionBindingResult>;
   accountStatusDeps?: AgentAccountStatusWalletDeps;
 };
 
@@ -74,44 +79,90 @@ function protocolMethod(body: unknown): string | null {
   return typeof method === 'string' ? method : null;
 }
 
-async function isSuccessfulJsonRpcResponse(response: Response): Promise<boolean> {
-  if (!response.ok) return false;
+const AUDITABLE_TOOL_NAMES = new Set([
+  'get_account_status',
+  'list_models',
+  'recommend_models',
+]);
+
+async function readJsonRpcResponse(response: Response): Promise<Record<string, unknown> | null> {
   try {
     const payload = await response.clone().json();
-    return (
+    return response.ok
+      && (
       payload != null &&
       typeof payload === 'object' &&
       !Array.isArray(payload) &&
-      (payload as { jsonrpc?: unknown }).jsonrpc === '2.0' &&
-      !Object.prototype.hasOwnProperty.call(payload, 'error') &&
-      Object.prototype.hasOwnProperty.call(payload, 'result')
-    );
+      (payload as { jsonrpc?: unknown }).jsonrpc === '2.0'
+      )
+      ? payload as Record<string, unknown>
+      : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
-async function recordProtocolDiscovery(
+function toolName(body: unknown): string | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) return null;
+  const params = (body as { params?: unknown }).params;
+  if (!params || typeof params !== 'object' || Array.isArray(params)) return null;
+  const name = (params as { name?: unknown }).name;
+  return typeof name === 'string' && AUDITABLE_TOOL_NAMES.has(name) ? name : null;
+}
+
+function toolOutcome(payload: Record<string, unknown>): 'success' | 'failure' {
+  if (Object.prototype.hasOwnProperty.call(payload, 'error')) return 'failure';
+  const result = payload.result;
+  return result && typeof result === 'object' && !Array.isArray(result)
+    && (result as { isError?: unknown }).isError === true
+    ? 'failure'
+    : 'success';
+}
+
+async function recordProtocolActivity(
   body: unknown,
   response: Response,
   principal: AgentPrincipal,
-  recorder: ((event: McpAuditEvent) => Promise<boolean>) | undefined
+  recorder: ((event: McpAuditEvent) => Promise<boolean>) | undefined,
+  connectionRecorder: ((principal: AgentPrincipal) => Promise<McpConnectionBindingResult>) | undefined,
 ): Promise<void> {
-  if (!recorder) return;
   const method = protocolMethod(body);
-  const eventType = method === 'initialize' ? 'connection_initialized' : method === 'tools/list' ? 'tool_discovery' : null;
-  if (!eventType) return;
-  if (!(await isSuccessfulJsonRpcResponse(response))) return;
-  await recorder({
-    eventType,
-    userId: principal.userId,
-    oauthClientId: principal.clientId,
-    tool: null,
-    outcome: 'success',
-    surface: null,
-    engineId: null,
-    errorCode: null,
-  }).catch(() => false);
+  if (!method) return;
+  const payload = await readJsonRpcResponse(response);
+  if (!payload) return;
+
+  if (method === 'initialize' || method === 'tools/list') {
+    if (Object.prototype.hasOwnProperty.call(payload, 'error')
+      || !Object.prototype.hasOwnProperty.call(payload, 'result')) return;
+    const eventType = method === 'initialize' ? 'connection_initialized' : 'tool_discovery';
+    await recorder?.({
+      eventType,
+      userId: principal.userId,
+      oauthClientId: principal.clientId,
+      tool: null,
+      outcome: 'success',
+      surface: null,
+      engineId: null,
+      errorCode: null,
+    }).catch(() => false);
+    await connectionRecorder?.(principal).catch(() => 'unavailable');
+    return;
+  }
+
+  if (method === 'tools/call' && recorder) {
+    const tool = toolName(body);
+    if (!tool) return;
+    await recorder({
+      eventType: 'tool_call',
+      userId: principal.userId,
+      oauthClientId: principal.clientId,
+      tool,
+      outcome: toolOutcome(payload),
+      surface: null,
+      engineId: null,
+      errorCode: null,
+    }).catch(() => false);
+  }
 }
 
 function withPrivateCaching(response: Response): Response {
@@ -179,7 +230,10 @@ export async function handleMcpHttpRequest(
     await server.connect(transport);
     const response = await transport.handleRequest(request, { parsedBody });
     const recorder = injectedDeps ? injectedDeps.recordEvent : recordMcpEvent;
-    await recordProtocolDiscovery(parsedBody, response, principal, recorder);
+    const connectionRecorder = injectedDeps
+      ? injectedDeps.recordConnection
+      : bindAuthenticatedMcpConnection;
+    await recordProtocolActivity(parsedBody, response, principal, recorder, connectionRecorder);
     return withPrivateCaching(response);
   } catch {
     return jsonRpcError(500, -32603, 'MCP request handling failed.');

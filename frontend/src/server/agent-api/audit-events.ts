@@ -27,7 +27,7 @@ const ALLOWED_KEYS = new Set<keyof McpAuditEvent>([
   'engineId',
   'errorCode',
 ]);
-const SENSITIVE_KEY = /prompt|token|secret|reference.?url|payment/i;
+const SENSITIVE_KEY = /prompt|email|token|secret|reference.?url|raw.?url|provider.?(?:body|response)|payment|fraud/i;
 const EVENT_TYPES = new Set<McpAuditEvent['eventType']>([
   'connection_initialized',
   'tool_discovery',

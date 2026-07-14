@@ -1,7 +1,13 @@
-import { headers } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { notFound, redirect } from 'next/navigation';
+import {
+  MCP_ACQUISITION_COOKIE_NAME,
+  resolveMcpAcquisitionSigningSecret,
+  verifySignedMcpAcquisitionCookie,
+} from '@/lib/mcp-acquisition';
 import { createSupabaseServerClient } from '@/lib/supabase-ssr';
 import { getMcpRequestHost } from '@/lib/mcp-host-routing';
+import { recordMcpOAuthConnectionStarted } from '@/server/agent-api/mcp-funnel';
 import {
   buildConsentLoginPath,
   isValidAuthorizationId,
@@ -41,7 +47,13 @@ export default async function OAuthConsentPage({ searchParams }: ConsentPageProp
 
   const supabase = await createSupabaseServerClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-  if (claimsError || !claimsData?.claims?.sub) {
+  const subject = typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub.trim() : '';
+  if (claimsError || !subject) {
+    redirect(buildConsentLoginPath(authorizationId));
+  }
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (userError || !user || user.id !== subject) {
     redirect(buildConsentLoginPath(authorizationId));
   }
 
@@ -51,6 +63,26 @@ export default async function OAuthConsentPage({ searchParams }: ConsentPageProp
   }
   if (!('authorization_id' in data)) {
     redirect(resolveOAuthRedirectUrl(data.redirect_url));
+  }
+
+  const cookieStore = await cookies();
+  const signedCookie = cookieStore.get(MCP_ACQUISITION_COOKIE_NAME)?.value;
+  if (signedCookie) {
+    let acquisition = null;
+    try {
+      acquisition = verifySignedMcpAcquisitionCookie(signedCookie, {
+        secret: resolveMcpAcquisitionSigningSecret(),
+      });
+    } catch {
+      acquisition = null;
+    }
+    if (acquisition) {
+      await recordMcpOAuthConnectionStarted({
+        userId: user.id,
+        oauthClientId: data.client.id,
+        acquisition,
+      });
+    }
   }
 
   return (

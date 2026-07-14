@@ -3,6 +3,10 @@ import { query, withDbTransaction, type QueryExecutor } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { recordMockWalletTopUp } from '@/lib/wallet';
 import { extractGaClientId, sendGa4Event } from '@/server/ga4';
+import {
+  recordConfirmedMcpWalletFunding,
+  resolveMcpTrialToWalletWindowSeconds,
+} from '@/server/agent-api/mcp-funnel';
 import { buildTopupAttributionGa4Params } from '@/server/wallet-attribution';
 import { lockAndResolveFirstWalletTopup } from '@/server/wallet-first-topup';
 import {
@@ -294,6 +298,17 @@ export async function recordStripeTopup(
       });
       return;
     }
+
+    await recordConfirmedMcpWalletFunding({
+      receiptId: persistenceResult.receiptId,
+      userId,
+      amountCents: normalizedWalletAmount,
+      currency: walletCurrencyUpper,
+      occurredAt: new Date(),
+    }, {
+      executor: { query },
+      conversionWindowSeconds: resolveMcpTrialToWalletWindowSeconds(),
+    });
 
     const { combinedMetadata } = persistenceResult;
 

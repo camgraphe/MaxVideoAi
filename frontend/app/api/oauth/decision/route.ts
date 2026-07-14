@@ -32,7 +32,11 @@ export async function POST(request: NextRequest) {
 
   const supabase = await createSupabaseRouteClient();
   const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
-  if (claimsError || !claimsData?.claims?.sub) return jsonError('authentication_required', 401);
+  const subject = typeof claimsData?.claims?.sub === 'string' ? claimsData.claims.sub.trim() : '';
+  if (claimsError || !subject) return jsonError('authentication_required', 401);
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const user = userData.user;
+  if (userError || !user || user.id !== subject) return jsonError('authentication_required', 401);
 
   const result =
     decision === 'approve'
