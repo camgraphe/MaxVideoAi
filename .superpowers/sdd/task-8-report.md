@@ -2,7 +2,7 @@
 
 ## Status
 
-IMPLEMENTATION COMPLETE — LIVE FUNNEL DATA REMAINS UNAVAILABLE UNTIL PREREQUISITE MIGRATIONS EXIST AND ARE APPLIED.
+IMPLEMENTATION COMPLETE — LIVE FUNNEL DATA REMAINS UNAVAILABLE UNTIL PREREQUISITE MIGRATIONS ARE APPLIED AND THE RELEVANT SERVER-SIDE PRODUCER CAPABILITIES ARE ENABLED.
 
 No database migration, Neon/Supabase/Stripe state, external alert, deployment, publication flag,
 push, pull request, or merge was performed. All eight MCP publication flags remain `false`.
@@ -46,8 +46,10 @@ provenance, and hidden missing provider costs. The GREEN run passed 21 of 21 tes
 
 ## Metric authority and definitions
 
-All application queries are parameterized, aggregate-only, and bounded to the requested UTC range.
-No query returns a user identity or private payload column.
+All application queries are parameterized and aggregate-only. Canonical accounting timestamps are
+bounded to the requested UTC range; provenance lookups are intentionally range-independent, and the
+trial-to-wallet cohort may inspect its configured follow-up window beyond `to`. No query returns a
+user identity or private payload column.
 
 - Funnel stage counts come from distinct users in `mcp_funnel_events`.
 - Trial-to-wallet uses the Task 7 definition: distinct completed-trial users with a later

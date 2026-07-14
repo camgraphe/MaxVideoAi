@@ -18,4 +18,6 @@ Task 3: complete (commits e16966d1..89780079, review clean; localized routes bui
 Task 4: complete (commits 89780079..fc4b84cd, review clean; technical docs remain gated and describe 3 live read-only tools)
 Task 5: partial; durable connection binding is complete in code under Task 7, but deployment remains blocked on prerequisite migrations 30–32 and unapplied migration 33
 Task 6: complete (commits e5673049..eda73899, review clean; false and all-enabled discovery matrices verified)
-Task 7: partial; authoritative ledger, binding, confirmed-receipt attribution, KPI, and tests are complete in code; migration 33 remains reserved/unapplied until 30–32 exist
+Task 7: partial implementation approved (commits 61d5b62c..605e7dfd; independent review clean; authoritative ledger, grant-specific binding, retry-safe confirmed-receipt attribution, KPI, and real PostgreSQL tests complete in code; migrations 30–32 are absent and migration 33 remains reserved/unapplied; Neon branch check unavailable with API 401)
+Task 8: partial implementation approved (commits 4d66e72b..e809cc76; independent review clean after real PostgreSQL boundary tests; dashboard and alerts complete in code; live data remains unavailable until prerequisite migrations and producer capabilities are enabled; local authenticated smoke blocked by absent Supabase env)
+Task 9: in progress (deterministic GEO/tool-selection evaluation suite; public fixtures only, no private customer prompts)
