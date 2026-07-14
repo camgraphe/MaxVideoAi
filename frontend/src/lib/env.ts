@@ -75,7 +75,7 @@ export const ENV = {
   BYTEPLUS_ARK_SEEDREAM_MODEL_ID: getOptionalEnv('BYTEPLUS_ARK_SEEDREAM_MODEL_ID', 'seedream-5-0-260128'),
   BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID: getOptionalEnv(
     'BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID',
-    'seedream-5-0-pro-260628'
+    'dola-seedream-5-0-pro-260628'
   ),
   BYTEPLUS_ARK_ENABLED: getOptionalEnv('BYTEPLUS_ARK_ENABLED', 'false'),
   SEEDANCE_2_PROVIDER: getOptionalEnv('SEEDANCE_2_PROVIDER', 'fal'),

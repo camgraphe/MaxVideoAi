@@ -253,7 +253,7 @@ const SEEDREAM_PRO_ENGINE: EngineCaps = {
   ttlSec: 600,
   providerMeta: {
     provider: 'byteplus_modelark',
-    modelSlug: 'seedream-5-0-pro-260628',
+    modelSlug: 'dola-seedream-5-0-pro-260628',
   },
   availability: 'available',
   brandId: 'bytedance',
@@ -360,7 +360,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     modes: [
       {
         mode: 't2i',
-        falModelId: 'seedream-5-0-pro-260628',
+        falModelId: 'dola-seedream-5-0-pro-260628',
         ui: {
           modes: ['t2i'],
           resolution: ['2K', '4K'],
@@ -370,7 +370,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
       },
       {
         mode: 'i2i',
-        falModelId: 'seedream-5-0-pro-260628',
+        falModelId: 'dola-seedream-5-0-pro-260628',
         ui: {
           modes: ['i2i'],
           resolution: ['2K', '4K'],
@@ -381,7 +381,7 @@ export const SEEDREAM_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
         },
       },
     ],
-    defaultFalModelId: 'seedream-5-0-pro-260628',
+    defaultFalModelId: 'dola-seedream-5-0-pro-260628',
     seo: {
       title: 'Seedream 5.0 Pro AI Image Generator | MaxVideoAI',
       description:

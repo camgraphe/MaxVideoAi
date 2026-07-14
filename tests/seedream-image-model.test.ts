@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
+import { ENV } from '../frontend/src/lib/env.ts';
 
 function getSeedreamEntry() {
   const entry = listFalEngines().find((candidate) => candidate.id === 'seedream');
@@ -95,7 +96,8 @@ test('Seedream 5.0 Pro is registered with direct BytePlus Pro-only options', () 
   assert.equal(entry.category, 'image');
   assert.deepEqual(entry.engine.modes, ['t2i', 'i2i']);
   assert.equal(entry.engine.providerMeta?.provider, 'byteplus_modelark');
-  assert.equal(entry.engine.providerMeta?.modelSlug, 'seedream-5-0-pro-260628');
+  assert.equal(entry.engine.providerMeta?.modelSlug, 'dola-seedream-5-0-pro-260628');
+  assert.equal(ENV.BYTEPLUS_ARK_SEEDREAM_PRO_MODEL_ID, 'dola-seedream-5-0-pro-260628');
   assert.deepEqual(entry.engine.inputSchema?.optional?.find((field) => field.id === 'resolution')?.values, [
     '2K',
     '4K',

@@ -119,7 +119,7 @@ test('enables Seedream sequential image generation for batch requests', () => {
 
 test('keeps Seedream Pro single-image requests off streaming and sequential generation', () => {
   const payload = buildBytePlusSeedreamPayload({
-    modelId: 'seedream-5-0-pro-260628',
+    modelId: 'dola-seedream-5-0-pro-260628',
     prompt: 'Create a professional high-density event infographic',
     mode: 't2i',
     numImages: 1,
@@ -128,7 +128,7 @@ test('keeps Seedream Pro single-image requests off streaming and sequential gene
     responseFormat: 'url',
   });
 
-  assert.equal(payload.model, 'seedream-5-0-pro-260628');
+  assert.equal(payload.model, 'dola-seedream-5-0-pro-260628');
   assert.equal(payload.size, '5504x3040');
   assert.equal(payload.stream, undefined);
   assert.equal(payload.sequential_image_generation, undefined);
@@ -139,7 +139,7 @@ test('rejects Seedream Pro batch requests because Pro does not support sequentia
   assert.throws(
     () =>
       buildBytePlusSeedreamPayload({
-        modelId: 'seedream-5-0-pro-260628',
+        modelId: 'dola-seedream-5-0-pro-260628',
         prompt: 'Create multiple professional finals',
         mode: 't2i',
         numImages: 2,

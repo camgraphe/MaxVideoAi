@@ -17163,7 +17163,7 @@
       "ttlSec": 600,
       "providerMeta": {
         "provider": "byteplus_modelark",
-        "modelSlug": "seedream-5-0-pro-260628"
+        "modelSlug": "dola-seedream-5-0-pro-260628"
       },
       "availability": "available",
       "brandId": "bytedance"
@@ -17171,7 +17171,7 @@
     "modes": [
       {
         "mode": "t2i",
-        "falModelId": "seedream-5-0-pro-260628",
+        "falModelId": "dola-seedream-5-0-pro-260628",
         "ui": {
           "modes": [
             "t2i"
@@ -17196,7 +17196,7 @@
       },
       {
         "mode": "i2i",
-        "falModelId": "seedream-5-0-pro-260628",
+        "falModelId": "dola-seedream-5-0-pro-260628",
         "ui": {
           "modes": [
             "i2i"
