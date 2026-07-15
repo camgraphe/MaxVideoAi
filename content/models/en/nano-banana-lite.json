@@ -76,10 +76,21 @@
     "heroEyebrow": "Nano Banana Lite Image Model",
     "heroSupportLine": "Best for fast 1K drafts, social visuals, and quick image edits.",
     "heroSpecChips": [
-      { "label": "Text->Image", "icon": "textToVideo" },
-      { "label": "Image->Image", "icon": "imageToVideo" },
-      { "label": "1K only", "icon": "resolution" },
-      { "label": "No Search grounding" }
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "1K only",
+        "icon": "resolution"
+      },
+      {
+        "label": "No Search grounding"
+      }
     ],
     "whyTitle": "Why use Lite",
     "heroDesc1": "Nano Banana Lite keeps the still-image workflow fast and focused: one resolution, direct Google routing, and no Pro-only controls in the composer.",
@@ -138,5 +149,133 @@
       "No hateful, harassing, or graphic-violence requests.",
       "Do not impersonate real people or public figures without consent."
     ]
+  },
+  "decision": {
+    "modelSlug": "nano-banana-lite",
+    "hero": {
+      "eyebrow": "GOOGLE FAST IMAGE MODEL",
+      "title": "Nano Banana Lite - fast 1K image generation",
+      "subtitle": "Nano Banana Lite is the fast, efficient 1K member of the Google Nano Banana image family. Use it for high-volume still drafts, social concepts, local image edits, and quick visual exploration before moving selected ideas to Nano Banana 2 or Nano Banana Pro.",
+      "subtitleHighlights": [
+        "fast, efficient 1K",
+        "local image edits",
+        "quick visual exploration"
+      ],
+      "paragraph": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration.",
+      "primaryCta": {
+        "label": "Launch Nano Banana Lite",
+        "href": "/app/image?engine=nano-banana-lite"
+      },
+      "secondaryCta": {
+        "label": "Open Nano Banana 2",
+        "href": "/models/nano-banana-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=nano-banana-lite"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#nano-banana-lite-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        },
+        {
+          "label": "Open Nano Banana Pro",
+          "href": "/models/nano-banana-pro"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Nano Banana Lite example",
+      "description": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration.",
+      "renderLabel": "View image",
+      "badges": [
+        "Text -> Image",
+        "Image -> Image",
+        "1K only"
+      ],
+      "altContext": "Nano Banana Lite - fast 1K image generation"
+    },
+    "features": [
+      {
+        "title": "Capabilities",
+        "body": "Nano Banana Lite is the fast, efficient 1K member of the Google Nano Banana image family. Use it for high-volume still drafts, social concepts, local image edits, and quick visual exploration before moving selected ideas to Nano Banana 2 or Nano Banana Pro.",
+        "tone": "quality"
+      },
+      {
+        "title": "Workflow",
+        "body": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration.",
+        "tone": "reference"
+      },
+      {
+        "title": "Output",
+        "body": "Text -> Image · Image -> Image · 1K only",
+        "tone": "duration"
+      },
+      {
+        "title": "Live price",
+        "body": "Nano Banana Lite is priced per 1K image. MaxVideoAI shows the exact live quote before generation.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Open Nano Banana 2",
+        "body": "Nano Banana Lite is the fast, efficient 1K member of the Google Nano Banana image family. Use it for high-volume still drafts, social concepts, local image edits, and quick visual exploration before moving selected ideas to Nano Banana 2 or Nano Banana Pro.",
+        "cta": {
+          "label": "Open Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      },
+      {
+        "title": "Open Nano Banana Pro",
+        "body": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration.",
+        "cta": {
+          "label": "Open Nano Banana Pro",
+          "href": "/models/nano-banana-pro"
+        }
+      },
+      {
+        "title": "Need prompt examples?",
+        "body": "Open the Prompt Lab for a structured starting point.",
+        "cta": {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Use the direct Google Lite route for fast still-image drafts, quick local edits, and high-volume creative exploration."
+      },
+      {
+        "title": "Image-to-image",
+        "body": "Nano Banana Lite is the fast, efficient 1K member of the Google Nano Banana image family. Use it for high-volume still drafts, social concepts, local image edits, and quick visual exploration before moving selected ideas to Nano Banana 2 or Nano Banana Pro."
+      },
+      {
+        "title": "Output setup",
+        "body": "Text -> Image · Image -> Image · 1K only"
+      },
+      {
+        "title": "Price check",
+        "body": "Nano Banana Lite is priced per 1K image. MaxVideoAI shows the exact live quote before generation."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Nano Banana Lite pricing at a glance",
+      "subtitle": "Nano Banana Lite is priced per 1K image. MaxVideoAI shows the exact live quote before generation.",
+      "footnote": "Nano Banana Lite is priced per 1K image. MaxVideoAI shows the exact live quote before generation.",
+      "ctaLabel": "View full pricing",
+      "ctaHref": "/pricing#nano-banana-lite-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana Lite - Fast 1K Google Image Generation | MaxVideoAI",
+      "description": "Generate fast 1K still images and local edits with Nano Banana Lite in MaxVideoAI, routed directly through Google's Gemini image API."
+    }
   }
 }

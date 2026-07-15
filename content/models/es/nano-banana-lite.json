@@ -53,5 +53,133 @@
       "q": "¿Nano Banana Lite admite Search grounding?",
       "a": "No. Lite está optimizado para generación y edición rápidas. Usa Nano Banana 2 o Pro si el prompt necesita Google Search."
     }
-  ]
+  ],
+  "decision": {
+    "modelSlug": "nano-banana-lite",
+    "hero": {
+      "eyebrow": "MODELO DE IMAGEN RÁPIDO DE GOOGLE",
+      "title": "Nano Banana Lite - generación rápida de imágenes 1K",
+      "subtitle": "Nano Banana Lite es el modelo Google Nano Banana más rápido para imágenes 1K. Úsalo para borradores visuales, conceptos sociales, ediciones locales y exploración rápida antes de pasar a Nano Banana 2 o Pro.",
+      "subtitleHighlights": [
+        "más rápido para imágenes 1K",
+        "ediciones locales",
+        "exploración rápida"
+      ],
+      "paragraph": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas.",
+      "primaryCta": {
+        "label": "Abrir Nano Banana Lite",
+        "href": "/app/image?engine=nano-banana-lite"
+      },
+      "secondaryCta": {
+        "label": "Abrir Nano Banana 2",
+        "href": "/es/modelos/nano-banana-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir el espacio de imágenes",
+          "href": "/app/image?engine=nano-banana-lite"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#nano-banana-lite-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Abrir Nano Banana Pro",
+          "href": "/es/modelos/nano-banana-pro"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Nano Banana Lite ejemplo",
+      "description": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas.",
+      "renderLabel": "Ver imagen",
+      "badges": [
+        "Texto -> Imagen",
+        "Imagen -> Imagen",
+        "solo 1K"
+      ],
+      "altContext": "Nano Banana Lite - generación rápida de imágenes 1K"
+    },
+    "features": [
+      {
+        "title": "Capacidades",
+        "body": "Nano Banana Lite es el modelo Google Nano Banana más rápido para imágenes 1K. Úsalo para borradores visuales, conceptos sociales, ediciones locales y exploración rápida antes de pasar a Nano Banana 2 o Pro.",
+        "tone": "quality"
+      },
+      {
+        "title": "Flujo",
+        "body": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas.",
+        "tone": "reference"
+      },
+      {
+        "title": "Salida",
+        "body": "Texto -> Imagen · Imagen -> Imagen · solo 1K",
+        "tone": "duration"
+      },
+      {
+        "title": "Precio en vivo",
+        "body": "Nano Banana Lite se cobra por imagen 1K. MaxVideoAI muestra la cotización exacta antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Abrir Nano Banana 2",
+        "body": "Nano Banana Lite es el modelo Google Nano Banana más rápido para imágenes 1K. Úsalo para borradores visuales, conceptos sociales, ediciones locales y exploración rápida antes de pasar a Nano Banana 2 o Pro.",
+        "cta": {
+          "label": "Abrir Nano Banana 2",
+          "href": "/es/modelos/nano-banana-2"
+        }
+      },
+      {
+        "title": "Abrir Nano Banana Pro",
+        "body": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas.",
+        "cta": {
+          "label": "Abrir Nano Banana Pro",
+          "href": "/es/modelos/nano-banana-pro"
+        }
+      },
+      {
+        "title": "¿Necesitas ejemplos de prompts?",
+        "body": "Abre el Prompt Lab para empezar con una estructura clara.",
+        "cta": {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Usa la ruta directa Google Lite para crear borradores, ediciones locales y variaciones creativas rápidas."
+      },
+      {
+        "title": "Image-to-image",
+        "body": "Nano Banana Lite es el modelo Google Nano Banana más rápido para imágenes 1K. Úsalo para borradores visuales, conceptos sociales, ediciones locales y exploración rápida antes de pasar a Nano Banana 2 o Pro."
+      },
+      {
+        "title": "Ajustes de salida",
+        "body": "Texto -> Imagen · Imagen -> Imagen · solo 1K"
+      },
+      {
+        "title": "Revisión del precio",
+        "body": "Nano Banana Lite se cobra por imagen 1K. MaxVideoAI muestra la cotización exacta antes de generar."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Nano Banana Lite precios de un vistazo",
+      "subtitle": "Nano Banana Lite se cobra por imagen 1K. MaxVideoAI muestra la cotización exacta antes de generar.",
+      "footnote": "Nano Banana Lite se cobra por imagen 1K. MaxVideoAI muestra la cotización exacta antes de generar.",
+      "ctaLabel": "Ver todos los precios",
+      "ctaHref": "/es/precios#nano-banana-lite-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana Lite - generación rápida de imágenes 1K | MaxVideoAI",
+      "description": "Genera imágenes 1K rápidas y ediciones locales con Nano Banana Lite en MaxVideoAI mediante el proveedor directo de Google."
+    }
+  }
 }

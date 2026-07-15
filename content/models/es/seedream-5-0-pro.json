@@ -53,5 +53,133 @@
       "q": "¿Seedream 5.0 Pro admite batch output?",
       "a": "No. MaxVideoAI expone Seedream 5.0 Pro como una imagen generada por solicitud, según la ruta directa del proveedor."
     }
-  ]
+  ],
+  "decision": {
+    "modelSlug": "seedream-5-0-pro",
+    "hero": {
+      "eyebrow": "MODELO DE IMAGEN PROFESIONAL DE BYTEDANCE",
+      "title": "Seedream 5.0 Pro - producción profesional de imágenes",
+      "subtitle": "Seedream 5.0 Pro es la ruta profesional de imagen ByteDance en MaxVideoAI. Úsalo para infografías densas, ediciones avanzadas, layouts multilingües, stills cinematográficos y fotogramas pulidos antes de animar.",
+      "subtitleHighlights": [
+        "ruta profesional de imagen ByteDance",
+        "infografías densas",
+        "fotogramas pulidos"
+      ],
+      "paragraph": "Usa Seedream Pro para stills detallados, infografías estructuradas, ediciones controladas e imágenes 4K listas para campaña.",
+      "primaryCta": {
+        "label": "Abrir Seedream Pro",
+        "href": "/app/image?engine=seedream-5-0-pro"
+      },
+      "secondaryCta": {
+        "label": "Abrir Seedream Lite",
+        "href": "/es/modelos/seedream"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir el espacio de imágenes",
+          "href": "/app/image?engine=seedream-5-0-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#seedream-5-0-pro-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        },
+        {
+          "label": "Animar con Seedance 2.0",
+          "href": "/es/modelos/seedance-2-0"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Seedream 5.0 Pro ejemplo",
+      "description": "Usa Seedream Pro para stills detallados, infografías estructuradas, ediciones controladas e imágenes 4K listas para campaña.",
+      "renderLabel": "Ver imagen",
+      "badges": [
+        "Texto -> Imagen",
+        "Imagen -> Imagen",
+        "2K / 4K"
+      ],
+      "altContext": "Seedream 5.0 Pro - producción profesional de imágenes"
+    },
+    "features": [
+      {
+        "title": "Capacidades",
+        "body": "Seedream 5.0 Pro es la ruta profesional de imagen ByteDance en MaxVideoAI. Úsalo para infografías densas, ediciones avanzadas, layouts multilingües, stills cinematográficos y fotogramas pulidos antes de animar.",
+        "tone": "quality"
+      },
+      {
+        "title": "Flujo",
+        "body": "Usa Seedream Pro para stills detallados, infografías estructuradas, ediciones controladas e imágenes 4K listas para campaña.",
+        "tone": "reference"
+      },
+      {
+        "title": "Salida",
+        "body": "Texto -> Imagen · Imagen -> Imagen · 2K / 4K",
+        "tone": "duration"
+      },
+      {
+        "title": "Precio en vivo",
+        "body": "Seedream 5.0 Pro se expone como una salida profesional de imagen única. MaxVideoAI muestra la cotización exacta antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Abrir Seedream Lite",
+        "body": "Seedream 5.0 Pro es la ruta profesional de imagen ByteDance en MaxVideoAI. Úsalo para infografías densas, ediciones avanzadas, layouts multilingües, stills cinematográficos y fotogramas pulidos antes de animar.",
+        "cta": {
+          "label": "Abrir Seedream Lite",
+          "href": "/es/modelos/seedream"
+        }
+      },
+      {
+        "title": "Animar con Seedance 2.0",
+        "body": "Usa Seedream Pro para stills detallados, infografías estructuradas, ediciones controladas e imágenes 4K listas para campaña.",
+        "cta": {
+          "label": "Animar con Seedance 2.0",
+          "href": "/es/modelos/seedance-2-0"
+        }
+      },
+      {
+        "title": "¿Necesitas ejemplos de prompts?",
+        "body": "Abre el Prompt Lab para empezar con una estructura clara.",
+        "cta": {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Usa Seedream Pro para stills detallados, infografías estructuradas, ediciones controladas e imágenes 4K listas para campaña."
+      },
+      {
+        "title": "Image-to-image",
+        "body": "Seedream 5.0 Pro es la ruta profesional de imagen ByteDance en MaxVideoAI. Úsalo para infografías densas, ediciones avanzadas, layouts multilingües, stills cinematográficos y fotogramas pulidos antes de animar."
+      },
+      {
+        "title": "Ajustes de salida",
+        "body": "Texto -> Imagen · Imagen -> Imagen · 2K / 4K"
+      },
+      {
+        "title": "Revisión del precio",
+        "body": "Seedream 5.0 Pro se expone como una salida profesional de imagen única. MaxVideoAI muestra la cotización exacta antes de generar."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedream 5.0 Pro precios de un vistazo",
+      "subtitle": "Seedream 5.0 Pro se expone como una salida profesional de imagen única. MaxVideoAI muestra la cotización exacta antes de generar.",
+      "footnote": "Seedream 5.0 Pro se expone como una salida profesional de imagen única. MaxVideoAI muestra la cotización exacta antes de generar.",
+      "ctaLabel": "Ver todos los precios",
+      "ctaHref": "/es/precios#seedream-5-0-pro-pricing"
+    },
+    "meta": {
+      "title": "Seedream 5.0 Pro - generación profesional de imágenes | MaxVideoAI",
+      "description": "Crea imágenes profesionales, infografías densas, ediciones visuales y assets 4K con Seedream 5.0 Pro en MaxVideoAI."
+    }
+  }
 }
