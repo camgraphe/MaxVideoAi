@@ -7,11 +7,41 @@ import {
   getComparePageOverride,
   parseComparePageContentDocument,
 } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
+import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
+import { getIndexableComparisonLocales } from '../frontend/lib/compare-hub/indexation.ts';
+import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
 import type { ComparePageContentDocument } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'comparisons');
 const MESSAGES_DIR = path.join(process.cwd(), 'frontend', 'messages');
 const LOCALES = ['en', 'fr', 'es'] as const;
+const EXPECTED_GENERIC_METADATA_FALLBACK_SLUGS = [
+  'kling-2-6-pro-vs-ltx-2',
+  'kling-2-6-pro-vs-seedance-2-0',
+  'kling-3-4k-vs-kling-3-pro',
+  'kling-3-pro-vs-seedance-2-0',
+  'kling-3-pro-vs-sora-2',
+  'kling-3-pro-vs-sora-2-pro',
+  'kling-3-pro-vs-veo-3-1',
+  'kling-3-pro-vs-wan-2-6',
+  'kling-3-standard-vs-ltx-2',
+  'kling-3-standard-vs-veo-3-1',
+  'ltx-2-3-fast-vs-ltx-2-3-pro',
+  'ltx-2-3-fast-vs-seedance-2-0-fast',
+  'ltx-2-3-pro-vs-seedance-2-0',
+  'ltx-2-3-pro-vs-veo-3-1',
+  'ltx-2-fast-vs-wan-2-5',
+  'ltx-2-fast-vs-wan-2-6',
+  'ltx-2-vs-seedance-2-0',
+  'ltx-2-vs-veo-3-1',
+  'ltx-2-vs-veo-3-1-fast',
+  'seedance-1-5-pro-vs-veo-3-1',
+  'seedance-2-0-fast-vs-veo-3-1-fast',
+  'seedance-2-0-vs-sora-2',
+  'seedance-2-0-vs-veo-3-1',
+  'sora-2-vs-sora-2-pro',
+  'wan-2-5-vs-wan-2-6',
+] as const;
 const SUPPORTED_HREF_BY_LOCALE = {
   en: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$))/,
   fr: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|fr\/(?:modeles|exemples|comparatif)\/|fr\/tarifs(?:#|$))/,
@@ -63,6 +93,20 @@ function loadDocument(fileName: string): ComparePageContentDocument {
   );
 }
 
+function loadGenericMetadataFallbacks(locale: (typeof LOCALES)[number]): Record<string, {
+  title?: unknown;
+  description?: unknown;
+}> {
+  const messages = JSON.parse(readFileSync(path.join(MESSAGES_DIR, `${locale}.json`), 'utf8')) as {
+    comparePage?: {
+      meta?: {
+        slugOverrides?: Record<string, { title?: unknown; description?: unknown }>;
+      };
+    };
+  };
+  return messages.comparePage?.meta?.slugOverrides ?? {};
+}
+
 test('comparison documents are dynamically discovered with unique matching identities and three locales', () => {
   const files = contentFiles();
   assert.equal(files.length, 47);
@@ -99,6 +143,63 @@ test('comparison documents never duplicate message metadata overrides', () => {
 
     assert.deepEqual(duplicateSlugs, [], `${locale} comparison metadata must have exactly one owner`);
   }
+});
+
+test('all 25 generic metadata fallbacks remain complete, published and document-free in every locale', () => {
+  const documentSlugs = new Set(contentFiles().map((fileName) => fileName.slice(0, -'.json'.length)));
+  const expectedSlugs = [...EXPECTED_GENERIC_METADATA_FALLBACK_SLUGS];
+  assert.ok(expectedSlugs.length > 0, 'the independent generic metadata fallback inventory must not be empty');
+
+  for (const locale of LOCALES) {
+    const fallbacks = loadGenericMetadataFallbacks(locale);
+    assert.deepEqual(Object.keys(fallbacks).sort(), expectedSlugs, `${locale} generic fallback inventory`);
+
+    for (const slug of expectedSlugs) {
+      const fallback = fallbacks[slug];
+      assert.ok(
+        typeof fallback?.title === 'string' && fallback.title.trim().length > 0,
+        `${locale} title for ${slug}`,
+      );
+      assert.ok(
+        typeof fallback.description === 'string' && fallback.description.trim().length > 0,
+        `${locale} description for ${slug}`,
+      );
+      assert.ok(isPublishedComparisonSlug(slug), `${slug} must remain published`);
+      assert.equal(documentSlugs.has(slug), false, `${slug} must not have a comparison content document`);
+      assert.equal(getComparePageOverride(locale, slug), undefined, `${locale} ${slug} must use generic content`);
+    }
+  }
+});
+
+test('the real metadata builder projects a localized generic fallback with canonical hreflang', () => {
+  const slug = 'kling-3-pro-vs-veo-3-1';
+  assert.equal(getComparePageOverride('fr', slug), undefined);
+  const fallback = loadGenericMetadataFallbacks('fr')[slug];
+  assert.ok(typeof fallback?.title === 'string');
+  assert.ok(typeof fallback.description === 'string');
+
+  const metadata = buildSeoMetadata({
+    locale: 'fr',
+    title: fallback.title,
+    description: fallback.description,
+    englishPath: `/ai-video-engines/${slug}`,
+    availableLocales: getIndexableComparisonLocales(slug),
+  });
+
+  assert.deepEqual(metadata.title, {
+    absolute: 'Kling 3 Pro vs Veo 3.1 | Comparatif de modèles vidéo IA |…',
+  });
+  assert.equal(
+    metadata.description,
+    'Comparez Kling 3 Pro vs Veo 3.1 sur MaxVideoAI avec des prompts identiques : caractéristiques, prix, contrôle de scène, comportement de l’audio natif et…',
+  );
+  assert.equal(metadata.alternates?.canonical, `https://maxvideoai.com/fr/comparatif/${slug}`);
+  assert.deepEqual(metadata.alternates?.languages, {
+    en: `https://maxvideoai.com/ai-video-engines/${slug}`,
+    fr: `https://maxvideoai.com/fr/comparatif/${slug}`,
+    es: `https://maxvideoai.com/es/comparativa/${slug}`,
+    'x-default': `https://maxvideoai.com/ai-video-engines/${slug}`,
+  });
 });
 
 test('a valid comparison slug without enriched content preserves generic rendering', () => {

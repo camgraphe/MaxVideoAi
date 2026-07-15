@@ -134,8 +134,9 @@ Comparisons without a content document intentionally use the generic renderer an
 slug-specific SEO fallback metadata in `compareCopy.meta.slugOverrides` in the locale message
 files. A canonical slug must never exist in both a comparison document and `slugOverrides`.
 New or edited documents must pass `tests/comparison-content-contract.test.ts`, including the
-dynamic empty-intersection, identity, schema, locale parity, link, path-safety, and
-output-tracing contracts.
+dynamic generic-fallback inventory, empty-intersection, identity, schema, locale parity, link,
+and path-safety contracts. The complementary `tests/compare-page-architecture.test.ts` owns
+route isolation, obsolete-source absence, and Next output-tracing contracts.
 
 ## Refactor Checklist
 
