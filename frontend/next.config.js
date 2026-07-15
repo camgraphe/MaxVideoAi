@@ -29,6 +29,7 @@ const CONTENT_GLOBS = [
   '../content/fr/docs/**/*',
   '../content/es/docs/**/*',
   '../content/models/**/*',
+  '../content/comparisons/**/*',
 ];
 const SITEMAP_RUNTIME_GLOBS = [
   // Ensure sitemap generation can read Next build manifests inside the deployed function bundle.

@@ -3,6 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
 import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
 import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
@@ -38,6 +39,14 @@ test('all 141 generated locale projections are deeply equal to the post-parity m
     assert.equal(document.slug, slug);
     for (const locale of ['en', 'fr', 'es'] as const) {
       assert.deepEqual(document[locale], SOURCE_BY_LOCALE[locale][slug], `${locale} projection for ${slug}`);
+    }
+  }
+});
+
+test('the route-facing loader returns the exact post-parity source projection', () => {
+  for (const slug of Object.keys(EN_COMPARE_PAGE_OVERRIDES).sort()) {
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      assert.deepEqual(getComparePageOverride(locale, slug), SOURCE_BY_LOCALE[locale][slug], `${locale} route data for ${slug}`);
     }
   }
 });
