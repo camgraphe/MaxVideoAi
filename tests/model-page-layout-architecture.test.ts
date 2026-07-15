@@ -25,6 +25,7 @@ const decisionPricingCardPath = join(root, 'frontend/app/(localized)/[locale]/(m
 const pageContentSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPageContentSections.tsx');
 const decisionCardsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCardsSection.tsx');
 const decisionPromptingSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx');
+const legacyPromptingPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts');
 const decisionDemoMediaPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionDemoMedia.client.tsx');
 const decisionPromptTabsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx');
 const decisionCopyButtonPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCopyButton.client.tsx');
@@ -121,6 +122,7 @@ test('model page layout delegates template page ownership', () => {
   const pageContentSectionsSource = readSource(pageContentSectionsPath);
   const decisionCardsSource = readSource(decisionCardsSectionPath);
   const decisionPromptingSource = readSource(decisionPromptingSectionPath);
+  const legacyPromptingSource = readSource(legacyPromptingPath);
   const decisionDemoMediaSource = readSource(decisionDemoMediaPath);
   const decisionPromptTabsSource = readSource(decisionPromptTabsPath);
   const decisionCopyButtonSource = readSource(decisionCopyButtonPath);
@@ -173,7 +175,7 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptingSource, /How Seedance 2\.0 uses references|referencesTitle/, 'decision prompting should render the reference workflow section');
   assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
   assert.match(
-    decisionPromptingSource,
+    legacyPromptingSource,
     /engineSlug === 'happy-horse-1-1'[\s\S]*Night market noodle stall chef[\s\S]*getHappyHorse11DemoPrompt/,
     'Happy Horse 1.1 prompt lab should use the dedicated night-market demo copy'
   );

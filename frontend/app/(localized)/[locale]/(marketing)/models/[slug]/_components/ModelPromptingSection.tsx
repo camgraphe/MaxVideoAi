@@ -21,6 +21,7 @@ type ModelPromptingSectionProps = {
   isImageEngine: boolean;
   locale: AppLocale;
   modelName: string;
+  modelSlug: string;
   audioBadgeLabel: string;
   mediaAltContexts: { demo: string };
   useDemoMediaPrompt: boolean;
@@ -38,6 +39,7 @@ export function ModelPromptingSection({
   isImageEngine,
   locale,
   modelName,
+  modelSlug,
   audioBadgeLabel,
   mediaAltContexts,
   useDemoMediaPrompt,
@@ -54,6 +56,7 @@ export function ModelPromptingSection({
         isImageEngine={isImageEngine}
         locale={locale}
         modelName={modelName}
+        modelSlug={modelSlug}
         referenceWorkflows={decisionReferenceWorkflows ?? []}
       />
     );

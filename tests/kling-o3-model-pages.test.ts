@@ -54,23 +54,30 @@ function hasInputField(engine: ReturnType<typeof getEngine>, fieldId: string) {
 }
 
 test('Kling 3.0 Omni model prompt lab uses route-specific O3 prompt structures', () => {
-  const source = readFileSync(
+  const componentSource = readFileSync(
     join(
       ROOT,
       'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx'
     ),
     'utf8'
   );
+  const legacySource = readFileSync(
+    join(
+      ROOT,
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts'
+    ),
+    'utf8'
+  );
 
-  assert.match(source, /getKlingO3PromptingTabs/);
-  assert.match(source, /const promptingTabs = copy\.promptingTabs\.length[\s\S]+getKlingO3PromptingTabs\(locale, engineSlug\)/);
-  assert.match(source, /tabs=\{promptingTabs\}/);
-  assert.match(source, /Refs \+ V2V|V2V draft|@Video1/);
-  assert.match(source, /keep_audio/);
-  assert.match(source, /Final 4K|native 4K|4K native/);
-  assert.match(source, /Do not use @Video1|N’utilise pas @Video1|No usar @Video1/);
-  assert.match(source, /promptingGlobalPrinciples\.map/);
-  assert.match(source, /promptingEngineWhy\.map/);
+  assert.match(legacySource, /getKlingO3PromptingTabs/);
+  assert.match(legacySource, /const tabs = copy\.promptingTabs\.length[\s\S]+getKlingO3PromptingTabs\(locale, engineId\)/);
+  assert.match(componentSource, /tabs=\{promptingTabs\}/);
+  assert.match(legacySource, /Refs \+ V2V|V2V draft|@Video1/);
+  assert.match(legacySource, /keep_audio/);
+  assert.match(legacySource, /Final 4K|native 4K|4K native/);
+  assert.match(legacySource, /Do not use @Video1|N’utilise pas @Video1|No usar @Video1/);
+  assert.match(componentSource, /promptingGlobalPrinciples\.map/);
+  assert.match(componentSource, /promptingEngineWhy\.map/);
 });
 
 test('Kling 3.0 Omni model pages pin the rendered Camp Graph media pairs', () => {
@@ -81,7 +88,7 @@ test('Kling 3.0 Omni model pages pin the rendered Camp Graph media pairs', () =>
   const promptLabSource = readFileSync(
     join(
       ROOT,
-      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx'
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts'
     ),
     'utf8'
   );
@@ -89,7 +96,14 @@ test('Kling 3.0 Omni model pages pin the rendered Camp Graph media pairs', () =>
   assert.match(promptLabSource, /giant origami whale/i);
   assert.match(promptLabSource, /tiny lighthouse keeper/i);
   assert.match(promptLabSource, /handmade mechanical moon/i);
-  assert.match(promptLabSource, /demoMedia\?\.hasAudio \? labels\.audioOn : audioOffChipLabel/);
+  const componentSource = readFileSync(
+    join(
+      ROOT,
+      'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx'
+    ),
+    'utf8'
+  );
+  assert.match(componentSource, /demoMedia\?\.hasAudio \? ui\.audioOn : ui\.audioOff/);
 });
 
 test('Kling 3.0 Omni model pages use the current decision-page template', () => {
