@@ -86,6 +86,7 @@ type EngineOverlay = {
   prompts?: EngineOverlayPrompt[];
   faqs?: EngineOverlayFaq[];
   custom?: Record<string, unknown>;
+  decision?: unknown;
 };
 
 export type LocalizedPrompt = {
@@ -119,6 +120,7 @@ export type EngineLocalizedContent = {
   prompts: LocalizedPrompt[];
   faqs: LocalizedFaq[];
   custom?: Record<string, unknown>;
+  decision?: unknown;
 };
 
 const FRONTEND_ROOT = process.cwd();
@@ -240,6 +242,7 @@ export async function getEngineLocalized(slug: string, locale: AppLocale): Promi
     prompts: resolvedPrompts,
     faqs: resolvedFaqs,
     custom: overlay.custom ?? base.custom,
+    decision: overlay.decision,
   };
 }
 
