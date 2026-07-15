@@ -11,7 +11,7 @@ import {
   getExampleFamilyModelSlugs,
   getExampleFamilyPrimaryModelSlug,
 } from '../frontend/lib/model-families.ts';
-import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
 
@@ -101,7 +101,7 @@ test('Kling 3.0 Omni model pages use the current decision-page template', () => 
     assert.equal(template.slug, slug);
 
     for (const locale of LOCALES) {
-      const decisionData = buildModelDecisionData({ engine, locale });
+      const decisionData = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decisionData, `${slug}/${locale} should have localized decision-page copy`);
       assert.match(decisionData.hero.title, /Kling 3\.0 Omni/i);
       assert.ok(decisionData.pricing.scenarios.length >= 3, `${slug}/${locale} should expose modern pricing cards`);

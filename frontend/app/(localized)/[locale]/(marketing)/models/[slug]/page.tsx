@@ -87,7 +87,11 @@ export async function generateMetadata(props: PageParams): Promise<Metadata> {
 
   const canonicalSlug = engine.modelSlug ?? slug;
   const localized = await getEngineLocalized(canonicalSlug, locale);
-  const decisionData = buildModelDecisionData({ engine, locale });
+  const decisionData = buildModelDecisionData({
+    engine,
+    locale,
+    decisionContent: localized.decision,
+  });
   const detailSlugMap = buildDetailSlugMap(canonicalSlug);
   const publishableLocales = Array.from(resolveLocalesForEnglishPath(`/models/${canonicalSlug}`));
   const fallbackTitle = engine.seo.title ?? `${engine.marketingName} — MaxVideo AI`;

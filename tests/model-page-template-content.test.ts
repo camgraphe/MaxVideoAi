@@ -8,6 +8,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
+import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
   'seedance-1-5-pro',
@@ -111,11 +112,11 @@ function collectCustomerFacingStrings(value: unknown, skipKeys = new Set<string>
 test('migrated model templates provide complete localized decision data', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
-    const en = buildModelDecisionData({ engine, locale: 'en' });
+    const en = buildModelDecisionDataFromContent({ engine, locale: 'en' });
     assert.ok(en, `${slug}/en decision data should exist`);
 
     for (const locale of LOCALES) {
-      const decision = buildModelDecisionData({ engine, locale });
+      const decision = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
 
       assertNonEmptyString(decision.meta.title, `${slug}/${locale} meta title`);
@@ -201,7 +202,7 @@ test('Luma Ray 3.2 localized spec sections match the English structure', () => {
 
 test('Spanish migrated template copy avoids Spain-only second-person and device phrasing', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
-    const decision = buildModelDecisionData({ engine: getEngine(slug), locale: 'es' });
+    const decision = buildModelDecisionDataFromContent({ engine: getEngine(slug), locale: 'es' });
     assert.ok(decision, `${slug}/es decision data should exist`);
 
     assert.doesNotMatch(
@@ -215,7 +216,7 @@ test('Spanish migrated template copy avoids Spain-only second-person and device 
 test('Luma Agents localized FR and ES copy avoids internal English launch terms', () => {
   for (const locale of ['fr', 'es'] as const) {
     for (const slug of LUMA_AGENT_TEMPLATE_SLUGS) {
-      const decision = buildModelDecisionData({ engine: getEngine(slug), locale });
+      const decision = buildModelDecisionDataFromContent({ engine: getEngine(slug), locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
 
       for (const value of collectCustomerFacingStrings(decision, LOCALIZED_CONTENT_SKIP_KEYS)) {
@@ -241,7 +242,7 @@ test('Luma Agents localized FR and ES copy avoids internal English launch terms'
 test('migrated template prompt links keep users on the Prompt Lab section', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     for (const locale of LOCALES) {
-      const decision = buildModelDecisionData({ engine: getEngine(slug), locale });
+      const decision = buildModelDecisionDataFromContent({ engine: getEngine(slug), locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
 
       const promptQuickLinks = decision.hero.quickLinks.filter((link) => /prompt/i.test(link.label));
@@ -265,7 +266,7 @@ test('migrated app-enabled template links use the active engine id, not only the
     const expectedHref = `${engine.category === 'image' ? '/app/image' : '/app'}?engine=${engine.id}`;
 
     for (const locale of LOCALES) {
-      const decision = buildModelDecisionData({ engine, locale });
+      const decision = buildModelDecisionDataFromContent({ engine, locale });
       assert.ok(decision, `${slug}/${locale} decision data should exist`);
       if (!engine.surfaces.app.enabled) {
         assert.doesNotMatch(decision.hero.primaryCta.href, /^\/app(?:\/image)?\?engine=/);
@@ -293,7 +294,7 @@ test('image model prompt actions route to the image workspace', () => {
 });
 
 test('Nano Banana Pro uses image-specific pricing scenario labels', () => {
-  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  const nanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale: 'en' });
   assert.ok(nanoPro);
 
   assert.deepEqual(
@@ -303,7 +304,7 @@ test('Nano Banana Pro uses image-specific pricing scenario labels', () => {
 });
 
 test('Nano Banana 2 uses display pricing and still-image scenario labels', () => {
-  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  const nano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale: 'en' });
   assert.ok(nano2);
 
   assert.deepEqual(
@@ -325,7 +326,7 @@ test('Nano Banana 2 uses display pricing and still-image scenario labels', () =>
 });
 
 test('GPT Image 2 stays image-first with text, edit, mask, and display-pricing copy', () => {
-  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  const gptImage = buildModelDecisionDataFromContent({ engine: getEngine('gpt-image-2'), locale: 'en' });
   assert.ok(gptImage);
 
   assert.equal(gptImage.hero.title, 'GPT Image 2');
@@ -353,7 +354,7 @@ test('GPT Image 2 stays image-first with text, edit, mask, and display-pricing c
 });
 
 test('Seedream uses image-prep identity, official guide copy, and batch pricing context', () => {
-  const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
+  const seedream = buildModelDecisionDataFromContent({ engine: getEngine('seedream'), locale: 'en' });
   assert.ok(seedream);
 
   assert.equal(seedream.hero.title, 'Seedream 5.0 Lite');
@@ -377,7 +378,7 @@ test('Seedream uses image-prep identity, official guide copy, and batch pricing 
 
 test('Luma Uni image pages stay image-only and avoid compare routes', () => {
   for (const slug of ['luma-uni-1', 'luma-uni-1-max'] as const) {
-    const decision = buildModelDecisionData({ engine: getEngine(slug), locale: 'en' });
+    const decision = buildModelDecisionDataFromContent({ engine: getEngine(slug), locale: 'en' });
     assert.ok(decision);
     assert.match(decision.hero.primaryCta.href, /^\/app\/image\?engine=/);
     assert.doesNotMatch(visibleDecisionText(decision), /text-to-video|image-to-video|MP4|HDR|EXR|vs /i);
@@ -392,7 +393,7 @@ test('Luma Uni image pages stay image-only and avoid compare routes', () => {
 });
 
 test('Luma Ray 3.2 page is Modify/Reframe-first and does not expose direct-only HDR copy at launch', () => {
-  const decision = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  const decision = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
   assert.ok(decision);
   assert.equal(decision.hero.primaryCta.href, '/app?engine=luma-ray-3-2');
   assert.doesNotMatch(visibleDecisionText(decision), /EXR|HDR export|video edit controls/i);
@@ -471,39 +472,39 @@ test('localized model pages do not inherit English recreate labels from base con
 });
 
 test('migrated template metadata preserves non-cannibalizing route intent', () => {
-  const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
-  const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
-  const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
-  const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale: 'en' });
-  const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
-  const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
-  const kling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
-  const kling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
-  const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale: 'en' });
-  const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
-  const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
-  const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
-  const ltx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale: 'en' });
-  const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
-  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
-  const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale: 'en' });
-  const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
-  const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
-  const wan25 = buildModelDecisionData({ engine: getEngine('wan-2-5'), locale: 'en' });
-  const wan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale: 'en' });
-  const luma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale: 'en' });
-  const lumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
-  const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
-  const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
-  const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
-  const happyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
-  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
-  const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
-  const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
-  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
-  const nano = buildModelDecisionData({ engine: getEngine('nano-banana'), locale: 'en' });
-  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
-  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  const seedance = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0'), locale: 'en' });
+  const seedanceFast = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const seedance15 = buildModelDecisionDataFromContent({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
+  const veo = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1'), locale: 'en' });
+  const veoFast = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
+  const veoLite = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
+  const kling25 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
+  const kling26 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
+  const kling = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-pro'), locale: 'en' });
+  const klingStandard = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-standard'), locale: 'en' });
+  const kling4k = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-4k'), locale: 'en' });
+  const ltx2 = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2'), locale: 'en' });
+  const ltx2Fast = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-fast'), locale: 'en' });
+  const ltxFast = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
+  const ltxPro = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
+  const seedream = buildModelDecisionDataFromContent({ engine: getEngine('seedream'), locale: 'en' });
+  const sora = buildModelDecisionDataFromContent({ engine: getEngine('sora-2'), locale: 'en' });
+  const soraPro = buildModelDecisionDataFromContent({ engine: getEngine('sora-2-pro'), locale: 'en' });
+  const wan25 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-5'), locale: 'en' });
+  const wan26 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-6'), locale: 'en' });
+  const luma = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2'), locale: 'en' });
+  const lumaFlash = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
+  const lumaRay32 = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  const lumaUni = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1'), locale: 'en' });
+  const lumaUniMax = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
+  const happyHorse11 = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
+  const happyHorse = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
+  const hailuo = buildModelDecisionDataFromContent({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
+  const pika = buildModelDecisionDataFromContent({ engine: getEngine('pika-text-to-video'), locale: 'en' });
+  const gptImage = buildModelDecisionDataFromContent({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  const nano = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana'), locale: 'en' });
+  const nano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  const nanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale: 'en' });
 
   assert.ok(seedance);
   assert.ok(seedanceFast);
@@ -633,33 +634,33 @@ test('migrated template metadata preserves non-cannibalizing route intent', () =
 });
 
 test('migrated template visible copy avoids route cannibalization claims', () => {
-  const seedanceFast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
-  const seedanceMini = buildModelDecisionData({ engine: getEngine('dreamina-seedance-2-0-mini'), locale: 'en' });
-  const seedance15 = buildModelDecisionData({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
-  const seedance = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
-  const ltx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale: 'en' });
-  const ltx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale: 'en' });
-  const ltxFast = buildModelDecisionData({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
-  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
-  const kling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
-  const kling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
-  const sora = buildModelDecisionData({ engine: getEngine('sora-2'), locale: 'en' });
-  const soraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale: 'en' });
-  const wan25 = buildModelDecisionData({ engine: getEngine('wan-2-5'), locale: 'en' });
-  const wan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale: 'en' });
-  const luma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale: 'en' });
-  const lumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
-  const lumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
-  const lumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale: 'en' });
-  const lumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
-  const happyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
-  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
-  const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
-  const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
-  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
-  const nano = buildModelDecisionData({ engine: getEngine('nano-banana'), locale: 'en' });
-  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
-  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  const seedanceFast = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const seedanceMini = buildModelDecisionDataFromContent({ engine: getEngine('dreamina-seedance-2-0-mini'), locale: 'en' });
+  const seedance15 = buildModelDecisionDataFromContent({ engine: getEngine('seedance-1-5-pro'), locale: 'en' });
+  const seedance = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0'), locale: 'en' });
+  const ltx2 = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2'), locale: 'en' });
+  const ltx2Fast = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-fast'), locale: 'en' });
+  const ltxFast = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-3-fast'), locale: 'en' });
+  const ltxPro = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-3-pro'), locale: 'en' });
+  const kling25 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-5-turbo'), locale: 'en' });
+  const kling26 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-6-pro'), locale: 'en' });
+  const sora = buildModelDecisionDataFromContent({ engine: getEngine('sora-2'), locale: 'en' });
+  const soraPro = buildModelDecisionDataFromContent({ engine: getEngine('sora-2-pro'), locale: 'en' });
+  const wan25 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-5'), locale: 'en' });
+  const wan26 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-6'), locale: 'en' });
+  const luma = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2'), locale: 'en' });
+  const lumaFlash = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2-flash'), locale: 'en' });
+  const lumaRay32 = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-3-2'), locale: 'en' });
+  const lumaUni = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1'), locale: 'en' });
+  const lumaUniMax = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1-max'), locale: 'en' });
+  const happyHorse11 = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
+  const happyHorse = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
+  const hailuo = buildModelDecisionDataFromContent({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
+  const pika = buildModelDecisionDataFromContent({ engine: getEngine('pika-text-to-video'), locale: 'en' });
+  const gptImage = buildModelDecisionDataFromContent({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  const nano = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana'), locale: 'en' });
+  const nano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  const nanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale: 'en' });
 
   assert.ok(seedanceFast);
   assert.ok(seedanceMini);
@@ -805,35 +806,35 @@ test('migrated template visible copy avoids route cannibalization claims', () =>
   );
 
   for (const locale of LOCALES) {
-    const veo = buildModelDecisionData({ engine: getEngine('veo-3-1'), locale });
-    const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale });
-    const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale });
-    const localizedKling25 = buildModelDecisionData({ engine: getEngine('kling-2-5-turbo'), locale });
-    const localizedSeedanceMini = buildModelDecisionData({ engine: getEngine('dreamina-seedance-2-0-mini'), locale });
-    const localizedKling26 = buildModelDecisionData({ engine: getEngine('kling-2-6-pro'), locale });
-    const kling = buildModelDecisionData({ engine: getEngine('kling-3-pro'), locale });
-    const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale });
-    const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale });
-    const seedream = buildModelDecisionData({ engine: getEngine('seedream'), locale });
-    const localizedSora = buildModelDecisionData({ engine: getEngine('sora-2'), locale });
-    const localizedSoraPro = buildModelDecisionData({ engine: getEngine('sora-2-pro'), locale });
-    const localizedWan25 = buildModelDecisionData({ engine: getEngine('wan-2-5'), locale });
-    const localizedWan26 = buildModelDecisionData({ engine: getEngine('wan-2-6'), locale });
-    const localizedLtx2 = buildModelDecisionData({ engine: getEngine('ltx-2'), locale });
-    const localizedLtx2Fast = buildModelDecisionData({ engine: getEngine('ltx-2-fast'), locale });
-    const localizedLuma = buildModelDecisionData({ engine: getEngine('luma-ray-2'), locale });
-    const localizedLumaFlash = buildModelDecisionData({ engine: getEngine('luma-ray-2-flash'), locale });
-    const localizedLumaRay32 = buildModelDecisionData({ engine: getEngine('luma-ray-3-2'), locale });
-    const localizedLumaUni = buildModelDecisionData({ engine: getEngine('luma-uni-1'), locale });
-    const localizedLumaUniMax = buildModelDecisionData({ engine: getEngine('luma-uni-1-max'), locale });
-    const localizedHappyHorse11 = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale });
-    const localizedHappyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale });
-    const localizedHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale });
-    const localizedPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale });
-    const localizedGptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale });
-    const localizedNano = buildModelDecisionData({ engine: getEngine('nano-banana'), locale });
-    const localizedNano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale });
-    const localizedNanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale });
+    const veo = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1'), locale });
+    const veoFast = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-fast'), locale });
+    const veoLite = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-lite'), locale });
+    const localizedKling25 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-5-turbo'), locale });
+    const localizedSeedanceMini = buildModelDecisionDataFromContent({ engine: getEngine('dreamina-seedance-2-0-mini'), locale });
+    const localizedKling26 = buildModelDecisionDataFromContent({ engine: getEngine('kling-2-6-pro'), locale });
+    const kling = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-pro'), locale });
+    const klingStandard = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-standard'), locale });
+    const kling4k = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-4k'), locale });
+    const seedream = buildModelDecisionDataFromContent({ engine: getEngine('seedream'), locale });
+    const localizedSora = buildModelDecisionDataFromContent({ engine: getEngine('sora-2'), locale });
+    const localizedSoraPro = buildModelDecisionDataFromContent({ engine: getEngine('sora-2-pro'), locale });
+    const localizedWan25 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-5'), locale });
+    const localizedWan26 = buildModelDecisionDataFromContent({ engine: getEngine('wan-2-6'), locale });
+    const localizedLtx2 = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2'), locale });
+    const localizedLtx2Fast = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-fast'), locale });
+    const localizedLuma = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2'), locale });
+    const localizedLumaFlash = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-2-flash'), locale });
+    const localizedLumaRay32 = buildModelDecisionDataFromContent({ engine: getEngine('luma-ray-3-2'), locale });
+    const localizedLumaUni = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1'), locale });
+    const localizedLumaUniMax = buildModelDecisionDataFromContent({ engine: getEngine('luma-uni-1-max'), locale });
+    const localizedHappyHorse11 = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-1'), locale });
+    const localizedHappyHorse = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-0'), locale });
+    const localizedHailuo = buildModelDecisionDataFromContent({ engine: getEngine('minimax-hailuo-02-text'), locale });
+    const localizedPika = buildModelDecisionDataFromContent({ engine: getEngine('pika-text-to-video'), locale });
+    const localizedGptImage = buildModelDecisionDataFromContent({ engine: getEngine('gpt-image-2'), locale });
+    const localizedNano = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana'), locale });
+    const localizedNano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale });
+    const localizedNanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale });
 
     assert.ok(veo);
     assert.ok(veoFast);
@@ -1166,7 +1167,7 @@ test('existing Seedance content links to Mini only as a lower-cost batch value a
 test('migrated template product schemas avoid free price offers', () => {
   for (const slug of MIGRATED_TEMPLATE_SLUGS) {
     const engine = getEngine(slug);
-    const decision = buildModelDecisionData({ engine, locale: 'en' });
+    const decision = buildModelDecisionDataFromContent({ engine, locale: 'en' });
     assert.ok(decision, `${slug}/en decision data should exist`);
 
     const schemas = buildModelSchemaPayloads({
@@ -1202,7 +1203,7 @@ test('new Luma model product schemas emit priced offers without synthetic rating
 
   for (const [slug, expectedPrice] of expectedOfferPrices) {
     const engine = getEngine(slug);
-    const decision = buildModelDecisionData({ engine, locale: 'fr' });
+    const decision = buildModelDecisionDataFromContent({ engine, locale: 'fr' });
     assert.ok(decision, `${slug}/fr decision data should exist`);
 
     const schemas = buildModelSchemaPayloads({

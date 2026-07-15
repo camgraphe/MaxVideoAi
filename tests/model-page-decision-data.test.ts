@@ -19,12 +19,20 @@ import { resolveSectionLabels } from '../frontend/app/(localized)/[locale]/(mark
 import { getImagePresetQuote, getPresetQuote } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildSeoMetadata } from '../frontend/lib/seo/metadata.ts';
+import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 function getEngine(engineId: string) {
   const entry = listFalEngines().find((candidate) => candidate.id === engineId || candidate.modelSlug === engineId);
   assert.ok(entry, `Missing engine ${engineId}`);
   return entry;
 }
+
+test('decision data rejects missing selected-locale content', () => {
+  assert.throws(
+    () => buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'fr', decisionContent: undefined }),
+    /Missing decision content.*seedance-2-0\/fr/
+  );
+});
 
 function visibleDecisionText(decision: NonNullable<ReturnType<typeof buildModelDecisionData>>) {
   return JSON.stringify(
@@ -44,9 +52,9 @@ function visibleDecisionText(decision: NonNullable<ReturnType<typeof buildModelD
 
 test('Seedance 2.0 decision data returns localized hero, links, features, cards, and metadata', () => {
   const seedance = getEngine('seedance-2-0');
-  const en = buildModelDecisionData({ engine: seedance, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: seedance, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: seedance, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: seedance, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: seedance, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fr);
@@ -126,10 +134,10 @@ test('Seedance 2.0 decision data returns localized hero, links, features, cards,
 test('Seedance 2.0 Fast returns draft-intent decision data distinct from Seedance 2.0', () => {
   const seedance = getEngine('seedance-2-0');
   const fast = getEngine('seedance-2-0-fast');
-  const production = buildModelDecisionData({ engine: seedance, locale: 'en' });
-  const en = buildModelDecisionData({ engine: fast, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: fast, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: fast, locale: 'es' });
+  const production = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
+  const en = buildModelDecisionDataFromContent({ engine: fast, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: fast, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: fast, locale: 'es' });
 
   assert.ok(production);
   assert.ok(en);
@@ -172,11 +180,11 @@ test('Seedance 2.0 Fast returns draft-intent decision data distinct from Seedanc
 
 test('Seedance 2.0 Mini returns lower-cost batch decision data without overclaims', () => {
   const mini = getEngine('dreamina-seedance-2-0-mini');
-  const standard = buildModelDecisionData({ engine: getEngine('seedance-2-0'), locale: 'en' });
-  const fast = buildModelDecisionData({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
-  const en = buildModelDecisionData({ engine: mini, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: mini, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: mini, locale: 'es' });
+  const standard = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0'), locale: 'en' });
+  const fast = buildModelDecisionDataFromContent({ engine: getEngine('seedance-2-0-fast'), locale: 'en' });
+  const en = buildModelDecisionDataFromContent({ engine: mini, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: mini, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: mini, locale: 'es' });
 
   assert.ok(standard);
   assert.ok(fast);
@@ -228,7 +236,7 @@ test('Seedance 2.0 Mini returns lower-cost batch decision data without overclaim
 
 test('Seedance 2.0 SEO metadata can omit the site-name suffix', () => {
   const seedance = getEngine('seedance-2-0');
-  const decision = buildModelDecisionData({ engine: seedance, locale: 'en' });
+  const decision = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
   const title = 'Seedance 2.0 AI Video: Max Length, Pricing & Best Uses';
   assert.ok(decision);
 
@@ -245,9 +253,9 @@ test('Seedance 2.0 SEO metadata can omit the site-name suffix', () => {
 
 test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
   const ltx = getEngine('ltx-2-3-fast');
-  const en = buildModelDecisionData({ engine: ltx, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: ltx, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: ltx, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: ltx, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: ltx, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: ltx, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fr);
@@ -280,7 +288,7 @@ test('LTX 2.3 Fast returns LTX-specific draft decision data', () => {
 
 test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
   const ltx = getEngine('ltx-2-3-fast');
-  const decision = buildModelDecisionData({ engine: ltx, locale: 'en' });
+  const decision = buildModelDecisionDataFromContent({ engine: ltx, locale: 'en' });
   const title = 'LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro';
   const description =
     'Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing.';
@@ -319,10 +327,10 @@ test('LTX 2.3 Fast SEO metadata can omit the site-name suffix', async () => {
 test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3', () => {
   const ltx2 = getEngine('ltx-2');
   const ltx2Fast = getEngine('ltx-2-fast');
-  const en = buildModelDecisionData({ engine: ltx2, locale: 'en' });
-  const fast = buildModelDecisionData({ engine: ltx2Fast, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: ltx2, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: ltx2Fast, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: ltx2, locale: 'en' });
+  const fast = buildModelDecisionDataFromContent({ engine: ltx2Fast, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: ltx2, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: ltx2Fast, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fast);
@@ -350,10 +358,10 @@ test('LTX 2 legacy templates keep older route positioning distinct from LTX 2.3'
 test('Luma Ray 2 templates keep legacy Ray 2 routes behind current Ray 3.2', () => {
   const luma = getEngine('luma-ray-2');
   const flash = getEngine('luma-ray-2-flash');
-  const en = buildModelDecisionData({ engine: luma, locale: 'en' });
-  const fast = buildModelDecisionData({ engine: flash, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: luma, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: flash, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: luma, locale: 'en' });
+  const fast = buildModelDecisionDataFromContent({ engine: flash, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: luma, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: flash, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fast);
@@ -395,12 +403,12 @@ test('Luma Ray 2 templates keep legacy Ray 2 routes behind current Ray 3.2', () 
 });
 
 test('remaining video templates preserve Happy Horse, Hailuo, and Pika route intent', () => {
-  const happyHorse = buildModelDecisionData({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
-  const happyHorseLegacy = buildModelDecisionData({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
-  const hailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
-  const pika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'en' });
-  const frHailuo = buildModelDecisionData({ engine: getEngine('minimax-hailuo-02-text'), locale: 'fr' });
-  const esPika = buildModelDecisionData({ engine: getEngine('pika-text-to-video'), locale: 'es' });
+  const happyHorse = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-1'), locale: 'en' });
+  const happyHorseLegacy = buildModelDecisionDataFromContent({ engine: getEngine('happy-horse-1-0'), locale: 'en' });
+  const hailuo = buildModelDecisionDataFromContent({ engine: getEngine('minimax-hailuo-02-text'), locale: 'en' });
+  const pika = buildModelDecisionDataFromContent({ engine: getEngine('pika-text-to-video'), locale: 'en' });
+  const frHailuo = buildModelDecisionDataFromContent({ engine: getEngine('minimax-hailuo-02-text'), locale: 'fr' });
+  const esPika = buildModelDecisionDataFromContent({ engine: getEngine('pika-text-to-video'), locale: 'es' });
 
   assert.ok(happyHorse);
   assert.ok(happyHorseLegacy);
@@ -495,12 +503,12 @@ test('Pika SEO metadata can omit the site-name suffix when Google already shows 
 });
 
 test('image templates preserve GPT Image 2 and Nano Banana route intent', () => {
-  const gptImage = buildModelDecisionData({ engine: getEngine('gpt-image-2'), locale: 'en' });
-  const nano = buildModelDecisionData({ engine: getEngine('nano-banana'), locale: 'en' });
-  const nano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'en' });
-  const nanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'en' });
-  const frNano2 = buildModelDecisionData({ engine: getEngine('nano-banana-2'), locale: 'fr' });
-  const esNanoPro = buildModelDecisionData({ engine: getEngine('nano-banana-pro'), locale: 'es' });
+  const gptImage = buildModelDecisionDataFromContent({ engine: getEngine('gpt-image-2'), locale: 'en' });
+  const nano = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana'), locale: 'en' });
+  const nano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale: 'en' });
+  const nanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale: 'en' });
+  const frNano2 = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-2'), locale: 'fr' });
+  const esNanoPro = buildModelDecisionDataFromContent({ engine: getEngine('nano-banana-pro'), locale: 'es' });
 
   assert.ok(gptImage);
   assert.ok(nano);
@@ -551,9 +559,9 @@ test('image templates preserve GPT Image 2 and Nano Banana route intent', () => 
 
 test('Veo 3.1 returns production decision data with Standard 4K claims', () => {
   const veo = getEngine('veo-3-1');
-  const en = buildModelDecisionData({ engine: veo, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: veo, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: veo, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: veo, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: veo, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: veo, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fr);
@@ -578,7 +586,7 @@ test('Veo 3.1 returns production decision data with Standard 4K claims', () => {
 
 test('Veo 3.1 SEO metadata can omit the site-name suffix', () => {
   const veo = getEngine('veo-3-1');
-  const decision = buildModelDecisionData({ engine: veo, locale: 'en' });
+  const decision = buildModelDecisionDataFromContent({ engine: veo, locale: 'en' });
   const title = 'Google Veo 3.1 AI Video: Price, Prompts & References';
   const modelPageSource = readFileSync(
     'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/page.tsx',
@@ -600,9 +608,9 @@ test('Veo 3.1 SEO metadata can omit the site-name suffix', () => {
 
 test('Kling 3 Pro returns production decision data without unavailable route claims', () => {
   const kling = getEngine('kling-3-pro');
-  const en = buildModelDecisionData({ engine: kling, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: kling, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: kling, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: kling, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: kling, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: kling, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fr);
@@ -622,12 +630,12 @@ test('Kling 3 Pro returns production decision data without unavailable route cla
 test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () => {
   const kling25 = getEngine('kling-2-5-turbo');
   const kling26 = getEngine('kling-2-6-pro');
-  const en25 = buildModelDecisionData({ engine: kling25, locale: 'en' });
-  const fr25 = buildModelDecisionData({ engine: kling25, locale: 'fr' });
-  const es25 = buildModelDecisionData({ engine: kling25, locale: 'es' });
-  const en26 = buildModelDecisionData({ engine: kling26, locale: 'en' });
-  const fr26 = buildModelDecisionData({ engine: kling26, locale: 'fr' });
-  const es26 = buildModelDecisionData({ engine: kling26, locale: 'es' });
+  const en25 = buildModelDecisionDataFromContent({ engine: kling25, locale: 'en' });
+  const fr25 = buildModelDecisionDataFromContent({ engine: kling25, locale: 'fr' });
+  const es25 = buildModelDecisionDataFromContent({ engine: kling25, locale: 'es' });
+  const en26 = buildModelDecisionDataFromContent({ engine: kling26, locale: 'en' });
+  const fr26 = buildModelDecisionDataFromContent({ engine: kling26, locale: 'fr' });
+  const es26 = buildModelDecisionDataFromContent({ engine: kling26, locale: 'es' });
 
   assert.ok(en25);
   assert.ok(fr25);
@@ -671,12 +679,12 @@ test('Kling 2.x legacy templates stay distinct from current Kling 3 routes', () 
 test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks', () => {
   const wan25 = getEngine('wan-2-5');
   const wan26 = getEngine('wan-2-6');
-  const en25 = buildModelDecisionData({ engine: wan25, locale: 'en' });
-  const fr25 = buildModelDecisionData({ engine: wan25, locale: 'fr' });
-  const es25 = buildModelDecisionData({ engine: wan25, locale: 'es' });
-  const en26 = buildModelDecisionData({ engine: wan26, locale: 'en' });
-  const fr26 = buildModelDecisionData({ engine: wan26, locale: 'fr' });
-  const es26 = buildModelDecisionData({ engine: wan26, locale: 'es' });
+  const en25 = buildModelDecisionDataFromContent({ engine: wan25, locale: 'en' });
+  const fr25 = buildModelDecisionDataFromContent({ engine: wan25, locale: 'fr' });
+  const es25 = buildModelDecisionDataFromContent({ engine: wan25, locale: 'es' });
+  const en26 = buildModelDecisionDataFromContent({ engine: wan26, locale: 'en' });
+  const fr26 = buildModelDecisionDataFromContent({ engine: wan26, locale: 'fr' });
+  const es26 = buildModelDecisionDataFromContent({ engine: wan26, locale: 'es' });
 
   assert.ok(en25);
   assert.ok(fr25);
@@ -720,9 +728,9 @@ test('Wan templates separate 2.6 reference-video workflow from 2.5 audio checks'
 
 test('Seedream returns reference-prep decision data for still preparation', () => {
   const seedream = getEngine('seedream');
-  const en = buildModelDecisionData({ engine: seedream, locale: 'en' });
-  const fr = buildModelDecisionData({ engine: seedream, locale: 'fr' });
-  const es = buildModelDecisionData({ engine: seedream, locale: 'es' });
+  const en = buildModelDecisionDataFromContent({ engine: seedream, locale: 'en' });
+  const fr = buildModelDecisionDataFromContent({ engine: seedream, locale: 'fr' });
+  const es = buildModelDecisionDataFromContent({ engine: seedream, locale: 'es' });
 
   assert.ok(en);
   assert.ok(fr);
@@ -740,11 +748,11 @@ test('Seedream returns reference-prep decision data for still preparation', () =
 });
 
 test('second-wave model templates return distinct decision data without overclaims', () => {
-  const veoFast = buildModelDecisionData({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
-  const veoLite = buildModelDecisionData({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
-  const klingStandard = buildModelDecisionData({ engine: getEngine('kling-3-standard'), locale: 'en' });
-  const kling4k = buildModelDecisionData({ engine: getEngine('kling-3-4k'), locale: 'en' });
-  const ltxPro = buildModelDecisionData({ engine: getEngine('ltx-2-3'), locale: 'en' });
+  const veoFast = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-fast'), locale: 'en' });
+  const veoLite = buildModelDecisionDataFromContent({ engine: getEngine('veo-3-1-lite'), locale: 'en' });
+  const klingStandard = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-standard'), locale: 'en' });
+  const kling4k = buildModelDecisionDataFromContent({ engine: getEngine('kling-3-4k'), locale: 'en' });
+  const ltxPro = buildModelDecisionDataFromContent({ engine: getEngine('ltx-2-3'), locale: 'en' });
 
   assert.ok(veoFast);
   assert.ok(veoLite);
@@ -1009,7 +1017,7 @@ test('model page demo media can reuse a verified fallback clip when no public jo
 
 test('Seedance 2.0 schema can use decision metadata without a free price offer', () => {
   const seedance = getEngine('seedance-2-0');
-  const decision = buildModelDecisionData({ engine: seedance, locale: 'en' });
+  const decision = buildModelDecisionDataFromContent({ engine: seedance, locale: 'en' });
   assert.ok(decision);
 
   const schemas = buildModelSchemaPayloads({

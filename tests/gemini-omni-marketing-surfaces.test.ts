@@ -8,7 +8,7 @@ import compareConfig from '../frontend/config/compare-config.json' with { type: 
 import scoresFile from '../data/benchmarks/engine-scores.v1.json' with { type: 'json' };
 import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } from '../frontend/config/navigation.ts';
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
-import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
+import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
@@ -87,7 +87,7 @@ test('Gemini Omni Flash decision template exposes app, pricing, specs and Veo co
   assert.ok(engine, 'Gemini Omni Flash engine should exist');
 
   for (const locale of LOCALES) {
-    const decision = buildModelDecisionData({ engine, locale });
+    const decision = buildModelDecisionDataFromContent({ engine, locale });
     assert.ok(decision, `${locale} decision data should exist`);
     assert.equal(decision.hero.primaryCta.href, '/app?engine=gemini-omni-flash');
     assert.ok(decision.hero.quickLinks.some((link) => link.href.includes('gemini-omni-flash-vs-veo-3-1')));

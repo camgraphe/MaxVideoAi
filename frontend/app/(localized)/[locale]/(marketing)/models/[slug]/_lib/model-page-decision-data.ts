@@ -2,7 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 import type { FalEngineEntry } from '@/config/falEngines';
 
 import { buildDecisionPricingScenarios, type ModelDecisionPricingScenario } from './model-page-decision-pricing';
-import { getModelDecisionCopy } from './model-page-template-copy';
+import { parseModelDecisionContent } from './model-page-decision-content';
 import { getModelPageTemplateConfig } from './model-page-template-registry';
 import type { ModelPagePricingPreset } from './model-page-template-types';
 
@@ -73,16 +73,22 @@ export function buildModelDecisionPricingScenarios(
 export function buildModelDecisionData({
   engine,
   locale,
+  decisionContent,
 }: {
   engine: FalEngineEntry;
   locale: AppLocale;
+  decisionContent: unknown;
 }): ModelDecisionData | null {
   const template = getModelPageTemplateConfig(engine.modelSlug);
 
   if (!template) return null;
 
-  const copy = getModelDecisionCopy(engine.modelSlug, locale);
-  if (!copy) return null;
+  const copy = parseModelDecisionContent(
+    decisionContent,
+    engine.modelSlug,
+    locale,
+    `content/models/${locale}/${engine.modelSlug}.json#decision`
+  );
   const scenarios = buildModelDecisionPricingScenarios(engine, locale, template.pricing.presets).map((scenario) =>
     scenario.id === 'max-duration' && copy.pricingCopy.maxDurationNote
       ? { ...scenario, note: copy.pricingCopy.maxDurationNote }

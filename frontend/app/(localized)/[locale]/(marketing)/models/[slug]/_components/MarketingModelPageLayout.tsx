@@ -284,7 +284,11 @@ export function MarketingModelPageLayout({
   const faqJsonLdEntries = faqList.slice(0, 6);
   const prepLinksSection = buildModelPrepLinksSection(engine.modelSlug, locale);
   const pricingCallout = buildModelPricingCallout(engine.modelSlug, locale);
-  const templateData = buildModelDecisionData({ engine, locale });
+  const templateData = buildModelDecisionData({
+    engine,
+    locale,
+    decisionContent: localizedContent.decision,
+  });
   const templateConfig = templateData ? getModelPageTemplateConfig(engine.modelSlug) : null;
   const sectionLabels = resolveSectionLabels(locale);
   const compareCopy = resolveCompareCopy(locale, heroTitle, supportsNativeAudio);

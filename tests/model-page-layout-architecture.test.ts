@@ -109,6 +109,7 @@ test('model page layout delegates template page ownership', () => {
     assert.ok(existsSync(path), `${path} should exist`);
   }
 
+  const modelPageSource = readSource(modelPagePath);
   const layoutSource = readSource(layoutPath);
   const decisionDataSource = readSource(decisionDataPath);
   const decisionPricingSource = readSource(decisionPricingPath);
@@ -136,7 +137,10 @@ test('model page layout delegates template page ownership', () => {
 
   assert.match(decisionDataSource, /getModelPageTemplateConfig\(engine\.modelSlug\)/, 'decision data should use the template registry route guard');
   assert.match(decisionDataSource, /if \(!template\) return null/, 'decision data should return null for non-template pages');
-  assert.match(decisionDataSource, /getModelDecisionCopy\(engine\.modelSlug,\s*locale\)/, 'decision data should delegate localized copy selection');
+  assert.match(decisionDataSource, /parseModelDecisionContent/);
+  assert.match(decisionDataSource, /decisionContent:\s*unknown/);
+  assert.match(modelPageSource, /decisionContent:\s*localized\.decision/);
+  assert.match(layoutSource, /decisionContent:\s*localizedContent\.decision/);
   assert.doesNotMatch(
     decisionDataSource,
     /SEEDANCE_20_COPY|SEEDANCE_20_FAST_COPY|LTX_23_FAST_COPY|COPY_BY_MODEL_SLUG|buildSlugMap\('pricing'\)|Seedance 2\.0 or Fast\?/,
