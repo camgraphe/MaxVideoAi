@@ -5127,21 +5127,9 @@
           "title": "LTX 2 Fast vs WAN 2.6 — Calidad, velocidad y costo | MaxVideoAI",
           "description": "Compara LTX 2 Fast vs WAN 2.6 con los mismos prompts, specs clave, precios y un scorecard de 11 puntos. Revisa velocidad/estabilidad frente al soporte de video a video."
         },
-        "veo-3-1-vs-veo-3-1-fast": {
-          "title": "Veo 3.1 vs Veo 3.1 Fast | Comparación de modelos de video IA | MaxVideoAI",
-          "description": "Compara Veo 3.1 vs Veo 3.1 Fast en MaxVideoAI con prompts idénticos: specs, precios, tradeoffs de velocidad y calidad de salida lado a lado."
-        },
-        "veo-3-1-fast-vs-veo-3-1-lite": {
-          "title": "Veo 3.1 Fast vs Veo 3.1 Lite | Comparación de modelos de video IA | MaxVideoAI",
-          "description": "Compara Veo 3.1 Fast vs Veo 3.1 Lite en MaxVideoAI con prompts idénticos: tradeoffs fast vs lite, specs, precios, comportamiento del audio nativo y calidad de salida lado a lado."
-        },
         "wan-2-5-vs-wan-2-6": {
           "title": "WAN 2.5 vs WAN 2.6 — Novedades + specs | MaxVideoAI",
           "description": "Mira qué cambia en WAN 2.6 vs 2.5: clips más largos, salida multi-shot, soporte de video a video, precios y scorecard de 11 puntos con prompts idénticos."
-        },
-        "ltx-2-vs-wan-2-6": {
-          "title": "LTX 2 vs WAN 2.6 — Calidad, modos y costo | MaxVideoAI",
-          "description": "Compara LTX 2 vs WAN 2.6 con los mismos prompts: calidad, movimiento, texto, modos, precios y scorecard de 11 puntos. Elige el mejor para tu flujo de trabajo."
         },
         "ltx-2-fast-vs-wan-2-5": {
           "title": "LTX 2 Fast vs WAN 2.5 — Calidad, velocidad y costo | MaxVideoAI",
@@ -5167,17 +5155,9 @@
           "title": "LTX 2 vs Veo 3.1 — Calidad, costo y modos | MaxVideoAI",
           "description": "Compara LTX 2 vs Google Veo 3.1 con prompts idénticos: calidad, realismo del movimiento, legibilidad del texto, modos, precios y scorecard de 11 puntos."
         },
-        "seedance-1-5-pro-vs-seedance-2-0": {
-          "title": "Seedance 1.5 Pro vs Seedance 2.0 — qué cambió y cuándo actualizar | MaxVideoAI",
-          "description": "Compara Seedance 1.5 Pro vs Seedance 2.0: qué cambió, cuándo actualizar, specs actuales, precios y pruebas con los mismos prompts en MaxVideoAI."
-        },
         "seedance-2-0-vs-veo-3-1": {
           "title": "Seedance 2.0 vs Veo 3.1 | Comparación de modelos de video IA | MaxVideoAI",
           "description": "Compara Seedance 2.0 vs Veo 3.1 en MaxVideoAI con prompts idénticos: specs, precios, workflows de audio y resultados lado a lado."
-        },
-        "seedance-2-0-vs-seedance-2-0-fast": {
-          "title": "Seedance 2.0 vs Seedance 2.0 Fast | Comparación de modelos de video IA | MaxVideoAI",
-          "description": "Compara Seedance 2.0 vs Seedance 2.0 Fast en MaxVideoAI con prompts idénticos: tradeoffs entre estándar y fast, specs, precios y calidad lado a lado."
         },
         "kling-3-pro-vs-seedance-2-0": {
           "title": "Kling 3 Pro vs Seedance 2.0 | Comparación de modelos de video IA | MaxVideoAI",
@@ -5219,17 +5199,9 @@
           "title": "Sora 2 vs Sora 2 Pro — Diferencias y costo | MaxVideoAI",
           "description": "Compara Sora 2 vs Sora 2 Pro: calidad de salida, audio nativo, resolución/duración máximas y precios, probado con prompts idénticos y un scorecard."
         },
-        "kling-3-pro-vs-kling-3-standard": {
-          "title": "Kling 3 Pro vs Kling 3 Standard | Comparación de modelos de video IA | MaxVideoAI",
-          "description": "Compara Kling 3 Pro vs Kling 3 Standard en MaxVideoAI con prompts idénticos: workflow current premium vs workflow current de menor costo, specs, precios y calidad de salida lado a lado."
-        },
         "kling-3-4k-vs-kling-3-pro": {
           "title": "Kling 3 4K vs Kling 3 Pro | 4K nativo vs 1080p | MaxVideoAI",
           "description": "Compara Kling 3 4K y Kling 3 Pro en MaxVideoAI: entrega 4K nativa, iteracion 1080p, precios, modos y cuando usar cada ruta."
-        },
-        "kling-2-6-pro-vs-kling-3-pro": {
-          "title": "Kling 2.6 Pro vs Kling 3 Pro — qué cambió y cuándo actualizar | MaxVideoAI",
-          "description": "Compara Kling 2.6 Pro vs Kling 3 Pro: qué cambió, cuándo actualizar, specs actuales, precios y pruebas con los mismos prompts en MaxVideoAI."
         },
         "kling-2-6-pro-vs-seedance-2-0": {
           "title": "Kling 2.6 Pro vs Seedance 2 — Puntuaciones y precios | MaxVideoAI",

@@ -10,6 +10,7 @@ import {
 import type { ComparePageContentDocument } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts';
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'comparisons');
+const MESSAGES_DIR = path.join(process.cwd(), 'frontend', 'messages');
 const LOCALES = ['en', 'fr', 'es'] as const;
 const SUPPORTED_HREF_BY_LOCALE = {
   en: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$))/,
@@ -82,6 +83,21 @@ test('the stable loader returns every exact requested locale projection', () => 
     for (const locale of LOCALES) {
       assert.deepEqual(getComparePageOverride(locale, document.slug), document[locale], `${locale} ${document.slug}`);
     }
+  }
+});
+
+test('comparison documents never duplicate message metadata overrides', () => {
+  const documentSlugs = new Set(contentFiles().map((fileName) => fileName.slice(0, -'.json'.length)));
+
+  for (const locale of LOCALES) {
+    const messages = JSON.parse(readFileSync(path.join(MESSAGES_DIR, `${locale}.json`), 'utf8')) as {
+      comparePage?: { meta?: { slugOverrides?: Record<string, unknown> } };
+    };
+    const duplicateSlugs = Object.keys(messages.comparePage?.meta?.slugOverrides ?? {})
+      .filter((slug) => documentSlugs.has(slug))
+      .sort();
+
+    assert.deepEqual(duplicateSlugs, [], `${locale} comparison metadata must have exactly one owner`);
   }
 });
 

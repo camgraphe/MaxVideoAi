@@ -1,7 +1,7 @@
 # Comparison Localized Content Organization Design
 
 **Date:** 2026-07-15
-**Status:** Approved in conversation; pending written-spec review
+**Status:** Implemented; final metadata-ownership clarification applied
 **Scope:** Localized editorial overrides for comparison detail pages
 
 ## Context
@@ -27,6 +27,8 @@ The project therefore has two deliberately separated phases: first complete thos
 5. Preserve the existing public loader contract and every rendered result after the explicit parity additions.
 6. Delete the three large locale-specific TypeScript sources after a proven mechanical migration.
 7. Avoid adding a CMS, database table, generated registry, compatibility fallback, or generic content framework.
+8. Give every canonical comparison slug exactly one metadata owner: its enriched JSON document,
+   when present, or the locale-message SEO fallback for a generic comparison without a document.
 
 ## Non-goals
 
@@ -45,6 +47,8 @@ The project therefore has two deliberately separated phases: first complete thos
 - 141 slug-locale projections. Phase A changes only the enumerated missing localized fields; Phase B preserves the completed projections exactly.
 - The current consumer API is `getComparePageOverride(locale, slug)` from `compare-page-overrides.ts`.
 - Comparison pages without an override intentionally fall through to the existing generic comparison content.
+- Locale message files may retain `compareCopy.meta.slugOverrides` only for generic comparisons
+  without a content document. Their slug sets must remain disjoint from the discovered JSON inventory.
 
 ### Known localized enrichment gaps
 
@@ -117,7 +121,8 @@ No additional facade, generated manifest, registry, cache service, or fallback a
 
 Consumer behavior is unchanged:
 
-- no content file: return `undefined`, preserving the generic comparison renderer;
+- no content file: return `undefined`, preserving the generic comparison renderer; the metadata
+  builder may separately use the existing locale-message SEO fallback for that generic comparison;
 - valid content file: return the exact requested locale object;
 - present but invalid content file: throw an error that identifies the file and failing field;
 - present content file missing `en`, `fr`, or `es`: throw; never fall back to English.
@@ -173,7 +178,10 @@ After Phase A, the migration is mechanical and must not change prose.
 7. Delete `compare-page-overrides-en.ts`, `compare-page-overrides-fr.ts`, and `compare-page-overrides-es.ts` in the same completed batch.
 8. Delete the one-off converter and old/new comparison bridge. Neither belongs in the final architecture.
 
-The implementation may use incremental commits for review, but the final branch must have one source of truth only.
+The implementation may use incremental commits for review, but the final branch must have one
+source of truth for every enriched comparison. Metadata for a document-backed slug belongs to
+that document; locale-message overrides remain only for generic comparisons without documents,
+and the two slug inventories must have an empty intersection.
 
 ## SEO and Route Preservation
 
@@ -202,6 +210,8 @@ Permanent contracts must verify:
 - filename and internal slug match;
 - links remain byte-identical, resolve to supported public route families, and never use a crossed FR/ES locale prefix;
 - every file is reachable through `getComparePageOverride` for all three locales;
+- each locale has an empty intersection between discovered document slugs and
+  `compareCopy.meta.slugOverrides`, while generic message-only SEO fallbacks remain valid;
 - a missing file still returns `undefined` for the generic renderer;
 - malformed, incomplete, unknown-field, and path-unsafe fixtures are rejected;
 - routes consume only `compare-page-overrides.ts` and never direct JSON files;
@@ -235,12 +245,15 @@ The final diff must show no changes to pricing sources, model registries, compar
 
 ## Acceptance Criteria
 
-- 47 JSON files are the only enriched comparison-content source.
+- 47 JSON files are the only enriched comparison-content source and own the metadata of every
+  document-backed slug.
 - Every file owns exactly one slug and all three locales.
 - Phase A adds only the enumerated FR/ES metadata and quick-verdict fields and passes localized editorial/SEO review.
 - All 141 Phase B projections are proven identical to the completed post-parity maps.
 - `getComparePageOverride(locale, slug)` retains its signature and observable behavior.
 - Generic comparisons remain generic.
+- Generic comparisons without documents may retain localized message metadata fallbacks; no slug
+  may be owned by both a document and `compareCopy.meta.slugOverrides`.
 - Missing locales and malformed enriched files fail before deployment.
 - No automatic English fallback exists for enriched content.
 - The three giant locale TypeScript files and temporary migration logic are deleted.

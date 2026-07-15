@@ -118,20 +118,24 @@ Keep serialization centralized to avoid inconsistent escaping.
 
 ## Localized Comparison Content
 
-Enriched comparison editorial content is owned by `content/comparisons/<canonical-slug>.json`.
-Each document contains one `slug` plus complete `en`, `fr`, and `es` projections. Keep those
-locale projections structurally aligned and edit them together; do not add locale-specific
-TypeScript maps, an English fallback, a generated registry, or direct JSON imports in routes.
+Enriched comparison editorial content, including slug-specific metadata, is owned by
+`content/comparisons/<canonical-slug>.json`. Each document contains one `slug` plus complete
+`en`, `fr`, and `es` projections. Keep those locale projections structurally aligned and edit
+them together; do not add locale-specific TypeScript maps, an English fallback, a generated
+registry, or direct JSON imports in routes.
 
-Routes and metadata builders consume only:
+Routes and metadata builders consume document-backed content through:
 
 ```ts
 getComparePageOverride(locale, canonicalSlug)
 ```
 
-Comparisons without a content document intentionally use the generic renderer. New or edited
-documents must pass `tests/comparison-content-contract.test.ts`, including identity, schema,
-locale parity, link, path-safety, and output-tracing contracts.
+Comparisons without a content document intentionally use the generic renderer and may keep
+slug-specific SEO fallback metadata in `compareCopy.meta.slugOverrides` in the locale message
+files. A canonical slug must never exist in both a comparison document and `slugOverrides`.
+New or edited documents must pass `tests/comparison-content-contract.test.ts`, including the
+dynamic empty-intersection, identity, schema, locale parity, link, path-safety, and
+output-tracing contracts.
 
 ## Refactor Checklist
 

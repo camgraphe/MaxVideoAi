@@ -34,7 +34,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Storyboard workspace: `StoryboardWorkspace.tsx` is now 488 physical lines (489 by the live audit metric) and remains the workflow orchestrator. Focused owners now cover the builder UI (`StoryboardBuilderPanel.tsx`), reference state and uploads (`useStoryboardReferences.ts`), pricing estimates (`useStoryboardPricing.ts`), workspace configuration (`storyboard-workspace-config.ts`), and Kling first-frame persistence (`storyboard-kling-first-frame-storage.ts`).
 - Admin transactions: the public server module is a thin facade over focused read-model, top-up, refund, normalization, and type owners; manual refund writes remain transactionally serialized by job.
 - Pricing policy administration: the public policy service is a thin facade over focused contract, dependency, deterministic rule, preview, confirmation, and read-model owners; preview fingerprints and transactional apply semantics remain unchanged.
-- Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES projections behind the unchanged route-facing loader; strict parity and validation contracts replace the three giant locale maps.
+- Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES editorial projections and their metadata behind the unchanged route-facing loader; locale-message metadata overrides remain only for generic comparisons without a document, and a dynamic empty-intersection contract prevents duplicate ownership.
 
 Representative contract tests:
 

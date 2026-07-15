@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Complete the known French and Spanish comparison-content gaps, then replace three giant locale maps with 47 strict per-comparison JSON documents without changing routes, prices, product facts, or any previously rendered copy.
+**Goal:** Complete the known French and Spanish comparison-content gaps, then replace three giant locale maps with 47 strict per-comparison JSON documents and one unambiguous metadata owner per slug, without changing routes, prices, product facts, or any previously rendered copy.
 
-**Architecture:** Keep `getComparePageOverride(locale, slug)` as the stable synchronous route-facing API. Store one canonical comparison per `content/comparisons/<slug>.json`, with adjacent `en`, `fr`, and `es` projections; the existing facade becomes the direct server-only filesystem loader and strict validator, with no registry, cache, fallback, compatibility bridge, or generic content framework.
+**Architecture:** Keep `getComparePageOverride(locale, slug)` as the stable synchronous route-facing API. Store one canonical enriched comparison and its metadata per `content/comparisons/<slug>.json`, with adjacent `en`, `fr`, and `es` projections; the existing facade becomes the direct server-only filesystem loader and strict validator, with no registry, cache, fallback, compatibility bridge, or generic content framework. Locale-message `compareCopy.meta.slugOverrides` remain only as SEO fallbacks for generic comparisons without a JSON document, and their slug sets must be disjoint from the JSON inventory.
 
 **Tech Stack:** TypeScript, Next.js 15 App Router, Node filesystem APIs, Zod 3.23, JSON content documents, Node test runner through `tsx --test`.
 
@@ -19,7 +19,10 @@
 - Phase B must preserve all 141 completed slug-locale projections exactly, including field presence, strings, arrays, order, links, and optional-field absence.
 - Keep `getComparePageOverride(locale: AppLocale, slug: string): ComparePageOverride | undefined` synchronous and observable behavior stable.
 - A valid missing file returns `undefined`; a present malformed or incomplete file throws; an enriched file never falls back to English.
-- Keep exactly one source of truth in the final branch: 47 files under `content/comparisons/`.
+- Keep exactly one source of truth per enriched comparison in the final branch: the 47 files under
+  `content/comparisons/` own document-backed editorial content and metadata. Locale-message
+  `slugOverrides` may remain only for generic comparisons without documents; require an empty
+  intersection between the two inventories in every locale.
 - Do not retain `compare-page-overrides-en.ts`, `compare-page-overrides-fr.ts`, `compare-page-overrides-es.ts`, a migration converter, or an old/new comparison bridge.
 - Tests must discover final JSON files dynamically; do not create a second permanent manual list of all 47 slugs or duplicate all editorial prose in a fixture.
 - Add `../content/comparisons/**/*` to the existing `CONTENT_GLOBS` in `frontend/next.config.js`.
@@ -30,10 +33,13 @@
 ## Target File Map
 
 - `content/comparisons/<slug>.json` — the only final enriched comparison-content source; one identity and all three locales per document.
+- `frontend/messages/{en,fr,es}.json` — metadata fallback only for generic comparison slugs that
+  have no JSON document; never a second owner for a document-backed slug.
 - `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts` — stable synchronous route-facing loader plus strict document validation.
 - `frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts` — `ComparePageOverride` and `ComparePageContentDocument` types only.
 - `frontend/next.config.js` — Vercel output tracing for comparison JSON content.
-- `tests/comparison-content-contract.test.ts` — dynamic document, loader, validation, link, missing-file, and path-safety contracts.
+- `tests/comparison-content-contract.test.ts` — dynamic document, loader, validation, link,
+  missing-file, path-safety, and empty JSON/message metadata-intersection contracts.
 - Existing comparison tests — consume `getComparePageOverride` instead of obsolete locale maps.
 - `tests/compare-page-architecture.test.ts` — final ownership, tracing, route isolation, and obsolete-file absence contracts.
 - `docs/engineering/page-architecture.md` — durable comparison content ownership rule.
@@ -1228,20 +1234,24 @@ Add this section before `## Refactor Checklist` in `docs/engineering/page-archit
 ````markdown
 ## Localized Comparison Content
 
-Enriched comparison editorial content is owned by `content/comparisons/<canonical-slug>.json`.
-Each document contains one `slug` plus complete `en`, `fr`, and `es` projections. Keep those
-locale projections structurally aligned and edit them together; do not add locale-specific
-TypeScript maps, an English fallback, a generated registry, or direct JSON imports in routes.
+Enriched comparison editorial content, including slug-specific metadata, is owned by
+`content/comparisons/<canonical-slug>.json`. Each document contains one `slug` plus complete
+`en`, `fr`, and `es` projections. Keep those locale projections structurally aligned and edit
+them together; do not add locale-specific TypeScript maps, an English fallback, a generated
+registry, or direct JSON imports in routes.
 
-Routes and metadata builders consume only:
+Routes and metadata builders consume document-backed content through:
 
 ```ts
 getComparePageOverride(locale, canonicalSlug)
 ```
 
-Comparisons without a content document intentionally use the generic renderer. New or edited
-documents must pass `tests/comparison-content-contract.test.ts`, including identity, schema,
-locale parity, link, path-safety, and output-tracing contracts.
+Comparisons without a content document intentionally use the generic renderer and may keep
+slug-specific SEO fallback metadata in `compareCopy.meta.slugOverrides` in the locale message
+files. A canonical slug must never exist in both a comparison document and `slugOverrides`.
+New or edited documents must pass `tests/comparison-content-contract.test.ts`, including the
+dynamic empty-intersection, identity, schema, locale parity, link, path-safety, and
+output-tracing contracts.
 ````
 
 - [ ] **Step 2: Refresh the live cleanup roadmap**
