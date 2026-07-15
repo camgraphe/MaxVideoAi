@@ -221,6 +221,13 @@ async function main() {
     const transformed = transformValue(sourceOverlay, baseReplacements) as ModelOverlay;
 
     transformed.marketingName = options.targetName;
+    const decision = transformed.decision;
+    if (decision && typeof decision === 'object' && !Array.isArray(decision)) {
+      transformed.decision = {
+        ...(decision as Record<string, unknown>),
+        modelSlug: options.targetSlug,
+      };
+    }
     if (options.targetVersionLabel) {
       transformed.versionLabel = options.targetVersionLabel;
     }

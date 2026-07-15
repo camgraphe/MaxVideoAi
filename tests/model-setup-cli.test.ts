@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const script = 'scripts/model-setup.mjs';
+const scaffoldSource = readFileSync('frontend/scripts/scaffold-model-page.ts', 'utf8');
+const setupSource = readFileSync(script, 'utf8');
 
 function run(args: string[]) {
   return spawnSync(process.execPath, [script, ...args], {
@@ -29,6 +31,12 @@ const requiredArgs = [
   '--family',
   'seedance',
 ];
+
+test('model scaffold retargets decision identity and setup requires localized decision review', () => {
+  assert.match(scaffoldSource, /transformed\.decision/);
+  assert.match(scaffoldSource, /modelSlug:\s*options\.targetSlug/);
+  assert.match(setupSource, /Verify every localized `decision` block/);
+});
 
 test('model setup documents and validates canonical model categories', () => {
   const help = run(['--help']);

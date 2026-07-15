@@ -10,6 +10,33 @@ import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
 const I18N_SOURCE = readFileSync(path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n.ts'), 'utf8');
+const MODEL_ROUTE_ROOT = path.join(
+  process.cwd(),
+  'frontend',
+  'app',
+  '(localized)',
+  '[locale]',
+  '(marketing)',
+  'models',
+  '[slug]',
+);
+
+function typeScriptFiles(root: string): string[] {
+  return readdirSync(root, { withFileTypes: true }).flatMap((entry) => {
+    const entryPath = path.join(root, entry.name);
+    if (entry.isDirectory()) return typeScriptFiles(entryPath);
+    return /\.(?:ts|tsx)$/.test(entry.name) ? [entryPath] : [];
+  });
+}
+
+test('production model route has no obsolete copy owner or direct localized JSON import', () => {
+  const source = typeScriptFiles(MODEL_ROUTE_ROOT)
+    .map((filePath) => readFileSync(filePath, 'utf8'))
+    .join('\n');
+
+  assert.doesNotMatch(source, /model-page-template-copy|COPY_BY_MODEL_SLUG|ADDITIONAL_TEMPLATE_COPY/);
+  assert.doesNotMatch(source, /from\s+['"][^'"]*content\/models\/[^'"]+\.json['"]/);
+});
 
 function files(locale: AppLocale) {
   return readdirSync(path.join(CONTENT_ROOT, locale)).filter((name) => name.endsWith('.json')).sort();
