@@ -8,9 +8,7 @@ import {
   canonicalizePublishedCompareSlug,
   getHubComparisonSlugsForSitemap,
 } from '../frontend/lib/compare-hub/data.ts';
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import gscSnapshot from '../docs/seo/gsc-comparison-performance-2026-07-08.json';
 import {
   buildComparisonIndexationMatrix,
@@ -296,11 +294,12 @@ L'inventaire exhaustif des ${document.summary.totalUrls} URLs se trouve dans \`$
 export function generateComparisonIndexationArtifacts(): ComparisonIndexationArtifacts {
   const publishedSlugs = getHubComparisonSlugsForSitemap();
   const strategicSignalsBySlug = collectStrategicComparisonSignals(publishedSlugs);
-  const localizedOverrideSlugs: Record<ComparisonLocale, ReadonlySet<string>> = {
-    en: new Set(Object.keys(EN_COMPARE_PAGE_OVERRIDES)),
-    fr: new Set(Object.keys(FR_COMPARE_PAGE_OVERRIDES)),
-    es: new Set(Object.keys(ES_COMPARE_PAGE_OVERRIDES)),
-  };
+  const localizedOverrideSlugs = Object.fromEntries(
+    LOCALES.map((locale) => [
+      locale,
+      new Set(publishedSlugs.filter((slug) => getComparePageOverride(locale, slug) !== undefined)),
+    ]),
+  ) as Record<ComparisonLocale, ReadonlySet<string>>;
   const gscRows = gscSnapshot.rows as ComparisonGscRow[];
   const publishedSlugSet = new Set(publishedSlugs);
   const legacyGscRows = gscRows

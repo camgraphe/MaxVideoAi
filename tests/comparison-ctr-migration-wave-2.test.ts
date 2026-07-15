@@ -2,9 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import type { ComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts';
 import {
   canonicalizePublishedCompareSlug,
@@ -35,18 +33,11 @@ const LEGACY_SUCCESSOR_LINKS = {
 } as const;
 
 type Locale = 'en' | 'fr' | 'es';
-type OverrideMap = Record<string, ComparePageOverride>;
-
-const OVERRIDES_BY_LOCALE: Record<Locale, OverrideMap> = {
-  en: EN_COMPARE_PAGE_OVERRIDES,
-  fr: FR_COMPARE_PAGE_OVERRIDES,
-  es: ES_COMPARE_PAGE_OVERRIDES,
-};
 
 const CATALOG_BY_SLUG = new Map(engineCatalog.map((entry) => [entry.modelSlug, entry]));
 
 function getEntry(locale: Locale, slug: string): ComparePageOverride {
-  const entry = OVERRIDES_BY_LOCALE[locale][slug];
+  const entry = getComparePageOverride(locale, slug);
   assert.ok(entry, `missing ${locale.toUpperCase()} wave-2 override for ${slug}`);
   return entry;
 }

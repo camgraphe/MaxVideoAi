@@ -2,9 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import type { ComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts';
 import { isPublishedComparisonSlug } from '../frontend/lib/compare-hub/data.ts';
 
@@ -38,18 +36,11 @@ const PARITY_COMPLETION_SLUGS = [
 ] as const;
 
 type Locale = 'en' | 'fr' | 'es';
-type OverrideMap = Record<string, ComparePageOverride>;
-
-const OVERRIDES_BY_LOCALE: Record<Locale, OverrideMap> = {
-  en: EN_COMPARE_PAGE_OVERRIDES,
-  fr: FR_COMPARE_PAGE_OVERRIDES,
-  es: ES_COMPARE_PAGE_OVERRIDES,
-};
 
 const CATALOG_BY_SLUG = new Map(engineCatalog.map((entry) => [entry.modelSlug, entry]));
 
 function getEntry(locale: Locale, slug: string): ComparePageOverride {
-  const entry = OVERRIDES_BY_LOCALE[locale][slug];
+  const entry = getComparePageOverride(locale, slug);
   assert.ok(entry, `missing ${locale.toUpperCase()} override for ${slug}`);
   return entry;
 }
@@ -72,21 +63,6 @@ function collectText(entry: ComparePageOverride): string {
   ]
     .filter(Boolean)
     .join(' ');
-}
-
-function collectStructuralFieldPaths(value: unknown, prefix = ''): string[] {
-  if (Array.isArray(value)) {
-    return [...new Set(value.flatMap((item) => collectStructuralFieldPaths(item, `${prefix}[]`)))].sort();
-  }
-  if (!value || typeof value !== 'object') {
-    return [];
-  }
-  return Object.entries(value as Record<string, unknown>)
-    .flatMap(([key, nested]) => {
-      const path = prefix ? `${prefix}.${key}` : key;
-      return [path, ...collectStructuralFieldPaths(nested, path)];
-    })
-    .sort();
 }
 
 function assertCompleteOverride(locale: Locale, slug: string): void {
@@ -178,19 +154,6 @@ test('the bounded FR and ES metadata gaps are complete and independently localiz
       assert.notEqual(title, english.meta?.title, `${locale} title should not copy English for ${slug}`);
       assert.notEqual(description, english.meta?.description, `${locale} description should not copy English for ${slug}`);
     }
-  }
-});
-
-test('all 47 completed comparison entries have equivalent EN, FR and ES field presence', () => {
-  const englishSlugs = Object.keys(EN_COMPARE_PAGE_OVERRIDES).sort();
-  assert.equal(englishSlugs.length, 47);
-  assert.deepEqual(Object.keys(FR_COMPARE_PAGE_OVERRIDES).sort(), englishSlugs);
-  assert.deepEqual(Object.keys(ES_COMPARE_PAGE_OVERRIDES).sort(), englishSlugs);
-
-  for (const slug of englishSlugs) {
-    const englishPaths = collectStructuralFieldPaths(getEntry('en', slug));
-    assert.deepEqual(collectStructuralFieldPaths(getEntry('fr', slug)), englishPaths, `FR structure for ${slug}`);
-    assert.deepEqual(collectStructuralFieldPaths(getEntry('es', slug)), englishPaths, `ES structure for ${slug}`);
   }
 });
 

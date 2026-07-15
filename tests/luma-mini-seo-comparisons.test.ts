@@ -5,9 +5,7 @@ import test from 'node:test';
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
 import { buildCompareShowdownSlots } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
 
 type EngineCatalogEntry = (typeof engineCatalog)[number];
@@ -39,14 +37,15 @@ test('Luma Ray 3.2 and Seedance Mini SEO comparison wave is published', () => {
 
 test('Luma Ray 3.2 and Seedance Mini SEO comparisons have localized GEO overrides', () => {
   LUMA_MINI_SEO_COMPARISONS.forEach((slug) => {
-    assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug], `missing EN override for ${slug}`);
-    assert.ok(FR_COMPARE_PAGE_OVERRIDES[slug], `missing FR override for ${slug}`);
-    assert.ok(ES_COMPARE_PAGE_OVERRIDES[slug], `missing ES override for ${slug}`);
-    assert.ok((EN_COMPARE_PAGE_OVERRIDES[slug]?.faq?.items.length ?? 0) >= 3, `EN FAQ should cover ${slug}`);
+    const english = getComparePageOverride('en', slug);
+    assert.ok(english, `missing EN override for ${slug}`);
+    assert.ok(getComparePageOverride('fr', slug), `missing FR override for ${slug}`);
+    assert.ok(getComparePageOverride('es', slug), `missing ES override for ${slug}`);
+    assert.ok((english.faq?.items.length ?? 0) >= 3, `EN FAQ should cover ${slug}`);
   });
 
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-luma-ray-3-2']?.heroIntro ?? '', /scorecard-only/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['luma-ray-3-2-vs-veo-3-1-fast']?.heroIntro ?? '', /source-video control/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-luma-ray-3-2')?.heroIntro ?? '', /scorecard-only/);
+  assert.match(getComparePageOverride('en', 'luma-ray-3-2-vs-veo-3-1-fast')?.heroIntro ?? '', /source-video control/);
 });
 
 test('Seedance Mini vs Luma Ray 3.2 stays scorecard-only without comparison videos', async () => {

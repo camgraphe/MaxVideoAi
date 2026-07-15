@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import {
   CATALOG_BY_SLUG,
   ENGINE_OPTIONS,
@@ -56,23 +56,16 @@ const overrideSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts',
   'utf8'
 );
-const nextConfigSource = readFileSync('frontend/next.config.js', 'utf8');
 const overrideTypesSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts',
   'utf8'
 );
-const overrideEnSource = readFileSync(
+const obsoleteOverridePaths = [
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts',
-  'utf8'
-);
-const overrideFrSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts',
-  'utf8'
-);
-const overrideEsSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts',
-  'utf8'
-);
+];
+const nextConfigSource = readFileSync('frontend/next.config.js', 'utf8');
 const faqSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-faq.ts',
   'utf8'
@@ -246,7 +239,7 @@ const canonicalMiniCompareOverrideSlugs = [
 ];
 
 test('Seedance 2.0 vs Fast comparison owns CTR metadata without a site-name suffix', () => {
-  const override = EN_COMPARE_PAGE_OVERRIDES['seedance-2-0-vs-seedance-2-0-fast'];
+  const override = getComparePageOverride('en', 'seedance-2-0-vs-seedance-2-0-fast');
   const meta = override?.meta as { title?: string; description?: string; titleBranding?: string } | undefined;
   const title = 'Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses';
   const description =
@@ -349,7 +342,7 @@ test('Seedance 2.0 vs Fast comparison uses curated opposite-engine watch-page ou
 });
 
 test('Veo 3.1 Lite vs Fast comparison owns tier CTR metadata without a site-name suffix', () => {
-  const override = EN_COMPARE_PAGE_OVERRIDES['veo-3-1-fast-vs-veo-3-1-lite'];
+  const override = getComparePageOverride('en', 'veo-3-1-fast-vs-veo-3-1-lite');
   const meta = override?.meta as { title?: string; description?: string; titleBranding?: string } | undefined;
   const title = 'Veo 3.1 Lite vs Fast: Price, Quality & Best Uses';
   const description =
@@ -459,30 +452,31 @@ test('Seedance 2.0 Mini family showdowns reuse the Standard vs Fast prompts with
 
 test('Seedance 2.0 Mini localized compare overrides distinguish family videos from scorecard-only pages', () => {
   canonicalMiniCompareOverrideSlugs.forEach((slug) => {
-    assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug], `missing EN Mini override for ${slug}`);
-    assert.match(overrideFrSource, new RegExp(`'${slug}'`));
-    assert.match(overrideEsSource, new RegExp(`'${slug}'`));
+    assert.ok(getComparePageOverride('en', slug), `missing EN Mini override for ${slug}`);
+    assert.ok(getComparePageOverride('fr', slug), `missing FR Mini override for ${slug}`);
+    assert.ok(getComparePageOverride('es', slug), `missing ES Mini override for ${slug}`);
   });
 
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /flagship final-quality/);
-  assert.doesNotMatch(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /scorecard and specs comparison/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0']?.heroIntro ?? '', /side-by-side Mini vs Seedance 2\.0 videos/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0-fast']?.heroIntro ?? '', /lower-cost batch volume/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-seedance-2-0-fast']?.heroIntro ?? '', /side-by-side Mini vs Fast videos/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-ltx-2-3-fast']?.heroIntro ?? '', /480p\/720p batches/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-veo-3-1-fast']?.heroIntro ?? '', /does not include comparison videos/);
-  assert.match(overrideFrSource, /videos cote-a-cote Mini vs Seedance 2\.0/);
-  assert.match(overrideFrSource, /videos cote-a-cote Mini vs Fast/);
-  assert.match(overrideEsSource, /videos lado a lado Mini vs Seedance 2\.0/);
-  assert.match(overrideEsSource, /videos lado a lado Mini vs Fast/);
-  assert.match(overrideFrSource, /n inclut pas de videos comparatives/);
-  assert.match(overrideEsSource, /no incluye videos comparativos/);
-  [overrideEnSource, overrideFrSource, overrideEsSource].forEach((source) => {
-    const seedanceSlice = source.slice(
-      source.indexOf("'seedance-2-0-vs-seedance-2-0-fast'"),
-      source.indexOf("'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast'")
-    );
-    assert.doesNotMatch(seedanceSlice, /BytePlus|byteplus|fal\.ai|\bFal\b/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-seedance-2-0')?.heroIntro ?? '', /flagship final-quality/);
+  assert.doesNotMatch(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-seedance-2-0')?.heroIntro ?? '', /scorecard and specs comparison/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-seedance-2-0')?.heroIntro ?? '', /side-by-side Mini vs Seedance 2\.0 videos/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast')?.heroIntro ?? '', /lower-cost batch volume/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast')?.heroIntro ?? '', /side-by-side Mini vs Fast videos/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast')?.heroIntro ?? '', /480p\/720p batches/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-veo-3-1-fast')?.heroIntro ?? '', /does not include comparison videos/);
+  assert.match(getComparePageOverride('fr', 'dreamina-seedance-2-0-mini-vs-seedance-2-0')?.heroIntro ?? '', /videos cote-a-cote Mini vs Seedance 2\.0/);
+  assert.match(getComparePageOverride('fr', 'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast')?.heroIntro ?? '', /videos cote-a-cote Mini vs Fast/);
+  assert.match(getComparePageOverride('es', 'dreamina-seedance-2-0-mini-vs-seedance-2-0')?.heroIntro ?? '', /videos lado a lado Mini vs Seedance 2\.0/);
+  assert.match(getComparePageOverride('es', 'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast')?.heroIntro ?? '', /videos lado a lado Mini vs Fast/);
+  assert.match(getComparePageOverride('fr', 'dreamina-seedance-2-0-mini-vs-veo-3-1-fast')?.heroIntro ?? '', /n inclut pas de videos comparatives/);
+  assert.match(getComparePageOverride('es', 'dreamina-seedance-2-0-mini-vs-veo-3-1-fast')?.heroIntro ?? '', /no incluye videos comparativos/);
+  (['en', 'fr', 'es'] as const).forEach((locale) => {
+    const providerNeutralOverrides = [
+      'seedance-2-0-vs-seedance-2-0-fast',
+      'dreamina-seedance-2-0-mini-vs-seedance-2-0',
+      'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+    ].map((slug) => getComparePageOverride(locale, slug));
+    assert.doesNotMatch(JSON.stringify(providerNeutralOverrides), /BytePlus|byteplus|fal\.ai|\bFal\b/);
   });
 });
 
@@ -562,16 +556,24 @@ test('comparison detail helper facade delegates routing, pricing, specs, and str
   assert.match(overrideSource, /CONTENT_ROOT/);
   assert.match(overrideSource, /z\.ZodType<ComparePageContentDocument>/);
   assert.match(overrideSource, /const comparePageContentSchema[\s\S]*?\.strict\(\)/);
-  assert.doesNotMatch(overrideSource, /from '\.\/compare-page-overrides-(?:en|fr|es)'/);
+  assert.doesNotMatch(overrideSource, /compare-page-overrides-(en|fr|es)/);
   assert.match(overrideTypesSource, /export type ComparePageOverride/);
   assert.match(overrideTypesSource, /export type ComparePageContentDocument/);
-  assert.match(overrideEnSource, /export const EN_COMPARE_PAGE_OVERRIDES/);
-  assert.match(overrideFrSource, /export const FR_COMPARE_PAGE_OVERRIDES/);
-  assert.match(overrideEsSource, /export const ES_COMPARE_PAGE_OVERRIDES/);
   assert.doesNotMatch(helperSource, /const LOCALIZED_BEST_FOR/);
   assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
   assert.doesNotMatch(helperSource, /computeMarketingPriceRange/);
   assert.doesNotMatch(helperSource, /canonicalizeFalModelSlug/);
+});
+
+test('comparison content has one JSON source and is traced without route imports', () => {
+  for (const obsoletePath of obsoleteOverridePaths) {
+    assert.equal(existsSync(obsoletePath), false, `${obsoletePath} should be deleted`);
+  }
+  assert.match(nextConfigSource, /\.\.\/content\/comparisons\/\*\*\/\*/);
+  assert.doesNotMatch(pageSource, /content\/comparisons|\.json['"]/);
+  assert.doesNotMatch(metadataSource, /content\/comparisons|\.json['"]/);
+  assert.match(pageSource, /from '\.\/_lib\/compare-page-overrides'/);
+  assert.match(metadataSource, /from '\.\/compare-page-overrides'/);
 });
 
 test('comparison content is included in Next output tracing', () => {

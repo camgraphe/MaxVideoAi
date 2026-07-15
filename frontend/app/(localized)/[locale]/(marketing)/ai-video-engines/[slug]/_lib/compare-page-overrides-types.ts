@@ -1,5 +1,3 @@
-import type { AppLocale } from '@/i18n/locales';
-
 export type ComparePageOverride = {
   meta?: {
     title?: string;
@@ -36,6 +34,3 @@ export type ComparePageContentDocument = {
   fr: ComparePageOverride;
   es: ComparePageOverride;
 };
-
-export type ComparePageOverridesBySlug = Record<string, ComparePageOverride>;
-export type ComparePageOverridesByLocale = Partial<Record<AppLocale, ComparePageOverridesBySlug>>;

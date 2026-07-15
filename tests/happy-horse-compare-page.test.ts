@@ -5,9 +5,7 @@ import test from 'node:test';
 import compareConfig from '../frontend/config/compare-config.json' with { type: 'json' };
 import engineCatalog from '../frontend/config/engine-catalog.json' with { type: 'json' };
 import { buildCompareShowdownSlots } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-showdowns.ts';
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
 
 type EngineCatalogEntry = (typeof engineCatalog)[number];
@@ -58,16 +56,17 @@ test('Happy Horse 1.1 first-wave SEO comparisons are published', () => {
 
 test('Happy Horse 1.1 first-wave comparisons have localized GEO overrides', () => {
   HAPPY_HORSE_SEO_EXPANSION_SLUGS.forEach((slug) => {
-    assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug], `missing EN override for ${slug}`);
-    assert.ok(FR_COMPARE_PAGE_OVERRIDES[slug], `missing FR override for ${slug}`);
-    assert.ok(ES_COMPARE_PAGE_OVERRIDES[slug], `missing ES override for ${slug}`);
-    assert.ok(EN_COMPARE_PAGE_OVERRIDES[slug]?.heroIntro?.includes('Happy Horse'), `EN hero should mention Happy Horse for ${slug}`);
-    assert.ok((EN_COMPARE_PAGE_OVERRIDES[slug]?.faq?.items.length ?? 0) >= 3, `EN FAQ should cover ${slug}`);
+    const english = getComparePageOverride('en', slug);
+    assert.ok(english, `missing EN override for ${slug}`);
+    assert.ok(getComparePageOverride('fr', slug), `missing FR override for ${slug}`);
+    assert.ok(getComparePageOverride('es', slug), `missing ES override for ${slug}`);
+    assert.ok(english.heroIntro?.includes('Happy Horse'), `EN hero should mention Happy Horse for ${slug}`);
+    assert.ok((english.faq?.items.length ?? 0) >= 3, `EN FAQ should cover ${slug}`);
   });
 
-  assert.match(EN_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-happy-horse-1-1']?.heroIntro ?? '', /scorecard-only/);
-  assert.match(FR_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-happy-horse-1-1']?.heroIntro ?? '', /scorecard-only/);
-  assert.match(ES_COMPARE_PAGE_OVERRIDES['dreamina-seedance-2-0-mini-vs-happy-horse-1-1']?.heroIntro ?? '', /scorecard-only/);
+  assert.match(getComparePageOverride('en', 'dreamina-seedance-2-0-mini-vs-happy-horse-1-1')?.heroIntro ?? '', /scorecard-only/);
+  assert.match(getComparePageOverride('fr', 'dreamina-seedance-2-0-mini-vs-happy-horse-1-1')?.heroIntro ?? '', /scorecard-only/);
+  assert.match(getComparePageOverride('es', 'dreamina-seedance-2-0-mini-vs-happy-horse-1-1')?.heroIntro ?? '', /scorecard-only/);
 });
 
 test('Seedance Mini vs Happy Horse stays scoreboard-only without comparison videos', async () => {

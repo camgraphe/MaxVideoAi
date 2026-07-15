@@ -12,9 +12,7 @@ import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(ma
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
-import { EN_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-en.ts';
-import { FR_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-fr.ts';
-import { ES_COMPARE_PAGE_OVERRIDES } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-es.ts';
+import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
 import { getPublishedComparisonSlugs } from '../frontend/lib/compare-hub/data.ts';
 
 const PROJECT_ROOT = process.cwd();
@@ -133,11 +131,14 @@ test('Gemini Omni Flash comparison pages are published as scorecard-only with lo
     assert.ok(publishedSlugs.includes(slug), `${slug} should be a published comparison slug`);
   }
 
-  assert.ok(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG], 'missing EN Omni vs Veo override');
-  assert.ok(FR_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG], 'missing FR Omni vs Veo override');
-  assert.ok(ES_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG], 'missing ES Omni vs Veo override');
-  assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.heroIntro ?? '', /scorecard\/specs page/);
-  assert.match(EN_COMPARE_PAGE_OVERRIDES[PRIMARY_COMPARE_SLUG]?.quickVerdict?.body ?? '', /first\/last-frame|extend/i);
+  const englishComparison = getComparePageOverride('en', PRIMARY_COMPARE_SLUG);
+  const frenchComparison = getComparePageOverride('fr', PRIMARY_COMPARE_SLUG);
+  const spanishComparison = getComparePageOverride('es', PRIMARY_COMPARE_SLUG);
+  assert.ok(englishComparison, 'missing EN Omni vs Veo override');
+  assert.ok(frenchComparison, 'missing FR Omni vs Veo override');
+  assert.ok(spanishComparison, 'missing ES Omni vs Veo override');
+  assert.match(englishComparison.heroIntro ?? '', /scorecard\/specs page/);
+  assert.match(englishComparison.quickVerdict?.body ?? '', /first\/last-frame|extend/i);
 });
 
 test('Gemini Omni Flash limited preview is not labeled as pre-launch on compare pages', () => {
