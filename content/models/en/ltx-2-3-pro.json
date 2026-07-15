@@ -502,5 +502,100 @@
       "title": "LTX 2.3 Pro: Pricing, Audio, Extend & Retake | MaxVideoAI",
       "description": "Use LTX 2.3 Pro for production LTX video workflows: audio-to-video, Extend, Retake, image-to-video and higher-resolution generate passes."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-3-pro",
+    "section": {
+      "title": "How to Prompt LTX 2.3 Pro by Workflow",
+      "intro": "LTX 2.3 Pro changes shape depending on the job. Prompt fresh generation, audio-led animation, extend, and retake differently instead of using one universal template.",
+      "tip": "Tip: duration, resolution, fps, and workflow controls already live in the UI. Use the prompt to steer the active route: new shot, soundtrack-led motion, continuation, or surgical fix.",
+      "guide": null,
+      "referencesTitle": "How LTX 2.3 Pro uses Generate, Audio, Extend and Retake"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Generate",
+        "title": "Generate prompt",
+        "description": "Use when LTX is creating a fresh shot from text or a start image.",
+        "copy": "Subject:\nRugged desert adventurer holding an ancient brass compass at golden hour.\n\nAction:\nHe opens the compass and a glowing dust-map unfolds above it.\n\nCamera:\nWide rear establishing shot over dunes, then a slow push-in to his eyes reflecting the map.\n\nLook:\nWarm sun, drifting dust, bronze textures, clean premium adventure-film grade.\n\nAudio:\nDesert wind, soft metallic compass click, low atmospheric rumble.\n\nFormat:\n10 seconds, 16:9, no text, no logos."
+      },
+      {
+        "id": "structured",
+        "label": "Audio",
+        "title": "Audio-to-video prompt",
+        "description": "Use when soundtrack or dialogue should drive timing and staging.",
+        "copy": "Audio source:\n[What the soundtrack / dialogue / beat is doing]\n\nVisual staging:\n[What the viewer should see while the audio plays]\n\nCamera:\n[How the shot follows the rhythm]\n\nRule:\nLet the audio set pacing. Use the prompt to control subject, staging, and camera."
+      },
+      {
+        "id": "pro",
+        "label": "Extend",
+        "title": "Extend prompt",
+        "description": "Use when the current clip is good and you only need the next beat.",
+        "copy": "Current source:\n[What already exists]\n\nNext beat:\n[What should happen after the existing clip]\n\nContinuity to preserve:\n[Identity / setting / camera rhythm / light]\n\nRule:\nDescribe only the continuation. Do not rewrite the whole clip."
+      },
+      {
+        "id": "storyboard",
+        "label": "Retake",
+        "title": "Retake prompt",
+        "description": "Use when only one part of the clip needs to change.",
+        "copy": "Current source:\n[What is already correct]\n\nSection to retake:\n[Exact moment or visual problem]\n\nWhat must stay unchanged:\n[Everything outside the retake window]\n\nReplacement beat:\n[What the new section should do instead]\n\nRule:\nRetake prompts should be surgical. Ask for one repair, not a new scene."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Generate = create a new shot from text or image."
+      },
+      {
+        "tabId": "structured",
+        "body": "Audio = let the soundtrack carry timing and pacing."
+      },
+      {
+        "tabId": "pro",
+        "body": "Extend = add the next beat without drifting."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Retake = change only the damaged or weak section."
+      }
+    ],
+    "globalPrinciples": [
+      "Define one subject, one core beat and one camera move before layering style.",
+      "Use the workflow that matches the job: generate, audio, extend or retake.",
+      "For retakes, describe only the section that must change instead of rewriting the full video."
+    ],
+    "engineWhy": [
+      "Text and image generation stay direct and cinematic.",
+      "Audio-to-Video works best when the soundtrack carries timing and the prompt steers staging.",
+      "Extend and Retake are strongest when the prompt is specific about continuity and what must remain unchanged."
+    ],
+    "demo": {
+      "title": "Demo prompt - cinematic compass reveal",
+      "promptLabel": "Text-to-video generate prompt",
+      "prompt": "A rugged adventurer stands on the edge of a vast desert cliff at golden hour, sunburned face, worn leather jacket, scarf moving in the wind. He opens an ancient brass compass in his hand, and a glowing map made of floating light and dust unfolds above it, illuminating his face and the sand around him. The camera starts wide behind him to show the endless dunes, then pushes in slowly as he raises the compass, ending on a dramatic close view of his eyes reflecting the glowing map. Warm sun, drifting dust, rich bronze textures, epic but clean composition, premium cinematic adventure tone, simple and iconic. Wind over the dunes, faint metallic click from the compass, low atmospheric desert rumble, no text, no logos, no watermark.",
+      "notes": [
+        "One subject and one reveal beat",
+        "Camera path moves from establishing shot to close-up",
+        "Audio cues support the compass and desert atmosphere"
+      ],
+      "summary": {
+        "subject": "Adventurer at a desert cliff",
+        "action": "Opens an ancient compass that reveals a glowing map",
+        "camera": "Wide rear shot, then slow push-in toward the eyes",
+        "style": "Golden hour, drifting dust, bronze textures, premium adventure tone",
+        "output": "Desert wind, metallic compass click, low atmospheric rumble"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video generate prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "LTX 2.3 Pro desert compass adventure render"
+      }
+    },
+    "imageExamples": null
   }
 }

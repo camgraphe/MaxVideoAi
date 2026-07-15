@@ -386,5 +386,42 @@
       "title": "Luma Ray 2 Flash legacy: precios y borradores | MaxVideoAI",
       "description": "Usa Luma Ray 2 Flash como ruta Luma fast de generación anterior: precios de borrador, Modify, Reframe, contexto Ray 2 y migración a Ray 3.2."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Prompt Lab — Luma Ray 2 Flash",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Cómo Luma Ray 2 Flash usa imágenes iniciales y rutas de edición"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Prompt de demostración — Luma Ray 2 Flash",
+      "promptLabel": "Borrador Flash",
+      "prompt": "Borrador Luma Ray 2 Flash de 5 s en 16:9, salida sin audio.\nUn auto deportivo futurista entra en un túnel mojado y revela su silueta en una franja de luz.\nPush-in corto, cámara baja estable, reflejos rápidos sobre el asfalto, contraste limpio.\nUn solo beat de movimiento, energía de teaser, sin texto legible ni logo agregado.\nUsar Flash para validar dirección y timing antes de una pasada Ray 2.",
+      "notes": [],
+      "summary": {
+        "subject": "Auto deportivo en túnel mojado",
+        "action": "Entra en la luz y revela la silueta",
+        "camera": "Push-in corto, cámara baja y estable",
+        "style": "Borrador cinemático, reflejos rápidos, contraste limpio",
+        "output": "Borrador sin audio, listo para comparar con Ray 2"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Borrador Flash",
+        "outputLabel": "Salida",
+        "duration": "5 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Borrador de túnel Luma Ray 2 Flash"
+      }
+    },
+    "imageExamples": null
   }
 }

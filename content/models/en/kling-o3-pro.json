@@ -278,5 +278,82 @@
       "title": "Kling 3.0 Omni Pro: Reference, Storyboard & V2V | MaxVideoAI",
       "description": "Use Kling 3.0 Omni Pro for reference-to-video, storyboard inputs, source-video V2V, @Image and @Video1 prompts, native audio and live pricing."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-o3-pro",
+    "section": {
+      "title": "Prompt Lab — Kling 3.0 Omni Pro references and V2V",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How O3 Pro uses references and source video"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "O3 Pro text-to-video prompt",
+        "description": "Use this when no uploaded asset should guide the scene.",
+        "copy": "Subject:\n[Character / product / place + 2 visual traits]\n\nAction:\n[One readable action or 2-3 short beats]\n\nCamera:\n[Camera move + framing + continuity]\n\nStyle:\n[Lighting, texture, palette, cinematic look]\n\nAudio:\n[Native ambience, short SFX, brief dialogue if useful]\n\nExample:\nA designer crosses a night studio holding a glowing prototype. Camera: low tracking shot into a slight push-in. Style: blue reflections, brushed metal, premium finish. Audio: studio ambience, subtle electric hum, no subtitles."
+      },
+      {
+        "id": "structured",
+        "label": "Start/End",
+        "title": "Optional start/end frames with references",
+        "description": "Use this when the opening or landing pose must stay controlled.",
+        "copy": "Optional opening frame:\n[What should structure the first beat without overriding references]\n\nOptional end frame:\n[Expected final pose / composition / camera distance]\n\nReferences:\n@Image1 = [composition or character]\n@Image2 = [style, lighting, or object]\n\nAction and camera:\n[One readable motion path between opening and ending]\n\nExample:\nUse @Image1 as the opening composition and @Image2 as the lighting style. The character walks slowly toward camera, then lands in a stable pose close to the end frame. Consistent light, no location change."
+      },
+      {
+        "id": "pro",
+        "label": "Refs + V2V",
+        "title": "O3 Pro references and source video",
+        "description": "Use this when @Video1 guides motion and @Image guides identity or style.",
+        "copy": "@Video1 = [camera rhythm / motion / pacing]\n@Image1 = [storyboard or composition]\n@Image2 = [character, product, or style]\n\nIntent:\n[What the video should generate without copying every source frame]\n\nContinuity:\n[What must not drift: face, product, location, lighting]\n\nAudio:\n[generate_audio or keep_audio depending on the goal]\n\nExample:\nUse @Video1 for camera rhythm, @Image1 for storyboard composition, and @Image2 for character style. Generate a 12s cinematic three-beat sequence with stable continuity, native ambience, and no added text."
+      },
+      {
+        "id": "storyboard",
+        "label": "Timeline",
+        "title": "O3 Pro multi-shot timeline",
+        "description": "Use this to structure a reference-guided sequence with continuity.",
+        "copy": "Duration: [8-15s]\n\nShot 1 (0-4s):\n[Composition guided by @Image1 + readable action]\n\nShot 2 (4-8s):\n[Motion or camera inspired by @Video1]\n\nShot 3 (8-12s):\n[Payoff / final pose / product insert]\n\nAnchors:\n[Style @Image2, wardrobe, location, lighting, audio]\n\nExample:\nShot 1: @Image1 defines the scene. Shot 2: @Video1 guides camera speed. Shot 3: @Image2 locks the final style. Short native ambience, character and location continuity."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "State whether each asset is a reference or a visible frame.",
+      "Use @Image1, @Image2 for images and @Video1 only for source-video V2V.",
+      "When @Video1 is loaded, the workflow becomes V2V; start/end frames should not drive the shot.",
+      "Keep one readable action per shot and one job per reference.",
+      "Use keep_audio only when the source soundtrack should remain."
+    ],
+    "engineWhy": [
+      "Pro is the right route when references, storyboard, and V2V need stronger fidelity.",
+      "Images are not forced into the start frame unless you explicitly choose an opening frame.",
+      "@Video1 guides motion, camera rhythm, and continuity; it does not replace the prompt.",
+      "Native audio and keep_audio work best when short and tied to visible actions."
+    ],
+    "demo": {
+      "title": "Demo prompt — O3 Pro V2V + references",
+      "promptLabel": "Text prompt",
+      "prompt": "Subject:\nA tiny lighthouse keeper no taller than a coffee cup, wearing a yellow raincoat and carrying a glowing lantern.\n\nAction:\nHe walks across a kitchen table during a storm, climbs a stack of books, and raises his lantern toward a toy lighthouse as the light begins to glow.\n\nCamera:\nMacro close tracking shot at table height, following his small steps. End with a slight push-in on the lantern and lighthouse.\n\nStyle:\nWarm cinematic macro realism, cozy indoor storm atmosphere, shallow depth of field, raindrops on the window, golden lantern light against cool blue shadows.\n\nAudio:\nRain tapping on glass, tiny footsteps on wood, soft lantern hum, distant thunder.",
+      "notes": [],
+      "summary": {
+        "subject": "Tiny lighthouse keeper in a yellow raincoat",
+        "action": "Crosses a kitchen table, climbs books, and lights a toy lighthouse",
+        "camera": "Macro table-height tracking with a slight final push-in",
+        "style": "Warm cinematic macro realism, cozy storm, golden lantern light",
+        "output": "Rain on glass, tiny footsteps, lantern hum, distant thunder"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Kling 3.0 Omni Pro tiny lighthouse keeper render"
+      }
+    },
+    "imageExamples": null
   }
 }

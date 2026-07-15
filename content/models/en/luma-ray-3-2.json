@@ -419,5 +419,52 @@
       "title": "Luma Ray 3.2 Modify Video, Reframe & Examples | MaxVideoAI",
       "description": "Explore Luma Ray 3.2 source-video Modify, AI video Reframe, guide/keyframe controls, silent 5s/10s output, pricing, prompt tips and examples."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-3-2",
+    "section": {
+      "title": "How to write a strong Ray 3.2 prompt",
+      "intro": "Write a single edit or reframe brief with source preservation, the requested change, camera/framing intent, duration and resolution.",
+      "tip": "Tip: for Modify, write the preservation rule first so the prompt does not fight the source video.",
+      "guide": null,
+      "referencesTitle": "How Luma Ray 3.2 uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Use one edit goal per source clip.",
+      "Keep the preservation rule and the requested change separate.",
+      "Use 10s only when the action needs the extra time.",
+      "Use generation only when no source clip exists yet."
+    ],
+    "engineWhy": [
+      "Source videos make Modify and Reframe practical when timing is already approved.",
+      "Guide frames and keyframes help target specific moments instead of repainting the whole clip blindly.",
+      "Short Luma generation remains useful for creating candidate clips before a later edit/reframe pass.",
+      "Resolution, duration and mode choices directly affect displayed pricing."
+    ],
+    "demo": {
+      "title": "Demo prompt — Luma Ray 3.2",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Armored skull biker\nAction: Motorcycle approaches and stops\nCamera: Low front tracking, slight push-in\nStyle: Cinematic, wet street reflections\nAudio: Engine revs, metal clinks, distant thunder",
+      "notes": [],
+      "summary": {
+        "subject": "Armored skull biker",
+        "action": "Motorcycle approaches and stops",
+        "camera": "Low front tracking, slight push-in",
+        "style": "Cinematic, wet street reflections",
+        "output": "Engine revs, metal clinks, distant thunder"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Luma Ray 3.2 AI video example: Luma Ray 3.2 demo render"
+      }
+    },
+    "imageExamples": null
   }
 }

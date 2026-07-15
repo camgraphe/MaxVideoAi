@@ -502,5 +502,100 @@
       "title": "LTX 2.3 Pro : tarifs, audio, Extend et Retake | MaxVideoAI",
       "description": "Utilisez LTX 2.3 Pro pour les workflows vidéo LTX de production : audio-to-video, Extend, Retake, image-to-video et passes Generate haute résolution."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-3-pro",
+    "section": {
+      "title": "Comment prompter LTX 2.3 Pro selon le workflow",
+      "intro": "LTX 2.3 Pro change vraiment de logique selon le job. Promptez différemment une génération neuve, une animation guidée par audio, une extension et un retake au lieu d'utiliser un template unique.",
+      "tip": "Astuce : durée, résolution, fps et contrôles de workflow sont déjà dans l'UI. Utilisez le prompt pour piloter la route active : nouveau plan, mouvement guidé par soundtrack, continuation, ou correction ciblée.",
+      "guide": null,
+      "referencesTitle": "Comment LTX 2.3 Pro utilise Generate, Audio, Extend et Retake"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Générer",
+        "title": "Prompt de génération",
+        "description": "À utiliser quand LTX crée un plan neuf depuis du texte ou une image de départ.",
+        "copy": "Sujet :\nAventurier du désert avec une ancienne boussole en laiton à la golden hour.\n\nAction :\nIl ouvre la boussole et une carte lumineuse faite de poussière se déploie au-dessus.\n\nCaméra :\nPlan large arrière sur les dunes, puis push-in lent jusqu'à ses yeux qui reflètent la carte.\n\nLook :\nSoleil chaud, poussière flottante, textures bronze, étalonnage premium de film d'aventure.\n\nAudio :\nVent du désert, clic métallique léger de la boussole, grondement atmosphérique bas.\n\nFormat :\n10 secondes, 16:9, pas de texte, pas de logo."
+      },
+      {
+        "id": "structured",
+        "label": "Audio",
+        "title": "Prompt audio-to-video",
+        "description": "À utiliser quand la soundtrack ou le dialogue doivent piloter timing et staging.",
+        "copy": "Source audio :\n[Ce que fait la soundtrack / le dialogue / le beat]\n\nMise en scène visuelle :\n[Ce que l'on doit voir pendant l'audio]\n\nCaméra :\n[Comment le plan suit ce rythme]\n\nRègle :\nLaissez l'audio porter le pacing. Utilisez le prompt pour cadrer sujet, staging et caméra."
+      },
+      {
+        "id": "pro",
+        "label": "Extension",
+        "title": "Prompt d'extension",
+        "description": "À utiliser quand le clip actuel est bon et qu'il ne manque que le beat suivant.",
+        "copy": "Source actuelle :\n[Ce qui existe déjà]\n\nBeat suivant :\n[Ce qui doit arriver ensuite]\n\nContinuité à préserver :\n[Identité / décor / rythme caméra / lumière]\n\nRègle :\nDécrivez uniquement la continuation. Ne réécrivez pas tout le clip."
+      },
+      {
+        "id": "storyboard",
+        "label": "Retake",
+        "title": "Prompt de retake",
+        "description": "À utiliser quand une seule partie du clip doit changer.",
+        "copy": "Source actuelle :\n[Ce qui est déjà correct]\n\nSection à retoucher :\n[Moment exact ou problème visuel]\n\nCe qui doit rester inchangé :\n[Tout ce qui est hors de la fenêtre de retake]\n\nBeat de remplacement :\n[Ce que la nouvelle section doit faire à la place]\n\nRègle :\nUn retake doit être chirurgical. Demandez une réparation, pas une nouvelle scène."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Générer = créer un nouveau plan depuis texte ou image."
+      },
+      {
+        "tabId": "structured",
+        "body": "Audio = laisser la soundtrack porter le timing."
+      },
+      {
+        "tabId": "pro",
+        "body": "Extension = ajouter le beat suivant sans dérive."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Retake = corriger uniquement la partie faible ou cassée."
+      }
+    ],
+    "globalPrinciples": [
+      "Définissez un sujet, un beat principal et un mouvement caméra avant d'ajouter le style.",
+      "Utilisez le workflow qui correspond au job : génération, audio, extend ou retake.",
+      "Pour les retakes, décrivez seulement la section à changer au lieu de réécrire toute la vidéo."
+    ],
+    "engineWhy": [
+      "La génération texte et image reste directe et cinématique.",
+      "Audio vers vidéo fonctionne mieux quand la bande-son porte le timing et que le prompt guide le staging.",
+      "Extend et Retake sont plus solides quand le prompt est précis sur la continuité et sur ce qui doit rester inchangé."
+    ],
+    "demo": {
+      "title": "Prompt de démo - révélation boussole cinématique",
+      "promptLabel": "Prompt text-to-video Generate",
+      "prompt": "Un aventurier robuste se tient au bord d'une falaise désertique immense à la golden hour, visage marqué par le soleil, veste en cuir usée, foulard agité par le vent. Il ouvre une ancienne boussole en laiton dans sa main, et une carte lumineuse faite de lumière et de poussière se déploie au-dessus, éclairant son visage et le sable autour de lui. La caméra commence en plan large derrière lui pour montrer les dunes infinies, puis avance lentement lorsqu'il lève la boussole, jusqu'à un gros plan dramatique sur ses yeux reflétant la carte lumineuse. Soleil chaud, poussière flottante, textures bronze, composition épique mais propre, ton d'aventure cinématique premium, simple et iconique. Vent sur les dunes, léger clic métallique de la boussole, grondement désertique bas, pas de texte, pas de logo, pas de watermark.",
+      "notes": [
+        "Un sujet clair et un seul beat de révélation",
+        "La caméra passe du plan d'ensemble au gros plan",
+        "Les sons soutiennent la boussole et l'atmosphère désertique"
+      ],
+      "summary": {
+        "subject": "Aventurier au bord du désert",
+        "action": "Ouvre une boussole ancienne qui révèle une carte lumineuse",
+        "camera": "Plan large arrière, puis push-in lent vers les yeux",
+        "style": "Golden hour, poussière, textures bronze, aventure premium",
+        "output": "Vent du désert, clic métal, grondement atmosphérique"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt text-to-video Generate",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Rendu aventure boussole LTX 2.3 Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

@@ -397,5 +397,63 @@
       "title": "Luma Uni-1 Max : tarifs, images 2K et retouche | MaxVideoAI",
       "description": "Explorez Luma Uni-1 Max : prix, génération image 2K haut de gamme, retouches source, compositions sensibles à la typographie et flux image par références."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-uni-1-max",
+    "section": {
+      "title": "Écrire un bon prompt Uni-1 Max",
+      "intro": "Partez d’une direction créative retenue et précisez l’image finale, les contraintes source et les rôles de références.",
+      "tip": "Astuce : pour produit ou typographie, écrivez la hiérarchie exacte et inspectez avant publication.",
+      "guide": null,
+      "referencesTitle": "Comment Luma Uni-1 Max utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Utilisez Max quand détail et finition comptent.",
+      "Séparez préservation source et révision.",
+      "Donnez un rôle à chaque référence."
+    ],
+    "engineWhy": [
+      "Les images plus fidèles profitent de contraintes précises.",
+      "Les rôles de références réduisent l’ambiguïté produit et campagne.",
+      "La vérification du texte garde les promesses prudentes."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Luma Uni-1 Max",
+      "intro": "Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Visuel campagne",
+          "badge": "Visuel 2K",
+          "kind": "quality",
+          "prompt": "Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
+        },
+        {
+          "id": "typography-2",
+          "title": "Poster typographique",
+          "badge": "Typographie",
+          "kind": "typography",
+          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche référence",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K vers 4K final",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+        }
+      ]
+    }
   }
 }

@@ -333,5 +333,63 @@
       "title": "Nano Banana 2: precios, imágenes guiadas y edición | MaxVideoAI",
       "description": "Explora Nano Banana 2: precios, generación guiada, salidas 0.5K a 4K, ratios amplios, ediciones multi-referencia y web grounding."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-2",
+    "section": {
+      "title": "Como escribir un buen prompt para Nano Banana 2",
+      "intro": "Nano Banana 2 responde mejor a instrucciones claras de composicion, restricciones explicitas de edit y grounding solo cuando de verdad hace falta.",
+      "tip": "Tip: usa la UI para ratio, resolucion, seed, web search y output format. Manten el prompt centrado en sujeto, layout, estilo y lo que debe quedar fijo.",
+      "guide": null,
+      "referencesTitle": "Cómo Nano Banana 2 usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe primero el encuadre y despues el estilo.",
+      "En edits, di que cambia y que se mantiene.",
+      "Usa grounding solo si importa el contexto actual."
+    ],
+    "engineWhy": [
+      "Los ratios amplios funcionan mejor con zonas de composicion explicitas.",
+      "Los sets grandes de referencias ayudan, pero los roles por referencia limpian el edit.",
+      "Los prompts guiados deben seguir siendo especificos sobre la estetica objetivo."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts de imagen de Nano Banana 2",
+      "intro": "Ejemplos para stills guiados, edits de producto, multi-referencias y formatos amplios 4K.",
+      "workspaceLabel": "Abrir espacio de imagen",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Escena de producto guiada",
+          "badge": "1K grounded",
+          "kind": "quality",
+          "prompt": "Still de producto 1K para una botella outdoor sobre piedra clara, luz natural, estilo campaña e-commerce premium, contexto visual actual de trekking urbano si web grounding está activo."
+        },
+        {
+          "id": "edit-2",
+          "title": "Edit de producto",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Usando esta referencia de producto, mantener forma, logo, color principal y proporciones. Cambiar el entorno a estudio mineral claro, limpiar reflejos y polvo."
+        },
+        {
+          "id": "image-3",
+          "title": "Multi-referencias",
+          "badge": "14 refs max",
+          "kind": "image",
+          "prompt": "Combinar las referencias en un still coherente: referencia 1 para identidad del producto, referencia 2 para material, referencia 3 para paleta, referencia 4 para composición. No mezclar estilos."
+        },
+        {
+          "id": "layout-4",
+          "title": "Still amplio 4K",
+          "badge": "4K · 21:9",
+          "kind": "layout",
+          "prompt": "Still 4K en ratio 21:9 para banner de lanzamiento, producto a la izquierda, espacio negativo a la derecha para texto añadido después, luz suave, resultado fotorealista."
+        }
+      ]
+    }
   }
 }

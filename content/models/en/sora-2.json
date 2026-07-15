@@ -455,5 +455,101 @@
       "title": "Sora 2: Pricing, Native Audio & Examples | MaxVideoAI",
       "description": "Explore Sora 2 pricing, examples, synced native audio, text-to-video and image-to-video workflows. Compare Sora 2 vs Pro and other AI video models."
     }
+  },
+  "prompting": {
+    "modelSlug": "sora-2",
+    "section": {
+      "title": "How to Write a Great Sora 2 Prompt",
+      "intro": "Sora 2 works best when you brief it like a cinematographer: one clear shot, simple timing, and visible actions.",
+      "tip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, action, camera, lighting, style, and sound.",
+      "guide": {
+        "label": "Official Sora 2 prompting guide",
+        "href": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/"
+      },
+      "referencesTitle": "How Sora 2 uses prompts, start images and audio"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick action prompt",
+        "description": "Use this for fast 4s hook tests.",
+        "copy": "[Subject] performs [one visible action] in [setting]. Camera: [one move]. Lighting: [time of day / mood]. Audio: [ambience + one SFX]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured video prompt",
+        "description": "Use this when the clip needs repeatable action and sound.",
+        "copy": "Subject:\n[Who/what + one visible action]\n\nSetting:\n[Where + time of day + 2 visual anchors]\n\nCamera:\n[Framing + angle + one move]\n\nLighting:\n[Key light + palette + contrast]\n\nAudio:\n[Ambience + 1 SFX cue + optional dialogue under 8 words]\n\nConstraints:\nNo logos. No readable text. No protected likeness."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Image-to-video prompt",
+        "description": "Use this when a single approved still should define the opening frame.",
+        "copy": "Source image role:\n[What must stay fixed: subject, product shape, wardrobe or composition]\n\nMotion:\n[One action that starts from the still]\n\nCamera:\n[Move slowly / push-in / handheld drift / locked-off]\n\nEnding:\n[Where the subject or product should land by the final second]\n\nAudio:\n[Short ambience + visible SFX]\n\nAvoid:\nChanging identity, adding logos, or introducing extra subjects."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (sequenced shot list)",
+        "description": "Use this when you need multi-beat continuity in a single clip.",
+        "copy": "Storyboard / shot list (same subject + same setting)\nDuration: [4/8/12s] • Aspect: [16:9 or 9:16]\n\nBeat 1 (0-2s):\n[Framing + subject action + camera move]\n\nBeat 2 (2-6s):\n[Action continues, do not change location]\n\nBeat 3 (6-8/12s):\n[Final reveal + camera settle]\n\nContinuity:\n[Repeat wardrobe, props, lighting, background]\n\nAudio:\n[Ambience + 1 SFX cue + short dialogue if needed]\n\nConstraints:\nNo logos. No readable text. No protected people."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = hook tests. Use one action, one camera move and one sound cue."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Separate action, camera, lighting, audio and short dialogue."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = controlled delivery. Use continuity anchors and a clear final frame goal."
+      }
+    ],
+    "globalPrinciples": [
+      "1 shot = 1 camera move + 1 subject action",
+      "Use visual anchors (specific nouns > vague adjectives)",
+      "Keep characters consistent across shots",
+      "Start from an image for maximum control",
+      "Iterate: change one thing at a time"
+    ],
+    "engineWhy": [
+      "Too many beats can cause drift — keep each clip to 2–3 clear actions.",
+      "Image-to-video locks the first frame composition; prompt controls motion and timing.",
+      "Reference image rules are strict — clean stills, no logos, no readable text.",
+      "Audio cues help pacing; describe 1–2 key sounds for rhythm."
+    ],
+    "demo": {
+      "title": "Demo: a sequenced prompt",
+      "promptLabel": "720p lifestyle prompt",
+      "prompt": "8-second lifestyle spot: a 30-year-old runner with a smartwatch at sunrise in an urban park.\nShot 1 (2s): close-up on the watch as he tightens the strap, sun flare on the glass.\nShot 2 (4s): side tracking shot as he runs, warm light behind buildings.\nShot 3 (2s): close-up on his face glancing at the screen, slight smile, visible breath in cool air.\nLighting: golden hour, natural cinematic tones.\nAudio: rhythmic footsteps + soft optimistic music.\nCamera: dynamic handheld, 50mm feel.\nNegative: no logos, no slow motion, no on-screen text.",
+      "notes": [
+        "Shows transitions, location/subject continuity, clear motion, and a complete mini-story under 10s.",
+        "Reuse this structure for skincare, SaaS, fitness, or any 3-beat micro-story."
+      ],
+      "summary": {
+        "subject": "Urban runner",
+        "action": "Tightens a smartwatch and accelerates through morning light",
+        "camera": "Watch close-up, side tracking shot, final face close-up",
+        "style": "Natural golden hour, premium lifestyle look",
+        "output": "Rhythmic footsteps, short breath, soft optimistic music"
+      },
+      "presentationOverrides": {
+        "modeLabel": "720p lifestyle prompt",
+        "outputLabel": "Audio",
+        "duration": "8s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Sora 2 lifestyle render with audio"
+      }
+    },
+    "imageExamples": null
   }
 }

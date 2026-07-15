@@ -386,5 +386,42 @@
       "title": "Luma Ray 2 Flash legacy : tarifs et brouillons | MaxVideoAI",
       "description": "Utilisez Luma Ray 2 Flash comme route Luma fast d’ancienne génération : tarifs de brouillon, Modify, Reframe, contexte Ray 2 et migration vers Ray 3.2."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Prompt Lab — Luma Ray 2 Flash",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment Luma Ray 2 Flash utilise les images de départ et routes edit"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Prompt de démonstration — Luma Ray 2 Flash",
+      "promptLabel": "Brouillon Flash",
+      "prompt": "Brouillon Luma Ray 2 Flash de 5 s en 16:9, sortie silencieuse.\nUne voiture sportive futuriste entre dans un tunnel humide et révèle sa silhouette dans une bande de lumière.\nPush-in court, caméra basse stable, reflets rapides sur l’asphalte, contraste propre.\nUn seul beat de mouvement, énergie teaser, pas de texte lisible, pas de logo ajouté.\nUtiliser Flash pour valider direction et timing avant une passe Ray 2.",
+      "notes": [],
+      "summary": {
+        "subject": "Voiture sportive dans un tunnel humide",
+        "action": "Entre dans la lumière et révèle sa silhouette",
+        "camera": "Push-in court, caméra basse et stable",
+        "style": "Draft cinématique, reflets rapides, contraste propre",
+        "output": "Brouillon silencieux, prêt à comparer avec Ray 2"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Brouillon Flash",
+        "outputLabel": "Sortie",
+        "duration": "5 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Brouillon tunnel Luma Ray 2 Flash"
+      }
+    },
+    "imageExamples": null
   }
 }

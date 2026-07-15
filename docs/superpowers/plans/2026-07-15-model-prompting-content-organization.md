@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Move every model-specific Prompt Lab projection into the existing localized model JSON documents, preserve current behavior except four proven wrong-locale guide links, and reduce the decision Prompt Lab component to a focused renderer.
+**Goal:** Move every model-specific Prompt Lab projection into the existing localized model JSON documents, preserve current behavior except 18 reviewed objective corrections, and reduce the decision Prompt Lab component to a focused renderer.
 
 **Architecture:** `getEngineLocalized` exposes only the requested locale's raw `prompting` object. A strict route-local parser validates editorial content, a pure builder combines it with current media and capability inputs, and the server renderer consumes the resulting view model. A temporary legacy projector and converter prove exact 40-model-by-3-locale parity before all `custom` prompt fields and TypeScript fallback trees are deleted.
 
@@ -15,7 +15,7 @@
 - All 40 configured models and all 120 `en`/`fr`/`es` documents must contain a non-null top-level `prompting` object.
 - Model-specific Prompt Lab editorial content has exactly one final owner: `content/models/{locale}/{slug}.json#prompting`.
 - `prompting` is exact-locale content. Never use `overlay.prompting ?? base.prompting`, an English fallback, a compatibility map, or a second filesystem loader.
-- Preserve exact visible content, ordering, links, and conditional presence except the four approved wrong-locale guide-link corrections listed below.
+- Preserve exact visible content, ordering, links, and conditional presence except the 18 approved corrections listed below: four wrong-locale guide links and 14 wrong-language customer-visible strings.
 - Do not rewrite style, tone, prompts, model claims, or localized prose during migration.
 - Do not change public routes, redirects, canonical, hreflang, metadata, JSON-LD, sitemap policy, model registry, pricing, billing, capability configuration, or media selection.
 - Keep numeric prices and runtime facts out of prompting JSON. Media, duration, aspect ratio, audio state, and workspace destinations remain derived.
@@ -26,46 +26,30 @@
 
 ### Approved objective corrections
 
-The migration parity allowlist contains exactly these four entries:
+The migration parity allowlist contains exactly these 18 entries:
 
-```ts
-export const APPROVED_PROMPTING_CORRECTIONS = [
-  {
-    slug: 'dreamina-seedance-2-0-mini',
-    locale: 'fr',
-    path: 'section.guide.href',
-    oldValue: '/models/dreamina-seedance-2-0-mini',
-    newValue: '/fr/modeles/dreamina-seedance-2-0-mini',
-    evidence: 'MODELS_BASE_PATH_MAP.fr is /fr/modeles',
-  },
-  {
-    slug: 'dreamina-seedance-2-0-mini',
-    locale: 'es',
-    path: 'section.guide.href',
-    oldValue: '/models/dreamina-seedance-2-0-mini',
-    newValue: '/es/modelos/dreamina-seedance-2-0-mini',
-    evidence: 'MODELS_BASE_PATH_MAP.es is /es/modelos',
-  },
-  {
-    slug: 'seedance-2-0-fast',
-    locale: 'fr',
-    path: 'section.guide.href',
-    oldValue: '/models/seedance-2-0',
-    newValue: '/fr/modeles/seedance-2-0',
-    evidence: 'MODELS_BASE_PATH_MAP.fr is /fr/modeles',
-  },
-  {
-    slug: 'seedance-2-0-fast',
-    locale: 'es',
-    path: 'section.guide.href',
-    oldValue: '/models/seedance-2-0',
-    newValue: '/es/modelos/seedance-2-0',
-    evidence: 'MODELS_BASE_PATH_MAP.es is /es/modelos',
-  },
-] as const;
-```
+| # | Slug | Locale | Path | Exact old value | Exact new value | Objective evidence |
+|---:|---|---|---|---|---|---|
+| 1 | `dreamina-seedance-2-0-mini` | `fr` | `section.guide.href` | `/models/dreamina-seedance-2-0-mini` | `/fr/modeles/dreamina-seedance-2-0-mini` | `MODELS_BASE_PATH_MAP.fr` is `/fr/modeles`. |
+| 2 | `dreamina-seedance-2-0-mini` | `es` | `section.guide.href` | `/models/dreamina-seedance-2-0-mini` | `/es/modelos/dreamina-seedance-2-0-mini` | `MODELS_BASE_PATH_MAP.es` is `/es/modelos`. |
+| 3 | `seedance-2-0-fast` | `fr` | `section.guide.href` | `/models/seedance-2-0` | `/fr/modeles/seedance-2-0` | `MODELS_BASE_PATH_MAP.fr` is `/fr/modeles`. |
+| 4 | `seedance-2-0-fast` | `es` | `section.guide.href` | `/models/seedance-2-0` | `/es/modelos/seedance-2-0` | `MODELS_BASE_PATH_MAP.es` is `/es/modelos`. |
+| 5 | `luma-uni-1` | `fr` | `imageExamples.intro` | `Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.` | `Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.` | The existing localized-content forbidden-term contract rejects English `still`/`stills` in customer-facing French copy. |
+| 6 | `luma-uni-1` | `fr` | `imageExamples.items.0.badge` | `2K still` | `Visuel 2K` | Same localized-content contract. |
+| 7 | `luma-uni-1` | `fr` | `imageExamples.items.0.prompt` | `Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | `Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | Same localized-content contract. |
+| 8 | `luma-uni-1-max` | `fr` | `imageExamples.intro` | `Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.` | `Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.` | Same localized-content contract. |
+| 9 | `luma-uni-1-max` | `fr` | `imageExamples.items.0.badge` | `2K still` | `Visuel 2K` | Same localized-content contract. |
+| 10 | `luma-uni-1-max` | `fr` | `imageExamples.items.0.prompt` | `Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | `Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | Same localized-content contract. |
+| 11 | `luma-uni-1` | `es` | `imageExamples.intro` | `Ejemplos para stills de campaña, tipografía, ediciones con referencia y finales 4K.` | `Ejemplos para imágenes de campaña, tipografía, ediciones con referencia y finales 4K.` | The existing localized-content forbidden-term contract rejects English `still`/`stills` in customer-facing Spanish copy. |
+| 12 | `luma-uni-1` | `es` | `imageExamples.items.0.title` | `Still de campaña` | `Imagen de campaña` | Same localized-content contract. |
+| 13 | `luma-uni-1` | `es` | `imageExamples.items.0.badge` | `Still 2K` | `Imagen 2K` | Same localized-content contract. |
+| 14 | `luma-uni-1` | `es` | `imageExamples.items.0.prompt` | `Still de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | `Imagen de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | Same localized-content contract. |
+| 15 | `luma-uni-1-max` | `es` | `imageExamples.intro` | `Ejemplos para stills de campaña, tipografía, ediciones con referencia y finales 4K.` | `Ejemplos para imágenes de campaña, tipografía, ediciones con referencia y finales 4K.` | Same localized-content contract. |
+| 16 | `luma-uni-1-max` | `es` | `imageExamples.items.0.title` | `Still de campaña` | `Imagen de campaña` | Same localized-content contract. |
+| 17 | `luma-uni-1-max` | `es` | `imageExamples.items.0.badge` | `Still 2K` | `Imagen 2K` | Same localized-content contract. |
+| 18 | `luma-uni-1-max` | `es` | `imageExamples.items.0.prompt` | `Still de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | `Imagen de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | Same localized-content contract. |
 
-Any fifth difference is a failed migration unless it is independently evidenced, added to the design specification, and protected by a focused permanent assertion before cutover.
+The `kind: "layout"` value is a non-customer semantic enum and is excluded by key from the existing localized-content string scan; `prompting` itself remains fully scanned. Any nineteenth difference is a failed migration unless it is independently evidenced, added to the design specification, and protected by a focused permanent assertion before cutover.
 
 ## File Structure
 
@@ -101,7 +85,7 @@ Any fifth difference is a failed migration unless it is independently evidenced,
 ### Temporary migration files to create and delete in this project
 
 - `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts` — pure normalized projection of the existing TypeScript behavior.
-- `scripts/model-prompting-corrections.ts` — the four-entry allowlist and exact path replacement helper.
+- `scripts/model-prompting-corrections.ts` — the 18-entry allowlist and exact path replacement helper.
 - `scripts/migrate-model-prompting-content.ts` — dry-run/write converter and legacy-key remover.
 - `tests/model-prompting-legacy-projection.test.ts` — old/new deep parity while both representations exist.
 
@@ -420,7 +404,7 @@ git commit -m "feat: add strict model prompting contract"
 **Interfaces:**
 
 - Consumes: `ModelPromptingContent` from Task 1 and existing `SoraCopy`.
-- Produces temporarily: `buildLegacyModelPromptingContent(args): ModelPromptingContent`, `resolveLegacyPromptingModelName(args): string`, and the exact four-entry correction helper used only by tests/migration tooling.
+- Produces temporarily: `buildLegacyModelPromptingContent(args): ModelPromptingContent`, `resolveLegacyPromptingModelName(args): string`, and the exact 18-entry correction helper used only by tests/migration tooling.
 - The current component must consume this normalized projection so the existing 69-test baseline proves the extraction before JSON cutover.
 
 - [ ] **Step 1: Add a failing legacy-projection architecture test**
@@ -448,7 +432,7 @@ Expected: FAIL because the legacy projector does not exist and the component sti
 
 - [ ] **Step 3: Move legacy editorial selection into one pure module**
 
-Create `scripts/model-prompting-corrections.ts` first with the exact four entries from Global Constraints and this shared immutable helper:
+Create `scripts/model-prompting-corrections.ts` first with the exact 18 entries from Global Constraints and a shared immutable helper that asserts each exact old value before replacing its known path:
 
 ```ts
 export function applyApprovedPromptingCorrections(
@@ -602,7 +586,7 @@ git commit -m "refactor: isolate legacy model prompting projection"
 
 **Interfaces:**
 
-- Consumes: `buildLegacyModelPromptingContent`, `parseModelPromptingContent`, and the four-entry allowlist.
+- Consumes: `buildLegacyModelPromptingContent`, `parseModelPromptingContent`, and the 18-entry allowlist.
 - Produces: `EngineLocalizedContent.prompting?: unknown` selected as `overlay.prompting` only.
 - Produces: 120 strict JSON `prompting` objects.
 
@@ -630,7 +614,7 @@ test('localized prompting selection never falls back to English', () => {
 });
 ```
 
-Add structural signatures for EN/FR/ES and exact assertions for the four corrected guide hrefs.
+Add structural signatures for EN/FR/ES and exact assertions for all 18 reviewed corrections.
 
 - [ ] **Step 2: Run the permanent contract and verify it fails on missing JSON content**
 
@@ -699,10 +683,10 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-prompting-con
 
 Expected:
 
-- dry-run reports 120 valid pending projections and four approved corrections;
+- dry-run reports 120 valid projections and 18 approved corrections;
 - write reports 120 updated documents;
 - permanent contract PASS;
-- legacy parity PASS for all 120 projections after applying exactly the four allowlist entries;
+- legacy parity PASS for all 120 projections after applying exactly the 18 allowlist entries;
 - zero additional differences.
 
 - [ ] **Step 6: Audit the data-only delta**
@@ -715,7 +699,7 @@ rg -n '"prompting"' content/models | wc -l
 git diff --check
 ```
 
-Expected: 120 documents changed; exactly 120 top-level prompting matches; no malformed JSON or whitespace errors. Review the four corrected hrefs directly and confirm no price, SEO, decision, registry, or route file changed.
+Expected: 120 documents changed; exactly 120 top-level prompting matches; no malformed JSON or whitespace errors. Review the four corrected hrefs and 14 corrected wrong-language strings directly and confirm no price, SEO, decision, registry, or route file changed.
 
 - [ ] **Step 7: Commit loader and migrated content**
 
@@ -1112,7 +1096,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
   tests/gemini-omni-marketing-surfaces.test.ts
 ```
 
-Expected: all tests PASS; legacy/new projection still reports exactly four approved differences; special-model behavior is asserted from localized JSON and the final view model.
+Expected: all tests PASS; legacy/new projection still reports exactly 18 approved differences; special-model behavior is asserted from localized JSON and the final view model.
 
 - [ ] **Step 7: Run TypeScript, lint, and line caps**
 
@@ -1285,7 +1269,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
   tests/model-setup-cli.test.ts
 ```
 
-Expected: all PASS; 120 strict prompting documents; four corrected links; no legacy content owner.
+Expected: all PASS; 120 strict prompting documents; all 18 approved corrections remain exact; no legacy content owner.
 
 - [ ] **Step 9: Run full static and architecture validation**
 
@@ -1311,7 +1295,7 @@ Run:
 pnpm --prefix frontend run build
 ```
 
-Then start the production server and verify one standard video model, one Kling O3 model, one image model, and the four corrected guide-link projections across the three localized route families. Confirm Prompt Lab title, tabs, principles, demo/media state, copy action, workspace link, canonical, and hreflang. Expected: all pages render with requested-locale prompting and unchanged route/SEO output.
+Then start the production server and verify one standard video model, one Kling O3 model, one image model, the four corrected guide-link projections, and representative FR/ES Luma Uni copies from the 14 wrong-language corrections. Confirm Prompt Lab title, tabs, principles, demo/media state, copy action, workspace link, canonical, and hreflang. Expected: all pages render with requested-locale prompting and unchanged route/SEO output.
 
 - [ ] **Step 11: Review scoped diff and commit final cleanup**
 
@@ -1339,7 +1323,7 @@ Before declaring the project complete:
 - verify local `main` is clean and contains all six task commits;
 - compare `git diff origin/main...HEAD --name-status` and confirm the scoped file set;
 - record the exact full-test and build totals;
-- record whether the correction count is exactly four;
+- record whether the correction count is exactly 18;
 - report `ModelDecisionPromptingSection.tsx`, parser, builder, and UI-copy physical line counts;
 - state explicitly that routes, SEO, pricing, model registry, and `ModelExamplesSection.tsx` did not change;
 - do not push until the user explicitly requests the push.

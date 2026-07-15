@@ -281,5 +281,55 @@
       "title": "Seedream 5.0 Pro - Professional ByteDance Image Generation | MaxVideoAI",
       "description": "Create professional still images, dense infographics, visual edits, and 4K campaign assets with Seedream 5.0 Pro in MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-0-pro",
+    "section": {
+      "title": "How to prompt Seedream Pro",
+      "intro": "Write it like an art-director brief: visual goal, composition, hierarchy, copy/text constraints, materials, and lighting.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Seedream 5.0 Pro uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.0 Pro image prompt examples",
+      "intro": "Use these for campaign stills, typography posters, reference edits and 2K-to-4K finals.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Campaign still",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "2K campaign still for an amber perfume bottle on white acrylic, soft studio key light, clean shadow, exact headline \"AURA NOIRE\" top-left, small logo lockup bottom edge."
+        },
+        {
+          "id": "typography-2",
+          "title": "Typography poster",
+          "badge": "Typography",
+          "kind": "typography",
+          "prompt": "Vertical 4K poster, premium editorial grid, graphite background, exact headline \"MIDNIGHT LAUNCH\", subhead \"LIMITED DROP\", crisp hierarchy, generous margins, readable text."
+        },
+        {
+          "id": "edit-3",
+          "title": "Reference edit",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "Using this product reference, keep the shape, logo and proportions. Change the scene to a midnight-blue studio, improve reflections, remove dust and fingerprints."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K to 4K final",
+          "badge": "4K final",
+          "kind": "layout",
+          "prompt": "Rerun the approved 2K composition as a 4K final. Sharpen fine details, keep typography identical, preserve brand colors, product position and the locked framing."
+        }
+      ]
+    }
   }
 }

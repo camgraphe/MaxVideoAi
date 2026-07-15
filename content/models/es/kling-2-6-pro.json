@@ -426,5 +426,99 @@
       "title": "Kling 2.6 Pro: precios, audio y ejemplos | MaxVideoAI",
       "description": "Usa Kling 2.6 Pro para clips Kling 1080p aún compatibles con audio nativo, texto a video, imagen a video, prompt negativo y ejemplos."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-2-6-pro",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Kling 2.6 Pro",
+      "intro": "Kling 2.6 Pro prefiere sujeto, acción y dirección de cámara claros; añade cues de sonido si el audio está activado.",
+      "tip": "Tip: duración + relación se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y sonido opcional. Usa prompt negativo para bloquear artefactos.",
+      "guide": {
+        "label": "Kling by Kuaishou",
+        "href": "https://www.kuaishou.com/en"
+      },
+      "referencesTitle": "Cómo Kling 2.6 Pro usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "Prompt: [Sujeto + acción] en [entorno], [movimiento de cámara], [luz/estilo], [cue de sonido].\nNegativo: [texto, logos, extremidades extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEntorno:\n[Dónde + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento + sensación de lente.]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues SFX o una línea corta.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
+        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad entre planos.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos + materiales.]\n\nSet:\n[Ubicación + 3 anclas.]\n\nCinematografía:\n[Encuadre + ángulo + un movimiento + lente.]\n\nLuz + grade:\n[Key light + contraste + paleta.]\n\nSonido (opcional):\n[Ambiente + SFX + diálogo corto.]\n\nNegativo:\n[Texto, logos, personajes extra, artefactos.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (multi‑shot / lista de planos)",
+        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (multi‑shot / shot list) da timing claro, dirección de cámara y continuidad.",
+        "copy": "Storyboard / lista de planos\nDuración: [5/10s] • Relación: [16:9 o 9:16]\n\nEscena + continuidad:\n[Mismo sujeto + mismo lugar + mismo vestuario/props + misma luz durante todo.]\n\nPlano 1 (0–2s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nPlano 2 (2–6s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nPlano 3 (6–10s):\n[Encuadre + acción final/reveal + movimiento o settle de cámara]\n\nLuz + mood:\n[Golden hour / soft daylight / neon night… + 2–3 anclas de paleta]\n\nSonido (si se admite):\n[Ambiente + 1–2 cues SFX + vibe musical opcional]\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays. Sin jump cuts. Sin slow‑motion."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo cuando necesites resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = continuidad. Úsalo para looks precisos y repetibles."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = timing de beats. Úsalo para mini‑stories en un clip."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujeto, una acción, un movimiento de cámara.",
+      "Indica luz y sensación de lente.",
+      "Añade cues sonoros cortos o diálogo si el audio está on."
+    ],
+    "engineWhy": [
+      "El modo audio maneja bien una ambientación simple y líneas cortas.",
+      "El lenguaje de cámara mejora la consistencia.",
+      "Los prompts negativos ayudan a quitar texto/logos/personajes extra."
+    ],
+    "demo": {
+      "title": "Demo: Kling 2.6 Pro",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Mujer joven en una cafetería nocturna\nAcción: Trabaja junto a una ventana con lluvia\nCámara: Plano vertical cinemático con movimiento suave\nEstilo: Café cálido, reflejos de lluvia, mood íntimo\nAudio: Ambiente de café y lluvia sutil",
+      "notes": [],
+      "summary": {
+        "subject": "Mujer joven en una cafetería nocturna",
+        "action": "Trabaja junto a una ventana con lluvia",
+        "camera": "Plano vertical cinemático con movimiento suave",
+        "style": "Café cálido, reflejos de lluvia, mood íntimo",
+        "output": "Ambiente de café y lluvia sutil"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Kling 2.6 Pro: Demo: Kling 2.6 Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

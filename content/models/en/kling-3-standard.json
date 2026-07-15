@@ -416,5 +416,99 @@
       "title": "Kling 3 Standard: Pricing, 1080p Drafts & Examples | MaxVideoAI",
       "description": "Use Kling 3 Standard for lower-cost 1080p start-frame drafts, image-to-video tests, native audio options and 15 second Kling planning."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-standard",
+    "section": {
+      "title": "How to Write a Great Kling 3 Standard Prompt",
+      "intro": "Kling 3 Standard performs best with shot-based direction: clear framing, one action per shot, explicit motion, and (if audio is on) short dialogue plus minimal sound cues.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Kling 3 Standard structures shots and references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[One subject] [one visible action] in [setting], [framing + one camera move], [lighting/style].\nAudio (optional): [ambience + 1 SFX cue OR one short line].\nNegative: no text, no logos, no subtitles/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Scene anchors:\n[Subject + wardrobe/props + 2–3 environment anchors.]\n\nShots (multi-shot):\nShot 1 (0–5s): [framing + action + one camera move]\nShot 2 (5–10s): [framing + action + one camera move]\nShot 3 (10–15s): [final action/reveal + settle or end frame]\n\nElements (optional):\n@Element1 = [main character]\n@Element2 = [prop/product]\n\nAudio (optional):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues. Keep it minimal.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Director brief:\n[Goal + vibe + intended audience.]\n\nContinuity (repeat across shots):\n- Subject identity + wardrobe/props\n- Location + time + 3 visual anchors\n- Lighting + palette anchors\n- Lens feel + one camera move per shot\n\nMulti-shot plan (up to 15s total):\nShot 1: [framing + action + camera]\nShot 2: [framing + action + camera]\nShot 3: [framing + action + camera]\n(optional) Shot 4–6: [only if needed]\n\nElements:\n@Element1 = [character]\n@Element2 = [product/prop]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “One short line.”\nAmbience + 1–2 SFX cues + optional music vibe.\n\nNegative:\nNo text, no logos, no subtitles/overlays, no jump cuts."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (multi-shot / shot list)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "copy": "Duration: [3–15s] • Aspect: [16:9 / 9:16 / 1:1] • Audio: [on/off]\n\nElements (optional):\n@Element1 = [main character/subject]\n@Element2 = [prop/product]\n\nShot 1 (0–3s):\n[Framing + action + camera move]\n\nShot 2 (3–8s):\n[Framing + action + camera move]\n\nShot 3 (8–15s):\n[Final action/reveal + camera settle]\nEnd frame (optional): [describe the final frame you want to land on]\n\nAudio (if on):\nDialogue: <<<voice_1>>> “Short line.”\nAmbience + 1–2 SFX cues.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. Keep it to one action per shot."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control. Use for precise, repeatable looks."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = shot timing. Use for multi-shot beats."
+      }
+    ],
+    "globalPrinciples": [
+      "Think in shots, not clips: one action per shot is easier to execute cleanly.",
+      "Anchor your subjects early (and reuse the same wording) to reduce drift across shots.",
+      "Put framing + camera movement before style adjectives.",
+      "If audio is on: keep dialogue short and add only 1–2 sound cues."
+    ],
+    "engineWhy": [
+      "Multi-shot works best with 2–4 shots; keep each shot to one readable action.",
+      "Elements improve continuity: reference @Element1/@Element2 consistently across the prompt.",
+      "Voice IDs: reference voices in the prompt as <<<voice_1>>> and <<<voice_2>>> (max 2 voices).",
+      "Audio output supports English and Chinese; other languages may be auto-translated to English when audio is enabled.",
+      "End frame helps land transitions; avoid adding new actions in the final second."
+    ],
+    "demo": {
+      "title": "Demo prompt — Kling 3 Standard",
+      "promptLabel": "Prompt",
+      "prompt": "Duration: 12s • Aspect: 16:9 • Audio: on\nShot 1 (0-4s): @Element1 runner in a dark jacket waits under a neon sign, light rain, stable medium shot.\nShot 2 (4-8s): @Element1 crosses the street, smooth side tracking, blue and red reflections on wet pavement.\nShot 3 (8-12s): he slows beside a storefront, camera settles, same wardrobe and lighting anchors.\nAudio: wet street ambience, short footsteps, light breath. No text, no logos, no subtitles.",
+      "notes": [],
+      "summary": {
+        "subject": "Runner on a neon street",
+        "action": "Three short beats move from launch to crossing and final settle",
+        "camera": "1080p storyboard shots, stable tracking and readable cuts",
+        "style": "Rainy night, neon reflections, social promo look",
+        "output": "Audio on: street ambience and one short footstep cue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Kling 3 Standard storyboard draft render"
+      }
+    },
+    "imageExamples": null
   }
 }

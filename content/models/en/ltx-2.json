@@ -476,5 +476,103 @@
       "title": "LTX 2: Pricing, 4K Clips & Examples | MaxVideoAI",
       "description": "Use LTX 2 for supported older LTX high-fidelity 16:9 clips, text-to-video, image-to-video, 1080p to 4K checks, pricing and examples."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2",
+    "section": {
+      "title": "How to Write a Great LTX 2 Prompt",
+      "intro": "LTX 2 responds to structured, production-style prompts with clear camera direction.",
+      "tip": "Tip: duration + fps are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound cues.",
+      "guide": {
+        "label": "LTX",
+        "href": "https://www.ltx.studio"
+      },
+      "referencesTitle": "How LTX 2 uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject + action] in [setting], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Director brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet + continuity:\n[Location + anchors + time of day.]\n\nCinematography:\n[Framing + angle + one move + lens + composition.]\n\nLighting + grade:\n[Key light + contrast + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (multi-shot / shot list)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "copy": "Shot list (same subject + setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = continuity. Use for precise, repeatable looks."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = beat timing. Use for mini-stories in one clip."
+      }
+    ],
+    "globalPrinciples": [
+      "Define subject, action, and camera in the first lines.",
+      "Use lens + lighting anchors for consistency.",
+      "Keep beats readable; one move per shot."
+    ],
+    "engineWhy": [
+      "Longer prompts are OK if structured.",
+      "Camera language and lighting anchors drive fidelity.",
+      "Negative prompts help avoid artifacts."
+    ],
+    "demo": {
+      "title": "Demo prompt – premium product hero",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Futuristic coastal megacity\nAction: Camera glides between glass towers and flying traffic\nCamera: Wide aerial view with cinematic travel motion\nStyle: Sunset, glass reflections, premium 4K cityscape\nAudio: Subtle futuristic ambience",
+      "notes": [
+        "Single hero subject",
+        "Defined camera move and lighting",
+        "Audio included"
+      ],
+      "summary": {
+        "subject": "Futuristic coastal megacity",
+        "action": "Camera glides between glass towers and flying traffic",
+        "camera": "Wide aerial view with cinematic travel motion",
+        "style": "Sunset, glass reflections, premium 4K cityscape",
+        "output": "Subtle futuristic ambience"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "LTX 2 AI video example: Demo prompt - premium product hero"
+      }
+    },
+    "imageExamples": null
   }
 }

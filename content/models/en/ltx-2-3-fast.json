@@ -492,5 +492,100 @@
       "title": "LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro",
       "description": "Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-3-fast",
+    "section": {
+      "title": "How to Write a Great LTX 2.3 Fast Prompt",
+      "intro": "LTX 2.3 Fast is a generate-first engine, so keep the prompt short, visual and direct.",
+      "tip": "Tip: the UI already handles duration, aspect ratio, resolution, fps and the long-duration routing constraint. Focus the prompt on one subject, one move and one mood.",
+      "guide": null,
+      "referencesTitle": "How LTX 2.3 Fast uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fastest draft)",
+        "description": "Use this for rapid variants and hook testing.",
+        "copy": "[Subject + one action], [camera move], [lighting/style], [optional sound cue], [16:9 or 9:16 vibe]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (repeatable)",
+        "description": "Use labeled sections when several people will reuse the same prompt logic.",
+        "copy": "Subject:\n[Who/what]\n\nAction:\n[One clean motion beat]\n\nCamera:\n[Shot + one move]\n\nLook:\n[Lighting + palette]\n\nAudio:\n[Ambience/music cue if needed]"
+      },
+      {
+        "id": "pro",
+        "label": "Image flow",
+        "title": "Image-to-Video prompt",
+        "description": "Best when the still frame should stay recognizable.",
+        "copy": "Start frame:\n[What the uploaded image already shows]\n\nMotion:\n[What should move]\n\nCamera:\n[Push / pan / drift / orbit]\n\nResolve:\n[Optional end-image target]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (generate-only sequence)",
+        "description": "Use this for short multi-beat clips without switching workflows.",
+        "copy": "Shot 1: [setup]\nShot 2: [core action]\nShot 3: [resolve]\n\nLook:\n[Lighting + grade]\n\nAudio:\n[Ambience + one cue]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = fastest path to usable drafts."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = best when multiple teammates need to reuse the prompt."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = use only when you need stronger continuity inside a generate-only flow."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = helpful for simple multi-beat social sequences."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action and one move beat longer wish-list prompts.",
+      "Use start images for identity and prompts for motion.",
+      "Reserve 12 to 20 second runs for cases where the extra pacing room really matters."
+    ],
+    "engineWhy": [
+      "Fast responds well to concise prompts.",
+      "Image-to-Video works best when the still already contains the desired composition.",
+      "Start/end image transitions are most reliable when the two frames are clearly related."
+    ],
+    "demo": {
+      "title": "Demo prompt - fast cinematic draft",
+      "promptLabel": "Fast draft check",
+      "prompt": "A powerful boxer walks alone through a dark arena tunnel toward the ring, athletic frame wrapped in a hooded robe, shoulders relaxed but dangerous. Low front tracking shot, slow push-in, hard rim light, drifting haze, muted crowd rumble and one sharp impact cue, 10 seconds, 16:9.",
+      "notes": [
+        "Built for a fast motion check",
+        "One subject, one move and one atmosphere",
+        "Easy to rerun before a Pro pass"
+      ],
+      "summary": {
+        "subject": "Boxer in a dark tunnel",
+        "action": "Walks toward the ring with controlled tension",
+        "camera": "Low front tracking, slow push-in",
+        "style": "Hard rim light, subtle haze, cinematic arena mood",
+        "output": "Muted crowd rumble and one short impact cue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Fast draft check",
+        "outputLabel": "Audio",
+        "duration": "10s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "LTX 2.3 Fast boxer draft"
+      }
+    },
+    "imageExamples": null
   }
 }

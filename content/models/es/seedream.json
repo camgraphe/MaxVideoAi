@@ -376,5 +376,64 @@
       "title": "Seedream: precios de imagen y preparación de referencias | MaxVideoAI",
       "description": "Prepara con Seedream imágenes de referencia, cuadros de producto, personajes fijos y sets visuales controlados antes de elegir un modelo de video."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "Cómo escribir un buen prompt de Seedream",
+      "intro": "Escribe el still como si fuera el primer frame de una toma: sujeto, composición, luz y restricciones primero.",
+      "tip": "Consejo: si la imagen pasará a Seedance, menciona el objetivo de movimiento futuro sin pedir a Seedream que la anime.",
+      "guide": null,
+      "referencesTitle": "Cómo Seedream prepara referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un objetivo visual claro por imagen.",
+      "En una serie, definir secuencia, número y reglas visuales compartidas.",
+      "En ediciones, decir qué preservar antes de qué cambiar.",
+      "Simplificar el fondo cuando la imagen será referencia de video."
+    ],
+    "engineWhy": [
+      "Los stills controlados dan un punto de partida más claro a modelos image-to-video.",
+      "Las referencias de producto y personaje se animan mejor cuando silueta, luz y props ya son estables.",
+      "Preparar primero la imagen separa decisiones de calidad visual de decisiones de movimiento."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts de imagen de Seedream 5.0 Lite",
+      "intro": "Prompts de Seedream para stills de producto, hojas de personaje, edición de imagen y batches de storyboard.",
+      "workspaceLabel": "Abrir espacio de imagen",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Still de producto",
+          "badge": "Still 2K",
+          "kind": "image",
+          "prompt": "Packshot 2K de una botella de perfume ámbar sobre acrílico blanco, luz suave de estudio, sombra limpia, etiqueta legible, fondo minimal listo como referencia."
+        },
+        {
+          "id": "references-2",
+          "title": "Hoja de personaje",
+          "badge": "2-10 refs",
+          "kind": "references",
+          "prompt": "Hoja de referencia de personaje: mismo rostro, outfit y paleta en cuatro vistas limpias, fondo neutro, detalles consistentes de chaqueta y accesorios."
+        },
+        {
+          "id": "edit-3",
+          "title": "Edición de imagen",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Usando esta imagen de producto, conservar forma, logo y proporciones. Limpiar polvo y reflejos molestos, simplificar el entorno y mantener luz natural."
+        },
+        {
+          "id": "quality-4",
+          "title": "Batch storyboard",
+          "badge": "4 imágenes",
+          "kind": "quality",
+          "prompt": "Crear cuatro imágenes coherentes para storyboard de lanzamiento: hero de producto, detalle de material, contexto lifestyle y frame final. Misma paleta, misma luz, encuadres distintos."
+        }
+      ]
+    }
   }
 }

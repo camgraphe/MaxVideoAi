@@ -386,5 +386,42 @@
       "title": "Luma Ray 2 Flash Legacy: Pricing & Drafts | MaxVideoAI",
       "description": "Use Luma Ray 2 Flash as a previous-generation fast Luma route, with legacy draft pricing, Modify, Reframe, Ray 2 context and Ray 3.2 migration guidance."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Prompt Lab — Luma Ray 2 Flash",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Luma Ray 2 Flash uses start frames and edit routes"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Demo prompt — Luma Ray 2 Flash",
+      "promptLabel": "Flash draft",
+      "prompt": "5s Luma Ray 2 Flash draft in 16:9, silent output.\nA futuristic sports car enters a wet tunnel and reveals its silhouette in a band of light.\nShort push-in, low stable camera, fast asphalt reflections, clean contrast.\nOne motion beat, teaser energy, no readable text, no added logo.\nUse Flash to validate direction and timing before a Ray 2 pass.",
+      "notes": [],
+      "summary": {
+        "subject": "Sports car in a wet tunnel",
+        "action": "Enters the light and reveals its silhouette",
+        "camera": "Short push-in, low stable camera",
+        "style": "Cinematic draft, fast reflections, clean contrast",
+        "output": "Silent draft, ready to compare against Ray 2"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Flash draft",
+        "outputLabel": "Output",
+        "duration": "5s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Luma Ray 2 Flash tunnel draft"
+      }
+    },
+    "imageExamples": null
   }
 }

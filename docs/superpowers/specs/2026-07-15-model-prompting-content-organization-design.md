@@ -69,14 +69,30 @@ Permitted defect classes are limited to wrong-language text, spelling or transcr
 
 The migration verifier begins with an empty correction allowlist. If no qualifying defect is found, the final implementation must report zero intentional content differences. If a qualifying defect is found, the allowlist entry is reviewed before cutover and its correction remains protected by a permanent test after migration-only tooling is deleted.
 
-The implementation-plan audit identified four qualifying wrong-locale guide links. They are the only pre-approved content differences:
+The reviewed migration manifest contains exactly 18 permitted differences: four qualifying wrong-locale guide links and 14 customer-visible wrong-language `still`/`stills` strings exposed by the existing localized-content forbidden-term contract.
 
-- `dreamina-seedance-2-0-mini` / `fr`: `/models/dreamina-seedance-2-0-mini` becomes `/fr/modeles/dreamina-seedance-2-0-mini`;
-- `dreamina-seedance-2-0-mini` / `es`: `/models/dreamina-seedance-2-0-mini` becomes `/es/modelos/dreamina-seedance-2-0-mini`;
-- `seedance-2-0-fast` / `fr`: `/models/seedance-2-0` becomes `/fr/modeles/seedance-2-0`;
-- `seedance-2-0-fast` / `es`: `/models/seedance-2-0` becomes `/es/modelos/seedance-2-0`.
+| # | Slug | Locale | Path | Exact old value | Exact new value | Objective evidence |
+|---:|---|---|---|---|---|---|
+| 1 | `dreamina-seedance-2-0-mini` | `fr` | `section.guide.href` | `/models/dreamina-seedance-2-0-mini` | `/fr/modeles/dreamina-seedance-2-0-mini` | The localized route contract defines `/fr/modeles`. |
+| 2 | `dreamina-seedance-2-0-mini` | `es` | `section.guide.href` | `/models/dreamina-seedance-2-0-mini` | `/es/modelos/dreamina-seedance-2-0-mini` | The localized route contract defines `/es/modelos`. |
+| 3 | `seedance-2-0-fast` | `fr` | `section.guide.href` | `/models/seedance-2-0` | `/fr/modeles/seedance-2-0` | The localized route contract defines `/fr/modeles`. |
+| 4 | `seedance-2-0-fast` | `es` | `section.guide.href` | `/models/seedance-2-0` | `/es/modelos/seedance-2-0` | The localized route contract defines `/es/modelos`. |
+| 5 | `luma-uni-1` | `fr` | `imageExamples.intro` | `Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.` | `Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.` | The localized-content contract rejects English `still`/`stills` in customer-facing French copy. |
+| 6 | `luma-uni-1` | `fr` | `imageExamples.items.0.badge` | `2K still` | `Visuel 2K` | Same localized-content contract. |
+| 7 | `luma-uni-1` | `fr` | `imageExamples.items.0.prompt` | `Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | `Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | Same localized-content contract. |
+| 8 | `luma-uni-1-max` | `fr` | `imageExamples.intro` | `Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.` | `Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.` | Same localized-content contract. |
+| 9 | `luma-uni-1-max` | `fr` | `imageExamples.items.0.badge` | `2K still` | `Visuel 2K` | Same localized-content contract. |
+| 10 | `luma-uni-1-max` | `fr` | `imageExamples.items.0.prompt` | `Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | `Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact "AURA NOIRE" en haut à gauche, logo discret en bas.` | Same localized-content contract. |
+| 11 | `luma-uni-1` | `es` | `imageExamples.intro` | `Ejemplos para stills de campaña, tipografía, ediciones con referencia y finales 4K.` | `Ejemplos para imágenes de campaña, tipografía, ediciones con referencia y finales 4K.` | The localized-content contract rejects English `still`/`stills` in customer-facing Spanish copy. |
+| 12 | `luma-uni-1` | `es` | `imageExamples.items.0.title` | `Still de campaña` | `Imagen de campaña` | Same localized-content contract. |
+| 13 | `luma-uni-1` | `es` | `imageExamples.items.0.badge` | `Still 2K` | `Imagen 2K` | Same localized-content contract. |
+| 14 | `luma-uni-1` | `es` | `imageExamples.items.0.prompt` | `Still de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | `Imagen de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | Same localized-content contract. |
+| 15 | `luma-uni-1-max` | `es` | `imageExamples.intro` | `Ejemplos para stills de campaña, tipografía, ediciones con referencia y finales 4K.` | `Ejemplos para imágenes de campaña, tipografía, ediciones con referencia y finales 4K.` | Same localized-content contract. |
+| 16 | `luma-uni-1-max` | `es` | `imageExamples.items.0.title` | `Still de campaña` | `Imagen de campaña` | Same localized-content contract. |
+| 17 | `luma-uni-1-max` | `es` | `imageExamples.items.0.badge` | `Still 2K` | `Imagen 2K` | Same localized-content contract. |
+| 18 | `luma-uni-1-max` | `es` | `imageExamples.items.0.prompt` | `Still de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | `Imagen de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto "AURA NOIRE" arriba a la izquierda, logo discreto abajo.` | Same localized-content contract. |
 
-The evidence is the route-localized model path contract (`/models`, `/fr/modeles`, `/es/modelos`). These four corrections receive exact permanent assertions. Any additional difference still requires the full evidence and review policy above.
+The non-customer `kind: "layout"` semantic enum remains unchanged and is excluded by key from the existing localized-content scan; `prompting` itself remains fully scanned. All 18 corrections receive exact permanent assertions. Any additional difference still requires the full evidence and review policy above.
 
 ### Keep runtime facts derived
 

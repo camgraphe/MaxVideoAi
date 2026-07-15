@@ -309,5 +309,42 @@
       "title": "Happy Horse 1.0: edición de video anterior | MaxVideoAI",
       "description": "Usa Happy Horse 1.0 como ruta anterior de Happy Horse para edición de video. Usa Happy Horse 1.1 para nuevas generaciones de texto, imagen y referencia."
     }
+  },
+  "prompting": {
+    "modelSlug": "happy-horse-1-0",
+    "section": {
+      "title": "Prompt Lab — Happy Horse 1.0",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Cómo Happy Horse 1.0 usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Consigna demo - Happy Horse 1.0",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Conservadora en una galería de retratos\nAcción: Camina mientras los rostros pintados cobran vida\nCámara: Dolly suave por la galería\nEstilo: Realismo surreal, luz de amanecer, mármol y polvo suave\nAudio: Ambiente silencioso de museo, sin diálogo",
+      "notes": [],
+      "summary": {
+        "subject": "Conservadora en una galería de retratos",
+        "action": "Camina mientras los rostros pintados cobran vida",
+        "camera": "Dolly suave por la galería",
+        "style": "Realismo surreal, luz de amanecer, mármol y polvo suave",
+        "output": "Ambiente silencioso de museo, sin diálogo"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Happy Horse 1.0: Consigna demo - Happy Horse 1.0"
+      }
+    },
+    "imageExamples": null
   }
 }

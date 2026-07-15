@@ -465,5 +465,102 @@
       "title": "Seedance 2.0 Fast : prix brouillons et itérations | MaxVideoAI",
       "description": "Utilisez Seedance 2.0 Fast pour des brouillons rapides, tests de rythme, variantes de mouvement et plans guidés par références avant rendu final."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-0-fast",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.0 Fast",
+      "intro": "Seedance 2.0 Fast fonctionne mieux quand chaque rendu teste une seule décision. Gardez le brief dans l'ordre Sujet -> Action -> Caméra -> Style, puis choisissez la route la plus rapide : texte, image départ/fin, ou références.",
+      "tip": null,
+      "guide": {
+        "label": "Notes de workflow Seedance 2.0 Fast",
+        "href": "/fr/modeles/seedance-2-0"
+      },
+      "referencesTitle": "Comment Seedance 2.0 Fast utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Texte",
+        "title": "Prompt text-to-video de test",
+        "description": "À utiliser quand vous voulez une lecture rapide du cadrage, du mouvement ou de l'ambiance depuis le langage seul.",
+        "copy": "Sujet :\n[Qui / quoi apparaît]\n\nAction :\n[Un seul beat visible]\n\nCaméra :\n[Un seul mouvement court]\n\nStyle :\n[Lumière + palette]\n\nObjectif :\n[Ce que ce run doit prouver : timing / cadrage / mouvement / audio]\n\nRègle :\nNe mélangez pas plusieurs décisions dans le même run Fast."
+      },
+      {
+        "id": "structured",
+        "label": "Départ/Fin",
+        "title": "Prompt de test image-to-video",
+        "description": "À utiliser quand vous devez valider la façon dont une image de départ atterrit sur une image de fin.",
+        "copy": "Image de départ :\n[Ce qui est fixe dès la frame 1]\n\nImage de fin (optionnelle) :\n[Ce que la dernière frame doit atteindre]\n\nTrajet du mouvement :\n[Comment le sujet se déplace entre les deux]\n\nCaméra :\n[Un seul mouvement]\n\nCe qui doit rester identique entre variantes :\n[Lumière / tenue / décor / rythme]\n\nUtilisez ce format quand la vraie question est la qualité de la transition."
+      },
+      {
+        "id": "pro",
+        "label": "Références",
+        "title": "Prompt de test de continuité",
+        "description": "À utiliser quand vous vérifiez si le même pack de références tient bien entre variantes.",
+        "copy": "Intention du prompt :\n[Ce que le brouillon doit valider]\n\nRéférences image :\n@Image1 = [identité]\n@Image2 = [produit / tenue / palette]\n\nRéférences vidéo :\n@Video1 = [rythme caméra / pacing]\n\nRéférences audio :\n@Audio1 = [ambiance / beat / texture de dialogue]\n\nVariable testée :\n[Un seul changement : caméra / rythme / cadrage / son]\n\nRègle :\nGardez le même pack source et ne changez qu'une seule chose."
+      },
+      {
+        "id": "storyboard",
+        "label": "Comparaison",
+        "title": "Prompt de comparaison / handoff",
+        "description": "À utiliser quand Fast sert à choisir un gagnant avant le standard.",
+        "copy": "Ce qui reste fixe dans le A/B :\n[Sujet / références / décor / durée / ratio]\n\nVariante A :\n[Choix caméra / rythme / audio]\n\nVariante B :\n[Une seule variable changée]\n\nCritère de victoire :\n[Ce qui compte comme succès]\n\nSi validé, passage au standard avec :\n[Plus de polish, un plan de sons plus riche, un découpage plus complet]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Texte = tester le brief lui-même."
+      },
+      {
+        "tabId": "structured",
+        "body": "Départ/Fin = tester la transition et la frame d'arrivée."
+      },
+      {
+        "tabId": "pro",
+        "body": "Références = tester la continuité avec le même pack source."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Comparaison = préparer le gagnant pour le standard."
+      }
+    ],
+    "globalPrinciples": [
+      "Changez une seule variable par rendu pour garder des comparaisons lisibles.",
+      "Conservez les mêmes références quand vous testez caméra, timing ou audio.",
+      "Utilisez les tests départ/fin pour valider une transition, pas pour réécrire toute la scène.",
+      "Donnez un rôle unique à chaque référence et supprimez les adjectifs de style superflus.",
+      "Faites passer les versions gagnantes dans Seedance 2.0 standard pour la finition finale."
+    ],
+    "engineWhy": [
+      "Fast est surtout utile pour les checks conceptuels avant les rendus coûteux.",
+      "Les tests avec image de départ/fin sont pratiques pour juger une transition sans sur-diriger le milieu du plan.",
+      "Les runs à références servent surtout aux tests A/B de continuité, pas à la complexité maximale.",
+      "Des indications audio courtes rendent les comparaisons côte à côte plus faciles à juger."
+    ],
+    "demo": {
+      "title": "Prompt de démonstration — Seedance 2.0 Fast",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Braquage absurde aux armes gonflables\nAction: Les voleurs entrent dans une scène de thriller bancaire\nCaméra: Cadre cinéma lisible, rythme de brouillon rapide\nStyle: Thriller tendu avec humour visuel absurde\nAudio: Ambiance banque, tension, pas de dialogue long",
+      "notes": [],
+      "summary": {
+        "subject": "Braquage absurde aux armes gonflables",
+        "action": "Les voleurs entrent dans une scène de thriller bancaire",
+        "camera": "Cadre cinéma lisible, rythme de brouillon rapide",
+        "style": "Thriller tendu avec humour visuel absurde",
+        "output": "Ambiance banque, tension, pas de dialogue long"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Brouillon de mouvement Seedance 2.0 Fast"
+      }
+    },
+    "imageExamples": null
   }
 }

@@ -225,5 +225,82 @@
       "title": "Kling 3.0 Omni Standard: borradores referencia y V2V | MaxVideoAI",
       "description": "Usa Kling 3.0 Omni Standard para reference-to-video de menor costo, borradores storyboard, V2V fuente, prompts @Image y @Video1."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-o3-standard",
+    "section": {
+      "title": "Prompt Lab — Kling 3.0 Omni Standard drafts con referencias",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Cómo O3 Standard estructura drafts con referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Prompt text-to-video O3 Standard",
+        "description": "Para validar una idea con menor costo y sin assets.",
+        "copy": "Sujeto:\n[Personaje / producto / lugar + 2 rasgos visuales]\n\nAcción:\n[Una acción legible o 2-3 beats cortos]\n\nCámara:\n[Movimiento de cámara + encuadre + continuidad]\n\nEstilo:\n[Luz, textura, paleta, look cinematográfico]\n\nAudio:\n[Ambiente nativo, SFX cortos, diálogo breve si aplica]\n\nExample:\nUn diseñador cruza un estudio nocturno con un prototipo luminoso. Cámara: tracking bajo y leve push-in. Estilo: reflejos azules, metal cepillado, look premium. Audio: ambiente de estudio, hum eléctrico sutil, sin subtítulos."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Draft reference-to-video O3 Standard",
+        "description": "Para probar estilo, sujeto o storyboard sin start frame forzado.",
+        "copy": "Opening frame opcional:\n[Qué debe estructurar el primer beat sin anular referencias]\n\nEnd frame opcional:\n[Pose final / composición / distancia de cámara esperada]\n\nReferencias:\n@Image1 = [composición o personaje]\n@Image2 = [estilo, luz u objeto]\n\nAcción y cámara:\n[Un movimiento legible entre apertura y final]\n\nExample:\nUsa @Image1 como composición inicial y @Image2 como estilo de luz. El personaje avanza lentamente hacia cámara y termina en una pose estable cercana al end frame. Luz coherente, sin cambio de escenario."
+      },
+      {
+        "id": "pro",
+        "label": "V2V draft",
+        "title": "V2V O3 Standard económico",
+        "description": "Para probar @Video1 y keep_audio antes de pasar a Pro.",
+        "copy": "@Video1 = [ritmo de cámara / movimiento / pacing]\n@Image1 = [storyboard o composición]\n@Image2 = [personaje, producto o estilo]\n\nIntención:\n[Qué debe generar el video sin copiar cada frame fuente]\n\nContinuidad:\n[Qué no debe derivar: rostro, producto, lugar, luz]\n\nAudio:\n[generate_audio o keep_audio según necesidad]\n\nExample:\nUsa @Video1 para ritmo de cámara, @Image1 para composición storyboard y @Image2 para estilo de personaje. Genera una secuencia cinematográfica de 12 s en tres beats con continuidad estable, ambiente nativo y sin texto añadido."
+      },
+      {
+        "id": "storyboard",
+        "label": "Upgrade",
+        "title": "Plan de paso a Pro o 4K",
+        "description": "Para documentar qué debe conservarse después del draft.",
+        "copy": "Duración: [8-15 s]\n\nShot 1 (0-4 s):\n[Composición guiada por @Image1 + acción legible]\n\nShot 2 (4-8 s):\n[Movimiento o cámara inspirado por @Video1]\n\nShot 3 (8-12 s):\n[Payoff / pose final / insert de producto]\n\nAnclas:\n[Estilo @Image2, vestuario, lugar, luz, audio]\n\nExample:\nShot 1: @Image1 define la escena. Shot 2: @Video1 guía velocidad de cámara. Shot 3: @Image2 fija el estilo final. Ambiente nativo corto, continuidad de personaje y lugar."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Aclara si cada asset es una referencia o un frame visible.",
+      "Usa @Image1, @Image2 para imágenes y @Video1 solo para un video fuente V2V.",
+      "Cuando @Video1 está cargado, el flujo pasa a V2V: start/end frames no deben dirigir la toma.",
+      "Mantén una acción legible por toma y una sola función por referencia.",
+      "Usa keep_audio solo si el audio fuente debe conservarse."
+    ],
+    "engineWhy": [
+      "Standard es la ruta de draft para probar referencias y V2V con menor costo.",
+      "Mantén prompts más cortos y compara una variable por vez.",
+      "Pasa a Pro para fidelidad final o a 4K cuando la dirección esté aprobada.",
+      "Incluso en draft, cada @Image y @Video1 necesita una función clara."
+    ],
+    "demo": {
+      "title": "Prompt demo — O3 Standard draft con referencias",
+      "promptLabel": "Prompt de texto",
+      "prompt": "Subject:\nA giant origami whale made of folded newspaper, gliding through a dry European street like it is swimming underwater.\n\nAction:\nThe paper whale passes between buildings, creating a wave of loose paper. People step back in surprise as the whale’s tail gently sweeps newspapers into the air.\n\nCamera:\nLow wide tracking shot moving alongside the whale, keeping the full body readable. Smooth forward motion, no sudden cuts.\n\nStyle:\nCinematic magical realism, soft afternoon light, paper textures, muted beige and blue-gray palette, elegant surreal mood, realistic city with a poetic fantasy element.\n\nAudio:\nSoft paper rustling, distant city ambience, deep whale-like paper creak, gentle wind swell.",
+      "notes": [],
+      "summary": {
+        "subject": "Ballena origami gigante hecha de papel periódico",
+        "action": "Nada por una calle europea seca y levanta hojas de papel",
+        "camera": "Tracking bajo y amplio junto a la ballena",
+        "style": "Realismo mágico cinematográfico, luz suave, texturas de papel",
+        "output": "Papel crujiendo, ciudad lejana, viento suave"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt de texto",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Render de ballena origami Kling 3.0 Omni Standard"
+      }
+    },
+    "imageExamples": null
   }
 }

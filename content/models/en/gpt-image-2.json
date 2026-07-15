@@ -315,5 +315,77 @@
       "title": "GPT Image 2: Pricing, Text Rendering & Editing | MaxVideoAI",
       "description": "Explore GPT Image 2 pricing, readable text rendering, product stills, custom image sizes, reference edits and mask-guided image workflows on MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "gpt-image-2",
+    "section": {
+      "title": "How to write a strong GPT Image 2 prompt",
+      "intro": "Use structured prompts with scene, subject, exact text, visual details, use case, and constraints.",
+      "tip": "Tip: put exact words in quotation marks and describe where each text block should appear.",
+      "guide": null,
+      "referencesTitle": "How GPT Image 2 uses sources and masks"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "State the target artifact: poster, product photo, UI screen, infographic, or concept frame.",
+      "Give exact text when typography matters.",
+      "For edits, separate preserve instructions from change instructions."
+    ],
+    "engineWhy": [
+      "The model is especially useful when text and layout accuracy are part of the image brief.",
+      "Quality affects cost, so draft cheaper and rerun approved frames at High.",
+      "Reference edits improve when each source image has a clear role."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "GPT Image 2 image prompt examples",
+      "intro": "GPT Image 2 prompts for readable text, product stills, UI mockups, controlled edits, masks and 4K finals.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Product still with readable label",
+          "badge": "High · 1024x768",
+          "kind": "image",
+          "prompt": "Catalog product photo of a premium coffee bag titled \"SUMMIT ROAST\", readable tasting notes, light wood table, soft daylight, clean framing, e-commerce background."
+        },
+        {
+          "id": "typography-2",
+          "title": "Exact-text poster",
+          "badge": "4K text",
+          "kind": "typography",
+          "prompt": "Vertical 4K poster with exact title \"CREATOR LAUNCH CHECKLIST\", 8 numbered modules, crisp typography, white background, navy and cyan accents, even margins."
+        },
+        {
+          "id": "layout-3",
+          "title": "UI mockup",
+          "badge": "1920x1080",
+          "kind": "layout",
+          "prompt": "1920x1080 SaaS analytics dashboard screen mockup, white cards, left navigation, readable headings, realistic metrics, premium product UI style."
+        },
+        {
+          "id": "edit-4",
+          "title": "Controlled image edit",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Using this product image, preserve shape, label, proportions and main reflection. Replace the background with a bright studio, remove dust and distracting reflections."
+        },
+        {
+          "id": "quality-5",
+          "title": "Mask-guided edit",
+          "badge": "Mask URL",
+          "kind": "quality",
+          "prompt": "Modify only the masked region: replace the secondary copy with \"LIMITED RESERVE\", keep logo, packaging color, shadow and perspective unchanged."
+        },
+        {
+          "id": "layout-6",
+          "title": "4K hero still",
+          "badge": "3840x2160",
+          "kind": "layout",
+          "prompt": "4K product-page hero still, black smartphone on graphite surface, readable screen text, controlled reflection, premium studio lighting, negative space on the right."
+        }
+      ]
+    }
   }
 }

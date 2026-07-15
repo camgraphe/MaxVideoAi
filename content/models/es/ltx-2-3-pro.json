@@ -502,5 +502,100 @@
       "title": "LTX 2.3 Pro: precios, audio, Extend y Retake | MaxVideoAI",
       "description": "Usa LTX 2.3 Pro para flujos LTX de producción: audio-to-video, Extend, Retake, imagen a video y pasadas Generate de mayor resolución."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-3-pro",
+    "section": {
+      "title": "Cómo promptear LTX 2.3 Pro según el workflow",
+      "intro": "LTX 2.3 Pro cambia realmente de lógica según el trabajo. Promptea distinto una generación nueva, una animación guiada por audio, una extensión y un retake en lugar de usar una plantilla universal.",
+      "tip": "Consejo: duración, resolución, fps y controles de workflow ya viven en la UI. Usa el prompt para dirigir la ruta activa: toma nueva, movimiento guiado por soundtrack, continuación o arreglo quirúrgico.",
+      "guide": null,
+      "referencesTitle": "Cómo LTX 2.3 Pro usa Generate, Audio, Extend y Retake"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Generar",
+        "title": "Prompt de generación",
+        "description": "Úsalo cuando LTX crea una toma nueva desde texto o una imagen inicial.",
+        "copy": "Sujeto:\nAventurero del desierto con una antigua brújula de latón durante golden hour.\n\nAcción:\nAbre la brújula y un mapa luminoso de polvo se despliega encima.\n\nCámara:\nPlano amplio desde atrás sobre las dunas, luego push-in lento hasta sus ojos reflejando el mapa.\n\nLook:\nSol cálido, polvo flotando, texturas bronce, grade premium de película de aventura.\n\nAudio:\nViento del desierto, clic metálico suave de la brújula, rumble atmosférico bajo.\n\nFormato:\n10 segundos, 16:9, sin texto, sin logos."
+      },
+      {
+        "id": "structured",
+        "label": "Audio",
+        "title": "Prompt audio-to-video",
+        "description": "Úsalo cuando la banda sonora o el diálogo deben marcar timing y puesta en escena.",
+        "copy": "Fuente de audio:\n[Qué hace la soundtrack / el diálogo / el beat]\n\nPuesta en escena visual:\n[Qué debe ver el espectador mientras suena]\n\nCámara:\n[Cómo sigue la toma ese ritmo]\n\nRegla:\nDeja que el audio lleve el pacing. Usa el prompt para controlar sujeto, staging y cámara."
+      },
+      {
+        "id": "pro",
+        "label": "Extend",
+        "title": "Prompt de extensión",
+        "description": "Úsalo cuando el clip actual es bueno y solo falta el siguiente beat.",
+        "copy": "Fuente actual:\n[Qué ya existe]\n\nSiguiente beat:\n[Qué debe ocurrir después]\n\nContinuidad a preservar:\n[Identidad / escenario / ritmo de cámara / luz]\n\nRegla:\nDescribe solo la continuación. No reescribas el clip entero."
+      },
+      {
+        "id": "storyboard",
+        "label": "Retake",
+        "title": "Prompt de retake",
+        "description": "Úsalo cuando solo una parte del clip debe cambiar.",
+        "copy": "Fuente actual:\n[Qué ya está correcto]\n\nSección a rehacer:\n[Momento exacto o problema visual]\n\nQué debe permanecer igual:\n[Todo lo que queda fuera de la ventana de retake]\n\nBeat de reemplazo:\n[Qué debe hacer la nueva sección]\n\nRegla:\nUn retake debe ser quirúrgico. Pide una reparación, no una escena nueva."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Generar = crear una toma nueva desde texto o imagen."
+      },
+      {
+        "tabId": "structured",
+        "body": "Audio = dejar que la soundtrack lleve el timing."
+      },
+      {
+        "tabId": "pro",
+        "body": "Extend = añadir el siguiente beat sin deriva."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Retake = cambiar solo la parte dañada o floja."
+      }
+    ],
+    "globalPrinciples": [
+      "Define un sujeto, un beat central y un movimiento de cámara antes de añadir estilo.",
+      "Usa el workflow que corresponda al trabajo: generación, audio, extend o retake.",
+      "En retakes, describe solo la sección que debe cambiar en vez de reescribir todo el video."
+    ],
+    "engineWhy": [
+      "La generación con texto e imagen sigue siendo directa y cinematográfica.",
+      "Audio a video funciona mejor cuando la banda sonora lleva el timing y el prompt guía la puesta en escena.",
+      "Extend y Retake son más sólidos cuando el prompt es preciso sobre la continuidad y sobre lo que debe permanecer igual."
+    ],
+    "demo": {
+      "title": "Prompt demo - revelación cinematográfica con brújula",
+      "promptLabel": "Prompt text-to-video Generate",
+      "prompt": "Un aventurero robusto está al borde de un acantilado desértico enorme durante golden hour, rostro quemado por el sol, chaqueta de cuero gastada, pañuelo moviéndose con el viento. Abre una antigua brújula de latón en la mano, y un mapa luminoso hecho de luz y polvo se despliega encima, iluminando su rostro y la arena alrededor. La cámara empieza en un plano amplio desde atrás para mostrar las dunas infinitas, luego avanza lentamente cuando levanta la brújula y termina en un primer plano dramático de sus ojos reflejando el mapa luminoso. Sol cálido, polvo flotando, texturas bronce, composición épica pero limpia, tono de aventura cinematográfica premium, simple e icónico. Viento sobre las dunas, clic metálico sutil de la brújula, rumble atmosférico bajo del desierto, sin texto, sin logos, sin watermark.",
+      "notes": [
+        "Un sujeto claro y un solo beat de revelación",
+        "La cámara pasa del plano general al primer plano",
+        "Los sonidos apoyan la brújula y la atmósfera del desierto"
+      ],
+      "summary": {
+        "subject": "Aventurero al borde del desierto",
+        "action": "Abre una brújula antigua que revela un mapa luminoso",
+        "camera": "Plano amplio desde atrás, luego push-in lento hacia los ojos",
+        "style": "Golden hour, polvo, texturas bronce, aventura premium",
+        "output": "Viento del desierto, clic metálico, rumble atmosférico"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt text-to-video Generate",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Render de aventura con brújula LTX 2.3 Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

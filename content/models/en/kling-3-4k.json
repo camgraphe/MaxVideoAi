@@ -415,5 +415,83 @@
       "title": "Kling 3 4K: Native 4K Pricing & Examples | MaxVideoAI",
       "description": "Use Kling 3 4K for native 4K delivery renders, approved image-to-video shots, product masters and final campaign clips up to 15 seconds."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-4k",
+    "section": {
+      "title": "Prompt Lab — Kling 3 4K",
+      "intro": "Kling 3 4K works best as a final delivery pass. Start from an approved prompt or start frame, lock framing and duration, decide whether audio belongs in the master, then render only the selected shot in native 4K.",
+      "tip": "Tip: validate timing, motion and framing in Kling 3 Standard or Pro before spending on the 4K master.",
+      "guide": null,
+      "referencesTitle": "How Kling 3 4K uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Final master",
+        "title": "Final 4K delivery prompt",
+        "description": "Use this when the shot recipe is already approved.",
+        "copy": "Template (copy / paste)\nShot goal: [final delivery use: product master, campaign clip, large-screen review]\nSubject: [approved product / character / scene]\nAction: [one clean readable action]\nCamera: [locked framing + one camera move]\nStyle: [approved lighting, palette, lens feel]\nDelivery: native 4K, [duration], [aspect ratio], audio [on/off]\n\nExample:\nFinal native 4K product master for a premium smartwatch on a dark graphite plinth. One slow dolly push reveals the screen reflection and polished metal edge. Locked 16:9 framing, crisp studio highlights, black background, no extra text, no logo changes. Audio off for editorial finishing."
+      },
+      {
+        "id": "structured",
+        "label": "Reference",
+        "title": "Image-to-video master prompt",
+        "description": "Use this when a source frame controls product identity or composition.",
+        "copy": "Template (copy / paste)\nSource image role: [identity / product geometry / final framing]\nKeep: [shape, logo, color, pose, composition]\nAnimate: [single motion beat]\nCamera: [small push / orbit / locked shot]\nEnd frame: [optional landing frame if needed]\nDelivery: native 4K, [duration], audio [on/off]\n\nExample:\nUse the approved product still as the source frame. Preserve bottle shape, label placement and amber glass color. Add a subtle 4K macro orbit with controlled reflections, keep the bottle centered, land on the same clean frontal composition, no added text. Audio on with soft studio ambience only."
+      },
+      {
+        "id": "pro",
+        "label": "Audio",
+        "title": "Audio decision prompt",
+        "description": "Use this when the 4K delivery file needs sound context.",
+        "copy": "Template (copy / paste)\nAudio role: [review context / final ambience / short voice / no audio]\nVisible action tied to sound: [what creates the cue]\nAvoid: [long dialogue, competing music beds, noisy off-screen action]\nExport note: [audio on/off]\n\nExample:\nNative 4K fashion campaign master, model turns once under soft studio light. Audio on: quiet fabric movement, subtle room tone, one low cinematic hit at the turn. No dialogue, no music bed, no off-screen sounds."
+      },
+      {
+        "id": "storyboard",
+        "label": "Cost control",
+        "title": "4K escalation checklist",
+        "description": "Use this before moving from Standard or Pro into 4K.",
+        "copy": "Checklist\n1. Prompt is approved in a lower-cost Kling route.\n2. Source frame or end frame is final.\n3. Aspect ratio and duration match delivery.\n4. Audio on/off is decided.\n5. Only the approved shot moves to Kling 3 4K.\n\nExample:\nApproved Kling 3 Pro 1080p shot becomes the 4K master: same subject, same camera path, same timing, same source frame, native 4K output for final delivery."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Use one approved shot brief instead of exploring multiple creative directions in 4K.",
+      "Lock subject, action, camera, aspect ratio and duration before rendering the final master.",
+      "Use a clean source image when product geometry, identity or framing must stay stable.",
+      "Decide audio on/off before export; treat audio as part of the delivery spec.",
+      "Control cost by drafting lower first, then moving only approved shots to Kling 3 4K."
+    ],
+    "engineWhy": [
+      "Kling 3 4K is exposed as text-to-video and image-to-video on MaxVideoAI, not as a video-input route.",
+      "Image-to-video accepts one source image, with an optional end frame where the active route exposes it.",
+      "The route is native 4K, so it fits final masters better than broad prompt exploration.",
+      "Lip sync is supported, but the prompt still needs short readable dialogue and stable face framing.",
+      "Use the final quote in Generate before client-facing delivery or bulk rendering."
+    ],
+    "demo": {
+      "title": "Demo prompt — Kling 3 4K",
+      "promptLabel": "Final 4K master",
+      "prompt": "Native 4K Kling 3 delivery render, 16:9, 6 seconds, audio off.\nA premium smartwatch rests on a dark graphite plinth in a minimal studio.\nOne slow dolly push reveals the polished edge, glass reflection and screen detail.\nLocked product framing, crisp highlights, clean black background, no added text or logo changes.\nUse this only after the composition and timing are approved in Standard or Pro.",
+      "notes": [],
+      "summary": {
+        "subject": "Premium smartwatch product master",
+        "action": "Slow reveal of edge, reflection and screen detail",
+        "camera": "Locked 16:9 dolly push in native 4K",
+        "style": "Minimal studio, graphite surface, crisp product highlights",
+        "output": "Audio off for editorial finishing"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Final 4K master",
+        "outputLabel": "Audio",
+        "duration": "6s",
+        "aspectRatio": null,
+        "audioChipMode": "off",
+        "audioChipLabel": "Audio off",
+        "altContext": "Kling 3 4K product master render"
+      }
+    },
+    "imageExamples": null
   }
 }

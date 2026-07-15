@@ -426,5 +426,102 @@
       "title": "Seedance 2.0 Mini: video IA de bajo coste, precios y usos",
       "description": "Usa Seedance 2.0 Mini para pruebas de video 480p/720p de menor coste, lotes ecommerce, variantes UGC y movimiento con referencias antes de pasar tomas hero a Seedance 2.0."
     }
+  },
+  "prompting": {
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.0 Mini",
+      "intro": "Seedance 2.0 Mini funciona mejor con prompts donde cada render responde una pregunta de lote: ángulo de producto, hook, comportamiento de referencias, pasada de edición de video o extensión.",
+      "tip": null,
+      "guide": {
+        "label": "Notas de workflow Seedance 2.0 Mini",
+        "href": "/es/modelos/dreamina-seedance-2-0-mini"
+      },
+      "referencesTitle": "Cómo Dreamina Seedance 2.0 Mini usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Texto",
+        "title": "Prompt de texto batch",
+        "description": "Úsalo para leer a menor coste encuadre, movimiento, hook o dirección de audio desde texto solamente.",
+        "copy": "Pregunta del lote:\n[Qué debe probar este render: hook, cámara, ángulo de producto, movimiento o sonido]\n\nSujeto y acción:\n[Un sujeto legible + una acción visible]\n\nCámara:\n[Un solo movimiento: push-in / tracking / estática / handheld]\n\nEstilo:\n[Luz, clima, paleta, nivel de realismo]\n\nAjuste de audio:\n[Audio activado para ambiente/diálogo nativos, o audio desactivado para revisión visual]\n\nRegla:\nNo pruebes más de una variable principal en el mismo render Mini."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Prompt con referencias de imagen y audio",
+        "description": "Úsalo cuando Mini deba mantener producto, persona, vestuario o mood estable en muchas variantes.",
+        "copy": "Intención del prompt:\n[Qué debe hacer el clip generado]\n\nReferencias de imagen:\n@Image1 = [producto / persona / composición]\n@Image2 = [estilo / vestuario / paleta]\n\nReferencias de audio si se adjuntan:\n@Audio1 = [ritmo / ambiente / textura de diálogo]\n\nMovimiento:\n[Una acción o movimiento de cámara claro]\n\nAnclas de continuidad:\n[Qué no debe derivar entre variantes]\n\nRegla:\nCada referencia tiene un trabajo. No subas referencias que compitan por el mismo rol."
+      },
+      {
+        "id": "pro",
+        "label": "Edit/Extend",
+        "title": "Prompt de edición de video o extensión",
+        "description": "Úsalo cuando ya existe un clip fuente y Mini prueba un edit o continuación de menor coste.",
+        "copy": "Clip fuente:\n[Qué ya ocurre y qué debe mantenerse continuo]\n\nCambio pedido:\n[Editar el look / ajustar pacing / extender el final]\n\nNo cambiar:\n[Identidad del sujeto, forma del producto, lugar, lógica de cámara]\n\nNuevo beat:\n[Una acción, reveal o pose final]\n\nAudio:\n[Desactivado para revisión visual, o audio nativo para ambiente/SFX/diálogo]\n\nRegla:\nDescribe el siguiente cambio, no una escena nueva sin relación."
+      },
+      {
+        "id": "storyboard",
+        "label": "Comparar",
+        "title": "Prompt de comparación batch",
+        "description": "Úsalo cuando Mini produce varias opciones comparables antes de una pasada final en Seedance 2.0.",
+        "copy": "Setup fijo en todas las variantes:\n[Sujeto, ratio, resolución, duración, referencias y acción central]\n\nVariante A:\n[Solo una variable cambiada]\n\nVariante B:\n[Otra variable solamente]\n\nCriterio ganador:\n[Claridad, lectura de producto, hook emocional, movimiento o coste]\n\nNota de handoff:\n[Qué pasa a Seedance 2.0 si se aprueba]\n\nRegla:\nMantén duración y resolución fijas para comparar coste y calidad con limpieza."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Texto = una pregunta de lote solo desde lenguaje."
+      },
+      {
+        "tabId": "structured",
+        "body": "Refs = mantener producto, sujeto o estilo estables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Edit/Extend = usar clips fuente para revisiones de menor coste."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Comparar = mantener ajustes fijos y cambiar una variable."
+      }
+    ],
+    "globalPrinciples": [
+      "Mantén un producto, hook u objetivo de edición por render.",
+      "Usa 480p para volumen y 720p para revisión con más detalle.",
+      "Da un trabajo a cada referencia de imagen, video o audio.",
+      "Usa videos fuente para pruebas de edición de video y extensión.",
+      "Lleva el mejor resultado a Seedance 2.0 cuando importe el acabado."
+    ],
+    "engineWhy": [
+      "Los prompts de texto sirven para ideas batch y hooks marketing de menor coste.",
+      "Las referencias de imagen estabilizan forma de producto, vestuario o packaging.",
+      "Las referencias de video y videos fuente ayudan a probar pacing, edits y extensiones.",
+      "Las referencias de audio pueden guiar ritmo o mood, mientras el audio nativo/lip-sync puede generarse con el clip."
+    ],
+    "demo": {
+      "title": "Prompt de demostración — Seedance 2.0 Mini",
+      "promptLabel": "Prompt",
+      "prompt": "Escena cinematográfica de 8 segundos en 720p 16:9 en un cruce urbano al golden hour. Un padre y su hija pequeña avanzan entre la multitud mientras un bus pasa detrás y la calle se llena de movimiento ascendente.\nPlano 1: vista media-abierta a nivel de calle, vida urbana normal alrededor, push documental, rim light cálida y sombras largas.\nPlano 2: push-in fluido en slow motion mientras el fondo reacciona con naturalidad; mantener al padre y la niña como foco emocional, manos conectadas y rostros realistas.\nPlano 3: close medium de la niña mirando hacia arriba con asombro tranquilo, luego el padre sonríe con alivio. La luz cálida atraviesa el frame final.\nAjuste de audio de este render seleccionado: desactivado. Para nuevos renders Mini, activa audio nativo si quieres ambiente de tráfico, pasos, sonido de paso o diálogo corto. Restricciones: sin texto legible, logos, subtítulos ni UI.",
+      "notes": [],
+      "summary": {
+        "subject": "Padre e hija en un cruce urbano al golden hour",
+        "action": "Una ola de movimiento atraviesa la escena mientras pasa un bus detrás",
+        "camera": "Push-in documental y luego close medium emocional",
+        "style": "Luz cálida entre edificios, siluetas en movimiento, realismo cinematográfico",
+        "output": "Render seleccionado sin audio; activa audio nativo para nuevas pruebas sonoras"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "supported",
+        "audioChipLabel": null,
+        "altContext": "Render Seedance 2.0 Mini en un cruce urbano"
+      }
+    },
+    "imageExamples": null
   }
 }

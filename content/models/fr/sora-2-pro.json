@@ -516,5 +516,88 @@
       "title": "Sora 2 Pro : tarifs, 1080p et exemples | MaxVideoAI",
       "description": "Explorez prix Sora 2 Pro, exemples 1080p, audio natif synchronisé, text-to-video et image-to-video. Comparez Sora 2 Pro vs Sora 2."
     }
+  },
+  "prompting": {
+    "modelSlug": "sora-2-pro",
+    "section": {
+      "title": "Comment écrire un excellent prompt Sora 2 Pro",
+      "intro": "Sora 2 Pro fonctionne mieux quand le brief sépare le plan, le rôle de l’image source, le son synchronisé et les contraintes de livraison.",
+      "tip": "Astuce : durée, format et résolution sont définis dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et son.",
+      "guide": {
+        "label": "OpenAI Developers",
+        "href": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/"
+      },
+      "referencesTitle": "Comment Sora 2 Pro utilise prompts, références et audio"
+    },
+    "tabs": [
+      {
+        "id": "text",
+        "label": "Texte",
+        "title": "Brief Pro text-to-video",
+        "description": "À utiliser quand le plan part uniquement d’un prompt texte.",
+        "copy": "Durée / sortie :\n[4 s, 8 s ou 12 s] • [16:9 ou 9:16] • [720p ou 1080p]\n\nSujet :\n[Qui/quoi apparaît + 2 traits distinctifs]\n\nAction :\n[Une action visible, puis une réaction optionnelle]\n\nCaméra :\n[Cadrage + angle + un mouvement caméra]\n\nStyle / lumière :\n[Look de production + source lumineuse + palette]\n\nAudio :\n[Ambiance + 1-2 SFX ou une courte réplique]\n\nContraintes :\nPas de logos, pas de texte illisible en overlay, pas de personnages en plus."
+      },
+      {
+        "id": "image",
+        "label": "Image",
+        "title": "Image-to-video depuis un still validé",
+        "description": "À utiliser quand le premier frame, le produit ou l’identité doivent rester stables.",
+        "copy": "Rôle de l’image source :\n[Identité / forme produit / composition / environnement]\n\nMouvement :\n[Ce qui change après le frame 1, en restant simple]\n\nCaméra :\n[Statique / push-in / dolly / dérive handheld]\n\nAncrages :\n[Tenue, détails produit, lumière, arrière-plan]\n\nAudio :\n[Room tone, musique, SFX ou courte réplique]\n\nFrame final :\n[Où le mouvement doit atterrir à la dernière seconde]"
+      },
+      {
+        "id": "audio",
+        "label": "Audio",
+        "title": "Prompt audio synchronisé",
+        "description": "À utiliser quand le timing sonore fait partie de la décision.",
+        "copy": "Beats visuels :\n0-3 s : [action visible]\n3-8 s : [réaction ou reveal]\n8-12 s : [beat final]\n\nDialogue :\n[Une courte ligne si nécessaire]\n\nAmbiance :\n[Room tone / rue / foule / météo]\n\nSFX :\n[Liez chaque son à une action visible]\n\nMix :\n[Voix propre / musique basse / pas de dialogue]"
+      },
+      {
+        "id": "final",
+        "label": "Final",
+        "title": "Check de livraison finale",
+        "description": "À utiliser avant de lancer une passe Pro 1080p plus coûteuse.",
+        "copy": "Cible de livraison :\n[Revue client / insert pub / hero produit / B-roll ciné]\n\nDirection validée :\n[Prompt ou image déjà validé dans Sora 2]\n\nNon négociables :\n[Identité, accessoire, lieu, timing du mouvement, cue audio]\n\nContrôle qualité :\n[Ce qui doit rester propre en 1080p]\n\nÀ éviter :\n[Artefacts, membres en trop, faux logos, texte involontaire, audio hors beat]"
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "1 plan = 1 mouvement caméra + 1 action du sujet",
+      "Utilisez des ancrages visuels (noms précis > adjectifs vagues)",
+      "Gardez les personnages cohérents d’un plan à l’autre",
+      "Commencez par une image pour un contrôle maximal",
+      "Itérez : changez un seul élément à la fois"
+    ],
+    "engineWhy": [
+      "Trop de beats peut créer des dérives — limitez à 2–3 actions claires.",
+      "Image→Vidéo verrouille la composition du premier frame ; le prompt contrôle le mouvement et le timing.",
+      "Règles strictes pour les images de référence — visuels propres, pas de logos, pas de texte lisible.",
+      "Les cues audio aident le rythme ; décrivez 1–2 sons clés."
+    ],
+    "demo": {
+      "title": "Démo : contrôle de continuité Pro 8 s",
+      "promptLabel": "Check Pro",
+      "prompt": "Plan unique CCTV en 16:9 dans une zone de chantier active.\nUne équipe vient de lisser une couche de ciment humide. Un chat traverse le cadre au mauvais moment, laisse des traces et les ouvriers réagissent en arrière-plan.\nCaméra : angle fixe de caméra de sécurité, légère compression, aucun push-in dramatique.\nStyle : footage de chantier crédible, ciel couvert, texture ciment humide, cônes et ruban de sécurité.\nAudio : off pour ce rendu.\nFormat : 8 s, 16:9.",
+      "notes": [
+        "Correspond aux métadonnées du rendu hero/galerie.",
+        "Même structure pour vos checks Pro : une scène, un événement, une caméra claire, des réglages explicites."
+      ],
+      "summary": {
+        "subject": "Chat sur ciment frais",
+        "action": "Le chat traverse le chantier et les ouvriers réagissent",
+        "camera": "Angle CCTV fixe en 16:9",
+        "style": "Footage de chantier crédible, ciel couvert, texture humide",
+        "output": "Audio désactivé pour ce rendu"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Check Pro",
+        "outputLabel": "Audio",
+        "duration": "8 s",
+        "aspectRatio": null,
+        "audioChipMode": "off",
+        "audioChipLabel": null,
+        "altContext": "Rendu de contrôle de continuité Sora 2 Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

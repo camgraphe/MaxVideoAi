@@ -401,5 +401,63 @@
       "title": "Luma Uni-1 : prix image, références et retouche | MaxVideoAI",
       "description": "Explorez Luma Uni-1 : génération image 2K, retouches source, guidage multi-référence, recherche visuelle avec contexte web et prix de référence."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-uni-1",
+    "section": {
+      "title": "Écrire un bon prompt Uni-1",
+      "intro": "Traitez le prompt comme une consigne image : visuel, sujet, composition, références et contraintes.",
+      "tip": "Astuce : donnez un rôle à chaque référence.",
+      "guide": null,
+      "referencesTitle": "Comment Luma Uni-1 utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un objectif visuel clair par demande.",
+      "Séparez préservation et changement pour les retouches.",
+      "Recherche web seulement si le contexte actuel compte."
+    ],
+    "engineWhy": [
+      "Les rôles de références aident le modèle à raisonner sur composition et identité.",
+      "La vérification typographique garde les visuels prudents.",
+      "Une image propre sert de meilleure source pour la suite."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Luma Uni-1",
+      "intro": "Exemples adaptés aux visuels de campagne, à la typographie, aux retouches et aux rendus finaux 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Visuel campagne",
+          "badge": "Visuel 2K",
+          "kind": "quality",
+          "prompt": "Visuel de campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
+        },
+        {
+          "id": "typography-2",
+          "title": "Poster typographique",
+          "badge": "Typographie",
+          "kind": "typography",
+          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche référence",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K vers 4K final",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+        }
+      ]
+    }
   }
 }

@@ -508,5 +508,92 @@
       "title": "Wan 2.5: Pricing, Audio Drafts & Examples | MaxVideoAI",
       "description": "Use Wan 2.5 for short audio-ready AI video drafts, text-to-video, image-to-video, optional soundtrack upload, prompt expansion and pricing."
     }
+  },
+  "prompting": {
+    "modelSlug": "wan-2-5",
+    "section": {
+      "title": "How to Write a Great Wan 2.5 Prompt",
+      "intro": "Wan 2.5 works best with a single clear action and a short, concrete prompt.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, motion, camera, lighting, style, and optional sound. Prompt expansion helps short prompts.",
+      "guide": {
+        "label": "Wan AI",
+        "href": "https://www.wan-ai.com"
+      },
+      "referencesTitle": "How Wan 2.5 uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [action] in [scene], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nScene:\n[Location + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + setting:\n[Key traits + location + anchors.]\n\nCamera:\n[Framing + angle + one move + lens feel.]\n\nLighting + color:\n[Key light + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = style control. Use for precise, repeatable looks."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action.",
+      "Specify camera move and lighting.",
+      "Use a short negative prompt to avoid artifacts."
+    ],
+    "engineWhy": [
+      "Short prompts are expanded automatically.",
+      "Audio URL can sync timing; keep cues minimal.",
+      "Avoid multiple beats in one short clip."
+    ],
+    "demo": {
+      "title": "Demo: a prompt for Wan 2.5",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Fitness smartwatch on a runner’s wrist\nAction: Shot follows the run and beat changes of the track\nCamera: Close-up, then synchronized pull-back\nStyle: Vertical product sport story, rain and music energy\nAudio: Energetic electronic track",
+      "notes": [
+        "Audio anchors the transitions.",
+        "Single subject/location, clear camera path.",
+        "Explicit cues for the hits."
+      ],
+      "summary": {
+        "subject": "Fitness smartwatch on a runner’s wrist",
+        "action": "Shot follows the run and beat changes of the track",
+        "camera": "Close-up, then synchronized pull-back",
+        "style": "Vertical product sport story, rain and music energy",
+        "output": "Energetic electronic track"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Wan 2.5 AI video example: Demo: a prompt for Wan 2.5"
+      }
+    },
+    "imageExamples": null
   }
 }

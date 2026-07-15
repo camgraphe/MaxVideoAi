@@ -578,5 +578,105 @@
       "title": "Google Veo 3.1 AI Video: Price, Prompts & References",
       "description": "See Google Veo 3.1 pricing, native audio, image references, first/last frame control, prompt tips and best uses before you render."
     }
+  },
+  "prompting": {
+    "modelSlug": "veo-3-1",
+    "section": {
+      "title": "How to Prompt Veo 3.1 by Workflow",
+      "intro": "Veo 3.1 is not just a text model. Choose the right path in the UI: plain-language text-to-video, image-guided animation, multi-reference control, first/last bridging, or clip extension.",
+      "tip": "Tip: Veo follows natural language well. Lead with subject, action, and context, keep one camera move, and use positive constraints. Use the specific Veo route for references, first/last, and extend.",
+      "guide": {
+        "label": "Official Veo prompt guide",
+        "href": "https://deepmind.google/technologies/veo/"
+      },
+      "referencesTitle": "How Veo 3.1 uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Text-to-video prompt",
+        "description": "Use when the shot starts from language and Veo should infer the scene naturally.",
+        "copy": "Subject + action + context:\n[Who/what does what, and where]\n\nCamera:\n[Shot size + one move]\n\nLook:\n[Lighting + palette + atmosphere]\n\nSound:\n[Optional ambience / dialogue / SFX]\n\nConstraint style:\nSay what you want (\"clean background\", \"steady handheld\") rather than what you do not want."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Reference prompt",
+        "description": "Use when the key problem is consistency, not invention.",
+        "copy": "Prompt intent:\n[What the shot should accomplish]\n\nReference stills:\n[Which images define subject / product / setting / palette]\n\nWhat stays fixed:\n[Wardrobe / packaging / background / mood]\n\nWhat can change:\n[Camera / action / framing]\n\nRule:\nUse references to lock identity and style, then let the prompt steer the motion and camera."
+      },
+      {
+        "id": "pro",
+        "label": "First/Last",
+        "title": "First/last frame prompt",
+        "description": "Use when Veo should bridge from an opening frame to a landing frame.",
+        "copy": "First frame:\n[What we open on]\n\nLast frame:\n[What we must land on]\n\nTransition logic:\n[How the camera and subject move between the two]\n\nContinuity anchors:\n[What must remain stable across the bridge]\n\nDo not ask for unrelated scene changes in the last frame. Use it to guide the destination."
+      },
+      {
+        "id": "storyboard",
+        "label": "Extend",
+        "title": "Extend prompt",
+        "description": "Use when a source clip already exists and you only need the next beat.",
+        "copy": "Current clip:\n[What already happened]\n\nNew beat:\n[What should happen next]\n\nWhat must stay continuous:\n[Subject / setting / camera rhythm / lighting]\n\nExtension rule:\nDescribe only the next action, reveal, or continuation. Do not rewrite the whole scene."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Text = plain-language shot brief."
+      },
+      {
+        "tabId": "structured",
+        "body": "Refs = stabilize brand, subject, or setting."
+      },
+      {
+        "tabId": "pro",
+        "body": "First/Last = define the bridge between opening and landing frames."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Extend = add the next beat without breaking continuity."
+      }
+    ],
+    "globalPrinciples": [
+      "Write in plain language; do not overcomplicate the brief.",
+      "Keep one clear physical action and one camera move per clip.",
+      "Tell Veo what must stay fixed when you bridge or extend a shot.",
+      "Use positive constraints and concrete atmosphere cues.",
+      "Use references to stabilize brand, wardrobe, product, or setting, not to fight the camera direction."
+    ],
+    "engineWhy": [
+      "Text-to-video and single-image animation work best when the brief reads like a live-action shot.",
+      "Reference mode is best for brand, character, and product consistency.",
+      "First/last mode works when you define the opening frame, the landing frame, and one transition logic between them.",
+      "Extend works best when you describe only the new beat while preserving camera rhythm, location, and subject identity."
+    ],
+    "demo": {
+      "title": "Demo: wireless earbuds product micro-story",
+      "promptLabel": "8s reference-guided product ad (16:9, 1080p, native audio)",
+      "prompt": "Shot 1 (0-3s): macro close-up of one wireless earbud rotating on a wooden desk, shallow depth of field, warm desk lamp glow.\nShot 2 (3-6s): medium shot of a young professional putting the earbuds on before stepping into a lively city street, soft bokeh in the background.\nShot 3 (6-8s): close-up of the charging case clicking shut beside a laptop, subtle reflections on the shell.\nCamera: smooth dolly moves between beats, handheld feel but stable.\nLighting: warm interior shifting to cool evening street light, light film grain.\nAudio: low city ambience, soft electronic music bed, short voiceover: \"Block the noise, keep the focus.\" No subtitles.\nNegative: no visible brands, no on-screen text, no ultra-wide distortion.",
+      "notes": [
+        "The summary, prompt and demo render all describe the same wireless-earbud product ad.",
+        "The 3-beat structure fits an 8s Veo 3.1 render with native audio enabled."
+      ],
+      "summary": {
+        "subject": "Premium wireless earbuds",
+        "action": "Macro rotation, in-use moment, and closing case",
+        "camera": "Smooth dolly moves across three short beats",
+        "style": "Cinematic product ad, warm interior to cool street light",
+        "output": "City ambience, soft electronic bed, short voiceover"
+      },
+      "presentationOverrides": {
+        "modeLabel": "8s reference-guided product ad (16:9, 1080p, native audio)",
+        "outputLabel": "Audio",
+        "duration": "8s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Veo 3.1 wireless earbuds product ad"
+      }
+    },
+    "imageExamples": null
   }
 }

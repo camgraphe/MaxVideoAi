@@ -358,5 +358,42 @@
       "title": "Gemini Omni Flash: video Google Omni, specs y precios",
       "description": "Usa Gemini Omni Flash para text-to-video 720p, image-to-video, reference-to-video, edicion de video y refine conversacional en MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "gemini-omni-flash",
+    "section": {
+      "title": "Prompt Lab — Gemini Omni Flash",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Cómo Gemini Omni Flash usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Prompt demo de Gemini Omni Flash",
+      "promptLabel": "Prompt 10 s 16:9 con sonido nativo",
+      "prompt": "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.\nSound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"\nCamera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight.",
+      "notes": [],
+      "summary": {
+        "subject": "Dos amigos en una azotea al atardecer",
+        "action": "Una grabadora convierte un recuerdo en luz en movimiento",
+        "camera": "Dolly lateral suave, cierre en reaccion de dos rostros",
+        "style": "Realismo cinematografico premium, contraluz calida, ciudad suave",
+        "output": "Viento en azotea, clic de grabadora, eco de oceano, una frase susurrada"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt 10 s 16:9 con sonido nativo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Render Gemini Omni Flash en azotea con audio nativo"
+      }
+    },
+    "imageExamples": null
   }
 }

@@ -401,5 +401,63 @@
       "title": "Luma Uni-1: Image Pricing, References & Editing | MaxVideoAI",
       "description": "Explore Luma Uni-1 2K image generation, source-image edits, multi-reference guidance, web-grounded visual research and MaxVideoAI pricing."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-uni-1",
+    "section": {
+      "title": "How to write a strong Uni-1 prompt",
+      "intro": "Treat the prompt like a still-image creative brief: artifact, subject, layout, references and constraints.",
+      "tip": "Tip: name the role of every reference image.",
+      "guide": null,
+      "referencesTitle": "How Luma Uni-1 uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Keep one clear visual goal per request.",
+      "Separate preserve and change instructions for edits.",
+      "Use web search only when the brief needs current context."
+    ],
+    "engineWhy": [
+      "Reference roles help the image route reason about layout and identity.",
+      "Reviewing typography keeps final assets conservative and production-safe.",
+      "A clean still can become stronger source material for later motion."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Luma Uni-1 image prompt examples",
+      "intro": "Use these for campaign stills, typography posters, reference edits and 2K-to-4K finals.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Campaign still",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "2K campaign still for an amber perfume bottle on white acrylic, soft studio key light, clean shadow, exact headline \"AURA NOIRE\" top-left, small logo lockup bottom edge."
+        },
+        {
+          "id": "typography-2",
+          "title": "Typography poster",
+          "badge": "Typography",
+          "kind": "typography",
+          "prompt": "Vertical 4K poster, premium editorial grid, graphite background, exact headline \"MIDNIGHT LAUNCH\", subhead \"LIMITED DROP\", crisp hierarchy, generous margins, readable text."
+        },
+        {
+          "id": "edit-3",
+          "title": "Reference edit",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "Using this product reference, keep the shape, logo and proportions. Change the scene to a midnight-blue studio, improve reflections, remove dust and fingerprints."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K to 4K final",
+          "badge": "4K final",
+          "kind": "layout",
+          "prompt": "Rerun the approved 2K composition as a 4K final. Sharpen fine details, keep typography identical, preserve brand colors, product position and the locked framing."
+        }
+      ]
+    }
   }
 }

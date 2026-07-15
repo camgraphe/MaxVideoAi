@@ -376,5 +376,64 @@
       "title": "Seedream : tarifs image et préparation de références | MaxVideoAI",
       "description": "Préparez avec Seedream des images de référence, frames produit, personnages fixes et séries visuelles contrôlées avant de choisir un modèle vidéo."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "Écrire un bon prompt Seedream",
+      "intro": "Écrivez l'image fixe comme si c'était la première frame d'un plan : sujet, composition, lumière et contraintes d'abord.",
+      "tip": "Astuce : si l'image part ensuite dans Seedance, mentionnez l'objectif de mouvement sans demander à Seedream d'animer.",
+      "guide": null,
+      "referencesTitle": "Comment Seedream prépare les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un objectif visuel clair par image.",
+      "Pour une série, préciser la séquence, le nombre et les règles visuelles communes.",
+      "Pour les edits, dire ce qui reste avant ce qui change.",
+      "Simplifier le fond quand l'image servira de référence vidéo."
+    ],
+    "engineWhy": [
+      "Les images fixes contrôlées donnent un départ plus clair aux modèles image-to-video.",
+      "Les références produit et personnage s'animent mieux quand silhouette, lumière et accessoires sont déjà stables.",
+      "Préparer l'image d'abord sépare les décisions de qualité visuelle des décisions de mouvement."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Seedream 5.0 Lite",
+      "intro": "Prompts Seedream pour stills produit, planches personnage, retouches image et batches de storyboard.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Still produit de référence",
+          "badge": "2K still",
+          "kind": "image",
+          "prompt": "Packshot 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, étiquette lisible, fond minimal prêt à servir de référence."
+        },
+        {
+          "id": "references-2",
+          "title": "Planche personnage",
+          "badge": "2-10 refs",
+          "kind": "references",
+          "prompt": "Planche de référence personnage : même visage, tenue et palette sur quatre vues propres, fond neutre, détails de veste et accessoires cohérents."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche image",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "À partir de cette image produit, préserver forme, logo et proportions. Nettoyer poussières et reflets parasites, simplifier le décor, garder une lumière naturelle."
+        },
+        {
+          "id": "quality-4",
+          "title": "Batch storyboard",
+          "badge": "4 images",
+          "kind": "quality",
+          "prompt": "Créer quatre images cohérentes pour storyboard de lancement : hero produit, détail matière, contexte lifestyle et frame finale. Même palette, même lumière, cadrages distincts."
+        }
+      ]
+    }
   }
 }

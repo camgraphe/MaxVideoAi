@@ -383,5 +383,64 @@
       "title": "Seedream: Image Pricing & Reference Prep | MaxVideoAI",
       "description": "Prepare Seedream reference images, product frames, character stills and controlled visual sets in MaxVideoAI before choosing a video model."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "How to write a strong Seedream prompt",
+      "intro": "Write the still image as if it were the first frame of a shot: subject, composition, lighting, and constraints first.",
+      "tip": "Tip: if the image is going into Seedance, mention the future motion goal without asking Seedream to animate it.",
+      "guide": null,
+      "referencesTitle": "How Seedream prepares references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Use one clean visual goal per image.",
+      "For image sets, name the sequence, count, and shared visual rules.",
+      "For edits, say what to preserve before what to change.",
+      "Keep the background simple when the still will become a video reference."
+    ],
+    "engineWhy": [
+      "Controlled stills give image-to-video models clearer starting material.",
+      "Product and character references are easier to animate when silhouette, lighting, and props are already stable.",
+      "Drafting the still first helps separate image quality decisions from motion decisions."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Seedream 5.0 Lite image prompt examples",
+      "intro": "Seedream prompts for product stills, character reference sheets, image edits and storyboard batches.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Product reference still",
+          "badge": "2K still",
+          "kind": "image",
+          "prompt": "2K product still of an amber perfume bottle on white acrylic, soft studio light, clean shadow, readable label, minimal background ready for reference use."
+        },
+        {
+          "id": "references-2",
+          "title": "Character reference sheet",
+          "badge": "2-10 refs",
+          "kind": "references",
+          "prompt": "Character reference sheet with the same face, outfit and palette across four clean views, neutral background, consistent jacket details and accessories."
+        },
+        {
+          "id": "edit-3",
+          "title": "Image edit cleanup",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Using this product image, preserve shape, logo and proportions. Clean dust and unwanted reflections, simplify the environment and keep natural lighting."
+        },
+        {
+          "id": "quality-4",
+          "title": "Storyboard batch",
+          "badge": "4 images",
+          "kind": "quality",
+          "prompt": "Create four coherent launch storyboard images: product hero, material detail, lifestyle context and final frame. Same palette, same lighting, distinct compositions."
+        }
+      ]
+    }
   }
 }

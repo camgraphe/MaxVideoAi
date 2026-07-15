@@ -309,5 +309,42 @@
       "title": "Happy Horse 1.0 Legacy Video Edit Route | MaxVideoAI",
       "description": "Use Happy Horse 1.0 as the legacy Alibaba video-edit route on MaxVideoAI. Use Happy Horse 1.1 for new text, image and reference generations."
     }
+  },
+  "prompting": {
+    "modelSlug": "happy-horse-1-0",
+    "section": {
+      "title": "Prompt Lab — Happy Horse 1.0",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Happy Horse 1.0 uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Demo prompt - Happy Horse 1.0",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Museum curator in a portrait gallery\nAction: Walks through as painted faces come alive\nCamera: Smooth dolly through the gallery\nStyle: Surreal realism, dawn light, marble reflections and soft dust\nAudio: Quiet museum ambience, no dialogue",
+      "notes": [],
+      "summary": {
+        "subject": "Museum curator in a portrait gallery",
+        "action": "Walks through as painted faces come alive",
+        "camera": "Smooth dolly through the gallery",
+        "style": "Surreal realism, dawn light, marble reflections and soft dust",
+        "output": "Quiet museum ambience, no dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Happy Horse 1.0 AI video example: Demo prompt - Happy Horse 1.0"
+      }
+    },
+    "imageExamples": null
   }
 }

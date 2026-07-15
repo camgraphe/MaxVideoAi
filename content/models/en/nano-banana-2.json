@@ -351,5 +351,63 @@
       "title": "Nano Banana 2: Pricing, Grounded Images & Editing | MaxVideoAI",
       "description": "Explore Nano Banana 2 pricing, grounded image generation, 0.5K to 4K outputs, wide aspect ratios, multi-reference edits and web-grounded prompts."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-2",
+    "section": {
+      "title": "How to write a strong Nano Banana 2 prompt",
+      "intro": "Nano Banana 2 responds best to clear composition instructions, explicit edit constraints, and grounded context only when needed.",
+      "tip": "Tip: use the UI for ratio, resolution, seed, web search, and output format. Keep the prompt focused on subject, layout, style, and what should stay fixed.",
+      "guide": null,
+      "referencesTitle": "How Nano Banana 2 uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Describe the frame before the style treatment.",
+      "For edits, say what to keep and what to change.",
+      "Only use grounding when live or current context matters."
+    ],
+    "engineWhy": [
+      "Wide ratios work better with explicit compositional zones.",
+      "Large reference sets help, but roles per reference keep the edit cleaner.",
+      "Grounded prompts should still be specific about the target aesthetic."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Nano Banana 2 image prompt examples",
+      "intro": "Use these for grounded stills, product edits, multi-reference workflows and wide-ratio 4K images.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Grounded product scene",
+          "badge": "1K grounded",
+          "kind": "quality",
+          "prompt": "1K product still for an outdoor water bottle on pale stone, natural daylight, premium e-commerce campaign style, current urban hiking context if web grounding is enabled."
+        },
+        {
+          "id": "edit-2",
+          "title": "Product edit",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Using this product reference, keep the shape, logo, main color and proportions. Change the environment to a light mineral studio, clean reflections and remove dust."
+        },
+        {
+          "id": "image-3",
+          "title": "Multi-reference edit",
+          "badge": "14 refs max",
+          "kind": "image",
+          "prompt": "Combine the references into one cohesive still: reference 1 for product identity, reference 2 for material, reference 3 for palette, reference 4 for composition. Do not blend competing styles."
+        },
+        {
+          "id": "layout-4",
+          "title": "Wide-ratio 4K still",
+          "badge": "4K · 21:9",
+          "kind": "layout",
+          "prompt": "4K still in 21:9 for a launch banner, product on the left, negative space on the right for text added later, soft light, photorealistic finish."
+        }
+      ]
+    }
   }
 }

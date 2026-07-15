@@ -333,5 +333,63 @@
       "title": "Nano Banana 2 : tarifs, images guidées et retouche | MaxVideoAI",
       "description": "Explorez Nano Banana 2 : prix, génération guidée, sorties 0.5K à 4K, ratios larges, retouches multi-références et grounding web."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-2",
+    "section": {
+      "title": "Comment ecrire un bon prompt Nano Banana 2",
+      "intro": "Nano Banana 2 repond mieux a des instructions de composition claires, des contraintes d'edit explicites et un grounding uniquement quand il est vraiment utile.",
+      "tip": "Astuce : utilisez l'UI pour le ratio, la resolution, la seed, la web search et l'output format. Gardez le prompt centre sur le sujet, le layout, le style et ce qui doit rester fixe.",
+      "guide": null,
+      "referencesTitle": "Comment Nano Banana 2 utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Decrivez d'abord le cadre puis le style.",
+      "Pour les edits, dites ce qui change et ce qui reste.",
+      "Utilisez le grounding seulement si le contexte actuel compte."
+    ],
+    "engineWhy": [
+      "Les ratios larges marchent mieux avec des zones de composition explicites.",
+      "De gros sets de references aident, mais les roles par reference gardent l'edit plus net.",
+      "Les prompts guides doivent quand meme rester precis sur l'esthetique cible."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Nano Banana 2",
+      "intro": "Exemples pour stills guidés, edits produit, multi-références et formats larges 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Scène produit guidée",
+          "badge": "1K grounded",
+          "kind": "quality",
+          "prompt": "Still produit 1K pour une gourde outdoor sur pierre claire, lumière naturelle, style campagne e-commerce premium, contexte visuel actuel de randonnée urbaine si le grounding web est activé."
+        },
+        {
+          "id": "edit-2",
+          "title": "Edit produit",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo, la couleur principale et les proportions. Changer le décor en studio minéral clair, nettoyer reflets et poussières."
+        },
+        {
+          "id": "image-3",
+          "title": "Multi-références",
+          "badge": "14 refs max",
+          "kind": "image",
+          "prompt": "Combiner les références en un still cohérent : référence 1 pour identité produit, référence 2 pour matière, référence 3 pour palette, référence 4 pour composition. Ne pas mélanger les styles."
+        },
+        {
+          "id": "layout-4",
+          "title": "Still large 4K",
+          "badge": "4K · 21:9",
+          "kind": "layout",
+          "prompt": "Still 4K en ratio 21:9 pour bannière de lancement, produit à gauche, espace négatif à droite pour texte ajouté ensuite, lumière douce, rendu photo réaliste."
+        }
+      ]
+    }
   }
 }

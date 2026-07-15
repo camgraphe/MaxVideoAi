@@ -506,5 +506,93 @@
       "title": "Pika 2.2 Text-to-Video: precios, loops silenciosos y ejemplos | MaxVideoAI",
       "description": "Explora Pika 2.2 Text-to-Video: precios, clips estilizados sin audio, loops sociales, seeds, prompts negativos y ejemplos en MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "pika-text-to-video",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Pika",
+      "intro": "Pika funciona mejor con prompts estilizados, movimiento claro y un solo movimiento de cámara.",
+      "tip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación y estilo. Usa prompt negativo para bloquear texto/logos.",
+      "guide": {
+        "label": "Pika Labs",
+        "href": "https://pika.art"
+      },
+      "referencesTitle": "Cómo Pika 2.2 estructura un prompt Text-to-Video"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "Prompt: [Estilo] + [Sujeto + acción] + [Escenario] + [Movimiento de cámara] + [Iluminación].\nNegativo: [texto, logos, extremidades extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscenario:\n[Dónde + momento + 2 anclajes.]\n\nCámara:\n[Plano + ángulo + un movimiento.]\n\nEstilo:\n[Estilo artístico + paleta + textura.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre tomas.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos clave + materiales.]\n\nSet + luz:\n[Ubicación + key light + paleta.]\n\nCámara:\n[Encuadre + ángulo + un movimiento + sensación de lente.]\n\nControles de estilo:\n[Estilo de animación, textura, grano, color.]\n\nNegativo:\n[Texto, logos, personajes extra, artefactos.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo para resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujeto, una acción, un movimiento de cámara.",
+      "Usa keywords de estilo y anclajes de paleta.",
+      "Añade un prompt negativo corto para texto/logos/extremidades extra."
+    ],
+    "engineWhy": [
+      "Los prompts cortos y estilizados mantienen el motion limpio.",
+      "El lenguaje de cámara ayuda a que los loops se sientan intencionales.",
+      "Los prompts negativos reducen artefactos."
+    ],
+    "demo": {
+      "title": "Demo: un prompt para Pika 2.2",
+      "promptLabel": "Text-to-Video",
+      "prompt": "Loop Pika 2.2 Text-to-Video de 5 s en 1:1.\nUn pequeño mago pixel-art remueve un caldero brillante en una cabaña acogedora.\nCámara fija en plano medio, burbujas que suben en loop, libros flotando suavemente.\nPaleta cálida de 16 colores, luz de vela, píxeles retro grandes, movimiento simple y repetible.\nPrompt negativo: texto, logos, blur, personajes extra, manos deformes.",
+      "notes": [
+        "Sujeto claro en un solo entorno.",
+        "Dirección de estilo fuerte (pixel‑art, paleta retro).",
+        "Movimiento simple y repetible para un loop limpio.",
+        "Evita instrucciones de cámara contradictorias o múltiples locaciones."
+      ],
+      "summary": {
+        "subject": "Pequeño mago pixel-art",
+        "action": "Remueve un caldero brillante en loop",
+        "camera": "Plano medio fijo, composición 1:1",
+        "style": "Pixel-art retro, paleta cálida, luz de vela",
+        "output": "Clip sin audio, sin texto ni logos"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-Video",
+        "outputLabel": "Salida",
+        "duration": "5 s",
+        "aspectRatio": "1:1",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Loop pixel-art de Pika 2.2"
+      }
+    },
+    "imageExamples": null
   }
 }

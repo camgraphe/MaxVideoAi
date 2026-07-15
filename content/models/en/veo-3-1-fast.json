@@ -547,5 +547,103 @@
       "title": "Veo 3.1 Fast: 4K Pricing, Drafts & Examples | MaxVideoAI",
       "description": "Use Veo 3.1 Fast for faster Veo drafts up to 4K, optional native audio, first-last frame tests and lower-cost short concept loops before Veo 3.1 finals."
     }
+  },
+  "prompting": {
+    "modelSlug": "veo-3-1-fast",
+    "section": {
+      "title": "How to Write a Great Veo 3.1 Fast Prompt",
+      "intro": "Veo Fast prefers short, concrete prompts and one clear action.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
+      "guide": {
+        "label": "Google DeepMind",
+        "href": "https://deepmind.google/technologies/veo/"
+      },
+      "referencesTitle": "How Veo 3.1 Fast uses start, reference and ending frames"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want fast Veo variants.",
+        "copy": "8s 16:9 Veo 3.1 Fast draft of a product founder walking through a rainy neon street, slow handheld tracking move, blue storefront reflections, audio on with city ambience and one short calm line."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (reliable draft)",
+        "description": "Separate subject, action, camera and audio so the fast route stays readable.",
+        "copy": "Subject:\nProduct founder in a navy rain jacket, holding a compact camera bag.\n\nAction:\nWalks one step forward, looks toward the storefront, then pauses.\n\nCamera:\nMedium shot, slow handheld tracking move, 16:9, 8 seconds.\n\nLook:\nRainy neon street, blue reflections, clean commercial grade.\n\nAudio:\nCity ambience, soft footsteps, one short calm VO line."
+      },
+      {
+        "id": "pro",
+        "label": "Reference-to-video",
+        "title": "Reference-to-video prompt (1-4 stills)",
+        "description": "Use this when attached stills should preserve identity, product, wardrobe or style.",
+        "copy": "Reference-to-video, 8s, 16:9, 1080p, audio on. Use reference 1 for face and jacket, reference 2 for the product color, reference 3 for the rainy street palette. Keep the same identity and materials while the subject takes one step forward. Slow push-in, subtle city ambience, no extra characters."
+      },
+      {
+        "id": "storyboard",
+        "label": "First/Last",
+        "title": "First/last frame prompt",
+        "description": "Use this when both opening and ending compositions are already approved.",
+        "copy": "First/last-frame Veo 3.1 Fast draft, 6s, 9:16, audio off. Start on the approved product table frame, end on the approved close-up hero frame. Smooth push-in only, keep background layout and label position stable, no new props, no text changes."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = fast T2V variants with audio on/off."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = clearer subject, action, camera and sound cues."
+      },
+      {
+        "tabId": "pro",
+        "body": "Reference-to-video = 1-4 stills for identity, product or style continuity."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "First/Last = use when both endpoint frames are already approved."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action.",
+      "Call out framing and camera move.",
+      "Use 2-3 visual anchors, not long lists."
+    ],
+    "engineWhy": [
+      "Fast favors simple beats and short prompts.",
+      "Camera language improves consistency.",
+      "Use style anchors to keep the look stable."
+    ],
+    "demo": {
+      "title": "Demo: Veo 3.1 Fast desk draft",
+      "promptLabel": "8s audio-on draft (16:9, 1080p)",
+      "prompt": "8s 16:9 Veo 3.1 Fast draft of a presenter working late at a minimalist desk, city lights blurred through a large window.\nCamera: medium close-up with a slow handheld drift, staying on the face, hands and laptop.\nLighting: cool blue window light mixed with a warm desk lamp.\nAudio: soft typing, low city hum and one short calm line.",
+      "notes": [
+        "One clear subject and one environment.",
+        "Simple movement that loops cleanly.",
+        "Audio supports the mood without adding complexity."
+      ],
+      "summary": {
+        "subject": "Presenter in a late-night desk scene",
+        "action": "Looks up from a laptop and delivers one calm line",
+        "camera": "Medium close-up, slow handheld drift",
+        "style": "Cool city window light with a warm desk lamp",
+        "output": "Soft typing, city hum, short voice line"
+      },
+      "presentationOverrides": {
+        "modeLabel": "8s audio-on draft (16:9, 1080p)",
+        "outputLabel": "Audio",
+        "duration": "8s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Veo 3.1 Fast late-night desk draft"
+      }
+    },
+    "imageExamples": null
   }
 }

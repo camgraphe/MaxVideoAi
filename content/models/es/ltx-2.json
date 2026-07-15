@@ -476,5 +476,103 @@
       "title": "LTX 2: precios, clips 4K y ejemplos | MaxVideoAI",
       "description": "Usa LTX 2 para clips 16:9 de alta fidelidad aún compatibles, texto a video, imagen a video, checks de 1080p a 4K, precios y ejemplos."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2",
+    "section": {
+      "title": "Cómo escribir un gran prompt LTX 2",
+      "intro": "LTX‑2 Pro responde a prompts estructurados tipo producción con dirección de cámara clara.",
+      "tip": "Tip: duración + fps se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y cues sonoros opcionales.",
+      "guide": {
+        "label": "LTX",
+        "href": "https://www.ltx.studio"
+      },
+      "referencesTitle": "Cómo LTX 2 usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto + acción] en [entorno], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEntorno:\n[Dónde + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento + sensación de lente.]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
+        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad entre planos.",
+        "copy": "Brief de director:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos clave + materiales.]\n\nSet + continuidad:\n[Ubicación + anclas + momento del día.]\n\nCinematografía:\n[Encuadre + ángulo + un movimiento + lente + composición.]\n\nLuz + grade:\n[Key light + contraste + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Texto, logos, personajes extra, artefactos.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (multi‑shot / lista de planos)",
+        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (multi‑shot / shot list) da timing claro, dirección de cámara y continuidad.",
+        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nPlano 1: [acción + cámara]\nPlano 2: [acción + cámara]\nPlano 3: [acción final/reveal]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo cuando necesites resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = continuidad. Úsalo para looks precisos y repetibles."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = timing de beats. Úsalo para mini‑stories en un clip."
+      }
+    ],
+    "globalPrinciples": [
+      "Define sujeto, acción y cámara en las primeras líneas.",
+      "Usa anclajes de lente + luz para consistencia.",
+      "Mantén los beats legibles; un move por plano."
+    ],
+    "engineWhy": [
+      "Los prompts más largos funcionan si están estructurados.",
+      "El lenguaje de cámara y los anclajes de luz impulsan la fidelidad.",
+      "Los prompts negativos ayudan a evitar artefactos."
+    ],
+    "demo": {
+      "title": "Prompt demo — hero producto premium",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Megaciudad costera futurista\nAcción: La cámara atraviesa torres y tráfico aéreo\nCámara: Vista aérea amplia, travelling cinemático\nEstilo: Atardecer, cristal, reflejos premium, 4K\nAudio: Ambiente futurista sutil",
+      "notes": [
+        "Un solo sujeto hero",
+        "Movimiento de cámara y luz definidos",
+        "Audio incluido"
+      ],
+      "summary": {
+        "subject": "Megaciudad costera futurista",
+        "action": "La cámara atraviesa torres y tráfico aéreo",
+        "camera": "Vista aérea amplia, travelling cinemático",
+        "style": "Atardecer, cristal, reflejos premium, 4K",
+        "output": "Ambiente futurista sutil"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de LTX 2: Prompt demo - hero producto premium"
+      }
+    },
+    "imageExamples": null
   }
 }

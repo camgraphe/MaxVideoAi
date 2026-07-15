@@ -225,5 +225,81 @@
       "title": "Kling 3.0 Omni 4K : vidéo référence 4K native | MaxVideoAI",
       "description": "Utilisez Kling 3.0 Omni 4K pour vidéo 4K native guidée par références et storyboard. Utilisez O3 Pro ou Standard pour V2V source."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-o3-4k",
+    "section": {
+      "title": "Prompt Lab — Kling 3.0 Omni 4K finales guidées par références",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment O3 4K utilise les références finales"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Prompt final 4K sans vidéo source",
+        "description": "Pour une finale 4K guidée par texte et références.",
+        "copy": "Sujet:\\n[Produit / personnage / décor approuvé]\\n\\nAction:\\n[Un mouvement court et contrôlé]\\n\\nCaméra:\\n[Mouvement final: push-in / travelling léger / statique]\\n\\nStyle:\\n[Lumière et finition 4K]\\n\\nAudio:\\n[Ambiance générée si activée]\\n\\nExample:\\nUn produit premium flotte sur un socle graphite, mouvement push-in lent, reflets propres, textures nettes, finale 4K sans texte ajouté."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Références 4K approuvées",
+        "description": "Pour mapper les images au rendu final.",
+        "copy": "@Image1 = [storyboard ou composition validée]\\n@Image2 = [style / produit / identité visuelle]\\n@Image3 = [détail matière ou couleur]\\n\\nRendu attendu:\\n[Ce que la finale 4K doit générer]\\n\\nContraintes:\\n[Pas de déformation, pas de texte ajouté, composition stable]\\n\\nExample:\\nUtilise @Image1 pour la composition, @Image2 pour le style lumière et @Image3 pour le détail produit. Rends une finale 4K stable, nette, prête montage."
+      },
+      {
+        "id": "pro",
+        "label": "Start/End",
+        "title": "Start/end frame en 4K",
+        "description": "Pour contrôler la frontière visuelle du plan final.",
+        "copy": "Opening frame optionnel:\\n[Pose ou composition initiale attendue]\\n\\nEnd frame optionnel:\\n[Landing frame final]\\n\\nAction:\\n[Mouvement unique entre les deux états]\\n\\nRègle:\\nNe pas utiliser @Video1. La route 4K actuelle est reference-to-video, pas V2V source.\\n\\nExample:\\nDépart sur @Image1, léger travelling avant, fin proche de l’end frame. Même produit, même lumière, aucune rupture de décor."
+      },
+      {
+        "id": "storyboard",
+        "label": "Final 4K",
+        "title": "Checklist de livraison 4K",
+        "description": "Pour transformer un draft validé en master.",
+        "copy": "Durée: [3-15 s]\\nRésolution: 4K native\\n\\nComposition validée:\\n[@Image1]\\n\\nStyle validé:\\n[@Image2]\\n\\nMouvement final:\\n[Simple, contrôlé, montage-ready]\\n\\nInterdits:\\n[@Video1, keep_audio, texte ajouté, changement de scène]\\n\\nExample:\\nRendre le plan approuvé en 4K native avec mouvement court, texture propre, identité stable et fin exploitable en montage."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Assignez un rôle clair à chaque image : composition, style, produit, personnage ou détail.",
+      "Validez le mouvement en Standard ou Pro avant de payer une finale 4K.",
+      "N’utilisez pas @Video1 ni keep_audio sur la route 4K actuelle.",
+      "Décrivez caméra, action, continuité et intention de livraison dans le prompt."
+    ],
+    "engineWhy": [
+      "4K est une route de livraison, pas le meilleur endroit pour explorer une direction.",
+      "La page doit guider les références image et le storyboard, sans promettre de V2V source.",
+      "Les prompts doivent verrouiller composition, texture, caméra et fin exploitable.",
+      "Si le workflow demande @Video1, revenez en O3 Pro ou Standard."
+    ],
+    "demo": {
+      "title": "Prompt démo — O3 4K finale référence",
+      "promptLabel": "Prompt texte 4K",
+      "prompt": "Subject:\nA handmade mechanical moon, brass and porcelain, floating above an old clockmaker’s workbench.\n\nAction:\nTiny gears begin turning inside the moon. It slowly opens like a pocket watch and releases a cloud of glowing fireflies that circle the room.\n\nCamera:\nMedium close-up with a slow orbit around the floating moon, then a gentle upward tilt following the fireflies.\n\nStyle:\nCinematic workshop fantasy, warm candlelight, brass reflections, dust in the air, rich brown and gold palette, handcrafted textures, elegant and mysterious.\n\nAudio:\nSoft ticking gears, delicate metallic clicks, magical shimmer, quiet room tone.",
+      "notes": [],
+      "summary": {
+        "subject": "Lune mécanique artisanale en laiton et porcelaine",
+        "action": "S’ouvre comme une montre et libère des lucioles lumineuses",
+        "camera": "Orbite lente puis tilt vers les lucioles",
+        "style": "Atelier fantasy cinématographique, bougie chaude, reflets laiton",
+        "output": "Rendu sélectionné silencieux; le prompt contient des cues de tic-tac et shimmer"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt texte 4K",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Lune mécanique Kling 3.0 Omni 4K"
+      }
+    },
+    "imageExamples": null
   }
 }

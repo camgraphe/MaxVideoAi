@@ -531,5 +531,99 @@
       "title": "Veo 3.1 Lite: precios, audio opcional y ejemplos | MaxVideoAI",
       "description": "Usa Veo 3.1 Lite para borradores Veo de menor coste con audio nativo opcional, pruebas cortas de prompt y checks de imagen a video."
     }
+  },
+  "prompting": {
+    "modelSlug": "veo-3-1-lite",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Veo 3.1 Lite",
+      "intro": "Veo 3.1 Lite prefiere prompts cortos, concretos y una acción clara.",
+      "tip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación, estilo y cues de sonido.",
+      "guide": {
+        "label": "Guía oficial Veo / Google DeepMind",
+        "href": "https://deepmind.google/technologies/veo/"
+      },
+      "referencesTitle": "Cómo Veo 3.1 Lite usa imágenes iniciales"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [acción] en [contexto], [movimiento de cámara], [iluminación/estilo], [cue sonoro opcional]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nContexto:\n[Ubicación + momento + 2 anclajes visuales.]\n\nCámara:\n[Encuadre + ángulo + un movimiento.]\n\nLook:\n[Iluminación + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1 cue.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre tomas.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto:\n[Rasgos clave + vestuario/props.]\n\nCámara:\n[Encuadre + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + anclajes de paleta.]\n\nRestricciones:\nManténlo simple; evita acciones extra."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (shot list corta)",
+        "description": "Manténlo mínimo para borradores más limpios y rápidos.",
+        "copy": "Shot list (mismo sujeto + mismo escenario)\nDuración: [4/6/8s]\n\nShot 1 (0–2s):\n[Encuadre + acción + movimiento de cámara]\n\nShot 2 (2–6/8s):\n[Encuadre + acción + movimiento de cámara]\n\nLook + mood:\n[Iluminación + paleta]\n\nSonido (opcional):\n[Ambiente + 1 cue]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo para resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujeto, una acción.",
+      "Indica encuadre y movimiento de cámara.",
+      "Usa 2–3 anclajes visuales, no listas largas."
+    ],
+    "engineWhy": [
+      "Lite favorece beats simples y prompts cortos.",
+      "El lenguaje de cámara mejora la consistencia.",
+      "Usa anclajes de estilo para mantener el look estable."
+    ],
+    "demo": {
+      "title": "Demo: patrón de prompt para Veo 3.1 Lite",
+      "promptLabel": "Prompt Veo Lite",
+      "prompt": "Clip Veo 3.1 Lite de 8 s en 16:9, audio incluido.\nReencuentro romántico cinematográfico en un gran andén de tren, con energía de drama de época, elegante y atemporal.\nUna pareja joven con ropa de principios de 1900 corre para encontrarse: él lleva abrigo oscuro y sombrero; ella, vestido beige largo y una pequeña maleta vintage.\nPlano abierto con grúa descendiendo lentamente hacia ellos, ligera sensación de teleobjetivo y movimiento cinematográfico suave.\nLuz suave de mañana filtrada por vapor y cristal, tonos sepia, marrones, latón y crema. Una sola acción clara, sin texto ni señalética cerca de cámara.",
+      "notes": [
+        "Una sola acción emocional, no una secuencia cargada.",
+        "Bloquea los detalles de época y el movimiento de cámara desde el inicio.",
+        "Mantén señalética y extras lejos del primer plano."
+      ],
+      "summary": {
+        "subject": "Reencuentro romántico en un andén de tren",
+        "action": "Una pareja con ropa de principios de 1900 corre para encontrarse",
+        "camera": "Plano abierto con grúa descendiendo lentamente",
+        "style": "Luz de mañana, vapor suave, tonos sepia",
+        "output": "Ambiente de estación, sin diálogo"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt Veo Lite",
+        "outputLabel": "Audio",
+        "duration": "8 s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Reencuentro romántico Veo 3.1 Lite en andén de tren"
+      }
+    },
+    "imageExamples": null
   }
 }

@@ -532,5 +532,99 @@
       "title": "Veo 3.1 Lite: Pricing, Optional Audio & Examples | MaxVideoAI",
       "description": "Use Veo 3.1 Lite for lower-cost Veo drafts with optional native audio, short prompt tests and image-to-video checks before upgrading winners."
     }
+  },
+  "prompting": {
+    "modelSlug": "veo-3-1-lite",
+    "section": {
+      "title": "How to Write a Great Veo 3.1 Lite Prompt",
+      "intro": "Veo 3.1 Lite prefers short, concrete prompts and one clear action.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
+      "guide": {
+        "label": "Official Veo / Google DeepMind guide",
+        "href": "https://deepmind.google/technologies/veo/"
+      },
+      "referencesTitle": "How Veo 3.1 Lite uses image references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [action] in [context], [camera move], [lighting/style], [optional sound cue]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nContext:\n[Location + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1 cue.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject:\n[Key traits + wardrobe/props.]\n\nCamera:\n[Framing + one move + lens feel.]\n\nLighting + color:\n[Key light + palette anchors.]\n\nConstraints:\nKeep it simple; avoid extra actions."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (short shot list)",
+        "description": "Keep it minimal for faster, cleaner drafts.",
+        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-6/8s):\n[Framing + action + camera move]\n\nLook + mood:\n[Lighting + palette]\n\nSound (optional):\n[Ambience + 1 cue]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = style control. Use for precise, repeatable looks."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action.",
+      "Call out framing and camera move.",
+      "Use 2-3 visual anchors, not long lists."
+    ],
+    "engineWhy": [
+      "Lite favors simple beats and short prompts.",
+      "Camera language improves consistency.",
+      "Use style anchors to keep the look stable."
+    ],
+    "demo": {
+      "title": "Demo: prompt pattern for Veo 3.1 Lite",
+      "promptLabel": "Veo Lite prompt",
+      "prompt": "8s Veo 3.1 Lite clip in 16:9, audio included.\nRomantic cinematic reunion on a large train station platform, grand period-drama energy, elegant and timeless.\nA young couple in early-1900s clothing runs toward each other: the man in a dark wool coat and hat, the woman in a long beige dress with a small vintage suitcase.\nWide crane shot descending slowly toward them, slight long-lens feel, smooth cinematic motion.\nSoft morning light filtered through steam and glass, sepia tones, muted browns, brass, and cream. One clear action only, no close foreground signage.",
+      "notes": [
+        "Use one emotional action, not a crowded sequence.",
+        "Lock the period details and camera move early.",
+        "Keep signage and foreground extras out of the frame."
+      ],
+      "summary": {
+        "subject": "Romantic train-platform reunion",
+        "action": "Early-1900s couple runs toward each other",
+        "camera": "Wide crane shot descending slowly",
+        "style": "Morning light, soft steam, sepia period-drama tones",
+        "output": "Train station ambience, no dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Veo Lite prompt",
+        "outputLabel": "Audio",
+        "duration": "8s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Veo 3.1 Lite romantic train-platform reunion"
+      }
+    },
+    "imageExamples": null
   }
 }

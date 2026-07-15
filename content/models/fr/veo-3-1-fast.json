@@ -546,5 +546,103 @@
       "title": "Veo 3.1 Fast : tarifs 4K, brouillons et exemples | MaxVideoAI",
       "description": "Utilisez Veo 3.1 Fast pour des brouillons Veo rapides jusqu’en 4K, audio natif optionnel, tests première-dernière image et boucles courtes."
     }
+  },
+  "prompting": {
+    "modelSlug": "veo-3-1-fast",
+    "section": {
+      "title": "Comment écrire un excellent prompt Veo 3.1 Fast",
+      "intro": "Veo Fast préfère des prompts courts, concrets et une action claire.",
+      "tip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores.",
+      "guide": {
+        "label": "Google DeepMind",
+        "href": "https://deepmind.google/technologies/veo/"
+      },
+      "referencesTitle": "Comment Veo 3.1 Fast utilise images de départ, références et image finale"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt quick (itération rapide)",
+        "description": "Utilisez 1 à 2 phrases pour obtenir vite des variantes Veo.",
+        "copy": "Brouillon Veo 3.1 Fast de 8 s en 16:9 : fondateur produit marchant dans une rue néon pluvieuse, tracking handheld lent, reflets bleus de vitrines, audio activé avec ambiance ville et une phrase calme très courte."
+      },
+      {
+        "id": "structured",
+        "label": "Structuré",
+        "title": "Prompt structuré (brouillon fiable)",
+        "description": "Séparez sujet, action, caméra et audio pour garder une lecture claire.",
+        "copy": "Sujet :\nFondateur produit en veste de pluie navy, tenant un sac caméra compact.\n\nAction :\nIl avance d’un pas, regarde vers la vitrine, puis marque une pause.\n\nCaméra :\nPlan moyen, tracking handheld lent, 16:9, 8 secondes.\n\nLook :\nRue néon pluvieuse, reflets bleus, grade pub propre.\n\nAudio :\nAmbiance ville, pas discrets, une phrase VO calme très courte."
+      },
+      {
+        "id": "pro",
+        "label": "Reference-to-video",
+        "title": "Prompt reference-to-video (1 à 4 stills)",
+        "description": "À utiliser quand les stills attachés doivent préserver identité, produit, tenue ou style.",
+        "copy": "Reference-to-video, 8 s, 16:9, 1080p, audio activé. Utiliser la référence 1 pour le visage et la veste, la référence 2 pour la couleur produit, la référence 3 pour la palette rue pluvieuse. Garder la même identité et les mêmes matières pendant que le sujet avance d’un pas. Push-in lent, ambiance ville subtile, aucun personnage en plus."
+      },
+      {
+        "id": "storyboard",
+        "label": "First/Last",
+        "title": "Prompt première/dernière image",
+        "description": "À utiliser quand le début et la fin sont déjà validés.",
+        "copy": "Brouillon Veo 3.1 Fast première/dernière image, 6 s, 9:16, audio désactivé. Démarrer sur la frame table produit validée, finir sur le gros plan hero validé. Push-in fluide uniquement, garder layout, position label et décor stables, pas de nouvel accessoire, pas de changement de texte."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variantes T2V rapides avec audio activé/désactivé."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structuré = sujet, action, caméra et son plus lisibles."
+      },
+      {
+        "tabId": "pro",
+        "body": "Reference-to-video = 1 à 4 stills pour continuité identité, produit ou style."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "First/Last = quand les frames de départ et d’arrivée sont déjà validées."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujet, une action.",
+      "Indiquez cadrage et mouvement caméra.",
+      "Utilisez 2–3 ancrages visuels, pas de longues listes."
+    ],
+    "engineWhy": [
+      "Fast favorise les beats simples et prompts courts.",
+      "Le langage caméra améliore la cohérence.",
+      "Utilisez des ancrages de style pour stabiliser le look."
+    ],
+    "demo": {
+      "title": "Démo : brouillon bureau Veo 3.1 Fast",
+      "promptLabel": "Brouillon audio 8 s (16:9, 1080p)",
+      "prompt": "Brouillon Veo 3.1 Fast de 8 s en 16:9 : une présentatrice travaille tard dans un bureau minimaliste, lumières de ville floues derrière une grande fenêtre.\nCaméra : plan rapproché moyen avec une dérive handheld lente, cadrée sur le visage, les mains et le laptop.\nLumière : lumière bleue de fenêtre mélangée à une lampe de bureau chaude.\nAudio : clavier discret, ville en fond et une phrase courte et calme.",
+      "notes": [
+        "Un sujet clair et un seul environnement.",
+        "Mouvement simple qui boucle proprement.",
+        "Audio qui soutient le mood sans complexité."
+      ],
+      "summary": {
+        "subject": "Présentatrice dans un bureau de nuit",
+        "action": "Elle relève les yeux du laptop et dit une phrase courte",
+        "camera": "Plan rapproché moyen, dérive handheld lente",
+        "style": "Lumière bleue de ville, lampe de bureau chaude",
+        "output": "Clavier discret, ville en fond, voix courte"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Brouillon audio 8 s (16:9, 1080p)",
+        "outputLabel": "Audio",
+        "duration": "8 s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Brouillon bureau de nuit Veo 3.1 Fast"
+      }
+    },
+    "imageExamples": null
   }
 }

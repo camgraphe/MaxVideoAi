@@ -475,5 +475,97 @@
       "title": "Wan 2.6 : tarifs, références et exemples | MaxVideoAI",
       "description": "Explorez Wan 2.6 : prix, vidéo multi-plans jusqu’à 15 s, texte-vidéo, image-vidéo, références 5s/10s, audio optionnel et exemples."
     }
+  },
+  "prompting": {
+    "modelSlug": "wan-2-6",
+    "section": {
+      "title": "Comment écrire un excellent prompt Wan 2.6",
+      "intro": "Wan 2.6 suit des prompts courts avec sujet, scène et mouvement clairs; utilisez une shot list simple pour le multi‑shot.",
+      "tip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, mouvement, caméra, style et son optionnel. Gardez les prompts concis; l’expansion aide.",
+      "guide": {
+        "label": "Wan AI",
+        "href": "https://www.wan-ai.com"
+      },
+      "referencesTitle": "Comment Wan 2.6 utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] [mouvement] dans [scène], [caméra], [lumière/style], [cue sonore optionnel].\nNégatif : [texte, logos, personnes en trop, flou]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + traits clés.]\n\nScène :\n[Lieu + moment + 2 ancrages.]\n\nMouvement :\n[Une action claire + mouvement caméra.]\n\nLook :\n[Lumière + palette + style.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Liste de plans (même sujet + même décor)\nPlan 1 : [action + caméra]\nPlan 2 : [action + caméra]\nPlan 3 : [action finale/reveal]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Texte/logos/personnages en trop.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats horodatés)",
+        "description": "Idéal pour des séquences multi‑shots en un seul clip.",
+        "copy": "Liste de plans (même sujet + même décor)\nDurée : [5/10/15s]\n\nBeat 1 (0–3s):\n[Cadrage + action + mouvement caméra]\n\nBeat 2 (3–7s):\n[Cadrage + action + mouvement caméra]\n\nBeat 3 (7–10/15s):\n[Action finale/reveal + caméra qui se pose]\n\nContinuité :\n[Répéter les ancrages : tenue, props, lumière, décor]\n[Si références : tag @Video1/@Video2/@Video3]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]\n\nNégatif :\n[Texte, logos, personnages en trop, flou]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      }
+    ],
+    "globalPrinciples": [
+      "Sujet + scène + mouvement en une phrase claire.",
+      "Pour le multi‑shot, limitez à 2–3 beats.",
+      "Ajoutez un prompt négatif court pour éviter les artefacts."
+    ],
+    "engineWhy": [
+      "L’expansion de prompt gère bien les prompts courts et concrets.",
+      "Le mode Référence marche mieux quand vous spécifiez ce qui doit rester constant.",
+      "Les cues audio aident le rythme; gardez‑les minimaux."
+    ],
+    "demo": {
+      "title": "Exemple prêt à rendre",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Unboxing produit en studio cuisine\nAction: La personne présente un produit sur une table minimaliste\nCaméra: Plan large 16:9, corps visible, mouvement propre\nStyle: Studio clair, rendu produit commercial\nAudio: Ambiance légère, audio inclus si route active",
+      "notes": [
+        "Option audio : URL d’une nappe ambient douce 3–15 s, volume discret."
+      ],
+      "summary": {
+        "subject": "Unboxing produit en studio cuisine",
+        "action": "La personne présente un produit sur une table minimaliste",
+        "camera": "Plan large 16:9, corps visible, mouvement propre",
+        "style": "Studio clair, rendu produit commercial",
+        "output": "Ambiance légère, audio inclus si route active"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Wan 2.6: Exemple prêt à rendre"
+      }
+    },
+    "imageExamples": null
   }
 }

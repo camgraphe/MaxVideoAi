@@ -465,5 +465,102 @@
       "title": "Seedance 2.0 Fast: precios de borradores e iteración | MaxVideoAI",
       "description": "Usa Seedance 2.0 Fast para borradores rápidos, pruebas de ritmo, variantes de movimiento y planificación con referencias antes del render final."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-0-fast",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.0 Fast",
+      "intro": "Seedance 2.0 Fast funciona mejor cuando cada render prueba una sola decisión. Mantén el brief en el orden Sujeto -> Acción -> Cámara -> Estilo y luego elige la ruta más rápida: texto, imagen inicio/final o referencias.",
+      "tip": null,
+      "guide": {
+        "label": "Notas de workflow de Seedance 2.0 Fast",
+        "href": "/es/modelos/seedance-2-0"
+      },
+      "referencesTitle": "Cómo Seedance 2.0 Fast usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Texto",
+        "title": "Prompt text-to-video de prueba",
+        "description": "Úsalo cuando quieras una lectura rápida de encuadre, movimiento o atmósfera solo desde lenguaje.",
+        "copy": "Sujeto:\n[Quién / qué aparece]\n\nAcción:\n[Un solo beat visible]\n\nCámara:\n[Un único movimiento corto]\n\nEstilo:\n[Luz + paleta]\n\nObjetivo:\n[Qué debe demostrar este run: timing / encuadre / movimiento / audio]\n\nRegla:\nNo mezcles varias decisiones en el mismo run Fast."
+      },
+      {
+        "id": "structured",
+        "label": "Inicio/Final",
+        "title": "Prompt de prueba image-to-video",
+        "description": "Úsalo cuando necesites validar cómo una imagen inicial aterriza en una imagen final.",
+        "copy": "Imagen inicial:\n[Lo que queda fijo desde el frame 1]\n\nImagen final (opcional):\n[Lo que el último frame debe alcanzar]\n\nTrayectoria del movimiento:\n[Cómo se desplaza el sujeto entre ambos puntos]\n\nCámara:\n[Un solo movimiento]\n\nQué debe permanecer idéntico entre variantes:\n[Luz / vestuario / entorno / ritmo]\n\nUsa este formato cuando la verdadera pregunta sea la calidad de la transición."
+      },
+      {
+        "id": "pro",
+        "label": "Referencias",
+        "title": "Prompt de prueba de continuidad",
+        "description": "Úsalo cuando verificas si el mismo pack de referencias aguanta bien entre variantes.",
+        "copy": "Intención del prompt:\n[Qué debe validar el borrador]\n\nReferencias de imagen:\n@Image1 = [identidad]\n@Image2 = [producto / vestuario / paleta]\n\nReferencias de video:\n@Video1 = [ritmo de cámara / pacing]\n\nReferencias de audio:\n@Audio1 = [ambiente / beat / textura de diálogo]\n\nVariable bajo prueba:\n[Un solo cambio: cámara / ritmo / encuadre / sonido]\n\nRegla:\nMantén el mismo pack fuente y cambia una sola cosa."
+      },
+      {
+        "id": "storyboard",
+        "label": "Comparación",
+        "title": "Prompt de comparación / handoff",
+        "description": "Úsalo cuando Fast sirve para elegir un ganador antes de pasar al estándar.",
+        "copy": "Qué permanece fijo en el A/B:\n[Sujeto / referencias / entorno / duración / ratio]\n\nVariante A:\n[Elección de cámara / ritmo / audio]\n\nVariante B:\n[Una sola variable cambiada]\n\nCriterio ganador:\n[Qué cuenta como éxito]\n\nSi se aprueba, pasar al estándar con:\n[Más pulido, plan de sonido más rico, desglose de planos más completo]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Texto = probar el brief en sí."
+      },
+      {
+        "tabId": "structured",
+        "body": "Inicio/Final = probar la transición y el frame de llegada."
+      },
+      {
+        "tabId": "pro",
+        "body": "Referencias = probar continuidad con el mismo pack fuente."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Comparación = preparar el ganador para la versión estándar."
+      }
+    ],
+    "globalPrinciples": [
+      "Cambia una sola variable por render para que las comparaciones sean legibles.",
+      "Conserva las mismas referencias cuando pruebes cámara, timing o audio.",
+      "Usa las pruebas inicio/final para validar transiciones, no para reescribir toda la escena.",
+      "Da un único trabajo a cada referencia y recorta adjetivos de estilo innecesarios.",
+      "Lleva los borradores ganadores a Seedance 2.0 estándar para el acabado final."
+    ],
+    "engineWhy": [
+      "Fast es especialmente útil para checks conceptuales antes de renders costosos.",
+      "Las pruebas con imagen inicial/final son útiles para juzgar una transición sin sobre-dirigir el centro de la toma.",
+      "Los runs con referencias sirven sobre todo para tests A/B de continuidad, no para máxima complejidad.",
+      "Las indicaciones de audio cortas hacen que las comparaciones lado a lado sean más fáciles de evaluar."
+    ],
+    "demo": {
+      "title": "Prompt de demostración — Seedance 2.0 Fast",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Atraco absurdo con armas inflables\nAcción: Los ladrones entran en una escena de thriller bancario\nCámara: Encuadre cinematográfico claro, ritmo de borrador rápido\nEstilo: Thriller tenso con humor visual absurdo\nAudio: Ambiente de banco, tensión, sin diálogo largo",
+      "notes": [],
+      "summary": {
+        "subject": "Atraco absurdo con armas inflables",
+        "action": "Los ladrones entran en una escena de thriller bancario",
+        "camera": "Encuadre cinematográfico claro, ritmo de borrador rápido",
+        "style": "Thriller tenso con humor visual absurdo",
+        "output": "Ambiente de banco, tensión, sin diálogo largo"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Borrador de movimiento Seedance 2.0 Fast"
+      }
+    },
+    "imageExamples": null
   }
 }

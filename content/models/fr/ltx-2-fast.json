@@ -483,5 +483,103 @@
       "title": "LTX 2 Fast : tarifs, drafts 20 s et exemples | MaxVideoAI",
       "description": "Utilisez LTX 2 Fast pour des drafts 16:9 encore pris en charge, tests de timing 20 s, text-to-video, image-to-video, checks haute résolution et tarifs."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-fast",
+    "section": {
+      "title": "Comment écrire un excellent prompt LTX 2 Fast",
+      "intro": "LTX‑2 Fast préfère des prompts courts avec une action claire et un seul mouvement caméra.",
+      "tip": "Astuce : durée + fps se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores optionnels.",
+      "guide": {
+        "label": "LTX",
+        "href": "https://www.ltx.studio"
+      },
+      "referencesTitle": "Comment LTX 2 Fast utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet + action] dans [décor], [mouvement caméra], [lumière/style], [cue sonore optionnel].\nNégatif : [texte, logos, personnes en trop, flou]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + un mouvement + sensation de lentille.]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1 cue.]\n\nNégatif :\n[Texte, logos, personnes en trop, flou.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
+        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matières.]\n\nSet :\n[Lieu + ancrages.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + lentille.]\n\nLumière + grade :\n[Key light + palette.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (multi‑shot / liste de plans)",
+        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
+        "copy": "Mini‑séquence (même sujet + même décor)\nBeat 1 (début) : [action + caméra]\nBeat 2 (milieu) : [action + caméra]\nBeat 3 (fin) : [action finale + pose]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = continuité. À utiliser pour des looks précis et répétables."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = timing des beats. À utiliser pour des mini‑stories en un clip."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujet, une action, un mouvement caméra.",
+      "Utilisez des ancrages visuels concrets.",
+      "Gardez les prompts courts; évitez les longues listes."
+    ],
+    "engineWhy": [
+      "Fast est optimisé pour des itérations rapides; les prompts simples gagnent.",
+      "Un langage caméra explicite réduit le drift.",
+      "Les prompts négatifs aident à retirer logos/texte."
+    ],
+    "demo": {
+      "title": "Prompt démo — clip social rapide",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Jeune femme à un passage piéton\nAction: Attend puis traverse dans la lumière golden hour\nCaméra: Départ derrière elle, puis suivi handheld fluide\nStyle: Ville animée, lumière chaude, clip social cinématique\nAudio: Ambiance urbaine, pas de dialogue",
+      "notes": [
+        "Action unique",
+        "Mouvement caméra clair et mood",
+        "Cue audio intégré"
+      ],
+      "summary": {
+        "subject": "Jeune femme à un passage piéton",
+        "action": "Attend puis traverse dans la lumière golden hour",
+        "camera": "Départ derrière elle, puis suivi handheld fluide",
+        "style": "Ville animée, lumière chaude, clip social cinématique",
+        "output": "Ambiance urbaine, pas de dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA LTX 2 Fast: Prompt démo - clip social rapide"
+      }
+    },
+    "imageExamples": null
   }
 }

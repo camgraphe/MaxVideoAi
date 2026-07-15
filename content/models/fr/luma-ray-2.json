@@ -387,5 +387,42 @@
       "title": "Luma Ray 2 legacy : tarifs, Modify et Reframe | MaxVideoAI",
       "description": "Explorez Luma Ray 2 comme route Luma d’ancienne génération : tarifs, exemples, Modify, Reframe, contexte Ray 2 Flash et migration vers Ray 3.2."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-2",
+    "section": {
+      "title": "Prompt Lab — Luma Ray 2",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment Luma Ray 2 utilise Generate, Modify et Reframe"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Prompt de démonstration — Luma Ray 2",
+      "promptLabel": "Workflow Ray 2",
+      "prompt": "Rendu Luma Ray 2 de 9 s en 16:9, sortie silencieuse.\nUn produit premium est posé sur une table de café en lumière dorée, avec reflets propres et arrière-plan doux.\nDolly avant lent, caméra stable, mouvement unique et lisible, profondeur de champ cinématique.\nConserver le cadrage produit, éviter tout texte illisible, logo ajouté ou mouvement trop rapide.\nPour Modify/Reframe, garder le mouvement source validé et préciser uniquement ce qui change.",
+      "notes": [],
+      "summary": {
+        "subject": "Hero produit dans un café en lumière dorée",
+        "action": "La caméra glisse vers le produit puis révèle les reflets",
+        "camera": "Dolly lent, cadrage stable, profondeur de champ douce",
+        "style": "Cinématique premium, reflets contrôlés, aucune marque ajoutée",
+        "output": "Rendu silencieux Ray 2, prêt pour une passe de livraison"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Workflow Ray 2",
+        "outputLabel": "Sortie",
+        "duration": "9 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Rendu produit Luma Ray 2"
+      }
+    },
+    "imageExamples": null
   }
 }

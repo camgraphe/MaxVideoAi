@@ -503,5 +503,92 @@
       "title": "MiniMax Hailuo 02: Pricing, Motion Drafts & Examples | MaxVideoAI",
       "description": "Explore MiniMax Hailuo 02 pricing, budget motion drafts, physics-aware tests, image-to-video starts and silent storyboard examples on MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "How to Write a Great Hailuo 02 Prompt",
+      "intro": "Hailuo 02 works best with short prompts and explicit motion cues.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use bracketed camera moves like [pan], [tilt], [zoom].",
+      "guide": {
+        "label": "MiniMax",
+        "href": "https://www.minimaxi.com"
+      },
+      "referencesTitle": "How Hailuo 02 structures motion tests"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [action] in [scene], [camera move in brackets], [lighting/style]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nScene:\n[Location + time + 2 anchors.]\n\nCamera:\n[Shot + angle + motion in brackets, e.g., [pan left], [zoom in].]\n\nLook:\n[Lighting + palette + style.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + setting:\n[Key traits + location + anchors.]\n\nCamera + motion:\n[Framing + bracketed motion cue.]\n\nOptional end frame:\n[Describe the target last frame if using one.]\n\nLighting + style:\n[Key light + palette.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = style control. Use for precise, repeatable looks."
+      }
+    ],
+    "globalPrinciples": [
+      "Keep prompts short and concrete.",
+      "Use bracketed camera/motion cues.",
+      "Use an end frame (optional) to land the transition."
+    ],
+    "engineWhy": [
+      "Prompt optimizer can expand short prompts.",
+      "Camera brackets help steer motion.",
+      "End frame improves landing and match cuts."
+    ],
+    "demo": {
+      "title": "Demo – 10s city drift (9:16)",
+      "promptLabel": "Silent motion draft",
+      "prompt": "10s silent Hailuo 02 draft in 16:9.\nA cyclist rides through a shallow puddle on an empty concrete path.\nWater splashes outward and the jacket fabric reacts to the motion.\nLow side tracking shot with one smooth push-in, natural dusk light, simple background.\nFocus on physics-driven movement. No dialogue, no music, no SFX.",
+      "notes": [
+        "One environment with physical cues.",
+        "Easy to loop as a background.",
+        "Silent output ready for your soundtrack."
+      ],
+      "summary": {
+        "subject": "Cyclist on wet pavement",
+        "action": "Rides through a shallow puddle and slows down",
+        "camera": "Low side tracking, one smooth push-in",
+        "style": "Natural dusk light, simple background",
+        "output": "Silent draft, physics-focused motion only"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Silent motion draft",
+        "outputLabel": "Output",
+        "duration": "10s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Hailuo 02 AI video example: Demo - 10s city drift (9:16)"
+      }
+    },
+    "imageExamples": null
   }
 }

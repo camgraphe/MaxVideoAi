@@ -508,5 +508,92 @@
       "title": "Wan 2.5: precios, drafts con audio y ejemplos | MaxVideoAI",
       "description": "Usa Wan 2.5 para borradores cortos de video IA con audio, texto a video, imagen a video, carga de audio opcional, expansión de prompt y precios."
     }
+  },
+  "prompting": {
+    "modelSlug": "wan-2-5",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Wan 2.5",
+      "intro": "Wan 2.5 funciona mejor con una sola acción clara y un prompt corto y concreto.",
+      "tip": "Tip: duración + relación se configuran en la UI - tu prompt controla sujeto, movimiento, cámara, luz, estilo y sonido opcional. La expansión ayuda a prompts cortos.",
+      "guide": {
+        "label": "Wan AI",
+        "href": "https://www.wan-ai.com"
+      },
+      "referencesTitle": "Cómo Wan 2.5 usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [acción] en [escena], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + entorno:\n[Rasgos clave + lugar + anclas.]\n\nCámara:\n[Encuadre + ángulo + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo cuando necesites resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujeto, una acción.",
+      "Especifica movimiento de cámara y luz.",
+      "Añade un prompt negativo corto para evitar artefactos."
+    ],
+    "engineWhy": [
+      "Los prompts cortos se expanden automáticamente.",
+      "Una URL de audio puede fijar el timing; mantén las cues mínimas.",
+      "Evita múltiples beats en un clip corto."
+    ],
+    "demo": {
+      "title": "Demo: un prompt para Wan 2.5",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Reloj fitness en la muñeca de un corredor\nAcción: La toma sigue la carrera y los beats de una pista energética\nCámara: Close-up y pull-back sincronizado\nEstilo: Vertical deportivo de producto, lluvia y energía musical\nAudio: Pista electrónica energética",
+      "notes": [
+        "El audio ancla las transiciones.",
+        "Un sujeto/entorno, trayectoria de cámara clara.",
+        "Cues explícitos para los hits."
+      ],
+      "summary": {
+        "subject": "Reloj fitness en la muñeca de un corredor",
+        "action": "La toma sigue la carrera y los beats de una pista energética",
+        "camera": "Close-up y pull-back sincronizado",
+        "style": "Vertical deportivo de producto, lluvia y energía musical",
+        "output": "Pista electrónica energética"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Wan 2.5: Demo: un prompt para Wan 2.5"
+      }
+    },
+    "imageExamples": null
   }
 }

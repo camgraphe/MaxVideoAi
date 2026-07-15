@@ -419,5 +419,52 @@
       "title": "Luma Ray 3.2 Modify Video, Reframe y ejemplos | MaxVideoAI",
       "description": "Explora Luma Ray 3.2: Modify de video fuente, Reframe de video IA, cuadros guía, salidas silenciosas 5 s / 10 s, precios, prompts y ejemplos."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-3-2",
+    "section": {
+      "title": "Cómo escribir un buen prompt Ray 3.2",
+      "intro": "Escribe un brief de edición o Reframe con regla de preservación, cambio solicitado, encuadre, duración y resolución.",
+      "tip": "Consejo: para Modify, escribe primero qué debe conservarse para no pelear contra el video fuente.",
+      "guide": null,
+      "referencesTitle": "Cómo Luma Ray 3.2 usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un solo objetivo de edición por clip fuente.",
+      "Separa claramente lo que se conserva y lo que cambia.",
+      "10 s solo cuando la acción lo necesita.",
+      "Usa generación solo cuando aún no existe clip fuente."
+    ],
+    "engineWhy": [
+      "Los videos fuente hacen útiles Modify y Reframe cuando el timing ya está aprobado.",
+      "Cuadros guía e imágenes clave apuntan a momentos concretos en lugar de repintar todo el clip.",
+      "La generación corta sigue útil para producir candidatos antes de una pasada Modify/Reframe.",
+      "Modo, duración y resolución influyen directamente en el precio mostrado."
+    ],
+    "demo": {
+      "title": "Prompt de demostración — Luma Ray 3.2",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Biker calavera blindado\nAcción: La moto se acerca y se detiene\nCámara: Tracking bajo frontal, leve push-in\nEstilo: Cinemático, reflejos de calle mojada\nAudio: Motor, metal, trueno distante",
+      "notes": [],
+      "summary": {
+        "subject": "Biker calavera blindado",
+        "action": "La moto se acerca y se detiene",
+        "camera": "Tracking bajo frontal, leve push-in",
+        "style": "Cinemático, reflejos de calle mojada",
+        "output": "Motor, metal, trueno distante"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Luma Ray 3.2: Luma Ray 3.2 demo render"
+      }
+    },
+    "imageExamples": null
   }
 }

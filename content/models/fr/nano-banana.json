@@ -412,5 +412,100 @@
       "title": "Nano Banana : tarifs, brouillons image rapides et retouches | MaxVideoAI",
       "description": "Explorez Nano Banana : prix, brouillons image rapides, retouches par références, variantes en lot et workflows Google légers dans MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana",
+    "section": {
+      "title": "Comment écrire un excellent prompt Nano Banana",
+      "intro": "Nano Banana récompense les briefs courts et littéraux. Commencez par la composition, puis la lumière/style. Pour les edits, dites ce qui change et ce qui doit rester. Pour les blends, assignez un rôle à chaque référence.",
+      "tip": "Astuce : résolution + ratio se règlent dans l’UI — votre prompt contrôle sujet, composition, lumière, style et instructions d’edit.",
+      "guide": null,
+      "referencesTitle": "Comment Nano Banana utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] dans [décor]. [Composition]. [Lumière]. [Ancre de style].\n\nSi edit :\nEdit : change [X]. Keep [Y] (cadrage, lumière, identité).\n\nSi multi‑image :\nRefs : Image1 = [sujet principal]. Image2 = [style/lumière]. (Optionnel) Image3 = [fond/prop]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + 2–3 détails définissants.]\n\nComposition :\n[Cadrage + angle + fond + ce qui doit rester propre.]\n\nLumière :\n[Key light + mood + 2 ancrages de palette.]\n\nStyle :\n[Photoréal / illustration + texture/grain + une référence de style.]\n\nTexte (optionnel) :\n[Copy exact entre guillemets + placement + contraste.]\nExemple : “SALE — 20% OFF” en haut‑gauche, une ligne, fort contraste.\n\nEdit (si edit) :\nChange :\n- [liste des changements]\nKeep :\n- cadrage, lumière, identité, sans logo, fond propre\n\nRéférences (si multi‑image) :\nImage1 contrôle sujet/identité\nImage2 contrôle lumière\nImage3 contrôle palette/fond"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “studio” ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou des résultats répétables sur une série.",
+        "copy": "Brief :\n[Objectif + usage de sortie.]\n\nSujet + matières :\n[Détails + textures + contraintes.]\n\nLayout :\n[Grille + spacing + point focal + espace négatif.]\n\nLumière + grade :\n[Key light + contraste + ancrages de palette.]\n\nTypo (optionnel) :\n[Ambiance de police + hiérarchie + copy exact + placement.]\nGardez le copy court. Évitez les paragraphes.\n\nEdits (si besoin) :\nChange list :\n- [A]\n- [B]\nKeep list :\n- cadrage, lumière, identité, fond, palette"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = répétabilité. À utiliser pour des batches contrôlés."
+      }
+    ],
+    "globalPrinciples": [
+      "Composition d’abord. Style ensuite.",
+      "Prompts courts et spécifiques; évitez les longues listes.",
+      "Pour les edits : “Change X, keep Y” vaut mieux que re‑décrire toute la scène.",
+      "Si le texte compte : gardez‑le court, contrasté et entre guillemets exacts."
+    ],
+    "engineWhy": [
+      "Le tier rapide préfère les prompts courts; les prompts longs peuvent dériver.",
+      "Le multi‑image fonctionne mieux quand chaque image a un rôle clair (sujet vs lumière vs fond).",
+      "Le micro‑texte et les UI denses sont peu fiables — gardez le copy minimal et overlay en post.",
+      "Si un edit sur‑corrige, resserrez la liste “keep” (cadrage, lumière, identité)."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Nano Banana",
+      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Visuel campagne",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
+        },
+        {
+          "id": "typography-2",
+          "title": "Poster typographique",
+          "badge": "Typographie",
+          "kind": "typography",
+          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche référence",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K vers 4K final",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+        }
+      ]
+    }
   }
 }

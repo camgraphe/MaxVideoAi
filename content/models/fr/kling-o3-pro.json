@@ -242,5 +242,82 @@
       "title": "Kling 3.0 Omni Pro : références, storyboard et V2V | MaxVideoAI",
       "description": "Utilisez Kling 3.0 Omni Pro pour reference-to-video, storyboard, V2V depuis vidéo source, prompts @Image et @Video1, audio natif et prix live."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-o3-pro",
+    "section": {
+      "title": "Prompt Lab — Kling 3.0 Omni Pro références et V2V",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment O3 Pro utilise références et vidéo source"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Prompt text-to-video O3 Pro",
+        "description": "À utiliser quand aucun asset ne guide la scène.",
+        "copy": "Sujet:\n[Personnage / produit / décor + 2 traits visuels]\n\nAction:\n[Une action lisible ou 2-3 beats courts]\n\nCaméra:\n[Mouvement caméra + cadrage + continuité]\n\nStyle:\n[Lumière, texture, palette, rendu cinéma]\n\nAudio:\n[Ambiance native, SFX courts, dialogue bref si utile]\n\nExample:\nUn designer traverse un studio nocturne avec un prototype lumineux. Caméra: tracking bas puis léger push-in. Style: reflets bleus, métal brossé, rendu premium. Audio: ambiance studio, hum électrique discret, pas de sous-titres."
+      },
+      {
+        "id": "structured",
+        "label": "Start/End",
+        "title": "Start/end optionnels avec références",
+        "description": "À utiliser quand la première ou dernière pose doit rester contrôlée.",
+        "copy": "Opening frame optionnel:\n[Ce qui doit structurer le premier beat sans annuler les références]\n\nEnd frame optionnel:\n[Pose finale / composition / distance caméra attendue]\n\nRéférences:\n@Image1 = [composition ou personnage]\n@Image2 = [style, lumière ou objet]\n\nAction et caméra:\n[Un mouvement lisible entre ouverture et fin]\n\nExample:\nUtilise @Image1 comme composition de départ et @Image2 comme style lumière. Le personnage avance lentement vers caméra, puis termine dans une pose stable proche de l’end frame. Lumière cohérente, pas de changement de décor."
+      },
+      {
+        "id": "pro",
+        "label": "Refs + V2V",
+        "title": "Références et vidéo source O3 Pro",
+        "description": "À utiliser quand @Video1 guide le mouvement et @Image guide l’identité ou le style.",
+        "copy": "@Video1 = [rythme caméra / mouvement / pacing]\n@Image1 = [storyboard ou composition]\n@Image2 = [personnage, produit ou style]\n\nIntent:\n[Ce que la vidéo doit générer sans copier chaque frame source]\n\nContinuité:\n[Ce qui ne doit pas dériver: visage, produit, décor, lumière]\n\nAudio:\n[generate_audio ou keep_audio selon le besoin]\n\nExample:\nUtilise @Video1 pour le rythme caméra, @Image1 pour la composition storyboard et @Image2 pour le style du personnage. Génère une séquence cinématique 12 s en trois beats avec continuité stable, ambiance native et aucun texte ajouté."
+      },
+      {
+        "id": "storyboard",
+        "label": "Timeline",
+        "title": "Timeline O3 Pro multi-shot",
+        "description": "À utiliser pour structurer une séquence avec références et continuité.",
+        "copy": "Durée: [8-15 s]\n\nShot 1 (0-4 s):\n[Composition guidée par @Image1 + action lisible]\n\nShot 2 (4-8 s):\n[Mouvement ou caméra inspiré de @Video1]\n\nShot 3 (8-12 s):\n[Payoff / pose finale / insert produit]\n\nAncres:\n[Style @Image2, tenue, décor, lumière, audio]\n\nExample:\nShot 1: @Image1 définit la scène. Shot 2: @Video1 guide la vitesse caméra. Shot 3: @Image2 verrouille le style final. Ambiance native courte, continuité personnage et décor."
+      }
+    ],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Indiquez si chaque asset est une référence ou une frame visible.",
+      "Utilisez @Image1, @Image2 pour les images et @Video1 uniquement pour une vidéo source V2V.",
+      "Quand @Video1 est chargé, la logique devient V2V : les start/end frames ne doivent pas piloter le plan.",
+      "Gardez une action lisible par plan et une seule fonction par référence.",
+      "Utilisez keep_audio seulement si l’audio source doit vraiment rester."
+    ],
+    "engineWhy": [
+      "Pro est le bon choix quand références, storyboard et V2V doivent rester fidèles.",
+      "Les images ne sont pas forcées en start frame, sauf si vous choisissez explicitement une frame d’ouverture.",
+      "@Video1 sert au mouvement, au rythme caméra et à la continuité, pas à remplacer le prompt.",
+      "Audio natif et keep_audio doivent rester courts et liés aux actions visibles."
+    ],
+    "demo": {
+      "title": "Prompt démo — O3 Pro V2V + références",
+      "promptLabel": "Prompt texte",
+      "prompt": "Subject:\nA tiny lighthouse keeper no taller than a coffee cup, wearing a yellow raincoat and carrying a glowing lantern.\n\nAction:\nHe walks across a kitchen table during a storm, climbs a stack of books, and raises his lantern toward a toy lighthouse as the light begins to glow.\n\nCamera:\nMacro close tracking shot at table height, following his small steps. End with a slight push-in on the lantern and lighthouse.\n\nStyle:\nWarm cinematic macro realism, cozy indoor storm atmosphere, shallow depth of field, raindrops on the window, golden lantern light against cool blue shadows.\n\nAudio:\nRain tapping on glass, tiny footsteps on wood, soft lantern hum, distant thunder.",
+      "notes": [],
+      "summary": {
+        "subject": "Gardien de phare miniature en imperméable jaune",
+        "action": "Traverse une table de cuisine, grimpe des livres et allume un phare jouet",
+        "camera": "Macro tracking à hauteur de table, léger push-in final",
+        "style": "Macro réalisme chaleureux, tempête cosy, lanterne dorée",
+        "output": "Pluie sur la vitre, petits pas, hum de lanterne, tonnerre lointain"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt texte",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Rendu gardien de phare Kling 3.0 Omni Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

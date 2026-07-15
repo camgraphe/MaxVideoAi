@@ -315,5 +315,77 @@
       "title": "GPT Image 2: precios, texto legible y edición | MaxVideoAI",
       "description": "Explora GPT Image 2: precios, texto legible, producto, tamaños personalizados, ediciones con referencias y máscaras en MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "gpt-image-2",
+    "section": {
+      "title": "Como escribir un buen prompt GPT Image 2",
+      "intro": "Usa una estructura con escena, sujeto, texto exacto, detalles visuales, uso y restricciones.",
+      "tip": "Tip: pon las palabras exactas entre comillas y describe donde debe aparecer cada bloque de texto.",
+      "guide": null,
+      "referencesTitle": "Cómo GPT Image 2 usa fuentes y máscaras"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Indica el artefacto final: poster, producto, pantalla UI, infografia o concept frame.",
+      "Da el texto exacto cuando importe la tipografia.",
+      "En edits, separa instrucciones de conservar e instrucciones de cambiar."
+    ],
+    "engineWhy": [
+      "El modelo es especialmente util cuando texto y layout forman parte del brief.",
+      "La calidad afecta al coste: haz drafts baratos y relanza en High.",
+      "Los edits con referencias mejoran cuando cada fuente tiene un rol claro."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts de imagen de GPT Image 2",
+      "intro": "Prompts de GPT Image 2 para texto legible, producto, mockups UI, edits controlados, máscaras y finales 4K.",
+      "workspaceLabel": "Abrir espacio de imagen",
+      "items": [
+        {
+          "id": "image-1",
+          "title": "Still de producto legible",
+          "badge": "High · 1024x768",
+          "kind": "image",
+          "prompt": "Foto de catálogo de una bolsa de café premium titulada \"SUMMIT ROAST\", notas de sabor legibles, mesa de madera clara, luz suave, encuadre limpio, fondo e-commerce."
+        },
+        {
+          "id": "typography-2",
+          "title": "Póster con texto exacto",
+          "badge": "Texto 4K",
+          "kind": "typography",
+          "prompt": "Póster vertical 4K con título exacto \"CREATOR LAUNCH CHECKLIST\", 8 módulos numerados, tipografía nítida, fondo blanco, acentos azul noche y cian, márgenes regulares."
+        },
+        {
+          "id": "layout-3",
+          "title": "Mockup UI",
+          "badge": "1920x1080",
+          "kind": "layout",
+          "prompt": "Mockup de pantalla SaaS 1920x1080 para dashboard de analytics, cards blancas, navegación lateral, títulos legibles, cifras realistas, estilo de producto premium."
+        },
+        {
+          "id": "edit-4",
+          "title": "Edición controlada",
+          "badge": "Image edit",
+          "kind": "edit",
+          "prompt": "Usando esta imagen de producto, conservar forma, etiqueta, proporciones y reflejo principal. Cambiar el fondo a un estudio claro, quitar polvo y reflejos molestos."
+        },
+        {
+          "id": "quality-5",
+          "title": "Edit con máscara",
+          "badge": "Mask URL",
+          "kind": "quality",
+          "prompt": "Modificar solo la zona con máscara: cambiar el texto secundario a \"LIMITED RESERVE\", mantener logo, color del packaging, sombra y perspectiva sin cambios."
+        },
+        {
+          "id": "layout-6",
+          "title": "Hero still 4K",
+          "badge": "3840x2160",
+          "kind": "layout",
+          "prompt": "Hero still 4K para página de producto, smartphone negro sobre superficie grafito, texto de pantalla legible, reflejo controlado, luz de estudio premium, espacio negativo a la derecha."
+        }
+      ]
+    }
   }
 }

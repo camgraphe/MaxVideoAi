@@ -309,5 +309,42 @@
       "title": "Happy Horse 1.0 : ancienne édition vidéo | MaxVideoAI",
       "description": "Utilisez Happy Horse 1.0 comme ancienne route Happy Horse pour l’édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence."
     }
+  },
+  "prompting": {
+    "modelSlug": "happy-horse-1-0",
+    "section": {
+      "title": "Prompt Lab — Happy Horse 1.0",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment Happy Horse 1.0 utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Consigne démo - Happy Horse 1.0",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Conservatrice dans une galerie de portraits\nAction: Traverse la salle pendant que les visages peints prennent vie\nCaméra: Dolly fluide dans la galerie\nStyle: Réalisme surréaliste, lumière d’aube, marbre et poussière douce\nAudio: Ambiance feutrée de musée, pas de dialogue",
+      "notes": [],
+      "summary": {
+        "subject": "Conservatrice dans une galerie de portraits",
+        "action": "Traverse la salle pendant que les visages peints prennent vie",
+        "camera": "Dolly fluide dans la galerie",
+        "style": "Réalisme surréaliste, lumière d’aube, marbre et poussière douce",
+        "output": "Ambiance feutrée de musée, pas de dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Happy Horse 1.0: Consigne démo - Happy Horse 1.0"
+      }
+    },
+    "imageExamples": null
   }
 }

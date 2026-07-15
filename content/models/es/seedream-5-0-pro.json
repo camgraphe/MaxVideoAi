@@ -181,5 +181,55 @@
       "title": "Seedream 5.0 Pro - generación profesional de imágenes | MaxVideoAI",
       "description": "Crea imágenes profesionales, infografías densas, ediciones visuales y assets 4K con Seedream 5.0 Pro en MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-0-pro",
+    "section": {
+      "title": "How to prompt Seedream Pro",
+      "intro": "Write it like an art-director brief: visual goal, composition, hierarchy, copy/text constraints, materials, and lighting.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Cómo Seedream 5.0 Pro usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts de imagen de Seedream 5.0 Pro",
+      "intro": "Ejemplos para stills de campaña, tipografía, ediciones con referencia y finales 4K.",
+      "workspaceLabel": "Abrir espacio de imagen",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Still de campaña",
+          "badge": "Still 2K",
+          "kind": "quality",
+          "prompt": "Still de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto \"AURA NOIRE\" arriba a la izquierda, logo discreto abajo."
+        },
+        {
+          "id": "typography-2",
+          "title": "Póster tipográfico",
+          "badge": "Tipografía",
+          "kind": "typography",
+          "prompt": "Póster vertical 4K, grilla editorial premium, fondo grafito, título exacto grande \"MIDNIGHT LAUNCH\", subtítulo \"LIMITED DROP\", jerarquía clara, márgenes amplios, texto legible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Edición con referencia",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "Usando esta referencia de producto, mantener forma, logo y proporciones. Cambiar el entorno a estudio azul noche, mejorar reflejos, quitar polvo y marcas."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K a final 4K",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reutilizar la composición aprobada en 2K. Salida final 4K, detalles más nítidos, tipografía idéntica, mismos colores de marca, mantener encuadre y posición del producto."
+        }
+      ]
+    }
   }
 }

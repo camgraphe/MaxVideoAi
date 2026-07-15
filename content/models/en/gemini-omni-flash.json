@@ -358,5 +358,42 @@
       "title": "Gemini Omni Flash: Google Omni Video, Specs & Pricing",
       "description": "Use Gemini Omni Flash for 720p text-to-video, image-to-video, reference-to-video, video editing and conversational refine workflows on MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "gemini-omni-flash",
+    "section": {
+      "title": "Prompt Lab — Gemini Omni Flash",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Gemini Omni Flash uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Gemini Omni Flash demo prompt",
+      "promptLabel": "10s 16:9 prompt with native sound",
+      "prompt": "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.\nSound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"\nCamera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight.",
+      "notes": [],
+      "summary": {
+        "subject": "Two friends on a golden-hour rooftop",
+        "action": "A recorder turns a memory into moving light",
+        "camera": "Smooth lateral dolly ending on a two-face reaction",
+        "style": "Premium cinematic realism, warm backlight, soft city atmosphere",
+        "output": "Rooftop wind, recorder click, ocean echo, one whispered line"
+      },
+      "presentationOverrides": {
+        "modeLabel": "10s 16:9 prompt with native sound",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "media",
+        "audioChipLabel": null,
+        "altContext": "Gemini Omni Flash rooftop render with native audio"
+      }
+    },
+    "imageExamples": null
   }
 }

@@ -507,5 +507,97 @@
       "title": "Wan 2.6: precios, referencias y ejemplos | MaxVideoAI",
       "description": "Explora Wan 2.6: precios, video multi-shot hasta 15 s, texto a video, imagen a video, referencias 5s/10s, audio opcional y ejemplos."
     }
+  },
+  "prompting": {
+    "modelSlug": "wan-2-6",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Wan 2.6",
+      "intro": "Wan 2.6 sigue prompts cortos con sujeto, escena y movimiento claros; usa una shot list simple para multi‑shot.",
+      "tip": "Tip: duración + relación se configuran en la UI — tu prompt controla sujeto, movimiento, cámara, estilo y sonido opcional. Mantén los prompts concisos; la expansión ayuda.",
+      "guide": {
+        "label": "Wan AI",
+        "href": "https://www.wan-ai.com"
+      },
+      "referencesTitle": "Cómo Wan 2.6 usa referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [movimiento] en [escena], [cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (más fiable)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + rasgos clave.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nMovimiento:\n[Una acción clara + movimiento de cámara.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
+        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nPlano 1: [acción + cámara]\nPlano 2: [acción + cámara]\nPlano 3: [acción final/reveal]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Texto/logos/personajes extra.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats con timestamps)",
+        "description": "Ideal para secuencias multi‑shot en un solo clip.",
+        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nDuración: [5/10/15s]\n\nBeat 1 (0–3s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 2 (3–7s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 3 (7–10/15s):\n[Acción final/reveal + cámara se asienta]\n\nContinuidad:\n[Repite anclas: vestuario, props, luz, fondo]\n[Si usas referencias: etiqueta @Video1/@Video2/@Video3]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]\n\nNegativo:\n[Texto, logos, personajes extra, blur]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo cuando necesites resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+      }
+    ],
+    "globalPrinciples": [
+      "Sujeto + escena + movimiento en una frase clara.",
+      "Para multi‑shot, limítalo a 2–3 beats.",
+      "Añade un prompt negativo corto para evitar artefactos."
+    ],
+    "engineWhy": [
+      "La expansión de prompt maneja bien prompts cortos y concretos.",
+      "El modo Referencia funciona mejor cuando especificas lo que debe permanecer constante.",
+      "Las cues de audio ayudan al ritmo; mantenlas mínimas."
+    ],
+    "demo": {
+      "title": "Ejemplo listo para renderizar",
+      "promptLabel": "Texto a video",
+      "prompt": "Sujeto: Unboxing de producto en estudio/cocina\nAcción: La persona presenta un producto sobre una mesa minimalista\nCámara: Plano amplio 16:9, cuerpo visible, movimiento limpio\nEstilo: Estudio luminoso, render comercial de producto\nAudio: Ambiente ligero, audio incluido si la ruta lo expone",
+      "notes": [
+        "Opción de audio: URL de una cama ambient suave 3–15 s, volumen bajo."
+      ],
+      "summary": {
+        "subject": "Unboxing de producto en estudio/cocina",
+        "action": "La persona presenta un producto sobre una mesa minimalista",
+        "camera": "Plano amplio 16:9, cuerpo visible, movimiento limpio",
+        "style": "Estudio luminoso, render comercial de producto",
+        "output": "Ambiente ligero, audio incluido si la ruta lo expone"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texto a video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Wan 2.6: Ejemplo listo para renderizar"
+      }
+    },
+    "imageExamples": null
   }
 }

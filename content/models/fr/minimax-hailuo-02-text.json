@@ -503,5 +503,92 @@
       "title": "MiniMax Hailuo 02 : tarifs, brouillons mouvement et exemples | MaxVideoAI",
       "description": "Explorez MiniMax Hailuo 02 : prix, brouillons mouvement économiques, tests physiques, image-to-video et exemples storyboard silencieux sur MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "Comment écrire un excellent prompt Hailuo 02",
+      "intro": "Hailuo 02 fonctionne mieux avec des prompts courts et des cues de motion explicites.",
+      "tip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez des mouvements caméra entre crochets comme [pan], [tilt], [zoom].",
+      "guide": {
+        "label": "MiniMax",
+        "href": "https://www.minimaxi.com"
+      },
+      "referencesTitle": "Comment Hailuo 02 structure un test mouvement"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] [action] dans [scène], [mouvement caméra entre crochets], [lumière/style]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nScène :\n[Lieu + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + mouvement entre crochets, ex. [pan left], [zoom in].]\n\nLook :\n[Lumière + palette + style.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + décor :\n[Traits clés + lieu + ancrages.]\n\nCaméra + motion :\n[Cadrage + cue de mouvement entre crochets.]\n\nEnd frame optionnelle :\n[Décrivez la frame finale cible si vous en utilisez une.]\n\nLumière + style :\n[Key light + palette.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      }
+    ],
+    "globalPrinciples": [
+      "Gardez les prompts courts et concrets.",
+      "Utilisez des cues de caméra/motion entre crochets.",
+      "Utilisez une end frame (optionnelle) pour verrouiller la transition."
+    ],
+    "engineWhy": [
+      "Le prompt optimizer peut étendre des prompts courts.",
+      "Les crochets caméra aident à guider le mouvement.",
+      "L’end frame améliore l’atterrissage et les match cuts."
+    ],
+    "demo": {
+      "title": "Démo — dérive urbaine 10 s (9:16)",
+      "promptLabel": "Brouillon silencieux",
+      "prompt": "Brouillon Hailuo 02 silencieux de 10 s en 16:9.\nUn cycliste traverse une flaque peu profonde sur un chemin en béton vide.\nL’eau éclabousse vers l’extérieur et la veste réagit au mouvement.\nTracking latéral bas avec un seul push-in doux, lumière naturelle au crépuscule, décor simple.\nSe concentrer sur la physique du mouvement. Pas de dialogue, pas de musique, pas de SFX.",
+      "notes": [
+        "Un seul environnement avec cues physiques.",
+        "Facile à boucler en background.",
+        "Sortie silencieuse prête pour votre bande‑son."
+      ],
+      "summary": {
+        "subject": "Cycliste sur chemin mouillé",
+        "action": "Traverse une flaque et ralentit",
+        "camera": "Tracking latéral bas, un push-in doux",
+        "style": "Lumière naturelle au crépuscule, décor simple",
+        "output": "Brouillon silencieux, mouvement physique uniquement"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Brouillon silencieux",
+        "outputLabel": "Sortie",
+        "duration": "10 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Hailuo 02: Démo - dérive urbaine 10 s (9:16)"
+      }
+    },
+    "imageExamples": null
   }
 }

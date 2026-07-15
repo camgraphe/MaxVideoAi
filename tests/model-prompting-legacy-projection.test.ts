@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import type { EngineLocalizedContent } from '../frontend/lib/models/i18n.ts';
@@ -20,6 +21,27 @@ const componentPath = join(
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx',
 );
 const LOCALES = ['en', 'fr', 'es'] as const;
+
+function readStoredPrompting(modelSlug: string, locale: (typeof LOCALES)[number]): unknown {
+  const document = JSON.parse(
+    readFileSync(join(PROJECT_ROOT, 'content', 'models', locale, `${modelSlug}.json`), 'utf8'),
+  ) as { prompting?: unknown };
+  return document.prompting;
+}
+
+function changedLeafPaths(before: unknown, after: unknown, prefix: readonly string[] = []): string[] {
+  if (isDeepStrictEqual(before, after)) return [];
+  if (Array.isArray(before) && Array.isArray(after) && before.length === after.length) {
+    return before.flatMap((entry, index) => changedLeafPaths(entry, after[index], [...prefix, String(index)]));
+  }
+  if (before && after && typeof before === 'object' && typeof after === 'object') {
+    const beforeRecord = before as Record<string, unknown>;
+    const afterRecord = after as Record<string, unknown>;
+    const keys = [...new Set([...Object.keys(beforeRecord), ...Object.keys(afterRecord)])].sort();
+    return keys.flatMap((key) => changedLeafPaths(beforeRecord[key], afterRecord[key], [...prefix, key]));
+  }
+  return [prefix.join('.')];
+}
 
 function readLocalizedContent(modelSlug: string, locale: (typeof LOCALES)[number]): EngineLocalizedContent {
   const readOverlay = (overlayLocale: (typeof LOCALES)[number]) =>
@@ -80,13 +102,18 @@ test('legacy prompting decisions are isolated behind one temporary pure projecto
 });
 
 test('all 40-by-3 legacy projections satisfy the strict prompting contract after approved corrections', async () => {
-  const [{ buildLegacyModelPromptingContent, resolveLegacyPromptingModelName }, { applyApprovedPromptingCorrections }] =
-    await Promise.all([
+  const [
+    { buildLegacyModelPromptingContent, resolveLegacyPromptingModelName },
+    { APPROVED_PROMPTING_CORRECTIONS, applyApprovedPromptingCorrections },
+  ] = await Promise.all([
       import('../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts'),
       import('../scripts/model-prompting-corrections.ts'),
     ]);
   const engines = listFalEngines().filter(isPublishedModelPage);
   assert.equal(engines.length, 40);
+  assert.equal(APPROVED_PROMPTING_CORRECTIONS.length, 18);
+  let projectionCount = 0;
+  let correctionCount = 0;
 
   for (const engine of engines) {
     const modes = engine.engine.modes ?? [];
@@ -107,17 +134,42 @@ test('all 40-by-3 legacy projections satisfy the strict prompting contract after
       });
       const beforeCorrection = structuredClone(projection);
       const corrected = applyApprovedPromptingCorrections(projection, engine.modelSlug, locale);
+      const pairCorrectionCount = APPROVED_PROMPTING_CORRECTIONS.filter(
+        (correction) => correction.slug === engine.modelSlug && correction.locale === locale,
+      ).length;
+      const expectedChangedPaths = APPROVED_PROMPTING_CORRECTIONS.filter(
+        (correction) => correction.slug === engine.modelSlug && correction.locale === locale,
+      )
+        .map((correction) => correction.path)
+        .sort();
+      assert.deepEqual(
+        changedLeafPaths(projection, corrected).sort(),
+        expectedChangedPaths,
+        `${engine.modelSlug}/${locale} corrected paths`,
+      );
+      correctionCount += pairCorrectionCount;
       const parsed = parseModelPromptingContent(
         corrected,
         engine.modelSlug,
         locale,
         `legacy projection ${engine.modelSlug}/${locale}`,
       );
+      const stored = parseModelPromptingContent(
+        readStoredPrompting(engine.modelSlug, locale),
+        engine.modelSlug,
+        locale,
+        `stored prompting ${engine.modelSlug}/${locale}`,
+      );
 
       assert.deepEqual(projection, beforeCorrection, `${engine.modelSlug}/${locale} correction must be immutable`);
+      assert.deepEqual(stored, parsed, `${engine.modelSlug}/${locale} stored prompting parity`);
       assert.equal(parsed.modelSlug, engine.modelSlug, `${engine.modelSlug}/${locale} identity`);
       assert.equal(parsed.demo === null, isImageEngine, `${engine.modelSlug}/${locale} demo presence`);
       assert.equal(parsed.imageExamples === null, !isImageEngine, `${engine.modelSlug}/${locale} image examples presence`);
+      projectionCount += 1;
     }
   }
+
+  assert.equal(projectionCount, 120);
+  assert.equal(correctionCount, 18);
 });

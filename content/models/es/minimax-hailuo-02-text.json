@@ -503,5 +503,92 @@
       "title": "MiniMax Hailuo 02: precios, borradores y ejemplos | MaxVideoAI",
       "description": "Explora MiniMax Hailuo 02: precios, borradores de movimiento económicos, pruebas físicas, imagen a video y ejemplos storyboard sin audio en MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "Cómo escribir un gran prompt para Hailuo 02",
+      "intro": "Hailuo 02 funciona mejor con prompts cortos y cues de movimiento explícitos.",
+      "tip": "Tip: la duración + la relación se configuran en la UI - tu prompt controla sujeto, acción, cámara, iluminación y estilo. Usa movimientos de cámara entre corchetes como [pan], [tilt], [zoom].",
+      "guide": {
+        "label": "MiniMax",
+        "href": "https://www.minimaxi.com"
+      },
+      "referencesTitle": "Cómo Hailuo 02 estructura una prueba de movimiento"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rápido (iteración)",
+        "description": "Usa 1–2 frases cuando quieras variaciones.",
+        "copy": "[Sujeto] [acción] en [escena], [movimiento de cámara entre corchetes], [iluminación/estilo]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt estructurado (mejor para resultados fiables)",
+        "description": "Separa la información para que el modelo la siga de forma consistente.",
+        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscena:\n[Ubicación + hora + 2 anclajes.]\n\nCámara:\n[Plano + ángulo + movimiento entre corchetes, p. ej., [pan left], [zoom in].]\n\nLook:\n[Iluminación + paleta + estilo.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de estudio ultra‑específico)",
+        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre planos.",
+        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + entorno:\n[Detalles clave + ubicación + anclajes.]\n\nCámara + motion:\n[Encuadre + cue de motion entre corchetes.]\n\nFrame final opcional:\n[Describe el último frame objetivo si lo usas.]\n\nIluminación + estilo:\n[Luz clave + paleta.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variaciones. Úsalo para iterar rápido."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistencia. Úsalo para resultados fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
+      }
+    ],
+    "globalPrinciples": [
+      "Mantén prompts cortos y concretos.",
+      "Usa cues de cámara/motion entre corchetes.",
+      "Usa un frame final (opcional) para aterrizar la transición."
+    ],
+    "engineWhy": [
+      "El optimizador de prompts puede expandir prompts cortos.",
+      "Los corchetes de cámara ayudan a dirigir el motion.",
+      "El frame final mejora el aterrizaje y los match cuts."
+    ],
+    "demo": {
+      "title": "Demo – deriva urbana 10 s (9:16)",
+      "promptLabel": "Borrador sin audio",
+      "prompt": "Borrador Hailuo 02 sin audio de 10 s en 16:9.\nUn ciclista cruza un charco poco profundo en un camino de concreto vacío.\nEl agua salpica hacia afuera y la chaqueta reacciona al movimiento.\nTracking lateral bajo con un solo push-in suave, luz natural al atardecer, fondo simple.\nEnfocar la prueba en la física del movimiento. Sin diálogo, sin música, sin SFX.",
+      "notes": [
+        "Un solo entorno con cues físicos.",
+        "Fácil de loopear como fondo.",
+        "Salida silenciosa lista para tu soundtrack."
+      ],
+      "summary": {
+        "subject": "Ciclista en camino mojado",
+        "action": "Cruza un charco y reduce velocidad",
+        "camera": "Tracking lateral bajo, un push-in suave",
+        "style": "Luz natural al atardecer, fondo simple",
+        "output": "Borrador sin audio, solo movimiento físico"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Borrador sin audio",
+        "outputLabel": "Salida",
+        "duration": "10 s",
+        "aspectRatio": "16:9",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Ejemplo de video IA de Hailuo 02: Demo - deriva urbana 10 s (9:16)"
+      }
+    },
+    "imageExamples": null
   }
 }

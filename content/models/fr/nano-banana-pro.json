@@ -380,5 +380,98 @@
       "title": "Nano Banana Pro : tarifs, images 4K et typographie | MaxVideoAI",
       "description": "Explorez Nano Banana Pro : prix, visuels campagne 2K/4K, génération typographique, retouches par références et workflows brand assets."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-pro",
+    "section": {
+      "title": "Comment écrire un excellent prompt Nano Banana Pro",
+      "intro": "Nano Banana Pro récompense les briefs structurés avec composition, typographie et intention d’edit claires.",
+      "tip": "Astuce : résolution + ratio se règlent dans l’UI - votre prompt contrôle sujet, composition, lumière, style et instructions d’edit.",
+      "guide": null,
+      "referencesTitle": "Comment Nano Banana Pro utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] dans [décor], [composition], [lumière], [style], [texte si besoin]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + traits clés.]\n\nComposition :\n[Cadrage + angle + arrière‑plan.]\n\nLumière :\n[Key light + mood.]\n\nStyle :\n[Photoréal / illustration / palette.]\n\nTypo (si besoin) :\n[Copy exact + placement.]\n\nEdit (si edit) :\n[Change X, keep Y.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “studio” ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Brief de marque :\n[Objectif + audience + format.]\n\nSujet + matières :\n[Détails + textures.]\n\nLayout + hiérarchie :\n[Grille, spacing, point focal.]\n\nTypo :\n[Vibe de police + hiérarchie + copy exact.]\n\nRéférences (optionnel) :\n[Ref A contrôle le style ; Ref B contrôle le produit.]\n\nEdits (si besoin) :\n[Change list + keep list.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      }
+    ],
+    "globalPrinciples": [
+      "Nommez le sujet et la composition d’abord.",
+      "Spécifiez lumière, lentille et ancrages de style.",
+      "Pour les edits, dites ce qui doit changer et ce qui doit rester."
+    ],
+    "engineWhy": [
+      "Les briefs structurés donnent un texte et un layout plus propres.",
+      "Les edits sans masque marchent mieux quand vous précisez ce qui change et ce qui reste.",
+      "Les références multi‑image aident à garder les produits on‑model."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Nano Banana Pro",
+      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Visuel campagne",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
+        },
+        {
+          "id": "typography-2",
+          "title": "Poster typographique",
+          "badge": "Typographie",
+          "kind": "typography",
+          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche référence",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K vers 4K final",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+        }
+      ]
+    }
   }
 }

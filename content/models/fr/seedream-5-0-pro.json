@@ -181,5 +181,55 @@
       "title": "Seedream 5.0 Pro - génération image professionnelle ByteDance | MaxVideoAI",
       "description": "Créez des images professionnelles, infographies denses, edits visuels et assets 4K avec Seedream 5.0 Pro dans MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedream-5-0-pro",
+    "section": {
+      "title": "How to prompt Seedream Pro",
+      "intro": "Write it like an art-director brief: visual goal, composition, hierarchy, copy/text constraints, materials, and lighting.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment Seedream 5.0 Pro utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts image Seedream 5.0 Pro",
+      "intro": "Exemples adaptés aux stills campagne, typographie, retouches et finales 4K.",
+      "workspaceLabel": "Ouvrir l’espace image",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Visuel campagne",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "Still campagne 2K pour une bouteille de parfum ambrée sur acrylique blanc, lumière studio douce, ombre propre, headline exact \"AURA NOIRE\" en haut à gauche, logo discret en bas."
+        },
+        {
+          "id": "typography-2",
+          "title": "Poster typographique",
+          "badge": "Typographie",
+          "kind": "typography",
+          "prompt": "Poster vertical 4K, grille éditoriale premium, fond graphite, grand titre exact \"MIDNIGHT LAUNCH\", sous-titre \"LIMITED DROP\", hiérarchie nette, marges généreuses, texte lisible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Retouche référence",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "À partir de cette référence produit, garder la forme, le logo et les proportions. Changer le décor en studio bleu nuit, améliorer les reflets, retirer poussières et traces."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K vers 4K final",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reprendre la composition validée en 2K. Sortie 4K finale, détails plus nets, typographie identique, mêmes couleurs de marque, conserver cadrage et placement du produit."
+        }
+      ]
+    }
   }
 }

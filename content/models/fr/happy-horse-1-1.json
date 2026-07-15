@@ -309,5 +309,42 @@
       "title": "Happy Horse 1.1 : tarifs, audio natif et références | MaxVideoAI",
       "description": "Explorez Happy Horse 1.1 : prix, audio natif, synchronisation labiale, génération depuis texte, image et références sur MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "happy-horse-1-1",
+    "section": {
+      "title": "Prompt Lab — Happy Horse 1.1",
+      "intro": null,
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "Comment Happy Horse 1.1 utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": {
+      "title": "Prompt de démo - Happy Horse 1.1",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Four-shot energetic studio food-film sequence in a small night market noodle stall after rain. Shot 1: neon reflections on wet pavement, a chef silhouette places a black wok over a blue gas flame, steam already rising. Shot 2: macro close-up of noodles flipping in the wok with orange sparks, camera locked, sizzling oil and quick whoosh. Shot 3: medium side shot as the chef slides the noodles into a ceramic bowl, steam curls across the lens, background lanterns soft and out of focus, no signs or readable text. Shot 4: slow push-in on the finished bowl on a stainless counter while rain taps the awning and steam fades into the neon light, no dialogue, no logos.",
+      "notes": [],
+      "summary": {
+        "subject": "Chef de stand de nouilles au marché de nuit",
+        "action": "Fait sauter les nouilles au wok puis dresse le bol après la pluie",
+        "camera": "Plan large néon, macro wok, dressage de côté, lent push-in",
+        "style": "Film food cinématographique, reflets de rue mouillée, vapeur et lanternes floues",
+        "output": "Sizzle du wok, souffle d'huile, pluie sur l'auvent, pas de dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Happy Horse 1.1: Prompt de démo - Happy Horse 1.1"
+      }
+    },
+    "imageExamples": null
   }
 }

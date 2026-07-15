@@ -401,5 +401,63 @@
       "title": "Luma Uni-1: precios de imagen, referencias y edición | MaxVideoAI",
       "description": "Explora Luma Uni-1: generación de imagen 2K, ediciones de fuente, guía multi-referencia, investigación visual con contexto web y precios de referencia."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-uni-1",
+    "section": {
+      "title": "Cómo escribir un buen prompt Uni-1",
+      "intro": "Trata el prompt como una consigna de imagen: visual, sujeto, composición, referencias y restricciones.",
+      "tip": "Consejo: da un rol a cada referencia.",
+      "guide": null,
+      "referencesTitle": "Cómo Luma Uni-1 usa referencias"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un objetivo visual claro por solicitud.",
+      "Separa preservar y cambiar en ediciones.",
+      "Búsqueda web solo si el contexto actual importa."
+    ],
+    "engineWhy": [
+      "Los roles de referencia ayudan al modelo a razonar sobre composición e identidad.",
+      "La revisión tipográfica mantiene los visuales prudentes.",
+      "Una imagen limpia sirve como mejor fuente para lo siguiente."
+    ],
+    "demo": null,
+    "imageExamples": {
+      "title": "Prompts de imagen de Luma Uni-1",
+      "intro": "Ejemplos para imágenes de campaña, tipografía, ediciones con referencia y finales 4K.",
+      "workspaceLabel": "Abrir espacio de imagen",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Imagen de campaña",
+          "badge": "Imagen 2K",
+          "kind": "quality",
+          "prompt": "Imagen de campaña 2K para una botella de perfume ámbar sobre acrílico blanco, luz de estudio suave, sombra limpia, headline exacto \"AURA NOIRE\" arriba a la izquierda, logo discreto abajo."
+        },
+        {
+          "id": "typography-2",
+          "title": "Póster tipográfico",
+          "badge": "Tipografía",
+          "kind": "typography",
+          "prompt": "Póster vertical 4K, grilla editorial premium, fondo grafito, título exacto grande \"MIDNIGHT LAUNCH\", subtítulo \"LIMITED DROP\", jerarquía clara, márgenes amplios, texto legible."
+        },
+        {
+          "id": "edit-3",
+          "title": "Edición con referencia",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "Usando esta referencia de producto, mantener forma, logo y proporciones. Cambiar el entorno a estudio azul noche, mejorar reflejos, quitar polvo y marcas."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K a final 4K",
+          "badge": "Final 4K",
+          "kind": "layout",
+          "prompt": "Reutilizar la composición aprobada en 2K. Salida final 4K, detalles más nítidos, tipografía idéntica, mismos colores de marca, mantener encuadre y posición del producto."
+        }
+      ]
+    }
   }
 }

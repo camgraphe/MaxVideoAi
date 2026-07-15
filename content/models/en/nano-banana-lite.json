@@ -277,5 +277,55 @@
       "title": "Nano Banana Lite - Fast 1K Google Image Generation | MaxVideoAI",
       "description": "Generate fast 1K still images and local edits with Nano Banana Lite in MaxVideoAI, routed directly through Google's Gemini image API."
     }
+  },
+  "prompting": {
+    "modelSlug": "nano-banana-lite",
+    "section": {
+      "title": "How to prompt Nano Banana Lite",
+      "intro": "Keep the request tight: subject, composition, lighting, and the edit target.",
+      "tip": null,
+      "guide": null,
+      "referencesTitle": "How Nano Banana Lite uses references"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [],
+    "engineWhy": [],
+    "demo": null,
+    "imageExamples": {
+      "title": "Nano Banana Lite image prompt examples",
+      "intro": "Use these for campaign stills, typography posters, reference edits and 2K-to-4K finals.",
+      "workspaceLabel": "Open image workspace",
+      "items": [
+        {
+          "id": "quality-1",
+          "title": "Campaign still",
+          "badge": "2K still",
+          "kind": "quality",
+          "prompt": "2K campaign still for an amber perfume bottle on white acrylic, soft studio key light, clean shadow, exact headline \"AURA NOIRE\" top-left, small logo lockup bottom edge."
+        },
+        {
+          "id": "typography-2",
+          "title": "Typography poster",
+          "badge": "Typography",
+          "kind": "typography",
+          "prompt": "Vertical 4K poster, premium editorial grid, graphite background, exact headline \"MIDNIGHT LAUNCH\", subhead \"LIMITED DROP\", crisp hierarchy, generous margins, readable text."
+        },
+        {
+          "id": "edit-3",
+          "title": "Reference edit",
+          "badge": "Image-to-image",
+          "kind": "edit",
+          "prompt": "Using this product reference, keep the shape, logo and proportions. Change the scene to a midnight-blue studio, improve reflections, remove dust and fingerprints."
+        },
+        {
+          "id": "layout-4",
+          "title": "2K to 4K final",
+          "badge": "4K final",
+          "kind": "layout",
+          "prompt": "Rerun the approved 2K composition as a 4K final. Sharpen fine details, keep typography identical, preserve brand colors, product position and the locked framing."
+        }
+      ]
+    }
   }
 }

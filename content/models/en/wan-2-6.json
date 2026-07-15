@@ -507,5 +507,97 @@
       "title": "Wan 2.6: Pricing, References & Examples | MaxVideoAI",
       "description": "Explore Wan 2.6 pricing, 15s multi-shot video, text-to-video, image-to-video, 5s/10s reference-video workflows, optional audio and examples."
     }
+  },
+  "prompting": {
+    "modelSlug": "wan-2-6",
+    "section": {
+      "title": "How to Write a Great Wan 2.6 Prompt",
+      "intro": "Wan 2.6 follows short prompts with clear subject, scene, and motion; use a simple shot list for multi-shot.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, motion, camera, style, and optional sound. Keep prompts concise; prompt expansion helps.",
+      "guide": {
+        "label": "Wan AI",
+        "href": "https://www.wan-ai.com"
+      },
+      "referencesTitle": "How Wan 2.6 uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject] [motion] in [scene], [camera], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + key traits.]\n\nScene:\n[Location + time + 2 anchors.]\n\nMotion:\n[One clear action + camera move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Shot list (same subject + same setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text/logos/extra characters.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (timestamped beats)",
+        "description": "Best for multi-shot sequences in one clip.",
+        "copy": "Shot list (same subject + same setting)\nDuration: [5/10/15s]\n\nBeat 1 (0-3s):\n[Framing + action + camera move]\n\nBeat 2 (3-7s):\n[Framing + action + camera move]\n\nBeat 3 (7-10/15s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n[If using references: tag @Video1/@Video2/@Video3]\n\nSound (optional):\n[Ambience + 1-2 cues]\n\nNegative:\n[Text, logos, extra characters, blur]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = style control. Use for precise, repeatable looks."
+      }
+    ],
+    "globalPrinciples": [
+      "Subject + scene + motion in one clear sentence.",
+      "For multi-shot, keep it to 2-3 beats.",
+      "Add a short negative prompt to avoid artifacts."
+    ],
+    "engineWhy": [
+      "Prompt expansion handles short, concrete prompts.",
+      "Reference mode works best when you specify what must stay consistent.",
+      "Audio cues help pacing; keep them minimal."
+    ],
+    "demo": {
+      "title": "Render-ready example",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Product unboxing in a clean studio kitchen\nAction: Person presents a product on a minimalist tabletop\nCamera: Wide 16:9 shot with visible body and clean motion\nStyle: Bright studio, commercial product render\nAudio: Light ambience, audio included when the route exposes it",
+      "notes": [
+        "Audio option: URL to a soft ambient bed 3–15s, low volume."
+      ],
+      "summary": {
+        "subject": "Product unboxing in a clean studio kitchen",
+        "action": "Person presents a product on a minimalist tabletop",
+        "camera": "Wide 16:9 shot with visible body and clean motion",
+        "style": "Bright studio, commercial product render",
+        "output": "Light ambience, audio included when the route exposes it"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Wan 2.6 AI video example: Render-ready example"
+      }
+    },
+    "imageExamples": null
   }
 }

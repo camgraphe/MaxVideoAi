@@ -52,7 +52,7 @@ const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LUMA_AGENT_TEMPLATE_SLUGS = ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'] as const;
 const LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS =
   /\b(?:fallback|fallback-safe|fal-reference|direct-only|layout|stills?|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
-const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'modelSlug']);
+const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'kind', 'modelSlug']);
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
   const engine = listFalEngines().find((candidate) => candidate.id === slug || candidate.modelSlug === slug);
@@ -88,6 +88,7 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
     custom?: {
       specSections?: Array<Record<string, unknown>>;
     };
+    prompting?: unknown;
   };
 }
 
@@ -237,6 +238,16 @@ test('Luma Agents localized FR and ES copy avoids internal English launch terms'
       }
     }
   }
+});
+
+test('localized content checks scan prompting customer copy but skip semantic kind enums', () => {
+  assert.equal(LOCALIZED_CONTENT_SKIP_KEYS.has('prompting'), false);
+  assert.equal(LOCALIZED_CONTENT_SKIP_KEYS.has('kind'), true);
+  const content = readModelContentJson('fr', 'luma-uni-1');
+  const promptingStrings = collectCustomerFacingStrings(content.prompting, LOCALIZED_CONTENT_SKIP_KEYS);
+  const contentStrings = collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS);
+  assert.ok(promptingStrings.length > 0);
+  assert.ok(promptingStrings.every((value) => contentStrings.includes(value)));
 });
 
 test('migrated template prompt links keep users on the Prompt Lab section', () => {

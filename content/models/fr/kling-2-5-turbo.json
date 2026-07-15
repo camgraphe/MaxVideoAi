@@ -520,5 +520,92 @@
       "title": "Kling 2.5 Turbo : tarifs et drafts muets | MaxVideoAI",
       "description": "Utilisez Kling 2.5 Turbo pour des drafts Kling muets encore pris en charge, départ texte ou image, prompt négatif et look-dev 1080p à moindre coût."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-2-5-turbo",
+    "section": {
+      "title": "Comment écrire un excellent prompt Kling 2.5 Turbo",
+      "intro": "Kling Turbo réagit mieux à des prompts courts et concrets avec un seul mouvement caméra.",
+      "tip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez un prompt négatif pour bloquer les artefacts.",
+      "guide": {
+        "label": "Kling by Kuaishou",
+        "href": "https://www.kuaishou.com/en"
+      },
+      "referencesTitle": "Comment Kling 2.5 Turbo utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "Prompt : [Sujet + action] dans [décor], [mouvement caméra], [lumière/style].\nNégatif : [texte, logos, membres en trop, flou]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages visuels.]\n\nCaméra :\n[Plan + angle + un mouvement.]\n\nLook :\n[Lumière + palette + style.]\n\nNégatif :\n[Ce qu’il faut éviter : texte, logos, personnes en trop, flou.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matières.]\n\nSet :\n[Lieu + 3 ancrages.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + sensation de lentille.]\n\nLumière :\n[Key light + palette.]\n\nNégatif :\n[Texte, logos, personnages en trop, artefacts.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujet, une action, un mouvement caméra.",
+      "Utilisez des noms concrets et des décors simples.",
+      "Ajoutez un prompt négatif court pour texte/logos/personnes en trop."
+    ],
+    "engineWhy": [
+      "Les actions courtes et physiques lisent mieux en 5–10 s.",
+      "Un langage caméra explicite améliore la cohérence.",
+      "Les prompts négatifs gardent les frames propres."
+    ],
+    "demo": {
+      "title": "Démo – Portrait founder 5 s (9:16)",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Founder près d’une fenêtre\nAction: Regarde vers caméra pendant un portrait vertical\nCaméra: Dérive handheld lente du buste vers le visage\nStyle: Golden hour, arrière-plan ville flou, portrait startup\nAudio: Ambiance douce, pas de dialogue",
+      "notes": [
+        "Un seul sujet, un seul lieu, trajectoire caméra claire.",
+        "De la place pour VO/graphisme en post.",
+        "Pro Image pour la meilleure fidélité sur un portrait."
+      ],
+      "summary": {
+        "subject": "Founder près d’une fenêtre",
+        "action": "Regarde vers caméra pendant un portrait vertical",
+        "camera": "Dérive handheld lente du buste vers le visage",
+        "style": "Golden hour, arrière-plan ville flou, portrait startup",
+        "output": "Ambiance douce, pas de dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Kling 2.5 Turbo: Démo - Portrait founder 5 s (9:16)"
+      }
+    },
+    "imageExamples": null
   }
 }

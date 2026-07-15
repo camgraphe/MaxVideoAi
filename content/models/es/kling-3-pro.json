@@ -436,5 +436,103 @@
       "title": "Kling 3 Pro: precios, audio nativo y control 15 s | MaxVideoAI",
       "description": "Genera con Kling 3 Pro: control tipo storyboard, audio nativo, salida 1080p, duración de 3 a 15 s, prompt negativo, CFG scale y cuadro final opcional."
     }
+  },
+  "prompting": {
+    "modelSlug": "kling-3-pro",
+    "section": {
+      "title": "Cómo promptear Kling 3 Pro para control multi-shot",
+      "intro": "Kling 3 Pro recompensa un prompting de tipo storyboard con multi_prompt, anclas reutilizables de Kling Elements, frame final opcional y cues de audio nativos muy cortos. Piensa como un planificador de tomas, no como un novelista.",
+      "tip": null,
+      "guide": {
+        "label": "Guía de prompting Kling 3.0",
+        "href": "https://blog.fal.ai/kling-3-0-prompting-guide/"
+      },
+      "referencesTitle": "Cómo Kling 3 Pro usa tomas y referencias"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Plano único",
+        "title": "Prompt de plano único",
+        "description": "Úsalo cuando quieras una acción limpia con un solo movimiento de cámara.",
+        "copy": "[Un sujeto] [una acción visible] en [entorno], [encuadre + un movimiento de cámara], [luz/estilo].\nAudio (opcional): [ambiente + 1 SFX clave O una línea corta].\nNegativo: sin texto, sin logos, sin subtítulos/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Multi-shot",
+        "title": "Prompt multi-shot",
+        "description": "Úsalo cuando la estructura multi_prompt importa más que la variación libre.",
+        "copy": "Anclas de escena:\n[Sujeto + vestuario/props + 2–3 anclas de entorno.]\n\nPlan multi‑shot (3–15 s total):\nPlano 1 (0–4 s): [encuadre + acción + un movimiento de cámara]\nPlano 2 (4–10 s): [encuadre + acción + un movimiento de cámara]\nPlano 3 (10–15 s): [acción final/reveal + settle]\n\nElements (opcional):\n@Element1 = [personaje/sujeto principal]\n@Element2 = [prop/producto]\n\nAudio (opcional):\nDiálogo: <<<voice_1>>> “Línea corta.”\nAmbiente + 1–2 cues SFX. Manténlo minimal.\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays."
+      },
+      {
+        "id": "pro",
+        "label": "Elements + audio",
+        "title": "Prompt de Elements / voces",
+        "description": "Úsalo cuando identidad, props y voces deban mantenerse bloqueados durante todo el clip.",
+        "copy": "Brief de dirección:\n[Objetivo + vibe + audiencia]\n\nElements:\n@Element1 = [personaje]\n@Element2 = [producto / prop]\n\nShot type:\n[customize | intelligent]\n\nContinuidad:\n- Identidad + vestuario / props\n- Ubicación + momento + 3 anclas\n- Iluminación + paleta\n\nAudio (si está activo):\nDiálogo: <<<voice_1>>> Línea corta.\nAmbiente + 1–2 cues SFX.\n\nRegla:\nSi el audio está activo, mantén el diálogo breve y evita acumular demasiadas instrucciones sonoras."
+      },
+      {
+        "id": "storyboard",
+        "label": "Lista de planos",
+        "title": "Prompt shot list",
+        "description": "Úsalo cuando quieras una secuencia multi-shot completa con shot_type y frame final opcional.",
+        "copy": "Duración: [3–15 s] • Relación: [16:9 / 9:16 / 1:1] • Audio: [on/off] • shot_type: [customize | intelligent]\n\nElements (opcional):\n@Element1 = [personaje/sujeto principal]\n@Element2 = [prop/producto]\n\nPlano 1 (0–3 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 2 (3–8 s):\n[Encuadre + acción + movimiento de cámara]\n\nPlano 3 (8–15 s):\n[Acción final/reveal + settle de cámara]\nFrame final (opcional): [describe el frame final que quieres]\n\nAudio (si está activo):\nDiálogo: <<<voice_1>>> “Línea corta.”\nAmbiente + 1–2 cues SFX.\n\nRestricciones:\nSin logos. Sin texto legible. Sin subtítulos/overlays. Una acción por plano."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Plano único = validar encuadre, movimiento y un beat."
+      },
+      {
+        "tabId": "structured",
+        "body": "Multi-shot = 2-4 planos con anclas reutilizadas."
+      },
+      {
+        "tabId": "pro",
+        "body": "Elements + audio = bloquear identidad, props y voces."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Lista de planos = secuencia completa con shot_type y frame final opcional."
+      }
+    ],
+    "globalPrinciples": [
+      "Piensa en planos, no en clips: una acción legible por plano.",
+      "Pon encuadre + movimiento de cámara antes de los adjetivos de estilo.",
+      "Ancla los sujetos pronto (y reutiliza el mismo wording) para reducir el drift entre planos.",
+      "Si el audio está activo: mantén el diálogo corto y añade solo 1–2 cues de sonido."
+    ],
+    "engineWhy": [
+      "multi_prompt: usa 2–4 planos para mejor consistencia; mantén la duración total ≤ 15 s.",
+      "Elements: referencia @Element1/@Element2 de forma consistente para estabilizar identidad/props.",
+      "Voice IDs: referencia las voces como <<<voice_1>>> / <<<voice_2>>> (máx 2).",
+      "Audio: el audio nativo soporta inglés y chino; otros idiomas pueden auto‑traducirse al inglés si el audio está activo.",
+      "Frame final: evita introducir nuevas acciones en el último segundo; describe claramente la pose/composición final.",
+      "shot_type: “intelligent” ayuda con cobertura automática; “customize” es mejor para control estricto."
+    ],
+    "demo": {
+      "title": "Prompt demo — Kling 3 Pro",
+      "promptLabel": "Prompt",
+      "prompt": "Duración: 12 s • Ratio: 16:9 • Audio: activado • shot_type: customize\n@Element1 = presentadora con blazer azul marino\n@Element2 = prototipo transparente sobre base grafito\nShot 1 (0-4 s): plano medio de @Element1 sosteniendo @Element2, estudio premium, luz suave, cámara estable.\nShot 2 (4-8 s): @Element1 camina hacia una pantalla demo, tracking lateral fluido, misma ropa y mismo producto.\nShot 3 (8-12 s): primer plano del prototipo en la base, reflejos controlados, cámara se estabiliza en la composición final.\nAudio: <<<voice_1>>> “Here is the next generation of our platform.” Ambiente de estudio discreto, un solo cue sonoro suave. Sin texto, sin logos, sin subtítulos.",
+      "notes": [],
+      "summary": {
+        "subject": "Presentadora de lanzamiento de producto",
+        "action": "Presenta un prototipo y camina hacia una pantalla demo",
+        "camera": "Tres tomas storyboard 1080p con tracking estable",
+        "style": "Estudio premium, luz suave, reflejos controlados",
+        "output": "Audio activado: línea corta con voice ID y ambiente de estudio"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Render de lanzamiento de producto Kling 3 Pro"
+      }
+    },
+    "imageExamples": null
   }
 }

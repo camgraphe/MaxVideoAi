@@ -419,5 +419,52 @@
       "title": "Luma Ray 3.2 Modify Video, Reframe et exemples | MaxVideoAI",
       "description": "Explorez Luma Ray 3.2 : Modify de vidéo source, Reframe vidéo IA, images guides, sorties silencieuses 5 s / 10 s, tarifs, prompts et exemples."
     }
+  },
+  "prompting": {
+    "modelSlug": "luma-ray-3-2",
+    "section": {
+      "title": "Écrire un bon prompt Ray 3.2",
+      "intro": "Rédigez un brief de retouche ou Reframe avec règle de préservation, changement demandé, cadrage, durée et résolution.",
+      "tip": "Astuce : pour Modify, écrivez d’abord ce qui doit rester pour ne pas lutter contre la vidéo source.",
+      "guide": null,
+      "referencesTitle": "Comment Luma Ray 3.2 utilise les références"
+    },
+    "tabs": [],
+    "tabNotes": [],
+    "globalPrinciples": [
+      "Un seul objectif de retouche par clip source.",
+      "Séparez clairement ce qui reste et ce qui change.",
+      "10 s seulement lorsque l’action a besoin de temps.",
+      "Utilisez la génération seulement lorsqu’aucun clip source n’existe encore."
+    ],
+    "engineWhy": [
+      "Les vidéos sources rendent Modify et Reframe utiles quand le timing est déjà validé.",
+      "Les images guides et images clés ciblent des moments précis au lieu de repeindre tout le clip.",
+      "La génération courte reste utile pour produire des candidats avant une passe Modify/Reframe.",
+      "Mode, durée et résolution influencent directement le prix affiché."
+    ],
+    "demo": {
+      "title": "Prompt de démonstration — Luma Ray 3.2",
+      "promptLabel": "Texte-vers-vidéo",
+      "prompt": "Sujet: Biker crâne blindé\nAction: La moto approche et marque l’arrêt\nCaméra: Tracking bas frontal, léger push-in\nStyle: Cinématique, reflets de rue mouillée\nAudio: Moteur, cliquetis métal, tonnerre lointain",
+      "notes": [],
+      "summary": {
+        "subject": "Biker crâne blindé",
+        "action": "La moto approche et marque l’arrêt",
+        "camera": "Tracking bas frontal, léger push-in",
+        "style": "Cinématique, reflets de rue mouillée",
+        "output": "Moteur, cliquetis métal, tonnerre lointain"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Texte-vers-vidéo",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Exemple video IA Luma Ray 3.2: Luma Ray 3.2 demo render"
+      }
+    },
+    "imageExamples": null
   }
 }

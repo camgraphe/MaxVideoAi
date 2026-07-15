@@ -506,5 +506,93 @@
       "title": "Pika 2.2 Text-to-Video : tarifs, boucles silencieuses et exemples | MaxVideoAI",
       "description": "Explorez Pika 2.2 Text-to-Video : tarifs, clips silencieux stylisés, boucles sociales, seeds, prompts négatifs et exemples sur MaxVideoAI."
     }
+  },
+  "prompting": {
+    "modelSlug": "pika-text-to-video",
+    "section": {
+      "title": "Comment écrire un excellent prompt Pika",
+      "intro": "Pika fonctionne mieux avec des prompts stylisés, un mouvement clair et un seul move caméra.",
+      "tip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez un prompt négatif pour bloquer texte/logos.",
+      "guide": {
+        "label": "Pika Labs",
+        "href": "https://pika.art"
+      },
+      "referencesTitle": "Comment Pika 2.2 structure un prompt Text-to-Video"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "Prompt : [Style] + [Sujet + action] + [Décor] + [Mouvement caméra] + [Lumière].\nNégatif : [texte, logos, membres en trop, flou]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + un mouvement.]\n\nStyle :\n[Style artistique + palette + texture.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
+        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matériaux.]\n\nDécor + lumière :\n[Lieu + key light + palette.]\n\nCaméra :\n[Cadrage + angle + un mouvement + sensation de lentille.]\n\nContrôles de style :\n[Style d’animation, texture, grain, couleur.]\n\nNégatif :\n[Texte, logos, personnages en trop, artefacts.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujet, une action, un mouvement caméra.",
+      "Utilisez des mots‑clés de style et des ancrages de palette.",
+      "Ajoutez un prompt négatif court pour texte/logos/limbs en trop."
+    ],
+    "engineWhy": [
+      "Les prompts courts et stylisés gardent un motion propre.",
+      "Le langage caméra aide les loops à paraître intentionnelles.",
+      "Les prompts négatifs réduisent les artefacts."
+    ],
+    "demo": {
+      "title": "Démo : un prompt pour Pika 2.2",
+      "promptLabel": "Text-to-Video",
+      "prompt": "Loop Pika 2.2 Text-to-Video de 5 s en 1:1.\nUn petit magicien pixel-art remue un chaudron lumineux dans une cabane cosy.\nCaméra fixe en plan moyen, bulles qui montent en boucle, livres qui flottent doucement.\nPalette chaude 16 couleurs, lumière de bougie, gros pixels rétro, mouvement simple et répétable.\nPrompt négatif : texte, logos, flou, personnages supplémentaires, mains déformées.",
+      "notes": [
+        "Sujet clair dans un seul environnement.",
+        "Direction de style forte (pixel‑art, palette rétro).",
+        "Mouvement simple et répétable pour un loop propre.",
+        "Évitez les instructions caméra contradictoires ou les multiples lieux."
+      ],
+      "summary": {
+        "subject": "Petit magicien pixel-art",
+        "action": "Remue un chaudron lumineux en boucle",
+        "camera": "Plan moyen fixe, composition 1:1",
+        "style": "Pixel-art rétro, palette chaude, lumière de bougie",
+        "output": "Clip silencieux, sans texte ni logo"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-Video",
+        "outputLabel": "Sortie",
+        "duration": "5 s",
+        "aspectRatio": "1:1",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Loop pixel-art Pika 2.2"
+      }
+    },
+    "imageExamples": null
   }
 }

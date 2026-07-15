@@ -506,5 +506,93 @@
       "title": "Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses",
       "description": "Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model."
     }
+  },
+  "prompting": {
+    "modelSlug": "pika-text-to-video",
+    "section": {
+      "title": "How to Write a Great Pika Prompt",
+      "intro": "Pika performs best with stylized prompts, clear motion, and one camera move.",
+      "tip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use Negative prompt to block text/logos.",
+      "guide": {
+        "label": "Pika Labs",
+        "href": "https://pika.art"
+      },
+      "referencesTitle": "How Pika 2.2 structures Text-to-Video prompts"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "Prompt: [Style] + [Subject + action] + [Setting] + [Camera move] + [Lighting].\nNegative: [text, logos, extra limbs, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nStyle:\n[Art style + palette + texture.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"studio brief\")",
+        "description": "Use this when you need a very specific look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet + lighting:\n[Location + key light + palette.]\n\nCamera:\n[Framing + angle + one move + lens feel.]\n\nStyle controls:\n[Animation style, texture, grain, color.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = style control. Use for precise, repeatable looks."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action, one camera move.",
+      "Use style keywords and color palette anchors.",
+      "Add a short negative prompt for text/logos/extra limbs."
+    ],
+    "engineWhy": [
+      "Short, stylized prompts keep motion clean.",
+      "Camera language helps loops feel intentional.",
+      "Negative prompts reduce artifacts."
+    ],
+    "demo": {
+      "title": "Demo: a prompt for Pika 2.2",
+      "promptLabel": "Text-to-Video",
+      "prompt": "5s Pika 2.2 Text-to-Video loop in 1:1.\nA tiny pixel-art wizard stirs a glowing cauldron inside a cozy cottage.\nLocked medium shot, bubbles rising in a repeatable loop, books floating gently.\nWarm 16-color palette, candlelight, chunky retro pixels, simple repeatable motion.\nNegative prompt: text, logos, blur, extra characters, distorted hands.",
+      "notes": [
+        "Clear subject in a single environment.",
+        "Strong style direction (pixel-art, retro palette).",
+        "Simple, repeatable motion for a clean loop.",
+        "Avoid conflicting camera instructions or multiple locations."
+      ],
+      "summary": {
+        "subject": "Tiny pixel-art wizard",
+        "action": "Stirs a glowing cauldron in a seamless loop",
+        "camera": "Locked medium shot, 1:1 composition",
+        "style": "Retro pixel art, warm palette, candlelight",
+        "output": "Silent clip, no text or logos"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-Video",
+        "outputLabel": "Output",
+        "duration": "5s",
+        "aspectRatio": "1:1",
+        "audioChipMode": "silent",
+        "audioChipLabel": null,
+        "altContext": "Pika 2.2 pixel-art loop"
+      }
+    },
+    "imageExamples": null
   }
 }

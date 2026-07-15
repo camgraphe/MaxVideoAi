@@ -404,5 +404,102 @@
       "title": "Seedance 1.5 Pro : tarifs et camera fixed | MaxVideoAI",
       "description": "Explorez prix Seedance 1.5 Pro, exemples, camera_fixed, seed, audio on/off et workflows image de départ/fin. Comparez Seedance 1.5 Pro vs Seedance 2.0."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-1-5-pro",
+    "section": {
+      "title": "Comment écrire un bon prompt Seedance 1.5 Pro",
+      "intro": "Seedance 1.5 Pro fonctionne mieux avec un sujet/action clair, une direction caméra contrôlée (souvent camera‑fixed) et des notes audio concises quand l’audio est activé.",
+      "tip": null,
+      "guide": {
+        "label": "Docs Seedance 1.5 Pro",
+        "href": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api"
+      },
+      "referencesTitle": "Comment prompter Seedance 1.5 Pro"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt rapide (itération)",
+        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
+        "copy": "[Sujet] [une action claire] dans [décor], [cadrage], [lumière/style].\nAudio (optionnel) : [ambience + 1 SFX clé OU une courte ligne].\nNégatif : pas de texte, pas de logos, pas de sous‑titres/overlays."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt structuré (plus fiable)",
+        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
+        "copy": "Sujet :\n[Qui/quoi + 2–3 détails définissants.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Cadrage + (camera_fixed recommandé) OU un mouvement simple.]\n\nLook :\n[Lumière + ancrages de palette.]\n\nAudio (optionnel) :\nDialogue : “Courte ligne.”\nAmbience + 1–2 cues SFX.\n\nNégatif :\n[Texte, logos, personnes en trop, flou.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
+        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité stricte.",
+        "copy": "Brief réalisateur :\n[Objectif + vibe.]\n\nAncrages de continuité :\n- Identité du sujet + tenue/props\n- Lieu + moment + 3 ancrages visuels\n- Lumière + ancrages de palette\n\nCaméra :\n- Cadrage + angle\n- Préférez camera_fixed pour la stabilité (ou un mouvement simple)\n\nAudio (si activé) :\n- Dialogue : “Courte ligne.”\n- Ambience + 1–2 cues SFX (restez minimal)\n\nSeed (recommandé pour itérations) :\nRéutilisez le même seed pour générer des variantes."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (beats séquencés)",
+        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (beats séquencés) donne timing, direction caméra et continuité.",
+        "copy": "Durée : [4–12 s] • Format : [21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16] • Audio : [on/off]\n\nBeat 1 (0–4 s) :\n[Cadrage + action + direction caméra]\n\nBeat 2 (4–8 s) :\n[Cadrage + action + direction caméra]\n\nBeat 3 (8–12 s) :\n[Action finale/reveal + pose]\nImage de fin (optionnelle, I2V) : [décrivez le dernier frame souhaité]\n\nAudio (si activé) :\nDialogue : “Courte ligne.”\nAmbience + 1–2 cues SFX.\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. À utiliser pour itérer vite."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. À utiliser pour des résultats fiables."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = contrôle. À utiliser pour des looks précis et répétables."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = timing des beats. À utiliser pour des clips courts séquencés."
+      }
+    ],
+    "globalPrinciples": [
+      "Préférez les plans camera‑fixed quand vous voulez un motion plus stable et moins d’artefacts.",
+      "Gardez une action lisible par clip (ou par beat).",
+      "Utilisez un seed quand vous itérez — changez une variable à la fois.",
+      "Si l’audio est activé : gardez le dialogue court et n’ajoutez que 1–2 cues sonores."
+    ],
+    "engineWhy": [
+      "camera_fixed est un atout : utilisez‑le pour du réalisme caméra verrouillée et des shots produit.",
+      "Seedance est court‑format : gardez les beats simples et évitez d’empiler plusieurs actions.",
+      "L’image de fin (I2V) aide à atterrir les transitions ; n’introduisez pas de nouvelles actions dans la dernière seconde.",
+      "L’audio fonctionne mieux avec peu de cues ; les longs monologues peuvent dériver.",
+      "Si le texte compte, prévoyez un overlay en post (le micro‑texte reste peu fiable)."
+    ],
+    "demo": {
+      "title": "Prompt démo — Seedance 1.5 Pro",
+      "promptLabel": "Prompt camera_fixed",
+      "prompt": "Clip Seedance 1.5 Pro de 10 s en 16:9, audio activé.\nUn pilote moto traverse une rue humide de nuit et ralentit dans le cadre.\ncamera_fixed activé : plan bas verrouillé, léger push-in, mouvement unique et lisible.\nStyle cinématique nocturne, reflets de rue mouillée, arrière-plan simple, pas de texte ajouté.\nAudio : moteur court, pluie légère, ambiance de rue, pas de dialogue.\nSeed : réutiliser le même seed pour comparer seulement lumière, timing ou intensité audio.",
+      "notes": [],
+      "summary": {
+        "subject": "Pilote moto en rue humide",
+        "action": "La moto approche puis ralentit dans le cadre",
+        "camera": "Plan bas verrouillé camera_fixed, léger push-in",
+        "style": "Cinématique nocturne, reflets de rue mouillée",
+        "output": "Moteur court, pluie légère, pas de dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt camera_fixed",
+        "outputLabel": "Audio",
+        "duration": "10 s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Rendu moto Seedance 1.5 Pro camera_fixed"
+      }
+    },
+    "imageExamples": null
   }
 }

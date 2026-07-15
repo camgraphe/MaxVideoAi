@@ -466,5 +466,102 @@
       "title": "Seedance 2.0 Fast: Draft Pricing & Iteration | MaxVideoAI",
       "description": "Use Seedance 2.0 Fast for rapid Seedance draft passes, timing tests, A/B motion checks and reference-guided shot planning before final renders."
     }
+  },
+  "prompting": {
+    "modelSlug": "seedance-2-0-fast",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.0 Fast",
+      "intro": "Seedance 2.0 Fast works best when each run tests one decision. Keep the brief in Subject -> Action -> Camera -> Style order, then choose the fastest route: text, start/end image, or references.",
+      "tip": null,
+      "guide": {
+        "label": "Seedance 2.0 Fast workflow notes",
+        "href": "/models/seedance-2-0"
+      },
+      "referencesTitle": "How Seedance 2.0 Fast uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Text-to-video test prompt",
+        "description": "Use when you want a fast read on framing, motion, or mood from language alone.",
+        "copy": "Subject:\n[Who/what appears]\n\nAction:\n[One visible beat only]\n\nCamera:\n[One short move]\n\nStyle:\n[Lighting + palette]\n\nGoal:\n[What this run is proving: timing / framing / motion / audio]\n\nRule:\nDo not combine multiple decisions in the same Fast run."
+      },
+      {
+        "id": "structured",
+        "label": "Start/End",
+        "title": "Image-to-video transition test",
+        "description": "Use when you need to validate how a start frame lands on an end frame.",
+        "copy": "Start image:\n[What is fixed from frame 1]\n\nEnd image (optional):\n[What the last frame should land on]\n\nMotion path:\n[How the subject travels between the two]\n\nCamera:\n[One move only]\n\nWhat should stay identical across versions:\n[Lighting / wardrobe / background / pace]\n\nUse this when the question is transition quality, not final polish."
+      },
+      {
+        "id": "pro",
+        "label": "References",
+        "title": "Reference continuity test",
+        "description": "Use when you are checking whether the same reference pack holds together across variants.",
+        "copy": "Prompt intent:\n[What the short draft should prove]\n\nImage refs:\n@Image1 = [identity]\n@Image2 = [product / wardrobe / palette]\n\nVideo refs:\n@Video1 = [camera rhythm / pacing]\n\nAudio refs:\n@Audio1 = [ambience / beat / dialogue texture]\n\nVariant under test:\n[Only one variable: camera / pace / framing / sound]\n\nRule:\nKeep the same source pack while changing one thing."
+      },
+      {
+        "id": "storyboard",
+        "label": "Compare",
+        "title": "Comparison / handoff prompt",
+        "description": "Use this when Fast is selecting a winner before the standard tier.",
+        "copy": "What stays fixed across A/B:\n[Subject / refs / setting / duration / ratio]\n\nVariant A:\n[Camera / pacing / sound choice]\n\nVariant B:\n[One changed variable only]\n\nWinner criteria:\n[What counts as success]\n\nIf approved, move into standard Seedance 2.0 with:\n[Extra polish, richer sound design, fuller shot plan]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Text = test the brief itself."
+      },
+      {
+        "tabId": "structured",
+        "body": "Start/End = test the transition and landing frame."
+      },
+      {
+        "tabId": "pro",
+        "body": "References = test continuity with the same source pack."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Compare = package the winner for standard Seedance 2.0."
+      }
+    ],
+    "globalPrinciples": [
+      "Change one variable per run so comparisons stay readable.",
+      "Keep the same references when testing camera, timing, or audio variants.",
+      "Use start/end image tests to validate transitions, not to rewrite the full scene.",
+      "Give every reference one job and trim extra style adjectives.",
+      "Escalate winning drafts into standard Seedance 2.0 for final polish."
+    ],
+    "engineWhy": [
+      "Fast is strongest for prompt-only concept checks before expensive finals.",
+      "Start/end image tests are useful for landing the last frame without over-directing the middle.",
+      "Reference runs are best for continuity A/B checks, not for maximum complexity.",
+      "Short audio cues make side-by-side comparisons easier to judge."
+    ],
+    "demo": {
+      "title": "Demo prompt — Seedance 2.0 Fast",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Absurd bank robbery with inflatable weapons\nAction: Robbers enter a tense crime-thriller setup\nCamera: Readable cinematic framing for a fast draft pass\nStyle: Tense thriller with absurd visual humor\nAudio: Bank ambience, tension, no long dialogue",
+      "notes": [],
+      "summary": {
+        "subject": "Absurd bank robbery with inflatable weapons",
+        "action": "Robbers enter a tense crime-thriller setup",
+        "camera": "Readable cinematic framing for a fast draft pass",
+        "style": "Tense thriller with absurd visual humor",
+        "output": "Bank ambience, tension, no long dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Seedance 2.0 Fast motion draft render"
+      }
+    },
+    "imageExamples": null
   }
 }

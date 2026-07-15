@@ -483,5 +483,103 @@
       "title": "LTX 2 Fast: Pricing, 20s Drafts & Examples | MaxVideoAI",
       "description": "Use LTX 2 Fast for supported older LTX 16:9 drafts, 20s timing checks, text-to-video, image-to-video, high-res review options and pricing."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-fast",
+    "section": {
+      "title": "How to Write a Great LTX 2 Fast Prompt",
+      "intro": "LTX 2 Fast prefers short prompts with one clear action and a single camera move.",
+      "tip": "Tip: duration + fps are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound cues.",
+      "guide": {
+        "label": "LTX",
+        "href": "https://www.ltx.studio"
+      },
+      "referencesTitle": "How LTX 2 Fast uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Quick prompt (fast iteration)",
+        "description": "Use 1–2 sentences when you want variations.",
+        "copy": "[Subject + action] in [setting], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Structured prompt (best for reliable results)",
+        "description": "Separate information so the model can follow it consistently.",
+        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1 cue.]\n\nNegative:\n[Text, logos, extra people, blur.]"
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Pro prompt (ultra-specific \"film crew brief\")",
+        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
+        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet:\n[Location + anchors.]\n\nCinematography:\n[Framing + angle + one move + lens.]\n\nLighting + grade:\n[Key light + palette.]\n\nNegative:\n[What to avoid.]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Storyboard prompt (multi-shot / shot list)",
+        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
+        "copy": "Mini sequence (same subject + setting)\nBeat 1 (start): [action + camera]\nBeat 2 (middle): [action + camera]\nBeat 3 (end): [final action + settle]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = variations. Use for fast iteration."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = consistency. Use when you need reliable results."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = continuity. Use for precise, repeatable looks."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = beat timing. Use for mini-stories in one clip."
+      }
+    ],
+    "globalPrinciples": [
+      "One subject, one action, one camera move.",
+      "Use concrete visual anchors.",
+      "Keep prompts short; avoid long lists."
+    ],
+    "engineWhy": [
+      "Fast is optimized for quick iterations; simple prompts win.",
+      "Explicit camera language reduces drift.",
+      "Negative prompts help remove logos/text."
+    ],
+    "demo": {
+      "title": "Demo prompt – fast social clip",
+      "promptLabel": "Text-to-video",
+      "prompt": "Subject: Young woman at a busy crosswalk\nAction: Waits, then crosses in golden-hour light\nCamera: Starts behind her, then moves into a smooth handheld follow\nStyle: Busy city, warm light, cinematic social clip\nAudio: City ambience, no dialogue",
+      "notes": [
+        "Single-beat action",
+        "Clear camera move and mood",
+        "Audio cue baked in"
+      ],
+      "summary": {
+        "subject": "Young woman at a busy crosswalk",
+        "action": "Waits, then crosses in golden-hour light",
+        "camera": "Starts behind her, then moves into a smooth handheld follow",
+        "style": "Busy city, warm light, cinematic social clip",
+        "output": "City ambience, no dialogue"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Text-to-video",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "LTX 2 Fast AI video example: Demo prompt - fast social clip"
+      }
+    },
+    "imageExamples": null
   }
 }

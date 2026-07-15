@@ -426,5 +426,102 @@
       "title": "Seedance 2.0 Mini: Low-Cost AI Video, Pricing & Best Uses",
       "description": "Use Seedance 2.0 Mini for lower-cost 480p/720p video tests, batch ecommerce assets, UGC variants, and reference-guided motion before moving final hero shots to Seedance 2.0."
     }
+  },
+  "prompting": {
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "section": {
+      "title": "Prompt Lab — Seedance 2.0 Mini",
+      "intro": "Seedance 2.0 Mini works best with prompts where each run answers one batch question: product angle, hook, reference behavior, video editing pass, or extension.",
+      "tip": null,
+      "guide": {
+        "label": "Seedance 2.0 Mini workflow notes",
+        "href": "/models/dreamina-seedance-2-0-mini"
+      },
+      "referencesTitle": "How Dreamina Seedance 2.0 Mini uses references"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Text",
+        "title": "Text batch prompt",
+        "description": "Use this when you want a lower-cost read on framing, motion, hook, or audio direction from language alone.",
+        "copy": "Batch question:\n[What this run should prove: hook, camera, product angle, motion, or sound]\n\nSubject and action:\n[One readable subject + one visible action]\n\nCamera:\n[One move only: push-in / tracking / static / handheld]\n\nStyle:\n[Lighting, weather, palette, realism level]\n\nAudio setting:\n[Audio on for native ambience/dialogue, or audio off for visual-only review]\n\nRule:\nDo not test more than one major variable in the same Mini run."
+      },
+      {
+        "id": "structured",
+        "label": "Refs",
+        "title": "Image and audio reference prompt",
+        "description": "Use this when Mini should keep a product, person, wardrobe, or mood stable across many variants.",
+        "copy": "Prompt intent:\n[What the generated clip should do]\n\nImage refs:\n@Image1 = [product / person / composition]\n@Image2 = [style / wardrobe / palette]\n\nAudio refs if attached:\n@Audio1 = [rhythm / ambience / dialogue texture]\n\nMotion:\n[One clear action or camera move]\n\nContinuity anchors:\n[What must not drift across variants]\n\nRule:\nEach reference gets one job. Do not upload competing references for the same role."
+      },
+      {
+        "id": "pro",
+        "label": "Edit/Extend",
+        "title": "Video editing or extension prompt",
+        "description": "Use this when a source clip already exists and Mini is testing a cheaper edit or continuation.",
+        "copy": "Source clip:\n[What already happens and what must stay continuous]\n\nRequested change:\n[Edit the look / adjust pacing / extend the ending]\n\nDo not change:\n[Subject identity, product shape, location, camera logic]\n\nNew beat:\n[One action, reveal, or final pose]\n\nAudio:\n[Keep off for visual review, or enable native audio for ambience/SFX/dialogue tests]\n\nRule:\nDescribe the next change, not an unrelated new scene."
+      },
+      {
+        "id": "storyboard",
+        "label": "Compare",
+        "title": "Batch comparison prompt",
+        "description": "Use this when Mini is producing several comparable options before a final Seedance 2.0 pass.",
+        "copy": "Fixed setup across all variants:\n[Subject, ratio, resolution, duration, references, and core action]\n\nVariant A:\n[Only one changed variable]\n\nVariant B:\n[One different variable]\n\nSuccess criteria:\n[What wins: clarity, product read, emotional hook, motion, or cost]\n\nHandoff note:\n[What should move to Seedance 2.0 if approved]\n\nRule:\nKeep duration and resolution fixed so cost and quality comparisons stay clean."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Text = one batch question from language only."
+      },
+      {
+        "tabId": "structured",
+        "body": "Refs = keep product, subject, or style stable."
+      },
+      {
+        "tabId": "pro",
+        "body": "Edit/Extend = use source clips for lower-cost revisions."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Compare = hold settings fixed and change one variable."
+      }
+    ],
+    "globalPrinciples": [
+      "Keep one product, hook, or edit goal per run.",
+      "Use 480p for volume and 720p for review detail.",
+      "Assign each image, video, or audio reference one job.",
+      "Use source video inputs for video editing and extension tests.",
+      "Move the strongest result to Seedance 2.0 when final polish matters."
+    ],
+    "engineWhy": [
+      "Text prompts are best for batch ideation and low-cost marketing hooks.",
+      "Image references keep product shape, wardrobe, or packaging consistent.",
+      "Video references and source videos help test pacing, edits, and extensions.",
+      "Audio references can guide rhythm or mood, while native audio/lip-sync can be generated with the clip."
+    ],
+    "demo": {
+      "title": "Demo prompt — Seedance 2.0 Mini",
+      "promptLabel": "Prompt",
+      "prompt": "8 second 720p 16:9 cinematic golden-hour city crosswalk scene. A father and his small daughter move through the crowd as a bus passes behind them and the street suddenly fills with upward motion.\nShot 1: medium-wide street-level view, normal city life around them, documentary push forward, warm rim light and long shadows.\nShot 2: smooth slow-motion push-in as the background reacts naturally; keep the father and child as the emotional focus, hands connected and faces realistic.\nShot 3: close medium on the child looking up with quiet awe, then the father smiles with relief. Warm sunlight flickers across the final frame.\nAudio setting for this curated render: off. For new Mini renders, enable native audio if you want traffic ambience, footsteps, pass-by sound, or short dialogue. Constraints: no readable text, no logos, no subtitles, no UI.",
+      "notes": [],
+      "summary": {
+        "subject": "Father and child in a golden-hour city crosswalk",
+        "action": "A wave of motion crosses the scene as a bus passes behind them",
+        "camera": "Documentary push-in, then an emotional close medium shot",
+        "style": "Warm light between buildings, moving silhouettes, cinematic realism",
+        "output": "Selected render is audio off; enable native audio for new sound tests"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt",
+        "outputLabel": "Audio",
+        "duration": null,
+        "aspectRatio": null,
+        "audioChipMode": "supported",
+        "audioChipLabel": null,
+        "altContext": "Seedance 2.0 Mini city crosswalk render"
+      }
+    },
+    "imageExamples": null
   }
 }

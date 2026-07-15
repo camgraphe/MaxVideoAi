@@ -492,5 +492,100 @@
       "title": "LTX 2.3 Fast : prix brouillons et tests de prompts | MaxVideoAI",
       "description": "Utilisez LTX 2.3 Fast pour des boucles de brouillon rapides, exploration visuelle, tests de prompts et vidéos verticales ou sociales."
     }
+  },
+  "prompting": {
+    "modelSlug": "ltx-2-3-fast",
+    "section": {
+      "title": "Comment écrire un excellent prompt LTX 2.3 Fast",
+      "intro": "LTX 2.3 Fast est un modèle orienté génération. Gardez donc le prompt court, visuel et direct.",
+      "tip": "Astuce : l’UI gère déjà durée, ratio, résolution, fps et la contrainte de routing longue durée. Concentrez le prompt sur un sujet, un mouvement et une humeur.",
+      "guide": null,
+      "referencesTitle": "Comment LTX 2.3 Fast utilise les références"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Rapide",
+        "title": "Prompt rapide (draft le plus rapide)",
+        "description": "À utiliser pour les variantes rapides et les tests d’accroches.",
+        "copy": "[Sujet + une action], [mouvement caméra], [lumière/style], [indice sonore optionnel], [vibe 16:9 ou 9:16]."
+      },
+      {
+        "id": "structured",
+        "label": "Structuré",
+        "title": "Prompt structuré (répétable)",
+        "description": "Utilisez des sections nommées quand plusieurs personnes vont réutiliser la même logique.",
+        "copy": "Sujet :\n[Qui/quoi]\n\nAction :\n[Un beat de mouvement propre]\n\nCaméra :\n[Plan + un mouvement]\n\nLook :\n[Lumière + palette]\n\nAudio :\n[Ambiance / musique si nécessaire]"
+      },
+      {
+        "id": "pro",
+        "label": "Flux image",
+        "title": "Prompt Image vers vidéo",
+        "description": "Le meilleur choix quand la still de départ doit rester reconnaissable.",
+        "copy": "Frame de départ :\n[Ce que l’image uploadée montre déjà]\n\nMouvement :\n[Ce qui doit bouger]\n\nCaméra :\n[Push / pan / drift / orbit]\n\nRésolution :\n[Cible optionnelle d’image de fin]"
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (séquence generate-only)",
+        "description": "À utiliser pour des clips courts à plusieurs beats sans changer de workflow.",
+        "copy": "Plan 1 : [setup]\nPlan 2 : [action principale]\nPlan 3 : [résolution]\n\nLook :\n[Lumière + étalonnage]\n\nAudio :\n[Ambiance + un indice]"
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = chemin le plus rapide vers des tests utilisables."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = meilleur choix quand plusieurs personnes doivent réutiliser la même logique de prompt."
+      },
+      {
+        "tabId": "pro",
+        "body": "Image flow = à utiliser quand la still doit rester reconnaissable."
+      },
+      {
+        "tabId": "storyboard",
+        "body": "Storyboard = utile pour des séquences sociales simples à plusieurs beats."
+      }
+    ],
+    "globalPrinciples": [
+      "Un sujet, une action et un mouvement valent mieux qu’un prompt fourre-tout.",
+      "Utilisez les images de départ pour l’identité et les prompts pour le mouvement.",
+      "Réservez les runs de 12 à 20 secondes aux cas où l’espace de pacing supplémentaire compte vraiment."
+    ],
+    "engineWhy": [
+      "Fast répond bien aux prompts concis.",
+      "Image vers vidéo marche mieux quand le still contient déjà la composition voulue.",
+      "Les transitions début / fin sont plus fiables quand les deux frames restent visuellement proches."
+    ],
+    "demo": {
+      "title": "Prompt de démo - brouillon cinématique fast",
+      "promptLabel": "Check brouillon fast",
+      "prompt": "Un boxeur puissant avance seul dans un tunnel sombre vers le ring, silhouette athlétique sous un peignoir à capuche, épaules relâchées mais dangereuses. Tracking bas frontal, push-in lent, rim light dur, brume légère, rumeur de foule étouffée et un impact sonore net, 10 secondes, 16:9.",
+      "notes": [
+        "Conçu pour un check motion rapide",
+        "Un sujet, un mouvement, une ambiance",
+        "Facile à relancer avant une passe Pro"
+      ],
+      "summary": {
+        "subject": "Boxeur dans un tunnel sombre",
+        "action": "Il avance vers le ring avec une tension contrôlée",
+        "camera": "Tracking bas frontal, push-in lent",
+        "style": "Rim light dur, brume légère, arena cinématique",
+        "output": "Rumeur de foule étouffée et impact sonore court"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Check brouillon fast",
+        "outputLabel": "Audio",
+        "duration": "10 s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Brouillon boxer LTX 2.3 Fast"
+      }
+    },
+    "imageExamples": null
   }
 }

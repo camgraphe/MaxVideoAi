@@ -455,5 +455,101 @@
       "title": "Sora 2 : tarifs, audio natif et exemples | MaxVideoAI",
       "description": "Explorez prix Sora 2, exemples, audio natif synchronisé, text-to-video et image-to-video. Comparez Sora 2 vs Pro et les autres modèles vidéo IA."
     }
+  },
+  "prompting": {
+    "modelSlug": "sora-2",
+    "section": {
+      "title": "Comment écrire un excellent prompt Sora 2",
+      "intro": "Sora 2 fonctionne mieux quand vous le briefez comme un chef op : un plan clair, un timing simple et des actions lisibles.",
+      "tip": "Astuce : durée + format sont définis dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et son.",
+      "guide": {
+        "label": "Guide officiel de prompting Sora 2",
+        "href": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/"
+      },
+      "referencesTitle": "Comment Sora 2 utilise prompt, image source et audio"
+    },
+    "tabs": [
+      {
+        "id": "quick",
+        "label": "Quick",
+        "title": "Prompt action rapide",
+        "description": "À utiliser pour tester un hook en 4 s.",
+        "copy": "[Sujet] fait [une action visible] dans [lieu]. Caméra : [un mouvement]. Lumière : [moment / mood]. Audio : [ambiance + un SFX]."
+      },
+      {
+        "id": "structured",
+        "label": "Structured",
+        "title": "Prompt vidéo structuré",
+        "description": "À utiliser quand le clip doit rester lisible côté action et son.",
+        "copy": "Sujet :\n[Qui/quoi + une action visible]\n\nLieu :\n[Où + moment + 2 repères visuels]\n\nCaméra :\n[Cadrage + angle + un mouvement]\n\nLumière :\n[Key light + palette + contraste]\n\nAudio :\n[Ambiance + 1 SFX + dialogue optionnel sous 8 mots]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de personne protégée."
+      },
+      {
+        "id": "pro",
+        "label": "Pro",
+        "title": "Prompt image-to-video",
+        "description": "À utiliser quand une image validée doit définir la première frame.",
+        "copy": "Rôle de l’image source :\n[Ce qui doit rester fixe : sujet, forme produit, tenue ou composition]\n\nMouvement :\n[Une action qui démarre depuis l’image]\n\nCaméra :\n[Mouvement lent / push-in / drift handheld / plan fixe]\n\nFin :\n[Position du sujet ou produit à la dernière seconde]\n\nAudio :\n[Ambiance courte + SFX visible]\n\nÉviter :\nChanger l’identité, ajouter des logos ou introduire trop de sujets."
+      },
+      {
+        "id": "storyboard",
+        "label": "Storyboard",
+        "title": "Prompt storyboard (shot list séquencée)",
+        "description": "À utiliser quand vous avez besoin d’une continuité multi‑beats dans un seul clip.",
+        "copy": "Storyboard / shot list (même sujet + même lieu)\nDurée : [4/8/12s] • Format : [16:9 ou 9:16]\n\nBeat 1 (0-2s) :\n[Cadrage + action sujet + mouvement caméra]\n\nBeat 2 (2-6s) :\n[L’action continue, sans changer de lieu]\n\nBeat 3 (6-8/12s) :\n[Révélation finale + caméra qui se pose]\n\nContinuité :\n[Tenue, accessoires, lumière, décor]\n\nAudio :\n[Ambiance + 1 SFX + dialogue court si utile]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de personnes protégées."
+      }
+    ],
+    "tabNotes": [
+      {
+        "tabId": "quick",
+        "body": "Quick = tests de hook. Gardez une action, un mouvement caméra et un indice sonore."
+      },
+      {
+        "tabId": "structured",
+        "body": "Structured = cohérence. Séparez action, caméra, lumière, audio et dialogue court."
+      },
+      {
+        "tabId": "pro",
+        "body": "Pro = livraison contrôlée. Ajoutez des ancres de continuité et une fin claire."
+      }
+    ],
+    "globalPrinciples": [
+      "1 plan = 1 mouvement caméra + 1 action du sujet",
+      "Utilisez des repères visuels (noms précis > adjectifs vagues)",
+      "Gardez les personnages cohérents d’un plan à l’autre",
+      "Partez d’une image pour un contrôle maximal",
+      "Itérez : changez une seule chose à la fois"
+    ],
+    "engineWhy": [
+      "Trop de beats provoquent du drift — gardez 2–3 actions claires par clip.",
+      "Image→Vidéo verrouille la composition du premier frame ; le prompt contrôle la motion et le timing.",
+      "Les règles de référence sont strictes — images propres, pas de logos ni texte lisible.",
+      "Les cues audio aident le rythme ; décrivez 1–2 sons clés."
+    ],
+    "demo": {
+      "title": "Démo : prompt séquencé",
+      "promptLabel": "Prompt lifestyle 720p",
+      "prompt": "Spot lifestyle 8 secondes : un coureur de 30 ans avec une montre connectée au lever du soleil dans un parc urbain.\nShot 1 (2s) : gros plan sur la montre pendant qu’il serre le bracelet, flare du soleil sur le verre.\nShot 2 (4s) : travelling latéral pendant qu’il court, lumière chaude derrière les bâtiments.\nShot 3 (2s) : gros plan sur son visage regardant l’écran, léger sourire, respiration visible dans l’air frais.\nLumière : golden hour, tons cinématiques naturels.\nAudio : pas rythmés + musique douce et optimiste.\nCaméra : handheld dynamique, sensation 50mm.\nNégatif : pas de logos, pas de ralenti, pas de texte à l’écran.",
+      "notes": [
+        "Montre des transitions, une continuité lieu/sujet, une motion claire et une mini‑histoire complète en moins de 10s.",
+        "Réutilisez cette structure pour skincare, SaaS, fitness ou tout micro‑story en 3 beats."
+      ],
+      "summary": {
+        "subject": "Coureuse urbaine",
+        "action": "Elle serre sa montre puis accélère dans la lumière du matin",
+        "camera": "Close-up montre, tracking latéral, puis gros plan visage",
+        "style": "Golden hour naturel, rendu lifestyle premium",
+        "output": "Pas rythmés, souffle court, musique légère"
+      },
+      "presentationOverrides": {
+        "modeLabel": "Prompt lifestyle 720p",
+        "outputLabel": "Audio",
+        "duration": "8 s",
+        "aspectRatio": null,
+        "audioChipMode": "on",
+        "audioChipLabel": null,
+        "altContext": "Rendu lifestyle Sora 2 avec audio"
+      }
+    },
+    "imageExamples": null
   }
 }
