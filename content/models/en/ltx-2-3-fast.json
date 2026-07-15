@@ -353,5 +353,144 @@
       "The clip feels too busy -> reduce to one action and one camera move.",
       "You need source-video editing -> move to LTX 2.3 Pro instead of overloading Fast."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-3-fast",
+    "hero": {
+      "eyebrow": "LTX FAST DRAFT ROUTE",
+      "title": "LTX 2.3 Fast",
+      "subtitle": "Fast visual exploration for prompt testing, lower-cost draft loops, and vertical/social drafts.",
+      "subtitleHighlights": [
+        "visual exploration",
+        "prompt testing",
+        "vertical/social drafts"
+      ],
+      "paragraph": "Use LTX 2.3 Fast for fast text-to-video and image-to-video exploration when you need to test prompts, compare looks, and prepare social drafts before choosing a final production route.",
+      "primaryCta": {
+        "label": "Draft with LTX 2.3 Fast",
+        "href": "/app?engine=ltx-2-3-fast"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Pro",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#ltx-2-3-fast-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "LTX 2.3 Fast example",
+      "description": "Fast visual exploration draft",
+      "renderLabel": "View draft",
+      "badges": [
+        "Fast route",
+        "10s",
+        "16:9"
+      ],
+      "altContext": "LTX 2.3 Fast cinematic draft example"
+    },
+    "features": [
+      {
+        "title": "Visual exploration",
+        "body": "Move through look, style and scene options quickly.",
+        "tone": "quality"
+      },
+      {
+        "title": "Prompt testing",
+        "body": "Compare prompt wording before committing to a final route.",
+        "tone": "reference"
+      },
+      {
+        "title": "Image-to-video drafts",
+        "body": "Use a start image when the draft needs a visual anchor.",
+        "tone": "reference"
+      },
+      {
+        "title": "Vertical/social drafts",
+        "body": "Sketch short concepts for social formats and creative reviews.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 20s",
+        "body": "Draft clips up to 20 seconds per generation.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast or LTX 2.3 Pro?",
+        "body": "Use Fast for visual exploration and prompt tests. Use Pro when you need the broader production workflow exposed by the Pro route.",
+        "cta": {
+          "label": "Compare Fast vs Pro",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro"
+        }
+      },
+      {
+        "title": "Testing social concepts?",
+        "body": "Draft vertical ideas, ad hooks and style directions before spending time on a final candidate.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Choosing a fast draft engine?",
+        "body": "Compare LTX Fast with Seedance Fast when speed and iteration cost matter more than final polish.",
+        "cta": {
+          "label": "Compare with Seedance Fast",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Test subject, style, camera and format instructions with short prompt variants."
+      },
+      {
+        "title": "Start image",
+        "body": "Use image-to-video when a visual seed should define composition or product framing."
+      },
+      {
+        "title": "Vertical draft",
+        "body": "Frame early social concepts around 9:16 or 16:9 review needs."
+      },
+      {
+        "title": "Look comparison",
+        "body": "Run prompt variants to compare lighting, color and motion direction."
+      },
+      {
+        "title": "Production handoff",
+        "body": "Move the strongest draft into the appropriate final route once the concept is clear."
+      }
+    ],
+    "pricingCopy": {
+      "title": "LTX 2.3 Fast draft pricing",
+      "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Longer drafts at 1080p",
+      "ctaHref": "/pricing#ltx-2-3-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2.3 Fast: Pricing, Max Length & Fast vs Pro",
+      "description": "Compare LTX 2.3 Fast pricing, max length, resolution limits and when to use Fast instead of LTX 2.3 Pro for draft loops and prompt testing."
+    }
   }
 }

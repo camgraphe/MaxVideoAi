@@ -170,5 +170,144 @@
     "finalPara1": "Happy Horse 1.1 encaja cuando el proyecto necesita un modelo Alibaba actual para prompt, imagen, referencias, audio nativo y sincronización labial; elige Seedance, Kling o Veo primero cuando realismo, calidad de imagen y control de movimiento son prioridad.",
     "finalPara2": "Para lanzamientos, empieza con texto o referencias de video para establecer el plano, y usa Happy Horse 1.0 solo si un clip fuente aprobado necesita la ruta anterior de edición de video.",
     "finalButton": "Generar con Happy Horse 1.1"
+  },
+  "decision": {
+    "modelSlug": "happy-horse-1-1",
+    "hero": {
+      "eyebrow": "MODELO DE VIDEO ALIBABA ACTUAL",
+      "title": "Happy Horse 1.1",
+      "subtitle": "Audio nativo, sincronización labial, imagen a video y generación guiada por referencias en la ruta actual de Alibaba.",
+      "subtitleHighlights": [
+        "Audio nativo",
+        "sincronización labial",
+        "referencias"
+      ],
+      "paragraph": "Usa Happy Horse 1.1 cuando un plano necesita voz o sonido sincronizado desde texto, una imagen inicial o hasta nueve referencias. Mantén Happy Horse 1.0 para la edición de video anterior.",
+      "primaryCta": {
+        "label": "Generar con Happy Horse 1.1",
+        "href": "/app?engine=happy-horse-1-1"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/happy-horse"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar vs Seedance",
+          "href": "/es/comparativa/happy-horse-1-1-vs-seedance-2-0"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#happy-horse-1-1-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Happy Horse 1.1",
+      "description": "Ruta de texto, imagen y referencias con audio nativo",
+      "renderLabel": "Ver resultado",
+      "badges": [
+        "Audio nativo",
+        "Referencias",
+        "1080p"
+      ],
+      "altContext": "ejemplo de Happy Horse 1.1 con audio nativo y referencias"
+    },
+    "features": [
+      {
+        "title": "Audio nativo",
+        "body": "Genera diálogo, ambiente y SFX con el render cuando la ruta lo permite.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto o imagen",
+        "body": "Empieza con un brief o una imagen para fijar sujeto y composición.",
+        "tone": "reference"
+      },
+      {
+        "title": "Imágenes de referencia",
+        "body": "Usa hasta nueve referencias con anclas character1 a character9.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Ratios ampliados",
+        "body": "Usa paisaje, vertical, cuadrado, clásico, panorámico, alto, 5:4 o 4:5.",
+        "tone": "quality"
+      },
+      {
+        "title": "720p o 1080p",
+        "body": "Elige la resolución disponible en MaxVideoAI antes de generar.",
+        "tone": "quality"
+      },
+      {
+        "title": "1080p proveedor más barato",
+        "body": "Happy Horse 1.1 usa la tarifa actual del proveedor para 1080p antes del margen MaxVideoAI.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Happy Horse 1.1 o Seedance?",
+        "body": "Usa Happy Horse 1.1 para generación Alibaba con audio nativo desde texto, imagen o referencias. Usa Seedance 2.0 para referencias multimodales y continuidad actual de producción Seedance.",
+        "cta": {
+          "label": "Comparar Happy Horse vs Seedance",
+          "href": "/es/comparativa/happy-horse-1-1-vs-seedance-2-0"
+        }
+      },
+      {
+        "title": "¿Necesitas edición de video?",
+        "body": "Usa Happy Horse 1.0 solo si necesitas el endpoint anterior de edición de video. Los nuevos trabajos de texto, imagen y referencia deben empezar en 1.1.",
+        "cta": {
+          "label": "Abrir la ruta anterior Happy Horse 1.0",
+          "href": "/es/modelos/happy-horse-1-0"
+        }
+      },
+      {
+        "title": "¿Trabajas con referencias?",
+        "body": "Dale una función clara a cada archivo: identidad, vestuario, movimiento, entorno o mood de audio.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texto a video",
+        "body": "Define sujeto, acción, cámara, estilo e indicaciones de audio en un prompt compacto."
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Usa una imagen para fijar sujeto, producto, vestuario o composición."
+      },
+      {
+        "title": "Referencias a video",
+        "body": "Nombra cada referencia como character1, character2 y así sucesivamente para aclarar roles."
+      },
+      {
+        "title": "Edición de video anterior",
+        "body": "Cambia a Happy Horse 1.0 solo cuando una fuente de video deba editarse en lugar de regenerarse."
+      },
+      {
+        "title": "Manejo de audio",
+        "body": "Mantén diálogo corto y conecta SFX con acciones visibles."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Happy Horse 1.1 de un vistazo",
+      "subtitle": "Totales con audio nativo. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#happy-horse-1-1-pricing"
+    },
+    "meta": {
+      "title": "Happy Horse 1.1: precios, audio nativo y referencias | MaxVideoAI",
+      "description": "Explora Happy Horse 1.1: precios, audio nativo, sincronización labial, texto a video, imagen a video y referencias a video en MaxVideoAI."
+    }
   }
 }

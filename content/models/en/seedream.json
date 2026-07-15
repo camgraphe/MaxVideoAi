@@ -245,5 +245,143 @@
         "ctaLabel": "Draft with Seedance 2.0 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "seedream",
+    "hero": {
+      "eyebrow": "REFERENCE IMAGE PREP MODEL",
+      "title": "Seedream 5.0 Lite",
+      "subtitle": "Clean still references, product frames, and video reference prep before you animate in a separate model.",
+      "subtitleHighlights": [
+        "clean still references",
+        "product frames",
+        "video reference prep"
+      ],
+      "paragraph": "Use Seedream as an image generation and editing workspace for source stills: create product frames, character references, ad visuals and controlled image sets before sending the strongest assets to a video model.",
+      "primaryCta": {
+        "label": "Prepare references with Seedream",
+        "href": "/app/image?engine=seedream"
+      },
+      "secondaryCta": {
+        "label": "Animate with Seedance",
+        "href": "/models/seedance-2-0"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=seedream"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#seedream-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Seedream reference example",
+      "description": "Still reference prepared for later animation",
+      "renderLabel": "View still",
+      "badges": [
+        "Image model",
+        "Up to 10 refs",
+        "2K-4K"
+      ],
+      "altContext": "Seedream product reference still prepared for a later video workflow"
+    },
+    "features": [
+      {
+        "title": "Still reference prep",
+        "body": "Create clean source images before handing assets to a video route.",
+        "tone": "reference"
+      },
+      {
+        "title": "Text or image input",
+        "body": "Start from a prompt or edit with uploaded reference images.",
+        "tone": "reference"
+      },
+      {
+        "title": "Up to 10 references",
+        "body": "Guide edits with multiple source images when details need tighter control.",
+        "tone": "continuity"
+      },
+      {
+        "title": "2K, 3K or 4K images",
+        "body": "Prepare higher-resolution stills for product, character and layout review.",
+        "tone": "quality"
+      },
+      {
+        "title": "Up to 15 images total",
+        "body": "Generated and reference images share the exposed Seedream total.",
+        "tone": "duration"
+      },
+      {
+        "title": "Per-image pricing",
+        "body": "Image presets use the shared pricing helper, not video seconds.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "When should you choose Seedream?",
+        "body": "Choose Seedream when the next video pass needs cleaner product, character, style or composition references first.",
+        "cta": {
+          "label": "Open Seedream image workspace",
+          "href": "/app/image?engine=seedream"
+        }
+      },
+      {
+        "title": "Preparing product frames?",
+        "body": "Generate stills with readable labels, clean backgrounds and stable framing before using them as source assets elsewhere.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need motion next?",
+        "body": "Seedream prepares the stills. Pick a video model after the reference set is ready.",
+        "cta": {
+          "label": "Browse video models",
+          "href": "/models"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompted still",
+        "body": "Describe the exact product, character, scene, surface, lens and lighting for a clean source frame."
+      },
+      {
+        "title": "Reference edit",
+        "body": "Upload source images when the output must preserve identity, product geometry or brand details."
+      },
+      {
+        "title": "Reference set",
+        "body": "Create multiple stills for front, side, detail and lifestyle views before the video step."
+      },
+      {
+        "title": "Size choice",
+        "body": "Use 2K for fast prep, 3K for review, or 4K when the still needs extra detail."
+      },
+      {
+        "title": "Video handoff",
+        "body": "Send only the strongest stills into the chosen motion model once the visual direction is clear."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedream image pricing at a glance",
+      "subtitle": "Per-image preset totals - see the exact live price in the image workspace before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset image scenarios.",
+      "ctaLabel": "View full pricing",
+      "ctaHref": "/pricing#seedream-pricing"
+    },
+    "meta": {
+      "title": "Seedream: Image Pricing & Reference Prep | MaxVideoAI",
+      "description": "Prepare Seedream reference images, product frames, character stills and controlled visual sets in MaxVideoAI before choosing a video model."
+    }
   }
 }

@@ -273,5 +273,144 @@
       }
     ],
     "promptingGuideLabel": "En savoir plus"
+  },
+  "decision": {
+    "modelSlug": "nano-banana",
+    "hero": {
+      "eyebrow": "ROUTE IMAGE GOOGLE RAPIDE",
+      "title": "Nano Banana",
+      "subtitle": "Brouillons image rapides, retouches par référence et variantes en lot pour explorer vite.",
+      "subtitleHighlights": [
+        "Brouillons image rapides",
+        "retouches par référence",
+        "variantes en lot"
+      ],
+      "paragraph": "Utilisez Nano Banana comme route Google légère pour concepts rapides, retouches simples par référence et lots d’images avant de finaliser dans Pro ou Nano Banana 2.",
+      "primaryCta": {
+        "label": "Générer avec Nano Banana",
+        "href": "/app/image?engine=nano-banana"
+      },
+      "secondaryCta": {
+        "label": "Voir les tarifs",
+        "href": "/fr/tarifs#nano-banana-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir l’espace image",
+          "href": "/app/image?engine=nano-banana"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#nano-banana-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Nano Banana",
+      "description": "Concept image rapide et route de retouche",
+      "renderLabel": "Voir l’image",
+      "badges": [
+        "Rapide",
+        "Lot",
+        "Retouche"
+      ],
+      "altContext": "exemple image rapide Nano Banana"
+    },
+    "features": [
+      {
+        "title": "Brouillons rapides",
+        "body": "Explorez des idées visuelles avant les routes finales.",
+        "tone": "price"
+      },
+      {
+        "title": "Retouches référence",
+        "body": "Chargez 1 à 4 images pour remixer ou éditer.",
+        "tone": "reference"
+      },
+      {
+        "title": "Variantes en lot",
+        "body": "Générez plusieurs sorties depuis un prompt.",
+        "tone": "duration"
+      },
+      {
+        "title": "Formats courants",
+        "body": "Utilisez ratios sociaux, carré, portrait ou large.",
+        "tone": "quality"
+      },
+      {
+        "title": "Coût léger",
+        "body": "Adapté aux moodboards et stills de storyboard.",
+        "tone": "price"
+      },
+      {
+        "title": "Workspace image",
+        "body": "Même wallet, prompts et historique que le reste de MaxVideoAI.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Nano Banana ou Nano Banana 2 ?",
+        "body": "Gardez Nano Banana pour les lots rapides moins chers. Passez à Nano Banana 2 pour grounding, ratios larges et contrôles plus forts.",
+        "cta": {
+          "label": "Voir Nano Banana 2",
+          "href": "/fr/modeles/nano-banana-2"
+        }
+      },
+      {
+        "title": "Besoin de variantes rapides ?",
+        "body": "Gardez un prompt court, changez une variable visuelle à la fois et lancez plusieurs sorties.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin de visuels 4K ?",
+        "body": "Passez les directions retenues dans Nano Banana Pro pour texte plus propre, finition campagne ou sortie 4K.",
+        "cta": {
+          "label": "Voir Nano Banana Pro",
+          "href": "/fr/modeles/nano-banana-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Décrivez sujet, style, ratio et composition cible."
+      },
+      {
+        "title": "Retouche image",
+        "body": "Chargez une référence et dites ce qui change tout en gardant la structure."
+      },
+      {
+        "title": "Variantes",
+        "body": "Lancez plusieurs images pour moodboards, miniatures ou storyboards."
+      },
+      {
+        "title": "Ratio",
+        "body": "Choisissez le format de livraison avant le prompt."
+      },
+      {
+        "title": "Passage final",
+        "body": "Envoyez les pistes gagnantes vers Nano Banana 2 ou Pro."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Nano Banana en un coup d’œil",
+      "subtitle": "Prix totaux par scénario image — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 8 images",
+      "ctaHref": "/fr/tarifs#nano-banana-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana : tarifs, brouillons image rapides et retouches | MaxVideoAI",
+      "description": "Explorez Nano Banana : prix, brouillons image rapides, retouches par références, variantes en lot et workflows Google légers dans MaxVideoAI."
+    }
   }
 }

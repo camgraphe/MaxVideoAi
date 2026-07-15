@@ -29,21 +29,54 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      { "title": "Hero stills for product and campaign pages", "icon": "product" },
-      { "title": "Typography-sensitive poster or label layouts", "icon": "layout" },
-      { "title": "High-detail source-image revisions", "icon": "layers" },
-      { "title": "Multi-reference creative direction", "icon": "storyboard" },
-      { "title": "Final stills before motion handoff", "icon": "sparkles" }
+      {
+        "title": "Hero stills for product and campaign pages",
+        "icon": "product"
+      },
+      {
+        "title": "Typography-sensitive poster or label layouts",
+        "icon": "layout"
+      },
+      {
+        "title": "High-detail source-image revisions",
+        "icon": "layers"
+      },
+      {
+        "title": "Multi-reference creative direction",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Final stills before motion handoff",
+        "icon": "sparkles"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Workflows", "body": "Text-to-image and image edit" },
-    { "label": "Output", "body": "2K still image output" },
-    { "label": "References", "body": "Text requests can use multiple references; edits use a source image plus optional references" },
-    { "label": "Style", "body": "Auto and manga style controls where exposed" },
-    { "label": "Output format", "body": "PNG or JPEG in the active image workspace" },
-    { "label": "Pricing", "body": "Public examples use MaxVideoAI display pricing" }
+    {
+      "label": "Workflows",
+      "body": "Text-to-image and image edit"
+    },
+    {
+      "label": "Output",
+      "body": "2K still image output"
+    },
+    {
+      "label": "References",
+      "body": "Text requests can use multiple references; edits use a source image plus optional references"
+    },
+    {
+      "label": "Style",
+      "body": "Auto and manga style controls where exposed"
+    },
+    {
+      "label": "Output format",
+      "body": "PNG or JPEG in the active image workspace"
+    },
+    {
+      "label": "Pricing",
+      "body": "Public examples use MaxVideoAI display pricing"
+    }
   ],
   "promptStructure": {
     "title": "Prompt mini-guide",
@@ -108,11 +141,24 @@
     "heroEyebrow": "Luma Uni-1 Max Image Model",
     "heroSupportLine": "Best for premium 2K hero stills, product visuals and careful reference edits.",
     "heroSpecChips": [
-      { "label": "Text->Image", "icon": "textToVideo" },
-      { "label": "Image edit", "icon": "imageToVideo" },
-      { "label": "2K output", "icon": "resolution" },
-      { "label": "Reference-led" },
-      { "label": "PNG / JPEG" }
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image edit",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "2K output",
+        "icon": "resolution"
+      },
+      {
+        "label": "Reference-led"
+      },
+      {
+        "label": "PNG / JPEG"
+      }
     ],
     "whyTitle": "Why Uni-1 Max is useful",
     "heroDesc1": "Uni-1 Max gives selected still-image work a higher-fidelity Luma route without implying it should replace every cheaper exploration pass.",
@@ -212,5 +258,144 @@
     ],
     "finalPara1": "Luma Uni-1 Max is the premium Uni still-image route for hero images, product visuals and careful source-image edits in MaxVideoAI.",
     "finalButton": "Generate with Luma Uni-1 Max"
+  },
+  "decision": {
+    "modelSlug": "luma-uni-1-max",
+    "hero": {
+      "eyebrow": "LUMA PREMIUM IMAGE ROUTE",
+      "title": "Luma Uni-1 Max",
+      "subtitle": "Higher-fidelity Uni-1 stills for precise image revisions, product visuals and reference-led edits.",
+      "subtitleHighlights": [
+        "Higher-fidelity Uni-1 stills",
+        "precise image revisions",
+        "reference-led edits"
+      ],
+      "paragraph": "Use Uni-1 Max when the still needs more careful detail than the base route: hero images, product-label layouts, typography-sensitive concepts and high-detail edits with references.",
+      "primaryCta": {
+        "label": "Generate with Luma Uni-1 Max",
+        "href": "/app/image?engine=luma-uni-1-max"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing#luma-uni-1-max-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=luma-uni-1-max"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#luma-uni-1-max-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Luma Uni-1 Max example",
+      "description": "Premium 2K still and reference edit workflow",
+      "renderLabel": "View image",
+      "badges": [
+        "2K",
+        "Hero still",
+        "References"
+      ],
+      "altContext": "Luma Uni-1 Max premium still image example"
+    },
+    "features": [
+      {
+        "title": "Premium 2K route",
+        "body": "Use Max for selected stills that need stronger detail and finish.",
+        "tone": "quality"
+      },
+      {
+        "title": "Product visuals",
+        "body": "Good fit for catalog-style stills, labels, packaging and campaign layouts.",
+        "tone": "reference"
+      },
+      {
+        "title": "Precise revisions",
+        "body": "Use source images and references to narrow what should change.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Typography-sensitive",
+        "body": "Helpful for text-aware layouts, while exact copy still needs inspection.",
+        "tone": "quality"
+      },
+      {
+        "title": "Reference direction",
+        "body": "Blend product, style, wardrobe or layout references into one still brief.",
+        "tone": "reference"
+      },
+      {
+        "title": "Display pricing",
+        "body": "Display prices use MaxVideoAI pricing before generation.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Max or base Uni-1?",
+        "body": "Use base Uni-1 for exploration. Use Max for selected hero stills, product detail and revisions that justify the higher-cost route.",
+        "cta": {
+          "label": "View Uni-1",
+          "href": "/models/luma-uni-1"
+        }
+      },
+      {
+        "title": "Product or typography hero still?",
+        "body": "Name exact label hierarchy, surface materials, lighting and composition; then inspect text and edges before shipping.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Edit with references",
+        "body": "Use the source image for what must remain, then add references only when each one has a clear role.",
+        "cta": {
+          "label": "Open Uni-1 Max",
+          "href": "/app/image?engine=luma-uni-1-max"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Hero still",
+        "body": "Define product, scene, layout, copy placement, lighting and output ratio before generating."
+      },
+      {
+        "title": "Product label or poster",
+        "body": "Write text hierarchy explicitly, then verify lettering, logo placement and fine details."
+      },
+      {
+        "title": "High-detail edit",
+        "body": "Upload the source image and describe the smallest set of changes needed."
+      },
+      {
+        "title": "Multi-reference creative direction",
+        "body": "Assign references to product identity, palette, material, style or composition."
+      },
+      {
+        "title": "Handoff to video",
+        "body": "Use the strongest still as a start image when the campaign later needs motion."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Luma Uni-1 Max pricing at a glance",
+      "subtitle": "Display prices use MaxVideoAI pricing; exact price appears before generation.",
+      "footnote": "Max is not positioned as cheaper or faster than Uni-1; choose it when the still needs the higher-fidelity route.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "One image",
+      "ctaHref": "/pricing#luma-uni-1-max-pricing"
+    },
+    "meta": {
+      "title": "Luma Uni-1 Max: Pricing, 2K Images & Editing | MaxVideoAI",
+      "description": "Explore Luma Uni-1 Max pricing, premium 2K still generation, source-image edits, typography-sensitive layouts and reference-led image workflows."
+    }
   }
 }

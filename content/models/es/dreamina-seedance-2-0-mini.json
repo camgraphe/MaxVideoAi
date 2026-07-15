@@ -284,5 +284,147 @@
         "ctaLabel": "Ver Seedance 2.0 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "hero": {
+      "eyebrow": "RUTA BYTEDANCE BATCH ORIENTADA A VALOR",
+      "title": "Seedance 2.0 Mini",
+      "subtitle": "Lotes Seedance de menor coste para variantes 480p/720p, pruebas ecommerce/UGC, audio nativo/lip-sync, edición de video con referencias y extensión.",
+      "subtitleHighlights": [
+        "Lotes Seedance de menor coste",
+        "variantes 480p/720p",
+        "audio nativo/lip-sync"
+      ],
+      "paragraph": "Usa Seedance 2.0 Mini cuando el coste-rendimiento importe más que la resolución máxima: lotes ecommerce y marketing, hooks UGC, referencias multimodales, audio nativo/lip-sync, edición de video y extensión en renders de 4 a 15 segundos a 480p o 720p.",
+      "primaryCta": {
+        "label": "Generar con Seedance 2.0 Mini",
+        "href": "/app?engine=seedance-2-0-mini"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/seedance"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con 2.0",
+          "href": "/es/comparativa/dreamina-seedance-2-0-mini-vs-seedance-2-0"
+        },
+        {
+          "label": "Comparar con Fast",
+          "href": "/es/comparativa/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#dreamina-seedance-2-0-mini-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Seedance 2.0 Mini",
+      "description": "Variante batch de valor para revisión de campaña",
+      "renderLabel": "Ver variante",
+      "badges": [
+        "Ruta Mini",
+        "480p/720p",
+        "Audio posible"
+      ],
+      "altContext": "render cinematográfico batch de valor en Seedance 2.0 Mini"
+    },
+    "features": [
+      {
+        "title": "Lotes de menor coste",
+        "body": "Crea más variantes ecommerce, marketing y UGC antes de elegir finalistas.",
+        "tone": "price"
+      },
+      {
+        "title": "Salida 480p/720p",
+        "body": "Usa 480p para checks de volumen o 720p cuando la revisión requiera más detalle.",
+        "tone": "quality"
+      },
+      {
+        "title": "4 a 15 segundos",
+        "body": "Ejecuta hooks cortos, loops de producto y pruebas de extensión dentro del rango Mini.",
+        "tone": "duration"
+      },
+      {
+        "title": "Referencias multimodales",
+        "body": "Guía identidad, encuadre de producto, ritmo y mood de audio con referencias compatibles.",
+        "tone": "reference"
+      },
+      {
+        "title": "Edición de video y extensión",
+        "body": "Usa videos fuente para pasadas de edición o extensión cuando el trabajo sea iterativo.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio nativo y lip-sync",
+        "body": "Genera audio sincronizado, diálogo corto y lip-sync cuando el prompt necesita sonido.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Mini o Seedance 2.0?",
+        "body": "Usa Mini para exploración batch de menor coste y orientada a valor. Lleva las tomas hero aprobadas a Seedance 2.0 cuando el final necesite más pulido, entrega de mayor resolución y el techo Seedance superior.",
+        "cta": {
+          "label": "Comparar Mini vs 2.0",
+          "href": "/es/comparativa/dreamina-seedance-2-0-mini-vs-seedance-2-0"
+        }
+      },
+      {
+        "title": "¿Mini o Fast?",
+        "body": "Usa Fast cuando la prioridad sea la velocidad del borrador. Usa Mini cuando importe más el coste-rendimiento repetible en muchas variantes.",
+        "cta": {
+          "label": "Comparar Mini vs Fast",
+          "href": "/es/comparativa/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast"
+        }
+      },
+      {
+        "title": "¿Necesitas ejemplos de prompts?",
+        "body": "Empieza con hooks batch, loops de producto ecommerce, edición de video con referencias y prompts de extensión.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Lote de texto",
+        "body": "Escribe un hook compacto de producto o UGC y luego varía cámara, entorno, ratio y duración."
+      },
+      {
+        "title": "Referencia de imagen",
+        "body": "Usa imágenes para estabilizar forma de producto, vestuario, packaging o detalles de marca."
+      },
+      {
+        "title": "Edición de video",
+        "body": "Usa un video fuente para una pasada de edición de menor coste antes de la ruta final."
+      },
+      {
+        "title": "Extensión",
+        "body": "Extiende clips cortos para hooks revisables, finales alternativos o pruebas de movimiento de producto."
+      },
+      {
+        "title": "Audio y lip-sync",
+        "body": "Usa audio generado, diálogo corto, lip-sync y referencias de audio opcionales cuando el sonido importe."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de valor de Seedance 2.0 Mini",
+      "subtitle": "Totales Mini por escenario 480p/720p de 4 a 15 s - consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios MaxVideoAI mostrados en créditos USD para escenarios Mini predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "ctaHref": "/es/precios#dreamina-seedance-2-0-mini-pricing"
+    },
+    "meta": {
+      "title": "Seedance 2.0 Mini: video IA de bajo coste, precios y usos",
+      "description": "Usa Seedance 2.0 Mini para pruebas de video 480p/720p de menor coste, lotes ecommerce, variantes UGC y movimiento con referencias antes de pasar tomas hero a Seedance 2.0."
+    }
   }
 }

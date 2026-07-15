@@ -367,5 +367,144 @@
       "El loop no loopa → escribe explícitamente “seamless loop” + describe qué se repite (y mantén el mismo estado inicio/fin).",
       "Texto/logos aleatorios → añade “no text, no logos, no UI” al prompt negativo; evita señalética en el encuadre."
     ]
+  },
+  "decision": {
+    "modelSlug": "pika-text-to-video",
+    "hero": {
+      "eyebrow": "RUTA PIKA TEXT-TO-VIDEO",
+      "title": "Pika 2.2 Text-to-Video",
+      "subtitle": "Loops sociales Text-to-Video con movimiento estilizado, seeds, prompts negativos y salida sin audio de 5s/10s.",
+      "subtitleHighlights": [
+        "Loops sociales Text-to-Video",
+        "movimiento estilizado",
+        "salida sin audio de 5s/10s"
+      ],
+      "paragraph": "Usa Pika 2.2 para animación estilizada sin audio guiada por prompt, variantes rápidas y clips sociales cortos cuando la dirección es anime, cómic, pixel, toon o 3D lúdico.",
+      "primaryCta": {
+        "label": "Generar con Pika 2.2",
+        "href": "/app?engine=pika-text-to-video"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/pika"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar vs Hailuo",
+          "href": "/es/comparativa/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#pika-text-to-video-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Text-to-Video Pika 2.2",
+      "description": "Clip social estilizado sin audio",
+      "renderLabel": "Ver resultado",
+      "badges": [
+        "Sin audio",
+        "10s",
+        "1080p"
+      ],
+      "altContext": "loop social text-to-video estilizado con Pika 2.2"
+    },
+    "features": [
+      {
+        "title": "Text-to-Video primero",
+        "body": "Empieza con un prompt compacto cuando la idea depende de estilo, acción y timing de loop.",
+        "tone": "reference"
+      },
+      {
+        "title": "Movimiento estilizado",
+        "body": "Crea movimiento anime, cómic, pixel, toon o 3D lúdico.",
+        "tone": "quality"
+      },
+      {
+        "title": "Seeds",
+        "body": "Reutiliza variantes por seed cuando una dirección visual empieza a funcionar.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Prompts negativos",
+        "body": "Excluye rasgos visuales no deseados mientras pruebas una dirección estilizada.",
+        "tone": "reference"
+      },
+      {
+        "title": "5s o 10s",
+        "body": "Mantén clips compactos para loops, ediciones sociales y pruebas de movimiento.",
+        "tone": "duration"
+      },
+      {
+        "title": "Salida sin audio",
+        "body": "Agrega música, voz y SFX después de aprobar la parte visual.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Pika o Hailuo?",
+        "body": "Usa Pika para loops sociales estilizados y variantes por seed. Usa Hailuo 02 para física y movimiento de bajo costo.",
+        "cta": {
+          "label": "Comparar Pika vs Hailuo",
+          "href": "/es/comparativa/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      },
+      {
+        "title": "¿Armas un prompt estilizado?",
+        "body": "Fija sujeto, estilo, acción y exclusiones antes de probar variantes con seeds.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Necesitas una ruta draft más amplia?",
+        "body": "Compara con LTX 2.3 Fast cuando necesitas un motor de borrador más general antes de rutas de producción.",
+        "cta": {
+          "label": "Comparar Pika vs LTX 2.3 Fast",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texto a video",
+        "body": "Escribe sujeto, acción, familia visual y exclusiones en un prompt compacto."
+      },
+      {
+        "title": "Anclas de estilo",
+        "body": "Nombra dirección artística, paleta y comportamiento del loop en vez de depender de demasiadas referencias."
+      },
+      {
+        "title": "Variantes por seed",
+        "body": "Conserva un seed útil e itera prompts dentro de la misma línea visual."
+      },
+      {
+        "title": "Prompt negativo",
+        "body": "Lista artefactos, estilos o texto no deseado para evitarlos."
+      },
+      {
+        "title": "Inicio con imagen relacionado",
+        "body": "Usa el flujo de imagen de Pika solo cuando un still deba fijar la composición."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Pika 2.2 de un vistazo",
+      "subtitle": "Totales de clips estilizados. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#pika-text-to-video-pricing"
+    },
+    "meta": {
+      "title": "Pika 2.2 Text-to-Video: precios, loops silenciosos y ejemplos | MaxVideoAI",
+      "description": "Explora Pika 2.2 Text-to-Video: precios, clips estilizados sin audio, loops sociales, seeds, prompts negativos y ejemplos en MaxVideoAI."
+    }
   }
 }

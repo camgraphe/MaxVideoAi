@@ -336,5 +336,152 @@
       "Texte incorrect → évitez la signalétique lisible, UI minuscule, micro‑labels. Gardez le texte hors‑champ.",
       "Dialogue qui dérive → gardez les lignes courtes et percutantes; évitez les monologues longs."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-fast",
+    "hero": {
+      "eyebrow": "ROUTE LTX 2 FAST ENCORE PRISE EN CHARGE",
+      "title": "LTX 2 Fast",
+      "subtitle": "Drafts 16:9 rapides jusqu’à 20 s pour texte ou image de départ, revues avec audio et checks 1080p à 4K.",
+      "subtitleHighlights": [
+        "Drafts 16:9 rapides",
+        "jusqu’à 20 s",
+        "checks 1080p à 4K"
+      ],
+      "paragraph": "Utilisez LTX 2 Fast pour l’ancienne route fast LTX encore prise en charge : drafts 16:9 moins chers, tests de timing jusqu’à 20 s, image de départ et options haute résolution. Utilisez LTX 2.3 Fast pour le workflow fast LTX actuel.",
+      "primaryCta": {
+        "label": "Drafter avec LTX 2 Fast",
+        "href": "/app?engine=ltx-2-fast"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Voir LTX 2.3 Fast",
+          "href": "/fr/modeles/ltx-2-3-fast"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#ltx-2-fast-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple LTX 2 Fast",
+      "description": "Boucle draft 16:9 rapide",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Fast",
+        "20 s max",
+        "16:9"
+      ],
+      "altContext": "rendu video draft 16:9 avec LTX 2 Fast"
+    },
+    "features": [
+      {
+        "title": "Drafts 16:9 rapides",
+        "body": "Avancez vite sur timing et composition dans l’ancien workflow LTX.",
+        "tone": "duration"
+      },
+      {
+        "title": "Texte ou image source",
+        "body": "Testez produit, sujet ou décor depuis un prompt ou une image fixe.",
+        "tone": "reference"
+      },
+      {
+        "title": "Jusqu’à 20 s",
+        "body": "Utilisez les boucles 1080p/25 fps quand le pacing compte plus que le polish.",
+        "tone": "duration"
+      },
+      {
+        "title": "1080p à 4K",
+        "body": "Les tests plus courts peuvent aussi servir à vérifier le détail.",
+        "tone": "quality"
+      },
+      {
+        "title": "Audio-ready",
+        "body": "Gardez le son actif quand le timing ou la revue en a besoin.",
+        "tone": "audio"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "LTX 2 Fast ou LTX 2.3 Fast ?",
+        "body": "Utilisez LTX 2 Fast pour d’anciens drafts 16:9 encore pris en charge. Choisissez LTX 2.3 Fast pour la route fast actuelle et plus de formats.",
+        "cta": {
+          "label": "Voir LTX 2.3 Fast",
+          "href": "/fr/modeles/ltx-2-3-fast"
+        }
+      },
+      {
+        "title": "Besoin de plus de fidélité ?",
+        "body": "Déplacez les directions validées vers LTX 2 ou LTX 2.3 Pro quand le plan mérite une passe plus propre.",
+        "cta": {
+          "label": "Voir LTX 2",
+          "href": "/fr/modeles/ltx-2"
+        }
+      },
+      {
+        "title": "Vous comparez des routes fast ?",
+        "body": "Comparez LTX 2 Fast et Wan 2.5 entre boucles LTX 16:9 plus longues et checks audio moins chers.",
+        "cta": {
+          "label": "Comparer LTX 2 Fast vs Wan 2.5",
+          "href": "/fr/comparatif/ltx-2-fast-vs-wan-2-5"
+        }
+      },
+      {
+        "title": "Besoin d’exemples de prompts ?",
+        "body": "Utilisez des prompts courts avec un beat de mouvement, une caméra et un objectif de revue clair.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de draft",
+        "body": "Gardez un sujet, une idée de mouvement et un mouvement caméra pour rester lisible."
+      },
+      {
+        "title": "Image de départ",
+        "body": "Utilisez une image pour verrouiller produit, personnage ou environnement."
+      },
+      {
+        "title": "Boucle longue",
+        "body": "Réservez 12-20 s aux tests 1080p où le rythme compte plus que le détail."
+      },
+      {
+        "title": "Check court haute résolution",
+        "body": "Passez en 1440p ou 4K sur les clips courts quand il faut inspecter le détail."
+      },
+      {
+        "title": "Montée de gamme",
+        "body": "Envoyez les directions gagnantes vers LTX 2.3 Fast ou Pro selon le workflow actuel recherché."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix des drafts LTX 2 Fast",
+      "subtitle": "Totaux de brouillon par scénario — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "20 s en 1080p / 25 fps",
+      "ctaHref": "/fr/tarifs#ltx-2-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2 Fast : tarifs, drafts 20 s et exemples | MaxVideoAI",
+      "description": "Utilisez LTX 2 Fast pour des drafts 16:9 encore pris en charge, tests de timing 20 s, text-to-video, image-to-video, checks haute résolution et tarifs."
+    }
   }
 }

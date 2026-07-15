@@ -364,5 +364,144 @@
       "Jittery camera → specify “tripod-stable” or “smooth track”; avoid “dynamic” wording.",
       "Random text/logos → add a short negative (“no text, no logos, no UI”) and keep signage out of frame."
     ]
+  },
+  "decision": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "hero": {
+      "eyebrow": "BUDGET MOTION DRAFT ROUTE",
+      "title": "MiniMax Hailuo 02",
+      "subtitle": "Budget motion drafts for physics-aware tests, start/end frame checks and silent storyboard clips.",
+      "subtitleHighlights": [
+        "Budget motion drafts",
+        "physics-aware tests",
+        "silent storyboard clips"
+      ],
+      "paragraph": "Use Hailuo 02 for low-cost 6 to 10 second motion tests at 512P or 768P before moving winners into higher-resolution or audio-capable production routes.",
+      "primaryCta": {
+        "label": "Draft with Hailuo 02",
+        "href": "/app?engine=minimax-hailuo-02-text"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/hailuo"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Pika",
+          "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#minimax-hailuo-02-text-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Hailuo 02 example",
+      "description": "Silent motion draft for timing and physics",
+      "renderLabel": "View draft",
+      "badges": [
+        "Silent",
+        "10s",
+        "768P"
+      ],
+      "altContext": "MiniMax Hailuo 02 silent motion draft example"
+    },
+    "features": [
+      {
+        "title": "Budget drafts",
+        "body": "Test motion ideas before spending on final-quality routes.",
+        "tone": "price"
+      },
+      {
+        "title": "Physics tests",
+        "body": "Check object movement, collisions and body motion in short clips.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Text or image",
+        "body": "Start from a prompt or a still image depending on how locked the shot is.",
+        "tone": "reference"
+      },
+      {
+        "title": "512P or 768P",
+        "body": "Draft cap on this route; use higher-resolution engines for delivery.",
+        "tone": "quality"
+      },
+      {
+        "title": "6s or 10s",
+        "body": "Choose compact durations for timing and storyboard validation.",
+        "tone": "duration"
+      },
+      {
+        "title": "Silent output",
+        "body": "Plan music, voiceover and SFX in a later production pass.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Hailuo or Pika?",
+        "body": "Use Hailuo for budget motion and physics checks. Use Pika when stylized social loops and seed variants matter more.",
+        "cta": {
+          "label": "Compare Hailuo vs Pika",
+          "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video"
+        }
+      },
+      {
+        "title": "Testing the landing frame?",
+        "body": "Use image-to-video and end-frame planning when the final pose or composition matters.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need sound or 1080p?",
+        "body": "Compare with Kling 2.6 Pro when you need stronger output quality, audio support or production-ready renders.",
+        "cta": {
+          "label": "Compare Hailuo vs Kling",
+          "href": "/ai-video-engines/kling-2-6-pro-vs-minimax-hailuo-02-text?order=minimax-hailuo-02-text"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Keep the test narrow: one subject, one action and one camera move."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Use a start image when composition or product shape should stay stable."
+      },
+      {
+        "title": "End frame",
+        "body": "Plan the landing pose with a clear final composition when available."
+      },
+      {
+        "title": "Prompt optimizer",
+        "body": "Use optimization for quick drafts, then tighten the wording after you see motion behavior."
+      },
+      {
+        "title": "Upgrade path",
+        "body": "Send approved movement to a higher-resolution or audio-capable engine for finals."
+      }
+    ],
+    "pricingCopy": {
+      "title": "MiniMax Hailuo 02 pricing at a glance",
+      "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 768P",
+      "ctaHref": "/pricing#minimax-hailuo-02-text-pricing"
+    },
+    "meta": {
+      "title": "MiniMax Hailuo 02: Pricing, Motion Drafts & Examples | MaxVideoAI",
+      "description": "Explore MiniMax Hailuo 02 pricing, budget motion drafts, physics-aware tests, image-to-video starts and silent storyboard examples on MaxVideoAI."
+    }
   }
 }

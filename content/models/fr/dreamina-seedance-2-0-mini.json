@@ -284,5 +284,147 @@
         "ctaLabel": "Voir Seedance 2.0 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "hero": {
+      "eyebrow": "ROUTE BYTEDANCE BATCH ORIENTÉE VALEUR",
+      "title": "Seedance 2.0 Mini",
+      "subtitle": "Lots Seedance à coût réduit pour variantes 480p/720p, tests ecommerce/UGC, audio natif/lipsync, édition vidéo guidée par références et prolongation.",
+      "subtitleHighlights": [
+        "Lots Seedance à coût réduit",
+        "variantes 480p/720p",
+        "audio natif/lipsync"
+      ],
+      "paragraph": "Utilisez Seedance 2.0 Mini quand le rapport coût-performance prime sur la résolution maximale : lots de variantes ecommerce et marketing, hooks UGC, références multimodales, audio natif/lipsync, édition vidéo et prolongation en 4 à 15 secondes à 480p ou 720p.",
+      "primaryCta": {
+        "label": "Générer avec Seedance 2.0 Mini",
+        "href": "/app?engine=seedance-2-0-mini"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/seedance"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs 2.0",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0"
+        },
+        {
+          "label": "Comparer vs Fast",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#dreamina-seedance-2-0-mini-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Seedance 2.0 Mini",
+      "description": "Variante batch orientée valeur pour revue campagne",
+      "renderLabel": "Voir la variante",
+      "badges": [
+        "Route Mini",
+        "480p/720p",
+        "Audio possible"
+      ],
+      "altContext": "rendu cinématique batch valeur Seedance 2.0 Mini"
+    },
+    "features": [
+      {
+        "title": "Lots à coût réduit",
+        "body": "Créez plus de variantes ecommerce, marketing et UGC avant de choisir les finalistes.",
+        "tone": "price"
+      },
+      {
+        "title": "Sortie 480p/720p",
+        "body": "Utilisez 480p pour les checks en volume ou 720p quand la revue demande plus de détail.",
+        "tone": "quality"
+      },
+      {
+        "title": "4 à 15 secondes",
+        "body": "Lancez hooks courts, boucles produit et tests de prolongation dans la plage Mini.",
+        "tone": "duration"
+      },
+      {
+        "title": "Références multimodales",
+        "body": "Guidez identité, cadrage produit, rythme et mood audio avec les références prises en charge.",
+        "tone": "reference"
+      },
+      {
+        "title": "Édition vidéo et prolongation",
+        "body": "Utilisez des vidéos source pour des passes edit ou extension quand le travail est itératif.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Audio natif et lipsync",
+        "body": "Générez audio synchronisé, répliques courtes et lipsync quand le prompt demande du son.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Mini ou Seedance 2.0 ?",
+        "body": "Utilisez Mini pour l’exploration batch à coût réduit et orientée valeur. Passez les plans héros validés à Seedance 2.0 pour plus de finition, une livraison en plus haute résolution et le plafond Seedance supérieur.",
+        "cta": {
+          "label": "Comparer Mini vs 2.0",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0"
+        }
+      },
+      {
+        "title": "Mini ou Fast ?",
+        "body": "Utilisez Fast quand la priorité est la vitesse de brouillon. Utilisez Mini quand le rapport coût-performance sur beaucoup de variantes compte davantage.",
+        "cta": {
+          "label": "Comparer Mini vs Fast",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast"
+        }
+      },
+      {
+        "title": "Besoin d’exemples de prompts ?",
+        "body": "Commencez par des hooks en lot, boucles produit ecommerce, édition vidéo guidée par références et prompts de prolongation.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Lot texte",
+        "body": "Rédigez un hook produit ou UGC compact, puis variez caméra, décor, ratio et durée."
+      },
+      {
+        "title": "Référence image",
+        "body": "Utilisez des images pour stabiliser forme produit, tenue, packaging ou détails de marque."
+      },
+      {
+        "title": "Édition vidéo",
+        "body": "Utilisez une vidéo source pour une passe edit à coût réduit avant la route finale."
+      },
+      {
+        "title": "Prolongation",
+        "body": "Prolongez des clips courts pour hooks à revoir, fins alternatives ou tests de mouvement produit."
+      },
+      {
+        "title": "Audio et lipsync",
+        "body": "Utilisez audio généré, répliques courtes, lipsync et références audio optionnelles quand le son compte."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix valeur Seedance 2.0 Mini",
+      "subtitle": "Prix Mini par scénario 480p/720p de 4 à 15 s - prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix MaxVideoAI affichés en crédits USD pour des scénarios Mini prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "ctaHref": "/fr/tarifs#dreamina-seedance-2-0-mini-pricing"
+    },
+    "meta": {
+      "title": "Seedance 2.0 Mini : vidéo IA moins chère, prix et usages",
+      "description": "Utilisez Seedance 2.0 Mini pour tester des vidéos 480p/720p à coût réduit, variantes ecommerce, UGC et mouvement guidé par références avant de passer les plans héros à Seedance 2.0."
+    }
   }
 }

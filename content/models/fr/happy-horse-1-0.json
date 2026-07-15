@@ -170,5 +170,144 @@
     "finalPara1": "Happy Horse 1.0 est pertinent quand un clip source validé doit passer par l’ancienne édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.",
     "finalPara2": "Pour un lancement, commencez sur Happy Horse 1.1, Seedance, Kling ou Veo, puis revenez à 1.0 uniquement si un clip source doit utiliser l’ancien endpoint d’édition vidéo.",
     "finalButton": "Générer avec Happy Horse 1.0"
+  },
+  "decision": {
+    "modelSlug": "happy-horse-1-0",
+    "hero": {
+      "eyebrow": "ANCIENNE ROUTE D’ÉDITION VIDÉO",
+      "title": "Happy Horse 1.0",
+      "subtitle": "Ancienne route d’édition vidéo pour clip source ; utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.",
+      "subtitleHighlights": [
+        "édition vidéo",
+        "clip source",
+        "Happy Horse 1.1"
+      ],
+      "paragraph": "Utilisez Happy Horse 1.0 seulement pour l’ancien endpoint d’édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.",
+      "primaryCta": {
+        "label": "Générer avec Happy Horse 1.0",
+        "href": "/app?engine=happy-horse-1-0"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/happy-horse"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Happy Horse 1.1",
+          "href": "/fr/comparatif/happy-horse-1-0-vs-happy-horse-1-1?order=happy-horse-1-1"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#happy-horse-1-0-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Happy Horse 1.0",
+      "description": "Ancienne route d’édition vidéo avec audio natif",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "Audio natif",
+        "R2V",
+        "1080p"
+      ],
+      "altContext": "exemple vidéo Happy Horse 1.0 avec audio natif et références"
+    },
+    "features": [
+      {
+        "title": "Audio natif",
+        "body": "Générez dialogue, ambiance et SFX avec le rendu quand la route le permet.",
+        "tone": "audio"
+      },
+      {
+        "title": "Route actuelle déplacée",
+        "body": "Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence.",
+        "tone": "reference"
+      },
+      {
+        "title": "Références R2V",
+        "body": "Utilisez plusieurs références pour guider identité, mouvement, style ou décor.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Édition vidéo",
+        "body": "Modifiez un clip existant pour un ajustement visuel plus contrôlé.",
+        "tone": "quality"
+      },
+      {
+        "title": "720p ou 1080p",
+        "body": "Choisissez la résolution exposée dans MaxVideoAI avant génération.",
+        "tone": "quality"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Besoin du Happy Horse actuel ?",
+        "body": "Démarrez sur Happy Horse 1.1 pour les nouvelles générations texte, image et référence. Gardez 1.0 uniquement pour l’ancienne édition vidéo.",
+        "cta": {
+          "label": "Ouvrir Happy Horse 1.1",
+          "href": "/fr/modeles/happy-horse-1-1"
+        }
+      },
+      {
+        "title": "Travail avec références ?",
+        "body": "Donnez un rôle clair à chaque fichier : identité, tenue, mouvement, environnement ou humeur audio.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’une autre route audio ?",
+        "body": "Comparez avec Veo si vous hésitez entre rendu Google cinématographique et workflow audio-vidéo flexible.",
+        "cta": {
+          "label": "Comparer Happy Horse vs Veo",
+          "href": "/fr/comparatif/happy-horse-1-0-vs-veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Structurez sujet, action, caméra, style et beats audio dans un brief court."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Utilisez une image pour ancrer sujet, produit, tenue ou composition."
+      },
+      {
+        "title": "Références R2V",
+        "body": "Attribuez un rôle par référence pour éviter les conflits entre identité, mouvement et décor."
+      },
+      {
+        "title": "Édition vidéo",
+        "body": "Utilisez une source vidéo quand il faut changer look, rythme ou détail sans repartir de zéro."
+      },
+      {
+        "title": "Gestion audio",
+        "body": "Gardez les dialogues courts et liez les SFX aux actions visibles."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Happy Horse 1.0 en un coup d’œil",
+      "subtitle": "Prix totaux avec audio natif — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#happy-horse-1-0-pricing"
+    },
+    "meta": {
+      "title": "Happy Horse 1.0 : ancienne édition vidéo | MaxVideoAI",
+      "description": "Utilisez Happy Horse 1.0 comme ancienne route Happy Horse pour l’édition vidéo. Utilisez Happy Horse 1.1 pour les nouvelles générations texte, image et référence."
+    }
   }
 }

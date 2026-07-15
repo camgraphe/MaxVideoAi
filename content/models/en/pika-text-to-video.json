@@ -367,5 +367,144 @@
       "Loop doesn’t loop → explicitly say “seamless loop” + describe what repeats (and keep the start/end state identical).",
       "Random text/logos appear → add “no text, no logos, no UI” to negative prompt; keep signage out of frame."
     ]
+  },
+  "decision": {
+    "modelSlug": "pika-text-to-video",
+    "hero": {
+      "eyebrow": "PIKA TEXT-TO-VIDEO ROUTE",
+      "title": "Pika 2.2 Text-to-Video",
+      "subtitle": "Text-to-Video social loops with stylized motion, seeds, negative prompts and silent 5s/10s output.",
+      "subtitleHighlights": [
+        "Text-to-Video social loops",
+        "stylized motion",
+        "silent 5s/10s output"
+      ],
+      "paragraph": "Use Pika 2.2 for prompt-led, silent stylized animation, variant testing and short social clips when the creative direction is anime, comic, pixel, toon or playful 3D.",
+      "primaryCta": {
+        "label": "Generate with Pika 2.2",
+        "href": "/app?engine=pika-text-to-video"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/pika"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Hailuo",
+          "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#pika-text-to-video-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Pika 2.2 Text-to-Video example",
+      "description": "Stylized silent social clip",
+      "renderLabel": "View render",
+      "badges": [
+        "Silent",
+        "10s",
+        "1080p"
+      ],
+      "altContext": "Pika 2.2 stylized text-to-video social loop"
+    },
+    "features": [
+      {
+        "title": "Text-to-Video first",
+        "body": "Start from a compact prompt when the idea is style, action and loop timing.",
+        "tone": "reference"
+      },
+      {
+        "title": "Stylized motion",
+        "body": "Create anime, comic, pixel, toon or playful 3D movement.",
+        "tone": "quality"
+      },
+      {
+        "title": "Seeds",
+        "body": "Reuse seed-driven variants when a style direction starts working.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Negative prompts",
+        "body": "Exclude unwanted visual traits while testing a stylized direction.",
+        "tone": "reference"
+      },
+      {
+        "title": "5s or 10s",
+        "body": "Keep clips compact for loops, social edits and motion tests.",
+        "tone": "duration"
+      },
+      {
+        "title": "Silent output",
+        "body": "Add music, voice and SFX after the visual pass.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Pika or Hailuo?",
+        "body": "Use Pika for stylized social loops and seed variants. Use Hailuo 02 for lower-cost physics and motion checks.",
+        "cta": {
+          "label": "Compare Pika vs Hailuo",
+          "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      },
+      {
+        "title": "Building a stylized prompt?",
+        "body": "Lock subject, style, action and exclusions before testing variants with seeds.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need a broader draft route?",
+        "body": "Compare with LTX 2.3 Fast when you need a more general draft engine before production routes.",
+        "cta": {
+          "label": "Compare Pika vs LTX 2.3 Fast",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Write subject, action, style family and what to avoid in one compact prompt."
+      },
+      {
+        "title": "Style anchors",
+        "body": "Name the art direction, palette and loop behavior instead of relying on reference-heavy setup."
+      },
+      {
+        "title": "Seed variants",
+        "body": "Keep a useful seed and iterate prompts around the same visual lane."
+      },
+      {
+        "title": "Negative prompt",
+        "body": "List distracting artifacts, unwanted styles or text elements to avoid."
+      },
+      {
+        "title": "Related image start",
+        "body": "Use the related Pika image workflow only when one still must anchor composition."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Pika 2.2 pricing at a glance",
+      "subtitle": "Preset stylized clip totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#pika-text-to-video-pricing"
+    },
+    "meta": {
+      "title": "Pika Text-to-Video Limits: 5s/10s, Pricing & Best Uses",
+      "description": "Check Pika 2.2 text-to-video limits, 5s/10s duration, 720p/1080p pricing and when to use another AI video model."
+    }
   }
 }

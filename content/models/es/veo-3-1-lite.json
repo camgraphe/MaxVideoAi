@@ -392,5 +392,144 @@
       "Texto/señalética se rompe → mantén el texto legible fuera de plano; añade el copy crítico en post.",
       "La VO / lip sync falla → acorta líneas; evita monólogos largos y habla rápida."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1-lite",
+    "hero": {
+      "eyebrow": "RUTA GOOGLE VIDEO DE MENOR COSTE",
+      "title": "Veo 3.1 Lite",
+      "subtitle": "Borradores Veo de menor coste con audio nativo opcional, pruebas cortas de prompt y checks simples de imagen a video.",
+      "subtitleHighlights": [
+        "borradores Veo de menor coste",
+        "audio nativo opcional",
+        "pruebas cortas de prompt"
+      ],
+      "paragraph": "Usa Veo 3.1 Lite cuando necesitas la ruta Veo 3.1 más económica para borradores cortos, pruebas de ritmo y comparación de prompts antes de subir ganadores a Fast o Veo 3.1.",
+      "primaryCta": {
+        "label": "Generar con Veo 3.1 Lite",
+        "href": "/app?engine=veo-3-1-lite"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Fast",
+          "href": "/es/comparativa/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#veo-3-1-lite-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Veo 3.1 Lite",
+      "description": "Borrador Veo con audio opcional",
+      "renderLabel": "Ver borrador",
+      "badges": [
+        "Audio opcional",
+        "8 s",
+        "720p"
+      ],
+      "altContext": "borrador corto con audio en Veo 3.1 Lite"
+    },
+    "features": [
+      {
+        "title": "Veo de menor coste",
+        "body": "Usa Lite para los checks Veo más económicos.",
+        "tone": "price"
+      },
+      {
+        "title": "Audio opcional",
+        "body": "Activa audio nativo para ambiente o apágalo para pruebas visuales de menor coste.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto o imagen",
+        "body": "Empieza desde un prompt o una sola referencia visual.",
+        "tone": "reference"
+      },
+      {
+        "title": "Primer-último cuadro",
+        "body": "Usa dos cuadros cuando la composición final importa.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 8 s",
+        "body": "Mantén las pruebas cortas y enfocadas en un beat claro.",
+        "tone": "duration"
+      },
+      {
+        "title": "720p o 1080p",
+        "body": "Elige nivel de coste/calidad antes de generar.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Lite o Fast?",
+        "body": "Usa Lite para los borradores Veo más económicos. Usa Fast si necesitas reference-to-video o más controles.",
+        "cta": {
+          "label": "Comparar Lite vs Fast",
+          "href": "/es/comparativa/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        }
+      },
+      {
+        "title": "¿Necesitas ritmo de audio?",
+        "body": "Cuando el audio está activado, escribe cues breves de ambiente, SFX o diálogo en el prompt.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Listo para una pasada final?",
+        "body": "Lleva los mejores borradores Lite a Veo 3.1 cuando el concepto esté aprobado.",
+        "cta": {
+          "label": "Ver Veo 3.1",
+          "href": "/es/modelos/veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Un sujeto, una acción, un movimiento de cámara y un cue simple de audio."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Ancla composición o forma de producto con una sola imagen fuente."
+      },
+      {
+        "title": "Cue de audio",
+        "body": "Mantén ambiente o diálogo cortos cuando el audio está activado."
+      },
+      {
+        "title": "Prueba corta",
+        "body": "Usa 4, 6 u 8 segundos para validar el beat principal."
+      },
+      {
+        "title": "Subida de nivel",
+        "body": "Promueve los mejores borradores a Fast o Veo 3.1 según el caso."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Veo 3.1 Lite de un vistazo",
+      "subtitle": "Totales de menor coste por escenario. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#veo-3-1-lite-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1 Lite: precios, audio opcional y ejemplos | MaxVideoAI",
+      "description": "Usa Veo 3.1 Lite para borradores Veo de menor coste con audio nativo opcional, pruebas cortas de prompt y checks de imagen a video."
+    }
   }
 }

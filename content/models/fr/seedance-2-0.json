@@ -357,5 +357,147 @@
         "ctaLabel": "Comparer Seedance 2.0 vs Kling 3 Pro ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "seedance-2-0",
+    "hero": {
+      "eyebrow": "MODÈLE DREAMINA / BYTEDANCE ACTUEL",
+      "title": "Seedance 2.0",
+      "subtitle": "Audio natif, sortie jusqu’en 4K, continuité multi-plans et vidéo guidée par références pour des publicités, lancements et contenus de marque cinématographiques.",
+      "subtitleHighlights": [
+        "Audio natif",
+        "sortie jusqu’en 4K",
+        "continuité multi-plans"
+      ],
+      "paragraph": "Utilisez Seedance 2.0 pour le workflow Dreamina Seedance actuel : meilleure continuité que les versions précédentes, sortie 480p/720p/1080p/4K, audio natif dans le même flux et références multimodales pour le text-to-video ou l’image-to-video.",
+      "primaryCta": {
+        "label": "Générer avec Seedance 2.0",
+        "href": "/app?engine=seedance-2-0"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/seedance"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Fast",
+          "href": "/fr/comparatif/seedance-2-0-vs-seedance-2-0-fast"
+        },
+        {
+          "label": "Comparer vs route Mini valeur",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0?order=seedance-2-0"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#seedance-2-0-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Seedance 2.0",
+      "description": "Séquence cinématographique avec audio natif",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "Audio activé",
+        "15 s",
+        "Option 4K"
+      ],
+      "altContext": "scène cinématographique de course sur un toit"
+    },
+    "features": [
+      {
+        "title": "Audio natif",
+        "body": "Dialogue, ambiance et SFX générés en synchro.",
+        "tone": "audio"
+      },
+      {
+        "title": "Continuité multi-plans",
+        "body": "Gardez personnages, style et scène cohérents d’un plan à l’autre.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Guidé par références",
+        "body": "Guidez le rendu avec les références prises en charge.",
+        "tone": "reference"
+      },
+      {
+        "title": "Jusqu’à 4K",
+        "body": "Utilisez 480p, 720p, 1080p ou 4K sur la route Dreamina Seedance standard.",
+        "tone": "quality"
+      },
+      {
+        "title": "Max 15 s",
+        "body": "Jusqu’à 15 secondes par génération.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Seedance 2.0 ou Fast ?",
+        "body": "Choisissez Seedance 2.0 pour les rendus finaux avec audio natif et continuité multi-plans. Passez à Fast pour les brouillons moins chers et les tests de rythme.",
+        "cta": {
+          "label": "Comparer Seedance 2.0 vs Fast",
+          "href": "/fr/comparatif/seedance-2-0-vs-seedance-2-0-fast"
+        }
+      },
+      {
+        "title": "Vous venez de Seedance 1.5 ?",
+        "body": "Seedance 2.0 est le workflow actuel pour une meilleure continuité multi-plans, l’audio natif et des références plus nombreuses.",
+        "cta": {
+          "label": "Comparer 1.5 vs 2.0",
+          "href": "/fr/comparatif/seedance-1-5-pro-vs-seedance-2-0?order=seedance-2-0"
+        }
+      },
+      {
+        "title": "Besoin d’exemples de prompts ?",
+        "body": "Commencez avec des modèles text-to-video, image-to-video, références et multi-plans.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Utilisez le prompt pour le brief de scène : sujet, action, caméra, style et indications audio."
+      },
+      {
+        "title": "Référence image",
+        "body": "Utilisez les images pour guider l’identité, le produit, le style, la composition ou l’environnement."
+      },
+      {
+        "title": "Référence vidéo",
+        "body": "Utilisez les vidéos pour guider le rythme du mouvement ou de la caméra quand le flux actif le permet."
+      },
+      {
+        "title": "Référence audio",
+        "body": "Utilisez l’audio pour guider le rythme, l’ambiance ou l’intention émotionnelle quand le flux actif le permet."
+      },
+      {
+        "title": "Ancrages de continuité",
+        "body": "Répétez tenue, accessoires, lieu, lumière et pose finale pour garder la séquence cohérente."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Seedance 2.0 en un coup d’œil",
+      "subtitle": "Prix totaux 720p, 1080p et 4K par scénario — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "ctaHref": "/fr/tarifs#seedance-2-0-pricing"
+    },
+    "meta": {
+      "title": "Seedance 2.0 : tarifs, audio natif et exemples | MaxVideoAI",
+      "description": "Explorez prix, sortie 4K, audio natif, vidéo multi-plans et workflows guidés par références. Comparez Seedance 2.0 vs Fast et les anciennes versions."
+    }
   }
 }

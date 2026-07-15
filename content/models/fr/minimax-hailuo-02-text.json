@@ -364,5 +364,144 @@
       "Caméra jittery → spécifiez “tripod‑stable” ou “smooth track”; évitez “dynamic”.",
       "Texte/logos aléatoires → ajoutez un négatif court (“no text, no logos, no UI”) et gardez la signalétique hors champ."
     ]
+  },
+  "decision": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "hero": {
+      "eyebrow": "ROUTE BROUILLON MOUVEMENT",
+      "title": "MiniMax Hailuo 02",
+      "subtitle": "Brouillons mouvement économiques pour tests physiques, image de fin et clips storyboard silencieux.",
+      "subtitleHighlights": [
+        "Brouillons mouvement économiques",
+        "tests physiques",
+        "clips storyboard silencieux"
+      ],
+      "paragraph": "Utilisez Hailuo 02 pour tester à coût réduit des mouvements de 6 à 10 secondes en 512P ou 768P, avant de passer les meilleures pistes sur une route plus haute résolution ou avec audio.",
+      "primaryCta": {
+        "label": "Créer un brouillon Hailuo 02",
+        "href": "/app?engine=minimax-hailuo-02-text"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/hailuo"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Pika",
+          "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#minimax-hailuo-02-text-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Hailuo 02",
+      "description": "Brouillon silencieux pour rythme et physique",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Silencieux",
+        "10 s",
+        "768P"
+      ],
+      "altContext": "exemple de brouillon mouvement silencieux avec MiniMax Hailuo 02"
+    },
+    "features": [
+      {
+        "title": "Brouillons économiques",
+        "body": "Testez les idées de mouvement avant les routes finales plus coûteuses.",
+        "tone": "price"
+      },
+      {
+        "title": "Tests physiques",
+        "body": "Vérifiez mouvements d’objets, collisions et gestuelle sur des clips courts.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Texte ou image",
+        "body": "Partez d’un prompt ou d’une image selon le niveau de verrouillage du plan.",
+        "tone": "reference"
+      },
+      {
+        "title": "512P ou 768P",
+        "body": "Limite brouillon de cette route ; utilisez une route plus haute résolution pour livrer.",
+        "tone": "quality"
+      },
+      {
+        "title": "6 s ou 10 s",
+        "body": "Choisissez des durées compactes pour valider timing et storyboard.",
+        "tone": "duration"
+      },
+      {
+        "title": "Sortie silencieuse",
+        "body": "Préparez musique, voix et SFX dans une passe de production suivante.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Hailuo ou Pika ?",
+        "body": "Utilisez Hailuo pour le mouvement et la physique à petit budget. Utilisez Pika pour des loops sociaux stylisés et variantes par seed.",
+        "cta": {
+          "label": "Comparer Hailuo vs Pika",
+          "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video"
+        }
+      },
+      {
+        "title": "Vous testez l’image de fin ?",
+        "body": "Utilisez image-to-video et une fin claire quand la pose ou la composition finale compte.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’audio ou de 1080p ?",
+        "body": "Comparez avec Kling 2.6 Pro si vous cherchez plus de qualité, du son ou une sortie prête pour production.",
+        "cta": {
+          "label": "Comparer Hailuo vs Kling",
+          "href": "/fr/comparatif/kling-2-6-pro-vs-minimax-hailuo-02-text?order=minimax-hailuo-02-text"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Gardez le test serré : un sujet, une action, un mouvement caméra."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Utilisez une image de départ quand composition ou forme produit doit rester stable."
+      },
+      {
+        "title": "Image de fin",
+        "body": "Préparez une pose finale claire lorsque la composition d’arrivée compte."
+      },
+      {
+        "title": "Optimisation du prompt",
+        "body": "Servez-vous de l’optimisation pour brouillonner vite, puis resserrez après avoir vu le mouvement."
+      },
+      {
+        "title": "Passage final",
+        "body": "Envoyez le mouvement validé vers une route plus haute résolution ou avec audio."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix MiniMax Hailuo 02 en un coup d’œil",
+      "subtitle": "Prix totaux de brouillon — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 768P",
+      "ctaHref": "/fr/tarifs#minimax-hailuo-02-text-pricing"
+    },
+    "meta": {
+      "title": "MiniMax Hailuo 02 : tarifs, brouillons mouvement et exemples | MaxVideoAI",
+      "description": "Explorez MiniMax Hailuo 02 : prix, brouillons mouvement économiques, tests physiques, image-to-video et exemples storyboard silencieux sur MaxVideoAI."
+    }
   }
 }

@@ -241,5 +241,144 @@
       }
     ],
     "promptingGuideLabel": "En savoir plus"
+  },
+  "decision": {
+    "modelSlug": "nano-banana-pro",
+    "hero": {
+      "eyebrow": "MODÈLE IMAGE GOOGLE PRO",
+      "title": "Nano Banana Pro",
+      "subtitle": "Visuels campagne 4K, retouches orientées typographie et références multiples pour assets finalisés.",
+      "subtitleHighlights": [
+        "Visuels campagne 4K",
+        "retouches orientées typographie",
+        "références multiples"
+      ],
+      "paragraph": "Utilisez Nano Banana Pro quand une image doit porter une typographie plus fiable, une finition campagne, une sortie 2K/4K et des retouches guidées par références.",
+      "primaryCta": {
+        "label": "Générer avec Nano Banana Pro",
+        "href": "/app/image?engine=nano-banana-pro"
+      },
+      "secondaryCta": {
+        "label": "Voir les tarifs",
+        "href": "/fr/tarifs#nano-banana-pro-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir l’espace image",
+          "href": "/app/image?engine=nano-banana-pro"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#nano-banana-pro-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Nano Banana Pro",
+      "description": "Visuel 4K et workflow typographie",
+      "renderLabel": "Voir l’image",
+      "badges": [
+        "2K/4K",
+        "Typographie",
+        "Références"
+      ],
+      "altContext": "image campagne Nano Banana Pro avec typographie"
+    },
+    "features": [
+      {
+        "title": "Visuels 4K",
+        "body": "Rendez des stills haute résolution pour lancements et assets client.",
+        "tone": "quality"
+      },
+      {
+        "title": "Typographie",
+        "body": "Décrivez hiérarchie de texte, placement et layout.",
+        "tone": "reference"
+      },
+      {
+        "title": "Retouches référence",
+        "body": "Chargez des refs pour produit, tenue, décor ou style.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Seeds",
+        "body": "Verrouillez l’aléatoire pendant les itérations.",
+        "tone": "reference"
+      },
+      {
+        "title": "2K d’abord",
+        "body": "Validez en 2K avant de payer une finale 4K.",
+        "tone": "price"
+      },
+      {
+        "title": "Workspace image",
+        "body": "Générez et éditez vos assets dans MaxVideoAI.",
+        "tone": "duration"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Pro ou Nano Banana 2 ?",
+        "body": "Prenez Pro pour la finition 4K et la typographie. Prenez Nano Banana 2 pour grounding, ratios larges et brouillons moins chers.",
+        "cta": {
+          "label": "Voir Nano Banana 2",
+          "href": "/fr/modeles/nano-banana-2"
+        }
+      },
+      {
+        "title": "Travail typographique ?",
+        "body": "Nommez le texte exact, sa hiérarchie, son espacement et le support où il apparaît.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin de variantes moins chères ?",
+        "body": "Utilisez Nano Banana pour les lots rapides avant de finaliser une piste dans Pro.",
+        "cta": {
+          "label": "Voir Nano Banana",
+          "href": "/fr/modeles/nano-banana"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Visuel campagne",
+        "body": "Définissez produit, layout, texte, lumière et résolution de livraison."
+      },
+      {
+        "title": "Retouche référence",
+        "body": "Chargez des refs pour identité produit, tenue, décor, palette ou typo."
+      },
+      {
+        "title": "2K vers 4K",
+        "body": "Validez la composition en 2K, puis relancez en 4K."
+      },
+      {
+        "title": "Itération par seed",
+        "body": "Réutilisez le seed et changez une seule variable par passe."
+      },
+      {
+        "title": "Sécurité marque",
+        "body": "Utilisez vos propres marques et personnages; évitez IP protégée et célébrités."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Nano Banana Pro en un coup d’œil",
+      "subtitle": "Prix totaux par scénario image — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 4K",
+      "ctaHref": "/fr/tarifs#nano-banana-pro-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana Pro : tarifs, images 4K et typographie | MaxVideoAI",
+      "description": "Explorez Nano Banana Pro : prix, visuels campagne 2K/4K, génération typographique, retouches par références et workflows brand assets."
+    }
   }
 }

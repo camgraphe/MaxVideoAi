@@ -363,5 +363,144 @@
       "Imagen a video se siente genérico -> refuerza el frame inicial y simplifica la petición de movimiento.",
       "Los runs en 4K parecen caros para ideación -> valida primero el movimiento en una pasada más barata y luego relanza la ganadora."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-3-pro",
+    "hero": {
+      "eyebrow": "RUTA LTX DE PRODUCCIÓN",
+      "title": "LTX 2.3 Pro",
+      "subtitle": "Flujos guiados por audio, controles Extend y Retake, y pasadas Generate 4K para video de producción.",
+      "subtitleHighlights": [
+        "flujos guiados por audio",
+        "Extend y Retake",
+        "pasadas Generate 4K"
+      ],
+      "paragraph": "Usa LTX 2.3 Pro cuando el trabajo LTX necesita más que un borrador: generación desde texto o imagen, audio-to-video, extensión de video fuente y retake selectivo en una ruta de producción.",
+      "primaryCta": {
+        "label": "Generar con LTX 2.3 Pro",
+        "href": "/app?engine=ltx-2-3"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Fast",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#ltx-2-3-pro-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo LTX 2.3 Pro",
+      "description": "Render de flujo de producción",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Generate",
+        "Audio activado",
+        "16:9"
+      ],
+      "altContext": "render cinematográfico Generate con LTX 2.3 Pro"
+    },
+    "features": [
+      {
+        "title": "Texto e imagen a video",
+        "body": "Genera desde prompt o imagen inicial, con cuadro final opcional.",
+        "tone": "reference"
+      },
+      {
+        "title": "Audio-to-video",
+        "body": "Usa un audio cargado cuando el sonido debe guiar el timing.",
+        "tone": "audio"
+      },
+      {
+        "title": "Extend",
+        "body": "Continúa un video fuente al inicio o al final.",
+        "tone": "duration"
+      },
+      {
+        "title": "Retake",
+        "body": "Reemplaza una sección en vez de regenerar todo el clip.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Generate hasta 4K",
+        "body": "Usa mayor resolución para pasadas ya aprobadas.",
+        "tone": "quality"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Pro o Fast?",
+        "body": "Usa Fast para borradores simples. Usa Pro cuando necesitas audio, extensión, retake o control de producción en mayor resolución.",
+        "cta": {
+          "label": "Comparar Fast vs Pro",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro?order=ltx-2-3-pro"
+        }
+      },
+      {
+        "title": "¿Arreglas parte de un clip?",
+        "body": "Usa Extend cuando falta más metraje, o Retake cuando una sección necesita reemplazo.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Comparas motores de producción?",
+        "body": "Compara LTX 2.3 Pro con Veo 3.1 al elegir entre controles editoriales y acabado premium corto.",
+        "cta": {
+          "label": "Comparar LTX Pro vs Veo",
+          "href": "/es/comparativa/ltx-2-3-pro-vs-veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Generate video",
+        "body": "Crea la toma desde texto o imagen inicial, con cuadro final opcional."
+      },
+      {
+        "title": "Audio-to-video",
+        "body": "Carga audio cuando ritmo, diálogo o música deben guiar la imagen."
+      },
+      {
+        "title": "Extend",
+        "body": "Continúa un clip fuente antes o después del metraje actual."
+      },
+      {
+        "title": "Retake",
+        "body": "Selecciona una ventana fallida y reemplaza audio, video o ambos."
+      },
+      {
+        "title": "Pasada final",
+        "body": "Sube resolución cuando la ruta y el prompt ya estén aprobados."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de LTX 2.3 Pro de un vistazo",
+      "subtitle": "Totales de producción por escenario. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Ruta de 20 s; presets Generate varían por modo",
+      "ctaHref": "/es/precios#ltx-2-3-pro-pricing"
+    },
+    "meta": {
+      "title": "LTX 2.3 Pro: precios, audio, Extend y Retake | MaxVideoAI",
+      "description": "Usa LTX 2.3 Pro para flujos LTX de producción: audio-to-video, Extend, Retake, imagen a video y pasadas Generate de mayor resolución."
+    }
   }
 }

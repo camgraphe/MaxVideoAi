@@ -438,5 +438,144 @@
       "Texto/señalética se rompe → mantén el texto legible fuera de plano; añade el copy crítico en post.",
       "La VO / lip sync falla → acorta líneas y evita monólogos largos."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1",
+    "hero": {
+      "eyebrow": "MODELO DE VIDEO PREMIUM DE GOOGLE",
+      "title": "Veo 3.1",
+      "subtitle": "Clips cortos pulidos con audio nativo, tomas guiadas por referencias, salida 4K y flujos first-last o extend.",
+      "subtitleHighlights": [
+        "clips cortos pulidos",
+        "audio nativo",
+        "salida 4K"
+      ],
+      "paragraph": "Usa Veo 3.1 para tomas premium de 4, 6 u 8 segundos cuando necesitas texto a video, imágenes iniciales, referencias fijas, control first/last-frame, salida 4K o extensión de clip dentro de MaxVideoAI.",
+      "primaryCta": {
+        "label": "Generar con Veo 3.1",
+        "href": "/app?engine=veo-3-1"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Kling",
+          "href": "/es/comparativa/kling-3-pro-vs-veo-3-1?order=veo-3-1"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#veo-3-1-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Veo 3.1",
+      "description": "Toma de video pulida con audio nativo",
+      "renderLabel": "Ver resultado",
+      "badges": [
+        "Audio nativo",
+        "8 s",
+        "Opción 4K"
+      ],
+      "altContext": "toma cinematográfica premium de Veo 3.1 con movimiento controlado"
+    },
+    "features": [
+      {
+        "title": "Clips cortos premium",
+        "body": "Crea tomas de 4, 6 u 8 segundos para anuncios, lanzamientos y momentos narrativos.",
+        "tone": "quality"
+      },
+      {
+        "title": "Audio nativo",
+        "body": "Genera ambiente, diálogo o intención sonora sincronizada en las rutas compatibles.",
+        "tone": "audio"
+      },
+      {
+        "title": "Referencias fijas",
+        "body": "Usa imágenes iniciales o varias referencias para anclar identidad, estilo y vestuario.",
+        "tone": "reference"
+      },
+      {
+        "title": "Control first-last",
+        "body": "Conecta imagen inicial y final cuando la pose o el producto deben cerrar con precisión.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Extensión",
+        "body": "Continúa un resultado de Veo sin cambiar de motor.",
+        "tone": "duration"
+      },
+      {
+        "title": "720p a 4K",
+        "body": "Elige 720p, 1080p o 4K antes de generar.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Cuándo conviene Veo 3.1?",
+        "body": "Elige Veo 3.1 para tomas cortas y pulidas donde importan la calidad del movimiento, el audio y la fidelidad a referencias más que el costo de iterar.",
+        "cta": {
+          "label": "Iniciar un resultado Veo 3.1",
+          "href": "/app?engine=veo-3-1"
+        }
+      },
+      {
+        "title": "¿Necesitas control con referencias?",
+        "body": "Usa una imagen inicial, varias referencias o cuadros first-last cuando la toma debe respetar un producto, personaje o composición final.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Comparas rutas de producción?",
+        "body": "Compara Veo 3.1 con Kling 3 Pro para decidir entre acabado premium corto y control tipo storyboard en tomas más largas.",
+        "cta": {
+          "label": "Comparar Veo y Kling",
+          "href": "/es/comparativa/kling-3-pro-vs-veo-3-1?order=veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Describe sujeto, ruta de cámara, ritmo, iluminación e intención de audio."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa una imagen fija para definir composición inicial e identidad visual."
+      },
+      {
+        "title": "Set de referencias",
+        "body": "Adjunta imágenes cuando vestuario, detalles de producto o estilo deben mantenerse."
+      },
+      {
+        "title": "Cuadros first-last",
+        "body": "Aporta inicio y cierre para guiar la transición y el punto final."
+      },
+      {
+        "title": "Pasada extend",
+        "body": "Continúa un clip de Veo cuando la idea necesita más tiempo después del primer resultado."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Veo 3.1 de un vistazo",
+      "subtitle": "Precios totales con audio activado. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 8 s en 4K",
+      "ctaHref": "/es/precios#veo-3-1-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1: precios 4K, audio nativo y referencias | MaxVideoAI",
+      "description": "Genera con Veo 3.1 hasta 4K: audio nativo, prompts de texto, imágenes de referencia, control first-last y extensión en MaxVideoAI."
+    }
   }
 }

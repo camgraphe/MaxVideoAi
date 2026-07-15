@@ -158,12 +158,30 @@
     "heroDesc2": "Eso crea una historia de producto mas limpia. Ray 2 sigue siendo premium, Flash sigue siendo rapido y ambos modelos soportan generacion nueva mas workflows de modify y reframe desde video fuente.",
     "heroSupportLine": "Ideal para iterar rapido sin perder herramientas reales de modify y reframe dentro de la misma familia Luma.",
     "heroSpecChips": [
-      { "label": "Text->Video", "icon": "textToVideo" },
-      { "label": "Image->Video", "icon": "imageToVideo" },
-      { "label": "Modify desde video fuente", "icon": "videoToVideo" },
-      { "label": "Reframe a 1:1 o 9:16", "icon": "aspectRatio" },
-      { "label": "Generate: 5s o 9s", "icon": "duration" },
-      { "label": "540p a 1080p en generate", "icon": "resolution" }
+      {
+        "label": "Text->Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Modify desde video fuente",
+        "icon": "videoToVideo"
+      },
+      {
+        "label": "Reframe a 1:1 o 9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Generate: 5s o 9s",
+        "icon": "duration"
+      },
+      {
+        "label": "540p a 1080p en generate",
+        "icon": "resolution"
+      }
     ],
     "whyTitle": "Por que Luma Ray 2 Flash es estrategicamente util",
     "heroHighlights": [
@@ -225,5 +243,148 @@
     ],
     "finalPara1": "Luma Ray 2 Flash es el contrapunto rapido correcto de Ray 2 solo si expone los mismos workflows reales. Ahora es asi: lineup mas simple, cobertura workflow mas fuerte y un camino mas limpio del draft al final premium.",
     "finalButton": "Generar con Luma Ray 2 Flash"
+  },
+  "decision": {
+    "modelSlug": "luma-ray-2-flash",
+    "hero": {
+      "eyebrow": "RUTA LUMA FAST DE GENERACION ANTERIOR",
+      "title": "Luma Ray 2 Flash",
+      "subtitle": "Ruta Luma fast de generación anterior para borradores legacy, Modify y Reframe históricos de Ray 2.",
+      "subtitleHighlights": [
+        "Ruta Luma fast de generación anterior",
+        "borradores legacy",
+        "Modify y Reframe"
+      ],
+      "paragraph": "Usa Luma Ray 2 Flash cuando necesitas una pasada rápida compatible con la ruta Ray 2 anterior o contexto de borrador histórico. Para nuevos edits de video fuente, keyframes y Reframe de Luma, empieza por Ray 3.2.",
+      "primaryCta": {
+        "label": "Abrir Flash legacy",
+        "href": "/app?engine=lumaRay2_flash"
+      },
+      "secondaryCta": {
+        "label": "Abrir Ray 3.2",
+        "href": "/es/modelos/luma-ray-3-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Luma actual: Ray 3.2",
+          "href": "/es/modelos/luma-ray-3-2"
+        },
+        {
+          "label": "Comparar con Ray 2",
+          "href": "/es/comparativa/luma-ray-2-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#luma-ray-2-flash-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Luma Ray 2 Flash",
+      "description": "Workflow Luma fast de generación anterior",
+      "renderLabel": "Ver borrador",
+      "badges": [
+        "Fast legacy",
+        "Borrador",
+        "1080p"
+      ],
+      "altContext": "ejemplo de borrador rápido con Luma Ray 2 Flash"
+    },
+    "features": [
+      {
+        "title": "Ruta fast legacy",
+        "body": "Usa Flash para prompts Ray 2 antiguos, ejemplos históricos y pruebas de compatibilidad.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pruebas con imagen inicial",
+        "body": "Anima un primer frame para revisar movimiento, encuadre y llegada.",
+        "tone": "reference"
+      },
+      {
+        "title": "Pasadas Modify",
+        "body": "Prueba fuerzas adhere, flex y reimagine sobre clips fuente.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Variantes Reframe",
+        "body": "Valida crops verticales, cuadrados o widescreen antes de entregar.",
+        "tone": "reference"
+      },
+      {
+        "title": "Hasta 1080p",
+        "body": "Elige 540p, 720p o 1080p para generación de borradores.",
+        "tone": "quality"
+      },
+      {
+        "title": "Ray 3.2 para edits actuales",
+        "body": "Mueve nuevos flujos Modify, keyframes y Reframe a Ray 3.2 primero.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Flash o Ray 3.2?",
+        "body": "Usa Ray 3.2 para Luma Modify, keyframes y Reframe actuales. Mantén Flash solo si necesitas comportamiento fast Ray 2 legacy.",
+        "cta": {
+          "label": "Abrir Ray 3.2",
+          "href": "/es/modelos/luma-ray-3-2"
+        }
+      },
+      {
+        "title": "¿Pruebas ediciones o crops?",
+        "body": "Usa Flash para pruebas antiguas de video fuente solo si importa la ruta legacy. Las nuevas pruebas deben empezar por Ray 3.2.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Necesitas una ruta rápida actual?",
+        "body": "Compara LTX Fast, Seedance Fast o Veo Fast cuando la velocidad importa más que la compatibilidad Luma legacy.",
+        "cta": {
+          "label": "Comparar Flash vs LTX Fast",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texto a video",
+        "body": "Mantén el prompt compacto: un sujeto, un movimiento, un mood y un formato."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa un primer frame para fijar composición mientras Flash prueba movimiento y pacing."
+      },
+      {
+        "title": "Cuadro final opcional",
+        "body": "Agrega un cuadro final solo si la ruta imagen a video activa lo expone y el borrador debe aterrizar en una composición específica."
+      },
+      {
+        "title": "Modify",
+        "body": "Explora cambios de look en video fuente antes de pasar la dirección ganadora a Ray 2."
+      },
+      {
+        "title": "Reframe",
+        "body": "Valida crops móviles, cuadrados o widescreen mientras el clip fuente se aprueba."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios legacy de Luma Ray 2 Flash",
+      "subtitle": "Totales de borrador legacy. Usa Ray 3.2 primero para flujos Luma Modify y Reframe actuales.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#luma-ray-2-flash-pricing"
+    },
+    "meta": {
+      "title": "Luma Ray 2 Flash legacy: precios y borradores | MaxVideoAI",
+      "description": "Usa Luma Ray 2 Flash como ruta Luma fast de generación anterior: precios de borrador, Modify, Reframe, contexto Ray 2 y migración a Ray 3.2."
+    }
   }
 }

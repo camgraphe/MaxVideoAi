@@ -381,5 +381,144 @@
       "Random text/logos appear → strengthen negative prompt (“no text, no logos, no UI, no watermark”) and keep signage out of frame.",
       "Frame looks chaotic → remove secondary characters/props; keep one hero subject and center the action."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-2-5-turbo",
+    "hero": {
+      "eyebrow": "SUPPORTED KLING SILENT DRAFT ROUTE",
+      "title": "Kling 2.5 Turbo",
+      "subtitle": "Silent 1080p drafts for text or image starts, camera look-dev, and negative prompt control.",
+      "subtitleHighlights": [
+        "Silent 1080p drafts",
+        "text or image starts",
+        "negative prompt control"
+      ],
+      "paragraph": "Use Kling 2.5 Turbo when you need a supported older Kling route for silent short drafts, single-image motion tests, camera-first look-dev, and lower-cost prompt cleanup before moving approved shots into Kling 3.",
+      "primaryCta": {
+        "label": "Draft with Kling 2.5 Turbo",
+        "href": "/app?engine=kling-2-5-turbo"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "View Kling 3 Standard",
+          "href": "/models/kling-3-standard"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-2-5-turbo-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Kling 2.5 Turbo example",
+      "description": "Silent short draft for look-dev",
+      "renderLabel": "View draft",
+      "badges": [
+        "Silent",
+        "10s",
+        "1080p"
+      ],
+      "altContext": "silent Kling 2.5 Turbo draft clip"
+    },
+    "features": [
+      {
+        "title": "Silent drafts",
+        "body": "Generate video-only clips that are easy to score or edit later.",
+        "tone": "quality"
+      },
+      {
+        "title": "Text or image",
+        "body": "Start from a prompt or one reference still for short motion tests.",
+        "tone": "reference"
+      },
+      {
+        "title": "Camera look-dev",
+        "body": "Try tracking, dolly, handheld or product moves before the final route.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Negative prompt",
+        "body": "Block extra people, text, logos and visual artifacts with cleanup copy.",
+        "tone": "reference"
+      },
+      {
+        "title": "Max 10s",
+        "body": "Keep one scene and one action inside the exposed short duration.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "When should you use 2.5 Turbo?",
+        "body": "Use it for silent look-dev, camera tests and inexpensive Kling drafts. Use Kling 3 routes when the shot needs the current workflow.",
+        "cta": {
+          "label": "View Kling 3 Standard",
+          "href": "/models/kling-3-standard"
+        }
+      },
+      {
+        "title": "Need audio or stronger finals?",
+        "body": "Move approved recipes into Kling 3 Pro when the render needs stronger current-model fidelity or sound context.",
+        "cta": {
+          "label": "View Kling 3 Pro",
+          "href": "/models/kling-3-pro"
+        }
+      },
+      {
+        "title": "Cleaning up a prompt?",
+        "body": "Use one action, one camera move and a strong negative prompt before trying more expensive routes.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Write a tight shot brief: subject, action, setting, camera move and style."
+      },
+      {
+        "title": "Single image",
+        "body": "Use one still when subject shape, product framing or composition should anchor the clip."
+      },
+      {
+        "title": "Negative prompt",
+        "body": "List what to avoid: text, logos, extra characters, distortion or low-quality motion."
+      },
+      {
+        "title": "CFG scale",
+        "body": "Adjust adherence carefully when the shot needs less drift or more creative freedom."
+      },
+      {
+        "title": "Upgrade path",
+        "body": "Send the best silent recipe to Kling 3 Standard or Pro when it is ready for review."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 2.5 Turbo pricing at a glance",
+      "subtitle": "Preset silent draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#kling-2-5-turbo-pricing"
+    },
+    "meta": {
+      "title": "Kling 2.5 Turbo: Pricing & Silent Drafts | MaxVideoAI",
+      "description": "Use Kling 2.5 Turbo for supported older Kling silent drafts, text or image starts, negative prompt control and lower-cost 1080p look-dev."
+    }
   }
 }

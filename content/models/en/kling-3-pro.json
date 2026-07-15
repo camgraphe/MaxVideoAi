@@ -297,5 +297,144 @@
       "",
       "Audio: <<<voice_1>>> “Here is the next generation of our platform.” Quiet studio ambience, one soft UI chime. No text, no logos, no subtitles."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-3-pro",
+    "hero": {
+      "eyebrow": "KLING PRO VIDEO MODEL",
+      "title": "Kling 3 Pro",
+      "subtitle": "Storyboard control, native audio, and 15s 1080p production clips for structured sequences.",
+      "subtitleHighlights": [
+        "storyboard control",
+        "native audio",
+        "15s 1080p production clips"
+      ],
+      "paragraph": "Use Kling 3 Pro when you need text-to-video or image-led shots with strong narrative control: 3 to 15 seconds, 1080p output, three aspect ratios, negative prompts, CFG scale and optional end-frame guidance.",
+      "primaryCta": {
+        "label": "Generate with Kling 3 Pro",
+        "href": "/app?engine=kling-3-pro"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare with Veo",
+          "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-3-pro-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Kling 3 Pro example",
+      "description": "Controlled 1080p production sequence",
+      "renderLabel": "View render",
+      "badges": [
+        "Native audio",
+        "15s cap",
+        "1080p"
+      ],
+      "altContext": "Kling 3 Pro cinematic sequence with storyboard-style shot control"
+    },
+    "features": [
+      {
+        "title": "Storyboard control",
+        "body": "Structure scene beats and camera direction for narrative shots.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Native audio",
+        "body": "Keep audio on for synchronized ambience and production context.",
+        "tone": "audio"
+      },
+      {
+        "title": "3-15 seconds",
+        "body": "Pick the exact duration range exposed in MaxVideoAI.",
+        "tone": "duration"
+      },
+      {
+        "title": "1080p output",
+        "body": "Use the dedicated 1080p route for production review and publishing prep.",
+        "tone": "quality"
+      },
+      {
+        "title": "Image and end frame",
+        "body": "Start from an image and optionally steer the ending frame.",
+        "tone": "reference"
+      },
+      {
+        "title": "CFG and negative prompt",
+        "body": "Tune prompt adherence and suppress unwanted artifacts.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "When should you choose Kling 3 Pro?",
+        "body": "Choose Kling 3 Pro for storyboard-style control, longer 15s clips, native audio and precise 1080p shots.",
+        "cta": {
+          "label": "Start a Kling 3 Pro render",
+          "href": "/app?engine=kling-3-pro"
+        }
+      },
+      {
+        "title": "Need tighter shot direction?",
+        "body": "Use clear scene beats, a negative prompt, CFG scale and an optional end frame when the camera path needs guardrails.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparing premium routes?",
+        "body": "Compare Kling 3 Pro with Veo 3.1 when choosing between longer controlled sequences and short premium polish.",
+        "cta": {
+          "label": "Compare Kling and Veo",
+          "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text sequence",
+        "body": "Write a compact storyboard with subject, scene beats, camera and audio direction."
+      },
+      {
+        "title": "Start image",
+        "body": "Use image mode when identity, product shape or composition must start from a still."
+      },
+      {
+        "title": "End frame",
+        "body": "Add an ending image when the final pose or product placement needs to be controlled."
+      },
+      {
+        "title": "Negative prompt",
+        "body": "Call out blur, distortion, extra limbs or off-brand details to reduce unwanted output."
+      },
+      {
+        "title": "CFG scale",
+        "body": "Adjust adherence when a prompt needs either stricter control or more natural motion."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3 Pro pricing at a glance",
+      "subtitle": "Audio-on 1080p preset totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 15s at 1080p",
+      "ctaHref": "/pricing#kling-3-pro-pricing"
+    },
+    "meta": {
+      "title": "Kling 3 Pro: Pricing, Native Audio & 15s Control | MaxVideoAI",
+      "description": "Generate Kling 3 Pro clips with storyboard control, native audio, 1080p output, 3-15s duration, negative prompts, CFG scale and optional end-frame guidance."
+    }
   }
 }

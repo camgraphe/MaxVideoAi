@@ -403,5 +403,148 @@
       "Texte/signalétique cassés → gardez le texte lisible hors champ; ajoutez le copy critique en post.",
       "VO / lip sync instable → raccourcissez les lignes; évitez les monologues longs et débit rapide."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1-fast",
+    "hero": {
+      "eyebrow": "ROUTE GOOGLE FAST VIDEO",
+      "title": "Veo 3.1 Fast",
+      "subtitle": "Des brouillons Veo rapides avec audio natif optionnel, reference-to-video, sortie 4K et boucles courtes.",
+      "subtitleHighlights": [
+        "brouillons Veo rapides",
+        "audio natif optionnel",
+        "sortie 4K"
+      ],
+      "paragraph": "Utilisez Veo 3.1 Fast pour tester vite en texte-vidéo, image-vidéo, reference-to-video, première-dernière image et checks 4K avant de passer les plans retenus dans Veo 3.1.",
+      "primaryCta": {
+        "label": "Générer avec Veo 3.1 Fast",
+        "href": "/app?engine=veo-3-1-fast"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Veo 3.1",
+          "href": "/fr/comparatif/veo-3-1-vs-veo-3-1-fast?order=veo-3-1-fast"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#veo-3-1-fast-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Veo 3.1 Fast",
+      "description": "Brouillon Veo rapide avec audio optionnel",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Fast",
+        "8 s",
+        "Option 4K"
+      ],
+      "altContext": "brouillon court Veo 3.1 Fast"
+    },
+    "features": [
+      {
+        "title": "Brouillons Veo rapides",
+        "body": "Testez les concepts de 720p à 4K avant la route de production principale.",
+        "tone": "quality"
+      },
+      {
+        "title": "Audio optionnel",
+        "body": "Activez l’audio natif pour tester timing ou ambiance.",
+        "tone": "audio"
+      },
+      {
+        "title": "Reference-to-video",
+        "body": "Ajoutez 1 à 3 stills pour une passe cohérence identité, produit ou style de 8 s.",
+        "tone": "reference"
+      },
+      {
+        "title": "Tests première-dernière",
+        "body": "Reliez deux images approuvées pour contrôler une transition courte.",
+        "tone": "reference"
+      },
+      {
+        "title": "Extension",
+        "body": "Prolongez un clip Fast existant quand le brouillon a besoin d’un beat en plus.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast ou Veo 3.1 ?",
+        "body": "Utilisez Fast pour les tests de prompts et les boucles de concept. Passez à Veo 3.1 pour le rendu final.",
+        "cta": {
+          "label": "Comparer Veo 3.1 vs Fast",
+          "href": "/fr/comparatif/veo-3-1-vs-veo-3-1-fast?order=veo-3-1-fast"
+        }
+      },
+      {
+        "title": "Vous testez une fin ?",
+        "body": "Utilisez première-dernière image quand le début et la composition finale sont déjà validés.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin du test Veo le moins cher ?",
+        "body": "Comparez Fast et Lite selon que vous privilégiez le contrôle audio ou le coût d’itération.",
+        "cta": {
+          "label": "Comparer Fast vs Lite",
+          "href": "/fr/comparatif/veo-3-1-fast-vs-veo-3-1-lite"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Testez sujet, caméra, style et intention audio dans un brouillon court."
+      },
+      {
+        "title": "Image de départ",
+        "body": "Ancrez cadrage, produit ou identité avec une seule image source."
+      },
+      {
+        "title": "Reference-to-video",
+        "body": "Ajoutez 1 à 3 stills quand identité, tenue, produit ou style doivent rester cohérents."
+      },
+      {
+        "title": "Check 4K",
+        "body": "Utilisez la 4K sur les runs Fast retenus quand vous devez inspecter le détail."
+      },
+      {
+        "title": "Première-dernière image",
+        "body": "Ajoutez une image d’arrivée quand la pose finale compte."
+      },
+      {
+        "title": "Audio",
+        "body": "Activez l’audio pour le timing, ou coupez-le pour un test purement visuel."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Veo 3.1 Fast en un coup d’œil",
+      "subtitle": "Prix totaux par scénario de brouillon — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 4K",
+      "ctaHref": "/fr/tarifs#veo-3-1-fast-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1 Fast : tarifs 4K, brouillons et exemples | MaxVideoAI",
+      "description": "Utilisez Veo 3.1 Fast pour des brouillons Veo rapides jusqu’en 4K, audio natif optionnel, tests première-dernière image et boucles courtes."
+    }
   }
 }

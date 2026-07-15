@@ -158,12 +158,30 @@
     "heroDesc2": "That gives the family a cleaner product story. Ray 2 stays premium, Flash stays fast, and both models support net-new generation plus source-video modify and reframe workflows.",
     "heroSupportLine": "Best for fast iteration when you still need real modify and reframe tools inside the same Luma family.",
     "heroSpecChips": [
-      { "label": "Text->Video", "icon": "textToVideo" },
-      { "label": "Image->Video", "icon": "imageToVideo" },
-      { "label": "Modify from source clip", "icon": "videoToVideo" },
-      { "label": "Reframe to 1:1 or 9:16", "icon": "aspectRatio" },
-      { "label": "Generate: 5s or 9s", "icon": "duration" },
-      { "label": "540p to 1080p on generate", "icon": "resolution" }
+      {
+        "label": "Text->Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Modify from source clip",
+        "icon": "videoToVideo"
+      },
+      {
+        "label": "Reframe to 1:1 or 9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Generate: 5s or 9s",
+        "icon": "duration"
+      },
+      {
+        "label": "540p to 1080p on generate",
+        "icon": "resolution"
+      }
     ],
     "whyTitle": "Why Luma Ray 2 Flash is strategically useful",
     "heroHighlights": [
@@ -225,5 +243,148 @@
     ],
     "finalPara1": "Luma Ray 2 Flash is the right fast counterpart to Ray 2 only if it exposes the same real workflows. That is now the case: simpler model lineup, stronger workflow coverage, and a cleaner path from draft to premium final.",
     "finalButton": "Generate with Luma Ray 2 Flash"
+  },
+  "decision": {
+    "modelSlug": "luma-ray-2-flash",
+    "hero": {
+      "eyebrow": "PREVIOUS-GENERATION FAST LUMA ROUTE",
+      "title": "Luma Ray 2 Flash",
+      "subtitle": "Previous-generation fast Luma route for older Ray 2 draft coverage, Modify and Reframe.",
+      "subtitleHighlights": [
+        "Previous-generation fast Luma",
+        "draft coverage",
+        "Modify and Reframe"
+      ],
+      "paragraph": "Use Luma Ray 2 Flash when you need a legacy-compatible fast Ray 2 pass or older draft context. For new Luma source-video edits, keyframe guidance and Reframe work, start with Ray 3.2 instead of making Flash the first choice.",
+      "primaryCta": {
+        "label": "Open legacy Flash",
+        "href": "/app?engine=lumaRay2_flash"
+      },
+      "secondaryCta": {
+        "label": "Open Ray 3.2",
+        "href": "/models/luma-ray-3-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Current Luma: Ray 3.2",
+          "href": "/models/luma-ray-3-2"
+        },
+        {
+          "label": "Compare vs Ray 2",
+          "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#luma-ray-2-flash-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Luma Ray 2 Flash example",
+      "description": "Previous-generation fast Luma workflow",
+      "renderLabel": "View draft",
+      "badges": [
+        "Legacy fast route",
+        "Draft pass",
+        "1080p"
+      ],
+      "altContext": "fast Luma Ray 2 Flash draft example"
+    },
+    "features": [
+      {
+        "title": "Legacy fast route",
+        "body": "Use Flash for older Ray 2 draft prompts, old examples and compatibility checks.",
+        "tone": "duration"
+      },
+      {
+        "title": "Start-image tests",
+        "body": "Animate a first frame to check motion, framing and landing before final spend.",
+        "tone": "reference"
+      },
+      {
+        "title": "Modify passes",
+        "body": "Try adherence, flex and reimagine strengths on source clips.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Reframe variants",
+        "body": "Test vertical, square or wide crops before locking delivery formats.",
+        "tone": "reference"
+      },
+      {
+        "title": "Up to 1080p",
+        "body": "Choose 540p, 720p or 1080p for draft generation.",
+        "tone": "quality"
+      },
+      {
+        "title": "Ray 3.2 for current edits",
+        "body": "Move new Modify, keyframe and Reframe work to Ray 3.2 first.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Flash or Ray 3.2?",
+        "body": "Use Ray 3.2 for current Luma Modify, keyframes and Reframe. Keep Flash only when you need legacy fast Ray 2 behavior or old draft economics.",
+        "cta": {
+          "label": "Open Ray 3.2",
+          "href": "/models/luma-ray-3-2"
+        }
+      },
+      {
+        "title": "Testing edits or crops?",
+        "body": "Use Flash for older source-video look tests only when the legacy route matters. New edit and crop tests should start on Ray 3.2.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need a fast current draft route?",
+        "body": "Compare against LTX Fast, Seedance Fast or Veo Fast when speed matters more than preserving a legacy Luma workflow.",
+        "cta": {
+          "label": "Compare Flash vs LTX Fast",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Keep the draft prompt compact: one subject, one move, one mood and one format."
+      },
+      {
+        "title": "Start image",
+        "body": "Use a first frame to lock composition while Flash tests motion and pacing."
+      },
+      {
+        "title": "Optional end frame",
+        "body": "Add an end image only when the active image-to-video route exposes it and the draft needs a specific landing composition."
+      },
+      {
+        "title": "Modify",
+        "body": "Explore source-video look changes before committing the winning direction to Ray 2."
+      },
+      {
+        "title": "Reframe",
+        "body": "Validate mobile, square or wide crops while the source clip is still being approved."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Legacy Luma Ray 2 Flash pricing",
+      "subtitle": "Preset legacy draft totals - use Ray 3.2 first for current Luma Modify and Reframe work.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#luma-ray-2-flash-pricing"
+    },
+    "meta": {
+      "title": "Luma Ray 2 Flash Legacy: Pricing & Drafts | MaxVideoAI",
+      "description": "Use Luma Ray 2 Flash as a previous-generation fast Luma route, with legacy draft pricing, Modify, Reframe, Ray 2 context and Ray 3.2 migration guidance."
+    }
   }
 }

@@ -16,29 +16,71 @@
       "href": "/app/image?engine=luma-uni-1"
     },
     "secondaryLinks": [
-      { "label": "Ouvrir l’espace image", "href": "/app/image?engine=luma-uni-1" },
-      { "label": "Vérifier les tarifs", "href": "/pricing#luma-uni-1-pricing" }
+      {
+        "label": "Ouvrir l’espace image",
+        "href": "/app/image?engine=luma-uni-1"
+      },
+      {
+        "label": "Vérifier les tarifs",
+        "href": "/pricing#luma-uni-1-pricing"
+      }
     ]
   },
   "bestUseCases": {
     "title": "Meilleurs cas d’usage",
     "items": [
-      { "title": "Concepts 2K depuis un brief visuel", "icon": "imageToVideo" },
-      { "title": "Retouches source qui préservent le sujet principal", "icon": "layers" },
-      { "title": "Guidage produit, composition et style par références", "icon": "storyboard" },
-      { "title": "Recherche visuelle web quand le contexte compte", "icon": "sparkles" },
-      { "title": "Image propre avant un travail de mouvement", "icon": "product" }
+      {
+        "title": "Concepts 2K depuis un brief visuel",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Retouches source qui préservent le sujet principal",
+        "icon": "layers"
+      },
+      {
+        "title": "Guidage produit, composition et style par références",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Recherche visuelle web quand le contexte compte",
+        "icon": "sparkles"
+      },
+      {
+        "title": "Image propre avant un travail de mouvement",
+        "icon": "product"
+      }
     ]
   },
   "technicalOverviewTitle": "Aperçu technique",
   "technicalOverview": [
-    { "label": "Flux", "body": "Texte vers image et retouche image" },
-    { "label": "Sortie", "body": "Image fixe 2K" },
-    { "label": "Références", "body": "Les demandes texte peuvent utiliser plusieurs références; les retouches utilisent la première image comme source" },
-    { "label": "Ratios", "body": "Formats larges, carrés, verticaux et étendus en création" },
-    { "label": "Styles", "body": "Contrôles auto et manga lorsque disponibles" },
-    { "label": "Format", "body": "PNG ou JPEG dans l’espace image" },
-    { "label": "Prix", "body": "La copie publique utilise les prix de référence MaxVideoAI" }
+    {
+      "label": "Flux",
+      "body": "Texte vers image et retouche image"
+    },
+    {
+      "label": "Sortie",
+      "body": "Image fixe 2K"
+    },
+    {
+      "label": "Références",
+      "body": "Les demandes texte peuvent utiliser plusieurs références; les retouches utilisent la première image comme source"
+    },
+    {
+      "label": "Ratios",
+      "body": "Formats larges, carrés, verticaux et étendus en création"
+    },
+    {
+      "label": "Styles",
+      "body": "Contrôles auto et manga lorsque disponibles"
+    },
+    {
+      "label": "Format",
+      "body": "PNG ou JPEG dans l’espace image"
+    },
+    {
+      "label": "Prix",
+      "body": "La copie publique utilise les prix de référence MaxVideoAI"
+    }
   ],
   "promptStructure": {
     "title": "Mini-guide de prompt",
@@ -103,11 +145,24 @@
     "heroEyebrow": "Modèle image Luma Uni-1",
     "heroSupportLine": "Idéal pour images 2K, retouches source et compositions guidées par références.",
     "heroSpecChips": [
-      { "label": "Text->Image", "icon": "textToVideo" },
-      { "label": "Retouche image", "icon": "imageToVideo" },
-      { "label": "Sortie 2K", "icon": "resolution" },
-      { "label": "Multi-référence" },
-      { "label": "PNG / JPEG" }
+      {
+        "label": "Text->Image",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Retouche image",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Sortie 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Multi-référence"
+      },
+      {
+        "label": "PNG / JPEG"
+      }
     ],
     "whyTitle": "Pourquoi Uni-1 sert la préparation image",
     "heroDesc1": "Uni-1 offre une route Luma centrée sur l’image fixe pour concepts, retouches et préparation de références.",
@@ -207,5 +262,144 @@
     ],
     "finalPara1": "Luma Uni-1 est la route image 2K pratique pour création, retouches et préparation de références dans MaxVideoAI.",
     "finalButton": "Générer avec Luma Uni-1"
+  },
+  "decision": {
+    "modelSlug": "luma-uni-1",
+    "hero": {
+      "eyebrow": "ROUTE LUMA IMAGE",
+      "title": "Luma Uni-1",
+      "subtitle": "Génération d’images 2K avec retouches image, guidage multi-référence, composition raisonnée et références web optionnelles.",
+      "subtitleHighlights": [
+        "Génération d’images 2K",
+        "retouches image",
+        "guidage multi-référence"
+      ],
+      "paragraph": "Utilisez Uni-1 pour créer depuis texte, retoucher une source, guider la composition par références et préparer une recherche visuelle sans promettre une typographie parfaite.",
+      "primaryCta": {
+        "label": "Générer avec Luma Uni-1",
+        "href": "/app/image?engine=luma-uni-1"
+      },
+      "secondaryCta": {
+        "label": "Voir les tarifs",
+        "href": "/fr/tarifs#luma-uni-1-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir l’espace image",
+          "href": "/app/image?engine=luma-uni-1"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#luma-uni-1-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Luma Uni-1",
+      "description": "Génération d’images 2K et retouche guidée par références",
+      "renderLabel": "Voir l’image",
+      "badges": [
+        "2K",
+        "Retouche",
+        "Références"
+      ],
+      "altContext": "exemple image Luma Uni-1 guidé par références"
+    },
+    "features": [
+      {
+        "title": "Images 2K",
+        "body": "Créez des images 2K uniques pour concepts, références et exploration de composition.",
+        "tone": "quality"
+      },
+      {
+        "title": "Retouches source",
+        "body": "Utilisez la première image comme source, puis guidez la révision par prompt.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Multi-référence",
+        "body": "Ajoutez des références pour forme produit, style, direction typographique ou composition.",
+        "tone": "reference"
+      },
+      {
+        "title": "Composition raisonnée",
+        "body": "Utile pour organiser les éléments visuels, avec contrôle humain du texte exact.",
+        "tone": "quality"
+      },
+      {
+        "title": "Option avec contexte web",
+        "body": "Activez la recherche web seulement si le contexte visuel actuel aide la consigne.",
+        "tone": "reference"
+      },
+      {
+        "title": "Prix de référence",
+        "body": "Les prix affichés utilisent les références publiques MaxVideoAI avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Quand choisir Uni-1",
+        "body": "Choisissez Uni-1 pour concepts 2K, retouches source, préparation de références et exploration de composition.",
+        "cta": {
+          "label": "Ouvrir Uni-1",
+          "href": "/app/image?engine=luma-uni-1"
+        }
+      },
+      {
+        "title": "Bien utiliser les références",
+        "body": "Donnez un rôle à chaque référence : produit, palette, composition, style ou hiérarchie texte. Précisez ce qui doit rester.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Quand passer a Uni-1 Max",
+        "body": "Passez les images retenues dans Max quand le visuel principal exige plus de détail, de finition produit ou de révision précise.",
+        "cta": {
+          "label": "Voir Uni-1 Max",
+          "href": "/fr/modeles/luma-uni-1-max"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texte vers image",
+        "body": "Décrivez visuel, sujet, composition, style, ratio et tout texte à vérifier."
+      },
+      {
+        "title": "Retouche source",
+        "body": "Chargez une source, puis séparez ce qui doit rester de ce qui doit changer."
+      },
+      {
+        "title": "Composition multi-référence",
+        "body": "Utilisez les références pour ancrer sujet, style, palette et composition."
+      },
+      {
+        "title": "Recherche visuelle avec contexte web",
+        "body": "Activez la recherche web seulement si le contexte récent est utile, puis vérifiez le résultat."
+      },
+      {
+        "title": "Passage vers vidéo",
+        "body": "Gardez l’image la plus claire comme image de départ si l’étape suivante est le mouvement."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Luma Uni-1 en un coup d’oeil",
+      "subtitle": "Les prix affichés utilisent les références publiques MaxVideoAI; le prix exact apparaît avant génération.",
+      "footnote": "Les exemples de retouche/référence incluent les comptes images indiqués; le devis dans l’app reste la référence.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Une image",
+      "ctaHref": "/fr/tarifs#luma-uni-1-pricing"
+    },
+    "meta": {
+      "title": "Luma Uni-1 : prix image, références et retouche | MaxVideoAI",
+      "description": "Explorez Luma Uni-1 : génération image 2K, retouches source, guidage multi-référence, recherche visuelle avec contexte web et prix de référence."
+    }
   }
 }

@@ -273,5 +273,144 @@
       }
     ],
     "promptingGuideLabel": "Learn more"
+  },
+  "decision": {
+    "modelSlug": "nano-banana",
+    "hero": {
+      "eyebrow": "GOOGLE FAST IMAGE ROUTE",
+      "title": "Nano Banana",
+      "subtitle": "Fast still drafts, reference edits and batch image variants for lightweight visual exploration.",
+      "subtitleHighlights": [
+        "Fast still drafts",
+        "reference edits",
+        "batch image variants"
+      ],
+      "paragraph": "Use Nano Banana as the low-friction Google image route for quick still concepts, simple reference edits and multi-image batches before moving finals to Pro or Nano Banana 2.",
+      "primaryCta": {
+        "label": "Generate with Nano Banana",
+        "href": "/app/image?engine=nano-banana"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing#nano-banana-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=nano-banana"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#nano-banana-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Nano Banana example",
+      "description": "Fast still concept and edit route",
+      "renderLabel": "View image",
+      "badges": [
+        "Fast",
+        "Batch",
+        "Edit"
+      ],
+      "altContext": "Nano Banana fast still image example"
+    },
+    "features": [
+      {
+        "title": "Fast still drafts",
+        "body": "Explore image ideas quickly before investing in final routes.",
+        "tone": "price"
+      },
+      {
+        "title": "Reference edits",
+        "body": "Upload 1-4 images for prompt-led edits and remixes.",
+        "tone": "reference"
+      },
+      {
+        "title": "Batch variants",
+        "body": "Generate multiple outputs from one prompt for visual exploration.",
+        "tone": "duration"
+      },
+      {
+        "title": "Broad ratios",
+        "body": "Use common social, square, portrait and wide aspect ratios.",
+        "tone": "quality"
+      },
+      {
+        "title": "Low unit cost",
+        "body": "Good for early moodboards and storyboard stills.",
+        "tone": "price"
+      },
+      {
+        "title": "Image workspace",
+        "body": "Use the same MaxVideoAI wallet, prompts and history as the rest of the app.",
+        "tone": "continuity"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Nano Banana or Nano Banana 2?",
+        "body": "Use Nano Banana for cheaper fast batches. Use Nano Banana 2 for grounding, wider ratios and stronger edit controls.",
+        "cta": {
+          "label": "View Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      },
+      {
+        "title": "Batching quick variants?",
+        "body": "Keep prompts short, change one visual variable at a time and batch several outputs.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need higher-res campaign stills?",
+        "body": "Move selected directions into Nano Banana Pro when text polish, campaign finish or higher-res output matters.",
+        "cta": {
+          "label": "View Nano Banana Pro",
+          "href": "/models/nano-banana-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Describe the subject, style, aspect ratio and one clear composition target."
+      },
+      {
+        "title": "Image edit",
+        "body": "Upload a reference and state what changes while preserving structure."
+      },
+      {
+        "title": "Batch variants",
+        "body": "Run several images when exploring moodboards, thumbnails or storyboard stills."
+      },
+      {
+        "title": "Aspect ratio",
+        "body": "Pick the delivery ratio before prompting so composition matches the final crop."
+      },
+      {
+        "title": "Upgrade path",
+        "body": "Send winners to Nano Banana 2 or Pro when the still needs grounding or 4K polish."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Nano Banana pricing at a glance",
+      "subtitle": "Preset image totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 8 images",
+      "ctaHref": "/pricing#nano-banana-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana: Pricing, Fast Image Drafts & Edits | MaxVideoAI",
+      "description": "Explore Nano Banana pricing, fast still drafts, reference image edits, batch variants and lightweight Google image workflows on MaxVideoAI."
+    }
   }
 }

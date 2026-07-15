@@ -194,5 +194,144 @@
         "a": "Sí. La ruta de MaxVideoAI acepta hasta 14 imágenes de referencia en edit. Dale un rol claro a cada referencia: identidad del producto, material, paleta o composición."
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "nano-banana-2",
+    "hero": {
+      "eyebrow": "MODELO GOOGLE DE IMAGEN GUIADA",
+      "title": "Nano Banana 2",
+      "subtitle": "Generación de imagen guiada, ratios amplios y ediciones multi-referencia para stills de producción.",
+      "subtitleHighlights": [
+        "Generación de imagen guiada",
+        "ratios amplios",
+        "ediciones multi-referencia"
+      ],
+      "paragraph": "Usa Nano Banana 2 para stills de 0.5K a 4K, grounding web opcional, ratios amplios y sets de referencia más grandes para generar o editar con control.",
+      "primaryCta": {
+        "label": "Generar con Nano Banana 2",
+        "href": "/app/image?engine=nano-banana-2"
+      },
+      "secondaryCta": {
+        "label": "Ver precios",
+        "href": "/es/precios#nano-banana-2-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir espacio de imagen",
+          "href": "/app/image?engine=nano-banana-2"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#nano-banana-2-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Nano Banana 2",
+      "description": "Generación guiada y edición de imagen",
+      "renderLabel": "Ver imagen",
+      "badges": [
+        "Guiado",
+        "4K",
+        "Referencias"
+      ],
+      "altContext": "ejemplo de generación de imagen guiada con Nano Banana 2"
+    },
+    "features": [
+      {
+        "title": "Prompts guiados",
+        "body": "Activa web grounding cuando el contexto visual actual importa.",
+        "tone": "reference"
+      },
+      {
+        "title": "0.5K a 4K",
+        "body": "Borrador barato y subida de resolución para finales seleccionados.",
+        "tone": "quality"
+      },
+      {
+        "title": "Ratios amplios",
+        "body": "Formatos comunes, panorámicos y extremos.",
+        "tone": "duration"
+      },
+      {
+        "title": "Multi-referencia",
+        "body": "Usa más referencias para producto, moodboard o layout.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Seeds",
+        "body": "Reutiliza un seed para iterar sobre la misma composición.",
+        "tone": "reference"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Nano Banana 2 o Pro?",
+        "body": "Usa Nano Banana 2 para grounding, ratios y control de costo. Usa Pro cuando pesan texto más limpio y entrega de campaña.",
+        "cta": {
+          "label": "Ver Nano Banana Pro",
+          "href": "/es/modelos/nano-banana-pro"
+        }
+      },
+      {
+        "title": "¿Usas web grounding?",
+        "body": "Activa búsqueda web solo si el brief necesita contexto visual reciente; mantén explícitas tus referencias de marca.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Necesitas texto con OpenAI?",
+        "body": "Revisa GPT Image 2 cuando la precisión de labels y las ediciones con máscara son el trabajo principal.",
+        "cta": {
+          "label": "Ver GPT Image 2",
+          "href": "/es/modelos/gpt-image-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Texto a imagen",
+        "body": "Define sujeto, ratio, resolución, estilo y si hace falta grounding."
+      },
+      {
+        "title": "Edición de imagen",
+        "body": "Usa referencias para preservar forma de producto, layout, materiales o paleta."
+      },
+      {
+        "title": "Web grounding",
+        "body": "Actívalo solo cuando el contexto actual mejore el brief."
+      },
+      {
+        "title": "Ratios extremos",
+        "body": "Diseña la composición para panorámico o vertical antes de generar."
+      },
+      {
+        "title": "Escalera de resolución",
+        "body": "0.5K o 1K para borradores; 2K o 4K para finales."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Nano Banana 2 de un vistazo",
+      "subtitle": "Totales por escenario de imagen. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 4K",
+      "ctaHref": "/es/precios#nano-banana-2-pricing"
+    },
+    "meta": {
+      "title": "Nano Banana 2: precios, imágenes guiadas y edición | MaxVideoAI",
+      "description": "Explora Nano Banana 2: precios, generación guiada, salidas 0.5K a 4K, ratios amplios, ediciones multi-referencia y web grounding."
+    }
   }
 }

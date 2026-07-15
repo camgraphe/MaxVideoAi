@@ -377,5 +377,144 @@
       "a": "Usa Sora 2 para exploración más económica. Usa Sora 2 Pro cuando una toma elegida necesita la ruta Pro y revisión de mayor calidad."
     }
   ],
-  "pricingNotes": "Los precios live se actualizan en Generate. Revisa la tarifa antes de ejecutar."
+  "pricingNotes": "Los precios live se actualizan en Generate. Revisa la tarifa antes de ejecutar.",
+  "decision": {
+    "modelSlug": "sora-2-pro",
+    "hero": {
+      "eyebrow": "MODELO DE VIDEO OPENAI PRO",
+      "title": "Sora 2 Pro",
+      "subtitle": "Finales en mayor resolución, control de audio e imagen a video guiada por referencia para producción short-form pulida.",
+      "subtitleHighlights": [
+        "mayor resolución",
+        "control de audio",
+        "imagen a video guiada por referencia"
+      ],
+      "paragraph": "Usa Sora 2 Pro cuando un concepto Sora elegido necesita la ruta Pro actual: salida 720p o 1080p, texto a video o imagen a video, sonido nativo opcional y revisiones cercanas a entrega final.",
+      "primaryCta": {
+        "label": "Generar con Sora 2 Pro",
+        "href": "/app?engine=sora-2-pro"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/sora"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Sora 2",
+          "href": "/es/comparativa/sora-2-vs-sora-2-pro?order=sora-2-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#sora-2-pro-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Sora 2 Pro",
+      "description": "Render Pro 8 s 16:9 de continuidad",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Audio desactivado",
+        "8 s",
+        "16:9"
+      ],
+      "altContext": "render de control de continuidad con Sora 2 Pro"
+    },
+    "features": [
+      {
+        "title": "Ruta 1080p",
+        "body": "Usa Pro para tomas seleccionadas que necesitan entrega más limpia.",
+        "tone": "quality"
+      },
+      {
+        "title": "Audio sincronizado",
+        "body": "Mantén diálogo, ambiente y SFX en el mismo flujo de generación.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto a video",
+        "body": "Brief de una toma corta con sujeto, acción, cámara y sonido.",
+        "tone": "reference"
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Parte de un frame aprobado para preservar composición e identidad.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Máx. 12 s",
+        "body": "Planifica beats cerrados, no escenas largas.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Pro o Sora 2 estándar?",
+        "body": "Usa Sora 2 para conceptos en 720p. Usa Pro cuando la toma ganadora necesita 1080p y una revisión más final.",
+        "cta": {
+          "label": "Comparar Sora 2 vs Pro",
+          "href": "/es/comparativa/sora-2-vs-sora-2-pro?order=sora-2-pro"
+        }
+      },
+      {
+        "title": "¿Lista para revisión final?",
+        "body": "Usa Pro cuando prompt, encuadre y pistas de audio ya estén cerca del resultado esperado.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Comparas finales premium?",
+        "body": "Compara Sora 2 Pro con Veo 3.1 o Kling 3 Pro para anuncios, explainers o inserts cinematográficos.",
+        "cta": {
+          "label": "Comparar Sora 2 Pro vs Veo 3.1",
+          "href": "/es/comparativa/sora-2-pro-vs-veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Final texto a video",
+        "body": "Usa un brief de director compacto con una acción, cámara y plan de sonido."
+      },
+      {
+        "title": "Final imagen a video",
+        "body": "Parte de un still aprobado cuando identidad, producto o encuadre deben quedarse estables."
+      },
+      {
+        "title": "Plan de audio",
+        "body": "Separa voz, ambiente y SFX para que el sonido no compita con la acción visual."
+      },
+      {
+        "title": "Anclas de continuidad",
+        "body": "Repite vestuario, props, ubicación e iluminación cuando el clip tenga varios beats."
+      },
+      {
+        "title": "Control de costo",
+        "body": "Prototipa en Sora 2 y reserva Pro para las tomas que vale la pena pulir."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Sora 2 Pro de un vistazo",
+      "subtitle": "Totales Pro predefinidos. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "4/8/12 s · hasta 1080p",
+      "ctaHref": "/es/precios#sora-2-pro-pricing"
+    },
+    "meta": {
+      "title": "Sora 2 Pro: precios, 1080p y ejemplos | MaxVideoAI",
+      "description": "Explora precios de Sora 2 Pro, ejemplos 1080p, audio nativo sincronizado, texto a video e imagen a video. Compara Sora 2 Pro vs Sora 2."
+    }
+  }
 }

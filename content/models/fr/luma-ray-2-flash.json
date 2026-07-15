@@ -158,12 +158,30 @@
     "heroDesc2": "Cela donne une histoire produit plus propre. Ray 2 reste premium, Flash reste rapide, et les deux modeles supportent la generation nette plus les workflows modify et reframe a partir d'une video source.",
     "heroSupportLine": "Ideal pour iterer vite tout en gardant de vrais outils modify et reframe dans la meme famille Luma.",
     "heroSpecChips": [
-      { "label": "Text->Video", "icon": "textToVideo" },
-      { "label": "Image->Video", "icon": "imageToVideo" },
-      { "label": "Modify depuis video source", "icon": "videoToVideo" },
-      { "label": "Reframe en 1:1 ou 9:16", "icon": "aspectRatio" },
-      { "label": "Generate: 5s ou 9s", "icon": "duration" },
-      { "label": "540p a 1080p en generate", "icon": "resolution" }
+      {
+        "label": "Text->Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Modify depuis video source",
+        "icon": "videoToVideo"
+      },
+      {
+        "label": "Reframe en 1:1 ou 9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Generate: 5s ou 9s",
+        "icon": "duration"
+      },
+      {
+        "label": "540p a 1080p en generate",
+        "icon": "resolution"
+      }
     ],
     "whyTitle": "Pourquoi Luma Ray 2 Flash est strategiquement utile",
     "heroHighlights": [
@@ -225,5 +243,148 @@
     ],
     "finalPara1": "Luma Ray 2 Flash est le bon pendant rapide de Ray 2 seulement s'il expose les memes vrais workflows. C'est maintenant le cas: lineup plus simple, couverture workflow plus forte et chemin plus propre du draft vers le final premium.",
     "finalButton": "Generer avec Luma Ray 2 Flash"
+  },
+  "decision": {
+    "modelSlug": "luma-ray-2-flash",
+    "hero": {
+      "eyebrow": "ROUTE LUMA FAST D’ANCIENNE GENERATION",
+      "title": "Luma Ray 2 Flash",
+      "subtitle": "Route Luma fast d’ancienne génération pour brouillons legacy, Modify et Reframe Ray 2 historiques.",
+      "subtitleHighlights": [
+        "Route Luma fast d’ancienne génération",
+        "brouillons legacy",
+        "Modify et Reframe"
+      ],
+      "paragraph": "Utilisez Luma Ray 2 Flash quand vous avez besoin d’une passe Ray 2 rapide compatible avec l’ancienne route ou d’un contexte de brouillon historique. Pour les nouveaux edits vidéo source, keyframes et Reframe Luma, commencez par Ray 3.2.",
+      "primaryCta": {
+        "label": "Ouvrir Flash legacy",
+        "href": "/app?engine=lumaRay2_flash"
+      },
+      "secondaryCta": {
+        "label": "Ouvrir Ray 3.2",
+        "href": "/fr/modeles/luma-ray-3-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Luma actuel : Ray 3.2",
+          "href": "/fr/modeles/luma-ray-3-2"
+        },
+        {
+          "label": "Comparer vs Ray 2",
+          "href": "/fr/comparatif/luma-ray-2-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#luma-ray-2-flash-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Luma Ray 2 Flash",
+      "description": "Workflow Luma fast d’ancienne génération",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Fast legacy",
+        "Brouillon",
+        "1080p"
+      ],
+      "altContext": "exemple de brouillon rapide Luma Ray 2 Flash"
+    },
+    "features": [
+      {
+        "title": "Route fast legacy",
+        "body": "Utilisez Flash pour les anciens prompts Ray 2, exemples historiques et tests de compatibilité.",
+        "tone": "duration"
+      },
+      {
+        "title": "Tests image de départ",
+        "body": "Animez une première image pour vérifier mouvement, cadrage et arrivée.",
+        "tone": "reference"
+      },
+      {
+        "title": "Passes Modify",
+        "body": "Testez les forces adhere, flex et reimagine sur une source vidéo.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Variantes Reframe",
+        "body": "Validez crops verticaux, carrés ou larges avant la livraison.",
+        "tone": "reference"
+      },
+      {
+        "title": "Jusqu’à 1080p",
+        "body": "Choisissez 540p, 720p ou 1080p pour les générations brouillon.",
+        "tone": "quality"
+      },
+      {
+        "title": "Ray 3.2 pour les edits actuels",
+        "body": "Passez les nouveaux workflows Modify, keyframes et Reframe sur Ray 3.2 d’abord.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Flash ou Ray 3.2 ?",
+        "body": "Utilisez Ray 3.2 pour Luma Modify, keyframes et Reframe actuels. Gardez Flash seulement pour le comportement fast Ray 2 legacy.",
+        "cta": {
+          "label": "Ouvrir Ray 3.2",
+          "href": "/fr/modeles/luma-ray-3-2"
+        }
+      },
+      {
+        "title": "Vous testez edits ou crops ?",
+        "body": "Utilisez Flash pour les tests vidéo source plus anciens seulement si la route legacy compte. Les nouveaux tests doivent partir de Ray 3.2.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’une route rapide actuelle ?",
+        "body": "Comparez plutôt LTX Fast, Seedance Fast ou Veo Fast quand la vitesse compte plus que la compatibilité Luma legacy.",
+        "cta": {
+          "label": "Comparer Flash vs LTX Fast",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-luma-ray-2-flash?order=luma-ray-2-flash"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Gardez un prompt court : un sujet, un mouvement, une ambiance, un format."
+      },
+      {
+        "title": "Image de départ",
+        "body": "Utilisez une première image pour verrouiller la composition pendant que Flash teste le mouvement."
+      },
+      {
+        "title": "Image de fin optionnelle",
+        "body": "Ajoutez une image de fin seulement si la route image-vidéo active l’expose et que le brouillon doit atterrir sur une composition précise."
+      },
+      {
+        "title": "Modify",
+        "body": "Explorez les changements de look sur source vidéo avant la passe Ray 2."
+      },
+      {
+        "title": "Reframe",
+        "body": "Validez crops mobile, carré ou large pendant que le clip source est encore en validation."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Luma Ray 2 Flash legacy",
+      "subtitle": "Prix totaux de brouillon legacy — utilisez Ray 3.2 d’abord pour les workflows Luma Modify et Reframe actuels.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#luma-ray-2-flash-pricing"
+    },
+    "meta": {
+      "title": "Luma Ray 2 Flash legacy : tarifs et brouillons | MaxVideoAI",
+      "description": "Utilisez Luma Ray 2 Flash comme route Luma fast d’ancienne génération : tarifs de brouillon, Modify, Reframe, contexte Ray 2 et migration vers Ray 3.2."
+    }
   }
 }

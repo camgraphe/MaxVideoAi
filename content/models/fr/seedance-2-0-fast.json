@@ -322,5 +322,148 @@
         "ctaLabel": "Comparer Seedance 2.0 Fast vs LTX 2.3 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "seedance-2-0-fast",
+    "hero": {
+      "eyebrow": "WORKFLOW DREAMINA / BYTEDANCE FAST POUR BROUILLONS",
+      "title": "Seedance 2.0 Fast",
+      "subtitle": "Des brouillons rapides Seedance pour tests de rythme, variantes de mouvement et planification de plans avec références.",
+      "subtitleHighlights": [
+        "brouillons rapides",
+        "tests de rythme",
+        "variantes de mouvement"
+      ],
+      "paragraph": "Utilisez Seedance 2.0 Fast comme workflow Dreamina Seedance plus rapide pour itérer avant un rendu final : cadrer le timing, comparer des mouvements et tester textes, images ou références en cycles courts.",
+      "primaryCta": {
+        "label": "Créer un brouillon Seedance Fast",
+        "href": "/app?engine=seedance-2-0-fast"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/seedance"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs 2.0",
+          "href": "/fr/comparatif/seedance-2-0-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        },
+        {
+          "label": "Comparer vs route Mini batch",
+          "href": "/fr/comparatif/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#seedance-2-0-fast-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Seedance 2.0 Fast",
+      "description": "Séquence de brouillon rapide",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Fast",
+        "Brouillon",
+        "9:16"
+      ],
+      "altContext": "brouillon Seedance rapide avec test de caméra produit"
+    },
+    "features": [
+      {
+        "title": "Workflow brouillon",
+        "body": "Lancez des passes Seedance plus rapides pour décider tôt.",
+        "tone": "duration"
+      },
+      {
+        "title": "Tests de rythme",
+        "body": "Vérifiez pacing, caméra et mouvement avant le rendu final.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Tests de références",
+        "body": "Essayez textes, images et références prises en charge.",
+        "tone": "reference"
+      },
+      {
+        "title": "Jusqu’à 720p",
+        "body": "Utilisez une résolution adaptée aux revues de brouillons.",
+        "tone": "quality"
+      },
+      {
+        "title": "Max 15 s",
+        "body": "Brouillons jusqu’à 15 secondes par génération.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast ou Seedance 2.0 ?",
+        "body": "Utilisez Fast pour les brouillons, tests de rythme et variantes de mouvement. Passez à Seedance 2.0 pour le workflow de production.",
+        "cta": {
+          "label": "Comparer Fast vs 2.0",
+          "href": "/fr/comparatif/seedance-2-0-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        }
+      },
+      {
+        "title": "Vous planifiez plusieurs plans ?",
+        "body": "Itérez en cycles courts pour fixer mouvement, caméra et comportement des références avant la passe finale.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’un autre repère rapide ?",
+        "body": "Comparez Seedance Fast à d’autres workflows rapides pour choisir un moteur de brouillon social ou publicitaire.",
+        "cta": {
+          "label": "Comparer avec LTX Fast",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Commencez par l’idée du plan, le mouvement, la caméra et le rythme voulu."
+      },
+      {
+        "title": "Référence image",
+        "body": "Testez composition, cadrage produit ou direction de style avec une image de départ."
+      },
+      {
+        "title": "Entrée de référence",
+        "body": "Vérifiez si le brouillon suit les ancrages visuels pris en charge."
+      },
+      {
+        "title": "Variante de mouvement",
+        "body": "Comparez vitesse caméra, mouvement sujet et rythme avec de petites variations."
+      },
+      {
+        "title": "Passage final",
+        "body": "Réutilisez les meilleurs choix de brouillon dans le workflow de production."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix des brouillons Seedance 2.0 Fast",
+      "subtitle": "Prix totaux par scénario de brouillon — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 720p",
+      "ctaHref": "/fr/tarifs#seedance-2-0-fast-pricing"
+    },
+    "meta": {
+      "title": "Seedance 2.0 Fast : prix brouillons et itérations | MaxVideoAI",
+      "description": "Utilisez Seedance 2.0 Fast pour des brouillons rapides, tests de rythme, variantes de mouvement et plans guidés par références avant rendu final."
+    }
   }
 }

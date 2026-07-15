@@ -369,5 +369,144 @@
       "Lip sync se desvía → acorta la línea y baja la velocidad; evita monólogos largos.",
       "La expansión cambia la intención → desactívala para control literal, o acorta el prompt y elimina adjetivos ambiguos."
     ]
+  },
+  "decision": {
+    "modelSlug": "wan-2-5",
+    "hero": {
+      "eyebrow": "RUTA WAN AUDIO DRAFT AUN COMPATIBLE",
+      "title": "Wan 2.5",
+      "subtitle": "Clips con audio de 5 a 10 s para arranques con texto o imagen, expansión de prompt y checks de 480p a 1080p.",
+      "subtitleHighlights": [
+        "Clips con audio de 5 a 10 s",
+        "arranques con texto o imagen",
+        "checks de 480p a 1080p"
+      ],
+      "paragraph": "Usa Wan 2.5 cuando necesitas la ruta Wan anterior aún compatible para pruebas cortas con audio: texto a video, imagen a video, carga de audio opcional, expansión de prompt, seed y borradores en baja resolución.",
+      "primaryCta": {
+        "label": "Generar con Wan 2.5",
+        "href": "/app?engine=wan-2-5"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/wan"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Sora 2",
+          "href": "/es/comparativa/sora-2-vs-wan-2-5?order=wan-2-5"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#wan-2-5-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Wan 2.5",
+      "description": "Borrador corto listo para audio",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Con audio",
+        "10 s max",
+        "1080p"
+      ],
+      "altContext": "borrador corto con audio usando Wan 2.5"
+    },
+    "features": [
+      {
+        "title": "Pruebas con audio",
+        "body": "Usa sonido nativo o adjunta una pista WAV/MP3 corta cuando el timing importa.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto o imagen",
+        "body": "Empieza con un prompt o una imagen fuente para probar movimiento rápido.",
+        "tone": "reference"
+      },
+      {
+        "title": "480p a 1080p",
+        "body": "Elige resolución de borrador de menor coste o 1080p si necesitas más detalle.",
+        "tone": "quality"
+      },
+      {
+        "title": "Expansión de prompt",
+        "body": "Actívala cuando un brief simple necesita más detalle visual.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Máx. 10 s",
+        "body": "Mantén Wan 2.5 en clips cortos de uno o dos beats.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Wan 2.5 o Wan 2.6?",
+        "body": "Usa Wan 2.5 para checks cortos con audio y borradores de menor resolución. Usa Wan 2.6 para 15 s, multi-shot o video de referencia.",
+        "cta": {
+          "label": "Ver Wan 2.6",
+          "href": "/es/modelos/wan-2-6"
+        }
+      },
+      {
+        "title": "¿La pista debe marcar el ritmo?",
+        "body": "Adjunta audio corto cuando ritmo o ambiente deben guiar el clip, y deja simple el prompt visual.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Comparas rutas con audio?",
+        "body": "Compara Wan 2.5 con Sora 2 si eliges entre checks de menor coste y salidas sincronizadas estilo Sora.",
+        "cta": {
+          "label": "Comparar Wan 2.5 vs Sora 2",
+          "href": "/es/comparativa/sora-2-vs-wan-2-5?order=wan-2-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Describe un sujeto, una acción, un movimiento de cámara y una dirección sonora."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa una imagen para mantener encuadre, producto o identidad del personaje."
+      },
+      {
+        "title": "Archivo de audio",
+        "body": "Adjunta una pista corta cuando ritmo, ambiente o mood deben guiar la toma."
+      },
+      {
+        "title": "Expansión de prompt",
+        "body": "Actívala para briefs simples; apágala cuando cada detalle visual sea intencional."
+      },
+      {
+        "title": "Paso a Wan 2.6",
+        "body": "Pasa a Wan 2.6 para clips más largos, multi-shot o consistencia con video de referencia."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Wan 2.5 de un vistazo",
+      "subtitle": "Totales de clips cortos. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#wan-2-5-pricing"
+    },
+    "meta": {
+      "title": "Wan 2.5: precios, drafts con audio y ejemplos | MaxVideoAI",
+      "description": "Usa Wan 2.5 para borradores cortos de video IA con audio, texto a video, imagen a video, carga de audio opcional, expansión de prompt y precios."
+    }
   }
 }

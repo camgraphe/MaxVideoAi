@@ -439,5 +439,144 @@
       "Text/signage breaks → keep readable text off-screen; plan to overlay critical copy in post.",
       "VO / lip sync feels off → shorten lines and avoid long monologues."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1",
+    "hero": {
+      "eyebrow": "GOOGLE PREMIUM VIDEO MODEL",
+      "title": "Veo 3.1",
+      "subtitle": "Short polished clips with native audio, reference-guided shots, 4K output, and first-last or extend workflows.",
+      "subtitleHighlights": [
+        "short polished clips",
+        "native audio",
+        "4K output"
+      ],
+      "paragraph": "Use Veo 3.1 for premium 4, 6, or 8 second shots when you need text-to-video, start images, reference stills, first/last-frame control, 4K delivery, or clip extension inside MaxVideoAI.",
+      "primaryCta": {
+        "label": "Generate with Veo 3.1",
+        "href": "/app?engine=veo-3-1"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare with Kling",
+          "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1?order=veo-3-1"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#veo-3-1-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Veo 3.1 example",
+      "description": "Polished native-audio video shot",
+      "renderLabel": "View render",
+      "badges": [
+        "Native audio",
+        "8s",
+        "4K option"
+      ],
+      "altContext": "premium Veo 3.1 cinematic shot with controlled motion"
+    },
+    "features": [
+      {
+        "title": "Premium short clips",
+        "body": "Build polished 4, 6 or 8 second shots for ads, launches and narrative beats.",
+        "tone": "quality"
+      },
+      {
+        "title": "Native audio",
+        "body": "Generate synchronized ambience, dialogue or sound direction on supported routes.",
+        "tone": "audio"
+      },
+      {
+        "title": "Reference stills",
+        "body": "Use start images or multiple references to anchor identity, styling and wardrobe.",
+        "tone": "reference"
+      },
+      {
+        "title": "First-last control",
+        "body": "Bridge opening and ending frames when the final pose or product placement matters.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Extend route",
+        "body": "Continue an existing Veo render without changing engines.",
+        "tone": "duration"
+      },
+      {
+        "title": "720p to 4K",
+        "body": "Choose 720p, 1080p, or 4K before generation.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "When should you choose Veo 3.1?",
+        "body": "Choose Veo 3.1 for short polished shots where motion quality, audio and reference fidelity matter more than the lowest iteration cost.",
+        "cta": {
+          "label": "Start a Veo 3.1 render",
+          "href": "/app?engine=veo-3-1"
+        }
+      },
+      {
+        "title": "Need reference control?",
+        "body": "Use a start image, multiple reference stills, or first-last frames when the shot has to respect a product, character or ending composition.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparing production routes?",
+        "body": "Compare Veo 3.1 with Kling 3 Pro when you are deciding between premium short polish and longer storyboard-style control.",
+        "cta": {
+          "label": "Compare Veo and Kling",
+          "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1?order=veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Describe the subject, camera path, pacing, lighting and audio intention clearly."
+      },
+      {
+        "title": "Start image",
+        "body": "Use one still to define the opening composition and visual identity."
+      },
+      {
+        "title": "Reference set",
+        "body": "Attach still references when wardrobe, product details or style need to stay consistent."
+      },
+      {
+        "title": "First-last frames",
+        "body": "Provide opening and closing images to guide the transition and final landing point."
+      },
+      {
+        "title": "Extend pass",
+        "body": "Continue a Veo clip when the idea needs more time after the first render."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Veo 3.1 pricing at a glance",
+      "subtitle": "Audio-on preset totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 8s at 4K",
+      "ctaHref": "/pricing#veo-3-1-pricing"
+    },
+    "meta": {
+      "title": "Google Veo 3.1 AI Video: Price, Prompts & References",
+      "description": "See Google Veo 3.1 pricing, native audio, image references, first/last frame control, prompt tips and best uses before you render."
+    }
   }
 }

@@ -353,5 +353,144 @@
       "El clip se siente demasiado cargado -> reduce a una acción y un movimiento de cámara.",
       "Necesitas editar un video fuente -> cambia a LTX 2.3 Pro en vez de sobrecargar Fast."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-3-fast",
+    "hero": {
+      "eyebrow": "RUTA LTX FAST PARA BORRADORES",
+      "title": "LTX 2.3 Fast",
+      "subtitle": "Una exploración visual rápida para pruebas de prompts, ciclos de borrador de menor coste y borradores verticales/sociales.",
+      "subtitleHighlights": [
+        "exploración visual",
+        "pruebas de prompts",
+        "borradores verticales/sociales"
+      ],
+      "paragraph": "Usa LTX 2.3 Fast para explorar rápido con texto a video e imagen a video: probar prompts, comparar estilos y preparar borradores sociales antes de una ruta final.",
+      "primaryCta": {
+        "label": "Crear borrador con LTX Fast",
+        "href": "/app?engine=ltx-2-3-fast"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Pro",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#ltx-2-3-fast-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo LTX 2.3 Fast",
+      "description": "Borrador rápido de exploración visual",
+      "renderLabel": "Ver borrador",
+      "badges": [
+        "Fast",
+        "10s",
+        "16:9"
+      ],
+      "altContext": "ejemplo de borrador cinematográfico de LTX 2.3 Fast"
+    },
+    "features": [
+      {
+        "title": "Exploración visual",
+        "body": "Avanza rápido por opciones de look, estilo y escena.",
+        "tone": "quality"
+      },
+      {
+        "title": "Pruebas de prompts",
+        "body": "Compara formulaciones antes de una ruta final.",
+        "tone": "reference"
+      },
+      {
+        "title": "Borradores imagen a video",
+        "body": "Usa una imagen inicial cuando necesites un ancla visual.",
+        "tone": "reference"
+      },
+      {
+        "title": "Borradores sociales",
+        "body": "Boceta conceptos cortos para formatos sociales y revisiones.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 20 s",
+        "body": "Borradores de hasta 20 segundos por generación.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Fast o LTX 2.3 Pro?",
+        "body": "Usa Fast para explorar y probar prompts. Usa Pro cuando necesites el flujo de producción más amplio de la ruta Pro.",
+        "cta": {
+          "label": "Comparar Fast vs Pro",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-ltx-2-3-pro"
+        }
+      },
+      {
+        "title": "¿Pruebas conceptos sociales?",
+        "body": "Borrador de ideas verticales, hooks de anuncio y direcciones de estilo antes del candidato final.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Eliges un motor rápido?",
+        "body": "Compara LTX Fast con Seedance Fast cuando importan velocidad y coste de iteración.",
+        "cta": {
+          "label": "Comparar con Seedance Fast",
+          "href": "/es/comparativa/ltx-2-3-fast-vs-seedance-2-0-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Prueba sujeto, estilo, cámara y formato con variantes cortas."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa imagen a video cuando una base visual deba guiar composición o producto."
+      },
+      {
+        "title": "Borrador vertical",
+        "body": "Enmarca temprano conceptos sociales en 9:16 o 16:9."
+      },
+      {
+        "title": "Comparación de look",
+        "body": "Compara luz, color y movimiento con variantes de prompt."
+      },
+      {
+        "title": "Paso a producción",
+        "body": "Lleva el mejor borrador a la ruta final adecuada."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de borradores LTX 2.3 Fast",
+      "subtitle": "Precios totales por escenario de borrador. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Borradores largos en 1080p",
+      "ctaHref": "/es/precios#ltx-2-3-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2.3 Fast: precios de borradores y prompts | MaxVideoAI",
+      "description": "Usa LTX 2.3 Fast para ciclos rápidos de borrador, exploración visual, pruebas de prompts y videos verticales o sociales."
+    }
   }
 }

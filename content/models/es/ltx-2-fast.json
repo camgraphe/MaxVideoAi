@@ -336,5 +336,152 @@
       "El texto sale mal → evita señalética legible, UI pequeña y micro‑labels. Mantén el texto fuera de cuadro.",
       "El diálogo deriva → mantén líneas cortas y directas; evita monólogos largos."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-fast",
+    "hero": {
+      "eyebrow": "RUTA LTX 2 FAST AUN COMPATIBLE",
+      "title": "LTX 2 Fast",
+      "subtitle": "Borradores 16:9 rápidos de hasta 20 s para texto o imagen inicial, pases de revisión con audio y checks de 1080p a 4K.",
+      "subtitleHighlights": [
+        "Borradores 16:9 rápidos",
+        "hasta 20 s",
+        "checks de 1080p a 4K"
+      ],
+      "paragraph": "Usa LTX 2 Fast para la ruta fast anterior de LTX cuando necesitas borradores 16:9 de menor coste, checks de timing de hasta 20 s, imagen inicial y opciones de revisión en alta resolución. Usa LTX 2.3 Fast para el flujo fast actual.",
+      "primaryCta": {
+        "label": "Hacer draft con LTX 2 Fast",
+        "href": "/app?engine=ltx-2-fast"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Ver LTX 2.3 Fast",
+          "href": "/es/modelos/ltx-2-3-fast"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#ltx-2-fast-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo LTX 2 Fast",
+      "description": "Loop de borrador 16:9 rápido",
+      "renderLabel": "Ver borrador",
+      "badges": [
+        "Fast",
+        "20 s max",
+        "16:9"
+      ],
+      "altContext": "render de borrador 16:9 con LTX 2 Fast"
+    },
+    "features": [
+      {
+        "title": "Borradores 16:9 rápidos",
+        "body": "Avanza rápido en timing y composición dentro del workflow LTX anterior.",
+        "tone": "duration"
+      },
+      {
+        "title": "Texto o imagen inicial",
+        "body": "Prueba producto, sujeto o escena desde un prompt o una imagen fija.",
+        "tone": "reference"
+      },
+      {
+        "title": "Hasta 20 s",
+        "body": "Usa loops 1080p/25 fps cuando el pacing importa más que el acabado.",
+        "tone": "duration"
+      },
+      {
+        "title": "1080p a 4K",
+        "body": "Los checks cortos también sirven para revisar detalle en alta resolución.",
+        "tone": "quality"
+      },
+      {
+        "title": "Listo para audio",
+        "body": "Usa la ruta con audio cuando el timing o la revisión lo requieran.",
+        "tone": "audio"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿LTX 2 Fast o LTX 2.3 Fast?",
+        "body": "Usa LTX 2 Fast para loops 16:9 anteriores aún compatibles. Usa LTX 2.3 Fast para la ruta fast actual y mayor cobertura de formatos.",
+        "cta": {
+          "label": "Ver LTX 2.3 Fast",
+          "href": "/es/modelos/ltx-2-3-fast"
+        }
+      },
+      {
+        "title": "¿Necesitas más fidelidad?",
+        "body": "Lleva las direcciones aprobadas a LTX 2 o LTX 2.3 Pro cuando la toma necesite una pasada más pulida.",
+        "cta": {
+          "label": "Ver LTX 2",
+          "href": "/es/modelos/ltx-2"
+        }
+      },
+      {
+        "title": "¿Comparas rutas fast de valor?",
+        "body": "Compara LTX 2 Fast con Wan 2.5 al elegir entre loops 16:9 más largos y checks con audio de menor coste.",
+        "cta": {
+          "label": "Comparar LTX 2 Fast vs Wan 2.5",
+          "href": "/es/comparativa/ltx-2-fast-vs-wan-2-5"
+        }
+      },
+      {
+        "title": "¿Necesitas ejemplos de prompts?",
+        "body": "Usa prompts cortos con un beat de movimiento, una cámara y un objetivo claro de revisión.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de borrador",
+        "body": "Mantén un sujeto, una idea de movimiento y un movimiento de cámara para que la ruta fast sea legible."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa una imagen para fijar producto, personaje o entorno antes de probar movimiento."
+      },
+      {
+        "title": "Loop largo",
+        "body": "Reserva 12-20 s para checks 1080p donde el ritmo pesa más que el detalle."
+      },
+      {
+        "title": "Check corto en alta resolución",
+        "body": "Usa 1440p o 4K en clips más cortos cuando necesitas inspeccionar detalle."
+      },
+      {
+        "title": "Ruta de mejora",
+        "body": "Lleva las mejores direcciones a LTX 2.3 Fast o Pro según el workflow actual que necesites."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de drafts LTX 2 Fast",
+      "subtitle": "Totales de borrador por escenario. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "20 s en 1080p / 25 fps",
+      "ctaHref": "/es/precios#ltx-2-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2 Fast: precios, borradores 20 s y ejemplos | MaxVideoAI",
+      "description": "Usa LTX 2 Fast para borradores 16:9 aún compatibles, checks de timing de 20 s, texto a video, imagen a video, revisión en alta resolución y precios."
+    }
   }
 }

@@ -176,5 +176,144 @@
       "Les edits de reference sont meilleurs quand chaque source a un role clair."
     ],
     "promptingGuideLabel": "En savoir plus"
+  },
+  "decision": {
+    "modelSlug": "gpt-image-2",
+    "hero": {
+      "eyebrow": "MODÈLE IMAGE OPENAI",
+      "title": "GPT Image 2",
+      "subtitle": "Génération d’images orientée qualité pour texte lisible, packshots produit et retouches contrôlées.",
+      "subtitleHighlights": [
+        "texte lisible",
+        "packshots produit",
+        "retouches contrôlées"
+      ],
+      "paragraph": "Utilisez GPT Image 2 quand l’image doit préserver du texte, des détails produit, des réglages qualité, des tailles personnalisées ou des retouches guidées par masque.",
+      "primaryCta": {
+        "label": "Générer avec GPT Image 2",
+        "href": "/app/image?engine=gpt-image-2"
+      },
+      "secondaryCta": {
+        "label": "Voir les tarifs",
+        "href": "/fr/tarifs#gpt-image-2-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Ouvrir l’espace image",
+          "href": "/app/image?engine=gpt-image-2"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#gpt-image-2-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple GPT Image 2",
+      "description": "Packshot avec texte et retouche contrôlée",
+      "renderLabel": "Voir l’image",
+      "badges": [
+        "Texte",
+        "Retouches",
+        "Format 4K"
+      ],
+      "altContext": "packshot GPT Image 2 avec texte lisible"
+    },
+    "features": [
+      {
+        "title": "Texte lisible",
+        "body": "Utile pour packaging, labels, maquettes UI et visuels éditoriaux.",
+        "tone": "quality"
+      },
+      {
+        "title": "Packshots produit",
+        "body": "Créez des images catalogue avec lumière et composition maîtrisées.",
+        "tone": "reference"
+      },
+      {
+        "title": "Retouches image",
+        "body": "Chargez des références pour des modifications pilotées par prompt.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Tailles personnalisées",
+        "body": "Utilisez presets ou dimensions custom dans les limites exposées.",
+        "tone": "quality"
+      },
+      {
+        "title": "Niveaux qualité",
+        "body": "Choisissez low, medium ou high selon coût et fidélité.",
+        "tone": "price"
+      },
+      {
+        "title": "Variantes",
+        "body": "Générez jusqu’à 4 images pour explorer plusieurs compositions.",
+        "tone": "duration"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "GPT Image 2 ou Nano Banana 2 ?",
+        "body": "Prenez GPT Image 2 pour texte et retouches contrôlées. Prenez Nano Banana 2 pour ratios plus larges et workflows Google guidés.",
+        "cta": {
+          "label": "Voir Nano Banana 2",
+          "href": "/fr/modeles/nano-banana-2"
+        }
+      },
+      {
+        "title": "Travail sur texte produit ?",
+        "body": "Décrivez hiérarchie de label, lumière, angle caméra et contraintes de retouche avant génération.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’un meilleur contrôle source ?",
+        "body": "Préparez le produit, le masque ou la hiérarchie texte, puis rendez ou retouchez le still final dans GPT Image 2.",
+        "cta": {
+          "label": "Ouvrir GPT Image 2",
+          "href": "/app/image?engine=gpt-image-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Précisez sujet, texte exact, layout, lumière, optique et taille de sortie."
+      },
+      {
+        "title": "Retouche image",
+        "body": "Chargez l’image source et dites ce qui change, et ce qui reste verrouillé."
+      },
+      {
+        "title": "Masque",
+        "body": "Utilisez un masque seulement quand la retouche doit rester dans une zone précise."
+      },
+      {
+        "title": "Choix qualité",
+        "body": "Brouillonnez plus bas, puis passez en high pour typographie ou détail produit."
+      },
+      {
+        "title": "Variantes",
+        "body": "Générez plusieurs images pour explorer la composition avant sélection."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix GPT Image 2 en un coup d’œil",
+      "subtitle": "Prix totaux par scénario image — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 4 images",
+      "ctaHref": "/fr/tarifs#gpt-image-2-pricing"
+    },
+    "meta": {
+      "title": "GPT Image 2 : tarifs, texte lisible et retouche | MaxVideoAI",
+      "description": "Explorez GPT Image 2 : prix, texte lisible, packshots produit, tailles personnalisées, retouches par références et masques dans MaxVideoAI."
+    }
   }
 }

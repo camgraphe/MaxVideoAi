@@ -277,5 +277,144 @@
       "",
       "Audio: ambiente de calle mojada, pasos cortos, respiración leve. Sin texto, sin logos, sin subtítulos."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-3-standard",
+    "hero": {
+      "eyebrow": "RUTA KLING STORYBOARD DE MENOR COSTE",
+      "title": "Kling 3 Standard",
+      "subtitle": "Borradores multi-shot para pruebas start-frame 1080p, planificación de prompts y opciones de audio nativo.",
+      "subtitleHighlights": [
+        "borradores multi-shot",
+        "pruebas start-frame 1080p",
+        "opciones de audio nativo"
+      ],
+      "paragraph": "Usa Kling 3 Standard para probar start frames Kling 3 de menor coste en 1080p: prompts estructurados, borradores imagen a video, cuadro final opcional y audio antes de pasar ganadores a Pro.",
+      "primaryCta": {
+        "label": "Generar con Kling 3 Standard",
+        "href": "/app?engine=kling-3-standard"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Pro",
+          "href": "/es/comparativa/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#kling-3-standard-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Kling 3 Standard",
+      "description": "Borrador start-frame de menor coste",
+      "renderLabel": "Ver borrador",
+      "badges": [
+        "1080p",
+        "15 s max",
+        "Audio opcional"
+      ],
+      "altContext": "borrador start-frame con Kling 3 Standard"
+    },
+    "features": [
+      {
+        "title": "Borradores multi-shot",
+        "body": "Planifica escenas y beats antes de pasar a Pro.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Salida 1080p",
+        "body": "Usa Standard para renders de revisión más eficientes.",
+        "tone": "quality"
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Usa una imagen fuente y cuadro final opcional para borradores más precisos.",
+        "tone": "reference"
+      },
+      {
+        "title": "Opciones de audio",
+        "body": "Prueba con o sin sonido según la etapa de revisión.",
+        "tone": "audio"
+      },
+      {
+        "title": "Max 15 s",
+        "body": "Arma secuencias cortas de hasta 15 segundos.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Standard o Pro?",
+        "body": "Usa Standard para pruebas start-frame de menor coste. Usa Kling 3 Pro cuando la toma aprobada necesite más fidelidad final.",
+        "cta": {
+          "label": "Comparar Standard vs Pro",
+          "href": "/es/comparativa/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        }
+      },
+      {
+        "title": "¿Planeas varias tomas?",
+        "body": "Mantén cada beat corto, una acción por toma y repite anclas de continuidad.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Necesitas entrega final?",
+        "body": "Valida primero en Standard y pasa tomas aprobadas a Pro cuando importen más fidelidad, estabilidad y calidad final.",
+        "cta": {
+          "label": "Ver Kling 3 Pro",
+          "href": "/es/modelos/kling-3-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Plan de tomas",
+        "body": "Divide la secuencia en escenas cortas con una acción clara por beat."
+      },
+      {
+        "title": "Imagen de referencia",
+        "body": "Usa una imagen fuente cuando importen producto, sujeto o encuadre."
+      },
+      {
+        "title": "Cuadro final",
+        "body": "Agrega un frame de llegada cuando la composición final debe estar controlada."
+      },
+      {
+        "title": "Pase de audio",
+        "body": "Usa sonido para contexto o mantén el borrador silencioso para postproducción."
+      },
+      {
+        "title": "Paso a Pro",
+        "body": "Mueve los mejores borradores Standard a Pro para la pasada principal de calidad."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Kling 3 Standard de un vistazo",
+      "subtitle": "Totales de borrador 1080p. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Ruta 1080p",
+      "ctaHref": "/es/precios#kling-3-standard-pricing"
+    },
+    "meta": {
+      "title": "Kling 3 Standard: precios, borradores 1080p y ejemplos | MaxVideoAI",
+      "description": "Usa Kling 3 Standard para borradores start-frame 1080p de menor coste, pruebas imagen a video, opciones de audio y planificación Kling hasta 15 s."
+    }
   }
 }

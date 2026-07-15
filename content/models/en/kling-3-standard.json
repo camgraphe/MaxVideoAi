@@ -277,5 +277,144 @@
       "",
       "Audio: wet street ambience, short footsteps, light breath. No text, no logos, no subtitles."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-3-standard",
+    "hero": {
+      "eyebrow": "KLING LOWER-COST STORYBOARD ROUTE",
+      "title": "Kling 3 Standard",
+      "subtitle": "Multi-shot drafts for 1080p start-frame tests, prompt planning, and native audio options.",
+      "subtitleHighlights": [
+        "multi-shot drafts",
+        "1080p start-frame tests",
+        "native audio options"
+      ],
+      "paragraph": "Use Kling 3 Standard when you want lower-cost Kling 3 start-frame testing in 1080p: structured prompts, image-to-video drafts, optional end frames and audio before moving winners into Pro.",
+      "primaryCta": {
+        "label": "Generate with Kling 3 Standard",
+        "href": "/app?engine=kling-3-standard"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Pro",
+          "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-3-standard-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Kling 3 Standard example",
+      "description": "Lower-cost start-frame draft",
+      "renderLabel": "View draft",
+      "badges": [
+        "1080p",
+        "15s max",
+        "Audio option"
+      ],
+      "altContext": "Kling 3 Standard start-frame draft"
+    },
+    "features": [
+      {
+        "title": "Multi-shot drafts",
+        "body": "Plan scenes and beats before spending on the Pro route.",
+        "tone": "continuity"
+      },
+      {
+        "title": "1080p output",
+        "body": "Keep Standard focused on cost-effective review renders.",
+        "tone": "quality"
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Use one source image and optional end frame for tighter drafts.",
+        "tone": "reference"
+      },
+      {
+        "title": "Native audio options",
+        "body": "Run sound-on or silent tests depending on the review stage.",
+        "tone": "audio"
+      },
+      {
+        "title": "Max 15s",
+        "body": "Storyboard short sequences up to 15 seconds.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Standard or Pro?",
+        "body": "Use Standard for lower-cost start-frame testing. Use Kling 3 Pro when the approved shot needs stronger final fidelity.",
+        "cta": {
+          "label": "Compare Standard vs Pro",
+          "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        }
+      },
+      {
+        "title": "Planning multiple shots?",
+        "body": "Keep each beat short, assign one action per shot, and reuse continuity anchors across the sequence.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need final delivery?",
+        "body": "Validate in Standard first, then move approved shots into Pro when fidelity, stability and final-quality approval matter more.",
+        "cta": {
+          "label": "View Kling 3 Pro",
+          "href": "/models/kling-3-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Shot plan",
+        "body": "Split the sequence into short scenes with one clear action per beat."
+      },
+      {
+        "title": "Image reference",
+        "body": "Use a source image when product framing or subject identity matters."
+      },
+      {
+        "title": "End frame",
+        "body": "Add a landing frame when the final composition needs control."
+      },
+      {
+        "title": "Audio pass",
+        "body": "Use sound for review context or keep drafts silent for post-production."
+      },
+      {
+        "title": "Pro handoff",
+        "body": "Move the best Standard drafts to Pro for the primary quality pass."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3 Standard pricing at a glance",
+      "subtitle": "Preset 1080p draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "1080p route",
+      "ctaHref": "/pricing#kling-3-standard-pricing"
+    },
+    "meta": {
+      "title": "Kling 3 Standard: Pricing, 1080p Drafts & Examples | MaxVideoAI",
+      "description": "Use Kling 3 Standard for lower-cost 1080p start-frame drafts, image-to-video tests, native audio options and 15 second Kling planning."
+    }
   }
 }

@@ -176,5 +176,144 @@
       "Reference edits improve when each source image has a clear role."
     ],
     "promptingGuideLabel": "Learn more"
+  },
+  "decision": {
+    "modelSlug": "gpt-image-2",
+    "hero": {
+      "eyebrow": "OPENAI IMAGE GENERATION MODEL",
+      "title": "GPT Image 2",
+      "subtitle": "Quality-first image generation for readable text, product stills and controlled edits.",
+      "subtitleHighlights": [
+        "readable text",
+        "product stills",
+        "controlled edits"
+      ],
+      "paragraph": "Use GPT Image 2 when the still needs precise text, product-label fidelity, quality controls, custom sizes or mask-guided edits from reference images.",
+      "primaryCta": {
+        "label": "Generate with GPT Image 2",
+        "href": "/app/image?engine=gpt-image-2"
+      },
+      "secondaryCta": {
+        "label": "View pricing",
+        "href": "/pricing#gpt-image-2-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Open image workspace",
+          "href": "/app/image?engine=gpt-image-2"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#gpt-image-2-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "GPT Image 2 example",
+      "description": "Text-heavy product still and controlled edit workflow",
+      "renderLabel": "View image",
+      "badges": [
+        "Text",
+        "Edits",
+        "4K size"
+      ],
+      "altContext": "GPT Image 2 product still with readable text"
+    },
+    "features": [
+      {
+        "title": "Readable text",
+        "body": "Useful for packaging, labels, UI-style layouts and editorial graphics.",
+        "tone": "quality"
+      },
+      {
+        "title": "Product stills",
+        "body": "Build catalog-style shots with controlled lighting and composition.",
+        "tone": "reference"
+      },
+      {
+        "title": "Image edits",
+        "body": "Upload references for prompt-led edits, with optional mask control.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Custom sizes",
+        "body": "Use presets or custom dimensions up to the exposed route limits.",
+        "tone": "quality"
+      },
+      {
+        "title": "Quality levels",
+        "body": "Choose low, medium or high depending on cost and fidelity.",
+        "tone": "price"
+      },
+      {
+        "title": "Batch output",
+        "body": "Generate up to 4 images when exploring variants.",
+        "tone": "duration"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "GPT Image 2 or Nano Banana 2?",
+        "body": "Use GPT Image 2 for text-heavy stills and controlled edits. Use Nano Banana 2 for broader ratios and grounded Google image workflows.",
+        "cta": {
+          "label": "View Nano Banana 2",
+          "href": "/models/nano-banana-2"
+        }
+      },
+      {
+        "title": "Working on product text?",
+        "body": "Write the exact label hierarchy, lighting, camera angle and edit constraints before generating.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need cleaner source control?",
+        "body": "Prepare the product source, mask or exact text hierarchy first, then render or edit the final still in GPT Image 2.",
+        "cta": {
+          "label": "Open GPT Image 2",
+          "href": "/app/image?engine=gpt-image-2"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-image",
+        "body": "Specify subject, exact text, layout, lighting, lens and output size."
+      },
+      {
+        "title": "Image edit",
+        "body": "Upload the source image and describe what should change and what must stay locked."
+      },
+      {
+        "title": "Mask-guided edit",
+        "body": "Use a mask only when an edit should be constrained to a specific region."
+      },
+      {
+        "title": "Quality choice",
+        "body": "Draft lower, then switch to high when typography or product detail matters."
+      },
+      {
+        "title": "Batch variants",
+        "body": "Generate multiple images for composition exploration before selecting a final."
+      }
+    ],
+    "pricingCopy": {
+      "title": "GPT Image 2 pricing at a glance",
+      "subtitle": "Preset image totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 4 images",
+      "ctaHref": "/pricing#gpt-image-2-pricing"
+    },
+    "meta": {
+      "title": "GPT Image 2: Pricing, Text Rendering & Editing | MaxVideoAI",
+      "description": "Explore GPT Image 2 pricing, readable text rendering, product stills, custom image sizes, reference edits and mask-guided image workflows on MaxVideoAI."
+    }
   }
 }

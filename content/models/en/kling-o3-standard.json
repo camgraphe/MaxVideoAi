@@ -114,5 +114,143 @@
       "q": "Does Kling 3.0 Omni Standard support video-to-video?",
       "a": "Yes. Standard supports source-video V2V with one 3-10 s clip referenced as @Video1, optional @Image references, and keep_audio when the original source audio should be preserved."
     }
-  ]
+  ],
+  "decision": {
+    "modelSlug": "kling-o3-standard",
+    "hero": {
+      "eyebrow": "KLING 3.0 OMNI STANDARD",
+      "title": "Kling 3.0 Omni Standard",
+      "subtitle": "Lower-cost reference-to-video, storyboard drafts and source-video V2V before moving approved directions into O3 Pro.",
+      "subtitleHighlights": [
+        "Reference-to-video",
+        "storyboard guidance",
+        "source-video V2V"
+      ],
+      "paragraph": "Use Kling 3.0 Omni Standard for cheaper reference-guided iteration: storyboard images, style anchors, optional start/end frames and source-video V2V tests. Move winners into O3 Pro when the shot needs stronger final polish.",
+      "primaryCta": {
+        "label": "Generate with Kling 3.0 Omni Standard",
+        "href": "/app?engine=kling-o3-standard"
+      },
+      "secondaryCta": {
+        "label": "View O3 Pro",
+        "href": "/models/kling-o3-pro"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs O3 Pro",
+          "href": "/ai-video-engines/kling-o3-pro-vs-kling-o3-standard?order=kling-o3-standard"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-o3-standard-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Kling 3.0 Omni Standard example",
+      "description": "Lower-cost storyboard draft",
+      "renderLabel": "View render",
+      "badges": [
+        "Storyboard draft",
+        "12s",
+        "Audio on"
+      ],
+      "altContext": "origami whale storyboard-guided Kling 3.0 Omni Standard draft"
+    },
+    "features": [
+      {
+        "title": "Reference images",
+        "body": "Use @Image anchors for style, subject, storyboard or scene continuity without forcing the first image to open.",
+        "tone": "reference"
+      },
+      {
+        "title": "Source-video V2V",
+        "body": "Attach a source video and refer to @Video1 when motion, pacing or camera language should guide the shot.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Optional start/end frames",
+        "body": "Combine references with opening or ending frames when the shot needs stronger structure.",
+        "tone": "reference"
+      },
+      {
+        "title": "Native audio route",
+        "body": "Generate with audio when the selected O3 route exposes audio controls.",
+        "tone": "audio"
+      },
+      {
+        "title": "Up to 15s",
+        "body": "Use Pro for longer reference-guided clips before moving final 4K work to the 4K route.",
+        "tone": "duration"
+      },
+      {
+        "title": "Live quote",
+        "body": "The app shows the exact price before generation.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Standard or Pro?",
+        "body": "Use Standard for lower-cost reference and V2V tests. Move to Pro when the selected direction needs final-quality fidelity.",
+        "cta": {
+          "label": "View O3 Pro",
+          "href": "/models/kling-o3-pro"
+        }
+      },
+      {
+        "title": "Need source-video guidance?",
+        "body": "Use O3 Pro or Standard for source-video V2V. Prompt with @Video1 when the source clip should control motion or camera continuity.",
+        "cta": {
+          "label": "Open O3 Pro composer",
+          "href": "/app?engine=kling-o3-pro"
+        }
+      },
+      {
+        "title": "Need native 4K?",
+        "body": "Use O3 4K after the reference direction is approved. Stay on Pro while testing source-video V2V and storyboard structure.",
+        "cta": {
+          "label": "View O3 4K",
+          "href": "/models/kling-o3-4k"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt only",
+        "body": "Use text when no visual anchor is needed and O3 should generate from the scene brief."
+      },
+      {
+        "title": "Reference images",
+        "body": "Use @Image1, @Image2 and more for character, object, style or storyboard guidance."
+      },
+      {
+        "title": "Start/end frames",
+        "body": "Add optional opening or ending frames when the first or last pose must be controlled."
+      },
+      {
+        "title": "Source video",
+        "body": "Use @Video1 for video-to-video motion, pacing, composition or camera continuity."
+      },
+      {
+        "title": "Reference plus V2V",
+        "body": "Combine source video and reference images when motion and visual identity both matter."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Omni Standard pricing at a glance",
+      "subtitle": "Lower-cost preset totals for reference-guided drafts and source-video V2V tests.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "ctaHref": "/pricing#kling-o3-standard-pricing"
+    },
+    "meta": {
+      "title": "Kling 3.0 Omni Standard: Reference Drafts & V2V | MaxVideoAI",
+      "description": "Use Kling 3.0 Omni Standard for lower-cost reference-to-video, storyboard drafts, source-video V2V, @Image and @Video1 prompts."
+    }
+  }
 }

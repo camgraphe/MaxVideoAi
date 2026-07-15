@@ -353,5 +353,144 @@
       "Le clip paraît trop chargé -> réduisez à une action et un mouvement caméra.",
       "Vous avez besoin d’éditer une vidéo source -> passez sur LTX 2.3 Pro au lieu de surcharger Fast."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-3-fast",
+    "hero": {
+      "eyebrow": "WORKFLOW LTX FAST POUR BROUILLONS",
+      "title": "LTX 2.3 Fast",
+      "subtitle": "Une exploration visuelle rapide pour tests de prompts, boucles de brouillon moins coûteuses et brouillons verticaux/social.",
+      "subtitleHighlights": [
+        "exploration visuelle",
+        "tests de prompts",
+        "brouillons verticaux/social"
+      ],
+      "paragraph": "Utilisez LTX 2.3 Fast pour explorer vite en text-to-video et image-to-video : tester des prompts, comparer des directions visuelles et préparer des brouillons sociaux avant un rendu final.",
+      "primaryCta": {
+        "label": "Créer un brouillon LTX Fast",
+        "href": "/app?engine=ltx-2-3-fast"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Pro",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#ltx-2-3-fast-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple LTX 2.3 Fast",
+      "description": "Brouillon d’exploration visuelle rapide",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Fast",
+        "10 s",
+        "16:9"
+      ],
+      "altContext": "exemple de brouillon cinématique LTX 2.3 Fast"
+    },
+    "features": [
+      {
+        "title": "Exploration visuelle",
+        "body": "Parcourez rapidement looks, styles et scènes.",
+        "tone": "quality"
+      },
+      {
+        "title": "Tests de prompts",
+        "body": "Comparez les formulations avant un workflow final.",
+        "tone": "reference"
+      },
+      {
+        "title": "Brouillons image-to-video",
+        "body": "Utilisez une image de départ comme ancrage visuel.",
+        "tone": "reference"
+      },
+      {
+        "title": "Brouillons sociaux",
+        "body": "Esquissez des concepts courts pour revues créatives.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 20 s",
+        "body": "Brouillons jusqu’à 20 secondes par génération.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast ou LTX 2.3 Pro ?",
+        "body": "Utilisez Fast pour explorer et tester des prompts. Choisissez Pro pour le workflow de production plus large exposé par la route Pro.",
+        "cta": {
+          "label": "Comparer Fast vs Pro",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-ltx-2-3-pro"
+        }
+      },
+      {
+        "title": "Vous testez des concepts sociaux ?",
+        "body": "Brouillonnez idées verticales, hooks publicitaires et directions de style avant de finaliser.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Choisir un moteur rapide ?",
+        "body": "Comparez LTX Fast et Seedance Fast quand vitesse et coût d’itération priment sur la finition.",
+        "cta": {
+          "label": "Comparer avec Seedance Fast",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-seedance-2-0-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Testez sujet, style, caméra et format avec de courtes variantes."
+      },
+      {
+        "title": "Image de départ",
+        "body": "Utilisez image-to-video quand une base visuelle doit guider composition ou produit."
+      },
+      {
+        "title": "Brouillon vertical",
+        "body": "Cadrez tôt les concepts sociaux en 9:16 ou 16:9."
+      },
+      {
+        "title": "Comparaison de look",
+        "body": "Comparez lumière, couleur et mouvement avec des variantes de prompt."
+      },
+      {
+        "title": "Passage production",
+        "body": "Déplacez le meilleur brouillon vers le workflow final adapté."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix des brouillons LTX 2.3 Fast",
+      "subtitle": "Prix totaux par scénario de brouillon — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Brouillons longs en 1080p",
+      "ctaHref": "/fr/tarifs#ltx-2-3-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2.3 Fast : prix brouillons et tests de prompts | MaxVideoAI",
+      "description": "Utilisez LTX 2.3 Fast pour des boucles de brouillon rapides, exploration visuelle, tests de prompts et vidéos verticales ou sociales."
+    }
   }
 }

@@ -238,5 +238,143 @@
         "ctaLabel": "Borrador con Seedance 2.0 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "seedream",
+    "hero": {
+      "eyebrow": "MODELO PARA PREPARAR IMÁGENES DE REFERENCIA",
+      "title": "Seedream 5.0 Lite",
+      "subtitle": "Referencias fijas limpias, cuadros de producto y preparación visual para video antes de animar en otro modelo.",
+      "subtitleHighlights": [
+        "referencias fijas limpias",
+        "cuadros de producto",
+        "preparación visual para video"
+      ],
+      "paragraph": "Usa Seedream como espacio de generación y edición de imágenes fuente: crea cuadros de producto, referencias de personaje, visuales para anuncios y sets controlados antes de enviar los mejores recursos a un modelo de video.",
+      "primaryCta": {
+        "label": "Preparar referencias con Seedream",
+        "href": "/app/image?engine=seedream"
+      },
+      "secondaryCta": {
+        "label": "Animar con Seedance",
+        "href": "/es/modelos/seedance-2-0"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir espacio de imagen",
+          "href": "/app/image?engine=seedream"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#seedream-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo de referencia Seedream",
+      "description": "Imagen fija preparada para animación posterior",
+      "renderLabel": "Ver imagen",
+      "badges": [
+        "Modelo de imagen",
+        "Hasta 10 refs",
+        "2K-4K"
+      ],
+      "altContext": "imagen de referencia de producto en Seedream preparada para un flujo de video posterior"
+    },
+    "features": [
+      {
+        "title": "Preparación de referencias",
+        "body": "Crea imágenes fuente limpias antes de pasarlas a una ruta de video.",
+        "tone": "reference"
+      },
+      {
+        "title": "Texto o imagen",
+        "body": "Empieza desde un prompt o edita con imágenes de referencia cargadas.",
+        "tone": "reference"
+      },
+      {
+        "title": "Hasta 10 referencias",
+        "body": "Guía ediciones con varias fuentes cuando los detalles necesitan más control.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Imágenes 2K, 3K o 4K",
+        "body": "Prepara stills con más resolución para producto, personaje y revisión de composición.",
+        "tone": "quality"
+      },
+      {
+        "title": "Hasta 15 imágenes totales",
+        "body": "Las imágenes generadas y de referencia comparten el total expuesto de Seedream.",
+        "tone": "duration"
+      },
+      {
+        "title": "Precio por imagen",
+        "body": "Los escenarios de imagen usan el helper de precios compartido, no segundos de video.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Cuándo conviene Seedream?",
+        "body": "Elige Seedream cuando el siguiente paso de video necesita primero referencias más limpias de producto, personaje, estilo o composición.",
+        "cta": {
+          "label": "Abrir espacio de imagen Seedream",
+          "href": "/app/image?engine=seedream"
+        }
+      },
+      {
+        "title": "¿Preparas cuadros de producto?",
+        "body": "Genera imágenes con etiquetas legibles, fondos limpios y encuadre estable antes de usarlas como recursos fuente.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Necesitas movimiento después?",
+        "body": "Seedream prepara las imágenes fijas. Elige un modelo de video cuando el set de referencias esté listo.",
+        "cta": {
+          "label": "Explorar modelos de video",
+          "href": "/es/modelos"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Imagen por prompt",
+        "body": "Describe producto, personaje, escena, superficie, lente e iluminación para una fuente limpia."
+      },
+      {
+        "title": "Edición con referencia",
+        "body": "Carga imágenes cuando debas conservar identidad, geometría de producto o detalles de marca."
+      },
+      {
+        "title": "Set de referencias",
+        "body": "Crea varias vistas: frente, perfil, detalle y contexto antes del paso de video."
+      },
+      {
+        "title": "Elección de tamaño",
+        "body": "Usa 2K para preparar rápido, 3K para revisión o 4K cuando la imagen requiera más detalle."
+      },
+      {
+        "title": "Paso a video",
+        "body": "Envía solo las mejores imágenes fijas al modelo de movimiento elegido."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de imagen Seedream de un vistazo",
+      "subtitle": "Precios por escenario de imagen. Consulta el precio exacto en el espacio de imagen antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios de imagen predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "ctaHref": "/es/precios#seedream-pricing"
+    },
+    "meta": {
+      "title": "Seedream: precios de imagen y preparación de referencias | MaxVideoAI",
+      "description": "Prepara con Seedream imágenes de referencia, cuadros de producto, personajes fijos y sets visuales controlados antes de elegir un modelo de video."
+    }
   }
 }

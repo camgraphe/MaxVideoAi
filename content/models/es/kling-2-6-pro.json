@@ -287,5 +287,144 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null
+  },
+  "decision": {
+    "modelSlug": "kling-2-6-pro",
+    "hero": {
+      "eyebrow": "RUTA KLING PRO CON AUDIO AUN COMPATIBLE",
+      "title": "Kling 2.6 Pro",
+      "subtitle": "Audio nativo, clips cortos 1080p y texto a video o imagen a video para workflows Kling Pro anteriores aún compatibles.",
+      "subtitleHighlights": [
+        "Audio nativo",
+        "clips cortos 1080p",
+        "texto a video o imagen a video"
+      ],
+      "paragraph": "Usa Kling 2.6 Pro cuando necesitas una ruta Kling anterior aún compatible para clips cortos con audio, arranque con texto o imagen, prompt negativo, seed y salida 1080p antes de mover el trabajo actual a Kling 3 Pro.",
+      "primaryCta": {
+        "label": "Generar con Kling 2.6 Pro",
+        "href": "/app?engine=kling-2-6-pro"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Kling 3 Pro",
+          "href": "/es/comparativa/kling-2-6-pro-vs-kling-3-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#kling-2-6-pro-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Kling 2.6 Pro",
+      "description": "Clip corto 1080p listo para audio",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Audio activado",
+        "10 s",
+        "1080p"
+      ],
+      "altContext": "clip cinematográfico corto con Kling 2.6 Pro y audio"
+    },
+    "features": [
+      {
+        "title": "Audio nativo",
+        "body": "Genera diálogo, ambiente o SFX con la pasada visual cuando el audio está activo.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto a video",
+        "body": "Empieza con un brief compacto de escena, cámara y sonido.",
+        "tone": "reference"
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Usa una imagen inicial para anclar composición o identidad.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Salida 1080p",
+        "body": "Mantén esta ruta enfocada en clips cortos full HD.",
+        "tone": "quality"
+      },
+      {
+        "title": "Máx. 10 s",
+        "body": "Planea un beat claro o una secuencia muy corta por render.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Kling 2.6 Pro o Kling 3 Pro?",
+        "body": "Usa 2.6 Pro para clips cortos con audio aún compatibles. Usa Kling 3 Pro para el workflow Pro actual.",
+        "cta": {
+          "label": "Comparar Kling 2.6 Pro vs Kling 3 Pro",
+          "href": "/es/comparativa/kling-2-6-pro-vs-kling-3-pro"
+        }
+      },
+      {
+        "title": "¿Necesitas una pasada corta con audio?",
+        "body": "Mantén diálogo y SFX breves, ligados a acciones visibles, y activa audio solo cuando la revisión lo necesite.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Solo estás probando movimiento?",
+        "body": "Usa Kling 2.5 Turbo o Kling 3 Standard para iteraciones silenciosas antes de la pasada final.",
+        "cta": {
+          "label": "Ver Kling 2.5 Turbo",
+          "href": "/es/modelos/kling-2-5-turbo"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Escribe sujeto, acción, cámara, luz, estilo y un cue de sonido corto."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa una imagen para anclar producto, identidad o composición de apertura."
+      },
+      {
+        "title": "Cue de audio",
+        "body": "Mantén ambiente, SFX o diálogo lo bastante cortos para sincronizar con el beat visible."
+      },
+      {
+        "title": "Prompt negativo y seed",
+        "body": "Usa términos de limpieza y seed cuando necesitas más repetibilidad."
+      },
+      {
+        "title": "Paso a Kling 3",
+        "body": "Mueve las recetas aprobadas a Kling 3 Pro cuando el trabajo necesita la ruta actual."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Kling 2.6 Pro de un vistazo",
+      "subtitle": "Totales 1080p predefinidos. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 1080p",
+      "ctaHref": "/es/precios#kling-2-6-pro-pricing"
+    },
+    "meta": {
+      "title": "Kling 2.6 Pro: precios, audio y ejemplos | MaxVideoAI",
+      "description": "Usa Kling 2.6 Pro para clips Kling 1080p aún compatibles con audio nativo, texto a video, imagen a video, prompt negativo y ejemplos."
+    }
   }
 }

@@ -16,28 +16,67 @@
       "href": "/app/image?engine=luma-uni-1-max"
     },
     "secondaryLinks": [
-      { "label": "Abrir espacio de imagen", "href": "/app/image?engine=luma-uni-1-max" },
-      { "label": "Revisar precios", "href": "/pricing#luma-uni-1-max-pricing" }
+      {
+        "label": "Abrir espacio de imagen",
+        "href": "/app/image?engine=luma-uni-1-max"
+      },
+      {
+        "label": "Revisar precios",
+        "href": "/pricing#luma-uni-1-max-pricing"
+      }
     ]
   },
   "bestUseCases": {
     "title": "Mejores casos de uso",
     "items": [
-      { "title": "Visuales principales para páginas de producto y campañas", "icon": "product" },
-      { "title": "Composiciones de póster o etiqueta sensibles a tipografía", "icon": "layout" },
-      { "title": "Revisiones de fuente de alto detalle", "icon": "layers" },
-      { "title": "Dirección creativa multi-referencia", "icon": "storyboard" },
-      { "title": "Imágenes finales antes de pasar a movimiento", "icon": "sparkles" }
+      {
+        "title": "Visuales principales para páginas de producto y campañas",
+        "icon": "product"
+      },
+      {
+        "title": "Composiciones de póster o etiqueta sensibles a tipografía",
+        "icon": "layout"
+      },
+      {
+        "title": "Revisiones de fuente de alto detalle",
+        "icon": "layers"
+      },
+      {
+        "title": "Dirección creativa multi-referencia",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Imágenes finales antes de pasar a movimiento",
+        "icon": "sparkles"
+      }
     ]
   },
   "technicalOverviewTitle": "Resumen técnico",
   "technicalOverview": [
-    { "label": "Flujos", "body": "Texto a imagen y edición de imagen" },
-    { "label": "Salida", "body": "Imagen fija 2K" },
-    { "label": "Referencias", "body": "Las solicitudes de texto pueden usar varias referencias; las ediciones usan una fuente más referencias opcionales" },
-    { "label": "Estilo", "body": "Controles auto y manga donde estén disponibles" },
-    { "label": "Formato", "body": "PNG o JPEG en el espacio de imagen" },
-    { "label": "Precio", "body": "Los ejemplos públicos usan precios de referencia de MaxVideoAI" }
+    {
+      "label": "Flujos",
+      "body": "Texto a imagen y edición de imagen"
+    },
+    {
+      "label": "Salida",
+      "body": "Imagen fija 2K"
+    },
+    {
+      "label": "Referencias",
+      "body": "Las solicitudes de texto pueden usar varias referencias; las ediciones usan una fuente más referencias opcionales"
+    },
+    {
+      "label": "Estilo",
+      "body": "Controles auto y manga donde estén disponibles"
+    },
+    {
+      "label": "Formato",
+      "body": "PNG o JPEG en el espacio de imagen"
+    },
+    {
+      "label": "Precio",
+      "body": "Los ejemplos públicos usan precios de referencia de MaxVideoAI"
+    }
   ],
   "promptStructure": {
     "title": "Mini-guía de prompt",
@@ -102,11 +141,24 @@
     "heroEyebrow": "Modelo de imagen Luma Uni-1 Max",
     "heroSupportLine": "Ideal para visuales principales 2K de alta fidelidad, imágenes de producto y ediciones con referencias.",
     "heroSpecChips": [
-      { "label": "Texto->Imagen", "icon": "textToVideo" },
-      { "label": "Edición de imagen", "icon": "imageToVideo" },
-      { "label": "Salida 2K", "icon": "resolution" },
-      { "label": "Guiado por referencias" },
-      { "label": "PNG / JPEG" }
+      {
+        "label": "Texto->Imagen",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Edición de imagen",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Salida 2K",
+        "icon": "resolution"
+      },
+      {
+        "label": "Guiado por referencias"
+      },
+      {
+        "label": "PNG / JPEG"
+      }
     ],
     "whyTitle": "Por qué Uni-1 Max es útil",
     "heroDesc1": "Uni-1 Max da a las imágenes seleccionadas una ruta Luma de mayor fidelidad sin reemplazar cada pase de exploración más barato.",
@@ -206,5 +258,144 @@
     ],
     "finalPara1": "Luma Uni-1 Max es la ruta de imagen de mayor fidelidad de la familia Uni para visuales principales, imágenes de producto y ediciones de fuente cuidadosas.",
     "finalButton": "Generar con Luma Uni-1 Max"
+  },
+  "decision": {
+    "modelSlug": "luma-uni-1-max",
+    "hero": {
+      "eyebrow": "RUTA LUMA PREMIUM DE IMAGEN",
+      "title": "Luma Uni-1 Max",
+      "subtitle": "Imágenes Uni-1 de mayor fidelidad para revisiones precisas, visuales de producto y ediciones con referencias.",
+      "subtitleHighlights": [
+        "Imágenes Uni-1 de mayor fidelidad",
+        "revisiones precisas",
+        "ediciones con referencias"
+      ],
+      "paragraph": "Usa Uni-1 Max cuando la imagen necesita más detalle que la ruta base: visuales principales, composiciones de producto, conceptos sensibles a tipografía y ediciones detalladas con referencias.",
+      "primaryCta": {
+        "label": "Generar con Luma Uni-1 Max",
+        "href": "/app/image?engine=luma-uni-1-max"
+      },
+      "secondaryCta": {
+        "label": "Ver precios",
+        "href": "/es/precios#luma-uni-1-max-pricing"
+      },
+      "quickLinks": [
+        {
+          "label": "Abrir espacio de imagen",
+          "href": "/app/image?engine=luma-uni-1-max"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#luma-uni-1-max-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Luma Uni-1 Max",
+      "description": "Imagen 2K de alta fidelidad y flujo de edición con referencias",
+      "renderLabel": "Ver imagen",
+      "badges": [
+        "2K",
+        "Visual principal",
+        "Referencias"
+      ],
+      "altContext": "ejemplo de imagen premium con Luma Uni-1 Max"
+    },
+    "features": [
+      {
+        "title": "Ruta 2K de alta fidelidad",
+        "body": "Usa Max para imágenes seleccionadas que necesitan más detalle y acabado.",
+        "tone": "quality"
+      },
+      {
+        "title": "Visuales de producto",
+        "body": "Buen ajuste para catálogo, etiquetas, packaging y composiciones de campaña.",
+        "tone": "reference"
+      },
+      {
+        "title": "Revisiones precisas",
+        "body": "Usa imagen fuente y referencias para acotar lo que debe cambiar.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Sensible a tipografía",
+        "body": "Ayuda en composiciones con texto, aunque el texto exacto requiere inspección.",
+        "tone": "quality"
+      },
+      {
+        "title": "Dirección con referencias",
+        "body": "Combina producto, estilo, vestuario o composición en una consigna de imagen.",
+        "tone": "reference"
+      },
+      {
+        "title": "Precio de referencia",
+        "body": "Los precios mostrados usan referencias públicas de MaxVideoAI antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Max o Uni-1 base?",
+        "body": "Usa Uni-1 base para explorar. Usa Max para visuales principales, detalle de producto y revisiones que justifiquen una ruta de mayor costo.",
+        "cta": {
+          "label": "Ver Uni-1",
+          "href": "/es/modelos/luma-uni-1"
+        }
+      },
+      {
+        "title": "¿Visual de producto o tipografía?",
+        "body": "Nombra jerarquía de texto, materiales, luz y composición; revisa texto y bordes antes de entregar.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Editar con referencias",
+        "body": "La imagen fuente define lo que queda. Agrega referencias solo si cada una tiene un rol claro.",
+        "cta": {
+          "label": "Abrir Uni-1 Max",
+          "href": "/app/image?engine=luma-uni-1-max"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Visual principal",
+        "body": "Define producto, escena, composición, ubicación de texto, luz y ratio antes de generar."
+      },
+      {
+        "title": "Etiqueta de producto o póster",
+        "body": "Escribe la jerarquía de texto y verifica letras, logo y detalles finos."
+      },
+      {
+        "title": "Edición de alto detalle",
+        "body": "Sube la fuente y describe el conjunto mínimo de cambios necesarios."
+      },
+      {
+        "title": "Dirección creativa multi-referencia",
+        "body": "Asigna referencias a identidad de producto, paleta, material, estilo o composición."
+      },
+      {
+        "title": "Paso a video",
+        "body": "Usa la imagen más fuerte como imagen inicial si la campaña después necesita movimiento."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Luma Uni-1 Max de un vistazo",
+      "subtitle": "Los precios mostrados usan referencias públicas de MaxVideoAI; el precio exacto aparece antes de generar.",
+      "footnote": "Max no se presenta como más barato o rápido que Uni-1; elige esta ruta cuando la imagen necesite mayor fidelidad.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Una imagen",
+      "ctaHref": "/es/precios#luma-uni-1-max-pricing"
+    },
+    "meta": {
+      "title": "Luma Uni-1 Max: precios, imágenes 2K y edición | MaxVideoAI",
+      "description": "Explora Luma Uni-1 Max: precios, imágenes 2K de alta fidelidad, ediciones de fuente, composiciones sensibles a tipografía y flujos con referencias."
+    }
   }
 }

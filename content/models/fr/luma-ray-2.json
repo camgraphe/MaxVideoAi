@@ -159,12 +159,30 @@
     "heroDesc2": "C'est important en production. Vous pouvez generer un plan depuis un prompt, animer un still, modifier un clip source gagnant, puis reframer le master approuve pour le social sans changer de famille modele.",
     "heroSupportLine": "Ideal pour un usage cinematographique premium quand vous voulez generation et edition video source dans une meme surface Luma.",
     "heroSpecChips": [
-      { "label": "Text->Video", "icon": "textToVideo" },
-      { "label": "Image->Video", "icon": "imageToVideo" },
-      { "label": "Modify depuis video source", "icon": "videoToVideo" },
-      { "label": "Reframe en 1:1 ou 9:16", "icon": "aspectRatio" },
-      { "label": "Generate: 5s ou 9s", "icon": "duration" },
-      { "label": "540p a 1080p en generate", "icon": "resolution" }
+      {
+        "label": "Text->Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Modify depuis video source",
+        "icon": "videoToVideo"
+      },
+      {
+        "label": "Reframe en 1:1 ou 9:16",
+        "icon": "aspectRatio"
+      },
+      {
+        "label": "Generate: 5s ou 9s",
+        "icon": "duration"
+      },
+      {
+        "label": "540p a 1080p en generate",
+        "icon": "resolution"
+      }
     ],
     "whyTitle": "Pourquoi Luma Ray 2 est strategiquement utile",
     "heroHighlights": [
@@ -226,5 +244,148 @@
     ],
     "finalPara1": "Luma Ray 2 est la moitie premium de la nouvelle famille Luma a deux modeles, mais la page se comporte maintenant comme une vraie page workflow complete et non comme un placeholder reduit. C'est le bon compromis: lineup simple, large couverture des workflows Luma.",
     "finalButton": "Generer avec Luma Ray 2"
+  },
+  "decision": {
+    "modelSlug": "luma-ray-2",
+    "hero": {
+      "eyebrow": "ROUTE LUMA D’ANCIENNE GENERATION",
+      "title": "Luma Ray 2",
+      "subtitle": "Route Luma d’ancienne génération pour les workflows Generate, Modify et Reframe encore pris en charge.",
+      "subtitleHighlights": [
+        "Route Luma d’ancienne génération",
+        "Modify",
+        "Reframe"
+      ],
+      "paragraph": "Utilisez Luma Ray 2 quand vous avez besoin d’un rendu Luma compatible avec l’ancienne route ou d’un workflow Ray 2 historique. Pour les nouveaux travaux Luma Modify, images guides, keyframes et Reframe, partez de Ray 3.2.",
+      "primaryCta": {
+        "label": "Ouvrir Ray 2 legacy",
+        "href": "/app?engine=lumaRay2"
+      },
+      "secondaryCta": {
+        "label": "Ouvrir Ray 3.2",
+        "href": "/fr/modeles/luma-ray-3-2"
+      },
+      "quickLinks": [
+        {
+          "label": "Luma actuel : Ray 3.2",
+          "href": "/fr/modeles/luma-ray-3-2"
+        },
+        {
+          "label": "Comparer vs Flash",
+          "href": "/fr/comparatif/luma-ray-2-vs-luma-ray-2-flash"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#luma-ray-2-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Luma Ray 2",
+      "description": "Workflow Luma d’ancienne génération",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "Route legacy",
+        "Modify + Reframe",
+        "1080p"
+      ],
+      "altContext": "exemple vidéo cinématographique Luma Ray 2"
+    },
+    "features": [
+      {
+        "title": "Route Luma legacy",
+        "body": "Gardez Ray 2 pour les anciens prompts, exemples historiques et tests de compatibilité.",
+        "tone": "quality"
+      },
+      {
+        "title": "Départ texte ou image",
+        "body": "Générez depuis un prompt ou animez une image avec fin optionnelle.",
+        "tone": "reference"
+      },
+      {
+        "title": "Modifier une source",
+        "body": "Conservez un timing qui marche déjà tout en changeant le look ou le détail.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Recadrer pour livrer",
+        "body": "Déclinez un master validé en formats vertical, carré ou large.",
+        "tone": "reference"
+      },
+      {
+        "title": "Génération 5 ou 9 s",
+        "body": "Travaillez sur des plans courts et contrôlés jusqu’à 1080p.",
+        "tone": "duration"
+      },
+      {
+        "title": "Ray 3.2 pour les nouveaux edits",
+        "body": "Utilisez Ray 3.2 d’abord si images guides, keyframes ou Reframe actuel comptent.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Ray 2 ou Ray 3.2 ?",
+        "body": "Utilisez Ray 3.2 pour les nouveaux workflows Luma Modify, keyframes et Reframe. Gardez Ray 2 pour les prompts legacy, anciens exemples et tests de compatibilité.",
+        "cta": {
+          "label": "Ouvrir Ray 3.2",
+          "href": "/fr/modeles/luma-ray-3-2"
+        }
+      },
+      {
+        "title": "Vous modifiez une vidéo existante ?",
+        "body": "Utilisez Modify Ray 2 seulement si vous voulez l’ancienne route. Pour un nouvel edit vidéo source, Ray 3.2 doit passer en premier.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’une génération plus forte ?",
+        "body": "Utilisez Seedance, Kling ou Veo pour les routes flagship, les sorties avec son ou le contrôle référence plus large plutôt qu’un workflow Luma legacy.",
+        "cta": {
+          "label": "Comparer Ray 2 vs Veo Fast",
+          "href": "/fr/comparatif/luma-ray-2-vs-veo-3-1-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Rédigez un brief court : sujet, caméra, lumière et mouvement du plan."
+      },
+      {
+        "title": "Image-to-video",
+        "body": "Ancrez composition, produit ou identité avec une image de départ."
+      },
+      {
+        "title": "Image de fin",
+        "body": "Ajoutez une fin uniquement si la pose ou la composition d’arrivée compte."
+      },
+      {
+        "title": "Modify",
+        "body": "Chargez une source vidéo, indiquez ce qui doit rester, ce qui change, puis choisissez la force."
+      },
+      {
+        "title": "Reframe",
+        "body": "Priorisez le sujet et le format de livraison sans réécrire toute la scène."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Luma Ray 2 legacy en un coup d’œil",
+      "subtitle": "Prix totaux Ray 2 par palier durée/résolution — utilisez Ray 3.2 pour les edits Luma et Reframe actuels.",
+      "footnote": "La génération suit des paliers durée/résolution. Modify et Reframe sont chiffrés en direct selon le clip source et les réglages.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#luma-ray-2-pricing"
+    },
+    "meta": {
+      "title": "Luma Ray 2 legacy : tarifs, Modify et Reframe | MaxVideoAI",
+      "description": "Explorez Luma Ray 2 comme route Luma d’ancienne génération : tarifs, exemples, Modify, Reframe, contexte Ray 2 Flash et migration vers Ray 3.2."
+    }
   }
 }

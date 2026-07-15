@@ -336,5 +336,152 @@
       "Text looks wrong → avoid readable signage, tiny UI, labels, and on-screen text.",
       "Dialogue drifts → keep lines short; avoid long monologues."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2-fast",
+    "hero": {
+      "eyebrow": "SUPPORTED LTX 2 FAST ROUTE",
+      "title": "LTX 2 Fast",
+      "subtitle": "Fast 16:9 drafts up to 20s for text or image starts, audio-ready review passes, and 1080p to 4K checks.",
+      "subtitleHighlights": [
+        "Fast 16:9 drafts",
+        "up to 20s",
+        "1080p to 4K checks"
+      ],
+      "paragraph": "Use LTX 2 Fast for the supported older fast LTX route when you need low-cost 16:9 drafts, longer 20s timing checks, image starts and high-res review options. Use LTX 2.3 Fast for the current fast LTX workflow.",
+      "primaryCta": {
+        "label": "Draft with LTX 2 Fast",
+        "href": "/app?engine=ltx-2-fast"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "View LTX 2.3 Fast",
+          "href": "/models/ltx-2-3-fast"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#ltx-2-fast-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "LTX 2 Fast example",
+      "description": "Fast 16:9 draft loop",
+      "renderLabel": "View draft",
+      "badges": [
+        "Fast route",
+        "20s max",
+        "16:9"
+      ],
+      "altContext": "LTX 2 Fast 16:9 draft video render"
+    },
+    "features": [
+      {
+        "title": "Fast 16:9 drafts",
+        "body": "Move quickly through older LTX timing and composition checks.",
+        "tone": "duration"
+      },
+      {
+        "title": "Text or image start",
+        "body": "Use a prompt or one still to test product, subject or scene setup.",
+        "tone": "reference"
+      },
+      {
+        "title": "Up to 20s",
+        "body": "Use longer 1080p/25 fps loops when pacing matters more than polish.",
+        "tone": "duration"
+      },
+      {
+        "title": "1080p to 4K",
+        "body": "Shorter checks can still use high-res review settings.",
+        "tone": "quality"
+      },
+      {
+        "title": "Audio-ready",
+        "body": "Use the audio-enabled route for timing and review passes.",
+        "tone": "audio"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "LTX 2 Fast or LTX 2.3 Fast?",
+        "body": "Use LTX 2 Fast for supported older 16:9 draft loops. Use LTX 2.3 Fast for the current fast LTX route and broader format coverage.",
+        "cta": {
+          "label": "View LTX 2.3 Fast",
+          "href": "/models/ltx-2-3-fast"
+        }
+      },
+      {
+        "title": "Need higher fidelity?",
+        "body": "Move approved draft directions into LTX 2 or LTX 2.3 Pro when the shot needs a more polished pass.",
+        "cta": {
+          "label": "View LTX 2",
+          "href": "/models/ltx-2"
+        }
+      },
+      {
+        "title": "Comparing fast value routes?",
+        "body": "Compare LTX 2 Fast with Wan 2.5 when choosing between longer 16:9 LTX loops and lower-cost audio checks.",
+        "cta": {
+          "label": "Compare LTX 2 Fast vs Wan 2.5",
+          "href": "/ai-video-engines/ltx-2-fast-vs-wan-2-5"
+        }
+      },
+      {
+        "title": "Need prompt examples?",
+        "body": "Use short draft prompts with one motion beat, one camera move and a clear review goal.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Draft prompt",
+        "body": "Keep one subject, one motion idea and one camera move so the fast route stays readable."
+      },
+      {
+        "title": "Image start",
+        "body": "Use one still to lock the product, character or environment before testing motion."
+      },
+      {
+        "title": "Long loop",
+        "body": "Use 12-20s only for 1080p timing checks where pacing matters more than detail."
+      },
+      {
+        "title": "High-res short check",
+        "body": "Use 1440p or 4K on shorter clips when you need to inspect detail."
+      },
+      {
+        "title": "Upgrade path",
+        "body": "Move winning directions into LTX 2.3 Fast or Pro depending on the current workflow needed."
+      }
+    ],
+    "pricingCopy": {
+      "title": "LTX 2 Fast draft pricing",
+      "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "20s at 1080p / 25 fps",
+      "ctaHref": "/pricing#ltx-2-fast-pricing"
+    },
+    "meta": {
+      "title": "LTX 2 Fast: Pricing, 20s Drafts & Examples | MaxVideoAI",
+      "description": "Use LTX 2 Fast for supported older LTX 16:9 drafts, 20s timing checks, text-to-video, image-to-video, high-res review options and pricing."
+    }
   }
 }

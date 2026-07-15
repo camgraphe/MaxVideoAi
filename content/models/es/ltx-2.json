@@ -329,5 +329,152 @@
       "Lip sync se ve mal → acorta las líneas, baja la velocidad de habla y evita monólogos largos.",
       "Texto/señalética falla → mantén el texto legible fuera de cuadro; evita labels UI pequeños y logos."
     ]
+  },
+  "decision": {
+    "modelSlug": "ltx-2",
+    "hero": {
+      "eyebrow": "RUTA LTX 2 PRO AUN COMPATIBLE",
+      "title": "LTX 2",
+      "subtitle": "Clips 16:9 de alta fidelidad para texto a video o imagen a video, con checks de 1080p a 4K en la ruta LTX anterior compatible.",
+      "subtitleHighlights": [
+        "Clips 16:9 de alta fidelidad",
+        "texto a video o imagen a video",
+        "checks de 1080p a 4K"
+      ],
+      "paragraph": "Usa LTX 2 cuando necesites la ruta Pro anterior de LTX: clips 16:9 cortos de 6 a 10 s, imagen inicial, negative prompt, seed y revisiones en alta resolución. Usa LTX 2.3 Pro para el flujo de producción actual.",
+      "primaryCta": {
+        "label": "Generar con LTX 2",
+        "href": "/app?engine=ltx-2"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/ltx"
+      },
+      "quickLinks": [
+        {
+          "label": "Ver LTX 2.3 Pro",
+          "href": "/es/modelos/ltx-2-3-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#ltx-2-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo LTX 2",
+      "description": "Render 16:9 de alta fidelidad",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Audio activo",
+        "10 s",
+        "16:9"
+      ],
+      "altContext": "render de video 16:9 de alta fidelidad con LTX 2"
+    },
+    "features": [
+      {
+        "title": "Fidelidad 16:9",
+        "body": "Usa LTX 2 para clips landscape cortos con look premium limpio.",
+        "tone": "quality"
+      },
+      {
+        "title": "Texto o imagen inicial",
+        "body": "Empieza desde un prompt o una imagen fija para imagen a video.",
+        "tone": "reference"
+      },
+      {
+        "title": "1080p a 4K",
+        "body": "Sube resolución cuando la dirección de movimiento ya está aprobada.",
+        "tone": "quality"
+      },
+      {
+        "title": "25 o 50 fps",
+        "body": "Elige la opción de frame rate disponible en la ruta de MaxVideoAI.",
+        "tone": "duration"
+      },
+      {
+        "title": "Máx. 10 s",
+        "body": "Mantén esta ruta anterior enfocada en renders cortos de un beat.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿LTX 2 o LTX 2.3 Pro?",
+        "body": "Usa LTX 2 para clips 16:9 de alta fidelidad en la ruta anterior. Usa LTX 2.3 Pro cuando necesitas la ruta LTX de producción actual.",
+        "cta": {
+          "label": "Ver LTX 2.3 Pro",
+          "href": "/es/modelos/ltx-2-3-pro"
+        }
+      },
+      {
+        "title": "¿Necesitas un borrador LTX más rápido?",
+        "body": "Usa LTX 2 Fast para loops 16:9 más largos y de menor coste antes de decidir si la toma merece una pasada con más fidelidad.",
+        "cta": {
+          "label": "Ver LTX 2 Fast",
+          "href": "/es/modelos/ltx-2-fast"
+        }
+      },
+      {
+        "title": "¿Comparas motores premium?",
+        "body": "Compara LTX 2 con Veo 3.1 al elegir entre checks antiguos de alta resolución y rutas premium actuales.",
+        "cta": {
+          "label": "Comparar LTX 2 vs Veo 3.1",
+          "href": "/es/comparativa/ltx-2-vs-veo-3-1"
+        }
+      },
+      {
+        "title": "¿Necesitas ejemplos de prompts?",
+        "body": "Empieza con una estructura corta: sujeto, acción, cámara y negative prompt antes de pagar checks en alta resolución.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Describe un sujeto, una acción visible, un movimiento de cámara y el acabado esperado."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Usa una imagen limpia cuando producto, encuadre o identidad deban mantenerse estables."
+      },
+      {
+        "title": "Negative prompt",
+        "body": "Bloquea artefactos o estilos no deseados sin sumar demasiadas instrucciones positivas."
+      },
+      {
+        "title": "Seed",
+        "body": "Reutiliza seed para comparar variantes dentro de la misma dirección creativa."
+      },
+      {
+        "title": "Pasada en alta resolución",
+        "body": "Pasa a 1440p o 4K solo cuando el movimiento ya esté aprobado."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de LTX 2 de un vistazo",
+      "subtitle": "Totales para esta ruta compatible. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Ruta de 6-10 s; hasta 4K",
+      "ctaHref": "/es/precios#ltx-2-pricing"
+    },
+    "meta": {
+      "title": "LTX 2: precios, clips 4K y ejemplos | MaxVideoAI",
+      "description": "Usa LTX 2 para clips 16:9 de alta fidelidad aún compatibles, texto a video, imagen a video, checks de 1080p a 4K, precios y ejemplos."
+    }
   }
 }

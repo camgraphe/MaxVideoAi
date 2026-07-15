@@ -369,5 +369,144 @@
       "Lip sync drifts → shorten the line and slow the delivery; avoid long monologues.",
       "Prompt expansion changes nuance → disable expansion for literal control, or shorten the prompt and remove ambiguous adjectives."
     ]
+  },
+  "decision": {
+    "modelSlug": "wan-2-5",
+    "hero": {
+      "eyebrow": "WAN SUPPORTED AUDIO DRAFT ROUTE",
+      "title": "Wan 2.5",
+      "subtitle": "Audio-ready 5-10s clips for text or image starts, prompt expansion, and 480p to 1080p checks.",
+      "subtitleHighlights": [
+        "Audio-ready 5-10s clips",
+        "text or image starts",
+        "480p to 1080p checks"
+      ],
+      "paragraph": "Use Wan 2.5 when you need the supported older Wan route for short audio-ready tests: text-to-video, image-to-video, optional soundtrack upload, prompt expansion, seed control and lower-resolution draft passes.",
+      "primaryCta": {
+        "label": "Generate with Wan 2.5",
+        "href": "/app?engine=wan-2-5"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/wan"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Sora 2",
+          "href": "/ai-video-engines/sora-2-vs-wan-2-5?order=wan-2-5"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#wan-2-5-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Wan 2.5 example",
+      "description": "Short audio-ready draft clip",
+      "renderLabel": "View render",
+      "badges": [
+        "Audio-ready",
+        "10s max",
+        "1080p"
+      ],
+      "altContext": "Wan 2.5 short audio-ready draft clip"
+    },
+    "features": [
+      {
+        "title": "Audio-ready tests",
+        "body": "Use native sound or attach a short WAV/MP3 track when timing matters.",
+        "tone": "audio"
+      },
+      {
+        "title": "Text or image start",
+        "body": "Generate from a prompt or one source image for quick motion checks.",
+        "tone": "reference"
+      },
+      {
+        "title": "480p to 1080p",
+        "body": "Pick lower-cost draft resolution or 1080p when the shot needs more detail.",
+        "tone": "quality"
+      },
+      {
+        "title": "Prompt expansion",
+        "body": "Use expansion when a simple brief needs more visual detail.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 10s",
+        "body": "Keep Wan 2.5 focused on short single-beat or two-beat clips.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Wan 2.5 or Wan 2.6?",
+        "body": "Use Wan 2.5 for short audio-ready checks and lower-resolution drafts. Use Wan 2.6 when you need 15s, multi-shot or reference-video guidance.",
+        "cta": {
+          "label": "View Wan 2.6",
+          "href": "/models/wan-2-6"
+        }
+      },
+      {
+        "title": "Need the soundtrack to steer timing?",
+        "body": "Attach a short audio file when rhythm or mood should guide the clip, then keep the visual prompt simple.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparing audio-native routes?",
+        "body": "Compare Wan 2.5 with Sora 2 when you are choosing between lower-cost checks and Sora-style synced outputs.",
+        "cta": {
+          "label": "Compare Wan 2.5 vs Sora 2",
+          "href": "/ai-video-engines/sora-2-vs-wan-2-5?order=wan-2-5"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Describe one subject, one action, one camera move and one sound direction."
+      },
+      {
+        "title": "Image start",
+        "body": "Use a single image to hold framing, product shape or character identity."
+      },
+      {
+        "title": "Audio file",
+        "body": "Attach a short soundtrack when rhythm, ambience or mood should drive the take."
+      },
+      {
+        "title": "Prompt expansion",
+        "body": "Turn expansion on for sparse briefs; turn it off when every visual detail is deliberate."
+      },
+      {
+        "title": "Wan 2.6 upgrade",
+        "body": "Move to Wan 2.6 for longer clips, multi-shot plans or reference-video consistency."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Wan 2.5 pricing at a glance",
+      "subtitle": "Preset short-clip totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#wan-2-5-pricing"
+    },
+    "meta": {
+      "title": "Wan 2.5: Pricing, Audio Drafts & Examples | MaxVideoAI",
+      "description": "Use Wan 2.5 for short audio-ready AI video drafts, text-to-video, image-to-video, optional soundtrack upload, prompt expansion and pricing."
+    }
   }
 }

@@ -404,5 +404,148 @@
       "Text/signage breaks → keep readable text off-screen; overlay critical copy in post.",
       "VO / lip sync feels off → shorten lines; avoid fast speech and long monologues."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1-fast",
+    "hero": {
+      "eyebrow": "GOOGLE FAST VIDEO ROUTE",
+      "title": "Veo 3.1 Fast",
+      "subtitle": "Faster Veo drafts with optional native audio, reference-to-video runs, 4K output, and short concept loops.",
+      "subtitleHighlights": [
+        "faster Veo drafts",
+        "optional native audio",
+        "4K output"
+      ],
+      "paragraph": "Use Veo 3.1 Fast for quick text-to-video, image-to-video, reference-to-video, first-last frame tests, and 4K checks when you need lower-cost Veo iteration before moving approved shots into Veo 3.1.",
+      "primaryCta": {
+        "label": "Generate with Veo 3.1 Fast",
+        "href": "/app?engine=veo-3-1-fast"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Veo 3.1",
+          "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-fast?order=veo-3-1-fast"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#veo-3-1-fast-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Veo 3.1 Fast example",
+      "description": "Fast Veo draft with optional audio",
+      "renderLabel": "View draft",
+      "badges": [
+        "Fast route",
+        "8s",
+        "4K option"
+      ],
+      "altContext": "Veo 3.1 Fast short concept draft"
+    },
+    "features": [
+      {
+        "title": "Fast Veo drafts",
+        "body": "Test concepts from 720p through 4K before paying for the main production route.",
+        "tone": "quality"
+      },
+      {
+        "title": "Optional audio",
+        "body": "Toggle native audio on when timing or ambience needs a rough pass.",
+        "tone": "audio"
+      },
+      {
+        "title": "Reference-to-video",
+        "body": "Attach 1-3 stills for an 8s consistency pass on identity, product or style.",
+        "tone": "reference"
+      },
+      {
+        "title": "First-last tests",
+        "body": "Bridge approved opening and ending frames for short motion checks.",
+        "tone": "reference"
+      },
+      {
+        "title": "Extend support",
+        "body": "Continue an existing Fast clip when a draft needs a pickup beat.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast or Veo 3.1?",
+        "body": "Use Fast for prompt tests and short concept loops. Use Veo 3.1 when the selected shot needs final polish.",
+        "cta": {
+          "label": "Compare Veo 3.1 vs Fast",
+          "href": "/ai-video-engines/veo-3-1-vs-veo-3-1-fast?order=veo-3-1-fast"
+        }
+      },
+      {
+        "title": "Testing endings?",
+        "body": "Use first-last frames when the opening and final composition are already approved.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need the cheapest Veo pass?",
+        "body": "Compare Fast with Lite when you are choosing between audio control and lower-cost timing tests.",
+        "cta": {
+          "label": "Compare Fast vs Lite",
+          "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Test subject, camera, style and audio direction in one short Veo draft."
+      },
+      {
+        "title": "Start image",
+        "body": "Use one still when framing, product shape or identity should anchor the first frame."
+      },
+      {
+        "title": "Reference-to-video",
+        "body": "Attach 1-3 stills when identity, wardrobe, product or style continuity matters."
+      },
+      {
+        "title": "4K check",
+        "body": "Use 4K on selected Fast runs when you need to inspect detail before the production route."
+      },
+      {
+        "title": "First-last frames",
+        "body": "Provide a landing frame when the ending pose or composition matters."
+      },
+      {
+        "title": "Audio toggle",
+        "body": "Turn audio on for rough timing, or off when you only need visual motion."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Veo 3.1 Fast pricing at a glance",
+      "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 4K",
+      "ctaHref": "/pricing#veo-3-1-fast-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1 Fast: 4K Pricing, Drafts & Examples | MaxVideoAI",
+      "description": "Use Veo 3.1 Fast for faster Veo drafts up to 4K, optional native audio, first-last frame tests and lower-cost short concept loops before Veo 3.1 finals."
+    }
   }
 }

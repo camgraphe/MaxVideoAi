@@ -392,5 +392,144 @@
       "Texte/signalétique cassés → gardez le texte lisible hors champ; ajoutez le copy critique en post.",
       "VO / lip sync instable → raccourcissez les lignes; évitez les monologues longs et débit rapide."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1-lite",
+    "hero": {
+      "eyebrow": "ROUTE GOOGLE VIDEO À MOINDRE COÛT",
+      "title": "Veo 3.1 Lite",
+      "subtitle": "Des brouillons Veo à moindre coût avec audio natif optionnel, tests de prompts courts et contrôles image-vidéo simples.",
+      "subtitleHighlights": [
+        "brouillons Veo à moindre coût",
+        "audio natif optionnel",
+        "tests de prompts courts"
+      ],
+      "paragraph": "Utilisez Veo 3.1 Lite pour la route Veo 3.1 la moins coûteuse : brouillons courts, tests de rythme et comparaisons de prompts avant de monter les gagnants vers Fast ou Veo 3.1.",
+      "primaryCta": {
+        "label": "Générer avec Veo 3.1 Lite",
+        "href": "/app?engine=veo-3-1-lite"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Fast",
+          "href": "/fr/comparatif/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#veo-3-1-lite-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Veo 3.1 Lite",
+      "description": "Brouillon Veo avec audio optionnel",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "Audio optionnel",
+        "8 s",
+        "720p"
+      ],
+      "altContext": "brouillon court Veo 3.1 Lite avec audio"
+    },
+    "features": [
+      {
+        "title": "Veo à moindre coût",
+        "body": "Utilisez Lite pour les tests Veo les plus économiques.",
+        "tone": "price"
+      },
+      {
+        "title": "Audio optionnel",
+        "body": "Activez l’audio natif pour l’ambiance ou coupez-le pour un test visuel moins cher.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texte ou image",
+        "body": "Démarrez depuis un prompt ou une seule référence visuelle.",
+        "tone": "reference"
+      },
+      {
+        "title": "Première-dernière",
+        "body": "Utilisez deux images quand la composition finale compte.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 8 s",
+        "body": "Gardez les tests courts et centrés sur un beat.",
+        "tone": "duration"
+      },
+      {
+        "title": "720p ou 1080p",
+        "body": "Choisissez le niveau coût/qualité avant génération.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Lite ou Fast ?",
+        "body": "Utilisez Lite pour les brouillons Veo les moins chers. Choisissez Fast pour le reference-to-video ou des contrôles plus larges.",
+        "cta": {
+          "label": "Comparer Lite vs Fast",
+          "href": "/fr/comparatif/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        }
+      },
+      {
+        "title": "Besoin de timing audio ?",
+        "body": "Quand l’audio est activé, écrivez des cues courts d’ambiance, de SFX ou de dialogue dans le prompt.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Prêt pour le rendu final ?",
+        "body": "Passez les meilleurs brouillons Lite dans Veo 3.1 quand le concept est validé.",
+        "cta": {
+          "label": "Voir Veo 3.1",
+          "href": "/fr/modeles/veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Un sujet, une action, un mouvement caméra et un cue audio simple."
+      },
+      {
+        "title": "Image de départ",
+        "body": "Ancrez composition ou forme produit avec une seule image source."
+      },
+      {
+        "title": "Cue audio",
+        "body": "Gardez ambiance ou dialogue courts quand l’audio est activé."
+      },
+      {
+        "title": "Test court",
+        "body": "Utilisez 4, 6 ou 8 secondes pour valider le beat central."
+      },
+      {
+        "title": "Montée en gamme",
+        "body": "Passez les meilleurs brouillons vers Fast ou Veo 3.1 selon le besoin."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Veo 3.1 Lite en un coup d’œil",
+      "subtitle": "Prix totaux à moindre coût — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#veo-3-1-lite-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1 Lite : tarifs, audio optionnel et exemples | MaxVideoAI",
+      "description": "Utilisez Veo 3.1 Lite pour des brouillons Veo à moindre coût avec audio natif optionnel, tests de prompts courts et contrôles image-vidéo."
+    }
   }
 }

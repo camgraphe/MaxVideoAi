@@ -323,5 +323,148 @@
         "ctaLabel": "Compare Seedance 2.0 Fast vs LTX 2.3 Fast ->"
       }
     ]
+  },
+  "decision": {
+    "modelSlug": "seedance-2-0-fast",
+    "hero": {
+      "eyebrow": "DREAMINA / BYTEDANCE FAST DRAFT ROUTE",
+      "title": "Seedance 2.0 Fast",
+      "subtitle": "Fast Seedance draft passes for timing tests, A/B motion checks, and quick reference-guided shot planning.",
+      "subtitleHighlights": [
+        "draft passes",
+        "timing tests",
+        "A/B motion checks"
+      ],
+      "paragraph": "Use Seedance 2.0 Fast as the faster Seedance draft route in the Dreamina Seedance family when you need rapid iteration before a final render: block timing, compare motion options, and test text, image, or reference inputs in shorter cycles.",
+      "primaryCta": {
+        "label": "Draft with Seedance Fast",
+        "href": "/app?engine=seedance-2-0-fast"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/seedance"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs 2.0",
+          "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        },
+        {
+          "label": "Compare vs Mini batch route",
+          "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#seedance-2-0-fast-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Seedance 2.0 Fast example",
+      "description": "Rapid motion draft sequence",
+      "renderLabel": "View draft",
+      "badges": [
+        "Fast route",
+        "Draft pass",
+        "9:16"
+      ],
+      "altContext": "fast Seedance draft with a moving product camera test"
+    },
+    "features": [
+      {
+        "title": "Fast draft route",
+        "body": "Run quicker Seedance passes for early creative decisions.",
+        "tone": "duration"
+      },
+      {
+        "title": "Timing tests",
+        "body": "Check pacing, camera beats and shot rhythm before polishing.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Reference tests",
+        "body": "Try supported text, image and reference inputs for shot planning.",
+        "tone": "reference"
+      },
+      {
+        "title": "Up to 720p",
+        "body": "Use lower-resolution outputs for draft review loops.",
+        "tone": "quality"
+      },
+      {
+        "title": "Max 15s",
+        "body": "Draft clips up to 15 seconds per generation.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Fast or Seedance 2.0?",
+        "body": "Use Fast for draft passes, timing tests and A/B motion checks. Move to Seedance 2.0 when you need the production route.",
+        "cta": {
+          "label": "Compare Fast vs 2.0",
+          "href": "/ai-video-engines/seedance-2-0-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        }
+      },
+      {
+        "title": "Planning multiple shots?",
+        "body": "Use short draft loops to lock motion direction, camera language and reference behavior before committing to a final pass.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need another fast baseline?",
+        "body": "Compare Seedance Fast with other fast routes when you are choosing a draft engine for social or ad concepts.",
+        "cta": {
+          "label": "Compare with LTX Fast",
+          "href": "/ai-video-engines/ltx-2-3-fast-vs-seedance-2-0-fast?order=seedance-2-0-fast"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Start with the shot idea, movement, camera direction and intended pacing."
+      },
+      {
+        "title": "Image reference",
+        "body": "Use a start image to test composition, product framing or style direction."
+      },
+      {
+        "title": "Reference input",
+        "body": "Use supported references to check whether a draft follows the intended visual anchors."
+      },
+      {
+        "title": "Motion variant",
+        "body": "Run small prompt changes to compare camera speed, subject movement and scene rhythm."
+      },
+      {
+        "title": "Final handoff",
+        "body": "Carry the strongest draft choices into the production route when polish matters."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Seedance 2.0 Fast draft pricing",
+      "subtitle": "Preset draft totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 720p",
+      "ctaHref": "/pricing#seedance-2-0-fast-pricing"
+    },
+    "meta": {
+      "title": "Seedance 2.0 Fast: Draft Pricing & Iteration | MaxVideoAI",
+      "description": "Use Seedance 2.0 Fast for rapid Seedance draft passes, timing tests, A/B motion checks and reference-guided shot planning before final renders."
+    }
   }
 }

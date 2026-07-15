@@ -393,5 +393,144 @@
       "Text/signage breaks → keep readable text off-screen; overlay critical copy in post.",
       "VO / lip sync feels off → shorten lines; avoid fast speech and long monologues."
     ]
+  },
+  "decision": {
+    "modelSlug": "veo-3-1-lite",
+    "hero": {
+      "eyebrow": "GOOGLE LOWER-COST VIDEO ROUTE",
+      "title": "Veo 3.1 Lite",
+      "subtitle": "Lower-cost Veo drafts with optional native audio, short prompt tests, and simple image-to-video checks.",
+      "subtitleHighlights": [
+        "lower-cost Veo drafts",
+        "optional native audio",
+        "short prompt tests"
+      ],
+      "paragraph": "Use Veo 3.1 Lite when you need the cheapest Veo 3.1 route for short drafts, timing checks and prompt comparisons before upgrading winners to Fast or Veo 3.1.",
+      "primaryCta": {
+        "label": "Generate with Veo 3.1 Lite",
+        "href": "/app?engine=veo-3-1-lite"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/veo"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Fast",
+          "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#veo-3-1-lite-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Veo 3.1 Lite example",
+      "description": "Lower-cost Veo draft with optional audio",
+      "renderLabel": "View draft",
+      "badges": [
+        "Optional audio",
+        "8s",
+        "720p"
+      ],
+      "altContext": "Veo 3.1 Lite short audio-ready draft"
+    },
+    "features": [
+      {
+        "title": "Lower-cost Veo",
+        "body": "Use Lite for the cheapest Veo timing and prompt checks.",
+        "tone": "price"
+      },
+      {
+        "title": "Optional audio",
+        "body": "Toggle native audio on for ambience or off for lower-cost visual tests.",
+        "tone": "audio"
+      },
+      {
+        "title": "Text or image",
+        "body": "Start from a prompt or a single visual reference.",
+        "tone": "reference"
+      },
+      {
+        "title": "First-last tests",
+        "body": "Use paired frames when the ending composition matters.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Max 8s",
+        "body": "Keep tests short and focused on one clear beat.",
+        "tone": "duration"
+      },
+      {
+        "title": "720p or 1080p",
+        "body": "Choose a cost/quality level before generation.",
+        "tone": "quality"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Lite or Fast?",
+        "body": "Use Lite for the lowest-cost Veo drafts. Use Fast when you need reference-to-video control or broader iteration controls.",
+        "cta": {
+          "label": "Compare Lite vs Fast",
+          "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite?order=veo-3-1-lite"
+        }
+      },
+      {
+        "title": "Need audio timing?",
+        "body": "When audio is enabled, write short ambience, SFX or dialogue cues into the prompt instead of leaving sound vague.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Ready for a final pass?",
+        "body": "Move winning Lite drafts into Veo 3.1 when the concept is approved and needs production polish.",
+        "cta": {
+          "label": "View Veo 3.1",
+          "href": "/models/veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Use one subject, one action, one camera move and a simple audio cue."
+      },
+      {
+        "title": "Start image",
+        "body": "Anchor composition or product shape with a single image source."
+      },
+      {
+        "title": "Audio cue",
+        "body": "Keep ambience or dialogue short when audio is enabled."
+      },
+      {
+        "title": "Short timing test",
+        "body": "Use 4, 6 or 8 seconds to test the core beat without overbuilding."
+      },
+      {
+        "title": "Upgrade path",
+        "body": "Promote the best drafts to Fast or Veo 3.1 when you need more control or polish."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Veo 3.1 Lite pricing at a glance",
+      "subtitle": "Preset lower-cost totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#veo-3-1-lite-pricing"
+    },
+    "meta": {
+      "title": "Veo 3.1 Lite: Pricing, Optional Audio & Examples | MaxVideoAI",
+      "description": "Use Veo 3.1 Lite for lower-cost Veo drafts with optional native audio, short prompt tests and image-to-video checks before upgrading winners."
+    }
   }
 }

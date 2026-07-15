@@ -34,22 +34,58 @@
   "bestUseCases": {
     "title": "Best use cases",
     "items": [
-      { "title": "Source-video visual modifications", "icon": "storyboard" },
-      { "title": "Vertical, square, wide or ultrawide Reframe cuts", "icon": "repeat2" },
-      { "title": "Guide-frame and keyframe-directed edit passes", "icon": "imageToVideo" },
-      { "title": "Short silent Luma motion tests from text or stills", "icon": "camera" },
-      { "title": "1080p inspection passes for selected edit candidates", "icon": "sparkles" }
+      {
+        "title": "Source-video visual modifications",
+        "icon": "storyboard"
+      },
+      {
+        "title": "Vertical, square, wide or ultrawide Reframe cuts",
+        "icon": "repeat2"
+      },
+      {
+        "title": "Guide-frame and keyframe-directed edit passes",
+        "icon": "imageToVideo"
+      },
+      {
+        "title": "Short silent Luma motion tests from text or stills",
+        "icon": "camera"
+      },
+      {
+        "title": "1080p inspection passes for selected edit candidates",
+        "icon": "sparkles"
+      }
     ]
   },
   "technicalOverviewTitle": "Technical overview",
   "technicalOverview": [
-    { "label": "Workflows", "body": "Source-video Modify, Reframe, text-to-video and image-to-video" },
-    { "label": "Duration", "body": "5s or 10s generation; source-video intake up to the configured clip limit for Modify/Reframe" },
-    { "label": "Resolution", "body": "540p, 720p or 1080p" },
-    { "label": "Aspect ratios", "body": "Common wide, square, portrait and extended ratios exposed by the active route" },
-    { "label": "Guides", "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify" },
-    { "label": "Source video", "body": "One MP4, MOV or WebM source clip for Modify and Reframe" },
-    { "label": "Pricing", "body": "Generation, Modify and Reframe use the same Fal-reference customer quote logic with MaxVideoAI margin" }
+    {
+      "label": "Workflows",
+      "body": "Source-video Modify, Reframe, text-to-video and image-to-video"
+    },
+    {
+      "label": "Duration",
+      "body": "5s or 10s generation; source-video intake up to the configured clip limit for Modify/Reframe"
+    },
+    {
+      "label": "Resolution",
+      "body": "540p, 720p or 1080p"
+    },
+    {
+      "label": "Aspect ratios",
+      "body": "Common wide, square, portrait and extended ratios exposed by the active route"
+    },
+    {
+      "label": "Guides",
+      "body": "One start image for image-to-video, optional guide frame or up to 64 indexed keyframes for Modify"
+    },
+    {
+      "label": "Source video",
+      "body": "One MP4, MOV or WebM source clip for Modify and Reframe"
+    },
+    {
+      "label": "Pricing",
+      "body": "Generation, Modify and Reframe use the same Fal-reference customer quote logic with MaxVideoAI margin"
+    }
   ],
   "promptStructure": {
     "title": "Prompt mini-guide",
@@ -121,13 +157,34 @@
     "heroEyebrow": "Luma Ray 3.2 Video Model",
     "heroSupportLine": "Best for source-video Modify, guide/keyframe edits and delivery Reframe.",
     "heroSpecChips": [
-      { "label": "Modify", "icon": "storyboard" },
-      { "label": "Reframe", "icon": "repeat2" },
-      { "label": "Guide/keyframes", "icon": "imageToVideo" },
-      { "label": "Text->Video", "icon": "textToVideo" },
-      { "label": "Image->Video", "icon": "imageToVideo" },
-      { "label": "5s or 10s", "icon": "duration" },
-      { "label": "540p / 720p / 1080p", "icon": "resolution" }
+      {
+        "label": "Modify",
+        "icon": "storyboard"
+      },
+      {
+        "label": "Reframe",
+        "icon": "repeat2"
+      },
+      {
+        "label": "Guide/keyframes",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "Text->Video",
+        "icon": "textToVideo"
+      },
+      {
+        "label": "Image->Video",
+        "icon": "imageToVideo"
+      },
+      {
+        "label": "5s or 10s",
+        "icon": "duration"
+      },
+      {
+        "label": "540p / 720p / 1080p",
+        "icon": "resolution"
+      }
     ],
     "whyTitle": "Why Ray 3.2 is useful",
     "heroDesc1": "Ray 3.2 gives teams a current Luma route for source-video Modify and Reframe, where an approved clip can be visually changed or adapted without rebuilding the shot from scratch.",
@@ -223,5 +280,144 @@
     "promptingGuideLabel": "Ray 3.2 prompt guide",
     "finalPara1": "Ray 3.2 is the current Luma video route in MaxVideoAI when Modify, guide/keyframe control and Reframe matter more than native audio generation.",
     "finalButton": "Generate with Luma Ray 3.2"
+  },
+  "decision": {
+    "modelSlug": "luma-ray-3-2",
+    "hero": {
+      "eyebrow": "LUMA MODIFY + REFRAME ROUTE",
+      "title": "Luma Ray 3.2",
+      "subtitle": "Source-video Modify, Reframe, guide/keyframe control and silent video outputs.",
+      "subtitleHighlights": [
+        "Source-video Modify",
+        "Reframe",
+        "silent video outputs"
+      ],
+      "paragraph": "Use Ray 3.2 when a source clip already has usable timing: change the visual treatment with Modify, guide selected moments with a frame or keyframes, or Reframe the approved shot into new delivery ratios. Text-to-video and image-to-video remain useful supporting routes for short silent Luma motion tests.",
+      "primaryCta": {
+        "label": "Generate with Luma Ray 3.2",
+        "href": "/app?engine=luma-ray-3-2"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/luma"
+      },
+      "quickLinks": [
+        {
+          "label": "View pricing",
+          "href": "/pricing#luma-ray-3-2-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        },
+        {
+          "label": "Specs",
+          "href": "#specs"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Luma Ray 3.2 example",
+      "description": "Modify and Reframe route for current Luma video",
+      "renderLabel": "View render",
+      "badges": [
+        "Modify",
+        "Reframe",
+        "Silent video"
+      ],
+      "altContext": "Luma Ray 3.2 source-video Modify and Reframe example"
+    },
+    "features": [
+      {
+        "title": "Modify source clips",
+        "body": "Keep source timing and camera motion while changing look, subject detail or scene treatment.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Reframe delivery cuts",
+        "body": "Outpaint a source clip into vertical, square, landscape or ultrawide formats.",
+        "tone": "duration"
+      },
+      {
+        "title": "Guide/keyframes",
+        "body": "Use a guide frame or indexed keyframes when selected source moments need visual direction.",
+        "tone": "reference"
+      },
+      {
+        "title": "Text or start image",
+        "body": "Generate short silent Luma motion tests when there is no source clip yet.",
+        "tone": "reference"
+      },
+      {
+        "title": "540p to 1080p",
+        "body": "Draft lower, then inspect selected edit or reframe candidates at 720p or 1080p.",
+        "tone": "quality"
+      },
+      {
+        "title": "Silent by design",
+        "body": "Ray 3.2 outputs video only in MaxVideoAI; add music, voice or sound design later.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Modify or Reframe first?",
+        "body": "Use Modify when the source timing already works and the look needs to change. Use Reframe when an approved master needs another aspect ratio.",
+        "cta": {
+          "label": "Open app",
+          "href": "/app?engine=luma-ray-3-2"
+        }
+      },
+      {
+        "title": "Need guide frames?",
+        "body": "Use one guide frame for a single visual target, or indexed keyframes when specific moments in the source video need direction.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Need audio?",
+        "body": "Ray 3.2 is a silent video route here. Choose it for visual edits and reframes, then add music, voice or sound design downstream.",
+        "cta": {
+          "label": "Check pricing",
+          "href": "/pricing#luma-ray-3-2-pricing"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Source video",
+        "body": "Upload a clean MP4, MOV or WebM clip when Modify or Reframe should preserve source timing."
+      },
+      {
+        "title": "Modify",
+        "body": "State what stays from the source first, then describe the visual change and strength of reinterpretation."
+      },
+      {
+        "title": "Guide frames",
+        "body": "Use one guide frame or indexed keyframes for Modify when specific moments need visual direction."
+      },
+      {
+        "title": "Reframe target",
+        "body": "Choose the delivery ratio first, then keep the prompt focused on subject priority and canvas fill."
+      },
+      {
+        "title": "Supporting generation",
+        "body": "Use text or a start image only when you need to create a new short silent clip before editing."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Luma Ray 3.2 pricing at a glance",
+      "subtitle": "Preset Ray 3.2 totals use MaxVideoAI display pricing; exact price appears before generation.",
+      "footnote": "All Ray 3.2 routes keep the same MaxVideoAI customer quote based on Fal reference pricing plus the configured margin; direct fulfillment does not change the client price.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#luma-ray-3-2-pricing"
+    },
+    "meta": {
+      "title": "Luma Ray 3.2 Modify Video, Reframe & Examples | MaxVideoAI",
+      "description": "Explore Luma Ray 3.2 source-video Modify, AI video Reframe, guide/keyframe controls, silent 5s/10s output, pricing, prompt tips and examples."
+    }
   }
 }

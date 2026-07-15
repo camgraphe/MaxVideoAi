@@ -368,5 +368,144 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null
+  },
+  "decision": {
+    "modelSlug": "wan-2-6",
+    "hero": {
+      "eyebrow": "WAN MULTI-SHOT VIDEO ROUTE",
+      "title": "Wan 2.6",
+      "subtitle": "15s multi-shot clips, 5s/10s reference-video consistency, and optional audio for text or image starts.",
+      "subtitleHighlights": [
+        "15s multi-shot clips",
+        "5s/10s reference-video consistency",
+        "optional audio for text or image starts"
+      ],
+      "paragraph": "Use Wan 2.6 when you need the newer Wan route on MaxVideoAI: 720p or 1080p clips up to 15 seconds, text-to-video, image-to-video, 5s/10s reference-video guidance and optional audio for text or image workflows.",
+      "primaryCta": {
+        "label": "Generate with Wan 2.6",
+        "href": "/app?engine=wan-2-6"
+      },
+      "secondaryCta": {
+        "label": "View examples",
+        "href": "/examples/wan"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs Sora 2",
+          "href": "/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#wan-2-6-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Wan 2.6 example",
+      "description": "Multi-shot reference-guided clip",
+      "renderLabel": "View render",
+      "badges": [
+        "15s max",
+        "1080p",
+        "Audio option"
+      ],
+      "altContext": "Wan 2.6 multi-shot cinematic clip"
+    },
+    "features": [
+      {
+        "title": "Multi-shot clips",
+        "body": "Plan short sequences with cleaner internal beat structure.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Reference-to-video",
+        "body": "Use supported reference videos for 5s/10s consistency checks; audio is off in this mode.",
+        "tone": "reference"
+      },
+      {
+        "title": "Text or image start",
+        "body": "Generate from a prompt or anchor the first frame with one image.",
+        "tone": "reference"
+      },
+      {
+        "title": "720p or 1080p",
+        "body": "Choose review or production preview resolution before generation.",
+        "tone": "quality"
+      },
+      {
+        "title": "Max 15s",
+        "body": "Use 5, 10 or 15 second durations depending on the beat.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pay-as-you-go",
+        "body": "See exact live price before you generate.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Wan 2.6 or Wan 2.5?",
+        "body": "Use Wan 2.6 for longer 15s clips, reference-video consistency and multi-shot planning. Use Wan 2.5 for shorter audio-ready checks.",
+        "cta": {
+          "label": "Compare Wan 2.6 vs Wan 2.5",
+          "href": "/ai-video-engines/wan-2-5-vs-wan-2-6?order=wan-2-6"
+        }
+      },
+      {
+        "title": "Need reference consistency?",
+        "body": "Use reference-to-video for 5s/10s clips when motion rhythm, subject identity or a previous take should guide the next output.",
+        "cta": {
+          "label": "Open Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Comparing premium routes?",
+        "body": "Compare Wan 2.6 with Sora 2 or Veo 3.1 when audio, consistency and cinematic polish are the decision points.",
+        "cta": {
+          "label": "Compare Wan 2.6 vs Sora 2",
+          "href": "/ai-video-engines/sora-2-vs-wan-2-6?order=wan-2-6"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text prompt",
+        "body": "Write subject, action, camera, style, duration and optional sound direction."
+      },
+      {
+        "title": "Image start",
+        "body": "Use one still to lock product shape, character framing or opening composition."
+      },
+      {
+        "title": "Reference videos",
+        "body": "Use one to three videos for 5s/10s guidance when motion or identity should stay consistent."
+      },
+      {
+        "title": "Audio track",
+        "body": "Attach a short track only for text or image workflows when timing or mood should follow sound."
+      },
+      {
+        "title": "Multi-shot beats",
+        "body": "Use short timestamped beats when a 15 second clip needs internal structure."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Wan 2.6 pricing at a glance",
+      "subtitle": "Preset 720p/1080p totals - see the exact live price in the app before you generate.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Up to 1080p",
+      "ctaHref": "/pricing#wan-2-6-pricing"
+    },
+    "meta": {
+      "title": "Wan 2.6: Pricing, References & Examples | MaxVideoAI",
+      "description": "Explore Wan 2.6 pricing, 15s multi-shot video, text-to-video, image-to-video, 5s/10s reference-video workflows, optional audio and examples."
+    }
   }
 }

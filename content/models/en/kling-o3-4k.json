@@ -113,5 +113,144 @@
       "q": "Does Kling 3.0 Omni 4K support video-to-video?",
       "a": "No. The current 4K route is for reference-guided native 4K generation, not source-video V2V. Use Kling 3.0 Omni Standard or Pro when the prompt must reference @Video1 or preserve source audio with keep_audio."
     }
-  ]
+  ],
+  "decision": {
+    "modelSlug": "kling-o3-4k",
+    "hero": {
+      "eyebrow": "KLING 3.0 OMNI 4K",
+      "title": "Kling 3.0 Omni 4K",
+      "subtitle": "Native 4K reference-guided Kling video for approved storyboard and visual-reference directions. This is not the source-video V2V route.",
+      "subtitleHighlights": [
+        "Native 4K",
+        "reference-guided Kling video",
+        "not source-video V2V"
+      ],
+      "paragraph": "Use Kling 3.0 Omni 4K when reference images or storyboard frames should guide a native 4K final without being forced as the opening frame. Use O3 Pro or Standard when the workflow needs a source video or @Video1 V2V.",
+      "primaryCta": {
+        "label": "Generate with Kling 3.0 Omni 4K",
+        "href": "/app?engine=kling-o3-4k"
+      },
+      "secondaryCta": {
+        "label": "View O3 Pro",
+        "href": "/models/kling-o3-pro"
+      },
+      "quickLinks": [
+        {
+          "label": "Compare vs O3 Pro",
+          "href": "/ai-video-engines/kling-o3-4k-vs-kling-o3-pro"
+        },
+        {
+          "label": "View pricing",
+          "href": "/pricing#kling-o3-4k-pricing"
+        },
+        {
+          "label": "Prompt examples",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Kling 3.0 Omni 4K example",
+      "description": "Native 4K storyboard delivery render",
+      "renderLabel": "View render",
+      "badges": [
+        "Native 4K",
+        "10s",
+        "Audio off"
+      ],
+      "altContext": "Kling 3.0 Omni 4K storyboard-guided native 4K render"
+    },
+    "features": [
+      {
+        "title": "Native 4K",
+        "body": "Use this route for final reference-guided 4K delivery renders.",
+        "tone": "quality"
+      },
+      {
+        "title": "Reference images",
+        "body": "Use @Image anchors for style, subject, storyboard or visual continuity.",
+        "tone": "reference"
+      },
+      {
+        "title": "Storyboard delivery",
+        "body": "Move approved storyboard direction into 4K after cheaper Pro or Standard tests.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Optional start/end frames",
+        "body": "Use opening or ending frames when the native 4K render needs a stronger structure.",
+        "tone": "reference"
+      },
+      {
+        "title": "Not source-video V2V",
+        "body": "Use O3 Pro or Standard when a source video and @Video1 are required.",
+        "tone": "duration"
+      },
+      {
+        "title": "Final quote",
+        "body": "The app shows the exact 4K price before generation.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "When should you use O3 4K?",
+        "body": "Use O3 4K after the reference or storyboard direction is approved and the output needs native 4K delivery.",
+        "cta": {
+          "label": "Start O3 4K render",
+          "href": "/app?engine=kling-o3-4k"
+        }
+      },
+      {
+        "title": "Need source-video V2V?",
+        "body": "Do not use 4K for source-video V2V. Use O3 Pro or Standard when @Video1 should guide motion or camera continuity.",
+        "cta": {
+          "label": "View O3 Pro",
+          "href": "/models/kling-o3-pro"
+        }
+      },
+      {
+        "title": "Still choosing the direction?",
+        "body": "Draft the visual structure in Standard or Pro before paying for the native 4K delivery route.",
+        "cta": {
+          "label": "View O3 Standard",
+          "href": "/models/kling-o3-standard"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Reference images",
+        "body": "Use @Image anchors for style, subject, product details or storyboard frames."
+      },
+      {
+        "title": "Start/end frames",
+        "body": "Add an opening or ending frame when the 4K render needs a defined boundary."
+      },
+      {
+        "title": "Prompt structure",
+        "body": "Keep the prompt explicit about camera, action, continuity and delivery intent."
+      },
+      {
+        "title": "No source video",
+        "body": "Use O3 Pro or Standard if the workflow requires @Video1."
+      },
+      {
+        "title": "Final pass",
+        "body": "Reserve 4K for approved shots, client review, campaign masters or edit-ready inserts."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Kling 3.0 Omni 4K pricing at a glance",
+      "subtitle": "Native 4K preset totals for approved reference-guided delivery renders.",
+      "footnote": "All prices are MaxVideoAI display prices in USD credits for preset scenarios.",
+      "ctaLabel": "View full pricing",
+      "maxDurationNote": "Native 4K reference route",
+      "ctaHref": "/pricing#kling-o3-4k-pricing"
+    },
+    "meta": {
+      "title": "Kling 3.0 Omni 4K: Native 4K Reference Video | MaxVideoAI",
+      "description": "Use Kling 3.0 Omni 4K for native 4K reference-guided and storyboard-guided video. Use O3 Pro or Standard for source-video V2V."
+    }
+  }
 }

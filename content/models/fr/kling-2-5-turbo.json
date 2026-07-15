@@ -381,5 +381,144 @@
       "Texte/logos aléatoires → renforcez le prompt négatif (“no text, no logos, no UI, no watermark”) et gardez la signalétique hors champ.",
       "Frame chaotique → supprimez personnages/props secondaires; gardez un seul sujet hero et centrez l’action."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-2-5-turbo",
+    "hero": {
+      "eyebrow": "ROUTE KLING DRAFT MUET PRISE EN CHARGE",
+      "title": "Kling 2.5 Turbo",
+      "subtitle": "Drafts muets 1080p pour départs texte ou image, look-dev caméra et contrôle par prompt négatif.",
+      "subtitleHighlights": [
+        "Drafts muets 1080p",
+        "départs texte ou image",
+        "contrôle par prompt négatif"
+      ],
+      "paragraph": "Utilisez Kling 2.5 Turbo quand il vous faut une ancienne route Kling encore prise en charge pour des drafts muets courts, des tests de mouvement depuis une image, du look-dev caméra et du nettoyage de prompt avant Kling 3.",
+      "primaryCta": {
+        "label": "Créer un draft avec Kling 2.5 Turbo",
+        "href": "/app?engine=kling-2-5-turbo"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Voir Kling 3 Standard",
+          "href": "/fr/modeles/kling-3-standard"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#kling-2-5-turbo-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Kling 2.5 Turbo",
+      "description": "Draft muet court pour look-dev",
+      "renderLabel": "Voir le draft",
+      "badges": [
+        "Muet",
+        "10 s",
+        "1080p"
+      ],
+      "altContext": "draft muet Kling 2.5 Turbo"
+    },
+    "features": [
+      {
+        "title": "Drafts muets",
+        "body": "Générez des clips sans son, faciles à monter ou sonoriser ensuite.",
+        "tone": "quality"
+      },
+      {
+        "title": "Texte ou image",
+        "body": "Partez d’un prompt ou d’une image unique pour tester le mouvement.",
+        "tone": "reference"
+      },
+      {
+        "title": "Look-dev caméra",
+        "body": "Testez tracking, dolly, handheld ou mouvement produit avant la route finale.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Prompt négatif",
+        "body": "Bloquez texte, logos, personnages en trop et artefacts visuels.",
+        "tone": "reference"
+      },
+      {
+        "title": "Max 10 s",
+        "body": "Gardez une scène et une action dans une durée courte.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Quand utiliser 2.5 Turbo ?",
+        "body": "Utilisez-le pour le look-dev muet, les tests caméra et les drafts Kling économiques. Passez aux routes Kling 3 pour le workflow actuel.",
+        "cta": {
+          "label": "Voir Kling 3 Standard",
+          "href": "/fr/modeles/kling-3-standard"
+        }
+      },
+      {
+        "title": "Besoin de son ou d’un rendu plus final ?",
+        "body": "Déplacez les recettes validées vers Kling 3 Pro quand le plan demande plus de fidélité ou du contexte sonore.",
+        "cta": {
+          "label": "Voir Kling 3 Pro",
+          "href": "/fr/modeles/kling-3-pro"
+        }
+      },
+      {
+        "title": "Vous nettoyez un prompt ?",
+        "body": "Gardez une action, un mouvement caméra et un prompt négatif solide avant les routes plus coûteuses.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt texte",
+        "body": "Rédigez un brief serré : sujet, action, décor, mouvement caméra et style."
+      },
+      {
+        "title": "Image unique",
+        "body": "Utilisez une image quand la forme du sujet, le produit ou le cadrage doivent rester stables."
+      },
+      {
+        "title": "Prompt négatif",
+        "body": "Listez ce à éviter : texte, logos, personnages en trop, distorsion ou mouvement faible."
+      },
+      {
+        "title": "CFG scale",
+        "body": "Ajustez l’adhérence avec prudence quand le plan dérive ou manque de liberté."
+      },
+      {
+        "title": "Passage Kling 3",
+        "body": "Envoyez la meilleure recette muette vers Kling 3 Standard ou Pro pour la revue."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Kling 2.5 Turbo en un coup d’œil",
+      "subtitle": "Prix totaux de drafts muets — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#kling-2-5-turbo-pricing"
+    },
+    "meta": {
+      "title": "Kling 2.5 Turbo : tarifs et drafts muets | MaxVideoAI",
+      "description": "Utilisez Kling 2.5 Turbo pour des drafts Kling muets encore pris en charge, départ texte ou image, prompt négatif et look-dev 1080p à moindre coût."
+    }
   }
 }

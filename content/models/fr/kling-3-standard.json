@@ -277,5 +277,144 @@
       "",
       "Audio : ambiance de rue humide, pas courts, un léger souffle. Pas de texte, pas de logo, pas de sous-titres."
     ]
+  },
+  "decision": {
+    "modelSlug": "kling-3-standard",
+    "hero": {
+      "eyebrow": "ROUTE KLING STORYBOARD À MOINDRE COÛT",
+      "title": "Kling 3 Standard",
+      "subtitle": "Des brouillons multi-plans pour tests start-frame 1080p, planification de prompts et options audio natives.",
+      "subtitleHighlights": [
+        "brouillons multi-plans",
+        "tests start-frame 1080p",
+        "options audio natives"
+      ],
+      "paragraph": "Utilisez Kling 3 Standard pour tester des start frames Kling 3 à moindre coût en 1080p : prompts structurés, brouillons image-vidéo, image de fin optionnelle et audio avant de passer les gagnants en Pro.",
+      "primaryCta": {
+        "label": "Générer avec Kling 3 Standard",
+        "href": "/app?engine=kling-3-standard"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/kling"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Pro",
+          "href": "/fr/comparatif/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#kling-3-standard-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Kling 3 Standard",
+      "description": "Brouillon start-frame à moindre coût",
+      "renderLabel": "Voir le brouillon",
+      "badges": [
+        "1080p",
+        "15 s max",
+        "Audio optionnel"
+      ],
+      "altContext": "brouillon start-frame Kling 3 Standard"
+    },
+    "features": [
+      {
+        "title": "Brouillons multi-plans",
+        "body": "Planifiez scènes et beats avant de passer sur Pro.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Sortie 1080p",
+        "body": "Gardez Standard pour les rendus de revue économiques.",
+        "tone": "quality"
+      },
+      {
+        "title": "Image-vidéo",
+        "body": "Utilisez une image source et une image de fin optionnelle.",
+        "tone": "reference"
+      },
+      {
+        "title": "Options audio natives",
+        "body": "Testez avec ou sans son selon l’étape de revue.",
+        "tone": "audio"
+      },
+      {
+        "title": "Max 15 s",
+        "body": "Storyboards courts jusqu’à 15 secondes.",
+        "tone": "duration"
+      },
+      {
+        "title": "Paiement à l’usage",
+        "body": "Prix exact affiché avant génération.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Standard ou Pro ?",
+        "body": "Utilisez Standard pour les tests start-frame à moindre coût. Passez à Kling 3 Pro pour une fidélité finale plus forte.",
+        "cta": {
+          "label": "Comparer Standard vs Pro",
+          "href": "/fr/comparatif/kling-3-pro-vs-kling-3-standard?order=kling-3-standard"
+        }
+      },
+      {
+        "title": "Plusieurs plans à structurer ?",
+        "body": "Gardez chaque beat court, une action par plan, et répétez les ancres de continuité.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’une livraison finale ?",
+        "body": "Validez d’abord en Standard, puis passez les plans approuvés en Pro quand fidélité, stabilité et qualité finale priment.",
+        "cta": {
+          "label": "Voir Kling 3 Pro",
+          "href": "/fr/modeles/kling-3-pro"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Plan de shots",
+        "body": "Découpez la séquence en scènes courtes avec une action claire par beat."
+      },
+      {
+        "title": "Image de référence",
+        "body": "Ancrez le sujet, le produit ou le cadrage avec une image source."
+      },
+      {
+        "title": "Image de fin",
+        "body": "Ajoutez une frame d’arrivée quand la composition finale compte."
+      },
+      {
+        "title": "Passe audio",
+        "body": "Ajoutez le son pour le contexte, ou gardez un brouillon silencieux pour la post-prod."
+      },
+      {
+        "title": "Passage Pro",
+        "body": "Déplacez les meilleurs brouillons Standard vers Pro pour la passe qualité."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Kling 3 Standard en un coup d’œil",
+      "subtitle": "Prix totaux de brouillons 1080p — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Route 1080p",
+      "ctaHref": "/fr/tarifs#kling-3-standard-pricing"
+    },
+    "meta": {
+      "title": "Kling 3 Standard : tarifs, brouillons 1080p et exemples | MaxVideoAI",
+      "description": "Utilisez Kling 3 Standard pour des brouillons start-frame 1080p à moindre coût, tests image-vidéo, options audio natives et séquences Kling jusqu’à 15 s."
+    }
   }
 }

@@ -367,5 +367,144 @@
       "Loop qui ne boucle pas → écrivez explicitement “seamless loop” + décrivez ce qui se répète (et gardez le même état début/fin).",
       "Texte/logos aléatoires → ajoutez “no text, no logos, no UI” au prompt négatif; évitez la signalétique dans le cadre."
     ]
+  },
+  "decision": {
+    "modelSlug": "pika-text-to-video",
+    "hero": {
+      "eyebrow": "ROUTE PIKA TEXT-TO-VIDEO",
+      "title": "Pika 2.2 Text-to-Video",
+      "subtitle": "Boucles sociales Text-to-Video avec mouvement stylisé, seeds, prompts négatifs et sortie silencieuse 5 s/10 s.",
+      "subtitleHighlights": [
+        "Boucles sociales Text-to-Video",
+        "mouvement stylisé",
+        "sortie silencieuse 5 s/10 s"
+      ],
+      "paragraph": "Utilisez Pika 2.2 pour des animations silencieuses pilotées par prompt, des variantes rapides et des clips sociaux courts quand la direction créative est anime, BD, pixel, cartoon ou 3D playful.",
+      "primaryCta": {
+        "label": "Générer avec Pika 2.2",
+        "href": "/app?engine=pika-text-to-video"
+      },
+      "secondaryCta": {
+        "label": "Voir les exemples",
+        "href": "/fr/galerie/pika"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparer vs Hailuo",
+          "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        },
+        {
+          "label": "Voir les tarifs",
+          "href": "/fr/tarifs#pika-text-to-video-pricing"
+        },
+        {
+          "label": "Exemples de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Exemple Text-to-Video Pika 2.2",
+      "description": "Clip social stylisé silencieux",
+      "renderLabel": "Voir le rendu",
+      "badges": [
+        "Silencieux",
+        "10 s",
+        "1080p"
+      ],
+      "altContext": "boucle sociale text-to-video stylisée avec Pika 2.2"
+    },
+    "features": [
+      {
+        "title": "Text-to-Video d’abord",
+        "body": "Partez d’un prompt compact quand l’idée repose sur style, action et timing de boucle.",
+        "tone": "reference"
+      },
+      {
+        "title": "Mouvement stylisé",
+        "body": "Créez du mouvement anime, BD, pixel, cartoon ou 3D playful.",
+        "tone": "quality"
+      },
+      {
+        "title": "Seeds",
+        "body": "Réutilisez les variantes par seed quand une direction visuelle fonctionne.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Prompts négatifs",
+        "body": "Écartez les traits visuels indésirables pendant vos tests stylisés.",
+        "tone": "reference"
+      },
+      {
+        "title": "5 s ou 10 s",
+        "body": "Gardez des clips compacts pour loops, edits sociaux et tests de mouvement.",
+        "tone": "duration"
+      },
+      {
+        "title": "Sortie silencieuse",
+        "body": "Ajoutez musique, voix et SFX après validation visuelle.",
+        "tone": "audio"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "Pika ou Hailuo ?",
+        "body": "Utilisez Pika pour des boucles sociales stylisées et variantes par seed. Utilisez Hailuo 02 pour les tests mouvement/physique à coût réduit.",
+        "cta": {
+          "label": "Comparer Pika vs Hailuo",
+          "href": "/fr/comparatif/minimax-hailuo-02-text-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      },
+      {
+        "title": "Construire un prompt stylisé ?",
+        "body": "Verrouillez sujet, style, action et exclusions avant de tester des variantes par seed.",
+        "cta": {
+          "label": "Ouvrir le Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "Besoin d’une route brouillon plus large ?",
+        "body": "Comparez avec LTX 2.3 Fast quand vous voulez un moteur de draft plus général avant les routes de production.",
+        "cta": {
+          "label": "Comparer Pika vs LTX 2.3 Fast",
+          "href": "/fr/comparatif/ltx-2-3-fast-vs-pika-text-to-video?order=pika-text-to-video"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Text-to-video",
+        "body": "Écrivez sujet, action, famille de style et exclusions dans un prompt compact."
+      },
+      {
+        "title": "Ancres de style",
+        "body": "Nommez direction artistique, palette et comportement de boucle plutôt qu’un setup chargé en références."
+      },
+      {
+        "title": "Variantes par seed",
+        "body": "Gardez un seed utile et itérez les prompts dans la même voie visuelle."
+      },
+      {
+        "title": "Prompt négatif",
+        "body": "Listez artefacts, styles ou éléments texte à éviter."
+      },
+      {
+        "title": "Départ image associé",
+        "body": "Utilisez le workflow image Pika associé seulement si un still doit ancrer la composition."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Prix Pika 2.2 en un coup d’œil",
+      "subtitle": "Prix totaux de clips stylisés — prix exact affiché dans l’app avant génération.",
+      "footnote": "Tous les prix sont des prix affichés MaxVideoAI en crédits USD pour des scénarios prédéfinis.",
+      "ctaLabel": "Voir tous les tarifs",
+      "maxDurationNote": "Jusqu’à 1080p",
+      "ctaHref": "/fr/tarifs#pika-text-to-video-pricing"
+    },
+    "meta": {
+      "title": "Pika 2.2 Text-to-Video : tarifs, boucles silencieuses et exemples | MaxVideoAI",
+      "description": "Explorez Pika 2.2 Text-to-Video : tarifs, clips silencieux stylisés, boucles sociales, seeds, prompts négatifs et exemples sur MaxVideoAI."
+    }
   }
 }

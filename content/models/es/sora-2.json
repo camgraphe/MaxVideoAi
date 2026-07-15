@@ -316,5 +316,144 @@
       "Muestra transiciones, continuidad de lugar/sujeto, movimiento claro y una mini‑historia completa en menos de 10s.",
       "Reutiliza esta estructura para skincare, SaaS, fitness o cualquier micro‑historia de 3 beats."
     ]
+  },
+  "decision": {
+    "modelSlug": "sora-2",
+    "hero": {
+      "eyebrow": "RUTA DE VIDEO 720P + AUDIO NATIVO",
+      "title": "Sora 2",
+      "subtitle": "Audio sincronizado, texto a video e imagen a video para conceptos cinematográficos, anuncios y escenas listas para social.",
+      "subtitleHighlights": [
+        "Audio sincronizado",
+        "texto a video",
+        "imagen a video"
+      ],
+      "paragraph": "Usa Sora 2 cuando necesitas una ruta OpenAI rápida en 720p: tomas cinematográficas cortas, pruebas desde imagen, sonido nativo y pasadas de storyboard antes de llevar los selects finales a Pro.",
+      "primaryCta": {
+        "label": "Generar con Sora 2",
+        "href": "/app?engine=sora-2"
+      },
+      "secondaryCta": {
+        "label": "Ver ejemplos",
+        "href": "/es/galeria/sora"
+      },
+      "quickLinks": [
+        {
+          "label": "Comparar con Pro",
+          "href": "/es/comparativa/sora-2-vs-sora-2-pro"
+        },
+        {
+          "label": "Ver precios",
+          "href": "/es/precios#sora-2-pricing"
+        },
+        {
+          "label": "Ejemplos de prompts",
+          "href": "#prompting"
+        }
+      ]
+    },
+    "media": {
+      "caption": "Ejemplo Sora 2",
+      "description": "Concepto cinematográfico con audio sincronizado",
+      "renderLabel": "Ver render",
+      "badges": [
+        "Audio activo",
+        "12 s",
+        "720p"
+      ],
+      "altContext": "escena conceptual de Sora 2 con audio sincronizado"
+    },
+    "features": [
+      {
+        "title": "Audio sincronizado",
+        "body": "Diálogo, ambiente y SFX se generan junto con el clip.",
+        "tone": "audio"
+      },
+      {
+        "title": "Texto a video",
+        "body": "Empieza con un brief claro de escena, cámara y sonido.",
+        "tone": "reference"
+      },
+      {
+        "title": "Imagen a video",
+        "body": "Anima un frame aprobado cuando el encuadre debe mantenerse estable.",
+        "tone": "continuity"
+      },
+      {
+        "title": "Ruta 720p",
+        "body": "Usa Sora 2 para revisar rápido antes de pasar a finales Pro.",
+        "tone": "quality"
+      },
+      {
+        "title": "Máx. 12 s",
+        "body": "Construye un beat claro o una secuencia corta por render.",
+        "tone": "duration"
+      },
+      {
+        "title": "Pago por uso",
+        "body": "Ve el precio exacto antes de generar.",
+        "tone": "price"
+      }
+    ],
+    "decisionCards": [
+      {
+        "title": "¿Sora 2 o Sora 2 Pro?",
+        "body": "Usa Sora 2 para conceptos rápidos en 720p. Usa Pro cuando la toma elegida necesita 1080p y acabado más final.",
+        "cta": {
+          "label": "Comparar Sora 2 vs Pro",
+          "href": "/es/comparativa/sora-2-vs-sora-2-pro"
+        }
+      },
+      {
+        "title": "¿Empiezas desde una imagen?",
+        "body": "Sube un frame limpio para fijar composición, producto o dirección de personaje, y escribe el prompt solo para movimiento y audio.",
+        "cta": {
+          "label": "Abrir Prompt Lab",
+          "href": "#prompting"
+        }
+      },
+      {
+        "title": "¿Comparas rutas premium?",
+        "body": "Compara Sora 2 con Veo 3.1 o Kling 3 Pro según priorices conceptos OpenAI, acabado Google o alternativas de control de movimiento.",
+        "cta": {
+          "label": "Comparar Sora 2 vs Veo 3.1",
+          "href": "/es/comparativa/sora-2-vs-veo-3-1"
+        }
+      }
+    ],
+    "referenceWorkflows": [
+      {
+        "title": "Prompt de texto",
+        "body": "Escribe sujeto, acción, cámara, estilo y una o dos pistas de sonido."
+      },
+      {
+        "title": "Imagen inicial",
+        "body": "Fija la composición de arranque y centra el prompt en movimiento y audio."
+      },
+      {
+        "title": "Duración",
+        "body": "4 s para hooks, 8 s para un beat completo y 12 s para secuencias cortas."
+      },
+      {
+        "title": "Pistas de audio",
+        "body": "Mantén el diálogo corto y liga los SFX a acciones visibles."
+      },
+      {
+        "title": "Paso a Pro",
+        "body": "Lleva los conceptos ganadores a Sora 2 Pro cuando necesites acabado final."
+      }
+    ],
+    "pricingCopy": {
+      "title": "Precios de Sora 2 de un vistazo",
+      "subtitle": "Totales predefinidos en 720p. Consulta el precio exacto en la app antes de generar.",
+      "footnote": "Todos los precios son precios mostrados por MaxVideoAI en créditos USD para escenarios predefinidos.",
+      "ctaLabel": "Ver precios completos",
+      "maxDurationNote": "Hasta 720p",
+      "ctaHref": "/es/precios#sora-2-pricing"
+    },
+    "meta": {
+      "title": "Sora 2: precios, audio nativo y ejemplos | MaxVideoAI",
+      "description": "Explora precios de Sora 2, ejemplos, audio nativo sincronizado, texto a video e imagen a video. Compara Sora 2 vs Pro y otros modelos de video IA."
+    }
   }
 }
