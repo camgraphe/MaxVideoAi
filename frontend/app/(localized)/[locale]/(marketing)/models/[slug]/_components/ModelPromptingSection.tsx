@@ -4,7 +4,6 @@ import type {
   PromptingTabNotes,
 } from '@/components/marketing/sora-prompting-content';
 
-import type { FeaturedMedia } from '../_lib/model-page-media';
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import {
   FULL_BLEED_SECTION,
@@ -27,24 +26,6 @@ function toLegacyTabs(viewModel: ModelPromptingViewModel): PromptingTab[] {
   })) as PromptingTab[];
 }
 
-function toPreviewMedia(
-  demo: NonNullable<ModelPromptingViewModel['demo']>,
-  viewModel: ModelPromptingViewModel,
-): FeaturedMedia {
-  const duration = Number.parseFloat(demo.durationLabel);
-  return {
-    id: null,
-    prompt: demo.prompt,
-    videoUrl: demo.videoSrc,
-    posterUrl: demo.posterSrc,
-    durationSec: Number.isFinite(duration) ? duration : null,
-    hasAudio: demo.audioChipLabel === viewModel.ui.audioOn,
-    href: demo.fullHref,
-    label: demo.title,
-    aspectRatio: demo.aspectLabel,
-  };
-}
-
 export function ModelPromptingSection({
   viewModel,
   variant = 'default',
@@ -53,17 +34,9 @@ export function ModelPromptingSection({
     return <ModelDecisionPromptingSection viewModel={viewModel} />;
   }
 
-  const mode = viewModel.imageExamples ? 'image' : 'video';
   const guide = viewModel.section.guide;
   const demo = viewModel.demo;
-  const previewMedia = demo && (demo.videoSrc || demo.posterSrc)
-    ? toPreviewMedia(demo, viewModel)
-    : null;
-  const locale = viewModel.ui.tipPrefix === 'Astuce'
-    ? 'fr'
-    : viewModel.ui.tipPrefix === 'Consejo'
-      ? 'es'
-      : 'en';
+  const defaultPresentation = viewModel.defaultPresentation;
 
   return (
     <section
@@ -87,8 +60,8 @@ export function ModelPromptingSection({
           tip={viewModel.section.tip ?? undefined}
           guideLabel={guide?.label}
           guideUrl={guide?.href}
-          mode={mode}
-          supportsAudio={demo?.audioChipLabel !== viewModel.ui.silent}
+          mode={viewModel.defaultPresentation.mode}
+          supportsAudio={viewModel.defaultPresentation.supportsAudio}
           tabs={toLegacyTabs(viewModel)}
           globalPrinciples={viewModel.globalPrinciples}
           engineWhy={viewModel.engineWhy}
@@ -100,17 +73,16 @@ export function ModelPromptingSection({
               {demo.title}
             </h2>
             <div className="mx-auto w-full max-w-5xl">
-              {previewMedia ? (
+              {defaultPresentation.demo ? (
                 <MediaPreview
-                  media={previewMedia}
-                  label={demo.title}
-                  locale={locale}
-                  audioBadgeLabel={demo.audioChipLabel}
-                  renderLinkLabel={viewModel.ui.viewFull}
-                  altContext={demo.alt}
+                  media={defaultPresentation.demo.media}
+                  label={defaultPresentation.demo.label}
+                  locale={viewModel.defaultPresentation.locale}
+                  audioBadgeLabel={defaultPresentation.demo.audioBadgeLabel}
+                  altContext={defaultPresentation.demo.altContext}
                   hideLabel
-                  promptLabel={demo.promptLabel}
-                  promptLines={demo.prompt.split('\n')}
+                  promptLabel={defaultPresentation.demo.promptLabel}
+                  promptLines={defaultPresentation.demo.promptLines}
                 />
               ) : (
                 <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">

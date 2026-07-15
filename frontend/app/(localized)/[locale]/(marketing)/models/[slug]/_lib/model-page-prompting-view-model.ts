@@ -2,6 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 
 import type { FeaturedMedia } from './model-page-media';
 import type { ModelPromptingContent } from './model-page-prompting-content';
+import type { ModelPromptingDemoPromptSource } from './model-page-prompting-prompt-source';
 import {
   getModelPromptingUiCopy,
   type ModelPromptingUiCopy,
@@ -19,6 +20,19 @@ export type ModelPromptingViewModel = {
   globalPrinciples: string[];
   engineWhy: string[];
   referenceWorkflows: Array<{ title: string; body: string }>;
+  defaultPresentation: {
+    locale: AppLocale;
+    mode: 'image' | 'video';
+    supportsAudio: boolean;
+    demo: {
+      media: FeaturedMedia;
+      label: string;
+      audioBadgeLabel: string;
+      altContext: string;
+      promptLabel: string | undefined;
+      promptLines: string[];
+    } | null;
+  };
   demo: {
     title: string;
     promptLabel: string;
@@ -47,10 +61,15 @@ export type BuildModelPromptingViewModelInput = {
   engineId: string;
   modelSlug: string;
   imageAnchorId: string;
+  isVideoEngine: boolean;
   isImageEngine: boolean;
   supportsNativeAudio: boolean;
-  useDemoMediaPrompt: boolean;
+  demoPromptSource: ModelPromptingDemoPromptSource;
   demoMedia: FeaturedMedia | null;
+  defaultDemoPresentation: {
+    audioBadgeLabel: string;
+    altContext: string;
+  };
   referenceWorkflows: Array<{ title: string; body: string }>;
 };
 
@@ -97,7 +116,7 @@ function buildDemoViewModel(
   ui: ModelPromptingUiCopy,
 ): NonNullable<ModelPromptingViewModel['demo']> {
   const presentation = demo.presentationOverrides;
-  const mediaPrompt = input.useDemoMediaPrompt
+  const mediaPrompt = input.demoPromptSource === 'media'
     ? input.demoMedia?.prompt?.trim()
     : null;
 
@@ -140,6 +159,25 @@ export function buildModelPromptingViewModel(
     globalPrinciples: input.content.globalPrinciples,
     engineWhy: input.content.engineWhy,
     referenceWorkflows: input.referenceWorkflows,
+    defaultPresentation: {
+      locale: input.locale,
+      mode: input.isVideoEngine ? 'video' : 'image',
+      supportsAudio: input.supportsNativeAudio,
+      demo: input.content.demo && input.demoMedia
+        ? {
+            media: input.demoMedia,
+            label: input.content.demo.title,
+            audioBadgeLabel: input.defaultDemoPresentation.audioBadgeLabel,
+            altContext: input.defaultDemoPresentation.altContext,
+            promptLabel: input.demoPromptSource === 'media'
+              ? undefined
+              : input.content.demo.promptLabel,
+            promptLines: input.demoPromptSource === 'media'
+              ? []
+              : input.content.demo.prompt.split('\n'),
+          }
+        : null,
+    },
     demo: input.content.demo
       ? buildDemoViewModel(input, input.content.demo, ui)
       : null,

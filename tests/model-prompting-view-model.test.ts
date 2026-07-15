@@ -1,12 +1,20 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import test from 'node:test';
 
 import type { FeaturedMedia } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import type { ModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
+import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
+import { resolveModelPromptingDemoPromptSource } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-prompt-source.ts';
 import {
   buildModelPromptingViewModel,
   type BuildModelPromptingViewModelInput,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-view-model.ts';
+
+const CONTENT_ROOT = join(process.cwd(), 'content/models');
+const VEO_FAST_MEDIA_PROMPT =
+  '8s 16:9 Veo 3.1 Fast desk draft with a presenter, slow handheld drift, soft typing, city ambience, and one short calm line.';
 
 function videoContent(): ModelPromptingContent {
   return {
@@ -81,10 +89,15 @@ function videoInput(
     engineId: 'fixture-engine',
     modelSlug: 'fixture-model',
     imageAnchorId: 'prompting',
+    isVideoEngine: true,
     isImageEngine: false,
     supportsNativeAudio: false,
-    useDemoMediaPrompt: false,
+    demoPromptSource: 'editorial',
     demoMedia: null,
+    defaultDemoPresentation: {
+      audioBadgeLabel: 'Audio on',
+      altContext: 'demo',
+    },
     referenceWorkflows: [],
     ...overrides,
   };
@@ -116,10 +129,15 @@ function imageInput(): BuildModelPromptingViewModelInput {
     engineId: 'fixture-image',
     modelSlug: 'fixture-image',
     imageAnchorId: 'prompting',
+    isVideoEngine: false,
     isImageEngine: true,
     supportsNativeAudio: false,
-    useDemoMediaPrompt: false,
+    demoPromptSource: 'editorial',
     demoMedia: null,
+    defaultDemoPresentation: {
+      audioBadgeLabel: 'Audio off',
+      altContext: 'demo',
+    },
     referenceWorkflows: [],
   };
 }
@@ -151,19 +169,123 @@ function deepFreeze<T>(value: T): T {
   return value;
 }
 
-test('video view model prefers the selected media prompt and derives localized media labels', () => {
+function localizedPrompting(locale: 'en' | 'fr' | 'es', slug: string): ModelPromptingContent {
+  const filePath = join(CONTENT_ROOT, locale, `${slug}.json`);
+  const document = JSON.parse(readFileSync(filePath, 'utf8')) as { prompting?: unknown };
+  return parseModelPromptingContent(document.prompting, slug, locale, `${filePath}#prompting`);
+}
+
+function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: ModelPromptingContent) {
+  const demoMedia = media({
+    id: 'job_e34e8979-9056-4564-bbfd-27e8d886fa26',
+    prompt: VEO_FAST_MEDIA_PROMPT,
+    label: 'Veo 3.1 Fast',
+  });
+  const demoPromptSource = resolveModelPromptingDemoPromptSource({
+    content,
+    demoMedia,
+    engineId: content.modelSlug,
+    locale,
+  });
+
+  return {
+    demoPromptSource,
+    viewModel: buildModelPromptingViewModel(
+      videoInput({
+        content,
+        locale,
+        engineId: content.modelSlug,
+        modelSlug: content.modelSlug,
+        demoMedia,
+        demoPromptSource,
+      }),
+    ),
+  };
+}
+
+test('localized Veo Fast routes keep editorial demo prompts when pinned media has short English prose', () => {
+  const expectedStarts = {
+    en: '8s 16:9 Veo 3.1 Fast draft',
+    fr: 'Brouillon Veo 3.1 Fast',
+    es: 'Borrador Veo 3.1 Fast',
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const content = localizedPrompting(locale, 'veo-3-1-fast');
+    const result = buildLocalizedRouteViewModel(locale, content);
+
+    assert.equal(result.demoPromptSource, 'editorial', `${locale} route prompt source`);
+    assert.equal(result.viewModel.demo?.prompt, content.demo?.prompt, `${locale} editorial prompt`);
+    assert.ok(result.viewModel.demo?.prompt.startsWith(expectedStarts[locale]), `${locale} prompt opening`);
+    assert.match(result.viewModel.demo?.prompt ?? '', /\n/, `${locale} multiline editorial projection`);
+    assert.notEqual(result.viewModel.demo?.prompt, VEO_FAST_MEDIA_PROMPT, `${locale} pinned media prose`);
+    assert.deepEqual(
+      result.viewModel.defaultPresentation.demo?.promptLines,
+      content.demo?.prompt.split('\n'),
+      `${locale} default renderer prompt lines`,
+    );
+  }
+});
+
+test('route prompt-source policy uses media only for Happy Horse or summary-shaped fallback copy', () => {
+  const happyHorse = localizedPrompting('en', 'happy-horse-1-1');
+  const runtimeMedia = media({ prompt: 'Runtime media prose' });
+  assert.equal(
+    resolveModelPromptingDemoPromptSource({
+      content: happyHorse,
+      demoMedia: runtimeMedia,
+      engineId: 'happy-horse-1-1',
+      locale: 'en',
+    }),
+    'media',
+  );
+
+  const summaryContent = videoContent();
+  assert.ok(summaryContent.demo);
+  summaryContent.demo.prompt = [
+    `Subject: ${summaryContent.demo.summary.subject}`,
+    `Action: ${summaryContent.demo.summary.action}`,
+    `Camera: ${summaryContent.demo.summary.camera}`,
+    `Style: ${summaryContent.demo.summary.style}`,
+    `Audio: ${summaryContent.demo.summary.output}`,
+  ].join('\n');
+  assert.equal(
+    resolveModelPromptingDemoPromptSource({
+      content: summaryContent,
+      demoMedia: runtimeMedia,
+      engineId: 'fixture-engine',
+      locale: 'en',
+    }),
+    'media',
+  );
+  assert.equal(
+    resolveModelPromptingDemoPromptSource({
+      content: videoContent(),
+      demoMedia: runtimeMedia,
+      engineId: 'fixture-engine',
+      locale: 'en',
+    }),
+    'editorial',
+  );
+});
+
+test('video view model uses a media prompt only when route policy explicitly selects media', () => {
   const referenceWorkflows = [{ title: 'Image de référence', body: 'Verrouille le sujet.' }];
   const result = buildModelPromptingViewModel(
     videoInput({
       locale: 'fr',
       supportsNativeAudio: true,
-      useDemoMediaPrompt: true,
+      demoPromptSource: 'media',
       demoMedia: media({
         prompt: '  Prompt média  ',
         durationSec: 8,
         aspectRatio: '9:16',
         hasAudio: true,
       }),
+      defaultDemoPresentation: {
+        audioBadgeLabel: 'Audio activé',
+        altContext: 'demo',
+      },
       referenceWorkflows,
     }),
   );
@@ -180,6 +302,17 @@ test('video view model prefers the selected media prompt and derives localized m
   assert.equal(result.tabs.usePromptHref, '/app?engine=fixture-engine');
   assert.deepEqual(result.tabs.notesById, { quick: 'Keep the subject explicit.' });
   assert.deepEqual(result.referenceWorkflows, referenceWorkflows);
+  assert.equal(result.defaultPresentation.locale, 'fr');
+  assert.equal(result.defaultPresentation.mode, 'video');
+  assert.equal(result.defaultPresentation.supportsAudio, true);
+  assert.equal(result.defaultPresentation.demo?.audioBadgeLabel, 'Audio activé');
+  assert.equal(result.defaultPresentation.demo?.altContext, 'demo');
+  assert.equal(result.defaultPresentation.demo?.promptLabel, undefined);
+  assert.deepEqual(result.defaultPresentation.demo?.promptLines, []);
+  assert.equal(result.defaultPresentation.demo?.media.label, 'Fixture');
+  assert.equal(result.defaultPresentation.demo?.media.durationSec, 8);
+  assert.equal(result.defaultPresentation.demo?.media.aspectRatio, '9:16');
+  assert.equal(result.defaultPresentation.demo?.media.hasAudio, true);
 });
 
 test('editorial prompt remains the fallback when media is missing, disabled, or blank', () => {
@@ -188,7 +321,7 @@ test('editorial prompt remains the fallback when media is missing, disabled, or 
     videoInput({ demoMedia: media({ prompt: 'Unused media prompt' }) }),
   );
   const blank = buildModelPromptingViewModel(
-    videoInput({ useDemoMediaPrompt: true, demoMedia: media({ prompt: '   ' }) }),
+    videoInput({ demoPromptSource: 'media', demoMedia: media({ prompt: '   ' }) }),
   );
 
   for (const result of [missing, disabled, blank]) {
@@ -200,6 +333,9 @@ test('editorial prompt remains the fallback when media is missing, disabled, or 
   assert.equal(missing.demo?.videoSrc, null);
   assert.equal(missing.demo?.fullHref, null);
   assert.equal(missing.tabs.exampleHref, null);
+  assert.equal(disabled.defaultPresentation.demo?.promptLabel, 'Text prompt');
+  assert.deepEqual(disabled.defaultPresentation.demo?.promptLines, ['Editorial fallback prompt']);
+  assert.equal(disabled.defaultPresentation.demo?.media.label, 'Fixture');
 });
 
 test('image view model routes to the encoded image workspace and does not manufacture a demo', () => {
@@ -268,7 +404,7 @@ test('presentation overrides win over runtime duration, aspect ratio, and audio 
 test('building the view model does not mutate frozen editorial or runtime inputs', () => {
   const input = deepFreeze(
     videoInput({
-      useDemoMediaPrompt: true,
+      demoPromptSource: 'media',
       demoMedia: media({ prompt: 'Runtime prompt', hasAudio: true }),
       referenceWorkflows: [{ title: 'Reference', body: 'Keep identity stable.' }],
     }),

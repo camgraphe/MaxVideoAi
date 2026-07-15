@@ -64,6 +64,7 @@ import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 import { parseModelPromptingContent } from '../_lib/model-page-prompting-content';
+import { resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
 import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 
@@ -276,7 +277,6 @@ export function MarketingModelPageLayout({
   const safetyInterpretation = copy.safetyInterpretation;
   const relatedItems = copy.relatedItems;
   const isSoraPrompting = engine.modelSlug === 'sora-2' || engine.modelSlug === 'sora-2-pro';
-  const useDemoMediaPrompt = Boolean(demoMedia?.prompt?.trim());
   const focusVsConfig = resolveFocusVsConfig(engine.modelSlug, locale);
   const faqList = faqEntries.map((entry) => ({
     question: entry.question,
@@ -350,16 +350,27 @@ export function MarketingModelPageLayout({
     locale,
     `content/models/${locale}/${engine.modelSlug}.json#prompting`,
   );
+  const demoPromptSource = resolveModelPromptingDemoPromptSource({
+    content: promptingContent,
+    demoMedia,
+    engineId: engine.id,
+    locale,
+  });
   const promptingViewModel = buildModelPromptingViewModel({
     content: promptingContent,
     locale,
     engineId: engine.id,
     modelSlug: engine.modelSlug,
     imageAnchorId,
+    isVideoEngine,
     isImageEngine,
     supportsNativeAudio,
-    useDemoMediaPrompt,
+    demoPromptSource,
     demoMedia,
+    defaultDemoPresentation: {
+      audioBadgeLabel,
+      altContext: mediaAltContexts.demo,
+    },
     referenceWorkflows: templateData?.referenceWorkflows ?? [],
   });
   const compareAnchorId = 'compare';

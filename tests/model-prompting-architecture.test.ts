@@ -21,6 +21,7 @@ const imageExamplesSource = readSource(componentPath('ModelDecisionImagePromptEx
 const parserSource = readSource(helperPath('model-page-prompting-content.ts'));
 const viewModelSource = readSource(helperPath('model-page-prompting-view-model.ts'));
 const uiCopySource = readSource(helperPath('model-page-prompting-ui-copy.ts'));
+const promptSourcePath = helperPath('model-page-prompting-prompt-source.ts');
 const legacyPath = helperPath('model-page-prompting-legacy.ts');
 
 test('model prompting parses and builds once before rendering', () => {
@@ -37,6 +38,16 @@ test('model prompting parses and builds once before rendering', () => {
     [...layoutSource.matchAll(/buildModelPromptingViewModel\(/g)].length,
     1,
     'the server layout should build the Prompt Lab view model exactly once',
+  );
+  assert.match(
+    layoutSource,
+    /resolveModelPromptingDemoPromptSource\(\{[\s\S]*content:\s*promptingContent,[\s\S]*demoMedia,[\s\S]*engineId:\s*engine\.id,[\s\S]*locale,[\s\S]*\}\)/,
+    'the route should apply the explicit legacy prompt-source policy to parsed localized content',
+  );
+  assert.doesNotMatch(
+    layoutSource,
+    /const\s+useDemoMediaPrompt\s*=\s*Boolean\(demoMedia\?\.prompt\?\.trim\(\)\)/,
+    'a non-empty route media prompt must not automatically replace editorial Prompt Lab copy',
   );
   assert.match(layoutSource, /promptingProps=\{\{\s*viewModel:\s*promptingViewModel\s*\}\}/);
 });
@@ -56,6 +67,32 @@ test('server Prompt Lab renderers accept only the render-ready view model', () =
   assert.ok(existsSync(legacyPath), 'Task 5 should leave the temporary legacy projector for Task 6');
 });
 
+test('default Prompt Lab rendering consumes explicit semantic presentation state', () => {
+  assert.match(viewModelSource, /defaultPresentation:\s*\{/);
+  assert.match(promptingWrapperSource, /viewModel\.defaultPresentation\.locale/);
+  assert.match(promptingWrapperSource, /viewModel\.defaultPresentation\.mode/);
+  assert.match(promptingWrapperSource, /viewModel\.defaultPresentation\.supportsAudio/);
+  assert.match(promptingWrapperSource, /defaultPresentation\.demo\.media/);
+  assert.doesNotMatch(
+    promptingWrapperSource,
+    /Number\.parseFloat|audioChipLabel\s*===|tipPrefix\s*===|function\s+toPreviewMedia/,
+    'the wrapper must not reverse-engineer runtime state from localized display labels',
+  );
+  assert.doesNotMatch(
+    promptingWrapperSource,
+    /media=\{\{[\s\S]*label:\s*demo\.title/,
+    'the wrapper must preserve the original FeaturedMedia label used for alt text',
+  );
+});
+
+test('prompt-source policy stays separate from the pure view-model builder', () => {
+  assert.ok(existsSync(promptSourcePath));
+  const promptSource = readSource(promptSourcePath);
+  assert.match(promptSource, /engineId\s*===\s*['"]happy-horse-1-1['"]/);
+  assert.match(promptSource, /demo\.prompt\s*===\s*summaryPrompt/);
+  assert.doesNotMatch(viewModelSource, /happy-horse-1-1|veo-3-1-fast/);
+});
+
 test('interactive Prompt Lab children receive derived labels and destinations', () => {
   assert.match(tabsSource, /tabs:\s*ModelPromptingViewModel\['tabs'\]\['items'\]/);
   assert.match(tabsSource, /labels:\s*Pick<ModelPromptingUiCopy,/);
@@ -72,5 +109,6 @@ test('prompting renderer and helpers respect permanent line caps', () => {
   assert.ok(lineCount(decisionSource) <= 300);
   assert.ok(lineCount(parserSource) <= 300);
   assert.ok(lineCount(viewModelSource) <= 300);
+  if (existsSync(promptSourcePath)) assert.ok(lineCount(readSource(promptSourcePath)) <= 120);
   assert.ok(lineCount(uiCopySource) <= 180);
 });
