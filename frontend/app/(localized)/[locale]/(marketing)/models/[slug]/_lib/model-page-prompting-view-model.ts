@@ -65,6 +65,7 @@ export type BuildModelPromptingViewModelInput = {
   isImageEngine: boolean;
   supportsNativeAudio: boolean;
   demoPromptSource: ModelPromptingDemoPromptSource;
+  defaultDemoPromptSource: ModelPromptingDemoPromptSource;
   demoMedia: FeaturedMedia | null;
   defaultDemoPresentation: {
     audioBadgeLabel: string;
@@ -73,7 +74,7 @@ export type BuildModelPromptingViewModelInput = {
   referenceWorkflows: Array<{ title: string; body: string }>;
 };
 
-const FALLBACK_DURATION_SECONDS = 12;
+const FALLBACK_DURATION_SECONDS = 8;
 const FALLBACK_ASPECT_RATIO = '16:9';
 
 function formatMediaDuration(media: FeaturedMedia | null, locale: AppLocale): string {
@@ -169,10 +170,10 @@ export function buildModelPromptingViewModel(
             label: input.content.demo.title,
             audioBadgeLabel: input.defaultDemoPresentation.audioBadgeLabel,
             altContext: input.defaultDemoPresentation.altContext,
-            promptLabel: input.demoPromptSource === 'media'
+            promptLabel: input.defaultDemoPromptSource === 'media'
               ? undefined
               : input.content.demo.promptLabel,
-            promptLines: input.demoPromptSource === 'media'
+            promptLines: input.defaultDemoPromptSource === 'media'
               ? []
               : input.content.demo.prompt.split('\n'),
           }

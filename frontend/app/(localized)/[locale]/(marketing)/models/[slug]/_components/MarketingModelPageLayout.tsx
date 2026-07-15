@@ -64,7 +64,7 @@ import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
 import { parseModelPromptingContent } from '../_lib/model-page-prompting-content';
-import { resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
+import { resolveDefaultModelPromptingDemoPromptSource, resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
 import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 
@@ -356,6 +356,7 @@ export function MarketingModelPageLayout({
     engineId: engine.id,
     locale,
   });
+  const defaultDemoPromptSource = resolveDefaultModelPromptingDemoPromptSource(demoMedia);
   const promptingViewModel = buildModelPromptingViewModel({
     content: promptingContent,
     locale,
@@ -366,6 +367,7 @@ export function MarketingModelPageLayout({
     isImageEngine,
     supportsNativeAudio,
     demoPromptSource,
+    defaultDemoPromptSource,
     demoMedia,
     defaultDemoPresentation: {
       audioBadgeLabel,

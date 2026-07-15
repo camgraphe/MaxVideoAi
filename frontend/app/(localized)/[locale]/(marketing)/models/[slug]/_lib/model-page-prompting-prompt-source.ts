@@ -6,6 +6,12 @@ import { getModelPromptingUiCopy } from './model-page-prompting-ui-copy';
 
 export type ModelPromptingDemoPromptSource = 'editorial' | 'media';
 
+export function resolveDefaultModelPromptingDemoPromptSource(
+  demoMedia: FeaturedMedia | null,
+): ModelPromptingDemoPromptSource {
+  return demoMedia?.prompt?.trim() ? 'media' : 'editorial';
+}
+
 export function resolveModelPromptingDemoPromptSource({
   content,
   demoMedia,

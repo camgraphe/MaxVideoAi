@@ -44,6 +44,16 @@ test('model prompting parses and builds once before rendering', () => {
     /resolveModelPromptingDemoPromptSource\(\{[\s\S]*content:\s*promptingContent,[\s\S]*demoMedia,[\s\S]*engineId:\s*engine\.id,[\s\S]*locale,[\s\S]*\}\)/,
     'the route should apply the explicit legacy prompt-source policy to parsed localized content',
   );
+  assert.match(
+    layoutSource,
+    /resolveDefaultModelPromptingDemoPromptSource\(demoMedia\)/,
+    'the route should derive the default renderer prompt source independently',
+  );
+  assert.match(
+    layoutSource,
+    /demoPromptSource,[\s\S]*defaultDemoPromptSource,[\s\S]*demoMedia,/,
+    'the builder should receive separate decision and default prompt sources',
+  );
   assert.doesNotMatch(
     layoutSource,
     /const\s+useDemoMediaPrompt\s*=\s*Boolean\(demoMedia\?\.prompt\?\.trim\(\)\)/,
@@ -90,6 +100,10 @@ test('prompt-source policy stays separate from the pure view-model builder', () 
   const promptSource = readSource(promptSourcePath);
   assert.match(promptSource, /engineId\s*===\s*['"]happy-horse-1-1['"]/);
   assert.match(promptSource, /demo\.prompt\s*===\s*summaryPrompt/);
+  assert.match(promptSource, /export function resolveDefaultModelPromptingDemoPromptSource/);
+  assert.match(promptSource, /demoMedia\?\.prompt\?\.trim\(\)/);
+  assert.match(viewModelSource, /input\.demoPromptSource\s*===\s*['"]media['"]/);
+  assert.match(viewModelSource, /input\.defaultDemoPromptSource\s*===\s*['"]media['"]/);
   assert.doesNotMatch(viewModelSource, /happy-horse-1-1|veo-3-1-fast/);
 });
 

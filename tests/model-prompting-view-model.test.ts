@@ -6,7 +6,10 @@ import test from 'node:test';
 import type { FeaturedMedia } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-media.ts';
 import type { ModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
-import { resolveModelPromptingDemoPromptSource } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-prompt-source.ts';
+import {
+  resolveDefaultModelPromptingDemoPromptSource,
+  resolveModelPromptingDemoPromptSource,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-prompt-source.ts';
 import {
   buildModelPromptingViewModel,
   type BuildModelPromptingViewModelInput,
@@ -93,6 +96,7 @@ function videoInput(
     isImageEngine: false,
     supportsNativeAudio: false,
     demoPromptSource: 'editorial',
+    defaultDemoPromptSource: 'editorial',
     demoMedia: null,
     defaultDemoPresentation: {
       audioBadgeLabel: 'Audio on',
@@ -133,6 +137,7 @@ function imageInput(): BuildModelPromptingViewModelInput {
     isImageEngine: true,
     supportsNativeAudio: false,
     demoPromptSource: 'editorial',
+    defaultDemoPromptSource: 'editorial',
     demoMedia: null,
     defaultDemoPresentation: {
       audioBadgeLabel: 'Audio off',
@@ -187,9 +192,11 @@ function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: Model
     engineId: content.modelSlug,
     locale,
   });
+  const defaultDemoPromptSource = resolveDefaultModelPromptingDemoPromptSource(demoMedia);
 
   return {
     demoPromptSource,
+    defaultDemoPromptSource,
     viewModel: buildModelPromptingViewModel(
       videoInput({
         content,
@@ -198,6 +205,7 @@ function buildLocalizedRouteViewModel(locale: 'en' | 'fr' | 'es', content: Model
         modelSlug: content.modelSlug,
         demoMedia,
         demoPromptSource,
+        defaultDemoPromptSource,
       }),
     ),
   };
@@ -215,15 +223,13 @@ test('localized Veo Fast routes keep editorial demo prompts when pinned media ha
     const result = buildLocalizedRouteViewModel(locale, content);
 
     assert.equal(result.demoPromptSource, 'editorial', `${locale} route prompt source`);
+    assert.equal(result.defaultDemoPromptSource, 'media', `${locale} default prompt source`);
     assert.equal(result.viewModel.demo?.prompt, content.demo?.prompt, `${locale} editorial prompt`);
     assert.ok(result.viewModel.demo?.prompt.startsWith(expectedStarts[locale]), `${locale} prompt opening`);
     assert.match(result.viewModel.demo?.prompt ?? '', /\n/, `${locale} multiline editorial projection`);
     assert.notEqual(result.viewModel.demo?.prompt, VEO_FAST_MEDIA_PROMPT, `${locale} pinned media prose`);
-    assert.deepEqual(
-      result.viewModel.defaultPresentation.demo?.promptLines,
-      content.demo?.prompt.split('\n'),
-      `${locale} default renderer prompt lines`,
-    );
+    assert.equal(result.viewModel.defaultPresentation.demo?.promptLabel, undefined);
+    assert.deepEqual(result.viewModel.defaultPresentation.demo?.promptLines, []);
   }
 });
 
@@ -269,6 +275,12 @@ test('route prompt-source policy uses media only for Happy Horse or summary-shap
   );
 });
 
+test('default prompt-source policy uses every non-empty media prompt without changing decision policy', () => {
+  assert.equal(resolveDefaultModelPromptingDemoPromptSource(null), 'editorial');
+  assert.equal(resolveDefaultModelPromptingDemoPromptSource(media({ prompt: '   ' })), 'editorial');
+  assert.equal(resolveDefaultModelPromptingDemoPromptSource(media({ prompt: 'Media prose' })), 'media');
+});
+
 test('video view model uses a media prompt only when route policy explicitly selects media', () => {
   const referenceWorkflows = [{ title: 'Image de référence', body: 'Verrouille le sujet.' }];
   const result = buildModelPromptingViewModel(
@@ -276,6 +288,7 @@ test('video view model uses a media prompt only when route policy explicitly sel
       locale: 'fr',
       supportsNativeAudio: true,
       demoPromptSource: 'media',
+      defaultDemoPromptSource: 'media',
       demoMedia: media({
         prompt: '  Prompt média  ',
         durationSec: 8,
@@ -315,7 +328,7 @@ test('video view model uses a media prompt only when route policy explicitly sel
   assert.equal(result.defaultPresentation.demo?.media.hasAudio, true);
 });
 
-test('editorial prompt remains the fallback when media is missing, disabled, or blank', () => {
+test('editorial prompt remains the decision fallback when media is missing, disabled, or blank', () => {
   const missing = buildModelPromptingViewModel(videoInput());
   const disabled = buildModelPromptingViewModel(
     videoInput({ demoMedia: media({ prompt: 'Unused media prompt' }) }),
@@ -327,7 +340,7 @@ test('editorial prompt remains the fallback when media is missing, disabled, or 
   for (const result of [missing, disabled, blank]) {
     assert.equal(result.demo?.prompt, 'Editorial fallback prompt');
   }
-  assert.equal(missing.demo?.durationLabel, '12s');
+  assert.equal(missing.demo?.durationLabel, '8s');
   assert.equal(missing.demo?.aspectLabel, '16:9');
   assert.equal(missing.demo?.posterSrc, null);
   assert.equal(missing.demo?.videoSrc, null);
@@ -336,6 +349,19 @@ test('editorial prompt remains the fallback when media is missing, disabled, or 
   assert.equal(disabled.defaultPresentation.demo?.promptLabel, 'Text prompt');
   assert.deepEqual(disabled.defaultPresentation.demo?.promptLines, ['Editorial fallback prompt']);
   assert.equal(disabled.defaultPresentation.demo?.media.label, 'Fixture');
+});
+
+test('missing numeric media duration preserves the pre-cutover 8-second decision fallback', () => {
+  const cases = [
+    { locale: 'en' as const, demoMedia: null, expected: '8s' },
+    { locale: 'fr' as const, demoMedia: media({ durationSec: null }), expected: '8 s' },
+    { locale: 'es' as const, demoMedia: media({ durationSec: undefined }), expected: '8 s' },
+  ];
+
+  for (const { locale, demoMedia, expected } of cases) {
+    const result = buildModelPromptingViewModel(videoInput({ locale, demoMedia }));
+    assert.equal(result.demo?.durationLabel, expected, `${locale} missing-duration fallback`);
+  }
 });
 
 test('image view model routes to the encoded image workspace and does not manufacture a demo', () => {
@@ -405,6 +431,7 @@ test('building the view model does not mutate frozen editorial or runtime inputs
   const input = deepFreeze(
     videoInput({
       demoPromptSource: 'media',
+      defaultDemoPromptSource: 'media',
       demoMedia: media({ prompt: 'Runtime prompt', hasAudio: true }),
       referenceWorkflows: [{ title: 'Reference', body: 'Keep identity stable.' }],
     }),
