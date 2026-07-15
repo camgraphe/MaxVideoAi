@@ -131,6 +131,8 @@ test('model page layout delegates template page ownership', () => {
   const decisionSafetyFaqSource = readSource(decisionSafetyFaqSectionPath);
 
   assert.match(layoutSource, /buildModelDecisionData/, 'layout should delegate template data building');
+  assert.match(layoutSource, /parseModelPromptingContent/, 'layout should validate exact-locale Prompt Lab content');
+  assert.match(layoutSource, /buildModelPromptingViewModel/, 'layout should derive Prompt Lab display state once');
   assert.match(layoutSource, /ModelDecisionHeroSection/, 'layout should render the template hero');
   assert.match(layoutSource, /ModelDecisionPricingCard/, 'layout should render the template pricing card');
   assert.match(layoutSource, /ModelPageContentSections/, 'layout should delegate ordered model content sections');
@@ -172,8 +174,8 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionCardsSource, /UIIcon/, 'cards section should render lucide icons through UIIcon');
 
   assert.match(decisionPromptingSource, /ModelDecisionPromptTabs/, 'decision prompting should delegate interactive tabs');
-  assert.match(decisionPromptingSource, /How Seedance 2\.0 uses references|referencesTitle/, 'decision prompting should render the reference workflow section');
-  assert.match(decisionPromptingSource, /promptingGlobalPrinciples/, 'decision prompting should render global principles');
+  assert.match(decisionPromptingSource, /viewModel\.section\.referencesTitle/, 'decision prompting should render the reference workflow section');
+  assert.match(decisionPromptingSource, /viewModel\.globalPrinciples\.map/, 'decision prompting should render global principles');
   assert.match(
     legacyPromptingSource,
     /engineSlug === 'happy-horse-1-1'[\s\S]*Night market noodle stall chef[\s\S]*getHappyHorse11DemoPrompt/,
@@ -186,7 +188,8 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptTabsSource, /ModelDecisionCopyButton/, 'decision prompt tabs should support copying templates');
   assert.match(decisionCopyButtonSource, /copyTextToClipboard/, 'decision copy button should use the clipboard helper fallback');
   assert.match(decisionCopyButtonSource, /useEffect\(\(\)\s*=>\s*\{\s*setCopied\(false\)/, 'decision copy button should reset copied state when copy text changes');
-  assert.match(decisionPromptTabsSource, /encodeURIComponent\(engineSlug\)/, 'decision prompt tabs should route Use Prompt to the active engine');
+  assert.match(decisionPromptTabsSource, /usePromptHref/, 'decision prompt tabs should receive the active engine destination');
+  assert.doesNotMatch(decisionPromptTabsSource, /encodeURIComponent\(engineSlug\)/, 'decision prompt tabs should not derive engine destinations');
   assert.doesNotMatch(
     decisionPromptTabsSource,
     /href="\/app\?engine=seedance-2-0"/,

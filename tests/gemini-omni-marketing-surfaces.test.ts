@@ -10,6 +10,7 @@ import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE, MARKETING_NAV_MODELS } fr
 import { canonicalizeFalModelSlug, listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
+import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { buildPricingHubData } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricingHubData.ts';
 import { isPrelaunchAvailability } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-pricing.ts';
 import { getComparePageOverride } from '../frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts';
@@ -40,7 +41,17 @@ const SCORE_FIELDS = [
 
 function readModelContent(locale: (typeof LOCALES)[number]) {
   const raw = readFileSync(join(PROJECT_ROOT, 'content', 'models', locale, 'gemini-omni-flash.json'), 'utf8');
-  return { raw, data: JSON.parse(raw) as Record<string, unknown> };
+  const data = JSON.parse(raw) as Record<string, unknown> & { prompting?: unknown };
+  return {
+    raw,
+    data,
+    prompting: parseModelPromptingContent(
+      data.prompting,
+      'gemini-omni-flash',
+      locale,
+      `content/models/${locale}/gemini-omni-flash.json#prompting`,
+    ),
+  };
 }
 
 test('Gemini Omni Flash has localized model content with non-cannibalizing internal links', () => {
@@ -51,7 +62,7 @@ test('Gemini Omni Flash has localized model content with non-cannibalizing inter
   };
 
   for (const locale of LOCALES) {
-    const { raw, data } = readModelContent(locale);
+    const { raw, data, prompting } = readModelContent(locale);
     assert.equal(data.marketingName, 'Gemini Omni Flash');
     assert.match(raw, /720p/i);
     assert.match(raw, /10\s*(?:s|seconds|secondes|segundos)/i);
@@ -60,6 +71,16 @@ test('Gemini Omni Flash has localized model content with non-cannibalizing inter
     assert.match(raw, /Golden-hour rooftop/i);
     assert.match(raw, /Sound direction/i);
     assert.match(raw, /Camera direction/i);
+    assert.deepEqual(prompting.tabs, []);
+    assert.deepEqual(prompting.globalPrinciples, []);
+    assert.deepEqual(prompting.engineWhy, []);
+    assert.ok(prompting.demo, `${locale} Gemini Omni should expose a Prompt Lab demo`);
+    assert.match(prompting.demo.prompt, /Golden-hour rooftop/i);
+    assert.match(prompting.demo.prompt, /Sound direction/i);
+    assert.match(prompting.demo.prompt, /Camera direction/i);
+    assert.equal(prompting.demo.presentationOverrides.audioChipMode, 'media');
+    assert.match(prompting.demo.presentationOverrides.modeLabel, /10\s*s|10s/i);
+    assert.ok(prompting.demo.presentationOverrides.altContext.trim().length > 0);
     assert.doesNotMatch(raw, /will be published after approved|seront publies apres validation|se publicaran despues/i);
     assert.doesNotMatch(raw, /fal\.ai|\bFal\b|\bFAL\b/);
     assert.doesNotMatch(raw, /Vertex implementation tutorial/i);

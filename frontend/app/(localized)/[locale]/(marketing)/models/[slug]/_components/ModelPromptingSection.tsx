@@ -1,143 +1,126 @@
-import type { AppLocale } from '@/i18n/locales';
 import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
+import type {
+  PromptingTab,
+  PromptingTabNotes,
+} from '@/components/marketing/sora-prompting-content';
+
 import type { FeaturedMedia } from '../_lib/model-page-media';
+import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import {
   FULL_BLEED_SECTION,
   SECTION_BG_B,
   SECTION_PAD,
   SECTION_SCROLL_MARGIN,
-  type SoraCopy,
 } from '../_lib/model-page-specs';
 import { MediaPreview } from './MediaPreview';
 import { ModelDecisionPromptingSection } from './ModelDecisionPromptingSection';
 
 type ModelPromptingSectionProps = {
-  imageAnchorId: string;
-  isVideoEngine: boolean;
-  copy: SoraCopy;
-  supportsNativeAudio: boolean;
-  demoMedia: FeaturedMedia | null;
-  engineSlug: string;
-  isImageEngine: boolean;
-  locale: AppLocale;
-  modelName: string;
-  modelSlug: string;
-  audioBadgeLabel: string;
-  mediaAltContexts: { demo: string };
-  useDemoMediaPrompt: boolean;
-  decisionReferenceWorkflows?: Array<{ title: string; body: string }>;
+  viewModel: ModelPromptingViewModel;
   variant?: 'default' | 'decision';
 };
 
+function toLegacyTabs(viewModel: ModelPromptingViewModel): PromptingTab[] {
+  return viewModel.tabs.items.map((tab) => ({
+    ...tab,
+    description: tab.description ?? undefined,
+  })) as PromptingTab[];
+}
+
+function toPreviewMedia(
+  demo: NonNullable<ModelPromptingViewModel['demo']>,
+  viewModel: ModelPromptingViewModel,
+): FeaturedMedia {
+  const duration = Number.parseFloat(demo.durationLabel);
+  return {
+    id: null,
+    prompt: demo.prompt,
+    videoUrl: demo.videoSrc,
+    posterUrl: demo.posterSrc,
+    durationSec: Number.isFinite(duration) ? duration : null,
+    hasAudio: demo.audioChipLabel === viewModel.ui.audioOn,
+    href: demo.fullHref,
+    label: demo.title,
+    aspectRatio: demo.aspectLabel,
+  };
+}
+
 export function ModelPromptingSection({
-  imageAnchorId,
-  isVideoEngine,
-  copy,
-  supportsNativeAudio,
-  demoMedia,
-  engineSlug,
-  isImageEngine,
-  locale,
-  modelName,
-  modelSlug,
-  audioBadgeLabel,
-  mediaAltContexts,
-  useDemoMediaPrompt,
-  decisionReferenceWorkflows,
+  viewModel,
   variant = 'default',
 }: ModelPromptingSectionProps) {
   if (variant === 'decision') {
-    return (
-      <ModelDecisionPromptingSection
-        imageAnchorId={imageAnchorId}
-        copy={copy}
-        demoMedia={demoMedia}
-        engineSlug={engineSlug}
-        isImageEngine={isImageEngine}
-        locale={locale}
-        modelName={modelName}
-        modelSlug={modelSlug}
-        referenceWorkflows={decisionReferenceWorkflows ?? []}
-      />
-    );
+    return <ModelDecisionPromptingSection viewModel={viewModel} />;
   }
 
-  const referenceWorkflows = decisionReferenceWorkflows ?? [];
+  const mode = viewModel.imageExamples ? 'image' : 'video';
+  const guide = viewModel.section.guide;
+  const demo = viewModel.demo;
+  const previewMedia = demo && (demo.videoSrc || demo.posterSrc)
+    ? toPreviewMedia(demo, viewModel)
+    : null;
+  const locale = viewModel.ui.tipPrefix === 'Astuce'
+    ? 'fr'
+    : viewModel.ui.tipPrefix === 'Consejo'
+      ? 'es'
+      : 'en';
+
   return (
-        <section
-          id={imageAnchorId}
-          className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
-        >
-          {isVideoEngine ? (
-            <div className="stack-gap-lg">
-              {referenceWorkflows.length ? (
-                <div className="mx-auto grid w-full max-w-5xl gap-3 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
-                  {referenceWorkflows.map((workflow) => (
-                    <article key={workflow.title} className="rounded-lg border border-hairline bg-surface px-4 py-3 shadow-card">
-                      <h3 className="text-sm font-semibold text-text-primary">{workflow.title}</h3>
-                      <p className="mt-1 text-xs leading-relaxed text-text-secondary">{workflow.body}</p>
-                    </article>
-                  ))}
-                </div>
-              ) : null}
-                <SoraPromptingTabs
-                  title={copy.promptingTitle ?? undefined}
-                  intro={copy.promptingIntro ?? undefined}
-                  tip={copy.promptingTip ?? undefined}
-                  guideLabel={copy.promptingGuideLabel ?? undefined}
-                  guideUrl={copy.promptingGuideUrl ?? undefined}
-                  mode="video"
-                  supportsAudio={supportsNativeAudio}
-                  tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
-                  globalPrinciples={copy.promptingGlobalPrinciples}
-                  engineWhy={copy.promptingEngineWhy}
-                  tabNotes={copy.promptingTabNotes}
+    <section
+      id={viewModel.id}
+      className={`${FULL_BLEED_SECTION} ${SECTION_BG_B} ${SECTION_PAD} ${SECTION_SCROLL_MARGIN} stack-gap`}
+    >
+      <div className="stack-gap-lg">
+        {viewModel.referenceWorkflows.length ? (
+          <div className="mx-auto grid w-full max-w-5xl gap-3 px-6 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+            {viewModel.referenceWorkflows.map((workflow) => (
+              <article key={workflow.title} className="rounded-lg border border-hairline bg-surface px-4 py-3 shadow-card">
+                <h3 className="text-sm font-semibold text-text-primary">{workflow.title}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-text-secondary">{workflow.body}</p>
+              </article>
+            ))}
+          </div>
+        ) : null}
+        <SoraPromptingTabs
+          title={viewModel.section.title}
+          intro={viewModel.section.intro ?? undefined}
+          tip={viewModel.section.tip ?? undefined}
+          guideLabel={guide?.label}
+          guideUrl={guide?.href}
+          mode={mode}
+          supportsAudio={demo?.audioChipLabel !== viewModel.ui.silent}
+          tabs={toLegacyTabs(viewModel)}
+          globalPrinciples={viewModel.globalPrinciples}
+          engineWhy={viewModel.engineWhy}
+          tabNotes={viewModel.tabs.notesById as PromptingTabNotes}
+        />
+        {demo ? (
+          <div className="stack-gap-lg">
+            <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
+              {demo.title}
+            </h2>
+            <div className="mx-auto w-full max-w-5xl">
+              {previewMedia ? (
+                <MediaPreview
+                  media={previewMedia}
+                  label={demo.title}
+                  locale={locale}
+                  audioBadgeLabel={demo.audioChipLabel}
+                  renderLinkLabel={viewModel.ui.viewFull}
+                  altContext={demo.alt}
+                  hideLabel
+                  promptLabel={demo.promptLabel}
+                  promptLines={demo.prompt.split('\n')}
                 />
-              {copy.demoTitle || copy.demoPrompt.length ? (
-                <div className="stack-gap-lg">
-                  {copy.demoTitle ? (
-                    <h2 className="mt-2 text-center text-2xl font-semibold text-text-primary sm:mt-0 sm:text-3xl">
-                      {copy.demoTitle}
-                    </h2>
-                  ) : null}
-                  <div className="mx-auto w-full max-w-5xl">
-                    {demoMedia ? (
-                      <MediaPreview
-                        media={demoMedia}
-                        label={copy.demoTitle ?? 'Sora 2 demo'}
-                        locale={locale}
-                        audioBadgeLabel={audioBadgeLabel}
-                        altContext={mediaAltContexts.demo}
-                        hideLabel
-                        promptLabel={useDemoMediaPrompt ? undefined : copy.demoPromptLabel ?? undefined}
-                        promptLines={useDemoMediaPrompt ? [] : copy.demoPrompt}
-                      />
-                    ) : (
-                      <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
-                        {copy.galleryIntro ?? (locale === 'fr' ? 'Aperçu de démonstration.' : locale === 'es' ? 'Vista previa de demostración.' : 'Demo preview.')}
-                      </div>
-                    )}
-                  </div>
+              ) : (
+                <div className="flex h-full min-h-[280px] items-center justify-center rounded-xl border border-dashed border-hairline bg-bg text-sm text-text-secondary">
+                  {viewModel.ui.demoPreview}
                 </div>
-              ) : null}
+              )}
             </div>
-          ) : (
-            <div className="stack-gap-lg">
-              <SoraPromptingTabs
-                title={copy.promptingTitle ?? undefined}
-                intro={copy.promptingIntro ?? undefined}
-                tip={copy.promptingTip ?? undefined}
-                guideLabel={copy.promptingGuideLabel ?? undefined}
-                guideUrl={copy.promptingGuideUrl ?? undefined}
-                mode="image"
-                supportsAudio={supportsNativeAudio}
-                tabs={copy.promptingTabs.length ? copy.promptingTabs : undefined}
-                globalPrinciples={copy.promptingGlobalPrinciples}
-                engineWhy={copy.promptingEngineWhy}
-                tabNotes={copy.promptingTabNotes}
-              />
-            </div>
-          )}
-        </section>
+          </div>
+        ) : null}
+      </div>
+    </section>
   );
 }

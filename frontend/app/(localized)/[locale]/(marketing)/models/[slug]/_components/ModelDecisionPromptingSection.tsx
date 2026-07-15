@@ -13,145 +13,62 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 
-import type { AppLocale } from '@/i18n/locales';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON, MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_WRAP } from '../_lib/model-page-icon-styles';
-import type { FeaturedMedia } from '../_lib/model-page-media';
-import { buildLegacyModelPromptingContent } from '../_lib/model-page-prompting-legacy';
-import { getModelPromptingUiCopy } from '../_lib/model-page-prompting-ui-copy';
-import { SECTION_SCROLL_MARGIN, type SoraCopy } from '../_lib/model-page-specs';
+import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
+import { SECTION_SCROLL_MARGIN } from '../_lib/model-page-specs';
 import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 import { ModelDecisionDemoMedia } from './ModelDecisionDemoMedia.client';
 import { ModelDecisionImagePromptExamples } from './ModelDecisionImagePromptExamples';
 import { ModelDecisionPromptTabs } from './ModelDecisionPromptTabs.client';
 
 type ModelDecisionPromptingSectionProps = {
-  imageAnchorId: string;
-  copy: SoraCopy;
-  demoMedia: FeaturedMedia | null;
-  engineSlug: string;
-  isImageEngine: boolean;
-  locale: AppLocale;
-  modelName: string;
-  modelSlug: string;
-  referenceWorkflows: Array<{ title: string; body: string }>;
+  viewModel: ModelPromptingViewModel;
 };
 
 const REFERENCE_ICONS = [FileText, ImageIcon, Film, AudioLines, Link2] as const satisfies readonly LucideIcon[];
 
-function getDuration(media: FeaturedMedia | null, locale: AppLocale) {
-  if (typeof media?.durationSec === 'number') return locale === 'fr' || locale === 'es' ? `${media.durationSec} s` : `${media.durationSec}s`;
-  return locale === 'fr' || locale === 'es' ? '8 s' : '8s';
-}
-
-function getAspect(media: FeaturedMedia | null) {
-  return media?.aspectRatio ?? '16:9';
-}
-
 export function ModelDecisionPromptingSection({
-  imageAnchorId,
-  copy,
-  demoMedia,
-  engineSlug,
-  isImageEngine,
-  locale,
-  modelName,
-  modelSlug,
-  referenceWorkflows,
+  viewModel,
 }: ModelDecisionPromptingSectionProps) {
-  const ui = getModelPromptingUiCopy(locale);
-  const content = buildLegacyModelPromptingContent({
-    copy,
-    engineId: engineSlug,
-    isImageEngine,
-    locale,
-    modelName,
-    modelSlug,
-  });
-  const demo = content.demo;
-  const imageExamples = content.imageExamples!;
-  const posterSrc = demoMedia?.posterUrl ?? null;
-  const demoVideoSrc = demoMedia?.videoUrl ?? demoMedia?.previewVideoUrl ?? null;
-  const summaryPrompt = demo
-    ? [
-        `${ui.subject}: ${demo.summary.subject}`,
-        `${ui.action}: ${demo.summary.action}`,
-        `${ui.camera}: ${demo.summary.camera}`,
-        `${ui.style}: ${demo.summary.style}`,
-        `${ui.audio}: ${demo.summary.output}`,
-      ].join('\n')
-    : '';
-  const demoPromptText =
-    demo && demoMedia?.prompt && (engineSlug === 'happy-horse-1-1' || demo.prompt === summaryPrompt)
-      ? demoMedia.prompt
-      : (demo?.prompt ?? '');
-  const presentation = demo?.presentationOverrides;
-  const demoDurationLabel =
-    presentation?.duration ??
-    (engineSlug === 'seedance-2-0-mini' && !demoMedia
-      ? locale === 'fr' || locale === 'es'
-        ? '8 s'
-        : '8s'
-      : getDuration(demoMedia, locale));
-  const demoAspectLabel = presentation?.aspectRatio ?? getAspect(demoMedia);
-  const demoModeLabel = presentation?.modeLabel ?? '';
-  const demoOutputLabel = presentation?.outputLabel ?? '';
-  const demoOutputValue = demo?.summary.output ?? '';
-  const demoAudioChipLabel = (() => {
-    if (!presentation) return '';
-    if (presentation.audioChipLabel) return presentation.audioChipLabel;
-    if (presentation.audioChipMode === 'silent') return ui.silent;
-    if (presentation.audioChipMode === 'off') return ui.audioOff;
-    if (presentation.audioChipMode === 'on') return ui.audioOn;
-    if (presentation.audioChipMode === 'supported' && !demoMedia) return ui.audioOn;
-    return demoMedia?.hasAudio ? ui.audioOn : ui.audioOff;
-  })();
-  const demoAlt = presentation?.altContext ?? '';
-  const promptingTabs: SoraCopy['promptingTabs'] = content.tabs.map((tab) => ({
-    ...tab,
-    id: tab.id as SoraCopy['promptingTabs'][number]['id'],
-    description: tab.description ?? undefined,
-  }));
-  const promptingGlobalPrinciples = content.globalPrinciples;
-  const promptingEngineWhy = content.engineWhy;
-  const demoTitle = demo?.title ?? '';
+  const { demo, ui } = viewModel;
 
   return (
-    <section id={imageAnchorId} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
+    <section id={viewModel.id} className={`${SECTION_SCROLL_MARGIN} space-y-4`}>
       <div className="rounded-[28px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] dark:shadow-[0_24px_70px_-42px_rgba(0,0,0,0.85)] sm:p-7">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-[2rem] font-semibold leading-tight tracking-normal text-slate-950 dark:text-white sm:text-[2.45rem]">
-            {content.section.title}
+            {viewModel.section.title}
           </h2>
-          {content.section.intro ? <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{content.section.intro}</p> : null}
-          {content.section.tip ? (
+          {viewModel.section.intro ? <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300">{viewModel.section.intro}</p> : null}
+          {viewModel.section.tip ? (
             <div className="mx-auto mt-4 inline-flex max-w-full items-center gap-2 rounded-full border border-slate-200 bg-slate-50/90 px-5 py-2 text-sm text-slate-600 dark:border-white/10 dark:!bg-white/[0.055] dark:text-slate-300">
               <UIIcon icon={Lightbulb} size={15} className="text-slate-500 dark:text-slate-300" />
-              <span>{content.section.tip.replace(/^Tip:\s*/i, `${ui.tipPrefix}: `)}</span>
+              <span>{viewModel.section.tip.replace(/^Tip:\s*/i, `${ui.tipPrefix}: `)}</span>
             </div>
           ) : null}
-          {content.section.guide ? (
+          {viewModel.section.guide ? (
             <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">
-              <span>{locale === 'fr' ? 'Source : ' : locale === 'es' ? 'Fuente: ' : 'Source: '}</span>
+              <span>{ui.source}</span>
               <a
-                href={content.section.guide.href}
+                href={viewModel.section.guide.href}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 font-medium text-slate-600 underline decoration-slate-300 underline-offset-4 transition hover:text-blue-600 hover:decoration-blue-300 dark:text-slate-300 dark:decoration-white/20 dark:hover:text-blue-200"
               >
-                <span>{content.section.guide.label}</span>
+                <span>{viewModel.section.guide.label}</span>
                 <UIIcon icon={ExternalLink} size={11} className={MODEL_PAGE_ICON_MUTED} />
               </a>
             </p>
           ) : null}
         </div>
 
-        {referenceWorkflows.length ? (
+        {viewModel.referenceWorkflows.length ? (
           <div className="mt-6 rounded-[18px] border border-slate-200 bg-slate-50/80 p-4 dark:border-white/10 dark:!bg-white/[0.035]">
-            <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{content.section.referencesTitle}</h3>
+            <h3 className="!text-left text-base font-semibold text-slate-950 dark:text-white">{viewModel.section.referencesTitle}</h3>
             <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-5">
-              {referenceWorkflows.map((workflow, index) => {
+              {viewModel.referenceWorkflows.map((workflow, index) => {
                 const Icon = REFERENCE_ICONS[index] ?? Sparkles;
                 return (
                   <article key={workflow.title} className="rounded-xl border border-slate-200 bg-white p-3.5 dark:border-white/10 dark:!bg-slate-950/[0.56] sm:p-4">
@@ -169,11 +86,10 @@ export function ModelDecisionPromptingSection({
 
         <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1.18fr)_minmax(340px,0.82fr)]">
           <ModelDecisionPromptTabs
-            tabs={promptingTabs}
-            locale={locale}
-            exampleHref={demoMedia?.href ?? null}
-            engineSlug={engineSlug}
-            isImageEngine={isImageEngine}
+            tabs={viewModel.tabs.items}
+            labels={ui}
+            exampleHref={viewModel.tabs.exampleHref}
+            usePromptHref={viewModel.tabs.usePromptHref}
           />
 
           <div className="space-y-4 lg:pt-14">
@@ -185,7 +101,7 @@ export function ModelDecisionPromptingSection({
                 <h3 className="!text-left text-base font-semibold text-text-primary">{ui.global}</h3>
               </div>
               <ul className="space-y-2.5 text-[0.84rem] leading-5 text-text-secondary">
-                {promptingGlobalPrinciples.map((item) => (
+                {viewModel.globalPrinciples.map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <UIIcon icon={BadgeCheck} size={15} className={`mt-0.5 shrink-0 ${MODEL_PAGE_ICON_MUTED}`} />
                     <span>{item}</span>
@@ -202,7 +118,7 @@ export function ModelDecisionPromptingSection({
                 <h3 className="!text-left text-base font-semibold text-text-primary">{ui.quirks}</h3>
               </div>
               <ul className="space-y-2.5 text-[0.84rem] leading-5 text-text-secondary">
-                {promptingEngineWhy.map((item) => (
+                {viewModel.engineWhy.map((item) => (
                   <li key={item} className="flex gap-2.5">
                     <UIIcon icon={BadgeCheck} size={15} className={`mt-0.5 shrink-0 ${MODEL_PAGE_ICON_MUTED}`} />
                     <span>{item}</span>
@@ -214,63 +130,63 @@ export function ModelDecisionPromptingSection({
         </div>
       </div>
 
-      {isImageEngine ? (
+      {viewModel.imageExamples ? (
         <ModelDecisionImagePromptExamples
           copiedLabel={ui.copied}
           copyLabel={ui.copyPrompt}
-          engineSlug={engineSlug}
-          imageExamples={imageExamples}
+          imageExamples={viewModel.imageExamples}
+          workspaceHref={viewModel.imageExamples.workspaceHref}
         />
-      ) : (
-      <article className="grid gap-5 rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] lg:grid-cols-[minmax(0,0.86fr)_minmax(440px,1.14fr)]">
-        <div>
-          <h2 className="!text-left text-2xl font-semibold text-text-primary">{demoTitle}</h2>
-          <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:!bg-blue-500/[0.12] dark:text-blue-200">
-            {demoModeLabel}
-          </span>
-          <p className="mt-4 text-sm leading-6 text-text-secondary">
-            <strong>{ui.subject}:</strong> {demo?.summary.subject} &nbsp;•&nbsp; <strong>{ui.action}:</strong> {demo?.summary.action}
-            <br />
-            <strong>{ui.camera}:</strong> {demo?.summary.camera} &nbsp;•&nbsp; <strong>{ui.style}:</strong> {demo?.summary.style}
-            <br />
-            <strong>{demoOutputLabel}:</strong> {demoOutputValue}
-          </p>
-          <details className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-sm">
-            <summary className="cursor-pointer font-semibold text-text-primary">{ui.showPrompt}</summary>
-            <pre className="mt-3 max-h-[180px] overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-bg px-3 py-3 font-mono text-[0.8rem] leading-5 text-text-primary dark:!bg-slate-950/[0.72]">
-              {demoPromptText}
-            </pre>
-            <div className="mt-3">
-              <ModelDecisionCopyButton copyText={demoPromptText} label={ui.copyPrompt} copiedLabel={ui.copied} />
+      ) : demo ? (
+        <article className="grid gap-5 rounded-[22px] border border-slate-200/80 bg-white/[0.92] p-5 shadow-[0_22px_58px_-36px_rgba(15,23,42,0.36)] backdrop-blur dark:border-white/10 dark:!bg-slate-950/[0.72] lg:grid-cols-[minmax(0,0.86fr)_minmax(440px,1.14fr)]">
+          <div>
+            <h2 className="!text-left text-2xl font-semibold text-text-primary">{demo.title}</h2>
+            <span className="mt-3 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-600 dark:!bg-blue-500/[0.12] dark:text-blue-200">
+              {demo.modeLabel}
+            </span>
+            <p className="mt-4 text-sm leading-6 text-text-secondary">
+              <strong>{ui.subject}:</strong> {demo.summary.subject} &nbsp;•&nbsp; <strong>{ui.action}:</strong> {demo.summary.action}
+              <br />
+              <strong>{ui.camera}:</strong> {demo.summary.camera} &nbsp;•&nbsp; <strong>{ui.style}:</strong> {demo.summary.style}
+              <br />
+              <strong>{demo.outputLabel}:</strong> {demo.summary.output}
+            </p>
+            <details className="mt-5 rounded-xl border border-hairline bg-surface p-4 text-sm text-text-secondary shadow-sm">
+              <summary className="cursor-pointer font-semibold text-text-primary">{ui.showPrompt}</summary>
+              <pre className="mt-3 max-h-[180px] overflow-auto whitespace-pre-wrap rounded-lg border border-hairline bg-bg px-3 py-3 font-mono text-[0.8rem] leading-5 text-text-primary dark:!bg-slate-950/[0.72]">
+                {demo.prompt}
+              </pre>
+              <div className="mt-3">
+                <ModelDecisionCopyButton copyText={demo.prompt} label={ui.copyPrompt} copiedLabel={ui.copied} />
+              </div>
+            </details>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
+                <UIIcon icon={Clock3} size={15} />
+                {demo.durationLabel}
+              </span>
+              <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
+                <UIIcon icon={Sparkles} size={15} />
+                {demo.aspectLabel}
+              </span>
+              <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
+                <UIIcon icon={Volume2} size={15} className={MODEL_PAGE_ICON_MUTED} />
+                {demo.audioChipLabel}
+              </span>
             </div>
-          </details>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
-              <UIIcon icon={Clock3} size={15} />
-              {demoDurationLabel}
-            </span>
-            <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
-              <UIIcon icon={Sparkles} size={15} />
-              {demoAspectLabel}
-            </span>
-            <span className="inline-flex h-10 items-center gap-2 rounded-xl border border-hairline bg-surface px-4 text-sm font-semibold text-text-secondary">
-              <UIIcon icon={Volume2} size={15} className={MODEL_PAGE_ICON_MUTED} />
-              {demoAudioChipLabel}
-            </span>
           </div>
-        </div>
 
-        <ModelDecisionDemoMedia
-          posterSrc={posterSrc}
-          videoSrc={demoVideoSrc}
-          alt={demoAlt}
-          durationLabel={demoDurationLabel}
-          aspectLabel={demoAspectLabel}
-          renderHref={demoMedia?.href ?? null}
-          renderLabel={ui.viewFull}
-        />
-      </article>
-      )}
+          <ModelDecisionDemoMedia
+            posterSrc={demo.posterSrc}
+            videoSrc={demo.videoSrc}
+            alt={demo.alt}
+            durationLabel={demo.durationLabel}
+            aspectLabel={demo.aspectLabel}
+            renderHref={demo.fullHref}
+            renderLabel={ui.viewFull}
+          />
+        </article>
+      ) : null}
     </section>
   );
 }

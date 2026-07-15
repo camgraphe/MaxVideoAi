@@ -4,50 +4,21 @@ import { useMemo, useState } from 'react';
 import { ArrowRight, Box, Camera, Clock3, FileText, Play, Sparkles } from 'lucide-react';
 
 import { Link } from '@/i18n/navigation';
-import type { AppLocale } from '@/i18n/locales';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON } from '../_lib/model-page-icon-styles';
-import type { PromptingTab } from '../_lib/model-page-specs';
+import type { ModelPromptingUiCopy } from '../_lib/model-page-prompting-ui-copy';
+import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { ModelDecisionCopyButton } from './ModelDecisionCopyButton.client';
 
 type ModelDecisionPromptTabsProps = {
-  tabs: PromptingTab[];
-  locale: AppLocale;
+  tabs: ModelPromptingViewModel['tabs']['items'];
+  labels: Pick<ModelPromptingUiCopy, 'copyTemplate' | 'copied' | 'example' | 'viewRender' | 'usePrompt'>;
   exampleHref: string | null;
-  engineSlug: string;
-  isImageEngine: boolean;
+  usePromptHref: string;
 };
 
 const TAB_ICONS = [FileText, Box, Camera, Sparkles] as const;
-
-function getCopy(locale: AppLocale) {
-  if (locale === 'fr') {
-    return {
-      copyTemplate: 'Copier le template',
-      copied: 'Copié',
-      example: 'EXEMPLE',
-      viewRender: 'Voir le rendu exemple',
-      usePrompt: 'Utiliser ce prompt',
-    };
-  }
-  if (locale === 'es') {
-    return {
-      copyTemplate: 'Copiar plantilla',
-      copied: 'Copiado',
-      example: 'EJEMPLO',
-      viewRender: 'Ver ejemplo',
-      usePrompt: 'Usar este prompt',
-    };
-  }
-  return {
-    copyTemplate: 'Copy template',
-    copied: 'Copied',
-    example: 'EXAMPLE',
-    viewRender: 'View example render',
-    usePrompt: 'Use this prompt',
-  };
-}
 
 function splitPromptCopy(value: string) {
   const match = value.match(/\n\nExample:\n/i);
@@ -62,16 +33,13 @@ function splitPromptCopy(value: string) {
 
 export function ModelDecisionPromptTabs({
   tabs,
-  locale,
+  labels,
   exampleHref,
-  engineSlug,
-  isImageEngine,
+  usePromptHref,
 }: ModelDecisionPromptTabsProps) {
   const [activeId, setActiveId] = useState(() => tabs[0]?.id ?? 'quick');
   const activeTab = tabs.find((tab) => tab.id === activeId) ?? tabs[0] ?? null;
-  const labels = getCopy(locale);
   const activeCopy = useMemo(() => splitPromptCopy(activeTab?.copy ?? ''), [activeTab?.copy]);
-  const usePromptHref = `${isImageEngine ? '/app/image' : '/app'}?engine=${encodeURIComponent(engineSlug)}`;
 
   if (!activeTab) return null;
 

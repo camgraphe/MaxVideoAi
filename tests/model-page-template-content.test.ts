@@ -8,6 +8,7 @@ import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
+import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
@@ -297,11 +298,8 @@ test('image model prompt actions route to the image workspace', () => {
     'utf8'
   );
 
-  assert.match(
-    promptTabsSource,
-    /isImageEngine\s*\?\s*'\/app\/image'\s*:\s*'\/app'/,
-    'decision Prompt Lab should route image engines to /app/image'
-  );
+  assert.match(promptTabsSource, /usePromptHref:\s*string/);
+  assert.doesNotMatch(promptTabsSource, /isImageEngine|\/app\/image\?engine=/);
 });
 
 test('Nano Banana Pro uses image-specific pricing scenario labels', () => {
@@ -1053,11 +1051,16 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
       hero?: { badge?: string; ctaPrimary?: { href?: string }; secondaryLinks?: Array<{ href?: string }> };
       technicalOverview?: Array<{ label?: string; body?: string }>;
       custom?: {
-        demoPrompt?: string[];
-        promptingTabs?: Array<{ id?: string; label?: string; title?: string; copy?: string }>;
         specSections?: Array<{ items?: string[] }>;
       };
+      prompting?: unknown;
     };
+    const prompting = parseModelPromptingContent(
+      content.prompting,
+      'dreamina-seedance-2-0-mini',
+      locale,
+      `content/models/${locale}/dreamina-seedance-2-0-mini.json#prompting`,
+    );
     const customerText = collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS).join(' ');
     const miniSpecsText = collectCustomerFacingStrings(
       {
@@ -1090,10 +1093,10 @@ test('Seedance 2.0 Mini content JSON is localized and keeps Mini specs accurate'
     assert.match(customerText, /dreamina-seedance-2-0-mini-260615/i);
     assert.match(customerText, /native audio|audio natif|audio nativo|lip-sync|lipsync/i);
     assert.deepEqual(
-      content.custom?.promptingTabs?.map((tab) => tab.id),
+      prompting.tabs.map((tab) => tab.id),
       ['quick', 'structured', 'pro', 'storyboard']
     );
-    assert.match(content.custom?.demoPrompt?.join(' ') ?? '', /crosswalk|passage piéton|cruce urbano/i);
+    assert.match(prompting.demo?.prompt ?? '', /crosswalk|passage piéton|cruce urbano/i);
     assert.doesNotMatch(
       rawContent,
       /coming soon|BytePlus API|API access|API pending|Bientôt|accès API|Próximamente|acceso API|before launch|after launch|après lancement|tras el lanzamiento/i

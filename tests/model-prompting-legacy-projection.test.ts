@@ -52,13 +52,13 @@ function readEngineOverlay(modelSlug: string, locale: (typeof LOCALES)[number]):
   ) as EngineOverlay;
 }
 
-test('legacy prompting decisions are isolated behind one temporary pure projector', () => {
+test('legacy prompting characterization remains isolated from the live renderer', () => {
   assert.ok(existsSync(legacyPath));
   const legacySource = readFileSync(legacyPath, 'utf8');
   const componentSource = readFileSync(componentPath, 'utf8');
 
   assert.match(legacySource, /export function buildLegacyModelPromptingContent/);
-  assert.match(componentSource, /buildLegacyModelPromptingContent/);
+  assert.doesNotMatch(componentSource, /buildLegacyModelPromptingContent/);
   assert.doesNotMatch(
     componentSource,
     /function getKlingO3PromptingTabs|function getImagePromptExamples|function getRouteDemoSummary/,

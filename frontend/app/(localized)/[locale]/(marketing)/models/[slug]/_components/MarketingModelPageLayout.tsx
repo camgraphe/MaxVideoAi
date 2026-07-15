@@ -43,6 +43,7 @@ import {
   isSupported,
   normalizeBestUseCaseItems,
   normalizeHeroSubtitle,
+  normalizeHeroTitle,
   normalizeSecondaryCta,
   normalizeSpecNote,
   normalizeSpecTitle,
@@ -62,7 +63,8 @@ import { buildModelPricingCallout } from '../_lib/model-page-pricing-callouts';
 import { buildModelSchemaPayloads } from '../_lib/model-page-schema-payloads';
 import { buildModelDecisionData } from '../_lib/model-page-decision-data';
 import { buildDecisionTocItems, resolveDecisionTocOverviewLabel } from '../_lib/model-page-decision-toc';
-import { resolveLegacyPromptingModelName } from '../_lib/model-page-prompting-legacy';
+import { parseModelPromptingContent } from '../_lib/model-page-prompting-content';
+import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
 
 export function MarketingModelPageLayout({
@@ -130,7 +132,8 @@ export function MarketingModelPageLayout({
       : `${homePathname.replace(/\/+$/, '')}/${localizedModelsSlug}`.replace(/\/{2,}/g, '/');
   const localizedModelsUrl = `${SITE}${modelsPathname}`;
   const providerName = resolveProviderInfo(engine).name;
-  const heroTitle = resolveLegacyPromptingModelName({ copy, engine, localized: localizedContent });
+  const rawHeroTitle = copy.heroTitle ?? localizedContent.hero?.title ?? localizedContent.marketingName ?? 'Sora 2';
+  const heroTitle = normalizeHeroTitle(rawHeroTitle, providerName);
   const rawHeroSubtitle = copy.heroSubtitle ?? localizedContent.hero?.intro ?? localizedContent.overview ?? '';
   const heroSubtitle = normalizeHeroSubtitle(rawHeroSubtitle, locale);
   const heroBadge = copy.heroBadge ?? localizedContent.hero?.badge ?? null;
@@ -341,6 +344,24 @@ export function MarketingModelPageLayout({
   const hasCompareSection = !isImageEngine && (Boolean(focusVsConfig) || hasCompareGrid);
   const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
+  const promptingContent = parseModelPromptingContent(
+    localizedContent.prompting,
+    engine.modelSlug,
+    locale,
+    `content/models/${locale}/${engine.modelSlug}.json#prompting`,
+  );
+  const promptingViewModel = buildModelPromptingViewModel({
+    content: promptingContent,
+    locale,
+    engineId: engine.id,
+    modelSlug: engine.modelSlug,
+    imageAnchorId,
+    isImageEngine,
+    supportsNativeAudio,
+    useDemoMediaPrompt,
+    demoMedia,
+    referenceWorkflows: templateData?.referenceWorkflows ?? [],
+  });
   const compareAnchorId = 'compare';
   const tocItems = [
     { id: 'specs', label: sectionLabels.specs, visible: hasSpecs },
@@ -449,22 +470,7 @@ export function MarketingModelPageLayout({
               galleryCtaHref,
             }}
             decisionCards={templateData?.decisionCards ?? null}
-            promptingProps={{
-              imageAnchorId,
-              isVideoEngine,
-              copy,
-              supportsNativeAudio,
-              demoMedia,
-              engineSlug: engine.id,
-              isImageEngine,
-              locale,
-              modelName: heroTitle,
-              modelSlug: engine.modelSlug,
-              audioBadgeLabel,
-              mediaAltContexts,
-              useDemoMediaPrompt,
-              decisionReferenceWorkflows: templateData?.referenceWorkflows,
-            }}
+            promptingProps={{ viewModel: promptingViewModel }}
             prepLinksProps={{ prepLinksSection, locale }}
             tipsProps={{ hasTipsSection, copy, locale, modelName: heroTitle, strengths, troubleshootingItems, boundaries, tipsCardLabels, troubleshootingTitle }}
             compareProps={{ hasCompareSection, compareAnchorId, focusVsConfig, localizeModelsPath, hasCompareGrid, compareCopy, relatedItems, compareEngines, engineSlug, localizeComparePath, locale, heroTitle }}
