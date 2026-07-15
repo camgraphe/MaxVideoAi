@@ -9,7 +9,10 @@ import { listModelPageTemplateSlugs } from '../frontend/app/(localized)/[locale]
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
-const I18N_SOURCE = readFileSync(path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n.ts'), 'utf8');
+const I18N_NORMALIZATION_SOURCE = readFileSync(
+  path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n-normalization.ts'),
+  'utf8',
+);
 const MODEL_ROUTE_ROOT = path.join(
   process.cwd(),
   'frontend',
@@ -77,8 +80,11 @@ test('each model keeps identical EN FR ES decision structure', () => {
 });
 
 test('localized model decision selection never falls back to English', () => {
-  assert.match(I18N_SOURCE, /decision:\s*overlay\.decision/);
-  assert.doesNotMatch(I18N_SOURCE, /decision:\s*overlay\.decision\s*\?\?\s*base\.decision/);
+  assert.match(I18N_NORMALIZATION_SOURCE, /decision:\s*overlay\.decision/);
+  assert.doesNotMatch(
+    I18N_NORMALIZATION_SOURCE,
+    /decision:\s*overlay\.decision\s*\?\?\s*base\.decision/,
+  );
 });
 
 test('old decision maps are not direct JSON consumers and tracing already includes model content', () => {

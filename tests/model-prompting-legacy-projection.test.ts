@@ -6,7 +6,10 @@ import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
-import type { EngineLocalizedContent } from '../frontend/lib/models/i18n.ts';
+import {
+  mergeEngineLocalizedContent,
+  type EngineOverlay,
+} from '../frontend/lib/models/i18n-normalization.ts';
 import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { isPublishedModelPage } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-publication.ts';
@@ -43,45 +46,10 @@ function changedLeafPaths(before: unknown, after: unknown, prefix: readonly stri
   return [prefix.join('.')];
 }
 
-function readLocalizedContent(modelSlug: string, locale: (typeof LOCALES)[number]): EngineLocalizedContent {
-  const readOverlay = (overlayLocale: (typeof LOCALES)[number]) =>
-    JSON.parse(
-      readFileSync(join(PROJECT_ROOT, 'content', 'models', overlayLocale, `${modelSlug}.json`), 'utf8'),
-    ) as Partial<EngineLocalizedContent>;
-  const base = readOverlay('en');
-  const overlay = locale === 'en' ? base : readOverlay(locale);
-
-  return {
-    marketingName: overlay.marketingName ?? base.marketingName,
-    versionLabel: overlay.versionLabel ?? base.versionLabel,
-    overview: overlay.overview ?? base.overview,
-    pricingNotes: overlay.pricingNotes ?? base.pricingNotes,
-    seo: {
-      title: overlay.seo?.title ?? base.seo?.title,
-      description: overlay.seo?.description ?? base.seo?.description,
-      image: overlay.seo?.image ?? base.seo?.image,
-    },
-    hero:
-      base.hero || overlay.hero
-        ? {
-            title: overlay.hero?.title ?? base.hero?.title,
-            intro: overlay.hero?.intro ?? base.hero?.intro,
-            badge: overlay.hero?.badge ?? base.hero?.badge,
-            ctaPrimary: overlay.hero?.ctaPrimary ?? base.hero?.ctaPrimary,
-            secondaryLinks: overlay.hero?.secondaryLinks ?? base.hero?.secondaryLinks,
-          }
-        : undefined,
-    bestUseCases: overlay.bestUseCases ?? base.bestUseCases,
-    technicalOverviewTitle: overlay.technicalOverviewTitle ?? base.technicalOverviewTitle,
-    technicalOverview: overlay.technicalOverview ?? base.technicalOverview,
-    promptStructure: overlay.promptStructure ?? base.promptStructure,
-    tips: overlay.tips ?? base.tips,
-    compareLink: overlay.compareLink ?? base.compareLink,
-    prompts: [],
-    faqs: [],
-    custom: overlay.custom ?? base.custom,
-    decision: overlay.decision,
-  };
+function readEngineOverlay(modelSlug: string, locale: (typeof LOCALES)[number]): EngineOverlay {
+  return JSON.parse(
+    readFileSync(join(PROJECT_ROOT, 'content', 'models', locale, `${modelSlug}.json`), 'utf8'),
+  ) as EngineOverlay;
 }
 
 test('legacy prompting decisions are isolated behind one temporary pure projector', () => {
@@ -122,7 +90,9 @@ test('all 40-by-3 legacy projections satisfy the strict prompting contract after
     const isImageEngine = hasImageMode && !hasVideoMode;
 
     for (const locale of LOCALES) {
-      const localized = readLocalizedContent(engine.modelSlug, locale);
+      const base = readEngineOverlay(engine.modelSlug, 'en');
+      const overlay = locale === 'en' ? base : readEngineOverlay(engine.modelSlug, locale);
+      const localized = mergeEngineLocalizedContent(base, overlay);
       const copy = buildSoraCopy(localized, engine.modelSlug, locale);
       const projection = buildLegacyModelPromptingContent({
         copy,

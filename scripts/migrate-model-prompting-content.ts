@@ -3,7 +3,11 @@ import path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
 
 import type { AppLocale } from '../frontend/i18n/locales';
-import type { EngineLocalizedContent } from '../frontend/lib/models/i18n';
+import {
+  mergeEngineLocalizedContent,
+  type EngineLocalizedContent,
+  type EngineOverlay,
+} from '../frontend/lib/models/i18n-normalization';
 import { listFalEngines } from '../frontend/src/config/falEngines';
 import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content';
@@ -50,46 +54,19 @@ function validateArguments(): void {
   if (REMOVE_LEGACY && !WRITE) throw new Error('--remove-legacy requires --write');
 }
 
-async function readLocalizedContent(modelSlug: string, locale: AppLocale): Promise<EngineLocalizedContent> {
-  const readOverlay = async (overlayLocale: AppLocale) =>
-    JSON.parse(
-      await fs.readFile(path.join(CONTENT_ROOT, overlayLocale, `${modelSlug}.json`), 'utf8'),
-    ) as Partial<EngineLocalizedContent>;
-  const base = await readOverlay('en');
-  const overlay = locale === 'en' ? base : await readOverlay(locale);
+async function readEngineOverlay(modelSlug: string, locale: AppLocale): Promise<EngineOverlay> {
+  return JSON.parse(
+    await fs.readFile(path.join(CONTENT_ROOT, locale, `${modelSlug}.json`), 'utf8'),
+  ) as EngineOverlay;
+}
 
-  return {
-    marketingName: overlay.marketingName ?? base.marketingName,
-    versionLabel: overlay.versionLabel ?? base.versionLabel,
-    overview: overlay.overview ?? base.overview,
-    pricingNotes: overlay.pricingNotes ?? base.pricingNotes,
-    seo: {
-      title: overlay.seo?.title ?? base.seo?.title,
-      description: overlay.seo?.description ?? base.seo?.description,
-      image: overlay.seo?.image ?? base.seo?.image,
-    },
-    hero:
-      base.hero || overlay.hero
-        ? {
-            title: overlay.hero?.title ?? base.hero?.title,
-            intro: overlay.hero?.intro ?? base.hero?.intro,
-            badge: overlay.hero?.badge ?? base.hero?.badge,
-            ctaPrimary: overlay.hero?.ctaPrimary ?? base.hero?.ctaPrimary,
-            secondaryLinks: overlay.hero?.secondaryLinks ?? base.hero?.secondaryLinks,
-          }
-        : undefined,
-    bestUseCases: overlay.bestUseCases ?? base.bestUseCases,
-    technicalOverviewTitle: overlay.technicalOverviewTitle ?? base.technicalOverviewTitle,
-    technicalOverview: overlay.technicalOverview ?? base.technicalOverview,
-    promptStructure: overlay.promptStructure ?? base.promptStructure,
-    tips: overlay.tips ?? base.tips,
-    compareLink: overlay.compareLink ?? base.compareLink,
-    prompts: [],
-    faqs: [],
-    custom: overlay.custom ?? base.custom,
-    prompting: overlay.prompting,
-    decision: overlay.decision,
-  };
+async function loadLocalizedContent(
+  modelSlug: string,
+  locale: AppLocale,
+): Promise<EngineLocalizedContent> {
+  const base = await readEngineOverlay(modelSlug, 'en');
+  const overlay = locale === 'en' ? base : await readEngineOverlay(modelSlug, locale);
+  return mergeEngineLocalizedContent(base, overlay);
 }
 
 function removeLegacyPromptingKeys(document: ModelDocument): number {
@@ -124,7 +101,7 @@ async function main(): Promise<void> {
       const document = JSON.parse(await fs.readFile(filePath, 'utf8')) as ModelDocument;
       const engine = engines.find((candidate) => candidate.modelSlug === modelSlug);
       if (!engine) throw new Error(`Missing engine for ${modelSlug}`);
-      const localized = await readLocalizedContent(modelSlug, locale);
+      const localized = await loadLocalizedContent(modelSlug, locale);
       const copy = buildSoraCopy(localized, modelSlug, locale);
       const projected = buildLegacyModelPromptingContent({
         copy,

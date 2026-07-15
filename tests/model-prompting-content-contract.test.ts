@@ -10,7 +10,10 @@ import { getModelPromptingUiCopy } from '../frontend/app/(localized)/[locale]/(m
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
-const I18N_SOURCE = readFileSync(path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n.ts'), 'utf8');
+const I18N_NORMALIZATION_SOURCE = readFileSync(
+  path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n-normalization.ts'),
+  'utf8',
+);
 
 function files(locale: AppLocale) {
   return readdirSync(path.join(CONTENT_ROOT, locale)).filter((name) => name.endsWith('.json')).sort();
@@ -69,8 +72,11 @@ test('each model keeps identical EN FR ES prompting structure', () => {
 });
 
 test('localized prompting selection never falls back to English', () => {
-  assert.match(I18N_SOURCE, /prompting:\s*overlay\.prompting/);
-  assert.doesNotMatch(I18N_SOURCE, /prompting:\s*overlay\.prompting\s*\?\?\s*base\.prompting/);
+  assert.match(I18N_NORMALIZATION_SOURCE, /prompting:\s*overlay\.prompting/);
+  assert.doesNotMatch(
+    I18N_NORMALIZATION_SOURCE,
+    /prompting:\s*overlay\.prompting\s*\?\?\s*base\.prompting/,
+  );
 });
 
 test('migrated prompting content contains exactly the 18 approved corrections', () => {
