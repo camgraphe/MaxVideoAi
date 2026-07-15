@@ -319,71 +319,7 @@
     "finalPara1": "Veo 3.1 Lite en MaxVideoAI es tu banco de pruebas ultra‑rápido para prompts Veo.",
     "finalPara2": "Mismo lenguaje cinematográfico, menor riesgo y calidad lista para social.",
     "finalButton": "Abrir Generate",
-    "promptingTitle": "Cómo escribir un gran prompt para Veo 3.1 Lite",
-    "promptingIntro": "Veo 3.1 Lite prefiere prompts cortos, concretos y una acción clara.",
-    "promptingTip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación, estilo y cues de sonido.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción.",
-      "Indica encuadre y movimiento de cámara.",
-      "Usa 2–3 anclajes visuales, no listas largas."
-    ],
     "tipsIntro": "Veo 3.1 Lite es más fiable cuando escribes un brief corto: un sujeto, una acción, encuadre claro y un solo movimiento de cámara.",
-    "promptingEngineWhy": [
-      "Lite favorece beats simples y prompts cortos.",
-      "El lenguaje de cámara mejora la consistencia.",
-      "Usa anclajes de estilo para mantener el look estable."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto] [acción] en [contexto], [movimiento de cámara], [iluminación/estilo], [cue sonoro opcional]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nContexto:\n[Ubicación + momento + 2 anclajes visuales.]\n\nCámara:\n[Encuadre + ángulo + un movimiento.]\n\nLook:\n[Iluminación + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1 cue.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre tomas.",
-        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto:\n[Rasgos clave + vestuario/props.]\n\nCámara:\n[Encuadre + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + anclajes de paleta.]\n\nRestricciones:\nManténlo simple; evita acciones extra."
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (shot list corta)",
-        "description": "Manténlo mínimo para borradores más limpios y rápidos.",
-        "copy": "Shot list (mismo sujeto + mismo escenario)\nDuración: [4/6/8s]\n\nShot 1 (0–2s):\n[Encuadre + acción + movimiento de cámara]\n\nShot 2 (2–6/8s):\n[Encuadre + acción + movimiento de cámara]\n\nLook + mood:\n[Iluminación + paleta]\n\nSonido (opcional):\n[Ambiente + 1 cue]"
-      }
-    ],
-    "promptingGuideLabel": "Guía oficial Veo / Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: patrón de prompt para Veo 3.1 Lite",
-    "demoPromptLabel": "Reencuentro de época 8 s (16:9, audio on)",
-    "demoPrompt": [
-      "Clip Veo 3.1 Lite de 8 s en 16:9, audio incluido.",
-      "Reencuentro romántico cinematográfico en un gran andén de tren, con energía de drama de época, elegante y atemporal.",
-      "Una pareja joven con ropa de principios de 1900 corre para encontrarse: él lleva abrigo oscuro y sombrero; ella, vestido beige largo y una pequeña maleta vintage.",
-      "Plano abierto con grúa descendiendo lentamente hacia ellos, ligera sensación de teleobjetivo y movimiento cinematográfico suave.",
-      "Luz suave de mañana filtrada por vapor y cristal, tonos sepia, marrones, latón y crema. Una sola acción clara, sin texto ni señalética cerca de cámara."
-    ],
-    "demoNotes": [
-      "Una sola acción emocional, no una secuencia cargada.",
-      "Bloquea los detalles de época y el movimiento de cámara desde el inicio.",
-      "Mantén señalética y extras lejos del primer plano."
-    ],
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Deriva / ignora detalles → mueve sujeto + acción + encuadre a la primera línea; elimina beats extra; mantén restricciones positivas (“fondo limpio”, “sujeto centrado”).",

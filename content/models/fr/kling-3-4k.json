@@ -168,63 +168,6 @@
     "finalPara1": "Kling 3 4K est le plus pertinent quand la direction créative est déjà prouvée. Traitez-le comme la route de master 4K natif pour les shots approuvés.",
     "finalPara2": "Pour la plupart des équipes, le workflow efficace reste Standard pour explorer, Pro pour valider, puis 4K uniquement pour la livraison finale.",
     "finalButton": "Rendre un shot final Kling 3 4K",
-    "promptingTitle": "Prompt Lab — Kling 3 4K",
-    "promptingGuideLabel": "Guide officiel Kling 3 4K",
-    "promptingIntro": "Kling 3 4K fonctionne surtout comme passe de livraison finale. Partez d un prompt ou d une start frame approuvee, verrouillez cadrage et duree, decidez si l audio fait partie du master, puis rendez uniquement le plan selectionne en 4K native.",
-    "promptingTip": "Astuce: validez timing, mouvement et cadrage dans Kling 3 Standard ou Pro avant de depenser sur le master 4K.",
-    "promptingGlobalPrinciples": [
-      "Utilisez un brief de plan approuve plutot que plusieurs directions creatives en 4K.",
-      "Verrouillez sujet, action, camera, ratio et duree avant le rendu final.",
-      "Utilisez une image source propre quand geometrie produit, identite ou cadrage doivent rester stables.",
-      "Decidez audio on/off avant export ; traitez l audio comme une specification de livraison.",
-      "Controlez le cout en validant plus bas, puis en passant seulement les plans approuves dans Kling 3 4K."
-    ],
-    "promptingEngineWhy": [
-      "Kling 3 4K est expose en texte-vers-video et image-vers-video sur MaxVideoAI, pas comme route avec entree video.",
-      "L image-vers-video accepte une image source, avec image de fin optionnelle quand la route active l expose.",
-      "La route sort en 4K native, donc elle sert mieux les masters finaux que l exploration large de prompts.",
-      "Le lip sync est pris en charge, mais le prompt doit garder un dialogue court et un cadrage visage stable.",
-      "Utilisez le devis final dans Generate avant livraison client ou rendu en volume."
-    ],
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Master final",
-        "title": "Prompt de livraison 4K finale",
-        "description": "A utiliser quand la recette du plan est deja approuvee.",
-        "copy": "Template (copy / paste)\nObjectif: [master produit, clip campagne, revue grand ecran]\nSujet: [produit / personnage / scene approuve]\nAction: [une action claire]\nCamera: [cadrage verrouille + un mouvement]\nStyle: [lumiere, palette, texture validees]\nLivraison: 4K native, [duree], [ratio], audio [on/off]\n\nExample:\nMaster produit final en 4K native pour une montre premium sur socle graphite. Un lent dolly push revele le reflet de l ecran et le bord metal poli. Cadrage 16:9 verrouille, highlights studio nets, fond noir, aucun texte ajoute, aucun changement de logo. Audio off pour finition montage."
-      },
-      {
-        "id": "structured",
-        "label": "Reference",
-        "title": "Prompt master image-vers-video",
-        "description": "A utiliser quand une image source controle identite produit ou composition.",
-        "copy": "Template (copy / paste)\nRole image source: [identite / geometrie produit / cadrage final]\nConserver: [forme, logo, couleur, pose, composition]\nAnimer: [un seul beat de mouvement]\nCamera: [petit push / orbit / plan verrouille]\nImage finale: [frame de fin optionnelle si necessaire]\nLivraison: 4K native, [duree], audio [on/off]\n\nExample:\nUtiliser le still produit approuve comme image source. Preserver forme de la bouteille, placement label et couleur verre ambre. Ajouter un orbit macro subtil en 4K avec reflets controles, garder la bouteille centree, finir sur la meme composition frontale propre, aucun texte ajoute. Audio on avec ambiance studio douce seulement."
-      },
-      {
-        "id": "pro",
-        "label": "Audio",
-        "title": "Prompt de decision audio",
-        "description": "A utiliser quand le fichier 4K final doit inclure un contexte sonore.",
-        "copy": "Template (copy / paste)\nRole audio: [contexte review / ambiance finale / voix courte / pas d audio]\nAction visible liee au son: [ce qui cree le cue]\nEviter: [dialogue long, musiques concurrentes, action hors-champ bruyante]\nNote export: [audio on/off]\n\nExample:\nMaster campagne mode en 4K native, le modele tourne une seule fois sous lumiere studio douce. Audio on: mouvement textile discret, room tone subtil, un impact cinematographique grave au moment du tour. Pas de dialogue, pas de lit musical, pas de sons hors-champ."
-      },
-      {
-        "id": "storyboard",
-        "label": "Cout",
-        "title": "Checklist avant passage 4K",
-        "description": "A utiliser avant de passer de Standard ou Pro vers 4K.",
-        "copy": "Checklist\n1. Prompt approuve sur une route Kling moins couteuse.\n2. Image source ou image finale validee.\n3. Ratio et duree alignes avec la livraison.\n4. Audio on/off decide.\n5. Seul le plan approuve passe dans Kling 3 4K.\n\nExample:\nUn plan Kling 3 Pro 1080p approuve devient le master 4K : meme sujet, meme camera, meme timing, meme image source, sortie 4K native pour livraison finale."
-      }
-    ],
-    "demoTitle": "Prompt de demonstration — Kling 3 4K",
-    "demoPromptLabel": "Master 4K final",
-    "demoPrompt": [
-      "Rendu Kling 3 en 4K native, 16:9, 6 s, audio off.",
-      "Une montre premium repose sur un socle graphite dans un studio minimal.",
-      "Un lent dolly push revele le bord poli, le reflet du verre et les details de l ecran.",
-      "Cadrage produit verrouille, highlights nets, fond noir propre, aucun texte ajoute ni changement de logo.",
-      "A utiliser seulement apres validation de composition et timing en Standard ou Pro."
-    ],
     "demoSummary": {
       "subject": "Master produit montre premium",
       "action": "Reveal lent du bord, reflet et detail ecran",

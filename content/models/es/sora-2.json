@@ -246,76 +246,7 @@
     "finalPara1": "Sora 2 en MaxVideoAI te da una forma directa y pay‑as‑you‑go de usar uno de los mejores modelos de video corto — sin infraestructura ni complicaciones.",
     "finalPara2": "Úsalo para explorar ideas, construir mini‑secuencias y probar direcciones creativas rápido. Para más resolución o control, pasa a Sora 2 Pro.",
     "finalButton": "Generar con Sora 2 →",
-    "promptingGlobalPrinciples": [
-      "1 plano = 1 movimiento de cámara + 1 acción del sujeto",
-      "Usa anclajes visuales (sustantivos concretos > adjetivos vagos)",
-      "Mantén personajes consistentes entre planos",
-      "Empieza desde una imagen para máximo control",
-      "Itera: cambia una sola cosa a la vez"
-    ],
-    "promptingEngineWhy": [
-      "Demasiados beats causan drift — mantén 2–3 acciones claras por clip.",
-      "Imagen→Video bloquea la composición del primer frame; el prompt controla movimiento y timing.",
-      "Las reglas de referencia son estrictas — stills limpios, sin logos ni texto legible.",
-      "Los cues de audio ayudan al ritmo; describe 1–2 sonidos clave."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = pruebas de hook. Mantén una acción, un movimiento de cámara y una pista sonora.",
-      "structured": "Structured = consistencia. Separa acción, cámara, luz, audio y diálogo corto.",
-      "pro": "Pro = entrega controlada. Añade anclajes de continuidad y un final claro."
-    },
-    "promptingTitle": "Cómo escribir un gran prompt para Sora 2",
-    "promptingIntro": "Sora 2 funciona mejor cuando lo describes como un operador: un plano claro, timing simple y acciones visibles.",
-    "promptingTip": "Tip: duración + formato se definen en la UI — tu prompt controla sujeto, acción, cámara, luz, estilo y sonido.",
-    "promptingGuideLabel": "Guía oficial de prompting de Sora 2",
-    "promptingGuideUrl": "https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/",
-    "tipsIntro": "Sora es más predecible cuando el plano se mantiene simple, legible y físico.",
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt de acción rápido",
-        "description": "Úsalo para probar hooks de 4 s.",
-        "copy": "[Sujeto] hace [una acción visible] en [lugar]. Cámara: [un movimiento]. Luz: [momento / mood]. Audio: [ambiente + un SFX]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt de video estructurado",
-        "description": "Úsalo cuando el clip necesita acción y sonido repetibles.",
-        "copy": "Sujeto:\n[Quién/qué + una acción visible]\n\nLugar:\n[Dónde + momento + 2 anclajes visuales]\n\nCámara:\n[Encuadre + ángulo + un movimiento]\n\nLuz:\n[Key light + paleta + contraste]\n\nAudio:\n[Ambiente + 1 SFX + diálogo opcional de menos de 8 palabras]\n\nRestricciones:\nSin logos. Sin texto legible. Sin personas protegidas."
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt imagen a video",
-        "description": "Úsalo cuando un still aprobado debe definir el primer frame.",
-        "copy": "Rol de la imagen inicial:\n[Qué debe mantenerse fijo: sujeto, forma del producto, vestuario o composición]\n\nMovimiento:\n[Una acción que empieza desde el still]\n\nCámara:\n[Movimiento lento / push-in / deriva handheld / plano fijo]\n\nFinal:\n[Dónde debe quedar sujeto o producto al último segundo]\n\nAudio:\n[Ambiente corto + SFX visible]\n\nEvita:\nCambiar identidad, añadir logos o introducir demasiados sujetos."
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (shot list secuenciada)",
-        "description": "Úsalo cuando necesites continuidad multi‑beat en un solo clip.",
-        "copy": "Storyboard / shot list (mismo sujeto + mismo lugar)\nDuración: [4/8/12s] • Formato: [16:9 o 9:16]\n\nBeat 1 (0-2s):\n[Encuadre + acción del sujeto + movimiento de cámara]\n\nBeat 2 (2-6s):\n[La acción continúa sin cambiar de lugar]\n\nBeat 3 (6-8/12s):\n[Revelación final + cámara se estabiliza]\n\nContinuidad:\n[Vestuario, props, luz, fondo]\n\nAudio:\n[Ambiente + 1 SFX + diálogo corto si hace falta]\n\nRestricciones:\nSin logos. Sin texto legible. Sin personas protegidas."
-      }
-    ],
-    "demoTitle": "Demo: prompt secuenciado",
-    "demoPromptLabel": "Prompt – spot lifestyle 8 s (16:9)",
-    "demoPrompt": [
-      "Spot lifestyle 8 segundos: un corredor de 30 años con un smartwatch al amanecer en un parque urbano.",
-      "Shot 1 (2s): primer plano del reloj mientras ajusta la correa, flare del sol en el cristal.",
-      "Shot 2 (4s): travelling lateral mientras corre, luz cálida detrás de los edificios.",
-      "Shot 3 (2s): primer plano de su rostro mirando la pantalla, leve sonrisa, aliento visible en el aire frío.",
-      "Luz: golden hour, tonos cinematográficos naturales.",
-      "Audio: pasos rítmicos + música suave y optimista.",
-      "Cámara: handheld dinámico, sensación 50mm.",
-      "Negativo: sin logos, sin cámara lenta, sin texto en pantalla."
-    ],
-    "demoNotes": [
-      "Muestra transiciones, continuidad de lugar/sujeto, movimiento claro y una mini‑historia completa en menos de 10s.",
-      "Reutiliza esta estructura para skincare, SaaS, fitness o cualquier micro‑historia de 3 beats."
-    ]
+    "tipsIntro": "Sora es más predecible cuando el plano se mantiene simple, legible y físico."
   },
   "decision": {
     "modelSlug": "sora-2",

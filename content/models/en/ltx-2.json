@@ -213,16 +213,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Demo prompt – premium product hero",
-    "demoPromptLabel": "6s hero product",
-    "demoPrompt": [
-      "Ultra-cinematic beauty shot of a perfume bottle on a glossy black table, soft spotlight and drifting particles in the air, slow 180° camera orbit, shallow depth of field, 4K, 50 fps, subtle atmospheric soundtrack."
-    ],
-    "demoNotes": [
-      "Single hero subject",
-      "Defined camera move and lighting",
-      "Audio included"
-    ],
     "multishotTitle": "Sequenced clips",
     "multishotIntro1": "Stitch multiple 6–10s shots for longer narratives.",
     "multishotIntro2": "Reuse seeds and style cues to stay consistent.",
@@ -269,58 +259,7 @@
     "finalPara1": "Ready to render in LTX 2? Check the live price chip before you queue.",
     "finalPara2": "Use LTX 2 Fast to iterate, then switch to Pro to finalize.",
     "finalButton": "Open LTX 2 in Generate →",
-    "promptingTitle": "How to Write a Great LTX 2 Prompt",
-    "promptingIntro": "LTX 2 responds to structured, production-style prompts with clear camera direction.",
-    "promptingTip": "Tip: duration + fps are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound cues.",
-    "promptingGlobalPrinciples": [
-      "Define subject, action, and camera in the first lines.",
-      "Use lens + lighting anchors for consistency.",
-      "Keep beats readable; one move per shot."
-    ],
     "tipsIntro": "LTX 2 is a final-take tier: use it when the concept is locked and you want the cleanest finish.",
-    "promptingEngineWhy": [
-      "Longer prompts are OK if structured.",
-      "Camera language and lighting anchors drive fidelity.",
-      "Negative prompts help avoid artifacts."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject + action] in [setting], [camera move], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"film crew brief\")",
-        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
-        "copy": "Director brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet + continuity:\n[Location + anchors + time of day.]\n\nCinematography:\n[Framing + angle + one move + lens + composition.]\n\nLighting + grade:\n[Key light + contrast + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (multi-shot / shot list)",
-        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
-        "copy": "Shot list (same subject + setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues]"
-      }
-    ],
-    "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio",
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Looks “busy” or unstable → reduce to one camera move and one main action; simplify the background.",

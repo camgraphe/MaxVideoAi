@@ -361,76 +361,7 @@
     "finalPara1": "Veo 3.1 in MaxVideoAI gives you direct, pay-as-you-go access to DeepMind’s most controllable short-form video engine.",
     "finalPara2": "Framing and audio controls make it feel like a virtual camera, not just another black-box generator.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Prompt Veo 3.1 by Workflow",
-    "promptingIntro": "Veo 3.1 is not just a text model. Choose the right path in the UI: plain-language text-to-video, image-guided animation, multi-reference control, first/last bridging, or clip extension.",
-    "promptingTip": "Tip: Veo follows natural language well. Lead with subject, action, and context, keep one camera move, and use positive constraints. Use the specific Veo route for references, first/last, and extend.",
-    "promptingGlobalPrinciples": [
-      "Write in plain language; do not overcomplicate the brief.",
-      "Keep one clear physical action and one camera move per clip.",
-      "Tell Veo what must stay fixed when you bridge or extend a shot.",
-      "Use positive constraints and concrete atmosphere cues.",
-      "Use references to stabilize brand, wardrobe, product, or setting, not to fight the camera direction."
-    ],
     "tipsIntro": "Veo 3.1 is easiest to control when you write like a shot brief: framing, one camera move, and clear lighting cues.",
-    "promptingEngineWhy": [
-      "Text-to-video and single-image animation work best when the brief reads like a live-action shot.",
-      "Reference mode is best for brand, character, and product consistency.",
-      "First/last mode works when you define the opening frame, the landing frame, and one transition logic between them.",
-      "Extend works best when you describe only the new beat while preserving camera rhythm, location, and subject identity."
-    ],
-    "promptingTabNotes": {
-      "quick": "Text = plain-language shot brief.",
-      "structured": "Refs = stabilize brand, subject, or setting.",
-      "pro": "First/Last = define the bridge between opening and landing frames.",
-      "storyboard": "Extend = add the next beat without breaking continuity."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Text",
-        "title": "Text-to-video prompt",
-        "description": "Use when the shot starts from language and Veo should infer the scene naturally.",
-        "copy": "Subject + action + context:\n[Who/what does what, and where]\n\nCamera:\n[Shot size + one move]\n\nLook:\n[Lighting + palette + atmosphere]\n\nSound:\n[Optional ambience / dialogue / SFX]\n\nConstraint style:\nSay what you want (\"clean background\", \"steady handheld\") rather than what you do not want."
-      },
-      {
-        "id": "structured",
-        "label": "Refs",
-        "title": "Reference prompt",
-        "description": "Use when the key problem is consistency, not invention.",
-        "copy": "Prompt intent:\n[What the shot should accomplish]\n\nReference stills:\n[Which images define subject / product / setting / palette]\n\nWhat stays fixed:\n[Wardrobe / packaging / background / mood]\n\nWhat can change:\n[Camera / action / framing]\n\nRule:\nUse references to lock identity and style, then let the prompt steer the motion and camera."
-      },
-      {
-        "id": "pro",
-        "label": "First/Last",
-        "title": "First/last frame prompt",
-        "description": "Use when Veo should bridge from an opening frame to a landing frame.",
-        "copy": "First frame:\n[What we open on]\n\nLast frame:\n[What we must land on]\n\nTransition logic:\n[How the camera and subject move between the two]\n\nContinuity anchors:\n[What must remain stable across the bridge]\n\nDo not ask for unrelated scene changes in the last frame. Use it to guide the destination."
-      },
-      {
-        "id": "storyboard",
-        "label": "Extend",
-        "title": "Extend prompt",
-        "description": "Use when a source clip already exists and you only need the next beat.",
-        "copy": "Current clip:\n[What already happened]\n\nNew beat:\n[What should happen next]\n\nWhat must stay continuous:\n[Subject / setting / camera rhythm / lighting]\n\nExtension rule:\nDescribe only the next action, reveal, or continuation. Do not rewrite the whole scene."
-      }
-    ],
-    "promptingGuideLabel": "Official Veo prompt guide",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: wireless earbuds product micro-story",
-    "demoPromptLabel": "8s reference-guided product ad (16:9, 1080p, native audio)",
-    "demoPrompt": [
-      "Shot 1 (0-3s): macro close-up of one wireless earbud rotating on a wooden desk, shallow depth of field, warm desk lamp glow.",
-      "Shot 2 (3-6s): medium shot of a young professional putting the earbuds on before stepping into a lively city street, soft bokeh in the background.",
-      "Shot 3 (6-8s): close-up of the charging case clicking shut beside a laptop, subtle reflections on the shell.",
-      "Camera: smooth dolly moves between beats, handheld feel but stable.",
-      "Lighting: warm interior shifting to cool evening street light, light film grain.",
-      "Audio: low city ambience, soft electronic music bed, short voiceover: \"Block the noise, keep the focus.\" No subtitles.",
-      "Negative: no visible brands, no on-screen text, no ultra-wide distortion."
-    ],
-    "demoNotes": [
-      "The summary, prompt and demo render all describe the same wireless-earbud product ad.",
-      "The 3-beat structure fits an 8s Veo 3.1 render with native audio enabled."
-    ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Prompt drift / ignores details → cut extra actions, move camera + framing to the first lines, and keep constraints positive (“clean background”, “centered subject”).",

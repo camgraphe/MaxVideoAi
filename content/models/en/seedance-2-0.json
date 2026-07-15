@@ -130,7 +130,6 @@
       "Add dialogue, ambience, and SFX cues"
     ]
   },
-  "promptingTip": "Tip: start with Subject -> Action -> Camera -> Style, then choose the right Seedance path: prompt-only text-to-video, start/end-frame image-to-video, or multimodal reference-to-video.",
   "tips": {
     "title": "Production notes",
     "items": [
@@ -143,7 +142,6 @@
       "Generate shows the active route and the final quote before you submit."
     ]
   },
-  "demoTitle": "Prompt demo",
   "prompts": [
     {
       "title": "Action chase (multi-shot)",
@@ -236,59 +234,6 @@
         ]
       }
     ],
-    "promptingTitle": "Prompt Lab — Seedance 2.0",
-    "promptingGuideLabel": "Official Seedance 2.0 page",
-    "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Seedance 2.0 works best when the brief is ordered and the workflow is explicit. Start with Subject -> Action -> Camera -> Style, then decide whether the shot should stay prompt-led, use a start/end image pair, or lean on multimodal references.",
-    "promptingGlobalPrinciples": [
-      "Write the core brief in Subject -> Action -> Camera -> Style order.",
-      "Keep one readable action per shot and add timestamps when you want internal cuts.",
-      "Give every reference one job: images for identity/style, videos for pacing/camera, audio for rhythm/ambience.",
-      "Use the optional end image to define the landing frame, not a second unrelated scene.",
-      "Keep dialogue short and pin SFX to visible actions."
-    ],
-    "promptingEngineWhy": [
-      "Text-to-video is strong for fresh ideation, cinematic camera language, and multi-shot beat planning.",
-      "Image-to-video is strongest when the start frame stays fixed and the optional end frame defines the landing pose or composition.",
-      "Reference-to-video is where Seedance gains its biggest continuity advantage across characters, props, pacing, and audio mood.",
-      "Native audio stays cleaner when music, ambience, dialogue, and SFX are short and tied to visible beats."
-    ],
-    "promptingTabNotes": {
-      "quick": "Text = prompt-only generation from a clean brief.",
-      "structured": "Start/End = guide the opening frame and the landing frame.",
-      "pro": "References = assign each image, video, and audio file a clear job.",
-      "storyboard": "Timeline = use timestamps when you want internal cuts or multi-shot structure."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Text",
-        "title": "Text-to-video prompt",
-        "description": "Use this when the shot starts from language, not from uploaded assets.",
-        "copy": "Subject:\n[Who/what appears + 2-3 defining traits]\n\nAction:\n[One visible action or one timed beat]\n\nCamera:\n[Shot size + angle + one move + optional transition verb]\n\nStyle:\n[Lighting + palette + texture / lens feel]\n\nAudio:\n[Ambience + 1-2 SFX cues + optional short dialogue]\n\nExample:\nA courier in a soaked yellow jacket sprints through a narrow alley at night. He jumps a puddle and looks back once. Camera: wide tracking shot into a short handheld close-up. Style: wet asphalt reflections, cold blue street light, subtle film grain. Audio: footsteps, distant siren, one short breathy line."
-      },
-      {
-        "id": "structured",
-        "label": "Start/End",
-        "title": "Image-to-video with optional end frame",
-        "description": "Use this when the first frame is fixed and you want to guide the landing frame.",
-        "copy": "Start image:\n[What must stay fixed from frame 1: subject, wardrobe, props, location]\n\nEnd image (optional):\n[What the last frame should land on: pose, composition, camera distance]\n\nMotion path:\n[How the subject moves between the two frames]\n\nCamera:\n[One move only: push-in / arc / handheld / static]\n\nStyle + lighting:\n[What must stay consistent]\n\nAudio:\n[Ambience / SFX / short dialogue if relevant]\n\nRule:\nDo not ask the end frame to become a different scene. Use it to control the landing frame, not to restart the story."
-      },
-      {
-        "id": "pro",
-        "label": "References",
-        "title": "Reference-to-video prompt",
-        "description": "Use this when identity, pacing, or ambience must stay locked.",
-        "copy": "Prompt intent:\n[What the scene should feel like and what must happen]\n\nImage refs:\n@Image1 = [character / hero product]\n@Image2 = [wardrobe / prop / palette]\n...\n\nVideo refs:\n@Video1 = [camera rhythm / action pacing]\n@Video2 = [transition logic]\n\nAudio refs:\n@Audio1 = [ambience bed]\n@Audio2 = [music rhythm / dialogue texture]\n\nContinuity anchors:\n[What must not drift across the run]\n\nOutput goal:\n[Single shot or 2-3 shot sequence, plus landing frame / payoff]\n\nRule:\nEach reference should have one clear job. Do not upload multiple files that fight for the same role."
-      },
-      {
-        "id": "storyboard",
-        "label": "Timeline",
-        "title": "Timeline / multi-shot prompt",
-        "description": "Use this when one generation contains multiple internal beats or cuts.",
-        "copy": "Duration: [auto / 4-15s]\n\nShot 1 (0-5s):\n[Framing + action + camera move]\n\nTransition:\n[match cut / whip pan / crash zoom / settle]\n\nShot 2 (5-10s):\n[Framing + action + camera move]\n\nShot 3 (10-15s):\n[Reveal / reaction / product payoff / final pose]\n\nContinuity:\n[Wardrobe + props + location + lighting]\n\nAudio plan:\n[Ambience bed + 1-3 timed SFX + optional short dialogue]\n\nUse auto duration only when the model should infer the pacing for you."
-      }
-    ],
     "tipsTitle": "Tips and boundaries",
     "strengths": [
       "Strong cinematic camera direction when beats are explicit.",
@@ -313,8 +258,6 @@
     "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",
     "galleryAllCta": "View all Seedance examples ->",
     "recreateLabel": "Recreate this shot ->",
-    "demoTitle": "Demo prompt — Seedance 2.0",
-    "demoPromptLabel": "Prompt",
     "relatedItems": [
       {
         "brand": "bytedance",

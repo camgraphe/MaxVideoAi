@@ -330,71 +330,7 @@
     "finalPara1": "Veo 3.1 Fast en MaxVideoAI es tu banco de pruebas ultra‑rápido para prompts Veo.",
     "finalPara2": "Mismo lenguaje cinematográfico, menor riesgo y calidad lista para social.",
     "finalButton": "Abrir Generate",
-    "promptingTitle": "Cómo escribir un gran prompt para Veo 3.1 Fast",
-    "promptingIntro": "Veo Fast prefiere prompts cortos, concretos y una acción clara.",
-    "promptingTip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación, estilo y cues de sonido.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción.",
-      "Indica encuadre y movimiento de cámara.",
-      "Usa 2–3 anclajes visuales, no listas largas."
-    ],
     "tipsIntro": "Veo 3.1 Fast es más fiable cuando escribes un brief corto: un sujeto, una acción, encuadre claro y un solo movimiento de cámara.",
-    "promptingEngineWhy": [
-      "Fast favorece beats simples y prompts cortos.",
-      "El lenguaje de cámara mejora la consistencia.",
-      "Usa anclajes de estilo para mantener el look estable."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variantes T2V rápidas con audio activado/desactivado.",
-      "structured": "Estructurado = sujeto, acción, cámara y sonido más claros.",
-      "pro": "Reference-to-video = 1 a 4 stills para continuidad de identidad, producto o estilo.",
-      "storyboard": "First/Last = cuando los frames inicial y final ya están aprobados."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt quick (iteración rápida)",
-        "description": "Usa 1–2 frases para obtener variantes Veo rápido.",
-        "copy": "Borrador Veo 3.1 Fast de 8 s en 16:9: fundador de producto caminando por una calle neón lluviosa, tracking handheld lento, reflejos azules en vitrinas, audio activado con ambiente urbano y una línea calmada muy corta."
-      },
-      {
-        "id": "structured",
-        "label": "Estructurado",
-        "title": "Prompt estructurado (borrador fiable)",
-        "description": "Separa sujeto, acción, cámara y audio para mantener la toma legible.",
-        "copy": "Sujeto:\nFundador de producto con chaqueta de lluvia navy, sosteniendo un bolso de cámara compacto.\n\nAcción:\nDa un paso adelante, mira hacia la vitrina y se detiene.\n\nCámara:\nPlano medio, tracking handheld lento, 16:9, 8 segundos.\n\nLook:\nCalle neón lluviosa, reflejos azules, grade comercial limpio.\n\nAudio:\nAmbiente urbano, pasos suaves, una línea VO calmada muy corta."
-      },
-      {
-        "id": "pro",
-        "label": "Reference-to-video",
-        "title": "Prompt reference-to-video (1-4 stills)",
-        "description": "Úsalo cuando los stills adjuntos deben preservar identidad, producto, vestuario o estilo.",
-        "copy": "Reference-to-video, 8 s, 16:9, 1080p, audio activado. Usa la referencia 1 para rostro y chaqueta, la referencia 2 para color del producto, la referencia 3 para la paleta de calle lluviosa. Mantén identidad y materiales mientras el sujeto da un paso adelante. Push-in lento, ambiente urbano sutil, sin personajes extra."
-      },
-      {
-        "id": "storyboard",
-        "label": "First/Last",
-        "title": "Prompt primer/último frame",
-        "description": "Úsalo cuando la composición inicial y final ya están aprobadas.",
-        "copy": "Borrador Veo 3.1 Fast primer/último frame, 6 s, 9:16, audio desactivado. Empezar en el frame aprobado de mesa de producto, terminar en el close-up hero aprobado. Solo push-in suave, mantener layout, posición de etiqueta y fondo estables, sin props nuevos, sin cambios de texto."
-      }
-    ],
-    "promptingGuideLabel": "Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: borrador de escritorio Veo 3.1 Fast",
-    "demoPromptLabel": "Borrador con audio 8 s (16:9, 1080p)",
-    "demoPrompt": [
-      "Borrador Veo 3.1 Fast de 8 s en 16:9: una presentadora trabaja tarde en un escritorio minimalista, luces de ciudad desenfocadas detrás de una ventana grande.",
-      "Cámara: plano medio corto con deriva handheld lenta, centrado en el rostro, las manos y el portátil.",
-      "Luz: luz azul de ventana mezclada con una lámpara cálida de escritorio.",
-      "Audio: tecleo suave, ciudad de fondo y una línea corta tranquila."
-    ],
-    "demoNotes": [
-      "Un sujeto claro y un solo entorno.",
-      "Movimiento simple que loopa limpio.",
-      "El audio sostiene el mood sin añadir complejidad."
-    ],
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Deriva / ignora detalles → mueve sujeto + acción + encuadre a la primera línea; elimina beats extra; mantén restricciones positivas (“fondo limpio”, “sujeto centrado”).",

@@ -162,20 +162,6 @@
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
     ],
-    "promptingTitle": "How to write a strong Nano Banana 2 prompt",
-    "promptingIntro": "Nano Banana 2 responds best to clear composition instructions, explicit edit constraints, and grounded context only when needed.",
-    "promptingTip": "Tip: use the UI for ratio, resolution, seed, web search, and output format. Keep the prompt focused on subject, layout, style, and what should stay fixed.",
-    "promptingGlobalPrinciples": [
-      "Describe the frame before the style treatment.",
-      "For edits, say what to keep and what to change.",
-      "Only use grounding when live or current context matters."
-    ],
-    "promptingEngineWhy": [
-      "Wide ratios work better with explicit compositional zones.",
-      "Large reference sets help, but roles per reference keep the edit cleaner.",
-      "Grounded prompts should still be specific about the target aesthetic."
-    ],
-    "promptingGuideLabel": "Learn more",
     "relatedTitle": "Nano Banana family",
     "relatedSubtitle": "Use Lite for fast 1K drafts, Nano Banana 2 for grounded flexible stills, and Pro for polished 4K finals.",
     "relatedItems": [

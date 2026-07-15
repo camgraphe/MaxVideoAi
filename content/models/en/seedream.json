@@ -207,21 +207,6 @@
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
     ],
-    "promptingTitle": "How to write a strong Seedream prompt",
-    "promptingIntro": "Write the still image as if it were the first frame of a shot: subject, composition, lighting, and constraints first.",
-    "promptingTip": "Tip: if the image is going into Seedance, mention the future motion goal without asking Seedream to animate it.",
-    "promptingGlobalPrinciples": [
-      "Use one clean visual goal per image.",
-      "For image sets, name the sequence, count, and shared visual rules.",
-      "For edits, say what to preserve before what to change.",
-      "Keep the background simple when the still will become a video reference."
-    ],
-    "promptingEngineWhy": [
-      "Controlled stills give image-to-video models clearer starting material.",
-      "Product and character references are easier to animate when silhouette, lighting, and props are already stable.",
-      "Drafting the still first helps separate image quality decisions from motion decisions."
-    ],
-    "promptingGuideLabel": "Seedream prompt guide",
     "relatedItems": [
       {
         "brand": "bytedance",

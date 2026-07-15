@@ -207,21 +207,6 @@
       "Ne pas imiter une personne réelle ou publique sans consentement.",
       "Ne pas inclure de données personnelles privées ou documents sensibles."
     ],
-    "promptingTitle": "Écrire un bon prompt Seedream",
-    "promptingIntro": "Écrivez l'image fixe comme si c'était la première frame d'un plan : sujet, composition, lumière et contraintes d'abord.",
-    "promptingTip": "Astuce : si l'image part ensuite dans Seedance, mentionnez l'objectif de mouvement sans demander à Seedream d'animer.",
-    "promptingGlobalPrinciples": [
-      "Un objectif visuel clair par image.",
-      "Pour une série, préciser la séquence, le nombre et les règles visuelles communes.",
-      "Pour les edits, dire ce qui reste avant ce qui change.",
-      "Simplifier le fond quand l'image servira de référence vidéo."
-    ],
-    "promptingEngineWhy": [
-      "Les images fixes contrôlées donnent un départ plus clair aux modèles image-to-video.",
-      "Les références produit et personnage s'animent mieux quand silhouette, lumière et accessoires sont déjà stables.",
-      "Préparer l'image d'abord sépare les décisions de qualité visuelle des décisions de mouvement."
-    ],
-    "promptingGuideLabel": "Guide de prompt Seedream",
     "relatedItems": [
       {
         "brand": "bytedance",

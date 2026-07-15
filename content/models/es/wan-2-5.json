@@ -302,65 +302,7 @@
     "finalPara1": "Wan 2.5 en MaxVideoAI es tu motor corto con audio para beats de 5–10 s.",
     "finalPara2": "Usa audio nativo o sube tu pista, itera barato y finaliza en HD cuando imagen y sonido deban caer juntos.",
     "finalButton": "Abrir Generate",
-    "promptingTitle": "Cómo escribir un gran prompt para Wan 2.5",
-    "promptingIntro": "Wan 2.5 funciona mejor con una sola acción clara y un prompt corto y concreto.",
-    "promptingTip": "Tip: duración + relación se configuran en la UI - tu prompt controla sujeto, movimiento, cámara, luz, estilo y sonido opcional. La expansión ayuda a prompts cortos.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción.",
-      "Especifica movimiento de cámara y luz.",
-      "Añade un prompt negativo corto para evitar artefactos."
-    ],
     "tipsIntro": "Wan 2.5 funciona mejor para beats cortos guiados por el sonido — mantén el brief visual simple y deja que el timing venga del audio.",
-    "promptingEngineWhy": [
-      "Los prompts cortos se expanden automáticamente.",
-      "Una URL de audio puede fijar el timing; mantén las cues mínimas.",
-      "Evita múltiples beats en un clip corto."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
-      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto] [acción] en [escena], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
-        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + entorno:\n[Rasgos clave + lugar + anclas.]\n\nCámara:\n[Encuadre + ángulo + un movimiento + sensación de lente.]\n\nLuz + color:\n[Key light + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
-      }
-    ],
-    "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com",
-    "demoTitle": "Demo: un prompt para Wan 2.5",
-    "demoPromptLabel": "Historia de producto 10 s 9:16 sincronizada con pista",
-    "demoPrompt": [
-      "Toma vertical 10 s de un smartwatch en la muñeca de una runner, al ritmo de electrónica energética.",
-      "Inicio: close‑up en el primer beat con gotas sobre el cristal.",
-      "Cambio de beat: pull back mostrando el sprint en slow‑mo en un puente neón.",
-      "Beat final: swing a perfil con aliento visible y pantalla brillante.",
-      "Luz: blue hour, highlights marcados en metal.",
-      "Audio: pista subida como música + pasos, lluvia, respiración; sin VO."
-    ],
-    "demoNotes": [
-      "El audio ancla las transiciones.",
-      "Un sujeto/entorno, trayectoria de cámara clara.",
-      "Cues explícitos para los hits."
-    ],
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "El audio no cuadra → recuerda que el audio subido se recorta a los primeros 5/10 s; promptea sobre el segmento que realmente usas.",

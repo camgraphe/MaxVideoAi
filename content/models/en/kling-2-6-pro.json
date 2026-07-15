@@ -211,64 +211,7 @@
       "Speech output is English/Chinese (other languages may be auto-translated to English when audio is enabled).",
       "Image→Video uses a single reference image; tiny on-screen text remains unreliable (overlay in post)."
     ],
-    "promptingTitle": "How to Write a Great Kling 2.6 Pro Prompt",
-    "promptingIntro": "Kling 2.6 Pro prefers clear subject, action, and camera direction; add sound cues if audio is on.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and optional sound. Use Negative prompt to block artifacts.",
-    "promptingGlobalPrinciples": [
-      "One subject, one action, one camera move.",
-      "Call out lighting and lens feel.",
-      "Add short sound cues or dialogue if audio is on."
-    ],
     "tipsIntro": "Kling 2.6 Pro is easiest to steer when you write a tight shot brief and treat audio as part of the scene (not an afterthought).",
-    "promptingEngineWhy": [
-      "Audio mode supports simple ambience and short lines.",
-      "Camera language improves consistency.",
-      "Negative prompts help remove text/logos/extra characters."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = continuity. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for mini-stories in one clip."
-    },
-    "demoTitle": "Demo prompt: Kling 2.6 Pro",
-    "demoPromptLabel": "Prompt",
-    "demoPrompt": [
-      "Two friends walk through a rain-soaked neon alley at night, camera tracks at shoulder height, reflective puddles, soft thunder, quiet dialogue: “Did you get the shot?” “Yeah, Kling 2.6 nailed it.”"
-    ],
-    "demoNotes": [],
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "Prompt: [Subject + action] in [setting], [camera move], [lighting/style], [sound cue].\nNegative: [text, logos, extra limbs, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Shot + angle + one move + lens feel.]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 SFX cues or a short line.]\n\nNegative:\n[What to avoid.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"film crew brief\")",
-        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
-        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Traits + materials.]\n\nSet:\n[Location + 3 anchors.]\n\nCinematography:\n[Framing + angle + one move + lens.]\n\nLighting + grade:\n[Key light + contrast + palette.]\n\nSound (optional):\n[Ambience + SFX + short dialogue.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (multi-shot / shot list)",
-        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka multi-shot / shot list prompt) gives clear timing, camera direction, and continuity. Also called shot-list or sequenced prompts.",
-        "copy": "Storyboard / shot list prompt\nDuration: [5/10s] • Aspect: [16:9 or 9:16]\n\nScene + continuity:\n[Same subject + same location + same wardrobe/props + same lighting throughout.]\n\nShot 1 (0–2s):\n[Framing + subject action + camera move]\n\nShot 2 (2–6s):\n[Framing + subject action + camera move]\n\nShot 3 (6–10s):\n[Framing + final action/reveal + camera move or settle]\n\nLighting + mood:\n[Golden hour / soft daylight / neon night… + 2–3 palette anchors]\n\nSound (if supported):\n[Ambience + 1–2 SFX cues + optional music vibe]\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays. No jump cuts. No slow-motion."
-      }
-    ],
-    "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en",
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Dialogue/lip sync drifts → shorten the line, slow delivery, avoid long monologues; reduce head turns and fast facial performance.",

@@ -262,22 +262,6 @@
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
     ],
-    "promptingTitle": "How to write a strong Ray 3.2 prompt",
-    "promptingIntro": "Write a single edit or reframe brief with source preservation, the requested change, camera/framing intent, duration and resolution.",
-    "promptingTip": "Tip: for Modify, write the preservation rule first so the prompt does not fight the source video.",
-    "promptingGlobalPrinciples": [
-      "Use one edit goal per source clip.",
-      "Keep the preservation rule and the requested change separate.",
-      "Use 10s only when the action needs the extra time.",
-      "Use generation only when no source clip exists yet."
-    ],
-    "promptingEngineWhy": [
-      "Source videos make Modify and Reframe practical when timing is already approved.",
-      "Guide frames and keyframes help target specific moments instead of repainting the whole clip blindly.",
-      "Short Luma generation remains useful for creating candidate clips before a later edit/reframe pass.",
-      "Resolution, duration and mode choices directly affect displayed pricing."
-    ],
-    "promptingGuideLabel": "Ray 3.2 prompt guide",
     "finalPara1": "Ray 3.2 is the current Luma video route in MaxVideoAI when Modify, guide/keyframe control and Reframe matter more than native audio generation.",
     "finalButton": "Generate with Luma Ray 3.2"
   },

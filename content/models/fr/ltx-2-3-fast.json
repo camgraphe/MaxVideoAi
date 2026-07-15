@@ -255,16 +255,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt de démo - brouillon cinématique fast",
-    "demoPromptLabel": "Check brouillon 16:9",
-    "demoPrompt": [
-      "Un boxeur puissant avance seul dans un tunnel sombre vers le ring, silhouette athlétique sous un peignoir à capuche, épaules relâchées mais dangereuses. Tracking bas frontal, push-in lent, rim light dur, brume légère, rumeur de foule étouffée et un impact sonore net, 10 secondes, 16:9."
-    ],
-    "demoNotes": [
-      "Conçu pour un check motion rapide",
-      "Un sujet, un mouvement, une ambiance",
-      "Facile à relancer avant une passe Pro"
-    ],
     "multishotTitle": "Beats fast plus longs",
     "multishotIntro1": "Fast peut aller plus loin que la génération standard de LTX 2.3 Pro, ce qui est utile pour des walkthroughs simples et des tests de pacing.",
     "multishotIntro2": "Gardez simplement en tête que les runs >10 secondes échangent une partie de la flexibilité contre la stabilité du routing.",
@@ -296,55 +286,6 @@
     "finalPara1": "Prêt pour un workflow LTX plus léger ? Ouvrez LTX 2.3 Fast dans Generate.",
     "finalPara2": "Utilisez Fast pour la vitesse, puis envoyez le prompt gagnant vers LTX 2.3 Pro si le projet demande des outils d’édition plus poussés.",
     "finalButton": "Ouvrir LTX 2.3 Fast dans Generate ->",
-    "promptingTitle": "Comment écrire un excellent prompt LTX 2.3 Fast",
-    "promptingIntro": "LTX 2.3 Fast est un modèle orienté génération. Gardez donc le prompt court, visuel et direct.",
-    "promptingTip": "Astuce : l’UI gère déjà durée, ratio, résolution, fps et la contrainte de routing longue durée. Concentrez le prompt sur un sujet, un mouvement et une humeur.",
-    "promptingGlobalPrinciples": [
-      "Un sujet, une action et un mouvement valent mieux qu’un prompt fourre-tout.",
-      "Utilisez les images de départ pour l’identité et les prompts pour le mouvement.",
-      "Réservez les runs de 12 à 20 secondes aux cas où l’espace de pacing supplémentaire compte vraiment."
-    ],
-    "promptingEngineWhy": [
-      "Fast répond bien aux prompts concis.",
-      "Image vers vidéo marche mieux quand le still contient déjà la composition voulue.",
-      "Les transitions début / fin sont plus fiables quand les deux frames restent visuellement proches."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = chemin le plus rapide vers des tests utilisables.",
-      "structured": "Structured = meilleur choix quand plusieurs personnes doivent réutiliser la même logique de prompt.",
-      "pro": "Image flow = à utiliser quand la still doit rester reconnaissable.",
-      "storyboard": "Storyboard = utile pour des séquences sociales simples à plusieurs beats."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Rapide",
-        "title": "Prompt rapide (draft le plus rapide)",
-        "description": "À utiliser pour les variantes rapides et les tests d’accroches.",
-        "copy": "[Sujet + une action], [mouvement caméra], [lumière/style], [indice sonore optionnel], [vibe 16:9 ou 9:16]."
-      },
-      {
-        "id": "structured",
-        "label": "Structuré",
-        "title": "Prompt structuré (répétable)",
-        "description": "Utilisez des sections nommées quand plusieurs personnes vont réutiliser la même logique.",
-        "copy": "Sujet :\n[Qui/quoi]\n\nAction :\n[Un beat de mouvement propre]\n\nCaméra :\n[Plan + un mouvement]\n\nLook :\n[Lumière + palette]\n\nAudio :\n[Ambiance / musique si nécessaire]"
-      },
-      {
-        "id": "pro",
-        "label": "Flux image",
-        "title": "Prompt Image vers vidéo",
-        "description": "Le meilleur choix quand la still de départ doit rester reconnaissable.",
-        "copy": "Frame de départ :\n[Ce que l’image uploadée montre déjà]\n\nMouvement :\n[Ce qui doit bouger]\n\nCaméra :\n[Push / pan / drift / orbit]\n\nRésolution :\n[Cible optionnelle d’image de fin]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (séquence generate-only)",
-        "description": "À utiliser pour des clips courts à plusieurs beats sans changer de workflow.",
-        "copy": "Plan 1 : [setup]\nPlan 2 : [action principale]\nPlan 3 : [résolution]\n\nLook :\n[Lumière + étalonnage]\n\nAudio :\n[Ambiance + un indice]"
-      }
-    ],
     "troubleshootingTitle": "Problèmes fréquents -> correctifs rapides",
     "troubleshootingItems": [
       "Les runs longs paraissent moins flexibles -> gardez les clips >10 secondes uniquement quand la longueur supplémentaire justifie la contrainte 1080p / 25 fps.",

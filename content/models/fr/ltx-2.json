@@ -213,16 +213,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt démo — hero produit premium",
-    "demoPromptLabel": "Hero produit 6 s",
-    "demoPrompt": [
-      "Plan beauté ultra‑cinématique d’un flacon de parfum sur une table noire brillante, projecteur doux et particules flottantes, orbite caméra 180° lente, faible profondeur de champ, 4K, 50 fps, soundtrack atmosphérique subtil."
-    ],
-    "demoNotes": [
-      "Sujet hero unique",
-      "Mouvement caméra et lumière définis",
-      "Audio inclus"
-    ],
     "multishotTitle": "Clips séquencés",
     "multishotIntro1": "Assemblez plusieurs plans 6–10 s pour des récits plus longs.",
     "multishotIntro2": "Réutilisez seeds et cues de style pour rester cohérent.",
@@ -269,58 +259,7 @@
     "finalPara1": "Prêt à rendre en LTX 2 ? Vérifiez le chip prix avant de lancer.",
     "finalPara2": "Itérez en LTX 2 Fast, puis basculez en Pro pour finaliser.",
     "finalButton": "Ouvrir LTX 2 dans Generate →",
-    "promptingTitle": "Comment écrire un excellent prompt LTX 2",
-    "promptingIntro": "LTX‑2 Pro répond aux prompts structurés, type production, avec une direction caméra claire.",
-    "promptingTip": "Astuce : durée + fps se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores optionnels.",
-    "promptingGlobalPrinciples": [
-      "Définissez sujet, action et caméra dès les premières lignes.",
-      "Utilisez des ancrages de lentille + lumière pour la cohérence.",
-      "Gardez les beats lisibles; un move par plan."
-    ],
     "tipsIntro": "LTX‑2 Pro est un tier final‑take : utilisez‑le quand le concept est verrouillé et que vous voulez la finition la plus propre.",
-    "promptingEngineWhy": [
-      "Les prompts plus longs fonctionnent si structurés.",
-      "Le langage caméra et les ancrages lumière pilotent la fidélité.",
-      "Les prompts négatifs aident à éviter les artefacts."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des beats. À utiliser pour des mini‑stories en un clip."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet + action] dans [décor], [mouvement caméra], [lumière/style], [cue sonore optionnel].\nNégatif : [texte, logos, personnes en trop, flou]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + un mouvement + sensation de lentille.]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
-        "copy": "Brief réalisateur :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matières.]\n\nSet + continuité :\n[Lieu + ancrages + moment de la journée.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + lentille + composition.]\n\nLumière + grade :\n[Key light + contraste + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Texte, logos, personnages en trop, artefacts.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / liste de plans)",
-        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
-        "copy": "Liste de plans (même sujet + même décor)\nPlan 1 : [action + caméra]\nPlan 2 : [action + caméra]\nPlan 3 : [action finale/reveal]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]"
-      }
-    ],
-    "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio",
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Résultat “chargé” ou instable → réduisez à un seul mouvement caméra et une action principale; simplifiez l’arrière‑plan.",

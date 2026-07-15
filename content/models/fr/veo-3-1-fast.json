@@ -330,71 +330,7 @@
     "finalPara1": "Veo 3.1 Fast dans MaxVideoAI est votre banc d’essai ultra‑rapide pour les prompts Veo.",
     "finalPara2": "Même langage cinématique, risque plus bas et qualité suffisante pour le social.",
     "finalButton": "Ouvrir Generate",
-    "promptingTitle": "Comment écrire un excellent prompt Veo 3.1 Fast",
-    "promptingIntro": "Veo Fast préfère des prompts courts, concrets et une action claire.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores.",
-    "promptingGlobalPrinciples": [
-      "Un sujet, une action.",
-      "Indiquez cadrage et mouvement caméra.",
-      "Utilisez 2–3 ancrages visuels, pas de longues listes."
-    ],
     "tipsIntro": "Veo 3.1 Fast est plus fiable quand vous écrivez un brief court : un sujet, une action, cadrage clair et un seul mouvement de caméra.",
-    "promptingEngineWhy": [
-      "Fast favorise les beats simples et prompts courts.",
-      "Le langage caméra améliore la cohérence.",
-      "Utilisez des ancrages de style pour stabiliser le look."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variantes T2V rapides avec audio activé/désactivé.",
-      "structured": "Structuré = sujet, action, caméra et son plus lisibles.",
-      "pro": "Reference-to-video = 1 à 4 stills pour continuité identité, produit ou style.",
-      "storyboard": "First/Last = quand les frames de départ et d’arrivée sont déjà validées."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt quick (itération rapide)",
-        "description": "Utilisez 1 à 2 phrases pour obtenir vite des variantes Veo.",
-        "copy": "Brouillon Veo 3.1 Fast de 8 s en 16:9 : fondateur produit marchant dans une rue néon pluvieuse, tracking handheld lent, reflets bleus de vitrines, audio activé avec ambiance ville et une phrase calme très courte."
-      },
-      {
-        "id": "structured",
-        "label": "Structuré",
-        "title": "Prompt structuré (brouillon fiable)",
-        "description": "Séparez sujet, action, caméra et audio pour garder une lecture claire.",
-        "copy": "Sujet :\nFondateur produit en veste de pluie navy, tenant un sac caméra compact.\n\nAction :\nIl avance d’un pas, regarde vers la vitrine, puis marque une pause.\n\nCaméra :\nPlan moyen, tracking handheld lent, 16:9, 8 secondes.\n\nLook :\nRue néon pluvieuse, reflets bleus, grade pub propre.\n\nAudio :\nAmbiance ville, pas discrets, une phrase VO calme très courte."
-      },
-      {
-        "id": "pro",
-        "label": "Reference-to-video",
-        "title": "Prompt reference-to-video (1 à 4 stills)",
-        "description": "À utiliser quand les stills attachés doivent préserver identité, produit, tenue ou style.",
-        "copy": "Reference-to-video, 8 s, 16:9, 1080p, audio activé. Utiliser la référence 1 pour le visage et la veste, la référence 2 pour la couleur produit, la référence 3 pour la palette rue pluvieuse. Garder la même identité et les mêmes matières pendant que le sujet avance d’un pas. Push-in lent, ambiance ville subtile, aucun personnage en plus."
-      },
-      {
-        "id": "storyboard",
-        "label": "First/Last",
-        "title": "Prompt première/dernière image",
-        "description": "À utiliser quand le début et la fin sont déjà validés.",
-        "copy": "Brouillon Veo 3.1 Fast première/dernière image, 6 s, 9:16, audio désactivé. Démarrer sur la frame table produit validée, finir sur le gros plan hero validé. Push-in fluide uniquement, garder layout, position label et décor stables, pas de nouvel accessoire, pas de changement de texte."
-      }
-    ],
-    "promptingGuideLabel": "Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Démo : brouillon bureau Veo 3.1 Fast",
-    "demoPromptLabel": "Brouillon audio 8 s (16:9, 1080p)",
-    "demoPrompt": [
-      "Brouillon Veo 3.1 Fast de 8 s en 16:9 : une présentatrice travaille tard dans un bureau minimaliste, lumières de ville floues derrière une grande fenêtre.",
-      "Caméra : plan rapproché moyen avec une dérive handheld lente, cadrée sur le visage, les mains et le laptop.",
-      "Lumière : lumière bleue de fenêtre mélangée à une lampe de bureau chaude.",
-      "Audio : clavier discret, ville en fond et une phrase courte et calme."
-    ],
-    "demoNotes": [
-      "Un sujet clair et un seul environnement.",
-      "Mouvement simple qui boucle proprement.",
-      "Audio qui soutient le mood sans complexité."
-    ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Drift / ignore les détails → mettez sujet + action + cadrage en première ligne; supprimez les beats en trop; contraintes positives (« fond propre », « sujet centré »).",

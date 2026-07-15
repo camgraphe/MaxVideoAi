@@ -67,16 +67,6 @@ export type KeySpecKey =
 export type KeySpecRow = { id: string; key: KeySpecKey; label: string; value: string; valueLines?: string[] };
 export type KeySpecValues = Record<KeySpecKey, string>;
 
-export type PromptingTabId = 'quick' | 'structured' | 'pro' | 'storyboard';
-
-export type PromptingTab = {
-  id: PromptingTabId;
-  label: string;
-  title: string;
-  description?: string;
-  copy: string;
-};
-
 export type SoraCopy = {
   heroEyebrow: string | null;
   heroTitle: string | null;
@@ -120,12 +110,6 @@ export type SoraCopy = {
   gallerySceneCta: string | null;
   galleryAllCta: string | null;
   recreateLabel: string | null;
-  promptingTitle?: string | null;
-  promptingIntro?: string | null;
-  promptingTip?: string | null;
-  promptingGuideLabel?: string | null;
-  promptingGuideUrl?: string | null;
-  promptingTabs: PromptingTab[];
   imageTitle: string | null;
   imageIntro: string | null;
   imageFlow: string[];
@@ -134,10 +118,6 @@ export type SoraCopy = {
   multishotIntro1: string | null;
   multishotIntro2: string | null;
   multishotTips: string[];
-  demoTitle: string | null;
-  demoPromptLabel: string | null;
-  demoPrompt: string[];
-  demoNotes: string[];
   tipsTitle: string | null;
   tipsIntro: string | null;
   strengths: string[];
@@ -162,12 +142,4 @@ export type SoraCopy = {
   finalButton: string | null;
   faqTitle: string | null;
   faqs: LocalizedFaqEntry[];
-  promptingGlobalPrinciples: string[];
-  promptingEngineWhy: string[];
-  promptingTabNotes: {
-    quick?: string;
-    structured?: string;
-    pro?: string;
-    storyboard?: string;
-  };
 };

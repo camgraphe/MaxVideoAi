@@ -141,8 +141,6 @@
     "galleryTitle": "Démos du modèle Happy Horse 1.1",
     "galleryIntro": "Analysez les clips de page modèle pour l’audio natif, la synchronisation labiale et les générations guidées par références. Les pages de comparaison restent volontairement centrées sur le texte et les spécifications pour ce lancement.",
     "galleryAllCta": "Lancer une génération Happy Horse 1.1 ->",
-    "demoTitle": "Prompt de démo - Happy Horse 1.1",
-    "demoPromptLabel": "Prompt",
     "quickPricingTitle": "Route de prix",
     "quickPricingItems": [
       "Utilisez 720p pour itérer moins cher en texte, image et références vidéo.",

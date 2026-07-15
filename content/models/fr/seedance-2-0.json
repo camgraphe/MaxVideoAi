@@ -130,7 +130,6 @@
       "Spécifier ambiance, dialogue court et SFX synchronisés"
     ]
   },
-  "promptingTip": "Astuce : partez de Sujet -> Action -> Caméra -> Style, puis choisissez le bon workflow Seedance : text-to-video pur, image-to-video avec départ/fin, ou reference-to-video multimodal.",
   "tips": {
     "title": "Notes de production",
     "items": [
@@ -142,7 +141,6 @@
       "Generate affiche le workflow actif et le devis final avant validation."
     ]
   },
-  "demoTitle": "Démo de prompt",
   "prompts": [
     {
       "title": "Poursuite d'action multi-plans",
@@ -235,59 +233,6 @@
         ]
       }
     ],
-    "promptingTitle": "Prompt Lab — Seedance 2.0",
-    "promptingGuideLabel": "Page officielle Seedance 2.0",
-    "promptingGuideUrl": "https://seed.bytedance.com/en/seedance2_0",
-    "promptingIntro": "Seedance 2.0 fonctionne mieux quand le brief est ordonné et que le workflow est explicite. Commencez par Sujet -> Action -> Caméra -> Style, puis décidez si le plan doit rester purement prompté, s'appuyer sur une image de départ/fin, ou utiliser des références multimodales.",
-    "promptingGlobalPrinciples": [
-      "Rédigez le brief dans l'ordre Sujet -> Action -> Caméra -> Style.",
-      "Gardez une action lisible par plan et ajoutez des timestamps si vous voulez des coupes internes.",
-      "Donnez un rôle unique à chaque référence : images pour identité/style, vidéos pour rythme/caméra, audio pour ambiance/rythme.",
-      "Utilisez l'image de fin optionnelle pour définir la frame d'arrivée, pas pour introduire une autre scène.",
-      "Gardez les répliques courtes et synchronisez les SFX sur des actions visibles."
-    ],
-    "promptingEngineWhy": [
-      "Le text-to-video est fort pour l'idéation, le langage caméra ciné et la planification multi-plans.",
-      "L'image-to-video est meilleure quand la frame de départ reste fixe et que l'image de fin définit la pose ou la composition d'arrivée.",
-      "Le reference-to-video est la vraie force de Seedance pour la continuité des personnages, accessoires, rythmes et ambiances audio.",
-      "L'audio natif reste plus propre quand musique, ambiance, dialogue et SFX sont courts et calés sur des beats visibles."
-    ],
-    "promptingTabNotes": {
-      "quick": "Texte = génération pure à partir d'un brief propre.",
-      "structured": "Départ/Fin = guider la première frame et la frame d'arrivée.",
-      "pro": "Références = donner un rôle clair à chaque image, vidéo et audio.",
-      "storyboard": "Timeline = utiliser des timestamps quand vous voulez des coupes internes ou une structure multi-plans."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Texte",
-        "title": "Prompt text-to-video",
-        "description": "À utiliser quand le plan démarre du langage et non d'assets uploadés.",
-        "copy": "Sujet :\n[Qui / quoi apparaît + 2-3 traits distinctifs]\n\nAction :\n[Une action visible ou un beat principal]\n\nCaméra :\n[Taille de plan + angle + un mouvement + verbe de transition éventuel]\n\nStyle :\n[Lumière + palette + texture / sensation de lentille]\n\nAudio :\n[Ambiance + 1-2 SFX + dialogue court éventuel]\n\nExemple :\nUn livreur en veste jaune trempée traverse une ruelle de nuit. Il saute une flaque puis regarde derrière lui une seule fois. Caméra : large en tracking puis bref rapproché handheld. Style : reflets mouillés, lumière bleue froide, léger grain. Audio : pas rapides, sirène lointaine, une courte respiration."
-      },
-      {
-        "id": "structured",
-        "label": "Départ/Fin",
-        "title": "Prompt image-to-video avec image de fin optionnelle",
-        "description": "À utiliser quand la première frame est fixe et que vous voulez guider la frame d'arrivée.",
-        "copy": "Image de départ :\n[Ce qui doit rester fixe dès la frame 1 : sujet, tenue, accessoire, lieu]\n\nImage de fin (optionnelle) :\n[La pose / composition / distance caméra attendue à l'arrivée]\n\nTrajet du mouvement :\n[Comment le sujet voyage entre les deux frames]\n\nCaméra :\n[Un seul mouvement]\n\nStyle + lumière :\n[Ce qui doit rester cohérent]\n\nAudio :\n[Ambiance / SFX / dialogue court si pertinent]\n\nRègle :\nN'utilisez pas l'image de fin pour demander une autre scène. Elle sert à guider l'atterrissage."
-      },
-      {
-        "id": "pro",
-        "label": "Références",
-        "title": "Prompt reference-to-video",
-        "description": "À utiliser quand l’identité, le rythme ou l’ambiance doivent rester verrouillés.",
-        "copy": "Intention du prompt :\n[Ce que la scène doit raconter ou faire ressentir]\n\nRéférences image :\n@Image1 = [personnage / produit héros]\n@Image2 = [tenue / accessoire / palette]\n\nRéférences vidéo :\n@Video1 = [rythme caméra]\n@Video2 = [logique de transition]\n\nRéférences audio :\n@Audio1 = [ambiance]\n@Audio2 = [rythme musical / texture de dialogue]\n\nAncrages de continuité :\n[Ce qui ne doit pas dériver]\n\nObjectif de sortie :\n[Plan unique ou séquence de 2-3 plans + résultat final]\n\nRègle :\nChaque référence doit avoir un rôle unique. Ne téléversez pas plusieurs fichiers qui se contredisent."
-      },
-      {
-        "id": "storyboard",
-        "label": "Timeline",
-        "title": "Prompt timeline / multi-plans",
-        "description": "À utiliser quand une génération contient plusieurs moments ou coupes internes.",
-        "copy": "Durée : [auto / 4-15 s]\n\nPlan 1 (0-5 s) :\n[Cadrage + action + mouvement caméra]\n\nTransition :\n[match cut / whip pan / crash zoom / pose]\n\nPlan 2 (5-10 s) :\n[Cadrage + action + mouvement caméra]\n\nPlan 3 (10-15 s) :\n[Révélation / réaction / plan produit final / pose finale]\n\nContinuité :\n[Tenue + accessoires + lieu + lumière]\n\nPlan audio :\n[Ambiance + 1-3 SFX synchronisés + dialogue court éventuel]\n\nUtilisez auto uniquement si vous voulez que le modèle déduise lui-même le rythme."
-      }
-    ],
     "tipsTitle": "Conseils et limites",
     "strengths": [
       "Très bon contrôle caméra lorsque les temps sont explicites.",
@@ -311,8 +256,6 @@
     "galleryIntro": "Utilisez cette galerie pour revoir les schémas de prompts, la structure des scènes et les séquences que Seedance 2.0 gère bien dans MaxVideoAI.",
     "galleryAllCta": "Voir tous les exemples Seedance ->",
     "recreateLabel": "Recréer ce plan ->",
-    "demoTitle": "Prompt de démonstration — Seedance 2.0",
-    "demoPromptLabel": "Prompt",
     "relatedItems": [
       {
         "brand": "bytedance",

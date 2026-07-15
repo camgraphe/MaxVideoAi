@@ -114,7 +114,6 @@
       "Escalate winning drafts into standard Seedance 2.0"
     ]
   },
-  "promptingTip": "Tip: keep the same Seedance grammar as standard, but use Fast to answer one question per run: does the text brief work, does the start/end transition land, do the references hold continuity, or is the timing right?",
   "tips": {
     "title": "Production notes",
     "items": [
@@ -127,7 +126,6 @@
       "Generate shows the active route and the final quote before you submit."
     ]
   },
-  "demoTitle": "Prompt demo",
   "prompts": [
     {
       "title": "Story beat draft",
@@ -214,59 +212,6 @@
         ]
       }
     ],
-    "promptingTitle": "Prompt Lab — Seedance 2.0 Fast",
-    "promptingGuideLabel": "Seedance 2.0 Fast workflow notes",
-    "promptingGuideUrl": "/models/seedance-2-0",
-    "promptingIntro": "Seedance 2.0 Fast works best when each run tests one decision. Keep the brief in Subject -> Action -> Camera -> Style order, then choose the fastest route: text, start/end image, or references.",
-    "promptingGlobalPrinciples": [
-      "Change one variable per run so comparisons stay readable.",
-      "Keep the same references when testing camera, timing, or audio variants.",
-      "Use start/end image tests to validate transitions, not to rewrite the full scene.",
-      "Give every reference one job and trim extra style adjectives.",
-      "Escalate winning drafts into standard Seedance 2.0 for final polish."
-    ],
-    "promptingEngineWhy": [
-      "Fast is strongest for prompt-only concept checks before expensive finals.",
-      "Start/end image tests are useful for landing the last frame without over-directing the middle.",
-      "Reference runs are best for continuity A/B checks, not for maximum complexity.",
-      "Short audio cues make side-by-side comparisons easier to judge."
-    ],
-    "promptingTabNotes": {
-      "quick": "Text = test the brief itself.",
-      "structured": "Start/End = test the transition and landing frame.",
-      "pro": "References = test continuity with the same source pack.",
-      "storyboard": "Compare = package the winner for standard Seedance 2.0."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Text",
-        "title": "Text-to-video test prompt",
-        "description": "Use when you want a fast read on framing, motion, or mood from language alone.",
-        "copy": "Subject:\n[Who/what appears]\n\nAction:\n[One visible beat only]\n\nCamera:\n[One short move]\n\nStyle:\n[Lighting + palette]\n\nGoal:\n[What this run is proving: timing / framing / motion / audio]\n\nRule:\nDo not combine multiple decisions in the same Fast run."
-      },
-      {
-        "id": "structured",
-        "label": "Start/End",
-        "title": "Image-to-video transition test",
-        "description": "Use when you need to validate how a start frame lands on an end frame.",
-        "copy": "Start image:\n[What is fixed from frame 1]\n\nEnd image (optional):\n[What the last frame should land on]\n\nMotion path:\n[How the subject travels between the two]\n\nCamera:\n[One move only]\n\nWhat should stay identical across versions:\n[Lighting / wardrobe / background / pace]\n\nUse this when the question is transition quality, not final polish."
-      },
-      {
-        "id": "pro",
-        "label": "References",
-        "title": "Reference continuity test",
-        "description": "Use when you are checking whether the same reference pack holds together across variants.",
-        "copy": "Prompt intent:\n[What the short draft should prove]\n\nImage refs:\n@Image1 = [identity]\n@Image2 = [product / wardrobe / palette]\n\nVideo refs:\n@Video1 = [camera rhythm / pacing]\n\nAudio refs:\n@Audio1 = [ambience / beat / dialogue texture]\n\nVariant under test:\n[Only one variable: camera / pace / framing / sound]\n\nRule:\nKeep the same source pack while changing one thing."
-      },
-      {
-        "id": "storyboard",
-        "label": "Compare",
-        "title": "Comparison / handoff prompt",
-        "description": "Use this when Fast is selecting a winner before the standard tier.",
-        "copy": "What stays fixed across A/B:\n[Subject / refs / setting / duration / ratio]\n\nVariant A:\n[Camera / pacing / sound choice]\n\nVariant B:\n[One changed variable only]\n\nWinner criteria:\n[What counts as success]\n\nIf approved, move into standard Seedance 2.0 with:\n[Extra polish, richer sound design, fuller shot plan]"
-      }
-    ],
     "tipsTitle": "Strengths and boundaries",
     "strengths": [
       "Rapid draft iteration",
@@ -284,8 +229,6 @@
     "galleryIntro": "Review the kinds of draft passes and comparison prompts that make Seedance 2.0 Fast useful in a real production workflow.",
     "galleryAllCta": "View all Seedance examples ->",
     "recreateLabel": "Recreate this draft ->",
-    "demoTitle": "Demo prompt — Seedance 2.0 Fast",
-    "demoPromptLabel": "Prompt",
     "relatedItems": [
       {
         "brand": "bytedance",

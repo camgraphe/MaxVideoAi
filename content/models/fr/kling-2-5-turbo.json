@@ -316,63 +316,7 @@
     "finalPara1": "Kling 2.5 Turbo dans MaxVideoAI est votre modèle 1080p silencieux et ciné pour des beats courts et percutants.",
     "finalPara2": "Utilisez‑le quand la caméra et la motion portent l’histoire, puis ajoutez l’audio en post ou via des modèles audio.",
     "finalButton": "Ouvrir Generate",
-    "promptingTitle": "Comment écrire un excellent prompt Kling 2.5 Turbo",
-    "promptingIntro": "Kling Turbo réagit mieux à des prompts courts et concrets avec un seul mouvement caméra.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez un prompt négatif pour bloquer les artefacts.",
-    "promptingGlobalPrinciples": [
-      "Un sujet, une action, un mouvement caméra.",
-      "Utilisez des noms concrets et des décors simples.",
-      "Ajoutez un prompt négatif court pour texte/logos/personnes en trop."
-    ],
     "tipsIntro": "Kling 2.5 Turbo est plus facile à piloter quand vous écrivez pour le mouvement : un sujet, une action claire, un mouvement caméra — et des cues de poids/inertie explicites.",
-    "promptingEngineWhy": [
-      "Les actions courtes et physiques lisent mieux en 5–10 s.",
-      "Un langage caméra explicite améliore la cohérence.",
-      "Les prompts négatifs gardent les frames propres."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "Prompt : [Sujet + action] dans [décor], [mouvement caméra], [lumière/style].\nNégatif : [texte, logos, membres en trop, flou]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages visuels.]\n\nCaméra :\n[Plan + angle + un mouvement.]\n\nLook :\n[Lumière + palette + style.]\n\nNégatif :\n[Ce qu’il faut éviter : texte, logos, personnes en trop, flou.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matières.]\n\nSet :\n[Lieu + 3 ancrages.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + sensation de lentille.]\n\nLumière :\n[Key light + palette.]\n\nNégatif :\n[Texte, logos, personnages en trop, artefacts.]"
-      }
-    ],
-    "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en",
-    "demoTitle": "Démo – Portrait founder 5 s (9:16)",
-    "demoPromptLabel": "Portrait founder 5 s",
-    "demoPrompt": [
-      "Clip vertical 5 s 9:16 d’un founder dans un bureau moderne au golden hour.",
-      "Caméra : drift handheld lent du buste vers le visage, faible DOF.",
-      "Bokeh urbain doux, peau/tissus réalistes, flares légers.",
-      "Pas de texte, pas de logos, pas d’extras."
-    ],
-    "demoNotes": [
-      "Un seul sujet, un seul lieu, trajectoire caméra claire.",
-      "De la place pour VO/graphisme en post.",
-      "Pro Image pour la meilleure fidélité sur un portrait."
-    ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Mouvement trop flottant / faux → ajoutez des cues de poids + contact; ralentissez l’action; supprimez le shake handheld; simplifiez l’arrière‑plan.",

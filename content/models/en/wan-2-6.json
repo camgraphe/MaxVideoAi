@@ -293,71 +293,10 @@
       "Look deviates from the key visual → start from Image→Video (hero frame), then only ask for motion; keep the style recipe identical.",
       "Transitions feel jumpy → explicitly name the transition + keep the camera move continuous between beats."
     ],
-    "promptingTitle": "How to Write a Great Wan 2.6 Prompt",
-    "promptingIntro": "Wan 2.6 follows short prompts with clear subject, scene, and motion; use a simple shot list for multi-shot.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, motion, camera, style, and optional sound. Keep prompts concise; prompt expansion helps.",
-    "promptingGlobalPrinciples": [
-      "Subject + scene + motion in one clear sentence.",
-      "For multi-shot, keep it to 2-3 beats.",
-      "Add a short negative prompt to avoid artifacts."
-    ],
     "tipsIntro": "Wan 2.6 is easiest to steer when you use short beats, explicit transitions, and reference anchoring when identity must stay stable.",
-    "promptingEngineWhy": [
-      "Prompt expansion handles short, concrete prompts.",
-      "Reference mode works best when you specify what must stay consistent.",
-      "Audio cues help pacing; keep them minimal."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [motion] in [scene], [camera], [lighting/style], [optional sound cue].\nNegative: [text, logos, extra people, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + key traits.]\n\nScene:\n[Location + time + 2 anchors.]\n\nMotion:\n[One clear action + camera move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[What to avoid.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Shot list (same subject + same setting)\nShot 1: [action + camera]\nShot 2: [action + camera]\nShot 3: [final action/reveal]\n\nLook:\n[Lighting + palette.]\n\nSound (optional):\n[Ambience + 1-2 cues.]\n\nNegative:\n[Text/logos/extra characters.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (timestamped beats)",
-        "description": "Best for multi-shot sequences in one clip.",
-        "copy": "Shot list (same subject + same setting)\nDuration: [5/10/15s]\n\nBeat 1 (0-3s):\n[Framing + action + camera move]\n\nBeat 2 (3-7s):\n[Framing + action + camera move]\n\nBeat 3 (7-10/15s):\n[Final action/reveal + camera settle]\n\nContinuity:\n[Repeat anchors: wardrobe, props, lighting, background]\n[If using references: tag @Video1/@Video2/@Video3]\n\nSound (optional):\n[Ambience + 1-2 cues]\n\nNegative:\n[Text, logos, extra characters, blur]"
-      }
-    ],
-    "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com",
     "galleryTitle": "Wan 2.6 Example Gallery",
     "galleryAllCta": "View all Wan 2.6 examples →",
     "recreateLabel": "Recreate this shot →",
-    "demoTitle": "Render-ready example",
-    "demoPromptLabel": "Render-ready example (multi-shot, 15s, 16:9, 1080p)",
-    "demoPrompt": [
-      "Global look: sleek thriller, rainy night, soft neon, 35mm, fine grain, cinematic depth of field, smooth camera, blue/amber palette.",
-      "Shot 1 [0–4s]: slow push-in down a wet alley, reflections on the ground, a silhouette in the distance, misty atmosphere.",
-      "Shot 2 [4–10s]: cut to close-up of hands opening a sealed envelope on a wooden table, warm side light, very shallow focus.",
-      "Shot 3 [10–15s]: door opens into an overexposed white room, flash of light, fine dust in the beam, fade to black."
-    ],
-    "demoNotes": [
-      "Audio option: URL to a soft ambient bed 3–15s, low volume."
-    ],
     "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
       "No sexual content, and nothing involving minors.",

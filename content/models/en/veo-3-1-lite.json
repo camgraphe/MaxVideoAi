@@ -320,71 +320,7 @@
     "finalPara1": "Veo 3.1 Lite in MaxVideoAI is your rapid-fire test bench for Veo prompts.",
     "finalPara2": "Same cinematic language, lower stakes, and quality that’s ready for social delivery.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Veo 3.1 Lite Prompt",
-    "promptingIntro": "Veo 3.1 Lite prefers short, concrete prompts and one clear action.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
-    "promptingGlobalPrinciples": [
-      "One subject, one action.",
-      "Call out framing and camera move.",
-      "Use 2-3 visual anchors, not long lists."
-    ],
     "tipsIntro": "Veo 3.1 Lite is most reliable when you write a short shot brief: one subject, one action, clear framing, and one camera move.",
-    "promptingEngineWhy": [
-      "Lite favors simple beats and short prompts.",
-      "Camera language improves consistency.",
-      "Use style anchors to keep the look stable."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [action] in [context], [camera move], [lighting/style], [optional sound cue]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nContext:\n[Location + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nSound (optional):\n[Ambience + 1 cue.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brief:\n[Goal + vibe.]\n\nSubject:\n[Key traits + wardrobe/props.]\n\nCamera:\n[Framing + one move + lens feel.]\n\nLighting + color:\n[Key light + palette anchors.]\n\nConstraints:\nKeep it simple; avoid extra actions."
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (short shot list)",
-        "description": "Keep it minimal for faster, cleaner drafts.",
-        "copy": "Shot list (same subject + same setting)\nDuration: [4/6/8s]\n\nShot 1 (0-2s):\n[Framing + action + camera move]\n\nShot 2 (2-6/8s):\n[Framing + action + camera move]\n\nLook + mood:\n[Lighting + palette]\n\nSound (optional):\n[Ambience + 1 cue]"
-      }
-    ],
-    "promptingGuideLabel": "Official Veo / Google DeepMind guide",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: prompt pattern for Veo 3.1 Lite",
-    "demoPromptLabel": "8s period reunion (16:9, audio on)",
-    "demoPrompt": [
-      "8s Veo 3.1 Lite clip in 16:9, audio included.",
-      "Romantic cinematic reunion on a large train station platform, grand period-drama energy, elegant and timeless.",
-      "A young couple in early-1900s clothing runs toward each other: the man in a dark wool coat and hat, the woman in a long beige dress with a small vintage suitcase.",
-      "Wide crane shot descending slowly toward them, slight long-lens feel, smooth cinematic motion.",
-      "Soft morning light filtered through steam and glass, sepia tones, muted browns, brass, and cream. One clear action only, no close foreground signage."
-    ],
-    "demoNotes": [
-      "Use one emotional action, not a crowded sequence.",
-      "Lock the period details and camera move early.",
-      "Keep signage and foreground extras out of the frame."
-    ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Drift / ignores details → move subject + action + framing to the first line; remove extra beats; keep constraints positive (“clean background”, “centered subject”).",

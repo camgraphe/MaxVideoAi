@@ -220,16 +220,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo — clip social rápido",
-    "demoPromptLabel": "8 s paisaje social",
-    "demoPrompt": [
-      "Plano en tracking de una runner al golden hour sobre un boardwalk, cámara baja, flare cálido, ambiente de océano, audio on."
-    ],
-    "demoNotes": [
-      "Acción única",
-      "Movimiento de cámara claro y mood",
-      "Cue de audio integrado"
-    ],
     "multishotTitle": "Clips secuenciados",
     "multishotIntro1": "Encadena varios renders de 6–10 s para construir beats más largos.",
     "multishotIntro2": "Reutiliza seeds y estilo para mantener consistencia.",
@@ -276,58 +266,7 @@
     "finalPara1": "¿Listo para probar LTX 2 Fast? Carga tu wallet y revisa el chip de precio antes de lanzar.",
     "finalPara2": "Pasa a LTX‑2 Pro cuando necesites máxima fidelidad y audio sincronizado.",
     "finalButton": "Abrir LTX 2 Fast en Generate →",
-    "promptingTitle": "Cómo escribir un gran prompt LTX 2 Fast",
-    "promptingIntro": "LTX‑2 Fast prefiere prompts cortos con una acción clara y un solo movimiento de cámara.",
-    "promptingTip": "Tip: duración + fps se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y cues sonoros opcionales.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción, un movimiento de cámara.",
-      "Usa anclajes visuales concretos.",
-      "Mantén prompts cortos; evita listas largas."
-    ],
     "tipsIntro": "LTX‑2 Fast es más fiable cuando lo tratas como una pasada draft: planos simples, variaciones rápidas, luego polish del ganador.",
-    "promptingEngineWhy": [
-      "Fast está optimizado para iteraciones rápidas; los prompts simples ganan.",
-      "El lenguaje de cámara explícito reduce el drift.",
-      "Los prompts negativos ayudan a quitar logos/texto."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
-      "pro": "Pro = continuidad. Úsalo para looks precisos y repetibles.",
-      "storyboard": "Storyboard = timing de beats. Úsalo para mini‑stories en un clip."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto + acción] en [entorno], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEntorno:\n[Dónde + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento + sensación de lente.]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1 cue.]\n\nNegativo:\n[Texto, logos, personas extra, blur.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
-        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad entre planos.",
-        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos clave + materiales.]\n\nSet:\n[Ubicación + anclas.]\n\nCinematografía:\n[Encuadre + ángulo + un movimiento + lente.]\n\nLuz + grade:\n[Key light + paleta.]\n\nNegativo:\n[Qué evitar.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / lista de planos)",
-        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (multi‑shot / shot list) da timing claro, dirección de cámara y continuidad.",
-        "copy": "Mini‑secuencia (mismo sujeto + mismo entorno)\nBeat 1 (inicio): [acción + cámara]\nBeat 2 (medio): [acción + cámara]\nBeat 3 (final): [acción final + settle]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]"
-      }
-    ],
-    "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio",
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Se siente aleatorio / inconsistente → elimina beats extra; re‑lanza 2–3 variaciones cortas.",

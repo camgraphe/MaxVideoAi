@@ -226,20 +226,6 @@
       "No imites personas reales sin consentimiento.",
       "No incluyas datos personales privados."
     ],
-    "promptingTitle": "Cómo escribir un buen prompt Uni-1 Max",
-    "promptingIntro": "Parte de una dirección creativa elegida y precisa la imagen final, restricciones de fuente y roles de referencias.",
-    "promptingTip": "Consejo: para producto o tipografía, escribe la jerarquía exacta y revisa antes de publicar.",
-    "promptingGlobalPrinciples": [
-      "Usa Max cuando detalle y acabado importan.",
-      "Separa preservación de fuente y revisión.",
-      "Da un rol a cada referencia."
-    ],
-    "promptingEngineWhy": [
-      "Las imágenes de mayor fidelidad se benefician de restricciones precisas.",
-      "Los roles de referencia reducen ambigüedad en producto y campaña.",
-      "Revisar texto mantiene las promesas prudentes."
-    ],
-    "promptingGuideLabel": "Guía de prompt Uni-1 Max",
     "relatedItems": [
       {
         "brand": "luma",

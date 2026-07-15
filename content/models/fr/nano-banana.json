@@ -228,51 +228,7 @@
       "N’imitez pas de personnes réelles ou de figures publiques; utilisez le consentement pour toute ressemblance.",
       "N’incluez pas de données personnelles privées (visages non consentis, adresses, numéros, documents).",
       "Certains prompts ou images de référence peuvent être bloqués par les filtres du fournisseur."
-    ],
-    "promptingTitle": "Comment écrire un excellent prompt Nano Banana",
-    "promptingIntro": "Nano Banana récompense les briefs courts et littéraux. Commencez par la composition, puis la lumière/style. Pour les edits, dites ce qui change et ce qui doit rester. Pour les blends, assignez un rôle à chaque référence.",
-    "promptingTip": "Astuce : résolution + ratio se règlent dans l’UI — votre prompt contrôle sujet, composition, lumière, style et instructions d’edit.",
-    "promptingGlobalPrinciples": [
-      "Composition d’abord. Style ensuite.",
-      "Prompts courts et spécifiques; évitez les longues listes.",
-      "Pour les edits : “Change X, keep Y” vaut mieux que re‑décrire toute la scène.",
-      "Si le texte compte : gardez‑le court, contrasté et entre guillemets exacts."
-    ],
-    "promptingEngineWhy": [
-      "Le tier rapide préfère les prompts courts; les prompts longs peuvent dériver.",
-      "Le multi‑image fonctionne mieux quand chaque image a un rôle clair (sujet vs lumière vs fond).",
-      "Le micro‑texte et les UI denses sont peu fiables — gardez le copy minimal et overlay en post.",
-      "Si un edit sur‑corrige, resserrez la liste “keep” (cadrage, lumière, identité)."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = répétabilité. À utiliser pour des batches contrôlés."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] dans [décor]. [Composition]. [Lumière]. [Ancre de style].\n\nSi edit :\nEdit : change [X]. Keep [Y] (cadrage, lumière, identité).\n\nSi multi‑image :\nRefs : Image1 = [sujet principal]. Image2 = [style/lumière]. (Optionnel) Image3 = [fond/prop]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + 2–3 détails définissants.]\n\nComposition :\n[Cadrage + angle + fond + ce qui doit rester propre.]\n\nLumière :\n[Key light + mood + 2 ancrages de palette.]\n\nStyle :\n[Photoréal / illustration + texture/grain + une référence de style.]\n\nTexte (optionnel) :\n[Copy exact entre guillemets + placement + contraste.]\nExemple : “SALE — 20% OFF” en haut‑gauche, une ligne, fort contraste.\n\nEdit (si edit) :\nChange :\n- [liste des changements]\nKeep :\n- cadrage, lumière, identité, sans logo, fond propre\n\nRéférences (si multi‑image) :\nImage1 contrôle sujet/identité\nImage2 contrôle lumière\nImage3 contrôle palette/fond"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “studio” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou des résultats répétables sur une série.",
-        "copy": "Brief :\n[Objectif + usage de sortie.]\n\nSujet + matières :\n[Détails + textures + contraintes.]\n\nLayout :\n[Grille + spacing + point focal + espace négatif.]\n\nLumière + grade :\n[Key light + contraste + ancrages de palette.]\n\nTypo (optionnel) :\n[Ambiance de police + hiérarchie + copy exact + placement.]\nGardez le copy court. Évitez les paragraphes.\n\nEdits (si besoin) :\nChange list :\n- [A]\n- [B]\nKeep list :\n- cadrage, lumière, identité, fond, palette"
-      }
-    ],
-    "promptingGuideLabel": "En savoir plus"
+    ]
   },
   "decision": {
     "modelSlug": "nano-banana",

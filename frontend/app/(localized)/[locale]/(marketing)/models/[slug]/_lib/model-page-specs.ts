@@ -23,8 +23,6 @@ export type {
   KeySpecRow,
   KeySpecValues,
   LocalizedFaqEntry,
-  PromptingTab,
-  PromptingTabId,
   QuickStartBlock,
   RelatedItem,
   SoraCopy,

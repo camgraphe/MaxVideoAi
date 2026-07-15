@@ -293,71 +293,10 @@
       "El look se desvía del key visual → empieza desde Imagen→Video (hero frame) y pide solo movimiento; mantén la receta de estilo idéntica.",
       "Transiciones bruscas → nombra la transición explícitamente y mantén el movimiento de cámara continuo entre beats."
     ],
-    "promptingTitle": "Cómo escribir un gran prompt para Wan 2.6",
-    "promptingIntro": "Wan 2.6 sigue prompts cortos con sujeto, escena y movimiento claros; usa una shot list simple para multi‑shot.",
-    "promptingTip": "Tip: duración + relación se configuran en la UI — tu prompt controla sujeto, movimiento, cámara, estilo y sonido opcional. Mantén los prompts concisos; la expansión ayuda.",
-    "promptingGlobalPrinciples": [
-      "Sujeto + escena + movimiento en una frase clara.",
-      "Para multi‑shot, limítalo a 2–3 beats.",
-      "Añade un prompt negativo corto para evitar artefactos."
-    ],
     "tipsIntro": "Wan 2.6 es más fácil de dirigir con beats cortos, transiciones explícitas y anclaje por referencia cuando la identidad debe mantenerse estable.",
-    "promptingEngineWhy": [
-      "La expansión de prompt maneja bien prompts cortos y concretos.",
-      "El modo Referencia funciona mejor cuando especificas lo que debe permanecer constante.",
-      "Las cues de audio ayudan al ritmo; mantenlas mínimas."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
-      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto] [movimiento] en [escena], [cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + rasgos clave.]\n\nEscena:\n[Lugar + momento + 2 anclas.]\n\nMovimiento:\n[Una acción clara + movimiento de cámara.]\n\nLook:\n[Luz + paleta + estilo.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesites un look muy preciso o continuidad entre planos.",
-        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nPlano 1: [acción + cámara]\nPlano 2: [acción + cámara]\nPlano 3: [acción final/reveal]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Texto/logos/personajes extra.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (beats con timestamps)",
-        "description": "Ideal para secuencias multi‑shot en un solo clip.",
-        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nDuración: [5/10/15s]\n\nBeat 1 (0–3s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 2 (3–7s):\n[Encuadre + acción + movimiento de cámara]\n\nBeat 3 (7–10/15s):\n[Acción final/reveal + cámara se asienta]\n\nContinuidad:\n[Repite anclas: vestuario, props, luz, fondo]\n[Si usas referencias: etiqueta @Video1/@Video2/@Video3]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]\n\nNegativo:\n[Texto, logos, personajes extra, blur]"
-      }
-    ],
-    "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com",
     "galleryTitle": "Galería de ejemplos Wan 2.6",
     "galleryAllCta": "Ver todos los ejemplos Wan 2.6 →",
     "recreateLabel": "Recrear esta toma →",
-    "demoTitle": "Ejemplo listo para renderizar",
-    "demoPromptLabel": "Ejemplo listo para renderizar (multi‑shot, 15 s, 16:9, 1080p)",
-    "demoPrompt": [
-      "Look global: thriller elegante, noche lluviosa, neón suave, 35mm, grano fino, profundidad de campo cinemática, cámara fluida, paleta azul/ámbar.",
-      "Plano 1 [0–4s]: travelling lento por un callejón mojado, reflejos en el suelo, una silueta al fondo, atmósfera brumosa.",
-      "Plano 2 [4–10s]: corte a primer plano de manos abriendo un sobre sellado sobre una mesa de madera, luz cálida lateral, foco muy corto.",
-      "Plano 3 [10–15s]: una puerta se abre a una sala blanca sobreexpuesta, destello de luz, polvo fino en el haz, fundido a negro."
-    ],
-    "demoNotes": [
-      "Opción de audio: URL de una cama ambient suave 3–15 s, volumen bajo."
-    ],
     "safetyTitle": "Seguridad y personas / semejanza",
     "safetyRules": [
       "Nada de contenido sexual, ni nada que involucre menores.",

@@ -228,51 +228,7 @@
       "No suplantes a personas reales o figuras públicas; usa consentimiento para cualquier semejanza.",
       "No incluyas datos personales privados (rostros sin consentimiento, direcciones, teléfonos, documentos).",
       "Algunos prompts o referencias pueden ser bloqueados por filtros de seguridad del proveedor."
-    ],
-    "promptingTitle": "Cómo escribir un gran prompt para Nano Banana",
-    "promptingIntro": "Nano Banana premia briefs cortos y literales. Lidera con composición, luego iluminación/estilo. Para ediciones, indica qué cambiar y qué debe mantenerse. Para blends multi‑imagen, asigna un rol a cada referencia.",
-    "promptingTip": "Tip: la resolución + la relación se configuran en la UI — tu prompt controla sujeto, composición, iluminación, estilo e instrucciones de edición.",
-    "promptingGlobalPrinciples": [
-      "Composición primero. Estilo después.",
-      "Mantén prompts cortos y específicos; evita long wish‑lists.",
-      "Para ediciones: “Cambia X, conserva Y” supera re‑describir toda la escena.",
-      "Si el texto importa: mantenlo corto, con alto contraste y cítalo exactamente."
-    ],
-    "promptingEngineWhy": [
-      "El tier rápido favorece prompts cortos; los prompts largos pueden divagar.",
-      "El multi‑imagen funciona mejor cuando cada imagen tiene un rol claro (sujeto vs iluminación vs fondo).",
-      "El texto pequeño y la UI densa son poco fiables — mantén el copy mínimo y añade texto crítico en post.",
-      "Si un edit cambia demasiado la imagen, ajusta la lista de “keep” (encuadre, iluminación, identidad)."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = repetibilidad. Úsalo para lotes controlados."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto] en [entorno]. [Composición]. [Iluminación]. [Ancla de estilo].\n\nSi editas:\nEdit: cambia [X]. Conserva [Y] (encuadre, iluminación, identidad).\n\nSi usas múltiples imágenes:\nRefs: Imagen1 = [sujeto principal]. Imagen2 = [estilo/iluminación]. (Opcional) Imagen3 = [fondo/prop]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (mejor para resultados fiables)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + 2–3 detalles clave.]\n\nComposición:\n[Encuadre + ángulo + fondo + lo que debe quedar limpio.]\n\nIluminación:\n[Luz clave + mood + 2 anclajes de paleta.]\n\nEstilo:\n[Fotorreal / ilustración + textura/grano + una referencia de estilo.]\n\nTexto (opcional):\n[Copy exacto entre comillas + ubicación + contraste.]\nEjemplo: “SALE — 20% OFF” arriba‑izquierda, una línea, alto contraste.\n\nEdit (si editas):\nChange:\n- [lista de cambios]\nKeep:\n- encuadre, iluminación, identidad, sin logos, fondo limpio\n\nReferencias (si usas múltiples imágenes):\nImagen1 controla sujeto/identidad\nImagen2 controla iluminación\nImagen3 controla paleta/fondo"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesitas un look muy específico o resultados repetibles en un set.",
-        "copy": "Brief:\n[Objetivo + objetivo de salida.]\n\nSujeto + materiales:\n[Detalles + texturas + restricciones.]\n\nLayout:\n[Grid + spacing + punto focal + espacio negativo.]\n\nIluminación + grade:\n[Luz clave + contraste + anclajes de paleta.]\n\nTipografía (opcional):\n[Vibe de fuente + jerarquía + copy exacto + ubicación.]\nMantén el copy corto. Evita párrafos.\n\nEdits (si hace falta):\nChange list:\n- [A]\n- [B]\nKeep list:\n- encuadre, iluminación, identidad, fondo, paleta de color"
-      }
-    ],
-    "promptingGuideLabel": "Más información"
+    ]
   },
   "decision": {
     "modelSlug": "nano-banana",

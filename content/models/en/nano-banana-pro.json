@@ -199,48 +199,6 @@
       "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
       "Some prompts or reference images may be blocked by MaxVideoAI safety filters."
     ],
-    "promptingTitle": "How to Write a Great Nano Banana Pro Prompt",
-    "promptingIntro": "Nano Banana Pro rewards structured briefs with clear composition, typography, and edit intent.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI - your prompt controls subject, composition, lighting, style, and edit instructions.",
-    "promptingGlobalPrinciples": [
-      "Name the subject and composition first.",
-      "Specify lighting, lens, and style anchors.",
-      "For edits, say what to change and what to keep."
-    ],
-    "promptingEngineWhy": [
-      "Structured briefs yield cleaner text and layout.",
-      "No-mask edits work best when you specify what to change and what to keep.",
-      "Multi-image references help keep products on-model."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] in [setting], [composition], [lighting], [style], [text if needed]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + key traits.]\n\nComposition:\n[Framing + angle + background.]\n\nLighting:\n[Key light + mood.]\n\nStyle:\n[Photoreal / illustration / palette.]\n\nTypography (if needed):\n[Exact copy + placement.]\n\nEdit (if editing):\n[Change X, keep Y.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brand brief:\n[Goal + audience + format.]\n\nSubject + materials:\n[Details + textures.]\n\nLayout + hierarchy:\n[Grid, spacing, focal point.]\n\nTypography:\n[Font vibe + hierarchy + exact copy.]\n\nReferences (optional):\n[Ref A controls style; Ref B controls product.]\n\nEdits (if needed):\n[Change list + keep list.]"
-      }
-    ],
-    "promptingGuideLabel": "Learn more",
     "relatedTitle": "Nano Banana family",
     "relatedSubtitle": "Use the Google image model that matches the delivery need, not a video benchmark score.",
     "relatedItems": [

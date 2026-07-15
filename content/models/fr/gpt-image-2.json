@@ -161,21 +161,7 @@
       "Pas de demandes haineuses, harcelantes ou de violence graphique.",
       "N'usurpez pas l'identite de personnes reelles ou publiques sans consentement.",
       "N'incluez pas de donnees personnelles privees ni de documents sensibles."
-    ],
-    "promptingTitle": "Comment ecrire un bon prompt GPT Image 2",
-    "promptingIntro": "Utilisez une structure scene, sujet, texte exact, details visuels, usage et contraintes.",
-    "promptingTip": "Astuce : mettez les mots exacts entre guillemets et decrivez ou chaque bloc de texte doit apparaitre.",
-    "promptingGlobalPrinciples": [
-      "Indiquez l'objet final : poster, packshot, ecran UI, infographie ou concept frame.",
-      "Donnez le texte exact quand la typographie compte.",
-      "Pour les edits, separez instructions a preserver et instructions a changer."
-    ],
-    "promptingEngineWhy": [
-      "Le modele est tres utile quand texte et layout font partie du brief image.",
-      "La qualite affecte le cout, donc brouillonnez moins cher puis relancez en High.",
-      "Les edits de reference sont meilleurs quand chaque source a un role clair."
-    ],
-    "promptingGuideLabel": "En savoir plus"
+    ]
   },
   "decision": {
     "modelSlug": "gpt-image-2",

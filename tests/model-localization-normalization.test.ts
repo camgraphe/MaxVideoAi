@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -104,20 +104,17 @@ test('non-empty localized prompt and FAQ arrays are selected and normalized with
   );
 });
 
-test('production loader, converter, and parity test share the same localized-content merger', () => {
-  const sourcePaths = [
-    'frontend/lib/models/i18n.ts',
+test('the production loader is the only remaining localized model-content merger owner', () => {
+  const productionLoader = readFileSync(
+    join(PROJECT_ROOT, 'frontend/lib/models/i18n.ts'),
+    'utf8',
+  );
+  assert.match(productionLoader, /mergeEngineLocalizedContent\(base, overlay\)/);
+
+  for (const sourcePath of [
     'scripts/migrate-model-prompting-content.ts',
     'tests/model-prompting-legacy-projection.test.ts',
-  ];
-
-  for (const sourcePath of sourcePaths) {
-    const source = readFileSync(join(PROJECT_ROOT, sourcePath), 'utf8');
-    assert.match(source, /mergeEngineLocalizedContent\(base, overlay\)/, sourcePath);
-  }
-
-  for (const sourcePath of sourcePaths.slice(1)) {
-    const source = readFileSync(join(PROJECT_ROOT, sourcePath), 'utf8');
-    assert.doesNotMatch(source, /function readLocalizedContent/, sourcePath);
+  ]) {
+    assert.equal(existsSync(join(PROJECT_ROOT, sourcePath)), false, sourcePath);
   }
 });

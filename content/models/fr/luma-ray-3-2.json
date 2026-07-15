@@ -262,22 +262,6 @@
       "N’imitez pas de personnes réelles sans consentement.",
       "N’incluez pas de données personnelles privées."
     ],
-    "promptingTitle": "Écrire un bon prompt Ray 3.2",
-    "promptingIntro": "Rédigez un brief de retouche ou Reframe avec règle de préservation, changement demandé, cadrage, durée et résolution.",
-    "promptingTip": "Astuce : pour Modify, écrivez d’abord ce qui doit rester pour ne pas lutter contre la vidéo source.",
-    "promptingGlobalPrinciples": [
-      "Un seul objectif de retouche par clip source.",
-      "Séparez clairement ce qui reste et ce qui change.",
-      "10 s seulement lorsque l’action a besoin de temps.",
-      "Utilisez la génération seulement lorsqu’aucun clip source n’existe encore."
-    ],
-    "promptingEngineWhy": [
-      "Les vidéos sources rendent Modify et Reframe utiles quand le timing est déjà validé.",
-      "Les images guides et images clés ciblent des moments précis au lieu de repeindre tout le clip.",
-      "La génération courte reste utile pour produire des candidats avant une passe Modify/Reframe.",
-      "Mode, durée et résolution influencent directement le prix affiché."
-    ],
-    "promptingGuideLabel": "Guide prompt Ray 3.2",
     "finalPara1": "Ray 3.2 est la route vidéo Luma actuelle dans MaxVideoAI quand Modify, images clés et Reframe comptent plus que la génération audio native.",
     "finalButton": "Générer avec Luma Ray 3.2"
   },

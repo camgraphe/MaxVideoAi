@@ -145,9 +145,7 @@ function getMarketingCoverage(content) {
         hasNonEmptyArray(custom?.specSections) ||
         hasNonEmptyString(content?.pricingNotes)
     ),
-    prompting: Boolean(
-      content?.promptStructure || hasNonEmptyArray(custom?.promptingTabs) || hasNonEmptyArray(content?.prompts)
-    ),
+    prompting: Boolean(content?.prompting),
     faq: hasNonEmptyArray(content?.faqs),
     gallery: Boolean(
       hasNonEmptyString(custom?.galleryTitle) ||

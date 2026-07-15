@@ -198,49 +198,7 @@
       "N’imitez pas de personnes réelles ou de figures publiques; utilisez le consentement pour toute ressemblance.",
       "N’incluez pas de données personnelles privées (visages non consentis, adresses, numéros, documents).",
       "Certains prompts ou images de référence peuvent être bloqués par les filtres du fournisseur."
-    ],
-    "promptingTitle": "Comment écrire un excellent prompt Nano Banana Pro",
-    "promptingIntro": "Nano Banana Pro récompense les briefs structurés avec composition, typographie et intention d’edit claires.",
-    "promptingTip": "Astuce : résolution + ratio se règlent dans l’UI - votre prompt contrôle sujet, composition, lumière, style et instructions d’edit.",
-    "promptingGlobalPrinciples": [
-      "Nommez le sujet et la composition d’abord.",
-      "Spécifiez lumière, lentille et ancrages de style.",
-      "Pour les edits, dites ce qui doit changer et ce qui doit rester."
-    ],
-    "promptingEngineWhy": [
-      "Les briefs structurés donnent un texte et un layout plus propres.",
-      "Les edits sans masque marchent mieux quand vous précisez ce qui change et ce qui reste.",
-      "Les références multi‑image aident à garder les produits on‑model."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] dans [décor], [composition], [lumière], [style], [texte si besoin]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + traits clés.]\n\nComposition :\n[Cadrage + angle + arrière‑plan.]\n\nLumière :\n[Key light + mood.]\n\nStyle :\n[Photoréal / illustration / palette.]\n\nTypo (si besoin) :\n[Copy exact + placement.]\n\nEdit (si edit) :\n[Change X, keep Y.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “studio” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Brief de marque :\n[Objectif + audience + format.]\n\nSujet + matières :\n[Détails + textures.]\n\nLayout + hiérarchie :\n[Grille, spacing, point focal.]\n\nTypo :\n[Vibe de police + hiérarchie + copy exact.]\n\nRéférences (optionnel) :\n[Ref A contrôle le style ; Ref B contrôle le produit.]\n\nEdits (si besoin) :\n[Change list + keep list.]"
-      }
-    ],
-    "promptingGuideLabel": "En savoir plus"
+    ]
   },
   "decision": {
     "modelSlug": "nano-banana-pro",

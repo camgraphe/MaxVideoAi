@@ -230,20 +230,6 @@
       "N’imitez pas de personnes réelles sans consentement.",
       "N’incluez pas de données personnelles privées."
     ],
-    "promptingTitle": "Écrire un bon prompt Uni-1",
-    "promptingIntro": "Traitez le prompt comme une consigne image : visuel, sujet, composition, références et contraintes.",
-    "promptingTip": "Astuce : donnez un rôle à chaque référence.",
-    "promptingGlobalPrinciples": [
-      "Un objectif visuel clair par demande.",
-      "Séparez préservation et changement pour les retouches.",
-      "Recherche web seulement si le contexte actuel compte."
-    ],
-    "promptingEngineWhy": [
-      "Les rôles de références aident le modèle à raisonner sur composition et identité.",
-      "La vérification typographique garde les visuels prudents.",
-      "Une image propre sert de meilleure source pour la suite."
-    ],
-    "promptingGuideLabel": "Guide prompt Uni-1",
     "relatedItems": [
       {
         "brand": "luma",

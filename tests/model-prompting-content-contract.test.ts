@@ -20,11 +20,36 @@ function files(locale: AppLocale) {
 }
 
 function rawPrompting(locale: AppLocale, slug: string): unknown {
-  const document = JSON.parse(readFileSync(path.join(CONTENT_ROOT, locale, `${slug}.json`), 'utf8')) as {
-    prompting?: unknown;
-  };
-  return document.prompting;
+  return readDocument(locale, slug).prompting;
 }
+
+function readDocument(locale: AppLocale, slug: string): {
+  custom?: Record<string, unknown>;
+  prompting?: unknown;
+} & Record<string, unknown> {
+  return JSON.parse(
+    readFileSync(path.join(CONTENT_ROOT, locale, `${slug}.json`), 'utf8'),
+  ) as {
+    custom?: Record<string, unknown>;
+    prompting?: unknown;
+  } & Record<string, unknown>;
+}
+
+const PROMPTING_CUSTOM_KEYS = [
+  'promptingTitle',
+  'promptingIntro',
+  'promptingTip',
+  'promptingGuideLabel',
+  'promptingGuideUrl',
+  'promptingTabs',
+  'promptingGlobalPrinciples',
+  'promptingEngineWhy',
+  'promptingTabNotes',
+  'demoTitle',
+  'demoPromptLabel',
+  'demoPrompt',
+  'demoNotes',
+] as const;
 
 function signature(value: unknown): unknown {
   if (Array.isArray(value)) return { kind: 'array', length: value.length, items: value.map(signature) };
@@ -68,6 +93,22 @@ test('each model keeps identical EN FR ES prompting structure', () => {
     const english = signature(rawPrompting('en', slug));
     assert.deepEqual(signature(rawPrompting('fr', slug)), english, `${slug}/fr structure`);
     assert.deepEqual(signature(rawPrompting('es', slug)), english, `${slug}/es structure`);
+  }
+});
+
+test('model documents contain no legacy Prompt Lab ownership', () => {
+  for (const locale of LOCALES) {
+    for (const slug of listModelPageTemplateSlugs()) {
+      const document = readDocument(locale, slug);
+      for (const key of PROMPTING_CUSTOM_KEYS) {
+        assert.equal(Object.hasOwn(document, key), false, `${slug}/${locale}/root/${key}`);
+        assert.equal(
+          Object.hasOwn(document.custom ?? {}, key),
+          false,
+          `${slug}/${locale}/${key}`,
+        );
+      }
+    }
   }
 });
 

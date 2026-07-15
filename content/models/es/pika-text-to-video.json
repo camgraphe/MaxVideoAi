@@ -301,64 +301,7 @@
     "finalPara1": "Pika 2.2 en MaxVideoAI es tu caballo de batalla estilizado y silencioso para loops rápidos y animación expresiva.",
     "finalPara2": "Boceta hooks aquí y luego pasa los ganadores a Sora o Veo cuando necesites realismo o sonido generado.",
     "finalButton": "Abrir Generate",
-    "promptingTitle": "Cómo escribir un gran prompt para Pika",
-    "promptingIntro": "Pika funciona mejor con prompts estilizados, movimiento claro y un solo movimiento de cámara.",
-    "promptingTip": "Tip: la duración + el formato se definen en la UI — tu prompt controla sujeto, acción, cámara, iluminación y estilo. Usa prompt negativo para bloquear texto/logos.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción, un movimiento de cámara.",
-      "Usa keywords de estilo y anclajes de paleta.",
-      "Añade un prompt negativo corto para texto/logos/extremidades extra."
-    ],
     "tipsIntro": "Pika 2.2 brilla cuando te apoyas en looks estilizados, loops apretados e iteraciones controladas (seed + prompt negativo).",
-    "promptingEngineWhy": [
-      "Los prompts cortos y estilizados mantienen el motion limpio.",
-      "El lenguaje de cámara ayuda a que los loops se sientan intencionales.",
-      "Los prompts negativos reducen artefactos."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "Prompt: [Estilo] + [Sujeto + acción] + [Escenario] + [Movimiento de cámara] + [Iluminación].\nNegativo: [texto, logos, extremidades extra, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscenario:\n[Dónde + momento + 2 anclajes.]\n\nCámara:\n[Plano + ángulo + un movimiento.]\n\nEstilo:\n[Estilo artístico + paleta + textura.]\n\nNegativo:\n[Qué evitar.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre tomas.",
-        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos clave + materiales.]\n\nSet + luz:\n[Ubicación + key light + paleta.]\n\nCámara:\n[Encuadre + ángulo + un movimiento + sensación de lente.]\n\nControles de estilo:\n[Estilo de animación, textura, grano, color.]\n\nNegativo:\n[Texto, logos, personajes extra, artefactos.]"
-      }
-    ],
-    "promptingGuideLabel": "Pika Labs",
-    "promptingGuideUrl": "https://pika.art",
-    "demoTitle": "Demo: un prompt para Pika 2.2",
-    "demoPromptLabel": "Loop pixel‑art 5 s (1:1, 1080p)",
-    "demoPrompt": [
-      "Loop pixel‑art 5 s de un pequeño mago removiendo un caldero brillante en un interior 1:1.",
-      "Cámara fija en plano medio encuadrando la mesa.",
-      "Burbujas repetidas, libros flotantes, parallax suave en estanterías.",
-      "Luz cálida, píxeles retro, paleta 16 colores, sin texto/logo/UI."
-    ],
-    "demoNotes": [
-      "Sujeto claro en un solo entorno.",
-      "Dirección de estilo fuerte (pixel‑art, paleta retro).",
-      "Movimiento simple y repetible para un loop limpio.",
-      "Evita instrucciones de cámara contradictorias o múltiples locaciones."
-    ],
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Se ve “uncanny” / demasiado real → empuja el estilo (textura, line work, paleta) y evita descriptores fotorrealistas.",

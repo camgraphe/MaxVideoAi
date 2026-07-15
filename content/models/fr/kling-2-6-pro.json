@@ -211,64 +211,7 @@
       "Sortie voix en anglais/chinois (autres langues peuvent être auto‑traduites en anglais quand l’audio est activé).",
       "Image→Vidéo utilise une seule image de référence; le micro‑texte à l’écran reste peu fiable (à overlay en post)."
     ],
-    "promptingTitle": "Comment écrire un excellent prompt Kling 2.6 Pro",
-    "promptingIntro": "Kling 2.6 Pro préfère un sujet, une action et une direction caméra clairs; ajoutez des cues sonores si l’audio est activé.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière, style et son optionnel. Utilisez un prompt négatif pour bloquer les artefacts.",
-    "promptingGlobalPrinciples": [
-      "Un sujet, une action, un mouvement caméra.",
-      "Indiquez la lumière et la sensation de lentille.",
-      "Ajoutez des cues sonores courts ou un dialogue si l’audio est on."
-    ],
     "tipsIntro": "Kling 2.6 Pro est plus facile à piloter si vous écrivez un brief de plan serré et considérez l’audio comme partie de la scène (pas un ajout).",
-    "promptingEngineWhy": [
-      "Le mode audio gère bien une ambiance simple et des lignes courtes.",
-      "Le langage caméra améliore la cohérence.",
-      "Les prompts négatifs aident à retirer texte/logos/personnages en trop."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des beats. À utiliser pour des mini‑stories en un clip."
-    },
-    "demoTitle": "Démo : Kling 2.6 Pro",
-    "demoPromptLabel": "Prompt",
-    "demoPrompt": [
-      "Deux amis marchent dans une ruelle néon sous la pluie la nuit, caméra en tracking à hauteur d’épaule, flaques réfléchissantes, tonnerre doux, dialogue discret : « Tu as eu le plan ? » « Oui, Kling 2.6 l’a cloué. »"
-    ],
-    "demoNotes": [],
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "Prompt : [Sujet + action] dans [décor], [mouvement caméra], [lumière/style], [cue sonore].\nNégatif : [texte, logos, membres en trop, flou]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + un mouvement + sensation de lentille.]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues SFX ou une ligne courte.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
-        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits + matières.]\n\nSet :\n[Lieu + 3 ancrages.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + lentille.]\n\nLumière + grade :\n[Key light + contraste + palette.]\n\nSon (optionnel) :\n[Ambiance + SFX + court dialogue.]\n\nNégatif :\n[Texte, logos, personnages en trop, artefacts.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / liste de plans)",
-        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
-        "copy": "Storyboard / liste de plans\nDurée : [5/10s] • Format : [16:9 ou 9:16]\n\nScène + continuité :\n[Même sujet + même lieu + mêmes vêtements/props + même lumière tout du long.]\n\nPlan 1 (0–2s) :\n[Cadrage + action du sujet + mouvement caméra]\n\nPlan 2 (2–6s) :\n[Cadrage + action du sujet + mouvement caméra]\n\nPlan 3 (6–10s) :\n[Cadrage + action finale/reveal + mouvement ou pose caméra]\n\nLumière + mood :\n[Golden hour / soft daylight / neon night… + 2–3 ancrages de palette]\n\nSon (si supporté) :\n[Ambiance + 1–2 cues SFX + vibe musicale optionnelle]\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays. Pas de jump cuts. Pas de slow‑motion."
-      }
-    ],
-    "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en",
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Dialogue/lipsync qui dérive → raccourcissez la ligne, ralentissez le débit, évitez les monologues longs; réduisez les mouvements de tête et la perf faciale rapide.",

@@ -175,13 +175,6 @@
         "icon": "audio"
       }
     ],
-    "demoTitle": "Prompt demo de Gemini Omni Flash",
-    "demoPromptLabel": "Prompt 10 s 16:9 con sonido nativo",
-    "demoPrompt": [
-      "Prompt: Golden-hour rooftop above a modern city. Two friends discover a small handheld recorder can turn spoken memories into warm moving light. One friend presses record; translucent images of a childhood beach form briefly in the air between them, then dissolve in the wind. Their faces shift from curiosity to wonder. Premium cinematic realism, warm backlight, no text or logos.",
-      "Sound direction: Soft rooftop wind, recorder click, distant city ambience, gentle ocean echo as the memory appears, one whispered line: \"That was my favorite day.\"",
-      "Camera direction: Smooth lateral dolly ending on their surprised faces, 50mm lens feel, shallow depth of field, golden-hour backlight."
-    ],
     "specTitle": "Specs de Gemini Omni Flash",
     "specNote": "Specs de la ruta preview MaxVideoAI para Gemini Omni Flash via Google Vertex Interactions.",
     "specSections": [

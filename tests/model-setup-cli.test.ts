@@ -32,10 +32,17 @@ const requiredArgs = [
   'seedance',
 ];
 
-test('model scaffold retargets decision identity and setup requires localized decision review', () => {
-  assert.match(scaffoldSource, /transformed\.decision/);
+test('model scaffold retargets decision and prompting identities', () => {
+  assert.match(scaffoldSource, /\['decision',\s*'prompting'\]\s+as const/);
+  assert.match(scaffoldSource, /transformed\[field\]/);
   assert.match(scaffoldSource, /modelSlug:\s*options\.targetSlug/);
-  assert.match(setupSource, /Verify every localized `decision` block/);
+});
+
+test('model setup requires exact-locale decision and prompting review', () => {
+  assert.match(setupSource, /every localized `decision` and `prompting` block/i);
+  assert.match(setupSource, /exact `modelSlug`/i);
+  assert.match(setupSource, /locale-correct hrefs/i);
+  assert.match(setupSource, /no English prompting fallback/i);
 });
 
 test('model setup documents and validates canonical model categories', () => {

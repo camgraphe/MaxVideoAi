@@ -228,51 +228,7 @@
       "Don’t impersonate real people or public figures; use consent for any likeness.",
       "Don’t include private personal data (faces of non-consenting people, addresses, phone numbers, documents).",
       "Some prompts or reference images may be blocked by MaxVideoAI safety filters."
-    ],
-    "promptingTitle": "How to Write a Great Nano Banana Prompt",
-    "promptingIntro": "Nano Banana rewards short, literal briefs. Lead with composition, then lighting/style. For edits, say what to change and what must stay the same. For multi-image blends, assign each reference a role.",
-    "promptingTip": "Tip: resolution + aspect ratio are set in the UI — your prompt controls subject, composition, lighting, style, and edit instructions.",
-    "promptingGlobalPrinciples": [
-      "Composition first. Style second.",
-      "Keep prompts short and specific; avoid long wish-lists.",
-      "For edits: \"Change X, keep Y\" beats re-describing the whole scene.",
-      "If text matters: keep it short, high-contrast, and quote it exactly."
-    ],
-    "promptingEngineWhy": [
-      "Fast tier favors short prompts; long prompts can wander.",
-      "Multi-image works best when each image has a clear role (subject vs lighting vs background).",
-      "Tiny text and dense UI are unreliable — keep copy minimal and overlay critical text in post.",
-      "If an edit over-changes the image, tighten the \"keep\" list (framing, lighting, identity)."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = repeatability. Use for controlled batches."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] in [setting]. [Composition]. [Lighting]. [Style anchor].\n\nIf editing:\nEdit: change [X]. Keep [Y] (framing, lighting, identity).\n\nIf using multiple images:\nRefs: Image1 = [main subject]. Image2 = [style/lighting]. (Optional) Image3 = [background/prop]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 2–3 defining details.]\n\nComposition:\n[Framing + angle + background + what stays clean.]\n\nLighting:\n[Key light + mood + 2 palette anchors.]\n\nStyle:\n[Photoreal / illustration + texture/grain + one style reference.]\n\nText (optional):\n[Exact copy in quotes + placement + contrast.]\nExample: “SALE — 20% OFF” top-left, one line, high contrast.\n\nEdit (if editing):\nChange:\n- [list the changes]\nKeep:\n- framing, lighting, identity, logo-free, clean background\n\nReferences (if using multiple images):\nImage1 controls subject/identity\nImage2 controls lighting\nImage3 controls palette/background"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or repeatable results across a set.",
-        "copy": "Brief:\n[Goal + output use case.]\n\nSubject + materials:\n[Details + textures + constraints.]\n\nLayout:\n[Grid + spacing + focal point + negative space.]\n\nLighting + grade:\n[Key light + contrast + palette anchors.]\n\nTypography (optional):\n[Font vibe + hierarchy + exact copy + placement.]\nKeep copy short. Avoid paragraphs.\n\nEdits (if needed):\nChange list:\n- [A]\n- [B]\nKeep list:\n- framing, lighting, identity, background, color palette"
-      }
-    ],
-    "promptingGuideLabel": "Learn more"
+    ]
   },
   "decision": {
     "modelSlug": "nano-banana",

@@ -331,71 +331,7 @@
     "finalPara1": "Veo 3.1 Fast in MaxVideoAI is your rapid-fire test bench for Veo prompts.",
     "finalPara2": "Same cinematic language, lower stakes, and quality that’s ready for social delivery.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Veo 3.1 Fast Prompt",
-    "promptingIntro": "Veo Fast prefers short, concrete prompts and one clear action.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, style, and sound cues.",
-    "promptingGlobalPrinciples": [
-      "One subject, one action.",
-      "Call out framing and camera move.",
-      "Use 2-3 visual anchors, not long lists."
-    ],
     "tipsIntro": "Veo 3.1 Fast is most reliable when you write a short shot brief: one subject, one action, clear framing, and one camera move.",
-    "promptingEngineWhy": [
-      "Fast favors simple beats and short prompts.",
-      "Camera language improves consistency.",
-      "Use style anchors to keep the look stable."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = fast T2V variants with audio on/off.",
-      "structured": "Structured = clearer subject, action, camera and sound cues.",
-      "pro": "Reference-to-video = 1-4 stills for identity, product or style continuity.",
-      "storyboard": "First/Last = use when both endpoint frames are already approved."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want fast Veo variants.",
-        "copy": "8s 16:9 Veo 3.1 Fast draft of a product founder walking through a rainy neon street, slow handheld tracking move, blue storefront reflections, audio on with city ambience and one short calm line."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (reliable draft)",
-        "description": "Separate subject, action, camera and audio so the fast route stays readable.",
-        "copy": "Subject:\nProduct founder in a navy rain jacket, holding a compact camera bag.\n\nAction:\nWalks one step forward, looks toward the storefront, then pauses.\n\nCamera:\nMedium shot, slow handheld tracking move, 16:9, 8 seconds.\n\nLook:\nRainy neon street, blue reflections, clean commercial grade.\n\nAudio:\nCity ambience, soft footsteps, one short calm VO line."
-      },
-      {
-        "id": "pro",
-        "label": "Reference-to-video",
-        "title": "Reference-to-video prompt (1-4 stills)",
-        "description": "Use this when attached stills should preserve identity, product, wardrobe or style.",
-        "copy": "Reference-to-video, 8s, 16:9, 1080p, audio on. Use reference 1 for face and jacket, reference 2 for the product color, reference 3 for the rainy street palette. Keep the same identity and materials while the subject takes one step forward. Slow push-in, subtle city ambience, no extra characters."
-      },
-      {
-        "id": "storyboard",
-        "label": "First/Last",
-        "title": "First/last frame prompt",
-        "description": "Use this when both opening and ending compositions are already approved.",
-        "copy": "First/last-frame Veo 3.1 Fast draft, 6s, 9:16, audio off. Start on the approved product table frame, end on the approved close-up hero frame. Smooth push-in only, keep background layout and label position stable, no new props, no text changes."
-      }
-    ],
-    "promptingGuideLabel": "Google DeepMind",
-    "promptingGuideUrl": "https://deepmind.google/technologies/veo/",
-    "demoTitle": "Demo: Veo 3.1 Fast desk draft",
-    "demoPromptLabel": "8s audio-on draft (16:9, 1080p)",
-    "demoPrompt": [
-      "8s 16:9 Veo 3.1 Fast draft of a presenter working late at a minimalist desk, city lights blurred through a large window.",
-      "Camera: medium close-up with a slow handheld drift, staying on the face, hands and laptop.",
-      "Lighting: cool blue window light mixed with a warm desk lamp.",
-      "Audio: soft typing, low city hum and one short calm line."
-    ],
-    "demoNotes": [
-      "One clear subject and one environment.",
-      "Simple movement that loops cleanly.",
-      "Audio supports the mood without adding complexity."
-    ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Drift / ignores details → move subject + action + framing to the first line; remove extra beats; keep constraints positive (“clean background”, “centered subject”).",

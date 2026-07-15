@@ -226,20 +226,6 @@
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
     ],
-    "promptingTitle": "How to write a strong Uni-1 Max prompt",
-    "promptingIntro": "Start from a selected creative direction and specify the final still, source constraints and reference roles.",
-    "promptingTip": "Tip: for product or typography work, write exact hierarchy and inspect the image before publishing.",
-    "promptingGlobalPrinciples": [
-      "Use Max when detail and finish matter.",
-      "Separate source preservation from revision instructions.",
-      "Give every reference a specific role."
-    ],
-    "promptingEngineWhy": [
-      "Higher-fidelity stills benefit from precise constraints.",
-      "Reference roles reduce ambiguity in product and campaign work.",
-      "Checking text and small details keeps claims conservative."
-    ],
-    "promptingGuideLabel": "Uni-1 Max prompt guide",
     "relatedItems": [
       {
         "brand": "luma",

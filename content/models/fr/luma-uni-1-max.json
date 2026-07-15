@@ -226,20 +226,6 @@
       "N’imitez pas de personnes réelles sans consentement.",
       "N’incluez pas de données personnelles privées."
     ],
-    "promptingTitle": "Écrire un bon prompt Uni-1 Max",
-    "promptingIntro": "Partez d’une direction créative retenue et précisez l’image finale, les contraintes source et les rôles de références.",
-    "promptingTip": "Astuce : pour produit ou typographie, écrivez la hiérarchie exacte et inspectez avant publication.",
-    "promptingGlobalPrinciples": [
-      "Utilisez Max quand détail et finition comptent.",
-      "Séparez préservation source et révision.",
-      "Donnez un rôle à chaque référence."
-    ],
-    "promptingEngineWhy": [
-      "Les images plus fidèles profitent de contraintes précises.",
-      "Les rôles de références réduisent l’ambiguïté produit et campagne.",
-      "La vérification du texte garde les promesses prudentes."
-    ],
-    "promptingGuideLabel": "Guide prompt Uni-1 Max",
     "relatedItems": [
       {
         "brand": "luma",

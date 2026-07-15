@@ -107,7 +107,6 @@
       "Audio cue or disable audio"
     ]
   },
-  "promptingTip": "Tip: duration + aspect ratio are set in the UI — your prompt controls subject, camera direction (often camera_fixed), lighting, and audio cues.",
   "tips": {
     "title": "Tips & limits",
     "items": [
@@ -186,59 +185,6 @@
         ]
       }
     ],
-    "promptingTitle": "How to Write a Great Seedance 1.5 Pro Prompt",
-    "promptingGuideLabel": "Seedance 1.5 Pro API Docs",
-    "promptingGuideUrl": "https://fal.ai/models/fal-ai/bytedance/seedance/v1.5/pro/text-to-video/api",
-    "promptingIntro": "Seedance 1.5 Pro performs best with clear subject/action, controlled camera direction (often camera-fixed), and concise audio notes when audio is enabled.",
-    "promptingGlobalPrinciples": [
-      "Prefer camera-fixed shots when you want steadier motion and fewer artifacts.",
-      "Keep one readable action per clip (or per beat).",
-      "Use a seed when iterating — change one variable at a time.",
-      "If audio is on: keep dialogue short and add only 1–2 sound cues."
-    ],
-    "promptingEngineWhy": [
-      "camera_fixed is a strength: use it for locked camera realism and product shots.",
-      "Seedance is short-form: keep beats simple and avoid cramming multiple actions.",
-      "End frame (I2V) helps land transitions; don’t introduce new actions in the last second.",
-      "Audio is best with minimal cues; long monologues can drift.",
-      "If text matters, plan to overlay it in post (tiny text is unreliable)."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = control. Use for precise, repeatable looks.",
-      "storyboard": "Storyboard = beat timing. Use for short sequenced clips."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [one clear action] in [setting], [framing], [lighting/style].\nAudio (optional): [ambience + 1 key SFX OR one short line].\nNegative: no text, no logos, no subtitles/overlays."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + 2–3 defining details.]\n\nSetting:\n[Where + time + 2 anchors.]\n\nCamera:\n[Framing + (camera_fixed recommended) OR one simple move.]\n\nLook:\n[Lighting + palette anchors.]\n\nAudio (optional):\nDialogue: “Short line.”\nAmbience + 1–2 SFX cues.\n\nNegative:\n[Text, logos, extra people, blur.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"film crew brief\")",
-        "description": "Use this when you need a very specific cinematic look or continuity across shots.",
-        "copy": "Director brief:\n[Goal + vibe.]\n\nContinuity anchors:\n- Subject identity + wardrobe/props\n- Location + time + 3 visual anchors\n- Lighting + palette anchors\n\nCamera:\n- Framing + angle\n- Prefer camera_fixed for steadiness (or one simple move)\n\nAudio (if on):\n- Dialogue: “One short line.”\n- Ambience + 1–2 SFX cues (keep it minimal)\n\nSeed (recommended for iterations):\nReuse the same seed when generating variants."
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Storyboard prompt (sequenced beats)",
-        "description": "Use this when you want a mini-story in one clip. A storyboard prompt (aka sequenced beats) gives clear timing, camera direction, and continuity.",
-        "copy": "Duration: [4–12s] • Aspect: [21:9 / 16:9 / 4:3 / 1:1 / 3:4 / 9:16] • Audio: [on/off]\n\nBeat 1 (0–4s):\n[Framing + action + camera direction]\n\nBeat 2 (4–8s):\n[Framing + action + camera direction]\n\nBeat 3 (8–12s):\n[Final action/reveal + settle]\nEnd frame (optional, I2V): [describe the final frame you want to land on]\n\nAudio (if on):\nDialogue: “Short line.”\nAmbience + 1–2 SFX cues.\n\nConstraints:\nNo logos. No readable text. No subtitles/overlays."
-      }
-    ],
     "tipsTitle": "Tips & Limitations",
     "strengths": [
       "Use camera_fixed for locked-off shots and steadier motion.",
@@ -262,9 +208,7 @@
     "galleryTitle": "Seedance 1.5 Pro examples",
     "galleryIntro": "Recent Seedance 1.5 Pro renders using camera_fixed, seed control, and end frames.",
     "galleryAllCta": "View all Seedance 1.5 Pro examples →",
-    "recreateLabel": "Recreate this shot →",
-    "demoTitle": "Demo prompt — Seedance 1.5 Pro",
-    "demoPromptLabel": "Prompt"
+    "recreateLabel": "Recreate this shot →"
   },
   "decision": {
     "modelSlug": "seedance-1-5-pro",

@@ -300,62 +300,7 @@
     "finalPara1": "MiniMax Hailuo 02 es tu motor de boceto rápido y con física para probar motion y transiciones barato.",
     "finalPara2": "Úsalo para explorar ideas y luego pasa los ganadores a modelos de gama alta para audio y finales en alta resolución.",
     "finalButton": "Abrir Generate",
-    "promptingTitle": "Cómo escribir un gran prompt para Hailuo 02",
-    "promptingIntro": "Hailuo 02 funciona mejor con prompts cortos y cues de movimiento explícitos.",
-    "promptingTip": "Tip: la duración + la relación se configuran en la UI - tu prompt controla sujeto, acción, cámara, iluminación y estilo. Usa movimientos de cámara entre corchetes como [pan], [tilt], [zoom].",
-    "promptingGlobalPrinciples": [
-      "Mantén prompts cortos y concretos.",
-      "Usa cues de cámara/motion entre corchetes.",
-      "Usa un frame final (opcional) para aterrizar la transición."
-    ],
     "tipsIntro": "Hailuo 02 es un motor de física draft: úsalo para tests de motion, experimentos de transición y aterrizajes limpios de end frames.",
-    "promptingEngineWhy": [
-      "El optimizador de prompts puede expandir prompts cortos.",
-      "Los corchetes de cámara ayudan a dirigir el motion.",
-      "El frame final mejora el aterrizaje y los match cuts."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo para resultados fiables.",
-      "pro": "Pro = control de estilo. Úsalo para looks precisos y repetibles."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto] [acción] en [escena], [movimiento de cámara entre corchetes], [iluminación/estilo]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (mejor para resultados fiables)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEscena:\n[Ubicación + hora + 2 anclajes.]\n\nCámara:\n[Plano + ángulo + movimiento entre corchetes, p. ej., [pan left], [zoom in].]\n\nLook:\n[Iluminación + paleta + estilo.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de estudio ultra‑específico)",
-        "description": "Úsalo cuando necesitas un look muy específico o continuidad entre planos.",
-        "copy": "Brief:\n[Objetivo + vibe.]\n\nSujeto + entorno:\n[Detalles clave + ubicación + anclajes.]\n\nCámara + motion:\n[Encuadre + cue de motion entre corchetes.]\n\nFrame final opcional:\n[Describe el último frame objetivo si lo usas.]\n\nIluminación + estilo:\n[Luz clave + paleta.]"
-      }
-    ],
-    "promptingGuideLabel": "MiniMax",
-    "promptingGuideUrl": "https://www.minimaxi.com",
-    "demoTitle": "Demo – deriva urbana 10 s (9:16)",
-    "demoPromptLabel": "Deriva urbana 10 s",
-    "demoPrompt": [
-      "Plano vertical 10 s en una calle neón de noche, física estilizada pero con base real.",
-      "La cámara flota sobre charcos con reflejos ondulados; peatones y paraguas en blur suave.",
-      "Ráfagas de viento mueven basura y vapor; look ligeramente pictórico, colores saturados, sin texto/logos."
-    ],
-    "demoNotes": [
-      "Un solo entorno con cues físicos.",
-      "Fácil de loopear como fondo.",
-      "Salida silenciosa lista para tu soundtrack."
-    ],
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "El motion se siente flotante → añade cues de peso/contacto (“grounded”, “friction”, “objects don’t slide”), ralentiza la acción y reduce el shake de cámara.",

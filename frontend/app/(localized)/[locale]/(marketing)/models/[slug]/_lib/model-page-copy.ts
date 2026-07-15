@@ -8,8 +8,6 @@ import {
   type HeroSpecChip,
   type HeroSpecIconKey,
   type LocalizedFaqEntry,
-  type PromptingTab,
-  type PromptingTabId,
   type QuickStartBlock,
   type RelatedItem,
   type SoraCopy,
@@ -89,39 +87,6 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
       sections.push({ title, items, intro });
     }
     return sections;
-  };
-  const getPromptingTabNotes = (): SoraCopy['promptingTabNotes'] => {
-    const value = custom['promptingTabNotes'];
-    if (!value || typeof value !== 'object') return {};
-    const obj = value as Record<string, unknown>;
-    const pick = (key: string) => (typeof obj[key] === 'string' ? obj[key] : undefined);
-    return {
-      quick: pick('quick'),
-      structured: pick('structured'),
-      pro: pick('pro'),
-      storyboard: pick('storyboard'),
-    };
-  };
-  const getPromptingTabs = (): PromptingTab[] => {
-    const value = custom['promptingTabs'];
-    if (!Array.isArray(value)) return [];
-    return value.reduce<PromptingTab[]>((tabs, entry) => {
-      if (!entry || typeof entry !== 'object') return tabs;
-      const obj = entry as Record<string, unknown>;
-      const id = typeof obj.id === 'string' ? obj.id : null;
-      const label = typeof obj.label === 'string' ? obj.label : null;
-      const title = typeof obj.title === 'string' ? obj.title : null;
-      const copy = typeof obj.copy === 'string' ? obj.copy : null;
-      if (!id || !label || !title || !copy) return tabs;
-      tabs.push({
-        id: id as PromptingTabId,
-        label,
-        title,
-        description: typeof obj.description === 'string' ? obj.description : undefined,
-        copy,
-      });
-      return tabs;
-    }, []);
   };
   const getQuickStartBlocks = (): QuickStartBlock[] => {
     const value = custom['quickStartBlocks'];
@@ -209,15 +174,6 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
   })();
   const specTitle = getString('specTitle') ?? localized.technicalOverviewTitle ?? 'Specs';
   const specNote = getString('specNote') ?? localized.pricingNotes ?? null;
-  const promptingGlobalPrinciples = getStringArray('promptingGlobalPrinciples');
-  const promptingEngineWhy = getStringArray('promptingEngineWhy');
-  const promptingTabNotes = getPromptingTabNotes();
-  const promptingTabs = getPromptingTabs();
-  const promptingTitle = getString('promptingTitle');
-  const promptingIntro = getString('promptingIntro');
-  const promptingTip = getString('promptingTip');
-  const promptingGuideLabel = getString('promptingGuideLabel');
-  const promptingGuideUrl = getString('promptingGuideUrl');
   const tipsIntro = getString('tipsIntro');
 
   return {
@@ -270,15 +226,6 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
     gallerySceneCta: getString('gallerySceneCta'),
     galleryAllCta: getString('galleryAllCta'),
     recreateLabel: getRecreateLabel(),
-    promptingTitle,
-    promptingIntro,
-    promptingTip,
-    promptingGuideLabel,
-    promptingGuideUrl,
-    promptingTabs,
-    promptingGlobalPrinciples,
-    promptingEngineWhy,
-    promptingTabNotes,
     imageTitle: getString('imageTitle'),
     imageIntro: getString('imageIntro'),
     imageFlow: getStringArray('imageFlow'),
@@ -287,10 +234,6 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
     multishotIntro1: getString('multishotIntro1'),
     multishotIntro2: getString('multishotIntro2'),
     multishotTips: getStringArray('multishotTips'),
-    demoTitle: getString('demoTitle'),
-    demoPromptLabel: getString('demoPromptLabel'),
-    demoPrompt: getStringArray('demoPrompt'),
-    demoNotes: getStringArray('demoNotes'),
     tipsTitle: getString('tipsTitle'),
     tipsIntro,
     strengths: getStringArray('strengths').length

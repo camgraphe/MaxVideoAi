@@ -220,16 +220,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt démo — clip social rapide",
-    "demoPromptLabel": "8 s paysage social",
-    "demoPrompt": [
-      "Plan en tracking d’un coureur à l’heure dorée sur une promenade, caméra basse, flare chaleureux, ambiance océan, audio on."
-    ],
-    "demoNotes": [
-      "Action unique",
-      "Mouvement caméra clair et mood",
-      "Cue audio intégré"
-    ],
     "multishotTitle": "Clips séquencés",
     "multishotIntro1": "Enchaînez plusieurs renders 6–10 s pour construire des séquences plus longues.",
     "multishotIntro2": "Réutilisez seeds et style pour garder la cohérence.",
@@ -276,58 +266,7 @@
     "finalPara1": "Prêt à essayer LTX 2 Fast ? Chargez votre wallet et vérifiez le chip prix avant de lancer.",
     "finalPara2": "Passez à LTX‑2 Pro quand vous avez besoin de fidélité max et d’un son synchro.",
     "finalButton": "Ouvrir LTX 2 Fast dans Generate →",
-    "promptingTitle": "Comment écrire un excellent prompt LTX 2 Fast",
-    "promptingIntro": "LTX‑2 Fast préfère des prompts courts avec une action claire et un seul mouvement caméra.",
-    "promptingTip": "Astuce : durée + fps se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière, style et cues sonores optionnels.",
-    "promptingGlobalPrinciples": [
-      "Un sujet, une action, un mouvement caméra.",
-      "Utilisez des ancrages visuels concrets.",
-      "Gardez les prompts courts; évitez les longues listes."
-    ],
     "tipsIntro": "LTX‑2 Fast est le plus fiable quand vous le traitez comme une passe draft : plans simples, variations rapides, puis polish du gagnant.",
-    "promptingEngineWhy": [
-      "Fast est optimisé pour des itérations rapides; les prompts simples gagnent.",
-      "Un langage caméra explicite réduit le drift.",
-      "Les prompts négatifs aident à retirer logos/texte."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = continuité. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des beats. À utiliser pour des mini‑stories en un clip."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet + action] dans [décor], [mouvement caméra], [lumière/style], [cue sonore optionnel].\nNégatif : [texte, logos, personnes en trop, flou]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nDécor :\n[Où + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + un mouvement + sensation de lentille.]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1 cue.]\n\nNégatif :\n[Texte, logos, personnes en trop, flou.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
-        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + tenue :\n[Traits clés + matières.]\n\nSet :\n[Lieu + ancrages.]\n\nCinématographie :\n[Cadrage + angle + un mouvement + lentille.]\n\nLumière + grade :\n[Key light + palette.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / liste de plans)",
-        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
-        "copy": "Mini‑séquence (même sujet + même décor)\nBeat 1 (début) : [action + caméra]\nBeat 2 (milieu) : [action + caméra]\nBeat 3 (fin) : [action finale + pose]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]"
-      }
-    ],
-    "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio",
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Résultat aléatoire / incohérent → retirez des beats; relancez 2–3 variations serrées.",

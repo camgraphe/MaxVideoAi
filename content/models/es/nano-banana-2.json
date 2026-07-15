@@ -162,20 +162,6 @@
       "No suplantes a personas reales o publicas sin consentimiento.",
       "No incluyas datos personales privados ni documentos sensibles."
     ],
-    "promptingTitle": "Como escribir un buen prompt para Nano Banana 2",
-    "promptingIntro": "Nano Banana 2 responde mejor a instrucciones claras de composicion, restricciones explicitas de edit y grounding solo cuando de verdad hace falta.",
-    "promptingTip": "Tip: usa la UI para ratio, resolucion, seed, web search y output format. Manten el prompt centrado en sujeto, layout, estilo y lo que debe quedar fijo.",
-    "promptingGlobalPrinciples": [
-      "Describe primero el encuadre y despues el estilo.",
-      "En edits, di que cambia y que se mantiene.",
-      "Usa grounding solo si importa el contexto actual."
-    ],
-    "promptingEngineWhy": [
-      "Los ratios amplios funcionan mejor con zonas de composicion explicitas.",
-      "Los sets grandes de referencias ayudan, pero los roles por referencia limpian el edit.",
-      "Los prompts guiados deben seguir siendo especificos sobre la estetica objetivo."
-    ],
-    "promptingGuideLabel": "Aprender mas",
     "faqs": [
       {
         "q": "Nano Banana 2 es para imágenes fijas o video?",

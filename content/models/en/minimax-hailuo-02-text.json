@@ -300,62 +300,7 @@
     "finalPara1": "MiniMax Hailuo 02 is your fast, physics-savvy sketch engine for testing motion and transitions cheaply.",
     "finalPara2": "Use it to explore ideas, then promote winners to higher-end models for audio and high-res finals.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Hailuo 02 Prompt",
-    "promptingIntro": "Hailuo 02 works best with short prompts and explicit motion cues.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use bracketed camera moves like [pan], [tilt], [zoom].",
-    "promptingGlobalPrinciples": [
-      "Keep prompts short and concrete.",
-      "Use bracketed camera/motion cues.",
-      "Use an end frame (optional) to land the transition."
-    ],
     "tipsIntro": "Hailuo 02 is a draft-tier physics engine: use it for motion tests, transition experiments, and landing clean end frames.",
-    "promptingEngineWhy": [
-      "Prompt optimizer can expand short prompts.",
-      "Camera brackets help steer motion.",
-      "End frame improves landing and match cuts."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "[Subject] [action] in [scene], [camera move in brackets], [lighting/style]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nScene:\n[Location + time + 2 anchors.]\n\nCamera:\n[Shot + angle + motion in brackets, e.g., [pan left], [zoom in].]\n\nLook:\n[Lighting + palette + style.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + setting:\n[Key traits + location + anchors.]\n\nCamera + motion:\n[Framing + bracketed motion cue.]\n\nOptional end frame:\n[Describe the target last frame if using one.]\n\nLighting + style:\n[Key light + palette.]"
-      }
-    ],
-    "promptingGuideLabel": "MiniMax",
-    "promptingGuideUrl": "https://www.minimaxi.com",
-    "demoTitle": "Demo – 10s city drift (9:16)",
-    "demoPromptLabel": "10s city drift",
-    "demoPrompt": [
-      "10s vertical shot on a neon street at night, stylized but grounded physics.",
-      "Camera floats above puddles, rippling reflections; passersby and umbrellas in soft blur.",
-      "Wind gusts move trash and steam; slightly painterly look, saturated colors, no text/logos."
-    ],
-    "demoNotes": [
-      "One environment with physical cues.",
-      "Easy to loop as a background.",
-      "Silent output ready for your soundtrack."
-    ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Motion feels floaty → add weight/contact cues (“grounded”, “friction”, “objects don’t slide”), slow the action, reduce camera shake.",

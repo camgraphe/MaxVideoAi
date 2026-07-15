@@ -161,21 +161,7 @@
       "No hateful, harassing, or graphic-violence requests.",
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
-    ],
-    "promptingTitle": "How to write a strong GPT Image 2 prompt",
-    "promptingIntro": "Use structured prompts with scene, subject, exact text, visual details, use case, and constraints.",
-    "promptingTip": "Tip: put exact words in quotation marks and describe where each text block should appear.",
-    "promptingGlobalPrinciples": [
-      "State the target artifact: poster, product photo, UI screen, infographic, or concept frame.",
-      "Give exact text when typography matters.",
-      "For edits, separate preserve instructions from change instructions."
-    ],
-    "promptingEngineWhy": [
-      "The model is especially useful when text and layout accuracy are part of the image brief.",
-      "Quality affects cost, so draft cheaper and rerun approved frames at High.",
-      "Reference edits improve when each source image has a clear role."
-    ],
-    "promptingGuideLabel": "Learn more"
+    ]
   },
   "decision": {
     "modelSlug": "gpt-image-2",

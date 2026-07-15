@@ -213,16 +213,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo — hero producto premium",
-    "demoPromptLabel": "Hero producto 6 s",
-    "demoPrompt": [
-      "Plano beauty ultra‑cinemático de un frasco de perfume sobre mesa negra brillante, foco suave y partículas flotando, órbita de cámara 180° lenta, poca profundidad de campo, 4K, 50 fps, soundtrack atmosférico sutil."
-    ],
-    "demoNotes": [
-      "Un solo sujeto hero",
-      "Movimiento de cámara y luz definidos",
-      "Audio incluido"
-    ],
     "multishotTitle": "Clips secuenciados",
     "multishotIntro1": "Encadena varios planos de 6–10 s para narrativas más largas.",
     "multishotIntro2": "Reutiliza seeds y cues de estilo para mantener consistencia.",
@@ -269,58 +259,7 @@
     "finalPara1": "¿Listo para renderizar en LTX 2? Revisa el chip de precio antes de lanzar.",
     "finalPara2": "Itera en LTX 2 Fast y luego cambia a Pro para finalizar.",
     "finalButton": "Abrir LTX 2 en Generate →",
-    "promptingTitle": "Cómo escribir un gran prompt LTX 2",
-    "promptingIntro": "LTX‑2 Pro responde a prompts estructurados tipo producción con dirección de cámara clara.",
-    "promptingTip": "Tip: duración + fps se configuran en la UI - tu prompt controla sujeto, acción, cámara, luz, estilo y cues sonoros opcionales.",
-    "promptingGlobalPrinciples": [
-      "Define sujeto, acción y cámara en las primeras líneas.",
-      "Usa anclajes de lente + luz para consistencia.",
-      "Mantén los beats legibles; un move por plano."
-    ],
     "tipsIntro": "LTX‑2 Pro es un tier final‑take: úsalo cuando el concepto está cerrado y quieres el acabado más limpio.",
-    "promptingEngineWhy": [
-      "Los prompts más largos funcionan si están estructurados.",
-      "El lenguaje de cámara y los anclajes de luz impulsan la fidelidad.",
-      "Los prompts negativos ayudan a evitar artefactos."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variaciones. Úsalo para iterar rápido.",
-      "structured": "Structured = consistencia. Úsalo cuando necesites resultados fiables.",
-      "pro": "Pro = continuidad. Úsalo para looks precisos y repetibles.",
-      "storyboard": "Storyboard = timing de beats. Úsalo para mini‑stories en un clip."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rápido (iteración)",
-        "description": "Usa 1–2 frases cuando quieras variaciones.",
-        "copy": "[Sujeto + acción] en [entorno], [movimiento de cámara], [luz/estilo], [cue de sonido opcional].\nNegativo: [texto, logos, personas extra, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt estructurado (más fiable)",
-        "description": "Separa la información para que el modelo la siga de forma consistente.",
-        "copy": "Sujeto:\n[Quién/qué + una acción.]\n\nEntorno:\n[Dónde + momento + 2 anclas.]\n\nCámara:\n[Plano + ángulo + un movimiento + sensación de lente.]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Qué evitar.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “equipo de rodaje” ultra‑específico)",
-        "description": "Úsalo cuando necesites un look cinematográfico muy preciso o continuidad entre planos.",
-        "copy": "Brief de director:\n[Objetivo + vibe.]\n\nSujeto + vestuario:\n[Rasgos clave + materiales.]\n\nSet + continuidad:\n[Ubicación + anclas + momento del día.]\n\nCinematografía:\n[Encuadre + ángulo + un movimiento + lente + composición.]\n\nLuz + grade:\n[Key light + contraste + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues.]\n\nNegativo:\n[Texto, logos, personajes extra, artefactos.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / lista de planos)",
-        "description": "Úsalo cuando quieras una mini‑story en un solo clip. Un prompt storyboard (multi‑shot / shot list) da timing claro, dirección de cámara y continuidad.",
-        "copy": "Lista de planos (mismo sujeto + mismo entorno)\nPlano 1: [acción + cámara]\nPlano 2: [acción + cámara]\nPlano 3: [acción final/reveal]\n\nLook:\n[Luz + paleta.]\n\nSonido (opcional):\n[Ambiente + 1–2 cues]"
-      }
-    ],
-    "promptingGuideLabel": "LTX",
-    "promptingGuideUrl": "https://www.ltx.studio",
     "troubleshootingTitle": "Problemas comunes → soluciones rápidas",
     "troubleshootingItems": [
       "Se ve “cargado” o inestable → reduce a un solo movimiento de cámara y una acción principal; simplifica el fondo.",

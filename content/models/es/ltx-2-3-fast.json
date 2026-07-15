@@ -255,16 +255,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - borrador cinematográfico fast",
-    "demoPromptLabel": "Check de borrador 16:9",
-    "demoPrompt": [
-      "Un boxeador poderoso camina solo por un túnel oscuro hacia el ring, cuerpo atlético envuelto en una bata con capucha, hombros relajados pero peligrosos. Tracking bajo frontal, push-in lento, rim light duro, niebla sutil, rumor de público apagado y un golpe sonoro nítido, 10 segundos, 16:9."
-    ],
-    "demoNotes": [
-      "Diseñado para un check rápido de motion",
-      "Un sujeto, un movimiento y una atmósfera",
-      "Fácil de relanzar antes de una pasada Pro"
-    ],
     "multishotTitle": "Beats fast más largos",
     "multishotIntro1": "Fast puede llegar más lejos que la generación estándar de LTX 2.3 Pro, lo que resulta útil para walkthroughs simples y pruebas de pacing.",
     "multishotIntro2": "Solo recuerda que los renders >10 segundos intercambian parte de la flexibilidad por la estabilidad del routing.",
@@ -296,55 +286,6 @@
     "finalPara1": "¿Listo para un workflow LTX más ligero? Abre LTX 2.3 Fast en Generate.",
     "finalPara2": "Usa Fast para velocidad y luego mueve el prompt ganador a LTX 2.3 Pro si el proyecto necesita herramientas de edición más profundas.",
     "finalButton": "Abrir LTX 2.3 Fast en Generate ->",
-    "promptingTitle": "Cómo escribir un gran prompt para LTX 2.3 Fast",
-    "promptingIntro": "LTX 2.3 Fast es un motor orientado a generación, así que mantén el prompt corto, visual y directo.",
-    "promptingTip": "Consejo: la UI ya gestiona duración, ratio, resolución, fps y la restricción de routing en duraciones largas. Enfoca el prompt en un sujeto, un movimiento y una atmósfera.",
-    "promptingGlobalPrinciples": [
-      "Un sujeto, una acción y un movimiento funcionan mejor que un prompt tipo lista de deseos.",
-      "Usa imágenes iniciales para la identidad y prompts para el movimiento.",
-      "Reserva los renders de 12 a 20 segundos para los casos donde ese espacio extra de pacing de verdad importe."
-    ],
-    "promptingEngineWhy": [
-      "Fast responde bien a prompts concisos.",
-      "Imagen a video funciona mejor cuando el still ya contiene la composición deseada.",
-      "Las transiciones inicio / final son más fiables cuando ambos frames están claramente relacionados."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = camino más rápido hacia drafts utilizables.",
-      "structured": "Structured = mejor cuando varias personas reutilizarán la misma lógica.",
-      "pro": "Flujo imagen = úsalo cuando el still deba seguir siendo reconocible.",
-      "storyboard": "Storyboard = útil para secuencias sociales simples de varios beats."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Rápido",
-        "title": "Prompt rápido (draft más rápido)",
-        "description": "Úsalo para variantes rápidas y pruebas de hooks.",
-        "copy": "[Sujeto + una acción], [movimiento de cámara], [luz/estilo], [pista sonora opcional], [vibe 16:9 o 9:16]."
-      },
-      {
-        "id": "structured",
-        "label": "Estructurado",
-        "title": "Prompt estructurado (repetible)",
-        "description": "Usa secciones etiquetadas cuando varias personas vayan a reutilizar la misma lógica.",
-        "copy": "Sujeto:\n[Quién/qué]\n\nAcción:\n[Un beat de movimiento limpio]\n\nCámara:\n[Plano + un movimiento]\n\nLook:\n[Luz + paleta]\n\nAudio:\n[Ambiente / música si hace falta]"
-      },
-      {
-        "id": "pro",
-        "label": "Flujo imagen",
-        "title": "Prompt Imagen a video",
-        "description": "La mejor opción cuando el frame inicial debe seguir siendo reconocible.",
-        "copy": "Frame inicial:\n[Lo que ya muestra la imagen subida]\n\nMovimiento:\n[Qué debe moverse]\n\nCámara:\n[Push / pan / drift / orbit]\n\nResolución:\n[Objetivo opcional de imagen final]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (secuencia solo-generate)",
-        "description": "Úsalo para clips cortos de varios beats sin cambiar de workflow.",
-        "copy": "Plano 1: [setup]\nPlano 2: [acción principal]\nPlano 3: [resolución]\n\nLook:\n[Luz + color grading]\n\nAudio:\n[Ambiente + una pista clave]"
-      }
-    ],
     "troubleshootingTitle": "Problemas frecuentes -> soluciones rápidas",
     "troubleshootingItems": [
       "Los renders largos se sienten menos flexibles -> deja los clips >10 segundos solo para casos donde la longitud extra justifique el límite 1080p / 25 fps.",

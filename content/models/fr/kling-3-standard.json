@@ -119,7 +119,6 @@
       "Choisir audio ou voice IDs"
     ]
   },
-  "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle le timing des plans, la caméra, la lumière, le style et les cues audio. Un seul geste par plan.",
   "tips": {
     "title": "Conseils & limites",
     "items": [
@@ -190,57 +189,6 @@
         ]
       }
     ],
-    "promptingTitle": "Comment écrire un bon prompt Kling 3 Standard",
-    "promptingIntro": "Kling 3 Standard fonctionne mieux avec une direction par plans : cadrage clair, une action par plan, mouvement explicite et (si audio activé) dialogue court + peu de cues sonores.",
-    "promptingGlobalPrinciples": [
-      "Pensez en plans, pas en clips : une action par plan est plus simple à exécuter proprement.",
-      "Ancrez vos sujets tôt (et réutilisez le même wording) pour réduire la dérive entre plans.",
-      "Placez cadrage + mouvement caméra avant les adjectifs de style.",
-      "Si l’audio est activé : gardez le dialogue court et n’ajoutez que 1–2 cues sonores."
-    ],
-    "promptingEngineWhy": [
-      "Le multi‑shot fonctionne mieux avec 2–4 plans ; gardez chaque plan sur une action lisible.",
-      "Elements améliorent la continuité : référencez @Element1/@Element2 de façon cohérente dans le prompt.",
-      "Voice IDs : référencez les voix comme <<<voice_1>>> et <<<voice_2>>> (max 2 voix).",
-      "La sortie audio supporte l’anglais et le chinois ; d’autres langues peuvent être auto‑traduites en anglais si l’audio est activé.",
-      "L’image de fin aide à atterrir les transitions ; évitez d’ajouter de nouvelles actions dans la dernière seconde."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle. À utiliser pour des looks précis et répétables.",
-      "storyboard": "Storyboard = timing des plans. À utiliser pour des beats multi‑plans."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Un sujet] [une action visible] dans [décor], [cadrage + un mouvement caméra], [lumière/style].\nAudio (optionnel) : [ambience + 1 cue SFX OU une courte ligne].\nNégatif : pas de texte, pas de logos, pas de sous‑titres/overlays."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Ancrages de scène :\n[Sujet + tenue/props + 2–3 ancrages d’environnement.]\n\nPlans (multi‑shot) :\nPlan 1 (0–5 s) : [cadrage + action + un mouvement caméra]\nPlan 2 (5–10 s) : [cadrage + action + un mouvement caméra]\nPlan 3 (10–15 s) : [action finale/reveal + pose ou image de fin]\n\nElements (optionnel) :\n@Element1 = [personnage principal]\n@Element2 = [prop/produit]\n\nAudio (optionnel) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX. Gardez ça minimal.\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays."
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief “équipe de tournage” ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look cinématique très précis ou une continuité entre plans.",
-        "copy": "Brief réalisateur :\n[Objectif + vibe + audience visée.]\n\nContinuité (répéter sur chaque plan) :\n- Identité du sujet + tenue/props\n- Lieu + moment + 3 ancrages visuels\n- Lumière + ancrages de palette\n- Sensation de lentille + un mouvement caméra par plan\n\nPlan multi‑shot (jusqu’à 15 s au total) :\nPlan 1 : [cadrage + action + caméra]\nPlan 2 : [cadrage + action + caméra]\nPlan 3 : [cadrage + action + caméra]\n(optionnel) Plan 4–6 : [si nécessaire]\n\nElements :\n@Element1 = [personnage]\n@Element2 = [produit/prop]\n\nAudio (si activé) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX + vibe musicale optionnelle.\n\nNégatif :\nPas de texte, pas de logos, pas de sous‑titres/overlays, pas de jump cuts."
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (multi‑shot / liste de plans)",
-        "description": "À utiliser quand vous voulez une mini‑story en un seul clip. Un prompt storyboard (multi‑shot / shot list) donne un timing clair, une direction caméra et de la continuité.",
-        "copy": "Durée : [3–15 s] • Format : [16:9 / 9:16 / 1:1] • Audio : [on/off]\n\nElements (optionnel) :\n@Element1 = [personnage/sujet principal]\n@Element2 = [prop/produit]\n\nPlan 1 (0–3 s) :\n[Cadrage + action + mouvement caméra]\n\nPlan 2 (3–8 s) :\n[Cadrage + action + mouvement caméra]\n\nPlan 3 (8–15 s) :\n[Action finale/reveal + pose caméra]\nImage de fin (optionnelle) : [décrivez le dernier frame souhaité]\n\nAudio (si activé) :\nDialogue : <<<voice_1>>> “Courte ligne.”\nAmbience + 1–2 cues SFX.\n\nContraintes :\nPas de logos. Pas de texte lisible. Pas de sous‑titres/overlays. Une action par plan."
-      }
-    ],
     "tipsTitle": "Conseils & limites",
     "tipsIntro": "Kling 3 Standard est plus prévisible quand vous le planifiez comme un storyboard : plans simples, Elements cohérents et dialogue court.",
     "strengths": [
@@ -265,18 +213,7 @@
     "galleryIntro": "Rendus récents Kling 3 Standard avec multi‑plans, Elements et audio optionnel.",
     "galleryAllCta": "Voir tous les exemples Kling 3 Standard →",
     "recreateLabel": "Recréer ce plan →",
-    "demoTitle": "Prompt démo — Kling 3 Standard",
-    "demoPromptLabel": "Prompt",
-    "safetyNote": "Garde-fous intégrés et bonnes pratiques pour une création responsable avec Kling 3 Standard.",
-    "demoPrompt": [
-      "Durée : 12 s • Ratio : 16:9 • Audio : activé",
-      "",
-      "Shot 1 (0-4 s) : @Element1 runner en veste sombre attend sous une enseigne néon, pluie légère, plan moyen stable.",
-      "Shot 2 (4-8 s) : @Element1 traverse la rue, tracking latéral fluide, reflets bleus et rouges sur le sol.",
-      "Shot 3 (8-12 s) : il ralentit près d’une vitrine, caméra qui se stabilise, même tenue et même lumière.",
-      "",
-      "Audio : ambiance de rue humide, pas courts, un léger souffle. Pas de texte, pas de logo, pas de sous-titres."
-    ]
+    "safetyNote": "Garde-fous intégrés et bonnes pratiques pour une création responsable avec Kling 3 Standard."
   },
   "decision": {
     "modelSlug": "kling-3-standard",

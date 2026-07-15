@@ -18,6 +18,11 @@ This route renders localized SEO pages for individual AI video models.
 - Keep route-only helper logic in `_lib`.
 - Do not move helpers into shared `frontend/lib` unless another route actually reuses them.
 - Keep safety, pricing, examples, and spec fallback copy localized when visible to users.
+- Keep model-specific Prompt Lab editorial content only in `content/models/{locale}/{slug}.json#prompting`.
+- Load Prompt Lab content through `getEngineLocalized`, validate it with `model-page-prompting-content.ts`, and derive runtime display state with `model-page-prompting-view-model.ts`.
+- Never add English fallback, Prompt Lab fields under `custom`, model-slug copy branches, direct JSON imports, or workspace URL construction in Prompt Lab components.
+- Keep generic Prompt Lab UI labels in `model-page-prompting-ui-copy.ts`; keep model-specific titles, prompts, notes, demos, and image examples in localized JSON.
+- Keep the preserved Happy Horse/media-summary prompt-source compatibility rule isolated in `model-page-prompting-prompt-source.ts`; do not move model identity checks into the parser, pure view-model builder, or renderers.
 
 ## Checks
 

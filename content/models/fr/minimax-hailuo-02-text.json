@@ -300,62 +300,7 @@
     "finalPara1": "MiniMax Hailuo 02 est votre modèle rapide et orienté physique pour tester motion et transitions à bas coût.",
     "finalPara2": "Utilisez‑le pour explorer, puis passez les gagnants sur des modèles plus premium pour l’audio et la haute résolution.",
     "finalButton": "Ouvrir Generate",
-    "promptingTitle": "Comment écrire un excellent prompt Hailuo 02",
-    "promptingIntro": "Hailuo 02 fonctionne mieux avec des prompts courts et des cues de motion explicites.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI - votre prompt contrôle sujet, action, caméra, lumière et style. Utilisez des mouvements caméra entre crochets comme [pan], [tilt], [zoom].",
-    "promptingGlobalPrinciples": [
-      "Gardez les prompts courts et concrets.",
-      "Utilisez des cues de caméra/motion entre crochets.",
-      "Utilisez une end frame (optionnelle) pour verrouiller la transition."
-    ],
     "tipsIntro": "Hailuo 02 est un modèle draft orienté physique : utilisez‑le pour tests de motion, transitions et atterrissages propres.",
-    "promptingEngineWhy": [
-      "Le prompt optimizer peut étendre des prompts courts.",
-      "Les crochets caméra aident à guider le mouvement.",
-      "L’end frame améliore l’atterrissage et les match cuts."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] [action] dans [scène], [mouvement caméra entre crochets], [lumière/style]."
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + une action.]\n\nScène :\n[Lieu + moment + 2 ancrages.]\n\nCaméra :\n[Plan + angle + mouvement entre crochets, ex. [pan left], [zoom in].]\n\nLook :\n[Lumière + palette + style.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Brief :\n[Objectif + vibe.]\n\nSujet + décor :\n[Traits clés + lieu + ancrages.]\n\nCaméra + motion :\n[Cadrage + cue de mouvement entre crochets.]\n\nEnd frame optionnelle :\n[Décrivez la frame finale cible si vous en utilisez une.]\n\nLumière + style :\n[Key light + palette.]"
-      }
-    ],
-    "promptingGuideLabel": "MiniMax",
-    "promptingGuideUrl": "https://www.minimaxi.com",
-    "demoTitle": "Démo — dérive urbaine 10 s (9:16)",
-    "demoPromptLabel": "Dérive urbaine 10 s",
-    "demoPrompt": [
-      "Plan vertical 10 s dans une rue néon de nuit, physique stylisée mais ancrée.",
-      "La caméra flotte au‑dessus des flaques, reflets ondulants ; passants et parapluies en flou doux.",
-      "Rafales de vent qui déplacent détritus et vapeur ; look légèrement painterly, couleurs saturées, pas de texte/logos."
-    ],
-    "demoNotes": [
-      "Un seul environnement avec cues physiques.",
-      "Facile à boucler en background.",
-      "Sortie silencieuse prête pour votre bande‑son."
-    ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Motion trop flottant → ajoutez des cues de poids/contact (“ancré”, “friction”, “objets qui ne glissent pas”), ralentissez l’action, réduisez le shake caméra.",

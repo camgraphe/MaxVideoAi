@@ -265,16 +265,6 @@
     ],
     "safetyInterpretation": [],
     "safetyNote": null,
-    "demoTitle": "Prompt demo - revelación cinematográfica con brújula",
-    "demoPromptLabel": "Prompt text-to-video Generate",
-    "demoPrompt": [
-      "Un aventurero robusto está al borde de un acantilado desértico enorme durante golden hour, rostro quemado por el sol, chaqueta de cuero gastada, pañuelo moviéndose con el viento. Abre una antigua brújula de latón en la mano, y un mapa luminoso hecho de luz y polvo se despliega encima, iluminando su rostro y la arena alrededor. La cámara empieza en un plano amplio desde atrás para mostrar las dunas infinitas, luego avanza lentamente cuando levanta la brújula y termina en un primer plano dramático de sus ojos reflejando el mapa luminoso. Sol cálido, polvo flotando, texturas bronce, composición épica pero limpia, tono de aventura cinematográfica premium, simple e icónico. Viento sobre las dunas, clic metálico sutil de la brújula, rumble atmosférico bajo del desierto, sin texto, sin logos, sin watermark."
-    ],
-    "demoNotes": [
-      "Un sujeto claro y un solo beat de revelación",
-      "La cámara pasa del plano general al primer plano",
-      "Los sonidos apoyan la brújula y la atmósfera del desierto"
-    ],
     "multishotTitle": "Workflows de continuación y corrección",
     "multishotIntro1": "LTX 2.3 Pro es menos un motor de generación long-form que una herramienta para mantener el impulso cuando la toma ya existe.",
     "multishotIntro2": "Usa Extend para continuar y Retake para reparar en vez de reconstruir una secuencia completa desde cero.",
@@ -306,55 +296,6 @@
     "finalPara1": "¿Listo para probar un workflow LTX completo con audio, extend y retake en un solo lugar? Abre LTX 2.3 Pro en Generate.",
     "finalPara2": "Usa el modelo estándar cuando el proyecto necesite más que una simple primera pasada rápida.",
     "finalButton": "Abrir LTX 2.3 Pro en Generate ->",
-    "promptingTitle": "Cómo promptear LTX 2.3 Pro según el workflow",
-    "promptingIntro": "LTX 2.3 Pro cambia realmente de lógica según el trabajo. Promptea distinto una generación nueva, una animación guiada por audio, una extensión y un retake en lugar de usar una plantilla universal.",
-    "promptingTip": "Consejo: duración, resolución, fps y controles de workflow ya viven en la UI. Usa el prompt para dirigir la ruta activa: toma nueva, movimiento guiado por soundtrack, continuación o arreglo quirúrgico.",
-    "promptingGlobalPrinciples": [
-      "Define un sujeto, un beat central y un movimiento de cámara antes de añadir estilo.",
-      "Usa el workflow que corresponda al trabajo: generación, audio, extend o retake.",
-      "En retakes, describe solo la sección que debe cambiar en vez de reescribir todo el video."
-    ],
-    "promptingEngineWhy": [
-      "La generación con texto e imagen sigue siendo directa y cinematográfica.",
-      "Audio a video funciona mejor cuando la banda sonora lleva el timing y el prompt guía la puesta en escena.",
-      "Extend y Retake son más sólidos cuando el prompt es preciso sobre la continuidad y sobre lo que debe permanecer igual."
-    ],
-    "promptingTabNotes": {
-      "quick": "Generar = crear una toma nueva desde texto o imagen.",
-      "structured": "Audio = dejar que la soundtrack lleve el timing.",
-      "pro": "Extend = añadir el siguiente beat sin deriva.",
-      "storyboard": "Retake = cambiar solo la parte dañada o floja."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Generar",
-        "title": "Prompt de generación",
-        "description": "Úsalo cuando LTX crea una toma nueva desde texto o una imagen inicial.",
-        "copy": "Sujeto:\nAventurero del desierto con una antigua brújula de latón durante golden hour.\n\nAcción:\nAbre la brújula y un mapa luminoso de polvo se despliega encima.\n\nCámara:\nPlano amplio desde atrás sobre las dunas, luego push-in lento hasta sus ojos reflejando el mapa.\n\nLook:\nSol cálido, polvo flotando, texturas bronce, grade premium de película de aventura.\n\nAudio:\nViento del desierto, clic metálico suave de la brújula, rumble atmosférico bajo.\n\nFormato:\n10 segundos, 16:9, sin texto, sin logos."
-      },
-      {
-        "id": "structured",
-        "label": "Audio",
-        "title": "Prompt audio-to-video",
-        "description": "Úsalo cuando la banda sonora o el diálogo deben marcar timing y puesta en escena.",
-        "copy": "Fuente de audio:\n[Qué hace la soundtrack / el diálogo / el beat]\n\nPuesta en escena visual:\n[Qué debe ver el espectador mientras suena]\n\nCámara:\n[Cómo sigue la toma ese ritmo]\n\nRegla:\nDeja que el audio lleve el pacing. Usa el prompt para controlar sujeto, staging y cámara."
-      },
-      {
-        "id": "pro",
-        "label": "Extend",
-        "title": "Prompt de extensión",
-        "description": "Úsalo cuando el clip actual es bueno y solo falta el siguiente beat.",
-        "copy": "Fuente actual:\n[Qué ya existe]\n\nSiguiente beat:\n[Qué debe ocurrir después]\n\nContinuidad a preservar:\n[Identidad / escenario / ritmo de cámara / luz]\n\nRegla:\nDescribe solo la continuación. No reescribas el clip entero."
-      },
-      {
-        "id": "storyboard",
-        "label": "Retake",
-        "title": "Prompt de retake",
-        "description": "Úsalo cuando solo una parte del clip debe cambiar.",
-        "copy": "Fuente actual:\n[Qué ya está correcto]\n\nSección a rehacer:\n[Momento exacto o problema visual]\n\nQué debe permanecer igual:\n[Todo lo que queda fuera de la ventana de retake]\n\nBeat de reemplazo:\n[Qué debe hacer la nueva sección]\n\nRegla:\nUn retake debe ser quirúrgico. Pide una reparación, no una escena nueva."
-      }
-    ],
     "troubleshootingTitle": "Problemas frecuentes -> soluciones rápidas",
     "troubleshootingItems": [
       "Audio a video se siente visualmente desconectado -> reduce la complejidad de la escena y deja que la banda sonora marque el pacing.",

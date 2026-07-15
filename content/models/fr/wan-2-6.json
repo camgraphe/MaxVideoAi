@@ -256,17 +256,6 @@
     "galleryIntro": "Rendus Wan 2.6 récents en workflows texte, image et référence.",
     "galleryAllCta": "Voir tous les exemples Wan 2.6 →",
     "recreateLabel": "Recréer ce plan →",
-    "demoTitle": "Exemple prêt à rendre",
-    "demoPromptLabel": "Exemple prêt à rendre (multi‑shot, 15 s, 16:9, 1080p)",
-    "demoPrompt": [
-      "Look global : thriller élégant, nuit pluvieuse, néons doux, 35mm, grain fin, profondeur de champ ciné, caméra fluide, palette bleu/ambre.",
-      "Shot 1 [0–4s] : slow push‑in dans une ruelle mouillée, reflets au sol, une silhouette au fond, atmosphère brumeuse.",
-      "Shot 2 [4–10s] : cut sur gros plan des mains ouvrant une enveloppe scellée sur une table en bois, lumière chaude latérale, focus très court.",
-      "Shot 3 [10–15s] : une porte s’ouvre sur une pièce blanche surexposée, flash de lumière, poussière fine dans le faisceau, fondu au noir."
-    ],
-    "demoNotes": [
-      "Option audio : URL d’une nappe ambient douce 3–15 s, volume discret."
-    ],
     "troubleshootingTitle": "Problèmes fréquents → solutions rapides",
     "troubleshootingItems": [
       "Le sujet change / dérive → réduisez les beats, répétez les ancrages à chaque beat, et passez en Référence avec des vidéos cadrées plus serrées.",
@@ -275,57 +264,7 @@
       "Le look dérive du key visual → partez d’Image→Vidéo (hero frame), puis demandez uniquement le mouvement; gardez la recette de style identique.",
       "Transitions abruptes → nommez explicitement la transition + gardez le mouvement caméra continu entre les beats."
     ],
-    "promptingTitle": "Comment écrire un excellent prompt Wan 2.6",
-    "promptingIntro": "Wan 2.6 suit des prompts courts avec sujet, scène et mouvement clairs; utilisez une shot list simple pour le multi‑shot.",
-    "promptingTip": "Astuce : durée + format se règlent dans l’UI — votre prompt contrôle sujet, mouvement, caméra, style et son optionnel. Gardez les prompts concis; l’expansion aide.",
-    "promptingGlobalPrinciples": [
-      "Sujet + scène + mouvement en une phrase claire.",
-      "Pour le multi‑shot, limitez à 2–3 beats.",
-      "Ajoutez un prompt négatif court pour éviter les artefacts."
-    ],
     "tipsIntro": "Wan 2.6 est plus facile à piloter avec des beats courts, des transitions explicites et des références quand l’identité doit rester stable.",
-    "promptingEngineWhy": [
-      "L’expansion de prompt gère bien les prompts courts et concrets.",
-      "Le mode Référence marche mieux quand vous spécifiez ce qui doit rester constant.",
-      "Les cues audio aident le rythme; gardez‑les minimaux."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. À utiliser pour itérer vite.",
-      "structured": "Structured = cohérence. À utiliser pour des résultats fiables.",
-      "pro": "Pro = contrôle de style. À utiliser pour des looks précis et répétables."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Prompt rapide (itération)",
-        "description": "Utilisez 1–2 phrases quand vous voulez des variations.",
-        "copy": "[Sujet] [mouvement] dans [scène], [caméra], [lumière/style], [cue sonore optionnel].\nNégatif : [texte, logos, personnes en trop, flou]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Prompt structuré (plus fiable)",
-        "description": "Séparez l’information pour que le modèle la suive de façon cohérente.",
-        "copy": "Sujet :\n[Qui/quoi + traits clés.]\n\nScène :\n[Lieu + moment + 2 ancrages.]\n\nMouvement :\n[Une action claire + mouvement caméra.]\n\nLook :\n[Lumière + palette + style.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Ce qu’il faut éviter.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Prompt Pro (brief de studio ultra‑spécifique)",
-        "description": "À utiliser quand vous voulez un look très précis ou une continuité entre plans.",
-        "copy": "Liste de plans (même sujet + même décor)\nPlan 1 : [action + caméra]\nPlan 2 : [action + caméra]\nPlan 3 : [action finale/reveal]\n\nLook :\n[Lumière + palette.]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues.]\n\nNégatif :\n[Texte/logos/personnages en trop.]"
-      },
-      {
-        "id": "storyboard",
-        "label": "Storyboard",
-        "title": "Prompt storyboard (beats horodatés)",
-        "description": "Idéal pour des séquences multi‑shots en un seul clip.",
-        "copy": "Liste de plans (même sujet + même décor)\nDurée : [5/10/15s]\n\nBeat 1 (0–3s):\n[Cadrage + action + mouvement caméra]\n\nBeat 2 (3–7s):\n[Cadrage + action + mouvement caméra]\n\nBeat 3 (7–10/15s):\n[Action finale/reveal + caméra qui se pose]\n\nContinuité :\n[Répéter les ancrages : tenue, props, lumière, décor]\n[Si références : tag @Video1/@Video2/@Video3]\n\nSon (optionnel) :\n[Ambiance + 1–2 cues]\n\nNégatif :\n[Texte, logos, personnages en trop, flou]"
-      }
-    ],
-    "promptingGuideLabel": "Wan AI",
-    "promptingGuideUrl": "https://www.wan-ai.com",
     "safetyTitle": "Sécurité & personnes / ressemblance",
     "safetyRules": [
       "Pas de contenu sexuel, ni rien impliquant des mineurs.",

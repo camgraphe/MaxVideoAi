@@ -25,7 +25,6 @@ const decisionPricingCardPath = join(root, 'frontend/app/(localized)/[locale]/(m
 const pageContentSectionsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPageContentSections.tsx');
 const decisionCardsSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCardsSection.tsx');
 const decisionPromptingSectionPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx');
-const legacyPromptingPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts');
 const decisionDemoMediaPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionDemoMedia.client.tsx');
 const decisionPromptTabsPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptTabs.client.tsx');
 const decisionCopyButtonPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionCopyButton.client.tsx');
@@ -122,7 +121,6 @@ test('model page layout delegates template page ownership', () => {
   const pageContentSectionsSource = readSource(pageContentSectionsPath);
   const decisionCardsSource = readSource(decisionCardsSectionPath);
   const decisionPromptingSource = readSource(decisionPromptingSectionPath);
-  const legacyPromptingSource = readSource(legacyPromptingPath);
   const decisionDemoMediaSource = readSource(decisionDemoMediaPath);
   const decisionPromptTabsSource = readSource(decisionPromptTabsPath);
   const decisionCopyButtonSource = readSource(decisionCopyButtonPath);
@@ -176,11 +174,6 @@ test('model page layout delegates template page ownership', () => {
   assert.match(decisionPromptingSource, /ModelDecisionPromptTabs/, 'decision prompting should delegate interactive tabs');
   assert.match(decisionPromptingSource, /viewModel\.section\.referencesTitle/, 'decision prompting should render the reference workflow section');
   assert.match(decisionPromptingSource, /viewModel\.globalPrinciples\.map/, 'decision prompting should render global principles');
-  assert.match(
-    legacyPromptingSource,
-    /engineSlug === 'happy-horse-1-1'[\s\S]*Night market noodle stall chef[\s\S]*getHappyHorse11DemoPrompt/,
-    'Happy Horse 1.1 prompt lab should use the dedicated night-market demo copy'
-  );
   assert.match(decisionDemoMediaSource, /function getMediaAspectRatio/, 'demo media should derive a stable media frame ratio from the visible aspect label');
   assert.match(decisionDemoMediaSource, /self-start/, 'demo media should opt out of grid stretch so the aspect ratio controls the poster height');
   assert.match(decisionDemoMediaSource, /style=\{\{\s*aspectRatio:\s*mediaAspectRatio\s*\}\}/, 'demo media should reserve the poster/video aspect ratio before playback');

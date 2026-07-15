@@ -207,21 +207,6 @@
       "No imites a personas reales o públicas sin consentimiento.",
       "No incluyas datos personales privados ni documentos sensibles."
     ],
-    "promptingTitle": "Cómo escribir un buen prompt de Seedream",
-    "promptingIntro": "Escribe el still como si fuera el primer frame de una toma: sujeto, composición, luz y restricciones primero.",
-    "promptingTip": "Consejo: si la imagen pasará a Seedance, menciona el objetivo de movimiento futuro sin pedir a Seedream que la anime.",
-    "promptingGlobalPrinciples": [
-      "Un objetivo visual claro por imagen.",
-      "En una serie, definir secuencia, número y reglas visuales compartidas.",
-      "En ediciones, decir qué preservar antes de qué cambiar.",
-      "Simplificar el fondo cuando la imagen será referencia de video."
-    ],
-    "promptingEngineWhy": [
-      "Los stills controlados dan un punto de partida más claro a modelos image-to-video.",
-      "Las referencias de producto y personaje se animan mejor cuando silueta, luz y props ya son estables.",
-      "Preparar primero la imagen separa decisiones de calidad visual de decisiones de movimiento."
-    ],
-    "promptingGuideLabel": "Guía de prompts Seedream",
     "relatedItems": [
       {
         "brand": "bytedance",

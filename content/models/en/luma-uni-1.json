@@ -230,20 +230,6 @@
       "Do not impersonate real people or public figures without consent.",
       "Do not include private personal data or sensitive documents."
     ],
-    "promptingTitle": "How to write a strong Uni-1 prompt",
-    "promptingIntro": "Treat the prompt like a still-image creative brief: artifact, subject, layout, references and constraints.",
-    "promptingTip": "Tip: name the role of every reference image.",
-    "promptingGlobalPrinciples": [
-      "Keep one clear visual goal per request.",
-      "Separate preserve and change instructions for edits.",
-      "Use web search only when the brief needs current context."
-    ],
-    "promptingEngineWhy": [
-      "Reference roles help the image route reason about layout and identity.",
-      "Reviewing typography keeps final assets conservative and production-safe.",
-      "A clean still can become stronger source material for later motion."
-    ],
-    "promptingGuideLabel": "Uni-1 prompt guide",
     "relatedItems": [
       {
         "brand": "luma",

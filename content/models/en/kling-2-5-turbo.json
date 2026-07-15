@@ -316,63 +316,7 @@
     "finalPara1": "Kling 2.5 Turbo in MaxVideoAI is your 1080p, silent, cinematic engine for short, punchy beats.",
     "finalPara2": "Use it when camera work and motion carry the story, then layer audio in post or pair with audio engines.",
     "finalButton": "Open Generate",
-    "promptingTitle": "How to Write a Great Kling 2.5 Turbo Prompt",
-    "promptingIntro": "Kling Turbo responds best to short, concrete prompts and one clear camera move.",
-    "promptingTip": "Tip: duration + aspect ratio are set in the UI - your prompt controls subject, action, camera, lighting, and style. Use Negative prompt to block artifacts.",
-    "promptingGlobalPrinciples": [
-      "One subject, one action, one camera move.",
-      "Use concrete nouns and settings.",
-      "Add a short negative prompt for text/logos/extra people."
-    ],
     "tipsIntro": "Kling 2.5 Turbo is easiest to steer when you write for motion: one subject, one clear action, one camera move — and explicit weight/inertia.",
-    "promptingEngineWhy": [
-      "Short, physical actions read best in 5-10s.",
-      "Explicit camera language improves consistency.",
-      "Negative prompts keep frames clean."
-    ],
-    "promptingTabNotes": {
-      "quick": "Quick = variations. Use for fast iteration.",
-      "structured": "Structured = consistency. Use when you need reliable results.",
-      "pro": "Pro = style control. Use for precise, repeatable looks."
-    },
-    "promptingTabs": [
-      {
-        "id": "quick",
-        "label": "Quick",
-        "title": "Quick prompt (fast iteration)",
-        "description": "Use 1–2 sentences when you want variations.",
-        "copy": "Prompt: [Subject + action] in [setting], [camera move], [lighting/style].\nNegative: [text, logos, extra limbs, blur]"
-      },
-      {
-        "id": "structured",
-        "label": "Structured",
-        "title": "Structured prompt (best for reliable results)",
-        "description": "Separate information so the model can follow it consistently.",
-        "copy": "Subject:\n[Who/what + one action.]\n\nSetting:\n[Where + time + 2 visual anchors.]\n\nCamera:\n[Shot + angle + one move.]\n\nLook:\n[Lighting + palette + style.]\n\nNegative:\n[What to avoid: text, logos, extra people, blur.]"
-      },
-      {
-        "id": "pro",
-        "label": "Pro",
-        "title": "Pro prompt (ultra-specific \"studio brief\")",
-        "description": "Use this when you need a very specific look or continuity across shots.",
-        "copy": "Brief:\n[Goal + vibe.]\n\nSubject + wardrobe:\n[Key traits + materials.]\n\nSet:\n[Location + 3 anchors.]\n\nCinematography:\n[Framing + angle + one move + lens feel.]\n\nLighting:\n[Key light + palette.]\n\nNegative:\n[Text, logos, extra characters, artifacts.]"
-      }
-    ],
-    "promptingGuideLabel": "Kling by Kuaishou",
-    "promptingGuideUrl": "https://www.kuaishou.com/en",
-    "demoTitle": "Demo – Founder portrait 5s (9:16)",
-    "demoPromptLabel": "Founder portrait 5s",
-    "demoPrompt": [
-      "5s vertical 9:16 clip of a founder in a modern office at golden hour.",
-      "Camera: slow handheld drift from torso to face, shallow DOF.",
-      "Soft city bokeh, realistic skin/fabric, gentle flares.",
-      "No text, no logos, no extras."
-    ],
-    "demoNotes": [
-      "Single subject, single location, clear camera path.",
-      "Room for VO/graphics in post.",
-      "Pro Image for best fidelity on a portrait."
-    ],
     "troubleshootingTitle": "Common problems → fast fixes",
     "troubleshootingItems": [
       "Motion feels floaty / fake → add weight + contact cues; slow the action; remove handheld shake; simplify the background.",

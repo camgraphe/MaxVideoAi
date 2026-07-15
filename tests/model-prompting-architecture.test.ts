@@ -23,6 +23,27 @@ const viewModelSource = readSource(helperPath('model-page-prompting-view-model.t
 const uiCopySource = readSource(helperPath('model-page-prompting-ui-copy.ts'));
 const promptSourcePath = helperPath('model-page-prompting-prompt-source.ts');
 const legacyPath = helperPath('model-page-prompting-legacy.ts');
+const copySource = readSource(helperPath('model-page-copy.ts'));
+const specsTypesSource = readSource(helperPath('model-page-specs-types.ts'));
+const correctionsPath = join(ROOT, 'scripts/model-prompting-corrections.ts');
+const converterPath = join(ROOT, 'scripts/migrate-model-prompting-content.ts');
+const legacyTestPath = join(ROOT, 'tests/model-prompting-legacy-projection.test.ts');
+const modelsAuditSource = readSource(join(ROOT, 'scripts/models-audit.mjs'));
+const PROMPTING_COPY_IDENTIFIERS = [
+  'promptingTitle',
+  'promptingIntro',
+  'promptingTip',
+  'promptingGuideLabel',
+  'promptingGuideUrl',
+  'promptingTabs',
+  'promptingGlobalPrinciples',
+  'promptingEngineWhy',
+  'promptingTabNotes',
+  'demoTitle',
+  'demoPromptLabel',
+  'demoPrompt',
+  'demoNotes',
+] as const;
 
 test('model prompting parses and builds once before rendering', () => {
   assert.equal(
@@ -74,7 +95,27 @@ test('server Prompt Lab renderers accept only the render-ready view model', () =
     `${layoutSource}\n${promptingWrapperSource}\n${decisionSource}`,
     /from ['"]\.\.\/_lib\/model-page-prompting-legacy['"]/,
   );
-  assert.ok(existsSync(legacyPath), 'Task 5 should leave the temporary legacy projector for Task 6');
+  assert.equal(existsSync(legacyPath), false, 'the temporary legacy projector must be deleted');
+});
+
+test('temporary prompting migration owners are absent', () => {
+  for (const filePath of [legacyPath, correctionsPath, converterPath, legacyTestPath]) {
+    assert.equal(existsSync(filePath), false, filePath);
+  }
+});
+
+test('SoraCopy and buildSoraCopy contain no Prompt Lab ownership', () => {
+  for (const identifier of PROMPTING_COPY_IDENTIFIERS) {
+    assert.doesNotMatch(specsTypesSource, new RegExp(`\\b${identifier}\\b`), identifier);
+    assert.doesNotMatch(copySource, new RegExp(`\\b${identifier}\\b`), identifier);
+  }
+  assert.doesNotMatch(specsTypesSource, /\bPromptingTab(?:Id)?\b/);
+  assert.doesNotMatch(copySource, /\bPromptingTab(?:Id)?\b/);
+});
+
+test('model audit recognizes the strict prompting owner without custom fallbacks', () => {
+  assert.match(modelsAuditSource, /content\?\.prompting/);
+  assert.doesNotMatch(modelsAuditSource, /custom\?\.promptingTabs/);
 });
 
 test('default Prompt Lab rendering consumes explicit semantic presentation state', () => {
@@ -95,7 +136,7 @@ test('default Prompt Lab rendering consumes explicit semantic presentation state
   );
 });
 
-test('prompt-source policy stays separate from the pure view-model builder', () => {
+test('the permanent prompt-source compatibility policy is isolated from builders and renderers', () => {
   assert.ok(existsSync(promptSourcePath));
   const promptSource = readSource(promptSourcePath);
   assert.match(promptSource, /engineId\s*===\s*['"]happy-horse-1-1['"]/);
@@ -104,7 +145,10 @@ test('prompt-source policy stays separate from the pure view-model builder', () 
   assert.match(promptSource, /demoMedia\?\.prompt\?\.trim\(\)/);
   assert.match(viewModelSource, /input\.demoPromptSource\s*===\s*['"]media['"]/);
   assert.match(viewModelSource, /input\.defaultDemoPromptSource\s*===\s*['"]media['"]/);
-  assert.doesNotMatch(viewModelSource, /happy-horse-1-1|veo-3-1-fast/);
+  assert.doesNotMatch(
+    `${parserSource}\n${viewModelSource}\n${uiCopySource}\n${promptingWrapperSource}\n${decisionSource}`,
+    /happy-horse-1-1|veo-3-1-fast/,
+  );
 });
 
 test('interactive Prompt Lab children receive derived labels and destinations', () => {
