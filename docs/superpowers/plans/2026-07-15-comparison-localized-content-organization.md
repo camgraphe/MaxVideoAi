@@ -468,7 +468,7 @@ test('the generated content inventory exactly matches the three completed source
   assert.deepEqual(Object.keys(ES_COMPARE_PAGE_OVERRIDES).sort(), slugs);
   assert.deepEqual(
     readdirSync(CONTENT_DIR).filter((name) => name.endsWith('.json')).sort(),
-    slugs.map((slug) => `${slug}.json`),
+    slugs.map((slug) => `${slug}.json`).sort(),
   );
 });
 
