@@ -73,6 +73,10 @@ test('legacy prompting decisions are isolated behind one temporary pure projecto
     componentSource,
     /function getKlingO3PromptingTabs|function getImagePromptExamples|function getRouteDemoSummary/,
   );
+  assert.ok(
+    componentSource.trimEnd().split('\n').length <= 300,
+    'ModelDecisionPromptingSection.tsx must stay at or below 300 physical lines',
+  );
 });
 
 test('all 40-by-3 legacy projections satisfy the strict prompting contract after approved corrections', async () => {
