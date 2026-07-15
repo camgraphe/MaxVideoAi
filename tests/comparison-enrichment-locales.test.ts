@@ -21,6 +21,22 @@ const TARGET_COMPARISONS = [
   ['minimax-hailuo-02-text-vs-wan-2-6', 'minimax-hailuo-02-text', 'wan-2-6'],
 ] as const;
 
+const PARITY_COMPLETION_SLUGS = [
+  'seedance-2-0-vs-seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0',
+  'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast',
+  'dreamina-seedance-2-0-mini-vs-veo-3-1-fast',
+  'dreamina-seedance-2-0-mini-vs-luma-ray-3-2',
+  'luma-ray-3-2-vs-veo-3-1-fast',
+  'happy-horse-1-1-vs-kling-o3-pro',
+  'happy-horse-1-1-vs-veo-3-1-fast',
+  'happy-horse-1-1-vs-seedance-2-0-fast',
+  'dreamina-seedance-2-0-mini-vs-happy-horse-1-1',
+  'happy-horse-1-1-vs-ltx-2-3-pro',
+  'veo-3-1-fast-vs-veo-3-1-lite',
+] as const;
+
 type Locale = 'en' | 'fr' | 'es';
 type OverrideMap = Record<string, ComparePageOverride>;
 
@@ -56,6 +72,21 @@ function collectText(entry: ComparePageOverride): string {
   ]
     .filter(Boolean)
     .join(' ');
+}
+
+function collectStructuralFieldPaths(value: unknown, prefix = ''): string[] {
+  if (Array.isArray(value)) {
+    return [...new Set(value.flatMap((item) => collectStructuralFieldPaths(item, `${prefix}[]`)))].sort();
+  }
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+  return Object.entries(value as Record<string, unknown>)
+    .flatMap(([key, nested]) => {
+      const path = prefix ? `${prefix}.${key}` : key;
+      return [path, ...collectStructuralFieldPaths(nested, path)];
+    })
+    .sort();
 }
 
 function assertCompleteOverride(locale: Locale, slug: string): void {
@@ -128,6 +159,53 @@ test('Spanish comparison copy stays LATAM-neutral', () => {
   TARGET_COMPARISONS.forEach(([slug]) => {
     assert.doesNotMatch(collectText(getEntry('es', slug)), spainSpecificTerms, `Spain-specific term in ${slug}`);
   });
+});
+
+test('the bounded FR and ES metadata gaps are complete and independently localized', () => {
+  for (const slug of PARITY_COMPLETION_SLUGS) {
+    const english = getEntry('en', slug);
+    for (const locale of ['fr', 'es'] as const) {
+      const localized = getEntry(locale, slug);
+      const title = localized.meta?.title ?? '';
+      const description = localized.meta?.description ?? '';
+
+      assert.ok(title.length >= 35 && title.length <= 80, `${locale} title length for ${slug}: ${title.length}`);
+      assert.ok(
+        description.length >= 120 && description.length <= 180,
+        `${locale} description length for ${slug}: ${description.length}`,
+      );
+      assert.equal(localized.meta?.titleBranding, english.meta?.titleBranding, `${locale} branding for ${slug}`);
+      assert.notEqual(title, english.meta?.title, `${locale} title should not copy English for ${slug}`);
+      assert.notEqual(description, english.meta?.description, `${locale} description should not copy English for ${slug}`);
+    }
+  }
+});
+
+test('all 47 completed comparison entries have equivalent EN, FR and ES field presence', () => {
+  const englishSlugs = Object.keys(EN_COMPARE_PAGE_OVERRIDES).sort();
+  assert.equal(englishSlugs.length, 47);
+  assert.deepEqual(Object.keys(FR_COMPARE_PAGE_OVERRIDES).sort(), englishSlugs);
+  assert.deepEqual(Object.keys(ES_COMPARE_PAGE_OVERRIDES).sort(), englishSlugs);
+
+  for (const slug of englishSlugs) {
+    const englishPaths = collectStructuralFieldPaths(getEntry('en', slug));
+    assert.deepEqual(collectStructuralFieldPaths(getEntry('fr', slug)), englishPaths, `FR structure for ${slug}`);
+    assert.deepEqual(collectStructuralFieldPaths(getEntry('es', slug)), englishPaths, `ES structure for ${slug}`);
+  }
+});
+
+test('Seedance 2.0 standard versus Fast has localized quick verdicts without fallback', () => {
+  const slug = 'seedance-2-0-vs-seedance-2-0-fast';
+  const english = getEntry('en', slug).quickVerdict;
+  const french = getEntry('fr', slug).quickVerdict;
+  const spanish = getEntry('es', slug).quickVerdict;
+
+  assert.ok(french && french.body.length >= 120);
+  assert.ok(spanish && spanish.body.length >= 120);
+  assert.notEqual(french.title, english?.title);
+  assert.notEqual(french.body, english?.body);
+  assert.notEqual(spanish.title, english?.title);
+  assert.notEqual(spanish.body, english?.body);
 });
 
 test('every comparison enrichment link resolves to a public model or comparison route', () => {

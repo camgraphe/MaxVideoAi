@@ -84,8 +84,17 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'seedance-2-0-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Seedance 2.0 vs Fast: calidad, velocidad, precio y usos',
+        description: 'Compara Seedance 2.0 y Fast con prompts idénticos, videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Compara Seedance 2.0 y Seedance 2.0 Fast para elegir el workflow de video IA de Seedance actual mas adecuado segun tu necesidad de trabajo multi-shot final, audio nativo y comparacion de workflow. Usa esta pagina para ver cuando el Seedance estandar encaja mejor en una salida de video de Seedance mas pulida y cuando Fast encaja mejor para pruebas, checks de timing e iteracion mas barata.',
+      quickVerdict: {
+        title: 'Veredicto rápido',
+        body: 'Elegir entre Seedance 2.0 y Seedance 2.0 Fast es, ante todo, decidir entre calidad final y velocidad de iteración. Seedance 2.0 funciona mejor para tomas finales en 1080p o 4K, mayor consistencia, trabajos guiados por referencias, audio nativo y resultados pulidos. Seedance 2.0 Fast conviene para borradores más económicos en 480p o 720p, pruebas de prompts, revisiones de ritmo y exploración creativa rápida antes de llevar la mejor idea a Seedance 2.0.',
+      },
       primaryLinksTitle: 'Siguientes pasos recomendados',
       primaryLinks: [
         {
@@ -135,6 +144,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0': {
+      meta: {
+        title: 'Seedance 2.0 vs Mini: calidad, costo por lote y usos',
+        description: 'Compara Seedance 2.0 y Seedance 2.0 Mini según sus calificaciones, especificaciones, diferencias de costo y cuándo usar Mini para variantes de video por lote.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, entrega de mayor resolucion y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina ahora incluye videos lado a lado Mini vs Seedance 2.0 con los mismos prompts, ademas de scorecard, specs y contexto de pricing.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -176,6 +190,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Seedance 2.0 Fast vs Mini: velocidad, costo por lote y usos',
+        description: 'Compara Seedance 2.0 Fast y Seedance 2.0 Mini por velocidad de borrador, costo por lote, especificaciones, calificaciones y flujos de marketing a gran escala.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Seedance 2.0 Fast cuando la prioridad sea velocidad de borrador Seedance, checks de timing y una ruta rapida de vuelta al modelo flagship. Usa Seedance 2.0 Mini como la opcion de volumen batch de menor coste para variantes ecommerce o social, ediciones de video, extensiones y pruebas de marketing repetidas. Esta pagina ahora incluye videos lado a lado Mini vs Fast con los mismos prompts, ademas de scorecard, specs y contexto de pricing.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -217,6 +236,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-ltx-2-3-fast': {
+      meta: {
+        title: 'LTX 2.3 Fast vs Seedance 2.0 Mini: valor, especificaciones y usos',
+        description: 'Compara LTX 2.3 Fast y Seedance 2.0 Mini para borradores rápidos, variantes por lote, especificaciones, calificaciones y flujos de video para marketing.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa LTX 2.3 Fast para exploracion LTX rapida, mas margen de resolucion y borradores creativos ligeros. Usa Seedance 2.0 Mini como la opcion Dreamina Seedance de menor coste en batches 480p/720p, variantes ecommerce, hooks UGC, edicion de video y pruebas de extension. Esta pagina es de scorecard/specs por ahora; no muestra videos comparativos de Mini todavia.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -258,6 +282,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Seedance 2.0 Mini vs Veo 3.1 Fast: costo, audio y usos',
+        description: 'Compara Seedance 2.0 Mini y Veo 3.1 Fast según sus calificaciones, posición de costo, flujo de audio y lugar dentro de una producción de marketing.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Seedance 2.0 Mini como la opcion batch 480p/720p de menor coste para variantes ecommerce, hooks UGC, ediciones de video y experimentos de marketing frecuentes. Usa Veo 3.1 Fast cuando la calidad Veo, workflows con audio, mayor resolucion de entrega y mejor pulido de borrador importan mas que el coste batch. Esta pagina Mini es solo scorecard/specs por ahora y no incluye videos comparativos.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -299,6 +328,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-luma-ray-3-2': {
+      meta: {
+        title: 'Seedance 2.0 Mini vs Luma Ray 3.2: costo, edición y usos',
+        description: 'Compara Seedance 2.0 Mini y Luma Ray 3.2 por costo por lote, audio, edición de video, reencuadre, calificaciones y mejores usos de marketing.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Seedance 2.0 Mini cuando el trabajo necesita batches Dreamina Seedance de menor coste, variantes ecommerce, hooks social, extension de video, ediciones desde video fuente y pruebas con audio nativo en 480p o 720p. Usa Luma Ray 3.2 cuando el trabajo depende del movimiento cinematico de Luma, Modify Video, Reframe, preservacion de video fuente, guide frames y control visual 1080p sin audio nativo. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -340,6 +374,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'luma-ray-3-2-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Luma Ray 3.2 vs Veo 3.1 Fast: cine, audio y usos',
+        description: 'Compara Luma Ray 3.2 y Veo 3.1 Fast por movimiento cinematográfico, control de video a video, reencuadre, audio nativo, velocidad y mejores usos.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Luma Ray 3.2 cuando el problema creativo es el control de video fuente: Modify Video, Reframe, guide frames, preservacion del movimiento cinematico e iteracion visual 1080p sin audio nativo. Usa Veo 3.1 Fast cuando el brief necesita un borrador mas rapido con look Veo, opciones de audio nativo, mas margen de entrega y pulido short-form premium antes de produccion final. Esta comparacion ayuda a decidir si la siguiente pasada debe editar o reframar movimiento existente, o generar un draft Veo mas pulido y audio-ready.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -381,6 +420,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'happy-horse-1-1-vs-kling-o3-pro': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Kling O3 Pro: audio, referencias y usos',
+        description: 'Compara Happy Horse 1.1 y Kling O3 Pro por audio nativo, sincronización labial, control con referencias, video a video, calificaciones y mejores usos.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Happy Horse 1.1 cuando el brief se centra en audio nativo, dialogo, lip-sync multilingue, personajes de referencia y workflows de texto, imagen o referencia-a-video. Usa Kling O3 Pro cuando el proyecto necesita mas control omni, transformacion desde video fuente, referencias visuales y continuidad estilo Kling. Esta comparacion ayuda a elegir entre un workflow de actor audio-first y una ruta de produccion mas pesada basada en referencias y video-to-video.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -422,6 +466,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'happy-horse-1-1-vs-veo-3-1-fast': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Veo 3.1 Fast: audio, velocidad y usos',
+        description: 'Compara Happy Horse 1.1 y Veo 3.1 Fast por audio nativo, sincronización labial, borradores rápidos, alta resolución, calificaciones y mejores usos.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Happy Horse 1.1 cuando el clip necesita audio nativo, dialogo, lip-sync y personajes de referencia controlables para escenas social o UGC. Usa Veo 3.1 Fast cuando quieres el look Veo, ciclos de borrador mas rapidos, mas margen de resolucion y conceptos cortos mas pulidos antes de un workflow Veo final. Esta pagina separa una generacion de actor audio-first de una ruta de borrador visual premium mas rapida.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -463,6 +512,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'happy-horse-1-1-vs-seedance-2-0-fast': {
+      meta: {
+        title: 'Happy Horse 1.1 vs Seedance 2.0 Fast: audio, borradores y usos',
+        description: 'Compara Happy Horse 1.1 y Seedance 2.0 Fast por audio nativo, sincronización labial, borradores rápidos, control de costos, calificaciones y mejores usos.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Happy Horse 1.1 cuando el trabajo depende de personajes que hablan, audio sincronizado nativo, lip-sync y referencias reutilizables. Usa Seedance 2.0 Fast cuando necesitas borradores Seedance de menor coste, checks de timing, exploracion de prompts y una ruta rapida hacia Seedance 2.0. Esta comparacion ayuda a decidir si la siguiente prueba debe validar performance y dialogo o simplemente iterar mas rapido la direccion visual.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -504,6 +558,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'dreamina-seedance-2-0-mini-vs-happy-horse-1-1': {
+      meta: {
+        title: 'Seedance 2.0 Mini vs Happy Horse 1.1: costo, audio y usos',
+        description: 'Compara Seedance 2.0 Mini y Happy Horse 1.1 por costo de video por lote, audio nativo, sincronización labial, referencias, calificaciones y flujos de marketing.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Seedance 2.0 Mini cuando buscas una ruta Dreamina Seedance de menor coste para batches ecommerce, variantes social, ediciones de video, pruebas de extension y produccion frecuente en 480p o 720p. Usa Happy Horse 1.1 cuando la escena depende de audio sincronizado nativo, dialogo, lip-sync y mejor comportamiento de personajes que hablan. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -545,6 +604,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'happy-horse-1-1-vs-ltx-2-3-pro': {
+      meta: {
+        title: 'Happy Horse 1.1 vs LTX 2.3 Pro: audio, 4K, edición y usos',
+        description: 'Compara Happy Horse 1.1 y LTX 2.3 Pro por audio nativo, sincronización labial, entrega en 4K, clips largos, controles de edición, calificaciones y mejores usos.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Usa Happy Horse 1.1 cuando la historia depende de audio nativo, lip-sync, dialogo y personajes de referencia en escenas cortas de marketing o UGC. Usa LTX 2.3 Pro cuando el proyecto necesita clips mas largos, entrega de mayor resolucion, margen 4K, workflows de extension o retake y mas acabado de produccion. Esta comparacion separa un modelo de actor audio-first de un modelo de produccion y edicion mas flexible.',
       primaryLinksTitle: 'Siguientes pasos recomendados',
@@ -691,6 +755,11 @@ export const ES_COMPARE_PAGE_OVERRIDES = {
       },
     },
     'veo-3-1-fast-vs-veo-3-1-lite': {
+      meta: {
+        title: 'Veo 3.1 Lite vs Fast: precio, calidad y usos',
+        description: 'Compara Veo 3.1 Lite y Fast por precio, calidad de salida, control de audio, flexibilidad del flujo y cuándo conviene elegir cada versión.',
+        titleBranding: 'none',
+      },
       heroIntro:
         'Compara Veo 3.1 Fast y Veo 3.1 Lite para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de borradores text-to-video mas baratos, pruebas image-to-video, comportamiento del audio e iteracion mas rapida.',
       faq: {
