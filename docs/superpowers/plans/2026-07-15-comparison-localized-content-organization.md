@@ -614,6 +614,16 @@ import type { ComparePageContentDocument } from '../frontend/app/(localized)/[lo
 
 const CONTENT_DIR = path.join(process.cwd(), 'content', 'comparisons');
 const LOCALES = ['en', 'fr', 'es'] as const;
+const SUPPORTED_HREF_BY_LOCALE = {
+  en: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$))/,
+  fr: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|fr\/(?:modeles|exemples|comparatif)\/|fr\/tarifs(?:#|$))/,
+  es: /^\/(?:(?:models|examples|ai-video-engines)\/|pricing(?:#|$)|es\/(?:modelos|ejemplos|comparativa)\/|es\/precios(?:#|$))/,
+} as const;
+const FORBIDDEN_LOCALE_PREFIX_BY_LOCALE = {
+  en: /^\/(?:fr|es)(?:\/|$)/,
+  fr: /^\/es(?:\/|$)/,
+  es: /^\/fr(?:\/|$)/,
+} as const;
 
 function contentFiles(): string[] {
   return readdirSync(CONTENT_DIR).filter((name) => name.endsWith('.json')).sort();
@@ -701,13 +711,17 @@ test('path-unsafe requests and structurally divergent locales are rejected', () 
   );
 });
 
-test('all comparison-content links use locale-neutral supported public route families', () => {
+test('all comparison-content links use supported public route families without crossed locale prefixes', () => {
   for (const fileName of contentFiles()) {
     const document = loadDocument(fileName);
     for (const locale of LOCALES) {
       for (const link of document[locale].primaryLinks ?? []) {
-        assert.match(link.href, /^\/(models|examples|ai-video-engines)\//, `${locale} unsupported href ${link.href}`);
-        assert.doesNotMatch(link.href, /^\/(fr|es)\//, `${locale} hard-coded locale prefix ${link.href}`);
+        assert.match(link.href, SUPPORTED_HREF_BY_LOCALE[locale], `${locale} unsupported href ${link.href}`);
+        assert.doesNotMatch(
+          link.href,
+          FORBIDDEN_LOCALE_PREFIX_BY_LOCALE[locale],
+          `${locale} crossed locale prefix ${link.href}`,
+        );
       }
     }
   }
@@ -741,7 +755,12 @@ export type { ComparePageOverride } from './compare-page-overrides-types';
 const COMPARISON_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*-vs-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const COMPARISON_CONTENT_ROOT = path.join(CONTENT_ROOT, 'comparisons');
 const nonEmptyString = z.string().min(1);
-const internalHref = nonEmptyString.regex(/^\/(?:models|examples|ai-video-engines)\//);
+const neutralInternalHrefPattern = /^\/(?:(?:models|examples|ai-video-engines)\/[^\s]+|pricing(?:#[^\s]+)?)$/;
+const internalHrefPatternsByLocale: Record<AppLocale, readonly RegExp[]> = {
+  en: [neutralInternalHrefPattern],
+  fr: [neutralInternalHrefPattern, /^\/fr\/(?:(?:modeles|exemples|comparatif)\/[^\s]+|tarifs(?:#[^\s]+)?)$/],
+  es: [neutralInternalHrefPattern, /^\/es\/(?:(?:modelos|ejemplos|comparativa)\/[^\s]+|precios(?:#[^\s]+)?)$/],
+};
 
 const metaSchema = z.object({
   title: nonEmptyString.optional(),
@@ -760,7 +779,7 @@ const topCardSchema = z.object({
 }).strict();
 
 const primaryLinkSchema = z.object({
-  href: internalHref,
+  href: nonEmptyString,
   label: nonEmptyString,
 }).strict();
 
@@ -826,6 +845,19 @@ function assertStructuralParity(document: ComparePageContentDocument, source: st
   }
 }
 
+function assertSupportedPrimaryLinkHrefs(document: ComparePageContentDocument, source: string): void {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const [index, link] of (document[locale].primaryLinks ?? []).entries()) {
+      if (!internalHrefPatternsByLocale[locale].some((pattern) => pattern.test(link.href))) {
+        throw new Error(
+          `[comparison-content] Invalid href in ${source} at ${locale}.primaryLinks.${index}.href: ` +
+            `expected a supported ${locale} public route, received ${JSON.stringify(link.href)}`,
+        );
+      }
+    }
+  }
+}
+
 export function parseComparePageContentDocument(
   raw: string,
   expectedSlug: string,
@@ -854,6 +886,7 @@ export function parseComparePageContentDocument(
     );
   }
 
+  assertSupportedPrimaryLinkHrefs(result.data, source);
   assertStructuralParity(result.data, source);
   return result.data;
 }

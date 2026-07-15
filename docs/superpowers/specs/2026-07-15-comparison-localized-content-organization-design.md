@@ -141,7 +141,7 @@ Every discovered JSON document must satisfy all of these rules:
 5. Each locale value conforms to the existing `ComparePageOverride` vocabulary.
 6. After the explicit parity phase, the three locale objects have equivalent structural field presence. Localized array lengths and prose remain editorial values, but a field family present in one locale cannot be silently absent from another.
 7. Required metadata, card, link, verdict, and FAQ values are correctly typed when present.
-8. Internal links use the existing locale-neutral English route vocabulary and do not hard-code `/fr` or `/es` prefixes.
+8. Internal links preserve their existing hrefs and resolve only through supported public route families. Locale-neutral `/models`, `/examples`, `/ai-video-engines`, and `/pricing` paths remain valid in every projection; FR may also use `/fr/modeles`, `/fr/exemples`, `/fr/comparatif`, and `/fr/tarifs`; ES may also use `/es/modelos`, `/es/ejemplos`, `/es/comparativa`, and `/es/precios`. Cross-locale FR/ES prefixes fail validation.
 9. Unknown fields fail validation instead of being silently ignored.
 10. Duplicate slugs or files whose internal identity differs from their filename fail validation.
 
@@ -200,7 +200,7 @@ Permanent contracts must verify:
 - all discovered files contain `en`, `fr`, and `es`;
 - locale structures satisfy the runtime contract;
 - filename and internal slug match;
-- links remain locale-neutral and resolve to supported public route families;
+- links remain byte-identical, resolve to supported public route families, and never use a crossed FR/ES locale prefix;
 - every file is reachable through `getComparePageOverride` for all three locales;
 - a missing file still returns `undefined` for the generic renderer;
 - malformed, incomplete, unknown-field, and path-unsafe fixtures are rejected;
