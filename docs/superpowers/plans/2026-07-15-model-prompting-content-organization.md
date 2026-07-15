@@ -411,13 +411,16 @@ git commit -m "feat: add strict model prompting contract"
 **Files:**
 
 - Create: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts`
+- Create: `scripts/model-prompting-corrections.ts`
 - Create: `tests/model-prompting-legacy-projection.test.ts`
+- Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx`
+- Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPromptingSection.tsx`
 - Modify: `frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx`
 
 **Interfaces:**
 
 - Consumes: `ModelPromptingContent` from Task 1 and existing `SoraCopy`.
-- Produces temporarily: `buildLegacyModelPromptingContent(args): ModelPromptingContent` and `resolveLegacyPromptingModelName(args): string`.
+- Produces temporarily: `buildLegacyModelPromptingContent(args): ModelPromptingContent`, `resolveLegacyPromptingModelName(args): string`, and the exact four-entry correction helper used only by tests/migration tooling.
 - The current component must consume this normalized projection so the existing 69-test baseline proves the extraction before JSON cutover.
 
 - [ ] **Step 1: Add a failing legacy-projection architecture test**
@@ -431,7 +434,7 @@ test('legacy prompting decisions are isolated behind one temporary pure projecto
 });
 ```
 
-Add a 40-by-3 loop that builds the projection from current localized JSON/copy, parses it with `parseModelPromptingContent`, asserts `modelSlug`, and verifies `demo === null` only for image models and `imageExamples === null` only for video models.
+Add a 40-by-3 loop that builds the projection from current localized JSON/copy, applies `applyApprovedPromptingCorrections` to the test value, parses it with `parseModelPromptingContent`, asserts `modelSlug`, and verifies `demo === null` only for image models and `imageExamples === null` only for video models. The component continues to render the uncorrected legacy projection until the JSON cutover, so Task 2 remains behavior-preserving.
 
 - [ ] **Step 2: Run the test and verify the red state**
 
@@ -444,6 +447,18 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/model-prompting-leg
 Expected: FAIL because the legacy projector does not exist and the component still owns the helper tree.
 
 - [ ] **Step 3: Move legacy editorial selection into one pure module**
+
+Create `scripts/model-prompting-corrections.ts` first with the exact four entries from Global Constraints and this shared immutable helper:
+
+```ts
+export function applyApprovedPromptingCorrections(
+  content: ModelPromptingContent,
+  slug: string,
+  locale: AppLocale,
+): ModelPromptingContent;
+```
+
+The helper verifies the old path before replacement and throws if the source value differs. Task 2 uses it only in characterization tests; production rendering remains byte-identical.
 
 Move the existing localized helper bodies and model branches without editing their strings. Normalize their output at one public boundary:
 
@@ -525,14 +540,11 @@ export function resolveLegacyPromptingModelName({
   localized,
 }: {
   copy: SoraCopy;
-  engine: Pick<FalEngineEntry, 'marketingName' | 'modelSlug'>;
+  engine: FalEngineEntry;
   localized: Pick<EngineLocalizedContent, 'hero' | 'marketingName'>;
 }): string {
-  return copy.heroTitle?.trim()
-    || localized.hero?.title?.trim()
-    || localized.marketingName?.trim()
-    || engine.marketingName?.trim()
-    || engine.modelSlug;
+  const rawTitle = copy.heroTitle ?? localized.hero?.title ?? localized.marketingName ?? 'Sora 2';
+  return normalizeHeroTitle(rawTitle, resolveProviderInfo(engine).name);
 }
 ```
 
@@ -572,7 +584,7 @@ Expected: all tests PASS with no visible-content assertion changes. The original
 - [ ] **Step 6: Commit the behavior-preserving extraction**
 
 ```bash
-git add tests/model-prompting-legacy-projection.test.ts 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPromptingSection.tsx'
+git add scripts/model-prompting-corrections.ts tests/model-prompting-legacy-projection.test.ts 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-legacy.ts' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/MarketingModelPageLayout.tsx' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionPromptingSection.tsx' 'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelPromptingSection.tsx'
 git commit -m "refactor: isolate legacy model prompting projection"
 ```
 
@@ -584,7 +596,6 @@ git commit -m "refactor: isolate legacy model prompting projection"
 - Modify: `content/models/en/*.json`
 - Modify: `content/models/fr/*.json`
 - Modify: `content/models/es/*.json`
-- Create: `scripts/model-prompting-corrections.ts`
 - Create: `scripts/migrate-model-prompting-content.ts`
 - Modify: `tests/model-prompting-content-contract.test.ts`
 - Modify: `tests/model-prompting-legacy-projection.test.ts`
@@ -641,7 +652,7 @@ prompting: overlay.prompting,
 
 Do not change `custom`, prompts, FAQs, SEO, hero, or any other fallback policy.
 
-- [ ] **Step 4: Implement the one-time converter and correction helper**
+- [ ] **Step 4: Implement the one-time converter with the existing correction helper**
 
 The converter must support dry-run and `--write` in Task 3, plus the guarded `--remove-legacy` mode used in Task 6. Its write path is deterministic:
 
@@ -657,7 +668,12 @@ for (const locale of LOCALES) {
     const projected = buildLegacyModelPromptingContent({
       copy,
       engineId: engine.id,
-      isImageEngine: engine.category === 'image',
+      isImageEngine: (() => {
+        const modes = engine.engine.modes ?? [];
+        const hasVideoMode = modes.some((mode) => mode.endsWith('v'));
+        const hasImageMode = modes.some((mode) => mode.endsWith('i'));
+        return hasImageMode && !hasVideoMode;
+      })(),
       locale,
       modelName: resolveLegacyPromptingModelName({ copy, engine, localized }),
       modelSlug,
@@ -669,17 +685,7 @@ for (const locale of LOCALES) {
 }
 ```
 
-Use the canonical image/video classification already available to the route rather than inventing a slug list. `applyApprovedPromptingCorrections` must verify the old value before replacement and throw if the source value does not match the allowlist.
-
-Use this exported helper contract in `scripts/model-prompting-corrections.ts` so the converter and parity test share the same allowlist implementation:
-
-```ts
-export function applyApprovedPromptingCorrections(
-  content: ModelPromptingContent,
-  slug: string,
-  locale: AppLocale,
-): ModelPromptingContent;
-```
+Use the route's exact `engine.engine.modes` image/video classification rather than inventing a slug list. Import `applyApprovedPromptingCorrections` from the Task 2 helper so the converter and parity test share one allowlist implementation.
 
 - [ ] **Step 5: Run the converter dry, write, and prove exact parity**
 
