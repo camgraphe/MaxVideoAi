@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-15
 
-**Status:** Approved design, pending written-spec review
+**Status:** Approved; implementation plan ready
 
 ## Objective
 
@@ -68,6 +68,15 @@ A content difference is permitted only when all of the following are recorded:
 Permitted defect classes are limited to wrong-language text, spelling or transcription errors, broken or wrong-locale links, internal contradictions, and claims that conflict with the canonical model capability configuration. Stylistic rewriting, tone polishing, prompt expansion, and speculative product corrections are excluded.
 
 The migration verifier begins with an empty correction allowlist. If no qualifying defect is found, the final implementation must report zero intentional content differences. If a qualifying defect is found, the allowlist entry is reviewed before cutover and its correction remains protected by a permanent test after migration-only tooling is deleted.
+
+The implementation-plan audit identified four qualifying wrong-locale guide links. They are the only pre-approved content differences:
+
+- `dreamina-seedance-2-0-mini` / `fr`: `/models/dreamina-seedance-2-0-mini` becomes `/fr/modeles/dreamina-seedance-2-0-mini`;
+- `dreamina-seedance-2-0-mini` / `es`: `/models/dreamina-seedance-2-0-mini` becomes `/es/modelos/dreamina-seedance-2-0-mini`;
+- `seedance-2-0-fast` / `fr`: `/models/seedance-2-0` becomes `/fr/modeles/seedance-2-0`;
+- `seedance-2-0-fast` / `es`: `/models/seedance-2-0` becomes `/es/modelos/seedance-2-0`.
+
+The evidence is the route-localized model path contract (`/models`, `/fr/modeles`, `/es/modelos`). These four corrections receive exact permanent assertions. Any additional difference still requires the full evidence and review policy above.
 
 ### Keep runtime facts derived
 
