@@ -1,0 +1,192 @@
+{
+  "slug": "minimax-hailuo-02-text-vs-seedance-2-0",
+  "en": {
+    "meta": {
+      "title": "Hailuo 02 vs Seedance 2.0: Price, Audio & 4K",
+      "description": "Compare MiniMax Hailuo 02 Standard and Seedance 2.0 on silent stylized clips, 512P/768P, audio, 4K, references, editing, and duration.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare MiniMax Hailuo 02 Standard with Seedance 2.0 when deciding between inexpensive stylized motion and a full production toolkit. Hailuo creates silent 512P or 768P clips up to ten seconds; Seedance adds audio, 4K, references, editing, extension, and 15-second output.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose MiniMax Hailuo 02 Standard for inexpensive silent stylized clips at 512P or 768P. Choose Seedance 2.0 when production requires audio, 4K, references, editing, extension, motion controls, broader ratios, or output up to 15 seconds."
+    },
+    "topCards": [
+      {
+        "title": "Choose Hailuo for simple stylization",
+        "body": "Hailuo 02 handles text/image motion in 16:9, 9:16, or 1:1 at 512P or 768P, with six- or ten-second silent output and a listed per-second price."
+      },
+      {
+        "title": "Choose Seedance for production depth",
+        "body": "Seedance 2.0 adds generated audio, output from 480p through 4K, references, video editing, extension, motion controls, and broader ratios."
+      },
+      {
+        "title": "Account for sound and finishing",
+        "body": "Hailuo always produces silent video and tops out at 768P; Seedance can deliver audio and higher-resolution masters inside the generation workflow."
+      },
+      {
+        "title": "Use complexity as the dividing line",
+        "body": "Hailuo suits affordable concept motion. Seedance suits reference-led campaigns, longer shots, edited sources, extensions, and final-resolution work."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Open the MiniMax Hailuo 02 Standard model page"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open the Seedance 2.0 model page"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-wan-2-6",
+        "label": "Compare MiniMax Hailuo 02 Standard vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for low-cost silent Hailuo concepts and full Seedance production.",
+      "items": [
+        {
+          "question": "Does MiniMax Hailuo 02 Standard generate audio?",
+          "answer": "No. Hailuo 02 output is silent at either 512P or 768P, so sound must be added separately if the final clip needs it."
+        },
+        {
+          "question": "Which model supports 4K and reference-driven work?",
+          "answer": "Seedance 2.0 supports 4K, audio, reference inputs, video editing, extension, and motion controls. Hailuo focuses on simpler text/image motion."
+        },
+        {
+          "question": "When is Hailuo 02 a better fit than Seedance 2.0?",
+          "answer": "Choose Hailuo when an inexpensive silent stylized concept of six or ten seconds is enough and 512P or 768P meets the delivery need."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Hailuo 02 vs Seedance 2.0 : prix, audio et 4K",
+      "description": "Comparez MiniMax Hailuo 02 Standard et Seedance 2.0 : clips stylisés silencieux, 512P/768P, audio, 4K, références, montage et durée.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "MiniMax Hailuo 02 Standard produit des vidéos stylisées économiques et silencieuses en 512P ou 768P, jusqu’à 10 secondes. Seedance 2.0 offre un environnement de production plus complet avec audio, 4K, références, montage, extension et sorties jusqu’à 15 secondes.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez MiniMax Hailuo 02 Standard pour des vidéos stylisées économiques et silencieuses en 512P ou 768P. Préférez Seedance 2.0 dès que la production exige de l’audio, de la 4K, des références, du montage, une extension, le contrôle du mouvement, davantage de ratios ou des clips de 15 secondes."
+    },
+    "topCards": [
+      {
+        "title": "Styliser simplement avec Hailuo",
+        "body": "Hailuo 02 génère une vidéo à partir d’un texte ou d’une image, en 16:9, 9:16 ou 1:1, uniquement en 512P ou 768P, pour un résultat silencieux de 6 ou 10 secondes facturé à la seconde."
+      },
+      {
+        "title": "Élargir la production avec Seedance",
+        "body": "Seedance 2.0 ajoute l’audio généré, des résolutions de 480p à 4K, les références, le montage vidéo, l’extension, le contrôle du mouvement et des ratios variés."
+      },
+      {
+        "title": "Anticiper le son et la finition",
+        "body": "Les vidéos Hailuo restent silencieuses et leur résolution plafonne à 768P ; Seedance peut intégrer l’audio et fournir des masters à une résolution supérieure au sein du même workflow."
+      },
+      {
+        "title": "Utiliser la complexité comme repère",
+        "body": "Hailuo convient aux vidéos de concept abordables. Seedance répond aux campagnes guidées par des références, aux plans longs et aux vidéos sources à transformer."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Ouvrir la page du modèle MiniMax Hailuo 02 Standard"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page du modèle Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-wan-2-6",
+        "label": "Comparer MiniMax Hailuo 02 Standard et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour choisir entre les vidéos de concept Hailuo silencieuses et une production complète avec Seedance.",
+      "items": [
+        {
+          "question": "MiniMax Hailuo 02 Standard génère-t-il de l’audio ?",
+          "answer": "Non. Hailuo 02 produit uniquement une vidéo silencieuse en 512P ou 768P ; il faut donc ajouter le son séparément si le livrable en demande."
+        },
+        {
+          "question": "Quel modèle prend en charge la 4K et les références ?",
+          "answer": "Seedance 2.0 gère la 4K, l’audio, les références, le montage vidéo, l’extension et le contrôle du mouvement. Hailuo se limite à une génération plus simple à partir d’un texte ou d’une image."
+        },
+        {
+          "question": "Quand Hailuo 02 convient-il mieux que Seedance 2.0 ?",
+          "answer": "Choisissez Hailuo lorsqu’une vidéo de concept stylisée et silencieuse de 6 ou 10 secondes suffit, avec un budget contenu et une livraison en 512P ou 768P."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Hailuo 02 vs Seedance 2.0: precio, audio y 4K",
+      "description": "Compara MiniMax Hailuo 02 Standard y Seedance 2.0 por clips estilizados sin audio, 512P/768P, audio, 4K, referencias, edición y duración.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara MiniMax Hailuo 02 Standard con Seedance 2.0 para decidir entre movimiento estilizado económico y un conjunto completo de herramientas de producción. Hailuo crea clips silenciosos en 512P o 768P de hasta diez segundos; Seedance agrega audio, 4K, referencias, edición, extensión y clips de hasta 15 segundos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige MiniMax Hailuo 02 Standard para clips estilizados económicos y silenciosos en 512P o 768P. Elige Seedance 2.0 cuando la producción requiera audio, 4K, referencias, edición, extensión, controles de movimiento, más formatos o clips de hasta 15 segundos."
+    },
+    "topCards": [
+      {
+        "title": "Usar Hailuo para estilización simple",
+        "body": "Hailuo 02 genera un video a partir de un prompt de texto o una imagen en 16:9, 9:16 o 1:1, a 512P o 768P, con salida silenciosa de seis o diez segundos y precio publicado por segundo."
+      },
+      {
+        "title": "Usar Seedance para producción completa",
+        "body": "Seedance 2.0 suma audio, salida de 480p a 4K, referencias, edición de video, extensión, controles de movimiento y más formatos."
+      },
+      {
+        "title": "Considerar sonido y acabado",
+        "body": "Hailuo siempre produce video silencioso y llega como máximo a 768P; Seedance permite entregar audio y resultados finales de mayor resolución dentro del mismo flujo."
+      },
+      {
+        "title": "Trazar el límite según la complejidad",
+        "body": "Hailuo sirve para conceptos animados económicos. Seedance se adapta a campañas con referencias, tomas largas, videos fuente editados, extensiones y entrega final."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Abrir el modelo MiniMax Hailuo 02 Standard"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir el modelo Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-wan-2-6",
+        "label": "Comparar MiniMax Hailuo 02 Standard vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para conceptos silenciosos con Hailuo y producción completa con Seedance.",
+      "items": [
+        {
+          "question": "¿MiniMax Hailuo 02 Standard genera audio?",
+          "answer": "No. La salida de Hailuo 02 es silenciosa tanto en 512P como en 768P, así que debes agregar el sonido por separado si el clip final lo necesita."
+        },
+        {
+          "question": "¿Qué modelo admite 4K y trabajos guiados por referencias?",
+          "answer": "Seedance 2.0 admite 4K, audio, referencias, edición de video, extensión y controles de movimiento. Hailuo se enfoca en movimiento más simple desde texto o imagen."
+        },
+        {
+          "question": "¿Cuándo encaja mejor Hailuo 02 que Seedance 2.0?",
+          "answer": "Elige Hailuo cuando baste un concepto estilizado, económico y silencioso de seis o diez segundos, y 512P o 768P cubran la entrega."
+        }
+      ]
+    }
+  }
+}

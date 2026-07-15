@@ -1,0 +1,192 @@
+{
+  "slug": "kling-2-6-pro-vs-kling-3-pro",
+  "en": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Kling 3 Pro: Is It Worth Upgrading?",
+      "description": "Compare Kling 2.6 Pro and Kling 3 Pro on generation length, audio, pricing, and multi-shot control to decide whether the upgrade fits your work.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Kling 2.6 Pro with Kling 3 Pro to decide whether a proven legacy Kling workflow is enough or the current generation earns its higher price. Both deliver 1080p video with audio, but Kling 3 Pro extends clips to 15 seconds and targets more demanding multi-shot cinematic control.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay with Kling 2.6 Pro for familiar 5- or 10-second dialogue shots and a lower audio-on price. Upgrade to Kling 3 Pro when the project needs clips up to 15 seconds, current Kling development, and stronger positioning for structured multi-shot work where the extra cost is easier to justify."
+    },
+    "topCards": [
+      {
+        "title": "Choose Kling 2.6 Pro",
+        "body": "Keep the legacy route for established 1080p prompt patterns, short cinematic dialogue, and a lower $0.14-per-second audio-on rate."
+      },
+      {
+        "title": "Choose Kling 3 Pro",
+        "body": "Use the current Pro model for clips up to 15 seconds and higher-priority multi-shot cinematic sequences."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Both support text-to-video, image-to-video, 1080p, and audio; the decision is legacy value versus current duration and workflow ambition."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Kling 2.6 Pro fits repeatable short dialogue shots. Kling 3 Pro fits campaign heroes, planned sequences, and longer cinematic beats."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Open the Kling 2.6 Pro model page"
+      },
+      {
+        "href": "/models/kling-3-pro",
+        "label": "Open the Kling 3 Pro model page"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Compare Kling 3 Pro vs Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for deciding whether to move from Kling 2.6 Pro to Kling 3 Pro.",
+      "items": [
+        {
+          "question": "Is Kling 3 Pro a direct upgrade from Kling 2.6 Pro?",
+          "answer": "Kling 3 Pro is the current Pro route and increases the maximum clip length from 10 to 15 seconds. Kling 2.6 Pro remains usable as a legacy option for established short-form workflows."
+        },
+        {
+          "question": "Do both Kling Pro models generate audio?",
+          "answer": "Yes. Both catalog routes support audio with 1080p text-to-video and image-to-video. Kling 2.6 Pro costs $0.14 per second with audio on, while Kling 3 Pro lists $0.168 per second before platform margin."
+        },
+        {
+          "question": "When is Kling 3 Pro worth the higher price?",
+          "answer": "Choose Kling 3 Pro when 15-second output, the current Kling generation, or multi-shot cinematic planning matters. Keep 2.6 Pro when a validated 10-second workflow already meets the brief."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Kling 3 Pro : faut-il évoluer ?",
+      "description": "Comparez Kling 2.6 Pro et Kling 3 Pro sur la durée, l’audio, le prix et le contrôle multi-plan pour savoir si la nouvelle version se justifie.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Kling 2.6 Pro et Kling 3 Pro pour déterminer si votre workflow historique suffit encore ou si la génération actuelle mérite son prix supérieur. Les deux produisent en 1080p avec audio, mais Kling 3 Pro monte à 15 secondes et vise les séquences cinématiques multi-plans plus ambitieuses.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Conservez Kling 2.6 Pro pour des dialogues de 5 ou 10 secondes déjà bien maîtrisés et un coût audio inférieur. Passez à Kling 3 Pro lorsque le projet demande jusqu’à 15 secondes, la génération Kling actuelle et un meilleur cadre pour des séquences multi-plans dont l’enjeu justifie le surcoût."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Kling 2.6 Pro",
+        "body": "Gardez ce modèle historique pour vos prompts 1080p validés, les dialogues courts et un tarif audio de 0,14 $ par seconde."
+      },
+      {
+        "title": "Choisir Kling 3 Pro",
+        "body": "Utilisez le modèle Pro actuel pour les clips jusqu’à 15 secondes et les séquences cinématiques multi-plans prioritaires."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Les deux offrent texte, image, 1080p et audio ; le choix oppose la valeur d’un modèle historique à la durée du modèle actuel."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Kling 2.6 Pro convient aux dialogues courts répétables. Kling 3 Pro vise les héros de campagne et les séquences planifiées."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Ouvrir la page Kling 2.6 Pro"
+      },
+      {
+        "href": "/models/kling-3-pro",
+        "label": "Ouvrir la page Kling 3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Comparer Kling 3 Pro et Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes avant de passer de Kling 2.6 Pro à Kling 3 Pro.",
+      "items": [
+        {
+          "question": "Kling 3 Pro remplace-t-il directement Kling 2.6 Pro ?",
+          "answer": "Kling 3 Pro est la route Pro actuelle et augmente la durée maximale de 10 à 15 secondes. Kling 2.6 Pro reste disponible comme option historique pour les workflows courts déjà validés."
+        },
+        {
+          "question": "Les deux modèles Kling Pro génèrent-ils de l’audio ?",
+          "answer": "Oui. Les deux prennent en charge l’audio en 1080p depuis du texte ou une image. Kling 2.6 Pro coûte 0,14 $ par seconde avec audio, contre 0,168 $ pour Kling 3 Pro avant marge."
+        },
+        {
+          "question": "Quand le prix supérieur de Kling 3 Pro est-il justifié ?",
+          "answer": "Choisissez Kling 3 Pro pour une durée de 15 secondes, la génération Kling actuelle ou une planification multi-plans. Gardez 2.6 Pro si votre workflow de 10 secondes répond déjà au brief."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Kling 3 Pro: ¿conviene actualizar?",
+      "description": "Compara Kling 2.6 Pro y Kling 3 Pro en duración, audio, precio y control de varias tomas para decidir si vale la pena actualizar.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Kling 2.6 Pro con Kling 3 Pro para saber si tu flujo anterior sigue siendo suficiente o si la generación actual justifica el precio adicional. Ambos entregan video 1080p con audio, pero Kling 3 Pro llega a 15 segundos y apunta a secuencias cinematográficas de varias tomas.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Mantén Kling 2.6 Pro para diálogos conocidos de 5 o 10 segundos y un menor precio con audio. Actualiza a Kling 3 Pro cuando el proyecto necesite hasta 15 segundos, la generación Kling actual y un flujo mejor preparado para secuencias de varias tomas que justifiquen el costo extra."
+    },
+    "topCards": [
+      {
+        "title": "Elige Kling 2.6 Pro",
+        "body": "Conserva este modelo anterior para prompts 1080p validados, diálogos cortos y una tarifa de US$0.14 por segundo con audio."
+      },
+      {
+        "title": "Elige Kling 3 Pro",
+        "body": "Usa el Pro actual para clips de hasta 15 segundos y secuencias cinematográficas prioritarias de varias tomas."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Ambos ofrecen texto, imagen, 1080p y audio; la decisión es valor del modelo anterior frente a duración y vigencia."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Kling 2.6 Pro sirve para diálogos cortos repetibles. Kling 3 Pro sirve para piezas principales y secuencias planeadas."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Abrir la página de Kling 2.6 Pro"
+      },
+      {
+        "href": "/models/kling-3-pro",
+        "label": "Abrir la página de Kling 3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Comparar Kling 3 Pro y Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves antes de pasar de Kling 2.6 Pro a Kling 3 Pro.",
+      "items": [
+        {
+          "question": "¿Kling 3 Pro es una actualización directa de Kling 2.6 Pro?",
+          "answer": "Kling 3 Pro es la ruta Pro actual y aumenta la duración máxima de 10 a 15 segundos. Kling 2.6 Pro sigue disponible como opción anterior para flujos cortos ya validados."
+        },
+        {
+          "question": "¿Los dos modelos Kling Pro generan audio?",
+          "answer": "Sí. Ambos admiten audio en 1080p desde texto o imagen. Kling 2.6 Pro cuesta US$0.14 por segundo con audio y Kling 3 Pro lista US$0.168 antes del margen de la plataforma."
+        },
+        {
+          "question": "¿Cuándo vale la pena pagar más por Kling 3 Pro?",
+          "answer": "Elige Kling 3 Pro para 15 segundos, la generación actual o la planeación de varias tomas. Conserva 2.6 Pro si tu flujo validado de 10 segundos ya resuelve el proyecto."
+        }
+      ]
+    }
+  }
+}

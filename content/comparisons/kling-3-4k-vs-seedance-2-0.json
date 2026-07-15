@@ -1,0 +1,192 @@
+{
+  "slug": "kling-3-4k-vs-seedance-2-0",
+  "en": {
+    "meta": {
+      "title": "Kling 3 4K vs Seedance 2.0: Final 4K or Control?",
+      "description": "Compare Kling 3 4K and Seedance 2.0 on native 4K delivery, references, editing, extensions, audio, and workflow flexibility before rendering.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Kling 3 4K with Seedance 2.0 when both can deliver 4K but serve different production paths. Kling is a dedicated native-4K text and start-image route for final renders; Seedance spans 480p through 4K with reference-to-video, video editing, extension, motion controls, and audio.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Kling 3 4K when an approved prompt or start image should render directly to native 4K and a focused final-delivery route is preferable. Choose Seedance 2.0 when the workflow needs lower-resolution iteration, multiple references, video-to-video editing, clip extension, wider aspect ratios, or more production control before the 4K master."
+    },
+    "topCards": [
+      {
+        "title": "Choose Kling 3 4K",
+        "body": "Use Kling for direct native-4K text-to-video or image-to-video renders from an approved concept, with optional audio."
+      },
+      {
+        "title": "Choose Seedance 2.0",
+        "body": "Use Seedance for references, video edits, extensions, motion controls, varied resolutions, and a wider set of aspect ratios."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Kling locks every render to native 4K; Seedance lets teams iterate from 480p upward and adds substantially broader input modes."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Kling fits approved final hero shots. Seedance fits iterative campaigns, reference-heavy sequences, edits, and extended clips."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-4k",
+        "label": "Open the Kling 3 4K model page"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open the Seedance 2.0 model page"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-4k-vs-veo-3-1",
+        "label": "Compare Kling 3 4K vs Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing dedicated native 4K or a broader Seedance workflow.",
+      "items": [
+        {
+          "question": "Do Kling 3 4K and Seedance 2.0 both support 4K?",
+          "answer": "Yes. Kling 3 4K is locked to native 4K output, while Seedance 2.0 offers 480p, 720p, 1080p, and 4K so teams can iterate before final delivery."
+        },
+        {
+          "question": "Which model offers more reference and editing control?",
+          "answer": "Seedance 2.0 offers reference-to-video, video-to-video editing, extension, motion controls, and multiple image, video, or audio references. Kling 3 4K focuses on text and start-image generation."
+        },
+        {
+          "question": "Which model is better for a final 4K hero shot?",
+          "answer": "Kling 3 4K is a focused choice for direct native-4K rendering from an approved prompt or image. Seedance is better when the shot still needs references, editing, extension, or lower-resolution iteration."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 3 4K vs Seedance 2.0 : 4K finale ou contrôle ?",
+      "description": "Comparez Kling 3 4K et Seedance 2.0 sur la 4K native, les références, le montage, l’extension, l’audio et la flexibilité du workflow.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Kling 3 4K et Seedance 2.0 : les deux livrent en 4K, mais leurs workflows diffèrent. Kling est une route texte ou image de départ entièrement dédiée au rendu final 4K natif ; Seedance va du 480p à la 4K avec références, montage vidéo, extension, contrôles de mouvement et audio.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Kling 3 4K lorsqu’un prompt ou une image déjà validés doivent être rendus directement en 4K native. Choisissez Seedance 2.0 lorsque le projet exige des itérations en basse résolution, plusieurs références, du montage vidéo, une extension de clip, davantage de formats ou plus de contrôle avant le master 4K."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Kling 3 4K",
+        "body": "Pour rendre directement un prompt ou une image validés en 4K native, avec audio optionnel."
+      },
+      {
+        "title": "Choisir Seedance 2.0",
+        "body": "Pour les références, le montage, l’extension, les contrôles de mouvement, plusieurs résolutions et davantage de formats."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Kling verrouille chaque rendu en 4K native ; Seedance permet d’itérer dès le 480p avec des entrées beaucoup plus variées."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Kling convient aux héros finaux approuvés. Seedance convient aux campagnes itératives, séquences référencées et retouches."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-4k",
+        "label": "Ouvrir la page Kling 3 4K"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-4k-vs-veo-3-1",
+        "label": "Comparer Kling 3 4K et Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre 4K native dédiée et workflow Seedance complet.",
+      "items": [
+        {
+          "question": "Kling 3 4K et Seedance 2.0 prennent-ils tous deux en charge la 4K ?",
+          "answer": "Oui. Kling 3 4K est verrouillé sur une sortie 4K native, tandis que Seedance 2.0 propose 480p, 720p, 1080p et 4K pour itérer avant la livraison finale."
+        },
+        {
+          "question": "Quel modèle offre le plus de contrôle par références et montage ?",
+          "answer": "Seedance 2.0 ajoute références, montage vidéo, extension, contrôles de mouvement et plusieurs images, vidéos ou audios sources. Kling 3 4K se concentre sur le texte et l’image de départ."
+        },
+        {
+          "question": "Quel modèle choisir pour un plan héros final en 4K ?",
+          "answer": "Kling 3 4K est une route directe pour rendre un prompt ou une image validés en 4K native. Seedance est préférable si le plan demande encore des références, retouches ou extensions."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 3 4K vs Seedance 2.0: 4K final o más control",
+      "description": "Compara Kling 3 4K y Seedance 2.0 en 4K nativo, referencias, edición, extensión, audio y flexibilidad antes de renderizar tu proyecto.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Kling 3 4K con Seedance 2.0: ambos entregan 4K, pero siguen rutas de producción distintas. Kling es una opción de texto o imagen inicial dedicada al render final en 4K nativo; Seedance va de 480p a 4K con referencias, edición, extensión, controles de movimiento y audio.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Kling 3 4K cuando un prompt o imagen aprobados deban renderizarse directamente en 4K nativo. Elige Seedance 2.0 cuando el proyecto necesite iteraciones de menor resolución, varias referencias, edición de video, extensión de clips, más formatos o mayor control antes del master 4K."
+    },
+    "topCards": [
+      {
+        "title": "Elige Kling 3 4K",
+        "body": "Para renderizar directamente un prompt o imagen aprobados en 4K nativo, con audio opcional."
+      },
+      {
+        "title": "Elige Seedance 2.0",
+        "body": "Para referencias, edición, extensión, controles de movimiento, varias resoluciones y más relaciones de aspecto."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Kling bloquea cada render en 4K nativo; Seedance permite iterar desde 480p con entradas mucho más variadas."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Kling sirve para piezas principales ya aprobadas. Seedance sirve para campañas iterativas, secuencias y ajustes."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-4k",
+        "label": "Abrir la página de Kling 3 4K"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir la página de Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-4k-vs-veo-3-1",
+        "label": "Comparar Kling 3 4K y Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre 4K nativo dedicado y un flujo Seedance completo.",
+      "items": [
+        {
+          "question": "¿Kling 3 4K y Seedance 2.0 admiten salida 4K?",
+          "answer": "Sí. Kling 3 4K está bloqueado en salida 4K nativa, mientras Seedance 2.0 ofrece 480p, 720p, 1080p y 4K para iterar antes de la entrega final."
+        },
+        {
+          "question": "¿Qué modelo ofrece más control con referencias y edición?",
+          "answer": "Seedance 2.0 agrega referencias, edición, extensión, controles de movimiento y varias fuentes de imagen, video o audio. Kling 3 4K se concentra en texto e imagen inicial."
+        },
+        {
+          "question": "¿Qué modelo conviene para una pieza principal final en 4K?",
+          "answer": "Kling 3 4K es una ruta directa para renderizar un prompt o imagen aprobados en 4K nativo. Seedance conviene si la toma todavía requiere referencias, ajustes o extensiones."
+        }
+      ]
+    }
+  }
+}

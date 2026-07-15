@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-fast-vs-luma-ray-2",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Luma Ray 2: Speed, 4K & Editing",
+      "description": "Compare LTX 2.3 Fast and Luma Ray 2 on duration, 4K, audio, video editing, and reframe controls to choose the better production route.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare LTX 2.3 Fast with Luma Ray 2 when choosing between fast, audio-ready generation and a legacy Luma editing toolkit. LTX 2.3 Fast reaches 20 seconds with 1080p, 1440p, or 4K output, while Luma Ray 2 stays at 9 seconds but adds video-to-video and reframe workflows.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose LTX 2.3 Fast for rapid text or image generation, native audio, longer landscape or vertical clips, and output up to 4K. Choose Luma Ray 2 when an existing clip needs video-to-video transformation or reframing across a broader set of aspect ratios and 1080p is enough."
+    },
+    "topCards": [
+      {
+        "title": "Choose LTX 2.3 Fast",
+        "body": "Use LTX for fast concepts, audio-ready output, clips up to 20 seconds, and 1080p through 4K delivery."
+      },
+      {
+        "title": "Choose Luma Ray 2",
+        "body": "Use the legacy Luma route to modify an existing video or reframe footage for wide, square, vertical, and ultrawide formats."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "LTX offers more duration, resolution, and audio; Luma offers source-video transformation and more aspect-ratio choices."
+      },
+      {
+        "title": "Best workflows",
+        "body": "LTX fits fast campaign drafts and high-resolution generation. Luma fits repurposing, format adaptation, and legacy edit workflows."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Open the Luma Ray 2 model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast",
+        "label": "Compare LTX 2.3 Fast vs Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between LTX 2.3 Fast generation and Luma Ray 2 editing.",
+      "items": [
+        {
+          "question": "Which model is better for fast 4K AI video?",
+          "answer": "LTX 2.3 Fast is the clear fit because it supports 4K output, native audio, and clips up to 20 seconds. Luma Ray 2 tops out at 1080p and does not generate audio."
+        },
+        {
+          "question": "What can Luma Ray 2 do that LTX 2.3 Fast cannot?",
+          "answer": "Luma Ray 2 includes video-to-video and reframe modes for transforming or resizing existing footage. LTX 2.3 Fast focuses on text-to-video and image-to-video generation."
+        },
+        {
+          "question": "Should I still choose the legacy Luma Ray 2 route?",
+          "answer": "Choose it when source-video modification or broad aspect-ratio reframing is the main job. For new audio-ready generation, longer clips, or high-resolution output, use LTX 2.3 Fast."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Luma Ray 2 : vitesse, 4K et montage",
+      "description": "Comparez LTX 2.3 Fast et Luma Ray 2 sur la durée, la 4K, l’audio, la transformation vidéo et le recadrage pour choisir votre workflow.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez LTX 2.3 Fast et Luma Ray 2 pour choisir entre une génération rapide avec audio et une boîte à outils Luma historique orientée montage. LTX atteint 20 secondes en 1080p, 1440p ou 4K ; Luma reste limité à 9 secondes mais ajoute la transformation vidéo et le recadrage.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez LTX 2.3 Fast pour générer rapidement depuis du texte ou une image, avec audio, clips plus longs et sortie jusqu’en 4K. Choisissez Luma Ray 2 lorsqu’une vidéo existante doit être transformée ou recadrée dans de nombreux formats et qu’une livraison 1080p suffit."
+    },
+    "topCards": [
+      {
+        "title": "Choisir LTX 2.3 Fast",
+        "body": "Pour les concepts rapides, l’audio natif, les clips jusqu’à 20 secondes et les livraisons du 1080p à la 4K."
+      },
+      {
+        "title": "Choisir Luma Ray 2",
+        "body": "Pour transformer une vidéo existante ou la recadrer en format large, carré, vertical ou ultra-large."
+      },
+      {
+        "title": "Différence clé",
+        "body": "LTX gagne en durée, résolution et audio ; Luma apporte le travail sur une vidéo source et davantage de formats."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "LTX vise les brouillons de campagne et la haute résolution. Luma vise le réemploi, l’adaptation et les montages historiques."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Ouvrir la page Luma Ray 2"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast",
+        "label": "Comparer LTX 2.3 Fast et Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre génération LTX rapide et montage Luma Ray 2.",
+      "items": [
+        {
+          "question": "Quel modèle choisir pour générer rapidement en 4K ?",
+          "answer": "LTX 2.3 Fast est le choix évident : il prend en charge la 4K, l’audio et des clips jusqu’à 20 secondes. Luma Ray 2 s’arrête au 1080p et ne produit pas d’audio."
+        },
+        {
+          "question": "Que permet Luma Ray 2 que LTX 2.3 Fast ne fait pas ?",
+          "answer": "Luma Ray 2 propose la transformation vidéo et le recadrage d’une source existante. LTX 2.3 Fast se concentre sur la génération depuis du texte ou une image."
+        },
+        {
+          "question": "Le modèle historique Luma Ray 2 reste-t-il pertinent ?",
+          "answer": "Oui, si votre priorité est de modifier une source vidéo ou de l’adapter à plusieurs formats. Pour une nouvelle génération avec audio et haute résolution, choisissez LTX 2.3 Fast."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Luma Ray 2: velocidad, 4K y edición",
+      "description": "Compara LTX 2.3 Fast y Luma Ray 2 en duración, 4K, audio, transformación de video y reencuadre para elegir tu mejor flujo.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Fast con Luma Ray 2 para elegir entre generación rápida con audio y una herramienta Luma anterior enfocada en edición. LTX alcanza 20 segundos en 1080p, 1440p o 4K; Luma se limita a 9 segundos, pero agrega transformación de video y reencuadre.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige LTX 2.3 Fast para generar rápidamente desde texto o imagen, con audio, clips más largos y salida hasta 4K. Elige Luma Ray 2 cuando necesites transformar un video existente o adaptarlo a una variedad mayor de formatos y una entrega 1080p sea suficiente."
+    },
+    "topCards": [
+      {
+        "title": "Elige LTX 2.3 Fast",
+        "body": "Para conceptos rápidos, audio nativo, clips de hasta 20 segundos y entregas desde 1080p hasta 4K."
+      },
+      {
+        "title": "Elige Luma Ray 2",
+        "body": "Para modificar un video existente o reencuadrarlo en formato ancho, cuadrado, vertical o ultraancho."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "LTX ofrece más duración, resolución y audio; Luma aporta transformación de una fuente y más relaciones de aspecto."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "LTX sirve para borradores de campaña y alta resolución. Luma sirve para reutilizar y adaptar material existente."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir la página de LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Abrir la página de Luma Ray 2"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-veo-3-1-fast",
+        "label": "Comparar LTX 2.3 Fast y Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves para elegir entre generación LTX y edición Luma.",
+      "items": [
+        {
+          "question": "¿Qué modelo conviene para generar video 4K rápidamente?",
+          "answer": "LTX 2.3 Fast es la opción clara porque admite 4K, audio y clips de hasta 20 segundos. Luma Ray 2 llega a 1080p y no genera audio."
+        },
+        {
+          "question": "¿Qué permite Luma Ray 2 que LTX 2.3 Fast no hace?",
+          "answer": "Luma Ray 2 incluye transformación de video a video y reencuadre de material existente. LTX 2.3 Fast se enfoca en generar desde texto o una imagen."
+        },
+        {
+          "question": "¿Todavía conviene usar Luma Ray 2?",
+          "answer": "Sí, cuando la prioridad es modificar una fuente de video o adaptarla a varios formatos. Para generación nueva con audio y alta resolución, usa LTX 2.3 Fast."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-vs-wan-2-6",
+  "en": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs Wan 2.6: 4K, Duration & References",
+      "description": "Compare available LTX 2.0 Pro and current Wan 2.6 for 4K landscape output, broader ratios, 15-second clips, audio, and video references.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare available LTX Video 2.0 Pro with current Wan 2.6 Text & Image to Video. LTX favors ten-second high-resolution 16:9 work through 4K, while Wan broadens aspect ratios and reaches 15 seconds in text/image modes, with a separate silent reference-video route.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available LTX Video 2.0 Pro for high-resolution landscape delivery; switch to current Wan 2.6 Text & Image to Video for broader ratios, text/image clips up to 15 seconds with optional audio, or separate silent five/ten-second reference-video work."
+    },
+    "topCards": [
+      {
+        "title": "Stay with LTX for high resolution",
+        "body": "Keep LTX Video 2.0 Pro for 16:9 text/image production in 1080p, 1440p, or 4K with audio and a ten-second maximum."
+      },
+      {
+        "title": "Use Wan text mode for five ratios",
+        "body": "Wan 2.6 text-to-video offers 16:9, 9:16, 1:1, 4:3, and 3:4. Image-to-video instead follows the source image aspect ratio; both modes support 5 to 15 seconds and optional audio."
+      },
+      {
+        "title": "Separate reference-video limits",
+        "body": "Wan 2.6 reference-video is separate: it accepts 16:9, 9:16, 1:1, 4:3, or 3:4, produces 5- or 10-second output, and does not generate audio."
+      },
+      {
+        "title": "Choose by delivery requirement",
+        "body": "LTX fits high-resolution landscape masters; Wan fits longer general-purpose shots or reference-led continuity when 1080p is sufficient."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Open the available LTX Video 2.0 Pro model page"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Open the current Wan 2.6 model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Compare current LTX 2.3 Fast vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for high-resolution LTX delivery and Wan text, image, or reference workflows.",
+      "items": [
+        {
+          "question": "Should I keep LTX Video 2.0 Pro for 4K work?",
+          "answer": "Yes. The available LTX route supports 1080p, 1440p, and 4K landscape output, while Wan 2.6 tops out at 1080p."
+        },
+        {
+          "question": "How long are Wan 2.6 text and image clips?",
+          "answer": "Wan 2.6 text-to-video supports 5 to 15 seconds and five ratios. Image-to-video supports the same durations, but follows the source image aspect ratio."
+        },
+        {
+          "question": "Does Wan 2.6 reference-video mode support audio or 15 seconds?",
+          "answer": "No. That separate mode creates silent five- or ten-second clips from one to three reference videos; the 15-second ceiling applies only to text/image modes."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs Wan 2.6 : 4K, durée et références",
+      "description": "Comparez LTX Video 2.0 Pro disponible et Wan 2.6 actuel : paysage 4K, formats variés, clips de 15 secondes, audio et références vidéo.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "LTX Video 2.0 Pro reste disponible pour livrer des plans 16:9 jusqu’en 4K pendant 10 secondes. L’actuel Wan 2.6 Text & Image to Video élargit les ratios et atteint 15 secondes avec audio facultatif en mode texte ou image ; son mode référence vidéo est distinct, silencieux et limité à 5 ou 10 secondes.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Conservez LTX Video 2.0 Pro pour les masters au format paysage en haute résolution. Migrez vers l’actuel Wan 2.6 Text & Image to Video pour davantage de ratios, jusqu’à 15 secondes en mode texte ou image avec audio facultatif, ou des résultats de 5 ou 10 secondes via le mode référence vidéo distinct et silencieux."
+    },
+    "topCards": [
+      {
+        "title": "Rester sur LTX pour la résolution",
+        "body": "LTX Video 2.0 Pro couvre pendant 10 secondes au maximum la génération 16:9 à partir d’un texte ou d’une image, avec audio, en 1080p, 1440p ou 4K."
+      },
+      {
+        "title": "Détailler les ratios du mode texte",
+        "body": "Le mode texte-vers-vidéo de Wan 2.6 propose les ratios 16:9, 9:16, 1:1, 4:3 et 3:4. Le mode image-vers-vidéo suit le ratio de l’image source ; les deux durent de 5 à 15 secondes avec audio facultatif."
+      },
+      {
+        "title": "Isoler le mode référence vidéo",
+        "body": "Le mode vidéo de référence Wan 2.6 est séparé : ratios 16:9, 9:16, 1:1, 4:3 ou 3:4, sortie de 5 ou 10 secondes et sans audio."
+      },
+      {
+        "title": "Décider selon la livraison",
+        "body": "LTX convient aux masters au format paysage en haute résolution ; Wan répond aux plans plus longs ou au maintien d’une continuité visuelle à partir de vidéos de référence lorsque le 1080p suffit."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Ouvrir la page du modèle disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Ouvrir la page du modèle actuel Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Comparer les modèles actuels LTX 2.3 Fast et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur la 4K de LTX et les modes texte, image ou référence de Wan 2.6.",
+      "items": [
+        {
+          "question": "Faut-il garder LTX Video 2.0 Pro pour la 4K ?",
+          "answer": "Oui. Ce modèle disponible propose une sortie au format paysage en 1080p, 1440p ou 4K, tandis que Wan 2.6 atteint au maximum le 1080p."
+        },
+        {
+          "question": "Quelle durée offrent les modes texte et image de Wan 2.6 ?",
+          "answer": "Wan 2.6 propose 5 à 15 secondes en texte-vers-vidéo. Son mode image-vers-vidéo offre les mêmes durées, mais suit le ratio de l’image source."
+        },
+        {
+          "question": "Le mode référence de Wan 2.6 combine-t-il audio et 15 secondes ?",
+          "answer": "Non. Ce mode séparé produit des clips silencieux de 5 ou 10 secondes à partir d’une à trois vidéos ; les 15 secondes concernent uniquement les modes texte et image."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs Wan 2.6: 4K, duración y referencias",
+      "description": "Compara LTX 2.0 Pro disponible y Wan 2.6 actual por salida horizontal 4K, más formatos, clips de hasta 15 segundos, audio y referencias de video.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX Video 2.0 Pro disponible con Wan 2.6 Text & Image to Video actual. LTX favorece trabajos 16:9 de hasta diez segundos y hasta 4K; Wan amplía los formatos y llega a 15 segundos en modos de texto o imagen, además de ofrecer una ruta separada y silenciosa con videos de referencia.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Conviene quedarse en LTX Video 2.0 Pro, que está disponible, para entregas horizontales de alta resolución. Cambia al actual Wan 2.6 Text & Image to Video para más formatos, clips de texto o imagen de hasta 15 segundos con audio opcional, o trabajos silenciosos de cinco o diez segundos con videos de referencia."
+    },
+    "topCards": [
+      {
+        "title": "Mantener LTX para alta resolución",
+        "body": "Conserva LTX Video 2.0 Pro para producción 16:9 desde texto o imagen en 1080p, 1440p o 4K, con audio y un máximo de diez segundos."
+      },
+      {
+        "title": "Detallar formatos del modo texto",
+        "body": "El modo texto a video de Wan 2.6 ofrece 16:9, 9:16, 1:1, 4:3 y 3:4. Imagen a video sigue la relación de la imagen fuente; ambos duran de 5 a 15 segundos con audio opcional."
+      },
+      {
+        "title": "Separar los límites de referencias",
+        "body": "El modo video de referencia de Wan 2.6 es separado: admite 16:9, 9:16, 1:1, 4:3 o 3:4, produce 5 o 10 segundos y no genera audio."
+      },
+      {
+        "title": "Decidir por el formato de entrega",
+        "body": "LTX encaja con entregables horizontales de alta resolución; Wan funciona para tomas generales más largas o continuidad guiada por referencias cuando 1080p basta."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Abrir el modelo disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Abrir el modelo actual Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Comparar LTX 2.3 Fast actual vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre alta resolución en LTX y los distintos modos de Wan.",
+      "items": [
+        {
+          "question": "¿Conviene mantener LTX Video 2.0 Pro para trabajos 4K?",
+          "answer": "Sí. La ruta LTX disponible admite salida horizontal en 1080p, 1440p y 4K, mientras que Wan 2.6 llega como máximo a 1080p."
+        },
+        {
+          "question": "¿Cuánto duran los clips de texto e imagen de Wan 2.6?",
+          "answer": "Wan 2.6 ofrece de 5 a 15 segundos en texto a video. Imagen a video ofrece las mismas duraciones, pero sigue la relación de la imagen fuente."
+        },
+        {
+          "question": "¿El modo con videos de referencia de Wan 2.6 admite audio o 15 segundos?",
+          "answer": "No. Esa ruta separada crea clips silenciosos de cinco o diez segundos a partir de uno a tres videos; el máximo de 15 segundos solo se aplica a los modos de texto e imagen."
+        }
+      ]
+    }
+  }
+}

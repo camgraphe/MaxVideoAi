@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-vs-ltx-2-3-pro",
+  "en": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Pro: Upgrade or Stay?",
+      "description": "Compare two available LTX Pro routes on matching listed tiers, 4K, duration, vertical output, audio-to-video, extend, retake, and frame control.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare the available LTX Video 2.0 Pro workflow with current LTX 2.3 Pro. Both include audio, reach 4K, and share the same listed resolution tiers; 2.3 Pro adds 9:16, audio-to-video, extension, retake, and newer start/end-frame controls.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Both remain available at the same listed tiers. Stay on LTX Video 2.0 Pro for familiar ten-second 16:9 text/image work; upgrade to current LTX 2.3 Pro for 9:16, audio-to-video, extension, retake, or start/end-frame control."
+    },
+    "topCards": [
+      {
+        "title": "Stay with the familiar Pro route",
+        "body": "Keep LTX Video 2.0 Pro when a validated ten-second 16:9 text/image workflow with audio already produces the required delivery."
+      },
+      {
+        "title": "Separate 2.3 Pro durations by mode",
+        "body": "LTX 2.3 Pro text-to-video and image-to-video offer 6, 8, or 10 seconds. The 20-second ceiling applies only to audio-to-video, extension, or retake."
+      },
+      {
+        "title": "Pricing does not decide this pair",
+        "body": "The two Pro routes list the same per-second tiers at 1080p, 1440p, and 4K, shifting the choice to workflow requirements."
+      },
+      {
+        "title": "Migrate only when controls matter",
+        "body": "The newer model earns the move for vertical, audio-led, extension, or retake jobs; established landscape generation can remain on 2.0 Pro."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Open the available LTX Video 2.0 Pro model page"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Open the current LTX 2.3 Pro model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Compare LTX 2.3 Fast vs current LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for staying on the established Pro route or adopting LTX 2.3 Pro controls.",
+      "items": [
+        {
+          "question": "Is LTX Video 2.0 Pro still accessible on MaxVideoAI?",
+          "answer": "Yes. It remains available for ten-second 16:9 text/image generation with audio in 1080p, 1440p, or 4K."
+        },
+        {
+          "question": "Which LTX 2.3 Pro features justify an upgrade?",
+          "answer": "Migrate from LTX Video 2.0 Pro for 9:16, audio-to-video up to 20 seconds, extension, retake, or newer start/end-frame controls."
+        },
+        {
+          "question": "Are the listed LTX 2.0 Pro and 2.3 Pro tiers different?",
+          "answer": "No. Their listed per-second tiers match at 1080p, 1440p, and 4K, so choose based on modes and delivery rather than tier price."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Pro : rester ou évoluer ?",
+      "description": "Comparez deux modèles LTX Pro disponibles : mêmes tarifs affichés, 4K, format vertical, Audio-vers-vidéo, extension, retake et contrôle début/fin.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "LTX Video 2.0 Pro reste disponible pour produire en 16:9 des clips de 10 secondes selon un processus familier. L’actuel LTX 2.3 Pro conserve l’audio, la 4K et les mêmes paliers tarifaires, puis ajoute le 9:16, l’Audio-vers-vidéo, l’extension, le retake et le contrôle début/fin.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Les deux modèles restent disponibles aux mêmes paliers affichés. Conservez LTX Video 2.0 Pro pour les clips texte/image de 10 secondes en 16:9 ; évoluez vers LTX 2.3 Pro pour le 9:16, l’Audio-vers-vidéo, l’extension, le retake ou le contrôle début/fin."
+    },
+    "topCards": [
+      {
+        "title": "Garder la formule Pro familière",
+        "body": "LTX Video 2.0 Pro reste un bon choix lorsqu’un workflow 16:9 à partir d’un texte ou d’une image avec audio est déjà validé et que des générations de 10 secondes suffisent."
+      },
+      {
+        "title": "Séparer les durées selon le mode",
+        "body": "Les modes texte-vers-vidéo et image-vers-vidéo de LTX 2.3 Pro proposent 6, 8 ou 10 secondes. Les 20 secondes concernent uniquement l’Audio-vers-vidéo, l’extension ou le retake."
+      },
+      {
+        "title": "Le prix ne départage pas les modèles",
+        "body": "Les deux offres Pro affichent les mêmes paliers par seconde en 1080p, 1440p et 4K ; le choix dépend donc des fonctionnalités nécessaires."
+      },
+      {
+        "title": "Migrer pour un besoin concret",
+        "body": "Le modèle plus récent se justifie pour le format vertical, la génération Audio-vers-vidéo, l’extension ou le retake ; les rendus paysage établis peuvent rester sur 2.0 Pro."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Ouvrir la page du modèle disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Ouvrir la page du modèle actuel LTX 2.3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparer LTX 2.3 Fast et le modèle actuel LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour rester sur LTX 2.0 Pro ou adopter les contrôles de LTX 2.3 Pro.",
+      "items": [
+        {
+          "question": "LTX Video 2.0 Pro est-il toujours accessible sur MaxVideoAI ?",
+          "answer": "Oui. Il reste disponible pour des générations de 10 secondes en 16:9 à partir d’un texte ou d’une image, avec audio, en 1080p, 1440p ou 4K."
+        },
+        {
+          "question": "Quelles fonctions de LTX 2.3 Pro justifient une migration ?",
+          "answer": "Migrez depuis LTX Video 2.0 Pro pour le 9:16, l’Audio-vers-vidéo jusqu’à 20 secondes, l’extension, le retake ou le contrôle début/fin."
+        },
+        {
+          "question": "Les tarifs affichés de LTX 2.0 Pro et LTX 2.3 Pro diffèrent-ils ?",
+          "answer": "Non. Leurs paliers par seconde sont identiques en 1080p, 1440p et 4K ; choisissez donc selon les modes et le format de livraison."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Pro: quedarse o migrar",
+      "description": "Compara dos rutas LTX Pro disponibles por precios publicados equivalentes, 4K, duración, formato vertical, generación desde audio, extensión y retoque.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Pro actual. Ambos incluyen audio, llegan a 4K y comparten los mismos precios publicados por resolución; 2.3 Pro agrega 9:16, audio a video, extensión, retake y control más reciente de los cuadros inicial y final.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Ambos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Pro para trabajos de texto o imagen de diez segundos en 16:9; migra a LTX 2.3 Pro por 9:16, audio a video, extensión, retake o control inicial/final."
+    },
+    "topCards": [
+      {
+        "title": "Mantener la ruta Pro conocida",
+        "body": "Conserva LTX Video 2.0 Pro cuando un flujo validado de texto o imagen en 16:9, con audio y diez segundos, ya produce la entrega necesaria."
+      },
+      {
+        "title": "Separar duraciones según el modo",
+        "body": "Los modos texto a video e imagen a video de LTX 2.3 Pro ofrecen 6, 8 o 10 segundos. Los 20 segundos corresponden solo a audio a video, extensión o retake."
+      },
+      {
+        "title": "No decidir solo por el precio",
+        "body": "Las dos rutas Pro publican los mismos precios por segundo en 1080p, 1440p y 4K, así que la decisión depende de las necesidades del flujo."
+      },
+      {
+        "title": "Migrar cuando los controles aporten valor",
+        "body": "El modelo más reciente justifica el cambio para trabajos verticales, guiados por audio, de extensión o retoque; la generación horizontal puede seguir en 2.0 Pro."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Abrir el modelo disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Abrir el modelo actual LTX 2.3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro actual"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para quedarse en la ruta Pro conocida o adoptar los controles de 2.3 Pro.",
+      "items": [
+        {
+          "question": "¿LTX Video 2.0 Pro sigue disponible en MaxVideoAI?",
+          "answer": "Sí. Sigue disponible para generar desde texto o imagen en 16:9 durante diez segundos, con audio y salida en 1080p, 1440p o 4K."
+        },
+        {
+          "question": "¿Qué funciones de LTX 2.3 Pro justifican actualizar?",
+          "answer": "Migra desde LTX Video 2.0 Pro por 9:16, audio a video de hasta 20 segundos, extensión, retake o control de los cuadros inicial y final."
+        },
+        {
+          "question": "¿Cambian los precios publicados entre LTX 2.0 Pro y 2.3 Pro?",
+          "answer": "No. Sus precios por segundo coinciden en 1080p, 1440p y 4K; elige según los modos y el formato de entrega, no por el precio por resolución."
+        }
+      ]
+    }
+  }
+}

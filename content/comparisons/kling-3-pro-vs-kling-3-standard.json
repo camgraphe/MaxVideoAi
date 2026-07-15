@@ -1,0 +1,66 @@
+{
+  "slug": "kling-3-pro-vs-kling-3-standard",
+  "en": {
+    "heroIntro": "Compare Kling 3 Pro and Kling 3 Standard to choose the right current Kling AI model for multi-shot video, Kling image-to-video workflows, reusable Kling Elements, and native-audio output quality.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers to help you choose between the current Kling Pro and Standard tiers.",
+      "items": [
+        {
+          "question": "Which current Kling AI model is better for image-to-video and prompt testing?",
+          "answer": "Kling 3 Standard is better for lower-cost prompt testing and repeatable image-to-video tests, while Kling 3 Pro is better when you need tighter scene control and higher-priority final outputs."
+        },
+        {
+          "question": "Do Kling 3 Pro and Kling 3 Standard both support Kling Elements?",
+          "answer": "Yes. Both current Kling models support Kling Elements for character and prop continuity, but Kling 3 Pro is the stronger choice when the sequence is more demanding or continuity matters more."
+        },
+        {
+          "question": "When should I choose Kling 3 Pro instead of Kling 3 Standard?",
+          "answer": "Choose Kling 3 Pro when you need stronger scene control, more demanding multi-shot continuity, and higher-priority final output. Choose Kling 3 Standard when cost control and repeatable draft testing matter more."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "heroIntro": "Comparez Kling 3 Pro et Kling 3 Standard pour choisir le bon modele Kling IA actuel pour la video multi-shot, les workflows Kling en image-vers-video, les Kling Elements reutilisables et la qualite de sortie avec audio natif.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre les tiers Kling Pro et Standard actuels.",
+      "items": [
+        {
+          "question": "Quel modele Kling IA actuel convient le mieux a l image-vers-video et aux tests de prompt ?",
+          "answer": "Kling 3 Standard convient mieux a des tests de prompt moins couteux et a des tests image-vers-video repetables, tandis que Kling 3 Pro convient mieux quand vous avez besoin d un controle de scene plus serre et de sorties finales plus prioritaires."
+        },
+        {
+          "question": "Kling 3 Pro et Kling 3 Standard supportent-ils tous les deux les Kling Elements ?",
+          "answer": "Oui. Les deux modeles Kling actuels supportent les Kling Elements pour la continuite des personnages et des props, mais Kling 3 Pro reste le meilleur choix quand la sequence est plus exigeante ou que la continuite compte davantage."
+        },
+        {
+          "question": "Quand faut-il choisir Kling 3 Pro plutot que Kling 3 Standard ?",
+          "answer": "Choisissez Kling 3 Pro quand vous avez besoin d un meilleur controle de scene, d une continuite multi-shot plus exigeante et d une sortie finale plus prioritaire. Choisissez Kling 3 Standard quand le controle des couts et les tests repetables comptent davantage."
+        }
+      ]
+    }
+  },
+  "es": {
+    "heroIntro": "Compara Kling 3 Pro y Kling 3 Standard para elegir el modelo Kling AI actual adecuado para video multi-shot, workflows Kling de imagen-a-video, Kling Elements reutilizables y calidad de salida con audio nativo.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre los tiers actuales de Kling Pro y Standard.",
+      "items": [
+        {
+          "question": "¿Que modelo Kling AI actual es mejor para imagen-a-video y pruebas de prompt?",
+          "answer": "Kling 3 Standard es mejor para pruebas de prompt de menor coste y borradores repetibles de imagen-a-video, mientras que Kling 3 Pro es mejor cuando necesitas un control de escena mas preciso y salidas finales mas prioritarias."
+        },
+        {
+          "question": "¿Kling 3 Pro y Kling 3 Standard soportan ambos los Kling Elements?",
+          "answer": "Si. Ambos modelos Kling actuales soportan Kling Elements para continuidad de personajes y props, pero Kling 3 Pro es la mejor opcion cuando la secuencia es mas exigente o la continuidad importa mas."
+        },
+        {
+          "question": "¿Cuando deberia elegir Kling 3 Pro en lugar de Kling 3 Standard?",
+          "answer": "Elige Kling 3 Pro cuando necesites mejor control de escena, continuidad multi-shot mas exigente y una salida final mas prioritaria. Elige Kling 3 Standard cuando importe mas controlar el coste y repetir pruebas de borrador."
+        }
+      ]
+    }
+  }
+}

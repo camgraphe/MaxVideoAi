@@ -1,0 +1,192 @@
+{
+  "slug": "kling-3-standard-vs-kling-o3-standard",
+  "en": {
+    "meta": {
+      "title": "Kling 3 Standard vs Omni Standard: Which to Choose?",
+      "description": "Compare Kling 3 Standard and Kling 3.0 Omni Standard on references, video editing, 1080p output, audio, and price to pick the right workflow.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Kling 3 Standard with Kling 3.0 Omni Standard when both offer 15-second 1080p output and audio at the same listed base price. Standard keeps text and start-image generation focused, while Omni adds reference-to-video and video-to-video control for source-led work.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Kling 3 Standard for streamlined text-to-video or start-frame testing when extra reference modes would only add complexity. Choose Kling 3.0 Omni Standard when characters, products, visual references, or an existing source clip need to guide the result through reference-to-video or video-to-video."
+    },
+    "topCards": [
+      {
+        "title": "Choose Kling 3 Standard",
+        "body": "Use Standard for direct prompt generation, start-image animation, and repeatable 1080p draft testing with optional audio."
+      },
+      {
+        "title": "Choose Omni Standard",
+        "body": "Use Omni when the shot needs reference assets or an existing video source in addition to text and image generation."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Resolution, duration, audio, and listed base price match; Omni expands the input workflow while Standard stays simpler."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Standard fits rapid start-frame drafts. Omni fits reference-guided characters, product continuity, and source-video transformations."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-standard",
+        "label": "Open the Kling 3 Standard model page"
+      },
+      {
+        "href": "/models/kling-o3-standard",
+        "label": "Open the Kling 3.0 Omni Standard model page"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Compare Kling 3 Pro vs Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between the Standard and Omni Standard Kling workflows.",
+      "items": [
+        {
+          "question": "What is the main difference between Kling 3 Standard and Omni Standard?",
+          "answer": "Both support 15-second 1080p generation with audio. Omni Standard adds reference-to-video and video-to-video, while Kling 3 Standard focuses on text-to-video and image-to-video."
+        },
+        {
+          "question": "Do Kling 3 Standard and Omni Standard cost the same?",
+          "answer": "The catalog lists the same provider base rates for both: $0.084 per second with audio off and $0.126 per second with audio on, before MaxVideoAI platform margin."
+        },
+        {
+          "question": "Which Kling Standard model should I use for reference assets?",
+          "answer": "Use Kling 3.0 Omni Standard when reference images or a source video must guide the output. Use Kling 3 Standard when a prompt or start image is enough."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 3 Standard vs Omni Standard : lequel choisir ?",
+      "description": "Comparez Kling 3 Standard et Kling 3.0 Omni Standard sur les références, le montage vidéo, le 1080p, l’audio et le prix pour bien choisir.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Kling 3 Standard et Kling 3.0 Omni Standard lorsque les deux offrent 15 secondes en 1080p avec audio au même tarif de base. Standard simplifie la génération depuis un texte ou une image de départ ; Omni ajoute les références visuelles et la transformation d’une vidéo source.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Kling 3 Standard pour tester directement un prompt ou une image de départ sans complexité inutile. Choisissez Kling 3.0 Omni Standard lorsque des personnages, produits, références visuelles ou une vidéo existante doivent guider le résultat grâce aux modes référence-vers-vidéo ou vidéo-vers-vidéo."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Kling 3 Standard",
+        "body": "Pour les prompts directs, l’animation d’une image initiale et des brouillons 1080p répétables avec audio optionnel."
+      },
+      {
+        "title": "Choisir Omni Standard",
+        "body": "Pour guider le plan avec des références ou transformer une vidéo source en plus des modes texte et image."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Résolution, durée, audio et tarif de base sont identiques ; Omni élargit les entrées, Standard reste plus simple."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Standard convient aux tests depuis une image. Omni convient à la continuité de personnages, produits et sources vidéo."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-standard",
+        "label": "Ouvrir la page Kling 3 Standard"
+      },
+      {
+        "href": "/models/kling-o3-standard",
+        "label": "Ouvrir la page Kling 3.0 Omni Standard"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Comparer Kling 3 Pro et Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre les workflows Kling Standard et Omni Standard.",
+      "items": [
+        {
+          "question": "Quelle est la différence principale entre Standard et Omni Standard ?",
+          "answer": "Les deux produisent jusqu’à 15 secondes en 1080p avec audio. Omni Standard ajoute les modes référence-vers-vidéo et vidéo-vers-vidéo, absents de Kling 3 Standard."
+        },
+        {
+          "question": "Kling 3 Standard et Omni Standard coûtent-ils le même prix ?",
+          "answer": "Le catalogue indique les mêmes tarifs fournisseur : 0,084 $ par seconde sans audio et 0,126 $ avec audio, avant la marge appliquée par MaxVideoAI."
+        },
+        {
+          "question": "Quel modèle choisir pour travailler avec des références ?",
+          "answer": "Choisissez Kling 3.0 Omni Standard si des images de référence ou une vidéo source doivent guider le résultat. Kling 3 Standard suffit avec un prompt ou une image de départ."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 3 Standard vs Omni Standard: ¿cuál elegir?",
+      "description": "Compara Kling 3 Standard y Kling 3.0 Omni Standard en referencias, edición de video, 1080p, audio y precio para elegir el flujo correcto.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Kling 3 Standard con Kling 3.0 Omni Standard cuando ambos ofrecen 15 segundos en 1080p con audio al mismo precio base. Standard simplifica la generación desde texto o una imagen inicial; Omni agrega referencias visuales y transformación de un video fuente.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Kling 3 Standard para probar directamente un prompt o una imagen inicial sin complejidad extra. Elige Kling 3.0 Omni Standard cuando personajes, productos, referencias visuales o un video existente deban guiar el resultado mediante referencia a video o video a video."
+    },
+    "topCards": [
+      {
+        "title": "Elige Kling 3 Standard",
+        "body": "Para prompts directos, animación de una imagen inicial y borradores 1080p repetibles con audio opcional."
+      },
+      {
+        "title": "Elige Omni Standard",
+        "body": "Para guiar la toma con referencias o transformar un video fuente además de generar desde texto o imagen."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Resolución, duración, audio y precio base coinciden; Omni amplía las entradas y Standard mantiene el flujo simple."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Standard sirve para pruebas desde una imagen. Omni sirve para continuidad de personajes, productos y fuentes de video."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-3-standard",
+        "label": "Abrir la página de Kling 3 Standard"
+      },
+      {
+        "href": "/models/kling-o3-standard",
+        "label": "Abrir la página de Kling 3.0 Omni Standard"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-kling-3-standard",
+        "label": "Comparar Kling 3 Pro y Kling 3 Standard"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre los flujos Kling Standard y Omni Standard.",
+      "items": [
+        {
+          "question": "¿Cuál es la diferencia principal entre Standard y Omni Standard?",
+          "answer": "Ambos producen hasta 15 segundos en 1080p con audio. Omni Standard agrega referencia a video y video a video, modos que Kling 3 Standard no incluye."
+        },
+        {
+          "question": "¿Kling 3 Standard y Omni Standard cuestan lo mismo?",
+          "answer": "El catálogo indica las mismas tarifas del proveedor: US$0.084 por segundo sin audio y US$0.126 con audio, antes del margen aplicado por MaxVideoAI."
+        },
+        {
+          "question": "¿Qué modelo debo usar con recursos de referencia?",
+          "answer": "Elige Kling 3.0 Omni Standard si imágenes de referencia o un video fuente deben guiar el resultado. Kling 3 Standard basta cuando un prompt o imagen inicial resuelven la toma."
+        }
+      ]
+    }
+  }
+}

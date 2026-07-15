@@ -1,0 +1,126 @@
+{
+  "slug": "dreamina-seedance-2-0-mini-vs-happy-horse-1-1",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Happy Horse 1.1: Batch Cost, Audio & Best Uses",
+      "description": "Compare Seedance 2.0 Mini and Happy Horse 1.1 for batch video cost, native audio, lip-sync, references, scorecard ratings and best marketing workflows.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Seedance 2.0 Mini when you need a lower-cost Dreamina Seedance route for ecommerce batches, social variants, video edits, extension tests, and high-frequency 480p or 720p production. Use Happy Horse 1.1 when the scene depends on native synchronized audio, dialogue, lip-sync, and stronger speaking-character behavior. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and decision guidance instead of side-by-side video renders.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Open Seedance 2.0 Mini model page"
+      },
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Open Happy Horse 1.1 model page"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Compare Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between Seedance Mini batch value and Happy Horse native-audio output.",
+      "items": [
+        {
+          "question": "When should I choose Seedance 2.0 Mini?",
+          "answer": "Choose Mini for lower-cost batch production, ecommerce variants, UGC hook testing, video edits, extensions, and high-frequency experiments where 480p or 720p is enough."
+        },
+        {
+          "question": "When is Happy Horse 1.1 the better fit?",
+          "answer": "Choose Happy Horse 1.1 when native audio, multilingual lip-sync, speaking characters, and reference subjects are more important than the lowest per-variant cost."
+        },
+        {
+          "question": "Why is this Mini page scorecard-only?",
+          "answer": "Mini comparison pages use scorecards, specs, and decision copy until curated side-by-side Mini renders are ready, so this page does not show comparison videos yet."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Happy Horse 1.1 : coût, audio et usages",
+      "description": "Comparez Seedance 2.0 Mini et Happy Horse 1.1 pour le coût des vidéos en lot, l’audio natif, la synchronisation labiale, les références, les notes et les flux marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Seedance 2.0 Mini quand vous cherchez une route Dreamina Seedance moins couteuse pour batches ecommerce, variantes social, edits video, tests d extension et production frequente en 480p ou 720p. Utilisez Happy Horse 1.1 quand la scene depend d audio synchronise natif, de dialogue, de lip-sync et d un meilleur comportement de personnages parlants. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Ouvrir la page modele Seedance 2.0 Mini"
+      },
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Ouvrir la page modele Happy Horse 1.1"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparer Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre valeur batch Seedance Mini et sortie Happy Horse avec audio natif.",
+      "items": [
+        {
+          "question": "Quand choisir Seedance 2.0 Mini ?",
+          "answer": "Choisissez Mini pour la production batch moins couteuse, variantes ecommerce, tests de hooks UGC, edits video, extensions et experiences a haute frequence quand 480p ou 720p suffit."
+        },
+        {
+          "question": "Quand Happy Horse 1.1 est-il plus adapte ?",
+          "answer": "Choisissez Happy Horse 1.1 quand l audio natif, le lip-sync multilingue, les personnages parlants et les sujets de reference comptent plus que le cout par variante le plus bas."
+        },
+        {
+          "question": "Pourquoi cette page Mini est-elle scorecard-only ?",
+          "answer": "Les pages Mini utilisent scorecards, specs et copy de decision jusqu a ce que des renders Mini cote-a-cote soient prets, donc cette page n affiche pas encore de videos comparatives."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Happy Horse 1.1: costo, audio y usos",
+      "description": "Compara Seedance 2.0 Mini y Happy Horse 1.1 por costo de video por lote, audio nativo, sincronización labial, referencias, calificaciones y flujos de marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Seedance 2.0 Mini cuando buscas una ruta Dreamina Seedance de menor coste para batches ecommerce, variantes social, ediciones de video, pruebas de extension y produccion frecuente en 480p o 720p. Usa Happy Horse 1.1 cuando la escena depende de audio sincronizado nativo, dialogo, lip-sync y mejor comportamiento de personajes que hablan. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Mini"
+      },
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Abrir la pagina del modelo Happy Horse 1.1"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparar Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre valor batch Seedance Mini y output Happy Horse con audio nativo.",
+      "items": [
+        {
+          "question": "Cuando elegir Seedance 2.0 Mini?",
+          "answer": "Elige Mini para produccion batch de menor coste, variantes ecommerce, pruebas de hooks UGC, ediciones de video, extensiones y experimentos de alta frecuencia cuando 480p o 720p es suficiente."
+        },
+        {
+          "question": "Cuando Happy Horse 1.1 encaja mejor?",
+          "answer": "Elige Happy Horse 1.1 cuando audio nativo, lip-sync multilingue, personajes que hablan y sujetos de referencia importan mas que el coste por variante mas bajo."
+        },
+        {
+          "question": "Por que esta pagina Mini es scorecard-only?",
+          "answer": "Las paginas Mini usan scorecards, specs y copy de decision hasta que haya renders Mini lado a lado listos, por eso esta pagina no muestra videos comparativos todavia."
+        }
+      ]
+    }
+  }
+}

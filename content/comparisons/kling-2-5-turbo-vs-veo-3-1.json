@@ -1,0 +1,192 @@
+{
+  "slug": "kling-2-5-turbo-vs-veo-3-1",
+  "en": {
+    "meta": {
+      "title": "Kling 2.5 Turbo vs Veo 3.1: Price, Audio & 4K",
+      "description": "Compare Kling 2.5 Turbo and Google Veo 3.1 for silent draft cost, audio, 4K, references, controls, and the current Kling upgrade path.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Kling 2.5 Turbo with Google Veo 3.1 when choosing an inexpensive silent legacy draft route or polished current production. Kling remains available for clips up to 10 seconds; Veo adds audio, references, frame controls, extension, and 4K.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available Kling 2.5 Turbo for inexpensive silent drafts up to 10 seconds. Choose Google Veo 3.1 for polished audio, references, controls, and 4K; migrate new Kling Pro work to current Kling 3 Pro when 15-second production is the priority."
+    },
+    "topCards": [
+      {
+        "title": "Keep Kling for silent drafts",
+        "body": "Continue with Kling 2.5 Turbo when its available 720p or 1080p text, image, and image-to-image workflow covers a low-cost concept."
+      },
+      {
+        "title": "Choose Veo for production control",
+        "body": "Veo adds native audio, references, first-last-frame control, extension, and resolutions from 720p through 4K."
+      },
+      {
+        "title": "Upgrade within Kling",
+        "body": "Move to current Kling 3 Pro when a new Kling project needs audio, clips up to 15 seconds, and the current Pro production route."
+      },
+      {
+        "title": "Ten seconds or controlled eight",
+        "body": "Legacy Kling reaches 10 seconds without audio; Veo stops at eight seconds but brings a broader controlled final-output toolkit."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-5-turbo",
+        "label": "Open the available Kling 2.5 Turbo page"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Open the Google Veo 3.1 model page"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1",
+        "label": "Compare current Kling 3 Pro vs Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for legacy Kling drafts, controlled Veo output, and the current Kling successor.",
+      "items": [
+        {
+          "question": "Is Kling 2.5 Turbo still available for generation?",
+          "answer": "Yes. Kling 2.5 Turbo remains available for legacy silent text, image, or image-to-image jobs up to 10 seconds in 720p or 1080p."
+        },
+        {
+          "question": "Who should stay on Kling 2.5 Turbo instead of Veo 3.1?",
+          "answer": "Stay on Kling 2.5 Turbo for inexpensive silent drafts when 1080p is enough and the job does not need audio, references, or 4K."
+        },
+        {
+          "question": "When should I upgrade Kling 2.5 Turbo to Kling 3 Pro?",
+          "answer": "Migrate new Kling work to current Kling 3 Pro when audio, up to 15 seconds, or the newer Pro workflow matters more than legacy draft cost."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 2.5 Turbo vs Veo 3.1 : prix, audio et 4K",
+      "description": "Comparez Kling 2.5 Turbo et Google Veo 3.1 sur le coût des brouillons silencieux, l’audio, la 4K, les références et la migration Kling.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Kling 2.5 Turbo et Google Veo 3.1 pour choisir entre un ancien workflow de brouillon silencieux économique et une production moderne et soignée avec Veo. Kling reste disponible pour des clips de 10 secondes maximum ; Veo ajoute l’audio, les références, le contrôle des images initiale et finale, l’extension et la 4K.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur Kling 2.5 Turbo, toujours accessible, pour des brouillons silencieux économiques jusqu’à 10 secondes. Choisissez Google Veo 3.1 pour l’audio, les références, les contrôles et la 4K ; migrez les nouveaux projets Kling Pro vers l’actuel Kling 3 Pro lorsque les 15 secondes deviennent prioritaires."
+    },
+    "topCards": [
+      {
+        "title": "Garder Kling pour les brouillons silencieux",
+        "body": "Continuez avec Kling 2.5 Turbo lorsque ce workflow, toujours disponible en 720p ou 1080p depuis du texte, une image ou une transformation image-vers-image, suffit à un concept peu coûteux."
+      },
+      {
+        "title": "Choisir Veo pour le contrôle en production",
+        "body": "Veo ajoute l’audio natif, les références, le contrôle des images initiale et finale, l’extension et des résolutions allant du 720p à la 4K."
+      },
+      {
+        "title": "Évoluer au sein de Kling",
+        "body": "Passez à l’actuel Kling 3 Pro lorsqu’un nouveau projet Kling requiert de l’audio, des clips jusqu’à 15 secondes et le workflow Pro actuel."
+      },
+      {
+        "title": "Dix secondes ou huit contrôlées",
+        "body": "L’ancien Kling atteint 10 secondes sans audio ; Veo s’arrête à huit secondes mais propose une boîte à outils plus large pour la sortie finale."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-5-turbo",
+        "label": "Ouvrir la page Kling 2.5 Turbo disponible"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Ouvrir la page du modèle Google Veo 3.1"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1",
+        "label": "Comparer l’actuel Kling 3 Pro et Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur le workflow Kling historique, la production Veo et le successeur Kling actuel.",
+      "items": [
+        {
+          "question": "Kling 2.5 Turbo est-il encore disponible pour générer des vidéos ?",
+          "answer": "Oui. Kling 2.5 Turbo reste disponible pour les workflows historiques de génération silencieuse depuis du texte, une image ou une transformation image-vers-image, jusqu’à 10 secondes en 720p ou 1080p."
+        },
+        {
+          "question": "Qui devrait rester sur Kling 2.5 Turbo plutôt que choisir Veo 3.1 ?",
+          "answer": "Restez sur Kling 2.5 Turbo pour des brouillons silencieux économiques lorsque le 1080p suffit et que le projet n’exige ni audio, ni références, ni 4K."
+        },
+        {
+          "question": "Quand faut-il migrer de Kling 2.5 Turbo vers Kling 3 Pro ?",
+          "answer": "Faites évoluer les nouveaux projets Kling vers l’actuel Kling 3 Pro lorsque l’audio, les clips jusqu’à 15 secondes ou le workflow Pro plus récent justifient le coût."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 2.5 Turbo vs Veo 3.1: precio, audio y 4K",
+      "description": "Compara Kling 2.5 Turbo y Google Veo 3.1 en costo de borrador, audio, 4K, referencias y controles, y descubre cuándo migrar a Kling 3 Pro.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Kling 2.5 Turbo con Google Veo 3.1 para elegir entre una ruta anterior económica y silenciosa para borradores o una producción pulida con un modelo actual. Kling sigue disponible en MaxVideoAI para clips de hasta 10 segundos; Veo agrega audio, referencias, controles de fotogramas, extensión y 4K.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Quédate en Kling 2.5 Turbo, que sigue disponible, para borradores silenciosos económicos de hasta 10 segundos. Elige Google Veo 3.1 para producción pulida con audio, referencias, controles y 4K; migra los nuevos trabajos Kling Pro a Kling 3 Pro actual cuando la producción de 15 segundos sea prioritaria."
+    },
+    "topCards": [
+      {
+        "title": "Conservar Kling para borradores silenciosos",
+        "body": "Mantén Kling 2.5 Turbo cuando su flujo disponible de texto, imagen o imagen a imagen en 720p o 1080p cubra un concepto de bajo costo."
+      },
+      {
+        "title": "Elegir Veo para control de producción",
+        "body": "Veo agrega audio nativo, referencias, control de primer y último fotograma, extensión y resoluciones desde 720p hasta 4K."
+      },
+      {
+        "title": "Actualizar dentro de Kling",
+        "body": "Pasa a Kling 3 Pro actual cuando un proyecto Kling nuevo necesite audio, clips de hasta 15 segundos y la ruta Pro de producción vigente."
+      },
+      {
+        "title": "Diez segundos o ocho controlados",
+        "body": "Kling 2.5 Turbo llega a 10 segundos sin audio; Veo termina en ocho, pero aporta herramientas más amplias para controlar la salida final."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-5-turbo",
+        "label": "Abrir la página del Kling 2.5 Turbo disponible"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Abrir la página de Google Veo 3.1"
+      },
+      {
+        "href": "/ai-video-engines/kling-3-pro-vs-veo-3-1",
+        "label": "Comparar Kling 3 Pro actual y Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre borradores con Kling 2.5 Turbo, producción con Veo y el sucesor actual de Kling.",
+      "items": [
+        {
+          "question": "¿Kling 2.5 Turbo sigue disponible para generar?",
+          "answer": "Sí. Kling 2.5 Turbo sigue disponible para trabajos silenciosos desde texto, imagen o imagen a imagen de hasta 10 segundos en 720p o 1080p."
+        },
+        {
+          "question": "¿Quién debería quedarse en Kling 2.5 Turbo en vez de usar Veo 3.1?",
+          "answer": "Quédate en Kling 2.5 Turbo para borradores silenciosos económicos cuando una resolución de 1080p sea suficiente y el trabajo no necesite audio, referencias ni 4K."
+        },
+        {
+          "question": "¿Cuándo conviene actualizar Kling 2.5 Turbo a Kling 3 Pro?",
+          "answer": "Migra los proyectos nuevos de Kling a Kling 3 Pro actual cuando el audio, los clips de hasta 15 segundos o el flujo Pro más reciente importen más que el costo de los borradores con Kling 2.5 Turbo."
+        }
+      ]
+    }
+  }
+}

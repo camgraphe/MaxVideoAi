@@ -1,0 +1,192 @@
+{
+  "slug": "veo-3-1-vs-veo-3-1-lite",
+  "en": {
+    "meta": {
+      "title": "Veo 3.1 vs Veo 3.1 Lite: 4K, References & Price",
+      "description": "Compare Google Veo 3.1 and Google Veo 3.1 Lite on listed price, 4K, reference images, audio, eight-second clips, frame control, and extension.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Google Veo 3.1 with Google Veo 3.1 Lite for budget drafting or final production. Both support audio, text/image generation, eight-second output, first/last-frame control, and extension; standard Veo adds 4K and multiple-reference-image mode at a higher listed price.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Google Veo 3.1 Lite for budget 720p or 1080p drafts. Choose Google Veo 3.1 for multiple-reference-image mode or 4K. Both support audio, eight-second output, first/last-frame control, and extension, but Lite offers neither 4K nor that reference mode."
+    },
+    "topCards": [
+      {
+        "title": "Choose Lite for economical drafts",
+        "body": "Google Veo 3.1 Lite lists a lower 720p/1080p price ladder for text, single-image, first/last-frame, and extension workflows with audio."
+      },
+      {
+        "title": "Choose standard Veo for 4K",
+        "body": "Google Veo 3.1 reaches 4K and supports a dedicated multiple-reference-image mode for preserving identities, wardrobe, or visual style."
+      },
+      {
+        "title": "Know what both models share",
+        "body": "Each supports audio, up to eight seconds, 16:9 or 9:16, text/image generation, first-and-last-frame control, and seven-second extension."
+      },
+      {
+        "title": "Best Veo workflows",
+        "body": "Use Lite for economical drafts or approved 1080p delivery; use standard Veo for a 4K master or dedicated multiple-reference-image production."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1",
+        "label": "Open the Google Veo 3.1 model page"
+      },
+      {
+        "href": "/models/veo-3-1-lite",
+        "label": "Open the Google Veo 3.1 Lite model page"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Compare Google Veo 3.1 Fast vs Veo 3.1 Lite"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for Veo Lite drafts, 4K delivery, and reference-image workflows.",
+      "items": [
+        {
+          "question": "Can Google Veo 3.1 Lite generate 4K video?",
+          "answer": "No. Lite supports 720p and 1080p. Choose standard Google Veo 3.1 when the final generation or extension requires 4K."
+        },
+        {
+          "question": "Does Veo 3.1 Lite support multiple reference images?",
+          "answer": "No. Lite supports a single starting image and first/last-frame control, but the dedicated one-to-three-reference-image mode belongs to standard Veo 3.1."
+        },
+        {
+          "question": "What do Google Veo 3.1 and Lite both support?",
+          "answer": "Both support audio, text/image generation, first/last-frame control, extensions, 16:9 or 9:16, and generation up to eight seconds."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Veo 3.1 vs Veo 3.1 Lite : 4K, références et prix",
+      "description": "Comparez Google Veo 3.1 et Google Veo 3.1 Lite : prix affichés, 4K, images de référence, audio, clips de 8 secondes, contrôle début/fin et extension.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Google Veo 3.1 Lite cible les brouillons économiques, tandis que Google Veo 3.1 vise la production finale. Les deux gèrent l’audio, la génération à partir d’un texte ou d’une image, les sorties de 8 secondes, les images de début et de fin ainsi que l’extension ; Veo standard ajoute la 4K et un mode dédié à plusieurs images de référence.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Google Veo 3.1 Lite pour des brouillons 720p ou 1080p économiques. Préférez Google Veo 3.1 pour la 4K ou son mode à plusieurs images de référence. Les deux prennent en charge l’audio, les sorties de 8 secondes, le contrôle début/fin et l’extension ; Lite n’offre ni 4K ni ce mode de référence."
+    },
+    "topCards": [
+      {
+        "title": "Réduire le coût des brouillons",
+        "body": "Google Veo 3.1 Lite affiche des paliers 720p/1080p moins élevés pour la génération à partir d’un texte ou d’une image unique, le contrôle début/fin et l’extension avec audio."
+      },
+      {
+        "title": "Finaliser en 4K avec Veo standard",
+        "body": "Google Veo 3.1 atteint la 4K et propose un mode à plusieurs images de référence pour préserver les identités, les tenues ou le style visuel."
+      },
+      {
+        "title": "Repérer le socle commun",
+        "body": "Chaque modèle gère l’audio, les générations à partir d’un texte ou d’une image jusqu’à 8 secondes, les formats 16:9 et 9:16, le contrôle début/fin et une extension de 7 secondes."
+      },
+      {
+        "title": "Affecter chaque version au bon rendu",
+        "body": "Lite convient aux brouillons ou livrables 1080p validés ; Veo standard s’impose pour un master 4K ou une production guidée par plusieurs références."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1",
+        "label": "Ouvrir la page du modèle Google Veo 3.1"
+      },
+      {
+        "href": "/models/veo-3-1-lite",
+        "label": "Ouvrir la page du modèle Google Veo 3.1 Lite"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Comparer Google Veo 3.1 Fast et Veo 3.1 Lite"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur les brouillons Veo Lite, la livraison 4K et les images de référence.",
+      "items": [
+        {
+          "question": "Google Veo 3.1 Lite peut-il générer une vidéo 4K ?",
+          "answer": "Non. Lite propose le 720p et le 1080p. Choisissez Google Veo 3.1 standard lorsque la génération finale ou l’extension exige la 4K."
+        },
+        {
+          "question": "Veo 3.1 Lite accepte-t-il plusieurs images de référence ?",
+          "answer": "Non. Lite gère une seule image de départ et le contrôle des images de début et de fin ; le mode dédié à une, deux ou trois références appartient à Veo 3.1 standard."
+        },
+        {
+          "question": "Quelles fonctions Google Veo 3.1 et Lite partagent-ils ?",
+          "answer": "Les deux gèrent l’audio, la génération à partir d’un texte ou d’une image, le contrôle début/fin, les extensions, les formats 16:9 et 9:16, et des créations allant jusqu’à 8 secondes."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Veo 3.1 vs Veo 3.1 Lite: 4K, referencias y precio",
+      "description": "Compara Google Veo 3.1 y Google Veo 3.1 Lite por precio publicado, 4K, imágenes de referencia, audio, ocho segundos, control de los cuadros y extensión.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Google Veo 3.1 con Google Veo 3.1 Lite para borradores económicos o producción final. Ambos admiten audio, generación desde texto o imagen, salida de ocho segundos, control del primer y del último cuadro y extensión; Veo estándar agrega 4K y un modo con varias imágenes de referencia por un precio mayor.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Google Veo 3.1 Lite para borradores económicos en 720p o 1080p. Elige Google Veo 3.1 para el modo con varias imágenes de referencia o 4K. Ambos admiten audio, ocho segundos, control del primer y del último cuadro y extensión, pero Lite no ofrece 4K ni ese modo de referencias."
+    },
+    "topCards": [
+      {
+        "title": "Elegir Lite para borradores económicos",
+        "body": "Google Veo 3.1 Lite publica precios más bajos en 720p y 1080p para flujos de generación desde texto o imagen, control del primer y del último cuadro y extensión con audio."
+      },
+      {
+        "title": "Elegir Veo estándar para 4K",
+        "body": "Google Veo 3.1 llega a 4K y admite un modo dedicado con varias imágenes de referencia para conservar identidades, vestuario o estilo visual."
+      },
+      {
+        "title": "Reconocer lo que ambos comparten",
+        "body": "Los dos admiten audio, hasta ocho segundos, 16:9 o 9:16, generación de video desde texto o imagen, control del primer y del último cuadro y extensión de siete segundos."
+      },
+      {
+        "title": "Asignar el mejor flujo de Veo",
+        "body": "Usa Lite para borradores económicos o entrega aprobada en 1080p; usa Veo estándar para una entrega final en 4K o una producción con varias imágenes de referencia."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1",
+        "label": "Abrir el modelo Google Veo 3.1"
+      },
+      {
+        "href": "/models/veo-3-1-lite",
+        "label": "Abrir el modelo Google Veo 3.1 Lite"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-veo-3-1-lite",
+        "label": "Comparar Google Veo 3.1 Fast vs Veo 3.1 Lite"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre borradores Lite, entrega 4K y flujos con imágenes de referencia.",
+      "items": [
+        {
+          "question": "¿Google Veo 3.1 Lite puede generar video en 4K?",
+          "answer": "No. Lite admite 720p y 1080p. Elige Google Veo 3.1 estándar cuando la generación final o la extensión requiera 4K."
+        },
+        {
+          "question": "¿Veo 3.1 Lite admite varias imágenes de referencia?",
+          "answer": "No. Lite admite una sola imagen inicial y control del primer y del último cuadro; el modo dedicado con una a tres imágenes de referencia pertenece a Veo 3.1 estándar."
+        },
+        {
+          "question": "¿Qué admiten tanto Google Veo 3.1 como Lite?",
+          "answer": "Ambos admiten audio, generación desde texto o imagen, control del primer y del último cuadro, extensiones, formatos 16:9 o 9:16 y hasta ocho segundos."
+        }
+      ]
+    }
+  }
+}

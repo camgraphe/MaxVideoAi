@@ -1,0 +1,126 @@
+{
+  "slug": "happy-horse-1-1-vs-ltx-2-3-pro",
+  "en": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs LTX 2.3 Pro: Audio, 4K, Editing & Best Uses",
+      "description": "Compare Happy Horse 1.1 and LTX 2.3 Pro for native audio, lip-sync, 4K delivery, longer clips, editing controls, scorecard ratings and best uses.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Happy Horse 1.1 when the story depends on native audio, lip-sync, dialogue, and reference characters in short marketing or UGC scenes. Use LTX 2.3 Pro when the project needs longer clips, higher-resolution delivery, 4K headroom, extension or retake workflows, and broader production finishing. This comparison helps separate an audio-first actor model from a more flexible production and editing model.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Open Happy Horse 1.1 model page"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Open LTX 2.3 Pro model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Compare LTX 2.3 Pro vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between native-audio character output and LTX production controls.",
+      "items": [
+        {
+          "question": "When should I choose Happy Horse 1.1?",
+          "answer": "Choose Happy Horse 1.1 for native audio, lip-sync, short dialogue scenes, and reference-character work where performance is the main signal."
+        },
+        {
+          "question": "When should I choose LTX 2.3 Pro?",
+          "answer": "Choose LTX 2.3 Pro for longer clips, 4K-oriented delivery, extension or retake workflows, and production finishing where visual control matters more than lip-sync."
+        },
+        {
+          "question": "Which model is better for product ads?",
+          "answer": "Happy Horse 1.1 is better for spokesperson or UGC-style product ads with dialogue. LTX 2.3 Pro is better for polished product motion, higher-resolution finishing, and edit-heavy production."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs LTX 2.3 Pro : audio, 4K, montage et usages",
+      "description": "Comparez Happy Horse 1.1 et LTX 2.3 Pro pour l’audio natif, la synchronisation labiale, la 4K, les plans longs, le montage, les notes et les meilleurs usages.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Happy Horse 1.1 quand l histoire depend d audio natif, de lip-sync, de dialogue et de personnages de reference dans des scenes marketing ou UGC courtes. Utilisez LTX 2.3 Pro quand le projet demande des clips plus longs, une livraison en plus haute resolution, de la marge 4K, des workflows d extension ou de retake et plus de finition production. Cette comparaison separe un modele acteur audio-first d un modele de production et edition plus flexible.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Ouvrir la page modele Happy Horse 1.1"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Ouvrir la page modele LTX 2.3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Comparer LTX 2.3 Pro vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre sortie personnage avec audio natif et controles de production LTX.",
+      "items": [
+        {
+          "question": "Quand choisir Happy Horse 1.1 ?",
+          "answer": "Choisissez Happy Horse 1.1 pour l audio natif, le lip-sync, les scenes de dialogue courtes et les personnages de reference quand la performance est le signal principal."
+        },
+        {
+          "question": "Quand choisir LTX 2.3 Pro ?",
+          "answer": "Choisissez LTX 2.3 Pro pour des clips plus longs, une livraison orientee 4K, des workflows extension ou retake et une finition production ou le controle visuel prime sur le lip-sync."
+        },
+        {
+          "question": "Quel modele est meilleur pour des pubs produit ?",
+          "answer": "Happy Horse 1.1 est meilleur pour des pubs spokesperson ou UGC avec dialogue. LTX 2.3 Pro est meilleur pour un mouvement produit soigne, une finition haute resolution et une production plus editee."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs LTX 2.3 Pro: audio, 4K, edición y usos",
+      "description": "Compara Happy Horse 1.1 y LTX 2.3 Pro por audio nativo, sincronización labial, entrega en 4K, clips largos, controles de edición, calificaciones y mejores usos.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Happy Horse 1.1 cuando la historia depende de audio nativo, lip-sync, dialogo y personajes de referencia en escenas cortas de marketing o UGC. Usa LTX 2.3 Pro cuando el proyecto necesita clips mas largos, entrega de mayor resolucion, margen 4K, workflows de extension o retake y mas acabado de produccion. Esta comparacion separa un modelo de actor audio-first de un modelo de produccion y edicion mas flexible.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Abrir la pagina del modelo Happy Horse 1.1"
+      },
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Abrir la pagina del modelo LTX 2.3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Comparar LTX 2.3 Pro vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre output de personaje con audio nativo y controles de produccion LTX.",
+      "items": [
+        {
+          "question": "Cuando elegir Happy Horse 1.1?",
+          "answer": "Elige Happy Horse 1.1 para audio nativo, lip-sync, escenas cortas de dialogo y personajes de referencia cuando la performance es la senal principal."
+        },
+        {
+          "question": "Cuando elegir LTX 2.3 Pro?",
+          "answer": "Elige LTX 2.3 Pro para clips mas largos, entrega orientada a 4K, workflows de extension o retake y acabado de produccion donde el control visual pesa mas que el lip-sync."
+        },
+        {
+          "question": "Que modelo es mejor para anuncios de producto?",
+          "answer": "Happy Horse 1.1 es mejor para anuncios tipo spokesperson o UGC con dialogo. LTX 2.3 Pro es mejor para movimiento de producto pulido, acabado de alta resolucion y produccion mas editada."
+        }
+      ]
+    }
+  }
+}

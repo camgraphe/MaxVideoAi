@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-fast-vs-seedance-2-0",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0: Price or Control?",
+      "description": "Compare LTX 2.3 Fast and Seedance 2.0 on transparent listed tiers, dynamic pricing, 4K, references, editing, extension, and motion control.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare LTX 2.3 Fast with Seedance 2.0 when the real choice is predictable listed high-resolution generation or a broader production toolkit. Both reach 4K with audio, while Seedance adds references, video editing, extension, motion controls, and more aspect ratios.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose LTX 2.3 Fast for price-transparent high-resolution generation, remembering that clips above 10 seconds require 1080p at 25 fps. Choose Seedance 2.0 for references, editing, extension, motion controls, or broad ratios; its token-based pricing is dynamic, so neither is a universal price winner."
+    },
+    "topCards": [
+      {
+        "title": "Choose LTX for listed tiers",
+        "body": "LTX 2.3 Fast publishes resolution-based tiers for 1080p, 1440p, and 4K text/image generation with audio in 16:9 or 9:16."
+      },
+      {
+        "title": "Choose Seedance for production control",
+        "body": "Seedance 2.0 supports references, source-video editing, clip extension, motion controls, audio, broad ratios, and output from 480p through 4K."
+      },
+      {
+        "title": "Compare pricing per job",
+        "body": "Seedance uses dynamic token-based pricing, while LTX lists fixed resolution tiers; input and output choices prevent a universal price winner."
+      },
+      {
+        "title": "Best high-resolution workflows",
+        "body": "Use LTX for direct high-resolution text/image renders. Use Seedance when references, source-video edits, extensions, or motion controls define the job."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open the Seedance 2.0 model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Compare LTX 2.3 Pro vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers about LTX listed pricing and Seedance production controls.",
+      "items": [
+        {
+          "question": "Is LTX 2.3 Fast always cheaper than Seedance 2.0?",
+          "answer": "No universal winner applies. LTX has transparent listed resolution tiers, while Seedance quotes dynamic token-based pricing from the selected job."
+        },
+        {
+          "question": "Which model is better for reference-heavy video production?",
+          "answer": "Seedance 2.0 is the relevant choice because it supports reference inputs, video editing, extension, and motion controls. LTX Fast focuses on text/image generation."
+        },
+        {
+          "question": "What restricts long LTX 2.3 Fast clips?",
+          "answer": "Any LTX 2.3 Fast duration above ten seconds requires 1080p at 25 fps. Other resolution and frame-rate choices are limited to ten seconds or less."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0 : prix ou contrôle ?",
+      "description": "Comparez LTX 2.3 Fast et Seedance 2.0 : tarifs affichés ou dynamiques, 4K, références, montage, extension et contrôle du mouvement.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Cette comparaison met en balance la génération haute résolution à tarifs transparents de LTX 2.3 Fast et la boîte à outils plus complète de Seedance 2.0. Les deux modèles atteignent la 4K avec audio ; Seedance ajoute les références, le montage vidéo, l’extension, le contrôle du mouvement et davantage de ratios.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez LTX 2.3 Fast pour ses paliers tarifaires transparents, avec une contrainte 1080p à 25 fps au-delà de 10 secondes. Préférez Seedance 2.0 pour les références, le montage, l’extension, le contrôle du mouvement ou les ratios variés. Son prix dynamique signifie qu’aucun modèle n’est toujours le moins cher."
+    },
+    "topCards": [
+      {
+        "title": "Lire le coût avec LTX",
+        "body": "LTX 2.3 Fast affiche des paliers par résolution pour les générations à partir d’un texte ou d’une image avec audio, en 1080p, 1440p ou 4K, aux formats 16:9 ou 9:16."
+      },
+      {
+        "title": "Piloter la production avec Seedance",
+        "body": "Seedance 2.0 gère les références, le montage d’une vidéo source, l’extension, le contrôle du mouvement, l’audio, plusieurs ratios et des résolutions de 480p à 4K."
+      },
+      {
+        "title": "Comparer chaque devis",
+        "body": "Le tarif de Seedance est calculé dynamiquement selon le nombre de jetons et les paramètres demandés ; LTX publie des paliers fixes par résolution."
+      },
+      {
+        "title": "Séparer rendu et transformation",
+        "body": "LTX convient aux rendus directs à partir d’un texte ou d’une image. Seedance prend l’avantage lorsque les sources, les références ou les retouches structurent le projet."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page du modèle LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page du modèle Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Comparer LTX 2.3 Pro et Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur les tarifs LTX et les outils de production Seedance.",
+      "items": [
+        {
+          "question": "LTX 2.3 Fast coûte-t-il toujours moins cher que Seedance 2.0 ?",
+          "answer": "Non. LTX présente des paliers transparents par résolution, tandis que Seedance calcule un prix dynamique en jetons selon la tâche sélectionnée."
+        },
+        {
+          "question": "Quel modèle convient aux productions riches en références ?",
+          "answer": "Seedance 2.0 est le choix adapté : il prend en charge les références, le montage vidéo, l’extension et le contrôle du mouvement. LTX Fast se concentre sur la génération à partir d’un texte ou d’une image."
+        },
+        {
+          "question": "Quelle règle limite les plans longs de LTX 2.3 Fast ?",
+          "answer": "Toute durée supérieure à 10 secondes impose le 1080p à 25 fps. Les autres résolutions et cadences nécessitent une génération de 10 secondes ou moins."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0: precio o control",
+      "description": "Compara LTX 2.3 Fast y Seedance 2.0 por precios publicados, precio dinámico, 4K, referencias, edición, extensión y control de movimiento.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Fast con Seedance 2.0 cuando la decisión real sea entre generación de alta resolución con precios publicados y un conjunto más amplio de herramientas de producción. Ambos llegan a 4K con audio; Seedance agrega referencias, edición de video, extensión, controles de movimiento y más formatos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige LTX 2.3 Fast para generación de alta resolución con precios claros, considerando que un clip de más de 10 segundos exige 1080p a 25 fps. Elige Seedance 2.0 para referencias, edición, extensión, controles de movimiento o más formatos; su precio por tokens es dinámico, así que ninguno gana siempre por costo."
+    },
+    "topCards": [
+      {
+        "title": "Elegir LTX por sus precios publicados",
+        "body": "LTX 2.3 Fast publica precios por resolución para generación desde texto o imagen en 1080p, 1440p y 4K, con audio y formato 16:9 o 9:16."
+      },
+      {
+        "title": "Elegir Seedance por control de producción",
+        "body": "Seedance 2.0 admite referencias, edición desde un video fuente, extensión de clips, controles de movimiento, audio, más formatos y salida de 480p a 4K."
+      },
+      {
+        "title": "Comparar el precio de cada trabajo",
+        "body": "Seedance calcula un precio dinámico basado en tokens y LTX publica precios fijos por resolución; las entradas y salidas impiden declarar un ganador universal."
+      },
+      {
+        "title": "Distinguir generación y producción",
+        "body": "Usa LTX para generaciones directas de alta resolución desde texto o imagen. Usa Seedance cuando el trabajo dependa de referencias, ediciones, extensiones o movimiento."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir el modelo LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir el modelo Seedance 2.0"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-pro-vs-seedance-2-0",
+        "label": "Comparar LTX 2.3 Pro vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre los precios de LTX y los controles de producción de Seedance.",
+      "items": [
+        {
+          "question": "¿LTX 2.3 Fast siempre cuesta menos que Seedance 2.0?",
+          "answer": "No existe un ganador universal. LTX muestra precios por resolución, mientras que Seedance calcula un precio dinámico basado en tokens según el trabajo elegido."
+        },
+        {
+          "question": "¿Qué modelo conviene para producir video con muchas referencias?",
+          "answer": "Seedance 2.0 es la opción indicada porque admite referencias, edición de video, extensión y controles de movimiento. LTX Fast se concentra en texto e imagen."
+        },
+        {
+          "question": "¿Qué limita los clips largos de LTX 2.3 Fast?",
+          "answer": "Toda duración superior a diez segundos requiere 1080p a 25 fps. Las demás resoluciones y velocidades de cuadro se limitan a diez segundos o menos."
+        }
+      ]
+    }
+  }
+}

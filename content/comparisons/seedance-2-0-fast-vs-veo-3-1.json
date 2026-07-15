@@ -1,0 +1,192 @@
+{
+  "slug": "seedance-2-0-fast-vs-veo-3-1",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 Fast vs Veo 3.1: Drafts or Final 4K?",
+      "description": "Compare Seedance 2.0 Fast and Google Veo 3.1 on draft speed, references, editing, duration, audio, and 4K output for your next video.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Seedance 2.0 Fast with Google Veo 3.1 when choosing between a broad draft-and-edit workflow and higher-resolution final delivery. Seedance Fast reaches 15 seconds with references, video editing, and extend at 480p or 720p; Veo 3.1 reaches 4K for polished 8-second ads and B-roll.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Seedance 2.0 Fast for rapid planning, longer drafts, reference-heavy iteration, video edits, or extensions where 720p is enough. Choose Google Veo 3.1 for polished short ads, B-roll, first-and-last-frame control, and final delivery at 1080p or 4K when output resolution matters more than clip length."
+    },
+    "topCards": [
+      {
+        "title": "Choose Seedance 2.0 Fast",
+        "body": "Use Seedance Fast for 4- to 15-second drafts, visual references, video editing, extensions, and flexible aspect ratios."
+      },
+      {
+        "title": "Choose Veo 3.1",
+        "body": "Use Veo for polished 8-second ads or B-roll, first-and-last-frame control, audio, and 1080p or 4K delivery."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Seedance offers more duration and editing breadth at 480p/720p; Veo offers shorter clips with substantially higher final resolution."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Seedance fits shot planning and iterative edits. Veo fits approved campaign shots, polished product visuals, and high-resolution masters."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Open the Seedance 2.0 Fast model page"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Open the Google Veo 3.1 model page"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Compare Seedance 2.0 Fast vs Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing a fast Seedance workflow or final-quality Veo output.",
+      "items": [
+        {
+          "question": "Is Seedance 2.0 Fast or Veo 3.1 better for drafts?",
+          "answer": "Seedance 2.0 Fast is designed for rapid drafts, reference tests, and shot planning. It also supports clips up to 15 seconds, video editing, and extension at 480p or 720p."
+        },
+        {
+          "question": "Which model is better for final 4K delivery?",
+          "answer": "Google Veo 3.1 is the better fit for a polished 4K master. Seedance 2.0 Fast tops out at 720p and is better treated as an iteration and editing route."
+        },
+        {
+          "question": "Do both models support audio and reference workflows?",
+          "answer": "Yes. Both support audio and reference-led generation. Seedance adds video-to-video editing and a wider aspect-ratio set, while Veo adds first-and-last-frame control and higher-resolution output."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 Fast vs Veo 3.1 : brouillon ou 4K ?",
+      "description": "Comparez Seedance 2.0 Fast et Google Veo 3.1 sur les brouillons, références, montages, durées, audio et sorties 4K pour votre vidéo.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Seedance 2.0 Fast et Google Veo 3.1 pour choisir entre un workflow complet de brouillon et montage ou une livraison finale en haute résolution. Seedance atteint 15 secondes avec références, édition et extension en 480p ou 720p ; Veo monte en 4K pour des publicités et plans B-roll de 8 secondes.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Seedance 2.0 Fast pour planifier vite, produire des brouillons plus longs, exploiter des références, modifier ou prolonger une vidéo lorsque le 720p suffit. Choisissez Google Veo 3.1 pour des publicités courtes et finies, le contrôle première-dernière image et une livraison 1080p ou 4K."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Seedance 2.0 Fast",
+        "body": "Pour les brouillons de 4 à 15 secondes, les références visuelles, le montage, l’extension et de nombreux formats."
+      },
+      {
+        "title": "Choisir Veo 3.1",
+        "body": "Pour des publicités ou plans B-roll finis de 8 secondes, l’audio, le contrôle des images limites et la 4K."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Seedance offre davantage de durée et d’outils en 480p/720p ; Veo produit des clips plus courts à bien meilleure résolution finale."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Seedance convient à la préparation et aux retouches. Veo convient aux plans de campagne validés et aux masters haute résolution."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Ouvrir la page Seedance 2.0 Fast"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Ouvrir la page Google Veo 3.1"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Comparer Seedance 2.0 Fast et Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre brouillons Seedance et sorties finales Veo.",
+      "items": [
+        {
+          "question": "Seedance 2.0 Fast ou Veo 3.1 : lequel choisir pour les brouillons ?",
+          "answer": "Seedance 2.0 Fast est conçu pour les brouillons rapides, les essais de référence et la préparation des plans. Il atteint 15 secondes et permet aussi de modifier ou prolonger une vidéo."
+        },
+        {
+          "question": "Quel modèle convient le mieux à une livraison finale 4K ?",
+          "answer": "Google Veo 3.1 est le meilleur choix pour un master 4K fini. Seedance 2.0 Fast s’arrête au 720p et sert davantage à l’itération et au montage."
+        },
+        {
+          "question": "Les deux modèles acceptent-ils l’audio et les références ?",
+          "answer": "Oui. Seedance ajoute le montage vidéo et davantage de formats, tandis que Veo ajoute le contrôle première-dernière image et une résolution finale supérieure."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 Fast vs Veo 3.1: borradores o 4K final",
+      "description": "Compara Seedance 2.0 Fast y Google Veo 3.1 en borradores, referencias, edición, duración, audio y salida 4K para tu próximo video.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Seedance 2.0 Fast con Google Veo 3.1 para elegir entre un flujo amplio de borrador y edición o una entrega final de mayor resolución. Seedance llega a 15 segundos con referencias, edición y extensión en 480p o 720p; Veo alcanza 4K para anuncios y B-roll pulidos de 8 segundos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Seedance 2.0 Fast para planear con rapidez, crear borradores más largos, usar referencias, editar o extender un video cuando 720p sean suficientes. Elige Google Veo 3.1 para anuncios cortos terminados, control de primera y última imagen, y entrega 1080p o 4K."
+    },
+    "topCards": [
+      {
+        "title": "Elige Seedance 2.0 Fast",
+        "body": "Para borradores de 4 a 15 segundos, referencias visuales, edición, extensión y una variedad amplia de formatos."
+      },
+      {
+        "title": "Elige Veo 3.1",
+        "body": "Para anuncios o B-roll terminados de 8 segundos, audio, control de imágenes límite y entrega 1080p o 4K."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Seedance ofrece más duración y herramientas en 480p/720p; Veo produce clips más cortos con mayor resolución final."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Seedance sirve para planeación y ajustes. Veo sirve para tomas aprobadas de campaña y masters de alta resolución."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Abrir la página de Seedance 2.0 Fast"
+      },
+      {
+        "href": "/models/veo-3-1",
+        "label": "Abrir la página de Google Veo 3.1"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Comparar Seedance 2.0 Fast y Veo 3.1 Fast"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre borradores Seedance y entregas finales Veo.",
+      "items": [
+        {
+          "question": "¿Seedance 2.0 Fast o Veo 3.1 conviene más para borradores?",
+          "answer": "Seedance 2.0 Fast está diseñado para borradores rápidos, pruebas con referencias y planeación de tomas. También llega a 15 segundos y permite editar o extender video."
+        },
+        {
+          "question": "¿Qué modelo conviene para una entrega final en 4K?",
+          "answer": "Google Veo 3.1 es la mejor opción para un master 4K pulido. Seedance 2.0 Fast llega a 720p y funciona mejor como ruta de iteración y edición."
+        },
+        {
+          "question": "¿Los dos modelos admiten audio y referencias?",
+          "answer": "Sí. Seedance agrega edición de video y más formatos, mientras Veo agrega control de primera y última imagen junto con una resolución final superior."
+        }
+      ]
+    }
+  }
+}

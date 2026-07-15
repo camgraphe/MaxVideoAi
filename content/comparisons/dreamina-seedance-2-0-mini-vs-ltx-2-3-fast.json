@@ -1,0 +1,126 @@
+{
+  "slug": "dreamina-seedance-2-0-mini-vs-ltx-2-3-fast",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0 Mini: Value, Specs & Best Uses",
+      "description": "Compare LTX 2.3 Fast and Seedance 2.0 Mini for fast drafts, batch variants, specs, scorecard ratings and marketing video workflows.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use LTX 2.3 Fast when you want fast LTX exploration, broader resolution headroom, and lightweight creative drafts. Use Seedance 2.0 Mini as the lower-cost Dreamina Seedance option for 480p/720p batches, ecommerce variants, UGC hooks, video editing, and extension tests. This is a scorecard/specs page for now; Mini comparison videos are not shown yet.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Open Seedance 2.0 Mini model page"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Compare Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between LTX fast drafts and Seedance Mini batch value.",
+      "items": [
+        {
+          "question": "When should I choose LTX 2.3 Fast?",
+          "answer": "Choose LTX 2.3 Fast for fast visual exploration, LTX-style prompt tests, and workflows where its resolution and draft behavior fit the brief better."
+        },
+        {
+          "question": "When should I choose Seedance 2.0 Mini?",
+          "answer": "Choose Mini for lower-cost Seedance batches, product variants, social tests, UGC hooks, video edits, and extension workflows where 480p/720p is enough."
+        },
+        {
+          "question": "Why is this a scorecard-only comparison?",
+          "answer": "Mini comparison pages use scorecards, specs, and decision guidance first. Side-by-side videos will be added later after curated Mini outputs are selected."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0 Mini : valeur, caractéristiques et usages",
+      "description": "Comparez LTX 2.3 Fast et Seedance 2.0 Mini pour les brouillons rapides, les variantes en lot, les caractéristiques, les notes et les flux de vidéo marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez LTX 2.3 Fast pour l exploration LTX rapide, plus de marge sur la resolution et des drafts creatifs legers. Utilisez Seedance 2.0 Mini comme l option Dreamina Seedance moins couteuse en batches 480p/720p, variantes ecommerce, hooks UGC, edition video et tests d extension. Cette page est scorecard/specs pour l instant; les videos comparatives Mini ne sont pas affichees.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page modele LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Ouvrir la page modele Seedance 2.0 Mini"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparer Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre drafts LTX rapides et valeur batch Seedance Mini.",
+      "items": [
+        {
+          "question": "Quand choisir LTX 2.3 Fast ?",
+          "answer": "Choisissez LTX 2.3 Fast pour l exploration visuelle rapide, les tests de prompt LTX et les workflows ou sa resolution et son comportement de draft correspondent mieux au brief."
+        },
+        {
+          "question": "Quand choisir Seedance 2.0 Mini ?",
+          "answer": "Choisissez Mini pour les batches Seedance moins couteux, les variantes produit, les tests social, les hooks UGC, les edits video et les extensions quand 480p/720p suffit."
+        },
+        {
+          "question": "Pourquoi cette comparaison est-elle scorecard-only ?",
+          "answer": "Les pages Mini utilisent d abord scorecards, specs et recommandations. Les videos cote-a-cote seront ajoutees plus tard apres selection de sorties Mini dediees."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Seedance 2.0 Mini: valor, especificaciones y usos",
+      "description": "Compara LTX 2.3 Fast y Seedance 2.0 Mini para borradores rápidos, variantes por lote, especificaciones, calificaciones y flujos de video para marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa LTX 2.3 Fast para exploracion LTX rapida, mas margen de resolucion y borradores creativos ligeros. Usa Seedance 2.0 Mini como la opcion Dreamina Seedance de menor coste en batches 480p/720p, variantes ecommerce, hooks UGC, edicion de video y pruebas de extension. Esta pagina es de scorecard/specs por ahora; no muestra videos comparativos de Mini todavia.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir la pagina del modelo LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Mini"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparar Seedance Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre borradores LTX rapidos y valor batch de Seedance Mini.",
+      "items": [
+        {
+          "question": "Cuando deberia elegir LTX 2.3 Fast?",
+          "answer": "Elige LTX 2.3 Fast para exploracion visual rapida, pruebas de prompt estilo LTX y workflows donde su resolucion y comportamiento de borrador encajan mejor con el brief."
+        },
+        {
+          "question": "Cuando deberia elegir Seedance 2.0 Mini?",
+          "answer": "Elige Mini para batches Seedance de menor coste, variantes de producto, pruebas social, hooks UGC, ediciones de video y extensiones cuando 480p/720p sea suficiente."
+        },
+        {
+          "question": "Por que esta comparacion es scorecard-only?",
+          "answer": "Las paginas Mini usan primero scorecards, specs y recomendaciones. Los videos lado a lado se agregaran mas adelante cuando se elijan outputs Mini curados."
+        }
+      ]
+    }
+  }
+}

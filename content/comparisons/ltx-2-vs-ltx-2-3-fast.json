@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-vs-ltx-2-3-fast",
+  "en": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Fast: Price, 4K & Upgrade",
+      "description": "Compare available LTX 2.0 Pro with current LTX 2.3 Fast on listed price, 4K, vertical delivery, FPS, and constrained longer clips.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare the available LTX Video 2.0 Pro workflow with current LTX 2.3 Fast. Both cover audio and high-resolution landscape generation, but 2.3 Fast adds 9:16, more frame-rate choices, lower listed shared-resolution pricing, and constrained longer clips.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available LTX Video 2.0 Pro for a familiar ten-second 16:9 route; upgrade to current LTX 2.3 Fast for lower listed shared-resolution pricing, vertical delivery, and longer clips. Durations above 10 seconds require 1080p at 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Keep the familiar Pro workflow",
+        "body": "Stay with LTX Video 2.0 Pro when its established 16:9 text/image route, ten-second ceiling, audio, and 25/50 fps options fit production."
+      },
+      {
+        "title": "Choose Fast for vertical delivery",
+        "body": "LTX 2.3 Fast adds 9:16, 24/48 fps choices, and lower listed per-second tiers at 1080p, 1440p, and 4K."
+      },
+      {
+        "title": "Plan longer Fast clips carefully",
+        "body": "Fast can reach 20 seconds, but clips above ten seconds are restricted to the 1080p and 25 fps combination."
+      },
+      {
+        "title": "Best route for each production",
+        "body": "Keep 2.0 Pro for familiar landscape sequences; use 2.3 Fast for cost-sensitive vertical work or longer shots that fit its duration rule."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Open the available LTX Video 2.0 Pro model page"
+      },
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the current LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-vs-ltx-2-3-pro",
+        "label": "Compare LTX Video 2.0 Pro vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers about cost, orientation, and migration from LTX 2.0 Pro to 2.3 Fast.",
+      "items": [
+        {
+          "question": "Who should stay on LTX Video 2.0 Pro?",
+          "answer": "Teams with a validated ten-second 16:9 text/image workflow can keep using the available model, especially when current prompts and delivery settings already work."
+        },
+        {
+          "question": "Why move from LTX 2.0 Pro to LTX 2.3 Fast?",
+          "answer": "Migrate when you need 9:16, 24/48 fps, lower listed pricing at shared resolutions, or a clip longer than ten seconds under the 1080p/25 fps rule."
+        },
+        {
+          "question": "Does LTX 2.3 Fast support 20-second 4K clips?",
+          "answer": "No. Although its maximum is 20 seconds, anything above 10 seconds must use 1080p at 25 fps; keep 4K generations to ten seconds or less."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Fast : prix, 4K et évolution",
+      "description": "Comparez LTX Video 2.0 Pro disponible et LTX 2.3 Fast actuel : prix affichés, 4K, format vertical, cadences et contraintes au-delà de 10 secondes.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "LTX Video 2.0 Pro demeure disponible pour un workflow 16:9 familier, avec audio et des rendus en haute résolution. L’actuel LTX 2.3 Fast conserve ces bases, tout en ouvrant le 9:16, davantage de cadences, des tarifs affichés plus bas pour les mêmes résolutions et des plans plus longs sous conditions.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur LTX Video 2.0 Pro si ses générations 16:9 de 10 secondes sont déjà validées. Évoluez vers l’actuel LTX 2.3 Fast pour le format vertical, des tarifs affichés plus bas ou une durée supérieure, en sachant qu’au-delà de 10 secondes il faut rester en 1080p à 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Conserver la formule Pro connue",
+        "body": "LTX Video 2.0 Pro reste pertinent pour un pipeline établi de génération 16:9 à partir d’un texte ou d’une image, avec audio, des clips limités à 10 secondes et les cadences 25/50 fps."
+      },
+      {
+        "title": "Passer au format vertical avec Fast",
+        "body": "LTX 2.3 Fast ajoute le 9:16, les cadences 24/48 fps et des paliers par seconde moins élevés en 1080p, 1440p et 4K."
+      },
+      {
+        "title": "Préparer les durées étendues",
+        "body": "Fast monte à 20 secondes, mais les générations de plus de 10 secondes doivent combiner la résolution 1080p et une cadence de 25 fps."
+      },
+      {
+        "title": "Arbitrer format et budget",
+        "body": "Gardez 2.0 Pro pour les séquences paysage familières ; choisissez 2.3 Fast pour produire au format vertical à coût maîtrisé ou créer des plans longs compatibles."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Ouvrir la page du modèle disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page du modèle actuel LTX 2.3 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-vs-ltx-2-3-pro",
+        "label": "Comparer LTX Video 2.0 Pro et LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur le coût, l’orientation et le passage de LTX 2.0 Pro à LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "Qui peut rester sur LTX Video 2.0 Pro ?",
+          "answer": "Les équipes dont le workflow 16:9 à partir d’un texte ou d’une image est validé peuvent conserver ce modèle disponible, surtout si leurs clips de 10 secondes, leurs prompts et leurs réglages répondent déjà au besoin."
+        },
+        {
+          "question": "Pourquoi migrer vers LTX 2.3 Fast ?",
+          "answer": "La migration se justifie pour le 9:16, les cadences 24/48 fps, les tarifs affichés plus bas pour les mêmes résolutions ou un plan plus long selon la règle 1080p/25 fps."
+        },
+        {
+          "question": "LTX 2.3 Fast produit-il 20 secondes en 4K ?",
+          "answer": "Non. Le maximum atteint bien 20 secondes, mais toute génération au-delà de 10 secondes impose le 1080p à 25 fps ; la 4K reste limitée à 10 secondes."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.0 Pro vs LTX 2.3 Fast: precio, 4K y migración",
+      "description": "Compara LTX 2.0 Pro disponible con LTX 2.3 Fast actual por precio publicado, 4K, formato vertical, fps y clips largos con restricciones.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara el flujo disponible de LTX Video 2.0 Pro con LTX 2.3 Fast actual. Ambos cubren audio y generación horizontal en alta resolución, pero 2.3 Fast suma 9:16, más velocidades de cuadro, precios publicados más bajos en resoluciones compartidas y clips largos con restricciones.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Puedes quedarte en LTX Video 2.0 Pro, que sigue disponible, para un flujo 16:9 conocido de diez segundos. Conviene migrar a LTX 2.3 Fast, la ruta actual, por menor precio publicado en resoluciones compartidas, formato vertical o mayor duración; todo clip de más de 10 segundos exige 1080p a 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Conservar el flujo Pro conocido",
+        "body": "Mantén LTX Video 2.0 Pro cuando su flujo comprobado de generación desde texto o imagen en 16:9, con límite de diez segundos, audio y opciones de 25/50 fps, encaje en producción."
+      },
+      {
+        "title": "Usar Fast para entrega vertical",
+        "body": "LTX 2.3 Fast incorpora 9:16, opciones de 24/48 fps y precios publicados por segundo más bajos en 1080p, 1440p y 4K."
+      },
+      {
+        "title": "Respetar la regla de mayor duración",
+        "body": "Fast puede llegar a 20 segundos, pero los clips superiores a diez segundos están restringidos a la combinación de 1080p y 25 fps."
+      },
+      {
+        "title": "Asignar cada ruta a su producción",
+        "body": "Mantén 2.0 Pro para secuencias horizontales conocidas; elige 2.3 Fast para trabajos verticales sensibles al costo o tomas largas que cumplan su regla."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2",
+        "label": "Abrir el modelo disponible LTX Video 2.0 Pro"
+      },
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir el modelo actual LTX 2.3 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-vs-ltx-2-3-pro",
+        "label": "Comparar LTX Video 2.0 Pro vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre costo, orientación y migración de LTX 2.0 Pro a 2.3 Fast.",
+      "items": [
+        {
+          "question": "¿Quién debería quedarse en LTX Video 2.0 Pro?",
+          "answer": "Los equipos con un flujo 16:9 validado de diez segundos pueden seguir usando este modelo disponible, sobre todo si sus prompts y ajustes de entrega ya funcionan."
+        },
+        {
+          "question": "¿Por qué migrar de LTX 2.0 Pro a LTX 2.3 Fast?",
+          "answer": "Migra cuando necesites 9:16, 24/48 fps, menor precio publicado en resoluciones compartidas o más de diez segundos bajo la regla de 1080p a 25 fps."
+        },
+        {
+          "question": "¿LTX 2.3 Fast admite clips 4K de 20 segundos?",
+          "answer": "No. Aunque su máximo es de 20 segundos, cualquier duración superior a 10 segundos debe usar 1080p a 25 fps; limita las generaciones 4K a diez segundos."
+        }
+      ]
+    }
+  }
+}

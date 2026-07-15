@@ -1,0 +1,126 @@
+{
+  "slug": "dreamina-seedance-2-0-mini-vs-seedance-2-0",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 vs Mini: Quality, Batch Cost & Best Uses",
+      "description": "Compare Seedance 2.0 and Seedance 2.0 Mini with scorecard ratings, specs, cost tradeoffs and when to use Mini for batch video variants.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Seedance 2.0 for flagship final-quality Seedance output, stronger polish, higher-resolution delivery, and hero shots. Use Seedance 2.0 Mini as the lower-cost option when cost, batch volume, 480p/720p variants, ecommerce tests, UGC hooks, and high-frequency marketing experiments matter more. This page now includes matched side-by-side Mini vs Seedance 2.0 videos using the same prompts, plus scorecard, specs, and pricing context.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open Seedance 2.0 model page"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Open Seedance 2.0 Mini model page"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Compare Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between flagship Seedance 2.0 and the lower-cost Mini route.",
+      "items": [
+        {
+          "question": "When should I choose Seedance 2.0 Mini?",
+          "answer": "Choose Mini for lower-cost batches, ecommerce variants, UGC hook testing, marketing A/B passes, and high-frequency prompt exploration where 480p or 720p is enough."
+        },
+        {
+          "question": "When is Seedance 2.0 still the better choice?",
+          "answer": "Choose Seedance 2.0 for final-quality hero shots, stronger visual polish, higher-resolution delivery, and work where the best Seedance output matters more than per-variant cost."
+        },
+        {
+          "question": "Are Mini comparison videos included here?",
+          "answer": "Yes. This Seedance family page uses curated side-by-side Mini and Seedance 2.0 outputs generated from the same prompts, so the video section is directly comparable."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 vs Mini : qualité, coût par lot et usages",
+      "description": "Comparez Seedance 2.0 et Seedance 2.0 Mini selon les notes, les caractéristiques, les écarts de coût et les cas où Mini convient aux variantes vidéo en lot.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Seedance 2.0 pour la qualite finale flagship, le rendu Seedance le plus soigne, la livraison en plus haute resolution et les hero shots. Utilisez Seedance 2.0 Mini comme l option moins couteuse quand le cout, le volume batch, les variantes 480p/720p, les tests ecommerce, les hooks UGC et les experiences marketing frequentes comptent davantage. Cette page inclut maintenant des videos cote-a-cote Mini vs Seedance 2.0 avec les memes prompts, plus scorecard, specs et contexte pricing.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page modele Seedance 2.0"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Ouvrir la page modele Seedance 2.0 Mini"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparer Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre Seedance 2.0 flagship et la route Mini moins couteuse.",
+      "items": [
+        {
+          "question": "Quand choisir Seedance 2.0 Mini ?",
+          "answer": "Choisissez Mini pour les batches moins couteux, les variantes ecommerce, les tests de hooks UGC, les passes A/B marketing et l exploration de prompts a volume quand 480p ou 720p suffit."
+        },
+        {
+          "question": "Quand Seedance 2.0 reste-t-il le meilleur choix ?",
+          "answer": "Choisissez Seedance 2.0 pour les hero shots finaux, la meilleure finition visuelle, la livraison en plus haute resolution et les sorties ou la qualite Seedance prime sur le cout par variante."
+        },
+        {
+          "question": "Les videos comparatives Mini sont-elles incluses ici ?",
+          "answer": "Oui. Cette page Seedance family utilise des sorties Mini et Seedance 2.0 cote-a-cote generees avec les memes prompts, donc la section video est directement comparable."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 vs Mini: calidad, costo por lote y usos",
+      "description": "Compara Seedance 2.0 y Seedance 2.0 Mini según sus calificaciones, especificaciones, diferencias de costo y cuándo usar Mini para variantes de video por lote.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Seedance 2.0 para la calidad final flagship, el output Seedance mas pulido, entrega de mayor resolucion y hero shots. Usa Seedance 2.0 Mini como la opcion de menor coste cuando importan mas el coste, el volumen batch, variantes 480p/720p, pruebas ecommerce, hooks UGC y experimentos de marketing frecuentes. Esta pagina ahora incluye videos lado a lado Mini vs Seedance 2.0 con los mismos prompts, ademas de scorecard, specs y contexto de pricing.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir la pagina del modelo Seedance 2.0"
+      },
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Mini"
+      },
+      {
+        "href": "/ai-video-engines/dreamina-seedance-2-0-mini-vs-seedance-2-0-fast",
+        "label": "Comparar Fast vs Mini"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre Seedance 2.0 flagship y la ruta Mini de menor coste.",
+      "items": [
+        {
+          "question": "Cuando deberia elegir Seedance 2.0 Mini?",
+          "answer": "Elige Mini para batches de menor coste, variantes ecommerce, pruebas de hooks UGC, pases A/B de marketing y exploracion de prompts a volumen cuando 480p o 720p sea suficiente."
+        },
+        {
+          "question": "Cuando sigue siendo mejor Seedance 2.0?",
+          "answer": "Elige Seedance 2.0 para hero shots finales, mayor pulido visual, entrega de mayor resolucion y trabajos donde la mejor salida Seedance importa mas que el coste por variante."
+        },
+        {
+          "question": "Esta pagina incluye videos comparativos de Mini?",
+          "answer": "Si. Esta pagina de la familia Seedance usa outputs Mini y Seedance 2.0 lado a lado generados con los mismos prompts, asi que la seccion de video es directamente comparable."
+        }
+      ]
+    }
+  }
+}

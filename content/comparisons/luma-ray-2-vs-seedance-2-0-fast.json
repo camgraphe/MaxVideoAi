@@ -1,0 +1,204 @@
+{
+  "slug": "luma-ray-2-vs-seedance-2-0-fast",
+  "en": {
+    "meta": {
+      "title": "Luma Ray 2 vs Seedance 2.0 Fast: Edit or Upgrade?",
+      "description": "Compare Luma Ray 2 and Seedance 2.0 Fast for legacy 1080p modify and reframe work versus current audio, references, editing, and extension.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Luma Ray 2 with Seedance 2.0 Fast when choosing an available legacy 1080p modify and reframe route or a current audio-ready workflow. Luma reaches nine seconds and 1080p; Seedance Fast reaches 15 seconds and 720p with references, edit, and extend.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available Luma Ray 2 for established silent 1080p source-video modification or reframing. Choose Seedance 2.0 Fast for current audio, references, editing, and extension up to 720p; migrate new Luma generation to current Luma Ray 3.2 when appropriate."
+    },
+    "topCards": [
+      {
+        "title": "Keep Luma for 1080p reframing",
+        "body": "Stay on Ray 2 when its available silent modify and reframe workflow, broad ratios, and 1080p ceiling already match the source-video job."
+      },
+      {
+        "title": "Choose Seedance Fast for audio",
+        "body": "Seedance Fast adds audio, image and video references, editing, extension, motion controls, and clips up to 15 seconds at up to 720p."
+      },
+      {
+        "title": "Resolution versus workflow breadth",
+        "body": "Luma reaches 1080p but remains silent; Seedance Fast tops out at 720p while adding a broader current production toolkit."
+      },
+      {
+        "title": "Current Luma migration route",
+        "body": "Upgrade new Luma projects to Luma Ray 3.2 for the current Ray generation, while established Ray 2 modify or reframe jobs can continue."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Open the available Luma Ray 2 model page"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Open the Seedance 2.0 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Compare Seedance 2.0 Fast vs Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Open the current Luma Ray 3.2 model page"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for legacy Luma edits, current Seedance production, and the newer Ray route.",
+      "items": [
+        {
+          "question": "Does Luma Ray 2 remain available for modify and reframe jobs?",
+          "answer": "Yes. Luma Ray 2 remains available for legacy silent source-video modification and reframing in resolutions up to 1080p."
+        },
+        {
+          "question": "Who should stay on Ray 2 instead of using Seedance 2.0 Fast?",
+          "answer": "Keep Ray 2 when 1080p source-video modification or reframing is the core need. Choose Seedance Fast for audio, references, longer clips, editing, or extension."
+        },
+        {
+          "question": "When should Luma users migrate to Luma Ray 3.2?",
+          "answer": "Move new Luma generation to current Luma Ray 3.2 when its newer Ray workflow fits, while continuing validated Ray 2 modify and reframe jobs."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Luma Ray 2 vs Seedance 2.0 Fast : éditer ou évoluer ?",
+      "description": "Comparez Luma Ray 2 et Seedance 2.0 Fast pour le workflow historique de modification en 1080p face à l’audio, aux références, à l’édition et à l’extension.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Luma Ray 2 et Seedance 2.0 Fast pour choisir entre le workflow historique de modification et de recadrage en 1080p, toujours disponible, et le modèle actuel Seedance 2.0 Fast avec audio. Luma atteint neuf secondes et le 1080p ; Seedance Fast atteint 15 secondes et le 720p avec des références, l’édition et l’extension.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur Luma Ray 2, toujours accessible, pour la modification ou le recadrage silencieux d’une vidéo source en 1080p. Choisissez le workflow actuel de Seedance 2.0 Fast pour l’audio, les références, l’édition et l’extension jusqu’en 720p ; migrez les nouveaux projets de génération Luma vers l’actuel Luma Ray 3.2 lorsque son workflow convient."
+    },
+    "topCards": [
+      {
+        "title": "Garder Luma pour recadrer en 1080p",
+        "body": "Restez sur Ray 2 lorsque ce workflow silencieux de modification et de recadrage, toujours disponible, correspond à la source grâce à ses nombreux ratios et à son plafond 1080p."
+      },
+      {
+        "title": "Choisir Seedance Fast pour l’audio",
+        "body": "Seedance Fast ajoute l’audio, les références image et vidéo, l’édition, l’extension, le contrôle du mouvement et des clips jusqu’à 15 secondes en 720p maximum."
+      },
+      {
+        "title": "Résolution ou largeur du workflow",
+        "body": "Luma atteint le 1080p mais reste silencieux ; Seedance Fast se limite au 720p tout en proposant une boîte à outils de production plus moderne et plus large."
+      },
+      {
+        "title": "La migration Luma actuelle",
+        "body": "Faites évoluer les nouveaux projets Luma vers Luma Ray 3.2, la génération Ray actuelle, tout en continuant les projets Ray 2 Modify ou Reframe déjà établis."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Ouvrir la page du modèle Luma Ray 2 disponible"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Ouvrir la page du modèle Seedance 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Comparer Seedance 2.0 Fast et Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Ouvrir la page du modèle actuel Luma Ray 3.2"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour les workflows historiques d’édition Luma, la production Seedance et le modèle Ray actuel.",
+      "items": [
+        {
+          "question": "Luma Ray 2 reste-t-il disponible pour les projets Modify et Reframe ?",
+          "answer": "Oui. Luma Ray 2 reste disponible pour les anciens workflows silencieux de modification et de recadrage d’une vidéo source, jusqu’en 1080p."
+        },
+        {
+          "question": "Qui devrait rester sur Ray 2 plutôt qu’utiliser Seedance 2.0 Fast ?",
+          "answer": "Conservez Ray 2 si la modification ou le recadrage d’une source en 1080p est le besoin central. Choisissez Seedance Fast pour l’audio, les références, les clips plus longs, l’édition ou l’extension."
+        },
+        {
+          "question": "Quand les utilisateurs de Luma devraient-ils migrer vers Luma Ray 3.2 ?",
+          "answer": "Passez à l’actuel Luma Ray 3.2 pour une nouvelle génération adaptée à son workflow plus récent, tout en continuant les projets Ray 2 de modification ou recadrage déjà validés."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Luma Ray 2 vs Seedance 2.0 Fast: editar o migrar",
+      "description": "Compara Luma Ray 2 y Seedance 2.0 Fast para modificar y reencuadrar en 1080p o acceder a audio, referencias, edición y extensión con un modelo actual.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Luma Ray 2 con Seedance 2.0 Fast para elegir entre modificación y reencuadre 1080p con un modelo anterior disponible en MaxVideoAI o un flujo actual con audio. Luma llega a nueve segundos y 1080p; Seedance Fast llega a 15 segundos y 720p con referencias, edición y extensión.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Quédate en Luma Ray 2, que sigue disponible, para modificar o reencuadrar video fuente en 1080p sin audio. Elige Seedance 2.0 Fast para un flujo actual de hasta 720p con audio, referencias, edición y extensión; migra los proyectos nuevos de Luma a Luma Ray 3.2 actual cuando corresponda."
+    },
+    "topCards": [
+      {
+        "title": "Conservar Luma para reencuadre 1080p",
+        "body": "Mantén Ray 2 cuando su flujo disponible y silencioso de modificación y reencuadre, sus proporciones amplias y su límite 1080p ya encajen con el video fuente."
+      },
+      {
+        "title": "Seedance Fast para trabajar con audio",
+        "body": "Seedance Fast agrega audio, referencias de imagen y video, edición, extensión, controles de movimiento y clips de hasta 15 segundos en un máximo de 720p."
+      },
+      {
+        "title": "Resolución frente a amplitud del flujo",
+        "body": "Luma llega a 1080p, pero es silencioso; Seedance Fast termina en 720p y suma un conjunto más amplio de herramientas actuales de producción."
+      },
+      {
+        "title": "Migración a la generación actual de Luma",
+        "body": "Actualiza los proyectos nuevos de Luma a Luma Ray 3.2, la generación actual de Ray, y conserva Ray 2 para tareas establecidas de modificación o reencuadre."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Abrir la página del Luma Ray 2 disponible"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Abrir la página de Seedance 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-fast-vs-veo-3-1-fast",
+        "label": "Comparar Seedance 2.0 Fast y Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Abrir la página de Luma Ray 3.2 actual"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre edición con Luma Ray 2, producción con Seedance y la generación reciente de Ray.",
+      "items": [
+        {
+          "question": "¿Luma Ray 2 sigue disponible para modificar y reencuadrar?",
+          "answer": "Sí. Luma Ray 2 sigue disponible para modificar y reencuadrar video fuente sin audio en resoluciones de hasta 1080p."
+        },
+        {
+          "question": "¿Quién debería quedarse en Ray 2 en vez de usar Seedance 2.0 Fast?",
+          "answer": "Conserva Ray 2 cuando modificar o reencuadrar video fuente en 1080p sea la necesidad central. Elige Seedance Fast para audio, referencias, clips más largos, edición o extensión."
+        },
+        {
+          "question": "¿Cuándo deberían migrar los usuarios de Luma a Luma Ray 3.2?",
+          "answer": "Migra los proyectos nuevos de Luma a Luma Ray 3.2 actual cuando encaje su flujo Ray más reciente, y mantén los trabajos validados de modificación y reencuadre en Ray 2."
+        }
+      ]
+    }
+  }
+}

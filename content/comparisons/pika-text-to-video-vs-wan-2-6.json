@@ -1,0 +1,192 @@
+{
+  "slug": "pika-text-to-video-vs-wan-2-6",
+  "en": {
+    "meta": {
+      "title": "Pika 2.2 vs Wan 2.6: Price, Audio & Best Uses",
+      "description": "Compare Pika 2.2 and Wan 2.6 on price, clip length, audio, resolution, and reference workflows to choose the right AI video model.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Pika 2.2 Text & Image to Video with Wan 2.6 Text & Image to Video when the real choice is a lower-cost short loop or a longer, audio-ready production workflow. Pika keeps simple prompt and image animation economical, while Wan adds 15-second output and reference-video control.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Pika 2.2 for inexpensive 5- or 10-second silent loops, stylized tests, and straightforward image animation. Choose Wan 2.6 when the shot needs up to 15 seconds, native audio, or one to three reference videos, accepting the higher 720p and 1080p generation price."
+    },
+    "topCards": [
+      {
+        "title": "Choose Pika 2.2",
+        "body": "Use Pika for lower-cost 720p tests, short silent loops, and simple text-to-video or image-to-video work."
+      },
+      {
+        "title": "Choose Wan 2.6",
+        "body": "Use Wan for clips up to 15 seconds, optional audio, 1080p delivery, or a workflow guided by reference videos."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Pika starts at $0.04 per second at 720p; Wan starts at $0.10 per second but adds duration, audio, and reference-video control."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Pika fits stylized social loops and concept tests. Wan fits longer general-purpose shots, narrated clips, and reference-led sequences."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/pika-text-to-video",
+        "label": "Open the Pika 2.2 model page"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Open the Wan 2.6 model page"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video",
+        "label": "Compare Hailuo 02 vs Pika 2.2"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between Pika 2.2 and Wan 2.6.",
+      "items": [
+        {
+          "question": "Is Pika 2.2 or Wan 2.6 better for low-cost video tests?",
+          "answer": "Pika 2.2 is the lower-cost choice at 720p and works well for short silent loops. Wan 2.6 costs more but is justified when a test needs audio, longer duration, or reference videos."
+        },
+        {
+          "question": "What can Wan 2.6 do that Pika 2.2 cannot?",
+          "answer": "Wan 2.6 supports clips up to 15 seconds, optional audio, and a reference-to-video workflow with one to three video references. Pika 2.2 is limited to text-to-video and image-to-video without audio."
+        },
+        {
+          "question": "Which model should I use for a polished 1080p clip?",
+          "answer": "Both offer 1080p. Choose Pika for a straightforward silent shot at a lower price, or Wan when the final clip benefits from native audio, extra duration, or reference-video guidance."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Pika 2.2 vs Wan 2.6 : prix, audio et usages",
+      "description": "Comparez Pika 2.2 et Wan 2.6 sur le prix, la durée, l’audio, la résolution et les vidéos de référence pour choisir le bon modèle.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Pika 2.2 Text & Image to Video et Wan 2.6 Text & Image to Video pour arbitrer entre une boucle courte et économique ou un workflow plus complet avec audio. Pika simplifie les animations de prompt ou d’image, tandis que Wan atteint 15 secondes et accepte des vidéos de référence.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Pika 2.2 pour des boucles silencieuses de 5 ou 10 secondes, des essais stylisés et des animations simples à moindre coût. Préférez Wan 2.6 si le plan exige jusqu’à 15 secondes, de l’audio natif ou une à trois vidéos de référence, malgré un tarif supérieur en 720p et 1080p."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Pika 2.2",
+        "body": "Idéal pour tester en 720p à petit prix, produire des boucles silencieuses et animer simplement un prompt ou une image."
+      },
+      {
+        "title": "Choisir Wan 2.6",
+        "body": "À privilégier pour des plans de 15 secondes, l’audio optionnel, la livraison 1080p ou le guidage par vidéos de référence."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Pika démarre à 0,04 $ par seconde en 720p ; Wan à 0,10 $, avec davantage de durée, l’audio et le contrôle par référence."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Pika convient aux boucles sociales et aux concepts. Wan convient aux plans plus longs, narrés ou guidés par des sources vidéo."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/pika-text-to-video",
+        "label": "Ouvrir la page du modèle Pika 2.2"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Ouvrir la page du modèle Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video",
+        "label": "Comparer Hailuo 02 et Pika 2.2"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes pour choisir entre Pika 2.2 et Wan 2.6.",
+      "items": [
+        {
+          "question": "Pika 2.2 ou Wan 2.6 : lequel coûte le moins cher pour tester ?",
+          "answer": "Pika 2.2 est moins cher en 720p et convient aux courtes boucles silencieuses. Wan 2.6 justifie son prix lorsque le test demande du son, davantage de durée ou des vidéos de référence."
+        },
+        {
+          "question": "Que permet Wan 2.6 que Pika 2.2 ne propose pas ?",
+          "answer": "Wan 2.6 génère jusqu’à 15 secondes, accepte un audio optionnel et peut suivre une à trois vidéos de référence. Pika 2.2 reste centré sur le texte et l’image sans audio."
+        },
+        {
+          "question": "Quel modèle choisir pour un plan final en 1080p ?",
+          "answer": "Les deux proposent le 1080p. Pika suffit pour un plan silencieux simple et moins cher ; Wan est plus adapté si l’audio, la durée ou le guidage vidéo sont essentiels."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Pika 2.2 vs Wan 2.6: precio, audio y mejores usos",
+      "description": "Compara Pika 2.2 y Wan 2.6 en precio, duración, audio, resolución y referencias de video para elegir el modelo ideal para tu proyecto.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Pika 2.2 Text & Image to Video con Wan 2.6 Text & Image to Video para decidir entre un loop corto y económico o un flujo más completo con audio. Pika simplifica la animación desde texto o imagen, mientras Wan llega a 15 segundos y admite videos de referencia.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Pika 2.2 para loops silenciosos de 5 o 10 segundos, pruebas estilizadas y animaciones simples a menor precio. Elige Wan 2.6 si la toma necesita hasta 15 segundos, audio nativo o entre uno y tres videos de referencia, aunque el costo en 720p y 1080p sea mayor."
+    },
+    "topCards": [
+      {
+        "title": "Elige Pika 2.2",
+        "body": "Úsalo para pruebas económicas en 720p, loops silenciosos y trabajos simples de texto a video o imagen a video."
+      },
+      {
+        "title": "Elige Wan 2.6",
+        "body": "Úsalo para tomas de hasta 15 segundos, audio opcional, entrega 1080p o un flujo guiado por videos de referencia."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Pika parte de US$0.04 por segundo en 720p; Wan parte de US$0.10 y agrega duración, audio y control por referencias."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Pika funciona para loops sociales y conceptos. Wan funciona para tomas más largas, narradas o guiadas por video."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/pika-text-to-video",
+        "label": "Abrir la página del modelo Pika 2.2"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Abrir la página del modelo Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/minimax-hailuo-02-text-vs-pika-text-to-video",
+        "label": "Comparar Hailuo 02 y Pika 2.2"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves para elegir entre Pika 2.2 y Wan 2.6.",
+      "items": [
+        {
+          "question": "¿Pika 2.2 o Wan 2.6 es más económico para hacer pruebas?",
+          "answer": "Pika 2.2 cuesta menos en 720p y funciona bien para loops silenciosos cortos. Wan 2.6 justifica su precio cuando la prueba requiere audio, más duración o videos de referencia."
+        },
+        {
+          "question": "¿Qué puede hacer Wan 2.6 que Pika 2.2 no ofrece?",
+          "answer": "Wan 2.6 genera hasta 15 segundos, admite audio opcional y trabaja con uno a tres videos de referencia. Pika 2.2 se concentra en texto a video e imagen a video sin audio."
+        },
+        {
+          "question": "¿Qué modelo conviene para una toma final en 1080p?",
+          "answer": "Los dos ofrecen 1080p. Pika sirve para una toma silenciosa simple y más económica; Wan conviene cuando el audio, la duración o la guía por video son esenciales."
+        }
+      ]
+    }
+  }
+}

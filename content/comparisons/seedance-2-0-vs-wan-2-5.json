@@ -1,0 +1,192 @@
+{
+  "slug": "seedance-2-0-vs-wan-2-5",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 vs Wan 2.5: 4K, Audio & Upgrade",
+      "description": "Compare Seedance 2.0 and available Wan 2.5 on 4K, duration, audio, dynamic versus fixed pricing, references, editing, and motion control.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare current Seedance 2.0 with available Wan 2.5 Text & Image to Video. Wan keeps a simple fixed-resolution pricing path for ten-second text/image clips, while Seedance reaches 15 seconds and adds 4K, references, editing, extension, motion controls, and dynamic pricing.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available Wan 2.5 Text & Image to Video for simple fixed-price text/image clips; migrate to current Seedance 2.0 for 4K, references, editing, extension, motion control, or 15-second output. Seedance pricing is dynamic rather than a universal bargain."
+    },
+    "topCards": [
+      {
+        "title": "Stay with Wan for simple clips",
+        "body": "Keep Wan 2.5 for text- or image-to-video in 480p, 720p, or 1080p, with audio, three familiar ratios, and fixed resolution pricing."
+      },
+      {
+        "title": "Upgrade to Seedance for breadth",
+        "body": "Seedance 2.0 adds 4K, broad ratios, reference generation, video editing, extension, motion controls, audio, and a 15-second ceiling."
+      },
+      {
+        "title": "Understand the pricing difference",
+        "body": "Wan lists fixed prices by resolution and duration; Seedance computes a dynamic token-based quote from the requested output."
+      },
+      {
+        "title": "Match the workflow to complexity",
+        "body": "Wan suits direct ten-second text/image jobs. Seedance suits longer or iterative productions that need source material and post-generation control."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open the current Seedance 2.0 model page"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Open the available Wan 2.5 model page"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-wan-2-6",
+        "label": "Compare current Seedance 2.0 vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for staying with Wan 2.5 or moving to the broader Seedance workflow.",
+      "items": [
+        {
+          "question": "Is Wan 2.5 still available for text and image generation?",
+          "answer": "Yes. Wan 2.5 remains available with audio for clips up to ten seconds in 480p, 720p, or 1080p and 16:9, 9:16, or 1:1."
+        },
+        {
+          "question": "What production tools does Seedance 2.0 add?",
+          "answer": "Seedance adds reference inputs, source-video editing, extension, motion controls, broad ratios, 4K, and clips up to 15 seconds."
+        },
+        {
+          "question": "Is Seedance 2.0 pricing always lower than Wan 2.5?",
+          "answer": "No. Seedance pricing is dynamic and token-based, while Wan uses fixed resolution pricing. Compare the live Seedance quote with the selected Wan tier."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 vs Wan 2.5 : 4K, audio et évolution",
+      "description": "Comparez Seedance 2.0 et Wan 2.5 disponible : 4K, durée, audio, prix dynamique ou fixe, références, montage et contrôle du mouvement.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Wan 2.5 Text & Image to Video reste disponible pour des clips de 10 secondes générés à partir d’un texte ou d’une image, avec une tarification fixe par résolution. L’actuel Seedance 2.0 va jusqu’à 15 secondes et ajoute la 4K, les références, le montage, l’extension, le contrôle du mouvement et un prix dynamique.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur Wan 2.5 Text & Image to Video pour des clips simples à prix fixe générés à partir d’un texte ou d’une image. Migrez vers l’actuel Seedance 2.0 si vous avez besoin de 4K, de références, de montage, d’extension, de contrôle du mouvement ou de clips de 15 secondes. Son prix dynamique ne garantit pas qu’il soit toujours moins cher."
+    },
+    "topCards": [
+      {
+        "title": "Garder Wan pour les clips directs",
+        "body": "Wan 2.5 produit à partir d’un texte ou d’une image en 480p, 720p ou 1080p, avec audio, trois ratios familiers et un prix fixe par résolution."
+      },
+      {
+        "title": "Évoluer vers une boîte à outils complète",
+        "body": "Seedance 2.0 ajoute la 4K, davantage de ratios, les références, le montage vidéo, l’extension, le contrôle du mouvement, l’audio et une durée maximale de 15 secondes."
+      },
+      {
+        "title": "Distinguer les deux tarifications",
+        "body": "Wan affiche un prix fixe selon la résolution et la durée ; Seedance calcule dynamiquement un devis en jetons à partir de la sortie demandée."
+      },
+      {
+        "title": "Adapter l’outil à la complexité",
+        "body": "Wan suffit aux demandes directes de 10 secondes à partir d’un texte ou d’une image. Seedance convient aux productions plus longues ou itératives qui exploitent des vidéos sources."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page du modèle actuel Seedance 2.0"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Ouvrir la page du modèle disponible Wan 2.5"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-wan-2-6",
+        "label": "Comparer les modèles actuels Seedance 2.0 et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour conserver Wan 2.5 ou adopter les outils étendus de Seedance 2.0.",
+      "items": [
+        {
+          "question": "Wan 2.5 est-il encore disponible pour générer à partir d’un texte ou d’une image ?",
+          "answer": "Oui. Wan 2.5 reste disponible avec audio pour des clips allant jusqu’à 10 secondes, en 480p, 720p ou 1080p, aux formats 16:9, 9:16 ou 1:1."
+        },
+        {
+          "question": "Quels outils de production Seedance 2.0 ajoute-t-il ?",
+          "answer": "Seedance ajoute les références, le montage d’une vidéo source, l’extension, le contrôle du mouvement, davantage de ratios, la 4K et des clips jusqu’à 15 secondes."
+        },
+        {
+          "question": "Le prix de Seedance 2.0 est-il toujours inférieur à celui de Wan 2.5 ?",
+          "answer": "Non. Seedance utilise un tarif dynamique en jetons, tandis que Wan applique un prix fixe par résolution. Comparez le devis Seedance au palier Wan choisi."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 vs Wan 2.5: 4K, audio y migración",
+      "description": "Compara Seedance 2.0 y Wan 2.5 disponible por 4K, duración, audio, precio dinámico o fijo, referencias, edición y control de movimiento.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Seedance 2.0 actual con Wan 2.5 Text & Image to Video disponible. Wan conserva una ruta simple de precio fijo por resolución para clips de texto o imagen de diez segundos; Seedance llega a 15 segundos y agrega 4K, referencias, edición, extensión, controles de movimiento y precio dinámico.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Conviene quedarse en Wan 2.5 Text & Image to Video, que sigue disponible, para clips simples con precio fijo. Conviene migrar al actual Seedance 2.0 por 4K, referencias, edición, extensión, control de movimiento o clips de hasta 15 segundos. El precio de Seedance es dinámico y no garantiza el menor costo."
+    },
+    "topCards": [
+      {
+        "title": "Mantener Wan para clips directos",
+        "body": "Conserva Wan 2.5 para texto o imagen a video en 480p, 720p o 1080p, con audio, tres formatos conocidos y precio fijo según la resolución."
+      },
+      {
+        "title": "Actualizar a Seedance por su alcance",
+        "body": "Seedance 2.0 incorpora 4K, más formatos, generación con referencias, edición de video, extensión, controles de movimiento, audio y clips de hasta 15 segundos."
+      },
+      {
+        "title": "Entender cómo cambia el precio",
+        "body": "Wan publica precios fijos por resolución y duración; la cotización de Seedance se calcula dinámicamente según los tokens de la salida solicitada."
+      },
+      {
+        "title": "Ajustar el modelo a la complejidad",
+        "body": "Wan funciona para trabajos directos de diez segundos. Seedance encaja con producciones más largas o iterativas que usan material fuente y control posterior."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir el modelo actual Seedance 2.0"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Abrir el modelo disponible Wan 2.5"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-wan-2-6",
+        "label": "Comparar Seedance 2.0 actual vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para mantener Wan 2.5 o adoptar el flujo más amplio de Seedance.",
+      "items": [
+        {
+          "question": "¿Wan 2.5 sigue disponible para generar desde texto e imagen?",
+          "answer": "Sí. Wan 2.5 sigue disponible con audio para clips de hasta diez segundos en 480p, 720p o 1080p y formatos 16:9, 9:16 o 1:1."
+        },
+        {
+          "question": "¿Qué herramientas de producción agrega Seedance 2.0?",
+          "answer": "Seedance agrega referencias, edición desde video fuente, extensión, controles de movimiento, más formatos, 4K y clips de hasta 15 segundos."
+        },
+        {
+          "question": "¿El precio de Seedance 2.0 siempre es menor que el de Wan 2.5?",
+          "answer": "No. Seedance usa un precio dinámico basado en tokens y Wan aplica precios fijos por resolución. Compara la cotización de Seedance con la tarifa de Wan elegida."
+        }
+      ]
+    }
+  }
+}

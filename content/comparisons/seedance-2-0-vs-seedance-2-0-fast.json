@@ -1,0 +1,162 @@
+{
+  "slug": "seedance-2-0-vs-seedance-2-0-fast",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 vs Fast: Quality, Speed, Price & Best Uses",
+      "description": "Compare Seedance 2.0 and Fast with identical prompts, side-by-side video outputs, pricing, speed, quality tradeoffs and when to use each model.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Seedance 2.0 when quality and consistency matter. Use Seedance 2.0 Fast when you want quicker, cheaper prompt tests and rapid iteration. Compare identical prompts, side-by-side outputs, pricing, speed, and quality tradeoffs before choosing the right Seedance workflow.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Seedance 2.0 vs Seedance 2.0 Fast is mainly a quality versus iteration-speed choice. Seedance 2.0 is better for final 1080p or 4K shots, stronger consistency, reference-driven work, native audio, and polished output. Seedance 2.0 Fast is better for cheaper 480p or 720p drafts, prompt testing, timing checks, and fast creative exploration before upgrading the best idea to the standard Seedance 2.0 route."
+    },
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open Seedance 2.0 model page"
+      },
+      {
+        "href": "/examples/seedance",
+        "label": "View Seedance AI video examples"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Open Seedance 2.0 Fast model page"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers to help you choose the right current Seedance workflow.",
+      "items": [
+        {
+          "question": "Which Seedance AI video model should I use for draft work?",
+          "answer": "Use Seedance 2.0 Fast for cheaper draft passes, faster testing, and workflow comparisons. Use Seedance 2.0 when you want stronger final-quality multi-shot output, native audio, and a more production-ready workflow."
+        },
+        {
+          "question": "How is Seedance 2.0 different from Seedance 2.0 Fast?",
+          "answer": "Seedance 2.0 is the stronger current choice for polished multi-shot work, native audio, and more demanding reference-driven outputs, while Seedance 2.0 Fast is better for cheaper tests, timing checks, and early iteration."
+        },
+        {
+          "question": "Seedance 2.0 Fast vs normal: what is the difference?",
+          "answer": "\"Normal\" usually means the standard Seedance 2.0 route. Use Fast for lower-cost 480p/720p draft passes and timing checks; use standard Seedance 2.0 when the shot needs stronger polish, 1080p or 4K delivery, and final-quality consistency."
+        },
+        {
+          "question": "Do Seedance 2.0 and Fast support video edit and extend?",
+          "answer": "Yes. On MaxVideoAI, Seedance 2.0 and Seedance 2.0 Fast support video edit and extend workflows, plus text-to-video, image-to-video, and reference-to-video."
+        },
+        {
+          "question": "Is Seedance 2.0 better for polished Seedance video output?",
+          "answer": "Yes. Seedance 2.0 is the better fit when the goal is polished Seedance video output, while Fast is the better fit when the goal is to test ideas and compare workflows quickly."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 vs Fast : qualité, vitesse, prix et usages",
+      "description": "Comparez Seedance 2.0 et Fast avec des prompts identiques, des vidéos côte à côte, les prix, la vitesse, les écarts de qualité et les usages de chaque modèle.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Seedance 2.0 et Seedance 2.0 Fast pour choisir le bon workflow video IA Seedance actuel selon votre besoin de rendu multi-shot final, d audio natif et de comparaison de workflow. Utilisez cette page pour voir quand le Seedance standard convient mieux a une sortie video Seedance soignee et quand Fast convient mieux aux tests, aux checks de timing et a l iteration moins couteuse.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Le choix entre Seedance 2.0 et Seedance 2.0 Fast oppose surtout qualité finale et vitesse d’itération. Seedance 2.0 convient mieux aux plans finaux en 1080p ou 4K, à une cohérence renforcée, aux projets guidés par des références, à l’audio natif et à une finition soignée. Seedance 2.0 Fast est préférable pour des brouillons 480p ou 720p moins coûteux, les essais de prompts, les contrôles de rythme et l’exploration rapide, avant de produire la meilleure idée avec Seedance 2.0."
+    },
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page modele Seedance 2.0"
+      },
+      {
+        "href": "/examples/seedance",
+        "label": "Voir les exemples video IA Seedance"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Ouvrir la page modele Seedance 2.0 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir le bon workflow Seedance actuel.",
+      "items": [
+        {
+          "question": "Quel modele video IA Seedance faut-il utiliser pour le travail de draft ?",
+          "answer": "Utilisez Seedance 2.0 Fast pour des tests moins couteux, des tests plus rapides et des comparaisons de workflow. Utilisez Seedance 2.0 quand vous voulez une sortie multi-shot plus aboutie, l audio natif et un workflow plus pret pour la production."
+        },
+        {
+          "question": "Quelle difference entre Seedance 2.0 et Seedance 2.0 Fast ?",
+          "answer": "Seedance 2.0 est le choix actuel le plus solide pour un rendu multi-shot soigne, l audio natif et des sorties a references plus exigeantes, tandis que Seedance 2.0 Fast convient mieux aux tests moins couteux, aux checks de timing et a l iteration initiale."
+        },
+        {
+          "question": "Seedance 2.0 Fast vs normal : quelle difference ?",
+          "answer": "\"Normal\" designe generalement la route Seedance 2.0 standard. Utilisez Fast pour des drafts 480p/720p moins couteux et des checks de timing; utilisez Seedance 2.0 standard quand le plan a besoin de plus de finition, de 1080p ou de 4K, et d une coherence finale plus solide."
+        },
+        {
+          "question": "Seedance 2.0 et Fast supportent-ils video edit et extend ?",
+          "answer": "Oui. Sur MaxVideoAI, Seedance 2.0 et Seedance 2.0 Fast supportent les workflows video edit et extend, en plus du text-to-video, image-to-video et reference-to-video."
+        },
+        {
+          "question": "Seedance 2.0 est-il meilleur pour une sortie video Seedance soignee ?",
+          "answer": "Oui. Seedance 2.0 convient mieux quand l objectif est une sortie video Seedance soignee, tandis que Fast convient mieux quand l objectif est de tester des idees et de comparer rapidement des workflows."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 vs Fast: calidad, velocidad, precio y usos",
+      "description": "Compara Seedance 2.0 y Fast con prompts idénticos, videos lado a lado, precios, velocidad, diferencias de calidad y los mejores usos de cada modelo.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Seedance 2.0 y Seedance 2.0 Fast para elegir el workflow de video IA de Seedance actual mas adecuado segun tu necesidad de trabajo multi-shot final, audio nativo y comparacion de workflow. Usa esta pagina para ver cuando el Seedance estandar encaja mejor en una salida de video de Seedance mas pulida y cuando Fast encaja mejor para pruebas, checks de timing e iteracion mas barata.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elegir entre Seedance 2.0 y Seedance 2.0 Fast es, ante todo, decidir entre calidad final y velocidad de iteración. Seedance 2.0 funciona mejor para tomas finales en 1080p o 4K, mayor consistencia, trabajos guiados por referencias, audio nativo y resultados pulidos. Seedance 2.0 Fast conviene para borradores más económicos en 480p o 720p, pruebas de prompts, revisiones de ritmo y exploración creativa rápida antes de llevar la mejor idea a Seedance 2.0."
+    },
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir la pagina del modelo Seedance 2.0"
+      },
+      {
+        "href": "/examples/seedance",
+        "label": "Ver ejemplos de video IA de Seedance"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir el workflow actual de Seedance adecuado.",
+      "items": [
+        {
+          "question": "Que modelo de video IA de Seedance deberia usar para trabajo de borrador?",
+          "answer": "Usa Seedance 2.0 Fast para borradores mas baratos, pruebas mas rapidas y comparaciones de workflow. Usa Seedance 2.0 cuando quieras una salida multi-shot mas pulida, audio nativo y un workflow mas listo para produccion."
+        },
+        {
+          "question": "En que se diferencia Seedance 2.0 de Seedance 2.0 Fast?",
+          "answer": "Seedance 2.0 es la opcion actual mas fuerte para trabajo multi-shot pulido, audio nativo y salidas mas exigentes guiadas por referencias, mientras que Seedance 2.0 Fast encaja mejor en borradores mas baratos, checks de timing e iteracion temprana."
+        },
+        {
+          "question": "Seedance 2.0 Fast vs normal: cual es la diferencia?",
+          "answer": "\"Normal\" suele referirse a la ruta Seedance 2.0 estandar. Usa Fast para borradores 480p/720p de menor coste y checks de timing; usa Seedance 2.0 estandar cuando el plano necesite mas acabado, 1080p o 4K, y consistencia final mas solida."
+        },
+        {
+          "question": "Seedance 2.0 y Fast soportan video edit y extend?",
+          "answer": "Si. En MaxVideoAI, Seedance 2.0 y Seedance 2.0 Fast soportan workflows de video edit y extend, ademas de text-to-video, image-to-video y reference-to-video."
+        },
+        {
+          "question": "Es mejor Seedance 2.0 para una salida de video de Seedance mas pulida?",
+          "answer": "Si. Seedance 2.0 encaja mejor cuando el objetivo es una salida de video de Seedance mas pulida, mientras que Fast encaja mejor cuando el objetivo es probar ideas y comparar workflows rapidamente."
+        }
+      ]
+    }
+  }
+}

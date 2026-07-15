@@ -1,0 +1,66 @@
+{
+  "slug": "veo-3-1-vs-veo-3-1-fast",
+  "en": {
+    "heroIntro": "Compare Veo 3.1 and Veo 3.1 Fast to choose the right current Veo 3 AI workflow for polished text-to-video, image-to-video, faster draft passes, and native-audio control.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers to help you choose the right current Veo workflow.",
+      "items": [
+        {
+          "question": "How should I use Veo 3 for text-to-video and draft testing?",
+          "answer": "Use Veo 3.1 Fast for cheaper draft passes, text-to-video prompt comparison, and quicker iteration. Use Veo 3.1 when you want stronger final-quality output, richer reference-guided control, and more polished image-to-video results."
+        },
+        {
+          "question": "Can I use both Veo 3.1 and Veo 3.1 Fast for image-to-video?",
+          "answer": "Yes. Both can handle image-to-video workflows, but Veo 3.1 is the better fit for more polished results while Veo 3.1 Fast is the better fit for cheaper prompt and framing tests."
+        },
+        {
+          "question": "When should I choose Veo 3.1 instead of Veo 3.1 Fast?",
+          "answer": "Choose Veo 3.1 when final quality, native audio polish, and stronger reference-guided control matter more than draft speed. Choose Fast when the goal is cheaper iteration and quicker workflow validation."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "heroIntro": "Comparez Veo 3.1 et Veo 3.1 Fast pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de texte-to-video soigne, d image-to-video, de tests plus rapides et de controle sur l audio natif.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir le bon workflow Veo actuel.",
+      "items": [
+        {
+          "question": "Comment utiliser Veo 3 pour le texte-to-video et les tests ?",
+          "answer": "Utilisez Veo 3.1 Fast pour des tests moins chers, la comparaison de prompts texte-to-video et une iteration plus rapide. Utilisez Veo 3.1 quand vous voulez une sortie finale plus solide, un meilleur controle guide par references et des resultats image-to-video plus soignes."
+        },
+        {
+          "question": "Peut-on utiliser Veo 3.1 et Veo 3.1 Fast pour l image-to-video ?",
+          "answer": "Oui. Les deux peuvent gerer des workflows image-to-video, mais Veo 3.1 convient mieux a des resultats plus aboutis, tandis que Veo 3.1 Fast convient mieux a des tests de prompt et de cadrage moins chers."
+        },
+        {
+          "question": "Quand faut-il choisir Veo 3.1 plutot que Veo 3.1 Fast ?",
+          "answer": "Choisissez Veo 3.1 quand la qualite finale, la finition sur l audio natif et un meilleur controle guide par references comptent plus que la vitesse de draft. Choisissez Fast quand l objectif est une iteration moins chere et une validation de workflow plus rapide."
+        }
+      ]
+    }
+  },
+  "es": {
+    "heroIntro": "Compara Veo 3.1 y Veo 3.1 Fast para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de text-to-video mas pulido, image-to-video, borradores mas rapidos y control sobre el audio nativo.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir el workflow Veo actual adecuado.",
+      "items": [
+        {
+          "question": "Como deberia usar Veo 3 para text-to-video y borradores?",
+          "answer": "Usa Veo 3.1 Fast para borradores mas baratos, comparacion de prompts text-to-video e iteracion mas rapida. Usa Veo 3.1 cuando quieras una salida final mas fuerte, mejor control guiado por referencias y resultados image-to-video mas pulidos."
+        },
+        {
+          "question": "Puedo usar tanto Veo 3.1 como Veo 3.1 Fast para image-to-video?",
+          "answer": "Si. Ambos pueden manejar workflows de image-to-video, pero Veo 3.1 encaja mejor en resultados mas pulidos, mientras que Veo 3.1 Fast encaja mejor en pruebas mas baratas de prompt y encuadre."
+        },
+        {
+          "question": "Cuando deberia elegir Veo 3.1 en lugar de Veo 3.1 Fast?",
+          "answer": "Elige Veo 3.1 cuando la calidad final, el pulido del audio nativo y un mejor control guiado por referencias importan mas que la velocidad del borrador. Elige Fast cuando el objetivo es una iteracion mas barata y una validacion de workflow mas rapida."
+        }
+      ]
+    }
+  }
+}

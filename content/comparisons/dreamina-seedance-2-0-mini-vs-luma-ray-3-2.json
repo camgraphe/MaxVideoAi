@@ -1,0 +1,126 @@
+{
+  "slug": "dreamina-seedance-2-0-mini-vs-luma-ray-3-2",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Luma Ray 3.2: Batch Cost, Editing & Best Uses",
+      "description": "Compare Seedance 2.0 Mini and Luma Ray 3.2 for batch cost, audio, video editing, reframe workflows, scorecard ratings and best marketing use cases.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Seedance 2.0 Mini when the job needs lower-cost Dreamina Seedance batches, ecommerce variants, social hooks, video extension, source-video edits, and native audio tests at 480p or 720p. Use Luma Ray 3.2 when the job depends on Luma-style cinematic motion, Modify Video, Reframe, source-video preservation, guide frames, and 1080p visual control without native audio. This Mini comparison is scorecard-only for now, so it focuses on specs, positioning, and production decision guidance instead of side-by-side videos.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Open Seedance 2.0 Mini model page"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Open Luma Ray 3.2 model page"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-3-2-vs-seedance-2-0",
+        "label": "Compare Luma Ray 3.2 vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between Seedance Mini batch value and Luma Ray 3.2 video-control workflows.",
+      "items": [
+        {
+          "question": "When should I choose Seedance 2.0 Mini?",
+          "answer": "Choose Mini for lower-cost batch variants, UGC hooks, product tests, video extension, source-video edits, and native audio experiments where 480p or 720p is acceptable."
+        },
+        {
+          "question": "When is Luma Ray 3.2 the better fit?",
+          "answer": "Choose Luma Ray 3.2 for Modify Video, Reframe, guide-frame control, source-video preservation, cinematic motion, and 1080p visual tests where native audio is not required."
+        },
+        {
+          "question": "Why is this page scorecard-only?",
+          "answer": "Mini comparison pages stay scorecard-only until curated Mini side-by-side renders are selected, so this page prioritizes specs, workflow positioning, and cost tradeoffs."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Luma Ray 3.2 : coût, montage et usages",
+      "description": "Comparez Seedance 2.0 Mini et Luma Ray 3.2 pour le coût par lot, l’audio, le montage vidéo, le recadrage, les notes et les meilleurs usages marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Seedance 2.0 Mini quand le job demande des batches Dreamina Seedance moins couteux, des variantes ecommerce, des hooks social, de l extension video, des edits depuis source video et des tests avec audio natif en 480p ou 720p. Utilisez Luma Ray 3.2 quand le job depend du mouvement cinematographique Luma, de Modify Video, Reframe, preservation de source video, guide frames et controle visuel 1080p sans audio natif. Cette comparaison Mini est scorecard-only pour l instant: elle se concentre sur specs, positionnement et aide a la decision plutot que sur des videos cote-a-cote.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Ouvrir la page modele Seedance 2.0 Mini"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Ouvrir la page modele Luma Ray 3.2"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-3-2-vs-seedance-2-0",
+        "label": "Comparer Luma Ray 3.2 vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre valeur batch Seedance Mini et workflows de controle video Luma Ray 3.2.",
+      "items": [
+        {
+          "question": "Quand choisir Seedance 2.0 Mini ?",
+          "answer": "Choisissez Mini pour des variantes batch moins couteuses, hooks UGC, tests produit, extension video, edits de source video et experiences avec audio natif quand 480p ou 720p suffit."
+        },
+        {
+          "question": "Quand Luma Ray 3.2 est-il plus adapte ?",
+          "answer": "Choisissez Luma Ray 3.2 pour Modify Video, Reframe, guide frames, preservation de source video, mouvement cinematographique et tests visuels 1080p quand l audio natif n est pas necessaire."
+        },
+        {
+          "question": "Pourquoi cette page est-elle scorecard-only ?",
+          "answer": "Les pages Mini restent scorecard-only jusqu a selection de renders Mini cote-a-cote, donc cette page priorise specs, positionnement workflow et compromis de cout."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 Mini vs Luma Ray 3.2: costo, edición y usos",
+      "description": "Compara Seedance 2.0 Mini y Luma Ray 3.2 por costo por lote, audio, edición de video, reencuadre, calificaciones y mejores usos de marketing.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Seedance 2.0 Mini cuando el trabajo necesita batches Dreamina Seedance de menor coste, variantes ecommerce, hooks social, extension de video, ediciones desde video fuente y pruebas con audio nativo en 480p o 720p. Usa Luma Ray 3.2 cuando el trabajo depende del movimiento cinematico de Luma, Modify Video, Reframe, preservacion de video fuente, guide frames y control visual 1080p sin audio nativo. Esta comparacion Mini es scorecard-only por ahora: se centra en specs, posicionamiento y ayuda de decision en lugar de videos lado a lado.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/dreamina-seedance-2-0-mini",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Mini"
+      },
+      {
+        "href": "/models/luma-ray-3-2",
+        "label": "Abrir la pagina del modelo Luma Ray 3.2"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-3-2-vs-seedance-2-0",
+        "label": "Comparar Luma Ray 3.2 vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre valor batch Seedance Mini y workflows de control de video Luma Ray 3.2.",
+      "items": [
+        {
+          "question": "Cuando elegir Seedance 2.0 Mini?",
+          "answer": "Elige Mini para variantes batch de menor coste, hooks UGC, pruebas de producto, extension de video, ediciones de video fuente y experimentos con audio nativo cuando 480p o 720p es suficiente."
+        },
+        {
+          "question": "Cuando Luma Ray 3.2 encaja mejor?",
+          "answer": "Elige Luma Ray 3.2 para Modify Video, Reframe, guide frames, preservacion de video fuente, movimiento cinematico y pruebas visuales 1080p cuando no necesitas audio nativo."
+        },
+        {
+          "question": "Por que esta pagina es scorecard-only?",
+          "answer": "Las paginas Mini siguen scorecard-only hasta que se elijan renders Mini lado a lado, asi que esta pagina prioriza specs, posicionamiento de workflow y tradeoffs de coste."
+        }
+      ]
+    }
+  }
+}

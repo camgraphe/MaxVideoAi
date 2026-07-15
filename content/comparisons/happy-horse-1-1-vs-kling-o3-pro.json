@@ -1,0 +1,126 @@
+{
+  "slug": "happy-horse-1-1-vs-kling-o3-pro",
+  "en": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Kling O3 Pro: Audio, References & Best Uses",
+      "description": "Compare Happy Horse 1.1 and Kling O3 Pro for native audio, lip-sync, reference control, video-to-video support, scorecard ratings and best production use cases.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Happy Horse 1.1 when the brief centers on native audio, dialogue, multilingual lip-sync, reference characters, and Alibaba-style text, image, or reference-to-video output. Use Kling O3 Pro when the project needs broader omni controls, source video transformation, stronger reference workflows, and Kling-style continuity. This comparison is designed for teams deciding between an audio-first actor workflow and a heavier reference or video-to-video production route.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Open Happy Horse 1.1 model page"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Open Kling O3 Pro model page"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-kling-3-pro",
+        "label": "Compare Happy Horse vs Kling 3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between Alibaba native-audio generation and Kling omni production control.",
+      "items": [
+        {
+          "question": "When should I choose Happy Horse 1.1 over Kling O3 Pro?",
+          "answer": "Choose Happy Horse 1.1 for speaking characters, native synchronized audio, lip-sync tests, and reference-image workflows where the actor and voice behavior are the central requirement."
+        },
+        {
+          "question": "When is Kling O3 Pro the better choice?",
+          "answer": "Choose Kling O3 Pro when you need broader source-video, reference, or transformation control and the project is less about native dialogue than controlled visual production."
+        },
+        {
+          "question": "Are both good for reference-driven video?",
+          "answer": "Yes, but they emphasize different workflows. Happy Horse 1.1 focuses on reference images and audio-ready character output, while Kling O3 Pro is better for broader omni reference and video-to-video style control."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Kling O3 Pro : audio, références et usages",
+      "description": "Comparez Happy Horse 1.1 et Kling O3 Pro pour l’audio natif, la synchronisation labiale, le contrôle par références, la vidéo-à-vidéo, les notes et les usages.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Happy Horse 1.1 quand le brief tourne autour de l audio natif, du dialogue, du lip-sync multilingue, des personnages de reference et de workflows texte, image ou reference-to-video. Utilisez Kling O3 Pro quand le projet demande plus de controle omni, de transformation depuis une video source, de references visuelles et de continuite style Kling. Cette comparaison aide a choisir entre un workflow acteur audio-first et une route de production plus lourde basee sur references et video-to-video.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Ouvrir la page modele Happy Horse 1.1"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Ouvrir la page modele Kling O3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-kling-3-pro",
+        "label": "Comparer Happy Horse vs Kling 3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre generation Alibaba avec audio natif et controle de production Kling omni.",
+      "items": [
+        {
+          "question": "Quand choisir Happy Horse 1.1 plutot que Kling O3 Pro ?",
+          "answer": "Choisissez Happy Horse 1.1 pour des personnages qui parlent, l audio synchronise natif, les tests de lip-sync et les references image quand l acteur et la voix sont le centre du rendu."
+        },
+        {
+          "question": "Quand Kling O3 Pro est-il le meilleur choix ?",
+          "answer": "Choisissez Kling O3 Pro quand vous avez besoin de plus de controle sur source video, references ou transformation, et que le projet depend moins du dialogue natif."
+        },
+        {
+          "question": "Les deux conviennent-ils aux videos avec references ?",
+          "answer": "Oui, mais pas avec le meme angle. Happy Horse 1.1 met l accent sur les images de reference et les personnages avec audio, tandis que Kling O3 Pro est plus adapte au controle omni et video-to-video."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Kling O3 Pro: audio, referencias y usos",
+      "description": "Compara Happy Horse 1.1 y Kling O3 Pro por audio nativo, sincronización labial, control con referencias, video a video, calificaciones y mejores usos.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Happy Horse 1.1 cuando el brief se centra en audio nativo, dialogo, lip-sync multilingue, personajes de referencia y workflows de texto, imagen o referencia-a-video. Usa Kling O3 Pro cuando el proyecto necesita mas control omni, transformacion desde video fuente, referencias visuales y continuidad estilo Kling. Esta comparacion ayuda a elegir entre un workflow de actor audio-first y una ruta de produccion mas pesada basada en referencias y video-to-video.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Abrir la pagina del modelo Happy Horse 1.1"
+      },
+      {
+        "href": "/models/kling-o3-pro",
+        "label": "Abrir la pagina del modelo Kling O3 Pro"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-kling-3-pro",
+        "label": "Comparar Happy Horse vs Kling 3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre generacion Alibaba con audio nativo y control de produccion Kling omni.",
+      "items": [
+        {
+          "question": "Cuando elegir Happy Horse 1.1 en lugar de Kling O3 Pro?",
+          "answer": "Elige Happy Horse 1.1 para personajes que hablan, audio sincronizado nativo, pruebas de lip-sync y referencias de imagen cuando el actor y la voz son el centro del output."
+        },
+        {
+          "question": "Cuando Kling O3 Pro es mejor opcion?",
+          "answer": "Elige Kling O3 Pro cuando necesites mas control sobre video fuente, referencias o transformacion, y el proyecto dependa menos del dialogo nativo."
+        },
+        {
+          "question": "Ambos sirven para video con referencias?",
+          "answer": "Si, pero no con el mismo enfoque. Happy Horse 1.1 enfatiza imagenes de referencia y personajes con audio, mientras Kling O3 Pro encaja mejor en control omni y video-to-video."
+        }
+      ]
+    }
+  }
+}

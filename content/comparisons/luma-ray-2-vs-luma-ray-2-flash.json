@@ -1,0 +1,192 @@
+{
+  "slug": "luma-ray-2-vs-luma-ray-2-flash",
+  "en": {
+    "meta": {
+      "title": "Luma Ray 2 vs Flash: Speed, Quality & Best Uses",
+      "description": "Compare Luma Ray 2 and Ray 2 Flash for faster drafts, standard legacy output, modify, reframe, duration, and the current Luma upgrade path.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Luma Ray 2 with Luma Ray 2 Flash across two available legacy Luma workflows. Both are silent, reach nine seconds and 1080p, and support text, image, video modification, and reframe; Flash is positioned for faster drafts.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on Luma Ray 2 for the standard available legacy workflow or choose Luma Ray 2 Flash for faster draft iteration with the same listed modes. Migrate new Luma production to current Luma Ray 3.2 when its newer generation path fits the brief."
+    },
+    "topCards": [
+      {
+        "title": "Standard Ray 2 workflow",
+        "body": "Keep Ray 2 when existing prompts and modify or reframe jobs rely on the standard available legacy Luma route."
+      },
+      {
+        "title": "Faster Flash drafts",
+        "body": "Choose Ray 2 Flash when draft speed is the priority and the shared silent, nine-second, up-to-1080p mode set is sufficient."
+      },
+      {
+        "title": "Matched creation modes",
+        "body": "Both routes support text, image, source-video modification, and reframing across broad landscape, square, vertical, and ultrawide ratios."
+      },
+      {
+        "title": "Current Luma successor",
+        "body": "Upgrade to Luma Ray 3.2 for the current Ray generation; established Ray 2 and Flash workflows can continue when they still meet the job."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Open the available Luma Ray 2 model page"
+      },
+      {
+        "href": "/models/luma-ray-2-flash",
+        "label": "Open the available Luma Ray 2 Flash page"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-3-2",
+        "label": "Compare legacy Luma Ray 2 vs current Luma Ray 3.2"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for standard Ray 2, faster Flash drafts, and the current Ray 3.2 route.",
+      "items": [
+        {
+          "question": "Are Luma Ray 2 and Ray 2 Flash still available?",
+          "answer": "Yes. Both legacy Luma routes remain available on MaxVideoAI for text, image, video modification, and reframe workflows."
+        },
+        {
+          "question": "Who should stay on Luma Ray 2 instead of Flash?",
+          "answer": "Stay on Ray 2 when the standard legacy workflow is already validated. Choose Flash when faster draft iteration is the clearer priority."
+        },
+        {
+          "question": "When should a Ray 2 user migrate to Luma Ray 3.2?",
+          "answer": "Move to current Luma Ray 3.2 for new production that benefits from the newer Ray generation, while keeping Ray 2 for established modify or reframe jobs."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Luma Ray 2 vs Flash : vitesse, qualité et usages",
+      "description": "Comparez Luma Ray 2 et Ray 2 Flash sur la vitesse, le workflow historique, Modify, Reframe, la durée et la migration vers Luma Ray 3.2.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Luma Ray 2 et Luma Ray 2 Flash, deux workflows Luma historiques toujours disponibles. Tous deux sont silencieux, atteignent neuf secondes et le 1080p, et couvrent la génération depuis du texte ou une image, la modification vidéo et le recadrage ; Flash est pensé pour accélérer les brouillons.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur Luma Ray 2 pour le workflow historique standard toujours accessible, ou choisissez Luma Ray 2 Flash pour itérer plus vite avec les mêmes modes catalogués. Faites évoluer les nouvelles productions Luma vers l’actuel Luma Ray 3.2 lorsque sa génération plus récente convient au brief."
+    },
+    "topCards": [
+      {
+        "title": "Le workflow Ray 2 standard",
+        "body": "Gardez Ray 2 lorsque des prompts existants et des projets Modify ou Reframe dépendent déjà de ce workflow Luma historique, toujours disponible."
+      },
+      {
+        "title": "Des brouillons plus rapides avec Flash",
+        "body": "Choisissez Ray 2 Flash lorsque la vitesse de brouillon prime et que ses modes silencieux partagés, limités à neuf secondes et au 1080p, suffisent."
+      },
+      {
+        "title": "Des modes de création identiques",
+        "body": "Les deux workflows acceptent du texte ou une image, la modification d’une vidéo source et le recadrage, dans de nombreux ratios paysage, carré, vertical ou ultralarge."
+      },
+      {
+        "title": "Le successeur Luma actuel",
+        "body": "Migrez vers Luma Ray 3.2 pour la génération Ray actuelle ; les workflows Ray 2 et Flash établis peuvent continuer tant qu’ils répondent au besoin."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Ouvrir la page du modèle Luma Ray 2 disponible"
+      },
+      {
+        "href": "/models/luma-ray-2-flash",
+        "label": "Ouvrir la page Luma Ray 2 Flash disponible"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-3-2",
+        "label": "Comparer l’ancien Luma Ray 2 et l’actuel Luma Ray 3.2"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur Ray 2 standard, les brouillons Flash et le modèle actuel Ray 3.2.",
+      "items": [
+        {
+          "question": "Luma Ray 2 et Ray 2 Flash sont-ils toujours disponibles ?",
+          "answer": "Oui. Les deux workflows Luma historiques restent disponibles sur MaxVideoAI pour la génération depuis texte ou image, la modification vidéo et le recadrage."
+        },
+        {
+          "question": "Qui devrait rester sur Luma Ray 2 plutôt que passer à Flash ?",
+          "answer": "Restez sur Ray 2 si le workflow historique standard est déjà validé. Choisissez Flash lorsque l’accélération des brouillons devient la priorité claire."
+        },
+        {
+          "question": "Quand un utilisateur de Ray 2 devrait-il migrer vers Luma Ray 3.2 ?",
+          "answer": "Passez à l’actuel Luma Ray 3.2 pour une nouvelle production qui profite de la génération Ray plus récente, tout en gardant Ray 2 pour les projets Modify ou Reframe établis."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Luma Ray 2 vs Flash: velocidad, calidad y usos",
+      "description": "Compara Luma Ray 2 y Ray 2 Flash en velocidad de borrador, modificación, reencuadre, duración y la migración desde estos modelos anteriores a Ray 3.2.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Luma Ray 2 con Luma Ray 2 Flash como dos modelos anteriores de Luma que siguen disponibles en MaxVideoAI. Ambos son silenciosos, llegan a nueve segundos y 1080p, y admiten texto, imagen, modificación de video y reencuadre; Flash está orientado a borradores más rápidos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Quédate en Luma Ray 2 para el flujo estándar anterior disponible o elige Luma Ray 2 Flash para iterar borradores más rápido con los mismos modos catalogados. Migra la producción nueva de Luma a Luma Ray 3.2 actual cuando su generación más reciente encaje con el proyecto."
+    },
+    "topCards": [
+      {
+        "title": "Flujo estándar de Ray 2",
+        "body": "Mantén Ray 2 cuando los prompts existentes y los trabajos de modificación o reencuadre dependan de la ruta estándar anterior disponible de Luma."
+      },
+      {
+        "title": "Borradores más rápidos con Flash",
+        "body": "Elige Ray 2 Flash cuando la velocidad de borrador sea prioritaria y basten los modos compartidos, silenciosos, de nueve segundos y hasta 1080p."
+      },
+      {
+        "title": "Modos de creación equivalentes",
+        "body": "Ambas rutas admiten texto, imagen, modificación desde video fuente y reencuadre en proporciones horizontales, cuadradas, verticales y ultrapanorámicas."
+      },
+      {
+        "title": "Sucesor actual de Luma",
+        "body": "Actualiza a Luma Ray 3.2 para usar la generación actual de Ray; los flujos establecidos de Ray 2 y Flash pueden seguir cuando todavía resuelvan el trabajo."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/luma-ray-2",
+        "label": "Abrir la página del Luma Ray 2 disponible"
+      },
+      {
+        "href": "/models/luma-ray-2-flash",
+        "label": "Abrir la página del Luma Ray 2 Flash disponible"
+      },
+      {
+        "href": "/ai-video-engines/luma-ray-2-vs-luma-ray-3-2",
+        "label": "Comparar Luma Ray 2 anterior y Luma Ray 3.2 actual"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre Ray 2 estándar, borradores Flash y la ruta actual de Ray 3.2.",
+      "items": [
+        {
+          "question": "¿Luma Ray 2 y Ray 2 Flash siguen disponibles?",
+          "answer": "Sí. Ambos modelos anteriores de Luma siguen disponibles en MaxVideoAI para flujos de texto, imagen, modificación de video y reencuadre."
+        },
+        {
+          "question": "¿Quién debería quedarse en Luma Ray 2 en vez de usar Flash?",
+          "answer": "Quédate en Ray 2 cuando el flujo estándar anterior ya esté validado. Elige Flash cuando iterar borradores más rápido sea la prioridad clara."
+        },
+        {
+          "question": "¿Cuándo debería migrar un usuario de Ray 2 a Luma Ray 3.2?",
+          "answer": "Pasa a Luma Ray 3.2 actual para proyectos nuevos que aprovechen la generación más reciente de Ray, y conserva Ray 2 para trabajos establecidos de modificación o reencuadre."
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "slug": "seedance-2-0-vs-veo-3-1-fast",
+  "en": {
+    "meta": {
+      "title": "Seedance 2.0 vs Veo 3.1 Fast: Control or Speed?",
+      "description": "Compare Seedance 2.0 and Google Veo 3.1 Fast for duration, references, editing, 4K, audio, iteration speed, and pricing structure.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Seedance 2.0 with Google Veo 3.1 Fast when deciding between a broad 15-second reference and editing workflow or a focused eight-second fast-production route. Both support audio and 4K, but they organize controls and pricing differently.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Seedance 2.0 for longer, reference-heavy production that may need video editing, extension, motion controls, or broader aspect ratios. Choose Google Veo 3.1 Fast for shorter rapid iterations with first-last-frame control and a simpler resolution-based price ladder."
+    },
+    "topCards": [
+      {
+        "title": "Choose Seedance for control",
+        "body": "Seedance reaches 15 seconds and combines references, video editing, extension, motion controls, audio, and resolutions from 480p through 4K."
+      },
+      {
+        "title": "Choose Veo Fast for iteration",
+        "body": "Veo Fast focuses on rapid eight-second production with audio, references, first and last frames, extension, and up to 4K."
+      },
+      {
+        "title": "Different pricing systems",
+        "body": "Seedance uses dynamic token pricing, while Veo Fast uses a resolution-based per-second ladder, so neither is universally cheaper."
+      },
+      {
+        "title": "Long edit or fast shot",
+        "body": "Seedance fits extended, edited, reference-rich sequences; Veo Fast fits short ads and shots that benefit from predictable resolution choices."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Open the Seedance 2.0 model page"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Open the Google Veo 3.1 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1",
+        "label": "Compare Seedance 2.0 vs Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for choosing a longer controlled workflow or a shorter fast-production route.",
+      "items": [
+        {
+          "question": "Which model supports longer clips, Seedance 2.0 or Veo 3.1 Fast?",
+          "answer": "Seedance 2.0 reaches 15 seconds, while Google Veo 3.1 Fast reaches eight seconds. Seedance is the stronger fit when shot length is decisive."
+        },
+        {
+          "question": "Which model offers more video editing controls?",
+          "answer": "Seedance 2.0 offers video-to-video editing, extension, references, and motion controls. Veo Fast offers references, first-last-frame control, and extension in a faster focused workflow."
+        },
+        {
+          "question": "Is Seedance 2.0 cheaper than Veo 3.1 Fast?",
+          "answer": "There is no universal winner: Seedance uses dynamic token pricing, while Veo Fast uses a per-second ladder that changes by resolution and audio choice."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Seedance 2.0 vs Veo 3.1 Fast : contrôle ou vitesse ?",
+      "description": "Comparez Seedance 2.0 et Google Veo 3.1 Fast sur la durée, les références, l’édition, la 4K, l’audio, la vitesse et la structure des prix.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Seedance 2.0 et Google Veo 3.1 Fast pour choisir entre un workflow riche en références et en outils d’édition pour des clips allant jusqu’à 15 secondes, et un workflow de production rapide limité à huit secondes. Les deux prennent en charge l’audio et la 4K, mais organisent leurs contrôles et leur tarification différemment.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Seedance 2.0 pour une production plus longue et riche en références, susceptible d’exiger l’édition vidéo, l’extension, le contrôle du mouvement ou davantage de ratios. Préférez Google Veo 3.1 Fast pour des itérations courtes et rapides avec le contrôle de la première et de la dernière image, ainsi qu’une grille tarifaire plus simple par résolution."
+    },
+    "topCards": [
+      {
+        "title": "Seedance pour le contrôle",
+        "body": "Seedance atteint 15 secondes et réunit les références, l’édition vidéo, l’extension, le contrôle du mouvement, l’audio et des résolutions allant du 480p à la 4K."
+      },
+      {
+        "title": "Veo Fast pour itérer vite",
+        "body": "Veo Fast cible une production rapide de huit secondes avec l’audio, les références, les images initiale et finale, l’extension et une résolution allant jusqu’à la 4K."
+      },
+      {
+        "title": "Deux logiques de tarification",
+        "body": "Seedance applique une tarification dynamique en tokens ; Veo Fast facture à la seconde selon la résolution, si bien que le modèle le moins cher dépend des réglages choisis."
+      },
+      {
+        "title": "Édition longue ou plan rapide",
+        "body": "Seedance convient aux séquences étendues, éditées et riches en références ; Veo Fast aux publicités courtes avec des choix de résolution prévisibles."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Ouvrir la page du modèle Seedance 2.0"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Ouvrir la page du modèle Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1",
+        "label": "Comparer Seedance 2.0 et Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour choisir entre un workflow long et contrôlé ou une production courte et rapide.",
+      "items": [
+        {
+          "question": "Quel modèle produit les clips les plus longs, Seedance 2.0 ou Veo 3.1 Fast ?",
+          "answer": "Seedance 2.0 atteint 15 secondes, contre huit secondes pour Google Veo 3.1 Fast. Seedance est donc plus adapté lorsque la durée du plan est le critère décisif."
+        },
+        {
+          "question": "Quel modèle propose le plus de contrôles d’édition vidéo ?",
+          "answer": "Seedance 2.0 propose l’édition vidéo-à-vidéo, l’extension, les références et le contrôle du mouvement. Veo Fast réunit les références, le contrôle début-fin et l’extension dans un workflow plus ciblé et rapide."
+        },
+        {
+          "question": "Seedance 2.0 coûte-t-il moins cher que Veo 3.1 Fast ?",
+          "answer": "Il n’existe pas de gagnant universel : Seedance utilise une tarification dynamique en tokens, tandis que Veo Fast facture à la seconde selon la résolution et le choix audio."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Seedance 2.0 vs Veo 3.1 Fast: control o velocidad",
+      "description": "Compara Seedance 2.0 y Google Veo 3.1 Fast en duración, referencias, edición, 4K, audio, velocidad de iteración y estructura de precios.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Seedance 2.0 con Google Veo 3.1 Fast para elegir entre un flujo de hasta 15 segundos con varias referencias y edición, y una ruta rápida de producción enfocada en ocho segundos. Ambos admiten audio y 4K, pero organizan sus controles y precios de manera distinta.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Seedance 2.0 para proyectos de mayor duración que requieran varias referencias, edición de video, extensión, controles de movimiento o más proporciones. Elige Google Veo 3.1 Fast para iteraciones cortas y rápidas con control de primer y último fotograma y una escala de precio por resolución más simple."
+    },
+    "topCards": [
+      {
+        "title": "Seedance para mayor control",
+        "body": "Seedance llega a 15 segundos y combina referencias, edición de video, extensión, controles de movimiento, audio y resoluciones desde 480p hasta 4K."
+      },
+      {
+        "title": "Veo Fast para iterar rápido",
+        "body": "Veo Fast se enfoca en producción rápida de ocho segundos con audio, referencias, primer y último fotograma, extensión y hasta 4K."
+      },
+      {
+        "title": "Sistemas de precios diferentes",
+        "body": "Seedance usa precios dinámicos por tokens, mientras Veo Fast usa una escala por segundo basada en resolución; ninguno es siempre más económico."
+      },
+      {
+        "title": "Edición larga o toma rápida",
+        "body": "Seedance encaja con secuencias extendidas, editadas y ricas en referencias; Veo Fast sirve para anuncios cortos con opciones de resolución previsibles."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/seedance-2-0",
+        "label": "Abrir la página de Seedance 2.0"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Abrir la página de Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/seedance-2-0-vs-veo-3-1",
+        "label": "Comparar Seedance 2.0 y Google Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para elegir un flujo largo y controlado o una ruta corta de producción rápida.",
+      "items": [
+        {
+          "question": "¿Qué modelo admite clips más largos, Seedance 2.0 o Veo 3.1 Fast?",
+          "answer": "Seedance 2.0 llega a 15 segundos, mientras Google Veo 3.1 Fast llega a ocho. Seedance encaja mejor cuando la duración de la toma define la decisión."
+        },
+        {
+          "question": "¿Qué modelo ofrece más controles de edición de video?",
+          "answer": "Seedance 2.0 ofrece edición de video a video, extensión, referencias y controles de movimiento. Veo Fast ofrece referencias, control de primer y último fotograma y extensión en un flujo más enfocado."
+        },
+        {
+          "question": "¿Seedance 2.0 cuesta menos que Veo 3.1 Fast?",
+          "answer": "No hay un ganador universal: Seedance usa precios dinámicos por tokens, mientras Veo Fast usa una escala por segundo que cambia según la resolución y la elección de audio."
+        }
+      ]
+    }
+  }
+}

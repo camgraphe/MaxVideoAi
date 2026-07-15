@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-fast-vs-wan-2-5",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Wan 2.5: Price, 4K & Upgrade",
+      "description": "Compare LTX 2.3 Fast with available Wan 2.5 on 1080p price, 4K, constrained duration, audio, square output, and lower-resolution entry tiers.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare current LTX 2.3 Fast with available Wan 2.5 Text & Image to Video. LTX reaches 4K, supports longer constrained clips, and lists a lower shared 1080p rate; Wan keeps 1:1 output and lower-resolution 480p/720p entry options for simple ten-second jobs.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available Wan 2.5 Text & Image to Video for existing simple work or 1:1 and lower-resolution output; upgrade to current LTX 2.3 Fast for 4K, lower listed 1080p pricing, or longer constrained clips. Above 10 seconds, LTX requires 1080p at 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Stay with Wan for accessible formats",
+        "body": "Keep Wan 2.5 for simple text/image generation with audio in 480p, 720p, or 1080p and 16:9, 9:16, or square output."
+      },
+      {
+        "title": "Move to LTX for higher resolution",
+        "body": "LTX 2.3 Fast adds 1440p and 4K, broader FPS selection, and a lower listed rate than Wan at their shared 1080p resolution."
+      },
+      {
+        "title": "Key format and duration trade-off",
+        "body": "Wan provides 1:1 and lower-resolution entry tiers; LTX adds high resolution and longer output, restricted above ten seconds to 1080p at 25 fps."
+      },
+      {
+        "title": "Best workflows for each model",
+        "body": "Use Wan for simple square or entry-resolution clips; use LTX for 1080p value, 1440p or 4K delivery, and constrained longer landscape or portrait shots."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the current LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Open the available Wan 2.5 model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Compare current LTX 2.3 Fast vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for Wan 2.5 continuity and migrating higher-resolution jobs to LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "When should I keep using Wan 2.5?",
+          "answer": "Stay on the available model for simple ten-second text/image clips, especially when 480p, 720p, or native 1:1 output fits the channel."
+        },
+        {
+          "question": "Why migrate a 1080p job to LTX 2.3 Fast?",
+          "answer": "LTX lists a lower per-second price at the shared 1080p tier and adds 1440p, 4K, and more frame-rate choices for current production."
+        },
+        {
+          "question": "Can LTX 2.3 Fast create a 20-second 4K video?",
+          "answer": "No. Its generations above ten seconds require 1080p at 25 fps, so 1440p and 4K work must stay at ten seconds or less."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Wan 2.5 : prix, 4K et évolution",
+      "description": "Comparez LTX 2.3 Fast et Wan 2.5 disponible : prix en 1080p, 4K, contraintes de durée, audio, format carré et paliers 480p/720p.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Wan 2.5 Text & Image to Video reste disponible pour générer simplement des clips de 10 secondes, avec le format carré et des paliers d’entrée en 480p/720p. L’actuel LTX 2.3 Fast monte jusqu’en 4K, affiche un tarif 1080p plus bas et autorise des plans plus longs sous une contrainte précise.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur Wan 2.5 Text & Image to Video pour vos workflows existants, le format 1:1 ou les basses résolutions. Évoluez vers l’actuel LTX 2.3 Fast pour la 4K, un prix 1080p affiché plus bas ou des plans plus longs sous conditions. Au-delà de 10 secondes, LTX impose le 1080p à 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Conserver Wan pour le carré et les basses résolutions",
+        "body": "Wan 2.5 génère avec audio à partir d’un texte ou d’une image, en 480p, 720p ou 1080p, aux formats 16:9, 9:16 ou carré."
+      },
+      {
+        "title": "Monter en résolution avec LTX",
+        "body": "LTX 2.3 Fast ajoute le 1440p et la 4K, un choix de cadences plus large et un tarif affiché inférieur à celui de Wan pour une même sortie en 1080p."
+      },
+      {
+        "title": "Mesurer le compromis durée-format",
+        "body": "Wan propose le 1:1 et des paliers en basse résolution ; LTX étend les possibilités de résolution et de durée, mais impose le 1080p à 25 fps au-delà de 10 secondes."
+      },
+      {
+        "title": "Cibler le bon canal de sortie",
+        "body": "Wan convient aux clips carrés ou en basse résolution. LTX propose un tarif avantageux en 1080p, des livraisons en 1440p ou 4K et des plans longs compatibles."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page du modèle actuel LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Ouvrir la page du modèle disponible Wan 2.5"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Comparer les modèles actuels LTX 2.3 Fast et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour rester sur Wan 2.5 ou migrer les besoins haute résolution vers LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "Quand faut-il continuer avec Wan 2.5 ?",
+          "answer": "Gardez ce modèle disponible pour les clips simples de 10 secondes générés à partir d’un texte ou d’une image, notamment si le 480p, le 720p ou le format carré natif correspond au canal."
+        },
+        {
+          "question": "Pourquoi migrer un projet 1080p vers LTX 2.3 Fast ?",
+          "answer": "LTX affiche un prix par seconde plus bas pour une même sortie en 1080p et ajoute le 1440p, la 4K ainsi que davantage de cadences pour les productions actuelles."
+        },
+        {
+          "question": "LTX 2.3 Fast peut-il créer une vidéo 4K de 20 secondes ?",
+          "answer": "Non. Toute génération de plus de 10 secondes exige le 1080p à 25 fps ; les projets 1440p et 4K doivent donc rester à 10 secondes ou moins."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Wan 2.5: precio, 4K y migración",
+      "description": "Compara LTX 2.3 Fast con Wan 2.5 disponible por precio en 1080p, 4K, duración restringida, audio, formato cuadrado y opciones de salida en 480p/720p.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Fast actual con Wan 2.5 Text & Image to Video disponible. LTX llega a 4K, admite clips largos con restricciones y publica un precio menor en 1080p; Wan conserva 1:1 y opciones de salida en 480p/720p para trabajos simples de diez segundos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Conviene quedarse en Wan 2.5 Text & Image to Video, que sigue disponible, para trabajos simples, formato 1:1 o salida en 480p/720p. Conviene migrar a LTX 2.3 Fast, la opción actual, por 4K, menor precio publicado en 1080p o clips largos con restricciones. Por encima de 10 segundos, LTX exige 1080p a 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Conservar Wan por sus formatos accesibles",
+        "body": "Mantén Wan 2.5 para generación simple desde texto o imagen con audio en 480p, 720p o 1080p, y salida en 16:9, 9:16 o formato cuadrado."
+      },
+      {
+        "title": "Migrar a LTX por mayor resolución",
+        "body": "LTX 2.3 Fast agrega 1440p y 4K, más opciones de fps y un precio publicado menor que Wan en la resolución 1080p que ambos comparten."
+      },
+      {
+        "title": "Equilibrar formato y duración",
+        "body": "Wan ofrece 1:1 y resoluciones de salida de 480p/720p; LTX suma alta resolución y más duración, limitada por encima de diez segundos a 1080p y 25 fps."
+      },
+      {
+        "title": "Destinar cada modelo a su mejor trabajo",
+        "body": "Usa Wan para clips simples cuadrados o con salida en 480p/720p; usa LTX para un precio más bajo en 1080p, entrega en 1440p o 4K y tomas largas sujetas a su límite."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir el modelo actual LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Abrir el modelo disponible Wan 2.5"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-wan-2-6",
+        "label": "Comparar LTX 2.3 Fast actual vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para mantener Wan 2.5 o migrar trabajos de alta resolución a LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "¿Cuándo conviene seguir usando Wan 2.5?",
+          "answer": "Quédate en el modelo disponible para clips simples de texto o imagen de diez segundos, sobre todo si 480p, 720p o el formato 1:1 nativo sirven para el canal."
+        },
+        {
+          "question": "¿Por qué migrar un trabajo 1080p a LTX 2.3 Fast?",
+          "answer": "LTX publica un menor precio por segundo en 1080p y agrega 1440p, 4K y más velocidades de cuadro para proyectos actuales."
+        },
+        {
+          "question": "¿LTX 2.3 Fast puede crear un video 4K de 20 segundos?",
+          "answer": "No. Las generaciones de más de diez segundos requieren 1080p a 25 fps, así que los trabajos en 1440p y 4K deben durar diez segundos o menos."
+        }
+      ]
+    }
+  }
+}

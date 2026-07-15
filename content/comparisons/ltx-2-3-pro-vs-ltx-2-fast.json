@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-pro-vs-ltx-2-fast",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Pro vs LTX 2.0 Fast: Cost or Control?",
+      "description": "Compare current LTX 2.3 Pro with available LTX 2.0 Fast on listed cost, vertical output, audio-to-video, extend, retake, and frame control.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare current LTX 2.3 Pro with the available LTX Video 2.0 Fast workflow. The older Fast route keeps lower listed tiers for straightforward 16:9 generation, while 2.3 Pro adds 9:16, audio-to-video, extension, retake, and newer start/end-frame controls.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Stay on available LTX Video 2.0 Fast for economical 16:9 text/image work. Upgrade to current LTX 2.3 Pro for 9:16 and advanced source-backed modes; its standard text/image generation stops at 10 seconds."
+    },
+    "topCards": [
+      {
+        "title": "Keep Fast for economical generation",
+        "body": "Continue with LTX Video 2.0 Fast when the job is established 16:9 text/image generation with audio and lower listed 1080p, 1440p, or 4K tiers."
+      },
+      {
+        "title": "Separate Pro durations by mode",
+        "body": "LTX 2.3 Pro text-to-video and image-to-video offer 6, 8, or 10 seconds. The 20-second ceiling applies only to audio-to-video, extension, or retake."
+      },
+      {
+        "title": "Pay for control when it matters",
+        "body": "The current Pro route lists higher resolution tiers, so its extra modes should solve a real production requirement before migration."
+      },
+      {
+        "title": "Best fit for simple or advanced work",
+        "body": "Use LTX Video 2.0 Fast for economical landscape generation; use LTX 2.3 Pro for vertical, audio-led, extension, retake, or start/end-frame production."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Open the current LTX 2.3 Pro model page"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Open the available LTX Video 2.0 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Compare current LTX 2.3 Fast vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for economical LTX Fast generation and advanced LTX 2.3 Pro control.",
+      "items": [
+        {
+          "question": "Can I keep using LTX Video 2.0 Fast on MaxVideoAI?",
+          "answer": "Yes. It remains available for lower-cost 16:9 text/image generation with audio and output at 1080p, 1440p, or 4K."
+        },
+        {
+          "question": "When should I migrate to LTX 2.3 Pro?",
+          "answer": "Move from LTX Video 2.0 Fast when you need 9:16 delivery, audio-driven generation, extension, retake, or start/end-frame control."
+        },
+        {
+          "question": "Does LTX 2.3 Pro replace the simple Fast workflow?",
+          "answer": "Not for every job. The available 2.0 Fast route remains economical for straightforward landscape generation; 2.3 Pro earns its place through broader controls."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Pro vs LTX 2.0 Fast : coût ou contrôle ?",
+      "description": "Comparez LTX 2.3 Pro actuel et LTX Video 2.0 Fast disponible : coût affiché, format vertical, Audio-vers-vidéo, extension, retake et contrôle début/fin.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "L’actuel LTX 2.3 Pro mise sur le contrôle, tandis que LTX Video 2.0 Fast reste disponible pour une génération 16:9 directe à des paliers affichés plus bas. Pro ajoute le 9:16, la génération Audio-vers-vidéo, l’extension, le retake et un guidage plus récent grâce aux images de début et de fin.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Restez sur LTX Video 2.0 Fast pour produire en 16:9 à moindre coût. Évoluez vers l’actuel LTX 2.3 Pro pour le 9:16 et ses modes avancés ; ses générations standard à partir d’un texte ou d’une image s’arrêtent à 10 secondes."
+    },
+    "topCards": [
+      {
+        "title": "Préserver un coût de génération bas",
+        "body": "LTX Video 2.0 Fast demeure adapté aux générations 16:9 à partir d’un texte ou d’une image, avec audio et des paliers affichés plus bas en 1080p, 1440p ou 4K."
+      },
+      {
+        "title": "Comprendre la limite du mode standard",
+        "body": "LTX 2.3 Pro limite le texte-vers-vidéo et l’image-vers-vidéo à 6, 8 ou 10 secondes. Les 20 secondes sont réservées à l’Audio-vers-vidéo, à l’extension ou au retake."
+      },
+      {
+        "title": "Payer le contrôle utile",
+        "body": "Les paliers de l’actuel modèle Pro sont plus élevés : ses modes supplémentaires doivent donc répondre à un besoin concret avant de migrer."
+      },
+      {
+        "title": "Distinguer simplicité et maîtrise",
+        "body": "Utilisez LTX Video 2.0 Fast pour générer simplement en paysage ; préférez LTX 2.3 Pro pour le format vertical, l’Audio-vers-vidéo, l’extension, le retake ou le contrôle début/fin."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Ouvrir la page du modèle actuel LTX 2.3 Pro"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Ouvrir la page du modèle disponible LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparer les modèles actuels LTX 2.3 Fast et LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses sur la génération Fast économique et les contrôles avancés de LTX 2.3 Pro.",
+      "items": [
+        {
+          "question": "Peut-on continuer à utiliser LTX Video 2.0 Fast sur MaxVideoAI ?",
+          "answer": "Oui. Il reste disponible pour la génération 16:9 à partir d’un texte ou d’une image, avec audio, à moindre coût, en 1080p, 1440p ou 4K."
+        },
+        {
+          "question": "Quand faut-il migrer vers LTX 2.3 Pro ?",
+          "answer": "Passez de LTX Video 2.0 Fast au modèle actuel lorsque le projet demande le 9:16, une génération pilotée par audio, une extension, un retake ou le contrôle début/fin."
+        },
+        {
+          "question": "LTX 2.3 Pro remplace-t-il le workflow Fast simple ?",
+          "answer": "Pas pour tous les projets. La formule 2.0 Fast disponible reste économique pour les rendus paysage directs ; 2.3 Pro se distingue par l’étendue de ses contrôles."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Pro vs LTX 2.0 Fast: costo o control",
+      "description": "Compara LTX 2.3 Pro actual con LTX 2.0 Fast disponible por costo publicado, salida vertical, generación desde audio, extensión, retoque y control de los cuadros.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Pro actual con el flujo disponible de LTX Video 2.0 Fast. La ruta Fast anterior conserva precios publicados más bajos para generación 16:9 directa, mientras que 2.3 Pro suma 9:16, generación de video a partir de audio, extensión, retoque y control más reciente de los cuadros inicial y final.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Conviene quedarse en LTX Video 2.0 Fast, que sigue disponible, para trabajos económicos de texto o imagen en 16:9. Migra a LTX 2.3 Pro por 9:16 y modos avanzados; su generación estándar desde texto o imagen termina en 10 segundos."
+    },
+    "topCards": [
+      {
+        "title": "Conservar Fast para generación económica",
+        "body": "Sigue con LTX Video 2.0 Fast cuando ya tengas validada la generación desde texto o imagen en 16:9 con audio y quieras conservar sus precios menores en 1080p, 1440p o 4K."
+      },
+      {
+        "title": "Entender el límite del modo estándar",
+        "body": "LTX 2.3 Pro limita texto a video e imagen a video a 6, 8 o 10 segundos. Los 20 segundos quedan reservados para audio a video, extensión o retake."
+      },
+      {
+        "title": "Pagar por control cuando sea necesario",
+        "body": "La ruta Pro actual publica precios más altos por resolución, por lo que sus modos adicionales deben resolver una necesidad real antes de migrar."
+      },
+      {
+        "title": "Separar trabajos simples y avanzados",
+        "body": "Usa LTX Video 2.0 Fast para generación horizontal económica; usa LTX 2.3 Pro para producción vertical, audio a video, extensión, retake o control inicial/final."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-pro",
+        "label": "Abrir el modelo actual LTX 2.3 Pro"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Abrir el modelo disponible LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparar LTX 2.3 Fast actual vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para generación Fast económica y controles avanzados de LTX 2.3 Pro.",
+      "items": [
+        {
+          "question": "¿Puedo seguir usando LTX Video 2.0 Fast en MaxVideoAI?",
+          "answer": "Sí. Sigue disponible para generación 16:9 desde texto o imagen con audio, a menor costo y con salida en 1080p, 1440p o 4K."
+        },
+        {
+          "question": "¿Cuándo conviene migrar a LTX 2.3 Pro?",
+          "answer": "Pasa de LTX Video 2.0 Fast al modelo actual cuando necesites 9:16, audio a video, extensión, retake o control de los cuadros inicial y final."
+        },
+        {
+          "question": "¿LTX 2.3 Pro reemplaza el flujo Fast simple?",
+          "answer": "No en todos los trabajos. La ruta 2.0 Fast disponible sigue siendo económica para generación horizontal directa; 2.3 Pro se justifica por sus controles más amplios."
+        }
+      ]
+    }
+  }
+}

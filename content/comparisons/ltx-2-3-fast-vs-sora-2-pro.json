@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-fast-vs-sora-2-pro",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Sora 2 Pro: Price, 4K & Best Uses",
+      "description": "Compare LTX 2.3 Fast and Sora 2 Pro for price, clip length, 4K, native audio, and references to choose rapid iteration or studio output.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare LTX 2.3 Fast with OpenAI Sora 2 Pro when the choice is economical high-resolution iteration or studio-grade Sora output. LTX offers 1440p or 4K for clips up to 10 seconds and reaches 20 seconds at 1080p and 25 fps; Sora Pro adds reference-led workflows for polished shots up to 12 seconds.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose LTX 2.3 Fast for economical 1440p or 4K iterations up to 10 seconds, or longer 1080p clips at 25 fps. Choose OpenAI Sora 2 Pro when studio-grade Sora rendering and image or reference workflows matter more than clip length or price."
+    },
+    "topCards": [
+      {
+        "title": "Choose LTX for longer iterations",
+        "body": "LTX supports native audio and reaches 20 seconds at 1080p and 25 fps; its 1440p and 4K options are available for clips up to 10 seconds."
+      },
+      {
+        "title": "Choose Sora Pro for references",
+        "body": "Sora Pro accepts text, images, and references for teams seeking the studio-grade Sora look in clips up to 12 seconds."
+      },
+      {
+        "title": "Resolution and cost trade-off",
+        "body": "LTX starts at $0.04 per second in 1080p and can render 4K; Sora Pro starts at $0.30 per second in 720p and tops out at 1080p."
+      },
+      {
+        "title": "Best production fit",
+        "body": "Use LTX for repeated ad concepts, 1440p or 4K shots up to 10 seconds, and longer 1080p/25 fps clips; use Sora Pro for high-value reference-led hero footage."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/sora-2-pro",
+        "label": "Open the OpenAI Sora 2 Pro model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for choosing economical 4K iteration or a reference-led Sora workflow.",
+      "items": [
+        {
+          "question": "Which model makes longer clips, LTX 2.3 Fast or Sora 2 Pro?",
+          "answer": "LTX 2.3 Fast supports clips up to 20 seconds at 1080p and 25 fps. OpenAI Sora 2 Pro supports up to 12 seconds, while LTX 1440p and 4K output is limited to 10 seconds."
+        },
+        {
+          "question": "Can both LTX 2.3 Fast and Sora 2 Pro generate native audio?",
+          "answer": "Yes. Both models support native audio. LTX separates 1440p/4K output up to 10 seconds from longer 1080p/25 fps runs, while Sora Pro emphasizes reference-led studio output."
+        },
+        {
+          "question": "Should I choose LTX 2.3 Fast for 4K delivery?",
+          "answer": "Choose LTX for direct 4K output up to 10 seconds. For clips beyond 12 seconds, use its 1080p/25 fps path; choose Sora Pro when image or reference workflows and the Sora rendering style define the shot."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Sora 2 Pro : prix, 4K et usages",
+      "description": "Comparez LTX 2.3 Fast et Sora 2 Pro sur le prix, la durée, la 4K, l’audio natif et les références pour choisir le bon workflow.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez LTX 2.3 Fast et OpenAI Sora 2 Pro pour arbitrer entre itérations haute résolution économiques et rendu Sora de niveau studio. LTX propose le 1440p ou la 4K jusqu’à 10 secondes, puis jusqu’à 20 secondes en 1080p à 25 fps ; Sora Pro privilégie les images et références visuelles pour des plans soignés de 12 secondes maximum.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez LTX 2.3 Fast pour produire à moindre coût en 1440p ou 4K jusqu’à 10 secondes, ou pour aller jusqu’à 20 secondes en 1080p à 25 fps. Préférez OpenAI Sora 2 Pro lorsque le rendu Sora et un workflow guidé par image ou référence priment sur la durée et le prix."
+    },
+    "topCards": [
+      {
+        "title": "LTX pour les itérations longues",
+        "body": "LTX génère avec audio natif jusqu’à 20 secondes en 1080p à 25 fps ; ses options 1440p et 4K sont réservées aux clips de 10 secondes maximum."
+      },
+      {
+        "title": "Sora Pro pour les références",
+        "body": "Sora Pro accepte du texte, des images et des références visuelles pour viser un rendu Sora de niveau studio sur des clips allant jusqu’à 12 secondes."
+      },
+      {
+        "title": "Résolution et budget",
+        "body": "LTX démarre à 0,04 $ par seconde en 1080p et peut sortir en 4K ; Sora Pro démarre à 0,30 $ par seconde en 720p et monte au 1080p."
+      },
+      {
+        "title": "Meilleur usage en production",
+        "body": "Utilisez LTX pour multiplier les concepts publicitaires et les plans 4K courts ; réservez Sora Pro aux plans phares soignés guidés par image ou référence."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page du modèle LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/sora-2-pro",
+        "label": "Ouvrir la page du modèle OpenAI Sora 2 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparer LTX 2.3 Fast et LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour choisir entre itération 4K économique et rendu Sora guidé par référence.",
+      "items": [
+        {
+          "question": "Quel modèle produit les clips les plus longs, LTX 2.3 Fast ou Sora 2 Pro ?",
+          "answer": "LTX 2.3 Fast atteint 20 secondes en 1080p à 25 fps, contre 12 secondes pour OpenAI Sora 2 Pro. En revanche, les sorties LTX en 1440p ou 4K restent limitées à 10 secondes."
+        },
+        {
+          "question": "LTX 2.3 Fast et Sora 2 Pro génèrent-ils tous deux un audio natif ?",
+          "answer": "Oui. Les deux modèles prennent en charge l’audio natif. LTX sépare ses sorties 1440p/4K de 10 secondes maximum de son mode 1080p à 25 fps, plus long."
+        },
+        {
+          "question": "Faut-il choisir LTX 2.3 Fast pour une livraison 4K ?",
+          "answer": "Oui si vous voulez une sortie 4K directe de 10 secondes maximum. Choisissez plutôt Sora Pro lorsque les images ou références visuelles et le style de rendu Sora définissent le plan."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs Sora 2 Pro: precio, 4K y usos",
+      "description": "Compara LTX 2.3 Fast y Sora 2 Pro en precio, duración, 4K, audio nativo y referencias para elegir iteración rápida o acabado de estudio.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Fast con OpenAI Sora 2 Pro para elegir entre iteración económica de alta resolución y un acabado Sora de estudio. LTX ofrece 1440p o 4K en clips de hasta 10 segundos y llega a 20 segundos en 1080p a 25 fps; Sora Pro admite imagen o referencias para tomas pulidas de hasta 12 segundos.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige LTX 2.3 Fast para iteraciones económicas en 1440p o 4K de hasta 10 segundos, o clips más largos en 1080p a 25 fps. Elige OpenAI Sora 2 Pro cuando el render de estudio y los flujos con imagen o referencias pesen más que la duración o el precio."
+    },
+    "topCards": [
+      {
+        "title": "LTX para iteraciones más largas",
+        "body": "LTX admite audio nativo y llega a 20 segundos en 1080p a 25 fps; las opciones 1440p y 4K están disponibles para clips de hasta 10 segundos."
+      },
+      {
+        "title": "Sora Pro para trabajar con referencias",
+        "body": "Sora Pro acepta texto, imágenes y referencias para equipos que buscan el estilo Sora de estudio en clips de hasta 12 segundos."
+      },
+      {
+        "title": "Resolución frente a costo",
+        "body": "LTX parte de US$0.04 por segundo en 1080p y puede renderizar en 4K; Sora Pro parte de US$0.30 por segundo en 720p y llega hasta 1080p."
+      },
+      {
+        "title": "Uso recomendado en producción",
+        "body": "Usa LTX para repetir conceptos de anuncios, producir tomas 1440p o 4K de hasta 10 segundos y extender clips 1080p/25 fps; usa Sora Pro para piezas principales guiadas por referencias."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir la página de LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/sora-2-pro",
+        "label": "Abrir la página de OpenAI Sora 2 Pro"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparar LTX 2.3 Fast y LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para elegir entre iteración 4K económica y un flujo Sora con referencias.",
+      "items": [
+        {
+          "question": "¿Qué modelo crea clips más largos, LTX 2.3 Fast o Sora 2 Pro?",
+          "answer": "LTX 2.3 Fast admite hasta 20 segundos en 1080p a 25 fps. OpenAI Sora 2 Pro llega a 12 segundos, mientras que la salida 1440p o 4K de LTX está limitada a 10 segundos."
+        },
+        {
+          "question": "¿LTX 2.3 Fast y Sora 2 Pro generan audio nativo?",
+          "answer": "Sí. Ambos modelos admiten audio nativo. LTX separa la salida 1440p/4K de hasta 10 segundos de las ejecuciones 1080p/25 fps más largas; Sora Pro prioriza el acabado de estudio guiado por referencias."
+        },
+        {
+          "question": "¿Conviene elegir LTX 2.3 Fast para entregar en 4K?",
+          "answer": "Elige LTX para una salida directa en 4K de hasta 10 segundos. Para más de 12 segundos, usa su ruta 1080p/25 fps; elige Sora Pro cuando la imagen o las referencias y el estilo Sora definan la toma."
+        }
+      ]
+    }
+  }
+}

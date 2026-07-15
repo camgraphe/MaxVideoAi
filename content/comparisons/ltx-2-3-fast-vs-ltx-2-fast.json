@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-3-fast-vs-ltx-2-fast",
+  "en": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs LTX 2.0 Fast: Upgrade or Stay?",
+      "description": "Compare both available LTX Fast models on vertical video, frame control, FPS, duration, and identical listed resolution price tiers.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare LTX 2.3 Fast with the available LTX Video 2.0 Fast workflow. Both include audio, reach 4K, and use the same listed resolution tiers, while the current 2.3 Fast route adds vertical output, more FPS choices, and start/end-frame control.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Both remain available at the same listed tiers. Stay on LTX Video 2.0 Fast for an established 16:9 workflow; upgrade to current LTX 2.3 Fast for 9:16, start/end-frame control, and broader FPS choices. Both models require 1080p at 25 fps above 10 seconds."
+    },
+    "topCards": [
+      {
+        "title": "Stay with the established Fast route",
+        "body": "Keep LTX Video 2.0 Fast when a proven 16:9 text- or image-to-video workflow already covers the brief, including audio and output through 4K."
+      },
+      {
+        "title": "Move to the current Fast controls",
+        "body": "Choose LTX 2.3 Fast for 9:16 delivery, optional end-frame guidance in image mode, and 24, 25, 48, or 50 fps selection."
+      },
+      {
+        "title": "Treat the long-duration rule as shared",
+        "body": "Both Fast models can reach 20 seconds, and both require 1080p at 25 fps for any duration above 10 seconds."
+      },
+      {
+        "title": "Best Fast workflows",
+        "body": "Use 2.0 Fast for validated landscape production; use 2.3 Fast when vertical delivery, end-frame guidance, or broader FPS choices shape the brief."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Open the current LTX 2.3 Fast model page"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Open the available LTX Video 2.0 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Compare LTX 2.3 Fast vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Specific answers for staying on LTX 2.0 Fast or moving to LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "Is LTX Video 2.0 Fast still available on MaxVideoAI?",
+          "answer": "Yes. It remains available for established 16:9 text and image workflows with audio, up to 20 seconds, and 1080p, 1440p, or 4K output."
+        },
+        {
+          "question": "What does LTX 2.3 Fast add over LTX Video 2.0 Fast?",
+          "answer": "It adds 9:16 output, start/end-frame guidance for image generation, and 24/48 fps choices alongside 25/50 fps."
+        },
+        {
+          "question": "Can either LTX Fast model generate more than ten seconds at 4K?",
+          "answer": "No. LTX 2.3 Fast and LTX Video 2.0 Fast both require 1080p at 25 fps above 10 seconds. Use 10 seconds or less for 1440p or 4K."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs LTX 2.0 Fast : rester ou évoluer ?",
+      "description": "Comparez les deux modèles LTX Fast disponibles : format vertical, contrôle des images, cadence, durée et tarifs identiques par résolution.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "LTX Video 2.0 Fast reste disponible pour les workflows 16:9 déjà en place. LTX 2.3 Fast propose lui aussi l’audio, une sortie jusqu’en 4K et les mêmes paliers tarifaires, puis ajoute le 9:16, davantage de cadences et le contrôle des images de début et de fin.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Conservez LTX Video 2.0 Fast pour un workflow 16:9 éprouvé, ou évoluez vers l’actuel LTX 2.3 Fast pour le 9:16, le contrôle début/fin et plus de cadences. Au-delà de 10 secondes, les deux modèles imposent le 1080p à 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Garder un workflow Fast éprouvé",
+        "body": "LTX Video 2.0 Fast convient aux productions 16:9 déjà validées à partir d’un texte ou d’une image, avec audio et une sortie pouvant atteindre la 4K."
+      },
+      {
+        "title": "Adopter les contrôles actuels",
+        "body": "LTX 2.3 Fast apporte le format 9:16, une image de fin facultative en mode image, ainsi que les cadences 24, 25, 48 et 50 fps."
+      },
+      {
+        "title": "Appliquer une contrainte commune",
+        "body": "Les deux modèles Fast, LTX 2.3 Fast et LTX Video 2.0 Fast, atteignent 20 secondes et imposent le 1080p à 25 fps au-delà de 10 secondes."
+      },
+      {
+        "title": "Choisir selon le format final",
+        "body": "Préférez 2.0 Fast pour un flux de production en format paysage maîtrisé ; passez à 2.3 Fast si la sortie verticale, l’image de fin ou le choix de cadence guide le brief."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Ouvrir la page du modèle actuel LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Ouvrir la page du modèle disponible LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparer LTX 2.3 Fast et LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour rester sur LTX 2.0 Fast ou migrer vers les contrôles de LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "LTX Video 2.0 Fast est-il encore disponible sur MaxVideoAI ?",
+          "answer": "Oui. Il reste disponible pour les générations 16:9 à partir d’un texte ou d’une image, avec audio, jusqu’à 20 secondes, en 1080p, 1440p ou 4K."
+        },
+        {
+          "question": "Quels contrôles LTX 2.3 Fast ajoute-t-il ?",
+          "answer": "Il ajoute le 9:16, le guidage par des images de début et de fin pour une génération à partir d’une image, et les cadences 24/48 fps en plus de 25/50 fps."
+        },
+        {
+          "question": "Un des deux modèles LTX Fast peut-il dépasser 10 secondes en 4K ?",
+          "answer": "Non. LTX 2.3 Fast et LTX Video 2.0 Fast exigent tous deux le 1080p à 25 fps au-delà de 10 secondes. Limitez le 1440p ou la 4K à 10 secondes."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2.3 Fast vs LTX 2.0 Fast: quedarse o migrar",
+      "description": "Compara los dos modelos LTX Fast disponibles por video vertical, control de los cuadros, fps, duración y precios publicados para cada resolución.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX 2.3 Fast con el flujo disponible de LTX Video 2.0 Fast. Ambos generan audio, llegan a 4K y comparten los mismos precios publicados por resolución; la ruta actual 2.3 Fast agrega formato vertical, más opciones de fps y control de los cuadros inicial y final.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Los dos siguen disponibles con los mismos precios publicados. Conviene quedarse en LTX Video 2.0 Fast para un flujo 16:9 probado y migrar a LTX 2.3 Fast para 9:16, control inicial/final o más fps. Por encima de 10 segundos, ambos modelos exigen 1080p a 25 fps."
+    },
+    "topCards": [
+      {
+        "title": "Mantener una ruta Fast ya validada",
+        "body": "Conserva LTX Video 2.0 Fast cuando el flujo de generación de video desde texto o imagen en 16:9 ya cubre el proyecto, incluido audio y salida de hasta 4K."
+      },
+      {
+        "title": "Migrar a controles Fast actuales",
+        "body": "Elige LTX 2.3 Fast para entregar en 9:16, guiar opcionalmente el cuadro final desde una imagen y seleccionar 24, 25, 48 o 50 fps."
+      },
+      {
+        "title": "Aplicar una restricción compartida",
+        "body": "Ambos modelos Fast, LTX 2.3 Fast y LTX Video 2.0 Fast, llegan a 20 segundos y exigen 1080p a 25 fps para más de 10 segundos."
+      },
+      {
+        "title": "Elegir el flujo Fast adecuado",
+        "body": "Usa 2.0 Fast para producción horizontal ya comprobada; usa 2.3 Fast cuando el formato vertical, el cuadro final o la variedad de fps sean decisivos."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-3-fast",
+        "label": "Abrir el modelo actual LTX 2.3 Fast"
+      },
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Abrir el modelo disponible LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-3-pro",
+        "label": "Comparar LTX 2.3 Fast vs LTX 2.3 Pro"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas para quedarse en LTX 2.0 Fast o pasar a LTX 2.3 Fast.",
+      "items": [
+        {
+          "question": "¿LTX Video 2.0 Fast sigue disponible en MaxVideoAI?",
+          "answer": "Sí. Sigue disponible para flujos 16:9 de texto e imagen con audio, hasta 20 segundos y salida en 1080p, 1440p o 4K."
+        },
+        {
+          "question": "¿Qué agrega LTX 2.3 Fast frente a LTX Video 2.0 Fast?",
+          "answer": "Agrega salida 9:16, guía de los cuadros inicial y final para generación desde imagen, y opciones de 24/48 fps además de 25/50 fps."
+        },
+        {
+          "question": "¿Alguno de los dos modelos LTX Fast supera diez segundos en 4K?",
+          "answer": "No. LTX 2.3 Fast y LTX Video 2.0 Fast exigen 1080p a 25 fps para más de 10 segundos. Limita 1440p o 4K a 10 segundos."
+        }
+      ]
+    }
+  }
+}

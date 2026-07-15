@@ -30,5 +30,12 @@ export type ComparePageOverride = {
   };
 };
 
+export type ComparePageContentDocument = {
+  slug: string;
+  en: ComparePageOverride;
+  fr: ComparePageOverride;
+  es: ComparePageOverride;
+};
+
 export type ComparePageOverridesBySlug = Record<string, ComparePageOverride>;
 export type ComparePageOverridesByLocale = Partial<Record<AppLocale, ComparePageOverridesBySlug>>;

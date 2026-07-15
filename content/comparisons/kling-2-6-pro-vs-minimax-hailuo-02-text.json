@@ -1,0 +1,192 @@
+{
+  "slug": "kling-2-6-pro-vs-minimax-hailuo-02-text",
+  "en": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Hailuo 02: Quality, Audio & Price",
+      "description": "Compare Kling 2.6 Pro and MiniMax Hailuo 02 on 1080p output, audio, stylized motion, and per-second price to match the model to your shot.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Kling 2.6 Pro with MiniMax Hailuo 02 Standard when choosing between 1080p cinematic dialogue and lower-cost stylized exploration. Kling adds native audio and higher output resolution, while Hailuo keeps silent text or image animation economical at 512P or 768P.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Kling 2.6 Pro for 1080p cinematic shots, dialogue, and optional native audio. Choose MiniMax Hailuo 02 Standard for inexpensive stylized tests, vertical or square social concepts, and silent motion where 512P or 768P is acceptable and cost matters more than finishing resolution."
+    },
+    "topCards": [
+      {
+        "title": "Choose Kling 2.6 Pro",
+        "body": "Use Kling for 1080p cinematic dialogue, optional audio, and shots where finish quality carries more weight than generation price."
+      },
+      {
+        "title": "Choose Hailuo 02",
+        "body": "Use Hailuo for $0.045-per-second stylized concepts, silent social motion, and lower-resolution prompt exploration."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Kling delivers 1080p and audio at $0.14 per second with audio on; Hailuo costs less but stops at 768P and stays silent."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Kling fits dialogue and polished cinematic shots. Hailuo fits stylized hooks, visual experiments, and budget-first batches."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Open the Kling 2.6 Pro model page"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Open the MiniMax Hailuo 02 model page"
+      },
+      {
+        "href": "/ai-video-engines/kling-2-6-pro-vs-wan-2-6",
+        "label": "Compare Kling 2.6 Pro vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing cinematic Kling output or lower-cost Hailuo motion.",
+      "items": [
+        {
+          "question": "Is Kling 2.6 Pro or Hailuo 02 better for dialogue?",
+          "answer": "Kling 2.6 Pro is the better fit because it supports native audio and 1080p output. Hailuo 02 generates silent video and is better used for visual or stylized motion tests."
+        },
+        {
+          "question": "How much resolution do the two models provide?",
+          "answer": "Kling 2.6 Pro outputs 1080p. MiniMax Hailuo 02 Standard offers 512P and 768P, making it more suitable for inexpensive concepts than high-resolution finishing."
+        },
+        {
+          "question": "When does the lower Hailuo 02 price make sense?",
+          "answer": "Use Hailuo when you need many silent stylized explorations at $0.045 per second and can accept lower resolution. Pay for Kling when audio and 1080p delivery are requirements."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Hailuo 02 : qualité, audio et prix",
+      "description": "Comparez Kling 2.6 Pro et MiniMax Hailuo 02 sur le 1080p, l’audio, le mouvement stylisé et le prix par seconde pour choisir votre modèle.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Kling 2.6 Pro et MiniMax Hailuo 02 Standard pour arbitrer entre un dialogue cinématique en 1080p et une exploration stylisée moins chère. Kling ajoute l’audio natif et une meilleure résolution, tandis que Hailuo produit des animations silencieuses économiques en 512P ou 768P.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Kling 2.6 Pro pour des plans cinématiques en 1080p, du dialogue et un audio natif optionnel. Choisissez MiniMax Hailuo 02 Standard pour tester à moindre coût des styles, formats verticaux ou carrés et mouvements silencieux lorsque le 512P ou 768P suffit."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Kling 2.6 Pro",
+        "body": "Pour les dialogues cinématiques en 1080p, l’audio optionnel et les plans où la finition prime sur le prix."
+      },
+      {
+        "title": "Choisir Hailuo 02",
+        "body": "Pour explorer des concepts stylisés à 0,045 $ par seconde et produire du mouvement silencieux en basse résolution."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Kling fournit le 1080p et l’audio à 0,14 $ par seconde avec son ; Hailuo coûte moins cher mais reste silencieux et limité au 768P."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Kling convient au dialogue et aux plans finis. Hailuo convient aux accroches stylisées et aux lots d’exploration économiques."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Ouvrir la page Kling 2.6 Pro"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Ouvrir la page MiniMax Hailuo 02"
+      },
+      {
+        "href": "/ai-video-engines/kling-2-6-pro-vs-wan-2-6",
+        "label": "Comparer Kling 2.6 Pro et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre finition Kling et mouvement Hailuo économique.",
+      "items": [
+        {
+          "question": "Kling 2.6 Pro ou Hailuo 02 : lequel choisir pour du dialogue ?",
+          "answer": "Kling 2.6 Pro est plus adapté grâce à son audio natif et sa sortie 1080p. Hailuo 02 produit une vidéo silencieuse et convient mieux aux essais visuels ou stylisés."
+        },
+        {
+          "question": "Quelle résolution proposent les deux modèles ?",
+          "answer": "Kling 2.6 Pro sort en 1080p. MiniMax Hailuo 02 Standard propose le 512P et le 768P, donc il sert davantage à explorer des concepts qu’à finaliser en haute résolution."
+        },
+        {
+          "question": "Quand le prix inférieur de Hailuo 02 est-il intéressant ?",
+          "answer": "Utilisez Hailuo pour multiplier les explorations stylisées silencieuses à 0,045 $ par seconde. Payez Kling lorsque l’audio et une livraison 1080p sont indispensables."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Kling 2.6 Pro vs Hailuo 02: calidad, audio y precio",
+      "description": "Compara Kling 2.6 Pro y MiniMax Hailuo 02 en 1080p, audio, movimiento estilizado y precio por segundo para elegir el modelo correcto.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Kling 2.6 Pro con MiniMax Hailuo 02 Standard para decidir entre diálogo cinematográfico en 1080p y exploración estilizada más económica. Kling agrega audio nativo y mayor resolución, mientras Hailuo produce animaciones silenciosas accesibles en 512P o 768P.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Kling 2.6 Pro para tomas cinematográficas en 1080p, diálogo y audio nativo opcional. Elige MiniMax Hailuo 02 Standard para probar estilos, formatos verticales o cuadrados y movimiento silencioso a menor precio cuando 512P o 768P sean suficientes."
+    },
+    "topCards": [
+      {
+        "title": "Elige Kling 2.6 Pro",
+        "body": "Para diálogos cinematográficos en 1080p, audio opcional y tomas donde el acabado importa más que el precio."
+      },
+      {
+        "title": "Elige Hailuo 02",
+        "body": "Para explorar conceptos estilizados a US$0.045 por segundo y producir movimiento silencioso de menor resolución."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Kling entrega 1080p y audio por US$0.14 por segundo con sonido; Hailuo cuesta menos, pero es silencioso y llega a 768P."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Kling sirve para diálogo y tomas terminadas. Hailuo sirve para ganchos estilizados y lotes de exploración económica."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/kling-2-6-pro",
+        "label": "Abrir la página de Kling 2.6 Pro"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Abrir la página de MiniMax Hailuo 02"
+      },
+      {
+        "href": "/ai-video-engines/kling-2-6-pro-vs-wan-2-6",
+        "label": "Comparar Kling 2.6 Pro y Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre acabado Kling y movimiento Hailuo económico.",
+      "items": [
+        {
+          "question": "¿Kling 2.6 Pro o Hailuo 02 conviene más para diálogo?",
+          "answer": "Kling 2.6 Pro es más adecuado por su audio nativo y salida 1080p. Hailuo 02 genera video silencioso y funciona mejor para pruebas visuales o estilizadas."
+        },
+        {
+          "question": "¿Qué resolución ofrece cada modelo?",
+          "answer": "Kling 2.6 Pro entrega 1080p. MiniMax Hailuo 02 Standard ofrece 512P y 768P, por lo que sirve más para explorar conceptos que para terminar en alta resolución."
+        },
+        {
+          "question": "¿Cuándo conviene el menor precio de Hailuo 02?",
+          "answer": "Usa Hailuo para multiplicar exploraciones estilizadas silenciosas a US$0.045 por segundo. Paga Kling cuando el audio y una entrega 1080p sean requisitos."
+        }
+      ]
+    }
+  }
+}

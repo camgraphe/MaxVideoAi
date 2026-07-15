@@ -1,0 +1,126 @@
+{
+  "slug": "happy-horse-1-1-vs-seedance-2-0-fast",
+  "en": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Seedance 2.0 Fast: Audio, Drafts & Best Uses",
+      "description": "Compare Happy Horse 1.1 and Seedance 2.0 Fast for native audio, lip-sync, fast Seedance drafts, cost control, scorecard ratings and best production use cases.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Happy Horse 1.1 when the job is driven by speaking characters, native synchronized audio, lip-sync, and reusable references. Use Seedance 2.0 Fast when you need cheaper Seedance draft passes, timing checks, prompt exploration, and a fast bridge back to the full Seedance 2.0 workflow. This comparison is useful when a team is deciding whether the next test should validate performance and dialogue or simply iterate visual direction faster.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Open Happy Horse 1.1 model page"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Open Seedance 2.0 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-seedance-2-0",
+        "label": "Compare Happy Horse vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between audio-first Happy Horse runs and fast Seedance iteration.",
+      "items": [
+        {
+          "question": "When should I choose Happy Horse 1.1?",
+          "answer": "Choose Happy Horse 1.1 when the test needs native audio, lip-sync, speaking subjects, or reference characters that must carry the scene."
+        },
+        {
+          "question": "When should I choose Seedance 2.0 Fast?",
+          "answer": "Choose Seedance 2.0 Fast for cheaper Seedance prompt tests, draft timing, storyboard exploration, and quick iteration before moving to the main Seedance 2.0 model."
+        },
+        {
+          "question": "Which one is better for batch testing?",
+          "answer": "Seedance 2.0 Fast is usually the better fit for many visual draft iterations. Happy Horse 1.1 is better when each batch item must test audio, dialogue, or a character reference."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Seedance 2.0 Fast : audio, brouillons et usages",
+      "description": "Comparez Happy Horse 1.1 et Seedance 2.0 Fast pour l’audio natif, la synchronisation labiale, les brouillons rapides, la maîtrise des coûts, les notes et les usages.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Happy Horse 1.1 quand le job depend de personnages parlants, d audio synchronise natif, de lip-sync et de references reutilisables. Utilisez Seedance 2.0 Fast quand vous avez besoin de drafts Seedance moins couteux, de checks de timing, d exploration de prompts et d un pont rapide vers Seedance 2.0. Cette comparaison aide a decider si le prochain test doit valider la performance et le dialogue ou simplement iterer plus vite la direction visuelle.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Ouvrir la page modele Happy Horse 1.1"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Ouvrir la page modele Seedance 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-seedance-2-0",
+        "label": "Comparer Happy Horse vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre runs Happy Horse audio-first et iteration Seedance rapide.",
+      "items": [
+        {
+          "question": "Quand choisir Happy Horse 1.1 ?",
+          "answer": "Choisissez Happy Horse 1.1 quand le test demande audio natif, lip-sync, sujets parlants ou personnages de reference qui portent la scene."
+        },
+        {
+          "question": "Quand choisir Seedance 2.0 Fast ?",
+          "answer": "Choisissez Seedance 2.0 Fast pour des tests de prompts Seedance moins couteux, du timing de draft, des storyboards et une iteration rapide avant Seedance 2.0."
+        },
+        {
+          "question": "Lequel convient mieux au batch testing ?",
+          "answer": "Seedance 2.0 Fast est souvent plus adapte a beaucoup d iterations visuelles. Happy Horse 1.1 est meilleur quand chaque variante doit tester audio, dialogue ou reference personnage."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Seedance 2.0 Fast: audio, borradores y usos",
+      "description": "Compara Happy Horse 1.1 y Seedance 2.0 Fast por audio nativo, sincronización labial, borradores rápidos, control de costos, calificaciones y mejores usos.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Happy Horse 1.1 cuando el trabajo depende de personajes que hablan, audio sincronizado nativo, lip-sync y referencias reutilizables. Usa Seedance 2.0 Fast cuando necesitas borradores Seedance de menor coste, checks de timing, exploracion de prompts y una ruta rapida hacia Seedance 2.0. Esta comparacion ayuda a decidir si la siguiente prueba debe validar performance y dialogo o simplemente iterar mas rapido la direccion visual.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Abrir la pagina del modelo Happy Horse 1.1"
+      },
+      {
+        "href": "/models/seedance-2-0-fast",
+        "label": "Abrir la pagina del modelo Seedance 2.0 Fast"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-seedance-2-0",
+        "label": "Comparar Happy Horse vs Seedance 2.0"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre runs Happy Horse audio-first e iteracion Seedance rapida.",
+      "items": [
+        {
+          "question": "Cuando elegir Happy Horse 1.1?",
+          "answer": "Elige Happy Horse 1.1 cuando la prueba necesita audio nativo, lip-sync, sujetos que hablan o personajes de referencia que sostienen la escena."
+        },
+        {
+          "question": "Cuando elegir Seedance 2.0 Fast?",
+          "answer": "Elige Seedance 2.0 Fast para pruebas de prompt Seedance de menor coste, timing de borrador, storyboards e iteracion rapida antes de Seedance 2.0."
+        },
+        {
+          "question": "Cual conviene mas para batch testing?",
+          "answer": "Seedance 2.0 Fast suele encajar mejor en muchas iteraciones visuales. Happy Horse 1.1 es mejor cuando cada variante debe probar audio, dialogo o referencia de personaje."
+        }
+      ]
+    }
+  }
+}

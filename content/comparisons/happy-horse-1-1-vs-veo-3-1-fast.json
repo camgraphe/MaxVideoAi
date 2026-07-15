@@ -1,0 +1,126 @@
+{
+  "slug": "happy-horse-1-1-vs-veo-3-1-fast",
+  "en": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Veo 3.1 Fast: Audio, Speed & Best Uses",
+      "description": "Compare Happy Horse 1.1 and Veo 3.1 Fast for native audio, lip-sync, fast Veo drafts, resolution headroom, scorecard ratings and best production use cases.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Use Happy Horse 1.1 when the clip needs native audio, dialogue, lip-sync, and controllable reference characters for social or UGC-style scenes. Use Veo 3.1 Fast when you want the Veo look, quicker draft cycles, stronger delivery headroom, and polished short-form concepts before moving into a final Veo workflow. This page helps separate audio-first actor generation from a faster premium visual draft path.",
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Open Happy Horse 1.1 model page"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Open Veo 3.1 Fast model page"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-veo-3-1",
+        "label": "Compare Happy Horse vs Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between native-audio character work and fast Veo production drafts.",
+      "items": [
+        {
+          "question": "When is Happy Horse 1.1 better than Veo 3.1 Fast?",
+          "answer": "Choose Happy Horse 1.1 when spoken performance, synchronized audio, lip-sync, and reference characters are more important than Veo-style final polish."
+        },
+        {
+          "question": "When should I use Veo 3.1 Fast instead?",
+          "answer": "Use Veo 3.1 Fast for polished fast drafts, cinematic concepts, and workflows where Veo visual quality and resolution headroom matter more than a native lip-sync actor workflow."
+        },
+        {
+          "question": "Which one is better for UGC ads?",
+          "answer": "Happy Horse 1.1 is stronger when the UGC ad depends on a speaking subject. Veo 3.1 Fast is stronger when the ad depends on premium product visuals, scene polish, or a quick Veo-style draft."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Veo 3.1 Fast : audio, vitesse et usages",
+      "description": "Comparez Happy Horse 1.1 et Veo 3.1 Fast pour l’audio natif, la synchronisation labiale, les brouillons rapides, la haute résolution, les notes et les usages.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Utilisez Happy Horse 1.1 quand le clip a besoin d audio natif, de dialogue, de lip-sync et de personnages de reference controlables pour des scenes social ou UGC. Utilisez Veo 3.1 Fast quand vous voulez le rendu Veo, des cycles de draft plus rapides, plus de marge de resolution et des concepts courts plus soignes avant un workflow Veo final. Cette page separe une generation acteur audio-first d une route de draft visuelle premium plus rapide.",
+    "primaryLinksTitle": "Parcours recommande",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Ouvrir la page modele Happy Horse 1.1"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Ouvrir la page modele Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-veo-3-1",
+        "label": "Comparer Happy Horse vs Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre travail personnage avec audio natif et drafts Veo rapides.",
+      "items": [
+        {
+          "question": "Quand Happy Horse 1.1 est-il meilleur que Veo 3.1 Fast ?",
+          "answer": "Choisissez Happy Horse 1.1 quand la performance parlee, l audio synchronise, le lip-sync et les personnages de reference comptent plus que la finition visuelle Veo."
+        },
+        {
+          "question": "Quand utiliser Veo 3.1 Fast a la place ?",
+          "answer": "Utilisez Veo 3.1 Fast pour des drafts rapides et soignes, des concepts cinematographiques et des workflows ou la qualite visuelle Veo et la resolution priment sur le lip-sync."
+        },
+        {
+          "question": "Lequel est le plus adapte aux pubs UGC ?",
+          "answer": "Happy Horse 1.1 est plus fort quand la pub UGC repose sur un sujet qui parle. Veo 3.1 Fast est plus fort pour les visuels produit premium, la finition de scene ou un draft Veo rapide."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Happy Horse 1.1 vs Veo 3.1 Fast: audio, velocidad y usos",
+      "description": "Compara Happy Horse 1.1 y Veo 3.1 Fast por audio nativo, sincronización labial, borradores rápidos, alta resolución, calificaciones y mejores usos.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Usa Happy Horse 1.1 cuando el clip necesita audio nativo, dialogo, lip-sync y personajes de referencia controlables para escenas social o UGC. Usa Veo 3.1 Fast cuando quieres el look Veo, ciclos de borrador mas rapidos, mas margen de resolucion y conceptos cortos mas pulidos antes de un workflow Veo final. Esta pagina separa una generacion de actor audio-first de una ruta de borrador visual premium mas rapida.",
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/happy-horse-1-1",
+        "label": "Abrir la pagina del modelo Happy Horse 1.1"
+      },
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Abrir la pagina del modelo Veo 3.1 Fast"
+      },
+      {
+        "href": "/ai-video-engines/happy-horse-1-1-vs-veo-3-1",
+        "label": "Comparar Happy Horse vs Veo 3.1"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre trabajo de personaje con audio nativo y borradores Veo rapidos.",
+      "items": [
+        {
+          "question": "Cuando Happy Horse 1.1 es mejor que Veo 3.1 Fast?",
+          "answer": "Elige Happy Horse 1.1 cuando la interpretacion hablada, el audio sincronizado, el lip-sync y los personajes de referencia importan mas que el pulido visual de Veo."
+        },
+        {
+          "question": "Cuando usar Veo 3.1 Fast en su lugar?",
+          "answer": "Usa Veo 3.1 Fast para borradores rapidos y pulidos, conceptos cinematicos y workflows donde la calidad visual Veo y la resolucion pesan mas que el lip-sync."
+        },
+        {
+          "question": "Cual encaja mejor en anuncios UGC?",
+          "answer": "Happy Horse 1.1 es mas fuerte cuando el anuncio UGC depende de un sujeto que habla. Veo 3.1 Fast es mas fuerte para visuales premium de producto, acabado de escena o un borrador Veo rapido."
+        }
+      ]
+    }
+  }
+}

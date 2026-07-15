@@ -1,0 +1,81 @@
+{
+  "slug": "veo-3-1-fast-vs-veo-3-1-lite",
+  "en": {
+    "meta": {
+      "title": "Veo 3.1 Lite vs Fast: Price, Quality & Best Uses",
+      "description": "Compare Veo 3.1 Lite and Fast by pricing, output quality, audio control, workflow flexibility and when each tier is worth using.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Choose Veo 3.1 Lite for lower-cost tests. Choose Veo 3.1 Fast when quality, audio control and workflow flexibility matter more. Compare pricing, output quality, audio behavior, and tier tradeoffs before choosing the right current Veo workflow.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers to help you choose between the current Fast and Lite Veo tiers.",
+      "items": [
+        {
+          "question": "Which Veo 3 model is better for image-to-video tests?",
+          "answer": "Both can work, but Veo 3.1 Lite is better for the cheapest audio-ready image-to-video tests, while Veo 3.1 Fast is better when you want broader flexibility and a smoother upgrade path into full Veo 3.1."
+        },
+        {
+          "question": "Is Veo 3.1 Lite or Veo 3.1 Fast better for text-to-video drafts?",
+          "answer": "Veo 3.1 Lite is better when you want the lowest-cost audio-ready tests. Veo 3.1 Fast is better when you want more output flexibility, optional audio, and a cleaner bridge into the main Veo 3.1 workflow."
+        },
+        {
+          "question": "When should I choose Veo 3.1 Fast instead of Veo 3.1 Lite?",
+          "answer": "Choose Fast when you want broader workflow flexibility, optional audio control, and an easier upgrade path into Veo 3.1. Choose Lite when your priority is the cheapest current Veo testing with audio always on."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Veo 3.1 Lite vs Fast : prix, qualité et usages",
+      "description": "Comparez Veo 3.1 Lite et Fast selon le prix, la qualité de sortie, le contrôle audio, la souplesse du flux de travail et les cas où chaque version vaut le choix.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Veo 3.1 Fast et Veo 3.1 Lite pour choisir le bon workflow video IA Veo 3 actuel selon votre besoin de tests texte-to-video moins chers, de tests image-to-video, de comportement audio et d iteration plus rapide.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Reponses courtes pour choisir entre les tiers Veo Fast et Lite actuels.",
+      "items": [
+        {
+          "question": "Quel modele Veo 3 convient le mieux pour des tests image-to-video ?",
+          "answer": "Les deux peuvent convenir, mais Veo 3.1 Lite est plus adapte aux tests image-to-video audio-ready les moins chers, tandis que Veo 3.1 Fast est plus adapte quand vous voulez plus de flexibilite et une montee plus fluide vers Veo 3.1."
+        },
+        {
+          "question": "Veo 3.1 Lite ou Veo 3.1 Fast convient mieux a des tests texte-to-video ?",
+          "answer": "Veo 3.1 Lite convient mieux quand vous voulez les tests audio-ready les moins chers. Veo 3.1 Fast convient mieux quand vous voulez plus de flexibilite, un audio optionnel et un pont plus propre vers le workflow principal Veo 3.1."
+        },
+        {
+          "question": "Quand faut-il choisir Veo 3.1 Fast plutot que Veo 3.1 Lite ?",
+          "answer": "Choisissez Fast quand vous voulez plus de flexibilite de workflow, un controle audio optionnel et un chemin de montee plus simple vers Veo 3.1. Choisissez Lite quand votre priorite est le testing Veo actuel le moins cher avec audio toujours actif."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Veo 3.1 Lite vs Fast: precio, calidad y usos",
+      "description": "Compara Veo 3.1 Lite y Fast por precio, calidad de salida, control de audio, flexibilidad del flujo y cuándo conviene elegir cada versión.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Veo 3.1 Fast y Veo 3.1 Lite para elegir el workflow de video IA Veo 3 actual mas adecuado segun tu necesidad de borradores text-to-video mas baratos, pruebas image-to-video, comportamiento del audio e iteracion mas rapida.",
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Respuestas cortas para elegir entre los tiers Veo Fast y Lite actuales.",
+      "items": [
+        {
+          "question": "Que modelo Veo 3 es mejor para pruebas de image-to-video?",
+          "answer": "Los dos pueden servir, pero Veo 3.1 Lite encaja mejor en las pruebas image-to-video con audio mas baratas, mientras que Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad y una subida mas fluida hacia Veo 3.1."
+        },
+        {
+          "question": "Veo 3.1 Lite o Veo 3.1 Fast es mejor para borradores text-to-video?",
+          "answer": "Veo 3.1 Lite encaja mejor cuando quieres los borradores con audio mas baratos. Veo 3.1 Fast encaja mejor cuando quieres mas flexibilidad, audio opcional y un puente mas limpio hacia el workflow principal de Veo 3.1."
+        },
+        {
+          "question": "Cuando deberia elegir Veo 3.1 Fast en lugar de Veo 3.1 Lite?",
+          "answer": "Elige Fast cuando quieras mas flexibilidad de workflow, control opcional del audio y una ruta de subida mas simple hacia Veo 3.1. Elige Lite cuando tu prioridad sea el testing Veo actual mas barato con audio siempre activado."
+        }
+      ]
+    }
+  }
+}

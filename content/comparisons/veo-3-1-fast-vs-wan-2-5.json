@@ -1,0 +1,192 @@
+{
+  "slug": "veo-3-1-fast-vs-wan-2-5",
+  "en": {
+    "meta": {
+      "title": "Veo 3.1 Fast vs Wan 2.5: Speed, 4K & Value",
+      "description": "Compare Google Veo 3.1 Fast and Wan 2.5 for speed, 4K, audio, controls, clip length, and legacy value before staying or upgrading.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare Google Veo 3.1 Fast with Wan 2.5 Text & Image to Video when deciding between current 4K controls and an inexpensive legacy workflow. Veo Fast reaches eight seconds; available Wan 2.5 reaches 10 seconds with simpler text and image inputs.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose Google Veo 3.1 Fast for rapid current production with 4K, references, first-last-frame control, and extension. Stay on available Wan 2.5 for inexpensive simple clips with two extra seconds; migrate to current Wan 2.6 for 15-second text/image clips with audio or 5/10-second silent reference-led work."
+    },
+    "topCards": [
+      {
+        "title": "Choose Veo Fast for controls",
+        "body": "Use Veo Fast for 720p, 1080p, or 4K output with audio, references, first and last frames, and extension in an eight-second workflow."
+      },
+      {
+        "title": "Keep Wan 2.5 for simple clips",
+        "body": "Stay on Wan when its available text or image generation, 480p-to-1080p ladder, and 10-second limit already fit the assignment."
+      },
+      {
+        "title": "Migrate for modern Wan control",
+        "body": "Upgrade to Wan 2.6 Text & Image to Video for text/image clips up to 15 seconds with optional audio; its separate silent reference mode accepts one to three videos for 5 or 10 seconds."
+      },
+      {
+        "title": "Core duration trade-off",
+        "body": "Veo Fast stops at eight seconds but adds current production controls and 4K; Wan 2.5 offers 10-second simplicity at up to 1080p."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Open the Google Veo 3.1 Fast model page"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Open the available Wan 2.5 model page"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-wan-2-6",
+        "label": "Compare Google Veo 3.1 Fast vs current Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Answers for fast Veo production, simple Wan value, and the Wan 2.6 migration path.",
+      "items": [
+        {
+          "question": "Does Wan 2.5 remain available beside Veo 3.1 Fast?",
+          "answer": "Yes. Wan 2.5 remains available as a legacy text and image route for clips up to 10 seconds in 480p, 720p, or 1080p."
+        },
+        {
+          "question": "When should I stay on Wan 2.5?",
+          "answer": "Keep Wan 2.5 for straightforward budget clips when 10 seconds and up to 1080p are enough and advanced reference or frame controls add no value."
+        },
+        {
+          "question": "When is Wan 2.6 the better upgrade from Wan 2.5?",
+          "answer": "Move to current Wan 2.6 for 1080p text/image clips up to 15 seconds with optional audio, or for separate 5/10-second silent generation guided by one to three reference videos."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Veo 3.1 Fast vs Wan 2.5 : vitesse, 4K et valeur",
+      "description": "Comparez Google Veo 3.1 Fast et Wan 2.5 sur la vitesse, la 4K, l’audio, les contrôles, la durée et la valeur du workflow historique.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez Google Veo 3.1 Fast et Wan 2.5 Text & Image to Video pour confronter les contrôles de production et la 4K du modèle Veo actuel au workflow historique économique de Wan. Veo Fast atteint huit secondes ; Wan 2.5 reste disponible jusqu’à 10 secondes avec des entrées texte ou image plus simples.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez Google Veo 3.1 Fast pour un workflow actuel conçu pour itérer rapidement en 4K, avec des références, le contrôle de la première et de la dernière image, et l’extension. Restez sur Wan 2.5, toujours disponible, pour des clips simples moins chers et deux secondes de plus ; migrez vers l’actuel Wan 2.6 pour le mode texte/image avec audio jusqu’à 15 secondes, ou son mode référence vidéo distinct et silencieux de 5 ou 10 secondes."
+    },
+    "topCards": [
+      {
+        "title": "Veo Fast pour les contrôles",
+        "body": "Utilisez Veo Fast en 720p, 1080p ou 4K avec l’audio, les références, les images initiale et finale, et l’extension dans un workflow limité à huit secondes."
+      },
+      {
+        "title": "Conserver Wan 2.5 pour les clips simples",
+        "body": "Gardez Wan si ce modèle, toujours disponible, génère depuis du texte ou une image avec une gamme du 480p au 1080p et une limite de 10 secondes adaptées au projet."
+      },
+      {
+        "title": "Migrer vers les modes Wan actuels",
+        "body": "Évoluez vers Wan 2.6 Text & Image to Video pour atteindre 15 secondes avec audio optionnel ; son mode référence séparé accepte une à trois vidéos pendant 5 ou 10 secondes, sans audio."
+      },
+      {
+        "title": "Le compromis sur la durée",
+        "body": "Veo Fast s’arrête à huit secondes mais apporte des contrôles de production modernes et la 4K ; Wan 2.5 offre la simplicité de 10 secondes jusqu’en 1080p."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Ouvrir la page du modèle Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Ouvrir la page du modèle Wan 2.5 disponible"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-wan-2-6",
+        "label": "Comparer Google Veo 3.1 Fast et l’actuel Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses pour choisir la rapidité de Veo, la valeur de Wan 2.5 ou sa migration.",
+      "items": [
+        {
+          "question": "Wan 2.5 reste-t-il disponible aux côtés de Veo 3.1 Fast ?",
+          "answer": "Oui. Wan 2.5 reste accessible comme ancien workflow texte et image pour des clips allant jusqu’à 10 secondes en 480p, 720p ou 1080p."
+        },
+        {
+          "question": "Quand faut-il rester sur Wan 2.5 ?",
+          "answer": "Conservez Wan 2.5 pour des clips économiques sans complexité lorsque 10 secondes et le 1080p suffisent, et que les références ou contrôles d’images n’apportent rien."
+        },
+        {
+          "question": "Quand Wan 2.6 constitue-t-il la bonne évolution depuis Wan 2.5 ?",
+          "answer": "Migrez vers l’actuel Wan 2.6 pour des clips texte/image en 1080p jusqu’à 15 secondes avec audio optionnel, ou pour son mode séparé de 5 ou 10 secondes, silencieux et guidé par une à trois vidéos de référence."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Veo 3.1 Fast vs Wan 2.5: velocidad, 4K y valor",
+      "description": "Compara Google Veo 3.1 Fast y Wan 2.5 en velocidad, 4K, audio, controles y duración para decidir si conservar Wan 2.5 o migrar a un modelo actual.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara Google Veo 3.1 Fast con Wan 2.5 Text & Image to Video para elegir entre controles actuales en 4K y un flujo anterior económico. Veo Fast llega a ocho segundos; Wan 2.5 sigue disponible en MaxVideoAI y llega a 10 segundos con entradas simples de texto e imagen.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige Google Veo 3.1 Fast para iterar rápido con 4K, referencias, primer y último fotograma y extensión. Quédate en Wan 2.5 para clips simples económicos con dos segundos extra; migra a Wan 2.6 actual para texto o imagen de hasta 15 segundos con audio, o referencias separadas de 5 o 10 segundos sin audio."
+    },
+    "topCards": [
+      {
+        "title": "Veo Fast para mayor control",
+        "body": "Usa Veo Fast para salida 720p, 1080p o 4K con audio, referencias, primer y último fotograma y extensión dentro de un flujo de ocho segundos."
+      },
+      {
+        "title": "Mantener Wan 2.5 para clips simples",
+        "body": "Quédate en Wan cuando su generación disponible desde texto o imagen, su escala de 480p a 1080p y el límite de 10 segundos ya encajen con el trabajo."
+      },
+      {
+        "title": "Migrar a los modos de Wan 2.6",
+        "body": "Actualiza a Wan 2.6 Text & Image to Video para clips de texto o imagen de hasta 15 segundos con audio opcional; su modo separado sin audio acepta entre uno y tres videos de referencia durante 5 o 10 segundos."
+      },
+      {
+        "title": "La diferencia central de duración",
+        "body": "Veo Fast termina en ocho segundos, pero agrega controles actuales y 4K; Wan 2.5 ofrece simplicidad de 10 segundos con hasta 1080p."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/veo-3-1-fast",
+        "label": "Abrir la página de Google Veo 3.1 Fast"
+      },
+      {
+        "href": "/models/wan-2-5",
+        "label": "Abrir la página del Wan 2.5 disponible"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-fast-vs-wan-2-6",
+        "label": "Comparar Google Veo 3.1 Fast y Wan 2.6 actual"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas sobre producción rápida con Veo, la economía de Wan 2.5 y la migración a Wan 2.6.",
+      "items": [
+        {
+          "question": "¿Wan 2.5 sigue disponible junto a Veo 3.1 Fast?",
+          "answer": "Sí. Wan 2.5 sigue disponible como ruta anterior de texto e imagen para clips de hasta 10 segundos en 480p, 720p o 1080p."
+        },
+        {
+          "question": "¿Cuándo conviene quedarse en Wan 2.5?",
+          "answer": "Mantén Wan 2.5 para clips económicos directos cuando 10 segundos y hasta 1080p sean suficientes y los controles avanzados de referencias o fotogramas no agreguen valor."
+        },
+        {
+          "question": "¿Cuándo es Wan 2.6 la mejor actualización desde Wan 2.5?",
+          "answer": "Pasa a Wan 2.6 actual para clips 1080p de texto o imagen de hasta 15 segundos con audio opcional, o para la generación separada sin audio de 5 o 10 segundos guiada por entre uno y tres videos de referencia."
+        }
+      ]
+    }
+  }
+}

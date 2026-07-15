@@ -1,0 +1,192 @@
+{
+  "slug": "minimax-hailuo-02-text-vs-wan-2-6",
+  "en": {
+    "meta": {
+      "title": "Hailuo 02 vs Wan 2.6: Price, Audio & Best Uses",
+      "description": "Compare MiniMax Hailuo 02 and Wan 2.6 on price, duration, 1080p, audio, reference video, and stylized motion to choose the right model.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare MiniMax Hailuo 02 Standard with Wan 2.6 Text & Image to Video when choosing between inexpensive stylized motion and a broader general-purpose workflow. Hailuo costs $0.045 per second for silent 512P or 768P clips; Wan reaches 15 seconds with 1080p, audio, and reference-video control.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose MiniMax Hailuo 02 Standard for lower-cost silent stylized concepts, vertical or square hooks, and shots up to 10 seconds where 768P is sufficient. Choose Wan 2.6 for general-purpose production that needs 1080p, clips up to 15 seconds, optional audio, or one to three reference videos."
+    },
+    "topCards": [
+      {
+        "title": "Choose Hailuo 02",
+        "body": "Use Hailuo for $0.045-per-second stylized motion, silent tests, and lower-resolution vertical, square, or landscape clips."
+      },
+      {
+        "title": "Choose Wan 2.6",
+        "body": "Use Wan for 720p or 1080p delivery, optional audio, clips up to 15 seconds, and reference-video guidance."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "Hailuo minimizes cost for stylized silent output; Wan costs more but adds resolution, duration, sound, and reference control."
+      },
+      {
+        "title": "Best workflows",
+        "body": "Hailuo fits budget social concepts and visual experiments. Wan fits narrated clips, general B-roll, and reference-led sequences."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Open the MiniMax Hailuo 02 model page"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Open the Wan 2.6 model page"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-vs-wan-2-6",
+        "label": "Compare Veo 3.1 vs Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing budget stylized Hailuo or general-purpose Wan.",
+      "items": [
+        {
+          "question": "Is Hailuo 02 or Wan 2.6 cheaper?",
+          "answer": "Hailuo 02 lists $0.045 per second. Wan 2.6 starts at $0.10 per second at 720p and $0.15 at 1080p, so Hailuo is cheaper when silent lower-resolution output is enough."
+        },
+        {
+          "question": "Which model supports audio and reference videos?",
+          "answer": "Wan 2.6 supports optional audio and reference-to-video with one to three source clips. MiniMax Hailuo 02 Standard supports text or image generation without audio."
+        },
+        {
+          "question": "When should I choose Wan 2.6 over Hailuo 02?",
+          "answer": "Choose Wan when the job needs 1080p, more than 10 seconds, native audio, or reference-video guidance. Choose Hailuo for cheaper stylized exploration and social-format tests."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "Hailuo 02 vs Wan 2.6 : prix, audio et usages",
+      "description": "Comparez MiniMax Hailuo 02 et Wan 2.6 sur le prix, la durée, le 1080p, l’audio, les vidéos de référence et le mouvement stylisé.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez MiniMax Hailuo 02 Standard et Wan 2.6 Text & Image to Video pour arbitrer entre mouvement stylisé économique et workflow généraliste. Hailuo coûte 0,045 $ par seconde pour des clips silencieux en 512P ou 768P ; Wan atteint 15 secondes en 1080p avec audio et références vidéo.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez MiniMax Hailuo 02 Standard pour des concepts stylisés silencieux moins chers, des formats verticaux ou carrés et jusqu’à 10 secondes lorsque le 768P suffit. Choisissez Wan 2.6 pour une production généraliste en 1080p, jusqu’à 15 secondes, avec audio optionnel ou une à trois vidéos de référence."
+    },
+    "topCards": [
+      {
+        "title": "Choisir Hailuo 02",
+        "body": "Pour du mouvement stylisé à 0,045 $ par seconde et des tests silencieux en paysage, vertical ou carré."
+      },
+      {
+        "title": "Choisir Wan 2.6",
+        "body": "Pour une livraison 720p ou 1080p, l’audio optionnel, jusqu’à 15 secondes et le guidage par vidéo."
+      },
+      {
+        "title": "Différence clé",
+        "body": "Hailuo minimise le coût des sorties stylisées ; Wan coûte plus cher mais ajoute résolution, durée, son et références."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "Hailuo convient aux concepts sociaux économiques. Wan convient aux narrations, plans B-roll et séquences guidées."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Ouvrir la page MiniMax Hailuo 02"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Ouvrir la page Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-vs-wan-2-6",
+        "label": "Comparer Veo 3.1 et Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre Hailuo stylisé et Wan généraliste.",
+      "items": [
+        {
+          "question": "Hailuo 02 ou Wan 2.6 : lequel coûte le moins cher ?",
+          "answer": "Hailuo 02 coûte 0,045 $ par seconde. Wan 2.6 démarre à 0,10 $ en 720p et 0,15 $ en 1080p : Hailuo est moins cher si une sortie silencieuse en basse résolution suffit."
+        },
+        {
+          "question": "Quel modèle prend en charge l’audio et les vidéos de référence ?",
+          "answer": "Wan 2.6 accepte un audio optionnel et une à trois vidéos de référence. MiniMax Hailuo 02 Standard génère depuis du texte ou une image sans audio."
+        },
+        {
+          "question": "Quand choisir Wan 2.6 plutôt que Hailuo 02 ?",
+          "answer": "Choisissez Wan pour le 1080p, plus de 10 secondes, l’audio natif ou le guidage vidéo. Choisissez Hailuo pour explorer des styles et formats sociaux à moindre coût."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "Hailuo 02 vs Wan 2.6: precio, audio y mejores usos",
+      "description": "Compara MiniMax Hailuo 02 y Wan 2.6 en precio, duración, 1080p, audio, referencias de video y movimiento estilizado para elegir bien.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara MiniMax Hailuo 02 Standard con Wan 2.6 Text & Image to Video para decidir entre movimiento estilizado económico y un flujo de uso general. Hailuo cuesta US$0.045 por segundo para clips silenciosos en 512P o 768P; Wan llega a 15 segundos en 1080p con audio y referencias de video.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige MiniMax Hailuo 02 Standard para conceptos estilizados silenciosos más económicos, formatos verticales o cuadrados y hasta 10 segundos cuando 768P sean suficientes. Elige Wan 2.6 para producción general en 1080p, hasta 15 segundos, con audio opcional o entre uno y tres videos de referencia."
+    },
+    "topCards": [
+      {
+        "title": "Elige Hailuo 02",
+        "body": "Para movimiento estilizado a US$0.045 por segundo y pruebas silenciosas horizontales, verticales o cuadradas."
+      },
+      {
+        "title": "Elige Wan 2.6",
+        "body": "Para entrega 720p o 1080p, audio opcional, hasta 15 segundos y guía por referencias de video."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "Hailuo minimiza el costo de contenido estilizado; Wan cuesta más, pero agrega resolución, duración, sonido y referencias."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "Hailuo sirve para conceptos sociales económicos. Wan sirve para narración, B-roll y secuencias guiadas."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Abrir la página de MiniMax Hailuo 02"
+      },
+      {
+        "href": "/models/wan-2-6",
+        "label": "Abrir la página de Wan 2.6"
+      },
+      {
+        "href": "/ai-video-engines/veo-3-1-vs-wan-2-6",
+        "label": "Comparar Veo 3.1 y Wan 2.6"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre Hailuo estilizado y Wan de uso general.",
+      "items": [
+        {
+          "question": "¿Hailuo 02 o Wan 2.6 cuesta menos?",
+          "answer": "Hailuo 02 cuesta US$0.045 por segundo. Wan 2.6 parte de US$0.10 en 720p y US$0.15 en 1080p, así que Hailuo es más económico si basta una salida silenciosa de menor resolución."
+        },
+        {
+          "question": "¿Qué modelo admite audio y videos de referencia?",
+          "answer": "Wan 2.6 admite audio opcional y entre uno y tres videos de referencia. MiniMax Hailuo 02 Standard genera desde texto o imagen sin audio."
+        },
+        {
+          "question": "¿Cuándo debo elegir Wan 2.6 en vez de Hailuo 02?",
+          "answer": "Elige Wan cuando necesites 1080p, más de 10 segundos, audio nativo o guía por video. Elige Hailuo para explorar estilos y formatos sociales a menor precio."
+        }
+      ]
+    }
+  }
+}

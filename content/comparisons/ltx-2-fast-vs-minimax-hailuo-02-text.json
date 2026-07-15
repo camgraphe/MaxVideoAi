@@ -1,0 +1,192 @@
+{
+  "slug": "ltx-2-fast-vs-minimax-hailuo-02-text",
+  "en": {
+    "meta": {
+      "title": "LTX 2 Fast vs Hailuo 02: Resolution, Audio & Uses",
+      "description": "Compare LTX Video 2.0 Fast and MiniMax Hailuo 02 on duration, resolution, audio, aspect ratios, and price for social and stylized clips.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compare LTX Video 2.0 Fast with MiniMax Hailuo 02 Standard when choosing between long, high-resolution landscape clips and lower-resolution stylized formats. LTX reaches 20 seconds with audio and output up to 4K, while Hailuo adds vertical and square options for silent 512P or 768P motion.",
+    "quickVerdict": {
+      "title": "Quick verdict",
+      "body": "Choose LTX Video 2.0 Fast for rapid landscape clips, native audio, durations up to 20 seconds, and 1080p, 1440p, or 4K output. Choose MiniMax Hailuo 02 Standard when a silent stylized concept needs vertical, square, or landscape delivery and lower resolution is acceptable."
+    },
+    "topCards": [
+      {
+        "title": "Choose LTX 2 Fast",
+        "body": "Use LTX for longer 16:9 social clips, audio-ready generation, and output from 1080p through 4K."
+      },
+      {
+        "title": "Choose Hailuo 02",
+        "body": "Use Hailuo for silent stylized motion in 16:9, 9:16, or 1:1 when 512P or 768P meets the channel requirement."
+      },
+      {
+        "title": "Key trade-off",
+        "body": "LTX offers duration, audio, and high resolution but only 16:9; Hailuo offers more social formats at lower resolution."
+      },
+      {
+        "title": "Best workflows",
+        "body": "LTX fits longer landscape promos and music-backed clips. Hailuo fits stylized vertical hooks, square posts, and visual tests."
+      }
+    ],
+    "primaryLinksTitle": "Recommended next steps",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Open the LTX Video 2.0 Fast model page"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Open the MiniMax Hailuo 02 model page"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast",
+        "label": "Compare LTX 2.3 Fast vs LTX 2 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Short answers for choosing between high-resolution LTX and flexible-format Hailuo.",
+      "items": [
+        {
+          "question": "Which model is better for long, high-resolution clips?",
+          "answer": "LTX Video 2.0 Fast supports clips up to 20 seconds with 1080p, 1440p, or 4K output and native audio. Hailuo 02 stops at 10 seconds and 768P."
+        },
+        {
+          "question": "Which model works better for vertical or square social video?",
+          "answer": "MiniMax Hailuo 02 Standard supports 9:16 and 1:1 as well as 16:9. LTX Video 2.0 Fast is limited to 16:9, so it is best for landscape output."
+        },
+        {
+          "question": "Do LTX 2 Fast and Hailuo 02 both generate audio?",
+          "answer": "No. LTX Video 2.0 Fast supports native audio, while Hailuo 02 produces silent video. Choose Hailuo only when sound can be added separately or is not needed."
+        }
+      ]
+    }
+  },
+  "fr": {
+    "meta": {
+      "title": "LTX 2 Fast vs Hailuo 02 : résolution, audio et usages",
+      "description": "Comparez LTX Video 2.0 Fast et MiniMax Hailuo 02 sur la durée, la résolution, l’audio, les formats et le prix pour vos clips sociaux.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Comparez LTX Video 2.0 Fast et MiniMax Hailuo 02 Standard pour choisir entre de longs clips paysage en haute résolution ou des formats stylisés plus modestes. LTX atteint 20 secondes avec audio et une sortie jusqu’en 4K ; Hailuo ajoute les formats vertical et carré en 512P ou 768P silencieux.",
+    "quickVerdict": {
+      "title": "Verdict rapide",
+      "body": "Choisissez LTX Video 2.0 Fast pour des clips paysage rapides, l’audio natif, une durée jusqu’à 20 secondes et des sorties 1080p, 1440p ou 4K. Choisissez MiniMax Hailuo 02 Standard pour un concept stylisé silencieux en vertical, carré ou paysage lorsque le 512P ou 768P suffit."
+    },
+    "topCards": [
+      {
+        "title": "Choisir LTX 2 Fast",
+        "body": "Pour des clips sociaux 16:9 plus longs, une génération avec audio et des livraisons du 1080p à la 4K."
+      },
+      {
+        "title": "Choisir Hailuo 02",
+        "body": "Pour des mouvements stylisés silencieux en 16:9, 9:16 ou 1:1 lorsque le 512P ou le 768P suffit au canal."
+      },
+      {
+        "title": "Différence clé",
+        "body": "LTX offre durée, audio et haute résolution mais seulement en 16:9 ; Hailuo offre plus de formats sociaux à basse résolution."
+      },
+      {
+        "title": "Usages recommandés",
+        "body": "LTX convient aux promotions paysage avec musique. Hailuo convient aux accroches verticales, carrées et aux essais visuels."
+      }
+    ],
+    "primaryLinksTitle": "Prochaines étapes recommandées",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Ouvrir la page LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Ouvrir la page MiniMax Hailuo 02"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast",
+        "label": "Comparer LTX 2.3 Fast et LTX 2 Fast"
+      }
+    ],
+    "faq": {
+      "title": "FAQ",
+      "subtitle": "Réponses courtes entre LTX haute résolution et Hailuo multiformat.",
+      "items": [
+        {
+          "question": "Quel modèle choisir pour des clips longs en haute résolution ?",
+          "answer": "LTX Video 2.0 Fast atteint 20 secondes avec audio et une sortie 1080p, 1440p ou 4K. Hailuo 02 s’arrête à 10 secondes et au 768P."
+        },
+        {
+          "question": "Quel modèle fonctionne le mieux en vertical ou en carré ?",
+          "answer": "MiniMax Hailuo 02 Standard prend en charge le 9:16 et le 1:1 en plus du 16:9. LTX Video 2.0 Fast est limité au 16:9 paysage."
+        },
+        {
+          "question": "LTX 2 Fast et Hailuo 02 génèrent-ils tous deux de l’audio ?",
+          "answer": "Non. LTX Video 2.0 Fast prend en charge l’audio natif, tandis que Hailuo 02 produit une vidéo silencieuse à sonoriser ensuite si nécessaire."
+        }
+      ]
+    }
+  },
+  "es": {
+    "meta": {
+      "title": "LTX 2 Fast vs Hailuo 02: resolución, audio y usos",
+      "description": "Compara LTX Video 2.0 Fast y MiniMax Hailuo 02 en duración, resolución, audio, formatos y precio para clips sociales y estilizados.",
+      "titleBranding": "none"
+    },
+    "heroIntro": "Compara LTX Video 2.0 Fast con MiniMax Hailuo 02 Standard para elegir entre clips horizontales largos en alta resolución o formatos estilizados más modestos. LTX alcanza 20 segundos con audio y salida hasta 4K; Hailuo agrega formatos vertical y cuadrado en 512P o 768P sin audio.",
+    "quickVerdict": {
+      "title": "Veredicto rápido",
+      "body": "Elige LTX Video 2.0 Fast para clips horizontales rápidos, audio nativo, duración de hasta 20 segundos y salida 1080p, 1440p o 4K. Elige MiniMax Hailuo 02 Standard para un concepto estilizado silencioso en vertical, cuadrado u horizontal cuando 512P o 768P sean suficientes."
+    },
+    "topCards": [
+      {
+        "title": "Elige LTX 2 Fast",
+        "body": "Para clips sociales 16:9 más largos, generación con audio y entregas desde 1080p hasta 4K."
+      },
+      {
+        "title": "Elige Hailuo 02",
+        "body": "Para movimiento estilizado silencioso en 16:9, 9:16 o 1:1 cuando 512P o 768P cubran el canal."
+      },
+      {
+        "title": "Diferencia clave",
+        "body": "LTX ofrece duración, audio y alta resolución, pero solo 16:9; Hailuo ofrece más formatos sociales con menor resolución."
+      },
+      {
+        "title": "Mejores flujos",
+        "body": "LTX sirve para promociones horizontales con música. Hailuo sirve para ganchos verticales, cuadrados y pruebas visuales."
+      }
+    ],
+    "primaryLinksTitle": "Siguientes pasos recomendados",
+    "primaryLinks": [
+      {
+        "href": "/models/ltx-2-fast",
+        "label": "Abrir la página de LTX Video 2.0 Fast"
+      },
+      {
+        "href": "/models/minimax-hailuo-02-text",
+        "label": "Abrir la página de MiniMax Hailuo 02"
+      },
+      {
+        "href": "/ai-video-engines/ltx-2-3-fast-vs-ltx-2-fast",
+        "label": "Comparar LTX 2.3 Fast y LTX 2 Fast"
+      }
+    ],
+    "faq": {
+      "title": "Preguntas frecuentes",
+      "subtitle": "Respuestas breves entre LTX de alta resolución y Hailuo multiformato.",
+      "items": [
+        {
+          "question": "¿Qué modelo conviene para clips largos en alta resolución?",
+          "answer": "LTX Video 2.0 Fast alcanza 20 segundos con audio y salida 1080p, 1440p o 4K. Hailuo 02 se limita a 10 segundos y 768P."
+        },
+        {
+          "question": "¿Qué modelo funciona mejor en vertical o cuadrado?",
+          "answer": "MiniMax Hailuo 02 Standard admite 9:16 y 1:1 además de 16:9. LTX Video 2.0 Fast se limita al formato horizontal 16:9."
+        },
+        {
+          "question": "¿LTX 2 Fast y Hailuo 02 generan audio?",
+          "answer": "No los dos. LTX Video 2.0 Fast admite audio nativo, mientras Hailuo 02 produce video silencioso que puede sonorizarse después si hace falta."
+        }
+      ]
+    }
+  }
+}
