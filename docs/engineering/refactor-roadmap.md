@@ -34,6 +34,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Storyboard workspace: `StoryboardWorkspace.tsx` is now 488 physical lines (489 by the live audit metric) and remains the workflow orchestrator. Focused owners now cover the builder UI (`StoryboardBuilderPanel.tsx`), reference state and uploads (`useStoryboardReferences.ts`), pricing estimates (`useStoryboardPricing.ts`), workspace configuration (`storyboard-workspace-config.ts`), and Kling first-frame persistence (`storyboard-kling-first-frame-storage.ts`).
 - Admin transactions: the public server module is a thin facade over focused read-model, top-up, refund, normalization, and type owners; manual refund writes remain transactionally serialized by job.
 - Pricing policy administration: the public policy service is a thin facade over focused contract, dependency, deterministic rule, preview, confirmation, and read-model owners; preview fingerprints and transactional apply semantics remain unchanged.
+- Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES projections behind the unchanged route-facing loader; strict parity and validation contracts replace the three giant locale maps.
 
 Representative contract tests:
 
@@ -59,9 +60,6 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-07-15:
 | --- | ---: | --- |
 | `model-page-template-copy-additional.ts` | 6278 | content organization |
 | `ModelDecisionPromptingSection.tsx` | 3114 | large marketing component |
-| `compare-page-overrides-en.ts` | 2840 | localized content organization |
-| `compare-page-overrides-es.ts` | 2757 | localized content organization |
-| `compare-page-overrides-fr.ts` | 2757 | localized content organization |
 | `model-page-template-copy.ts` | 1887 | content organization |
 | `ModelExamplesSection.tsx` | 1589 | large marketing component |
 | `pricingHubData.ts` | 1226 | pricing-sensitive presentation data |
@@ -77,7 +75,7 @@ Line counts change over time. The audit command, not this dated table, is author
 Prefer this order unless product work changes the risk profile:
 
 1. Treat the pricing policy and admin transaction server boundaries as complete; do not add another layer without a concrete behavior or ownership problem.
-2. Treat large locale, comparison, and model copy files as a separate content-organization project with locale parity contracts.
+2. Treat comparison content organization as complete; model decision copy remains the next independent content-organization project and requires its own parity and migration proof.
 3. Approach pricing hub presentation data as price-sensitive and require the immutable pricing acceptance guards for any structural change.
 4. Refactor generation routes, webhooks, polling, storage, or wallet APIs only through dedicated regression plans because they have higher runtime blast radius.
 
