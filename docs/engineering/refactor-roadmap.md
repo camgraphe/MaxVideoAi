@@ -35,6 +35,7 @@ The architecture cleanup waves have landed across the main route categories:
 - Admin transactions: the public server module is a thin facade over focused read-model, top-up, refund, normalization, and type owners; manual refund writes remain transactionally serialized by job.
 - Pricing policy administration: the public policy service is a thin facade over focused contract, dependency, deterministic rule, preview, confirmation, and read-model owners; preview fingerprints and transactional apply semantics remain unchanged.
 - Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES editorial projections and their metadata behind the unchanged route-facing loader; locale-message metadata overrides remain only for generic comparisons without a document, and a dynamic empty-intersection contract prevents duplicate ownership.
+- Localized model decision content: 120 locale-specific JSON documents now own strict decision copy behind an exact-locale loader and parser boundary; live pricing scenarios stay in the decision data builder, and the temporary TypeScript copy maps and migration proof have been removed.
 
 Representative contract tests:
 
@@ -58,9 +59,7 @@ Snapshot from `npm run architecture:audit -- --min-lines 500` on 2026-07-15:
 
 | File | Lines | Risk and responsibility |
 | --- | ---: | --- |
-| `model-page-template-copy-additional.ts` | 6278 | content organization |
-| `ModelDecisionPromptingSection.tsx` | 3114 | large marketing component |
-| `model-page-template-copy.ts` | 1887 | content organization |
+| `ModelDecisionPromptingSection.tsx` | 3114 | next independent model-page component cleanup |
 | `ModelExamplesSection.tsx` | 1589 | large marketing component |
 | `pricingHubData.ts` | 1226 | pricing-sensitive presentation data |
 | `pricingHubCopy.ts` | 737 | localized pricing content |
@@ -75,7 +74,7 @@ Line counts change over time. The audit command, not this dated table, is author
 Prefer this order unless product work changes the risk profile:
 
 1. Treat the pricing policy and admin transaction server boundaries as complete; do not add another layer without a concrete behavior or ownership problem.
-2. Treat comparison content organization as complete; model decision copy remains the next independent content-organization project and requires its own parity and migration proof.
+2. Treat comparison and model decision content organization as complete; `ModelDecisionPromptingSection.tsx` is the next independent model-page cleanup and requires a dedicated behavior-preserving component plan and contract coverage.
 3. Approach pricing hub presentation data as price-sensitive and require the immutable pricing acceptance guards for any structural change.
 4. Refactor generation routes, webhooks, polling, storage, or wallet APIs only through dedicated regression plans because they have higher runtime blast radius.
 

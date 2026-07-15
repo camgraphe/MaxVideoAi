@@ -138,6 +138,19 @@ dynamic generic-fallback inventory, empty-intersection, identity, schema, locale
 and path-safety contracts. The complementary `tests/compare-page-architecture.test.ts` owns
 route isolation, obsolete-source absence, and Next output-tracing contracts.
 
+## Localized Model Decision Content
+
+`content/models/{locale}/{slug}.json` is the only localized editorial owner for model pages.
+Every template-configured model requires a strict top-level `decision` block in English,
+French, and Spanish.
+
+`getEngineLocalized` selects `decision` only from the requested locale; it never falls back to
+English. `model-page-decision-content.ts` validates the editorial copy and hrefs, while
+`model-page-decision-data.ts` adds scenarios backed by live pricing.
+
+Do not add TypeScript copy maps, a second filesystem loader, direct JSON imports, or numeric
+prices to decision content.
+
 ## Refactor Checklist
 
 Before moving code:

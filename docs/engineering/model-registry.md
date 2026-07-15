@@ -18,11 +18,15 @@ The browser-safe runtime projection omits the replacement graph. A retired repla
 
 1. Add the provider/execution definition with its canonical `id` only. Keep provider-specific IDs in the adapter or mode definition.
 2. Add one registry entry with canonical slug, family, category, empty alias arrays, and every publication field set explicitly.
-3. Add `content/models/{en,fr,es}/{slug}.json` before publishing the model page.
+3. Add `content/models/{en,fr,es}/{slug}.json` before publishing the model page. Review all
+   three strict top-level `decision` blocks before publication, including the localized copy and
+   hrefs, and verify that every `decision.modelSlug` exactly matches the new canonical slug.
 4. Run `pnpm model:registry:generate`, `pnpm engine:catalog`, and `pnpm model:generate:write` to refresh the generated projections.
 5. Run `pnpm model:registry:check` and the focused model/page tests.
 
 `pnpm model:setup -- --from <source-slug> --slug <target-slug> --name "<Marketing Name>" --family <family-id>` can scaffold the localized content, provider/execution stub, registry entry skeleton, and optional presentation-only family stub.
+The scaffold retargets `decision.modelSlug`, but its generated English, French, and Spanish
+decision content still requires the manual review in the checklist above before publication.
 
 ## Rename a public slug
 
