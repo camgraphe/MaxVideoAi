@@ -56,6 +56,7 @@ const overrideSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides.ts',
   'utf8'
 );
+const nextConfigSource = readFileSync('frontend/next.config.js', 'utf8');
 const overrideTypesSource = readFileSync(
   'frontend/app/(localized)/[locale]/(marketing)/ai-video-engines/[slug]/_lib/compare-page-overrides-types.ts',
   'utf8'
@@ -530,7 +531,7 @@ test('comparison detail page delegates copy, data, schema, and media responsibil
   assert.doesNotMatch(pageSource, /'@type': 'WebPage'/);
 });
 
-test('comparison detail helper facade delegates routing, pricing, specs, and localized overrides', () => {
+test('comparison detail helper facade delegates routing, pricing, specs, and strict localized content', () => {
   const helperLineCount = helperSource.split('\n').length;
 
   assert.ok(helperLineCount <= 80, `compare-page-helpers.ts should stay a facade below 80 lines, got ${helperLineCount}`);
@@ -555,12 +556,15 @@ test('comparison detail helper facade delegates routing, pricing, specs, and loc
   assert.match(helperScoreUtilsSource, /export function pickFirstCapabilityDifference/);
   assert.match(helperTextSource, /export function formatTemplate/);
   assert.match(helperTextSource, /export function stripAudioReferencesForSilentPair/);
-  assert.ok(overrideSource.split('\n').length <= 40, 'compare-page-overrides.ts should stay a small facade');
   assert.match(overrideSource, /export function getComparePageOverride/);
-  assert.match(overrideSource, /from '\.\/compare-page-overrides-en'/);
-  assert.match(overrideSource, /from '\.\/compare-page-overrides-fr'/);
-  assert.match(overrideSource, /from '\.\/compare-page-overrides-es'/);
+  assert.match(overrideSource, /export function parseComparePageContentDocument/);
+  assert.match(overrideSource, /readFileSync/);
+  assert.match(overrideSource, /CONTENT_ROOT/);
+  assert.match(overrideSource, /z\.ZodType<ComparePageContentDocument>/);
+  assert.match(overrideSource, /const comparePageContentSchema[\s\S]*?\.strict\(\)/);
+  assert.doesNotMatch(overrideSource, /from '\.\/compare-page-overrides-(?:en|fr|es)'/);
   assert.match(overrideTypesSource, /export type ComparePageOverride/);
+  assert.match(overrideTypesSource, /export type ComparePageContentDocument/);
   assert.match(overrideEnSource, /export const EN_COMPARE_PAGE_OVERRIDES/);
   assert.match(overrideFrSource, /export const FR_COMPARE_PAGE_OVERRIDES/);
   assert.match(overrideEsSource, /export const ES_COMPARE_PAGE_OVERRIDES/);
@@ -568,6 +572,11 @@ test('comparison detail helper facade delegates routing, pricing, specs, and loc
   assert.doesNotMatch(helperSource, /export async function loadEngineScores/);
   assert.doesNotMatch(helperSource, /computeMarketingPriceRange/);
   assert.doesNotMatch(helperSource, /canonicalizeFalModelSlug/);
+});
+
+test('comparison content is included in Next output tracing', () => {
+  assert.match(nextConfigSource, /const CONTENT_GLOBS[\s\S]*'\.\.\/content\/comparisons\/\*\*\/\*'/);
+  assert.match(nextConfigSource, /outputFileTracingIncludes:[\s\S]*CONTENT_GLOBS/);
 });
 
 test('comparison route excludes image-only Luma Uni models', () => {
