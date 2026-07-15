@@ -1,7 +1,7 @@
 export const DEFAULT_GUIDE_URL =
   'https://developers.openai.com/cookbook/examples/sora/sora2_prompting_guide/';
 
-export type TabId = 'quick' | 'structured' | 'pro' | 'storyboard';
+export type TabId = string;
 export type PromptingMode = 'video' | 'image';
 export type PromptingTabNotes = Partial<Record<TabId, string>>;
 

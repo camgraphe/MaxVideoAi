@@ -1,8 +1,5 @@
 import { SoraPromptingTabs } from '@/components/marketing/SoraPromptingTabs.client';
-import type {
-  PromptingTab,
-  PromptingTabNotes,
-} from '@/components/marketing/sora-prompting-content';
+import type { PromptingTab } from '@/components/marketing/sora-prompting-content';
 
 import type { ModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import {
@@ -23,7 +20,7 @@ function toLegacyTabs(viewModel: ModelPromptingViewModel): PromptingTab[] {
   return viewModel.tabs.items.map((tab) => ({
     ...tab,
     description: tab.description ?? undefined,
-  })) as PromptingTab[];
+  }));
 }
 
 export function ModelPromptingSection({
@@ -65,7 +62,7 @@ export function ModelPromptingSection({
           tabs={toLegacyTabs(viewModel)}
           globalPrinciples={viewModel.globalPrinciples}
           engineWhy={viewModel.engineWhy}
-          tabNotes={viewModel.tabs.notesById as PromptingTabNotes}
+          tabNotes={viewModel.tabs.notesById}
         />
         {demo ? (
           <div className="stack-gap-lg">

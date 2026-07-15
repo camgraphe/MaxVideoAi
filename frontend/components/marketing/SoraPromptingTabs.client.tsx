@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SoraPromptingSidebar } from '@/components/marketing/SoraPromptingSidebar';
 import { SoraPromptingTabList } from '@/components/marketing/SoraPromptingTabList';
 import { SoraPromptingTabPanel } from '@/components/marketing/SoraPromptingTabPanel';
@@ -12,6 +12,7 @@ import {
   IMAGE_TABS,
   VIDEO_TABS,
   VIDEO_TABS_NO_AUDIO,
+  type PromptingTabNotes,
   type SoraPromptingTabsProps,
   type TabId,
 } from '@/components/marketing/sora-prompting-content';
@@ -29,11 +30,6 @@ export function SoraPromptingTabs({
   engineWhy,
   tabNotes,
 }: SoraPromptingTabsProps) {
-  const [activeId, setActiveId] = useState<TabId>('quick');
-  const mergedTabNotes: Record<TabId, string> = {
-    ...DEFAULT_TAB_NOTES,
-    ...(tabNotes ?? {}),
-  };
   const resolvedTabs = (
     tabs && tabs.length
       ? tabs
@@ -43,6 +39,17 @@ export function SoraPromptingTabs({
           ? VIDEO_TABS
           : VIDEO_TABS_NO_AUDIO
   ).filter(Boolean);
+  const [selectedId, setSelectedId] = useState<TabId>(() => resolvedTabs[0]?.id ?? '');
+  const activeId = resolvedTabs.some((tab) => tab.id === selectedId)
+    ? selectedId
+    : resolvedTabs[0]?.id ?? '';
+  useEffect(() => {
+    if (activeId !== selectedId) setSelectedId(activeId);
+  }, [activeId, selectedId]);
+  const mergedTabNotes: PromptingTabNotes = {
+    ...DEFAULT_TAB_NOTES,
+    ...(tabNotes ?? {}),
+  };
   const globalRules = globalPrinciples?.length ? globalPrinciples : DEFAULT_GLOBAL_PRINCIPLES;
   const engineRules = engineWhy?.length ? engineWhy : DEFAULT_ENGINE_WHY;
   const resolvedTitle =
@@ -82,7 +89,7 @@ export function SoraPromptingTabs({
         {resolvedTip ? <p className="text-sm text-text-secondary">{resolvedTip}</p> : null}
       </div>
 
-      <SoraPromptingTabList activeId={activeId} tabs={resolvedTabs} onActiveIdChange={setActiveId} />
+      <SoraPromptingTabList activeId={activeId} tabs={resolvedTabs} onActiveIdChange={setSelectedId} />
 
       <div className="grid gap-6 lg:grid-cols-12">
         <div className="lg:col-span-7">

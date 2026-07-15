@@ -160,6 +160,8 @@ test('interactive Prompt Lab children receive derived labels and destinations', 
   assert.match(decisionSource, /usePromptHref=\{viewModel\.tabs\.usePromptHref\}/);
   assert.match(decisionSource, /workspaceHref=\{viewModel\.imageExamples\.workspaceHref\}/);
   assert.match(imageExamplesSource, /workspaceHref:\s*string/);
+  assert.match(imageExamplesSource, /key=\{example\.id\}/);
+  assert.doesNotMatch(imageExamplesSource, /key=\{example\.title\}/);
   assert.doesNotMatch(imageExamplesSource, /engineSlug|encodeURIComponent|\/app\/image\?engine=/);
 });
 

@@ -22,6 +22,7 @@ const FRONTEND_ROOT = process.cwd();
 const REPO_ROOT = path.resolve(FRONTEND_ROOT, '..');
 const MODELS_ROOT = path.join(REPO_ROOT, 'content', 'models');
 const DEFAULT_LOCALES: Locale[] = ['en', 'fr', 'es'];
+const MODEL_ROUTE_PREFIXES = ['/models', '/fr/modeles', '/es/modelos'] as const;
 const PROVIDER_PREFIX = /^(OpenAI|Google(?: DeepMind)?|Google|DeepMind)\s+/i;
 
 function usage(): string {
@@ -207,7 +208,9 @@ async function main() {
   const baseReplacements: Array<[string, string]> = ([
     [sourceName, options.targetName] as [string, string],
     ...aliasPairs,
-    [`/models/${options.fromSlug}`, `/models/${options.targetSlug}`] as [string, string],
+    ...MODEL_ROUTE_PREFIXES.map(
+      (prefix) => [`${prefix}/${options.fromSlug}`, `${prefix}/${options.targetSlug}`] as [string, string],
+    ),
     [`/examples/${options.fromSlug}`, `/examples/${options.targetSlug}`] as [string, string],
     [`examples-${options.fromSlug}`, `examples-${options.targetSlug}`] as [string, string],
     [`engine=${options.fromSlug}`, `engine=${options.targetEngineId}`] as [string, string],

@@ -1,11 +1,23 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 const script = 'scripts/model-setup.mjs';
-const scaffoldSource = readFileSync('frontend/scripts/scaffold-model-page.ts', 'utf8');
+const root = process.cwd();
+const scaffoldScript = resolve(root, 'frontend/scripts/scaffold-model-page.ts');
+const scaffoldSource = readFileSync(scaffoldScript, 'utf8');
 const setupSource = readFileSync(script, 'utf8');
+const tsxBin = resolve(root, 'node_modules/.bin/tsx');
 
 function run(args: string[]) {
   return spawnSync(process.execPath, [script, ...args], {
@@ -36,6 +48,68 @@ test('model scaffold retargets decision and prompting identities', () => {
   assert.match(scaffoldSource, /\['decision',\s*'prompting'\]\s+as const/);
   assert.match(scaffoldSource, /transformed\[field\]/);
   assert.match(scaffoldSource, /modelSlug:\s*options\.targetSlug/);
+});
+
+test('model scaffold retargets EN FR ES identities and localized prompting guide links', () => {
+  const sourceSlug = 'dreamina-seedance-2-0-mini';
+  const targetSlug = 'review-target-model';
+  const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-model-scaffold-'));
+  const sandboxFrontend = join(sandboxRoot, 'frontend');
+
+  try {
+    mkdirSync(sandboxFrontend, { recursive: true });
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const localeRoot = join(sandboxRoot, 'content/models', locale);
+      mkdirSync(localeRoot, { recursive: true });
+      copyFileSync(
+        join(root, 'content/models', locale, `${sourceSlug}.json`),
+        join(localeRoot, `${sourceSlug}.json`),
+      );
+    }
+
+    const result = spawnSync(
+      tsxBin,
+      [
+        '--tsconfig',
+        resolve(root, 'frontend/tsconfig.scripts.json'),
+        scaffoldScript,
+        '--from',
+        sourceSlug,
+        '--slug',
+        targetSlug,
+        '--name',
+        'Review Target Model',
+      ],
+      { cwd: sandboxFrontend, encoding: 'utf8' },
+    );
+    assert.equal(result.status, 0, result.stderr);
+
+    const expectedGuideHrefs = {
+      en: `/models/${targetSlug}`,
+      fr: `/fr/modeles/${targetSlug}`,
+      es: `/es/modelos/${targetSlug}`,
+    } as const;
+    for (const locale of ['en', 'fr', 'es'] as const) {
+      const generated = JSON.parse(
+        readFileSync(
+          join(sandboxRoot, 'content/models', locale, `${targetSlug}.json`),
+          'utf8',
+        ),
+      ) as {
+        decision?: { modelSlug?: string };
+        prompting?: { modelSlug?: string; section?: { guide?: { href?: string } } };
+      };
+      assert.equal(generated.decision?.modelSlug, targetSlug, `${locale} decision identity`);
+      assert.equal(generated.prompting?.modelSlug, targetSlug, `${locale} prompting identity`);
+      assert.equal(
+        generated.prompting?.section?.guide?.href,
+        expectedGuideHrefs[locale],
+        `${locale} prompting guide`,
+      );
+    }
+  } finally {
+    rmSync(sandboxRoot, { recursive: true, force: true });
+  }
 });
 
 test('model setup requires exact-locale decision and prompting review', () => {

@@ -53,7 +53,7 @@ export function ModelDecisionImagePromptExamples({
         {imageExamples.items.map((example) => {
           const Icon = IMAGE_EXAMPLE_ICONS[example.kind];
           return (
-            <article key={example.title} className="rounded-xl border border-hairline bg-surface p-4 shadow-sm">
+            <article key={example.id} className="rounded-xl border border-hairline bg-surface p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 <span className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${MODEL_PAGE_ICON_WRAP}`}>
                   <UIIcon icon={Icon} size={18} className={MODEL_PAGE_ICON} />
