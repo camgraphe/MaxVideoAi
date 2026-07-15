@@ -16,8 +16,8 @@
 - Phase A may add only the enumerated missing FR/ES metadata fields and the missing FR/ES quick verdict for `seedance-2-0-vs-seedance-2-0-fast`.
 - Phase A titles must contain 35–80 characters; descriptions must contain 120–180 characters.
 - French copy must read naturally in French; Spanish copy must remain neutral LATAM Spanish and avoid `vídeo`, `vídeos`, `móvil`, `móviles`, `ordenador`, `ordenadores`, `monedero`, `monederos`, and `vosotros`.
-- Phase B must preserve all 141 completed slug-locale projections exactly, including field presence, strings, arrays, order, links, and optional-field absence.
-- Keep `getComparePageOverride(locale: AppLocale, slug: string): ComparePageOverride | undefined` synchronous and observable behavior stable.
+- Phase B must preserve all 141 completed slug-locale projections exactly except for the bounded metadata-ownership migration below; strings, arrays, order, links, and optional-field absence otherwise remain unchanged.
+- Keep the `getComparePageOverride(locale: AppLocale, slug: string): ComparePageOverride | undefined` signature, synchronous execution, requested-locale selection, missing-file behavior, and validation-error behavior stable. As a bounded ownership-migration exception, six projections (`kling-3-pro-vs-kling-3-standard` and `veo-3-1-vs-veo-3-1-fast` across `en`, `fr`, and `es`) gain `meta` previously supplied by locale messages, while all 21 affected public metadata outputs remain identical.
 - A valid missing file returns `undefined`; a present malformed or incomplete file throws; an enriched file never falls back to English.
 - Keep exactly one source of truth per enriched comparison in the final branch: the 47 files under
   `content/comparisons/` own document-backed editorial content and metadata. Locale-message
@@ -1259,7 +1259,7 @@ output-tracing contracts.
 Add this bullet to `## Recently Completed` in `docs/engineering/refactor-roadmap.md`:
 
 ```markdown
-- Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES projections behind the unchanged route-facing loader; strict parity and validation contracts replace the three giant locale maps.
+- Localized comparison content: 47 per-slug JSON documents now own adjacent EN/FR/ES editorial projections and their metadata behind the unchanged route-facing loader; locale-message metadata overrides remain only for generic comparisons without a document, and a dynamic empty-intersection contract prevents duplicate ownership.
 ```
 
 Remove these three rows from `## Current High-Signal Candidates`:

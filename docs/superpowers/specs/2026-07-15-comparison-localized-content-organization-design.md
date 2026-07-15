@@ -249,8 +249,9 @@ The final diff must show no changes to pricing sources, model registries, compar
   document-backed slug.
 - Every file owns exactly one slug and all three locales.
 - Phase A adds only the enumerated FR/ES metadata and quick-verdict fields and passes localized editorial/SEO review.
-- All 141 Phase B projections are proven identical to the completed post-parity maps.
-- `getComparePageOverride(locale, slug)` retains its signature and observable behavior.
+- All 141 Phase B projections preserve their completed post-parity content except for the bounded metadata-ownership migration below.
+- `getComparePageOverride(locale, slug)` retains its signature, synchronous execution, requested-locale selection, missing-file behavior, and validation-error behavior.
+- As a bounded ownership-migration exception, six projections (`kling-3-pro-vs-kling-3-standard` and `veo-3-1-vs-veo-3-1-fast` across `en`, `fr`, and `es`) gain `meta` previously supplied by locale messages, while all 21 affected public metadata outputs remain identical.
 - Generic comparisons remain generic.
 - Generic comparisons without documents may retain localized message metadata fallbacks; no slug
   may be owned by both a document and `compareCopy.meta.slugOverrides`.
