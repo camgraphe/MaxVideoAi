@@ -1039,28 +1039,12 @@ function getEntry(locale: Locale, slug: string): ComparePageOverride {
 
 Preserve the more specific existing assertion message in the wave-2 and wave-3 files if desired; do not change their test logic.
 
-For the two key-set assertions that currently use full locale maps in `comparison-enrichment-locales.test.ts`, replace them with dynamic content discovery:
-
-```ts
-const completedSlugs = readdirSync(path.join(process.cwd(), 'content', 'comparisons'))
-  .filter((name) => name.endsWith('.json'))
-  .map((name) => name.slice(0, -'.json'.length))
-  .sort();
-
-assert.equal(completedSlugs.length, 47);
-for (const slug of completedSlugs) {
-  const englishPaths = collectStructuralFieldPaths(getEntry('en', slug));
-  assert.deepEqual(collectStructuralFieldPaths(getEntry('fr', slug)), englishPaths, `FR structure for ${slug}`);
-  assert.deepEqual(collectStructuralFieldPaths(getEntry('es', slug)), englishPaths, `ES structure for ${slug}`);
-}
-```
-
-Add these imports to that file:
-
-```ts
-import { readdirSync } from 'node:fs';
-import path from 'node:path';
-```
+Delete the temporary `collectStructuralFieldPaths` helper and the
+`all 47 completed comparison entries have equivalent EN, FR and ES field presence`
+test from `comparison-enrichment-locales.test.ts`. Task 3 has made
+`tests/comparison-content-contract.test.ts` the permanent dynamic parity contract,
+so retaining the temporary oracle would duplicate the production validation algorithm.
+Keep the bounded 13-slug metadata and Seedance quick-verdict editorial assertions.
 
 - [ ] **Step 4: Migrate the remaining direct-map assertions**
 
