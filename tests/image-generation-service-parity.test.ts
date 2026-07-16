@@ -47,3 +47,53 @@ test('image provider submission remains after initial job reservation and keeps 
   assert.match(service, /ensureUserPreferredCurrency/);
   assert.match(service, /executeAfterInitialJobReservation/);
 });
+
+test('ordinary web image timeout and 5xx failures keep the existing failure and refund path', async () => {
+  const policy = await import('../frontend/src/server/images/image-provider-failure-policy');
+  const shouldKeepPending = (policy as unknown as {
+    shouldKeepImageProviderOutcomePending?: (params: {
+      walletReservation: 'reserve' | 'already_reserved';
+      hasTrustedQuotedBilling: boolean;
+      error: unknown;
+      providerJobId?: string;
+    }) => boolean;
+  }).shouldKeepImageProviderOutcomePending;
+  assert.equal(typeof shouldKeepPending, 'function');
+  assert.equal(shouldKeepPending!({
+    walletReservation: 'reserve',
+    hasTrustedQuotedBilling: false,
+    error: new Error('provider timeout'),
+  }), false);
+  assert.equal(shouldKeepPending!({
+    walletReservation: 'reserve',
+    hasTrustedQuotedBilling: false,
+    error: { status: 503 },
+  }), false);
+  const service = readFileSync(servicePath, 'utf8');
+  assert.match(service, /persistFailedImageGeneration/);
+  assert.match(service, /refundOnFailure:\s*walletChargeMode === 'charge'/);
+});
+
+test('trusted already-reserved MCP image ambiguity stays pending without entering the web refund path', async () => {
+  const policy = await import('../frontend/src/server/images/image-provider-failure-policy');
+  const shouldKeepPending = (policy as unknown as {
+    shouldKeepImageProviderOutcomePending?: (params: {
+      walletReservation: 'reserve' | 'already_reserved';
+      hasTrustedQuotedBilling: boolean;
+      error: unknown;
+      providerJobId?: string;
+    }) => boolean;
+  }).shouldKeepImageProviderOutcomePending;
+  assert.equal(typeof shouldKeepPending, 'function');
+  assert.equal(shouldKeepPending!({
+    walletReservation: 'already_reserved',
+    hasTrustedQuotedBilling: true,
+    error: new Error('provider timeout'),
+  }), true);
+  assert.equal(shouldKeepPending!({
+    walletReservation: 'already_reserved',
+    hasTrustedQuotedBilling: true,
+    error: { status: 503 },
+    providerJobId: 'provider-job-1',
+  }), true);
+});

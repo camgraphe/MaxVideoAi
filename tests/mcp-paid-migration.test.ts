@@ -65,7 +65,10 @@ test('migration 30 defines private versioned quotes, NULL-safe limits, transitio
   assert.match(source, /\(oauth_client_id, created_at DESC\)/i);
   assert.match(source, /\(expires_at\)/i);
   assert.match(source, /\(state(?:, created_at DESC)?\)/i);
-  assert.match(source, /\(user_id, currency, claimed_at\)[\s\S]*WHERE state = 'accepted'/i);
+  assert.match(
+    source,
+    /\(user_id, currency, claimed_at\)[\s\S]*WHERE state IN \('claimed', 'accepted'\)/i,
+  );
 
   const quoteTable = source.match(/CREATE TABLE IF NOT EXISTS mcp_generation_quotes\s*\(([\s\S]*?)\n\);/i)?.[1] ?? '';
   assert.doesNotMatch(quoteTable, /\bprompt\b|reference_url|source_url|provider_body|access_token/i);
@@ -358,20 +361,24 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await clientA.query(`
     INSERT INTO mcp_spending_limits (user_id, daily_cents)
     VALUES ('spend-user', 100);
+    WITH day_clock AS (
+      SELECT date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' AS day_start
+    )
     INSERT INTO mcp_generation_quotes (
       quote_id, user_id, request_json, request_hash, catalog_revision, pricing_snapshot,
       price_cents, currency, funding_mode, state, expires_at, created_at, updated_at
-    ) VALUES
-      (
-        '00000000-0000-4000-8000-000000000031', 'spend-user', '{"schemaVersion":1}',
-        repeat('e',64), 'catalog', '{}', 40, 'USD', 'wallet', 'prepared',
-        '2026-07-16T23:59:00Z', '2026-07-16T23:49:00Z', '2026-07-16T23:49:00Z'
-      ),
-      (
-        '00000000-0000-4000-8000-000000000032', 'spend-user', '{"schemaVersion":1}',
-        repeat('f',64), 'catalog', '{}', 30, 'USD', 'wallet', 'prepared',
-        '2026-07-17T00:10:00Z', '2026-07-17T00:00:00Z', '2026-07-17T00:00:00Z'
-      );
+    )
+    SELECT
+        '00000000-0000-4000-8000-000000000031'::uuid, 'spend-user', '{"schemaVersion":1}'::jsonb,
+        repeat('e',64), 'catalog', '{}'::jsonb, 40, 'USD', 'wallet', 'prepared',
+        day_start, day_start - INTERVAL '10 minutes', day_start - INTERVAL '10 minutes'
+      FROM day_clock
+    UNION ALL
+    SELECT
+        '00000000-0000-4000-8000-000000000032'::uuid, 'spend-user', '{"schemaVersion":1}'::jsonb,
+        repeat('f',64), 'catalog', '{}'::jsonb, 30, 'USD', 'wallet', 'prepared',
+        day_start + INTERVAL '10 minutes', day_start, day_start
+      FROM day_clock;
     UPDATE mcp_generation_quotes
        SET state = 'claimed',
            job_id = CASE quote_id
@@ -379,12 +386,14 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
              ELSE 'spend-today'
            END,
            claimed_at = CASE quote_id
-             WHEN '00000000-0000-4000-8000-000000000031' THEN '2026-07-16T23:50:00Z'::timestamptz
-             ELSE '2026-07-17T00:01:00Z'::timestamptz
+             WHEN '00000000-0000-4000-8000-000000000031'
+               THEN date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' - INTERVAL '9 minutes'
+             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + INTERVAL '1 minute'
            END,
            updated_at = CASE quote_id
-             WHEN '00000000-0000-4000-8000-000000000031' THEN '2026-07-16T23:50:00Z'::timestamptz
-             ELSE '2026-07-17T00:01:00Z'::timestamptz
+             WHEN '00000000-0000-4000-8000-000000000031'
+               THEN date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' - INTERVAL '9 minutes'
+             ELSE date_trunc('day', clock_timestamp() AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' + INTERVAL '1 minute'
            END
      WHERE user_id = 'spend-user';
     UPDATE mcp_generation_quotes
@@ -395,7 +404,7 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await clientA.query('BEGIN');
   const spending = await checkMcpSpendingLimits(
     { userId: 'spend-user', priceCents: 60, currency: 'USD' },
-    { executor: transactionExecutorA, now: () => new Date('2026-07-17T15:00:00Z') },
+    { executor: transactionExecutorA },
   );
   assert.equal(spending.acceptedTodayCents, 30);
   assert.equal(spending.allowed, true);
@@ -404,7 +413,7 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   let spendingWaiterSettled = false;
   const secondSpendingCheck = checkMcpSpendingLimits(
     { userId: 'spend-user', priceCents: 60, currency: 'USD' },
-    { executor: transactionExecutorB, now: () => new Date('2026-07-17T15:00:00Z') },
+    { executor: transactionExecutorB },
   );
   void secondSpendingCheck.then(
     () => { spendingWaiterSettled = true; },
@@ -413,20 +422,23 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await new Promise((resolve) => setTimeout(resolve, 100));
   assert.equal(spendingWaiterSettled, false, 'transaction B must wait for the account spending lock');
   await clientA.query(`
+    WITH quote_time AS (
+      SELECT clock_timestamp() - INTERVAL '1 second' AS created_at
+    )
     INSERT INTO mcp_generation_quotes (
       quote_id, user_id, request_json, request_hash, catalog_revision, pricing_snapshot,
       price_cents, currency, funding_mode, state, expires_at, created_at, updated_at
-    ) VALUES (
+    ) SELECT
       '00000000-0000-4000-8000-000000000033', 'spend-user', '{"schemaVersion":1}',
       repeat('1',64), 'catalog', '{}', 20, 'USD', 'wallet', 'prepared',
-      '2026-07-17T14:10:00Z', '2026-07-17T14:00:00Z', '2026-07-17T14:00:00Z'
-    );
+      created_at + INTERVAL '10 minutes', created_at, created_at
+    FROM quote_time;
     UPDATE mcp_generation_quotes
        SET state = 'claimed', job_id = 'spend-concurrent',
-           claimed_at = '2026-07-17T14:01:00Z', updated_at = '2026-07-17T14:01:00Z'
+           claimed_at = clock_timestamp(), updated_at = clock_timestamp()
      WHERE quote_id = '00000000-0000-4000-8000-000000000033';
     UPDATE mcp_generation_quotes
-       SET state = 'accepted', updated_at = '2026-07-17T14:02:00Z'
+       SET state = 'accepted', updated_at = clock_timestamp()
      WHERE quote_id = '00000000-0000-4000-8000-000000000033';
   `);
   await clientA.query('COMMIT');
@@ -442,7 +454,7 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await clientA.query('BEGIN');
   const nullLimits = await checkMcpSpendingLimits(
     { userId: 'null-limit-user', priceCents: 1, currency: 'USD' },
-    { executor: transactionExecutorA, now: () => new Date('2026-07-17T15:00:00Z') },
+    { executor: transactionExecutorA },
   );
   assert.equal(nullLimits.allowed, true);
   const insideTransaction = await clientA.query<{ count: string }>(`

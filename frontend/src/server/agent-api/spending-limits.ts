@@ -34,7 +34,6 @@ type SpendingCheckInput = {
 
 type SpendingDependencies = {
   executor: TransactionQueryExecutor;
-  now?: () => Date;
 };
 
 type SpendingLimitsRow = {
@@ -70,14 +69,6 @@ function assertInput(value: unknown): asserts value is SpendingCheckInput {
     || !CURRENCY_PATTERN.test(value.currency)) {
     throw new Error('Invalid spending check input.');
   }
-}
-
-function requireNow(dependencies: SpendingDependencies): Date {
-  const value = (dependencies.now ?? (() => new Date()))();
-  if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
-    throw new Error('Invalid spending check clock.');
-  }
-  return new Date(value.getTime());
 }
 
 function parseNullableCents(value: unknown): number | null {
@@ -140,22 +131,25 @@ async function checkSpendingLimits(
     webApprovalAboveCents: parseNullableCents(limitRows[0].web_approval_above_cents),
   };
 
-  const now = requireNow(dependencies);
   const statePredicate = includeClaimed
     ? "state IN ('claimed', 'accepted')"
     : "state = 'accepted'";
   const spendingRows = await dependencies.executor.query<AcceptedSpendingRow>(
-    `SELECT COALESCE(SUM(price_cents), 0)::text AS accepted_today_cents
-        FROM mcp_generation_quotes
-       WHERE user_id = $1
-         AND currency = $2
-         AND funding_mode = 'wallet'
-         AND ${statePredicate}
-         AND claimed_at >= (
-           date_trunc('day', $3::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+    `WITH spending_clock AS (
+       SELECT clock_timestamp() AS spending_now
+     )
+     SELECT COALESCE(SUM(price_cents), 0)::text AS accepted_today_cents
+       FROM mcp_generation_quotes
+       CROSS JOIN spending_clock
+      WHERE user_id = $1
+        AND currency = $2
+        AND funding_mode = 'wallet'
+        AND ${statePredicate}
+        AND claimed_at >= (
+          date_trunc('day', spending_now AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
          )
-         AND claimed_at <= $3`,
-    [input.userId, input.currency, now],
+        AND claimed_at <= spending_now`,
+    [input.userId, input.currency],
   );
   if (spendingRows.length !== 1) throw new Error('Invalid spending limit row.');
   const acceptedTodayCents = parseAcceptedCents(spendingRows[0].accepted_today_cents);

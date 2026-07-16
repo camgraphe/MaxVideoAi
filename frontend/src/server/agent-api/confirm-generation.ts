@@ -14,7 +14,7 @@ import {
   GenerationCapabilityError,
   validateCanonicalGenerationCapabilities,
 } from './generation-capability-validation';
-import { hashCanonicalGenerationRequest } from './generation-normalization';
+import { hashCanonicalGenerationRequest, stableJson } from './generation-normalization';
 import {
   priceCanonicalGenerationInExecutor,
   type GenerationPricingResult,
@@ -52,7 +52,7 @@ export type ConfirmGenerationInput = {
 };
 
 type ExecutorDependencies = { executor: TransactionQueryExecutor };
-type SpendingDependencies = ExecutorDependencies & { now?: () => Date };
+type SpendingDependencies = ExecutorDependencies;
 type AccountRestriction = Awaited<ReturnType<typeof getActiveAccountRestrictionInExecutor>>;
 
 export type ConfirmGenerationDependencies = {
@@ -170,15 +170,6 @@ function requirePrincipal(principal: AgentPrincipal): void {
   ) {
     throw new AgentApiError('AUTH_REQUIRED', 'Connect MaxVideoAI before confirming a generation.');
   }
-}
-
-function stableJson(value: unknown): string {
-  if (value === null || typeof value !== 'object') return JSON.stringify(value);
-  if (Array.isArray(value)) return `[${value.map(stableJson).join(',')}]`;
-  return `{${Object.keys(value as Record<string, unknown>)
-    .sort()
-    .map((key) => `${JSON.stringify(key)}:${stableJson((value as Record<string, unknown>)[key])}`)
-    .join(',')}}`;
 }
 
 function staleQuote(): never {
@@ -305,7 +296,7 @@ async function confirmationTransaction(
 
     const spending = await dependencies.checkSpendingLimits(
       { userId: principal.userId, priceCents: quote.priceCents, currency: quote.currency },
-      { executor, now: () => databaseNow },
+      { executor },
     );
     if (!spending.allowed) throw spendingError(dependencies);
 

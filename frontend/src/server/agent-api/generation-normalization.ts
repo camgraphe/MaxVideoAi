@@ -218,7 +218,7 @@ function normalizeSettingValue(value: unknown, key: string): CanonicalGeneration
   fail(`settings.${key}`, 'settings values must be strings, finite numbers, booleans, or null.');
 }
 
-function stableJson(value: unknown): string {
+export function stableJson(value: unknown): string {
   if (value === null || typeof value === 'string' || typeof value === 'boolean') {
     return JSON.stringify(value);
   }

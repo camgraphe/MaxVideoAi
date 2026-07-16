@@ -16,6 +16,7 @@ import { paidProviderSubmissionDependencies } from '@/server/generations/paid-pr
 
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
+import { stableJson } from './generation-normalization';
 
 export type PaidGenerationExecution = {
   surface: 'video' | 'image';
@@ -104,7 +105,7 @@ function requiredSetting(
 function canonicalPricing(input: ReservePaidGenerationInput): Record<string, unknown> {
   const stored = record(input.quote.pricingSnapshot.canonicalPricing, 'Invalid stored generation pricing.');
   const authoritative = record(input.pricingSnapshot.canonicalPricing, 'Invalid authoritative generation pricing.');
-  if (JSON.stringify(stored) !== JSON.stringify(authoritative)) {
+  if (stableJson(stored) !== stableJson(authoritative)) {
     throw new Error('Stored generation pricing changed before reservation.');
   }
   return stored;

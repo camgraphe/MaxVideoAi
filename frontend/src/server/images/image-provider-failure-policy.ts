@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import type { WalletReservation } from '@/server/generations/initial-job-reservation';
 
 export function isAmbiguousImageProviderFailure(
   error: unknown,
@@ -14,6 +15,17 @@ export function isAmbiguousImageProviderFailure(
   return !Number.isFinite(status)
     || status >= 500
     || /abort|network|socket|timeout|timed out|fetch failed|connection/iu.test(`${name} ${message}`);
+}
+
+export function shouldKeepImageProviderOutcomePending(params: {
+  walletReservation: WalletReservation;
+  hasTrustedQuotedBilling: boolean;
+  error: unknown;
+  providerJobId?: string;
+}): boolean {
+  return params.walletReservation === 'already_reserved'
+    && params.hasTrustedQuotedBilling
+    && isAmbiguousImageProviderFailure(params.error, params.providerJobId);
 }
 
 export async function markImageProviderOutcomeAmbiguous(

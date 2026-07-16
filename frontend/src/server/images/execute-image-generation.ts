@@ -47,10 +47,7 @@ import {
 } from './storyboard-image-billing';
 import { executeAfterInitialJobReservation } from '@/server/generations/initial-job-reservation';
 import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
-import {
-  isAmbiguousImageProviderFailure,
-  markImageProviderOutcomeAmbiguous,
-} from './image-provider-failure-policy';
+import { markImageProviderOutcomeAmbiguous, shouldKeepImageProviderOutcomePending } from './image-provider-failure-policy';
 import { resolveImageGenerationPricingSnapshot } from './image-generation-pricing';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
@@ -582,7 +579,10 @@ export async function executeImageGeneration({
         } satisfies ImageGenerationResponse;
       } catch (error) {
         console.error('[images] Fal generation failed', error);
-        if (isAmbiguousImageProviderFailure(error, providerJobId)) {
+        if (shouldKeepImageProviderOutcomePending({
+          walletReservation, hasTrustedQuotedBilling: Boolean(trustedQuotedBilling),
+          error, providerJobId,
+        })) {
           await markImageProviderOutcomeAmbiguous(jobId, providerJobId);
           fail(
             mode,

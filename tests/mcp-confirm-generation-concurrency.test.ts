@@ -21,6 +21,7 @@ import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
+import { reservePaidGenerationInitialJob } from '../frontend/src/server/agent-api/paid-generation-execution';
 import {
   claimPreparedQuote,
   insertPreparedQuote,
@@ -322,6 +323,7 @@ test('P8 quote claim, claimed spending, and transaction-only owners are statical
   assert.match(repository, /claimPreparedQuote\([\s\S]{0,180}QuoteClaimDependencies/);
   assert.match(repository, /clock_timestamp\(\)/i);
   assert.match(spending, /state\s+IN\s*\(\s*'claimed'\s*,\s*'accepted'\s*\)/i);
+  assert.match(spending, /RETURNING[\s\S]*SELECT clock_timestamp\(\) AS spending_now/i);
 });
 
 test('same-quote video/image races, distinct-quote cap race, and expiry wait execute in disposable PostgreSQL', async (t) => {
@@ -402,6 +404,40 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
   });
 
   for (const [index, surface] of (['video', 'image'] as const).entries()) {
+    const quoteId = `00000000-0000-4000-8000-00000000000${index + 8}`;
+    const userId = `jsonb-${surface}`;
+    const clientId = `jsonb-client-${surface}`;
+    const request = requestFor(surface, `jsonb-${index}`);
+    const candidate = capability(request);
+    const catalogRevision = computeGenerationCatalogRevision([candidate]);
+    const authoritativePricing = pricingSnapshot(request, 60, catalogRevision);
+    await pool.query(
+      `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description)
+       VALUES ($1, 'topup', 1000, 'USD', 'local JSONB round-trip topup')`,
+      [userId],
+    );
+    await insertQuote({ pool, quoteId, userId, clientId, request, priceCents: 60 });
+
+    const reservation = await transactionRunner(pool)(async (executor) => {
+      const locked = await lockOwnedQuote({ quoteId, userId, oauthClientId: clientId }, { executor });
+      assert.ok(locked, `${surface} quote must survive the JSONB round-trip`);
+      return reservePaidGenerationInitialJob({
+        quote: locked.quote,
+        candidate,
+        pricingSnapshot: authoritativePricing,
+      }, { executor });
+    });
+    assert.equal(reservation.surface, surface);
+    assert.equal(reservation.jobId, quoteId);
+    const persisted = await pool.query<{ jobs: string; charges: string }>(`
+      SELECT
+        (SELECT count(*) FROM app_jobs WHERE job_id = $1)::text AS jobs,
+        (SELECT count(*) FROM app_receipts WHERE job_id = $1 AND type = 'charge')::text AS charges
+    `, [quoteId]);
+    assert.deepEqual(persisted.rows[0], { jobs: '1', charges: '1' });
+  }
+
+  for (const [index, surface] of (['video', 'image'] as const).entries()) {
     const quoteId = `00000000-0000-4000-8000-00000000001${index + 1}`;
     const userId = `race-${surface}`;
     const clientId = `client-${surface}`;
@@ -470,18 +506,30 @@ test('same-quote video/image races, distinct-quote cap race, and expiry wait exe
   const capPrincipal: AgentPrincipal = {
     userId: capUser, clientId: capClient, emailVerified: true, authMethod: 'oauth',
   };
-  const capResults = await Promise.allSettled([
-    confirmGeneration(
-      { quoteId: capQuoteA, confirmed: true },
-      capPrincipal,
-      confirmationDependencies({ pool, request: capRequestA, priceCents: 60 }),
-    ),
-    confirmGeneration(
-      { quoteId: capQuoteB, confirmed: true },
-      capPrincipal,
-      confirmationDependencies({ pool, request: capRequestB, priceCents: 60 }),
-    ),
-  ]);
+  let releaseEarlierClockWaiter!: () => void;
+  let markEarlierClockRead!: () => void;
+  const earlierClockRead = new Promise<void>((resolve) => { markEarlierClockRead = resolve; });
+  const releaseWaiter = new Promise<void>((resolve) => { releaseEarlierClockWaiter = resolve; });
+  const waiterDependencies = confirmationDependencies({ pool, request: capRequestA, priceCents: 60 });
+  waiterDependencies.getAccountRestriction = async () => {
+    markEarlierClockRead();
+    await releaseWaiter;
+    return null;
+  };
+  const waiter = confirmGeneration(
+    { quoteId: capQuoteA, confirmed: true },
+    capPrincipal,
+    waiterDependencies,
+  );
+  await earlierClockRead;
+  const laterClockWinner = await confirmGeneration(
+    { quoteId: capQuoteB, confirmed: true },
+    capPrincipal,
+    confirmationDependencies({ pool, request: capRequestB, priceCents: 60 }),
+  );
+  assert.equal(laterClockWinner.jobId, capQuoteB);
+  releaseEarlierClockWaiter();
+  const capResults = await Promise.allSettled([waiter, Promise.resolve(laterClockWinner)]);
   assert.equal(capResults.filter((result) => result.status === 'fulfilled').length, 1);
   const rejected = capResults.find((result): result is PromiseRejectedResult => result.status === 'rejected');
   assert.ok(rejected?.reason instanceof AgentApiError);

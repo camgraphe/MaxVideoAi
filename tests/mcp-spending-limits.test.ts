@@ -5,8 +5,6 @@ import test from 'node:test';
 import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
 
 const modulePath = 'frontend/src/server/agent-api/spending-limits.ts';
-const now = new Date('2026-07-16T15:30:00.000Z');
-
 type Captured = { sql: string; params?: ReadonlyArray<unknown> };
 
 function executorWithRows(rows: Record<string, unknown>[], captured: Captured[]): TransactionQueryExecutor {
@@ -43,7 +41,7 @@ test('null limits mean unlimited while accepted MCP spend is read in the UTC day
       web_approval_above_cents: null,
     },
     { accepted_today_cents: '0' },
-  ], captured), now: () => now });
+  ], captured) });
 
   assert.deepEqual(result, {
     allowed: true,
@@ -57,12 +55,13 @@ test('null limits mean unlimited while accepted MCP spend is read in the UTC day
   assert.match(captured[0].sql, /RETURNING per_generation_cents, daily_cents, web_approval_above_cents/i);
   assert.deepEqual(captured[0].params, ['user-1']);
   assert.doesNotMatch(captured[0].sql, /mcp_generation_quotes|SUM\(/i);
+  assert.match(captured[1].sql, /SELECT clock_timestamp\(\) AS spending_now/i);
   assert.match(captured[1].sql, /state\s*=\s*'accepted'/i);
   assert.match(captured[1].sql, /funding_mode\s*=\s*'wallet'/i);
   assert.match(captured[1].sql, /claimed_at\s*>=\s*\(\s*date_trunc\('day',[\s\S]*AT TIME ZONE 'UTC'/i);
-  assert.match(captured[1].sql, /claimed_at\s*<=\s*\$3/i);
+  assert.match(captured[1].sql, /claimed_at\s*<=\s*spending_now/i);
   assert.match(captured[1].sql, /currency\s*=\s*\$2/i);
-  assert.deepEqual(captured[1].params, ['user-1', 'USD', now]);
+  assert.deepEqual(captured[1].params, ['user-1', 'USD']);
 });
 
 test('per-generation, daily, and strict-above approval thresholds return stable safe handoffs', async () => {
@@ -96,7 +95,7 @@ test('per-generation, daily, and strict-above approval thresholds return stable 
         web_approval_above_cents: item.limits[2],
       },
       { accepted_today_cents: item.accepted },
-    ], []), now: () => now });
+    ], []) });
     assert.equal(result.allowed, false, item.label);
     if (!result.allowed) {
       assert.equal(result.code, 'SPENDING_LIMIT_EXCEEDED');
@@ -111,7 +110,7 @@ test('per-generation, daily, and strict-above approval thresholds return stable 
   }, { executor: executorWithRows([
     { per_generation_cents: 100, daily_cents: 100, web_approval_above_cents: 100 },
     { accepted_today_cents: '0' },
-  ], []), now: () => now });
+  ], []) });
   assert.equal(atThreshold.allowed, true, 'thresholds are inclusive; only values above are blocked');
 });
 
@@ -125,7 +124,7 @@ test('accepted spend is account-wide, parameterized, and never contains prompt o
   }, { executor: executorWithRows([
     { per_generation_cents: null, daily_cents: 100, web_approval_above_cents: null },
     { accepted_today_cents: '20' },
-  ], captured), now: () => now });
+  ], captured) });
   for (const call of captured) {
     assert.doesNotMatch(call.sql, /user-'private|prompt|request_json|reference|url/i);
     assert.doesNotMatch(call.sql, /oauth_client_id/i);
@@ -145,7 +144,7 @@ test('invalid integers, overflow, malformed rows, and missing tables fail closed
   const executor = executorWithRows([validRow, { accepted_today_cents: '0' }], []);
   for (const priceCents of [-1, 1.5, Number.NaN, Number.MAX_SAFE_INTEGER]) {
     await assert.rejects(
-      checkMcpSpendingLimits({ userId: 'user-1', priceCents, currency: 'USD' }, { executor, now: () => now }),
+      checkMcpSpendingLimits({ userId: 'user-1', priceCents, currency: 'USD' }, { executor }),
       /invalid spending check input|spending amount overflow/i,
     );
   }
@@ -153,14 +152,12 @@ test('invalid integers, overflow, malformed rows, and missing tables fail closed
   await assert.rejects(
     checkMcpSpendingLimits({ userId: 'user-1', priceCents: 1, currency: 'USD' }, {
       executor: executorWithRows([validRow, { accepted_today_cents: '9007199254740992' }], []),
-      now: () => now,
     }),
     /invalid spending limit row/i,
   );
   await assert.rejects(
     checkMcpSpendingLimits({ userId: 'user-1', priceCents: 1, currency: 'USD' }, {
       executor: { async query() { throw new Error('relation does not exist'); } } as TransactionQueryExecutor,
-      now: () => now,
     }),
     /relation does not exist/,
   );

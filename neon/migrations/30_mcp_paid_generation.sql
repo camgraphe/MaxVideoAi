@@ -119,7 +119,7 @@ CREATE INDEX IF NOT EXISTS mcp_generation_quotes_state_idx
   ON mcp_generation_quotes (state, created_at DESC);
 CREATE INDEX IF NOT EXISTS mcp_generation_quotes_accepted_spend_idx
   ON mcp_generation_quotes (user_id, currency, claimed_at)
-  WHERE state = 'accepted' AND funding_mode = 'wallet';
+  WHERE state IN ('claimed', 'accepted') AND funding_mode = 'wallet';
 
 CREATE OR REPLACE FUNCTION enforce_mcp_generation_quote_insert()
 RETURNS TRIGGER
