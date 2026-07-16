@@ -56,6 +56,7 @@ The object owns:
 - section title and intro;
 - default-renderer CTA copy when currently present;
 - recreate-label copy;
+- the ordered model-contextual filter IDs and labels;
 - the five decision proof cards;
 - localized fallback image-example titles, categories, aspect-ratio labels, alt text, and semantic filter tags when those fallback items are currently active.
 
@@ -68,7 +69,6 @@ Generic vocabulary shared by every model remains in a small route-local locale t
 - view/open render;
 - view all examples;
 - empty-filter message;
-- filter labels;
 - audio-on, audio-off, and silent badges;
 - duration formatting;
 - generic no-preview copy.
@@ -105,6 +105,28 @@ type ModelExamplesContent = {
     defaultCtaLabel: string | null;
     recreateLabel: string;
   };
+  filters: Array<{
+    id:
+      | 'all'
+      | 'cinematic'
+      | 'product'
+      | 'action'
+      | 'vertical'
+      | 'audio'
+      | 'campaign'
+      | 'typography'
+      | 'reference'
+      | 'final'
+      | 'grounded'
+      | 'edit'
+      | 'wide'
+      | 'character'
+      | 'batch'
+      | 'ui'
+      | 'mask'
+      | 'infographic';
+    label: string;
+  }>;
   proofItems: Array<{
     id: string;
     icon:
@@ -131,9 +153,9 @@ type ModelExamplesContent = {
 };
 ```
 
-All objects are strict. Unknown fields fail validation. Required strings are non-empty after trimming. IDs are unique. `modelSlug` must match the requested slug and filename.
+All objects are strict. Unknown fields fail validation. Required strings are non-empty after trimming. IDs are unique. `modelSlug` must match the requested slug and filename. `filters` begins with exactly one `all` entry, and every fallback tag references a declared filter ID.
 
-`proofItems` has exactly five items because the current decision proof grid renders five cards for every configured model. The three locale documents for one model must have the same proof IDs, icon keys, fallback-item IDs, tag values, array order, and nullability.
+`proofItems` has exactly five items because the current decision proof grid renders five cards for every configured model. The three locale documents for one model must have the same filter IDs, proof IDs, icon keys, fallback-item IDs, tag values, array order, and nullability. Filter labels remain localized because the same semantic ID currently has model-contextual presentation such as `Product / Ad`, `Product still`, and `Product`.
 
 `fallbackItems` is non-null only where the current production path actually activates localized image fallback cards. Dormant branches are not activated during migration. Unreachable fallback definitions are deleted rather than materialized as new behavior.
 
@@ -169,9 +191,9 @@ It performs no file reads, runtime media selection, capability checks, slug-base
 
 ### Generic UI copy
 
-Add `_lib/model-page-examples-ui-copy.ts` for generic locale vocabulary and filter labels.
+Add `_lib/model-page-examples-ui-copy.ts` for generic locale vocabulary only.
 
-Filter IDs are semantic and typed. The visible filter set is derived from the tags that exist in the final view-model items. The content documents do not repeat generic filter labels 120 times.
+Filter IDs are semantic and typed. Their model-contextual labels come from validated exact-locale content. The visible filter set is derived from the tags that exist in the final view-model items, so runtime media determines availability without owning editorial labels.
 
 ### Static fallback media
 
