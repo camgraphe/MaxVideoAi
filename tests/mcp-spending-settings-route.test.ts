@@ -17,7 +17,7 @@ import {
   handleMcpSettingsGet,
   handleMcpSettingsPatch,
   type McpSettingsRouteDependencies,
-} from '../frontend/app/api/account/mcp-settings/route';
+} from '../frontend/app/api/account/mcp-settings/_lib/mcp-settings-route';
 import { isSameOriginConsentRequest } from '../frontend/src/server/mcp/oauth-consent';
 
 const settings = {
@@ -402,7 +402,14 @@ test('route file keeps thin exported GET/PATCH adapters and no service-role secr
   const source = readFileSync('frontend/app/api/account/mcp-settings/route.ts', 'utf8');
   assert.match(source, /export async function GET/);
   assert.match(source, /export async function PATCH/);
-  assert.match(source, /getRouteAuthContext/);
-  assert.match(source, /isSameOriginConsentRequest/);
+  assert.doesNotMatch(source, /export\s+(?:async\s+)?function\s+handleMcpSettings(?:Get|Patch)/);
+  assert.doesNotMatch(source, /export\s+(?:type|interface)\s+McpSettingsRouteDependencies/);
+  assert.match(source, /\.\/_lib\/mcp-settings-route/);
+  const owner = readFileSync(
+    'frontend/app/api/account/mcp-settings/_lib/mcp-settings-route.ts',
+    'utf8',
+  );
+  assert.match(owner, /getRouteAuthContext/);
+  assert.match(owner, /isSameOriginConsentRequest/);
   assert.doesNotMatch(source, /SUPABASE_SERVICE_ROLE|service_role|userId\s*=\s*body/i);
 });

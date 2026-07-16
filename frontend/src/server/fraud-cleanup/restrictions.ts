@@ -1,6 +1,15 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { RESTRICTED_ACCOUNT_MESSAGE } from './constants';
 
+function normalizedRestrictionTimestamp(value: unknown): string | null {
+  const parsed = value instanceof Date
+    ? value
+    : typeof value === 'string'
+      ? new Date(value)
+      : null;
+  return parsed && Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
+}
+
 export async function getActiveAccountRestriction(userId: string): Promise<{
   userId: string;
   reason: string;
@@ -14,7 +23,7 @@ export async function getActiveAccountRestriction(userId: string): Promise<{
       user_id: string;
       reason: string;
       message: string | null;
-      restricted_at: string;
+      restricted_at: string | Date;
     }>(
       `
         SELECT user_id, reason, message, restricted_at
@@ -27,11 +36,13 @@ export async function getActiveAccountRestriction(userId: string): Promise<{
     );
     const row = rows[0];
     if (!row) return null;
+    const restrictedAt = normalizedRestrictionTimestamp(row.restricted_at);
+    if (!restrictedAt) throw new Error('Invalid restricted account result.');
     return {
       userId: row.user_id,
       reason: row.reason,
       message: row.message ?? RESTRICTED_ACCOUNT_MESSAGE,
-      restrictedAt: row.restricted_at,
+      restrictedAt,
     };
   } catch (error) {
     const code = typeof error === 'object' && error && 'code' in error ? (error as { code?: string }).code : undefined;
@@ -59,7 +70,7 @@ export async function getActiveAccountRestrictionInExecutor(
     user_id: string;
     reason: string;
     message: string | null;
-    restricted_at: string;
+    restricted_at: string | Date;
   }>(
     `SELECT user_id, reason, message, restricted_at
        FROM user_account_restrictions
@@ -70,14 +81,15 @@ export async function getActiveAccountRestrictionInExecutor(
   );
   const row = rows[0];
   if (!row) return null;
-  if (row.user_id !== userId || typeof row.reason !== 'string' || typeof row.restricted_at !== 'string') {
+  const restrictedAt = normalizedRestrictionTimestamp(row.restricted_at);
+  if (row.user_id !== userId || typeof row.reason !== 'string' || !restrictedAt) {
     throw new Error('Invalid restricted account result.');
   }
   return {
     userId: row.user_id,
     reason: row.reason,
     message: row.message ?? RESTRICTED_ACCOUNT_MESSAGE,
-    restrictedAt: row.restricted_at,
+    restrictedAt,
   };
 }
 

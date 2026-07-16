@@ -70,7 +70,7 @@ configuration was touched.
 | Codex default OAuth `phone` request | Blocked | The default first-run scope mismatch remains unresolved; explicit least-privilege login does not make the default flow safe. |
 | Claude Desktop token-expiry refresh | Blocked | Revocation and reconnect evidence exists, but automatic refresh still lacks a recorded exact-version hosted result. |
 | Real-host end-to-end trial/paid/reference decision | Not run | Task 11 intentionally performed no authentication, grant, purchase, spend, upload, provider, or production action. |
-| Paid generation | Blocked | Mutation tools and quote/confirmation/result/refund evidence are unavailable. |
+| Paid generation | Blocked | Local paid facade verified through the MCP SDK, disposable PostgreSQL, and deterministic provider adapters; hosted real-provider, real-wallet, OAuth refresh, and exact-host confirmation rendering remain pending. |
 | Trial | Blocked | Allocation, abuse, failure restoration, and exact-host evidence are unavailable. |
 | Reference workflow | Blocked | Upload handoff, retention, model support, and exact-host transfer evidence are unavailable. |
 | Funnel/admin reconciliation | Blocked | Migrations 30–32 are absent and migration 33 remains unapplied; deterministic repository tests cannot replace the live ledger. |
@@ -78,6 +78,31 @@ configuration was touched.
 
 Local artifacts, Lighthouse limitations, commands, and the promotion verdict are recorded in
 `docs/marketing/mcp-launch-evidence.md`. These rows do not supersede the host-specific evidence above.
+
+## Paid facade local E2E — 2026-07-16
+
+This entry adds only deterministic local evidence. A linked MCP TypeScript SDK
+client/server pair used an in-memory transport bound to a verified OAuth fixture
+principal. Quotes, locks, spending controls, wallet receipts, jobs, status and
+recent reads, top-up invalidation, and the real wallet refund owner ran against a
+fresh disposable PostgreSQL cluster with migration 30. Provider and payment
+network boundaries remained deterministic local adapters.
+
+The local suite verified the eight-tool registry behind an explicit in-memory
+paid gate, text-to-image, image-to-image, text-to-video, image-to-video, exact
+shared web/MCP price parity, database-time expiry, insufficient funds, signed
+top-up handoff plus fresh quote, completed recovery links, known-rejection
+refund, ambiguous recovery without premature refund, same-quote concurrency,
+distinct-quote daily caps, account restrictions, kill switch and spending
+controls, ownership failures, sanitized activity, and ledger reconciliation.
+
+This does not add or change any Codex or Claude hosted status. All eight
+checked-in publication flags remain `false`. Private `kind: 'asset'` reference
+transfer is still blocked by the later Reference Media plan. Trial allocation,
+hosted OAuth refresh, real provider acceptance/rejection, real wallet/refund,
+and exact-host confirmation/resource rendering have not been verified. No
+public, directory, SEO, or GEO compatibility claim should cite this local row as
+hosted evidence.
 
 ## Commands for preview verification
 
