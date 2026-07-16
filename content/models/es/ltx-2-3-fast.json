@@ -231,10 +231,6 @@
       "Elige duración, ratio, resolución y fps teniendo en cuenta la restricción >10 s.",
       "Revisa el precio en vivo y usa Fast para iteración amplia antes de subir los ganadores."
     ],
-    "galleryTitle": "Ejemplos de LTX 2.3 Fast",
-    "galleryIntro": "Ejemplos representativos de LTX 2.3 Fast para revisar estructura de prompts, ritmo de borradores y preparación de imagen a video antes de generar.",
-    "galleryAllCta": "Ver todos los ejemplos de LTX 2.3 Fast ->",
-    "recreateLabel": "Recrear esta toma ->",
     "tipsTitle": "Fortalezas prácticas y límites",
     "strengths": [
       "Buen equilibrio coste / velocidad para explorar ideas, probar hooks y producir variantes por ratio.",

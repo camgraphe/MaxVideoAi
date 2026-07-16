@@ -231,10 +231,6 @@
       "Choisissez durée, ratio, résolution et fps, en gardant en tête la contrainte >10 s.",
       "Vérifiez le prix live et utilisez Fast pour l’itération large avant de faire monter les gagnants."
     ],
-    "galleryTitle": "Exemples LTX 2.3 Fast",
-    "galleryIntro": "Exemples LTX 2.3 Fast représentatifs pour revoir la structure des prompts, le rythme des brouillons et la préparation image-vers-vidéo avant de générer.",
-    "galleryAllCta": "Voir tous les exemples LTX 2.3 Fast ->",
-    "recreateLabel": "Recréer ce plan ->",
     "tipsTitle": "Forces pratiques et limites",
     "strengths": [
       "Bon équilibre coût / vitesse pour l'exploration d'idées, les tests d'accroches et les variantes de ratio.",

@@ -253,10 +253,6 @@
       }
     ],
     "specValueProp": "Veo 3.1 in MaxVideoAI gives you framing presets, native audio control, seeds and Extend—so it behaves like a directable camera, not a black box.",
-    "galleryTitle": "Real Veo 3.1 examples",
-    "galleryIntro": "See live Veo 3.1 renders powered by the same settings you have in MaxVideoAI.",
-    "galleryAllCta": "View all Veo 3.1 examples →",
-    "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video Workflow with Google Veo 3.1 (+ Nano Banana)",
     "imageIntro": "Pair Google Veo 3.1 with Nano Banana to lock style and iterate on motion.",
     "imageFlow": [

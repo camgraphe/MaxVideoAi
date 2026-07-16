@@ -151,6 +151,18 @@ English. `model-page-decision-content.ts` validates the editorial copy and hrefs
 Do not add TypeScript copy maps, a second filesystem loader, direct JSON imports, or numeric
 prices to decision content.
 
+## Localized Model Examples Content
+
+Model-specific Examples editorial copy lives only in
+`content/models/{locale}/{slug}.json#examples`. The model loader selects the exact requested
+locale and never falls back to English for this block. The strict parser, pure view-model
+builder, and focused server/client renderers must remain model-neutral; do not add slug-specific
+editorial branches or reads from `custom` gallery fields.
+
+Runtime gallery media, engine capabilities, route destinations, and poster selection remain
+runtime policy. They are not localized editorial content and do not belong in the `examples`
+document block.
+
 ## Refactor Checklist
 
 Before moving code:

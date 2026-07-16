@@ -252,7 +252,6 @@
     "finalPara1": "Wan 2.6 is built for short cinematic sequences with multi-shot control.",
     "finalPara2": "Start with text or image, then move to reference video for consistency.",
     "finalButton": "Open Wan 2.6 in Generate →",
-    "galleryIntro": "Recent Wan 2.6 renders across text, image, and reference workflows.",
     "quickStartTitle": "Quick start (1 minute)",
     "quickStartBlocks": [
       {
@@ -294,9 +293,6 @@
       "Transitions feel jumpy → explicitly name the transition + keep the camera move continuous between beats."
     ],
     "tipsIntro": "Wan 2.6 is easiest to steer when you use short beats, explicit transitions, and reference anchoring when identity must stay stable.",
-    "galleryTitle": "Wan 2.6 Example Gallery",
-    "galleryAllCta": "View all Wan 2.6 examples →",
-    "recreateLabel": "Recreate this shot →",
     "safetyTitle": "Safety & people / likeness",
     "safetyRules": [
       "No sexual content, and nothing involving minors.",

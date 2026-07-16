@@ -230,10 +230,6 @@
       }
     ],
     "specValueProp": "Kling 2.5 Turbo is a silent 1080p engine for cinematic short beats with strong motion and physics.",
-    "galleryTitle": "Example Gallery: Kling 2.5 Turbo",
-    "galleryIntro": "Actual runs from the current Kling route in MaxVideoAI.",
-    "galleryAllCta": "View all Kling 2.5 Turbo examples →",
-    "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video Flow with Kling 2.5 Turbo",
     "imageIntro": "Animate one still via Pro Image or Standard tiers.",
     "imageFlow": [

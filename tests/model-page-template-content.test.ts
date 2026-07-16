@@ -7,7 +7,6 @@ import { fileURLToPath } from 'node:url';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-data.ts';
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
-import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
@@ -452,10 +451,10 @@ test('migrated localized model content avoids placeholder media copy', () => {
       const rawContent = readFileSync(contentPath, 'utf8');
       const content = JSON.parse(rawContent) as {
         seo?: { image?: string };
-        custom?: { galleryIntro?: string };
+        examples?: unknown;
       };
       const seoImage = content.seo?.image ?? '';
-      const galleryIntro = content.custom?.galleryIntro ?? '';
+      const examples = parseModelExamplesContent(content.examples, slug, locale);
 
       assert.doesNotMatch(
         seoImage,
@@ -463,9 +462,9 @@ test('migrated localized model content avoids placeholder media copy', () => {
         `${slug}/${locale} SEO image should not point to placeholder media`
       );
       assert.doesNotMatch(
-        galleryIntro,
+        examples.section.intro,
         /placeholder/i,
-        `${slug}/${locale} gallery intro should not expose branch placeholder copy`
+        `${slug}/${locale} Examples intro should not expose branch placeholder copy`
       );
       assert.doesNotMatch(
         rawContent,
@@ -495,23 +494,6 @@ test('shared decision sections do not hardcode Seedance identity fallbacks', () 
     /Prompt Lab — Seedance 2\.0|How Seedance 2\.0 uses references|strongest results with Seedance 2\.0|responsible creation with Seedance 2\.0|engine:\s*['"]Seedance 2\.0['"]/,
     'shared decision components should derive identity fallback copy from the active model name'
   );
-});
-
-test('localized model pages do not inherit English recreate labels from base content', () => {
-  const localizedContent = {
-    seo: {},
-    prompts: [],
-    faqs: [],
-    custom: {
-      recreateLabel: 'Recreate this shot →',
-    },
-  };
-
-  const frCopy = buildSoraCopy(localizedContent, 'example-model', 'fr');
-  const esCopy = buildSoraCopy(localizedContent, 'example-model', 'es');
-
-  assert.equal(frCopy.recreateLabel, 'Recréer ce rendu →');
-  assert.equal(esCopy.recreateLabel, 'Recrear este resultado →');
 });
 
 test('migrated template metadata preserves non-cannibalizing route intent', () => {

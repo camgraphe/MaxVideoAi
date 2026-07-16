@@ -215,10 +215,6 @@
       }
     ],
     "specValueProp": "Pika 2.2 es el motor stylized y silencioso de clips cortos: rápido para iterar con seeds y prompts negativos, perfecto para feeds sociales e inserts de motion.",
-    "galleryTitle": "Galería de ejemplos Pika 2.2",
-    "galleryIntro": "Clips curados generados con los mismos ajustes que tienes en MaxVideoAI.",
-    "galleryAllCta": "Ver todos los ejemplos Pika 2.2 →",
-    "recreateLabel": "Recrear esta toma →",
     "imageTitle": "Flujo de imagen relacionado con Pika 2.2 (+ Nano Banana)",
     "imageIntro": "Esta página es Text-to-Video primero. Usa un still solo en el flujo de imagen relacionado de Pika cuando la composición deba quedar anclada.",
     "imageFlow": [

@@ -224,10 +224,6 @@
       "Traitez-le comme une version de travail, pas comme un remplaçant du standard.",
       "Vérifiez le devis final et les détails de route dans Generate avant chaque génération."
     ],
-    "galleryTitle": "Exemples Seedance 2.0 Fast",
-    "galleryIntro": "Revue des versions de travail et des prompts de comparaison qui rendent Seedance 2.0 Fast utile dans un vrai processus de production.",
-    "galleryAllCta": "Voir tous les exemples Seedance ->",
-    "recreateLabel": "Recréer cette version ->",
     "relatedItems": [
       {
         "brand": "bytedance",

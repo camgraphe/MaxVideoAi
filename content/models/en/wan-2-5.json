@@ -217,10 +217,6 @@
       }
     ],
     "specValueProp": "Wan 2.5 is the audio-ready short-form engine for 5–10s beats where visuals and sound need to land together.",
-    "galleryTitle": "Wan 2.5 Example Gallery",
-    "galleryIntro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",
-    "galleryAllCta": "View all Wan 2.5 examples →",
-    "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video Flow with Wan 2.5",
     "imageIntro": "Animate a single still into an audio-backed beat.",
     "imageFlow": [

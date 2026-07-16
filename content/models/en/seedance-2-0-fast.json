@@ -225,10 +225,6 @@
       "Treat it as a draft tier, not a replacement for the standard tier.",
       "Use the final quote and route details inside Generate before scaling winners."
     ],
-    "galleryTitle": "Seedance 2.0 Fast examples",
-    "galleryIntro": "Review the kinds of draft passes and comparison prompts that make Seedance 2.0 Fast useful in a real production workflow.",
-    "galleryAllCta": "View all Seedance examples ->",
-    "recreateLabel": "Recreate this draft ->",
     "relatedItems": [
       {
         "brand": "bytedance",

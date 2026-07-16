@@ -209,10 +209,6 @@
       "Voice IDs limitées (max 2) et le comportement langue audio dépend du routing.",
       "L’image de fin est optionnelle et fonctionne mieux si la composition finale est clairement décrite."
     ],
-    "galleryTitle": "Galerie d’exemples Kling 3 Standard",
-    "galleryIntro": "Rendus récents Kling 3 Standard avec multi‑plans, Elements et audio optionnel.",
-    "galleryAllCta": "Voir tous les exemples Kling 3 Standard →",
-    "recreateLabel": "Recréer ce plan →",
     "safetyNote": "Garde-fous intégrés et bonnes pratiques pour une création responsable avec Kling 3 Standard."
   },
   "decision": {

@@ -159,10 +159,6 @@
         ]
       }
     ],
-    "galleryTitle": "Example Gallery: Real Sora 2 Outputs",
-    "galleryIntro": "See a handful of live Sora 2 renders powered by the same settings you have in MaxVideoAI.",
-    "galleryAllCta": "View all Sora 2 examples →",
-    "recreateLabel": "Recreate this shot →",
     "imageTitle": "Image-to-Video Workflow with Sora 2 (+ Nano Banana)",
     "imageIntro": "One advantage of Sora in MaxVideoAI is pairing it with an image engine like Nano Banana.",
     "imageFlow": [

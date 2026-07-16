@@ -8,9 +8,6 @@
   "overview": "Kling 3.0 Omni 4K es la ruta nativa 4K para renders Kling guiados por referencias y storyboard.",
   "pricingNotes": "Costo aproximado del proveedor antes del margen MaxVideoAI: $0.42/s.",
   "custom": {
-    "galleryTitle": "Demos Kling 3.0 Omni 4K para entrega final",
-    "galleryIntro": "Revisa renders O3 nativos 4K guiados por storyboard o imágenes de referencia. Usa estos ejemplos cuando la dirección creativa ya está aprobada y la salida final necesita entrega 4K en vez de V2V desde video fuente.",
-    "galleryAllCta": "Ver ejemplos Kling ->",
     "relatedTitle": "Pasar del borrador a la entrega final",
     "relatedSubtitle": "Usa 4K después de validar el plan de referencias en Standard o Pro. Mantén el V2V desde video fuente en Standard o Pro, porque la ruta 4K actual está centrada en referencias.",
     "relatedItems": [

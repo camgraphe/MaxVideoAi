@@ -8,9 +8,6 @@
   "overview": "Kling 3.0 Omni Pro es la ruta Kling Omni para usar imágenes o un video fuente como guía visual sin convertir automáticamente la primera subida en el frame inicial.",
   "pricingNotes": "Coste aproximado del proveedor antes del margen MaxVideoAI: $0.168/s con audio y $0.112/s sin audio.",
   "custom": {
-    "galleryTitle": "Demos Kling 3.0 Omni Pro storyboard y V2V",
-    "galleryIntro": "Revisa ejemplos Pro con imágenes de referencia, storyboard, V2V desde video fuente y audio nativo. Estos clips ayudan a comparar la guía O3 con los workflows Kling 3 donde la imagen subida se convierte en start frame.",
-    "galleryAllCta": "Ver ejemplos Kling ->",
     "relatedTitle": "Dónde encaja Kling 3.0 Omni Pro",
     "relatedSubtitle": "Pro es la ruta O3 principal cuando las imágenes de referencia y el video fuente deben guiar el plano sin imponer un frame inicial fijo.",
     "relatedItems": [

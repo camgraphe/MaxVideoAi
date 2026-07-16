@@ -236,10 +236,6 @@
       "Utiliser prompt seul ou image de départ seulement pour générer un nouveau clip.",
       "Vérifier le prix exact puis générer."
     ],
-    "galleryTitle": "Exemples Luma Ray 3.2",
-    "galleryIntro": "Servez-vous des exemples pour étudier prompts Modify, changements guidés par images clés, réglages Reframe et tests courts complémentaires.",
-    "galleryAllCta": "Voir tous les exemples Luma",
-    "recreateLabel": "Recréer ce plan",
     "tipsTitle": "Forces pratiques et limites",
     "strengths": [
       "Les vidéos sources aident à préserver timing et mouvement caméra avec Modify.",

@@ -252,7 +252,6 @@
     "finalPara1": "Wan 2.6 está diseñado para secuencias cinematográficas cortas con control multi‑shot.",
     "finalPara2": "Empieza con texto o imagen y luego pasa a referencia de video para consistencia.",
     "finalButton": "Abrir Wan 2.6 en Generate →",
-    "galleryIntro": "Renders recientes de Wan 2.6 en flujos de texto, imagen y referencia.",
     "quickStartTitle": "Inicio rápido (1 minuto)",
     "quickStartBlocks": [
       {
@@ -294,9 +293,6 @@
       "Transiciones bruscas → nombra la transición explícitamente y mantén el movimiento de cámara continuo entre beats."
     ],
     "tipsIntro": "Wan 2.6 es más fácil de dirigir con beats cortos, transiciones explícitas y anclaje por referencia cuando la identidad debe mantenerse estable.",
-    "galleryTitle": "Galería de ejemplos Wan 2.6",
-    "galleryAllCta": "Ver todos los ejemplos Wan 2.6 →",
-    "recreateLabel": "Recrear esta toma →",
     "safetyTitle": "Seguridad y personas / semejanza",
     "safetyRules": [
       "Nada de contenido sexual, ni nada que involucre menores.",

@@ -204,10 +204,6 @@
       "Add your prompt; for edits, upload a clean reference",
       "Check the live price chip and generate"
     ],
-    "galleryTitle": "Nano Banana examples",
-    "galleryIntro": "Recent photoreal stills and edits used as keyframes for video workflows.",
-    "galleryAllCta": "View image examples →",
-    "recreateLabel": "Recreate this still →",
     "tipsTitle": "Tips & limits",
     "tipsIntro": "Image generation is most predictable when you keep the frame simple, readable, and physically grounded.",
     "strengths": [

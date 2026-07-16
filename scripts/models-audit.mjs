@@ -29,6 +29,13 @@ const VALID_STATUS = new Set(['live', 'early_access', 'busy', 'degraded', 'maint
 const VALID_EXAMPLES_STAGES = new Set(['hidden', 'public_noindex', 'indexed']);
 const TEMPLATE_MARKER_REGEX = /\{\{[^}]+\}\}/g;
 const GRANDFATHERED_PRELAUNCH_COMPARE_PUBLICATION_SLUGS = new Set(['seedance-2-0']);
+const LEGACY_GALLERY_KEYS = [
+  'galleryTitle',
+  'galleryIntro',
+  'galleryAllCta',
+  'gallerySceneCta',
+  'recreateLabel',
+];
 
 function parseArgs(argv) {
   return {
@@ -146,12 +153,8 @@ function getMarketingCoverage(content) {
         hasNonEmptyString(content?.pricingNotes)
     ),
     prompting: Boolean(content?.prompting),
+    examples: Boolean(content?.examples),
     faq: hasNonEmptyArray(content?.faqs),
-    gallery: Boolean(
-      hasNonEmptyString(custom?.galleryTitle) ||
-        hasNonEmptyString(custom?.galleryIntro) ||
-        hasNonEmptyString(custom?.galleryAllCta)
-    ),
     closingCta: Boolean(
       hasNonEmptyString(custom?.finalPara1) ||
         hasNonEmptyString(custom?.finalButton) ||
@@ -178,6 +181,7 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
       useCases: coverage.useCases,
       specs: coverage.specs,
       prompting: coverage.prompting,
+      examples: coverage.examples,
       faq: coverage.faq,
     })
       .filter(([, present]) => !present)
@@ -194,7 +198,6 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
     }
 
     const missingWarningBlocks = Object.entries({
-      gallery: coverage.gallery,
       closingCta: coverage.closingCta,
     })
       .filter(([, present]) => !present)
@@ -216,6 +219,21 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
         localizedContent = locale === 'en' ? content : await loadLocaleContentEntry(locale, modelSlug);
       } catch {
         continue;
+      }
+      const localizedCustom = localizedContent?.custom && typeof localizedContent.custom === 'object'
+        ? localizedContent.custom
+        : {};
+      const legacyExamplesKeys = LEGACY_GALLERY_KEYS.filter((key) =>
+        Object.hasOwn(localizedCustom, key)
+      );
+      if (legacyExamplesKeys.length) {
+        addIssue(
+          issues,
+          'critical',
+          'legacy_examples_ownership',
+          `Model "${modelSlug}" still owns legacy Examples copy in ${locale.toUpperCase()} custom content: ${legacyExamplesKeys.join(', ')}.`,
+          { modelSlug, locale, keys: legacyExamplesKeys }
+        );
       }
       const templateMarkers = Array.from(
         new Set(

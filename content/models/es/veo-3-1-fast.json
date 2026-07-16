@@ -243,10 +243,6 @@
       }
     ],
     "specValueProp": "Veo 3.1 Fast es tu banco de pruebas ultra‑rápido: mismo lenguaje cinematográfico que Veo 3.1, menor costo y turnaround más rápido.",
-    "galleryTitle": "Galería de ejemplos: renders Veo 3.1 Fast",
-    "galleryIntro": "Explora clips generados con Veo 3.1 Fast usando los mismos presets que tienes.",
-    "galleryAllCta": "Ver todos los ejemplos Veo 3.1 Fast →",
-    "recreateLabel": "Recrear esta toma →",
     "imageTitle": "Flow image y reference-to-video con Google Veo 3.1 Fast",
     "imageIntro": "Anima una imagen inicial en un loop rápido, o adjunta 1 a 4 imágenes de referencia para un pase de consistencia de 8 s.",
     "imageFlow": [

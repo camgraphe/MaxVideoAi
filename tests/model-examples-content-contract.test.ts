@@ -12,6 +12,13 @@ import {
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
 
 const LOCALES = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
+const LEGACY_GALLERY_KEYS = [
+  'galleryTitle',
+  'galleryIntro',
+  'galleryAllCta',
+  'gallerySceneCta',
+  'recreateLabel',
+] as const;
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
 const normalizationSource = readFileSync(
   path.join(process.cwd(), 'frontend', 'lib', 'models', 'i18n-normalization.ts'),
@@ -130,6 +137,21 @@ test('all 40 model documents expose strict Examples content in every locale', ()
       const slug = fileName.slice(0, -5);
       const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
       assert.equal(parsed.modelSlug, slug);
+    }
+  }
+});
+
+test('model documents contain no legacy Examples ownership', () => {
+  for (const locale of LOCALES) {
+    for (const slug of listModelPageTemplateSlugs()) {
+      const document = readDocument(locale, slug);
+      const custom = document.custom && typeof document.custom === 'object'
+        ? document.custom as Record<string, unknown>
+        : {};
+      for (const key of LEGACY_GALLERY_KEYS) {
+        assert.equal(Object.hasOwn(document, key), false, `${slug}/${locale}/root/${key}`);
+        assert.equal(Object.hasOwn(custom, key), false, `${slug}/${locale}/custom/${key}`);
+      }
     }
   }
 });

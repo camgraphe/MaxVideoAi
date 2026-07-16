@@ -23,6 +23,9 @@ This route renders localized SEO pages for individual AI video models.
 - Never add English fallback, Prompt Lab fields under `custom`, model-slug copy branches, direct JSON imports, or workspace URL construction in Prompt Lab components.
 - Keep generic Prompt Lab UI labels in `model-page-prompting-ui-copy.ts`; keep model-specific titles, prompts, notes, demos, and image examples in localized JSON.
 - Keep the preserved Happy Horse/media-summary prompt-source compatibility rule isolated in `model-page-prompting-prompt-source.ts`; do not move model identity checks into the parser, pure view-model builder, or renderers.
+- Keep model-specific Examples editorial copy only in `content/models/{locale}/{slug}.json#examples`.
+- Load Examples from the exact requested locale. The parser, pure view-model builder, and renderers must not own model-specific editorial branches or an English fallback.
+- Treat runtime gallery media, capability-derived presentation, link destinations, and poster selection as runtime policy, not localized editorial content.
 
 ## Checks
 

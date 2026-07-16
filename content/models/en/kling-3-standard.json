@@ -209,10 +209,6 @@
       "Voice IDs are limited (max 2) and audio language behavior depends on routing.",
       "End frame is optional and works best when the final composition is clearly described."
     ],
-    "galleryTitle": "Kling 3 Standard examples",
-    "galleryIntro": "Recent Kling 3 Standard renders with multi-shot prompts, Elements, and optional audio.",
-    "galleryAllCta": "View all Kling 3 Standard examples →",
-    "recreateLabel": "Recreate this shot →",
     "safetyNote": "Built-in safeguards and best practices for responsible creation with Kling 3 Standard."
   },
   "decision": {

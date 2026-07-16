@@ -252,10 +252,6 @@
       "Revisa el proveedor y el flujo activos antes de usarlo con clientes o automatizaciones.",
       "Usa el precio final de Generate antes de un despliegue con clientes o automatizaciones."
     ],
-    "galleryTitle": "Ejemplos de Seedance 2.0",
-    "galleryIntro": "Usa esta galería para revisar patrones de prompt, estructura de escenas y tipos de secuencias que Seedance 2.0 resuelve bien dentro de MaxVideoAI.",
-    "galleryAllCta": "Ver todos los ejemplos de Seedance ->",
-    "recreateLabel": "Recrear esta toma ->",
     "relatedItems": [
       {
         "brand": "bytedance",

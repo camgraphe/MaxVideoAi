@@ -8,9 +8,6 @@
   "overview": "Kling 3.0 Omni Standard es la ruta Kling Omni de menor costo para reference-to-video, borradores storyboard y pruebas video-to-video desde video fuente.",
   "pricingNotes": "Costo aproximado del proveedor antes del margen MaxVideoAI: $0.126/s con audio y $0.084/s sin audio.",
   "custom": {
-    "galleryTitle": "Borradores de referencia Kling 3.0 Omni Standard",
-    "galleryIntro": "Revisa ejemplos de menor costo con storyboard, imágenes de referencia y V2V desde video fuente antes de pasar los planos aprobados a Pro o 4K. Standard sirve para probar guía visual sin forzar la primera imagen subida como frame inicial.",
-    "galleryAllCta": "Ver ejemplos Kling ->",
     "relatedTitle": "Elegir la ruta Kling correcta",
     "relatedSubtitle": "Usa Standard para borradores O3 de menor costo, Pro cuando importan V2V y continuidad, y Kling 3 Standard cuando la imagen debe abrir el clip.",
     "relatedItems": [

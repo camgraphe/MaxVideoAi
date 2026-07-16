@@ -29,6 +29,10 @@ const paths = {
   uiCopy: path.join(ROUTE_ROOT, '_lib/model-page-examples-ui-copy.ts'),
   media: path.join(ROUTE_ROOT, '_lib/model-page-example-media.ts'),
   runtimePolicy: path.join(ROUTE_ROOT, '_lib/model-page-examples-runtime-policy.ts'),
+  legacyProjector: path.join(ROUTE_ROOT, '_lib/model-page-examples-legacy.ts'),
+  converter: path.join(ROOT, 'scripts/migrate-model-examples-content.ts'),
+  legacyParityTest: path.join(ROOT, 'tests/model-examples-legacy-projection.test.ts'),
+  audit: path.join(ROOT, 'scripts/models-audit.mjs'),
   legacyCopy: path.join(ROUTE_ROOT, '_lib/model-page-copy.ts'),
   legacyCopyTypes: path.join(ROUTE_ROOT, '_lib/model-page-specs-types.ts'),
 };
@@ -70,6 +74,27 @@ test('active Examples ownership no longer imports the legacy projector', () => {
     .join('\n');
 
   assert.doesNotMatch(activeSource, /model-page-examples-legacy|buildLegacyModelExamplesContent/);
+});
+
+test('temporary Examples migration owners are absent', () => {
+  for (const filePath of [paths.legacyProjector, paths.converter, paths.legacyParityTest]) {
+    assert.equal(existsSync(filePath), false, filePath);
+  }
+});
+
+test('SoraCopy and buildSoraCopy contain no Examples ownership', () => {
+  const source = [paths.legacyCopyTypes, paths.legacyCopy].map(readSource).join('\n');
+  for (const key of ['galleryTitle', 'galleryIntro', 'galleryAllCta', 'gallerySceneCta', 'recreateLabel']) {
+    assert.doesNotMatch(source, new RegExp(`\\b${key}\\b`));
+  }
+});
+
+test('model audit requires strict Examples content and rejects legacy custom ownership', () => {
+  const source = readSource(paths.audit);
+
+  assert.match(source, /examples:\s*Boolean\(content\?\.examples\)/);
+  assert.match(source, /LEGACY_GALLERY_KEYS/);
+  assert.match(source, /legacy_examples_ownership/);
 });
 
 test('client gallery consumes permanent filter and item contracts plus localized no-preview copy', () => {
@@ -172,4 +197,81 @@ test('default renderer localizes missing previews and hides recreate links witho
 
   assert.match(markup, />No preview</);
   assert.doesNotMatch(markup, /recreate=job_no_preview/);
+});
+
+test('decision renderer preserves localized copy, generic view-all, proof order, and gallery wiring', async () => {
+  const video: ExampleGalleryVideo = {
+    id: 'job_decision_fixture',
+    href: '/video/job_decision_fixture',
+    engineLabel: 'Fixture Engine',
+    engineIconId: 'fixture',
+    priceLabel: null,
+    prompt: 'A cinematic product sprint with synchronized audio.',
+    aspectRatio: '16:9',
+    durationSec: 8,
+    hasAudio: true,
+    optimizedPosterUrl: null,
+    rawPosterUrl: null,
+    recreateHref: '/app?engine=fixture&recreate=job_decision_fixture',
+  };
+  const proofItems = [
+    { id: 'one', icon: 'sparkles' as const, title: 'Proof one', body: 'One body' },
+    { id: 'two', icon: 'zap' as const, title: 'Proof two', body: 'Two body' },
+    { id: 'three', icon: 'audio' as const, title: 'Proof three', body: 'Three body' },
+    { id: 'four', icon: 'users' as const, title: 'Proof four', body: 'Four body' },
+    { id: 'five', icon: 'shield' as const, title: 'Proof five', body: 'Five body' },
+  ];
+  const viewModel = buildModelExamplesViewModel({
+    content: {
+      modelSlug: 'fixture',
+      section: {
+        title: 'Localized decision examples',
+        intro: 'Localized decision intro',
+        defaultCtaLabel: null,
+        recreateLabel: 'Recreate fixture →',
+      },
+      filters: [
+        { id: 'all', label: 'Everything' },
+        { id: 'audio', label: 'With sound' },
+      ],
+      proofItems,
+      fallbackItems: null,
+    },
+    ui: getModelExamplesUiCopy('en'),
+    locale: 'en',
+    anchorId: 'examples',
+    modelName: 'Fixture',
+    mode: 'video',
+    audioMode: 'runtime',
+    decisionAltMode: 'preview-alt',
+    galleryVideos: [video],
+    galleryPreviewAlts: new Map(),
+    fallbackPosters: new Map(),
+    examplesLinkHref: '/examples/fixture',
+    imageWorkspaceHref: '/app/image?engine=fixture',
+  });
+  const { ModelDecisionExamplesSection } = await import(
+    '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_components/ModelDecisionExamplesSection.tsx'
+  );
+  const { I18nProvider } = await import('../frontend/lib/i18n/I18nProvider.tsx');
+  const markup = renderToStaticMarkup(
+    React.createElement(
+      I18nProvider,
+      { locale: 'en', dictionary: {}, fallback: {} },
+      React.createElement(ModelDecisionExamplesSection, { viewModel }),
+    ),
+  );
+
+  assert.match(markup, /Localized decision examples/);
+  assert.match(markup, /Localized decision intro/);
+  assert.match(markup, />View all examples</);
+  assert.match(markup, />Everything</);
+  assert.match(markup, />With sound</);
+  assert.match(markup, />No preview</);
+  assert.match(markup, /Recreate fixture/);
+  assert.deepEqual(
+    proofItems.map(({ title }) => markup.indexOf(title)),
+    [...proofItems.keys()].map((index) => markup.indexOf(proofItems[index].title)).sort((a, b) => a - b),
+  );
+  assert.match(markup, /lucide-sparkles[\s\S]*lucide-zap[\s\S]*lucide-audio-lines[\s\S]*lucide-users[\s\S]*lucide-shield-check/);
 });

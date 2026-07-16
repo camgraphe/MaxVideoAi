@@ -138,9 +138,6 @@
     }
   ],
   "custom": {
-    "galleryTitle": "Demos del modelo Happy Horse 1.1",
-    "galleryIntro": "Revisa los clips de la página del modelo para audio nativo, sincronización labial y generaciones guiadas por referencias. Las páginas de comparación se mantienen enfocadas en texto y especificaciones para este lanzamiento.",
-    "galleryAllCta": "Iniciar una generación Happy Horse 1.1 ->",
     "quickPricingTitle": "Ruta de precio",
     "quickPricingItems": [
       "Usa 720p para iterar más barato en texto, imagen y referencias de video.",

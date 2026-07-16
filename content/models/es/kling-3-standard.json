@@ -209,10 +209,6 @@
       "Voice IDs limitadas (máx 2) y el comportamiento de idioma de audio depende del routing.",
       "El frame final es opcional y funciona mejor si la composición final está claramente descrita."
     ],
-    "galleryTitle": "Galería de ejemplos Kling 3 Standard",
-    "galleryIntro": "Renders recientes de Kling 3 Standard con multi‑shot, Elements y audio opcional.",
-    "galleryAllCta": "Ver todos los ejemplos Kling 3 Standard →",
-    "recreateLabel": "Recrear esta toma →",
     "safetyNote": "Controles integrados y buenas prácticas para creación responsable con Kling 3 Standard."
   },
   "decision": {

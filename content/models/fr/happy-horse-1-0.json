@@ -138,9 +138,6 @@
     }
   ],
   "custom": {
-    "galleryTitle": "Démos modèle Happy Horse 1.0",
-    "galleryIntro": "Analysez le comportement de l’ancienne édition vidéo. Les pages de comparaison restent volontairement orientées caractéristiques et texte pour ce lancement.",
-    "galleryAllCta": "Lancer une génération Happy Horse ->",
     "quickPricingTitle": "Route tarifaire",
     "quickPricingItems": [
       "Utilisez 720p pour itérer moins cher en texte, image et R2V.",

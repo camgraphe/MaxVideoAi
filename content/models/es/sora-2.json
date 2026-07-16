@@ -159,10 +159,6 @@
         ]
       }
     ],
-    "galleryTitle": "Galería de ejemplos: renders Sora 2",
-    "galleryIntro": "Algunos renders Sora 2 hechos con los mismos ajustes que tienes en MaxVideoAI.",
-    "galleryAllCta": "Ver todos los ejemplos de Sora 2 →",
-    "recreateLabel": "Recrear este plano →",
     "imageTitle": "Flujo Imagen→Video con Sora 2 (+ Nano Banana)",
     "imageIntro": "Una ventaja de Sora en MaxVideoAI es combinarlo con un motor de imagen como Nano Banana.",
     "imageFlow": [

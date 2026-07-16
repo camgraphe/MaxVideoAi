@@ -8,9 +8,6 @@
   "overview": "Kling 3.0 Omni Standard is the lower-cost Kling Omni route for reference-to-video, storyboard drafts, and source-video video-to-video experiments.",
   "pricingNotes": "Provider cost is about $0.126/s with audio on and $0.084/s audio off before the MaxVideoAI margin.",
   "custom": {
-    "galleryTitle": "Kling 3.0 Omni Standard reference drafts",
-    "galleryIntro": "Review lower-cost storyboard, reference-image, and source-video V2V examples before moving approved shots into Pro or 4K. Standard is the O3 route for testing visual guidance without forcing the first uploaded image to become the opening frame.",
-    "galleryAllCta": "Browse Kling reference examples ->",
     "relatedTitle": "Choose the right Kling route",
     "relatedSubtitle": "Use Standard for lower-cost O3 reference drafts, Pro when source-video V2V and stronger continuity matter, and Kling 3 Standard when the image must become the first frame.",
     "relatedItems": [

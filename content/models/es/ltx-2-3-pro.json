@@ -241,10 +241,6 @@
       "Sube el asset adecuado para el workflow activo: imagen inicial, imagen final, fuente de audio o video fuente.",
       "Revisa el precio en vivo antes de generar y luego itera solo sobre el workflow que realmente importa."
     ],
-    "galleryTitle": "Ejemplos de LTX 2.3 Pro",
-    "galleryIntro": "Ejemplos representativos de LTX 2.3 Pro para revisar generación guiada por audio, extensión, retake y pasadas de producción en mayor resolución.",
-    "galleryAllCta": "Ver todos los ejemplos de LTX 2.3 Pro ->",
-    "recreateLabel": "Recrear esta toma ->",
     "tipsTitle": "Fortalezas prácticas y límites",
     "strengths": [
       "La interfaz LTX más completa: generación, animación guiada por audio, extensión y retake en un mismo lugar.",

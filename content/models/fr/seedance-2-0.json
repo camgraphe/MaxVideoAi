@@ -252,10 +252,6 @@
       "Vérifiez le provider actif avant de monter en volume.",
       "Utilisez le devis final dans Generate avant un déploiement côté client ou une automatisation."
     ],
-    "galleryTitle": "Exemples Seedance 2.0",
-    "galleryIntro": "Utilisez cette galerie pour revoir les schémas de prompts, la structure des scènes et les séquences que Seedance 2.0 gère bien dans MaxVideoAI.",
-    "galleryAllCta": "Voir tous les exemples Seedance ->",
-    "recreateLabel": "Recréer ce plan ->",
     "relatedItems": [
       {
         "brand": "bytedance",

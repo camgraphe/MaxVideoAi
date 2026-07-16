@@ -227,10 +227,6 @@
       "Pour Modify, choisissez le preset adhere, flex ou reimagine adapte.",
       "Verifiez le prix live avant generation, puis iterez seulement sur le workflow utile."
     ],
-    "galleryTitle": "Exemples Luma Ray 2",
-    "galleryIntro": "Utilisez le rail d'exemples pour comparer generation nette, animation de still, passes modify et reframes de livraison dans la meme famille Ray 2.",
-    "galleryAllCta": "Voir tous les exemples Luma ->",
-    "recreateLabel": "Recreer ce plan ->",
     "tipsTitle": "Forces pratiques et limites",
     "strengths": [
       "Surface workflow Luma a forte valeur: generate, modify et reframe au meme endroit.",

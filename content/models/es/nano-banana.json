@@ -204,10 +204,6 @@
       "Añade tu prompt; para ediciones, sube una referencia limpia",
       "Revisa el chip de precio en vivo y genera"
     ],
-    "galleryTitle": "Ejemplos de Nano Banana",
-    "galleryIntro": "Stills fotorrealistas recientes y edits usados como keyframes para workflows de video.",
-    "galleryAllCta": "Ver ejemplos de imagen →",
-    "recreateLabel": "Recrear este still →",
     "tipsTitle": "Consejos y límites",
     "tipsIntro": "La generación de imágenes es más predecible cuando mantienes el frame simple, legible y físicamente anclado.",
     "strengths": [

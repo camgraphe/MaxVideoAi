@@ -105,10 +105,6 @@ export type SoraCopy = {
   showPricePerSecondInSpecs: boolean;
   hidePricingSection: boolean;
   microCta: string | null;
-  galleryTitle: string | null;
-  galleryIntro: string | null;
-  galleryAllCta: string | null;
-  recreateLabel: string | null;
   imageTitle: string | null;
   imageIntro: string | null;
   imageFlow: string[];

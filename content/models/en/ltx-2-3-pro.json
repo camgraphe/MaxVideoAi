@@ -241,10 +241,6 @@
       "Upload the relevant asset for the active workflow: start image, end image, audio source or source video.",
       "Review the live price before generation, then iterate only on the workflow that matters."
     ],
-    "galleryTitle": "LTX 2.3 Pro examples",
-    "galleryIntro": "Representative LTX 2.3 Pro examples for reviewing audio-led motion, extension, retake and higher-resolution production workflows.",
-    "galleryAllCta": "View all LTX 2.3 Pro examples ->",
-    "recreateLabel": "Recreate this shot ->",
     "tipsTitle": "Practical strengths and boundaries",
     "strengths": [
       "Most complete LTX workflow surface: generate, audio-driven motion, extension and retake in one place.",

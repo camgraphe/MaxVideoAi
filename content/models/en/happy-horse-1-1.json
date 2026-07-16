@@ -138,9 +138,6 @@
     }
   ],
   "custom": {
-    "galleryTitle": "Happy Horse 1.1 model demos",
-    "galleryIntro": "Review the model page clips for native audio, lip-sync, and reference-to-video behavior. Comparison pages intentionally stay text/spec focused for this launch.",
-    "galleryAllCta": "Start a Happy Horse 1.1 generation ->",
     "quickPricingTitle": "Pricing route",
     "quickPricingItems": [
       "Use 720p for cheaper iteration across text, image, and reference-to-video.",

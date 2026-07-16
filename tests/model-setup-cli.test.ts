@@ -44,13 +44,13 @@ const requiredArgs = [
   'seedance',
 ];
 
-test('model scaffold retargets decision and prompting identities', () => {
-  assert.match(scaffoldSource, /\['decision',\s*'prompting'\]\s+as const/);
+test('model scaffold retargets decision, prompting, and Examples identities', () => {
+  assert.match(scaffoldSource, /\['decision',\s*'prompting',\s*'examples'\]\s+as const/);
   assert.match(scaffoldSource, /transformed\[field\]/);
   assert.match(scaffoldSource, /modelSlug:\s*options\.targetSlug/);
 });
 
-test('model scaffold retargets EN FR ES identities and localized prompting guide links', () => {
+test('model scaffold retargets EN FR ES identities and preserves Examples filter structure', () => {
   const sourceSlug = 'dreamina-seedance-2-0-mini';
   const targetSlug = 'review-target-model';
   const sandboxRoot = mkdtempSync(join(tmpdir(), 'maxvideo-model-scaffold-'));
@@ -90,6 +90,9 @@ test('model scaffold retargets EN FR ES identities and localized prompting guide
       es: `/es/modelos/${targetSlug}`,
     } as const;
     for (const locale of ['en', 'fr', 'es'] as const) {
+      const source = JSON.parse(
+        readFileSync(join(root, 'content/models', locale, `${sourceSlug}.json`), 'utf8'),
+      ) as { examples?: { filters: Array<{ id: string }> } };
       const generated = JSON.parse(
         readFileSync(
           join(sandboxRoot, 'content/models', locale, `${targetSlug}.json`),
@@ -98,9 +101,16 @@ test('model scaffold retargets EN FR ES identities and localized prompting guide
       ) as {
         decision?: { modelSlug?: string };
         prompting?: { modelSlug?: string; section?: { guide?: { href?: string } } };
+        examples?: { modelSlug?: string; filters: Array<{ id: string }> };
       };
       assert.equal(generated.decision?.modelSlug, targetSlug, `${locale} decision identity`);
       assert.equal(generated.prompting?.modelSlug, targetSlug, `${locale} prompting identity`);
+      assert.equal(generated.examples?.modelSlug, targetSlug, `${locale} Examples identity`);
+      assert.deepEqual(
+        generated.examples?.filters.map(({ id }) => id),
+        source.examples?.filters.map(({ id }) => id),
+        `${locale} Examples filter ids`,
+      );
       assert.equal(
         generated.prompting?.section?.guide?.href,
         expectedGuideHrefs[locale],
@@ -112,11 +122,13 @@ test('model scaffold retargets EN FR ES identities and localized prompting guide
   }
 });
 
-test('model setup requires exact-locale decision and prompting review', () => {
-  assert.match(setupSource, /every localized `decision` and `prompting` block/i);
+test('model setup requires exact-locale decision, prompting, and Examples review', () => {
+  assert.match(setupSource, /every localized `decision`, `prompting`, and `examples` block/i);
   assert.match(setupSource, /exact `modelSlug`/i);
   assert.match(setupSource, /locale-correct hrefs/i);
-  assert.match(setupSource, /no English prompting fallback/i);
+  assert.match(setupSource, /structural parity/i);
+  assert.match(setupSource, /model-context filter labels/i);
+  assert.match(setupSource, /no English fallback/i);
 });
 
 test('model setup documents and validates canonical model categories', () => {

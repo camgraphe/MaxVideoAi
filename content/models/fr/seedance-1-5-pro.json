@@ -204,11 +204,7 @@
       "24 fps.",
       "Résolution et prix varient selon le tier ; vérifiez les spec chips avant rendu.",
       "Pas de micro‑texte fiable — overlay le texte critique en post."
-    ],
-    "galleryTitle": "Galerie d’exemples Seedance 1.5 Pro",
-    "galleryIntro": "Rendus récents Seedance 1.5 Pro avec camera_fixed, seed control et images de fin.",
-    "galleryAllCta": "Voir tous les exemples Seedance 1.5 Pro →",
-    "recreateLabel": "Recréer ce plan →"
+    ]
   },
   "decision": {
     "modelSlug": "seedance-1-5-pro",

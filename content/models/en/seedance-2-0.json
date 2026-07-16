@@ -254,10 +254,6 @@
       "Check the active provider route before scaling production traffic.",
       "Use the final quote in Generate before client-facing rollout or automated workflows."
     ],
-    "galleryTitle": "Seedance 2.0 examples",
-    "galleryIntro": "Use this gallery to review prompt patterns, scene structure, and the kinds of beats Seedance 2.0 handles well inside MaxVideoAI.",
-    "galleryAllCta": "View all Seedance examples ->",
-    "recreateLabel": "Recreate this shot ->",
     "relatedItems": [
       {
         "brand": "bytedance",

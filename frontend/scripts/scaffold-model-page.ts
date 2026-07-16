@@ -224,7 +224,7 @@ async function main() {
     const transformed = transformValue(sourceOverlay, baseReplacements) as ModelOverlay;
 
     transformed.marketingName = options.targetName;
-    for (const field of ['decision', 'prompting'] as const) {
+    for (const field of ['decision', 'prompting', 'examples'] as const) {
       const block = transformed[field];
       if (block && typeof block === 'object' && !Array.isArray(block)) {
         transformed[field] = {

@@ -215,10 +215,6 @@
       }
     ],
     "specValueProp": "Pika 2.2 est le modèle stylisé et silencieux de clips courts : rapide à itérer avec seeds et prompts négatifs, parfait pour les feeds sociaux et les inserts motion.",
-    "galleryTitle": "Galerie d’exemples Pika 2.2",
-    "galleryIntro": "Clips curés générés avec les mêmes réglages que dans MaxVideoAI.",
-    "galleryAllCta": "Voir tous les exemples Pika 2.2 →",
-    "recreateLabel": "Recréer ce plan →",
     "imageTitle": "Workflow image associé avec Pika 2.2 (+ Nano Banana)",
     "imageIntro": "Cette page est Text-to-Video d’abord. Utilisez un still seulement dans le workflow image Pika associé si la composition doit rester ancrée.",
     "imageFlow": [

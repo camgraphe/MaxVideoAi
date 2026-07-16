@@ -138,9 +138,6 @@
     }
   ],
   "custom": {
-    "galleryTitle": "Happy Horse 1.0 model demos",
-    "galleryIntro": "Review legacy video-edit behavior. Comparison pages intentionally stay text/spec focused for this launch.",
-    "galleryAllCta": "Start a Happy Horse generation ->",
     "quickPricingTitle": "Pricing route",
     "quickPricingItems": [
       "Use 720p for cheaper iteration across text, image, and R2V.",

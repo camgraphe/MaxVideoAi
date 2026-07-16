@@ -217,10 +217,6 @@
       }
     ],
     "specValueProp": "Wan 2.5 es el motor corto con audio para beats de 5–10 s donde imagen y sonido deben caer juntos.",
-    "galleryTitle": "Galería de ejemplos Wan 2.5",
-    "galleryIntro": "Clips generados con la configuración exacta disponible en MaxVideoAI.",
-    "galleryAllCta": "Ver todos los ejemplos Wan 2.5 →",
-    "recreateLabel": "Recrear esta toma →",
     "imageTitle": "Flujo Imagen → Video con Wan 2.5",
     "imageIntro": "Anima un still en un beat con audio.",
     "imageFlow": [
