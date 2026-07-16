@@ -22,7 +22,7 @@ type ModelPageContentSectionsProps = {
   pricingCallout: ComponentProps<typeof ModelPricingCallout>['callout'] | null;
   microCta: string | null | undefined;
   microCtaHref: ComponentProps<typeof Link>['href'];
-  examplesProps: ComponentProps<typeof ModelExamplesSection>;
+  examplesProps: Omit<ComponentProps<typeof ModelExamplesSection>, 'variant'>;
   decisionCards: ModelDecisionData['decisionCards'] | null;
   promptingProps: ComponentProps<typeof ModelPromptingSection>;
   prepLinksProps: ComponentProps<typeof ModelPrepLinksSection>;

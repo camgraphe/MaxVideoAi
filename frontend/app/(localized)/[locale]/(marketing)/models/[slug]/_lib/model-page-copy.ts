@@ -223,7 +223,6 @@ export function buildSoraCopy(localized: EngineLocalizedContent, slug: string, l
     microCta: getString('microCta'),
     galleryTitle: getString('galleryTitle'),
     galleryIntro: getString('galleryIntro'),
-    gallerySceneCta: getString('gallerySceneCta'),
     galleryAllCta: getString('galleryAllCta'),
     recreateLabel: getRecreateLabel(),
     imageTitle: getString('imageTitle'),

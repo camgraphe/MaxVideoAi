@@ -52,22 +52,19 @@ function allLegacyProjections() {
   );
 }
 
-test('legacy Examples editorial decisions are isolated behind one pure projector', () => {
+test('legacy Examples projector remains a parity fixture outside active rendering ownership', () => {
   assert.ok(existsSync(legacyPath));
   assert.match(legacySource, /export function buildLegacyModelExamplesContent/);
-  assert.match(sectionSource, /buildLegacyModelExamplesContent/);
+  assert.doesNotMatch(sectionSource, /buildLegacyModelExamplesContent|model-page-examples-legacy/);
   assert.doesNotMatch(
     sectionSource,
     /function getDecisionExampleProofItems|function getDecisionExampleFilters|function buildImageFallbackExampleItems/,
   );
 });
 
-test('active legacy decision renderer keeps the generic view-all label', () => {
-  assert.match(sectionSource, /viewAllLabel=\{uiCopy\.viewAllLabel\}/);
-  assert.doesNotMatch(
-    sectionSource,
-    /viewAllLabel=\{legacyContent\.section\.defaultCtaLabel/,
-  );
+test('active Examples wrapper receives only the strict view model', () => {
+  assert.match(sectionSource, /viewModel:\s*ModelExamplesViewModel/);
+  assert.doesNotMatch(sectionSource, /defaultCtaLabel|viewAllLabel|SoraCopy|AppLocale/);
 });
 
 test('all 40 by 3 legacy projections satisfy the strict normalized contract', () => {

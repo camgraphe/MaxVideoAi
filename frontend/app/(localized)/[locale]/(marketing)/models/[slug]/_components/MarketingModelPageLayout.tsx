@@ -5,7 +5,6 @@ import type { FalEngineEntry } from '@/config/falEngines';
 import type { EngineCaps } from '@/types/engines';
 import type { EngineLocalizedContent } from '@/lib/models/i18n';
 import { getLocalizedModelMetaLabels } from '@/lib/ltx-localization';
-import { dedupeAltsInList, getImageAlt, inferRenderTag } from '@/lib/image-alt';
 import { getExamplesHref } from '@/lib/examples-links';
 import type { ExampleGalleryVideo } from '@/components/examples/ExamplesGalleryGrid';
 import { serializeJsonLd } from '../../model-jsonld';
@@ -67,6 +66,11 @@ import { parseModelPromptingContent } from '../_lib/model-page-prompting-content
 import { resolveDefaultModelPromptingDemoPromptSource, resolveModelPromptingDemoPromptSource } from '../_lib/model-page-prompting-prompt-source';
 import { buildModelPromptingViewModel } from '../_lib/model-page-prompting-view-model';
 import { getModelPageTemplateConfig } from '../_lib/model-page-template-registry';
+import { parseModelExamplesContent } from '../_lib/model-page-examples-content';
+import { getModelExamplesUiCopy } from '../_lib/model-page-examples-ui-copy';
+import { resolveModelExampleFallbackPosters } from '../_lib/model-page-example-media';
+import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../_lib/model-page-examples-runtime-policy';
+import { buildModelExamplesViewModel } from '../_lib/model-page-examples-view-model';
 
 export function MarketingModelPageLayout({
   engine,
@@ -81,7 +85,6 @@ export function MarketingModelPageLayout({
   heroMedia,
   demoMedia,
   galleryVideos,
-  galleryCtaHref,
   compareEngines,
   faqEntries,
   keySpecRows,
@@ -106,7 +109,6 @@ export function MarketingModelPageLayout({
   heroMedia: FeaturedMedia;
   demoMedia: FeaturedMedia | null;
   galleryVideos: ExampleGalleryVideo[];
-  galleryCtaHref: string;
   compareEngines: FalEngineEntry[];
   faqEntries: LocalizedFaqEntry[];
   keySpecRows: KeySpecRow[];
@@ -300,38 +302,46 @@ export function MarketingModelPageLayout({
   const heroPosterAbsolute = toAbsoluteUrl(heroMedia.posterUrl ?? localizedContent.seo.image ?? null);
   const hasKeySpecRows = keySpecRows.length > 0;
   const hasSpecs = specSections.length > 0 || hasKeySpecRows;
-  const hideExamplesSection = false;
-  const hasFallbackGalleryCopy = Boolean(copy.galleryTitle || copy.galleryIntro || copy.galleryAllCta || copy.gallerySceneCta);
-  const usesImageExampleFallback =
-    engine.modelSlug === 'nano-banana-pro' ||
-    engine.modelSlug === 'nano-banana' ||
-    engine.modelSlug === 'nano-banana-2' ||
-    engine.modelSlug === 'seedream' ||
-    engine.modelSlug === 'gpt-image-2' ||
-    engine.modelSlug === 'luma-uni-1' ||
-    engine.modelSlug === 'luma-uni-1-max';
-  const hasExamples = !hideExamplesSection && (galleryVideos.length > 0 || hasFallbackGalleryCopy || usesImageExampleFallback);
-  const exampleAltLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
-  const galleryPreviewAlts = dedupeAltsInList(
-    galleryVideos.slice(0, 6).map((video, index) => {
-      const prompt = video.promptFull ?? video.prompt;
-      const tag = inferRenderTag(prompt, locale);
-      const label =
-        engine.modelSlug === 'seedance-2-0' ||
-        engine.modelSlug === 'minimax-hailuo-02-text' ||
-        engine.modelSlug === 'wan-2-6' ||
-        engine.modelSlug === 'pika-text-to-video'
-          ? `${heroTitle} ${tag ? `${tag} ` : ''}${exampleAltLabel} ${index + 1}`
-          : prompt;
-      return {
-        id: video.id,
-        alt: getImageAlt({ kind: 'renderThumb', engine: video.engineLabel, label, prompt: label, locale }),
-        tag,
-        index,
-        locale,
-      };
-    })
+  const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
+  const examplesContent = parseModelExamplesContent(
+    localizedContent.examples,
+    engine.modelSlug,
+    locale,
+    `content/models/${locale}/${engine.modelSlug}.json#examples`,
   );
+  const examplesPolicy = resolveModelExamplesRuntimePolicy({
+    modelSlug: engine.modelSlug,
+    engineId: engine.id,
+  });
+  const examplesUi = getModelExamplesUiCopy(locale);
+  const galleryPreviewAlts = buildModelExamplePreviewAlts({
+    galleryVideos,
+    locale,
+    modelName: heroTitle,
+    mode: examplesPolicy.previewAltMode,
+    numberedExampleLabel: examplesUi.numberedExampleLabel,
+  });
+  const fallbackPosters = resolveModelExampleFallbackPosters(
+    engine.modelSlug,
+    examplesContent.fallbackItems?.map((item) => item.id) ?? [],
+    heroMedia.posterUrl ?? localizedContent.seo.image ?? null,
+  );
+  const examplesViewModel = buildModelExamplesViewModel({
+    content: examplesContent,
+    ui: examplesUi,
+    locale,
+    anchorId: textAnchorId,
+    modelName: heroTitle,
+    mode: examplesContent.fallbackItems ? 'image-fallback' : 'video',
+    audioMode: examplesPolicy.audioMode,
+    decisionAltMode: examplesPolicy.decisionAltMode,
+    galleryVideos,
+    galleryPreviewAlts,
+    fallbackPosters,
+    examplesLinkHref,
+    imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(engine.modelSlug)}`,
+  });
+  const hasExamples = examplesViewModel.visible;
   const hasTextSection = true;
   const hasTipsSection =
     strengths.length > 0 || boundaries.length > 0 || troubleshootingItems.length > 0 || Boolean(copy.tipsTitle || copy.tipsIntro);
@@ -342,7 +352,6 @@ export function MarketingModelPageLayout({
     !isImageEngine &&
     (relatedItems.length > 0 || compareEngines.length > 0);
   const hasCompareSection = !isImageEngine && (Boolean(focusVsConfig) || hasCompareGrid);
-  const textAnchorId = isImageEngine ? 'text-to-image' : 'text-to-video';
   const imageAnchorId = templateData ? 'prompting' : isImageEngine ? 'image-to-image' : 'image-to-video';
   const promptingContent = parseModelPromptingContent(
     localizedContent.prompting,
@@ -469,19 +478,7 @@ export function MarketingModelPageLayout({
             pricingCallout={legacyPricingCallout}
             microCta={legacyMicroCta}
             microCtaHref={normalizedPrimaryCtaHref}
-            examplesProps={{
-              hideExamplesSection,
-              textAnchorId,
-              copy,
-              galleryVideos,
-              galleryPreviewAlts,
-              engineSlug: engine.id,
-              fallbackImageUrl: heroMedia.posterUrl ?? localizedContent.seo.image ?? null,
-              isImageEngine: usesImageExampleFallback,
-              locale,
-              examplesLinkHref,
-              galleryCtaHref,
-            }}
+            examplesProps={{ viewModel: examplesViewModel }}
             decisionCards={templateData?.decisionCards ?? null}
             promptingProps={{ viewModel: promptingViewModel }}
             prepLinksProps={{ prepLinksSection, locale }}

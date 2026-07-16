@@ -9,6 +9,7 @@ import { buildModelDecisionData } from '../frontend/app/(localized)/[locale]/(ma
 import { buildModelSchemaPayloads } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-schema-payloads.ts';
 import { buildSoraCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-copy.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
+import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { buildModelDecisionDataFromContent } from './helpers/model-decision-content.ts';
 
 const MIGRATED_TEMPLATE_SLUGS = [
@@ -177,6 +178,27 @@ test('migrated model templates provide complete localized decision data', () => 
         );
       }
     }
+  }
+});
+
+test('Sora 2 Pro template locales retain the strict customer-visible Examples contract', () => {
+  const expected = {
+    en: ['Example Gallery: Sora 2 Pro Outputs', 'Recreate this Pro shot →', 'Audio on'],
+    fr: ['Galerie d’exemples : rendus Sora 2 Pro', 'Recréer ce plan Pro →', 'Audio activé'],
+    es: ['Galería de ejemplos: renders Sora 2 Pro', 'Recrear esta toma Pro →', 'Audio activado'],
+  } as const;
+
+  for (const locale of LOCALES) {
+    const content = readModelContentJson(locale, 'sora-2-pro');
+    const examples = parseModelExamplesContent(content.examples, 'sora-2-pro', locale);
+
+    assert.equal(examples.section.title, expected[locale][0]);
+    assert.equal(examples.section.recreateLabel, expected[locale][1]);
+    assert.equal(examples.filters.find(({ id }) => id === 'audio')?.label, expected[locale][2]);
+    assert.deepEqual(
+      examples.proofItems.map(({ icon }) => icon),
+      ['sparkles', 'zap', 'audio', 'users', 'shield'],
+    );
   }
 });
 

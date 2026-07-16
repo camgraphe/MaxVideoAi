@@ -337,11 +337,6 @@ async function renderMarketingModelPage({
     demoMedia.prompt =
       '10s silent Hailuo 02 draft in 16:9. A cyclist rides through a shallow puddle on an empty concrete path; water splashes outward and the jacket fabric reacts to the motion. Low side tracking shot with one smooth push-in, natural dusk light, simple background, physics-focused movement, no dialogue or audio.';
   }
-  const galleryCtaHref = appGenerationEnabled
-    ? heroMedia?.id
-      ? `${appPath}?engine=${engine.id}&from=${encodeURIComponent(heroMedia.id)}`
-      : `${appPath}?engine=${engine.id}`
-    : fallbackMarketingHref;
   const compareEngines = pickCompareEngines(listFalEngines(), engine.modelSlug);
   const faqEntries = localizedContent.faqs.length ? localizedContent.faqs : copy.faqs;
   const showPriceInSpecs = engine.id !== 'lumaRay2';
@@ -424,7 +419,6 @@ async function renderMarketingModelPage({
       heroMedia={heroMedia}
       demoMedia={demoMedia}
       galleryVideos={galleryVideos}
-      galleryCtaHref={galleryCtaHref}
       compareEngines={compareEngines}
       faqEntries={faqEntries}
       keySpecRows={keySpecRows}

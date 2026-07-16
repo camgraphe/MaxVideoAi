@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import type { ExampleGalleryVideo } from '../frontend/components/examples/examples-gallery-types.ts';
 import { listFalEngines } from '../frontend/src/config/falEngines.ts';
 import { MARKETING_MODEL_SLUGS, MARKETING_NAV_COMPARE } from '../frontend/config/navigation.ts';
 import {
@@ -15,6 +16,10 @@ import { buildModelDecisionDataFromContent } from './helpers/model-decision-cont
 import { PREFERRED_MEDIA } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-static-media.ts';
 import { parseModelPromptingContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-prompting-content.ts';
 import { getModelPageTemplateConfig } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-template-registry.ts';
+import { parseModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+import { getModelExamplesUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
+import { buildModelExamplePreviewAlts, resolveModelExamplesRuntimePolicy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-runtime-policy.ts';
+import { buildModelExamplesViewModel } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
 
 const ROOT = process.cwd();
 const LOCALES = ['en', 'fr', 'es'] as const;
@@ -43,10 +48,11 @@ function getEngine(slug: string) {
 
 function readModelContent(locale: (typeof LOCALES)[number], slug: string) {
   const raw = readFileSync(join(ROOT, 'content', 'models', locale, `${slug}.json`), 'utf8');
-  const document = JSON.parse(raw) as { prompting?: unknown };
+  const document = JSON.parse(raw) as { examples?: unknown; prompting?: unknown };
   return {
     raw,
     text: JSON.stringify(document),
+    examples: document.examples,
     prompting: parseModelPromptingContent(
       document.prompting,
       slug,
@@ -98,6 +104,64 @@ test('Kling 3.0 Omni model pages pin the rendered Camp Graph media pairs', () =>
     assert.deepEqual(PREFERRED_MEDIA[slug], KLING_O3_RENDER_PAIRS[slug]);
   }
 
+});
+
+test('Kling O3 Pro Examples preserve the exact gallery section and current Camp Graph links', () => {
+  const slug = 'kling-o3-pro';
+  const pair = KLING_O3_RENDER_PAIRS[slug];
+  const galleryVideos: ExampleGalleryVideo[] = [pair.hero, pair.demo].map((id, index) => ({
+    id,
+    href: `/video/${id}`,
+    engineLabel: 'Kling 3.0 Omni Pro',
+    engineIconId: 'kling',
+    priceLabel: null,
+    prompt: index === 0
+      ? 'A cinematic storyboard reference sequence with native audio.'
+      : 'A source video action edit guided by reference images.',
+    aspectRatio: index === 0 ? '16:9' : '9:16',
+    durationSec: 10,
+    hasAudio: true,
+    optimizedPosterUrl: `/kling-o3-pro-${index + 1}.webp`,
+    recreateHref: `/app?engine=${slug}&recreate=${id}`,
+  }));
+  const content = parseModelExamplesContent(readModelContent('en', slug).examples, slug, 'en');
+  const ui = getModelExamplesUiCopy('en');
+  const policy = resolveModelExamplesRuntimePolicy({ modelSlug: slug, engineId: slug });
+  const viewModel = buildModelExamplesViewModel({
+    content,
+    ui,
+    locale: 'en',
+    anchorId: 'text-to-video',
+    modelName: 'Kling 3.0 Omni Pro',
+    mode: 'video',
+    audioMode: policy.audioMode,
+    decisionAltMode: policy.decisionAltMode,
+    galleryVideos,
+    galleryPreviewAlts: buildModelExamplePreviewAlts({
+      galleryVideos,
+      locale: 'en',
+      modelName: 'Kling 3.0 Omni Pro',
+      mode: policy.previewAltMode,
+      numberedExampleLabel: ui.numberedExampleLabel,
+    }),
+    fallbackPosters: new Map(),
+    examplesLinkHref: { pathname: '/examples/[model]', params: { model: slug } },
+    imageWorkspaceHref: `/app/image?engine=${slug}`,
+  });
+
+  assert.deepEqual(viewModel.section, {
+    title: 'Kling 3.0 Omni Pro storyboard and V2V demos',
+    intro: 'Review Pro examples for reference images, storyboard inputs, source-video V2V, and native audio. Use these clips to compare O3 reference guidance against Kling 3 start-frame workflows before choosing a production route.',
+    defaultCtaLabel: 'Browse Kling reference examples ->',
+    recreateLabel: null,
+  });
+  assert.deepEqual(viewModel.decision.items.map(({ id }) => id), [pair.hero, pair.demo]);
+  assert.deepEqual(
+    viewModel.decision.items.map(({ href }) => href),
+    [`/video/${pair.hero}`, `/video/${pair.demo}`],
+  );
+  assert.ok(viewModel.decision.items.every(({ recreateLabel }) => recreateLabel === null));
+  assert.ok(viewModel.defaultPresentation.items.every(({ recreateLabel }) => recreateLabel === null));
 });
 
 test('Kling 3.0 Omni model pages use the current decision-page template', () => {

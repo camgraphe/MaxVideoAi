@@ -8,56 +8,19 @@ import { Link, type LocalizedLinkHref } from '@/i18n/navigation';
 import { UIIcon } from '@/components/ui/UIIcon';
 
 import { MODEL_PAGE_ICON_MUTED, MODEL_PAGE_ICON_ON_DARK } from '../_lib/model-page-icon-styles';
-
-export type DecisionExampleFilterId =
-  | 'all'
-  | 'cinematic'
-  | 'product'
-  | 'action'
-  | 'vertical'
-  | 'audio'
-  | 'campaign'
-  | 'typography'
-  | 'reference'
-  | 'final'
-  | 'grounded'
-  | 'edit'
-  | 'wide'
-  | 'character'
-  | 'batch'
-  | 'ui'
-  | 'mask'
-  | 'infographic';
-
-export type DecisionExampleFilter = {
-  id: DecisionExampleFilterId;
-  label: string;
-};
-
-export type DecisionExampleGalleryItem = {
-  id: string;
-  href: string;
-  posterUrl: string;
-  alt: string;
-  audioBadgeLabel: string | null;
-  durationLabel: string | null;
-  aspectRatio: string | null;
-  category: string;
-  title: string;
-  recreateHref: string | null;
-  recreateLabel: string | null;
-  tags: DecisionExampleFilterId[];
-};
+import type { DecisionExampleFilterId, ModelExampleFilter } from '../_lib/model-page-examples-content';
+import type { ModelExamplesGalleryItem } from '../_lib/model-page-examples-view-model';
 
 type ModelDecisionExamplesGalleryProps = {
   title: string;
   intro: string;
-  filters: DecisionExampleFilter[];
-  items: DecisionExampleGalleryItem[];
+  filters: ModelExampleFilter[];
+  items: ModelExamplesGalleryItem[];
   examplesLinkHref: LocalizedLinkHref | null;
   viewAllLabel: string;
   renderLinkLabel: string;
   emptyLabel: string;
+  noPreviewLabel: string;
 };
 
 export function ModelDecisionExamplesGallery({
@@ -69,6 +32,7 @@ export function ModelDecisionExamplesGallery({
   viewAllLabel,
   renderLinkLabel,
   emptyLabel,
+  noPreviewLabel,
 }: ModelDecisionExamplesGalleryProps) {
   const [activeFilter, setActiveFilter] = useState<DecisionExampleFilterId>('all');
   const [pageIndex, setPageIndex] = useState(0);
@@ -167,7 +131,7 @@ export function ModelDecisionExamplesGallery({
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-slate-500 dark:text-slate-400">
-                          No preview
+                          {noPreviewLabel}
                         </div>
                       )}
                       {item.audioBadgeLabel ? (

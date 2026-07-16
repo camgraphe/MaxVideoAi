@@ -196,9 +196,11 @@ test('Luma Uni image models have specs but no compare pairs or video best-for pl
   }
 });
 
-test('Luma Uni model pages use the image example fallback surface', () => {
-  assert.match(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1'/);
-  assert.match(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1-max'/);
+test('Luma Uni model pages use the strict content-driven image example fallback surface', () => {
+  assert.match(modelPageLayoutSource, /parseModelExamplesContent\(/);
+  assert.match(modelPageLayoutSource, /mode:\s*examplesContent\.fallbackItems\s*\?\s*'image-fallback'\s*:\s*'video'/);
+  assert.match(modelPageLayoutSource, /resolveModelExampleFallbackPosters\(/);
+  assert.doesNotMatch(modelPageLayoutSource, /engine\.modelSlug === 'luma-uni-1(?:-max)?'/);
 });
 
 test('Luma Ray 3.2 discovery stays behind current video leaders', () => {

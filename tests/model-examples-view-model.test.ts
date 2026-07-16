@@ -2,8 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { AudioLines, ShieldCheck, Sparkles, Users, Zap } from 'lucide-react';
 
 import type { ExampleGalleryVideo } from '../frontend/components/examples/examples-gallery-types.ts';
+import type { AppLocale } from '../frontend/i18n/locales.ts';
 import type { LocalizedLinkHref } from '../frontend/i18n/navigation.tsx';
 import { parseModelExamplesContent, type ModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { getModelExamplesUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
@@ -20,7 +22,8 @@ import {
   type BuildModelExamplesViewModelInput,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
 
-const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models', 'en');
+const MODEL_CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
+const CONTENT_ROOT = path.join(MODEL_CONTENT_ROOT, 'en');
 const RUNTIME_POLICY_PATH = path.join(
   process.cwd(),
   'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-runtime-policy.ts',
@@ -132,6 +135,50 @@ function imageFallbackInput(): BuildModelExamplesViewModelInput {
   };
 }
 
+function buildStoredExamplesViewModel({
+  slug,
+  locale,
+  modelName,
+  galleryVideos = [],
+}: {
+  slug: string;
+  locale: AppLocale;
+  modelName: string;
+  galleryVideos?: ExampleGalleryVideo[];
+}) {
+  const document = JSON.parse(
+    readFileSync(path.join(MODEL_CONTENT_ROOT, locale, `${slug}.json`), 'utf8'),
+  ) as { examples?: unknown };
+  const content = parseModelExamplesContent(document.examples, slug, locale);
+  const ui = getModelExamplesUiCopy(locale);
+  const policy = resolveModelExamplesRuntimePolicy({ modelSlug: slug, engineId: slug });
+  return buildModelExamplesViewModel({
+    content,
+    ui,
+    locale,
+    anchorId: content.fallbackItems ? 'text-to-image' : 'text-to-video',
+    modelName,
+    mode: content.fallbackItems ? 'image-fallback' : 'video',
+    audioMode: policy.audioMode,
+    decisionAltMode: policy.decisionAltMode,
+    galleryVideos,
+    galleryPreviewAlts: buildModelExamplePreviewAlts({
+      galleryVideos,
+      locale,
+      modelName,
+      mode: policy.previewAltMode,
+      numberedExampleLabel: ui.numberedExampleLabel,
+    }),
+    fallbackPosters: resolveModelExampleFallbackPosters(
+      slug,
+      content.fallbackItems?.map((item) => item.id) ?? [],
+      null,
+    ),
+    examplesLinkHref: { pathname: '/examples/[model]', params: { model: slug } },
+    imageWorkspaceHref: `/app/image?engine=${encodeURIComponent(slug)}`,
+  });
+}
+
 function deepFreeze<T>(value: T): T {
   if (value && typeof value === 'object' && !Object.isFrozen(value)) {
     Object.freeze(value);
@@ -160,6 +207,83 @@ test('real video media preserves current title, alt, badges, links and available
   assert.equal(result.defaultPresentation.items[0]?.metadataLabel, '1920:1080 · 8s · audio on');
   assert.equal(result.defaultPresentation.examplesLinkHref, examplesLinkHref);
   assert.equal(result.section.defaultCtaLabel, 'View all Fixture examples');
+});
+
+test('Sora 2 Pro stored EN FR ES copy drives real-video filters, proof, recreate and audio output', () => {
+  const videos = [
+    galleryVideo({
+      id: 'job_sora_cinematic',
+      href: '/video/job_sora_cinematic',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'A cinematic film follows a rain-soaked detective.',
+      hasAudio: true,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_cinematic',
+    }),
+    galleryVideo({
+      id: 'job_sora_product',
+      href: '/video/job_sora_product',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'A product packshot rotates on a clean tabletop.',
+      hasAudio: false,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_product',
+    }),
+    galleryVideo({
+      id: 'job_sora_action',
+      href: '/video/job_sora_action',
+      engineLabel: 'Sora 2 Pro',
+      prompt: 'An athlete running through a narrow market.',
+      aspectRatio: '9:16',
+      hasAudio: false,
+      recreateHref: '/app?engine=sora-2-pro&recreate=job_sora_action',
+    }),
+  ];
+  const expected = {
+    en: {
+      title: 'Example Gallery: Sora 2 Pro Outputs',
+      recreate: 'Recreate this Pro shot →',
+      audio: 'Audio on',
+    },
+    fr: {
+      title: 'Galerie d’exemples : rendus Sora 2 Pro',
+      recreate: 'Recréer ce plan Pro →',
+      audio: 'Audio activé',
+    },
+    es: {
+      title: 'Galería de ejemplos: renders Sora 2 Pro',
+      recreate: 'Recrear esta toma Pro →',
+      audio: 'Audio activado',
+    },
+  } as const;
+
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    const result = buildStoredExamplesViewModel({
+      slug: 'sora-2-pro',
+      locale,
+      modelName: 'Sora 2 Pro',
+      galleryVideos: videos,
+    });
+
+    assert.equal(result.section.title, expected[locale].title);
+    assert.deepEqual(result.filters.map(({ id }) => id), [
+      'all',
+      'cinematic',
+      'product',
+      'action',
+      'vertical',
+      'audio',
+    ]);
+    assert.deepEqual(
+      result.proofItems.map(({ icon }) => icon),
+      [Sparkles, Zap, AudioLines, Users, ShieldCheck],
+    );
+    assert.equal(result.decision.items[0]?.title, 'A cinematic film follows a rain-soaked detective');
+    assert.equal(result.decision.items[0]?.recreateLabel, expected[locale].recreate);
+    assert.equal(result.decision.items[0]?.audioBadgeLabel, expected[locale].audio);
+    assert.equal(
+      result.decision.items[0]?.alt,
+      'Sora 2 Pro a cinematic film follows a rain-soaked detective',
+    );
+  }
 });
 
 test('compatibility-prefix routes derive decision alts generically from the supplied model name', () => {
@@ -221,6 +345,67 @@ test('image fallback attaches static posters without inventing runtime gallery m
   assert.deepEqual(result.filters.map(({ id }) => id), ['all', 'product']);
 });
 
+test('Nano Banana Pro and Luma Uni-1 stored fallbacks preserve item order and workspace output', () => {
+  const fixtures = [
+    {
+      slug: 'nano-banana-pro',
+      modelName: 'Nano Banana Pro',
+      ids: ['campaign', 'typography', 'reference', 'final'],
+      posters: [
+        '/assets/model-examples/nano-banana-pro/campaign.webp',
+        '/assets/model-examples/nano-banana-pro/typography.webp',
+        '/assets/model-examples/nano-banana-pro/reference.webp',
+        '/assets/model-examples/nano-banana-pro/final.webp',
+      ],
+      categories: ['Campaign', 'Typography', 'Reference edit', '4K final'],
+      alts: [
+        'Nano Banana Pro campaign image with ad layout',
+        'Nano Banana Pro poster with readable typography',
+        'Nano Banana Pro product edit guided by references',
+        'Nano Banana Pro campaign asset finalized in 4K',
+      ],
+    },
+    {
+      slug: 'luma-uni-1',
+      modelName: 'Luma Uni-1',
+      ids: ['product', 'edit', 'reference', 'campaign'],
+      posters: [
+        '/assets/model-examples/luma-uni-1/product.webp',
+        '/assets/model-examples/luma-uni-1/edit.webp',
+        '/assets/model-examples/luma-uni-1/reference.webp',
+        '/assets/model-examples/luma-uni-1/research.webp',
+      ],
+      categories: ['Product', 'Edit', 'References', 'Direction'],
+      alts: [
+        'Luma Uni-1 clean product still with simple studio light',
+        'Luma Uni-1 edit preserving product shape while changing studio tone',
+        'Luma Uni-1 still guided by product and mood references',
+        'Luma Uni-1 retail research still for product direction',
+      ],
+    },
+  ] as const;
+
+  for (const fixture of fixtures) {
+    const result = buildStoredExamplesViewModel({
+      slug: fixture.slug,
+      locale: 'en',
+      modelName: fixture.modelName,
+    });
+    const workspaceHref = `/app/image?engine=${fixture.slug}`;
+
+    assert.deepEqual(
+      result.decision.items.map(({ id }) => id),
+      fixture.ids.map((id) => `${fixture.slug}-fallback-${id}`),
+    );
+    assert.deepEqual(result.decision.items.map(({ posterUrl }) => posterUrl), fixture.posters);
+    assert.deepEqual(result.decision.items.map(({ category }) => category), fixture.categories);
+    assert.deepEqual(result.decision.items.map(({ alt }) => alt), fixture.alts);
+    assert.ok(result.decision.items.every(({ href }) => href === workspaceHref));
+    assert.ok(result.decision.items.every(({ recreateHref }) => recreateHref === workspaceHref));
+    assert.equal(result.decision.examplesLinkHref, null);
+  }
+});
+
 test('missing real media stays empty when content has no active fallback items', () => {
   const result = buildModelExamplesViewModel(videoInput({ galleryVideos: [] }));
 
@@ -266,9 +451,37 @@ test('runtime policy bounds every silent engine and numbered-alt model compatibi
       modelSlug,
     );
   }
+  for (const engineId of [
+    'luma-ray-2',
+    'lumaRay2',
+    'luma-ray-3-2',
+    'sora-2-pro',
+    'sora-2',
+    'ltx-2-3-fast',
+    'ltx-2-3-pro',
+    'ltx-2-3',
+    'kling-3-pro',
+    'kling-3-4k',
+    'kling-3-standard',
+    'veo-3-1-lite',
+    'veo-3-1',
+    'veo-3-1-fast',
+    'seedance-2-0-fast',
+    'seedance-1-5-pro',
+  ]) {
+    assert.equal(
+      resolveModelExamplesRuntimePolicy({ modelSlug: 'fixture', engineId }).decisionAltMode,
+      'model-name-prefix',
+      engineId,
+    );
+  }
   assert.deepEqual(
     resolveModelExamplesRuntimePolicy({ modelSlug: 'fixture', engineId: 'fixture-engine' }),
-    { audioMode: 'runtime', previewAltMode: 'prompt' },
+    {
+      audioMode: 'runtime',
+      previewAltMode: 'prompt',
+      decisionAltMode: 'preview-alt',
+    },
   );
 });
 

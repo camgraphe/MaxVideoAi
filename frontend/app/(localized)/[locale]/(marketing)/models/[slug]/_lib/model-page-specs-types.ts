@@ -107,7 +107,6 @@ export type SoraCopy = {
   microCta: string | null;
   galleryTitle: string | null;
   galleryIntro: string | null;
-  gallerySceneCta: string | null;
   galleryAllCta: string | null;
   recreateLabel: string | null;
   imageTitle: string | null;
