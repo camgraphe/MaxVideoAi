@@ -12,6 +12,7 @@ import {
   getMcpSpendingSettings,
   updateMcpSpendingSettings,
 } from '../frontend/src/server/agent-api/spending-limits';
+import { listMcpActivityHistory } from '../frontend/src/server/agent-api/activity-history';
 import {
   handleMcpSettingsGet,
   handleMcpSettingsPatch,
@@ -290,6 +291,49 @@ test('settings repository round-trip and PATCH-versus-confirm lock serialize on 
   const confirmClient = new Client(connection);
   await Promise.all([patchClient.connect(), confirmClient.connect()]);
   t.after(async () => Promise.allSettled([pool.end(), patchClient.end(), confirmClient.end()]));
+
+  await pool.query(`
+    CREATE TABLE app_jobs (
+      job_id text PRIMARY KEY,
+      user_id text,
+      status text,
+      payment_status text
+    );
+    WITH activity_clock AS (SELECT clock_timestamp() AS created_at)
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+      pricing_snapshot, price_cents, currency, funding_mode, state,
+      expires_at, created_at, updated_at
+    ) SELECT
+      '00000000-0000-4000-8000-000000000071', 'activity-pg-user', 'activity-pg-client',
+      '{"schemaVersion":1,"engineId":"seedance-2-0-mini"}', repeat('a', 64), 'activity-catalog',
+      '{}', 125, 'USD', 'wallet', 'prepared',
+      created_at + INTERVAL '10 minutes', created_at, created_at
+    FROM activity_clock;
+    UPDATE mcp_generation_quotes
+       SET state = 'claimed', job_id = 'activity-pg-job',
+           claimed_at = created_at + INTERVAL '1 second',
+           updated_at = created_at + INTERVAL '1 second'
+     WHERE user_id = 'activity-pg-user';
+    UPDATE mcp_generation_quotes
+       SET state = 'accepted', updated_at = created_at + INTERVAL '2 seconds'
+     WHERE user_id = 'activity-pg-user';
+    INSERT INTO app_jobs (job_id, user_id, status, payment_status)
+    VALUES ('activity-pg-job', 'activity-pg-user', 'failed', 'refunded_wallet');
+  `);
+  const pgActivity = await listMcpActivityHistory({
+    userId: 'activity-pg-user',
+    clientLabels: { 'activity-pg-client': 'Claude Desktop' },
+  }, { executor: asExecutor(patchClient) });
+  assert.deepEqual(pgActivity, [{
+    clientLabel: 'Claude Desktop',
+    tool: 'confirm_generation',
+    model: 'seedance-2-0-mini',
+    amountCents: 125,
+    currency: 'USD',
+    outcome: 'refunded',
+    timestamp: pgActivity[0]?.timestamp,
+  }]);
 
   const initial = await getMcpSpendingSettings('pg-user', { executor: asExecutor(patchClient) });
   assert.equal(initial.paidGenerationEnabled, true);

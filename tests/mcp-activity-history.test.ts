@@ -9,12 +9,12 @@ type Captured = { sql: string; params?: ReadonlyArray<unknown> };
 
 function row(overrides: Record<string, unknown> = {}) {
   return {
-    quote_id: '00000000-0000-4000-8000-000000000001',
-    oauth_client_id: 'codex-raw-id',
+    client_label: 'Codex Desktop',
     model: 'seedance-2-0-mini',
     price_cents: 125,
     currency: 'USD',
     state: 'prepared',
+    job_status: null,
     payment_status: null,
     event_at: '2026-07-16T12:00:00.000Z',
     ...overrides,
@@ -47,7 +47,10 @@ test('safe activity projects only owner-scoped fields with deterministic newest-
     timestamp: '2026-07-16T12:00:00.000Z',
   }]);
   assert.equal(captured.length, 1);
-  assert.deepEqual(captured[0].params, ['activity-owner']);
+  assert.deepEqual(captured[0].params, [
+    'activity-owner',
+    JSON.stringify([{ clientId: 'codex-raw-id', clientLabel: 'Codex Desktop' }]),
+  ]);
   assert.match(captured[0].sql, /WHERE\s+q\.user_id\s*=\s*\$1/i);
   assert.match(captured[0].sql, /q\.request_json\s*->>\s*'engineId'\s+AS\s+model/i);
   assert.match(captured[0].sql, /ORDER BY[\s\S]*event_at\s+DESC[\s\S]*quote_id\s+DESC/i);
@@ -58,12 +61,12 @@ test('safe activity projects only owner-scoped fields with deterministic newest-
 
 test('every quote outcome maps to the exact safe tool and immutable quoted wallet amount', async () => {
   const rows = [
-    row({ quote_id: '00000000-0000-4000-8000-000000000001', state: 'prepared' }),
-    row({ quote_id: '00000000-0000-4000-8000-000000000002', state: 'expired' }),
-    row({ quote_id: '00000000-0000-4000-8000-000000000003', state: 'claimed' }),
-    row({ quote_id: '00000000-0000-4000-8000-000000000004', state: 'accepted' }),
-    row({ quote_id: '00000000-0000-4000-8000-000000000005', state: 'failed', payment_status: 'paid_wallet' }),
-    row({ quote_id: '00000000-0000-4000-8000-000000000006', state: 'failed', payment_status: 'refunded_wallet' }),
+    row({ state: 'prepared' }),
+    row({ state: 'expired' }),
+    row({ state: 'claimed' }),
+    row({ state: 'accepted' }),
+    row({ state: 'failed', payment_status: 'paid_wallet' }),
+    row({ state: 'failed', payment_status: 'refunded_wallet' }),
   ];
   const items = await listMcpActivityHistory({
     userId: 'activity-owner',
@@ -79,6 +82,95 @@ test('every quote outcome maps to the exact safe tool and immutable quoted walle
   ]);
 });
 
+test('asynchronous failed jobs override claimed and accepted quote states with refund priority', async () => {
+  const rows = [
+    row({
+      state: 'claimed',
+      job_status: 'failed',
+      payment_status: 'paid_wallet',
+    }),
+    row({
+      state: 'accepted',
+      job_status: 'failed',
+      payment_status: 'paid_wallet',
+    }),
+    row({
+      state: 'claimed',
+      job_status: 'failed',
+      payment_status: 'refunded_wallet',
+    }),
+    row({
+      state: 'accepted',
+      job_status: 'failed',
+      payment_status: 'refunded',
+    }),
+  ];
+  const items = await listMcpActivityHistory({
+    userId: 'activity-owner',
+    clientLabels: { 'codex-raw-id': 'Codex Desktop' },
+  }, { executor: executor(rows, []) });
+  assert.deepEqual(items.map(({ tool, outcome }) => ({ tool, outcome })), [
+    { tool: 'confirm_generation', outcome: 'failed' },
+    { tool: 'confirm_generation', outcome: 'failed' },
+    { tool: 'confirm_generation', outcome: 'refunded' },
+    { tool: 'confirm_generation', outcome: 'refunded' },
+  ]);
+});
+
+test('SQL result projection contains resolved labels but no raw quote or OAuth client IDs', async () => {
+  const rawClientId = 'codex-raw-id';
+  const rawQuoteId = '00000000-0000-4000-8000-000000000001';
+  const captured: Captured[] = [];
+  const items = await listMcpActivityHistory({
+    userId: 'activity-owner',
+    clientLabels: { [rawClientId]: 'Codex Desktop' },
+  }, { executor: executor([{
+    client_label: 'Codex Desktop',
+    model: 'seedance-2-0-mini',
+    price_cents: 125,
+    currency: 'USD',
+    state: 'accepted',
+    job_status: 'completed',
+    payment_status: 'paid_wallet',
+    event_at: '2026-07-16T12:00:00.000Z',
+  }], captured) });
+
+  assert.equal(items.length, 1);
+  const projection = captured[0].sql.match(/SELECT([\s\S]*?)FROM\s+mcp_generation_quotes/i)?.[1] ?? '';
+  assert.match(projection, /client_label/i);
+  assert.match(projection, /job_status/i);
+  assert.doesNotMatch(projection, /q\.quote_id|q\.oauth_client_id|\bquote_id\b|\boauth_client_id\b/i);
+  assert.match(captured[0].sql, /ORDER BY[\s\S]*q\.quote_id\s+DESC/i);
+  assert.equal(captured[0].params?.[0], 'activity-owner');
+  assert.deepEqual(JSON.parse(String(captured[0].params?.[1])), [
+    { clientId: rawClientId, clientLabel: 'Codex Desktop' },
+  ]);
+  const serialized = JSON.stringify(items);
+  assert.equal(serialized.includes(rawClientId), false);
+  assert.equal(serialized.includes(rawQuoteId), false);
+});
+
+test('a grant label equal to its raw client ID is omitted from SQL labels and falls back generically', async () => {
+  const rawClientId = 'self-label-client-id';
+  const captured: Captured[] = [];
+  const items = await listMcpActivityHistory({
+    userId: 'activity-owner',
+    clientLabels: { [rawClientId]: rawClientId },
+  }, { executor: executor([{
+    client_label: 'Connected application',
+    model: 'flux-pro',
+    price_cents: 45,
+    currency: 'USD',
+    state: 'prepared',
+    job_status: null,
+    payment_status: null,
+    event_at: '2026-07-16T12:00:00.000Z',
+  }], captured) });
+  assert.equal(items[0]?.clientLabel, 'Connected application');
+  assert.equal(String(captured[0].params?.[1]).includes(rawClientId), false);
+  assert.equal(JSON.stringify(items).includes(rawClientId), false);
+});
+
 test('labels come only from current grants and raw client IDs never leave the owner', async () => {
   const rawIds = [
     'known-client-id',
@@ -88,10 +180,10 @@ test('labels come only from current grants and raw client IDs never leave the ow
     'separator-label-id',
     'long-label-id',
   ];
-  const rows = rawIds.map((oauth_client_id, index) => row({
-    quote_id: `00000000-0000-4000-8000-00000000001${index}`,
-    oauth_client_id,
+  const rows = rawIds.map((_, index) => row({
+    client_label: index === 0 ? 'Claude Desktop' : 'Connected application',
   }));
+  const captured: Captured[] = [];
   const items = await listMcpActivityHistory({
     userId: 'activity-owner',
     clientLabels: {
@@ -101,7 +193,7 @@ test('labels come only from current grants and raw client IDs never leave the ow
       'separator-label-id': 'Unsafe\u2028Label',
       'long-label-id': 'x'.repeat(121),
     },
-  }, { executor: executor(rows, []) });
+  }, { executor: executor(rows, captured) });
 
   assert.deepEqual(items.map((item) => item.clientLabel), [
     'Claude Desktop',
@@ -113,12 +205,15 @@ test('labels come only from current grants and raw client IDs never leave the ow
   ]);
   const serialized = JSON.stringify(items);
   for (const rawId of rawIds) assert.equal(serialized.includes(rawId), false, rawId);
+  assert.deepEqual(JSON.parse(String(captured[0].params?.[1])), [
+    { clientId: 'known-client-id', clientLabel: 'Claude Desktop' },
+  ]);
 });
 
 test('malformed rows are omitted fail-closed and safe output contains no forbidden fields or values', async () => {
   const privatePrompt = 'secret private prompt';
   const rows = [
-    row({ quote_id: 'not-a-uuid' }),
+    row({ job_status: 'FAILED PRIVATE' }),
     row({ model: '' }),
     row({ price_cents: -1 }),
     row({ price_cents: 1.5 }),
@@ -127,12 +222,12 @@ test('malformed rows are omitted fail-closed and safe output contains no forbidd
     row({ event_at: 'invalid' }),
     row({ event_at: '1' }),
     row({
-      quote_id: '00000000-0000-4000-8000-000000000099',
-      oauth_client_id: null,
+      client_label: 'Connected application',
       model: 'flux-pro',
       price_cents: 45,
       currency: 'USD',
       state: 'accepted',
+      job_status: 'completed',
       payment_status: 'paid_wallet',
       event_at: '2026-07-16T13:00:00.000Z',
       prompt: privatePrompt,
@@ -149,7 +244,7 @@ test('malformed rows are omitted fail-closed and safe output contains no forbidd
     'amountCents', 'clientLabel', 'currency', 'model', 'outcome', 'timestamp', 'tool',
   ]);
   const serialized = JSON.stringify(items);
-  for (const forbidden of [privatePrompt, 'private.example', 'private-provider', 'request_json', 'oauth_client_id']) {
+  for (const forbidden of [privatePrompt, 'private.example', 'private-provider', 'request_json', 'oauth_client_id', 'quote_id']) {
     assert.equal(serialized.includes(forbidden), false, forbidden);
   }
 });
