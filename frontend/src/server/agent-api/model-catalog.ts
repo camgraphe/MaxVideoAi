@@ -63,7 +63,10 @@ function publicModes(engine: EngineCaps, surface: 'video' | 'image'): AgentGener
   );
 }
 
-function isPublicEngine(engine: EngineCaps, surface: 'video' | 'image' | null): surface is 'video' | 'image' {
+export function isPublicAgentEngine(
+  engine: EngineCaps,
+  surface: 'video' | 'image' | null,
+): surface is 'video' | 'image' {
   if (!surface || engine.isLab || engine.status === 'maintenance') return false;
   if (engine.availability !== 'available' && engine.availability !== 'limited') return false;
   if (engine.apiAvailability && NON_PUBLIC_API_MARKERS.test(engine.apiAvailability)) return false;
@@ -104,7 +107,7 @@ export async function listPublicAgentGenerationEngines(
   const engines = await deps.listEngines();
   return engines.flatMap((engine) => {
     const surface = deps.surfaceByEngineId(engine.id);
-    if (!isPublicEngine(engine, surface)) return [];
+    if (!isPublicAgentEngine(engine, surface)) return [];
     const modes = publicModes(engine, surface);
     const configuredModeCaps = engine.modeCaps ?? {};
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};

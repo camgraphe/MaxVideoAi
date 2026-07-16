@@ -5,17 +5,19 @@ import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
 
 import type { CanonicalGenerationRequest } from './generation-types';
 import { normalizeGenerationRequest } from './generation-normalization';
-import type { AgentPublicGenerationEngine } from './model-catalog';
+import { isPublicAgentEngine, type AgentPublicGenerationEngine } from './model-catalog';
 
-export const MCP_TRIAL_PRESET = {
+const MCP_TRIAL_ASPECT_RATIOS = Object.freeze(['16:9', '9:16', '1:1'] as const);
+
+export const MCP_TRIAL_PRESET = Object.freeze({
   engineId: 'seedance-2-0-mini',
   surface: 'video',
   mode: 't2v',
   durationSec: 5,
   resolution: '480p',
-  aspectRatios: ['16:9', '9:16', '1:1'],
+  aspectRatios: MCP_TRIAL_ASPECT_RATIOS,
   outputCount: 1,
-} as const;
+} as const);
 
 const RAW_CANDIDATE_FIELDS = new Set([
   'schemaVersion',
@@ -29,6 +31,11 @@ const RAW_CANDIDATE_FIELDS = new Set([
 ]);
 const RAW_SETTING_FIELDS = new Set(['aspectRatio', 'audio']);
 const MEDIA_FIELD_TYPES = new Set(['image', 'video', 'audio']);
+const AUDIO_PRICING_FIELDS = new Set([
+  'perSecondCents',
+  'perSecondCentsByResolution',
+  'flatCents',
+]);
 
 export class TrialCandidateError extends Error {
   constructor() {
@@ -87,22 +94,22 @@ function validateRawTrialCandidate(input: unknown): asserts input is Record<stri
   assertPlainDataObject(input);
   assertExactRawFields(input, RAW_CANDIDATE_FIELDS);
 
-  if (input.schemaVersion !== undefined && input.schemaVersion !== 1) invalidCandidate();
+  if (Object.hasOwn(input, 'schemaVersion') && input.schemaVersion !== 1) invalidCandidate();
   if (input.engineId !== MCP_TRIAL_PRESET.engineId) invalidCandidate();
   if (input.surface !== MCP_TRIAL_PRESET.surface) invalidCandidate();
   if (input.mode !== MCP_TRIAL_PRESET.mode) invalidCandidate();
-  if (input.outputCount !== undefined && input.outputCount !== MCP_TRIAL_PRESET.outputCount) {
+  if (Object.hasOwn(input, 'outputCount') && input.outputCount !== MCP_TRIAL_PRESET.outputCount) {
     invalidCandidate();
   }
 
-  if (input.references !== undefined) assertEmptyDataArray(input.references);
+  if (Object.hasOwn(input, 'references')) assertEmptyDataArray(input.references);
 
-  if (input.settings !== undefined) {
+  if (Object.hasOwn(input, 'settings')) {
     assertPlainDataObject(input.settings);
     assertExactRawFields(input.settings, RAW_SETTING_FIELDS);
     const aspectRatio = input.settings.aspectRatio;
     if (
-      aspectRatio !== undefined
+      Object.hasOwn(input.settings, 'aspectRatio')
       && (
         typeof aspectRatio !== 'string'
         || !MCP_TRIAL_PRESET.aspectRatios.includes(
@@ -112,7 +119,7 @@ function validateRawTrialCandidate(input: unknown): asserts input is Record<stri
     ) {
       invalidCandidate();
     }
-    if (input.settings.audio !== undefined && typeof input.settings.audio !== 'boolean') {
+    if (Object.hasOwn(input.settings, 'audio') && typeof input.settings.audio !== 'boolean') {
       invalidCandidate();
     }
   }
@@ -175,7 +182,54 @@ function assertFiniteNonNegative(value: unknown, reason: string): void {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) unsupported(reason);
 }
 
+function assertPlainPricingObject(
+  value: unknown,
+  reason: string,
+): asserts value is Record<string, unknown> {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) unsupported(reason);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) unsupported(reason);
+  for (const key of Reflect.ownKeys(value)) {
+    if (typeof key !== 'string') unsupported(reason);
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor?.enumerable || !('value' in descriptor)) unsupported(reason);
+  }
+}
+
+function assertAudioAddonInputShape(engine: AgentPublicGenerationEngine['engine']): void {
+  const pricingDetails = engine.pricingDetails;
+  if (!pricingDetails) return;
+  const addonsDescriptor = Object.getOwnPropertyDescriptor(pricingDetails, 'addons');
+  if (!addonsDescriptor) return;
+  if (!addonsDescriptor.enumerable || !('value' in addonsDescriptor)) {
+    unsupported('pricing_addons_malformed');
+  }
+  const addons = addonsDescriptor.value;
+  assertPlainPricingObject(addons, 'pricing_addons_malformed');
+  if (!Object.hasOwn(addons, 'audio')) return;
+
+  const audio = addons.audio;
+  assertPlainPricingObject(audio, 'audio_pricing_malformed');
+  for (const key of Object.keys(audio)) {
+    if (!AUDIO_PRICING_FIELDS.has(key)) unsupported('audio_pricing_malformed');
+  }
+  for (const field of ['perSecondCents', 'flatCents'] as const) {
+    if (Object.hasOwn(audio, field)) {
+      assertFiniteNonNegative(audio[field], 'audio_pricing_malformed');
+    }
+  }
+  if (Object.hasOwn(audio, 'perSecondCentsByResolution')) {
+    const byResolution = audio.perSecondCentsByResolution;
+    assertPlainPricingObject(byResolution, 'audio_pricing_malformed');
+    for (const [resolution, value] of Object.entries(byResolution)) {
+      if (!engine.resolutions.includes(resolution as never)) unsupported('audio_pricing_malformed');
+      assertFiniteNonNegative(value, 'audio_pricing_malformed');
+    }
+  }
+}
+
 function assertAudioPricingStable(engine: AgentPublicGenerationEngine['engine']): void {
+  assertAudioAddonInputShape(engine);
   const definition = buildPricingDefinition(engine);
   if (!definition || definition.engineId !== MCP_TRIAL_PRESET.engineId) unsupported('pricing_missing');
   assertFiniteNonNegative(definition.baseUnitPriceCents, 'pricing_malformed');
@@ -234,6 +288,7 @@ export function assertTrialPresetSupported(candidate: AgentPublicGenerationEngin
     const engine = candidate.engine;
     if (
       candidate.surface !== MCP_TRIAL_PRESET.surface
+      || !isPublicAgentEngine(engine, candidate.surface)
       || engine.id !== MCP_TRIAL_PRESET.engineId
       || engine.status !== 'live'
       || engine.availability !== 'available'

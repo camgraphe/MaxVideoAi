@@ -44,6 +44,29 @@ function cloneEngine(candidate: AgentPublicGenerationEngine): AgentPublicGenerat
 }
 
 test('owns the exact immutable Seedance Mini trial preset', () => {
+  const originalDuration = MCP_TRIAL_PRESET.durationSec;
+  const originalRatio = MCP_TRIAL_PRESET.aspectRatios[0];
+  const presetMutationSucceeded = Reflect.set(
+    MCP_TRIAL_PRESET as unknown as Record<string, unknown>,
+    'durationSec',
+    10,
+  );
+  const ratioMutationSucceeded = Reflect.set(
+    MCP_TRIAL_PRESET.aspectRatios as unknown as string[],
+    0,
+    '4:3',
+  );
+  if (presetMutationSucceeded) {
+    Reflect.set(MCP_TRIAL_PRESET as unknown as Record<string, unknown>, 'durationSec', originalDuration);
+  }
+  if (ratioMutationSucceeded) {
+    Reflect.set(MCP_TRIAL_PRESET.aspectRatios as unknown as string[], 0, originalRatio);
+  }
+
+  assert.equal(Object.isFrozen(MCP_TRIAL_PRESET), true);
+  assert.equal(Object.isFrozen(MCP_TRIAL_PRESET.aspectRatios), true);
+  assert.equal(presetMutationSucceeded, false);
+  assert.equal(ratioMutationSucceeded, false);
   assert.deepEqual(MCP_TRIAL_PRESET, {
     engineId: 'seedance-2-0-mini',
     surface: 'video',
@@ -93,9 +116,12 @@ test('accepts every allowed ratio and primitive audio state without coercion', (
 });
 
 test('defaults the required ratio and forces explicit audio on when omitted', () => {
-  const normalized = normalizeTrialCandidate(
-    trialCandidate({ schemaVersion: undefined, settings: undefined, references: undefined, outputCount: undefined }),
-  );
+  const candidate = trialCandidate();
+  delete candidate.schemaVersion;
+  delete candidate.settings;
+  delete candidate.references;
+  delete candidate.outputCount;
+  const normalized = normalizeTrialCandidate(candidate);
 
   assert.deepEqual(normalized.settings, {
     aspectRatio: '16:9',
@@ -105,6 +131,25 @@ test('defaults the required ratio and forces explicit audio on when omitted', ()
   });
   assert.deepEqual(normalized.references, []);
   assert.equal(normalized.outputCount, 1);
+});
+
+test('rejects optional envelope and setting properties when explicitly present as undefined', () => {
+  for (const field of ['schemaVersion', 'settings', 'references', 'outputCount']) {
+    assert.throws(
+      () => normalizeTrialCandidate(trialCandidate({ [field]: undefined })),
+      /trial candidate/i,
+      `${field}: undefined must not be treated as omission`,
+    );
+  }
+  for (const field of ['aspectRatio', 'audio']) {
+    assert.throws(
+      () => normalizeTrialCandidate(trialCandidate({
+        settings: { aspectRatio: '16:9', audio: true, [field]: undefined },
+      })),
+      /trial candidate/i,
+      `settings.${field}: undefined must not be treated as omission`,
+    );
+  }
 });
 
 test('trims a bounded prompt and rejects empty, non-string, or oversized prompts', () => {
@@ -296,6 +341,8 @@ test('fails closed when identity, publication, or t2v mode capability changes', 
     (candidate) => { candidate.surface = 'image'; },
     (candidate) => { candidate.engine.status = 'busy'; },
     (candidate) => { candidate.engine.availability = 'limited'; },
+    (candidate) => { candidate.engine.isLab = true; },
+    (candidate) => { candidate.engine.apiAvailability = 'private'; },
     (candidate) => { candidate.publicModes = candidate.publicModes.filter((mode) => mode !== 't2v'); },
     (candidate) => { delete candidate.modeCaps.t2v; },
   ];
@@ -404,4 +451,96 @@ test('fails closed when pricing is missing, malformed, or audio changes the addo
     mutate(candidate);
     assert.throws(() => assertTrialPresetSupported(candidate), /trial preset/i);
   }
+});
+
+test('fails closed before pricing calculation for exotic addon collections and audio rules', async () => {
+  const current = await getCurrentTrialEngine();
+  const candidates: AgentPublicGenerationEngine[] = [];
+  let pricingDetailsAccessorReads = 0;
+  let addonsAccessorReads = 0;
+  let audioRuleAccessorReads = 0;
+  let resolutionMapAccessorReads = 0;
+
+  const withAddons = (addons: unknown): AgentPublicGenerationEngine => {
+    const candidate = cloneEngine(current);
+    assert.ok(candidate.engine.pricingDetails);
+    (candidate.engine.pricingDetails as { addons?: unknown }).addons = addons;
+    return candidate;
+  };
+
+  const accessorPricingDetails = cloneEngine(current);
+  assert.ok(accessorPricingDetails.engine.pricingDetails);
+  Object.defineProperty(accessorPricingDetails.engine.pricingDetails, 'addons', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      pricingDetailsAccessorReads += 1;
+      return {};
+    },
+  });
+  assert.throws(() => assertTrialPresetSupported(accessorPricingDetails), /trial preset/i);
+  assert.equal(pricingDetailsAccessorReads, 0);
+
+  candidates.push(withAddons([]));
+  candidates.push(withAddons({ audio: [] }));
+  candidates.push(withAddons(Object.assign(Object.create({ inherited: true }), {})));
+
+  const symbolAddons = {};
+  Object.defineProperty(symbolAddons, Symbol('audio'), {
+    enumerable: true,
+    value: { flatCents: 1 },
+  });
+  candidates.push(withAddons(symbolAddons));
+
+  const accessorAddons = {};
+  Object.defineProperty(accessorAddons, 'audio', {
+    enumerable: true,
+    get() {
+      addonsAccessorReads += 1;
+      return {};
+    },
+  });
+  candidates.push(withAddons(accessorAddons));
+
+  candidates.push(withAddons({ audio: Object.assign(Object.create({ inherited: true }), { flatCents: 0 }) }));
+  candidates.push(withAddons({ audio: { flatCents: 0, unexpected: true } }));
+
+  const symbolAudioRule = { flatCents: 0 };
+  Object.defineProperty(symbolAudioRule, Symbol('unexpected'), { enumerable: true, value: true });
+  candidates.push(withAddons({ audio: symbolAudioRule }));
+
+  const accessorAudioRule = {};
+  Object.defineProperty(accessorAudioRule, 'flatCents', {
+    enumerable: true,
+    get() {
+      audioRuleAccessorReads += 1;
+      return 0;
+    },
+  });
+  candidates.push(withAddons({ audio: accessorAudioRule }));
+
+  candidates.push(withAddons({
+    audio: { perSecondCentsByResolution: Object.assign(Object.create({ inherited: true }), { '480p': 0 }) },
+  }));
+
+  const symbolResolutionMap = { '480p': 0 };
+  Object.defineProperty(symbolResolutionMap, Symbol('unexpected'), { enumerable: true, value: 1 });
+  candidates.push(withAddons({ audio: { perSecondCentsByResolution: symbolResolutionMap } }));
+
+  const accessorResolutionMap = {};
+  Object.defineProperty(accessorResolutionMap, '480p', {
+    enumerable: true,
+    get() {
+      resolutionMapAccessorReads += 1;
+      return 0;
+    },
+  });
+  candidates.push(withAddons({ audio: { perSecondCentsByResolution: accessorResolutionMap } }));
+
+  for (const candidate of candidates) {
+    assert.throws(() => assertTrialPresetSupported(candidate), /trial preset/i);
+  }
+  assert.equal(addonsAccessorReads, 0);
+  assert.equal(audioRuleAccessorReads, 0);
+  assert.equal(resolutionMapAccessorReads, 0);
 });
