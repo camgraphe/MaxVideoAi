@@ -103,7 +103,7 @@ type ModelExamplesContent = {
     title: string;
     intro: string;
     defaultCtaLabel: string | null;
-    recreateLabel: string;
+    recreateLabel: string | null;
   };
   filters: Array<{
     id:
@@ -153,7 +153,7 @@ type ModelExamplesContent = {
 };
 ```
 
-All objects are strict. Unknown fields fail validation. Required strings are non-empty after trimming. IDs are unique. `modelSlug` must match the requested slug and filename. `filters` begins with exactly one `all` entry, and every fallback tag references a declared filter ID.
+All objects are strict. Unknown fields fail validation. Required strings are non-empty after trimming. IDs are unique. `modelSlug` must match the requested slug and filename. `filters` begins with exactly one `all` entry, and every fallback tag references a declared filter ID. `recreateLabel` remains explicitly `null` where the current projection intentionally renders no recreate action.
 
 `proofItems` has exactly five items because the current decision proof grid renders five cards for every configured model. The three locale documents for one model must have the same filter IDs, proof IDs, icon keys, fallback-item IDs, tag values, array order, and nullability. Filter labels remain localized because the same semantic ID currently has model-contextual presentation such as `Product / Ad`, `Product still`, and `Product`.
 
