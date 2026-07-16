@@ -70,7 +70,7 @@ export async function captureCurrentPaygManifest(
   process.env.NODE_ENV = 'production';
   try {
     const content = getPayAsYouGoContent(locale);
-    const data = buildPayAsYouGoPageData(locale);
+    const data = buildPayAsYouGoPageData({ locale, content });
     const markup = renderToStaticMarkup(React.createElement(
       I18nProvider,
       { locale, dictionary: {}, fallback: {} },

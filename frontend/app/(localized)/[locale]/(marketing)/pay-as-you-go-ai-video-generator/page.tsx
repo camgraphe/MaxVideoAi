@@ -34,7 +34,7 @@ export async function generateMetadata(props: { params: Promise<{ locale: AppLoc
 export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Promise<{ locale: AppLocale }> }) {
   const { locale } = await props.params;
   const content = getPayAsYouGoContent(locale);
-  const data = buildPayAsYouGoPageData(locale);
+  const data = buildPayAsYouGoPageData({ locale, content });
   const showcaseVideos = await loadPayAsYouGoVideoShowcase(locale);
   const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
   const breadcrumbJsonLd = buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale, copy: content.jsonLd });
