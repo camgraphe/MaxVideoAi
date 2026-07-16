@@ -12,6 +12,7 @@ const referencesPath = join(root, 'frontend/src/server/images/image-generation-r
 const storyboardTemplateReferencePath = join(root, 'frontend/src/server/images/storyboard-template-reference.ts');
 const storyboardPricingPath = join(root, 'frontend/src/lib/storyboard-pricing.ts');
 const storyboardImageBillingPath = join(root, 'frontend/src/server/images/storyboard-image-billing.ts');
+const imageGenerationPricingPath = join(root, 'frontend/src/server/images/image-generation-pricing.ts');
 const imageGenerateRoutePath = join(root, 'frontend/app/api/images/generate/route.ts');
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
 const initialJobReservationPath = join(root, 'frontend/src/server/generations/initial-job-reservation.ts');
@@ -46,6 +47,7 @@ const referencesSource = readFileSync(referencesPath, 'utf8');
 const storyboardTemplateReferenceSource = readFileSync(storyboardTemplateReferencePath, 'utf8');
 const storyboardPricingSource = readFileSync(storyboardPricingPath, 'utf8');
 const storyboardImageBillingSource = readFileSync(storyboardImageBillingPath, 'utf8');
+const imageGenerationPricingSource = readFileSync(imageGenerationPricingPath, 'utf8');
 const imageGenerateRouteSource = readFileSync(imageGenerateRoutePath, 'utf8');
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
 const initialJobReservationSource = readFileSync(initialJobReservationPath, 'utf8');
@@ -185,7 +187,8 @@ test('storyboard image billing uses storyboard identity instead of provider disp
   assert.match(executorSource, /description = billingProductLabel[\s\S]+billingEngineLabel/);
   assert.match(executorSource, /body\.referenceImageSizes/);
   assert.match(executorSource, /storedReferenceSizes\.length \? storedReferenceSizes : clientReferenceImageSizes/);
-  assert.match(executorSource, /applyStoryboardImagePricing/);
+  assert.match(executorSource, /resolveImageGenerationPricingSnapshot/);
+  assert.match(imageGenerationPricingSource, /applyStoryboardImagePricing/);
   assert.match(executorSource, /resolveIncludedKlingFirstFrameParentJobId/);
   assert.match(executorSource, /walletChargeMode === 'included'/);
   assert.match(storyboardImageBillingSource, /applyStoryboardKlingBundlePricing/);

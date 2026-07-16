@@ -46,6 +46,62 @@ export type GenerateRouteContextResult =
   | { ok: true; context: GenerateRouteContext }
   | { ok: false; status: number; body: Record<string, unknown> };
 
+export function resolveTrustedPaidGenerateRouteContext(params: {
+  body: Record<string, unknown>;
+  engine: EngineCaps;
+  jobId: string;
+  mode: Mode;
+}): GenerateRouteContextResult {
+  const { body, engine, jobId, mode } = params;
+  const isPublicSeedanceStandardBytePlus = shouldRoutePublicSeedanceToBytePlus(engine.id);
+  const isPublicSeedanceFastBytePlus = shouldRoutePublicSeedanceFastToBytePlus(engine.id);
+  const isPublicSeedanceMiniBytePlus = shouldRoutePublicSeedanceMiniToBytePlus(engine.id);
+  const isBytePlusV1a =
+    isBytePlusSeedanceFastEngine(engine.id)
+    || isPublicSeedanceFastBytePlus
+    || isPublicSeedanceMiniBytePlus
+    || isPublicSeedanceStandardBytePlus;
+  if (isBytePlusV1a && !isBytePlusModelArkEnabled()) {
+    return { ok: false, status: 404, body: { ok: false, error: 'Engine unavailable' } };
+  }
+  const bytePlusRequiresAdmin = isBytePlusV1a && (
+    isPublicSeedanceEngine(engine.id)
+      ? seedanceBytePlusAdminOnly()
+      : isPublicSeedanceMiniEngine(engine.id)
+        ? seedanceMiniBytePlusAdminOnly()
+        : isPublicSeedanceFastEngine(engine.id) || isBytePlusSeedanceFastEngine(engine.id)
+          ? seedanceFastBytePlusAdminOnly()
+          : false
+  );
+  if (bytePlusRequiresAdmin || (isBytePlusV1a && !getBytePlusSeedanceAllowedModes(engine.id).includes(mode))) {
+    return { ok: false, status: 400, body: { ok: false, error: 'Engine unavailable' } };
+  }
+  let providerRoutingPlan: VideoProviderRoutingPlan = isBytePlusV1a
+    ? { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false }
+    : resolveVideoProviderRoutingPlan({ engineId: engine.id, mode, isAdmin: false });
+  if (shouldRouteKlingDirectSourceElementsToFal({
+    providerRoutingPlan,
+    elementCount: Array.isArray(body.elements) ? body.elements.length : 0,
+  })) {
+    providerRoutingPlan = { kind: 'fal_only', primaryProvider: 'fal', fallbackEnabled: false };
+  }
+  if (providerRoutingPlan.kind === 'google_vertex_unavailable') {
+    return { ok: false, status: 503, body: { ok: false, error: 'Engine unavailable' } };
+  }
+  return {
+    ok: true,
+    context: {
+      engine,
+      isBytePlusV1a,
+      jobId,
+      mode,
+      payment: { mode: 'wallet' },
+      providerKey: isBytePlusV1a ? BYTEPLUS_MODELARK_PROVIDER : providerRoutingPlan.primaryProvider,
+      providerRoutingPlan,
+    },
+  };
+}
+
 export async function resolveGenerateRouteContext(params: {
   body: Record<string, unknown>;
   req: NextRequest;

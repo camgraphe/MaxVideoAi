@@ -9,9 +9,18 @@ import {
 } from '@/lib/engines';
 import { computeCanonicalPublicSnapshot } from '@/server/pricing/quote-public';
 import type { EngineCaps, EngineInputField, EnginePricing, EnginePricingDetails } from '@/types/engines';
-import { fetchEngineOverrides } from '@/server/engine-overrides';
+import {
+  fetchEngineOverrides,
+  fetchEngineOverridesWithExecutor,
+} from '@/server/engine-overrides';
 import type { EngineOverride } from '@/server/engine-overrides';
-import { ensureEngineSettingsSeed, fetchEngineSettings, EngineSettingsRecord } from '@/server/engine-settings';
+import {
+  ensureEngineSettingsSeed,
+  fetchEngineSettings,
+  fetchEngineSettingsWithExecutor,
+  EngineSettingsRecord,
+} from '@/server/engine-settings';
+import type { TransactionQueryExecutor } from '@/lib/db';
 import type { PreflightRequest, PreflightResponse } from '@/types/engines';
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { ensureBillingSchema } from '@/lib/schema';
@@ -252,6 +261,21 @@ export async function getPublicConfiguredEnginesByCategory(
 ): Promise<EngineCaps[]> {
   const baseEngines = getBaseEnginesByCategory(category);
   return getConfiguredEnginesForBase(baseEngines, includeDisabled, { bootstrap: false });
+}
+
+export async function getPublicConfiguredEnginesByCategoryInExecutor(
+  category: EngineCategory,
+  executor: TransactionQueryExecutor,
+): Promise<EngineCaps[]> {
+  await executor.query('LOCK TABLE engine_settings, engine_overrides IN SHARE MODE');
+  const [settingsMap, overridesMap] = await Promise.all([
+    fetchEngineSettingsWithExecutor(executor),
+    fetchEngineOverridesWithExecutor(executor),
+  ]);
+  return getBaseEnginesByCategory(category)
+    .map((engine) => mergeEngine(engine, settingsMap, overridesMap))
+    .filter((entry) => !entry.disabled)
+    .map((entry) => applyGoogleVertexVeoRuntimeOptions(applyBytePlusSeedanceRuntimeOptions(entry.engine)));
 }
 
 export async function getConfiguredEngines(includeDisabled = false): Promise<EngineCaps[]> {

@@ -8,6 +8,10 @@ import {
 import { listAgentModels } from '@/server/agent-api/model-catalog';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
+  createConfirmGenerationService,
+  type ConfirmGenerationInput,
+} from '@/server/agent-api/confirm-generation';
+import {
   createPrepareGenerationService,
   type PreparedGeneration,
   type PrepareGenerationInput,
@@ -23,6 +27,7 @@ import type {
 import type { McpConfig } from '@/server/mcp/config';
 import { MAXVIDEOAI_MCP_INSTRUCTIONS } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
+import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
@@ -38,6 +43,10 @@ export type MaxVideoAiMcpServices = {
     input: PrepareGenerationInput,
     principal: AgentPrincipal,
   ): Promise<PreparedGeneration>;
+  confirmGeneration?(
+    input: ConfirmGenerationInput,
+    principal: AgentPrincipal,
+  ): Promise<import('@/server/generations/generation-status').AgentGenerationStatus>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -53,6 +62,7 @@ export function createDefaultMaxVideoAiMcpServices(
     listModels: (filter) => listAgentModels(filter),
     recommendModels: (input) => recommendAgentModels(input),
     prepareGeneration: createPrepareGenerationService(config.accountUrl),
+    confirmGeneration: createConfirmGenerationService(config.accountUrl),
   };
 }
 
@@ -78,6 +88,7 @@ export function createMaxVideoAiMcpServer(
   registerRecommendModelsTool(server, principal, services);
   if (options.paidGeneration ?? mcpPublication.paidGeneration) {
     registerPrepareGenerationTool(server, principal, services);
+    registerConfirmGenerationTool(server, principal, services);
   }
   return server;
 }

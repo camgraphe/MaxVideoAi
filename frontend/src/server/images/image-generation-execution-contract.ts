@@ -1,6 +1,9 @@
 import type { ImageGenerationRequest } from '@/types/image-generation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
-import type { WalletReservation } from '@/server/generations/initial-job-reservation';
+import type {
+  TrustedQuotedBilling,
+  WalletReservation,
+} from '@/server/generations/initial-job-reservation';
 
 export type PreReservedImageInitialState = {
   kind: 'created';
@@ -12,10 +15,12 @@ type ImageGenerationReservationOptions =
   | ({ walletReservation: WalletReservation } & {
       walletReservation: 'reserve';
       preReservedInitialState?: never;
+      trustedQuotedBilling?: never;
     })
   | ({ walletReservation: WalletReservation } & {
       walletReservation: 'already_reserved';
       preReservedInitialState: PreReservedImageInitialState;
+      trustedQuotedBilling: TrustedQuotedBilling;
     });
 
 export type ExecuteImageGenerationOptions = {

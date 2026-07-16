@@ -1,4 +1,11 @@
 import { computeConfiguredPreflight } from '@/server/engines';
+import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
+import type { TransactionQueryExecutor } from '@/lib/db';
+import { loadMembershipTiersWithExecutor } from '@/lib/membership';
+import { loadPricingPolicyOverridesWithExecutor } from '@/lib/pricing-rule-store';
+import { applyEngineVariantPricing, buildEngineAddonInput } from '@/lib/pricing-addons';
+import { getLumaRay2DurationInfo, isLumaRay2EngineId } from '@/lib/luma-ray2';
+import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import {
   estimateImageGeneration,
   type ImageEstimateInput,
@@ -7,6 +14,7 @@ import type { PreflightRequest, PreflightResponse, PricingSnapshot } from '@/typ
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 
 import type { CanonicalGenerationRequest } from './generation-types';
+import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 
 export type GenerationPricingResult = {
@@ -124,4 +132,72 @@ export async function priceCanonicalGeneration(
     membershipTier,
   });
   return validatePricingResult(result.pricing, membershipTier);
+}
+
+export async function priceCanonicalGenerationInExecutor(
+  request: CanonicalGenerationRequest,
+  membershipTier: AuthoritativeMembershipTier,
+  dependencies: {
+    executor: TransactionQueryExecutor;
+    candidate: AgentPublicGenerationEngine;
+  },
+): Promise<GenerationPricingResult> {
+  if (
+    dependencies.candidate.engine.id !== request.engineId
+    || dependencies.candidate.surface !== request.surface
+  ) {
+    throw new Error('Canonical transaction pricing candidate mismatch.');
+  }
+  const [overrideResult, tiers] = await Promise.all([
+    loadPricingPolicyOverridesWithExecutor(dependencies.executor, { lock: true }),
+    loadMembershipTiersWithExecutor(dependencies.executor, { lock: true }),
+  ]);
+  if (overrideResult.status !== 'loaded') {
+    throw new Error('Canonical transaction pricing policy unavailable.');
+  }
+  const membershipDiscounts = Object.fromEntries(
+    tiers.map((tier) => [tier.tier, tier.discountPercent]),
+  );
+  const pricingPolicy = { loadOverrides: async () => overrideResult, warn: () => undefined };
+  const engine = dependencies.candidate.engine;
+  let snapshot: PricingSnapshot;
+  if (request.surface === 'video') {
+    const pricingEngine = applyEngineVariantPricing(engine, request.mode);
+    const durationSec = requiredPositiveInteger(request.settings, 'durationSec');
+    const resolution = requiredString(request.settings, 'resolution');
+    const audioEnabled = typeof request.settings.audio === 'boolean'
+      ? request.settings.audio
+      : undefined;
+    snapshot = await computeCanonicalBillingSnapshot({
+      engine: pricingEngine,
+      durationSec,
+      resolution,
+      aspectRatio: optionalString(request.settings, 'aspectRatio'),
+      mode: request.mode,
+      membershipTier,
+      loop: isLumaRay2EngineId(engine.id) && request.settings.loop === true,
+      durationOption: isLumaRay2EngineId(engine.id)
+        ? getLumaRay2DurationInfo(durationSec)?.label
+        : undefined,
+      addons: buildEngineAddonInput(pricingEngine, { audioEnabled }),
+    }, { pricingPolicy, membershipDiscounts });
+  } else {
+    const referenceImageCount = isLumaAgentsImageEngineId(engine.id)
+      ? request.mode === 'i2i'
+        ? Math.max(0, request.references.length - 1)
+        : request.references.length
+      : undefined;
+    snapshot = await computeCanonicalBillingSnapshot({
+      engine,
+      durationSec: request.outputCount,
+      resolution: requiredString(request.settings, 'resolution'),
+      aspectRatio: optionalString(request.settings, 'aspectRatio'),
+      mode: request.mode,
+      quality: optionalString(request.settings, 'quality'),
+      referenceImageCount,
+      membershipTier,
+      currency: engine.pricing?.currency ?? 'USD',
+    }, { pricingPolicy, membershipDiscounts });
+  }
+  return validatePricingResult(snapshot, membershipTier);
 }

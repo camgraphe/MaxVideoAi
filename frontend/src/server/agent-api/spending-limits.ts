@@ -117,9 +117,10 @@ function exceeded(
   };
 }
 
-export async function checkMcpSpendingLimits(
+async function checkSpendingLimits(
   input: SpendingCheckInput,
   dependencies: SpendingDependencies,
+  includeClaimed: boolean,
 ): Promise<McpSpendingDecision> {
   assertInput(input);
   // The no-op conflict update is intentional: it ensures and locks one account scope
@@ -140,13 +141,16 @@ export async function checkMcpSpendingLimits(
   };
 
   const now = requireNow(dependencies);
+  const statePredicate = includeClaimed
+    ? "state IN ('claimed', 'accepted')"
+    : "state = 'accepted'";
   const spendingRows = await dependencies.executor.query<AcceptedSpendingRow>(
     `SELECT COALESCE(SUM(price_cents), 0)::text AS accepted_today_cents
         FROM mcp_generation_quotes
        WHERE user_id = $1
          AND currency = $2
          AND funding_mode = 'wallet'
-         AND state = 'accepted'
+         AND ${statePredicate}
          AND claimed_at >= (
            date_trunc('day', $3::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
          )
@@ -170,4 +174,18 @@ export async function checkMcpSpendingLimits(
     return exceeded('web_approval', acceptedTodayCents, projectedTodayCents, limits);
   }
   return { allowed: true, acceptedTodayCents, projectedTodayCents, limits };
+}
+
+export async function checkMcpSpendingLimits(
+  input: SpendingCheckInput,
+  dependencies: SpendingDependencies,
+): Promise<McpSpendingDecision> {
+  return checkSpendingLimits(input, dependencies, false);
+}
+
+export async function checkMcpConfirmationSpendingLimits(
+  input: SpendingCheckInput,
+  dependencies: SpendingDependencies,
+): Promise<McpSpendingDecision> {
+  return checkSpendingLimits(input, dependencies, true);
 }

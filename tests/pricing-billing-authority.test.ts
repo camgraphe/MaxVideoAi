@@ -8,7 +8,7 @@ test('new generation charges enter through canonical server pricing owners', () 
   const canonicalConsumers = new Map<string, string>([
     ['frontend/app/api/generate/_lib/billing-preflight.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/app/api/wallet/route.ts', 'computeCanonicalBillingSnapshot'],
-    ['frontend/src/server/images/execute-image-generation.ts', 'computeCanonicalBillingSnapshot'],
+    ['frontend/src/server/images/image-generation-pricing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/images/storyboard-image-billing.ts', 'computeCanonicalBillingSnapshot'],
     ['frontend/src/server/audio/generate-audio.ts', 'computeCanonicalAudioBillingSnapshot'],
   ]);
@@ -42,6 +42,7 @@ test('API routes and tool runners never call the pure canonical kernel directly'
     'frontend/app/api/generate/_lib/billing-preflight.ts',
     'frontend/app/api/wallet/route.ts',
     'frontend/src/server/images/execute-image-generation.ts',
+    'frontend/src/server/images/image-generation-pricing.ts',
     'frontend/src/server/images/storyboard-image-billing.ts',
     'frontend/src/server/audio/generate-audio.ts',
     'frontend/src/server/tools/angle.ts',

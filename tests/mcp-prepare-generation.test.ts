@@ -759,6 +759,20 @@ test('prepare_generation is gated out by default and accurately annotated when e
       assert.equal(input.engineId, videoModel.id);
       return prepared;
     },
+    async confirmGeneration() {
+      return {
+        jobId: quoteId,
+        surface: 'video',
+        status: 'accepted',
+        progress: 0,
+        message: 'Generation accepted.',
+        priceCents: 125,
+        currency: 'USD',
+        paymentStatus: 'paid_wallet',
+        result: null,
+        retryAfterSeconds: 5,
+      };
+    },
   };
   const defaultServer = createMaxVideoAiMcpServer(principal, services);
   const enabledServer = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
@@ -782,9 +796,9 @@ test('prepare_generation is gated out by default and accurately annotated when e
   ]);
   const tools = (await enabledClient.listTools()).tools;
   assert.deepEqual(tools.map((tool) => tool.name), [
-    'get_account_status', 'list_models', 'recommend_models', 'prepare_generation',
+    'get_account_status', 'list_models', 'recommend_models', 'prepare_generation', 'confirm_generation',
   ]);
-  const prepareTool = tools.at(-1);
+  const prepareTool = tools.find((tool) => tool.name === 'prepare_generation');
   assert.equal(prepareTool?.annotations?.readOnlyHint, true);
   assert.equal(prepareTool?.annotations?.destructiveHint, false);
   assert.equal(prepareTool?.annotations?.openWorldHint, false);

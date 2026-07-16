@@ -30,7 +30,10 @@ function normalizeMembershipTier(value: string | null | undefined): 'member' | '
 
 export async function computeCanonicalBillingSnapshot(
   context: PricingContext,
-  dependencies: { pricingPolicy?: ResolveServerPricingPolicyDependencies } = {}
+  dependencies: {
+    pricingPolicy?: ResolveServerPricingPolicyDependencies;
+    membershipDiscounts?: Record<string, number>;
+  } = {}
 ): Promise<PricingSnapshot> {
   const pricingDetails = context.engine.pricingDetails ?? (await getPricingDetails(context.engine.id));
   const { policy, vendorAccountId } = await resolveServerBillingPolicy(
@@ -44,7 +47,7 @@ export async function computeCanonicalBillingSnapshot(
   );
   const currency = (context.currency ?? policy.rule.currency ?? pricingDetails?.currency ?? context.engine.pricing?.currency ?? 'USD').toUpperCase();
   const memberTier = normalizeMembershipTier(context.membershipTier);
-  const membershipDiscounts = await getMembershipDiscountMap();
+  const membershipDiscounts = dependencies.membershipDiscounts ?? await getMembershipDiscountMap();
   const memberTierDiscounts: Record<MemberTier, number> = {
     member: 0,
     plus: 0.05,

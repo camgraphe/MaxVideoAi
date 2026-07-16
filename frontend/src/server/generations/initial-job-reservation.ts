@@ -1,6 +1,12 @@
 import { type TransactionQueryExecutor, withDbTransaction } from '@/lib/db';
+import type { PricingSnapshot } from '@/types/engines';
 
 export type WalletReservation = 'reserve' | 'already_reserved';
+
+export type TrustedQuotedBilling = {
+  pricing: PricingSnapshot;
+  membershipTier: 'member' | 'plus' | 'pro';
+};
 
 export async function lockInitialJobReservation(executor: TransactionQueryExecutor, jobId: string): Promise<void> {
   await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [jobId]);

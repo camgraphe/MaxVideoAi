@@ -65,6 +65,19 @@ type QuoteLockDependencies = {
   executor: TransactionQueryExecutor;
 };
 
+type QuoteClaimDependencies = QuoteLockDependencies & {
+  claimedAt: Date;
+};
+
+type QuoteExpireDependencies = QuoteLockDependencies & {
+  expiredAt: Date;
+};
+
+export type LockedOwnedQuote = {
+  quote: McpGenerationQuote;
+  databaseNow: Date;
+};
+
 type QuoteRow = {
   quote_id: unknown;
   user_id: unknown;
@@ -348,6 +361,75 @@ export async function lockOwnedPreparedQuote(
   const currentTime = finiteDate(clockRows[0].current_time);
   if (!currentTime) throw new Error('Invalid quote repository clock result.');
   return quote.expiresAt <= currentTime ? null : quote;
+}
+
+export async function lockOwnedQuote(
+  input: OwnedQuoteInput,
+  dependencies: QuoteLockDependencies,
+): Promise<LockedOwnedQuote | null> {
+  assertOwnerInput(input);
+  const rows = await dependencies.executor.query<QuoteRow>(
+    `SELECT ${QUOTE_COLUMNS}
+       FROM mcp_generation_quotes
+      WHERE quote_id = $1
+        AND user_id = $2
+        AND oauth_client_id IS NOT DISTINCT FROM $3
+      FOR UPDATE`,
+    [input.quoteId, input.userId, input.oauthClientId],
+  );
+  const quote = parseOptionalQuote(rows);
+  if (!quote) return null;
+  const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
+    'SELECT clock_timestamp() AS current_time',
+  );
+  if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
+  const databaseNow = finiteDate(clockRows[0].current_time);
+  if (!databaseNow) throw new Error('Invalid quote repository clock result.');
+  return { quote, databaseNow };
+}
+
+export async function claimPreparedQuote(
+  input: OwnedQuoteJobInput,
+  dependencies: QuoteClaimDependencies,
+): Promise<McpGenerationQuote | null> {
+  assertJobInput(input);
+  const claimedAt = finiteDate(dependencies.claimedAt);
+  if (!claimedAt) throw new Error('Invalid quote claim clock.');
+  const rows = await dependencies.executor.query<QuoteRow>(
+    `UPDATE mcp_generation_quotes
+        SET state = 'claimed', job_id = $4, claimed_at = $5, updated_at = $5
+      WHERE quote_id = $1
+        AND user_id = $2
+        AND oauth_client_id IS NOT DISTINCT FROM $3
+        AND state = 'prepared'
+        AND expires_at > $5
+        AND job_id IS NULL
+        AND claimed_at IS NULL
+    RETURNING ${QUOTE_COLUMNS}`,
+    [input.quoteId, input.userId, input.oauthClientId, input.jobId, claimedAt],
+  );
+  return parseOptionalQuote(rows);
+}
+
+export async function markQuoteExpired(
+  input: OwnedQuoteInput,
+  dependencies: QuoteExpireDependencies,
+): Promise<McpGenerationQuote | null> {
+  assertOwnerInput(input);
+  const expiredAt = finiteDate(dependencies.expiredAt);
+  if (!expiredAt) throw new Error('Invalid quote expiration clock.');
+  const rows = await dependencies.executor.query<QuoteRow>(
+    `UPDATE mcp_generation_quotes
+        SET state = 'expired', updated_at = $4
+      WHERE quote_id = $1
+        AND user_id = $2
+        AND oauth_client_id IS NOT DISTINCT FROM $3
+        AND state = 'prepared'
+        AND expires_at <= $4
+    RETURNING ${QUOTE_COLUMNS}`,
+    [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+  );
+  return parseOptionalQuote(rows);
 }
 
 export async function markQuoteAccepted(

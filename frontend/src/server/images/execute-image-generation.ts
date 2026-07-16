@@ -3,8 +3,6 @@ import type { ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
-import { computeCanonicalBillingSnapshot } from '@/server/pricing/quote-billing';
-import type { PricingSnapshot } from '@/types/engines';
 import { receiptsPriceOnlyEnabled } from '@/lib/env';
 import { ensureUserPreferredCurrency, getUserPreferredCurrency, type Currency } from '@/lib/currency';
 import { normalizeMediaUrl } from '@/lib/media';
@@ -24,7 +22,6 @@ import {
   validateGptImage2CustomImageSize,
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
-import { computeBillingProductSnapshot } from '@/lib/billing-products';
 import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
@@ -46,11 +43,15 @@ import {
   lumaAgentsImageDirectEnabled,
 } from './luma-agents-execution';
 import {
-  applyStoryboardImagePricing,
   resolveIncludedKlingFirstFrameParentJobId,
 } from './storyboard-image-billing';
 import { executeAfterInitialJobReservation } from '@/server/generations/initial-job-reservation';
 import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
+import {
+  isAmbiguousImageProviderFailure,
+  markImageProviderOutcomeAmbiguous,
+} from './image-provider-failure-policy';
+import { resolveImageGenerationPricingSnapshot } from './image-generation-pricing';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
@@ -64,12 +65,24 @@ export async function executeImageGeneration({
   body,
   walletReservation,
   preReservedInitialState,
+  trustedQuotedBilling,
   settingsSnapshot,
   jobSurface = 'image',
   billingProductKey = null,
   billingQuantityMultiplier = 1,
   isAdminForDirectProvider = false,
 }: ExecuteImageGenerationOptions): Promise<ImageGenerationResponse> {
+  if (
+    (walletReservation === 'already_reserved'
+      && (!preReservedInitialState
+        || preReservedInitialState.kind !== 'created'
+        || preReservedInitialState.recoveredCharge !== true
+        || !trustedQuotedBilling))
+    || (walletReservation === 'reserve'
+      && (preReservedInitialState !== undefined || trustedQuotedBilling !== undefined))
+  ) {
+    fail('t2i', 'job_charge_conflict', 'Invalid pre-reserved image generation state.', 409);
+  }
   if (!isDatabaseConfigured()) {
     fail('t2i', 'db_unavailable', 'Database unavailable.', 503);
   }
@@ -249,53 +262,24 @@ export async function executeImageGeneration({
     metadata: requestMetadata,
   });
 
-  let pricing: PricingSnapshot;
-  const membershipTier = typeof body.membershipTier === 'string' && body.membershipTier.trim().length
-    ? body.membershipTier.trim()
-    : undefined;
-  const lumaAgentsReferenceImageCount = isLumaAgentsImageEngineId(engine.id)
-    ? mode === 'i2i'
-      ? Math.max(0, combinedImageUrls.length - 1)
-      : combinedImageUrls.length
-    : undefined;
+  let pricingResult: Awaited<ReturnType<typeof resolveImageGenerationPricingSnapshot>>;
   try {
-    pricing = billingProductKey
-      ? await computeBillingProductSnapshot({
-          productKey: billingProductKey,
-          quantity: numImages * Math.max(1, Math.round(billingQuantityMultiplier)),
-          membershipTier,
-          engineId: engine.id,
-        })
-      : await computeCanonicalBillingSnapshot({
-          engine,
-          durationSec,
-          resolution,
-          mode,
-          customImageSize,
-          quality,
-          referenceImageCount: lumaAgentsReferenceImageCount,
-          membershipTier,
-          currency: DISPLAY_CURRENCY,
-          addons: enableWebSearch ? { enable_web_search: true } : undefined,
-        });
-    pricing = await applyStoryboardImagePricing({
-      pricing,
-      engine,
-      jobSurface,
-      source: body.source,
-      metadata: requestMetadata,
-      includedKlingFirstFrameParentJobId,
-      customImageSize,
-      resolution,
-      quality,
-      resolvedAspectRatio,
-      membershipTier,
-      currency: DISPLAY_CURRENCY,
+    pricingResult = await resolveImageGenerationPricingSnapshot({
+      engine, mode, durationSec, resolution, customImageSize, quality,
+      combinedImageCount: combinedImageUrls.length,
+      enableWebSearch, numImages, billingProductKey, billingQuantityMultiplier,
+      jobSurface, source: body.source, metadata: requestMetadata,
+      includedKlingFirstFrameParentJobId, resolvedAspectRatio,
+      requestedMembershipTier: typeof body.membershipTier === 'string' && body.membershipTier.trim().length
+        ? body.membershipTier.trim()
+        : undefined,
+      trustedQuotedBilling,
     });
   } catch (error) {
     console.error('[images] failed to compute pricing snapshot', error);
     fail(mode, 'pricing_error', 'Unable to compute pricing.', 500, null, engineResponseExtras);
   }
+  const { pricing, membershipTier } = pricingResult;
 
   const jobAspectRatio = resolvedAspectRatio ?? null;
   const falAspectRatio = resolvedAspectRatio && resolvedAspectRatio !== 'auto' ? resolvedAspectRatio : null;
@@ -306,35 +290,37 @@ export async function executeImageGeneration({
   const billingEngineId = storyboardBillingIdentity?.engineId ?? engine.id;
   const billingEngineLabel = storyboardBillingIdentity?.engineLabel ?? engine.label;
 
-  pricing.meta = {
-    ...(pricing.meta ?? {}),
-    surface: jobSurface,
-    billingProductKey,
-    engineId: billingEngineId,
-    engineLabel: billingEngineLabel,
-    ...(storyboardBillingIdentity ? { billingProductLabel: storyboardBillingIdentity.productLabel } : {}),
-    request: {
+  if (!trustedQuotedBilling) {
+    pricing.meta = {
+      ...(pricing.meta ?? {}),
+      surface: jobSurface,
+      billingProductKey,
       engineId: billingEngineId,
       engineLabel: billingEngineLabel,
-      mode,
-      numImages,
-      resolution,
-      ...(customImageSize ? { customImageSize } : {}),
-      ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
-      ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
-      ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
-      ...(outputFormat ? { outputFormat } : {}),
-      ...(quality ? { quality } : {}),
-      ...(style ? { style } : {}),
-      ...(maskUrl ? { maskUrl } : {}),
-      ...(enableWebSearch ? { enableWebSearch } : {}),
-      ...(thinkingLevel ? { thinkingLevel } : {}),
-      ...(limitGenerations ? { limitGenerations } : {}),
-      ...(watermark ? { watermark } : {}),
-    },
-  };
+      ...(storyboardBillingIdentity ? { billingProductLabel: storyboardBillingIdentity.productLabel } : {}),
+      request: {
+        engineId: billingEngineId,
+        engineLabel: billingEngineLabel,
+        mode,
+        numImages,
+        resolution,
+        ...(customImageSize ? { customImageSize } : {}),
+        ...(characterReferences.length ? { characterReferenceCount: characterReferences.length } : {}),
+        ...(resolvedAspectRatio ? { aspectRatio: resolvedAspectRatio } : {}),
+        ...(normalizedSeed != null ? { seed: normalizedSeed } : {}),
+        ...(outputFormat ? { outputFormat } : {}),
+        ...(quality ? { quality } : {}),
+        ...(style ? { style } : {}),
+        ...(maskUrl ? { maskUrl } : {}),
+        ...(enableWebSearch ? { enableWebSearch } : {}),
+        ...(thinkingLevel ? { thinkingLevel } : {}),
+        ...(limitGenerations ? { limitGenerations } : {}),
+        ...(watermark ? { watermark } : {}),
+      },
+    };
+  }
 
-  const priceOnlyReceipts = receiptsPriceOnlyEnabled();
+  const priceOnlyReceipts = trustedQuotedBilling ? false : receiptsPriceOnlyEnabled();
   const receiptSnapshot = priceOnlyReceipts ? buildReceiptSnapshot(pricing) : pricing;
   const pricingSnapshotJson = JSON.stringify(receiptSnapshot);
   const costBreakdownJson =
@@ -403,7 +389,9 @@ export async function executeImageGeneration({
     stripePaymentIntentId: null,
     stripeChargeId: null,
   };
-  const preferredCurrency = await getUserPreferredCurrency(userId);
+  const preferredCurrency = trustedQuotedBilling
+    ? DISPLAY_CURRENCY_LOWER
+    : await getUserPreferredCurrency(userId);
   let shouldEnsurePreferredCurrency =
     !preferredCurrency && walletChargeMode === 'charge' && walletReservation === 'reserve';
   const reserveInitialState = async () => {
@@ -594,6 +582,23 @@ export async function executeImageGeneration({
         } satisfies ImageGenerationResponse;
       } catch (error) {
         console.error('[images] Fal generation failed', error);
+        if (isAmbiguousImageProviderFailure(error, providerJobId)) {
+          await markImageProviderOutcomeAmbiguous(jobId, providerJobId);
+          fail(
+            mode,
+            'provider_outcome_ambiguous',
+            'Provider acceptance is still being verified.',
+            503,
+            null,
+            {
+              engineId: billingEngineId,
+              engineLabel: billingEngineLabel,
+              jobId,
+              providerJobId,
+              paymentStatus: imagePaymentStatus,
+            },
+          );
+        }
         const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
           characterReferenceCount: characterReferences.length,
           enableWebSearch,

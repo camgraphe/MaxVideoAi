@@ -165,7 +165,7 @@ function requireMembershipPricing(value: MembershipPricingContext): MembershipPr
   return value;
 }
 
-function safePricingSnapshot(
+export function buildGenerationPricingSnapshot(
   pricing: GenerationPricingResult,
   request: CanonicalGenerationRequest,
   catalogRevision: string,
@@ -303,7 +303,7 @@ export async function prepareGeneration(
       'The selected settings cannot be priced for this model.',
     );
   }
-  const pricingSnapshot = safePricingSnapshot(pricing, request, catalogRevision, membership);
+  const pricingSnapshot = buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership);
   const wallet = await dependencies.getWalletSummary(principal.userId);
   const balanceBefore = requireWallet(wallet, pricing.currency);
   const requestHash = hashCanonicalGenerationRequest(request);

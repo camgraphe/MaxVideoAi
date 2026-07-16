@@ -1,5 +1,9 @@
 import { listFalEngines } from '@/config/falEngines';
-import { getPublicConfiguredEnginesByCategory } from '@/server/engines';
+import type { TransactionQueryExecutor } from '@/lib/db';
+import {
+  getPublicConfiguredEnginesByCategory,
+  getPublicConfiguredEnginesByCategoryInExecutor,
+} from '@/server/engines';
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
@@ -118,6 +122,17 @@ export async function listPublicAgentGenerationEngines(
       publicModes: executableModes,
       modeCaps,
     }];
+  });
+}
+
+export async function listPublicAgentGenerationEnginesInExecutor(
+  executor: TransactionQueryExecutor,
+): Promise<AgentPublicGenerationEngine[]> {
+  return listPublicAgentGenerationEngines({
+    listEngines: () => getPublicConfiguredEnginesByCategoryInExecutor('all', executor),
+    surfaceByEngineId(engineId) {
+      return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
+    },
   });
 }
 

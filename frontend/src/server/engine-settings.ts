@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
 import type { EngineCaps, EnginePricingDetails } from '@/types/engines';
 
@@ -78,6 +78,15 @@ export async function fetchEngineSettings(): Promise<Map<string, EngineSettingsR
   if (!process.env.DATABASE_URL) return new Map();
   const rows = await query<EngineSettingsRecord>(
     `SELECT engine_id, options, pricing, updated_at, updated_by FROM engine_settings`
+  );
+  return new Map(rows.map((row) => [row.engine_id, row]));
+}
+
+export async function fetchEngineSettingsWithExecutor(
+  executor: QueryExecutor,
+): Promise<Map<string, EngineSettingsRecord>> {
+  const rows = await executor.query<EngineSettingsRecord>(
+    'SELECT engine_id, options, pricing, updated_at, updated_by FROM engine_settings',
   );
   return new Map(rows.map((row) => [row.engine_id, row]));
 }

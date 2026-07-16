@@ -1,4 +1,4 @@
-import { query } from '@/lib/db';
+import { query, type QueryExecutor } from '@/lib/db';
 import { getBaseEngines } from '@/lib/engines';
 import type { EngineCaps, EngineAvailability, EngineStatus, LatencyTier } from '@/types/engines';
 
@@ -36,6 +36,15 @@ export async function fetchEngineOverrides(): Promise<Map<string, EngineOverride
   if (!process.env.DATABASE_URL) return new Map();
   const rows = await query<EngineOverride>(
     `SELECT engine_id, active, availability, status, latency_tier FROM engine_overrides`
+  );
+  return new Map(rows.map((row) => [row.engine_id, row]));
+}
+
+export async function fetchEngineOverridesWithExecutor(
+  executor: QueryExecutor,
+): Promise<Map<string, EngineOverride>> {
+  const rows = await executor.query<EngineOverride>(
+    'SELECT engine_id, active, availability, status, latency_tier FROM engine_overrides',
   );
   return new Map(rows.map((row) => [row.engine_id, row]));
 }

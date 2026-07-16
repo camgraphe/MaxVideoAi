@@ -1,10 +1,14 @@
 import type { NextRequest } from 'next/server';
+import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
 import { processGenerationAttachments } from '@/app/api/generate/_lib/attachments';
 import { deriveGenerationAttachmentReferences } from '@/app/api/generate/_lib/attachment-references';
 import { buildFalRequestParts } from '@/app/api/generate/_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from '@/app/api/generate/_lib/settings-snapshot';
-import { resolveGenerateBillingPreflight } from '@/app/api/generate/_lib/billing-preflight';
+import {
+  resolveGenerateBillingPreflight,
+  type GenerateBillingPreflightResult,
+} from '@/app/api/generate/_lib/billing-preflight';
 import { buildGenerateValidationPayload } from '@/app/api/generate/_lib/validation-payload';
 import { validateGenerationImageDimensions } from '@/app/api/generate/_lib/generation-image-dimensions';
 import { resolveGenerateSourceVideoContext } from '@/app/api/generate/_lib/source-video-context';
@@ -15,7 +19,11 @@ import type {
   GenerateRouteMetricState,
   GenerateRouteMetricStatus,
 } from '@/app/api/generate/_lib/metric-logger';
-import type { WalletReservation } from '@/server/generations/initial-job-reservation';
+import { normalizeCurrencyCode } from '@/lib/currency';
+import type {
+  TrustedQuotedBilling,
+  WalletReservation,
+} from '@/server/generations/initial-job-reservation';
 import { executePreparedVideoGeneration } from './execute-prepared-video-generation';
 import type { PreReservedVideoInitialState, VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 
@@ -26,10 +34,12 @@ type VideoGenerationReservationOptions =
   | ({ walletReservation: WalletReservation } & {
       walletReservation: 'reserve';
       preReservedInitialState?: never;
+      trustedQuotedBilling?: never;
     })
   | ({ walletReservation: WalletReservation } & {
       walletReservation: 'already_reserved';
       preReservedInitialState: PreReservedVideoInitialState;
+      trustedQuotedBilling: TrustedQuotedBilling;
     });
 
 export type ExecuteVideoGenerationOptions = {
@@ -45,6 +55,64 @@ export type ExecuteVideoGenerationOptions = {
   adapters: VideoGenerationAdapters;
 } & VideoGenerationReservationOptions;
 
+function buildTrustedQuotedVideoBilling(params: {
+  trustedQuotedBilling: TrustedQuotedBilling;
+  engineLabel: string;
+  userId: string;
+  jobId: string;
+  durationSec: number;
+}): GenerateBillingPreflightResult {
+  const source = params.trustedQuotedBilling.pricing;
+  const pricing = JSON.parse(JSON.stringify(source)) as typeof source;
+  const currency = typeof pricing.currency === 'string' ? pricing.currency.toUpperCase() : '';
+  const resolvedCurrencyLower = normalizeCurrencyCode(currency);
+  if (
+    !Number.isSafeInteger(pricing.totalCents)
+    || pricing.totalCents < 0
+    || !resolvedCurrencyLower
+    || pricing.membershipTier !== params.trustedQuotedBilling.membershipTier
+  ) {
+    throw new Error('Invalid trusted quoted video billing.');
+  }
+  const applicationFeeCents = getPlatformFeeCents(pricing);
+  const vendorAccountId = typeof pricing.vendorAccountId === 'string'
+    ? pricing.vendorAccountId
+    : null;
+  const pricingSnapshotJson = JSON.stringify(pricing);
+  return {
+    ok: true,
+    preflight: {
+      preferredCurrency: resolvedCurrencyLower,
+      resolvedCurrencyLower,
+      resolvedCurrencyUpper: currency,
+      pricing,
+      priceOnlyReceipts: false,
+      costBreakdownUsd: null,
+      receiptSnapshot: pricing,
+      pricingSnapshotJson,
+      costBreakdownJson: null,
+      vendorAccountId,
+      applicationFeeCents,
+      visibility: 'private',
+      indexable: false,
+      paymentMode: 'wallet',
+      pendingReceipt: {
+        userId: params.userId,
+        amountCents: pricing.totalCents,
+        currency,
+        description: `MCP ${params.engineLabel} - ${params.durationSec}s`,
+        jobId: params.jobId,
+        snapshot: pricing,
+        applicationFeeCents,
+        vendorAccountId,
+      },
+      paymentStatus: 'paid_wallet',
+      stripePaymentIntentId: null,
+      stripeChargeId: null,
+    },
+  };
+}
+
 export async function executeVideoGeneration(params: ExecuteVideoGenerationOptions): Promise<VideoGenerationResponse> {
   const {
     req,
@@ -58,6 +126,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     logMetric,
     walletReservation,
     preReservedInitialState,
+    trustedQuotedBilling,
   } = params;
   const { engine, isBytePlusV1a, jobId, mode, payment } = routeContext;
 
@@ -210,7 +279,15 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       status: dimensionValidation.status,
     };
   }
-  const billingPreflight = await resolveGenerateBillingPreflight({
+  const billingPreflight = trustedQuotedBilling
+    ? buildTrustedQuotedVideoBilling({
+        trustedQuotedBilling,
+        engineLabel: engine.label,
+        userId,
+        jobId,
+        durationSec: effectiveDurationSec,
+      })
+    : await resolveGenerateBillingPreflight({
     req,
     engine,
     mode,
@@ -231,7 +308,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     lumaDurationLabel: lumaDurationInfo?.label ?? null,
     audioEnabled,
     voiceControl,
-  });
+      });
   if (!billingPreflight.ok) {
     if (billingPreflight.metric) {
       logMetric('rejected', billingPreflight.metric);
