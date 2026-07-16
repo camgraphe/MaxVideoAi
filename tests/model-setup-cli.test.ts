@@ -92,7 +92,7 @@ test('model scaffold retargets EN FR ES identities and preserves Examples filter
     for (const locale of ['en', 'fr', 'es'] as const) {
       const source = JSON.parse(
         readFileSync(join(root, 'content/models', locale, `${sourceSlug}.json`), 'utf8'),
-      ) as { examples?: { filters: Array<{ id: string }> } };
+      ) as { examples?: { showWhenEmpty: boolean; filters: Array<{ id: string }> } };
       const generated = JSON.parse(
         readFileSync(
           join(sandboxRoot, 'content/models', locale, `${targetSlug}.json`),
@@ -101,11 +101,16 @@ test('model scaffold retargets EN FR ES identities and preserves Examples filter
       ) as {
         decision?: { modelSlug?: string };
         prompting?: { modelSlug?: string; section?: { guide?: { href?: string } } };
-        examples?: { modelSlug?: string; filters: Array<{ id: string }> };
+        examples?: { modelSlug?: string; showWhenEmpty?: boolean; filters: Array<{ id: string }> };
       };
       assert.equal(generated.decision?.modelSlug, targetSlug, `${locale} decision identity`);
       assert.equal(generated.prompting?.modelSlug, targetSlug, `${locale} prompting identity`);
       assert.equal(generated.examples?.modelSlug, targetSlug, `${locale} Examples identity`);
+      assert.equal(
+        generated.examples?.showWhenEmpty,
+        source.examples?.showWhenEmpty,
+        `${locale} Examples empty-state visibility`,
+      );
       assert.deepEqual(
         generated.examples?.filters.map(({ id }) => id),
         source.examples?.filters.map(({ id }) => id),
@@ -128,6 +133,8 @@ test('model setup requires exact-locale decision, prompting, and Examples review
   assert.match(setupSource, /locale-correct hrefs/i);
   assert.match(setupSource, /structural parity/i);
   assert.match(setupSource, /model-context filter labels/i);
+  assert.match(setupSource, /empty-state visibility/i);
+  assert.match(setupSource, /showWhenEmpty/);
   assert.match(setupSource, /no English fallback/i);
 });
 

@@ -254,7 +254,7 @@ function buildLaunchPacket(options, paths) {
     '2. Rewrite the EN model page with factual positioning, not template placeholders.',
     '3. Rewrite FR and ES as marketing adaptations, not literal translations.',
     '4. Verify every localized `decision`, `prompting`, and `examples` block has the exact `modelSlug` and locale-correct hrefs before enabling the model page.',
-    '5. Confirm EN, FR, and ES keep structural parity, use model-context filter labels for Examples, and select the requested locale directly with no English fallback.',
+    '5. Confirm EN, FR, and ES keep structural parity, use model-context filter labels for Examples, preserve explicit empty-state visibility in `showWhenEmpty`, and select the requested locale directly with no English fallback.',
     '6. Verify title, meta description, canonical path, and locale coverage before promoting indexation.',
     '7. Insert the printed entry in `frontend/config/model-registry.json` and decide every publication field explicitly.',
     '8. Keep historical engine inputs in `aliases.internal` and historical URLs in `aliases.publicSlugs`.',

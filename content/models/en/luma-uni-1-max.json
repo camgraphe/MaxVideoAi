@@ -541,6 +541,7 @@
           "reference"
         ]
       }
-    ]
+    ],
+    "showWhenEmpty": true
   }
 }

@@ -25,6 +25,7 @@ This route renders localized SEO pages for individual AI video models.
 - Keep the preserved Happy Horse/media-summary prompt-source compatibility rule isolated in `model-page-prompting-prompt-source.ts`; do not move model identity checks into the parser, pure view-model builder, or renderers.
 - Keep model-specific Examples editorial copy only in `content/models/{locale}/{slug}.json#examples`.
 - Load Examples from the exact requested locale. The parser, pure view-model builder, and renderers must not own model-specific editorial branches or an English fallback.
+- Keep `examples.showWhenEmpty` explicit and structurally aligned across locales; final real/fallback items override an empty-state `false` value.
 - Treat runtime gallery media, capability-derived presentation, link destinations, and poster selection as runtime policy, not localized editorial content.
 
 ## Checks

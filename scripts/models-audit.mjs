@@ -2,6 +2,10 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import modelExamplesContent from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
+
+const { parseModelExamplesContent } = modelExamplesContent;
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 
@@ -35,14 +39,6 @@ const LEGACY_GALLERY_KEYS = [
   'gallerySceneCta',
   'recreateLabel',
 ];
-const DECISION_EXAMPLE_FILTER_IDS = new Set([
-  'all', 'cinematic', 'product', 'action', 'vertical', 'audio',
-  'campaign', 'typography', 'reference', 'final', 'grounded', 'edit',
-  'wide', 'character', 'batch', 'ui', 'mask', 'infographic',
-]);
-const MODEL_EXAMPLE_ICON_IDS = new Set([
-  'audio', 'image', 'maximize', 'pen', 'shield', 'sparkles', 'type', 'users', 'zap',
-]);
 const EXAMPLES_NULLABLE_STRING_PATHS = new Set([
   'section.defaultCtaLabel',
   'section.recreateLabel',
@@ -163,150 +159,6 @@ function collectStringValues(value, output = []) {
   return output;
 }
 
-function failExamples(source, fieldPath, message) {
-  throw new Error(`${source}#examples/${fieldPath}: ${message}`);
-}
-
-function requireExactObject(value, expectedKeys, source, fieldPath) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    failExamples(source, fieldPath, 'expected an object');
-  }
-  const actualKeys = Object.keys(value);
-  const missing = expectedKeys.filter((key) => !Object.hasOwn(value, key));
-  const unknown = actualKeys.filter((key) => !expectedKeys.includes(key));
-  if (missing.length || unknown.length) {
-    const details = [
-      missing.length ? `missing fields: ${missing.join(', ')}` : null,
-      unknown.length ? `unknown fields: ${unknown.join(', ')}` : null,
-    ].filter(Boolean).join('; ');
-    failExamples(source, fieldPath, details);
-  }
-  return value;
-}
-
-function requireNonEmptyString(value, source, fieldPath) {
-  if (typeof value !== 'string' || !value.trim().length) {
-    failExamples(source, fieldPath, 'expected a non-empty string');
-  }
-  return value;
-}
-
-function requireNullableNonEmptyString(value, source, fieldPath) {
-  if (value === null) return null;
-  return requireNonEmptyString(value, source, fieldPath);
-}
-
-function requireArray(value, source, fieldPath, minimum = 0) {
-  if (!Array.isArray(value) || value.length < minimum) {
-    failExamples(source, fieldPath, `expected an array with at least ${minimum} item(s)`);
-  }
-  return value;
-}
-
-function requireAllowedId(value, allowed, source, fieldPath) {
-  const id = requireNonEmptyString(value, source, fieldPath);
-  if (!allowed.has(id)) failExamples(source, fieldPath, `unsupported id "${id}"`);
-  return id;
-}
-
-function assertUniqueIds(ids, label, source) {
-  if (new Set(ids).size !== ids.length) {
-    failExamples(source, label, `duplicate ${label} id`);
-  }
-}
-
-function validateModelExamplesContent(input, expectedSlug, locale) {
-  const source = `content/models/${locale}/${expectedSlug}.json`;
-  const value = requireExactObject(
-    input,
-    ['modelSlug', 'section', 'filters', 'proofItems', 'fallbackItems'],
-    source,
-    '<root>',
-  );
-  const modelSlug = requireNonEmptyString(value.modelSlug, source, 'modelSlug');
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(modelSlug)) {
-    failExamples(source, 'modelSlug', 'expected a canonical kebab-case slug');
-  }
-  if (modelSlug !== expectedSlug) {
-    failExamples(source, 'modelSlug', `expected "${expectedSlug}", received "${modelSlug}"`);
-  }
-
-  const section = requireExactObject(
-    value.section,
-    ['title', 'intro', 'defaultCtaLabel', 'recreateLabel'],
-    source,
-    'section',
-  );
-  requireNonEmptyString(section.title, source, 'section.title');
-  requireNonEmptyString(section.intro, source, 'section.intro');
-  requireNullableNonEmptyString(section.defaultCtaLabel, source, 'section.defaultCtaLabel');
-  requireNullableNonEmptyString(section.recreateLabel, source, 'section.recreateLabel');
-
-  const filters = requireArray(value.filters, source, 'filters', 1);
-  const filterIds = filters.map((entry, index) => {
-    const filter = requireExactObject(entry, ['id', 'label'], source, `filters.${index}`);
-    const id = requireAllowedId(filter.id, DECISION_EXAMPLE_FILTER_IDS, source, `filters.${index}.id`);
-    requireNonEmptyString(filter.label, source, `filters.${index}.label`);
-    return id;
-  });
-  assertUniqueIds(filterIds, 'filter', source);
-  if (filterIds[0] !== 'all' || filterIds.filter((id) => id === 'all').length !== 1) {
-    failExamples(source, 'filters', 'the first filter must be the only all filter');
-  }
-
-  const proofItems = requireArray(value.proofItems, source, 'proofItems');
-  if (proofItems.length !== 5) failExamples(source, 'proofItems', 'expected exactly five items');
-  const proofIds = proofItems.map((entry, index) => {
-    const proof = requireExactObject(
-      entry,
-      ['id', 'icon', 'title', 'body'],
-      source,
-      `proofItems.${index}`,
-    );
-    const id = requireNonEmptyString(proof.id, source, `proofItems.${index}.id`);
-    requireAllowedId(proof.icon, MODEL_EXAMPLE_ICON_IDS, source, `proofItems.${index}.icon`);
-    requireNonEmptyString(proof.title, source, `proofItems.${index}.title`);
-    requireNonEmptyString(proof.body, source, `proofItems.${index}.body`);
-    return id;
-  });
-  assertUniqueIds(proofIds, 'proof', source);
-
-  let fallbackItems = null;
-  if (value.fallbackItems !== null) {
-    fallbackItems = requireArray(value.fallbackItems, source, 'fallbackItems');
-    const declaredFilters = new Set(filterIds);
-    const fallbackIds = fallbackItems.map((entry, index) => {
-      const fallback = requireExactObject(
-        entry,
-        ['id', 'title', 'category', 'aspectRatio', 'alt', 'tags'],
-        source,
-        `fallbackItems.${index}`,
-      );
-      const id = requireNonEmptyString(fallback.id, source, `fallbackItems.${index}.id`);
-      requireNonEmptyString(fallback.title, source, `fallbackItems.${index}.title`);
-      requireNonEmptyString(fallback.category, source, `fallbackItems.${index}.category`);
-      requireNonEmptyString(fallback.aspectRatio, source, `fallbackItems.${index}.aspectRatio`);
-      requireNonEmptyString(fallback.alt, source, `fallbackItems.${index}.alt`);
-      const tags = requireArray(fallback.tags, source, `fallbackItems.${index}.tags`, 1);
-      for (const [tagIndex, rawTag] of tags.entries()) {
-        const tag = requireAllowedId(
-          rawTag,
-          DECISION_EXAMPLE_FILTER_IDS,
-          source,
-          `fallbackItems.${index}.tags.${tagIndex}`,
-        );
-        if (!declaredFilters.has(tag)) {
-          failExamples(source, `fallbackItems.${index}.tags.${tagIndex}`, `undeclared filter "${tag}"`);
-        }
-      }
-      return id;
-    });
-    assertUniqueIds(fallbackIds, 'fallback', source);
-  }
-
-  return { modelSlug, section, filters, proofItems, fallbackItems };
-}
-
 function examplesStructuralSignature(value, currentPath = '') {
   if (EXAMPLES_NULLABLE_STRING_PATHS.has(currentPath)) return 'nullable-string';
   if (Array.isArray(value)) {
@@ -343,6 +195,9 @@ function getExamplesParityDifferences(english, localized) {
   if (!sameJson(localized.filters.map(({ id }) => id), english.filters.map(({ id }) => id))) {
     differences.push('filters');
   }
+  if (localized.showWhenEmpty !== english.showWhenEmpty) {
+    differences.push('showWhenEmpty');
+  }
   if (!sameJson(
     localized.proofItems.map(({ id, icon }) => [id, icon]),
     english.proofItems.map(({ id, icon }) => [id, icon]),
@@ -367,7 +222,7 @@ async function runLocalizedExamplesChecks(catalogBySlug, issues, contentRoot) {
         const content = await loadLocaleContentEntry(locale, modelSlug, contentRoot);
         examplesByLocale.set(
           locale,
-          validateModelExamplesContent(content?.examples, modelSlug, locale),
+          parseModelExamplesContent(content?.examples, modelSlug, locale),
         );
       } catch (error) {
         addIssue(
@@ -495,16 +350,17 @@ async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
       const localizedCustom = localizedContent?.custom && typeof localizedContent.custom === 'object'
         ? localizedContent.custom
         : {};
-      const legacyExamplesKeys = LEGACY_GALLERY_KEYS.filter((key) =>
-        Object.hasOwn(localizedCustom, key)
-      );
-      if (legacyExamplesKeys.length) {
+      const legacyExamplesLocations = LEGACY_GALLERY_KEYS.flatMap((key) => [
+        ...(Object.hasOwn(localizedContent, key) ? [`root.${key}`] : []),
+        ...(Object.hasOwn(localizedCustom, key) ? [`custom.${key}`] : []),
+      ]);
+      if (legacyExamplesLocations.length) {
         addIssue(
           issues,
           'critical',
           'legacy_examples_ownership',
-          `Model "${modelSlug}" still owns legacy Examples copy in ${locale.toUpperCase()} custom content: ${legacyExamplesKeys.join(', ')}.`,
-          { modelSlug, locale, keys: legacyExamplesKeys }
+          `Model "${modelSlug}" still owns legacy Examples copy in ${locale.toUpperCase()} content: ${legacyExamplesLocations.join(', ')}.`,
+          { modelSlug, locale, locations: legacyExamplesLocations }
         );
       }
       const templateMarkers = Array.from(

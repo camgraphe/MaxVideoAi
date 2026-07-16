@@ -505,6 +505,7 @@
           "final"
         ]
       }
-    ]
+    ],
+    "showWhenEmpty": false
   }
 }

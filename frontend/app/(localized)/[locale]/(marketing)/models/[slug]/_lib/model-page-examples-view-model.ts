@@ -242,7 +242,7 @@ export function buildModelExamplesViewModel(
   const items = galleryItems.length ? galleryItems : buildFallbackItems(input);
   const availableIds = new Set(items.flatMap((item) => item.tags));
   return {
-    visible: true,
+    visible: items.length > 0 || input.content.showWhenEmpty,
     anchorId: input.anchorId,
     section: input.content.section,
     filters: input.content.filters.filter(

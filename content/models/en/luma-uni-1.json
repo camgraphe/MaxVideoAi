@@ -545,6 +545,7 @@
           "campaign"
         ]
       }
-    ]
+    ],
+    "showWhenEmpty": true
   }
 }

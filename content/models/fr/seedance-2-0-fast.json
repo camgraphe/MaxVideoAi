@@ -568,6 +568,7 @@
         "icon": "shield"
       }
     ],
-    "fallbackItems": null
+    "fallbackItems": null,
+    "showWhenEmpty": true
   }
 }

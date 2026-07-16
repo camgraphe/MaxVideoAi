@@ -13,6 +13,8 @@ import test from 'node:test';
 
 const ROOT = process.cwd();
 const AUDIT_SCRIPT = join(ROOT, 'scripts/models-audit.mjs');
+const TSX_BIN = join(ROOT, 'node_modules/.bin/tsx');
+const TS_CONFIG = join(ROOT, 'frontend/tsconfig.json');
 
 function updateDocument(
   contentRoot: string,
@@ -64,6 +66,12 @@ test('model audit fails malformed and divergent localized Examples with critical
     updateDocument(contentRoot, 'fr', 'veo-3-1', (document) => {
       (document.custom as Record<string, unknown>).galleryTitle = 'Legacy gallery owner';
     });
+    updateDocument(contentRoot, 'es', 'wan-2-5', (document) => {
+      document.galleryIntro = 'Legacy root gallery owner';
+    });
+    updateDocument(contentRoot, 'fr', 'wan-2-6', (document) => {
+      (document.examples as { showWhenEmpty: boolean }).showWhenEmpty = false;
+    });
     updateDocument(contentRoot, 'en', 'happy-horse-1-0', (document) => {
       (document.examples as Record<string, unknown>).unexpected = true;
     });
@@ -100,8 +108,10 @@ test('model audit fails malformed and divergent localized Examples with critical
     });
 
     const result = spawnSync(
-      process.execPath,
+      TSX_BIN,
       [
+        '--tsconfig',
+        TS_CONFIG,
         AUDIT_SCRIPT,
         '--content-root',
         contentRoot,
@@ -121,8 +131,8 @@ test('model audit fails malformed and divergent localized Examples with critical
         differences?: string[];
       }>;
     };
-    assert.equal(report.summary.critical, 17, JSON.stringify(report.critical, null, 2));
-    assert.match(result.stderr, /Failed with 17 critical issue\(s\)/);
+    assert.equal(report.summary.critical, 19, JSON.stringify(report.critical, null, 2));
+    assert.match(result.stderr, /Failed with 19 critical issue\(s\)/);
 
     const strictFailures = report.critical.filter(
       ({ type }) => type === 'invalid_localized_examples_content',
@@ -168,9 +178,17 @@ test('model audit fails malformed and divergent localized Examples with critical
       ({ modelSlug, locale, differences }) =>
         modelSlug === 'luma-uni-1' && locale === 'es' && differences?.includes('fallbackItems'),
     ));
+    assert.ok(parityFailures.some(
+      ({ modelSlug, locale, differences }) =>
+        modelSlug === 'wan-2-6' && locale === 'fr' && differences?.includes('showWhenEmpty'),
+    ));
     assert.ok(report.critical.some(
       ({ type, modelSlug, locale }) =>
         type === 'legacy_examples_ownership' && modelSlug === 'veo-3-1' && locale === 'fr',
+    ));
+    assert.ok(report.critical.some(
+      ({ type, modelSlug, locale }) =>
+        type === 'legacy_examples_ownership' && modelSlug === 'wan-2-5' && locale === 'es',
     ));
   } finally {
     rmSync(sandbox, { recursive: true, force: true });

@@ -24,7 +24,7 @@
     "model:registry:check": "tsx --tsconfig frontend/tsconfig.json scripts/validate-model-registry.ts && node scripts/generate-model-runtime.mjs && pnpm engine:catalog -- --check && pnpm model:generate",
     "model:scaffold": "npm --prefix frontend run models:scaffold --",
     "model:setup": "node scripts/model-setup.mjs",
-    "models:audit": "node scripts/models-audit.mjs",
+    "models:audit": "tsx --tsconfig frontend/tsconfig.json scripts/models-audit.mjs",
     "pricing:baseline": "tsx --tsconfig frontend/tsconfig.json scripts/pricing-baseline.ts",
     "pricing:public-baseline": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts",
     "pricing:public-baseline:generate": "tsx --tsconfig frontend/tsconfig.json frontend/scripts/pricing-public-baseline.ts --write",

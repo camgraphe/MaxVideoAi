@@ -7,9 +7,13 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const REPORT_PATH = path.join(ROOT, 'docs', 'model-roster-report.md');
 
-function runNodeScript(scriptPath, args = []) {
+function runScript(scriptPath, args = [], runner = 'node') {
   const absolutePath = path.join(ROOT, scriptPath);
-  const result = spawnSync(process.execPath, [absolutePath, ...args], {
+  const command = runner === 'tsx' ? path.join(ROOT, 'node_modules', '.bin', 'tsx') : process.execPath;
+  const commandArgs = runner === 'tsx'
+    ? ['--tsconfig', path.join(ROOT, 'frontend', 'tsconfig.json'), absolutePath, ...args]
+    : [absolutePath, ...args];
+  const result = spawnSync(command, commandArgs, {
     cwd: ROOT,
     stdio: 'inherit',
   });
@@ -48,12 +52,13 @@ async function main() {
       label: runtimeArgs.length ? 'models:audit --runtime' : 'models:audit',
       scriptPath: 'scripts/models-audit.mjs',
       args: runtimeArgs,
+      runner: 'tsx',
     },
   ];
 
   const results = steps.map((step) => ({
     label: step.label,
-    ok: runNodeScript(step.scriptPath, step.args),
+    ok: runScript(step.scriptPath, step.args, step.runner),
   }));
 
   await writeReport(results);

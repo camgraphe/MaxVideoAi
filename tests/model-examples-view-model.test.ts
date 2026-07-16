@@ -21,6 +21,7 @@ import {
   buildModelExamplesViewModel,
   type BuildModelExamplesViewModelInput,
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
+import { buildDecisionTocItems } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-decision-toc.ts';
 
 const MODEL_CONTENT_ROOT = path.join(process.cwd(), 'content', 'models');
 const CONTENT_ROOT = path.join(MODEL_CONTENT_ROOT, 'en');
@@ -40,6 +41,7 @@ const examplesLinkHref = {
 function videoContent(): ModelExamplesContent {
   return {
     modelSlug: 'fixture-model',
+    showWhenEmpty: true,
     section: {
       title: 'Fixture examples',
       intro: 'Current Fixture outputs.',
@@ -109,6 +111,7 @@ function imageFallbackInput(): BuildModelExamplesViewModelInput {
     content: {
       ...videoContent(),
       modelSlug: 'fixture-image',
+      showWhenEmpty: false,
       section: {
         ...videoContent().section,
         defaultCtaLabel: null,
@@ -333,6 +336,7 @@ test('silent mode never exposes the audio filter and uses the silent badge', () 
 test('image fallback attaches static posters without inventing runtime gallery media', () => {
   const result = buildModelExamplesViewModel(imageFallbackInput());
 
+  assert.equal(result.visible, true);
   assert.equal(result.decision.items[0]?.id, 'fixture-image-fallback-product');
   assert.equal(result.decision.items[0]?.posterUrl, '/assets/model-examples/fixture/product.webp');
   assert.equal(result.decision.items[0]?.href, '/app/image?engine=fixture-image');
@@ -406,12 +410,65 @@ test('Nano Banana Pro and Luma Uni-1 stored fallbacks preserve item order and wo
   }
 });
 
-test('missing real media stays empty when content has no active fallback items', () => {
-  const result = buildModelExamplesViewModel(videoInput({ galleryVideos: [] }));
+test('empty visibility follows authored ownership while real and fallback items take precedence', () => {
+  const hidden = buildModelExamplesViewModel(videoInput({
+    content: { ...videoContent(), showWhenEmpty: false },
+    galleryVideos: [],
+  }));
+  const authored = buildModelExamplesViewModel(videoInput({ galleryVideos: [] }));
+  const realMedia = buildModelExamplesViewModel(videoInput({
+    content: { ...videoContent(), showWhenEmpty: false },
+  }));
+  const fallback = buildModelExamplesViewModel(imageFallbackInput());
 
-  assert.equal(result.visible, true);
-  assert.deepEqual(result.decision.items, []);
-  assert.deepEqual(result.filters.map(({ id }) => id), ['all']);
+  assert.equal(hidden.visible, false);
+  assert.equal(authored.visible, true);
+  assert.equal(realMedia.visible, true);
+  assert.equal(fallback.visible, true);
+  assert.deepEqual(hidden.decision.items, []);
+  assert.deepEqual(hidden.filters.map(({ id }) => id), ['all']);
+});
+
+test('stored no-media routes preserve legacy section and TOC visibility in every locale', () => {
+  for (const locale of ['en', 'fr', 'es'] as const) {
+    for (const [slug, modelName, expectedVisible] of [
+      ['nano-banana-lite', 'Nano Banana Lite', false],
+      ['seedream-5-0-pro', 'Seedream 5.0 Pro', false],
+      ['sora-2', 'Sora 2', true],
+    ] as const) {
+      const result = buildStoredExamplesViewModel({ slug, locale, modelName });
+      const toc = buildDecisionTocItems({
+        locale,
+        sectionLabels: {
+          specs: 'Specs',
+          examples: 'Examples',
+          prompting: 'Prompting',
+          tips: 'Tips',
+          compare: 'Compare',
+          safety: 'Safety',
+          faq: 'FAQ',
+        },
+        textAnchorId: result.anchorId,
+        imageAnchorId: 'prompting',
+        compareAnchorId: 'compare',
+        hasExamples: result.visible,
+        hasSpecs: true,
+        hasTextSection: true,
+        hasTipsSection: true,
+        hasCompareSection: false,
+        hasSafetySection: true,
+        hasFaqSection: true,
+      });
+
+      assert.equal(result.visible, expectedVisible, `${slug}/${locale}`);
+      assert.deepEqual(result.decision.items, [], `${slug}/${locale} items`);
+      assert.equal(
+        toc.some(({ id }) => id === result.anchorId),
+        expectedVisible,
+        `${slug}/${locale} TOC`,
+      );
+    }
+  }
 });
 
 test('builder does not mutate frozen content, media, maps or link inputs', () => {

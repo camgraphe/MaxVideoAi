@@ -67,6 +67,7 @@ function structuralSignature(
 function validExamplesFixture() {
   return {
     modelSlug: 'fixture-model',
+    showWhenEmpty: true,
     section: {
       title: 'Fixture examples',
       intro: 'Current Fixture outputs.',
@@ -115,6 +116,28 @@ test('Examples parser rejects missing, identity mismatch, unknown fields, blanks
   );
 });
 
+test('Examples parser requires a strict showWhenEmpty boolean', () => {
+  const valid = validExamplesFixture();
+  assert.equal(
+    parseModelExamplesContent(valid, 'fixture-model', 'en', 'fixture.json').showWhenEmpty,
+    true,
+  );
+  const { showWhenEmpty: _omitted, ...missing } = valid;
+  assert.throws(
+    () => parseModelExamplesContent(missing, 'fixture-model', 'en', 'missing-visibility.json'),
+    /showWhenEmpty/,
+  );
+  assert.throws(
+    () => parseModelExamplesContent(
+      { ...valid, showWhenEmpty: 'true' },
+      'fixture-model',
+      'en',
+      'string-visibility.json',
+    ),
+    /showWhenEmpty/,
+  );
+});
+
 test('generic Examples UI copy is complete and model-neutral', () => {
   for (const locale of ['en', 'fr', 'es'] as const) {
     const copy = getModelExamplesUiCopy(locale);
@@ -138,6 +161,38 @@ test('all 40 model documents expose strict Examples content in every locale', ()
       const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
       assert.equal(parsed.modelSlug, slug);
     }
+  }
+});
+
+test('all 120 documents own the historically derived empty-state visibility boolean', () => {
+  const counts = { true: 0, false: 0 };
+  for (const locale of LOCALES) {
+    const localeCounts = { true: 0, false: 0 };
+    for (const slug of listModelPageTemplateSlugs()) {
+      const parsed = parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale);
+      const key = String(parsed.showWhenEmpty) as 'true' | 'false';
+      counts[key] += 1;
+      localeCounts[key] += 1;
+    }
+    assert.deepEqual(localeCounts, { true: 35, false: 5 }, locale);
+  }
+  assert.deepEqual(counts, { true: 105, false: 15 });
+
+  for (const slug of ['nano-banana-lite', 'seedream-5-0-pro']) {
+    for (const locale of LOCALES) {
+      assert.equal(
+        parseModelExamplesContent(readDocument(locale, slug).examples, slug, locale).showWhenEmpty,
+        false,
+        `${slug}/${locale}`,
+      );
+    }
+  }
+  for (const locale of LOCALES) {
+    assert.equal(
+      parseModelExamplesContent(readDocument(locale, 'sora-2').examples, 'sora-2', locale).showWhenEmpty,
+      true,
+      `sora-2/${locale}`,
+    );
   }
 });
 
@@ -170,6 +225,7 @@ test('each model keeps identical EN FR ES Examples structure and semantic IDs', 
         }),
       );
       assert.deepEqual(localized.filters.map(({ id }) => id), en.filters.map(({ id }) => id));
+      assert.equal(localized.showWhenEmpty, en.showWhenEmpty);
       assert.deepEqual(
         localized.proofItems.map(({ id, icon }) => [id, icon]),
         en.proofItems.map(({ id, icon }) => [id, icon]),

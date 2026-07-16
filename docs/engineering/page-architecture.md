@@ -159,6 +159,10 @@ locale and never falls back to English for this block. The strict parser, pure v
 builder, and focused server/client renderers must remain model-neutral; do not add slug-specific
 editorial branches or reads from `custom` gallery fields.
 
+Every strict `examples` block owns a required `showWhenEmpty` boolean. Keep it aligned across
+EN, FR, and ES. The view-model stays visible when final real/fallback items exist, or when
+`showWhenEmpty` is true for authored empty-state copy; it must not infer this from model identity.
+
 Runtime gallery media, engine capabilities, route destinations, and poster selection remain
 runtime policy. They are not localized editorial content and do not belong in the `examples`
 document block.

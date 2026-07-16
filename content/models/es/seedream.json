@@ -524,6 +524,7 @@
           "batch"
         ]
       }
-    ]
+    ],
+    "showWhenEmpty": false
   }
 }

@@ -33,6 +33,8 @@ const paths = {
   converter: path.join(ROOT, 'scripts/migrate-model-examples-content.ts'),
   legacyParityTest: path.join(ROOT, 'tests/model-examples-legacy-projection.test.ts'),
   audit: path.join(ROOT, 'scripts/models-audit.mjs'),
+  packageJson: path.join(ROOT, 'package.json'),
+  rosterValidator: path.join(ROOT, 'scripts/validate-model-roster.mjs'),
   legacyCopy: path.join(ROUTE_ROOT, '_lib/model-page-copy.ts'),
   legacyCopyTypes: path.join(ROUTE_ROOT, '_lib/model-page-specs-types.ts'),
 };
@@ -89,14 +91,19 @@ test('SoraCopy and buildSoraCopy contain no Examples ownership', () => {
   }
 });
 
-test('model audit requires strict Examples content and rejects legacy custom ownership', () => {
+test('model audit reuses the production parser and rejects legacy root or custom ownership', () => {
   const source = readSource(paths.audit);
 
-  assert.match(source, /validateModelExamplesContent/);
+  assert.match(source, /import\s+modelExamplesContent\s+from[\s\S]*model-page-examples-content\.ts/);
+  assert.match(source, /const\s*\{\s*parseModelExamplesContent\s*\}\s*=\s*modelExamplesContent/);
+  assert.doesNotMatch(source, /function validateModelExamplesContent|DECISION_EXAMPLE_FILTER_IDS|MODEL_EXAMPLE_ICON_IDS/);
   assert.match(source, /runLocalizedExamplesChecks/);
   assert.match(source, /localized_examples_parity_mismatch/);
   assert.match(source, /LEGACY_GALLERY_KEYS/);
   assert.match(source, /legacy_examples_ownership/);
+  assert.match(source, /Object\.hasOwn\(localizedContent, key\)/);
+  assert.match(readSource(paths.packageJson), /"models:audit":\s*"tsx --tsconfig frontend\/tsconfig\.json scripts\/models-audit\.mjs"/);
+  assert.match(readSource(paths.rosterValidator), /models-audit\.mjs[\s\S]*tsx/);
 });
 
 test('client gallery consumes permanent filter and item contracts plus localized no-preview copy', () => {
