@@ -15,13 +15,14 @@ import { Link } from '@/i18n/navigation';
 import { EngineIcon } from '@/components/ui/EngineIcon';
 import type { AppLocale } from '@/i18n/locales';
 import { PayAsYouGoVideoShowcase } from './PayAsYouGoVideoShowcase';
-import type { PaygIconId } from '../_content/types';
+import type { PayAsYouGoContent, PaygIconId } from '../_content/types';
 import type { PayAsYouGoPageData } from '../_lib/payg-page-data';
 import type { PayAsYouGoShowcaseVideo } from '../_lib/payg-video-showcase';
 
 type PayAsYouGoPageViewProps = {
   locale: AppLocale;
   data: PayAsYouGoPageData;
+  showcaseCopy: PayAsYouGoContent['showcase']['section'];
   showcaseVideos: PayAsYouGoShowcaseVideo[];
 };
 
@@ -531,11 +532,11 @@ function FaqSection({ data }: PayAsYouGoPageDataProps) {
   );
 }
 
-export function PayAsYouGoPageView({ locale, data, showcaseVideos }: PayAsYouGoPageViewProps) {
+export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
   return (
     <main className="bg-bg">
       <HeroSection data={data} />
-      <PayAsYouGoVideoShowcase videos={showcaseVideos} locale={locale} />
+      <PayAsYouGoVideoShowcase videos={showcaseVideos} copy={showcaseCopy} />
       <NaturalQuestionsSection data={data} />
       <ModelTestingOrderSection data={data} />
       <MeaningSection data={data} />

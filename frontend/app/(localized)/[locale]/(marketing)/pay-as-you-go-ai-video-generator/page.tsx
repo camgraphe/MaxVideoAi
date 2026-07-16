@@ -35,7 +35,7 @@ export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Pr
   const { locale } = await props.params;
   const content = getPayAsYouGoContent(locale);
   const data = buildPayAsYouGoPageData({ locale, content });
-  const showcaseVideos = await loadPayAsYouGoVideoShowcase(locale);
+  const showcaseVideos = await loadPayAsYouGoVideoShowcase({ locale, copy: content.showcase.runtime });
   const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
   const breadcrumbJsonLd = buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale, copy: content.jsonLd });
   const serviceJsonLd = buildPayAsYouGoServiceJsonLd({ canonical, copy: content.jsonLd });
@@ -43,7 +43,12 @@ export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Pr
 
   return (
     <>
-      <PayAsYouGoPageView locale={locale} data={data} showcaseVideos={showcaseVideos} />
+      <PayAsYouGoPageView
+        locale={locale}
+        data={data}
+        showcaseCopy={content.showcase.section}
+        showcaseVideos={showcaseVideos}
+      />
       <script
         id="payg-breadcrumb-jsonld"
         type="application/ld+json"

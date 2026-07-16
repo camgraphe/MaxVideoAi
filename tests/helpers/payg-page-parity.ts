@@ -74,7 +74,12 @@ export async function captureCurrentPaygManifest(
     const markup = renderToStaticMarkup(React.createElement(
       I18nProvider,
       { locale, dictionary: {}, fallback: {} },
-      React.createElement(PayAsYouGoPageView, { locale, data, showcaseVideos: videos }),
+      React.createElement(PayAsYouGoPageView, {
+        locale,
+        data,
+        showcaseCopy: content.showcase.section,
+        showcaseVideos: videos,
+      }),
     ));
     const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
     const jsonLd = {

@@ -1,6 +1,7 @@
 import { isDatabaseConfigured } from '@/lib/db';
 import type { AppLocale } from '@/i18n/locales';
 import { listGalleryVideos, listPlaylistVideos, type GalleryVideo } from '@/server/videos';
+import type { PayAsYouGoContent, PaygShowcaseTitleId } from '../_content/types';
 
 export const PAYG_VIDEO_PLAYLIST_SLUG = 'payg-ai-video-generator';
 const SHOWCASE_LIMIT = 7;
@@ -29,9 +30,11 @@ export type PayAsYouGoShowcaseVideo = {
   href: string;
 };
 
-function formatVideoPrice(video: GalleryVideo, locale: AppLocale) {
+export type PayAsYouGoShowcaseRuntimeCopy = PayAsYouGoContent['showcase']['runtime'];
+
+function formatVideoPrice(video: GalleryVideo, locale: AppLocale, copy: PayAsYouGoShowcaseRuntimeCopy) {
   if (typeof video.finalPriceCents !== 'number' || !Number.isFinite(video.finalPriceCents)) {
-    return locale === 'es' ? 'Precio visible antes de generar' : locale === 'fr' ? 'Prix affiché avant la génération' : 'Price shown first';
+    return copy.priceUnavailable;
   }
 
   const currency = video.currency?.trim().toUpperCase() || 'USD';
@@ -78,40 +81,34 @@ function cleanPromptText(prompt: string) {
     .trim();
 }
 
-const VIDEO_TITLE_RULES: Array<{ pattern: RegExp; title: string }> = [
-  { pattern: /rooftop|chase|reunion/i, title: 'Cinematic rooftop chase' },
-  { pattern: /museum|curator|gallery/i, title: 'Museum curator walkthrough' },
-  { pattern: /animate this image|image into|smooth animation/i, title: 'Smooth image-to-video animation' },
-  { pattern: /provided image|reference image/i, title: 'Image-guided cinematic scene' },
-  { pattern: /female racer|racer/i, title: 'Female racer character test' },
-  { pattern: /selfie|ugc|vertical/i, title: 'Vertical UGC selfie test' },
-  { pattern: /warrior|temple/i, title: 'Dark warrior temple scene' },
-  { pattern: /product|packshot|bottle|perfume/i, title: 'Product image-to-video test' },
-  { pattern: /cinematic|studio lighting|camera push/i, title: 'Cinematic product reveal' },
+const VIDEO_TITLE_RULES: Array<{ pattern: RegExp; id: PaygShowcaseTitleId }> = [
+  { pattern: /rooftop|chase|reunion/i, id: 'rooftop' },
+  { pattern: /museum|curator|gallery/i, id: 'museum' },
+  { pattern: /animate this image|image into|smooth animation/i, id: 'smooth-image' },
+  { pattern: /provided image|reference image/i, id: 'guided-image' },
+  { pattern: /female racer|racer/i, id: 'racer' },
+  { pattern: /selfie|ugc|vertical/i, id: 'ugc' },
+  { pattern: /warrior|temple/i, id: 'warrior' },
+  { pattern: /product|packshot|bottle|perfume/i, id: 'product-image' },
+  { pattern: /cinematic|studio lighting|camera push/i, id: 'product-reveal' },
 ];
 
-function formatVideoTitle(prompt: string, engineLabel: string, locale: AppLocale) {
+function formatVideoTitle(prompt: string, engineLabel: string, copy: PayAsYouGoShowcaseRuntimeCopy) {
   const cleaned = cleanPromptText(prompt);
-  const matchedTitle = VIDEO_TITLE_RULES.find(({ pattern }) => pattern.test(cleaned))?.title;
-  const translatedTitles: Record<AppLocale, Record<string, string>> = {
-    en: {},
-    es: { 'Cinematic rooftop chase': 'Persecución cinematográfica en una azotea', 'Museum curator walkthrough': 'Recorrido de una curadora de museo', 'Smooth image-to-video animation': 'Animación fluida de imagen a video', 'Image-guided cinematic scene': 'Escena cinematográfica guiada por imagen', 'Female racer character test': 'Prueba de personaje de piloto', 'Vertical UGC selfie test': 'Prueba de selfie UGC vertical', 'Dark warrior temple scene': 'Escena de guerrero en un templo oscuro', 'Product image-to-video test': 'Prueba de producto de imagen a video', 'Cinematic product reveal': 'Presentación cinematográfica de producto' },
-    fr: { 'Cinematic rooftop chase': 'Poursuite cinématographique sur un toit', 'Museum curator walkthrough': 'Visite guidée par une conservatrice de musée', 'Smooth image-to-video animation': 'Animation fluide d’image vers vidéo', 'Image-guided cinematic scene': 'Scène cinématographique guidée par image', 'Female racer character test': 'Essai de personnage de pilote', 'Vertical UGC selfie test': 'Essai de selfie UGC vertical', 'Dark warrior temple scene': 'Scène de guerrier dans un temple sombre', 'Product image-to-video test': 'Essai produit d’image vers vidéo', 'Cinematic product reveal': 'Présentation produit cinématographique' },
-  };
-  if (matchedTitle) return translatedTitles[locale][matchedTitle] ?? matchedTitle;
-  if (/image|reference|photo/i.test(cleaned)) return locale === 'es' ? 'Escena cinematográfica guiada por imagen' : locale === 'fr' ? 'Scène cinématographique guidée par image' : 'Image-guided cinematic scene';
-  if (/character|person|portrait|actor/i.test(cleaned)) return locale === 'es' ? 'Prueba de movimiento de personaje' : locale === 'fr' ? 'Essai de mouvement de personnage' : 'Character motion test';
-  if (/text-to-video|prompt/i.test(cleaned)) return locale === 'es' ? 'Prueba de prompt de texto a video' : locale === 'fr' ? 'Essai de prompt texte vers vidéo' : 'Text-to-video prompt test';
-  return locale === 'es' ? `Render de ejemplo con ${engineLabel || 'video IA'}` : locale === 'fr' ? `Rendu d’exemple avec ${engineLabel || 'vidéo IA'}` : `${engineLabel || 'AI video'} example render`;
+  const matched = VIDEO_TITLE_RULES.find(({ pattern }) => pattern.test(cleaned));
+  if (matched) return copy.titles[matched.id];
+  if (/image|reference|photo/i.test(cleaned)) return copy.fallbackTitles.image;
+  if (/character|person|portrait|actor/i.test(cleaned)) return copy.fallbackTitles.character;
+  if (/text-to-video|prompt/i.test(cleaned)) return copy.fallbackTitles.prompt;
+  return copy.defaultTitleTemplate.replace('{engine}', engineLabel || copy.defaultTitleEngineLabel);
 }
 
-function formatVideoUseCase(video: GalleryVideo, locale: AppLocale) {
-  const copy = (en: string, es: string, fr: string) => ({ en, es, fr })[locale];
+function formatVideoUseCase(video: GalleryVideo, copy: PayAsYouGoShowcaseRuntimeCopy) {
   const searchText = videoModelSearchText(video);
-  if (/seedance.*mini|dreamina/i.test(searchText)) return copy('Lighter multimodal test before scaling.', 'Prueba multimodal ligera antes de escalar.', 'Essai multimodal léger avant de passer à l’échelle.');
-  if (/seedance/i.test(searchText)) return copy('Current benchmark render for model testing.', 'Render de referencia para probar modelos.', 'Rendu de référence pour tester les modèles.');
-  if (/kling/i.test(searchText)) return copy('Motion-control or image-to-video test.', 'Prueba de control de movimiento o de imagen a video.', 'Essai de contrôle du mouvement ou d’image vers vidéo.');
-  if (/\b(?:google\s+)?veo\b/i.test(searchText)) return copy('Cinematic quality and prompt-following test.', 'Prueba de calidad cinematográfica y seguimiento de prompt.', 'Essai de qualité cinématographique et de suivi de prompt.');
+  if (/seedance.*mini|dreamina/i.test(searchText)) return copy.useCases.seedanceMini;
+  if (/seedance/i.test(searchText)) return copy.useCases.seedance;
+  if (/kling/i.test(searchText)) return copy.useCases.kling;
+  if (/\b(?:google\s+)?veo\b/i.test(searchText)) return copy.useCases.veo;
   if (/happy\s*-?\s*horse/i.test(searchText)) {
     const isHappyHorse11 = /happy\s*-?\s*horse[\s-]*(?:v)?1(?:\.|-)?1|(?:v)?1(?:\.|-)?1[\s-]*happy\s*-?\s*horse/i.test(
       searchText
@@ -119,13 +116,13 @@ function formatVideoUseCase(video: GalleryVideo, locale: AppLocale) {
     const isEarlierHappyHorse = /happy\s*-?\s*horse[\s-]*(?:v)?1(?:\.|-)?0|(?:v)?1(?:\.|-)?0[\s-]*happy\s*-?\s*horse/i.test(
       searchText
     );
-    if (isEarlierHappyHorse && !isHappyHorse11) return copy('Earlier Happy Horse render used as an Alibaba-route example.', 'Render anterior de Happy Horse usado como ejemplo de la opción de Alibaba.', 'Ancien rendu Happy Horse utilisé comme exemple de l’option Alibaba.');
-    if (isHappyHorse11) return copy('Happy Horse 1.1 alternate Alibaba video route.', 'Opción alternativa de video Alibaba con Happy Horse 1.1.', 'Option vidéo Alibaba alternative avec Happy Horse 1.1.');
-    return copy('Alternate Alibaba video route.', 'Opción de video Alibaba alternativa.', 'Option vidéo Alibaba alternative.');
+    if (isEarlierHappyHorse && !isHappyHorse11) return copy.useCases.happyHorseEarlier;
+    if (isHappyHorse11) return copy.useCases.happyHorse11;
+    return copy.useCases.happyHorse;
   }
-  if (/\bltx\b/i.test(searchText)) return copy('Efficient draft and prompt-iteration test.', 'Prueba de borrador eficiente e iteración de prompt.', 'Essai de brouillon efficace et d’itération de prompt.');
-  if (/\bwan\b/i.test(searchText)) return copy('Budget-aware text or image-to-video test.', 'Prueba económica de texto o imagen a video.', 'Essai économique de texte ou d’image vers vidéo.');
-  return copy('Public render with model and price context.', 'Render público con modelo y contexto de precio.', 'Rendu public avec modèle et contexte de prix.');
+  if (/\bltx\b/i.test(searchText)) return copy.useCases.ltx;
+  if (/\bwan\b/i.test(searchText)) return copy.useCases.wan;
+  return copy.useCases.fallback;
 }
 
 function pickDiverseVideos(videos: GalleryVideo[]) {
@@ -153,16 +150,22 @@ function pickDiverseVideos(videos: GalleryVideo[]) {
   return selected;
 }
 
-function toShowcaseVideo(video: GalleryVideo, locale: AppLocale): PayAsYouGoShowcaseVideo {
+export function buildPayAsYouGoShowcaseVideo(
+  video: GalleryVideo,
+  locale: AppLocale,
+  copy: PayAsYouGoShowcaseRuntimeCopy,
+): PayAsYouGoShowcaseVideo {
   const duration = Math.max(1, Math.round(video.durationSec || 0));
+  const engineLabel = video.engineLabel || video.engineId || copy.defaultEngineLabel;
+  const titleEngineLabel = video.engineLabel || video.engineId || copy.defaultTitleEngineLabel;
   return {
     id: video.id,
     engineId: video.engineId,
-    engineLabel: video.engineLabel || video.engineId || 'AI video model',
-    priceLabel: formatVideoPrice(video, locale),
+    engineLabel,
+    priceLabel: formatVideoPrice(video, locale, copy),
     durationLabel: `${duration}s`,
-    title: formatVideoTitle(video.promptExcerpt || video.prompt || '', video.engineLabel || video.engineId || 'AI video', locale),
-    useCase: formatVideoUseCase(video, locale),
+    title: formatVideoTitle(video.promptExcerpt || video.prompt || '', titleEngineLabel, copy),
+    useCase: formatVideoUseCase(video, copy),
     posterUrl: video.thumbUrl,
     videoUrl: video.previewVideoUrl ?? video.videoUrl,
     href: `/video/${encodeURIComponent(video.id)}?from=${encodeURIComponent('/pay-as-you-go-ai-video-generator')}`,
@@ -178,7 +181,13 @@ async function loadFallbackVideos() {
   }
 }
 
-export async function loadPayAsYouGoVideoShowcase(locale: AppLocale): Promise<PayAsYouGoShowcaseVideo[]> {
+export async function loadPayAsYouGoVideoShowcase({
+  locale,
+  copy,
+}: {
+  locale: AppLocale;
+  copy: PayAsYouGoShowcaseRuntimeCopy;
+}): Promise<PayAsYouGoShowcaseVideo[]> {
   if (!isDatabaseConfigured()) {
     return [];
   }
@@ -194,5 +203,5 @@ export async function loadPayAsYouGoVideoShowcase(locale: AppLocale): Promise<Pa
     videos = await loadFallbackVideos();
   }
 
-  return pickDiverseVideos(videos).map((video) => toShowcaseVideo(video, locale));
+  return pickDiverseVideos(videos).map((video) => buildPayAsYouGoShowcaseVideo(video, locale, copy));
 }

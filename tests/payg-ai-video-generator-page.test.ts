@@ -103,17 +103,26 @@ test('pay-as-you-go page uses an admin-controlled public video playlist strip', 
   assert.match(showcaseDataSource, /listPlaylistVideos\(PAYG_VIDEO_PLAYLIST_SLUG/);
   assert.match(showcaseDataSource, /listGalleryVideos\('starter'/);
   assert.match(showcaseDataSource, /finalPriceCents/);
-  assert.match(showcaseDataSource, /Price shown first/);
   assert.match(showcaseDataSource, /SHOWCASE_DISALLOWED_MODEL_PATTERN/);
   assert.match(showcaseDataSource, /SHOWCASE_MODEL_PRIORITY/);
   assert.match(showcaseDataSource, /formatVideoTitle/);
-  assert.match(showcaseDataSource, /Earlier Happy Horse render used as an Alibaba-route example/);
-  assert.match(showcaseSource, /View prompt and result/);
   assert.match(pageSource, /const showcaseVideos = await loadPayAsYouGoVideoShowcase/);
   assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\}/);
-  assert.match(showcaseSource, /Real pay-as-you-go outputs/);
   assert.match(showcaseSource, /<video/);
   assert.doesNotMatch(showcaseSource, /admin\/playlists|Manage playlist/);
+});
+
+test('showcase keeps runtime selection but owns no localized prose', () => {
+  const componentSource = read(showcasePath);
+  const loaderSource = read(showcaseDataPath);
+
+  assert.doesNotMatch(componentSource, /getShowcaseCopy|locale: AppLocale/);
+  assert.match(componentSource, /copy: PayAsYouGoContent\['showcase'\]\['section'\]/);
+  assert.doesNotMatch(
+    loaderSource,
+    /translatedTitles|const copy = \(en: string|Price shown first|Precio visible antes de generar|Prix affiché avant la génération/,
+  );
+  assert.match(loaderSource, /copy: PayAsYouGoShowcaseRuntimeCopy/);
 });
 
 test('pay-as-you-go route is discoverable by middleware and query cleanup', () => {
@@ -137,14 +146,14 @@ test('pay-as-you-go page localizes every route-local content surface', () => {
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.match(pageSource, /<PayAsYouGoPageView locale=\{locale\}/);
-  assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(locale\)/);
+  assert.match(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
+  assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(\{ locale, copy: content\.showcase\.runtime \}\)/);
   assert.match(pageSource, /const content = getPayAsYouGoContent\(locale\)/);
   assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content \}\)/);
   assert.doesNotMatch(dataSource, /PAYG_COPY_BY_LOCALE|PRICE_LOOKUP_COPY|modelBestFor|localizedLabels/);
   assert.doesNotMatch(viewSource, /getPayAsYouGoViewCopy|copy\.text|locale ===|\[locale\]/);
-  assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\} locale=\{locale\} \/>/);
-  assert.match(showcaseSource, /locale: AppLocale/);
+  assert.match(viewSource, /<PayAsYouGoVideoShowcase videos=\{showcaseVideos\} copy=\{showcaseCopy\} \/>/);
+  assert.doesNotMatch(showcaseSource, /locale: AppLocale/);
   assert.match(showcaseDataSource, /locale: AppLocale/);
   assert.ok(dataSource.split('\n').length <= 400);
 });

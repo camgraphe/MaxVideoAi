@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import test from 'node:test';
 import type { AppLocale } from '../frontend/i18n/locales.ts';
+import type { GalleryVideo } from '../frontend/server/videos.ts';
 import { getPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/index.ts';
 import {
   PAYG_EXAMPLE_COST_IDS,
@@ -11,6 +12,7 @@ import {
   PAYG_SHOWCASE_TITLE_IDS,
   PAYG_SUPPORTED_MODEL_IDS,
 } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/types.ts';
+import { buildPayAsYouGoShowcaseVideo } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-video-showcase.ts';
 
 const contentRoot = join(
   process.cwd(),
@@ -109,6 +111,38 @@ test('editorial content owns semantic strings but no computed pricing or React r
     getPayAsYouGoContent('en').quoteFactors.items.map((item) => item.icon),
     ['model', 'duration', 'resolution', 'audio'],
   );
+});
+
+test('showcase formatting uses exact-locale content while retaining runtime number formatting', () => {
+  const fixtureGalleryVideo = (overrides: Partial<GalleryVideo> = {}) => ({
+    id: 'showcase-fixture',
+    engineId: 'kling-3-pro',
+    engineLabel: 'Kling 3 Pro',
+    prompt: 'A rooftop chase',
+    promptExcerpt: 'A rooftop chase',
+    durationSec: 8,
+    currency: 'USD',
+    ...overrides,
+  }) as GalleryVideo;
+
+  for (const locale of locales) {
+    const copy = getPayAsYouGoContent(locale).showcase.runtime;
+    const result = buildPayAsYouGoShowcaseVideo(
+      fixtureGalleryVideo({ finalPriceCents: undefined, prompt: 'A rooftop chase' }),
+      locale,
+      copy,
+    );
+    assert.equal(result.priceLabel, copy.priceUnavailable);
+    assert.equal(result.title, copy.titles.rooftop);
+    assert.equal(result.useCase, copy.useCases.kling);
+  }
+
+  const priced = buildPayAsYouGoShowcaseVideo(
+    fixtureGalleryVideo({ finalPriceCents: 123 }),
+    'en',
+    getPayAsYouGoContent('en').showcase.runtime,
+  );
+  assert.equal(priced.priceLabel, '$1.23');
 });
 
 test('each locale module exports one complete literal and imports only the content type', () => {
