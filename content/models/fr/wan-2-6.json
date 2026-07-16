@@ -506,5 +506,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "wan-2-6",
+    "section": {
+      "title": "Galerie d’exemples Wan 2.6",
+      "intro": "Rendus Wan 2.6 récents en workflows texte, image et référence.",
+      "defaultCtaLabel": "Voir tous les exemples Wan 2.6 →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus communautaires",
+        "body": "Voyez ce qui est possible avec Wan 2.6 – Vidéo IA multi‑shot (Texte/Image 5–15 s, Référence 5–10 s, 720p/1080p).",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un plan",
+        "body": "Ouvrez l’app en un clic et réutilisez la configuration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio natif",
+        "body": "Dialogue, ambiance et SFX générés en synchro.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuité multi-plans",
+        "body": "Gardez personnages, style et scène cohérents.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt pour la production",
+        "body": "Garde-fous et filtres intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

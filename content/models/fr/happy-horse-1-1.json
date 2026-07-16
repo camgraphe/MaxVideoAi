@@ -344,5 +344,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "happy-horse-1-1",
+    "section": {
+      "title": "Démos du modèle Happy Horse 1.1",
+      "intro": "Analysez les clips de page modèle pour l’audio natif, la synchronisation labiale et les générations guidées par références. Les pages de comparaison restent volontairement centrées sur le texte et les spécifications pour ce lancement.",
+      "defaultCtaLabel": "Lancer une génération Happy Horse 1.1 ->",
+      "recreateLabel": "Recréer ce rendu →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus communautaires",
+        "body": "Voyez ce qui est possible avec Happy Horse 1.1.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un plan",
+        "body": "Ouvrez l’app en un clic et réutilisez la configuration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio natif",
+        "body": "Dialogue, ambiance et SFX générés en synchro.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuité multi-plans",
+        "body": "Gardez personnages, style et scène cohérents.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt pour la production",
+        "body": "Garde-fous et filtres intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

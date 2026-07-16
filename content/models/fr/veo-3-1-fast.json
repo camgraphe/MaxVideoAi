@@ -580,5 +580,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "veo-3-1-fast",
+    "section": {
+      "title": "Galerie d’exemples : rendus Veo 3.1 Fast",
+      "intro": "Explorez des clips générés avec Veo 3.1 Fast en utilisant les mêmes presets que vous avez.",
+      "defaultCtaLabel": "Voir tous les exemples Veo 3.1 Fast →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus communautaires",
+        "body": "Voyez ce qui est possible avec Veo 3.1 Fast — variante Veo actuelle pour des tests plus rapides et l’itération.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un plan",
+        "body": "Ouvrez l’app en un clic et réutilisez la configuration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio natif",
+        "body": "Dialogue, ambiance et SFX générés en synchro.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuité multi-plans",
+        "body": "Gardez personnages, style et scène cohérents.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt pour la production",
+        "body": "Garde-fous et filtres intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

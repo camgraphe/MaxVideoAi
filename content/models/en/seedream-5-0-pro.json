@@ -329,5 +329,73 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-0-pro",
+    "section": {
+      "title": "Seedream 5.0 Pro examples",
+      "intro": "Explore real community outputs and see how Seedream 5.0 Pro performs inside MaxVideoAI workflows.",
+      "defaultCtaLabel": null,
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Real community renders",
+        "body": "See what's possible with Seedream 5.0 Pro.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate any shot",
+        "body": "Jump into the app with one click and reuse the setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Native audio",
+        "body": "Dialogue, ambience and SFX generated in sync.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Multi-shot continuity",
+        "body": "Keep characters, style and scene consistency across sequences.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Built-in guardrails and safety filters for responsible review.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

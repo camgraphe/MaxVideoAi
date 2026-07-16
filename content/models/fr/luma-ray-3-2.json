@@ -450,5 +450,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-3-2",
+    "section": {
+      "title": "Exemples Luma Ray 3.2",
+      "intro": "Servez-vous des exemples pour étudier prompts Modify, changements guidés par images clés, réglages Reframe et tests courts complémentaires.",
+      "defaultCtaLabel": "Voir tous les exemples Luma",
+      "recreateLabel": "Recréer ce plan"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Modify source",
+        "body": "Etudiez comment Ray 3.2 change un clip sans perdre son timing.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Reframe livraison",
+        "body": "Recreez un ratio vertical, carre ou large depuis le meme master.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Sortie silencieuse",
+        "body": "Ray 3.2 ne genere pas d audio natif sur cette route MaxVideoAI.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Images guides",
+        "body": "Utilisez une image ou des images cles pour diriger des moments precis.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Controle cout",
+        "body": "Validez en 5 s / 540p ou 720p avant les passes 1080p.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

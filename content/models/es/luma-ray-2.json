@@ -424,5 +424,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2",
+    "section": {
+      "title": "Ejemplos Luma Ray 2",
+      "intro": "Usa el rail de ejemplos para comparar generacion nueva, animacion de still, pases de modify y reframes de entrega dentro de la misma familia Ray 2.",
+      "defaultCtaLabel": "Ver todos los ejemplos Luma ->",
+      "recreateLabel": "Recrear esta toma ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Renders Luma premium",
+        "body": "Compara generación, imagen inicial, Modify y Reframe dentro de Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear un render",
+        "body": "Abre la app con Ray 2 y reutiliza prompt, formato y duración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Salida sin audio",
+        "body": "Ray 2 no genera audio nativo en esta ruta de MaxVideoAI.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image y edición",
+        "body": "Anima una imagen inicial, modifica un clip fuente o reencuadra un master.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Ruta final Ray 2",
+        "body": "Usa Ray 2 para tomas aprobadas y variantes de entrega.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

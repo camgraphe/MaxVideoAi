@@ -459,5 +459,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "dreamina-seedance-2-0-mini",
+    "section": {
+      "title": "Ejemplos de Seedance 2.0 Mini",
+      "intro": "Revisa patrones ecommerce, marketing, UGC, con referencias, edición de video y extensión para Mini.",
+      "defaultCtaLabel": "Ver todos los ejemplos de Seedance ->",
+      "recreateLabel": "Recrear esta variante Mini ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Resultados reales",
+        "body": "Mira qué es posible con Dreamina Seedance 2.0 Mini — ruta de menor coste para variantes de video en lote.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una toma",
+        "body": "Abre la app con un clic y reutiliza la configuración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio nativo",
+        "body": "Diálogo, ambiente y efectos de sonido generados en sincronía.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuidad entre tomas",
+        "body": "Mantiene personajes, estilo y escena consistentes.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Controles de seguridad y filtros integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

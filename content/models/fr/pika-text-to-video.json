@@ -537,5 +537,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "pika-text-to-video",
+    "section": {
+      "title": "Galerie d’exemples Pika 2.2",
+      "intro": "Clips curés générés avec les mêmes réglages que dans MaxVideoAI.",
+      "defaultCtaLabel": "Voir tous les exemples Pika 2.2 →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Boucles stylisées",
+        "body": "Voyez les boucles Text-to-Video silencieuses possibles avec Pika 2.2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un test",
+        "body": "Ouvrez l’app et réutilisez le prompt, le ratio et la durée.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Sortie silencieuse",
+        "body": "Aucune bande-son générée ici ; ajoutez son et voix plus tard.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Seeds et négatifs",
+        "body": "Gardez une direction visuelle et bloquez texte, logos ou artefacts.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Social first",
+        "body": "Pensé pour clips courts, overlays et loops à monter ensuite.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

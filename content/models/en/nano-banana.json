@@ -463,5 +463,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana",
+    "section": {
+      "title": "Nano Banana examples",
+      "intro": "Recent photoreal stills and edits used as keyframes for video workflows.",
+      "defaultCtaLabel": "View image examples →",
+      "recreateLabel": "Recreate this still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "campaign",
+        "label": "Campaign"
+      },
+      {
+        "id": "typography",
+        "label": "Typography"
+      },
+      {
+        "id": "reference",
+        "label": "Reference edit"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Still image examples",
+        "body": "Prompt patterns tailored to Nano Banana – Photoreal Image Generation.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typography control",
+        "body": "Exact copy, hierarchy and placement stay explicit.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Reference edits",
+        "body": "Keep product identity, palette, layout or style.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "4K finals",
+        "body": "Validate at 2K, then finish at 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Owned references and built-in guardrails.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "campaign",
+        "title": "Fast thumbnail concept",
+        "category": "Draft",
+        "aspectRatio": "16:9",
+        "alt": "Nano Banana visual concept for a social thumbnail",
+        "tags": [
+          "campaign"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Simple promo still",
+        "category": "Typography",
+        "aspectRatio": "1:1",
+        "alt": "Nano Banana still with short readable promo copy",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Reference remix",
+        "category": "Reference",
+        "aspectRatio": "4:3",
+        "alt": "Nano Banana remix guided by a visual reference",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "Batch concept grid",
+        "category": "Batch",
+        "aspectRatio": "4 variants",
+        "alt": "Nano Banana four-variant exploration grid",
+        "tags": [
+          "final"
+        ]
+      }
+    ]
   }
 }

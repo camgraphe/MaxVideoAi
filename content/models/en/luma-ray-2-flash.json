@@ -423,5 +423,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Luma Ray 2 Flash examples",
+      "intro": "Use the examples rail to compare fast generate runs, modify passes, and delivery reframes before choosing whether the shot should stay on Flash or move to Ray 2.",
+      "defaultCtaLabel": "View all Luma examples ->",
+      "recreateLabel": "Recreate this shot ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Fast Luma drafts",
+        "body": "Compare direction, framing and Modify variants before Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a test",
+        "body": "Open Ray 2 Flash in the app and reuse the draft setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Silent output",
+        "body": "Ray 2 Flash does not generate native audio on this route.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image and edit",
+        "body": "Animate a start frame or test Modify/Reframe from a source clip.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Upgrade to Ray 2",
+        "body": "Use Flash for iteration, then final selected shots on Ray 2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

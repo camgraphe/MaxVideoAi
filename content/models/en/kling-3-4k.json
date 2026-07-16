@@ -436,5 +436,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-4k",
+    "section": {
+      "title": "Kling 3 4K delivery examples",
+      "intro": "Review approved Kling shots that deserve native 4K output: product masters, premium ads, large-screen edits, and high-resolution image-to-video approvals.",
+      "defaultCtaLabel": "View all Kling 3 4K examples ->",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Native 4K masters",
+        "body": "See final delivery renders possible with Kling 3 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a master",
+        "body": "Open the app with Kling 3 4K and reuse the approved prompt.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Optional audio",
+        "body": "Turn audio on only when it belongs in the delivery file.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Locked source image",
+        "body": "Keep product, framing and composition stable in image-to-video.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Delivery ready",
+        "body": "Reserved for approved shots where 4K detail justifies the cost.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

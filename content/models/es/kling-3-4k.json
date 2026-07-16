@@ -436,5 +436,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-4k",
+    "section": {
+      "title": "Ejemplos de entrega Kling 3 4K",
+      "intro": "Revisa shots Kling aprobados que merecen salida 4K nativa: masters de producto, anuncios premium, pantallas grandes y aprobaciones imagen-a-video en alta resolucion.",
+      "defaultCtaLabel": "Ver todos los ejemplos Kling 3 4K ->",
+      "recreateLabel": "Recrear este resultado →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Masters 4K nativos",
+        "body": "Mira renders finales posibles con Kling 3 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear un master",
+        "body": "Abre la app con Kling 3 4K y reutiliza el prompt aprobado.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio opcional",
+        "body": "Activa audio solo cuando pertenece al archivo final.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Imagen fuente bloqueada",
+        "body": "Mantén producto, encuadre y composición estables en image-to-video.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para entrega",
+        "body": "Úsalo en tomas aprobadas donde el detalle 4K justifica el coste.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

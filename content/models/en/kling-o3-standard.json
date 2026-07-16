@@ -329,5 +329,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-o3-standard",
+    "section": {
+      "title": "Kling 3.0 Omni Standard reference drafts",
+      "intro": "Review lower-cost storyboard, reference-image, and source-video V2V examples before moving approved shots into Pro or 4K. Standard is the O3 route for testing visual guidance without forcing the first uploaded image to become the opening frame.",
+      "defaultCtaLabel": "Browse Kling reference examples ->",
+      "recreateLabel": null
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Real community renders",
+        "body": "See what's possible with Kling 3.0 Omni Standard for lower-cost reference-guided video.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate any shot",
+        "body": "Jump into the app with one click and reuse the setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Native audio",
+        "body": "Dialogue, ambience and SFX generated in sync.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Multi-shot continuity",
+        "body": "Keep characters, style and scene consistency across sequences.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Built-in guardrails and safety filters for responsible review.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

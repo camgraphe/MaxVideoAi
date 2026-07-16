@@ -447,5 +447,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-standard",
+    "section": {
+      "title": "Galerie d’exemples Kling 3 Standard",
+      "intro": "Rendus récents Kling 3 Standard avec multi‑plans, Elements et audio optionnel.",
+      "defaultCtaLabel": "Voir tous les exemples Kling 3 Standard →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Brouillons storyboard",
+        "body": "Voyez les tests multi-plans possibles avec Kling 3 Standard — variante Kling actuelle pour la vidéo multi-plans à coût réduit.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer une variante",
+        "body": "Ouvrez l’app avec Kling 3 Standard et réutilisez le setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Testez avec audio natif ou gardez le brouillon silencieux.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Image source + fin",
+        "body": "Ancrez le sujet avec une image source et une fin optionnelle.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Passage Pro",
+        "body": "Montez les directions validées vers Pro pour plus de fidélité.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

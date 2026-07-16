@@ -463,5 +463,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana",
+    "section": {
+      "title": "Exemples Nano Banana",
+      "intro": "Stills photoréalistes récents et edits utilisés comme keyframes pour des workflows vidéo.",
+      "defaultCtaLabel": "Voir des exemples d’images →",
+      "recreateLabel": "Recréer ce still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "campaign",
+        "label": "Campagne"
+      },
+      {
+        "id": "typography",
+        "label": "Typographie"
+      },
+      {
+        "id": "reference",
+        "label": "Référence"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Exemples image",
+        "body": "Prompts stills adaptés à Nano Banana – Génération d’images photoréalistes.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typographie",
+        "body": "Texte exact, hiérarchie et placement restent visibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Retouches référence",
+        "body": "Gardez produit, identité, palette ou layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Validez en 2K puis finalisez en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt production",
+        "body": "Références possédées et garde-fous intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "campaign",
+        "title": "Concept thumbnail rapide",
+        "category": "Brouillon",
+        "aspectRatio": "16:9",
+        "alt": "Concept visuel Nano Banana pour miniature social",
+        "tags": [
+          "campaign"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Promo simple lisible",
+        "category": "Typographie",
+        "aspectRatio": "1:1",
+        "alt": "Image Nano Banana avec message promotionnel court",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Remix de référence",
+        "category": "Référence",
+        "aspectRatio": "4:3",
+        "alt": "Remix Nano Banana guidé par une référence visuelle",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "Batch de variantes",
+        "category": "Batch",
+        "aspectRatio": "4 variantes",
+        "alt": "Quatre variantes Nano Banana pour exploration rapide",
+        "tags": [
+          "final"
+        ]
+      }
+    ]
   }
 }

@@ -420,5 +420,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "Ejemplos de Seedream 5.0 Lite",
+      "intro": "Explora resultados de la comunidad y mira cómo Seedream 5.0 Lite funciona en flujos de MaxVideoAI.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recrear este resultado →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "product",
+        "label": "Producto"
+      },
+      {
+        "id": "character",
+        "label": "Personaje"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "batch",
+        "label": "Batch"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Ejemplos de imagen",
+        "body": "Prompts still adaptados a Seedream 5.0 Lite.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Tipografía",
+        "body": "Texto exacto, jerarquía y ubicación legibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Ediciones con referencia",
+        "body": "Mantén producto, identidad, paleta o layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Valida en 2K y termina en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Referencias propias y controles integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Still de producto",
+        "category": "Producto · 2K",
+        "aspectRatio": "2K",
+        "alt": "Still de producto Seedream preparado como referencia limpia",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "character",
+        "title": "Hoja de personaje",
+        "category": "Personaje",
+        "aspectRatio": "2-10 refs",
+        "alt": "Hoja Seedream con varias vistas coherentes del mismo personaje",
+        "tags": [
+          "character"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Edición limpia",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Edición Seedream que conserva forma, logo y proporciones",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "batch",
+        "title": "Batch storyboard",
+        "category": "Batch",
+        "aspectRatio": "4 imágenes",
+        "alt": "Batch Seedream de cuatro imágenes coherentes para storyboard",
+        "tags": [
+          "batch"
+        ]
+      }
+    ]
   }
 }

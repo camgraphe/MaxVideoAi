@@ -423,5 +423,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Exemples Luma Ray 2 Flash",
+      "intro": "Utilisez le rail d'exemples pour comparer generate rapide, passes Modify et reframes de livraison avant de decider si le plan reste sur Flash ou passe sur Ray 2.",
+      "defaultCtaLabel": "Voir tous les exemples Luma ->",
+      "recreateLabel": "Recreer ce plan ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Brouillons Luma rapides",
+        "body": "Comparez vite directions, cadrages et versions Modify avant Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un test",
+        "body": "Ouvrez l’app avec Ray 2 Flash et réutilisez la recette du draft.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Sortie silencieuse",
+        "body": "Ray 2 Flash ne génère pas d’audio natif dans cette route.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image et edit",
+        "body": "Animez une image de départ ou testez Modify/Reframe sur clip source.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Upgrade vers Ray 2",
+        "body": "Gardez Flash pour l’itération, puis finalisez les gagnants sur Ray 2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

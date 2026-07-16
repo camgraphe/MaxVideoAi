@@ -424,5 +424,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2",
+    "section": {
+      "title": "Exemples Luma Ray 2",
+      "intro": "Utilisez le rail d'exemples pour comparer generation nette, animation de still, passes modify et reframes de livraison dans la meme famille Ray 2.",
+      "defaultCtaLabel": "Voir tous les exemples Luma ->",
+      "recreateLabel": "Recreer ce plan ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus Luma premium",
+        "body": "Comparez génération, image de départ, Modify et Reframe dans Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un rendu",
+        "body": "Ouvrez l’app avec Ray 2 et réutilisez prompt, ratio et durée.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Sortie silencieuse",
+        "body": "Ray 2 ne génère pas d’audio natif dans cette route MaxVideoAI.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image et edit",
+        "body": "Animez une image de départ, modifiez un clip source ou recadrez un master.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Route finale Ray 2",
+        "body": "Gardez Ray 2 pour les shots validés et les variantes de livraison.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

@@ -427,5 +427,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "Seedream 5.0 Lite examples",
+      "intro": "Explore real community outputs and see how Seedream 5.0 Lite performs inside MaxVideoAI workflows.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recreate this still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "product",
+        "label": "Product still"
+      },
+      {
+        "id": "character",
+        "label": "Character"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "batch",
+        "label": "Batch"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Still image examples",
+        "body": "Prompt patterns tailored to Seedream 5.0 Lite.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typography control",
+        "body": "Exact copy, hierarchy and placement stay explicit.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Reference edits",
+        "body": "Keep product identity, palette, layout or style.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "4K finals",
+        "body": "Validate at 2K, then finish at 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Owned references and built-in guardrails.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Product reference still",
+        "category": "Product · 2K",
+        "aspectRatio": "2K",
+        "alt": "Seedream product still prepared as a clean reference image",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "character",
+        "title": "Character reference sheet",
+        "category": "Character",
+        "aspectRatio": "2-10 refs",
+        "alt": "Seedream sheet with consistent views of the same character",
+        "tags": [
+          "character"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Clean image edit",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Seedream edit preserving shape, logo and proportions",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "batch",
+        "title": "Storyboard batch",
+        "category": "Batch",
+        "aspectRatio": "4 images",
+        "alt": "Seedream four-image storyboard batch",
+        "tags": [
+          "batch"
+        ]
+      }
+    ]
   }
 }

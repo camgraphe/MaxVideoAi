@@ -537,5 +537,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "pika-text-to-video",
+    "section": {
+      "title": "Galería de ejemplos Pika 2.2",
+      "intro": "Clips curados generados con los mismos ajustes que tienes en MaxVideoAI.",
+      "defaultCtaLabel": "Ver todos los ejemplos Pika 2.2 →",
+      "recreateLabel": "Recrear esta toma →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Loops estilizados",
+        "body": "Mira loops Text-to-Video sin audio posibles con Pika 2.2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una prueba",
+        "body": "Abre la app y reutiliza prompt, formato y duración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Salida sin audio",
+        "body": "Aquí no se genera banda sonora; añade sonido y voz después.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Seeds y negativos",
+        "body": "Mantén una dirección visual y bloquea texto, logos o artefactos.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Social first",
+        "body": "Pensado para clips cortos, overlays y loops para editar después.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

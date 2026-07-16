@@ -465,5 +465,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-pro",
+    "section": {
+      "title": "Galerie d’exemples Kling 3 Pro",
+      "intro": "Rendus récents Kling 3 Pro avec multi‑plans, Elements et voice control.",
+      "defaultCtaLabel": "Voir tous les exemples Kling 3 Pro →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus Pro contrôlés",
+        "body": "Voyez les séquences premium possibles avec Kling 3 Pro — modèle Kling actuel pour la vidéo multi-plans et le contrôle de scène.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un rendu",
+        "body": "Ouvrez l’app avec Kling 3 Pro et réutilisez la configuration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio + voix",
+        "body": "Utilisez audio natif, lip sync et voice IDs quand le plan le demande.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Elements + end frame",
+        "body": "Stabilisez sujet, produit et landing avec Elements et image finale.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Passe qualité",
+        "body": "Gardez Pro pour les shots où fidélité et stabilité comptent.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

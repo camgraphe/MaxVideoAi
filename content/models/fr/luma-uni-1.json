@@ -445,5 +445,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "luma-uni-1",
+    "section": {
+      "title": "Exemples image Luma Uni-1",
+      "intro": "Planifiez retouches source, références produit et passages depuis images fixes.",
+      "defaultCtaLabel": "Ouvrir l’espace image",
+      "recreateLabel": "Recréer cette image"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      },
+      {
+        "id": "campaign",
+        "label": "Direction"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Stills propres",
+        "body": "Luma Uni-1 pour tester une direction image sans complexifier le prompt.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Edit guide",
+        "body": "Modifiez une image source en gardant produit, forme et palette lisibles.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-3",
+        "title": "References",
+        "body": "Utilisez des images de depart ou de style quand la coherence compte.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-4",
+        "title": "Ratios simples",
+        "body": "Validez produit, carre, vertical ou 16:9 avant de passer en video.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Pret video",
+        "body": "Servez-vous des meilleurs stills comme images de depart pour Ray 3.2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Still produit 2K",
+        "category": "Produit",
+        "aspectRatio": "2K · 16:9",
+        "alt": "Packshot Luma Uni-1 avec lumiere studio simple",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Edit image source",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Edit Luma Uni-1 qui garde la forme produit et change le mood studio",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Still guide par references",
+        "category": "References",
+        "aspectRatio": "2 refs",
+        "alt": "Still Luma Uni-1 guide par produit et reference mood",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "campaign",
+        "title": "Recherche direction visuelle",
+        "category": "Direction",
+        "aspectRatio": "1:1",
+        "alt": "Still Luma Uni-1 pour explorer une direction retail",
+        "tags": [
+          "campaign"
+        ]
+      }
+    ]
   }
 }

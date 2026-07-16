@@ -441,5 +441,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "luma-uni-1-max",
+    "section": {
+      "title": "Exemples image Luma Uni-1 Max",
+      "intro": "Planifiez visuels principaux, retouches produit et supports de campagne guidés par références.",
+      "defaultCtaLabel": "Ouvrir l’espace image",
+      "recreateLabel": "Recréer cette image"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "typography",
+        "label": "Typographie"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Stills haute fidelite",
+        "body": "Luma Uni-1 Max pour tester une direction image sans complexifier le prompt.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Edit guide",
+        "body": "Modifiez une image source en gardant produit, forme et palette lisibles.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-3",
+        "title": "References",
+        "body": "Utilisez des images de depart ou de style quand la coherence compte.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-4",
+        "title": "Detail et texte",
+        "body": "Bon candidat pour posters, packshots et typographie courte.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-5",
+        "title": "Pret video",
+        "body": "Servez-vous des meilleurs stills comme images de depart pour Ray 3.2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Packshot haute fidelite",
+        "category": "Produit",
+        "aspectRatio": "2K · 3:2",
+        "alt": "Packshot skincare Luma Uni-1 Max avec detail premium",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Poster texte lisible",
+        "category": "Typographie",
+        "aspectRatio": "Poster",
+        "alt": "Poster Luma Uni-1 Max avec titre NIGHT GARDEN lisible",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Edit produit detaille",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Edit Luma Uni-1 Max avec matiere et contours plus nets",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Still campagne reference",
+        "category": "References",
+        "aspectRatio": "2 refs",
+        "alt": "Still Luma Uni-1 Max guide par produit et mood campagne",
+        "tags": [
+          "reference"
+        ]
+      }
+    ]
   }
 }

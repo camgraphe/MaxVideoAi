@@ -535,5 +535,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "MiniMax Hailuo 02 Example Gallery",
+      "intro": "See text and image runs rendered with the same configuration you have.",
+      "defaultCtaLabel": "View all MiniMax Hailuo 02 examples →",
+      "recreateLabel": "Recreate this shot →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Draft renders",
+        "body": "See lightweight motion tests possible with MiniMax Hailuo 02 – Budget AI Video Drafts with Strong Physics.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a test",
+        "body": "Open the app and reuse the prompt or start image setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Silent output",
+        "body": "No native audio on this route; add sound and voice later.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Physics checks",
+        "body": "Review force, collisions, cloth, water and ground contact.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Draft route",
+        "body": "512P/768P here; move approved shots to a final route.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

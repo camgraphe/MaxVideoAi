@@ -551,5 +551,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-2-5-turbo",
+    "section": {
+      "title": "Galerie d’exemples : Kling 2.5 Turbo",
+      "intro": "Rendus réels de la route Kling actuelle dans MaxVideoAI.",
+      "defaultCtaLabel": "Voir tous les exemples Kling 2.5 Turbo →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus communautaires",
+        "body": "Voyez ce qui est possible avec Kling 2.5 Turbo — ancien modèle Kling encore pris en charge pour des tests silencieux rapides.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un plan",
+        "body": "Ouvrez l’app en un clic et réutilisez la configuration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio natif",
+        "body": "Dialogue, ambiance et SFX générés en synchro.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuité multi-plans",
+        "body": "Gardez personnages, style et scène cohérents.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt pour la production",
+        "body": "Garde-fous et filtres intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

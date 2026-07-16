@@ -33,6 +33,25 @@ function readDocument(locale: AppLocale, slug: string): EngineOverlay {
   ) as EngineOverlay;
 }
 
+function allLegacyProjections() {
+  return listModelPageTemplateSlugs().sort().flatMap((slug) =>
+    LOCALES.map((locale) => {
+      const localized = mergeEngineLocalizedContent(readDocument('en', slug), readDocument(locale, slug));
+      const copy = buildSoraCopy(localized, slug, locale);
+      return {
+        slug,
+        locale,
+        content: buildLegacyModelExamplesContent({
+          modelSlug: slug,
+          locale,
+          copy,
+          imageFallbackActive: LEGACY_ACTIVE_IMAGE_FALLBACK_SLUGS.has(slug),
+        }),
+      };
+    }),
+  );
+}
+
 test('legacy Examples editorial decisions are isolated behind one pure projector', () => {
   assert.ok(existsSync(legacyPath));
   assert.match(legacySource, /export function buildLegacyModelExamplesContent/);
@@ -52,24 +71,23 @@ test('active legacy decision renderer keeps the generic view-all label', () => {
 });
 
 test('all 40 by 3 legacy projections satisfy the strict normalized contract', () => {
-  const slugs = listModelPageTemplateSlugs().sort();
-  assert.equal(slugs.length, 40);
-
-  let projectionCount = 0;
-  for (const slug of slugs) {
-    for (const locale of LOCALES) {
-      const localized = mergeEngineLocalizedContent(readDocument('en', slug), readDocument(locale, slug));
-      const copy = buildSoraCopy(localized, slug, locale);
-      const projected = buildLegacyModelExamplesContent({
-        modelSlug: slug,
-        locale,
-        copy,
-        imageFallbackActive: LEGACY_ACTIVE_IMAGE_FALLBACK_SLUGS.has(slug),
-      });
-      assert.deepEqual(parseModelExamplesContent(projected, slug, locale), projected);
-      projectionCount += 1;
-    }
+  const projections = allLegacyProjections();
+  assert.equal(projections.length, 120);
+  for (const projection of projections) {
+    assert.deepEqual(
+      parseModelExamplesContent(projection.content, projection.slug, projection.locale),
+      projection.content,
+    );
   }
+});
 
-  assert.equal(projectionCount, 120);
+test('stored Examples content is exact legacy parity with zero corrections', () => {
+  for (const projection of allLegacyProjections()) {
+    const stored = parseModelExamplesContent(
+      readDocument(projection.locale, projection.slug).examples,
+      projection.slug,
+      projection.locale,
+    );
+    assert.deepEqual(stored, projection.content, `${projection.slug}/${projection.locale}`);
+  }
 });

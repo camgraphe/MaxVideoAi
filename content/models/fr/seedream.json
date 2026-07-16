@@ -420,5 +420,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "seedream",
+    "section": {
+      "title": "Exemples Seedream 5.0 Lite",
+      "intro": "Explorez des rendus de la communauté et voyez comment Seedream 5.0 Lite se comporte dans des workflows MaxVideoAI.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recréer ce rendu →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "character",
+        "label": "Personnage"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "batch",
+        "label": "Batch"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Exemples image",
+        "body": "Prompts stills adaptés à Seedream 5.0 Lite.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typographie",
+        "body": "Texte exact, hiérarchie et placement restent visibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Retouches référence",
+        "body": "Gardez produit, identité, palette ou layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Validez en 2K puis finalisez en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt production",
+        "body": "Références possédées et garde-fous intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Still produit de référence",
+        "category": "Produit · 2K",
+        "aspectRatio": "2K",
+        "alt": "Still produit Seedream préparé comme référence propre",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "character",
+        "title": "Planche personnage",
+        "category": "Personnage",
+        "aspectRatio": "2-10 refs",
+        "alt": "Planche Seedream avec plusieurs vues cohérentes du même personnage",
+        "tags": [
+          "character"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Retouche image propre",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Retouche Seedream qui préserve forme, logo et proportions",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "batch",
+        "title": "Batch storyboard",
+        "category": "Batch",
+        "aspectRatio": "4 images",
+        "alt": "Batch Seedream de quatre images cohérentes pour storyboard",
+        "tags": [
+          "batch"
+        ]
+      }
+    ]
   }
 }

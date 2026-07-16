@@ -441,5 +441,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "luma-uni-1-max",
+    "section": {
+      "title": "Luma Uni-1 Max image examples",
+      "intro": "Use examples to plan hero stills, product edits and reference-led campaign assets.",
+      "defaultCtaLabel": "Open the image workspace",
+      "recreateLabel": "Recreate this image"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "typography",
+        "label": "Typography"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "High-fidelity stills",
+        "body": "Luma Uni-1 Max is best tested with a focused visual direction, not overloaded prompts.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Guided edits",
+        "body": "Edit a source image while keeping product shape, palette, and layout readable.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-3",
+        "title": "References",
+        "body": "Use start or style references when consistency matters.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-4",
+        "title": "Detail and text",
+        "body": "Useful for posters, packshots, and short typography tests.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-5",
+        "title": "Video-ready",
+        "body": "Use the strongest stills as start images for Ray 3.2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "High-fidelity product still",
+        "category": "Product",
+        "aspectRatio": "2K · 3:2",
+        "alt": "Luma Uni-1 Max premium skincare product still",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Readable poster concept",
+        "category": "Typography",
+        "aspectRatio": "Poster",
+        "alt": "Luma Uni-1 Max poster with readable NIGHT GARDEN headline",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Detailed product edit",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Luma Uni-1 Max edit improving material realism and edge detail",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Campaign reference still",
+        "category": "References",
+        "aspectRatio": "2 refs",
+        "alt": "Luma Uni-1 Max launch still guided by product and mood references",
+        "tags": [
+          "reference"
+        ]
+      }
+    ]
   }
 }

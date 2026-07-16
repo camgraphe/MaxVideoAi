@@ -424,5 +424,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2",
+    "section": {
+      "title": "Luma Ray 2 examples",
+      "intro": "Use the examples rail to compare net-new generation, still animation, modify passes, and delivery reframes inside the same Ray 2 family.",
+      "defaultCtaLabel": "View all Luma examples ->",
+      "recreateLabel": "Recreate this shot ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Premium Luma renders",
+        "body": "Compare generation, start-image motion, Modify and Reframe inside Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a render",
+        "body": "Open Ray 2 in the app and reuse prompt, aspect ratio and duration.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Silent output",
+        "body": "Ray 2 does not generate native audio on this MaxVideoAI route.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image and edit",
+        "body": "Animate a start frame, modify a source clip or reframe an approved master.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Ray 2 final route",
+        "body": "Use Ray 2 for selected shots and final delivery variants.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

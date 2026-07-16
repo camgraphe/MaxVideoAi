@@ -449,5 +449,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana-pro",
+    "section": {
+      "title": "Nano Banana Pro examples",
+      "intro": "Recent 2K/4K stills and edits crafted for campaign boards and product reveals.",
+      "defaultCtaLabel": "View image examples →",
+      "recreateLabel": "Recreate this still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "campaign",
+        "label": "Campaign"
+      },
+      {
+        "id": "typography",
+        "label": "Typography"
+      },
+      {
+        "id": "reference",
+        "label": "Reference edit"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Still image examples",
+        "body": "Prompt patterns tailored to Nano Banana Pro.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typography control",
+        "body": "Exact copy, hierarchy and placement stay explicit.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Reference edits",
+        "body": "Keep product identity, palette, layout or style.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "4K finals",
+        "body": "Validate at 2K, then finish at 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Owned references and built-in guardrails.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "campaign",
+        "title": "2K campaign still",
+        "category": "Campaign",
+        "aspectRatio": "2K",
+        "alt": "Nano Banana Pro campaign image with ad layout",
+        "tags": [
+          "campaign"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Typography poster",
+        "category": "Typography",
+        "aspectRatio": "4K",
+        "alt": "Nano Banana Pro poster with readable typography",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Reference edit",
+        "category": "Reference edit",
+        "aspectRatio": "Edit",
+        "alt": "Nano Banana Pro product edit guided by references",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "2K to 4K final",
+        "category": "4K final",
+        "aspectRatio": "4K",
+        "alt": "Nano Banana Pro campaign asset finalized in 4K",
+        "tags": [
+          "final"
+        ]
+      }
+    ]
   }
 }

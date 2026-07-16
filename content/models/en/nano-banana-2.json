@@ -395,5 +395,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana-2",
+    "section": {
+      "title": "Nano Banana 2 examples",
+      "intro": "Explore real community outputs and see how Nano Banana 2 performs inside MaxVideoAI workflows.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recreate this still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "grounded",
+        "label": "Grounded"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      },
+      {
+        "id": "wide",
+        "label": "Wide ratio"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Still image examples",
+        "body": "Prompt patterns tailored to Nano Banana 2.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typography control",
+        "body": "Exact copy, hierarchy and placement stay explicit.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Reference edits",
+        "body": "Keep product identity, palette, layout or style.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "4K finals",
+        "body": "Validate at 2K, then finish at 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Owned references and built-in guardrails.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "grounded",
+        "title": "Grounded product scene",
+        "category": "Grounded · 1K",
+        "aspectRatio": "1K",
+        "alt": "Nano Banana 2 grounded product launch image",
+        "tags": [
+          "grounded"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Controlled product edit",
+        "category": "Edit",
+        "aspectRatio": "Edit",
+        "alt": "Nano Banana 2 product edit with keep-and-change constraints",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Multi-reference edit",
+        "category": "References",
+        "aspectRatio": "Refs",
+        "alt": "Nano Banana 2 image combining multiple product references",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "wide",
+        "title": "Wide-ratio 4K still",
+        "category": "Wide ratio",
+        "aspectRatio": "4K · 21:9",
+        "alt": "Nano Banana 2 wide 4K still image",
+        "tags": [
+          "wide"
+        ]
+      }
+    ]
   }
 }

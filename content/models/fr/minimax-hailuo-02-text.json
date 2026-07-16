@@ -535,5 +535,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "Galerie d’exemples MiniMax Hailuo 02",
+      "intro": "Voyez des runs texte et image rendus avec la même configuration que vous avez.",
+      "defaultCtaLabel": "Voir tous les exemples MiniMax Hailuo 02 →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus brouillon",
+        "body": "Voyez les tests mouvement légers possibles avec Hailuo 02.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer un test",
+        "body": "Ouvrez l’app et réutilisez le prompt ou l’image de départ.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Sortie silencieuse",
+        "body": "Pas d’audio natif sur cette route ; ajoutez son et voix plus tard.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Tests physiques",
+        "body": "Vérifiez force, collisions, tissu, eau et contact au sol.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Route de brouillon",
+        "body": "512P/768P ici ; passez les plans validés sur une route finale.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

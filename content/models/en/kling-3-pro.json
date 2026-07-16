@@ -465,5 +465,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-pro",
+    "section": {
+      "title": "Kling 3 Pro examples",
+      "intro": "Recent Kling 3 Pro renders with multi-shot prompts, Elements, and voice control.",
+      "defaultCtaLabel": "View all Kling 3 Pro examples →",
+      "recreateLabel": "Recreate this shot →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Controlled Pro renders",
+        "body": "See premium sequences possible with Kling 3 Pro — current Kling model for multi-shot video and scene control.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a render",
+        "body": "Open the app with Kling 3 Pro and reuse the setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio + voices",
+        "body": "Use native audio, lip sync and voice IDs when the shot needs it.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Elements + end frame",
+        "body": "Stabilize subject, product and landing frame with Elements.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Quality pass",
+        "body": "Use Pro when fidelity and stability matter more than draft cost.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

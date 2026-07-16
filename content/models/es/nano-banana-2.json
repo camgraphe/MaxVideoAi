@@ -377,5 +377,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana-2",
+    "section": {
+      "title": "Ejemplos de Nano Banana 2",
+      "intro": "Explora resultados de la comunidad y mira cómo Nano Banana 2 funciona en flujos de MaxVideoAI.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recrear este resultado →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "grounded",
+        "label": "Guiado"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "Referencias"
+      },
+      {
+        "id": "wide",
+        "label": "Ratio amplio"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Ejemplos de imagen",
+        "body": "Prompts still adaptados a Nano Banana 2.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Tipografía",
+        "body": "Texto exacto, jerarquía y ubicación legibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Ediciones con referencia",
+        "body": "Mantén producto, identidad, paleta o layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Valida en 2K y termina en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Referencias propias y controles integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "grounded",
+        "title": "Escena de producto guiada",
+        "category": "Guiado · 1K",
+        "aspectRatio": "1K",
+        "alt": "Imagen Nano Banana 2 guiada por contexto para lanzamiento de producto",
+        "tags": [
+          "grounded"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Edit controlado de producto",
+        "category": "Edit",
+        "aspectRatio": "Edit",
+        "alt": "Edición de producto Nano Banana 2 con restricciones claras",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Edit multi-referencia",
+        "category": "Referencias",
+        "aspectRatio": "Refs",
+        "alt": "Imagen Nano Banana 2 que combina varias referencias de producto",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "wide",
+        "title": "Still amplio 4K",
+        "category": "Ratio amplio",
+        "aspectRatio": "4K · 21:9",
+        "alt": "Still Nano Banana 2 en formato amplio 4K",
+        "tags": [
+          "wide"
+        ]
+      }
+    ]
   }
 }

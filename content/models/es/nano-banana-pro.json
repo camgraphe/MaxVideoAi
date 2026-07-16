@@ -431,5 +431,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "nano-banana-pro",
+    "section": {
+      "title": "Ejemplos de Nano Banana Pro",
+      "intro": "Stills 2K/4K recientes y edits creados para boards de campaña y reveals de producto.",
+      "defaultCtaLabel": "Ver ejemplos de imagen →",
+      "recreateLabel": "Recrear este still →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "campaign",
+        "label": "Campaña"
+      },
+      {
+        "id": "typography",
+        "label": "Tipografía"
+      },
+      {
+        "id": "reference",
+        "label": "Referencia"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Ejemplos de imagen",
+        "body": "Prompts still adaptados a Nano Banana Pro – 4K Texto→Imagen y edición.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Tipografía",
+        "body": "Texto exacto, jerarquía y ubicación legibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Ediciones con referencia",
+        "body": "Mantén producto, identidad, paleta o layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Valida en 2K y termina en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Referencias propias y controles integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "campaign",
+        "title": "Still de campaña 2K",
+        "category": "Campaña",
+        "aspectRatio": "2K",
+        "alt": "Imagen de campaña Nano Banana Pro con layout publicitario",
+        "tags": [
+          "campaign"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Póster tipográfico",
+        "category": "Tipografía",
+        "aspectRatio": "4K",
+        "alt": "Póster Nano Banana Pro con tipografía legible",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Edición con referencia",
+        "category": "Referencia",
+        "aspectRatio": "Edit",
+        "alt": "Edición de producto Nano Banana Pro guiada por referencia",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "Final 2K a 4K",
+        "category": "Final 4K",
+        "aspectRatio": "4K",
+        "alt": "Asset de campaña Nano Banana Pro finalizado en 4K",
+        "tags": [
+          "final"
+        ]
+      }
+    ]
   }
 }

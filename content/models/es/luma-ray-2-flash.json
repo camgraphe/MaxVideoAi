@@ -423,5 +423,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-2-flash",
+    "section": {
+      "title": "Ejemplos Luma Ray 2 Flash",
+      "intro": "Usa el rail de ejemplos para comparar generate rapido, pases Modify y reframes de entrega antes de decidir si la toma se queda en Flash o sube a Ray 2.",
+      "defaultCtaLabel": "Ver todos los ejemplos Luma ->",
+      "recreateLabel": "Recrear esta toma ->"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Borradores Luma rápidos",
+        "body": "Compara rápido dirección, encuadre y versiones Modify antes de Ray 2.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una prueba",
+        "body": "Abre la app con Ray 2 Flash y reutiliza la receta del borrador.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Salida sin audio",
+        "body": "Ray 2 Flash no genera audio nativo en esta ruta.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start image y edición",
+        "body": "Anima una imagen inicial o prueba Modify/Reframe sobre video fuente.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Upgrade a Ray 2",
+        "body": "Usa Flash para iterar y finaliza los ganadores en Ray 2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

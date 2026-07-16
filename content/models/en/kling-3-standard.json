@@ -447,5 +447,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-standard",
+    "section": {
+      "title": "Kling 3 Standard examples",
+      "intro": "Recent Kling 3 Standard renders with multi-shot prompts, Elements, and optional audio.",
+      "defaultCtaLabel": "View all Kling 3 Standard examples →",
+      "recreateLabel": "Recreate this shot →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Storyboard drafts",
+        "body": "See multi-shot tests possible with Kling 3 Standard — current Kling variant for lower-cost multi-shot video.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a variant",
+        "body": "Open the app with Kling 3 Standard and reuse the setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Test with native audio or keep the draft silent for post.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Source + end frame",
+        "body": "Anchor the subject with a source image and optional end frame.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Move to Pro",
+        "body": "Move approved directions to Pro for stronger fidelity.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

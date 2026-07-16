@@ -231,5 +231,73 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "seedream-5-0-pro",
+    "section": {
+      "title": "Ejemplos de Seedream 5.0 Pro",
+      "intro": "Explora resultados de la comunidad y mira cómo Seedream 5.0 Pro funciona en flujos de MaxVideoAI.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recrear este resultado →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Resultados reales",
+        "body": "Mira qué es posible con Seedream 5.0 Pro.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una toma",
+        "body": "Abre la app con un clic y reutiliza la configuración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio nativo",
+        "body": "Diálogo, ambiente y efectos de sonido generados en sincronía.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuidad entre tomas",
+        "body": "Mantiene personajes, estilo y escena consistentes.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Controles de seguridad y filtros integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

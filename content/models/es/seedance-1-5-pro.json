@@ -445,5 +445,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-1-5-pro",
+    "section": {
+      "title": "Galería de ejemplos Seedance 1.5 Pro",
+      "intro": "Renders recientes de Seedance 1.5 Pro con camera_fixed, seed control y end frames.",
+      "defaultCtaLabel": "Ver todos los ejemplos Seedance 1.5 Pro →",
+      "recreateLabel": "Recrear esta toma →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Renders camera_fixed",
+        "body": "Mira tomas bloqueadas posibles con Seedance 1.5 Pro — modelo Seedance anterior aún compatible para clips cinematográficos cortos.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una variante",
+        "body": "Abre la app con el mismo seed, ratio y ajuste de cámara.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Mantén audio nativo o apágalo para reducir coste.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Frames inicial/final",
+        "body": "Usa una imagen inicial y un final opcional en I2V.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Ruta legacy controlada",
+        "body": "Útil para pruebas Seedance 1.5 repetibles antes de migrar a 2.0.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

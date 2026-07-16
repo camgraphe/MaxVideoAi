@@ -447,5 +447,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-3-standard",
+    "section": {
+      "title": "Galería de ejemplos Kling 3 Standard",
+      "intro": "Renders recientes de Kling 3 Standard con multi‑shot, Elements y audio opcional.",
+      "defaultCtaLabel": "Ver todos los ejemplos Kling 3 Standard →",
+      "recreateLabel": "Recrear esta toma →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Borradores storyboard",
+        "body": "Mira pruebas multi-shot posibles con Kling 3 Standard — variante Kling actual para video multi-shot a menor costo.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una variante",
+        "body": "Abre la app con Kling 3 Standard y reutiliza el setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Prueba con audio nativo o mantén el borrador sin sonido.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Imagen fuente + final",
+        "body": "Ancla el sujeto con imagen fuente y frame final opcional.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Pasar a Pro",
+        "body": "Mueve direcciones aprobadas a Pro para más fidelidad.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

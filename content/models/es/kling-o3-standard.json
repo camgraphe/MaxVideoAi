@@ -302,5 +302,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "kling-o3-standard",
+    "section": {
+      "title": "Borradores de referencia Kling 3.0 Omni Standard",
+      "intro": "Revisa ejemplos de menor costo con storyboard, imágenes de referencia y V2V desde video fuente antes de pasar los planos aprobados a Pro o 4K. Standard sirve para probar guía visual sin forzar la primera imagen subida como frame inicial.",
+      "defaultCtaLabel": "Ver ejemplos Kling ->",
+      "recreateLabel": "Recrear este resultado →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Resultados reales",
+        "body": "Mira qué es posible con Kling 3.0 Omni Standard para borradores guiados por referencias.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una toma",
+        "body": "Abre la app con un clic y reutiliza la configuración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio nativo",
+        "body": "Diálogo, ambiente y efectos de sonido generados en sincronía.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuidad entre tomas",
+        "body": "Mantiene personajes, estilo y escena consistentes.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Controles de seguridad y filtros integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

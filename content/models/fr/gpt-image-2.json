@@ -373,5 +373,138 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "gpt-image-2",
+    "section": {
+      "title": "Exemples GPT Image 2",
+      "intro": "Explorez des rendus de la communauté et voyez comment GPT Image 2 se comporte dans des workflows MaxVideoAI.",
+      "defaultCtaLabel": null,
+      "recreateLabel": "Recréer ce rendu →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "product",
+        "label": "Produit"
+      },
+      {
+        "id": "typography",
+        "label": "Texte"
+      },
+      {
+        "id": "ui",
+        "label": "UI"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "mask",
+        "label": "Masque"
+      },
+      {
+        "id": "final",
+        "label": "4K final"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Exemples image",
+        "body": "Prompts stills adaptés à GPT Image 2.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Typographie",
+        "body": "Texte exact, hiérarchie et placement restent visibles.",
+        "icon": "type"
+      },
+      {
+        "id": "proof-3",
+        "title": "Retouches référence",
+        "body": "Gardez produit, identité, palette ou layout.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-4",
+        "title": "Finales 4K",
+        "body": "Validez en 2K puis finalisez en 4K.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Prêt production",
+        "body": "Références possédées et garde-fous intégrés.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "Packshot produit texte",
+        "category": "Produit",
+        "aspectRatio": "1024x768 · High",
+        "alt": "Packshot GPT Image 2 avec label produit lisible",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "typography",
+        "title": "Poster typographique",
+        "category": "Texte lisible",
+        "aspectRatio": "4K",
+        "alt": "Poster GPT Image 2 avec hiérarchie typographique nette",
+        "tags": [
+          "typography"
+        ]
+      },
+      {
+        "id": "ui",
+        "title": "Mockup UI",
+        "category": "UI",
+        "aspectRatio": "1920x1080",
+        "alt": "Mockup d’écran GPT Image 2 avec interface lisible",
+        "tags": [
+          "ui"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Retouche produit",
+        "category": "Edit image",
+        "aspectRatio": "Auto",
+        "alt": "Retouche GPT Image 2 qui préserve produit et label",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "mask",
+        "title": "Edit guidé par masque",
+        "category": "Masque",
+        "aspectRatio": "Mask URL",
+        "alt": "Retouche GPT Image 2 limitée à une zone masquée",
+        "tags": [
+          "mask"
+        ]
+      },
+      {
+        "id": "final",
+        "title": "Hero still 4K",
+        "category": "Final",
+        "aspectRatio": "3840x2160",
+        "alt": "Still hero GPT Image 2 en 4K avec détails produit nets",
+        "tags": [
+          "final"
+        ]
+      }
+    ]
   }
 }

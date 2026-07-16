@@ -535,5 +535,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "minimax-hailuo-02-text",
+    "section": {
+      "title": "Galería de ejemplos MiniMax Hailuo 02",
+      "intro": "Mira renders de texto e imagen con la misma configuración que tienes.",
+      "defaultCtaLabel": "Ver todos los ejemplos MiniMax Hailuo 02 →",
+      "recreateLabel": "Recrear este plano →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Renders de borrador",
+        "body": "Mira pruebas ligeras de movimiento posibles con Hailuo 02.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una prueba",
+        "body": "Abre la app y reutiliza prompt o imagen inicial.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Salida sin audio",
+        "body": "Esta ruta no tiene audio nativo; añade sonido y voz después.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Pruebas físicas",
+        "body": "Revisa fuerza, colisiones, tela, agua y contacto con el suelo.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Ruta de borrador",
+        "body": "512P/768P aquí; pasa los planos aprobados a una ruta final.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

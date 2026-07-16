@@ -445,5 +445,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-1-5-pro",
+    "section": {
+      "title": "Galerie d’exemples Seedance 1.5 Pro",
+      "intro": "Rendus récents Seedance 1.5 Pro avec camera_fixed, seed control et images de fin.",
+      "defaultCtaLabel": "Voir tous les exemples Seedance 1.5 Pro →",
+      "recreateLabel": "Recréer ce plan →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Tous"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinématique"
+      },
+      {
+        "id": "product",
+        "label": "Produit / Pub"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activé"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Rendus camera_fixed",
+        "body": "Voyez les plans verrouillés possibles avec Seedance 1.5 Pro — ancien modèle Seedance encore pris en charge pour des clips cinématiques courts.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recréer une variante",
+        "body": "Ouvrez l’app avec le même seed, ratio et réglage caméra.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Gardez l’audio natif ou coupez-le pour réduire le coût.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Images départ/fin",
+        "body": "Utilisez une image initiale et une fin optionnelle en I2V.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Route legacy contrôlée",
+        "body": "Idéal pour tests Seedance 1.5 répétables avant migration 2.0.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

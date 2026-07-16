@@ -445,5 +445,110 @@
         }
       ]
     }
+  },
+  "examples": {
+    "modelSlug": "luma-uni-1",
+    "section": {
+      "title": "Luma Uni-1 image examples",
+      "intro": "Use examples to plan source edits, product references and still-image handoffs.",
+      "defaultCtaLabel": "Open the image workspace",
+      "recreateLabel": "Recreate this image"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "id": "edit",
+        "label": "Edit"
+      },
+      {
+        "id": "reference",
+        "label": "References"
+      },
+      {
+        "id": "campaign",
+        "label": "Direction"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Clean stills",
+        "body": "Luma Uni-1 is best tested with a focused visual direction, not overloaded prompts.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-2",
+        "title": "Guided edits",
+        "body": "Edit a source image while keeping product shape, palette, and layout readable.",
+        "icon": "pen"
+      },
+      {
+        "id": "proof-3",
+        "title": "References",
+        "body": "Use start or style references when consistency matters.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-4",
+        "title": "Simple ratios",
+        "body": "Validate product, square, vertical, or 16:9 stills before video.",
+        "icon": "maximize"
+      },
+      {
+        "id": "proof-5",
+        "title": "Video-ready",
+        "body": "Use the strongest stills as start images for Ray 3.2.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": [
+      {
+        "id": "product",
+        "title": "2K product still",
+        "category": "Product",
+        "aspectRatio": "2K · 16:9",
+        "alt": "Luma Uni-1 clean product still with simple studio light",
+        "tags": [
+          "product"
+        ]
+      },
+      {
+        "id": "edit",
+        "title": "Source image edit",
+        "category": "Edit",
+        "aspectRatio": "Image edit",
+        "alt": "Luma Uni-1 edit preserving product shape while changing studio tone",
+        "tags": [
+          "edit"
+        ]
+      },
+      {
+        "id": "reference",
+        "title": "Reference-led still",
+        "category": "References",
+        "aspectRatio": "2 refs",
+        "alt": "Luma Uni-1 still guided by product and mood references",
+        "tags": [
+          "reference"
+        ]
+      },
+      {
+        "id": "campaign",
+        "title": "Visual research still",
+        "category": "Direction",
+        "aspectRatio": "1:1",
+        "alt": "Luma Uni-1 retail research still for product direction",
+        "tags": [
+          "campaign"
+        ]
+      }
+    ]
   }
 }

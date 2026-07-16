@@ -537,5 +537,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "wan-2-5",
+    "section": {
+      "title": "Galería de ejemplos Wan 2.5",
+      "intro": "Clips generados con la configuración exacta disponible en MaxVideoAI.",
+      "defaultCtaLabel": "Ver todos los ejemplos Wan 2.5 →",
+      "recreateLabel": "Recrear esta toma →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "Todo"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinemático"
+      },
+      {
+        "id": "product",
+        "label": "Producto / Anuncio"
+      },
+      {
+        "id": "action",
+        "label": "Acción"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio activado"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Resultados reales",
+        "body": "Mira qué es posible con Wan 2.5 – Texto o imagen a video con audio opcional en MaxVideoAI (480p–1080p, 5–10 s).",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recrear una toma",
+        "body": "Abre la app con un clic y reutiliza la configuración.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio nativo",
+        "body": "Diálogo, ambiente y efectos de sonido generados en sincronía.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Continuidad entre tomas",
+        "body": "Mantiene personajes, estilo y escena consistentes.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Listo para producción",
+        "body": "Controles de seguridad y filtros integrados.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

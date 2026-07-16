@@ -82,6 +82,7 @@ export type EngineOverlay = {
   custom?: Record<string, unknown>;
   prompting?: unknown;
   decision?: unknown;
+  examples?: unknown;
 };
 
 export type LocalizedPrompt = {
@@ -117,6 +118,7 @@ export type EngineLocalizedContent = {
   custom?: Record<string, unknown>;
   prompting?: unknown;
   decision?: unknown;
+  examples?: unknown;
 };
 
 function mergeSeo(base?: EngineOverlay['seo'], overlay?: EngineOverlay['seo']) {
@@ -231,5 +233,6 @@ export function mergeEngineLocalizedContent(
     custom: overlay.custom ?? base.custom,
     prompting: overlay.prompting,
     decision: overlay.decision,
+    examples: overlay.examples,
   };
 }

@@ -53,6 +53,8 @@ const PROJECT_ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const LUMA_AGENT_TEMPLATE_SLUGS = ['luma-ray-3-2', 'luma-uni-1', 'luma-uni-1-max'] as const;
 const LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS =
   /\b(?:fallback|fallback-safe|fal-reference|direct-only|layout|stills?|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
+const LOCALIZED_LUMA_AGENT_EXAMPLES_FORBIDDEN_TERMS =
+  /\b(?:fallback|fallback-safe|fal-reference|direct-only|layout|hero|display pricing|workspace|Workflow|workflows|web-grounded|checks?|loop|loops|labels|asset|assets)\b/i;
 const LOCALIZED_CONTENT_SKIP_KEYS = new Set(['brand', 'href', 'icon', 'id', 'image', 'kind', 'modelSlug']);
 
 function getEngine(slug: (typeof MIGRATED_TEMPLATE_SLUGS)[number]) {
@@ -90,6 +92,7 @@ function readModelContentJson(locale: (typeof LOCALES)[number], slug: string) {
       specSections?: Array<Record<string, unknown>>;
     };
     prompting?: unknown;
+    examples?: unknown;
   };
 }
 
@@ -230,11 +233,19 @@ test('Luma Agents localized FR and ES copy avoids internal English launch terms'
       }
 
       const content = readModelContentJson(locale, slug);
-      for (const value of collectCustomerFacingStrings(content, LOCALIZED_CONTENT_SKIP_KEYS)) {
+      const { examples, ...contentWithoutExamples } = content;
+      for (const value of collectCustomerFacingStrings(contentWithoutExamples, LOCALIZED_CONTENT_SKIP_KEYS)) {
         assert.doesNotMatch(
           value,
           LOCALIZED_LUMA_AGENT_COPY_FORBIDDEN_TERMS,
           `${slug}/${locale} localized content should avoid internal English term in "${value}"`
+        );
+      }
+      for (const value of collectCustomerFacingStrings(examples, LOCALIZED_CONTENT_SKIP_KEYS)) {
+        assert.doesNotMatch(
+          value,
+          LOCALIZED_LUMA_AGENT_EXAMPLES_FORBIDDEN_TERMS,
+          `${slug}/${locale} localized Examples should avoid internal English term in "${value}"`
         );
       }
     }
@@ -242,6 +253,7 @@ test('Luma Agents localized FR and ES copy avoids internal English launch terms'
 });
 
 test('localized content checks scan prompting customer copy but skip semantic kind enums', () => {
+  assert.equal(LOCALIZED_CONTENT_SKIP_KEYS.has('examples'), false);
   assert.equal(LOCALIZED_CONTENT_SKIP_KEYS.has('prompting'), false);
   assert.equal(LOCALIZED_CONTENT_SKIP_KEYS.has('kind'), true);
   const content = readModelContentJson('fr', 'luma-uni-1');

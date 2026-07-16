@@ -445,5 +445,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "seedance-1-5-pro",
+    "section": {
+      "title": "Seedance 1.5 Pro examples",
+      "intro": "Recent Seedance 1.5 Pro renders using camera_fixed, seed control, and end frames.",
+      "defaultCtaLabel": "View all Seedance 1.5 Pro examples →",
+      "recreateLabel": "Recreate this shot →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Camera-fixed renders",
+        "body": "See locked-camera shots possible with Seedance 1.5 Pro — supported older Seedance model for short cinematic clips.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate a variant",
+        "body": "Open the app with the same seed, ratio and camera setting.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Audio on/off",
+        "body": "Keep native audio or switch it off for a lower quote.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Start/end frames",
+        "body": "Use a start image and optional end frame in I2V.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Controlled legacy route",
+        "body": "Useful for repeatable Seedance 1.5 tests before moving to 2.0.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

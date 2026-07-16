@@ -450,5 +450,69 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "luma-ray-3-2",
+    "section": {
+      "title": "Luma Ray 3.2 examples",
+      "intro": "Use examples to study Modify prompts, keyframed source-video changes, Reframe delivery setups and short supporting generation tests.",
+      "defaultCtaLabel": "View all Luma examples",
+      "recreateLabel": "Recreate this shot"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Modify source clips",
+        "body": "Study how Ray 3.2 changes a clip without losing its timing.",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Reframe delivery",
+        "body": "Recreate a vertical, square, or wide cut from the same approved master.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Silent output",
+        "body": "Ray 3.2 does not generate native audio on this MaxVideoAI route.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Guide frames",
+        "body": "Use one frame or indexed keyframes to steer specific source moments.",
+        "icon": "image"
+      },
+      {
+        "id": "proof-5",
+        "title": "Cost control",
+        "body": "Validate at 5s / 540p or 720p before 1080p passes.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }

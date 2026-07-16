@@ -537,5 +537,73 @@
       }
     },
     "imageExamples": null
+  },
+  "examples": {
+    "modelSlug": "wan-2-5",
+    "section": {
+      "title": "Wan 2.5 Example Gallery",
+      "intro": "Clips generated with the exact configuration you have access to in MaxVideoAI.",
+      "defaultCtaLabel": "View all Wan 2.5 examples →",
+      "recreateLabel": "Recreate this shot →"
+    },
+    "filters": [
+      {
+        "id": "all",
+        "label": "All"
+      },
+      {
+        "id": "cinematic",
+        "label": "Cinematic"
+      },
+      {
+        "id": "product",
+        "label": "Product / Ad"
+      },
+      {
+        "id": "action",
+        "label": "Action"
+      },
+      {
+        "id": "vertical",
+        "label": "Vertical"
+      },
+      {
+        "id": "audio",
+        "label": "Audio on"
+      }
+    ],
+    "proofItems": [
+      {
+        "id": "proof-1",
+        "title": "Real community renders",
+        "body": "See what's possible with Wan 2.5 – Text or Image to Video with Optional Audio in MaxVideoAI (480p–1080p, 5–10s).",
+        "icon": "sparkles"
+      },
+      {
+        "id": "proof-2",
+        "title": "Recreate any shot",
+        "body": "Jump into the app with one click and reuse the setup.",
+        "icon": "zap"
+      },
+      {
+        "id": "proof-3",
+        "title": "Native audio",
+        "body": "Dialogue, ambience and SFX generated in sync.",
+        "icon": "audio"
+      },
+      {
+        "id": "proof-4",
+        "title": "Multi-shot continuity",
+        "body": "Keep characters, style and scene consistency across sequences.",
+        "icon": "users"
+      },
+      {
+        "id": "proof-5",
+        "title": "Production-aware",
+        "body": "Built-in guardrails and safety filters for responsible review.",
+        "icon": "shield"
+      }
+    ],
+    "fallbackItems": null
   }
 }
