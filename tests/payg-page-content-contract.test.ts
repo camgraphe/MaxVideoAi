@@ -16,6 +16,9 @@ const contentRoot = join(
   process.cwd(),
   'frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content',
 );
+const routeRoot = join(contentRoot, '..');
+const pagePath = join(routeRoot, 'page.tsx');
+const jsonLdPath = join(routeRoot, '_lib/payg-jsonld.ts');
 const locales = ['en', 'fr', 'es'] as const satisfies readonly AppLocale[];
 
 function read(path: string): string {
@@ -57,6 +60,18 @@ test('Pay-as-you-go content is complete, exact-locale and structurally identical
     () => getPayAsYouGoContent('de' as AppLocale),
     /Missing complete Pay-as-you-go content for locale "de"/,
   );
+});
+
+test('metadata and JSON-LD read exact-locale editorial content', () => {
+  const pageSource = read(pagePath);
+  const jsonLdSource = read(jsonLdPath);
+  assert.match(pageSource, /getPayAsYouGoContent\(locale\)/);
+  assert.match(pageSource, /const meta = getPayAsYouGoContent\(locale\)\.metadata/);
+  assert.match(pageSource, /copy: content\.jsonLd/);
+  assert.doesNotMatch(pageSource, /const PAYG_META/);
+  assert.doesNotMatch(jsonLdSource, /\ben:\s*\{|\bes:\s*\{|\bfr:\s*\{/);
+  assert.match(jsonLdSource, /copy: PayAsYouGoContent\['jsonLd'\]/);
+  assert.match(jsonLdSource, /price: '10\.00'/);
 });
 
 test('semantic ID inventories are fixed and exhaustive', () => {

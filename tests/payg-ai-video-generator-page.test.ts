@@ -127,14 +127,13 @@ test('pay-as-you-go route is discoverable by middleware and query cleanup', () =
   assert.match(read(llmsPath), /https:\/\/maxvideoai\.com\/pay-as-you-go-ai-video-generator/);
 });
 
-test('pay-as-you-go page localizes its metadata and every route-local content surface', () => {
+test('pay-as-you-go page localizes every route-local content surface', () => {
   const pageSource = read(pagePath);
   const viewSource = read(viewPath);
   const dataSource = read(dataPath);
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.match(pageSource, /PAYG_META\[locale\]/);
   assert.match(pageSource, /<PayAsYouGoPageView locale=\{locale\}/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(locale\)/);
   assert.match(dataSource, /PAYG_COPY_BY_LOCALE\[locale\]/);
@@ -143,9 +142,6 @@ test('pay-as-you-go page localizes its metadata and every route-local content su
   assert.match(viewSource, /getPayAsYouGoViewCopy\(locale\)/);
   assert.match(showcaseSource, /locale: AppLocale/);
   assert.match(showcaseDataSource, /locale: AppLocale/);
-  assert.match(read(jsonLdPath), /buildPayAsYouGoServiceJsonLd\(\{ canonical, locale = 'en' \}/);
-  assert.match(read(jsonLdPath), /Generador de video con IA de pago por uso/);
-  assert.match(read(jsonLdPath), /Générateur de vidéos IA sans abonnement/);
 });
 
 test('pay-as-you-go runtime data uses market-adapted Spanish and French copy', () => {

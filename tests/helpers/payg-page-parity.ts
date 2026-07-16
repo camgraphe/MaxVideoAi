@@ -4,6 +4,7 @@ import type { AppLocale } from '../../frontend/i18n/locales.ts';
 import { I18nProvider } from '../../frontend/lib/i18n/I18nProvider.tsx';
 import { buildMetadataUrls } from '../../frontend/lib/metadataUrls.ts';
 import { PayAsYouGoPageView } from '../../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_components/PayAsYouGoPageView.tsx';
+import { getPayAsYouGoContent } from '../../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/index.ts';
 import { buildPayAsYouGoPageData, PAYG_PAGE_PATH } from '../../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-page-data.ts';
 import { buildPayAsYouGoBreadcrumbJsonLd, buildPayAsYouGoServiceJsonLd, buildPayAsYouGoWebApplicationJsonLd } from '../../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-jsonld.ts';
 import type { PayAsYouGoShowcaseVideo } from '../../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-video-showcase.ts';
@@ -68,6 +69,7 @@ export async function captureCurrentPaygManifest(
   const originalNodeEnv = process.env.NODE_ENV;
   process.env.NODE_ENV = 'production';
   try {
+    const content = getPayAsYouGoContent(locale);
     const data = buildPayAsYouGoPageData(locale);
     const markup = renderToStaticMarkup(React.createElement(
       I18nProvider,
@@ -75,13 +77,14 @@ export async function captureCurrentPaygManifest(
       React.createElement(PayAsYouGoPageView, { locale, data, showcaseVideos: videos }),
     ));
     const canonical = buildMetadataUrls(locale, undefined, { englishPath: PAYG_PAGE_PATH }).canonical;
+    const jsonLd = {
+      breadcrumb: buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale, copy: content.jsonLd }),
+      service: buildPayAsYouGoServiceJsonLd({ canonical, copy: content.jsonLd }),
+      webApplication: buildPayAsYouGoWebApplicationJsonLd({ canonical, copy: content.jsonLd }),
+    };
     return {
       metadata: plain(await generateMetadata({ params: Promise.resolve({ locale }) })),
-      jsonLd: plain({
-        breadcrumb: buildPayAsYouGoBreadcrumbJsonLd({ canonical, locale }),
-        service: buildPayAsYouGoServiceJsonLd({ canonical, locale }),
-        webApplication: buildPayAsYouGoWebApplicationJsonLd({ canonical, locale }),
-      }),
+      jsonLd,
       ...semanticHtml(markup),
     };
   } finally {

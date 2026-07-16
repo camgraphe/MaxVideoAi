@@ -16,6 +16,7 @@ import {
   buildPayAsYouGoServiceJsonLd,
   buildPayAsYouGoWebApplicationJsonLd,
 } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_lib/payg-jsonld.ts';
+import { getPayAsYouGoContent } from '../frontend/app/(localized)/[locale]/(marketing)/pay-as-you-go-ai-video-generator/_content/index.ts';
 import {
   buildModelsCatalogBreadcrumbJsonLd,
   buildModelsCatalogFaqJsonLd,
@@ -260,6 +261,7 @@ function readBlogMdxJsonLdSchemas(): SchemaCase {
 
 function buildAuditedSchemaCases(): SchemaCase[] {
   const seedance = getRequiredEngine('seedance-2-0');
+  const paygJsonLdCopy = getPayAsYouGoContent('en').jsonLd;
   const blogLocalization = buildBlogPostLocalization({
     canonicalSlug: 'schema-audit-sample',
     locale: 'en',
@@ -351,12 +353,15 @@ function buildAuditedSchemaCases(): SchemaCase[] {
         buildPayAsYouGoBreadcrumbJsonLd({
           canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
           locale: 'en',
+          copy: paygJsonLdCopy,
         }),
         buildPayAsYouGoServiceJsonLd({
           canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
+          copy: paygJsonLdCopy,
         }),
         buildPayAsYouGoWebApplicationJsonLd({
           canonical: 'https://maxvideoai.com/pay-as-you-go-ai-video-generator',
+          copy: paygJsonLdCopy,
         }),
       ],
     },
