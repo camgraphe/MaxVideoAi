@@ -1,4 +1,4 @@
-import { query, type QueryExecutor } from '@/lib/db';
+import type { TransactionQueryExecutor } from '@/lib/db';
 
 export const MCP_SPENDING_APPROVAL_PATH = '/account/connections?focus=mcp-spending';
 
@@ -33,21 +33,20 @@ type SpendingCheckInput = {
 };
 
 type SpendingDependencies = {
-  executor: QueryExecutor;
+  executor: TransactionQueryExecutor;
   now?: () => Date;
 };
 
-type SpendingRow = {
+type SpendingLimitsRow = {
   per_generation_cents: unknown;
   daily_cents: unknown;
   web_approval_above_cents: unknown;
+};
+
+type AcceptedSpendingRow = {
   accepted_today_cents: unknown;
 };
 
-const defaultDependencies: SpendingDependencies = {
-  executor: { query },
-  now: () => new Date(),
-};
 const INPUT_KEYS = new Set(['userId', 'priceCents', 'currency']);
 const CURRENCY_PATTERN = /^[A-Z]{3}$/u;
 const MAX_INTEGER_CENTS = 2_147_483_647;
@@ -74,7 +73,7 @@ function assertInput(value: unknown): asserts value is SpendingCheckInput {
 }
 
 function requireNow(dependencies: SpendingDependencies): Date {
-  const value = (dependencies.now ?? defaultDependencies.now)?.();
+  const value = (dependencies.now ?? (() => new Date()))();
   if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
     throw new Error('Invalid spending check clock.');
   }
@@ -120,18 +119,29 @@ function exceeded(
 
 export async function checkMcpSpendingLimits(
   input: SpendingCheckInput,
-  dependencies: SpendingDependencies = defaultDependencies,
+  dependencies: SpendingDependencies,
 ): Promise<McpSpendingDecision> {
   assertInput(input);
+  // The no-op conflict update is intentional: it ensures and locks one account scope
+  // before the next READ COMMITTED statement calculates accepted spend.
+  const limitRows = await dependencies.executor.query<SpendingLimitsRow>(
+    `INSERT INTO mcp_spending_limits (user_id)
+     VALUES ($1)
+     ON CONFLICT (user_id) DO UPDATE
+       SET updated_at = mcp_spending_limits.updated_at
+     RETURNING per_generation_cents, daily_cents, web_approval_above_cents`,
+    [input.userId],
+  );
+  if (limitRows.length !== 1) throw new Error('Invalid spending limit row.');
+  const limits: McpSpendingLimits = {
+    perGenerationCents: parseNullableCents(limitRows[0].per_generation_cents),
+    dailyCents: parseNullableCents(limitRows[0].daily_cents),
+    webApprovalAboveCents: parseNullableCents(limitRows[0].web_approval_above_cents),
+  };
+
   const now = requireNow(dependencies);
-  const rows = await dependencies.executor.query<SpendingRow>(
-    `WITH locked_limits AS MATERIALIZED (
-      SELECT per_generation_cents, daily_cents, web_approval_above_cents
-        FROM mcp_spending_limits
-       WHERE user_id = $1
-       FOR UPDATE
-    ), accepted_spend AS (
-      SELECT COALESCE(SUM(price_cents), 0)::text AS accepted_today_cents
+  const spendingRows = await dependencies.executor.query<AcceptedSpendingRow>(
+    `SELECT COALESCE(SUM(price_cents), 0)::text AS accepted_today_cents
         FROM mcp_generation_quotes
        WHERE user_id = $1
          AND currency = $2
@@ -140,23 +150,11 @@ export async function checkMcpSpendingLimits(
          AND claimed_at >= (
            date_trunc('day', $3::timestamptz AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
          )
-         AND claimed_at <= $3
-    )
-    SELECT limits.per_generation_cents,
-           limits.daily_cents,
-           limits.web_approval_above_cents,
-           accepted_spend.accepted_today_cents
-      FROM accepted_spend
-      LEFT JOIN locked_limits AS limits ON TRUE`,
+         AND claimed_at <= $3`,
     [input.userId, input.currency, now],
   );
-  if (rows.length !== 1) throw new Error('Invalid spending limit row.');
-  const limits: McpSpendingLimits = {
-    perGenerationCents: parseNullableCents(rows[0].per_generation_cents),
-    dailyCents: parseNullableCents(rows[0].daily_cents),
-    webApprovalAboveCents: parseNullableCents(rows[0].web_approval_above_cents),
-  };
-  const acceptedTodayCents = parseAcceptedCents(rows[0].accepted_today_cents);
+  if (spendingRows.length !== 1) throw new Error('Invalid spending limit row.');
+  const acceptedTodayCents = parseAcceptedCents(spendingRows[0].accepted_today_cents);
   const projectedTodayCents = acceptedTodayCents + input.priceCents;
   if (!Number.isSafeInteger(projectedTodayCents)) {
     throw new Error('Spending amount overflow.');

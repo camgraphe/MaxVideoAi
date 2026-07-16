@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { query, type QueryExecutor } from '@/lib/db';
+import { query, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import {
   hashCanonicalGenerationRequest,
   normalizeGenerationRequest,
@@ -59,6 +59,10 @@ type QuoteRepositoryDependencies = {
   executor: QueryExecutor;
   now?: () => Date;
   randomUUID?: () => string;
+};
+
+type QuoteLockDependencies = {
+  executor: TransactionQueryExecutor;
 };
 
 type QuoteRow = {
@@ -322,10 +326,9 @@ export async function getOwnedQuote(
 
 export async function lockOwnedPreparedQuote(
   input: OwnedQuoteInput,
-  dependencies: QuoteRepositoryDependencies = defaultDependencies,
+  dependencies: QuoteLockDependencies,
 ): Promise<McpGenerationQuote | null> {
   assertOwnerInput(input);
-  const now = requireNow(dependencies);
   const rows = await dependencies.executor.query<QuoteRow>(
     `SELECT ${QUOTE_COLUMNS}
        FROM mcp_generation_quotes
@@ -333,11 +336,18 @@ export async function lockOwnedPreparedQuote(
         AND user_id = $2
         AND oauth_client_id IS NOT DISTINCT FROM $3
         AND state = 'prepared'
-        AND expires_at > $4
       FOR UPDATE`,
-    [input.quoteId, input.userId, input.oauthClientId, now],
+    [input.quoteId, input.userId, input.oauthClientId],
   );
-  return parseOptionalQuote(rows);
+  const quote = parseOptionalQuote(rows);
+  if (!quote) return null;
+  const clockRows = await dependencies.executor.query<{ current_time: unknown }>(
+    'SELECT clock_timestamp() AS current_time',
+  );
+  if (clockRows.length !== 1) throw new Error('Invalid quote repository clock result.');
+  const currentTime = finiteDate(clockRows[0].current_time);
+  if (!currentTime) throw new Error('Invalid quote repository clock result.');
+  return quote.expiresAt <= currentTime ? null : quote;
 }
 
 export async function markQuoteAccepted(

@@ -7,6 +7,12 @@ export type QueryExecutor = {
   query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>): Promise<TRecord[]>;
 };
 
+declare const transactionQueryExecutorBrand: unique symbol;
+
+export type TransactionQueryExecutor = QueryExecutor & {
+  readonly [transactionQueryExecutorBrand]: 'transaction-query-executor';
+};
+
 function getDatabaseUrl(): string {
   return (process.env.DATABASE_URL ?? '').trim();
 }
@@ -59,10 +65,10 @@ export async function query<TRecord = unknown>(text: string, params?: ReadonlyAr
 }
 
 export async function withDbTransaction<TResult>(
-  callback: (executor: QueryExecutor, client: PoolClient) => Promise<TResult>
+  callback: (executor: TransactionQueryExecutor, client: PoolClient) => Promise<TResult>
 ): Promise<TResult> {
   const client = await getDb().connect();
-  const executor = createQueryExecutor(client);
+  const executor = createQueryExecutor(client) as TransactionQueryExecutor;
 
   try {
     await client.query('BEGIN');

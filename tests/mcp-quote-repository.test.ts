@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { existsSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
-import type { QueryExecutor } from '../frontend/src/lib/db';
+import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 
@@ -47,6 +48,30 @@ function storedRow(overrides: Record<string, unknown> = {}) {
 
 test('quote repository is present before behavior contracts load', () => {
   assert.equal(existsSync(repositoryPath), true, `${repositoryPath} should exist`);
+});
+
+test('transaction executors are branded by withDbTransaction and ordinary query executors fail type-checking', () => {
+  const command = (config: string) => spawnSync(
+    './frontend/node_modules/.bin/tsc',
+    ['--project', config],
+    { cwd: process.cwd(), encoding: 'utf8' },
+  );
+  const valid = command('tests/fixtures/mcp-transaction-executor-valid-tsconfig.json');
+  assert.equal(valid.status, 0, `${valid.stdout}\n${valid.stderr}`);
+  const invalid = command('tests/fixtures/mcp-transaction-executor-invalid-tsconfig.json');
+  assert.notEqual(invalid.status, 0);
+  assert.match(`${invalid.stdout}\n${invalid.stderr}`, /transactionQueryExecutorBrand|transaction executor brand/i);
+
+  const dbSource = readFileSync('frontend/src/lib/db.ts', 'utf8');
+  const repositorySource = readFileSync(repositoryPath, 'utf8');
+  assert.match(dbSource, /unique symbol[\s\S]*TransactionQueryExecutor/);
+  assert.match(dbSource, /callback: \(executor: TransactionQueryExecutor/);
+  assert.match(repositorySource, /QuoteLockDependencies\s*=\s*\{[\s\S]*TransactionQueryExecutor/);
+  assert.match(repositorySource, /lockOwnedPreparedQuote\([\s\S]{0,250}QuoteLockDependencies/);
+  assert.doesNotMatch(
+    repositorySource,
+    /lockOwnedPreparedQuote\([\s\S]{0,300}= defaultDependencies/,
+  );
 });
 
 test('insertPreparedQuote creates a random UUID and exact server-owned ten-minute expiry', async () => {
@@ -106,15 +131,20 @@ test('owned reads bind quote, user, and nullable OAuth ownership with no prompt 
   const executor: QueryExecutor = {
     async query<TRecord>(sql, params) {
       calls.push({ sql, params });
+      if (/clock_timestamp\(\)/i.test(sql)) {
+        return [{ current_time: new Date('2026-07-16T12:01:00.000Z') }] as TRecord[];
+      }
       return [storedRow()] as TRecord[];
     },
   };
 
   const owner = { quoteId, userId: 'user-1', oauthClientId: 'client-1' };
   assert.equal((await getOwnedQuote(owner, { executor }))?.quoteId, quoteId);
-  assert.equal((await lockOwnedPreparedQuote(owner, { executor, now: () => now }))?.state, 'prepared');
-  assert.equal(calls.length, 2);
-  for (const call of calls) {
+  assert.equal((await lockOwnedPreparedQuote(owner, {
+    executor: executor as TransactionQueryExecutor,
+  }))?.state, 'prepared');
+  assert.equal(calls.length, 3);
+  for (const call of calls.slice(0, 2)) {
     assert.match(call.sql, /user_id\s*=\s*\$2/i);
     assert.match(call.sql, /oauth_client_id\s+IS NOT DISTINCT FROM\s+\$3/i);
     assert.deepEqual(call.params?.slice(0, 3), [quoteId, 'user-1', 'client-1']);
@@ -122,8 +152,37 @@ test('owned reads bind quote, user, and nullable OAuth ownership with no prompt 
   }
   assert.doesNotMatch(calls[0].sql, /FOR UPDATE/i);
   assert.match(calls[1].sql, /state\s*=\s*'prepared'/i);
-  assert.match(calls[1].sql, /expires_at\s*>\s*\$4/i);
+  assert.doesNotMatch(calls[1].sql, /expires_at\s*>|clock_timestamp|NOW\(\)/i);
   assert.match(calls[1].sql, /FOR UPDATE/i);
+  assert.deepEqual(calls[1].params, [quoteId, 'user-1', 'client-1']);
+  assert.match(calls[2].sql, /SELECT clock_timestamp\(\) AS current_time/i);
+  assert.equal(calls[2].params, undefined);
+});
+
+test('lockOwnedPreparedQuote evaluates expiry only after the row lock returns', async () => {
+  const { lockOwnedPreparedQuote } = await import(
+    '../frontend/src/server/agent-api/quote-repository'
+  );
+  const order: string[] = [];
+  const executor: QueryExecutor = {
+    async query<TRecord>(sql) {
+      if (/FOR UPDATE/i.test(sql)) {
+        order.push('lock-returned');
+        return [storedRow()] as TRecord[];
+      }
+      if (/clock_timestamp\(\)/i.test(sql)) {
+        order.push('fresh-clock');
+        return [{ current_time: new Date('2026-07-16T12:10:00.000Z') }] as TRecord[];
+      }
+      throw new Error('unexpected query');
+    },
+  };
+  const result = await lockOwnedPreparedQuote(
+    { quoteId, userId: 'user-1', oauthClientId: 'client-1' },
+    { executor: executor as TransactionQueryExecutor },
+  );
+  assert.equal(result, null);
+  assert.deepEqual(order, ['lock-returned', 'fresh-clock']);
 });
 
 test('terminal mutations are owner/job/state constrained and parameterized', async () => {

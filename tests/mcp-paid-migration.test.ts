@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { Client } from 'pg';
 
-import type { QueryExecutor } from '../frontend/src/lib/db';
+import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
 
@@ -239,15 +239,18 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   };
   const lockRequestHash = hashCanonicalGenerationRequest(lockRequest);
   await clientA.query(`
+    WITH quote_time AS (
+      SELECT clock_timestamp() AS created_at
+    )
     INSERT INTO mcp_generation_quotes (
       quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
       pricing_snapshot, price_cents, currency, funding_mode, state,
       expires_at, created_at, updated_at
-    ) VALUES (
-      '00000000-0000-4000-8000-000000000002', 'lock-user', 'lock-client',
-      $1::jsonb, $2, 'catalog-lock', '{}', 10, 'USD', 'wallet',
-      'prepared', '2026-07-16T11:10:00Z', '2026-07-16T11:00:00Z', '2026-07-16T11:00:00Z'
     )
+    SELECT '00000000-0000-4000-8000-000000000002', 'lock-user', 'lock-client',
+           $1::jsonb, $2, 'catalog-lock', '{}', 10, 'USD', 'wallet',
+           'prepared', created_at + INTERVAL '10 minutes', created_at, created_at
+      FROM quote_time
   `, [JSON.stringify(lockRequest), lockRequestHash]);
   const executorA: QueryExecutor = {
     async query<TRecord>(text, params) {
@@ -259,6 +262,8 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       return (await clientB.query<TRecord>(text, params as unknown[] | undefined)).rows;
     },
   };
+  const transactionExecutorA = executorA as TransactionQueryExecutor;
+  const transactionExecutorB = executorB as TransactionQueryExecutor;
   const { lockOwnedPreparedQuote, markQuoteAccepted } = await import(
     '../frontend/src/server/agent-api/quote-repository'
   );
@@ -269,7 +274,7 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await clientA.query('BEGIN');
   const locked = await lockOwnedPreparedQuote(
     { quoteId: '00000000-0000-4000-8000-000000000002', userId: 'lock-user', oauthClientId: 'lock-client' },
-    { executor: executorA, now: () => new Date('2026-07-16T11:01:00Z') },
+    { executor: transactionExecutorA },
   );
   assert.equal(locked?.state, 'prepared');
 
@@ -278,26 +283,71 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await assert.rejects(
     lockOwnedPreparedQuote(
       { quoteId: '00000000-0000-4000-8000-000000000002', userId: 'lock-user', oauthClientId: 'lock-client' },
-      { executor: executorB, now: () => new Date('2026-07-16T11:01:00Z') },
+      { executor: transactionExecutorB },
     ),
     /statement timeout|canceling statement/i,
   );
   await clientB.query('ROLLBACK');
   await clientA.query('ROLLBACK');
 
-  await clientA.query('BEGIN');
+  const expiringQuoteId = '00000000-0000-4000-8000-000000000003';
   await clientA.query(`
+    WITH quote_time AS (
+      SELECT clock_timestamp() - INTERVAL '9 minutes 58 seconds' AS created_at
+    )
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+      pricing_snapshot, price_cents, currency, funding_mode, state,
+      expires_at, created_at, updated_at
+    )
+    SELECT $1, 'expiring-user', 'expiring-client', $2::jsonb, $3, 'catalog-expiring',
+           '{}', 10, 'USD', 'wallet', 'prepared',
+           created_at + INTERVAL '10 minutes', created_at, created_at
+      FROM quote_time
+  `, [expiringQuoteId, JSON.stringify(lockRequest), lockRequestHash]);
+  await clientA.query('BEGIN');
+  assert.equal((await lockOwnedPreparedQuote(
+    { quoteId: expiringQuoteId, userId: 'expiring-user', oauthClientId: 'expiring-client' },
+    { executor: transactionExecutorA },
+  ))?.quoteId, expiringQuoteId);
+  await clientB.query('BEGIN');
+  let quoteWaiterSettled = false;
+  const waiter = lockOwnedPreparedQuote(
+    { quoteId: expiringQuoteId, userId: 'expiring-user', oauthClientId: 'expiring-client' },
+    { executor: transactionExecutorB },
+  );
+  void waiter.then(
+    () => { quoteWaiterSettled = true; },
+    () => { quoteWaiterSettled = true; },
+  );
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.equal(quoteWaiterSettled, false, 'transaction B must still be waiting on transaction A');
+  await new Promise((resolve) => setTimeout(resolve, 2_100));
+  await clientA.query('COMMIT');
+  assert.equal(
+    await waiter,
+    null,
+    'a waiter must evaluate expiry after acquiring the row lock, not before waiting',
+  );
+  await clientB.query('ROLLBACK');
+
+  await clientA.query('BEGIN');
+  const claimedForRollback = await clientA.query<{ claimed_at: Date }>(`
     UPDATE mcp_generation_quotes
-       SET state = 'claimed', job_id = 'job-rollback', claimed_at = '2026-07-16T11:01:00Z',
-           updated_at = '2026-07-16T11:01:00Z'
+       SET state = 'claimed', job_id = 'job-rollback', claimed_at = clock_timestamp(),
+           updated_at = clock_timestamp()
      WHERE quote_id = '00000000-0000-4000-8000-000000000002'
+     RETURNING claimed_at
   `);
   const accepted = await markQuoteAccepted({
     quoteId: '00000000-0000-4000-8000-000000000002',
     userId: 'lock-user',
     oauthClientId: 'lock-client',
     jobId: 'job-rollback',
-  }, { executor: executorA, now: () => new Date('2026-07-16T11:02:00Z') });
+  }, {
+    executor: executorA,
+    now: () => new Date(claimedForRollback.rows[0].claimed_at.getTime() + 1_000),
+  });
   assert.equal(accepted?.state, 'accepted');
   await clientA.query('ROLLBACK');
   const afterRollback = await clientA.query<{ state: string }>(
@@ -345,23 +395,69 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
   await clientA.query('BEGIN');
   const spending = await checkMcpSpendingLimits(
     { userId: 'spend-user', priceCents: 60, currency: 'USD' },
-    { executor: executorA, now: () => new Date('2026-07-17T15:00:00Z') },
+    { executor: transactionExecutorA, now: () => new Date('2026-07-17T15:00:00Z') },
   );
   assert.equal(spending.acceptedTodayCents, 30);
   assert.equal(spending.allowed, true);
 
   await clientB.query('BEGIN');
-  await clientB.query(`SET LOCAL statement_timeout = '200ms'`);
-  await assert.rejects(
-    checkMcpSpendingLimits(
-      { userId: 'spend-user', priceCents: 60, currency: 'USD' },
-      { executor: executorB, now: () => new Date('2026-07-17T15:00:00Z') },
-    ),
-    /statement timeout|canceling statement/i,
-    'configured spending scopes must serialize in the surrounding transaction',
+  let spendingWaiterSettled = false;
+  const secondSpendingCheck = checkMcpSpendingLimits(
+    { userId: 'spend-user', priceCents: 60, currency: 'USD' },
+    { executor: transactionExecutorB, now: () => new Date('2026-07-17T15:00:00Z') },
   );
+  void secondSpendingCheck.then(
+    () => { spendingWaiterSettled = true; },
+    () => { spendingWaiterSettled = true; },
+  );
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  assert.equal(spendingWaiterSettled, false, 'transaction B must wait for the account spending lock');
+  await clientA.query(`
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, request_json, request_hash, catalog_revision, pricing_snapshot,
+      price_cents, currency, funding_mode, state, expires_at, created_at, updated_at
+    ) VALUES (
+      '00000000-0000-4000-8000-000000000033', 'spend-user', '{"schemaVersion":1}',
+      repeat('1',64), 'catalog', '{}', 20, 'USD', 'wallet', 'prepared',
+      '2026-07-17T14:10:00Z', '2026-07-17T14:00:00Z', '2026-07-17T14:00:00Z'
+    );
+    UPDATE mcp_generation_quotes
+       SET state = 'claimed', job_id = 'spend-concurrent',
+           claimed_at = '2026-07-17T14:01:00Z', updated_at = '2026-07-17T14:01:00Z'
+     WHERE quote_id = '00000000-0000-4000-8000-000000000033';
+    UPDATE mcp_generation_quotes
+       SET state = 'accepted', updated_at = '2026-07-17T14:02:00Z'
+     WHERE quote_id = '00000000-0000-4000-8000-000000000033';
+  `);
+  await clientA.query('COMMIT');
+  const refreshedSpending = await secondSpendingCheck;
+  assert.equal(refreshedSpending.allowed, false);
+  if (!refreshedSpending.allowed) {
+    assert.equal(refreshedSpending.reason, 'daily');
+    assert.equal(refreshedSpending.acceptedTodayCents, 50);
+    assert.equal(refreshedSpending.projectedTodayCents, 110);
+  }
   await clientB.query('ROLLBACK');
+
+  await clientA.query('BEGIN');
+  const nullLimits = await checkMcpSpendingLimits(
+    { userId: 'null-limit-user', priceCents: 1, currency: 'USD' },
+    { executor: transactionExecutorA, now: () => new Date('2026-07-17T15:00:00Z') },
+  );
+  assert.equal(nullLimits.allowed, true);
+  const insideTransaction = await clientA.query<{ count: string }>(`
+    SELECT COUNT(*)::text AS count
+      FROM mcp_spending_limits
+     WHERE user_id = 'null-limit-user'
+  `);
+  assert.equal(insideTransaction.rows[0]?.count, '1');
   await clientA.query('ROLLBACK');
+  const afterLimitRollback = await clientA.query<{ count: string }>(`
+    SELECT COUNT(*)::text AS count
+      FROM mcp_spending_limits
+     WHERE user_id = 'null-limit-user'
+  `);
+  assert.equal(afterLimitRollback.rows[0]?.count, '0');
 
   const indexes = await clientA.query<{ indexname: string }>(`
     SELECT indexname FROM pg_indexes
