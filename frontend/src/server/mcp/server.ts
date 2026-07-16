@@ -16,7 +16,19 @@ import {
   type PreparedGeneration,
   type PrepareGenerationInput,
 } from '@/server/agent-api/prepare-generation';
+import {
+  getAgentGenerationStatus,
+  listAgentRecentGenerations,
+  type AgentGenerationRecovery,
+  type AgentGenerationRecoveryPage,
+  type GetAgentGenerationStatusInput,
+  type ListAgentRecentGenerationsInput,
+} from '@/server/agent-api/generation-status';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
+import {
+  createMcpTopupHandoffService,
+  type McpTopupHandoffResult,
+} from '@/server/agent-api/topup-handoff';
 import type {
   AgentAccountStatus,
   AgentModel,
@@ -28,7 +40,10 @@ import type { McpConfig } from '@/server/mcp/config';
 import { MAXVIDEOAI_MCP_INSTRUCTIONS } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-generation';
+import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
+import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
+import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
 
@@ -47,6 +62,18 @@ export type MaxVideoAiMcpServices = {
     input: ConfirmGenerationInput,
     principal: AgentPrincipal,
   ): Promise<import('@/server/generations/generation-status').AgentGenerationStatus>;
+  getGenerationStatus?(
+    input: GetAgentGenerationStatusInput,
+    principal: AgentPrincipal,
+  ): Promise<AgentGenerationRecovery>;
+  listRecentGenerations?(
+    input: ListAgentRecentGenerationsInput,
+    principal: AgentPrincipal,
+  ): Promise<AgentGenerationRecoveryPage>;
+  createTopupLink?(
+    input: { quoteId: string },
+    principal: AgentPrincipal,
+  ): Promise<McpTopupHandoffResult>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
@@ -63,6 +90,11 @@ export function createDefaultMaxVideoAiMcpServices(
     recommendModels: (input) => recommendAgentModels(input),
     prepareGeneration: createPrepareGenerationService(config.accountUrl),
     confirmGeneration: createConfirmGenerationService(config.accountUrl),
+    getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
+    listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),
+    createTopupLink: createMcpTopupHandoffService({
+      billingBaseUrl: new URL(config.accountUrl).origin,
+    }),
   };
 }
 
@@ -89,6 +121,9 @@ export function createMaxVideoAiMcpServer(
   if (options.paidGeneration ?? mcpPublication.paidGeneration) {
     registerPrepareGenerationTool(server, principal, services);
     registerConfirmGenerationTool(server, principal, services);
+    registerGetGenerationStatusTool(server, principal, services);
+    registerListRecentGenerationsTool(server, principal, services);
+    registerCreateTopupLinkTool(server, principal, services);
   }
   return server;
 }

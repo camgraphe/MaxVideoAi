@@ -698,7 +698,7 @@ test('invalid image already-reserved runtime state fails before database or prov
   }
 });
 
-test('default registry remains three tools and the explicit paid gate exposes prepare plus confirm safely', async () => {
+test('default registry remains three tools and the explicit paid gate exposes the full paid recovery set safely', async () => {
   const services = {
     getAccountStatus: async () => ({
       connected: true, userId: USER_ID, emailVerified: true, accountUrl: 'https://maxvideoai.com/account',
@@ -708,6 +708,14 @@ test('default registry remains three tools and the explicit paid gate exposes pr
     recommendModels: async () => ({ recommendations: [], guidance: [] }),
     prepareGeneration: async () => { throw new Error('not called'); },
     confirmGeneration: async () => safeStatus(videoRequest),
+    getGenerationStatus: async () => ({
+      ...safeStatus(videoRequest),
+      retry: { tool: 'get_generation_status', arguments: { jobId: QUOTE_ID }, afterSeconds: 5 },
+    }),
+    listRecentGenerations: async () => ({ items: [], nextCursor: null }),
+    createTopupLink: async () => ({ topupRequired: false, nextAction: {
+      tool: 'confirm_generation', arguments: { quoteId: QUOTE_ID, confirmed: true },
+    } }),
   } as unknown as MaxVideoAiMcpServices;
   const defaultServer = createMaxVideoAiMcpServer(principal, services);
   const enabledServer = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
@@ -731,6 +739,7 @@ test('default registry remains three tools and the explicit paid gate exposes pr
   const tools = (await enabledClient.listTools()).tools;
   assert.deepEqual(tools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'recommend_models', 'prepare_generation', 'confirm_generation',
+    'get_generation_status', 'list_recent_generations', 'create_topup_link',
   ]);
   const confirm = tools.find((tool) => tool.name === 'confirm_generation');
   assert.deepEqual(confirm?.annotations, {

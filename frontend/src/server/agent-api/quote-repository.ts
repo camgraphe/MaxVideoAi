@@ -432,6 +432,28 @@ export async function markQuoteExpired(
   return parseOptionalQuote(rows);
 }
 
+export async function invalidatePreparedQuote(
+  input: OwnedQuoteInput,
+  dependencies: QuoteExpireDependencies,
+): Promise<McpGenerationQuote | null> {
+  assertOwnerInput(input);
+  const expiredAt = finiteDate(dependencies.expiredAt);
+  if (!expiredAt) throw new Error('Invalid quote invalidation clock.');
+  const rows = await dependencies.executor.query<QuoteRow>(
+    `UPDATE mcp_generation_quotes
+        SET state = 'expired', updated_at = $4
+      WHERE quote_id = $1
+        AND user_id = $2
+        AND oauth_client_id IS NOT DISTINCT FROM $3
+        AND state = 'prepared'
+        AND job_id IS NULL
+        AND claimed_at IS NULL
+    RETURNING ${QUOTE_COLUMNS}`,
+    [input.quoteId, input.userId, input.oauthClientId, expiredAt],
+  );
+  return parseOptionalQuote(rows);
+}
+
 export async function markQuoteAccepted(
   input: OwnedQuoteJobInput,
   dependencies: QuoteRepositoryDependencies = defaultDependencies,

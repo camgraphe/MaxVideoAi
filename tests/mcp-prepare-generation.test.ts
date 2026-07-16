@@ -732,7 +732,7 @@ test('generation pricing passes the authoritative tier to both canonical pricing
   assert.deepEqual(seen, ['video:pro', 'image:pro']);
 });
 
-test('prepare_generation is gated out by default and accurately annotated when explicitly injected on', async (t) => {
+test('paid generation tools are gated out by default and prepare is accurately annotated when injected on', async (t) => {
   const prepared = {
     quoteId,
     expiresAt: expiresAt.toISOString(),
@@ -773,6 +773,29 @@ test('prepare_generation is gated out by default and accurately annotated when e
         retryAfterSeconds: 5,
       };
     },
+    async getGenerationStatus() {
+      return {
+        jobId: quoteId,
+        surface: 'video' as const,
+        status: 'accepted' as const,
+        progress: 0,
+        message: 'Generation accepted.',
+        priceCents: 125,
+        currency: 'USD',
+        paymentStatus: 'paid_wallet',
+        result: null,
+        retry: { tool: 'get_generation_status' as const, arguments: { jobId: quoteId }, afterSeconds: 5 },
+      };
+    },
+    async listRecentGenerations() {
+      return { items: [], nextCursor: null };
+    },
+    async createTopupLink() {
+      return {
+        topupRequired: false as const,
+        nextAction: { tool: 'confirm_generation' as const, arguments: { quoteId, confirmed: true as const } },
+      };
+    },
   };
   const defaultServer = createMaxVideoAiMcpServer(principal, services);
   const enabledServer = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
@@ -797,6 +820,7 @@ test('prepare_generation is gated out by default and accurately annotated when e
   const tools = (await enabledClient.listTools()).tools;
   assert.deepEqual(tools.map((tool) => tool.name), [
     'get_account_status', 'list_models', 'recommend_models', 'prepare_generation', 'confirm_generation',
+    'get_generation_status', 'list_recent_generations', 'create_topup_link',
   ]);
   const prepareTool = tools.find((tool) => tool.name === 'prepare_generation');
   assert.equal(prepareTool?.annotations?.readOnlyHint, true);

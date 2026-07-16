@@ -153,7 +153,7 @@ test('charge-authoritative video and image call sites use the server-only canoni
   const chargedConsumers = [
     'frontend/app/api/generate/_lib/billing-preflight.ts',
     'frontend/app/api/wallet/route.ts',
-    'frontend/src/server/images/execute-image-generation.ts',
+    'frontend/src/server/images/image-generation-pricing.ts',
     'frontend/src/server/images/storyboard-image-billing.ts',
   ];
   for (const path of chargedConsumers) {
@@ -161,6 +161,12 @@ test('charge-authoritative video and image call sites use the server-only canoni
     assert.match(source, /quote-billing/, `${path} should import the canonical billing entry point`);
     assert.match(source, /computeCanonicalBillingSnapshot/, `${path} should calculate charged quotes canonically`);
   }
+
+  const imageExecutor = readFileSync(
+    'frontend/src/server/images/execute-image-generation.ts',
+    'utf8',
+  );
+  assert.match(imageExecutor, /resolveImageGenerationPricingSnapshot/);
 
   const publicConsumers = [
     'frontend/src/server/engines.ts',

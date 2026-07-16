@@ -25,7 +25,11 @@ import { useBillingTopupAnalytics } from '../_hooks/useBillingTopupAnalytics';
 import { useBillingTopupQuotes } from '../_hooks/useBillingTopupQuotes';
 import { useBillingTopupSelection } from '../_hooks/useBillingTopupSelection';
 import { DEFAULT_BILLING_COPY, type BillingCopy } from '../_lib/billing-copy';
-import { buildBillingIntentTarget, parseBillingIntent } from '../_lib/billing-intent';
+import {
+  buildBillingIntentTarget,
+  parseBillingIntent,
+  type BillingIntent,
+} from '../_lib/billing-intent';
 import { recordCheckoutInteractionEvent } from '../_lib/checkout-interaction-events';
 import { formatRateLimitMessage } from '../_lib/rate-limit-message';
 
@@ -33,7 +37,15 @@ const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? '';
 const EMPTY_SEARCH_PARAMS = new URLSearchParams();
 
-export function BillingClient() {
+type BillingClientProps = {
+  initialBillingIntent: BillingIntent | null;
+  signedLoginRedirectTarget: string | null;
+};
+
+export function BillingClient({
+  initialBillingIntent,
+  signedLoginRedirectTarget,
+}: BillingClientProps) {
   const { locale, t } = useI18n();
   const rawCopy = t('workspace.billing', DEFAULT_BILLING_COPY);
   const copy = useMemo<BillingCopy>(() => {
@@ -47,7 +59,10 @@ export function BillingClient() {
     return loadStripe(PUBLISHABLE_KEY, { locale });
   }, [locale]);
   const searchParams = useSearchParams() ?? EMPTY_SEARCH_PARAMS;
-  const billingIntent = useMemo(() => parseBillingIntent(searchParams), [searchParams]);
+  const billingIntent = useMemo(
+    () => initialBillingIntent ?? parseBillingIntent(searchParams),
+    [initialBillingIntent, searchParams],
+  );
   const walletQuoteLoading = copy.wallet.quoteLoading ?? DEFAULT_BILLING_COPY.wallet.quoteLoading;
   const walletQuoteError = copy.wallet.quoteError ?? DEFAULT_BILLING_COPY.wallet.quoteError;
   const { session, loading: authLoading } = useRequireAuth({ redirectIfLoggedOut: false });
@@ -128,12 +143,13 @@ export function BillingClient() {
     initialTopupCents: billingIntent.amountCents,
   });
   const loginRedirectTarget = useMemo(
-    () =>
-      buildBillingIntentTarget({
+    () => selectedTopupCents === initialBillingIntent?.amountCents && signedLoginRedirectTarget
+      ? signedLoginRedirectTarget
+      : buildBillingIntentTarget({
         amountCents: selectedTopupCents,
         currency: 'USD',
       }),
-    [selectedTopupCents]
+    [initialBillingIntent?.amountCents, selectedTopupCents, signedLoginRedirectTarget]
   );
   const { topupQuotes, quoteLoading, quoteError } = useBillingTopupQuotes({
     authLoading,
