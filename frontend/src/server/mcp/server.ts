@@ -1,11 +1,17 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
+import mcpPublication from '@/config/mcp-publication.json';
 import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
 import { listAgentModels } from '@/server/agent-api/model-catalog';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
+import {
+  createPrepareGenerationService,
+  type PreparedGeneration,
+  type PrepareGenerationInput,
+} from '@/server/agent-api/prepare-generation';
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import type {
   AgentAccountStatus,
@@ -18,6 +24,7 @@ import type { McpConfig } from '@/server/mcp/config';
 import { MAXVIDEOAI_MCP_INSTRUCTIONS } from '@/server/mcp/instructions';
 import { registerGetAccountStatusTool } from '@/server/mcp/tools/get-account-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
+import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
 
 export type MaxVideoAiMcpServices = {
@@ -27,6 +34,14 @@ export type MaxVideoAiMcpServices = {
     input: AgentModelRecommendationInput,
     principal: AgentPrincipal
   ): Promise<AgentModelRecommendationResult>;
+  prepareGeneration?(
+    input: PrepareGenerationInput,
+    principal: AgentPrincipal,
+  ): Promise<PreparedGeneration>;
+};
+
+export type MaxVideoAiMcpServerOptions = {
+  paidGeneration?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -37,12 +52,14 @@ export function createDefaultMaxVideoAiMcpServices(
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter) => listAgentModels(filter),
     recommendModels: (input) => recommendAgentModels(input),
+    prepareGeneration: createPrepareGenerationService(config.accountUrl),
   };
 }
 
 export function createMaxVideoAiMcpServer(
   principal: AgentPrincipal,
-  services: MaxVideoAiMcpServices
+  services: MaxVideoAiMcpServices,
+  options: MaxVideoAiMcpServerOptions = {},
 ): McpServer {
   const server = new McpServer(
     {
@@ -59,5 +76,8 @@ export function createMaxVideoAiMcpServer(
   registerGetAccountStatusTool(server, principal, services);
   registerListModelsTool(server, principal, services);
   registerRecommendModelsTool(server, principal, services);
+  if (options.paidGeneration ?? mcpPublication.paidGeneration) {
+    registerPrepareGenerationTool(server, principal, services);
+  }
   return server;
 }
