@@ -70,8 +70,11 @@ function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
 }
 
-function toCandidate(engine: EngineCaps, surface: 'video' | 'image'): AgentModelCandidate {
-  const modes = publicModes(engine, surface);
+function toCandidate(
+  engine: EngineCaps,
+  surface: 'video' | 'image',
+  modes: AgentGenerationMode[],
+): AgentModelCandidate {
   const rawBase = engine.pricing?.base;
   return {
     model: {
@@ -101,16 +104,19 @@ export async function listPublicAgentGenerationEngines(
     const modes = publicModes(engine, surface);
     const configuredModeCaps = engine.modeCaps ?? {};
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};
+    const modeCaps = Object.fromEntries(
+      modes.flatMap((mode) => {
+        const caps = configuredModeCaps[mode] ?? registryModeCaps[mode];
+        return caps ? [[mode, caps]] : [];
+      }),
+    ) as AgentPublicGenerationEngine['modeCaps'];
+    const executableModes = modes.filter((mode) => Boolean(modeCaps[mode]));
+    if (!executableModes.length) return [];
     return [{
       engine,
       surface,
-      publicModes: modes,
-      modeCaps: Object.fromEntries(
-        modes.flatMap((mode) => {
-          const caps = configuredModeCaps[mode] ?? registryModeCaps[mode];
-          return caps ? [[mode, caps]] : [];
-        }),
-      ) as AgentPublicGenerationEngine['modeCaps'],
+      publicModes: executableModes,
+      modeCaps,
     }];
   });
 }
@@ -137,8 +143,8 @@ export async function listAgentModelCandidates(
   deps: AgentModelCatalogDeps = defaultDeps
 ): Promise<AgentModelCandidate[]> {
   const engines = await listPublicAgentGenerationEngines(deps);
-  return engines.flatMap(({ engine, surface }) => {
-    const candidate = toCandidate(engine, surface);
+  return engines.flatMap(({ engine, surface, publicModes: modes }) => {
+    const candidate = toCandidate(engine, surface, modes);
     return matchesFilter(candidate.model, filter) ? [candidate] : [];
   });
 }

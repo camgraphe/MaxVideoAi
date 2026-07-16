@@ -27,6 +27,16 @@ function candidate(
     keyframes: false,
     params: {},
     inputLimits: {},
+    modeCaps: {
+      t2v: {
+        modes: ['t2v'],
+        duration: { options: [5, 10], default: 5 },
+        resolution: options.resolutions ?? ['1080p'],
+        aspectRatio: ['16:9'],
+        fps: [24],
+        audioToggle: true,
+      },
+    },
     pricing: options.base == null ? undefined : { unit: 'sec', base: options.base, currency: 'USD' },
     updatedAt: '2026-07-11T00:00:00.000Z',
     ttlSec: 300,
@@ -96,4 +106,31 @@ test('an incompatible request returns an explicit clarification next action', as
     nextAction: 'clarify_requirements',
     message: 'No public model matches all requested capabilities. Relax or clarify one or more requirements.',
   });
+});
+
+test('recommendations cannot revive a declared mode that has no executable mode caps', async () => {
+  const sora = {
+    ...candidate('sora-2-pro'),
+    modes: ['t2v', 'i2v', 'ref2v'] as EngineCaps['modes'],
+    modeCaps: {
+      t2v: {
+        modes: ['t2v'] as const,
+        duration: { options: [4, 8, 12], default: 4 },
+        resolution: ['720p', '1080p'],
+        aspectRatio: ['16:9', '9:16'],
+      },
+      i2v: {
+        modes: ['i2v'] as const,
+        duration: { options: [4, 8, 12], default: 4 },
+        resolution: ['720p', '1080p'],
+        aspectRatio: ['16:9', '9:16'],
+      },
+    },
+  } satisfies EngineCaps;
+  const result = await recommendAgentModels(
+    { surface: 'video', mode: 'ref2v', referenceImages: true },
+    deps([sora]),
+  );
+  assert.deepEqual(result.recommendations, []);
+  assert.equal(result.nextAction, 'clarify_requirements');
 });

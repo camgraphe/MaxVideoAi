@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import { computeGenerationCatalogRevision } from '../frontend/src/server/agent-api/catalog-revision';
 import {
   GenerationCapabilityError,
@@ -83,6 +85,21 @@ function request(overrides: Partial<CanonicalGenerationRequest> = {}): Canonical
     references: [],
     outputCount: 1,
     ...overrides,
+  };
+}
+
+function registryCapability(engineId: string): AgentPublicGenerationEngine {
+  const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+  assert.ok(entry, `Missing registry engine ${engineId}`);
+  const publicModes = entry.modes
+    .map((mode) => mode.mode)
+    .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
+      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+  return {
+    engine: entry.engine,
+    surface: entry.category === 'image' ? 'image' : 'video',
+    publicModes,
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
   };
 }
 
@@ -240,4 +257,56 @@ test('catalog revision covers every eligibility-determining capability and ignor
   for (const mutation of mutations) {
     assert.notEqual(computeGenerationCatalogRevision([mutation]), revision);
   }
+});
+
+test('real execution duration options accept numeric MCP seconds for Veo 3.1 and Luma Ray 2 only when supported', () => {
+  const veo = registryCapability('veo-3-1');
+  const luma = registryCapability('lumaRay2');
+  const videoRequest = (candidate: AgentPublicGenerationEngine, durationSec: number): CanonicalGenerationRequest => ({
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: candidate.engine.id,
+    mode: 't2v',
+    prompt: 'Duration parity',
+    settings: {
+      durationSec,
+      resolution: candidate.modeCaps.t2v?.resolution?.[0] ?? candidate.engine.resolutions[0],
+      aspectRatio: candidate.modeCaps.t2v?.aspectRatio?.[0] ?? candidate.engine.aspectRatios[0],
+    },
+    references: [],
+    outputCount: 1,
+  });
+
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(videoRequest(veo, 8), veo));
+  assert.doesNotThrow(() => validateCanonicalGenerationCapabilities(videoRequest(luma, 5), luma));
+  rejectsCapability(veo, videoRequest(veo, 5));
+  rejectsCapability(luma, videoRequest(luma, 6));
+});
+
+test('global provider controls reject an out-of-range seed even when a provider field omits bounds', () => {
+  const veo = registryCapability('veo-3-1');
+  rejectsCapability(veo, {
+    schemaVersion: 1,
+    surface: 'video',
+    engineId: 'veo-3-1',
+    mode: 't2v',
+    prompt: 'Seed parity',
+    settings: {
+      durationSec: 8,
+      resolution: '720p',
+      aspectRatio: '16:9',
+      seed: 2_147_483_648,
+    },
+    references: [],
+    outputCount: 1,
+  });
+});
+
+test('HTTP route validators delegate provider rules to a route-independent server owner', () => {
+  const shared = readFileSync('frontend/src/server/video-generation/execution-constraints.ts', 'utf8');
+  const providerWrapper = readFileSync('frontend/app/api/generate/_lib/validate-provider-constraints.ts', 'utf8');
+  const controlsWrapper = readFileSync('frontend/app/api/generate/_lib/validate-provider-controls.ts', 'utf8');
+  assert.doesNotMatch(shared, /app\/api\/generate|\.\.\/\.\.\/\.\.\/app/u);
+  assert.match(providerWrapper, /@\/server\/video-generation\/execution-constraints/u);
+  assert.match(controlsWrapper, /@\/server\/video-generation\/execution-constraints/u);
 });

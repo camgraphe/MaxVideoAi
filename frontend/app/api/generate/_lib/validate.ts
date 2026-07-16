@@ -1,6 +1,10 @@
 import type { Mode } from '../../../../fixtures/engineCaps';
 import { ENGINE_CAPS, resolveEngineCapsKey, type EngineCapsKey } from '../../../../fixtures/engineCaps';
 import { listFalEngines } from '../../../../src/config/falEngines';
+import {
+  isVideoDurationSupported,
+  normalizeVideoDurationOption,
+} from '../../../../src/server/video-generation/execution-constraints';
 import { validateModeMediaInputs } from './validate-media-inputs';
 import { validateProviderSpecificConstraints } from './validate-provider-constraints';
 import { validateProviderControls } from './validate-provider-controls';
@@ -22,16 +26,6 @@ const ENGINE_REQUIRED_PROMPT_MODES = listFalEngines().reduce<Record<string, Mode
   }
   return acc;
 }, {});
-
-function normalizeDurationValue(value: unknown): number | string | undefined {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return Math.round(value);
-  }
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-  return undefined;
-}
 
 export function validateRequest(engineId: string, mode: Mode | undefined, payload: Record<string, unknown>): ValidationResult {
   const capsKey: EngineCapsKey | undefined = resolveEngineCapsKey(engineId, mode);
@@ -121,7 +115,8 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
       };
     }
   } else if (caps.duration) {
-    const duration = normalizeDurationValue(payload['duration'] ?? payload['duration_seconds']);
+    const rawDuration = payload['duration'] ?? payload['duration_seconds'];
+    const duration = normalizeVideoDurationOption(rawDuration);
     if (duration == null) {
       return {
         ok: false,
@@ -136,24 +131,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
 
     if ('options' in caps.duration) {
       const allowed = caps.duration.options;
-      const matches = allowed.some((value) => {
-        if (typeof value === 'number') {
-          const numericDuration = typeof duration === 'number' ? duration : Number(String(duration).replace(/[^\d.]/g, ''));
-          return numericDuration === value;
-        }
-        const durationString = String(duration);
-        if (durationString === value) return true;
-        const numericPortion = Number(String(value).replace(/[^\d.]/g, ''));
-        if (Number.isFinite(numericPortion) && typeof duration === 'number') {
-          return Math.round(duration) === Math.round(numericPortion);
-        }
-        if (Number.isFinite(numericPortion) && typeof duration === 'string') {
-          const durationNumeric = Number(duration.replace(/[^\d.]/g, ''));
-          return Number.isFinite(durationNumeric) && Math.round(durationNumeric) === Math.round(numericPortion);
-        }
-        return false;
-      });
-      if (!matches) {
+      if (!isVideoDurationSupported(rawDuration, caps.duration)) {
         return {
           ok: false,
           error: {
@@ -166,19 +144,7 @@ export function validateRequest(engineId: string, mode: Mode | undefined, payloa
         };
       }
     } else if ('min' in caps.duration) {
-      if (typeof duration !== 'number') {
-        return {
-          ok: false,
-          error: {
-            code: 'ENGINE_CONSTRAINT',
-            field: 'duration',
-            message: `Duration must be ≥ ${caps.duration.min}s`,
-            allowed: [`>= ${caps.duration.min}`],
-            value: duration,
-          },
-        };
-      }
-      if (duration < caps.duration.min) {
+      if (!isVideoDurationSupported(rawDuration, caps.duration)) {
         return {
           ok: false,
           error: {

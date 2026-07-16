@@ -9,6 +9,11 @@ import {
 } from '@/lib/image/inputSchema';
 import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
 import type { ImageGenerationMode } from '@/types/image-generation';
+import {
+  isVideoDurationSupported,
+  validateProviderControls,
+  validateProviderSpecificConstraints,
+} from '@/server/video-generation/execution-constraints';
 
 import type { CanonicalGenerationRequest } from './generation-types';
 import type { AgentPublicGenerationEngine } from './model-catalog';
@@ -98,12 +103,6 @@ function validateFieldValue(field: EngineInputField, value: unknown): void {
   fail(field.id);
 }
 
-function matchesDurationOption(duration: number, option: string | number): boolean {
-  if (typeof option === 'number') return duration === option;
-  const numeric = Number(option.replace(/[^\d.]/gu, ''));
-  return Number.isFinite(numeric) && duration === numeric;
-}
-
 function validateVideoModeCaps(
   request: CanonicalGenerationRequest,
   caps: EngineModeUiCaps,
@@ -112,14 +111,19 @@ function validateVideoModeCaps(
   const duration = request.settings.durationSec;
   if (!Number.isSafeInteger(duration) || (duration as number) < 1) fail('durationSec');
   if (!caps.duration || caps.frames) fail('durationSec');
-  if (
-    'options' in caps.duration
-      ? !caps.duration.options.some((option) => matchesDurationOption(duration as number, option))
-      : (duration as number) < caps.duration.min
-  ) {
+  if (!isVideoDurationSupported(duration, caps.duration, candidate.engine.maxDurationSec)) {
     fail('durationSec');
   }
-  if ((duration as number) > candidate.engine.maxDurationSec) fail('durationSec');
+  const durationField = applicableField(candidate, 'duration', request.mode);
+  if (durationField) {
+    if (
+      durationField.type !== 'enum'
+      || !durationField.values?.length
+      || !isVideoDurationSupported(duration, { options: durationField.values })
+    ) {
+      fail('durationSec');
+    }
+  }
 
   const resolution = request.settings.resolution;
   if (
@@ -146,7 +150,6 @@ function validateVideoModeCaps(
   if (audio !== undefined && (typeof audio !== 'boolean' || !caps.audioToggle)) fail('audio');
 
   for (const [setting, fieldId] of [
-    ['durationSec', 'duration'],
     ['resolution', 'resolution'],
     ['aspectRatio', 'aspect_ratio'],
     ['fps', 'fps'],
@@ -170,6 +173,50 @@ function validateVideoModeCaps(
     validateFieldValue(field, request.settings.loop);
   }
   if (request.settings.numFrames !== undefined) fail('numFrames');
+}
+
+function buildProviderConstraintPayload(
+  request: CanonicalGenerationRequest,
+): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
+    duration: request.settings.durationSec,
+    resolution: request.settings.resolution,
+  };
+  if (request.settings.loop !== undefined) payload.loop = request.settings.loop;
+  if (request.settings.seed !== undefined) payload.seed = request.settings.seed;
+  if (request.settings.safetyChecker !== undefined) {
+    payload.enable_safety_checker = request.settings.safetyChecker;
+  }
+  const referencesByRole = new Map<string, string[]>();
+  for (const reference of request.references) {
+    const values = referencesByRole.get(reference.role) ?? [];
+    values.push(`mcp-${reference.role}-${values.length + 1}`);
+    referencesByRole.set(reference.role, values);
+  }
+  const source = referencesByRole.get('source')?.[0];
+  const firstFrame = referencesByRole.get('first_frame')?.[0];
+  const lastFrame = referencesByRole.get('last_frame')?.[0];
+  const references = referencesByRole.get('reference');
+  if (source) payload.image_url = source;
+  if (firstFrame) payload.first_frame_url = firstFrame;
+  if (lastFrame) {
+    payload.last_frame_url = lastFrame;
+    payload.end_image_url = lastFrame;
+  }
+  if (references?.length) payload.image_urls = references;
+  return payload;
+}
+
+function validateVideoExecutionConstraints(request: CanonicalGenerationRequest): void {
+  const payload = buildProviderConstraintPayload(request);
+  const provider = validateProviderSpecificConstraints({
+    engineId: request.engineId,
+    normalizedMode: request.mode,
+    payload,
+  });
+  if (!provider.ok) fail(provider.error.field ?? 'settings');
+  const controls = validateProviderControls(payload);
+  if (!controls.ok) fail(controls.error.field ?? 'settings');
 }
 
 function validateImageSettings(
@@ -288,4 +335,5 @@ export function validateCanonicalGenerationCapabilities(
   if (request.surface === 'video') validateVideoModeCaps(request, modeCaps, candidate);
   else validateImageSettings(request, candidate);
   validateReferences(request, candidate);
+  if (request.surface === 'video') validateVideoExecutionConstraints(request);
 }

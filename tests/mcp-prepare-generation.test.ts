@@ -5,6 +5,7 @@ import test from 'node:test';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
 
+import { listFalEngines } from '../frontend/src/config/falEngines';
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-types';
@@ -130,6 +131,21 @@ function publicEngine(model: AgentModel): AgentPublicGenerationEngine {
 const videoCapability = publicEngine(videoModel);
 const imageCapability = publicEngine(imageModel);
 const gptImageCapability = publicEngine(gptImageModel);
+
+function registryCapability(engineId: string): AgentPublicGenerationEngine {
+  const entry = listFalEngines().find((candidate) => candidate.id === engineId);
+  assert.ok(entry, `Missing registry engine ${engineId}`);
+  const publicModes = entry.modes
+    .map((mode) => mode.mode)
+    .filter((mode): mode is AgentPublicGenerationEngine['publicModes'][number] =>
+      ['t2v', 'i2v', 'ref2v', 't2i', 'i2i'].includes(mode));
+  return {
+    engine: entry.engine,
+    surface: entry.category === 'image' ? 'image' : 'video',
+    publicModes,
+    modeCaps: Object.fromEntries(entry.modes.map((mode) => [mode.mode, mode.ui])),
+  };
+}
 
 const videoInput: PrepareGenerationInput = {
   surface: 'video',
@@ -463,6 +479,47 @@ test('image requests fail closed when canonical input cannot represent exact pri
       listPublicEngines: async () => [unsafe.capability],
     });
     await expectAgentError(prepareGeneration(unsafe.input, principal, deps), 'PARAMETER_INVALID');
+    assert.equal(captures.events.includes('pricing'), false);
+    assert.equal(captures.inserted.length, 0);
+  }
+});
+
+test('real provider cross-field constraints reject Hailuo end-frame 512P and Luma 10s loop before pricing', async () => {
+  const cases: Array<{ capability: AgentPublicGenerationEngine; input: PrepareGenerationInput }> = [
+    {
+      capability: registryCapability('minimax-hailuo-02-text'),
+      input: {
+        surface: 'video',
+        engineId: 'minimax-hailuo-02-text',
+        mode: 'i2v',
+        prompt: 'Land on the final frame',
+        settings: { durationSec: 6, resolution: '512P', aspectRatio: '16:9', fps: 25 },
+        references: [
+          { kind: 'asset', assetId: 'start-asset', role: 'source' },
+          { kind: 'asset', assetId: 'end-asset', role: 'last_frame' },
+        ],
+        outputCount: 1,
+      },
+    },
+    {
+      capability: registryCapability('luma-ray-3-2'),
+      input: {
+        surface: 'video',
+        engineId: 'luma-ray-3-2',
+        mode: 't2v',
+        prompt: 'Loop this ten second shot',
+        settings: { durationSec: 10, resolution: '720p', aspectRatio: '16:9', loop: true },
+        references: [],
+        outputCount: 1,
+      },
+    },
+  ];
+
+  for (const item of cases) {
+    const { deps, captures } = baseDependencies({
+      listPublicEngines: async () => [item.capability],
+    });
+    await expectAgentError(prepareGeneration(item.input, principal, deps), 'PARAMETER_INVALID');
     assert.equal(captures.events.includes('pricing'), false);
     assert.equal(captures.inserted.length, 0);
   }
