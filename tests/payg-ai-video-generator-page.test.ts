@@ -10,6 +10,12 @@ const routeRoot = join(root, 'frontend/app/(localized)/[locale]/(marketing)/pay-
 const pagePath = join(routeRoot, 'page.tsx');
 const viewPath = join(routeRoot, '_components/PayAsYouGoPageView.tsx');
 const showcasePath = join(routeRoot, '_components/PayAsYouGoVideoShowcase.tsx');
+const sectionPaths = [
+  'PayAsYouGoHeroSections.tsx',
+  'PayAsYouGoGuideSections.tsx',
+  'PayAsYouGoPricingSections.tsx',
+  'PayAsYouGoTrustSections.tsx',
+].map((name) => join(routeRoot, '_components', name));
 const dataPath = join(routeRoot, '_lib/payg-page-data.ts');
 const jsonLdPath = join(routeRoot, '_lib/payg-jsonld.ts');
 const showcaseDataPath = join(routeRoot, '_lib/payg-video-showcase.ts');
@@ -48,6 +54,7 @@ test('pay-as-you-go page exists with focused route-local boundaries', () => {
 
 test('pay-as-you-go page targets natural-language AI search questions', () => {
   const viewSource = read(viewPath);
+  const rendererSource = [viewPath, ...sectionPaths].filter(existsSync).map(read).join('\n');
   const dataSource = read(dataPath);
   const contentSource = ['en.ts', 'fr.ts', 'es.ts'].map((name) => read(join(contentRoot, name))).join('\n');
   const combined = `${viewSource}\n${dataSource}\n${contentSource}`;
@@ -80,7 +87,7 @@ test('pay-as-you-go page targets natural-language AI search questions', () => {
   });
 
   assert.match(dataSource, /buildPricingHubData/);
-  assert.match(viewSource, /EngineIcon/);
+  assert.match(rendererSource, /EngineIcon/);
   assert.doesNotMatch(combined, /Direct AI-search answers|natural questions users ask LLMs|GSC-informed shortcuts/);
   assert.doesNotMatch(viewSource, /generated_images|\\.codex/);
   assert.match(combined, /Kling/);
@@ -146,7 +153,8 @@ test('pay-as-you-go page localizes every route-local content surface', () => {
   const showcaseSource = read(showcasePath);
   const showcaseDataSource = read(showcaseDataPath);
 
-  assert.match(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
+  assert.doesNotMatch(pageSource, /<PayAsYouGoPageView\s+locale=\{locale\}/);
+  assert.match(pageSource, /<PayAsYouGoPageView\s+data=\{data\}/);
   assert.match(pageSource, /loadPayAsYouGoVideoShowcase\(\{ locale, copy: content\.showcase\.runtime \}\)/);
   assert.match(pageSource, /const content = getPayAsYouGoContent\(locale\)/);
   assert.match(pageSource, /buildPayAsYouGoPageData\(\{ locale, content \}\)/);

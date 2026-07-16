@@ -46,7 +46,7 @@ function text(value: string): string {
   return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function semanticHtml(html: string) {
+export function extractPaygSemanticHtml(html: string) {
   return {
     sectionOpenings: values(/<(header|section)([^>]*)>/g, html, 0),
     headings: values(/<h[1-3][^>]*>([\s\S]*?)<\/h[1-3]>/g, html).map(text),
@@ -75,7 +75,6 @@ export async function captureCurrentPaygManifest(
       I18nProvider,
       { locale, dictionary: {}, fallback: {} },
       React.createElement(PayAsYouGoPageView, {
-        locale,
         data,
         showcaseCopy: content.showcase.section,
         showcaseVideos: videos,
@@ -90,7 +89,7 @@ export async function captureCurrentPaygManifest(
     return {
       metadata: plain(await generateMetadata({ params: Promise.resolve({ locale }) })),
       jsonLd,
-      ...semanticHtml(markup),
+      ...extractPaygSemanticHtml(markup),
     };
   } finally {
     if (originalNodeEnv === undefined) delete process.env.NODE_ENV;

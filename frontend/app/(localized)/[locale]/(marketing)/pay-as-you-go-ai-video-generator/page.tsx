@@ -44,7 +44,6 @@ export default async function PayAsYouGoAiVideoGeneratorPage(props: { params: Pr
   return (
     <>
       <PayAsYouGoPageView
-        locale={locale}
         data={data}
         showcaseCopy={content.showcase.section}
         showcaseVideos={showcaseVideos}
