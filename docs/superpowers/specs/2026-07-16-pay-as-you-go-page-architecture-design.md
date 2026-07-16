@@ -106,7 +106,7 @@ The three physical locale modules prevent the new content owner from becoming an
 
 It does not own:
 
-- price numbers;
+- computed pricing-matrix values or quote outputs;
 - pricing formulas;
 - selected pricing rows;
 - model runtime facts;
@@ -323,7 +323,7 @@ No new runtime recovery path is added as part of this structural refactor.
 - every required string is non-empty;
 - arrays and semantic IDs are structurally valid;
 - no locale-selection closures or inline translation tuples remain outside `_content`;
-- no numeric price ownership enters editorial content.
+- no computed pricing row, price-cell, preset quote, or pricing formula enters editorial content; existing authored prose such as the localized starter-credit claim remains exact.
 
 ### Permanent architecture contracts
 
