@@ -627,6 +627,102 @@ test('fails closed without reading malformed modern and legacy pricing container
   assert.equal(legacyAddonReads, 0);
 });
 
+test('rejects a direct engine pricingDetails getter without reading it', async () => {
+  const current = await getCurrentTrialEngine();
+  const candidate = cloneEngine(current);
+  const safePricingDetails = candidate.engine.pricingDetails;
+  let reads = 0;
+  Object.defineProperty(candidate.engine, 'pricingDetails', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      reads += 1;
+      return safePricingDetails;
+    },
+  });
+
+  let rejected = false;
+  try {
+    assertTrialPresetSupported(candidate);
+  } catch {
+    rejected = true;
+  }
+  assert.equal(reads, 0);
+  assert.equal(rejected, true);
+});
+
+test('rejects a direct engine legacy pricing getter without reading it', async () => {
+  const current = await getCurrentTrialEngine();
+  const candidate = cloneEngine(current);
+  const safeLegacyPricing = candidate.engine.pricing;
+  let reads = 0;
+  Object.defineProperty(candidate.engine, 'pricing', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      reads += 1;
+      return safeLegacyPricing;
+    },
+  });
+
+  let rejected = false;
+  try {
+    assertTrialPresetSupported(candidate);
+  } catch {
+    rejected = true;
+  }
+  assert.equal(reads, 0);
+  assert.equal(rejected, true);
+});
+
+test('rejects inherited and non-enumerable engine pricing properties before owner calculation', async () => {
+  const current = await getCurrentTrialEngine();
+  let inheritedPricingDetailsReads = 0;
+  let inheritedLegacyPricingReads = 0;
+
+  for (const key of ['pricingDetails', 'pricing'] as const) {
+    const candidate = cloneEngine(current);
+    const value = candidate.engine[key];
+    Object.defineProperty(candidate.engine, key, {
+      configurable: true,
+      enumerable: false,
+      value,
+      writable: true,
+    });
+    assert.throws(() => assertTrialPresetSupported(candidate), /trial preset/i);
+  }
+
+  const inheritedPricingDetails = cloneEngine(current);
+  const safePricingDetails = inheritedPricingDetails.engine.pricingDetails;
+  delete inheritedPricingDetails.engine.pricingDetails;
+  const pricingDetailsPrototype = Object.create(Object.getPrototypeOf(inheritedPricingDetails.engine));
+  Object.defineProperty(pricingDetailsPrototype, 'pricingDetails', {
+    enumerable: true,
+    get() {
+      inheritedPricingDetailsReads += 1;
+      return safePricingDetails;
+    },
+  });
+  Object.setPrototypeOf(inheritedPricingDetails.engine, pricingDetailsPrototype);
+  assert.throws(() => assertTrialPresetSupported(inheritedPricingDetails), /trial preset/i);
+  assert.equal(inheritedPricingDetailsReads, 0);
+
+  const inheritedLegacyPricing = cloneEngine(current);
+  const safeLegacyPricing = inheritedLegacyPricing.engine.pricing;
+  delete inheritedLegacyPricing.engine.pricing;
+  const legacyPricingPrototype = Object.create(Object.getPrototypeOf(inheritedLegacyPricing.engine));
+  Object.defineProperty(legacyPricingPrototype, 'pricing', {
+    enumerable: true,
+    get() {
+      inheritedLegacyPricingReads += 1;
+      return safeLegacyPricing;
+    },
+  });
+  Object.setPrototypeOf(inheritedLegacyPricing.engine, legacyPricingPrototype);
+  assert.throws(() => assertTrialPresetSupported(inheritedLegacyPricing), /trial preset/i);
+  assert.equal(inheritedLegacyPricingReads, 0);
+});
+
 test('validates exact modern and legacy addon rule schemas before owner calculation', async () => {
   const current = await getCurrentTrialEngine();
 

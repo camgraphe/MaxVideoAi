@@ -244,9 +244,69 @@ function validateAddonSource(
   }
 }
 
-function assertPricingInputShapes(engine: AgentPublicGenerationEngine['engine']): void {
-  const pricingDetails = engine.pricingDetails;
-  const legacyPricing = engine.pricing;
+type EnginePricingKey = 'pricingDetails' | 'pricing';
+
+function findInheritedPricingDescriptor(
+  engine: AgentPublicGenerationEngine['engine'],
+  key: EnginePricingKey,
+): PropertyDescriptor | undefined {
+  let prototype = Object.getPrototypeOf(engine);
+  while (prototype !== null) {
+    const descriptor = Object.getOwnPropertyDescriptor(prototype, key);
+    if (descriptor) return descriptor;
+    prototype = Object.getPrototypeOf(prototype);
+  }
+  return undefined;
+}
+
+function readOwnPricingValue(
+  engine: AgentPublicGenerationEngine['engine'],
+  key: EnginePricingKey,
+  reason: string,
+): unknown {
+  const descriptor = Object.getOwnPropertyDescriptor(engine, key);
+  if (!descriptor) {
+    if (findInheritedPricingDescriptor(engine, key)) unsupported(reason);
+    return undefined;
+  }
+  if (!descriptor.enumerable || !('value' in descriptor)) unsupported(reason);
+  return descriptor.value;
+}
+
+function cloneEngineWithSafePricing(
+  engine: AgentPublicGenerationEngine['engine'],
+  pricingDetails: unknown,
+  legacyPricing: unknown,
+): AgentPublicGenerationEngine['engine'] {
+  const descriptors = Object.getOwnPropertyDescriptors(engine);
+  delete descriptors.pricingDetails;
+  delete descriptors.pricing;
+  return Object.create(Object.getPrototypeOf(engine), {
+    ...descriptors,
+    pricingDetails: {
+      configurable: true,
+      enumerable: true,
+      value: pricingDetails,
+      writable: true,
+    },
+    pricing: {
+      configurable: true,
+      enumerable: true,
+      value: legacyPricing,
+      writable: true,
+    },
+  }) as AgentPublicGenerationEngine['engine'];
+}
+
+function assertPricingInputShapes(
+  engine: AgentPublicGenerationEngine['engine'],
+): AgentPublicGenerationEngine['engine'] {
+  const pricingDetails = readOwnPricingValue(
+    engine,
+    'pricingDetails',
+    'pricing_details_malformed',
+  );
+  const legacyPricing = readOwnPricingValue(engine, 'pricing', 'legacy_pricing_malformed');
   if (pricingDetails !== undefined) {
     assertPlainPricingObject(pricingDetails, 'pricing_details_malformed');
   }
@@ -260,21 +320,22 @@ function assertPricingInputShapes(engine: AgentPublicGenerationEngine['engine'])
   if (modernAddons) {
     if (!('value' in modernAddons)) unsupported('pricing_addons_malformed');
     validateAddonSource(engine, modernAddons.value, 'modern');
-    return;
+  } else {
+    const legacyAddons = legacyPricing
+      ? Object.getOwnPropertyDescriptor(legacyPricing, 'addons')
+      : undefined;
+    if (legacyAddons) {
+      if (!('value' in legacyAddons)) unsupported('pricing_addons_malformed');
+      validateAddonSource(engine, legacyAddons.value, 'legacy');
+    }
   }
 
-  const legacyAddons = legacyPricing
-    ? Object.getOwnPropertyDescriptor(legacyPricing, 'addons')
-    : undefined;
-  if (legacyAddons) {
-    if (!('value' in legacyAddons)) unsupported('pricing_addons_malformed');
-    validateAddonSource(engine, legacyAddons.value, 'legacy');
-  }
+  return cloneEngineWithSafePricing(engine, pricingDetails, legacyPricing);
 }
 
 function assertAudioPricingStable(engine: AgentPublicGenerationEngine['engine']): void {
-  assertPricingInputShapes(engine);
-  const definition = buildPricingDefinition(engine);
+  const safeEngine = assertPricingInputShapes(engine);
+  const definition = buildPricingDefinition(safeEngine);
   if (!definition || definition.engineId !== MCP_TRIAL_PRESET.engineId) unsupported('pricing_missing');
   assertFiniteNonNegative(definition.baseUnitPriceCents, 'pricing_malformed');
   if (definition.baseUnitPriceCents === 0) unsupported('pricing_malformed');
