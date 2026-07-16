@@ -178,6 +178,26 @@ test('transport-neutral estimate returns canonical GPT Image 2 pricing and norma
   );
 });
 
+test('transport-neutral image estimates apply the authoritative membership tier in exact cents', async () => {
+  const expected = {
+    member: 20,
+    plus: 19,
+    pro: 18,
+  } as const;
+  for (const membershipTier of ['member', 'plus', 'pro'] as const) {
+    const result = await estimateImageGeneration({
+      engineId: 'gpt-image-2',
+      mode: 't2i',
+      numImages: 1,
+      resolution: '1024x768',
+      quality: 'high',
+      membershipTier,
+    } as Parameters<typeof estimateImageGeneration>[0] & { membershipTier: typeof membershipTier });
+    assert.equal(result.pricing.membershipTier, membershipTier);
+    assert.equal(result.pricing.totalCents, expected[membershipTier]);
+  }
+});
+
 test('transport-neutral estimate clamps ordinary text-to-image output count', async () => {
   const result = await estimateImageGeneration({
     engineId: 'nano-banana-lite',

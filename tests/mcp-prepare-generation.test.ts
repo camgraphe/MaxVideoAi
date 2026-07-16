@@ -11,6 +11,7 @@ import type { CanonicalGenerationRequest } from '../frontend/src/server/agent-ap
 import {
   computeGenerationCatalogRevision,
 } from '../frontend/src/server/agent-api/catalog-revision';
+import type { AgentPublicGenerationEngine } from '../frontend/src/server/agent-api/model-catalog';
 import {
   priceCanonicalGeneration,
 } from '../frontend/src/server/agent-api/generation-pricing';
@@ -21,6 +22,7 @@ import {
 } from '../frontend/src/server/agent-api/prepare-generation';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
 import type { AgentModel } from '../frontend/src/server/agent-api/types';
+import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
 import {
   createMaxVideoAiMcpServer,
   type MaxVideoAiMcpServices,
@@ -72,6 +74,63 @@ const gptImageModel: AgentModel = {
   resolutions: ['auto', 'custom', '1024x1024'],
 };
 
+function publicEngine(model: AgentModel): AgentPublicGenerationEngine {
+  const isVideo = model.surface === 'video';
+  const inputFields: EngineInputField[] = isVideo
+    ? [
+        { id: 'prompt', type: 'text', label: 'Prompt' },
+        { id: 'duration', type: 'enum', label: 'Duration', values: ['5', '10'] },
+        { id: 'resolution', type: 'enum', label: 'Resolution', values: model.resolutions },
+        { id: 'aspect_ratio', type: 'enum', label: 'Ratio', values: model.aspectRatios },
+        { id: 'generate_audio', type: 'boolean', label: 'Audio' },
+        { id: 'image_url', type: 'image', label: 'Source', modes: ['i2v'], requiredInModes: ['i2v'], minCount: 1, maxCount: 1 },
+        { id: 'image_urls', type: 'image', label: 'References', modes: ['ref2v'], requiredInModes: ['ref2v'], minCount: 1, maxCount: 2 },
+      ]
+    : [
+        { id: 'prompt', type: 'text', label: 'Prompt' },
+        { id: 'resolution', type: 'enum', label: 'Resolution', values: model.resolutions, modes: ['t2i', 'i2i'] },
+        { id: 'aspect_ratio', type: 'enum', label: 'Ratio', values: model.aspectRatios, modes: ['t2i', 'i2i'] },
+        { id: 'quality', type: 'enum', label: 'Quality', values: ['low', 'medium', 'high'] },
+        { id: 'output_format', type: 'enum', label: 'Format', values: ['png', 'jpeg', 'webp'] },
+        { id: 'enable_web_search', type: 'boolean', label: 'Web search' },
+        { id: 'image_urls', type: 'image', label: 'References', modes: ['i2i'], requiredInModes: ['i2i'], minCount: 1, maxCount: 4 },
+      ];
+  const modeCaps = Object.fromEntries(model.modes.map((mode) => [mode, {
+    modes: [mode],
+    ...(isVideo ? { duration: { options: [5, 10], default: 5 }, fps: [24], audioToggle: model.audio } : {}),
+    resolution: model.resolutions,
+    aspectRatio: model.aspectRatios,
+  } satisfies EngineModeUiCaps])) as AgentPublicGenerationEngine['modeCaps'];
+  const caps: EngineCaps = {
+    id: model.id,
+    label: model.label,
+    provider: 'test',
+    status: 'live',
+    latencyTier: 'standard',
+    modes: model.modes,
+    maxDurationSec: model.maxDurationSec ?? 0,
+    resolutions: model.resolutions as EngineCaps['resolutions'],
+    aspectRatios: model.aspectRatios as EngineCaps['aspectRatios'],
+    fps: isVideo ? [24] : [1],
+    audio: model.audio,
+    upscale4k: false,
+    extend: false,
+    motionControls: false,
+    keyframes: false,
+    params: {},
+    inputLimits: { promptMaxChars: 12_000 },
+    inputSchema: { required: [inputFields[0]], optional: inputFields.slice(1) },
+    updatedAt: '2026-07-16T00:00:00.000Z',
+    ttlSec: 600,
+    availability: 'available',
+  };
+  return { engine: caps, surface: model.surface, publicModes: model.modes, modeCaps };
+}
+
+const videoCapability = publicEngine(videoModel);
+const imageCapability = publicEngine(imageModel);
+const gptImageCapability = publicEngine(gptImageModel);
+
 const videoInput: PrepareGenerationInput = {
   surface: 'video',
   engineId: videoModel.id,
@@ -120,19 +179,31 @@ function baseDependencies(
       captures.events.push('restriction');
       return null;
     },
-    listPublicModels: async () => {
+    listPublicEngines: async () => {
       captures.events.push('catalog');
-      return [videoModel, imageModel];
+      return [videoCapability, imageCapability];
     },
-    priceGeneration: async (request) => {
+    resolveMembershipPricing: async () => {
+      captures.events.push('membership');
+      return {
+        tier: 'member',
+        source: 'app_receipts_rolling_30d',
+        spent30Cents: 0,
+        thresholdCents: 0,
+        discountPercent: 0,
+      };
+    },
+    priceGeneration: async (request, membershipTier) => {
       captures.events.push('pricing');
       captures.priced.push(request);
       return {
         priceCents: request.surface === 'video' ? 125 : 45,
         currency: 'USD',
+        membershipTier,
         pricingSnapshot: {
           totalCents: request.surface === 'video' ? 125 : 45,
           currency: 'USD',
+          membershipTier,
           provenance: { source: 'canonical-test' },
         },
       };
@@ -223,9 +294,52 @@ test('valid video and image requests persist immutable exact quotes before retur
     assert.equal(captures.inserted[0].executor, transactionExecutor);
     assert.deepEqual(captures.spendingExecutors, [transactionExecutor]);
     assert.deepEqual(captures.events, [
-      'feature', 'restriction', 'catalog', 'pricing', 'wallet',
+      'feature', 'restriction', 'catalog', 'membership', 'pricing', 'wallet',
       'transaction', 'spending', 'persistence',
     ]);
+  }
+});
+
+test('authoritative Member, Plus, and Pro contexts set exact quotes and cannot be spoofed by MCP input', async () => {
+  const exactPrices = { member: 125, plus: 119, pro: 113 } as const;
+  for (const tier of ['member', 'plus', 'pro'] as const) {
+    const membership = {
+      tier,
+      source: 'app_receipts_rolling_30d' as const,
+      spent30Cents: tier === 'member' ? 0 : tier === 'plus' ? 5_000 : 20_000,
+      thresholdCents: tier === 'member' ? 0 : tier === 'plus' ? 5_000 : 20_000,
+      discountPercent: tier === 'member' ? 0 : tier === 'plus' ? 0.05 : 0.1,
+    };
+    const overrides = {
+      resolveMembershipPricing: async () => membership,
+      priceGeneration: async (_request: CanonicalGenerationRequest, received: string) => {
+        assert.equal(received, membership.tier);
+        return {
+          priceCents: exactPrices[tier],
+          currency: 'USD',
+          membershipTier: tier,
+          pricingSnapshot: {
+            totalCents: exactPrices[tier],
+            currency: 'USD',
+            membershipTier: tier,
+          },
+        };
+      },
+    } as unknown as Partial<PrepareGenerationDependencies>;
+    const { deps, captures } = baseDependencies(overrides);
+    const prepared = await prepareGeneration(videoInput, principal, deps);
+    assert.equal(prepared.price.amountCents, exactPrices[tier]);
+    const stored = captures.inserted[0].pricingSnapshot as Record<string, unknown>;
+    assert.deepEqual(stored.membership, membership);
+  }
+
+  for (const spoofed of [
+    { ...videoInput, membershipTier: 'pro' },
+    { ...videoInput, settings: { ...videoInput.settings, membershipTier: 'pro' } },
+  ]) {
+    const { deps, captures } = baseDependencies();
+    await expectAgentError(prepareGeneration(spoofed as never, principal, deps), 'PARAMETER_INVALID');
+    assert.equal(captures.events.includes('pricing'), false);
   }
 });
 
@@ -262,7 +376,7 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
   );
   assert.deepEqual(invalidCanonical.captures.events, ['feature', 'restriction']);
 
-  const disabledEngine = baseDependencies({ listPublicModels: async () => [] });
+  const disabledEngine = baseDependencies({ listPublicEngines: async () => [] });
   await expectAgentError(prepareGeneration(videoInput, principal, disabledEngine.deps), 'ENGINE_UNAVAILABLE');
 
   const modeMismatch = baseDependencies();
@@ -272,7 +386,7 @@ test('canonical, public-engine, mode, surface, and reference validation fail clo
   );
 
   const unsupportedMode = baseDependencies({
-    listPublicModels: async () => [{ ...videoModel, modes: ['t2v'] }],
+    listPublicEngines: async () => [{ ...videoCapability, publicModes: ['t2v'] }],
   });
   await expectAgentError(
     prepareGeneration({ ...videoInput, mode: 'i2v' }, principal, unsupportedMode.deps),
@@ -316,13 +430,13 @@ test('surface validation rejects semantically mistyped canonical settings before
 });
 
 test('image requests fail closed when canonical input cannot represent exact pricing facts', async () => {
-  const unsafeCases: Array<{ input: PrepareGenerationInput; model: AgentModel }> = [
+  const unsafeCases: Array<{ input: PrepareGenerationInput; capability: AgentPublicGenerationEngine }> = [
     {
       input: {
         ...imageInput,
         settings: { ...imageInput.settings, enableWebSearch: true },
       },
-      model: imageModel,
+      capability: imageCapability,
     },
     {
       input: {
@@ -332,7 +446,7 @@ test('image requests fail closed when canonical input cannot represent exact pri
         settings: { ...imageInput.settings, resolution: 'auto' },
         references: [{ kind: 'asset', assetId: 'asset-1', role: 'source' }],
       },
-      model: gptImageModel,
+      capability: gptImageCapability,
     },
     {
       input: {
@@ -340,13 +454,13 @@ test('image requests fail closed when canonical input cannot represent exact pri
         engineId: gptImageModel.id,
         settings: { ...imageInput.settings, resolution: 'custom' },
       },
-      model: gptImageModel,
+      capability: gptImageCapability,
     },
   ];
 
   for (const unsafe of unsafeCases) {
     const { deps, captures } = baseDependencies({
-      listPublicModels: async () => [unsafe.model],
+      listPublicEngines: async () => [unsafe.capability],
     });
     await expectAgentError(prepareGeneration(unsafe.input, principal, deps), 'PARAMETER_INVALID');
     assert.equal(captures.events.includes('pricing'), false);
@@ -383,12 +497,28 @@ test('wallet currency mismatch fails before spending and quote persistence', asy
   assert.equal(captures.inserted.length, 0);
 });
 
+test('invalid authoritative membership output fails as an internal error before pricing', async () => {
+  const { deps, captures } = baseDependencies({
+    resolveMembershipPricing: async () => ({
+      tier: 'vip',
+      source: 'app_receipts_rolling_30d',
+      spent30Cents: 0,
+      thresholdCents: 0,
+      discountPercent: 0,
+    } as never),
+  });
+  await expectAgentError(prepareGeneration(videoInput, principal, deps), 'INTERNAL_ERROR');
+  assert.equal(captures.events.includes('pricing'), false);
+  assert.equal(captures.inserted.length, 0);
+});
+
 test('an inconsistent canonical pricing snapshot fails closed before wallet and persistence', async () => {
   const { deps, captures } = baseDependencies({
     priceGeneration: async () => ({
       priceCents: 125,
       currency: 'USD',
-      pricingSnapshot: { totalCents: 124, currency: 'USD' },
+      membershipTier: 'member',
+      pricingSnapshot: { totalCents: 124, currency: 'USD', membershipTier: 'member' },
     }),
   });
   await expectAgentError(prepareGeneration(videoInput, principal, deps), 'INTERNAL_ERROR');
@@ -424,14 +554,20 @@ test('spending-limit denial returns a safe web handoff and never persists a quot
 });
 
 test('catalog revision and full versioned pricing snapshot are deterministic and persisted', async () => {
-  const first = computeGenerationCatalogRevision([videoModel, imageModel]);
-  const reordered = computeGenerationCatalogRevision([imageModel, videoModel]);
-  const changed = computeGenerationCatalogRevision([{ ...videoModel, resolutions: ['480p'] }, imageModel]);
-  const relabelled = computeGenerationCatalogRevision([{ ...videoModel, label: 'Renamed model' }, imageModel]);
+  const first = computeGenerationCatalogRevision([videoCapability, imageCapability]);
+  const reordered = computeGenerationCatalogRevision([imageCapability, videoCapability]);
+  const changed = computeGenerationCatalogRevision([
+    { ...videoCapability, engine: { ...videoCapability.engine, resolutions: ['480p'] } },
+    imageCapability,
+  ]);
+  const relabelled = computeGenerationCatalogRevision([
+    { ...videoCapability, engine: { ...videoCapability.engine, label: 'Renamed model' } },
+    imageCapability,
+  ]);
   assert.equal(first, reordered);
   assert.notEqual(first, changed);
   assert.notEqual(first, relabelled);
-  assert.match(first, /^mcp-catalog-v1:[a-f0-9]{64}$/u);
+  assert.match(first, /^mcp-catalog-v2:[a-f0-9]{64}$/u);
 
   const { deps, captures } = baseDependencies();
   await prepareGeneration(videoInput, principal, deps);
@@ -444,6 +580,7 @@ test('catalog revision and full versioned pricing snapshot are deterministic and
   assert.deepEqual(snapshot.canonicalPricing, {
     totalCents: 125,
     currency: 'USD',
+    membershipTier: 'member',
     provenance: { source: 'canonical-test' },
   });
 });
@@ -460,13 +597,13 @@ test('generation pricing delegates video and image formulas to the existing cano
         ok: true,
         total: 125,
         currency: 'USD',
-        pricing: { totalCents: 125, currency: 'USD', marker: 'video-canonical' },
+        pricing: { totalCents: 125, currency: 'USD', membershipTier: 'member', marker: 'video-canonical' },
       };
     },
     estimateImage: async (payload: Record<string, unknown>) => {
       imagePayload = payload;
       return {
-        pricing: { totalCents: 45, currency: 'USD', marker: 'image-canonical' },
+        pricing: { totalCents: 45, currency: 'USD', membershipTier: 'member', marker: 'image-canonical' },
         normalized: {
           engineId: imageModel.id,
           mode: 't2i',
@@ -481,8 +618,8 @@ test('generation pricing delegates video and image formulas to the existing cano
       };
     },
   };
-  const videoPrice = await priceCanonicalGeneration(videoRequest, deps as never);
-  const imagePrice = await priceCanonicalGeneration(imageRequest, deps as never);
+  const videoPrice = await priceCanonicalGeneration(videoRequest, 'member', deps as never);
+  const imagePrice = await priceCanonicalGeneration(imageRequest, 'member', deps as never);
 
   assert.equal(videoPrice.priceCents, 125);
   assert.equal(imagePrice.priceCents, 45);
@@ -496,6 +633,7 @@ test('generation pricing delegates video and image formulas to the existing cano
     aspectRatio: '16:9',
     fps: 24,
     audio: true,
+    user: { memberTier: 'member' },
   });
   assert.deepEqual(imagePayload, {
     engineId: imageModel.id,
@@ -506,7 +644,35 @@ test('generation pricing delegates video and image formulas to the existing cano
     aspectRatio: '1:1',
     referenceImageCount: 0,
     referenceImageSizes: [],
+    membershipTier: 'member',
   });
+});
+
+test('generation pricing passes the authoritative tier to both canonical pricing owners', async () => {
+  const videoRequest = { ...videoInput, schemaVersion: 1, prompt: videoInput.prompt.trim() } as CanonicalGenerationRequest;
+  const imageRequest = { ...imageInput, schemaVersion: 1 } as CanonicalGenerationRequest;
+  const seen: string[] = [];
+  const deps = {
+    computeVideoPreflight: async (payload: { user?: { memberTier?: string } }) => {
+      seen.push(`video:${payload.user?.memberTier ?? 'missing'}`);
+      return {
+        ok: true,
+        total: 113,
+        currency: 'USD',
+        pricing: { totalCents: 113, currency: 'USD', membershipTier: 'pro' },
+      };
+    },
+    estimateImage: async (payload: { membershipTier?: string }) => {
+      seen.push(`image:${payload.membershipTier ?? 'missing'}`);
+      return {
+        pricing: { totalCents: 18, currency: 'USD', membershipTier: 'pro' },
+        normalized: {},
+      };
+    },
+  };
+  assert.equal((await priceCanonicalGeneration(videoRequest, 'pro' as never, deps as never)).priceCents, 113);
+  assert.equal((await priceCanonicalGeneration(imageRequest, 'pro' as never, deps as never)).priceCents, 18);
+  assert.deepEqual(seen, ['video:pro', 'image:pro']);
 });
 
 test('prepare_generation is gated out by default and accurately annotated when explicitly injected on', async (t) => {

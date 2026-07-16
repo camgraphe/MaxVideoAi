@@ -7,10 +7,12 @@ import type { PreflightRequest, PreflightResponse, PricingSnapshot } from '@/typ
 import type { ImageGenerationMode, ImageGenerationRequest } from '@/types/image-generation';
 
 import type { CanonicalGenerationRequest } from './generation-types';
+import type { AuthoritativeMembershipTier } from '../membership/user-membership-status';
 
 export type GenerationPricingResult = {
   priceCents: number;
   currency: string;
+  membershipTier: AuthoritativeMembershipTier;
   pricingSnapshot: Record<string, unknown>;
 };
 
@@ -65,6 +67,7 @@ function pricingRecord(snapshot: PricingSnapshot): Record<string, unknown> {
 
 function validatePricingResult(
   snapshot: PricingSnapshot,
+  membershipTier: AuthoritativeMembershipTier,
   expectedTotal?: number,
   expectedCurrency?: string,
 ): GenerationPricingResult {
@@ -75,16 +78,18 @@ function validatePricingResult(
     || priceCents < 0
     || typeof currency !== 'string'
     || !/^[A-Z]{3}$/u.test(currency)
+    || snapshot.membershipTier !== membershipTier
     || (expectedTotal !== undefined && expectedTotal !== priceCents)
     || (expectedCurrency !== undefined && expectedCurrency !== currency)
   ) {
     throw new Error('Canonical pricing result is inconsistent.');
   }
-  return { priceCents, currency, pricingSnapshot: pricingRecord(snapshot) };
+  return { priceCents, currency, membershipTier, pricingSnapshot: pricingRecord(snapshot) };
 }
 
 export async function priceCanonicalGeneration(
   request: CanonicalGenerationRequest,
+  membershipTier: AuthoritativeMembershipTier,
   dependencies: GenerationPricingDependencies = defaultDependencies,
 ): Promise<GenerationPricingResult> {
   if (request.surface === 'video') {
@@ -98,11 +103,12 @@ export async function priceCanonicalGeneration(
       fps: typeof settings.fps === 'number' ? settings.fps : 24,
       ...(typeof settings.loop === 'boolean' ? { loop: settings.loop } : {}),
       ...(typeof settings.audio === 'boolean' ? { audio: settings.audio } : {}),
+      user: { memberTier: membershipTier },
     });
     if (!result.ok || !result.pricing || result.total === undefined || !result.currency) {
       throw new Error('Canonical video pricing is unavailable.');
     }
-    return validatePricingResult(result.pricing, result.total, result.currency);
+    return validatePricingResult(result.pricing, membershipTier, result.total, result.currency);
   }
 
   const settings = request.settings;
@@ -115,6 +121,7 @@ export async function priceCanonicalGeneration(
     aspectRatio: optionalString(settings, 'aspectRatio'),
     referenceImageCount: request.references.length,
     referenceImageSizes: [],
+    membershipTier,
   });
-  return validatePricingResult(result.pricing);
+  return validatePricingResult(result.pricing, membershipTier);
 }

@@ -4,6 +4,7 @@ import { normalizeMediaUrl } from '@/lib/media';
 import { ensureBillingSchema } from '@/lib/schema';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders, resolveHeroThumbFromRenders } from '@/lib/image-renders';
+import { resolveAuthoritativeMembershipTier } from '@/server/membership/user-membership-status';
 import { listStarterPlaylistVideos, type GalleryVideo } from '@/server/videos';
 import type { PricingSnapshot } from '@/types/engines';
 import type { Job } from '@/types/jobs';
@@ -243,16 +244,6 @@ export async function getVisitorImageLikeJob(jobId: string): Promise<Job | null>
   return jobs.find((job) => job.jobId === jobId) ?? null;
 }
 
-function resolveActiveTier(spent30Cents: number, tiers: MembershipTierConfig[]): MembershipTierConfig {
-  let activeTier = tiers[0] ?? { tier: 'member', spendThresholdCents: 0, discountPercent: 0 };
-  tiers.forEach((tier) => {
-    if (spent30Cents >= tier.spendThresholdCents) {
-      activeTier = tier;
-    }
-  });
-  return activeTier;
-}
-
 function formatTierLabel(tier: string): string {
   if (!tier.length) return 'Member';
   return `${tier.slice(0, 1).toUpperCase()}${tier.slice(1)}`;
@@ -276,7 +267,7 @@ export async function getVisitorMemberStatus(includeTiers: boolean): Promise<{
 
   const spent30Cents = costs.reduce((sum, value) => sum + value, 0);
   const spentTodayCents = costs.slice(0, VISITOR_SPEND_TODAY_SAMPLE_SIZE).reduce((sum, value) => sum + value, 0);
-  const activeTier = resolveActiveTier(spent30Cents, tiers);
+  const activeTier = resolveAuthoritativeMembershipTier(spent30Cents, tiers);
 
   return {
     tier: formatTierLabel(activeTier.tier),

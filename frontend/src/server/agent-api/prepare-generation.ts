@@ -1,10 +1,18 @@
 import mcpPublication from '@/config/mcp-publication.json';
 import { withDbTransaction, type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
+import {
+  getUserMembershipStatus,
+  type MembershipPricingContext,
+} from '@/server/membership/user-membership-status';
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 
 import { computeGenerationCatalogRevision } from './catalog-revision';
 import { AgentApiError } from './errors';
+import {
+  GenerationCapabilityError,
+  validateCanonicalGenerationCapabilities,
+} from './generation-capability-validation';
 import {
   hashCanonicalGenerationRequest,
   normalizeGenerationRequest,
@@ -13,11 +21,11 @@ import {
   priceCanonicalGeneration,
   type GenerationPricingResult,
 } from './generation-pricing';
-import type {
-  CanonicalGenerationReference,
-  CanonicalGenerationRequest,
-} from './generation-types';
-import { listAgentModels } from './model-catalog';
+import type { CanonicalGenerationRequest } from './generation-types';
+import {
+  listPublicAgentGenerationEngines,
+  type AgentPublicGenerationEngine,
+} from './model-catalog';
 import type { AgentPrincipal } from './principal';
 import {
   insertPreparedQuote,
@@ -29,7 +37,6 @@ import {
   MCP_SPENDING_APPROVAL_PATH,
   type McpSpendingDecision,
 } from './spending-limits';
-import type { AgentModel } from './types';
 
 export type PrepareGenerationInput = Omit<
   CanonicalGenerationRequest,
@@ -64,8 +71,12 @@ type QuoteInsertDependencies = {
 export type PrepareGenerationDependencies = {
   paidGenerationEnabled(): boolean;
   getAccountRestriction(userId: string): Promise<AccountRestriction>;
-  listPublicModels(): Promise<AgentModel[]>;
-  priceGeneration(request: CanonicalGenerationRequest): Promise<GenerationPricingResult>;
+  listPublicEngines(): Promise<AgentPublicGenerationEngine[]>;
+  resolveMembershipPricing(userId: string): Promise<MembershipPricingContext>;
+  priceGeneration(
+    request: CanonicalGenerationRequest,
+    membershipTier: MembershipPricingContext['tier'],
+  ): Promise<GenerationPricingResult>;
   getWalletSummary(userId: string): Promise<WalletSummary>;
   withTransaction<TResult>(
     callback: (executor: TransactionQueryExecutor) => Promise<TResult>,
@@ -85,7 +96,8 @@ export type PrepareGenerationDependencies = {
 const defaultDependencies: PrepareGenerationDependencies = {
   paidGenerationEnabled: () => mcpPublication.paidGeneration,
   getAccountRestriction: getActiveAccountRestriction,
-  listPublicModels: () => listAgentModels(),
+  listPublicEngines: () => listPublicAgentGenerationEngines(),
+  resolveMembershipPricing: async (userId) => (await getUserMembershipStatus(userId)).pricing,
   priceGeneration: priceCanonicalGeneration,
   getWalletSummary,
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
@@ -120,142 +132,44 @@ function invalidParameter(): never {
   );
 }
 
-function requireStringSetting(
-  request: CanonicalGenerationRequest,
-  key: string,
-): string {
-  const value = request.settings[key];
-  if (typeof value !== 'string' || value.length === 0) invalidParameter();
-  return value;
-}
-
-function validateCommonSettings(request: CanonicalGenerationRequest): void {
-  const integerKeys = ['seed', 'fps', 'numFrames'];
-  for (const key of integerKeys) {
-    const value = request.settings[key];
-    if (value !== undefined && (!Number.isSafeInteger(value) || (value as number) < 0)) {
-      invalidParameter();
-    }
-  }
-  if (typeof request.settings.fps === 'number' && request.settings.fps < 1) invalidParameter();
-}
-
-function requireOptionalSettingsType(
-  request: CanonicalGenerationRequest,
-  keys: readonly string[],
-  expectedType: 'boolean' | 'number' | 'string',
-): void {
-  for (const key of keys) {
-    const value = request.settings[key];
-    if (value !== undefined && typeof value !== expectedType) invalidParameter();
-  }
-}
-
-function validateSurfaceRequest(request: CanonicalGenerationRequest, model: AgentModel): void {
-  validateCommonSettings(request);
-  const resolution = requireStringSetting(request, 'resolution');
-  if (!model.resolutions.includes(resolution)) invalidParameter();
-
-  const aspectRatio = request.settings.aspectRatio;
+function validateRepresentablePricingFacts(request: CanonicalGenerationRequest): void {
+  const resolution = request.settings.resolution;
   if (
-    aspectRatio !== undefined
-    && (typeof aspectRatio !== 'string' || !model.aspectRatios.includes(aspectRatio))
+    request.surface === 'image'
+    && (
+      request.settings.enableWebSearch === true
+      || resolution === 'custom'
+      || (request.engineId === 'gpt-image-2' && request.mode === 'i2i' && resolution === 'auto')
+    )
   ) {
     invalidParameter();
   }
-
-  if (request.surface === 'video') {
-    requireOptionalSettingsType(
-      request,
-      ['audio', 'cameraFixed', 'loop', 'safetyChecker'],
-      'boolean',
-    );
-    requireOptionalSettingsType(request, ['cfgScale'], 'number');
-    requireOptionalSettingsType(request, ['negativePrompt', 'shotType'], 'string');
-    const duration = request.settings.durationSec;
-    if (
-      !Number.isSafeInteger(duration)
-      || (duration as number) < 1
-      || model.maxDurationSec === null
-      || (duration as number) > model.maxDurationSec
-      || typeof aspectRatio !== 'string'
-    ) {
-      invalidParameter();
-    }
-    const audio = request.settings.audio;
-    if (audio === true && !model.audio) invalidParameter();
-    const cfgScale = request.settings.cfgScale;
-    if (cfgScale !== undefined && (typeof cfgScale !== 'number' || cfgScale < 0 || cfgScale > 100)) {
-      invalidParameter();
-    }
-  } else {
-    requireOptionalSettingsType(
-      request,
-      ['enableWebSearch', 'limitGenerations', 'watermark'],
-      'boolean',
-    );
-    for (const key of ['quality', 'style', 'thinkingLevel', 'outputFormat']) {
-      const value = request.settings[key];
-      if (value !== undefined && (typeof value !== 'string' || value.length === 0)) {
-        invalidParameter();
-      }
-    }
-    const quality = request.settings.quality;
-    if (quality !== undefined && !['low', 'medium', 'high'].includes(quality as string)) {
-      invalidParameter();
-    }
-    const outputFormat = request.settings.outputFormat;
-    if (outputFormat !== undefined && !['jpeg', 'png', 'webp'].includes(outputFormat as string)) {
-      invalidParameter();
-    }
-    const thinkingLevel = request.settings.thinkingLevel;
-    if (thinkingLevel !== undefined && !['minimal', 'high'].includes(thinkingLevel as string)) {
-      invalidParameter();
-    }
-    // The transport-neutral image estimator intentionally excludes web-only addons,
-    // and the canonical P6 contract has no custom/reference dimension fields. Reject
-    // those cases instead of persisting a quote that could be lower than execution.
-    if (
-      request.settings.enableWebSearch === true
-      || resolution === 'custom'
-      || (
-        request.engineId === 'gpt-image-2'
-        && request.mode === 'i2i'
-        && resolution === 'auto'
-      )
-    ) {
-      invalidParameter();
-    }
-  }
 }
 
-function referencesWithRole(
-  references: readonly CanonicalGenerationReference[],
-  role: CanonicalGenerationReference['role'],
-): number {
-  return references.filter((reference) => reference.role === role).length;
-}
-
-function validateReferences(request: CanonicalGenerationRequest, model: AgentModel): void {
-  if (request.mode === 't2v' || request.mode === 't2i') {
-    if (request.references.length > 0) {
-      throw new AgentApiError('REFERENCE_INVALID', 'This generation mode does not accept references.');
-    }
-    return;
+function requireMembershipPricing(value: MembershipPricingContext): MembershipPricingContext {
+  if (
+    !value
+    || !['member', 'plus', 'pro'].includes(value.tier)
+    || value.source !== 'app_receipts_rolling_30d'
+    || !Number.isSafeInteger(value.spent30Cents)
+    || value.spent30Cents < 0
+    || !Number.isSafeInteger(value.thresholdCents)
+    || value.thresholdCents < 0
+    || typeof value.discountPercent !== 'number'
+    || !Number.isFinite(value.discountPercent)
+    || value.discountPercent < 0
+    || value.discountPercent > 1
+  ) {
+    throw new AgentApiError('INTERNAL_ERROR', 'The account membership price is unavailable.');
   }
-  if (!model.referenceImages) {
-    throw new AgentApiError('REFERENCE_INVALID', 'The selected model does not accept image references.');
-  }
-  const requiredRole = request.mode === 'ref2v' ? 'reference' : 'source';
-  if (referencesWithRole(request.references, requiredRole) < 1) {
-    throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires an image reference.');
-  }
+  return value;
 }
 
 function safePricingSnapshot(
   pricing: GenerationPricingResult,
   request: CanonicalGenerationRequest,
   catalogRevision: string,
+  membership: MembershipPricingContext,
 ): Record<string, unknown> {
   if (
     !Number.isSafeInteger(pricing.priceCents)
@@ -265,6 +179,7 @@ function safePricingSnapshot(
     || !pricing.pricingSnapshot
     || typeof pricing.pricingSnapshot !== 'object'
     || Array.isArray(pricing.pricingSnapshot)
+    || pricing.membershipTier !== membership.tier
   ) {
     throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
   }
@@ -281,6 +196,7 @@ function safePricingSnapshot(
   if (
     canonicalRecord.totalCents !== pricing.priceCents
     || canonicalRecord.currency !== pricing.currency
+    || canonicalRecord.membershipTier !== membership.tier
   ) {
     throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
   }
@@ -289,6 +205,7 @@ function safePricingSnapshot(
     catalogRevision,
     surface: request.surface,
     engineId: request.engineId,
+    membership,
     canonicalPricing: canonicalRecord,
   };
 }
@@ -343,28 +260,50 @@ export async function prepareGeneration(
     throw new AgentApiError('PARAMETER_INVALID', 'The generation request is invalid.');
   }
 
-  const publicModels = await dependencies.listPublicModels();
-  const model = publicModels.find((candidate) => candidate.id === request.engineId);
-  if (!model || model.surface !== request.surface) {
+  const publicEngines = await dependencies.listPublicEngines();
+  const candidate = publicEngines.find((entry) => entry.engine.id === request.engineId);
+  if (!candidate || candidate.surface !== request.surface) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'The selected model is not publicly available.');
   }
-  if (!model.modes.includes(request.mode)) {
+  if (!candidate.publicModes.includes(request.mode)) {
     throw new AgentApiError('MODE_UNSUPPORTED', 'The selected model does not support this mode.');
   }
-  validateSurfaceRequest(request, model);
-  validateReferences(request, model);
+  try {
+    validateCanonicalGenerationCapabilities(request, candidate);
+  } catch (error) {
+    if (error instanceof GenerationCapabilityError) {
+      if (error.kind === 'reference_required') {
+        throw new AgentApiError('REFERENCE_REQUIRED', 'This generation mode requires an image reference.');
+      }
+      if (error.kind === 'reference_invalid') {
+        throw new AgentApiError('REFERENCE_INVALID', 'The image references are invalid for this model mode.');
+      }
+      invalidParameter();
+    }
+    throw error;
+  }
+  validateRepresentablePricingFacts(request);
 
-  const catalogRevision = computeGenerationCatalogRevision(publicModels);
+  const catalogRevision = computeGenerationCatalogRevision(publicEngines);
+  let membership: MembershipPricingContext;
+  try {
+    membership = requireMembershipPricing(
+      await dependencies.resolveMembershipPricing(principal.userId),
+    );
+  } catch (error) {
+    if (error instanceof AgentApiError) throw error;
+    throw new AgentApiError('INTERNAL_ERROR', 'The account membership price is unavailable.');
+  }
   let pricing: GenerationPricingResult;
   try {
-    pricing = await dependencies.priceGeneration(request);
+    pricing = await dependencies.priceGeneration(request, membership.tier);
   } catch {
     throw new AgentApiError(
       'PARAMETER_INVALID',
       'The selected settings cannot be priced for this model.',
     );
   }
-  const pricingSnapshot = safePricingSnapshot(pricing, request, catalogRevision);
+  const pricingSnapshot = safePricingSnapshot(pricing, request, catalogRevision, membership);
   const wallet = await dependencies.getWalletSummary(principal.userId);
   const balanceBefore = requireWallet(wallet, pricing.currency);
   const requestHash = hashCanonicalGenerationRequest(request);

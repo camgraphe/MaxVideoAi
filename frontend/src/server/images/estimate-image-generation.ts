@@ -25,6 +25,7 @@ import {
   computeCanonicalPublicSnapshot,
   computeCanonicalPublicStoryboardSnapshot,
 } from '@/server/pricing/quote-public';
+import type { PublicPricingMembershipTier } from '@/lib/pricing-public-quote';
 
 export type ImageEstimateInput = Pick<
   ImageGenerationRequest,
@@ -32,6 +33,7 @@ export type ImageEstimateInput = Pick<
 > & {
   referenceImageCount?: number;
   referenceImageSizes?: Array<{ width: number; height: number }>;
+  membershipTier?: PublicPricingMembershipTier;
 };
 
 export type ImageEstimateNormalized = {
@@ -167,6 +169,7 @@ async function estimateImageGenerationInternal(
     customImageSize,
     quality: typeof input.quality === 'string' ? input.quality : undefined,
     referenceImageCount: pricedReferenceImageCount,
+    membershipTier: input.membershipTier,
     currency: engine.pricing?.currency ?? 'USD',
     addons:
       webExtensions &&
@@ -246,6 +249,7 @@ export async function estimateImageGeneration(
       aspectRatio: input.aspectRatio,
       referenceImageCount: input.referenceImageCount,
       referenceImageSizes: input.referenceImageSizes,
+      membershipTier: input.membershipTier,
     },
     false
   );
