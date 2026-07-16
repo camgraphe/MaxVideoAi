@@ -117,7 +117,7 @@ function normalizeJobId(value: unknown): string {
 }
 
 function normalizePublicUri(value: unknown, seen: Set<string>): string | null {
-  if (typeof value !== 'string' || value.length > MAX_RESOURCE_URI_CHARS || seen.has(value)) return null;
+  if (typeof value !== 'string' || value.length > MAX_RESOURCE_URI_CHARS) return null;
   try {
     const parsed = new URL(value);
     if (
@@ -129,8 +129,10 @@ function normalizePublicUri(value: unknown, seen: Set<string>): string | null {
     ) {
       return null;
     }
-    seen.add(value);
-    return value;
+    const canonical = parsed.toString();
+    if (canonical.length > MAX_RESOURCE_URI_CHARS || seen.has(canonical)) return null;
+    seen.add(canonical);
+    return canonical;
   } catch {
     return null;
   }

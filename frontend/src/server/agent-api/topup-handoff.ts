@@ -170,16 +170,23 @@ export function verifyMcpTopupHandoff(
     !encodedPayload
     || encodedPayload.length > MAX_PAYLOAD_CHARS
     || !BASE64URL_PATTERN.test(encodedPayload)
+    || encodedSignature.length !== 43
     || !BASE64URL_PATTERN.test(encodedSignature)
   ) {
     return null;
   }
   let suppliedSignature: Buffer;
+  let payloadBytes: Buffer;
   let parsed: unknown;
   try {
     suppliedSignature = Buffer.from(encodedSignature, 'base64url');
-    if (suppliedSignature.length !== 32) return null;
-    parsed = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as unknown;
+    payloadBytes = Buffer.from(encodedPayload, 'base64url');
+    if (
+      suppliedSignature.length !== 32
+      || suppliedSignature.toString('base64url') !== encodedSignature
+      || payloadBytes.toString('base64url') !== encodedPayload
+    ) return null;
+    parsed = JSON.parse(payloadBytes.toString('utf8')) as unknown;
   } catch {
     return null;
   }
@@ -210,13 +217,18 @@ function parseTrustedBillingBase(value: string): URL {
   const production = parsed.protocol === 'https:'
     && parsed.hostname.toLowerCase() === 'maxvideoai.com'
     && !parsed.port;
+  const officialStaging = parsed.protocol === 'https:'
+    && parsed.hostname.toLowerCase() === 'maxvideoai-mcp-staging.vercel.app'
+    && !parsed.port;
   if (
     parsed.username
     || parsed.password
     || parsed.search
     || parsed.hash
     || (parsed.pathname !== '/' && parsed.pathname !== '')
-    || (!production && !(loopback && (parsed.protocol === 'http:' || parsed.protocol === 'https:')))
+    || (!production
+      && !officialStaging
+      && !(loopback && (parsed.protocol === 'http:' || parsed.protocol === 'https:')))
   ) {
     throw new Error('The trusted MCP billing URL uses an unexpected origin.');
   }

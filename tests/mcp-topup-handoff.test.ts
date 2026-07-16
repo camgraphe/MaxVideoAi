@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHmac } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
@@ -111,6 +112,21 @@ function payloadFromToken(token: string): Record<string, unknown> {
   return JSON.parse(Buffer.from(parts[1]!, 'base64url').toString('utf8')) as Record<string, unknown>;
 }
 
+const BASE64URL_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';
+
+function changeOnlyBase64urlPaddingBits(value: string): string {
+  const remainder = value.length % 4;
+  const unusedBits = remainder === 2 ? 4 : remainder === 3 ? 2 : 0;
+  assert.ok(unusedBits > 0, 'fixture must end with unused base64url padding bits');
+  const lastIndex = BASE64URL_ALPHABET.indexOf(value.at(-1) ?? '');
+  assert.ok(lastIndex >= 0);
+  const changedIndex = (lastIndex & ~((1 << unusedBits) - 1)) | 1;
+  const changed = `${value.slice(0, -1)}${BASE64URL_ALPHABET[changedIndex]}`;
+  assert.notEqual(changed, value);
+  assert.deepEqual(Buffer.from(changed, 'base64url'), Buffer.from(value, 'base64url'));
+  return changed;
+}
+
 test('top-up signer round-trips an explicit v1 token with exactly four business fields', () => {
   const value = {
     amountCents: 1500,
@@ -153,6 +169,35 @@ test('verification fails closed for tampering, expiry, overly-future values, wro
   for (const [token, options] of cases) {
     assert.equal(verifyMcpTopupHandoff(token, options), null, token.slice(0, 60));
   }
+});
+
+test('verification rejects textually distinct non-canonical base64url payloads and signatures', () => {
+  const token = signMcpTopupHandoff({
+    amountCents: 1500,
+    currency: 'USD',
+    quoteIntentId: INTENT_ID,
+    expiresAt: Math.floor(NOW.getTime() / 1000) + 600,
+  }, { secret: SECRET });
+  const [version, payload, signature] = token.split('.') as [string, string, string];
+  assert.equal(signature.length, 43);
+
+  const nonCanonicalSignature = changeOnlyBase64urlPaddingBits(signature);
+  assert.equal(
+    verifyMcpTopupHandoff(`${version}.${payload}.${nonCanonicalSignature}`, { secret: SECRET, now: NOW }),
+    null,
+  );
+
+  const nonCanonicalPayload = changeOnlyBase64urlPaddingBits(payload);
+  const matchingSignature = createHmac('sha256', SECRET)
+    .update(`${version}.${nonCanonicalPayload}`, 'utf8')
+    .digest('base64url');
+  assert.equal(
+    verifyMcpTopupHandoff(`${version}.${nonCanonicalPayload}.${matchingSignature}`, {
+      secret: SECRET,
+      now: NOW,
+    }),
+    null,
+  );
 });
 
 test('secret validation happens before quote locking and rejects weak or whitespace secrets', async () => {

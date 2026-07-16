@@ -211,6 +211,31 @@ test('completed image recoveries bound, deduplicate, and length-limit public URL
   assert.doesNotMatch(JSON.stringify(links), /base64|data:/i);
 });
 
+test('completed media deduplicates equivalent URLs by their canonical HTTPS form', () => {
+  const recovery = buildAgentGenerationRecovery(status({
+    surface: 'image',
+    status: 'completed',
+    progress: 100,
+    retryAfterSeconds: null,
+    result: {
+      surface: 'image',
+      imageUrls: [
+        'https://CDN.MAXVIDEOAI.COM:443/generated/canonical.png',
+        'https://cdn.maxvideoai.com/generated/canonical.png',
+      ],
+      thumbnailUrls: ['https://cdn.maxvideoai.com:443/generated/canonical.png'],
+    },
+  }));
+  assert.deepEqual(recovery.result, {
+    surface: 'image',
+    imageUrls: ['https://cdn.maxvideoai.com/generated/canonical.png'],
+    thumbnailUrls: [],
+  });
+  assert.deepEqual(buildGenerationResourceLinks(recovery).map((link) => link.uri), [
+    'https://cdn.maxvideoai.com/generated/canonical.png',
+  ]);
+});
+
 test('completed video recovery exposes bounded stable links while non-terminal jobs expose none', () => {
   const completed = buildAgentGenerationRecovery(status({
     status: 'completed',

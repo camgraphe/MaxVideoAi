@@ -27,6 +27,7 @@ import {
 import type { AgentPrincipal } from '@/server/agent-api/principal';
 import {
   createMcpTopupHandoffService,
+  type McpTopupHandoffDependencies,
   type McpTopupHandoffResult,
 } from '@/server/agent-api/topup-handoff';
 import type {
@@ -82,7 +83,8 @@ export type MaxVideoAiMcpServerOptions = {
 
 export function createDefaultMaxVideoAiMcpServices(
   config: McpConfig,
-  accountStatusDeps?: AgentAccountStatusWalletDeps
+  accountStatusDeps?: AgentAccountStatusWalletDeps,
+  topupHandoffDeps?: Partial<Omit<McpTopupHandoffDependencies, 'billingBaseUrl'>>,
 ): MaxVideoAiMcpServices {
   return {
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
@@ -94,6 +96,7 @@ export function createDefaultMaxVideoAiMcpServices(
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),
     createTopupLink: createMcpTopupHandoffService({
       billingBaseUrl: new URL(config.accountUrl).origin,
+      ...topupHandoffDeps,
     }),
   };
 }
