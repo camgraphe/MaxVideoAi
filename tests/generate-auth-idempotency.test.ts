@@ -30,17 +30,15 @@ test('auth idempotency helper exposes the route contract', () => {
 
   assert.match(helperSource, /export async function resolveGenerateUserId/);
   assert.match(helperSource, /export async function resolveGenerateUserGate/);
+  assert.match(helperSource, /getRouteAuthContext/);
+  assert.doesNotMatch(helperSource, /createSupabaseRouteClient/);
   assert.match(helperSource, /buildResponseFromExistingVideoJob/);
   assert.match(helperSource, /created_at > NOW\(\) - INTERVAL '30 minutes'/);
 });
 
 test('resolveGenerateUserId falls back to the local admin bypass after Supabase misses', async () => {
   const userId = await resolveGenerateUserId({} as never, {
-    createSupabaseRouteClientFn: async () => ({
-      auth: {
-        getUser: async () => ({ data: { user: null } }),
-      },
-    }),
+    getRouteAuthContextFn: async () => ({ userId: null }),
     resolveLocalAdminBypassUserIdFn: async () => 'admin_user_123',
   });
 
@@ -99,4 +97,27 @@ test('resolveGenerateUserGate returns an existing local-key render response', as
   assert.equal(result.status, 200);
   assert.equal(result.body.jobId, 'job_123');
   assert.equal(result.body.localKey, 'local_render');
+});
+
+test('resolveGenerateUserGate keys idempotency by the verified user and ignores body identity', async () => {
+  let queryParams: unknown[] | undefined;
+  const result = await resolveGenerateUserGate({
+    req: {} as never,
+    body: {
+      localKey: 'same-render',
+      userId: 'attacker-controlled-user',
+      user_id: 'another-attacker-controlled-user',
+    },
+    deps: {
+      resolveGenerateUserIdFn: async () => 'verified-user',
+      getActiveAccountRestrictionFn: async () => null,
+      queryFn: async (_sql, params) => {
+        queryParams = params;
+        return [];
+      },
+    },
+  });
+
+  assert.equal(result.kind, 'ready');
+  assert.deepEqual(queryParams, ['verified-user', 'same-render']);
 });

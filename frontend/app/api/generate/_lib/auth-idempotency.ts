@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { query } from '@/lib/db';
-import { createSupabaseRouteClient } from '@/lib/supabase-ssr';
+import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import { resolveLocalAdminBypassUserId } from '@/server/admin';
 import { buildRestrictedAccountPayload, getActiveAccountRestriction } from '@/server/fraud-cleanup';
 import { buildResponseFromExistingVideoJob, type ExistingVideoJobRow } from './initial-video-job';
@@ -25,7 +25,7 @@ export type GenerateUserGateResult =
     };
 
 type ResolveGenerateUserIdDeps = {
-  createSupabaseRouteClientFn?: typeof createSupabaseRouteClient;
+  getRouteAuthContextFn?: (req?: NextRequest) => Promise<{ userId: string | null }>;
   resolveLocalAdminBypassUserIdFn?: typeof resolveLocalAdminBypassUserId;
 };
 
@@ -41,17 +41,14 @@ export async function resolveGenerateUserId(
   req?: NextRequest,
   deps: ResolveGenerateUserIdDeps = {}
 ): Promise<string | null> {
-  const createSupabaseRouteClientFn = deps.createSupabaseRouteClientFn ?? createSupabaseRouteClient;
+  const getRouteAuthContextFn = deps.getRouteAuthContextFn ?? getRouteAuthContext;
   const resolveLocalAdminBypassUserIdFn =
     deps.resolveLocalAdminBypassUserIdFn ?? resolveLocalAdminBypassUserId;
 
   try {
-    const supabase = await createSupabaseRouteClientFn();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (user?.id) {
-      return user.id;
+    const { userId } = await getRouteAuthContextFn(req);
+    if (userId) {
+      return userId;
     }
   } catch {
     // Keep auth fallback tolerant so local admin bypass still works in dev.
