@@ -7,11 +7,14 @@ import {
 import type { EngineCaps, EngineModeUiCaps } from '@/types/engines';
 
 import type { AgentGenerationMode, AgentModel, AgentModelFilter } from './types';
+import {
+  isPublicAgentEngine,
+  isPublicAgentGenerationMode,
+  listPublicAgentModes,
+  type AgentPublicGenerationEngine,
+} from './public-engine-policy';
 
-const PUBLIC_MODES = new Set<AgentGenerationMode>(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']);
-const VIDEO_MODES = new Set<AgentGenerationMode>(['t2v', 'i2v', 'ref2v']);
-const IMAGE_MODES = new Set<AgentGenerationMode>(['t2i', 'i2i']);
-const NON_PUBLIC_API_MARKERS = /\b(admin|internal|private|hidden|disabled|unavailable)\b/i;
+export type { AgentPublicGenerationEngine } from './public-engine-policy';
 
 const SURFACE_BY_ENGINE_ID = new Map<string, 'video' | 'image'>(
   listFalEngines().flatMap((entry) => {
@@ -25,7 +28,7 @@ const MODE_CAPS_BY_ENGINE_ID = new Map<string, Partial<Record<AgentGenerationMod
     Object.fromEntries(
       entry.modes
         .filter((mode): mode is typeof mode & { mode: AgentGenerationMode } =>
-          PUBLIC_MODES.has(mode.mode as AgentGenerationMode))
+          isPublicAgentGenerationMode(mode.mode))
         .map((mode) => [mode.mode, mode.ui]),
     ) as Partial<Record<AgentGenerationMode, EngineModeUiCaps>>,
   ]),
@@ -42,36 +45,12 @@ export type AgentModelCandidate = {
   indicativeCost: number | null;
 };
 
-export type AgentPublicGenerationEngine = {
-  engine: EngineCaps;
-  surface: 'video' | 'image';
-  publicModes: AgentGenerationMode[];
-  modeCaps: Partial<Record<AgentGenerationMode, EngineModeUiCaps>>;
-};
-
 const defaultDeps: AgentModelCatalogDeps = {
   listEngines: () => getPublicConfiguredEnginesByCategory('all'),
   surfaceByEngineId(engineId) {
     return SURFACE_BY_ENGINE_ID.get(engineId) ?? null;
   },
 };
-
-function publicModes(engine: EngineCaps, surface: 'video' | 'image'): AgentGenerationMode[] {
-  const allowedForSurface = surface === 'video' ? VIDEO_MODES : IMAGE_MODES;
-  return engine.modes.filter(
-    (mode): mode is AgentGenerationMode => PUBLIC_MODES.has(mode as AgentGenerationMode) && allowedForSurface.has(mode as AgentGenerationMode)
-  );
-}
-
-export function isPublicAgentEngine(
-  engine: EngineCaps,
-  surface: 'video' | 'image' | null,
-): surface is 'video' | 'image' {
-  if (!surface || engine.isLab || engine.status === 'maintenance') return false;
-  if (engine.availability !== 'available' && engine.availability !== 'limited') return false;
-  if (engine.apiAvailability && NON_PUBLIC_API_MARKERS.test(engine.apiAvailability)) return false;
-  return publicModes(engine, surface).length > 0;
-}
 
 function referenceImagesSupported(modes: AgentGenerationMode[]): boolean {
   return modes.some((mode) => mode === 'i2v' || mode === 'ref2v' || mode === 'i2i');
@@ -108,7 +87,7 @@ export async function listPublicAgentGenerationEngines(
   return engines.flatMap((engine) => {
     const surface = deps.surfaceByEngineId(engine.id);
     if (!isPublicAgentEngine(engine, surface)) return [];
-    const modes = publicModes(engine, surface);
+    const modes = listPublicAgentModes(engine, surface);
     const configuredModeCaps = engine.modeCaps ?? {};
     const registryModeCaps = MODE_CAPS_BY_ENGINE_ID.get(engine.id) ?? {};
     const modeCaps = Object.fromEntries(

@@ -5,7 +5,7 @@ import type { EngineInputField, EngineModeUiCaps } from '@/types/engines';
 
 import type { CanonicalGenerationRequest } from './generation-types';
 import { normalizeGenerationRequest } from './generation-normalization';
-import { isPublicAgentEngine, type AgentPublicGenerationEngine } from './model-catalog';
+import { isPublicAgentEngine, type AgentPublicGenerationEngine } from './public-engine-policy';
 
 const MCP_TRIAL_ASPECT_RATIOS = Object.freeze(['16:9', '9:16', '1:1'] as const);
 
@@ -31,11 +31,12 @@ const RAW_CANDIDATE_FIELDS = new Set([
 ]);
 const RAW_SETTING_FIELDS = new Set(['aspectRatio', 'audio']);
 const MEDIA_FIELD_TYPES = new Set(['image', 'video', 'audio']);
-const AUDIO_PRICING_FIELDS = new Set([
+const MODERN_ADDON_PRICING_FIELDS = new Set([
   'perSecondCents',
   'perSecondCentsByResolution',
   'flatCents',
 ]);
+const LEGACY_ADDON_PRICING_FIELDS = new Set(['perSecond', 'flat']);
 
 export class TrialCandidateError extends Error {
   constructor() {
@@ -196,40 +197,83 @@ function assertPlainPricingObject(
   }
 }
 
-function assertAudioAddonInputShape(engine: AgentPublicGenerationEngine['engine']): void {
-  const pricingDetails = engine.pricingDetails;
-  if (!pricingDetails) return;
-  const addonsDescriptor = Object.getOwnPropertyDescriptor(pricingDetails, 'addons');
-  if (!addonsDescriptor) return;
-  if (!addonsDescriptor.enumerable || !('value' in addonsDescriptor)) {
-    unsupported('pricing_addons_malformed');
-  }
-  const addons = addonsDescriptor.value;
-  assertPlainPricingObject(addons, 'pricing_addons_malformed');
-  if (!Object.hasOwn(addons, 'audio')) return;
+function pricingDataEntries(value: Record<string, unknown>): Array<[string, unknown]> {
+  return Object.keys(value).map((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor || !('value' in descriptor)) unsupported('pricing_malformed');
+    return [key, descriptor.value];
+  });
+}
 
-  const audio = addons.audio;
-  assertPlainPricingObject(audio, 'audio_pricing_malformed');
-  for (const key of Object.keys(audio)) {
-    if (!AUDIO_PRICING_FIELDS.has(key)) unsupported('audio_pricing_malformed');
-  }
-  for (const field of ['perSecondCents', 'flatCents'] as const) {
-    if (Object.hasOwn(audio, field)) {
-      assertFiniteNonNegative(audio[field], 'audio_pricing_malformed');
-    }
-  }
-  if (Object.hasOwn(audio, 'perSecondCentsByResolution')) {
-    const byResolution = audio.perSecondCentsByResolution;
-    assertPlainPricingObject(byResolution, 'audio_pricing_malformed');
-    for (const [resolution, value] of Object.entries(byResolution)) {
-      if (!engine.resolutions.includes(resolution as never)) unsupported('audio_pricing_malformed');
-      assertFiniteNonNegative(value, 'audio_pricing_malformed');
+function validateModernAddonRule(
+  engine: AgentPublicGenerationEngine['engine'],
+  value: unknown,
+): void {
+  assertPlainPricingObject(value, 'pricing_addons_malformed');
+  for (const [field, fieldValue] of pricingDataEntries(value)) {
+    if (!MODERN_ADDON_PRICING_FIELDS.has(field)) unsupported('pricing_addons_malformed');
+    if (field === 'perSecondCentsByResolution') {
+      assertPlainPricingObject(fieldValue, 'pricing_addons_malformed');
+      for (const [resolution, amount] of pricingDataEntries(fieldValue)) {
+        if (!engine.resolutions.includes(resolution as never)) unsupported('pricing_addons_malformed');
+        assertFiniteNonNegative(amount, 'pricing_addons_malformed');
+      }
+    } else {
+      assertFiniteNonNegative(fieldValue, 'pricing_addons_malformed');
     }
   }
 }
 
+function validateLegacyAddonRule(value: unknown): void {
+  assertPlainPricingObject(value, 'pricing_addons_malformed');
+  for (const [field, fieldValue] of pricingDataEntries(value)) {
+    if (!LEGACY_ADDON_PRICING_FIELDS.has(field)) unsupported('pricing_addons_malformed');
+    assertFiniteNonNegative(fieldValue, 'pricing_addons_malformed');
+  }
+}
+
+function validateAddonSource(
+  engine: AgentPublicGenerationEngine['engine'],
+  value: unknown,
+  source: 'modern' | 'legacy',
+): void {
+  assertPlainPricingObject(value, 'pricing_addons_malformed');
+  for (const [, rule] of pricingDataEntries(value)) {
+    if (source === 'modern') validateModernAddonRule(engine, rule);
+    else validateLegacyAddonRule(rule);
+  }
+}
+
+function assertPricingInputShapes(engine: AgentPublicGenerationEngine['engine']): void {
+  const pricingDetails = engine.pricingDetails;
+  const legacyPricing = engine.pricing;
+  if (pricingDetails !== undefined) {
+    assertPlainPricingObject(pricingDetails, 'pricing_details_malformed');
+  }
+  if (legacyPricing !== undefined) {
+    assertPlainPricingObject(legacyPricing, 'legacy_pricing_malformed');
+  }
+
+  const modernAddons = pricingDetails
+    ? Object.getOwnPropertyDescriptor(pricingDetails, 'addons')
+    : undefined;
+  if (modernAddons) {
+    if (!('value' in modernAddons)) unsupported('pricing_addons_malformed');
+    validateAddonSource(engine, modernAddons.value, 'modern');
+    return;
+  }
+
+  const legacyAddons = legacyPricing
+    ? Object.getOwnPropertyDescriptor(legacyPricing, 'addons')
+    : undefined;
+  if (legacyAddons) {
+    if (!('value' in legacyAddons)) unsupported('pricing_addons_malformed');
+    validateAddonSource(engine, legacyAddons.value, 'legacy');
+  }
+}
+
 function assertAudioPricingStable(engine: AgentPublicGenerationEngine['engine']): void {
-  assertAudioAddonInputShape(engine);
+  assertPricingInputShapes(engine);
   const definition = buildPricingDefinition(engine);
   if (!definition || definition.engineId !== MCP_TRIAL_PRESET.engineId) unsupported('pricing_missing');
   assertFiniteNonNegative(definition.baseUnitPriceCents, 'pricing_malformed');

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import { listFalEngines } from '../frontend/src/config/falEngines';
@@ -76,6 +77,33 @@ test('owns the exact immutable Seedance Mini trial preset', () => {
     aspectRatios: ['16:9', '9:16', '1:1'],
     outputCount: 1,
   });
+});
+
+test('keeps public-engine policy in a pure leaf outside catalog and server engine owners', () => {
+  const trialPresetPath = new URL(
+    '../frontend/src/server/agent-api/trial-preset.ts',
+    import.meta.url,
+  );
+  const modelCatalogPath = new URL(
+    '../frontend/src/server/agent-api/model-catalog.ts',
+    import.meta.url,
+  );
+  const publicPolicyPath = new URL(
+    '../frontend/src/server/agent-api/public-engine-policy.ts',
+    import.meta.url,
+  );
+  assert.equal(existsSync(publicPolicyPath), true, 'public engine policy must have a leaf owner');
+
+  const trialPresetSource = readFileSync(trialPresetPath, 'utf8');
+  const modelCatalogSource = readFileSync(modelCatalogPath, 'utf8');
+  const publicPolicySource = readFileSync(publicPolicyPath, 'utf8');
+  assert.doesNotMatch(trialPresetSource, /from ['"]\.\/model-catalog['"]/u);
+  assert.match(trialPresetSource, /from ['"]\.\/public-engine-policy['"]/u);
+  assert.match(modelCatalogSource, /from ['"]\.\/public-engine-policy['"]/u);
+  assert.doesNotMatch(
+    publicPolicySource,
+    /@\/server\/engines|@\/lib\/db|\.\/model-catalog|falEngines|provider/iu,
+  );
 });
 
 test('normalizes a trial candidate to the forced canonical no-reference request', () => {
@@ -543,4 +571,116 @@ test('fails closed before pricing calculation for exotic addon collections and a
   assert.equal(addonsAccessorReads, 0);
   assert.equal(audioRuleAccessorReads, 0);
   assert.equal(resolutionMapAccessorReads, 0);
+});
+
+test('fails closed without reading malformed modern and legacy pricing containers', async () => {
+  const current = await getCurrentTrialEngine();
+  let inheritedModernAddonReads = 0;
+  let legacyAddonReads = 0;
+
+  const pricingDetailsArray = cloneEngine(current);
+  pricingDetailsArray.engine.pricingDetails = [] as never;
+  assert.throws(() => assertTrialPresetSupported(pricingDetailsArray), /trial preset/i);
+
+  const inheritedModernAddons = cloneEngine(current);
+  assert.ok(inheritedModernAddons.engine.pricingDetails);
+  const pricingDetailsPrototype = {};
+  Object.defineProperty(pricingDetailsPrototype, 'addons', {
+    enumerable: true,
+    get() {
+      inheritedModernAddonReads += 1;
+      return {};
+    },
+  });
+  inheritedModernAddons.engine.pricingDetails = Object.assign(
+    Object.create(pricingDetailsPrototype),
+    inheritedModernAddons.engine.pricingDetails,
+  );
+  assert.throws(() => assertTrialPresetSupported(inheritedModernAddons), /trial preset/i);
+  assert.equal(inheritedModernAddonReads, 0);
+
+  const legacyPricingArray = cloneEngine(current);
+  legacyPricingArray.engine.pricing = [] as never;
+  assert.throws(() => assertTrialPresetSupported(legacyPricingArray), /trial preset/i);
+
+  const legacyAddonsArray = cloneEngine(current);
+  assert.ok(legacyAddonsArray.engine.pricing);
+  (legacyAddonsArray.engine.pricing as { addons?: unknown }).addons = [];
+  assert.throws(() => assertTrialPresetSupported(legacyAddonsArray), /trial preset/i);
+
+  const legacyAudioArray = cloneEngine(current);
+  assert.ok(legacyAudioArray.engine.pricing);
+  (legacyAudioArray.engine.pricing as { addons?: unknown }).addons = { audio: [] };
+  assert.throws(() => assertTrialPresetSupported(legacyAudioArray), /trial preset/i);
+
+  const legacyAddonAccessor = cloneEngine(current);
+  assert.ok(legacyAddonAccessor.engine.pricing);
+  Object.defineProperty(legacyAddonAccessor.engine.pricing, 'addons', {
+    configurable: true,
+    enumerable: true,
+    get() {
+      legacyAddonReads += 1;
+      return {};
+    },
+  });
+  assert.throws(() => assertTrialPresetSupported(legacyAddonAccessor), /trial preset/i);
+  assert.equal(legacyAddonReads, 0);
+});
+
+test('validates exact modern and legacy addon rule schemas before owner calculation', async () => {
+  const current = await getCurrentTrialEngine();
+
+  const withModernAddons = (addons: unknown): AgentPublicGenerationEngine => {
+    const candidate = cloneEngine(current);
+    assert.ok(candidate.engine.pricingDetails);
+    (candidate.engine.pricingDetails as { addons?: unknown }).addons = addons;
+    return candidate;
+  };
+  const withLegacyAddons = (addons: unknown): AgentPublicGenerationEngine => {
+    const candidate = cloneEngine(current);
+    assert.ok(candidate.engine.pricingDetails);
+    delete candidate.engine.pricingDetails.addons;
+    assert.ok(candidate.engine.pricing);
+    (candidate.engine.pricing as { addons?: unknown }).addons = addons;
+    return candidate;
+  };
+
+  assert.doesNotThrow(() => assertTrialPresetSupported(withModernAddons({
+    audio: {
+      perSecondCents: 0,
+      flatCents: 0,
+      perSecondCentsByResolution: { '480p': 0, '720p': 0 },
+    },
+  })));
+  assert.doesNotThrow(() => assertTrialPresetSupported(withLegacyAddons({
+    audio: { perSecond: 0, flat: 0 },
+  })));
+
+  const invalidModernRules = [
+    { audio: { perSecond: 0 } },
+    { audio: { flatCents: 0, unexpected: true } },
+  ];
+  const invalidLegacyRules: unknown[] = [
+    { audio: Object.assign(Object.create({ inherited: true }), { flat: 0 }) },
+    { audio: { flatCents: 0 } },
+    { audio: { flat: 0, unexpected: true } },
+  ];
+  const symbolLegacyRule = { flat: 0 };
+  Object.defineProperty(symbolLegacyRule, Symbol('unexpected'), { enumerable: true, value: true });
+  invalidLegacyRules.push({ audio: symbolLegacyRule });
+  const accessorLegacyRule = {};
+  Object.defineProperty(accessorLegacyRule, 'flat', {
+    enumerable: true,
+    get() {
+      return 0;
+    },
+  });
+  invalidLegacyRules.push({ audio: accessorLegacyRule });
+
+  for (const addons of invalidModernRules) {
+    assert.throws(() => assertTrialPresetSupported(withModernAddons(addons)), /trial preset/i);
+  }
+  for (const addons of invalidLegacyRules) {
+    assert.throws(() => assertTrialPresetSupported(withLegacyAddons(addons)), /trial preset/i);
+  }
 });
