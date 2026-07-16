@@ -21,7 +21,7 @@ function commandFailure(result: ReturnType<typeof spawnSync>): string {
   return `${result.stdout ?? ''}\n${result.stderr ?? ''}`.trim();
 }
 
-test('migration 30 is the unique paid-generation owner before reserved migrations 31-33', () => {
+test('migration 30 remains the paid-generation owner alongside trial migration 31', () => {
   assert.equal(existsSync(migrationPath), true, `${migrationPath} should exist`);
   const numbered = readdirSync('neon/migrations')
     .filter((name) => /^\d+_.+\.sql$/u.test(name))
@@ -29,6 +29,7 @@ test('migration 30 is the unique paid-generation owner before reserved migration
     .sort();
   assert.deepEqual(numbered, [
     '30_mcp_paid_generation.sql',
+    '31_mcp_trial_entitlements.sql',
     '33_mcp_acquisition_funnel.sql',
   ]);
 

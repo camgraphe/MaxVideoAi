@@ -1,6 +1,6 @@
 import { query } from '@/lib/db';
 
-// Durable paid MCP state is migration-owned. Runtime bootstrap intentionally covers audit only.
+// Paid/trial/reference durable tables are migration-owned. Runtime bootstrap intentionally covers audit only.
 let schemaPromise: Promise<void> | null = null;
 
 async function createMcpSchema(): Promise<void> {
