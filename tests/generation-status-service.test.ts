@@ -345,6 +345,7 @@ test('agent surface normalization respects direct surface before conflicting sna
 });
 
 test('agent surface uses only non-empty JSON-array render entries as image evidence', () => {
+  const ecmaWhitespace = '\u0009\u000a\u000b\u000c\u000d\u0020\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff';
   const fixtures: Array<{ renderIds: unknown; expected: 'video' | 'image' }> = [
     { renderIds: null, expected: 'video' },
     { renderIds: [], expected: 'video' },
@@ -355,8 +356,18 @@ test('agent surface uses only non-empty JSON-array render entries as image evide
     { renderIds: [''], expected: 'video' },
     { renderIds: [{ url: '   ' }], expected: 'video' },
     { renderIds: [{ url: 7 }], expected: 'video' },
+    { renderIds: ['\t'], expected: 'video' },
+    { renderIds: ['\n'], expected: 'video' },
+    { renderIds: ['\u00a0'], expected: 'video' },
+    { renderIds: [ecmaWhitespace], expected: 'video' },
+    { renderIds: [{ url: '\t' }], expected: 'video' },
+    { renderIds: [{ url: '\n' }], expected: 'video' },
+    { renderIds: [{ url: '\u00a0' }], expected: 'video' },
+    { renderIds: [{ url: ecmaWhitespace }], expected: 'video' },
     { renderIds: ['https://cdn.maxvideoai.com/valid.png'], expected: 'image' },
     { renderIds: [{ url: 'https://cdn.maxvideoai.com/valid-object.png' }], expected: 'image' },
+    { renderIds: [`${ecmaWhitespace}https://cdn.maxvideoai.com/wrapped.png${ecmaWhitespace}`], expected: 'image' },
+    { renderIds: [{ url: `${ecmaWhitespace}https://cdn.maxvideoai.com/wrapped-object.png${ecmaWhitespace}` }], expected: 'image' },
   ];
   for (const fixture of fixtures) {
     const result = mapGenerationStatusRecordToAgent(

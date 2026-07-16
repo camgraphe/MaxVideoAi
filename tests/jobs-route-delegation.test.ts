@@ -8,6 +8,8 @@ const listRoutePath = join(root, 'frontend/app/api/jobs/route.ts');
 const detailRoutePath = join(root, 'frontend/app/api/jobs/[jobId]/route.ts');
 const statusServicePath = join(root, 'frontend/src/server/generations/generation-status.ts');
 const recentServicePath = join(root, 'frontend/src/server/generations/recent-generations.ts');
+const agentPolicyPath = join(root, 'frontend/src/server/generations/agent-generation-policy.ts');
+const recentWebMapperPath = join(root, 'frontend/src/server/generations/recent-generation-web-mapper.ts');
 
 test('jobs routes delegate owned reads and explicit web mapping to transport-neutral services', () => {
   assert.ok(existsSync(statusServicePath));
@@ -43,6 +45,26 @@ test('generation read services stay server-only and agent DTOs exclude private r
     /prompt|provider|settingsSnapshot|vendorAccount|stripe|localKey|paymentIntent|token/i
   );
   assert.match(agentType, /retryAfterSeconds:\s*number\s*\|\s*null/);
+});
+
+test('generation read owners delegate agent policy and legacy web mapping to focused modules', () => {
+  assert.ok(existsSync(agentPolicyPath), 'agent generation policy module should exist');
+  assert.ok(existsSync(recentWebMapperPath), 'recent web mapper module should exist');
+
+  const statusService = readFileSync(statusServicePath, 'utf8');
+  const recentService = readFileSync(recentServicePath, 'utf8');
+  const agentPolicy = readFileSync(agentPolicyPath, 'utf8');
+  const recentWebMapper = readFileSync(recentWebMapperPath, 'utf8');
+
+  assert.match(statusService, /from '\.\/agent-generation-policy'/);
+  assert.match(statusService, /export \{ mapGenerationStatusRecordToAgent \}/);
+  assert.match(recentService, /from '\.\/recent-generation-web-mapper'/);
+  assert.match(recentService, /export \{ mapRecentGenerationRecordToWeb \}/);
+  assert.match(agentPolicy, /export function mapGenerationStatusRecordToAgent/);
+  assert.match(recentWebMapper, /export function mapRecentGenerationRecordToWeb/);
+  assert.doesNotMatch(`${agentPolicy}\n${recentWebMapper}`, /NextRequest|NextResponse/);
+  assert.ok(statusService.split('\n').length <= 320, 'generation status read owner should stay at or below 320 lines');
+  assert.ok(recentService.split('\n').length <= 450, 'recent generation read owner should stay at or below 450 lines');
 });
 
 test('route owners shrink while retaining visitor, cache, and mutation responsibilities', () => {
