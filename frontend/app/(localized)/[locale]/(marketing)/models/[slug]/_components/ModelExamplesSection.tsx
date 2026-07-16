@@ -358,7 +358,7 @@ function ModelDecisionExamplesPanel({
           filters={filters}
           items={items}
           examplesLinkHref={resolvedExamplesLinkHref}
-          viewAllLabel={legacyContent.section.defaultCtaLabel ?? uiCopy.viewAllLabel}
+          viewAllLabel={uiCopy.viewAllLabel}
           renderLinkLabel={renderLinkLabel}
           emptyLabel={formatEmptyExamplesLabel(uiCopy, modelName)}
         />

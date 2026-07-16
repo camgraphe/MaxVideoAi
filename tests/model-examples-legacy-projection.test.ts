@@ -43,6 +43,14 @@ test('legacy Examples editorial decisions are isolated behind one pure projector
   );
 });
 
+test('active legacy decision renderer keeps the generic view-all label', () => {
+  assert.match(sectionSource, /viewAllLabel=\{uiCopy\.viewAllLabel\}/);
+  assert.doesNotMatch(
+    sectionSource,
+    /viewAllLabel=\{legacyContent\.section\.defaultCtaLabel/,
+  );
+});
+
 test('all 40 by 3 legacy projections satisfy the strict normalized contract', () => {
   const slugs = listModelPageTemplateSlugs().sort();
   assert.equal(slugs.length, 40);
