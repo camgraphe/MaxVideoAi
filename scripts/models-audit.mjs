@@ -7,9 +7,8 @@ const ROOT = path.join(__dirname, '..');
 
 const ENGINE_CATALOG_PATH = path.join(ROOT, 'frontend', 'config', 'engine-catalog.json');
 const MODEL_ROSTER_PATH = path.join(ROOT, 'frontend', 'config', 'model-roster.json');
-const CONTENT_MODELS_ROOT = path.join(ROOT, 'content', 'models');
-const REPORTS_DIR = path.join(ROOT, '.reports');
-const REPORT_PATH = path.join(REPORTS_DIR, 'models-audit.json');
+const DEFAULT_CONTENT_MODELS_ROOT = path.join(ROOT, 'content', 'models');
+const DEFAULT_REPORT_PATH = path.join(ROOT, '.reports', 'models-audit.json');
 const LOCALES = ['en', 'fr', 'es'];
 const PRELAUNCH_CONTENT_RULES = [
   {
@@ -36,11 +35,42 @@ const LEGACY_GALLERY_KEYS = [
   'gallerySceneCta',
   'recreateLabel',
 ];
+const DECISION_EXAMPLE_FILTER_IDS = new Set([
+  'all', 'cinematic', 'product', 'action', 'vertical', 'audio',
+  'campaign', 'typography', 'reference', 'final', 'grounded', 'edit',
+  'wide', 'character', 'batch', 'ui', 'mask', 'infographic',
+]);
+const MODEL_EXAMPLE_ICON_IDS = new Set([
+  'audio', 'image', 'maximize', 'pen', 'shield', 'sparkles', 'type', 'users', 'zap',
+]);
+const EXAMPLES_NULLABLE_STRING_PATHS = new Set([
+  'section.defaultCtaLabel',
+  'section.recreateLabel',
+]);
 
 function parseArgs(argv) {
-  return {
-    runtime: argv.includes('--runtime'),
+  const options = {
+    runtime: false,
+    contentRoot: DEFAULT_CONTENT_MODELS_ROOT,
+    reportPath: DEFAULT_REPORT_PATH,
   };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--runtime') {
+      options.runtime = true;
+      continue;
+    }
+    if (arg === '--content-root' || arg === '--report-path') {
+      const value = argv[index + 1];
+      if (!value) throw new Error(`${arg} requires a path.`);
+      if (arg === '--content-root') options.contentRoot = path.resolve(value);
+      else options.reportPath = path.resolve(value);
+      index += 1;
+      continue;
+    }
+    throw new Error(`Unknown option: ${arg}`);
+  }
+  return options;
 }
 
 async function loadJson(filePath) {
@@ -93,8 +123,8 @@ function diffSet(left, right) {
   return missing.sort((a, b) => a.localeCompare(b, 'en'));
 }
 
-async function loadLocaleContentSlugs(locale) {
-  const localeDir = path.join(CONTENT_MODELS_ROOT, locale);
+async function loadLocaleContentSlugs(locale, contentRoot) {
+  const localeDir = path.join(contentRoot, locale);
   const fileNames = await fs.readdir(localeDir);
   return new Set(
     fileNames
@@ -104,8 +134,8 @@ async function loadLocaleContentSlugs(locale) {
   );
 }
 
-async function loadLocaleContentEntry(locale, slug) {
-  const filePath = path.join(CONTENT_MODELS_ROOT, locale, `${slug}.json`);
+async function loadLocaleContentEntry(locale, slug, contentRoot) {
+  const filePath = path.join(contentRoot, locale, `${slug}.json`);
   const raw = await fs.readFile(filePath, 'utf-8');
   return JSON.parse(raw);
 }
@@ -131,6 +161,246 @@ function collectStringValues(value, output = []) {
     Object.values(value).forEach((entry) => collectStringValues(entry, output));
   }
   return output;
+}
+
+function failExamples(source, fieldPath, message) {
+  throw new Error(`${source}#examples/${fieldPath}: ${message}`);
+}
+
+function requireExactObject(value, expectedKeys, source, fieldPath) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    failExamples(source, fieldPath, 'expected an object');
+  }
+  const actualKeys = Object.keys(value);
+  const missing = expectedKeys.filter((key) => !Object.hasOwn(value, key));
+  const unknown = actualKeys.filter((key) => !expectedKeys.includes(key));
+  if (missing.length || unknown.length) {
+    const details = [
+      missing.length ? `missing fields: ${missing.join(', ')}` : null,
+      unknown.length ? `unknown fields: ${unknown.join(', ')}` : null,
+    ].filter(Boolean).join('; ');
+    failExamples(source, fieldPath, details);
+  }
+  return value;
+}
+
+function requireNonEmptyString(value, source, fieldPath) {
+  if (typeof value !== 'string' || !value.trim().length) {
+    failExamples(source, fieldPath, 'expected a non-empty string');
+  }
+  return value;
+}
+
+function requireNullableNonEmptyString(value, source, fieldPath) {
+  if (value === null) return null;
+  return requireNonEmptyString(value, source, fieldPath);
+}
+
+function requireArray(value, source, fieldPath, minimum = 0) {
+  if (!Array.isArray(value) || value.length < minimum) {
+    failExamples(source, fieldPath, `expected an array with at least ${minimum} item(s)`);
+  }
+  return value;
+}
+
+function requireAllowedId(value, allowed, source, fieldPath) {
+  const id = requireNonEmptyString(value, source, fieldPath);
+  if (!allowed.has(id)) failExamples(source, fieldPath, `unsupported id "${id}"`);
+  return id;
+}
+
+function assertUniqueIds(ids, label, source) {
+  if (new Set(ids).size !== ids.length) {
+    failExamples(source, label, `duplicate ${label} id`);
+  }
+}
+
+function validateModelExamplesContent(input, expectedSlug, locale) {
+  const source = `content/models/${locale}/${expectedSlug}.json`;
+  const value = requireExactObject(
+    input,
+    ['modelSlug', 'section', 'filters', 'proofItems', 'fallbackItems'],
+    source,
+    '<root>',
+  );
+  const modelSlug = requireNonEmptyString(value.modelSlug, source, 'modelSlug');
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(modelSlug)) {
+    failExamples(source, 'modelSlug', 'expected a canonical kebab-case slug');
+  }
+  if (modelSlug !== expectedSlug) {
+    failExamples(source, 'modelSlug', `expected "${expectedSlug}", received "${modelSlug}"`);
+  }
+
+  const section = requireExactObject(
+    value.section,
+    ['title', 'intro', 'defaultCtaLabel', 'recreateLabel'],
+    source,
+    'section',
+  );
+  requireNonEmptyString(section.title, source, 'section.title');
+  requireNonEmptyString(section.intro, source, 'section.intro');
+  requireNullableNonEmptyString(section.defaultCtaLabel, source, 'section.defaultCtaLabel');
+  requireNullableNonEmptyString(section.recreateLabel, source, 'section.recreateLabel');
+
+  const filters = requireArray(value.filters, source, 'filters', 1);
+  const filterIds = filters.map((entry, index) => {
+    const filter = requireExactObject(entry, ['id', 'label'], source, `filters.${index}`);
+    const id = requireAllowedId(filter.id, DECISION_EXAMPLE_FILTER_IDS, source, `filters.${index}.id`);
+    requireNonEmptyString(filter.label, source, `filters.${index}.label`);
+    return id;
+  });
+  assertUniqueIds(filterIds, 'filter', source);
+  if (filterIds[0] !== 'all' || filterIds.filter((id) => id === 'all').length !== 1) {
+    failExamples(source, 'filters', 'the first filter must be the only all filter');
+  }
+
+  const proofItems = requireArray(value.proofItems, source, 'proofItems');
+  if (proofItems.length !== 5) failExamples(source, 'proofItems', 'expected exactly five items');
+  const proofIds = proofItems.map((entry, index) => {
+    const proof = requireExactObject(
+      entry,
+      ['id', 'icon', 'title', 'body'],
+      source,
+      `proofItems.${index}`,
+    );
+    const id = requireNonEmptyString(proof.id, source, `proofItems.${index}.id`);
+    requireAllowedId(proof.icon, MODEL_EXAMPLE_ICON_IDS, source, `proofItems.${index}.icon`);
+    requireNonEmptyString(proof.title, source, `proofItems.${index}.title`);
+    requireNonEmptyString(proof.body, source, `proofItems.${index}.body`);
+    return id;
+  });
+  assertUniqueIds(proofIds, 'proof', source);
+
+  let fallbackItems = null;
+  if (value.fallbackItems !== null) {
+    fallbackItems = requireArray(value.fallbackItems, source, 'fallbackItems');
+    const declaredFilters = new Set(filterIds);
+    const fallbackIds = fallbackItems.map((entry, index) => {
+      const fallback = requireExactObject(
+        entry,
+        ['id', 'title', 'category', 'aspectRatio', 'alt', 'tags'],
+        source,
+        `fallbackItems.${index}`,
+      );
+      const id = requireNonEmptyString(fallback.id, source, `fallbackItems.${index}.id`);
+      requireNonEmptyString(fallback.title, source, `fallbackItems.${index}.title`);
+      requireNonEmptyString(fallback.category, source, `fallbackItems.${index}.category`);
+      requireNonEmptyString(fallback.aspectRatio, source, `fallbackItems.${index}.aspectRatio`);
+      requireNonEmptyString(fallback.alt, source, `fallbackItems.${index}.alt`);
+      const tags = requireArray(fallback.tags, source, `fallbackItems.${index}.tags`, 1);
+      for (const [tagIndex, rawTag] of tags.entries()) {
+        const tag = requireAllowedId(
+          rawTag,
+          DECISION_EXAMPLE_FILTER_IDS,
+          source,
+          `fallbackItems.${index}.tags.${tagIndex}`,
+        );
+        if (!declaredFilters.has(tag)) {
+          failExamples(source, `fallbackItems.${index}.tags.${tagIndex}`, `undeclared filter "${tag}"`);
+        }
+      }
+      return id;
+    });
+    assertUniqueIds(fallbackIds, 'fallback', source);
+  }
+
+  return { modelSlug, section, filters, proofItems, fallbackItems };
+}
+
+function examplesStructuralSignature(value, currentPath = '') {
+  if (EXAMPLES_NULLABLE_STRING_PATHS.has(currentPath)) return 'nullable-string';
+  if (Array.isArray(value)) {
+    return {
+      kind: 'array',
+      length: value.length,
+      items: value.map((item, index) =>
+        examplesStructuralSignature(item, currentPath ? `${currentPath}.${index}` : String(index))
+      ),
+    };
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([key, nested]) => [
+          key,
+          examplesStructuralSignature(nested, currentPath ? `${currentPath}.${key}` : key),
+        ]),
+    );
+  }
+  return value === null ? 'null' : typeof value;
+}
+
+function sameJson(left, right) {
+  return JSON.stringify(left) === JSON.stringify(right);
+}
+
+function getExamplesParityDifferences(english, localized) {
+  const differences = [];
+  if (!sameJson(examplesStructuralSignature(localized), examplesStructuralSignature(english))) {
+    differences.push('structure');
+  }
+  if (!sameJson(localized.filters.map(({ id }) => id), english.filters.map(({ id }) => id))) {
+    differences.push('filters');
+  }
+  if (!sameJson(
+    localized.proofItems.map(({ id, icon }) => [id, icon]),
+    english.proofItems.map(({ id, icon }) => [id, icon]),
+  )) {
+    differences.push('proofItems');
+  }
+  if (!sameJson(
+    localized.fallbackItems?.map(({ id, tags }) => [id, tags]) ?? null,
+    english.fallbackItems?.map(({ id, tags }) => [id, tags]) ?? null,
+  )) {
+    differences.push('fallbackItems');
+  }
+  return differences;
+}
+
+async function runLocalizedExamplesChecks(catalogBySlug, issues, contentRoot) {
+  const modelSlugs = Array.from(catalogBySlug.keys()).sort((left, right) => left.localeCompare(right, 'en'));
+  for (const modelSlug of modelSlugs) {
+    const examplesByLocale = new Map();
+    for (const locale of LOCALES) {
+      try {
+        const content = await loadLocaleContentEntry(locale, modelSlug, contentRoot);
+        examplesByLocale.set(
+          locale,
+          validateModelExamplesContent(content?.examples, modelSlug, locale),
+        );
+      } catch (error) {
+        addIssue(
+          issues,
+          'critical',
+          'invalid_localized_examples_content',
+          `Model "${modelSlug}" has invalid ${locale.toUpperCase()} Examples content: ${error instanceof Error ? error.message : String(error)}.`,
+          {
+            modelSlug,
+            locale,
+            error: error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+    }
+
+    const english = examplesByLocale.get('en');
+    if (!english) continue;
+    for (const locale of ['fr', 'es']) {
+      const localized = examplesByLocale.get(locale);
+      if (!localized) continue;
+      const differences = getExamplesParityDifferences(english, localized);
+      if (differences.length) {
+        addIssue(
+          issues,
+          'critical',
+          'localized_examples_parity_mismatch',
+          `Model "${modelSlug}" ${locale.toUpperCase()} Examples diverge from EN in: ${differences.join(', ')}.`,
+          { modelSlug, locale, differences },
+        );
+      }
+    }
+  }
 }
 
 function getMarketingCoverage(content) {
@@ -165,12 +435,12 @@ function getMarketingCoverage(content) {
   };
 }
 
-async function runMarketingContentChecks(catalogBySlug, issues) {
+async function runMarketingContentChecks(catalogBySlug, issues, contentRoot) {
   const modelSlugs = Array.from(catalogBySlug.keys()).sort((a, b) => a.localeCompare(b, 'en'));
   for (const modelSlug of modelSlugs) {
     let content = null;
     try {
-      content = await loadLocaleContentEntry('en', modelSlug);
+      content = await loadLocaleContentEntry('en', modelSlug, contentRoot);
     } catch {
       continue;
     }
@@ -216,7 +486,9 @@ async function runMarketingContentChecks(catalogBySlug, issues) {
     for (const locale of LOCALES) {
       let localizedContent = null;
       try {
-        localizedContent = locale === 'en' ? content : await loadLocaleContentEntry(locale, modelSlug);
+        localizedContent = locale === 'en'
+          ? content
+          : await loadLocaleContentEntry(locale, modelSlug, contentRoot);
       } catch {
         continue;
       }
@@ -563,7 +835,7 @@ function runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues) 
   });
 }
 
-async function runPrelaunchContentChecks(catalogBySlug, issues) {
+async function runPrelaunchContentChecks(catalogBySlug, issues, contentRoot) {
   for (const rule of PRELAUNCH_CONTENT_RULES) {
     const catalogEntry = catalogBySlug.get(rule.modelSlug);
     if (!catalogEntry) continue;
@@ -581,7 +853,7 @@ async function runPrelaunchContentChecks(catalogBySlug, issues) {
 
       let content = null;
       try {
-        content = await loadLocaleContentEntry(locale, rule.modelSlug);
+        content = await loadLocaleContentEntry(locale, rule.modelSlug, contentRoot);
       } catch (error) {
         addIssue(
           issues,
@@ -745,9 +1017,9 @@ async function runRuntimeChecks(catalog, issues) {
   }
 }
 
-async function writeReport(report) {
-  await fs.mkdir(REPORTS_DIR, { recursive: true });
-  await fs.writeFile(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`, 'utf-8');
+async function writeReport(report, reportPath) {
+  await fs.mkdir(path.dirname(reportPath), { recursive: true });
+  await fs.writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, 'utf-8');
 }
 
 function printIssues(issues, level) {
@@ -759,7 +1031,7 @@ function printIssues(issues, level) {
 }
 
 async function main() {
-  const { runtime } = parseArgs(process.argv.slice(2));
+  const { runtime, contentRoot, reportPath } = parseArgs(process.argv.slice(2));
   const issues = { critical: [], warning: [] };
 
   const [catalog, roster] = await Promise.all([loadJson(ENGINE_CATALOG_PATH), loadJson(MODEL_ROSTER_PATH)]);
@@ -771,19 +1043,24 @@ async function main() {
   }
 
   const localeSlugMaps = await Promise.all(
-    LOCALES.map(async (locale) => ({ locale, slugs: await loadLocaleContentSlugs(locale) }))
+    LOCALES.map(async (locale) => ({
+      locale,
+      slugs: await loadLocaleContentSlugs(locale, contentRoot),
+    }))
   );
 
   const publicCatalog = catalog.filter((entry) => hasPublishedModelPage(entry));
   const catalogSlugs = setFromSlugs(publicCatalog, 'modelSlug');
   const rosterSlugs = setFromSlugs(roster, 'modelSlug');
   const catalogBySlug = new Map(catalog.map((entry) => [entry.modelSlug, entry]));
+  const publicCatalogBySlug = new Map(publicCatalog.map((entry) => [entry.modelSlug, entry]));
 
   runSlugParityChecks(catalogSlugs, rosterSlugs, localeSlugMaps, issues);
   validateCatalogEntries(catalog, issues);
   validateRosterEntries(roster, catalogBySlug, issues);
-  await runPrelaunchContentChecks(catalogBySlug, issues);
-  await runMarketingContentChecks(catalogBySlug, issues);
+  await runPrelaunchContentChecks(catalogBySlug, issues, contentRoot);
+  await runLocalizedExamplesChecks(publicCatalogBySlug, issues, contentRoot);
+  await runMarketingContentChecks(catalogBySlug, issues, contentRoot);
 
   if (runtime) {
     await runRuntimeChecks(catalog, issues);
@@ -803,7 +1080,7 @@ async function main() {
     warning: issues.warning,
   };
 
-  await writeReport(report);
+  await writeReport(report, reportPath);
 
   console.table([
     { metric: 'catalog', value: catalog.length },
@@ -819,12 +1096,12 @@ async function main() {
   printIssues(issues, 'critical');
 
   if (issues.critical.length) {
-    console.error(`[models:audit] Failed with ${issues.critical.length} critical issue(s). Report: .reports/models-audit.json`);
+    console.error(`[models:audit] Failed with ${issues.critical.length} critical issue(s). Report: ${reportPath}`);
     process.exitCode = 1;
     return;
   }
 
-  console.log(`[models:audit] Passed with ${issues.warning.length} warning(s). Report: .reports/models-audit.json`);
+  console.log(`[models:audit] Passed with ${issues.warning.length} warning(s). Report: ${reportPath}`);
 }
 
 main().catch((error) => {

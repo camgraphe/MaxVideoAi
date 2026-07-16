@@ -92,7 +92,9 @@ test('SoraCopy and buildSoraCopy contain no Examples ownership', () => {
 test('model audit requires strict Examples content and rejects legacy custom ownership', () => {
   const source = readSource(paths.audit);
 
-  assert.match(source, /examples:\s*Boolean\(content\?\.examples\)/);
+  assert.match(source, /validateModelExamplesContent/);
+  assert.match(source, /runLocalizedExamplesChecks/);
+  assert.match(source, /localized_examples_parity_mismatch/);
   assert.match(source, /LEGACY_GALLERY_KEYS/);
   assert.match(source, /legacy_examples_ownership/);
 });
