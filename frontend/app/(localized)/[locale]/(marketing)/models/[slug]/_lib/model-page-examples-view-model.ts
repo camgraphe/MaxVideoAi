@@ -50,6 +50,7 @@ export type BuildModelExamplesViewModelInput = {
   modelName: string;
   mode: 'video' | 'image-fallback';
   audioMode: 'runtime' | 'silent';
+  decisionAltMode: 'preview-alt' | 'model-name-prefix';
   galleryVideos: readonly ExampleGalleryVideo[];
   galleryPreviewAlts: ReadonlyMap<string, string>;
   fallbackPosters: ReadonlyMap<string, string>;
@@ -154,6 +155,17 @@ function getImageTags(video: ExampleGalleryVideo, category: string): DecisionExa
   return Array.from(tags);
 }
 
+function getDecisionAlt(
+  input: BuildModelExamplesViewModelInput,
+  video: ExampleGalleryVideo,
+  title: string,
+): string {
+  if (input.decisionAltMode === 'model-name-prefix') {
+    return `${input.modelName} ${title.toLowerCase()}`;
+  }
+  return input.galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${title}`;
+}
+
 function buildGalleryItems(input: BuildModelExamplesViewModelInput): ModelExamplesGalleryItem[] {
   return input.galleryVideos.map((video) => {
     const title = deriveShortPromptLabel(video.promptFull ?? video.prompt, input.locale);
@@ -164,7 +176,7 @@ function buildGalleryItems(input: BuildModelExamplesViewModelInput): ModelExampl
       id: video.id,
       href: video.href,
       posterUrl: video.optimizedPosterUrl ?? video.rawPosterUrl ?? '',
-      alt: input.galleryPreviewAlts.get(video.id) ?? `${video.engineLabel} example: ${title}`,
+      alt: getDecisionAlt(input, video, title),
       audioBadgeLabel: isImage
         ? null
         : input.audioMode === 'silent'

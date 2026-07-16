@@ -7,7 +7,10 @@ import type { ExampleGalleryVideo } from '../frontend/components/examples/exampl
 import type { LocalizedLinkHref } from '../frontend/i18n/navigation.tsx';
 import { parseModelExamplesContent, type ModelExamplesContent } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-content.ts';
 import { getModelExamplesUiCopy } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-ui-copy.ts';
-import { resolveModelExampleFallbackPosters } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-example-media.ts';
+import {
+  MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS,
+  resolveModelExampleFallbackPosters,
+} from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-example-media.ts';
 import {
   buildModelExamplePreviewAlts,
   resolveModelExamplesRuntimePolicy,
@@ -18,6 +21,14 @@ import {
 } from '../frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts';
 
 const CONTENT_ROOT = path.join(process.cwd(), 'content', 'models', 'en');
+const RUNTIME_POLICY_PATH = path.join(
+  process.cwd(),
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-runtime-policy.ts',
+);
+const VIEW_MODEL_PATH = path.join(
+  process.cwd(),
+  'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-examples-view-model.ts',
+);
 const examplesLinkHref = {
   pathname: '/examples/[model]',
   params: { model: 'fixture' },
@@ -79,6 +90,7 @@ function videoInput(
     modelName: 'Fixture Model',
     mode: 'video',
     audioMode: 'runtime',
+    decisionAltMode: 'preview-alt',
     galleryVideos: [galleryVideo()],
     galleryPreviewAlts: new Map([['job_fixture', 'Fixture preview alt']]),
     fallbackPosters: new Map(),
@@ -148,6 +160,42 @@ test('real video media preserves current title, alt, badges, links and available
   assert.equal(result.defaultPresentation.items[0]?.metadataLabel, '1920:1080 · 8s · audio on');
   assert.equal(result.defaultPresentation.examplesLinkHref, examplesLinkHref);
   assert.equal(result.section.defaultCtaLabel, 'View all Fixture examples');
+});
+
+test('compatibility-prefix routes derive decision alts generically from the supplied model name', () => {
+  for (const fixture of [
+    {
+      modelName: 'Sora 2 Pro',
+      engineLabel: 'Sora 2',
+      prompt: 'A cinematic tracking shot through a rain-soaked city.',
+      expected: 'Sora 2 Pro a cinematic tracking shot through a rain-soaked city',
+    },
+    {
+      modelName: 'Luma Ray 3.2',
+      engineLabel: 'Luma Ray 3',
+      prompt: 'A product bottle rotates under controlled studio light.',
+      expected: 'Luma Ray 3.2 a product bottle rotates under controlled studio light',
+    },
+  ]) {
+    const video = galleryVideo({
+      engineLabel: fixture.engineLabel,
+      prompt: fixture.prompt,
+    });
+    const result = buildModelExamplesViewModel(videoInput({
+      modelName: fixture.modelName,
+      decisionAltMode: 'model-name-prefix',
+      galleryVideos: [video],
+      galleryPreviewAlts: new Map([['job_fixture', `${fixture.engineLabel} supplied preview alt`]]),
+    }));
+
+    assert.equal(result.decision.items[0]?.alt, fixture.expected, fixture.modelName);
+    assert.equal(
+      result.defaultPresentation.items[0]?.alt,
+      `${fixture.engineLabel} supplied preview alt`,
+      fixture.modelName,
+    );
+  }
+  assert.doesNotMatch(readFileSync(VIEW_MODEL_PATH, 'utf8'), /sora-2-pro|luma-ray-3-2/);
 });
 
 test('silent mode never exposes the audio filter and uses the silent badge', () => {
@@ -234,18 +282,30 @@ test('preview alt builder preserves prompt mode, localizes numbered mode and cap
     locale: 'en',
     modelName: 'Fixture Model',
     mode: 'prompt',
+    numberedExampleLabel: getModelExamplesUiCopy('en').numberedExampleLabel,
   });
   const numberedAlts = buildModelExamplePreviewAlts({
     galleryVideos,
     locale: 'fr',
     modelName: 'Fixture Model',
     mode: 'numbered-model-example',
+    numberedExampleLabel: getModelExamplesUiCopy('fr').numberedExampleLabel,
   });
 
   assert.equal(promptAlts.get('job_1'), 'Fixture Engine AI video example: Product launch on a tabletop.');
   assert.equal(numberedAlts.get('job_1'), 'Exemple video IA Fixture Engine: Fixture Model produit exemple 1');
   assert.equal(promptAlts.size, 6);
   assert.equal(promptAlts.has('job_7'), false);
+});
+
+test('runtime policy receives localized numbered-example copy without owning locale branches', () => {
+  const source = readFileSync(RUNTIME_POLICY_PATH, 'utf8');
+
+  assert.equal(getModelExamplesUiCopy('en').numberedExampleLabel, 'example');
+  assert.equal(getModelExamplesUiCopy('fr').numberedExampleLabel, 'exemple');
+  assert.equal(getModelExamplesUiCopy('es').numberedExampleLabel, 'ejemplo');
+  assert.doesNotMatch(source, /\b(?:if|switch)\s*\([^)]*\blocale\b|locale\s*(?:===|==)|\blocale\s*\?/);
+  assert.doesNotMatch(source, /['"`](?:example|exemple|ejemplo)['"`]/i);
 });
 
 test('static poster manifest keys exactly match migrated models with fallback items', () => {
@@ -260,17 +320,10 @@ test('static poster manifest keys exactly match migrated models with fallback it
     .filter((content) => content.fallbackItems !== null)
     .map((content) => content.modelSlug)
     .sort();
-  const probeIds = Array.from(new Set(documents.flatMap(
-    (content) => content.fallbackItems?.map((item) => item.id) ?? [],
-  )));
   const sentinel = '/fallback-sentinel.webp';
-  const actual = documents
-    .filter((content) => Array.from(
-      resolveModelExampleFallbackPosters(content.modelSlug, probeIds, sentinel).values(),
-    ).some((poster) => poster !== sentinel))
-    .map((content) => content.modelSlug)
-    .sort();
+  const actual = [...MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS].sort();
 
+  assert.equal(Object.isFrozen(MODEL_EXAMPLE_FALLBACK_POSTER_SLUGS), true);
   assert.deepEqual(actual, expected);
   for (const content of documents.filter((item) => item.fallbackItems !== null)) {
     const ids = content.fallbackItems?.map((item) => item.id) ?? [];

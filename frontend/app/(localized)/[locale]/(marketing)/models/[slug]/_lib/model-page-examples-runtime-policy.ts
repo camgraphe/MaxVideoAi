@@ -42,18 +42,19 @@ export function buildModelExamplePreviewAlts({
   locale,
   modelName,
   mode,
+  numberedExampleLabel,
 }: {
   galleryVideos: readonly ExampleGalleryVideo[];
   locale: AppLocale;
   modelName: string;
   mode: ModelExamplesRuntimePolicy['previewAltMode'];
+  numberedExampleLabel: string;
 }): Map<string, string> {
-  const exampleLabel = locale === 'fr' ? 'exemple' : locale === 'es' ? 'ejemplo' : 'example';
   return dedupeAltsInList(galleryVideos.slice(0, 6).map((video, index) => {
     const prompt = video.promptFull ?? video.prompt;
     const tag = inferRenderTag(prompt, locale);
     const label = mode === 'numbered-model-example'
-      ? `${modelName} ${tag ? `${tag} ` : ''}${exampleLabel} ${index + 1}`
+      ? `${modelName} ${tag ? `${tag} ` : ''}${numberedExampleLabel} ${index + 1}`
       : prompt;
     return {
       id: video.id,

@@ -115,6 +115,7 @@ test('generic Examples UI copy is complete and model-neutral', () => {
     assert.ok(copy.renderLabel.trim());
     assert.ok(copy.openLabel.trim());
     assert.ok(copy.noPreviewLabel.trim());
+    assert.ok(copy.numberedExampleLabel.trim());
     assert.ok(formatEmptyExamplesLabel(copy, 'Fixture Model').includes('Fixture Model'));
     assert.doesNotMatch(JSON.stringify(copy), /sora|veo|kling|luma|seedance|nano banana/i);
   }
