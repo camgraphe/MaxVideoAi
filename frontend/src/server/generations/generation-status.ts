@@ -2,7 +2,6 @@ import { query } from '@/lib/db';
 import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { isStablePublicMediaUrl, normalizeMediaUrl } from '@/lib/media';
-import { toUserFacingFailureMessage } from '@/server/user-facing-failure-messages';
 import type { PricingSnapshot } from '@/types/engines';
 
 export type AgentGenerationResult =
@@ -97,27 +96,42 @@ const FAILED_STATUSES = new Set([
   'timeout',
 ]);
 const SAFE_PAYMENT_STATUSES = new Set([
-  'curated',
   'included',
-  'paid',
+  'paid_direct',
+  'paid_stripe',
   'paid_wallet',
-  'pending',
+  'platform',
   'refunded',
   'refunded_wallet',
-  'trial_consumed',
-  'trial_released',
-  'trial_reserved',
-  'trial_restored',
-  'unpaid',
 ]);
 const IMAGE_SURFACES = new Set([
   'angle',
-  'background-removal',
   'character',
   'image',
   'storyboard',
   'upscale',
 ]);
+const PRIVATE_MEDIA_PATH_PATTERN =
+  /^\/(?:api|admin|app|billing|connect|dashboard|generate|jobs|settings)(?:\/|$)/iu;
+const PUBLIC_APP_MEDIA_PATH_PATTERN = /^\/(?:generated|media|uploads)(?:\/|$)/iu;
+const DEFAULT_PUBLIC_MEDIA_HOSTS = new Set([
+  'cdn.maxvideoai.com',
+  'media.maxvideoai.com',
+  'storage.maxvideoai.com',
+]);
+
+const AGENT_FAILURE_COPY = {
+  default:
+    'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.',
+  busy: 'The render queue is temporarily busy. Please retry in a few moments.',
+  noOutput:
+    'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.',
+  safety: 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.',
+  start: 'MaxVideoAI could not start this render. Please retry in a few moments.',
+  storage: 'The render finished, but MaxVideoAI could not prepare the output for download. Please retry.',
+  timeout: 'This render exceeded the expected processing window. Please retry in a few moments.',
+  unsupported: 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings and try again.',
+} as const;
 
 function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image' | null {
   const surface = deriveJobSurface({
@@ -128,7 +142,7 @@ function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image
     videoUrl: record.video_url,
     renderIds: record.render_ids,
   });
-  if (surface === 'video') return 'video';
+  if (surface === 'video' || surface === 'background-removal') return 'video';
   return IMAGE_SURFACES.has(surface) ? 'image' : null;
 }
 
@@ -161,18 +175,32 @@ function stableMediaUrl(value: string | null | undefined): string | null {
   const normalized = normalizeMediaUrl(value);
   if (!normalized || !isStablePublicMediaUrl(normalized) || !/^https:\/\//iu.test(normalized)) return null;
   try {
-    const hostname = new URL(normalized).hostname.toLowerCase();
-    const configuredHosts = [process.env.S3_PUBLIC_BASE_URL, process.env.NEXT_PUBLIC_APP_URL]
+    const parsed = new URL(normalized);
+    const hostname = parsed.hostname.toLowerCase();
+    if (PRIVATE_MEDIA_PATH_PATTERN.test(parsed.pathname)) return null;
+    const configuredBases = [process.env.S3_PUBLIC_BASE_URL]
       .map((candidate) => {
         try {
-          return candidate ? new URL(candidate).hostname.toLowerCase() : null;
+          return candidate ? new URL(candidate) : null;
         } catch {
           return null;
         }
       })
-      .filter((candidate): candidate is string => Boolean(candidate));
-    const isMaxVideoAiHost = hostname === 'maxvideoai.com' || hostname.endsWith('.maxvideoai.com');
-    return isMaxVideoAiHost || configuredHosts.includes(hostname) ? normalized : null;
+      .filter((candidate): candidate is URL => Boolean(candidate));
+    const configuredStorageMatch = configuredBases.some((base) => {
+      if (base.hostname.toLowerCase() !== hostname) return false;
+      const basePath = base.pathname.replace(/\/+$/u, '');
+      return !basePath || basePath === '/' || parsed.pathname === basePath || parsed.pathname.startsWith(`${basePath}/`);
+    });
+    if (configuredStorageMatch || DEFAULT_PUBLIC_MEDIA_HOSTS.has(hostname)) return normalized;
+    const appHosts = new Set(['maxvideoai.com', 'www.maxvideoai.com']);
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
+      if (appUrl) appHosts.add(new URL(appUrl).hostname.toLowerCase());
+    } catch {
+      // Ignore malformed optional public app configuration.
+    }
+    return appHosts.has(hostname) && PUBLIC_APP_MEDIA_PATH_PATTERN.test(parsed.pathname) ? normalized : null;
   } catch {
     return null;
   }
@@ -216,7 +244,31 @@ function buildAgentMessage(
 ): string | null {
   if (status === 'accepted') return 'Generation accepted.';
   if (status === 'running') return 'Generation in progress.';
-  if (status === 'failed') return toUserFacingFailureMessage(rawMessage);
+  if (status === 'failed') {
+    const message = rawMessage?.trim().toLowerCase() ?? '';
+    if (/responsible ai|sensitive words|content policy|policy violation|safety|moderation|prohibited|blocked/iu.test(message)) {
+      return AGENT_FAILURE_COPY.safety;
+    }
+    if (/unsupported|not supported|invalid request|unprocessable|does not support/iu.test(message)) {
+      return AGENT_FAILURE_COPY.unsupported;
+    }
+    if (/no result|no video|no usable output|returned no|without a usable output/iu.test(message)) {
+      return AGENT_FAILURE_COPY.noOutput;
+    }
+    if (/copy|copied|storage|download|fast-start|faststart/iu.test(message)) {
+      return AGENT_FAILURE_COPY.storage;
+    }
+    if (/timeout|timed out|processing window|expected window|grace period|exceeded/iu.test(message)) {
+      return AGENT_FAILURE_COPY.timeout;
+    }
+    if (/rate limit|temporarily unavailable|temporarily busy|quota|credits exhausted|too many requests|queue is/iu.test(message)) {
+      return AGENT_FAILURE_COPY.busy;
+    }
+    if (/could not start|start failed|request failed|sync failed|missing provider_job_id|status unavailable|not found|expired/iu.test(message)) {
+      return AGENT_FAILURE_COPY.start;
+    }
+    return AGENT_FAILURE_COPY.default;
+  }
   return null;
 }
 

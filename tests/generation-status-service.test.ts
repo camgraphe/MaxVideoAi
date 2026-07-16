@@ -128,6 +128,8 @@ test('agent status returns only stable completed image media and omits private g
       'https://cdn.maxvideoai.com/image-1.png',
       'https://cdn.maxvideoai.com/image-2.png?X-Amz-Signature=private',
       'https://v3b.fal.media/provider-output.png',
+      'https://maxvideoai.com/api/jobs/private-output.png',
+      'https://cdn.maxvideoai.com/app/private-output.png',
       '/public/relative-output.png',
       '/api/media/private.png',
     ],
@@ -165,10 +167,26 @@ test('agent status returns only stable completed image media and omits private g
     'privateReferenceUrl',
     'X-Amz-Signature',
     'v3b.fal.media',
+    '/api/jobs/private-output.png',
+    '/app/private-output.png',
     'relative-output.png',
     '/api/media/private.png',
   ]) {
     assert.doesNotMatch(serialized, new RegExp(secret.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i'));
+  }
+});
+
+test('agent status rejects absolute private MaxVideoAI result paths', () => {
+  for (const videoUrl of [
+    'https://maxvideoai.com/api/media/job.mp4',
+    'https://maxvideoai.com/jobs/job_1.mp4',
+    'https://cdn.maxvideoai.com/admin/export.mp4',
+    'https://cdn.maxvideoai.com/dashboard/render.mp4',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ status: 'completed', progress: 100, video_url: videoUrl })
+    );
+    assert.equal(result?.result, null, videoUrl);
   }
 });
 
@@ -214,6 +232,116 @@ test('agent status sanitizes terminal failures and preserves refunded state', as
   );
   assert.equal(result?.result, null);
   assert.equal(result?.retryAfterSeconds, null);
+});
+
+test('agent failure messages never echo arbitrary secrets, identities, or opaque bodies', () => {
+  const expected =
+    'MaxVideoAI could not complete this render. Please retry in a few moments. If this keeps happening, contact support with your request ID.';
+  for (const message of [
+    'Stripe key sk_live_supersecret belongs to alice@example.com',
+    'api_token=tok_123456789 short_secret=abc123',
+    'alice@example.com failed: opaque internal state ZXCV-9988',
+    '{"error":{"body":"opaque-provider-body","authorization":"Bearer abc123"}}',
+    'short secret abc123',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ status: 'failed', message })
+    );
+    assert.equal(result?.message, expected, message);
+    assert.doesNotMatch(JSON.stringify(result), /sk_live|alice@|tok_|ZXCV|opaque-provider|abc123/i);
+  }
+});
+
+test('agent failure messages map recognized categories to fixed public copy', () => {
+  const cases = [
+    {
+      raw: 'content policy safety moderation rejected',
+      expected: 'This request was blocked by safety checks. Try rephrasing it with safer, more neutral wording.',
+    },
+    {
+      raw: 'processing timeout exceeded expected window',
+      expected: 'This render exceeded the expected processing window. Please retry in a few moments.',
+    },
+    {
+      raw: 'provider returned no video output',
+      expected:
+        'The render finished without a usable output. Please retry or contact support with your request ID if it happens again.',
+    },
+  ];
+  for (const fixture of cases) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ status: 'failed', message: fixture.raw })
+    );
+    assert.equal(result?.message, fixture.expected);
+    assert.notEqual(result?.message, fixture.raw);
+  }
+});
+
+test('agent payment status exposes only evidenced persisted app_jobs states', () => {
+  for (const paymentStatus of [
+    'platform',
+    'paid_wallet',
+    'paid_direct',
+    'paid_stripe',
+    'included',
+    'refunded_wallet',
+    'refunded',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ payment_status: paymentStatus })
+    );
+    assert.equal(result?.paymentStatus, paymentStatus);
+  }
+  for (const paymentStatus of ['paid', 'pending', 'unpaid', 'curated', 'trial_reserved', 'trial_restored']) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ payment_status: paymentStatus })
+    );
+    assert.equal(result?.paymentStatus, null, paymentStatus);
+  }
+});
+
+test('background removal normalizes to a controlled completed video result', () => {
+  const result = mapGenerationStatusRecordToAgent(
+    generationRecord({
+      job_id: 'tool_background_removal_1',
+      surface: 'background-removal',
+      status: 'completed',
+      progress: 100,
+      video_url: 'https://cdn.maxvideoai.com/background-removal/output.mov',
+      payment_status: 'paid_wallet',
+    })
+  );
+  assert.deepEqual(result?.result, {
+    surface: 'video',
+    videoUrl: 'https://cdn.maxvideoai.com/background-removal/output.mov',
+    previewUrl: null,
+    thumbnailUrl: null,
+    audioUrl: null,
+  });
+  assert.equal(result?.surface, 'video');
+});
+
+test('agent surface normalization respects direct surface before conflicting snapshots', () => {
+  const backgroundRemoval = mapGenerationStatusRecordToAgent(
+    generationRecord({
+      surface: 'background-removal',
+      settings_snapshot: { surface: 'image' },
+      render_ids: ['https://cdn.maxvideoai.com/conflicting.png'],
+      status: 'completed',
+      video_url: 'https://cdn.maxvideoai.com/background-removal/controlled.mov',
+    })
+  );
+  const image = mapGenerationStatusRecordToAgent(
+    generationRecord({
+      surface: 'image',
+      settings_snapshot: { surface: 'background-removal' },
+      render_ids: ['https://cdn.maxvideoai.com/controlled.png'],
+      status: 'completed',
+      video_url: 'https://cdn.maxvideoai.com/conflicting.mov',
+    })
+  );
+  assert.equal(backgroundRemoval?.surface, 'video');
+  assert.equal(image?.surface, 'image');
 });
 
 test('web status mapper preserves the authenticated video response fixture', () => {

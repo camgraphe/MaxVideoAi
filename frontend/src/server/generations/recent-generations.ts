@@ -80,7 +80,17 @@ export function parseRecentGenerationCursor(
     const createdAt = parsedDate && !Number.isNaN(parsedDate.getTime()) ? parsedDate : null;
     const parsedId = idPart ? Number.parseInt(idPart, 10) : NaN;
     const id = Number.isFinite(parsedId) ? parsedId : null;
-    if (strict && (parts.length !== 2 || !createdAt || id === null || !Number.isSafeInteger(id) || id < 0)) {
+    if (
+      strict &&
+      (
+        parts.length !== 2 ||
+        !createdAt ||
+        id === null ||
+        !Number.isSafeInteger(id) ||
+        id < 0 ||
+        String(id) !== idPart?.trim()
+      )
+    ) {
       if (strict) throw new RecentGenerationInputError('cursor', 'cursor is invalid.');
     }
     return { createdAt, id };
@@ -263,6 +273,102 @@ async function readRecentGenerationRecords(params: {
   return rows.filter((record) => record.user_id === userId);
 }
 
+function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video: string } {
+  const classification = `(CASE
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
+      THEN 'image'
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'background-removal'
+      THEN 'video'
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'audio'
+      THEN NULL
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
+      THEN 'image'
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'background-removal'
+      THEN 'video'
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'audio'
+      THEN NULL
+    WHEN j.job_id LIKE 'tool_angle_%' OR j.job_id LIKE 'angle_%'
+      THEN 'image'
+    WHEN j.job_id LIKE 'tool_upscale_%' OR j.job_id LIKE 'upscale_%'
+      THEN 'image'
+    WHEN j.job_id LIKE 'tool_background_removal_%' OR j.job_id LIKE 'background_removal_%'
+      THEN 'video'
+    WHEN j.job_id LIKE 'storyboard_%'
+      THEN 'image'
+    WHEN j.render_ids IS NOT NULL
+      THEN 'image'
+    WHEN COALESCE(j.engine_id, '') = ANY($${aliasesIndex}::text[])
+      THEN 'image'
+    ELSE 'video'
+  END)`;
+  return {
+    image: `${classification} = 'image'`,
+    video: `${classification} = 'video'`,
+  };
+}
+
+async function readRecentAgentGenerationRecords(params: {
+  userId: string;
+  surface: 'video' | 'image' | null;
+  status: AgentGenerationStatus['status'] | null;
+  cursor?: string | null;
+  limit: number;
+  queryFn?: RecentGenerationQuery;
+}): Promise<RecentGenerationRecord[]> {
+  const userId = params.userId.trim();
+  if (!userId) return [];
+  const limit = normalizeRecentLimit(params.limit, 20, MAX_AGENT_RECENT_LIMIT);
+  const queryParams: RecentGenerationQueryParam[] = [userId, RECENT_IMAGE_ENGINE_ALIASES];
+  const surfaceClauses = buildAgentSurfaceClauses(2);
+  const ownedConditions = [
+    'j.user_id = $1',
+    'j.hidden IS NOT TRUE',
+    params.surface ? surfaceClauses[params.surface] : `(${surfaceClauses.image} OR ${surfaceClauses.video})`,
+  ];
+  if (params.status) {
+    queryParams.push(STATUS_VALUES[params.status]);
+    ownedConditions.push(`LOWER(COALESCE(j.status, '')) = ANY($${queryParams.length}::text[])`);
+  }
+
+  const cursor = parseRecentGenerationCursor(params.cursor, { strict: true });
+  let cursorClause = '';
+  if (cursor.createdAt) {
+    queryParams.push(cursor.createdAt, cursor.id ?? Number.MAX_SAFE_INTEGER);
+    cursorClause = `WHERE (created_at, id) < ($${queryParams.length - 1}, $${queryParams.length})`;
+  } else if (cursor.id !== null) {
+    queryParams.push(cursor.id);
+    cursorClause = `WHERE id < $${queryParams.length}`;
+  }
+  queryParams.push(limit + 1);
+  const queryFn: RecentGenerationQuery = params.queryFn ?? query;
+  const rows = await queryFn(
+    `WITH ranked AS (
+       SELECT ${RECENT_GENERATIONS_SELECT},
+              ROW_NUMBER() OVER (
+                PARTITION BY CASE
+                  WHEN NULLIF(BTRIM(j.provider_job_id), '') IS NOT NULL
+                    THEN 'provider:' || BTRIM(j.provider_job_id)
+                  ELSE 'job:' || j.job_id
+                END
+                ORDER BY j.created_at DESC, j.id DESC
+              ) AS provider_rank
+         FROM app_jobs j
+        WHERE ${ownedConditions.join(' AND ')}
+     ), deduped AS (
+       SELECT ${RECENT_GENERATIONS_SELECT}
+         FROM ranked
+        WHERE provider_rank = 1
+     )
+     SELECT ${RECENT_GENERATIONS_SELECT}
+       FROM deduped
+       ${cursorClause}
+      ORDER BY created_at DESC, id DESC
+      LIMIT $${queryParams.length}`,
+    queryParams
+  );
+  return rows.filter((record) => record.user_id === userId);
+}
+
 export async function readRecentGenerationRecordsForWeb(params: {
   userId: string;
   feedType: 'all' | 'video' | 'image';
@@ -308,25 +414,17 @@ export async function listRecentGenerations(params: {
   queryFn?: RecentGenerationQuery;
 }): Promise<RecentGenerationsResult> {
   const limit = normalizeRecentLimit(params.limit ?? 20, 20, MAX_AGENT_RECENT_LIMIT);
-  const rows = await readRecentGenerationRecords({
+  const rows = await readRecentAgentGenerationRecords({
     userId: params.userId,
-    feedType: 'all',
-    requestedSurface: params.surface ?? null,
+    surface: params.surface ?? null,
     status: params.status ?? null,
     cursor: params.cursor,
     limit,
-    maxLimit: MAX_AGENT_RECENT_LIMIT,
-    strictCursor: true,
-    applyWebFailurePolicy: false,
     queryFn: params.queryFn,
   });
-  const seenProviderIds = new Set<string>();
   const items: Array<{ record: RecentGenerationRecord; status: AgentGenerationStatus }> = [];
   for (const record of rows) {
     if (record.user_id !== params.userId) continue;
-    const providerId = record.provider_job_id?.trim() ?? '';
-    if (providerId && seenProviderIds.has(providerId)) continue;
-    if (providerId) seenProviderIds.add(providerId);
     const status = mapGenerationStatusRecordToAgent(record);
     if (!status) continue;
     items.push({ record, status });

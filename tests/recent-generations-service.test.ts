@@ -76,10 +76,10 @@ test('recent agent reads are user-scoped, filtered, and capped to fifty items', 
   assert.equal(result.items[0]?.status, 'running');
   assert.equal(result.items[0]?.retryAfterSeconds, 5);
   assert.equal(calls.length, 1);
-  assert.match(calls[0]?.sql ?? '', /WHERE user_id = \$1/);
-  assert.match(calls[0]?.sql ?? '', /LOWER\(COALESCE\(status, ''\)\)/);
+  assert.match(calls[0]?.sql ?? '', /WHERE j\.user_id = \$1/);
+  assert.match(calls[0]?.sql ?? '', /LOWER\(COALESCE\(j\.status, ''\)\)/);
+  assert.match(calls[0]?.sql ?? '', /tool_background_removal_/);
   assert.ok(calls[0]?.params?.includes('user_1'));
-  assert.ok(calls[0]?.params?.includes('video'));
   assert.equal(calls[0]?.params?.at(-1), 51);
 });
 
@@ -94,7 +94,7 @@ test('recent agent reads retain failed jobs instead of applying the web feed exp
     },
   });
   assert.doesNotMatch(querySql, /INTERVAL '150 seconds'/);
-  assert.match(querySql, /LOWER\(COALESCE\(status, ''\)\)/);
+  assert.match(querySql, /LOWER\(COALESCE\(j\.status, ''\)\)/);
 });
 
 test('recent agent reads reject oversized and malformed cursors', async () => {
@@ -105,6 +105,14 @@ test('recent agent reads reject oversized and malformed cursors', async () => {
   );
   await assert.rejects(
     listRecentGenerations({ userId: 'user_1', cursor: 'not-a-cursor', queryFn }),
+    (error: unknown) => error instanceof RecentGenerationInputError && error.field === 'cursor'
+  );
+  await assert.rejects(
+    listRecentGenerations({
+      userId: 'user_1',
+      cursor: '2026-07-16T10:00:00.000Z|7junk',
+      queryFn,
+    }),
     (error: unknown) => error instanceof RecentGenerationInputError && error.field === 'cursor'
   );
 });
@@ -131,30 +139,83 @@ test('web cursor parsing retains legacy partial timestamp and numeric-prefix beh
   assert.deepEqual(parseRecentGenerationCursor('12legacy'), { createdAt: null, id: 12 });
 });
 
-test('recent agent reads deduplicate provider jobs without exposing provider identity', async () => {
-  const result = await listRecentGenerations({
+test('agent pagination deduplicates provider jobs in SQL before limit and keeps a stable keyset cursor', async () => {
+  const rawRows = [
+    recentRecord(),
+    recentRecord({
+      id: 9,
+      job_id: 'job_duplicate',
+      created_at: '2026-07-16T09:30:00.000Z',
+      provider_job_id: 'provider-private-10',
+    }),
+    recentRecord({
+      id: 8,
+      job_id: 'job_image_8',
+      created_at: '2026-07-16T09:00:00.000Z',
+      surface: 'image',
+      status: 'completed',
+      progress: 100,
+      provider_job_id: 'provider-private-8',
+      render_ids: ['https://cdn.maxvideoai.com/image.png'],
+    }),
+  ];
+  const queryFn = async (sql: string, params?: ReadonlyArray<unknown>) => {
+    assert.match(sql, /ROW_NUMBER\(\)[\s\S]*PARTITION BY[\s\S]*provider_job_id/);
+    assert.ok(sql.indexOf('provider_rank = 1') < sql.indexOf('(created_at, id) <') || !sql.includes('(created_at, id) <'));
+    const deduped = rawRows.filter(
+      (row, index, rows) =>
+        rows.findIndex((candidate) => candidate.provider_job_id === row.provider_job_id) === index
+    );
+    const cursorDate = params?.find((value) => value instanceof Date) as Date | undefined;
+    const cursorIndex = cursorDate ? params?.indexOf(cursorDate) ?? -1 : -1;
+    const cursorId = cursorIndex >= 0 ? Number(params?.[cursorIndex + 1]) : null;
+    const filtered = cursorDate
+      ? deduped.filter((row) => {
+          const createdAt = new Date(row.created_at);
+          return createdAt < cursorDate || (createdAt.getTime() === cursorDate.getTime() && row.id < (cursorId ?? 0));
+        })
+      : deduped;
+    return filtered.slice(0, Number(params?.at(-1)));
+  };
+
+  const first = await listRecentGenerations({ userId: 'user_1', limit: 1, queryFn });
+  const second = await listRecentGenerations({
     userId: 'user_1',
-    limit: 2,
-    queryFn: async () => [
-      recentRecord(),
-      recentRecord({ id: 9, job_id: 'job_duplicate', provider_job_id: 'provider-private-10' }),
-      recentRecord({
-        id: 8,
-        job_id: 'job_image_8',
-        created_at: '2026-07-16T09:00:00.000Z',
-        surface: 'image',
-        status: 'completed',
-        progress: 100,
-        provider_job_id: 'provider-private-8',
-        render_ids: ['https://cdn.maxvideoai.com/image.png'],
-      }),
-    ],
+    limit: 1,
+    cursor: first.nextCursor,
+    queryFn,
   });
 
-  assert.deepEqual(result.items.map((item) => item.jobId), ['job_10', 'job_image_8']);
-  assert.equal(result.nextCursor, '2026-07-16T09:00:00.000Z|8');
-  const serialized = JSON.stringify(result);
+  assert.deepEqual(first.items.map((item) => item.jobId), ['job_10']);
+  assert.equal(first.nextCursor, '2026-07-16T10:00:00.000Z|10');
+  assert.deepEqual(second.items.map((item) => item.jobId), ['job_image_8']);
+  assert.equal(second.nextCursor, null);
+  const serialized = JSON.stringify({ first, second });
   assert.doesNotMatch(serialized, /provider-private|private route prompt|acct_private|pi_private|private-key/);
+});
+
+test('agent surface SQL matches DTO normalization for image-like and background-removal jobs', async () => {
+  const sqlBySurface = new Map<string, string>();
+  for (const surface of ['image', 'video'] as const) {
+    await listRecentGenerations({
+      userId: 'user_1',
+      surface,
+      queryFn: async (sql) => {
+        sqlBySurface.set(surface, sql);
+        return [];
+      },
+    });
+  }
+  assert.match(sqlBySurface.get('image') ?? '', /IN \('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale'\)/);
+  assert.match(sqlBySurface.get('image') ?? '', /storyboard_%/);
+  assert.doesNotMatch(sqlBySurface.get('image') ?? '', /j\.surface IN \([^)]*background-removal/);
+  assert.match(sqlBySurface.get('video') ?? '', /background-removal/);
+  assert.match(sqlBySurface.get('video') ?? '', /tool_background_removal_/);
+  assert.match(
+    sqlBySurface.get('video') ?? '',
+    /CASE[\s\S]*BTRIM\(COALESCE\(j\.surface[\s\S]*j\.settings_snapshot->>'surface'/,
+    'agent SQL should apply the same direct-surface-before-snapshot precedence as the DTO mapper'
+  );
 });
 
 test('web recent lookup preserves lenient cursor behavior and exact list query ownership', async () => {
