@@ -319,6 +319,30 @@ test('allows only the closed transport-neutral settings for each canonical mode'
   );
 });
 
+test('accepts canonical cfgScale for video modes while rejecting provider spellings', () => {
+  for (const mode of ['t2v', 'i2v'] as const) {
+    assert.deepEqual(
+      normalizeGenerationRequest(request({ mode, settings: { cfgScale: 0.75, resolution: '1080p' } })).settings,
+      { cfgScale: 0.75, resolution: '1080p' }
+    );
+  }
+
+  for (const key of ['cfg_scale', 'guidance_scale']) {
+    assert.throws(
+      () => normalizeGenerationRequest(request({ mode: 'i2v', settings: { [key]: 0.75 } })),
+      /settings/i,
+      key
+    );
+  }
+  assert.throws(
+    () =>
+      normalizeGenerationRequest(
+        request({ surface: 'image', mode: 'i2i', settings: { cfgScale: 0.75 } })
+      ),
+    /settings/i
+  );
+});
+
 test('fails closed for arbitrary and normalized provider, payment, identity, job, video, and audio aliases', () => {
   const aliases = [
     'providerOptions',

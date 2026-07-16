@@ -54,6 +54,7 @@ const VIDEO_SETTING_KEYS = new Set([
   'aspectRatio',
   'audio',
   'cameraFixed',
+  'cfgScale',
   'durationSec',
   'fps',
   'loop',
