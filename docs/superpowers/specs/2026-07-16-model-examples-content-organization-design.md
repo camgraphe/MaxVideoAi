@@ -155,7 +155,9 @@ type ModelExamplesContent = {
 
 All objects are strict. Unknown fields fail validation. Required strings are non-empty after trimming. IDs are unique. `modelSlug` must match the requested slug and filename. `filters` begins with exactly one `all` entry, and every fallback tag references a declared filter ID. `recreateLabel` remains explicitly `null` where the current projection intentionally renders no recreate action.
 
-`proofItems` has exactly five items because the current decision proof grid renders five cards for every configured model. The three locale documents for one model must have the same filter IDs, proof IDs, icon keys, fallback-item IDs, tag values, array order, and nullability. Filter labels remain localized because the same semantic ID currently has model-contextual presentation such as `Product / Ad`, `Product still`, and `Product`.
+`proofItems` has exactly five items because the current decision proof grid renders five cards for every configured model. The three locale documents for one model must have the same filter IDs, proof IDs, icon keys, fallback-item IDs, tag values, array order, and `fallbackItems` nullability. Filter labels remain localized because the same semantic ID currently has model-contextual presentation such as `Product / Ad`, `Product still`, and `Product`.
+
+`defaultCtaLabel` and `recreateLabel` retain their current per-locale null/string projection. In particular, 11 model identities currently hide the English recreate action while the French and Spanish projections receive localized fallback labels. Structural parity treats those two fields as nullable strings without forcing the same runtime value kind across locales.
 
 `fallbackItems` is non-null only where the current production path actually activates localized image fallback cards. Dormant branches are not activated during migration. Unreachable fallback definitions are deleted rather than materialized as new behavior.
 
@@ -200,6 +202,15 @@ Filter IDs are semantic and typed. Their model-contextual labels come from valid
 Add `_lib/model-page-example-media.ts` for non-localized fallback poster assets keyed by model identity and fallback item ID.
 
 This module owns static asset selection only. It contains no localized copy, categories, alt text, proof content, or capability claims.
+
+### Runtime compatibility policy
+
+Add `_lib/model-page-examples-runtime-policy.ts` for the small non-editorial compatibility rules already active in production:
+
+- which current engine IDs use the silent Examples presentation;
+- which four current model routes build numbered preview alts instead of prompt-derived alts.
+
+The module returns explicit semantic inputs to the view-model builder. It contains no localized strings, proof copy, filter labels, fallback item content, JSX, prices, or routes. The pure builder and renderers remain model-identity-neutral.
 
 ### Pure view-model builder
 
@@ -255,6 +266,7 @@ After parity and cutover, remove these fields from localized `custom` content an
 
 Also delete:
 
+- the dormant `gallerySceneCta` render branch and its `galleryCtaHref` route plumbing, since the field is absent from all 120 documents;
 - model-specific proof-card copy trees from `ModelExamplesSection.tsx`;
 - image fallback editorial arrays from TypeScript;
 - slug-specific filter-copy branches;
@@ -335,6 +347,7 @@ Permanent tests must cover:
 - exact-locale loader selection with no English fallback;
 - no legacy gallery keys under `custom`, root content, `SoraCopy`, or production helpers;
 - no model IDs in the parser, pure builder, UI-copy module, or renderers;
+- all remaining model-ID compatibility rules isolated in the bounded runtime-policy module;
 - no filesystem access in parser or builder;
 - real video gallery transformation;
 - silent-video audio/filter behavior;
@@ -391,6 +404,7 @@ The work is complete only when:
 - the active section consumes one pure render-ready view model;
 - `ModelExamplesSection.tsx` is at most 120 physical lines;
 - focused renderers are each at most 220 physical lines;
+- the runtime compatibility policy is at most 180 physical lines;
 - model-specific editorial branches and disabled curated maps are absent from production TypeScript;
 - the five old `custom`/`SoraCopy` gallery fields are absent;
 - all required tests, build, and localized production smokes pass;
