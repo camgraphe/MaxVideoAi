@@ -50,31 +50,39 @@ const SAFE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]*$/;
 const SAFE_SETTING_KEY_PATTERN = /^[A-Za-z][A-Za-z0-9._-]*$/;
 const UNSAFE_CONTROL_CHARACTER_PATTERN = /[\u0000-\u001f\u007f-\u009f]/u;
 const EMBEDDED_WHITESPACE_PATTERN = /\s/u;
-const RESERVED_SETTING_KEYS = new Set([
-  'accountid',
-  'audioreference',
-  'audioreferenceurl',
-  'audiofile',
-  'audiourl',
-  'constructor',
-  'jobid',
-  'oauthclientid',
-  'payment',
-  'paymentmode',
-  'price',
-  'pricecents',
-  'provider',
-  'providerid',
-  'providername',
-  'providerparameters',
-  'providerparams',
-  'prototype',
-  'quoteid',
-  'sourcevideo',
-  'sourcevideourl',
-  'userid',
-  'videourl',
+const VIDEO_SETTING_KEYS = new Set([
+  'aspectRatio',
+  'audio',
+  'cameraFixed',
+  'durationSec',
+  'fps',
+  'loop',
+  'negativePrompt',
+  'numFrames',
+  'resolution',
+  'safetyChecker',
+  'seed',
+  'shotType',
 ]);
+const IMAGE_SETTING_KEYS = new Set([
+  'aspectRatio',
+  'enableWebSearch',
+  'limitGenerations',
+  'outputFormat',
+  'quality',
+  'resolution',
+  'seed',
+  'style',
+  'thinkingLevel',
+  'watermark',
+]);
+const SETTING_KEYS_BY_MODE: Record<CanonicalGenerationMode, ReadonlySet<string>> = {
+  t2v: VIDEO_SETTING_KEYS,
+  i2v: VIDEO_SETTING_KEYS,
+  ref2v: VIDEO_SETTING_KEYS,
+  t2i: IMAGE_SETTING_KEYS,
+  i2i: IMAGE_SETTING_KEYS,
+};
 
 export class GenerationNormalizationError extends Error {
   constructor(
@@ -187,14 +195,10 @@ function normalizeEngineId(value: unknown): string {
   return engineId;
 }
 
-function normalizeSettingKey(value: string): string {
+function normalizeSettingKey(value: string, allowedKeys: ReadonlySet<string>): string {
   const key = normalizeText(value, 'settings key', MAX_SETTING_KEY_CHARS, false);
-  if (!SAFE_SETTING_KEY_PATTERN.test(key)) {
-    fail('settings', 'settings contains an invalid key.');
-  }
-  const reservedKey = key.toLowerCase().replace(/[._-]/gu, '');
-  if (RESERVED_SETTING_KEYS.has(reservedKey)) {
-    fail('settings', 'settings contains a reserved field.');
+  if (!SAFE_SETTING_KEY_PATTERN.test(key) || !allowedKeys.has(key)) {
+    fail('settings', 'settings contains an unknown or unsupported field.');
   }
   return key;
 }
@@ -233,7 +237,10 @@ function stableJson(value: unknown): string {
   throw new TypeError('Stable JSON accepts JSON values only.');
 }
 
-function normalizeSettings(value: unknown): Record<string, CanonicalGenerationSettingValue> {
+function normalizeSettings(
+  value: unknown,
+  mode: CanonicalGenerationMode
+): Record<string, CanonicalGenerationSettingValue> {
   if (value === undefined) return {};
   assertPlainDataObject(value, 'settings');
   const rawKeys = Object.keys(value);
@@ -242,8 +249,9 @@ function normalizeSettings(value: unknown): Record<string, CanonicalGenerationSe
   }
 
   const settings: Record<string, CanonicalGenerationSettingValue> = {};
+  const allowedKeys = SETTING_KEYS_BY_MODE[mode];
   for (const rawKey of rawKeys) {
-    const key = normalizeSettingKey(rawKey);
+    const key = normalizeSettingKey(rawKey, allowedKeys);
     if (Object.hasOwn(settings, key)) {
       fail('settings', 'settings contains duplicate canonical keys.');
     }
@@ -384,7 +392,7 @@ export function normalizeGenerationRequest(input: unknown): CanonicalGenerationR
     engineId: normalizeEngineId(input.engineId),
     mode,
     prompt: normalizeText(input.prompt, 'prompt', MAX_CANONICAL_PROMPT_CHARS, false),
-    settings: normalizeSettings(input.settings),
+    settings: normalizeSettings(input.settings, mode),
     references: normalizeReferences(input.references),
     outputCount: normalizeOutputCount(input.outputCount),
   };

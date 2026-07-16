@@ -6,6 +6,7 @@ import {
   MAX_CANONICAL_PROMPT_CHARS,
   MAX_CANONICAL_SETTINGS_JSON_BYTES,
   MAX_CANONICAL_SETTING_COUNT,
+  GenerationNormalizationError,
   hashCanonicalGenerationRequest,
   normalizeGenerationRequest,
   serializeCanonicalGenerationRequest,
@@ -40,7 +41,7 @@ for (const entry of modes) {
         engineId: '  model-alpha  ',
         mode: entry.mode,
         prompt: '  Cafe\u0301\tlaunch\n\nwith   soft light  ',
-        settings: { resolution: '  1080p  ', audio: false, seed: -0 },
+        settings: { resolution: '  1080p  ', seed: -0 },
       })
     );
 
@@ -50,7 +51,7 @@ for (const entry of modes) {
       engineId: 'model-alpha',
       mode: entry.mode,
       prompt: 'Caf\u00e9 launch with soft light',
-      settings: { audio: false, resolution: '1080p', seed: 0 },
+      settings: { resolution: '1080p', seed: 0 },
       references: [],
       outputCount: 1,
     });
@@ -103,14 +104,14 @@ test('sorts references deterministically within an explicit semantic role order'
 test('serializes every object level with stable keys and hashes schema version plus canonical JSON', () => {
   const canonical = normalizeGenerationRequest(
     request({
-      settings: { zeta: true, alpha: 'value', middle: 3 },
+      settings: { seed: 3, resolution: '1080p', aspectRatio: '16:9' },
       references: [{ role: 'reference', assetId: 'asset-a', kind: 'asset' }],
     })
   );
   const reordered = {
     outputCount: canonical.outputCount,
     references: canonical.references.map(({ role, assetId, kind }) => ({ role, assetId, kind })),
-    settings: { middle: 3, zeta: true, alpha: 'value' },
+    settings: { aspectRatio: '16:9', seed: 3, resolution: '1080p' },
     prompt: canonical.prompt,
     mode: canonical.mode,
     engineId: canonical.engineId,
@@ -122,7 +123,7 @@ test('serializes every object level with stable keys and hashes schema version p
   assert.equal(canonicalJson, serializeCanonicalGenerationRequest(reordered));
   assert.equal(
     canonicalJson,
-    '{"engineId":"seedance-2-0-mini","mode":"t2v","outputCount":1,"prompt":"A product reveal","references":[{"assetId":"asset-a","kind":"asset","role":"reference"}],"schemaVersion":1,"settings":{"alpha":"value","middle":3,"zeta":true},"surface":"video"}'
+    '{"engineId":"seedance-2-0-mini","mode":"t2v","outputCount":1,"prompt":"A product reveal","references":[{"assetId":"asset-a","kind":"asset","role":"reference"}],"schemaVersion":1,"settings":{"aspectRatio":"16:9","resolution":"1080p","seed":3},"surface":"video"}'
   );
   assert.equal(
     hashCanonicalGenerationRequest(canonical),
@@ -219,14 +220,208 @@ test('bounds settings and accepts only finite scalar values with safe unique key
     assert.throws(() => normalizeGenerationRequest(request({ settings })), /settings|setting/i);
   }
 
-  const oversizedValue = 'x'.repeat(Math.ceil(MAX_CANONICAL_SETTINGS_JSON_BYTES / 4));
+  const oversizedValue = 'x'.repeat(Math.ceil(MAX_CANONICAL_SETTINGS_JSON_BYTES / 6));
   assert.throws(
     () =>
       normalizeGenerationRequest(
-        request({ settings: { settingA: oversizedValue, settingB: oversizedValue, settingC: oversizedValue, settingD: oversizedValue } })
+        request({
+          surface: 'image',
+          mode: 't2i',
+          settings: {
+            aspectRatio: oversizedValue,
+            outputFormat: oversizedValue,
+            quality: oversizedValue,
+            resolution: oversizedValue,
+            style: oversizedValue,
+            thinkingLevel: oversizedValue,
+          },
+        })
       ),
     /settings.*size|settings.*limit/i
   );
+});
+
+test('allows only the closed transport-neutral settings for each canonical mode', () => {
+  const cases = [
+    {
+      surface: 'video',
+      mode: 't2v',
+      settings: {
+        aspectRatio: '16:9',
+        audio: true,
+        cameraFixed: false,
+        durationSec: 5,
+        fps: 24,
+        loop: false,
+        negativePrompt: '  blur  ',
+        numFrames: 121,
+        resolution: '720p',
+        safetyChecker: true,
+        seed: 7,
+      },
+    },
+    {
+      surface: 'video',
+      mode: 'i2v',
+      settings: { aspectRatio: '9:16', audio: false, durationSec: 6, resolution: '1080p', seed: 8 },
+    },
+    {
+      surface: 'video',
+      mode: 'ref2v',
+      settings: { audio: true, durationSec: 10, fps: 25, resolution: '1080p' },
+    },
+    {
+      surface: 'image',
+      mode: 't2i',
+      settings: {
+        aspectRatio: '1:1',
+        enableWebSearch: true,
+        limitGenerations: false,
+        outputFormat: 'png',
+        quality: 'high',
+        resolution: '2048x2048',
+        seed: 9,
+        style: 'natural',
+        thinkingLevel: 'high',
+        watermark: false,
+      },
+    },
+    {
+      surface: 'image',
+      mode: 'i2i',
+      settings: { aspectRatio: 'source', outputFormat: 'webp', quality: 'medium', resolution: 'auto', seed: 10 },
+    },
+  ] as const;
+
+  for (const entry of cases) {
+    const normalized = normalizeGenerationRequest(
+      request({ surface: entry.surface, mode: entry.mode, settings: entry.settings })
+    );
+    assert.deepEqual(normalized.settings, {
+      ...Object.fromEntries(
+        Object.entries(entry.settings)
+          .map(([key, value]) => [key, typeof value === 'string' ? value.trim() : value])
+          .sort(([left], [right]) => String(left).localeCompare(String(right)))
+      ),
+    });
+  }
+
+  assert.throws(
+    () => normalizeGenerationRequest(request({ mode: 't2v', settings: { quality: 'high' } })),
+    /settings/i
+  );
+  assert.throws(
+    () =>
+      normalizeGenerationRequest(
+        request({ surface: 'image', mode: 't2i', settings: { audio: true } })
+      ),
+    /settings/i
+  );
+});
+
+test('fails closed for arbitrary and normalized provider, payment, identity, job, video, and audio aliases', () => {
+  const aliases = [
+    'providerOptions',
+    'provider_options',
+    ' Provider.Options ',
+    'rawProviderParameters',
+    'billingMode',
+    'billing_mode',
+    'ownerUserId',
+    'owner_user_id',
+    'externalJobId',
+    'external_job_id',
+    'inputVideoUrl',
+    'input_video_url',
+    'sourceAudioUrl',
+    'source_audio_url',
+    'audioReferenceUrl',
+    'callbackUrl',
+    'anythingElse',
+  ];
+
+  for (const key of aliases) {
+    let error: unknown;
+    try {
+      normalizeGenerationRequest(request({ settings: { [key]: 'private-value' } }));
+    } catch (caught) {
+      error = caught;
+    }
+    assert.ok(error instanceof GenerationNormalizationError, key);
+    assert.equal(error.field, 'settings', key);
+    assert.doesNotMatch(error.message, /private-value/i, key);
+  }
+});
+
+test('rejects symbol, accessor, and non-enumerable fields without evaluating or disclosing them', () => {
+  const symbolRequest = request();
+  Object.defineProperty(symbolRequest, Symbol('private-token'), { enumerable: true, value: 'secret-symbol' });
+
+  let getterCalls = 0;
+  const accessorRequest = request();
+  Object.defineProperty(accessorRequest, 'providerOptions', {
+    enumerable: true,
+    get() {
+      getterCalls += 1;
+      return 'secret-accessor';
+    },
+  });
+
+  const hiddenRequest = request();
+  Object.defineProperty(hiddenRequest, 'ownerUserId', { enumerable: false, value: 'secret-hidden' });
+
+  for (const input of [symbolRequest, accessorRequest, hiddenRequest]) {
+    let error: unknown;
+    try {
+      normalizeGenerationRequest(input);
+    } catch (caught) {
+      error = caught;
+    }
+    assert.ok(error instanceof GenerationNormalizationError);
+    assert.equal(error.field, 'generation request');
+    assert.doesNotMatch(error.message, /secret|token|ownerUserId|providerOptions/i);
+  }
+  assert.equal(getterCalls, 0);
+});
+
+test('detects duplicates after canonical URL normalization with a stable error field', () => {
+  let error: unknown;
+  try {
+    normalizeGenerationRequest(
+      request({
+        references: [
+          { kind: 'https', url: 'https://CDN.Example.com:443/image.png', role: 'reference' },
+          { kind: 'https', url: 'https://cdn.example.com/image.png', role: 'reference' },
+        ],
+      })
+    );
+  } catch (caught) {
+    error = caught;
+  }
+
+  assert.ok(error instanceof GenerationNormalizationError);
+  assert.equal(error.field, 'references');
+  assert.doesNotMatch(error.message, /cdn\.example|image\.png/i);
+});
+
+test('returns detached canonical objects without mutating or aliasing caller input', () => {
+  const settings = { resolution: '  1080p  ', seed: -0 };
+  const reference = { kind: 'asset', assetId: '  asset-a  ', role: 'reference' };
+  const references = [reference];
+  const input = request({ settings, references });
+  const normalized = normalizeGenerationRequest(input);
+
+  assert.deepEqual(settings, { resolution: '  1080p  ', seed: -0 });
+  assert.deepEqual(reference, { kind: 'asset', assetId: '  asset-a  ', role: 'reference' });
+  assert.equal(normalized.settings === settings, false);
+  assert.equal(normalized.references === references, false);
+  assert.equal(normalized.references[0] === reference, false);
+
+  settings.resolution = '480p';
+  reference.assetId = 'asset-b';
+  references.length = 0;
+  assert.deepEqual(normalized.settings, { resolution: '1080p', seed: 0 });
+  assert.deepEqual(normalized.references, [{ kind: 'asset', assetId: 'asset-a', role: 'reference' }]);
 });
 
 test('rejects sparse or decorated reference arrays instead of ignoring hidden input', () => {
