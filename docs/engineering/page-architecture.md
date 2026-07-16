@@ -116,6 +116,21 @@ return schemas.map((schema, index) => (
 
 Keep serialization centralized to avoid inconsistent escaping.
 
+## Pay-as-you-go Route Content
+
+The localized Pay-as-you-go route keeps authored copy strict and runtime pricing derived:
+
+```text
+locale -> strict route content -> runtime page-data builder -> focused sections
+                         \-> metadata / JSON-LD / showcase copy
+```
+
+`_content/{en,fr,es}.ts` owns the complete exact-locale editorial documents. The page-data
+builder owns pricing-hub projection, row selection, price fallback formatting, runtime links,
+hero quote preparation, and example costs. Route components render those projections; they do
+not select locales or calculate prices. Metadata, JSON-LD, and showcase helpers receive their
+authored projections explicitly.
+
 ## Localized Comparison Content
 
 Enriched comparison editorial content, including slug-specific metadata, is owned by

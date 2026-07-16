@@ -33,6 +33,19 @@ test('displayed pricing remains a live projection of the pricing hub', () => {
 
   assert.equal(cell?.value, '$987.65');
   assert.equal(cell?.displayValue, 'Example : $987.65');
+  assert.equal(
+    data.hero.quote.previewRows.find((row) => row.id === 'seedance-2-0')?.quoteLabel,
+    '$987.65',
+  );
+  assert.equal(
+    data.priceLookups.items.find((item) => item.id === 'seedance-2-0')?.price,
+    '$987.65',
+  );
+  assert.equal(
+    data.exampleCosts.items.find((item) => item.id === 'seedance-2-0')?.price,
+    '$987.65',
+  );
+  assert.equal(data.hero.quote.sampleCost?.price, '$987.65');
   assert.doesNotMatch(JSON.stringify(content), /987\.65/);
 });
 
