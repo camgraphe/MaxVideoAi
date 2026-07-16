@@ -68,7 +68,10 @@ test('background removal ProRes exports have an operational seven-day cleanup pa
 test('background removal is a first-class job and media surface', () => {
   const billingTypes = readFileSync(join(root, 'frontend/types/billing.ts'), 'utf8');
   const surfaceNormalize = readFileSync(join(root, 'frontend/src/lib/job-surface-normalize.ts'), 'utf8');
-  const surfaceFilter = readFileSync(join(root, 'frontend/app/api/jobs/_lib/jobs-surface-filter.ts'), 'utf8');
+  const surfaceFilter = readFileSync(
+    join(root, 'frontend/src/server/generations/recent-generations.ts'),
+    'utf8'
+  );
   const mediaRecords = readFileSync(join(root, 'frontend/server/media-library-records.ts'), 'utf8');
 
   assert.match(billingTypes, /'background-removal'/);

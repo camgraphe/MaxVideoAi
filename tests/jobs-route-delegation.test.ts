@@ -1,0 +1,62 @@
+import assert from 'node:assert/strict';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import test from 'node:test';
+
+const root = process.cwd();
+const listRoutePath = join(root, 'frontend/app/api/jobs/route.ts');
+const detailRoutePath = join(root, 'frontend/app/api/jobs/[jobId]/route.ts');
+const statusServicePath = join(root, 'frontend/src/server/generations/generation-status.ts');
+const recentServicePath = join(root, 'frontend/src/server/generations/recent-generations.ts');
+
+test('jobs routes delegate owned reads and explicit web mapping to transport-neutral services', () => {
+  assert.ok(existsSync(statusServicePath));
+  assert.ok(existsSync(recentServicePath));
+
+  const listRoute = readFileSync(listRoutePath, 'utf8');
+  const detailRoute = readFileSync(detailRoutePath, 'utf8');
+
+  assert.match(listRoute, /from '@\/server\/generations\/recent-generations'/);
+  assert.match(listRoute, /readRecentGenerationRecordsForWeb/);
+  assert.match(listRoute, /mapRecentGenerationRecordToWeb/);
+  assert.doesNotMatch(listRoute, /SELECT\s+\$\{APP_JOBS_SELECT\}/);
+
+  assert.match(detailRoute, /from '@\/server\/generations\/generation-status'/);
+  assert.match(detailRoute, /readOwnedGenerationRecord/);
+  assert.match(detailRoute, /mapGenerationStatusRecordToWeb/);
+  assert.doesNotMatch(detailRoute, /const JOB_DETAIL_SELECT/);
+});
+
+test('generation read services stay server-only and agent DTOs exclude private route fields', () => {
+  const statusService = readFileSync(statusServicePath, 'utf8');
+  const recentService = readFileSync(recentServicePath, 'utf8');
+  const combined = `${statusService}\n${recentService}`;
+
+  assert.doesNotMatch(combined, /from ['"]next(?:\/server)?['"]/);
+  assert.doesNotMatch(combined, /NextRequest|NextResponse/);
+
+  const agentTypeStart = statusService.indexOf('export type AgentGenerationStatus');
+  const agentTypeEnd = statusService.indexOf('\n};', agentTypeStart);
+  const agentType = statusService.slice(agentTypeStart, agentTypeEnd);
+  assert.doesNotMatch(
+    agentType,
+    /prompt|provider|settingsSnapshot|vendorAccount|stripe|localKey|paymentIntent|token/i
+  );
+  assert.match(agentType, /retryAfterSeconds:\s*number\s*\|\s*null/);
+});
+
+test('route owners shrink while retaining visitor, cache, and mutation responsibilities', () => {
+  const listRoute = readFileSync(listRoutePath, 'utf8');
+  const detailRoute = readFileSync(detailRoutePath, 'utf8');
+
+  assert.match(listRoute, /VISITOR_WORKSPACE_ENABLED/);
+  assert.match(detailRoute, /VISITOR_WORKSPACE_ENABLED/);
+  assert.match(listRoute, /private, no-store/);
+  assert.match(detailRoute, /private, no-store/);
+  assert.match(detailRoute, /export async function PATCH/);
+  assert.match(listRoute, /Number\.isFinite\(requestedLimit\)/);
+  assert.match(listRoute, /:\s*24;/, 'invalid web limits should use the historical default page size');
+
+  assert.ok(listRoute.split('\n').length <= 300, 'jobs list route should stay at or below 300 lines');
+  assert.ok(detailRoute.split('\n').length <= 570, 'job detail route should stay at or below 570 lines');
+});
