@@ -62,6 +62,7 @@ export async function POST(req: NextRequest) {
     const result = await executeImageGeneration({
       userId,
       body,
+      walletReservation: 'reserve',
       jobSurface,
       isAdminForDirectProvider,
     });

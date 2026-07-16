@@ -198,7 +198,10 @@ test('accepts the exact 300 x 300 boundary', async () => {
 });
 
 test('validates all constrained generation images before billing preflight', () => {
-  const source = readFileSync(join(process.cwd(), 'frontend/app/api/generate/route.ts'), 'utf8');
+  const source = readFileSync(
+    join(process.cwd(), 'frontend/src/server/video-generation/execute-video-generation.ts'),
+    'utf8',
+  );
 
   assert.match(source, /validateGenerationImageDimensions/);
   assert.ok(

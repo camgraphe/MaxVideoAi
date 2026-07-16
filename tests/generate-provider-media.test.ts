@@ -14,6 +14,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/provider-media.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const adapterSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-generation-adapters.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 const baseResult = (overrides: Partial<GenerateResult> = {}): GenerateResult => ({
@@ -25,7 +26,7 @@ const baseResult = (overrides: Partial<GenerateResult> = {}): GenerateResult => 
 
 test('generate route delegates provider media handling', () => {
   assert.ok(existsSync(helperPath), 'provider media handling should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/provider-media'/);
+  assert.match(adapterSource, /from '\.\/provider-media'/);
   assert.doesNotMatch(routeSource, /normalizeMediaUrl/, 'media URL normalization belongs in provider-media.ts');
   assert.doesNotMatch(routeSource, /ensureFastStartVideo/, 'fast-start copy belongs in provider-media.ts');
   assert.doesNotMatch(routeSource, /provider_video_copy_failed/, 'provider copy fallback belongs in provider-media.ts');

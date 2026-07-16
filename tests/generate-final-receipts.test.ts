@@ -14,6 +14,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/final-receipts.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 const pendingReceipt: PendingReceipt = {
@@ -31,7 +32,7 @@ const pendingReceipt: PendingReceipt = {
 
 test('generate route delegates final receipt persistence', () => {
   assert.ok(existsSync(helperPath), 'final receipt persistence should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/final-receipts'/);
+  assert.match(preparedSource, /generate\/_lib\/final-receipts/);
   assert.doesNotMatch(routeSource, /INSERT INTO app_receipts \(user_id, type, amount_cents/, 'final receipt SQL belongs in final-receipts.ts');
   assert.doesNotMatch(routeSource, /UPDATE app_jobs SET payment_status = 'refunded_wallet'/, 'wallet refund status update belongs in final-receipts.ts');
 

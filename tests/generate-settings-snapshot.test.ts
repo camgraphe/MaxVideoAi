@@ -10,11 +10,12 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/settings-snapshot.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates settings snapshot building', () => {
   assert.ok(existsSync(helperPath), 'settings snapshot building should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/settings-snapshot'/);
+  assert.match(serviceSource, /generate\/_lib\/settings-snapshot/);
   assert.doesNotMatch(routeSource, /schemaVersion:\s*1/, 'settings schema version belongs in settings-snapshot.ts');
   assert.doesNotMatch(routeSource, /negativePrompt\s*=/, 'negative prompt normalization belongs in settings-snapshot.ts');
   assert.doesNotMatch(routeSource, /memberTier/, 'membership tier snapshot belongs in settings-snapshot.ts');

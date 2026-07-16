@@ -1,10 +1,11 @@
-import { withDbTransaction, type QueryExecutor } from '@/lib/db';
+import { type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
 import type { ImageGenerationMode } from '@/types/image-generation';
 import type { BillingProductKey, JobSurface } from '@/types/billing';
 import type { ExistingImageJobRow } from './existing-image-job-response';
 import { ImageGenerationExecutionError } from './image-generation-error';
+import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
 
 export const PLACEHOLDER_THUMB = '/assets/frames/thumb-1x1.svg';
 
@@ -141,7 +142,7 @@ async function insertProvisionalImageJob(executor: QueryExecutor, params: Provis
   );
 }
 
-export async function createAtomicInitialImageJob(params: {
+export type CreateImageInitialJobParams = {
   userId: string;
   mode: ImageGenerationMode;
   jobId: string;
@@ -165,15 +166,20 @@ export async function createAtomicInitialImageJob(params: {
   visibility: 'public' | 'private';
   indexable: boolean;
   preferredCurrency: Currency | null;
+  walletReservation: WalletReservation;
   walletChargeMode?: ImageWalletChargeMode;
   includedPaymentStatus?: string;
-}): Promise<AtomicImageJobResult> {
-  return withDbTransaction(async (executor) => {
-    const walletChargeMode = params.walletChargeMode ?? 'charge';
-    await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [params.jobId]);
+};
 
-    const existingJobs = await executor.query<ExistingImageJobRow>(
-      `SELECT
+export async function createInitialImageJobInExecutor(
+  executor: TransactionQueryExecutor,
+  params: CreateImageInitialJobParams
+): Promise<AtomicImageJobResult> {
+  const walletChargeMode = params.walletChargeMode ?? 'charge';
+  await lockInitialJobReservation(executor, params.jobId);
+
+  const existingJobs = await executor.query<ExistingImageJobRow>(
+    `SELECT
          job_id,
          user_id,
          status,
@@ -193,45 +199,45 @@ export async function createAtomicInitialImageJob(params: {
        FROM app_jobs
        WHERE job_id = $1
        LIMIT 1`,
-      [params.jobId]
-    );
+    [params.jobId]
+  );
 
-    const existingJob = existingJobs[0];
-    if (existingJob) {
-      if (existingJob.user_id && existingJob.user_id !== params.userId) {
-        throw new ImageGenerationExecutionError('This job id is already in use.', {
-          mode: params.mode,
-          status: 409,
-          code: 'job_id_conflict',
-          extras: { jobId: params.jobId },
-        });
-      }
-      return { kind: 'existing_job', job: existingJob };
+  const existingJob = existingJobs[0];
+  if (existingJob) {
+    if (existingJob.user_id && existingJob.user_id !== params.userId) {
+      throw new ImageGenerationExecutionError('This job id is already in use.', {
+        mode: params.mode,
+        status: 409,
+        code: 'job_id_conflict',
+        extras: { jobId: params.jobId },
+      });
     }
+    return { kind: 'existing_job', job: existingJob };
+  }
 
-    const existingRefunds = await executor.query<{ id: number }>(
-      `SELECT id
+  const existingRefunds = await executor.query<{ id: number }>(
+    `SELECT id
        FROM app_receipts
        WHERE job_id = $1
          AND type = 'refund'
        LIMIT 1`,
-      [params.jobId]
-    );
+    [params.jobId]
+  );
 
-    if (existingRefunds.length) {
-      throw new ImageGenerationExecutionError('This image request was already refunded.', {
-        mode: params.mode,
-        status: 409,
-        code: 'job_already_refunded',
-        extras: {
-          jobId: params.jobId,
-          paymentStatus: 'refunded_wallet',
-        },
-      });
-    }
+  if (existingRefunds.length) {
+    throw new ImageGenerationExecutionError('This image request was already refunded.', {
+      mode: params.mode,
+      status: 409,
+      code: 'job_already_refunded',
+      extras: {
+        jobId: params.jobId,
+        paymentStatus: 'refunded_wallet',
+      },
+    });
+  }
 
-    const existingCharges = await executor.query<ExistingImageChargeRow>(
-      `SELECT
+  const existingCharges = await executor.query<ExistingImageChargeRow>(
+    `SELECT
          id,
          user_id,
          amount_cents,
@@ -243,113 +249,120 @@ export async function createAtomicInitialImageJob(params: {
          AND type = 'charge'
        ORDER BY created_at DESC
        LIMIT 1`,
-      [params.jobId]
-    );
+    [params.jobId]
+  );
 
-    const existingCharge = existingCharges[0] ?? null;
-    if (existingCharge) {
-      if (existingCharge.user_id !== params.userId) {
-        throw new ImageGenerationExecutionError('This job id is already in use.', {
-          mode: params.mode,
-          status: 409,
-          code: 'job_id_conflict',
-          extras: { jobId: params.jobId },
-        });
-      }
-
-      if (walletChargeMode === 'included') {
-        throw new ImageGenerationExecutionError('This included image job conflicts with an existing charge.', {
-          mode: params.mode,
-          status: 409,
-          code: 'job_charge_conflict',
-          extras: { jobId: params.jobId },
-        });
-      }
-
-      const existingCurrency = (existingCharge.currency ?? 'USD').toUpperCase();
-      if (
-        existingCharge.amount_cents !== params.amountCents ||
-        existingCurrency !== params.currency.toUpperCase() ||
-        (existingCharge.surface ?? null) !== params.surface ||
-        (existingCharge.billing_product_key ?? null) !== params.billingProductKey
-      ) {
-        throw new ImageGenerationExecutionError('This job id conflicts with an existing charge.', {
-          mode: params.mode,
-          status: 409,
-          code: 'job_charge_conflict',
-          extras: { jobId: params.jobId },
-        });
-      }
-    } else if (walletChargeMode === 'charge') {
-      const reserveResult = await reserveWalletChargeInExecutor(
-        executor,
-        {
-          userId: params.userId,
-          amountCents: params.amountCents,
-          currency: params.currency,
-          description: params.description,
-          jobId: params.jobId,
-          surface: params.surface,
-          billingProductKey: params.billingProductKey,
-          pricingSnapshotJson: params.pricingSnapshotJson,
-          applicationFeeCents: params.applicationFeeCents,
-          vendorAccountId: params.vendorAccountId,
-          stripePaymentIntentId: null,
-          stripeChargeId: null,
-        },
-        { preferredCurrency: params.preferredCurrency }
-      );
-
-      if (!reserveResult.ok) {
-        if (reserveResult.errorCode === 'currency_mismatch') {
-          throw new ImageGenerationExecutionError(
-            `Wallet currency locked to ${(reserveResult.preferredCurrency ?? 'USD').toUpperCase()}.`,
-            {
-              mode: params.mode,
-              status: 409,
-              code: 'currency_mismatch',
-            }
-          );
-        }
-
-        throw new ImageGenerationExecutionError('Insufficient wallet balance.', {
-          mode: params.mode,
-          status: 402,
-          code: 'insufficient_funds',
-          detail: {
-            requiredCents: Math.max(0, params.amountCents - reserveResult.balanceCents),
-            balanceCents: reserveResult.balanceCents,
-          },
-        });
-      }
+  const existingCharge = existingCharges[0] ?? null;
+  if (existingCharge) {
+    if (existingCharge.user_id !== params.userId) {
+      throw new ImageGenerationExecutionError('This job id is already in use.', {
+        mode: params.mode,
+        status: 409,
+        code: 'job_id_conflict',
+        extras: { jobId: params.jobId },
+      });
     }
 
-    const paymentStatus = walletChargeMode === 'included' ? (params.includedPaymentStatus ?? 'included') : 'paid_wallet';
-    await insertProvisionalImageJob(executor, {
-      userId: params.userId,
-      jobId: params.jobId,
-      surface: params.surface,
-      billingProductKey: params.billingProductKey,
-      engineId: params.engineId,
-      engineLabel: params.engineLabel,
-      durationSec: params.durationSec,
-      prompt: params.prompt,
-      aspectRatio: params.aspectRatio,
-      canUpscale: params.canUpscale,
-      finalPriceCents: params.finalPriceCents,
-      pricingSnapshotJson: params.pricingSnapshotJson,
-      costBreakdownJson: params.costBreakdownJson,
-      settingsSnapshotJson: params.settingsSnapshotJson,
-      currency: params.currency,
-      vendorAccountId: params.vendorAccountId,
-      paymentStatus,
-      visibility: params.visibility,
-      indexable: params.indexable,
-    });
+    if (walletChargeMode === 'included') {
+      throw new ImageGenerationExecutionError('This included image job conflicts with an existing charge.', {
+        mode: params.mode,
+        status: 409,
+        code: 'job_charge_conflict',
+        extras: { jobId: params.jobId },
+      });
+    }
 
-    return {
-      kind: 'created',
-      recoveredCharge: Boolean(existingCharge),
-    };
+    const existingCurrency = (existingCharge.currency ?? 'USD').toUpperCase();
+    if (
+      existingCharge.amount_cents !== params.amountCents ||
+      existingCurrency !== params.currency.toUpperCase() ||
+      (existingCharge.surface ?? null) !== params.surface ||
+      (existingCharge.billing_product_key ?? null) !== params.billingProductKey
+    ) {
+      throw new ImageGenerationExecutionError('This job id conflicts with an existing charge.', {
+        mode: params.mode,
+        status: 409,
+        code: 'job_charge_conflict',
+        extras: { jobId: params.jobId },
+      });
+    }
+  } else if (walletChargeMode === 'charge' && params.walletReservation === 'already_reserved') {
+    throw new ImageGenerationExecutionError('The reserved wallet charge is missing.', {
+      mode: params.mode,
+      status: 409,
+      code: 'job_charge_conflict',
+      extras: { jobId: params.jobId },
+    });
+  } else if (walletChargeMode === 'charge' && params.walletReservation === 'reserve') {
+    const reserveResult = await reserveWalletChargeInExecutor(
+      executor,
+      {
+        userId: params.userId,
+        amountCents: params.amountCents,
+        currency: params.currency,
+        description: params.description,
+        jobId: params.jobId,
+        surface: params.surface,
+        billingProductKey: params.billingProductKey,
+        pricingSnapshotJson: params.pricingSnapshotJson,
+        applicationFeeCents: params.applicationFeeCents,
+        vendorAccountId: params.vendorAccountId,
+        stripePaymentIntentId: null,
+        stripeChargeId: null,
+      },
+      { preferredCurrency: params.preferredCurrency }
+    );
+
+    if (!reserveResult.ok) {
+      if (reserveResult.errorCode === 'currency_mismatch') {
+        throw new ImageGenerationExecutionError(`Wallet currency locked to ${(reserveResult.preferredCurrency ?? 'USD').toUpperCase()}.`, {
+          mode: params.mode,
+          status: 409,
+          code: 'currency_mismatch',
+        });
+      }
+
+      throw new ImageGenerationExecutionError('Insufficient wallet balance.', {
+        mode: params.mode,
+        status: 402,
+        code: 'insufficient_funds',
+        detail: {
+          requiredCents: Math.max(0, params.amountCents - reserveResult.balanceCents),
+          balanceCents: reserveResult.balanceCents,
+        },
+      });
+    }
+  }
+
+  const paymentStatus = walletChargeMode === 'included' ? (params.includedPaymentStatus ?? 'included') : 'paid_wallet';
+  await insertProvisionalImageJob(executor, {
+    userId: params.userId,
+    jobId: params.jobId,
+    surface: params.surface,
+    billingProductKey: params.billingProductKey,
+    engineId: params.engineId,
+    engineLabel: params.engineLabel,
+    durationSec: params.durationSec,
+    prompt: params.prompt,
+    aspectRatio: params.aspectRatio,
+    canUpscale: params.canUpscale,
+    finalPriceCents: params.finalPriceCents,
+    pricingSnapshotJson: params.pricingSnapshotJson,
+    costBreakdownJson: params.costBreakdownJson,
+    settingsSnapshotJson: params.settingsSnapshotJson,
+    currency: params.currency,
+    vendorAccountId: params.vendorAccountId,
+    paymentStatus,
+    visibility: params.visibility,
+    indexable: params.indexable,
   });
+
+  return {
+    kind: 'created',
+    recoveredCharge: Boolean(existingCharge),
+  };
+}
+
+export async function createAtomicInitialImageJob(params: CreateImageInitialJobParams): Promise<AtomicImageJobResult> {
+  return runInitialJobTransaction((executor) => createInitialImageJobInExecutor(executor, params));
 }

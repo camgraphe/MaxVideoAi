@@ -11,13 +11,14 @@ const helperPath = join(root, 'frontend/app/api/generate/_lib/provider-job-track
 const providerSubmissionPath = join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const adapterSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-generation-adapters.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 const providerSubmissionSource = readFileSync(providerSubmissionPath, 'utf8');
 
 test('generate route delegates provider job id tracking', () => {
   assert.ok(existsSync(helperPath), 'provider job id tracking should live in the generate route _lib folder');
   assert.ok(existsSync(providerSubmissionPath), 'provider submission helper should own provider tracking wiring');
-  assert.match(routeSource, /from '\.\/_lib\/video-provider-submission'/);
+  assert.match(adapterSource, /from '\.\/video-provider-submission'/);
   assert.match(providerSubmissionSource, /from '\.\/provider-job-tracker'/);
   assert.doesNotMatch(routeSource, /let lastProviderJobId/, 'provider job id state belongs in provider-job-tracker.ts');
   assert.doesNotMatch(routeSource, /INSERT INTO fal_queue_log \(job_id, provider, provider_job_id, engine_id, status, payload\)\n\s+VALUES \(\$1,\$2,\$3,\$4,\$5,\$6::jsonb\)[\s\S]*'enqueue'/, 'enqueue queue log SQL belongs in provider-job-tracker.ts');

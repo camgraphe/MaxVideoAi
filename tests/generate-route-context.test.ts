@@ -9,6 +9,7 @@ const helperPath = join(root, 'frontend/app/api/generate/_lib/route-context.ts')
 const sourceVideoContextPath = join(root, 'frontend/app/api/generate/_lib/source-video-context.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates engine, provider, db, and admin context', () => {
@@ -43,8 +44,8 @@ test('generate route delegates source-video duration and input context', () => {
   assert.ok(existsSync(sourceVideoContextPath), 'source-video context should live in the generate route _lib folder');
   const sourceVideoContextSource = readFileSync(sourceVideoContextPath, 'utf8');
 
-  assert.match(routeSource, /from '\.\/_lib\/source-video-context'/);
-  assert.match(routeSource, /resolveGenerateSourceVideoContext\(\{/);
+  assert.match(serviceSource, /generate\/_lib\/source-video-context/);
+  assert.match(serviceSource, /resolveGenerateSourceVideoContext\(\{/);
   assert.doesNotMatch(routeSource, /resolveSourceVideoDurationSec/);
   assert.doesNotMatch(routeSource, /SOURCE_VIDEO_DURATION_UNSUPPORTED/);
   assert.match(sourceVideoContextSource, /export function resolveGenerateSourceVideoContext/);

@@ -45,6 +45,7 @@ export async function runCharacterBuilder(input: RunCharacterBuilderInput): Prom
   try {
     const result = await executeImageGeneration({
       userId: input.userId,
+      walletReservation: 'reserve',
       jobSurface: 'character',
       billingProductKey,
       body: {

@@ -15,13 +15,14 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/fal-submission.ts');
 const providerSubmissionPath = join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts');
 const routeSource = readFileSync(routePath, 'utf8');
+const adapterSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-generation-adapters.ts'), 'utf8');
 const providerSubmissionSource = readFileSync(providerSubmissionPath, 'utf8');
 
 test('generate route delegates Fal submission and transient error handling', () => {
   assert.ok(existsSync(helperPath), 'Fal submission should live in the generate route _lib folder');
   assert.ok(existsSync(providerSubmissionPath), 'provider submission routing should live in a route-local helper');
-  assert.match(routeSource, /from '\.\/_lib\/video-provider-submission'/);
-  assert.match(routeSource, /submitGenerateProviderTask/);
+  assert.match(adapterSource, /from '\.\/video-provider-submission'/);
+  assert.match(adapterSource, /submitGenerateProviderTask/);
   assert.match(providerSubmissionSource, /from '\.\/fal-submission'/);
   assert.match(providerSubmissionSource, /const falSubmission = await submitFalGenerateTask/);
   assert.doesNotMatch(routeSource, /generateVideo\(/);

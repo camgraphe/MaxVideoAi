@@ -10,11 +10,12 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/attachments.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates attachment normalization and inline uploads', () => {
   assert.ok(existsSync(helperPath), 'attachment processing should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/attachments'/);
+  assert.match(serviceSource, /generate\/_lib\/attachments/);
   assert.doesNotMatch(routeSource, /type NormalizedAttachment =/, 'attachment type belongs in attachments.ts');
   assert.doesNotMatch(routeSource, /function decodeDataUrl\(/, 'data URL decoding belongs in attachments.ts');
   assert.doesNotMatch(routeSource, /uploadImageToStorage/, 'inline upload belongs in attachments.ts');

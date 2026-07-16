@@ -14,6 +14,7 @@ const storyboardPricingPath = join(root, 'frontend/src/lib/storyboard-pricing.ts
 const storyboardImageBillingPath = join(root, 'frontend/src/server/images/storyboard-image-billing.ts');
 const imageGenerateRoutePath = join(root, 'frontend/app/api/images/generate/route.ts');
 const initialJobPath = join(root, 'frontend/src/server/images/image-initial-job.ts');
+const initialJobReservationPath = join(root, 'frontend/src/server/generations/initial-job-reservation.ts');
 const errorPath = join(root, 'frontend/src/server/images/image-generation-error.ts');
 const providerPayloadPath = join(root, 'frontend/src/server/images/image-provider-payload.ts');
 const directProviderExecutionPath = join(root, 'frontend/src/server/images/image-direct-provider-execution.ts');
@@ -47,6 +48,7 @@ const storyboardPricingSource = readFileSync(storyboardPricingPath, 'utf8');
 const storyboardImageBillingSource = readFileSync(storyboardImageBillingPath, 'utf8');
 const imageGenerateRouteSource = readFileSync(imageGenerateRoutePath, 'utf8');
 const initialJobSource = readFileSync(initialJobPath, 'utf8');
+const initialJobReservationSource = readFileSync(initialJobReservationPath, 'utf8');
 const errorSource = readFileSync(errorPath, 'utf8');
 const providerPayloadSource = readFileSync(providerPayloadPath, 'utf8');
 const directProviderExecutionSource = readFileSync(directProviderExecutionPath, 'utf8');
@@ -220,7 +222,8 @@ test('existing image job response module exposes the expected contract', () => {
   assert.match(initialJobSource, /walletChargeMode === 'charge'/);
   assert.match(initialJobSource, /walletChargeMode === 'included'/);
   assert.match(initialJobSource, /async function insertProvisionalImageJob/);
-  assert.match(initialJobSource, /withDbTransaction/);
+  assert.match(initialJobSource, /runInitialJobTransaction/);
+  assert.match(initialJobReservationSource, /withDbTransaction/);
   assert.match(initialJobSource, /reserveWalletChargeInExecutor/);
   assert.match(errorSource, /export class ImageGenerationExecutionError/);
   assert.match(providerPayloadSource, /export function normalizeProviderImageUrl/);

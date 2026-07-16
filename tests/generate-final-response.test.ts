@@ -16,6 +16,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/final-response.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 const pricing = {
@@ -38,9 +39,9 @@ const pendingReceipt: PendingReceipt = {
 
 test('generate route delegates final response building', () => {
   assert.ok(existsSync(helperPath), 'final response building should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/final-response'/);
-  assert.match(routeSource, /const finalResponse = buildFinalGenerateResponse/);
-  assert.match(routeSource, /return NextResponse\.json\(finalResponse\)/);
+  assert.match(preparedSource, /generate\/_lib\/final-response/);
+  assert.match(preparedSource, /const finalResponse = buildFinalGenerateResponse/);
+  assert.match(preparedSource, /return \{ body: finalResponse \}/);
   assert.doesNotMatch(
     routeSource,
     /return NextResponse\.json\(\{\n\s+ok: true,\n\s+jobId,\n\s+videoUrl: video,/,

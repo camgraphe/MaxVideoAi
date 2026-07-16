@@ -1,4 +1,3 @@
-import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { buildUserFacingRefundDescription } from '@/server/user-facing-failure-messages';
 import { rollbackPendingPayment } from './payment-rollback';
@@ -55,12 +54,12 @@ export async function buildMissingProviderJobIdResponse(params: {
     });
   }
 
-  return NextResponse.json(
-    {
+  return {
+    body: {
       ok: false,
       error: 'FAL_NO_PROVIDER_JOB_ID',
       message: failureMessage,
     },
-    { status: 502 }
-  );
+    status: 502,
+  };
 }

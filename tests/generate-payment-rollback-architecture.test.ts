@@ -8,11 +8,12 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/payment-rollback.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates payment rollback helpers', () => {
   assert.ok(existsSync(helperPath), 'payment rollback helpers should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/payment-rollback'/);
+  assert.match(preparedSource, /generate\/_lib\/payment-rollback/);
 
   for (const implementationName of [
     'recordRefundReceipt',

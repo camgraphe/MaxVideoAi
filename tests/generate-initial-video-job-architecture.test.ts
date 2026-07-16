@@ -9,10 +9,12 @@ const helperPath = join(root, 'frontend/app/api/generate/_lib/initial-video-job.
 
 const routeSource = readFileSync(routePath, 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
+const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
+const reservationSource = readFileSync(join(root, 'frontend/src/server/generations/initial-job-reservation.ts'), 'utf8');
 
 test('generate route delegates initial video job persistence', () => {
   assert.ok(existsSync(helperPath), 'initial video job persistence should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/initial-video-job'/);
+  assert.match(preparedSource, /generate\/_lib\/initial-video-job/);
 
   for (const typeName of [
     'PendingReceipt',
@@ -28,7 +30,7 @@ test('generate route delegates initial video job persistence', () => {
   for (const implementationName of [
     'buildResponseFromExistingVideoJob',
     'insertProvisionalVideoJob',
-    'createVideoInitialJobInExecutor',
+    'createInitialVideoJobInExecutor',
     'createAtomicInitialVideoJob',
   ]) {
     assert.doesNotMatch(
@@ -56,6 +58,7 @@ test('initial video job helper exposes the route contract', () => {
   assert.match(helperSource, /export async function createAtomicInitialVideoJob/, 'atomic initial job creator should be exported');
 
   assert.match(helperSource, /reserveWalletChargeInExecutor/, 'wallet reservation should stay with initial job creation');
-  assert.match(helperSource, /pg_advisory_xact_lock/, 'job id advisory lock should stay with initial job creation');
+  assert.match(helperSource, /lockInitialJobReservation/, 'initial job creation should use the shared transaction lock');
+  assert.match(reservationSource, /pg_advisory_xact_lock/, 'shared reservation owner should hold the advisory lock');
   assert.match(helperSource, /INSERT INTO app_jobs/, 'provisional job insert should stay with initial job creation');
 });

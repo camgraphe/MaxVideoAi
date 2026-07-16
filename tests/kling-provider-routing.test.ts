@@ -34,6 +34,7 @@ import { resolveKlingDirectSubmissionMediaInputs } from '../frontend/app/api/gen
 
 const root = process.cwd();
 const generateRouteSource = readFileSync(join(root, 'frontend/app/api/generate/route.ts'), 'utf8');
+const generationAdapterSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-generation-adapters.ts'), 'utf8');
 const providerSubmissionSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-provider-submission.ts'), 'utf8');
 const jobDetailRouteSource = readFileSync(join(root, 'frontend/app/api/jobs/[jobId]/route.ts'), 'utf8');
 
@@ -887,8 +888,8 @@ test('MaxVideoAI element payload maps to Kling element_list and Fal elements wit
 });
 
 test('generate route delegates Kling direct submission and does not build Kling payloads inline', () => {
-  assert.match(generateRouteSource, /from '\.\/_lib\/video-provider-submission'/);
-  assert.match(generateRouteSource, /submitGenerateProviderTask/);
+  assert.match(generationAdapterSource, /from '\.\/video-provider-submission'/);
+  assert.match(generationAdapterSource, /submitGenerateProviderTask/);
   assert.match(providerSubmissionSource, /from '\.\/kling-direct-submission'/);
   assert.match(providerSubmissionSource, /submitKlingDirectGenerateTask/);
   assert.doesNotMatch(generateRouteSource, /model_name:\s*['"]kling-v3/);

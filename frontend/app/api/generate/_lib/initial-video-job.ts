@@ -1,6 +1,7 @@
-import { type QueryExecutor, withDbTransaction } from '@/lib/db';
+import { type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
+import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
 
 const DISPLAY_CURRENCY = 'USD';
 
@@ -72,7 +73,7 @@ type ExistingVideoChargeRow = {
   billing_product_key: string | null;
 };
 
-type ProvisionalVideoJobInsert = {
+export type ProvisionalVideoJobInsert = {
   jobId: string;
   userId: string;
   engineId: string;
@@ -108,17 +109,18 @@ type ProvisionalVideoJobInsert = {
   indexable: boolean;
 };
 
-type CreateVideoInitialJobParams = {
+export type CreateVideoInitialJobParams = {
   jobId: string;
   userId: string;
   paymentMode: PaymentMode;
+  walletReservation: WalletReservation;
   pendingReceipt: PendingReceipt | null;
   preferredCurrency: Currency | null;
   resolvedCurrencyLower: string;
   jobInsert: ProvisionalVideoJobInsert;
 };
 
-type VideoInitialJobResult =
+export type VideoInitialJobResult =
   | {
       kind: 'existing_job';
       job: ExistingVideoJobRow;
@@ -243,10 +245,12 @@ async function insertProvisionalVideoJob(executor: QueryExecutor, params: Provis
   );
 }
 
-async function createVideoInitialJobInExecutor(
-  executor: QueryExecutor,
+export async function createInitialVideoJobInExecutor(
+  executor: TransactionQueryExecutor,
   params: CreateVideoInitialJobParams
 ): Promise<VideoInitialJobResult> {
+  await lockInitialJobReservation(executor, params.jobId);
+
   const existingJobs = await executor.query<ExistingVideoJobRow>(
     `SELECT
        job_id,
@@ -345,6 +349,17 @@ async function createVideoInitialJobInExecutor(
         });
       }
       walletChargeReserved = true;
+    } else if (params.walletReservation === 'already_reserved') {
+      throw new VideoInitialJobError('The reserved wallet charge is missing.', {
+        status: 409,
+        body: {
+          ok: false,
+          error: 'JOB_CHARGE_CONFLICT',
+          message: 'The reserved wallet charge is missing.',
+        },
+        metricKind: 'rejected',
+        metricCode: 'JOB_CHARGE_CONFLICT',
+      });
     } else {
       if (!params.pendingReceipt) {
         throw new VideoInitialJobError('Missing pending receipt for wallet payment.', {
@@ -415,10 +430,7 @@ async function createVideoInitialJobInExecutor(
 
 export async function createAtomicInitialVideoJob(params: CreateVideoInitialJobParams): Promise<VideoInitialJobResult> {
   try {
-    return await withDbTransaction(async (executor) => {
-      await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [params.jobId]);
-      return createVideoInitialJobInExecutor(executor, params);
-    });
+    return await runInitialJobTransaction((executor) => createInitialVideoJobInExecutor(executor, params));
   } catch (error) {
     if (error instanceof VideoInitialJobError) {
       throw error;

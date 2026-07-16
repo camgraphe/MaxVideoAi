@@ -11,6 +11,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/billing-preflight.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = existsSync(helperPath) ? readFileSync(helperPath, 'utf8') : '';
 
 const engine = {
@@ -37,7 +38,7 @@ function createReq(country = 'US') {
 
 test('generate route delegates billing and payment preflight', () => {
   assert.ok(existsSync(helperPath), 'billing preflight should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/billing-preflight'/);
+  assert.match(serviceSource, /generate\/_lib\/billing-preflight/);
   assert.doesNotMatch(routeSource, /computePricingSnapshot/, 'pricing computation belongs in billing-preflight.ts');
   assert.doesNotMatch(routeSource, /new Stripe/, 'direct payment preflight belongs in billing-preflight.ts');
   assert.doesNotMatch(routeSource, /getUserPreferredCurrency/, 'currency preference lookup belongs in billing-preflight.ts');

@@ -127,7 +127,10 @@ test('skips dimension lookup for non-Kling engines', async () => {
 });
 
 test('validates all constrained image dimensions before billing preflight', () => {
-  const source = readFileSync(join(process.cwd(), 'frontend/app/api/generate/route.ts'), 'utf8');
+  const source = readFileSync(
+    join(process.cwd(), 'frontend/src/server/video-generation/execute-video-generation.ts'),
+    'utf8',
+  );
 
   assert.match(source, /validateGenerationImageDimensions/);
   assert.ok(

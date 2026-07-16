@@ -10,6 +10,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/validation-payload.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = existsSync(helperPath) ? readFileSync(helperPath, 'utf8') : '';
 
 const baseParams = {
@@ -43,7 +44,7 @@ const baseParams = {
 
 test('generate route delegates validation payload and required input checks', () => {
   assert.ok(existsSync(helperPath), 'validation payload building should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/validation-payload'/);
+  assert.match(serviceSource, /generate\/_lib\/validation-payload/);
   assert.doesNotMatch(routeSource, /const validationPayload: Record<string, unknown> = \{\}/);
   assert.doesNotMatch(routeSource, /needsSourceVideoEdit/, 'required input branching belongs in validation-payload.ts');
   assert.doesNotMatch(routeSource, /validateRequest\(engine\.id, mode, validationPayload\)/);

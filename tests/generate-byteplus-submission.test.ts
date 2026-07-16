@@ -11,6 +11,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/byteplus-submission.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const adapterSource = readFileSync(join(root, 'frontend/app/api/generate/_lib/video-generation-adapters.ts'), 'utf8');
 const helperSource = existsSync(helperPath) ? readFileSync(helperPath, 'utf8') : '';
 
 const pendingReceipt: PendingReceipt = {
@@ -58,7 +59,7 @@ const baseParams = {
 
 test('generate route delegates BytePlus submission', () => {
   assert.ok(existsSync(helperPath), 'BytePlus submission should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/byteplus-submission'/);
+  assert.match(adapterSource, /from '\.\/byteplus-submission'/);
   assert.doesNotMatch(routeSource, /isPublicSeedanceBytePlus/);
   assert.doesNotMatch(routeSource, /buildBytePlusSeedancePayload/, 'BytePlus payload construction belongs in byteplus-submission.ts');
   assert.doesNotMatch(routeSource, /createSeedanceFastTask/, 'BytePlus task creation belongs in byteplus-submission.ts');

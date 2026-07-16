@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import type { ImageGenerationRequest, ImageGenerationResponse } from '@/types/image-generation';
+import type { ImageGenerationResponse } from '@/types/image-generation';
 import { isDatabaseConfigured } from '@/lib/db';
 import { ensureBillingSchema } from '@/lib/schema';
 import { getPlatformFeeCents } from '@maxvideoai/pricing';
@@ -25,7 +25,6 @@ import {
   type GptImage2ImageSize,
 } from '@/lib/image/gptImage2';
 import { computeBillingProductSnapshot } from '@/lib/billing-products';
-import type { BillingProductKey, JobSurface } from '@/types/billing';
 import { STORYBOARD_INCLUDED_PAYMENT_STATUS, getStoryboardBillingIdentity } from '@/lib/storyboard-pricing';
 import { isLumaAgentsImageEngineId } from '@/lib/luma-agents';
 import { buildResponseFromExistingJob } from './existing-image-job-response';
@@ -50,26 +49,21 @@ import {
   applyStoryboardImagePricing,
   resolveIncludedKlingFirstFrameParentJobId,
 } from './storyboard-image-billing';
+import { executeAfterInitialJobReservation } from '@/server/generations/initial-job-reservation';
+import type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
 
 export { buildResponseFromExistingJob } from './existing-image-job-response';
 export { ImageGenerationExecutionError } from './image-generation-error';
+export type { ExecuteImageGenerationOptions } from './image-generation-execution-contract';
 
 const DISPLAY_CURRENCY = 'USD';
 const DISPLAY_CURRENCY_LOWER: Currency = 'usd';
 
-type ExecuteImageGenerationOptions = {
-  userId: string;
-  body: Partial<ImageGenerationRequest>;
-  settingsSnapshot?: unknown;
-  jobSurface?: JobSurface;
-  billingProductKey?: BillingProductKey | null;
-  billingQuantityMultiplier?: number;
-  isAdminForDirectProvider?: boolean;
-};
-
 export async function executeImageGeneration({
   userId,
   body,
+  walletReservation,
+  preReservedInitialState,
   settingsSnapshot,
   jobSurface = 'image',
   billingProductKey = null,
@@ -97,6 +91,12 @@ export async function executeImageGeneration({
 
   const requestId = typeof body.jobId === 'string' && body.jobId.trim().length ? body.jobId.trim() : null;
   const jobId = requestId ?? `img_${randomUUID()}`;
+  if (walletReservation === 'already_reserved' && preReservedInitialState.jobId !== jobId) {
+    fail(mode, 'job_charge_conflict', 'The reserved image job does not match this request.', 409, {
+      jobId,
+      reservedJobId: preReservedInitialState.jobId,
+    });
+  }
   const requestMetadata = normalizeImageGenerationMetadata(body.metadata);
   const engineResponseExtras = { engineId: engineEntry.id, engineLabel: engineEntry.marketingName };
 
@@ -404,235 +404,230 @@ export async function executeImageGeneration({
     stripeChargeId: null,
   };
   const preferredCurrency = await getUserPreferredCurrency(userId);
-  let shouldEnsurePreferredCurrency = !preferredCurrency && walletChargeMode === 'charge';
-  try {
-    const initialJobState = await createAtomicInitialImageJob({
-      userId,
-      mode,
-      jobId,
-      surface: jobSurface,
-      billingProductKey,
-      description,
-      amountCents: pricing.totalCents,
-      currency: DISPLAY_CURRENCY,
-      pricingSnapshotJson,
-      applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
-      vendorAccountId,
-      engineId: billingEngineId,
-      engineLabel: billingEngineLabel,
-      durationSec,
-      prompt,
-      aspectRatio: jobAspectRatio,
-      canUpscale: Boolean(engine.upscale4k),
-      finalPriceCents: pricing.totalCents,
-      costBreakdownJson,
-      settingsSnapshotJson,
-      visibility,
-      indexable,
-      preferredCurrency,
-      walletChargeMode,
-      includedPaymentStatus: STORYBOARD_INCLUDED_PAYMENT_STATUS,
-    });
-
-    if (initialJobState.kind === 'existing_job') {
-      return buildResponseFromExistingJob({
-        job: initialJobState.job,
+  let shouldEnsurePreferredCurrency =
+    !preferredCurrency && walletChargeMode === 'charge' && walletReservation === 'reserve';
+  const reserveInitialState = async () => {
+    try {
+      const initialJobState = await createAtomicInitialImageJob({
+        userId,
         mode,
+        jobId,
+        surface: jobSurface,
+        billingProductKey,
+        description,
+        amountCents: pricing.totalCents,
+        currency: DISPLAY_CURRENCY,
+        pricingSnapshotJson,
+        applicationFeeCents: priceOnlyReceipts ? null : applicationFeeCents,
+        vendorAccountId,
         engineId: billingEngineId,
         engineLabel: billingEngineLabel,
+        durationSec,
+        prompt,
+        aspectRatio: jobAspectRatio,
+        canUpscale: Boolean(engine.upscale4k),
+        finalPriceCents: pricing.totalCents,
+        costBreakdownJson,
+        settingsSnapshotJson,
+        visibility,
+        indexable,
+        preferredCurrency,
+        walletReservation,
+        walletChargeMode,
+        includedPaymentStatus: STORYBOARD_INCLUDED_PAYMENT_STATUS,
+      });
+
+      if (initialJobState.kind === 'created' && shouldEnsurePreferredCurrency) {
+        await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER).catch((error) => {
+          console.warn('[images] unable to ensure preferred currency', error);
+        });
+        shouldEnsurePreferredCurrency = false;
+      }
+      return initialJobState;
+    } catch (error) {
+      if (error instanceof ImageGenerationExecutionError) {
+        throw error;
+      }
+      console.error('[images] failed to create provisional image job', error);
+      fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
+    }
+  };
+
+  return executeAfterInitialJobReservation({
+    trustedInitialState: preReservedInitialState,
+    reserveInitialState,
+    mapExisting: (job) => buildResponseFromExistingJob({
+      job, mode, engineId: billingEngineId, engineLabel: billingEngineLabel,
+      pricing, resolvedAspectRatio, resolution,
+    }),
+    submitProvider: async () => {
+      let providerMode: string = getResultProviderMode();
+      let providerJobId: string | undefined;
+
+      const directProviderResponse = await executeDirectImageProviderIfAvailable({
+        billingProductKey,
+        characterReferenceCount: characterReferences.length,
+        combinedImageUrls,
+        costBreakdownJson,
+        effectivePrompt,
+        enableWebSearch,
+        engine,
+        engineEntry,
+        indexable,
+        jobId,
+        jobSurface,
+        limitGenerations,
+        maskUrl,
+        mode,
+        normalizedSeed,
+        numImages,
+        outputFormat,
+        pendingReceipt,
+        priceOnlyReceipts,
         pricing,
+        pricingSnapshotJson,
+        quality,
+        refundDescription,
         resolvedAspectRatio,
         resolution,
+        thinkingLevel,
+        userId,
+        vendorAccountId,
+        visibility,
+        watermark,
       });
-    }
+      if (directProviderResponse) {
+        return directProviderResponse;
+      }
 
-    if (shouldEnsurePreferredCurrency) {
-      await ensureUserPreferredCurrency(userId, DISPLAY_CURRENCY_LOWER).catch((error) => {
-        console.warn('[images] unable to ensure preferred currency', error);
-      });
-      shouldEnsurePreferredCurrency = false;
-    }
-  } catch (error) {
-    if (error instanceof ImageGenerationExecutionError) {
-      throw error;
-    }
-    console.error('[images] failed to create provisional image job', error);
-    fail(mode, 'job_persist_failed', 'Failed to save job record.', 500);
-  }
+      try {
+        const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
+          await executeImageProviderWithLumaAgentsDirectFallback({
+          falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
+          providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
+          thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
+          useLumaDirect:
+            isLumaAgentsImageEngineId(engine.id) && lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),
+          onProviderJobId(requestId) { providerJobId = requestId; },
+          onProviderMode(nextProviderMode) { providerMode = nextProviderMode; },
+        });
+        providerMode = completedProviderMode;
+        providerJobId = completedProviderJobId ?? providerJobId;
 
-  let providerMode: string = getResultProviderMode();
-  let providerJobId: string | undefined;
+        const images = extractImages(result.data);
+        if (!images.length) {
+          throw new Error('Fal did not return images');
+        }
 
-  const directProviderResponse = await executeDirectImageProviderIfAvailable({
-    billingProductKey,
-    characterReferenceCount: characterReferences.length,
-    combinedImageUrls,
-    costBreakdownJson,
-    effectivePrompt,
-    enableWebSearch,
-    engine,
-    engineEntry,
-    indexable,
-    jobId,
-    jobSurface,
-    limitGenerations,
-    maskUrl,
-    mode,
-    normalizedSeed,
-    numImages,
-    outputFormat,
-    pendingReceipt,
-    priceOnlyReceipts,
-    pricing,
-    pricingSnapshotJson,
-    quality,
-    refundDescription,
-    resolvedAspectRatio,
-    resolution,
-    thinkingLevel,
-    userId,
-    vendorAccountId,
-    visibility,
-    watermark,
+        const normalizedImages = images.map((image) => ({
+          ...image,
+          url: normalizeMediaUrl(image.url) ?? image.url,
+        }));
+        const stableImages = jobSurface === 'storyboard'
+          ? await copyGeneratedImagesToStorage({ images: normalizedImages, jobId, userId })
+          : normalizedImages;
+
+        const thumbUrls = await createImageThumbnailBatch({
+          jobId,
+          userId,
+          imageUrls: stableImages.map((image) => image.url),
+        });
+        const normalizedImagesWithThumbs = stableImages.map((image, index) => ({
+          ...image,
+          thumbUrl: thumbUrls[index] ?? null,
+        }));
+        const resultDescription = result.data && typeof result.data === 'object'
+          ? (result.data as { description?: unknown }).description : null;
+        const description = typeof resultDescription === 'string' ? resultDescription : null;
+        const providerRequestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
+        providerJobId = providerRequestId ?? undefined;
+
+        const { heroThumb } = await persistCompletedImageGeneration({
+          billingProductKey,
+          characterReferenceCount: characterReferences.length,
+          costBreakdownJson,
+          description,
+          enableWebSearch,
+          engineId: engine.id,
+          engineLabel: engine.label,
+          images: normalizedImagesWithThumbs,
+          indexable,
+          jobId,
+          jobSurface,
+          limitGenerations,
+          maskUrl,
+          mode,
+          normalizedSeed,
+          numImages,
+          outputFormat,
+          pricing,
+          pricingSnapshotJson,
+          paymentStatus: imagePaymentStatus,
+          providerJobId: providerJobId ?? null,
+          providerMode,
+          quality,
+          resolvedAspectRatio,
+          resolution,
+          style,
+          thinkingLevel,
+          userId,
+          vendorAccountId,
+          visibility,
+        });
+
+        return {
+          ok: true,
+          jobId,
+          mode,
+          images: normalizedImagesWithThumbs,
+          description,
+          requestId: providerJobId ?? result.requestId ?? undefined,
+          providerJobId: providerJobId ?? undefined,
+          engineId: billingEngineId,
+          engineLabel: billingEngineLabel,
+          durationMs: undefined,
+          pricing,
+          paymentStatus: imagePaymentStatus,
+          thumbUrl: heroThumb,
+          aspectRatio: resolvedAspectRatio,
+          resolution,
+        } satisfies ImageGenerationResponse;
+      } catch (error) {
+        console.error('[images] Fal generation failed', error);
+        const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
+          characterReferenceCount: characterReferences.length,
+          enableWebSearch,
+          engineId: engine.id,
+          error,
+          falModelId: modeConfig.falModelId,
+          jobId,
+          limitGenerations,
+          maskUrl,
+          mode,
+          normalizedSeed,
+          numImages,
+          outputFormat,
+          pendingReceipt,
+          priceOnlyReceipts,
+          pricing,
+          refundOnFailure: walletChargeMode === 'charge',
+          failedPaymentStatus,
+          providerJobId: providerJobId ?? null,
+          providerMode,
+          quality,
+          referenceImageUrls: combinedImageUrls,
+          refundDescription,
+          resolvedAspectRatio,
+          resolution,
+          style,
+          thinkingLevel,
+        });
+
+        fail(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
+          engineId: billingEngineId, engineLabel: billingEngineLabel, jobId,
+          paymentStatus: failedPaymentStatus,
+        });
+      }
+    },
   });
-  if (directProviderResponse) {
-    return directProviderResponse;
-  }
-
-  try {
-    const { result, providerJobId: completedProviderJobId, providerMode: completedProviderMode } =
-      await executeImageProviderWithLumaAgentsDirectFallback({
-        falModelId: modeConfig.falModelId, effectivePrompt, numImages, mode, combinedImageUrls, falAspectRatio,
-        providerImageSize, resolutionEngineParam, normalizedSeed, outputFormat, quality, maskUrl, enableWebSearch,
-        thinkingLevel, limitGenerations, style, engine, engineEntry, jobId, userId, requestId: jobId,
-        useLumaDirect:
-          isLumaAgentsImageEngineId(engine.id) &&
-          lumaAgentsImageDirectEnabled({ isAdmin: isAdminForDirectProvider }),
-        onProviderJobId(requestId) { providerJobId = requestId; },
-        onProviderMode(nextProviderMode) { providerMode = nextProviderMode; },
-      });
-    providerMode = completedProviderMode;
-    providerJobId = completedProviderJobId ?? providerJobId;
-
-    const images = extractImages(result.data);
-    if (!images.length) {
-      throw new Error('Fal did not return images');
-    }
-
-    const normalizedImages = images.map((image) => ({
-      ...image,
-      url: normalizeMediaUrl(image.url) ?? image.url,
-    }));
-    const stableImages =
-      jobSurface === 'storyboard'
-        ? await copyGeneratedImagesToStorage({
-            images: normalizedImages,
-            jobId,
-            userId,
-          })
-        : normalizedImages;
-
-    const thumbUrls = await createImageThumbnailBatch({
-      jobId,
-      userId,
-      imageUrls: stableImages.map((image) => image.url),
-    });
-    const normalizedImagesWithThumbs = stableImages.map((image, index) => ({
-      ...image,
-      thumbUrl: thumbUrls[index] ?? null,
-    }));
-    const resultDescription =
-      result.data && typeof result.data === 'object' ? (result.data as { description?: unknown }).description : null;
-    const description = typeof resultDescription === 'string' ? resultDescription : null;
-    const providerRequestId = providerJobId ?? parseRequestId(result.data) ?? result.requestId ?? null;
-    providerJobId = providerRequestId ?? undefined;
-
-    const { heroThumb } = await persistCompletedImageGeneration({
-      billingProductKey,
-      characterReferenceCount: characterReferences.length,
-      costBreakdownJson,
-      description,
-      enableWebSearch,
-      engineId: engine.id,
-      engineLabel: engine.label,
-      images: normalizedImagesWithThumbs,
-      indexable,
-      jobId,
-      jobSurface,
-      limitGenerations,
-      maskUrl,
-      mode,
-      normalizedSeed,
-      numImages,
-      outputFormat,
-      pricing,
-      pricingSnapshotJson,
-      paymentStatus: imagePaymentStatus,
-      providerJobId: providerJobId ?? null,
-      providerMode,
-      quality,
-      resolvedAspectRatio,
-      resolution,
-      style,
-      thinkingLevel,
-      userId,
-      vendorAccountId,
-      visibility,
-    });
-
-    return {
-      ok: true,
-      jobId,
-      mode,
-      images: normalizedImagesWithThumbs,
-      description,
-      requestId: providerJobId ?? result.requestId ?? undefined,
-      providerJobId: providerJobId ?? undefined,
-      engineId: billingEngineId,
-      engineLabel: billingEngineLabel,
-      durationMs: undefined,
-      pricing,
-      paymentStatus: imagePaymentStatus,
-      thumbUrl: heroThumb,
-      aspectRatio: resolvedAspectRatio,
-      resolution,
-    } satisfies ImageGenerationResponse;
-  } catch (error) {
-    console.error('[images] Fal generation failed', error);
-    const { message, providerBody, providerStatus } = await persistFailedImageGeneration({
-      characterReferenceCount: characterReferences.length,
-      enableWebSearch,
-      engineId: engine.id,
-      error,
-      falModelId: modeConfig.falModelId,
-      jobId,
-      limitGenerations,
-      maskUrl,
-      mode,
-      normalizedSeed,
-      numImages,
-      outputFormat,
-      pendingReceipt,
-      priceOnlyReceipts,
-      pricing,
-      refundOnFailure: walletChargeMode === 'charge',
-      failedPaymentStatus,
-      providerJobId: providerJobId ?? null,
-      providerMode,
-      quality,
-      referenceImageUrls: combinedImageUrls,
-      refundDescription,
-      resolvedAspectRatio,
-      resolution,
-      style,
-      thinkingLevel,
-    });
-
-    fail(mode, 'fal_error', message, 502, { providerStatus, providerBody }, {
-      engineId: billingEngineId,
-      engineLabel: billingEngineLabel,
-      jobId,
-      paymentStatus: failedPaymentStatus,
-    });
-  }
 }

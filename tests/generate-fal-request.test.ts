@@ -13,6 +13,7 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/fal-request.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const serviceSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 const attachment = (overrides: Partial<NormalizedAttachment>): NormalizedAttachment => ({
@@ -70,7 +71,7 @@ function baseFalRequest(overrides: Partial<Parameters<typeof buildFalRequestPart
 
 test('generate route delegates Fal request building', () => {
   assert.ok(existsSync(helperPath), 'Fal request building should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/fal-request'/);
+  assert.match(serviceSource, /generate\/_lib\/fal-request/);
   assert.doesNotMatch(routeSource, /const falInputs\s*=/, 'Fal attachment mapping belongs in fal-request.ts');
   assert.doesNotMatch(routeSource, /const falInputSummary\s*=/, 'Fal input summary belongs in fal-request.ts');
   assert.doesNotMatch(routeSource, /isLtxFastLong/, 'LTX FPS clamping belongs in fal-request.ts');

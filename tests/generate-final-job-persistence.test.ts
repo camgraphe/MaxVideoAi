@@ -13,11 +13,12 @@ const routePath = join(root, 'frontend/app/api/generate/route.ts');
 const helperPath = join(root, 'frontend/app/api/generate/_lib/final-job-persistence.ts');
 
 const routeSource = readFileSync(routePath, 'utf8');
+const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
 
 test('generate route delegates final job persistence and final queue logging', () => {
   assert.ok(existsSync(helperPath), 'final job persistence should live in the generate route _lib folder');
-  assert.match(routeSource, /from '\.\/_lib\/final-job-persistence'/);
+  assert.match(preparedSource, /generate\/_lib\/final-job-persistence/);
   assert.doesNotMatch(routeSource, /SET thumb_url = \$2/, 'final app_jobs update SQL belongs in final-job-persistence.ts');
   assert.doesNotMatch(routeSource, /cost_breakdown_usd: costBreakdownUsd/, 'final queue log payload belongs in final-job-persistence.ts');
 
