@@ -97,10 +97,38 @@ test('recent agent reads retain failed jobs instead of applying the web feed exp
   assert.match(querySql, /LOWER\(COALESCE\(j\.status, ''\)\)/);
 });
 
+test('recent failed filter includes provider polling stalled as a terminal state', async () => {
+  let statusValues: unknown;
+  const result = await listRecentGenerations({
+    userId: 'user_1',
+    status: 'failed',
+    queryFn: async (_sql, params) => {
+      statusValues = params?.find((value) => Array.isArray(value) && value.includes('failed'));
+      return [recentRecord({ status: 'provider_polling_stalled', message: 'secret provider body' })];
+    },
+  });
+  assert.ok(Array.isArray(statusValues));
+  assert.ok(statusValues.includes('provider_polling_stalled'));
+  assert.equal(result.items[0]?.status, 'failed');
+  assert.equal(result.items[0]?.retryAfterSeconds, null);
+  assert.equal(
+    result.items[0]?.message,
+    'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.'
+  );
+});
+
 test('recent agent reads reject oversized and malformed cursors', async () => {
   const queryFn = async () => [] as RecentGenerationRecord[];
   await assert.rejects(
     listRecentGenerations({ userId: 'user_1', cursor: 'x'.repeat(257), queryFn }),
+    (error: unknown) => error instanceof RecentGenerationInputError && error.field === 'cursor'
+  );
+  await assert.rejects(
+    listRecentGenerations({
+      userId: 'user_1',
+      cursor: '2026-07-16T12:00:00+02:00|7',
+      queryFn,
+    }),
     (error: unknown) => error instanceof RecentGenerationInputError && error.field === 'cursor'
   );
   await assert.rejects(
@@ -137,6 +165,10 @@ test('web cursor parsing retains legacy partial timestamp and numeric-prefix beh
   });
   assert.deepEqual(parseRecentGenerationCursor('bad|9'), { createdAt: null, id: 9 });
   assert.deepEqual(parseRecentGenerationCursor('12legacy'), { createdAt: null, id: 12 });
+  assert.deepEqual(parseRecentGenerationCursor('2026-07-16T12:00:00+02:00|7'), {
+    createdAt: new Date('2026-07-16T10:00:00.000Z'),
+    id: 7,
+  });
 });
 
 test('agent pagination deduplicates provider jobs in SQL before limit and keeps a stable keyset cursor', async () => {
@@ -215,6 +247,66 @@ test('agent surface SQL matches DTO normalization for image-like and background-
     sqlBySurface.get('video') ?? '',
     /CASE[\s\S]*BTRIM\(COALESCE\(j\.surface[\s\S]*j\.settings_snapshot->>'surface'/,
     'agent SQL should apply the same direct-surface-before-snapshot precedence as the DTO mapper'
+  );
+  assert.match(
+    sqlBySurface.get('image') ?? '',
+    /jsonb_array_elements\([\s\S]*CASE[\s\S]*jsonb_typeof\(j\.render_ids\) = 'array'[\s\S]*ELSE '\[\]'::jsonb/,
+    'non-array legacy JSONB must be converted to an empty array before expansion'
+  );
+  assert.match(sqlBySurface.get('image') ?? '', /jsonb_typeof\(render_entry\.value\) = 'string'/);
+  assert.match(sqlBySurface.get('image') ?? '', /render_entry\.value->>'url'/);
+  assert.match(
+    sqlBySurface.get('image') ?? '',
+    /jsonb_typeof\(render_entry\.value->'url'\) = 'string'/,
+    'object URLs must be JSON strings just like parseStoredImageRenders requires'
+  );
+});
+
+test('agent surface pages return valid render arrays as image and malformed JSONB shapes as video', async () => {
+  const fixtures = [
+    recentRecord({ id: 20, job_id: 'null', render_ids: null }),
+    recentRecord({ id: 19, job_id: 'empty-array', render_ids: [] }),
+    recentRecord({ id: 18, job_id: 'object', render_ids: {} }),
+    recentRecord({ id: 17, job_id: 'scalar', render_ids: 7 }),
+    recentRecord({ id: 16, job_id: 'empty-string-entry', render_ids: [''] }),
+    recentRecord({ id: 14, job_id: 'numeric-object-url', render_ids: [{ url: 7 }] }),
+    recentRecord({
+      id: 15,
+      job_id: 'valid',
+      render_ids: [{ url: 'https://cdn.maxvideoai.com/valid.png' }],
+    }),
+  ];
+  const hasValidRender = (value: unknown) =>
+    Array.isArray(value) &&
+    value.some(
+      (entry) =>
+        (typeof entry === 'string' && entry.trim().length > 0) ||
+        (entry !== null &&
+          typeof entry === 'object' &&
+          typeof (entry as { url?: unknown }).url === 'string' &&
+          ((entry as { url: string }).url.trim().length > 0))
+    );
+  const run = (surface: 'image' | 'video') =>
+    listRecentGenerations({
+      userId: 'user_1',
+      surface,
+      limit: 20,
+      queryFn: async () =>
+        fixtures.filter((fixture) => hasValidRender(fixture.render_ids) === (surface === 'image')),
+    });
+
+  const [images, videos] = await Promise.all([run('image'), run('video')]);
+  assert.deepEqual(images.items.map((item) => [item.jobId, item.surface]), [['valid', 'image']]);
+  assert.deepEqual(
+    videos.items.map((item) => [item.jobId, item.surface]),
+    [
+      ['null', 'video'],
+      ['empty-array', 'video'],
+      ['object', 'video'],
+      ['scalar', 'video'],
+      ['empty-string-entry', 'video'],
+      ['numeric-object-url', 'video'],
+    ]
   );
 });
 

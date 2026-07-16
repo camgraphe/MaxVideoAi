@@ -48,13 +48,10 @@ const STATUS_VALUES: Record<AgentGenerationStatus['status'], string[]> = {
   accepted: ['accepted', 'created', 'pending', 'queued', 'submitted', 'waiting'],
   running: ['in_progress', 'processing', 'running'],
   completed: ['completed', 'finished', 'success', 'succeeded'],
-  failed: ['aborted', 'cancelled', 'canceled', 'error', 'errored', 'expired', 'failed', 'missing', 'not_found', 'timed_out', 'timeout'],
+  failed: ['aborted', 'cancelled', 'canceled', 'error', 'errored', 'expired', 'failed', 'missing', 'not_found', 'provider_polling_stalled', 'timed_out', 'timeout'],
 };
 
-type RecentGenerationQuery = (
-  sql: string,
-  params?: ReadonlyArray<unknown>
-) => Promise<RecentGenerationRecord[]>;
+type RecentGenerationQuery = (sql: string, params?: ReadonlyArray<unknown>) => Promise<RecentGenerationRecord[]>;
 
 export class RecentGenerationInputError extends Error {
   constructor(readonly field: 'cursor', message: string) {
@@ -88,7 +85,8 @@ export function parseRecentGenerationCursor(
         id === null ||
         !Number.isSafeInteger(id) ||
         id < 0 ||
-        String(id) !== idPart?.trim()
+        String(id) !== idPart?.trim() ||
+        timestampPart !== createdAt.toISOString()
       )
     ) {
       if (strict) throw new RecentGenerationInputError('cursor', 'cursor is invalid.');
@@ -274,31 +272,33 @@ async function readRecentGenerationRecords(params: {
 }
 
 function buildAgentSurfaceClauses(aliasesIndex: number): { image: string; video: string } {
+  const hasValidRenderEntry = `EXISTS (
+    SELECT 1
+      FROM jsonb_array_elements(CASE WHEN jsonb_typeof(j.render_ids) = 'array'
+        THEN j.render_ids ELSE '[]'::jsonb END) AS render_entry(value)
+     WHERE (jsonb_typeof(render_entry.value) = 'string'
+       AND BTRIM(COALESCE(render_entry.value #>> '{}', '')) <> '')
+        OR (jsonb_typeof(render_entry.value) = 'object'
+       AND jsonb_typeof(render_entry.value->'url') = 'string'
+       AND BTRIM(COALESCE(render_entry.value->>'url', '')) <> ''
+     )
+  )`;
   const classification = `(CASE
     WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
       THEN 'image'
-    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'background-removal'
-      THEN 'video'
-    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'audio'
-      THEN NULL
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'background-removal' THEN 'video'
+    WHEN LOWER(BTRIM(COALESCE(j.surface, ''))) = 'audio' THEN NULL
     WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) IN ('image', 'storyboard', 'character', 'character-builder', 'angle', 'upscale')
       THEN 'image'
-    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'background-removal'
-      THEN 'video'
-    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'audio'
-      THEN NULL
-    WHEN j.job_id LIKE 'tool_angle_%' OR j.job_id LIKE 'angle_%'
-      THEN 'image'
-    WHEN j.job_id LIKE 'tool_upscale_%' OR j.job_id LIKE 'upscale_%'
-      THEN 'image'
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'background-removal' THEN 'video'
+    WHEN LOWER(BTRIM(COALESCE(j.settings_snapshot->>'surface', ''))) = 'audio' THEN NULL
+    WHEN j.job_id LIKE 'tool_angle_%' OR j.job_id LIKE 'angle_%' THEN 'image'
+    WHEN j.job_id LIKE 'tool_upscale_%' OR j.job_id LIKE 'upscale_%' THEN 'image'
     WHEN j.job_id LIKE 'tool_background_removal_%' OR j.job_id LIKE 'background_removal_%'
       THEN 'video'
-    WHEN j.job_id LIKE 'storyboard_%'
-      THEN 'image'
-    WHEN j.render_ids IS NOT NULL
-      THEN 'image'
-    WHEN COALESCE(j.engine_id, '') = ANY($${aliasesIndex}::text[])
-      THEN 'image'
+    WHEN j.job_id LIKE 'storyboard_%' THEN 'image'
+    WHEN ${hasValidRenderEntry} THEN 'image'
+    WHEN COALESCE(j.engine_id, '') = ANY($${aliasesIndex}::text[]) THEN 'image'
     ELSE 'video'
   END)`;
   return {

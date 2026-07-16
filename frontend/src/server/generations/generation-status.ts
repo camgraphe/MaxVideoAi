@@ -92,6 +92,7 @@ const FAILED_STATUSES = new Set([
   'failed',
   'missing',
   'not_found',
+  'provider_polling_stalled',
   'timed_out',
   'timeout',
 ]);
@@ -131,6 +132,7 @@ const AGENT_FAILURE_COPY = {
   storage: 'The render finished, but MaxVideoAI could not prepare the output for download. Please retry.',
   timeout: 'This render exceeded the expected processing window. Please retry in a few moments.',
   unsupported: 'This request is not supported with the selected inputs. Adjust the prompt, media, or settings and try again.',
+  pollingStalled: 'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.',
 } as const;
 
 function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image' | null {
@@ -140,7 +142,7 @@ function normalizeAgentSurface(record: GenerationStatusRecord): 'video' | 'image
     jobId: record.job_id,
     engineId: record.engine_id,
     videoUrl: record.video_url,
-    renderIds: record.render_ids,
+    renderIds: Array.isArray(record.render_ids) ? record.render_ids : null,
   });
   if (surface === 'video' || surface === 'background-removal') return 'video';
   return IMAGE_SURFACES.has(surface) ? 'image' : null;
@@ -176,31 +178,67 @@ function stableMediaUrl(value: string | null | undefined): string | null {
   if (!normalized || !isStablePublicMediaUrl(normalized) || !/^https:\/\//iu.test(normalized)) return null;
   try {
     const parsed = new URL(normalized);
-    const hostname = parsed.hostname.toLowerCase();
+    if (
+      parsed.protocol !== 'https:' ||
+      parsed.username.length > 0 ||
+      parsed.password.length > 0 ||
+      parsed.hash.length > 0 ||
+      (parsed.port.length > 0 && parsed.port !== '443')
+    ) {
+      return null;
+    }
     if (PRIVATE_MEDIA_PATH_PATTERN.test(parsed.pathname)) return null;
-    const configuredBases = [process.env.S3_PUBLIC_BASE_URL]
+    const assetBases = (process.env.ASSET_HOST_ALLOWLIST ?? '')
+      .split(',')
+      .map((candidate) => candidate.trim())
+      .filter(Boolean)
+      .map((candidate) => (/^https?:\/\//iu.test(candidate) ? candidate : `https://${candidate}`));
+    const configuredBases = [
+      process.env.S3_PUBLIC_BASE_URL,
+      process.env.TEST_VIDEO_BASE_URL,
+      ...assetBases,
+    ]
       .map((candidate) => {
         try {
-          return candidate ? new URL(candidate) : null;
+          const base = candidate ? new URL(candidate) : null;
+          if (
+            !base ||
+            base.protocol !== 'https:' ||
+            base.username.length > 0 ||
+            base.password.length > 0 ||
+            base.hash.length > 0 ||
+            (base.port.length > 0 && base.port !== '443')
+          ) {
+            return null;
+          }
+          return base;
         } catch {
           return null;
         }
       })
       .filter((candidate): candidate is URL => Boolean(candidate));
     const configuredStorageMatch = configuredBases.some((base) => {
-      if (base.hostname.toLowerCase() !== hostname) return false;
+      if (base.origin !== parsed.origin) return false;
       const basePath = base.pathname.replace(/\/+$/u, '');
       return !basePath || basePath === '/' || parsed.pathname === basePath || parsed.pathname.startsWith(`${basePath}/`);
     });
-    if (configuredStorageMatch || DEFAULT_PUBLIC_MEDIA_HOSTS.has(hostname)) return normalized;
-    const appHosts = new Set(['maxvideoai.com', 'www.maxvideoai.com']);
-    try {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim();
-      if (appUrl) appHosts.add(new URL(appUrl).hostname.toLowerCase());
-    } catch {
-      // Ignore malformed optional public app configuration.
-    }
-    return appHosts.has(hostname) && PUBLIC_APP_MEDIA_PATH_PATTERN.test(parsed.pathname) ? normalized : null;
+    const fixedOrigins = new Set(
+      Array.from(DEFAULT_PUBLIC_MEDIA_HOSTS, (hostname) => `https://${hostname}`)
+    );
+    if (configuredStorageMatch || fixedOrigins.has(parsed.origin)) return normalized;
+    const appOrigins = [process.env.NEXT_PUBLIC_SITE_URL, process.env.NEXT_PUBLIC_APP_URL]
+      .map((candidate) => {
+        try {
+          const base = candidate ? new URL(candidate) : null;
+          return base?.protocol === 'https:' && (!base.port || base.port === '443') ? base.origin : null;
+        } catch {
+          return null;
+        }
+      })
+      .filter((origin): origin is string => Boolean(origin));
+    return appOrigins.includes(parsed.origin) && PUBLIC_APP_MEDIA_PATH_PATTERN.test(parsed.pathname)
+      ? normalized
+      : null;
   } catch {
     return null;
   }
@@ -240,11 +278,15 @@ function buildAgentResult(
 
 function buildAgentMessage(
   status: AgentGenerationStatus['status'],
-  rawMessage: string | null
+  rawMessage: string | null,
+  rawStatus: string | null
 ): string | null {
   if (status === 'accepted') return 'Generation accepted.';
   if (status === 'running') return 'Generation in progress.';
   if (status === 'failed') {
+    if (rawStatus?.trim().toLowerCase() === 'provider_polling_stalled') {
+      return AGENT_FAILURE_COPY.pollingStalled;
+    }
     const message = rawMessage?.trim().toLowerCase() ?? '';
     if (/responsible ai|sensitive words|content policy|policy violation|safety|moderation|prohibited|blocked/iu.test(message)) {
       return AGENT_FAILURE_COPY.safety;
@@ -305,7 +347,7 @@ export function mapGenerationStatusRecordToAgent(
     surface,
     status,
     progress: normalizeProgress(record.progress, status),
-    message: buildAgentMessage(status, record.message),
+    message: buildAgentMessage(status, record.message, record.status),
     priceCents:
       typeof record.final_price_cents === 'number' &&
       Number.isSafeInteger(record.final_price_cents) &&

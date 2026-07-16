@@ -344,6 +344,111 @@ test('agent surface normalization respects direct surface before conflicting sna
   assert.equal(image?.surface, 'image');
 });
 
+test('agent surface uses only non-empty JSON-array render entries as image evidence', () => {
+  const fixtures: Array<{ renderIds: unknown; expected: 'video' | 'image' }> = [
+    { renderIds: null, expected: 'video' },
+    { renderIds: [], expected: 'video' },
+    { renderIds: {}, expected: 'video' },
+    { renderIds: 7, expected: 'video' },
+    { renderIds: 'scalar', expected: 'video' },
+    { renderIds: '["https://cdn.maxvideoai.com/encoded.png"]', expected: 'video' },
+    { renderIds: [''], expected: 'video' },
+    { renderIds: [{ url: '   ' }], expected: 'video' },
+    { renderIds: [{ url: 7 }], expected: 'video' },
+    { renderIds: ['https://cdn.maxvideoai.com/valid.png'], expected: 'image' },
+    { renderIds: [{ url: 'https://cdn.maxvideoai.com/valid-object.png' }], expected: 'image' },
+  ];
+  for (const fixture of fixtures) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ surface: 'video', render_ids: fixture.renderIds })
+    );
+    assert.equal(result?.surface, fixture.expected, JSON.stringify(fixture.renderIds));
+  }
+});
+
+test('provider polling stalled is a terminal safe public failure without retry', () => {
+  const result = mapGenerationStatusRecordToAgent(
+    generationRecord({
+      status: 'provider_polling_stalled',
+      progress: 90,
+      message: 'manual review secret api_token=tok_private alice@example.com',
+    })
+  );
+  assert.deepEqual(result, {
+    jobId: 'job_video_1',
+    surface: 'video',
+    status: 'failed',
+    progress: 90,
+    message: 'This render needs manual review. Contact MaxVideoAI support with your request ID before retrying.',
+    priceCents: 42,
+    currency: 'USD',
+    paymentStatus: 'paid_wallet',
+    result: null,
+    retryAfterSeconds: null,
+  });
+  assert.doesNotMatch(JSON.stringify(result), /tok_private|alice@/i);
+});
+
+test('controlled result URLs reject credentials, fragments, nonstandard ports, and signed queries', () => {
+  for (const videoUrl of [
+    'https://user:password@cdn.maxvideoai.com/output.mp4',
+    'https://cdn.maxvideoai.com/output.mp4#private-fragment',
+    'https://cdn.maxvideoai.com:444/output.mp4',
+    'https://cdn.maxvideoai.com/output.mp4?X-Amz-Signature=private',
+  ]) {
+    const result = mapGenerationStatusRecordToAgent(
+      generationRecord({ status: 'completed', progress: 100, video_url: videoUrl })
+    );
+    assert.equal(result?.result, null, videoUrl);
+  }
+});
+
+test('configured asset, storage, and video bases use exact HTTPS origins and base paths', () => {
+  const previous = {
+    assetHosts: process.env.ASSET_HOST_ALLOWLIST,
+    storage: process.env.S3_PUBLIC_BASE_URL,
+    testVideo: process.env.TEST_VIDEO_BASE_URL,
+  };
+  process.env.ASSET_HOST_ALLOWLIST = 'images.example.com,https://media.example.com/assets';
+  process.env.S3_PUBLIC_BASE_URL = 'https://assets.example.com/public';
+  process.env.TEST_VIDEO_BASE_URL = 'https://video.example.com/vod';
+  try {
+    for (const videoUrl of [
+      'https://assets.example.com/public/render.mp4?version=1',
+      'https://video.example.com/vod/render.mp4?version=1',
+      'https://images.example.com/render.mp4?version=1',
+      'https://media.example.com/assets/render.mp4?version=1',
+    ]) {
+      const valid = mapGenerationStatusRecordToAgent(
+        generationRecord({ status: 'completed', video_url: videoUrl })
+      );
+      assert.equal(valid?.result?.surface, 'video', videoUrl);
+    }
+    for (const videoUrl of [
+      'https://assets.example.com.evil/public/render.mp4',
+      'https://assets.example.com:444/public/render.mp4',
+      'http://assets.example.com/public/render.mp4',
+      'https://assets.example.com/outside/render.mp4',
+      'https://video.example.com/outside/render.mp4',
+      'https://media.example.com/outside/render.mp4',
+    ]) {
+      const rejected = mapGenerationStatusRecordToAgent(
+        generationRecord({ status: 'completed', video_url: videoUrl })
+      );
+      assert.equal(rejected?.result, null, videoUrl);
+    }
+  } finally {
+    for (const [name, value] of [
+      ['ASSET_HOST_ALLOWLIST', previous.assetHosts],
+      ['S3_PUBLIC_BASE_URL', previous.storage],
+      ['TEST_VIDEO_BASE_URL', previous.testVideo],
+    ] as const) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+});
+
 test('web status mapper preserves the authenticated video response fixture', () => {
   const payload = mapGenerationStatusRecordToWeb(
     generationRecord({
