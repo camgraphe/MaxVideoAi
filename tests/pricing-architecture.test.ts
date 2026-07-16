@@ -83,7 +83,10 @@ test('canonical quote is the sole commercial formula owner', () => {
   const storyboardSource = readFileSync('frontend/src/lib/storyboard-pricing.ts', 'utf8');
   const serverBillingSource = readFileSync('frontend/server/pricing/quote-billing.ts', 'utf8');
   const serverPublicSource = readFileSync('frontend/server/pricing/quote-public.ts', 'utf8');
-  const imageEstimateSource = readFileSync('frontend/app/api/images/estimate/route.ts', 'utf8');
+  const imageEstimateSource = readFileSync(
+    'frontend/src/server/images/estimate-image-generation.ts',
+    'utf8'
+  );
   const enginesSource = readFileSync('frontend/src/lib/engines.ts', 'utf8');
 
   assert.match(canonicalSource, /export function quoteCanonicalPricing/);

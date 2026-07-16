@@ -165,6 +165,7 @@ test('charge-authoritative video and image call sites use the server-only canoni
   const publicConsumers = [
     'frontend/src/server/engines.ts',
     'frontend/app/api/images/estimate/route.ts',
+    'frontend/src/server/images/estimate-image-generation.ts',
     'frontend/app/(localized)/[locale]/(marketing)/models/[slug]/_lib/model-page-pricing.ts',
   ];
   for (const path of publicConsumers) {

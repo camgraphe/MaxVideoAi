@@ -34,6 +34,8 @@ const outputStoragePath = join(root, 'frontend/src/server/images/image-output-st
 const imageGenerationTypesPath = join(root, 'frontend/types/image-generation.ts');
 const imageWorkspacePath = join(root, 'frontend/app/(core)/(workspace)/app/image/ImageWorkspace.tsx');
 const imageGenerationRunnerPath = join(root, 'frontend/app/(core)/(workspace)/app/image/_hooks/useImageGenerationRunner.ts');
+const imageEstimateServicePath = join(root, 'frontend/src/server/images/estimate-image-generation.ts');
+const imageEstimateRoutePath = join(root, 'frontend/app/api/images/estimate/route.ts');
 
 const executorSource = readFileSync(executorPath, 'utf8');
 const existingJobResponseSource = readFileSync(existingJobResponsePath, 'utf8');
@@ -61,6 +63,23 @@ const settingsSnapshotSource = readFileSync(settingsSnapshotPath, 'utf8');
 const imageGenerationTypesSource = readFileSync(imageGenerationTypesPath, 'utf8');
 const imageWorkspaceSource = readFileSync(imageWorkspacePath, 'utf8');
 const imageGenerationRunnerSource = readFileSync(imageGenerationRunnerPath, 'utf8');
+
+test('image estimation has one transport-neutral pricing owner and a thin web adapter', () => {
+  assert.ok(existsSync(imageEstimateServicePath), 'image estimation should live in a reusable server service');
+  const serviceSource = readFileSync(imageEstimateServicePath, 'utf8');
+  const routeSource = readFileSync(imageEstimateRoutePath, 'utf8');
+
+  assert.match(serviceSource, /export async function estimateImageGeneration/);
+  assert.match(serviceSource, /computeCanonicalPublicSnapshot/);
+  assert.doesNotMatch(serviceSource, /NextRequest|NextResponse|prompt|userId|payment|providerMeta/);
+  assert.match(routeSource, /estimateWebImageGeneration/);
+  assert.doesNotMatch(routeSource, /computeCanonicalPublicSnapshot|computeCanonicalPublicStoryboardSnapshot/);
+  assert.doesNotMatch(routeSource, /listFalEngines|clampRequestedImageCount|resolveRequestedResolution/);
+  assert.ok(
+    routeSource.split('\n').length <= 125,
+    `image estimate route should remain a parser/JSON/error adapter, got ${routeSource.split('\n').length} lines`
+  );
+});
 
 test('image generation executor delegates focused server helpers', () => {
   assert.ok(existsSync(existingJobResponsePath), 'existing image job response helpers should live in a focused module');

@@ -23,7 +23,8 @@ test('all customer-visible pricing surfaces delegate to canonical public owners'
       'quotePublicPricing',
     ],
     ['frontend/src/server/engines.ts', 'computeCanonicalPublicSnapshot'],
-    ['frontend/app/api/images/estimate/route.ts', 'computeCanonicalPublicSnapshot'],
+    ['frontend/app/api/images/estimate/route.ts', 'estimateWebImageGeneration'],
+    ['frontend/src/server/images/estimate-image-generation.ts', 'computeCanonicalPublicSnapshot'],
     [
       'frontend/app/(localized)/[locale]/(marketing)/mcp/_lib/mcp-budget-options.ts',
       'quotePublicPricing',
