@@ -9,6 +9,10 @@ const clientPath = join(
   root,
   'frontend/app/(core)/account/connections/_components/McpConnectionsClient.tsx'
 );
+const controlsPath = join(
+  root,
+  'frontend/app/(core)/account/connections/_components/McpSpendingControls.tsx'
+);
 
 test('connections page is authenticated, flag-gated, private, and lists Supabase OAuth grants', () => {
   const source = readFileSync(pagePath, 'utf8');
@@ -44,4 +48,41 @@ test('/account routes are protected and excluded from indexing', () => {
 
   assert.match(protectedSource, /PROTECTED_PREFIXES[^\n]+['"]\/account['"]/);
   assert.match(noindexSource, /APP_NOINDEX_PREFIXES[^\n]+['"]\/account['"]/);
+});
+
+test('connections page remains a server orchestrator and loads controls/activity independently of grants', () => {
+  const source = readFileSync(pagePath, 'utf8');
+  assert.doesNotMatch(source, /['"]use client['"]/);
+  assert.match(source, /getMcpSpendingSettings/);
+  assert.match(source, /listMcpActivityHistory/);
+  assert.match(source, /McpSpendingControls/);
+  assert.match(source, /clientLabels/);
+  assert.match(source, /McpConnectionsClient/);
+  assert.match(source, /settingsUnavailable|activityUnavailable/);
+});
+
+test('MCP spending controls expose accessible exact-money controls, safe activity, and server-confirmed saves', () => {
+  const source = readFileSync(controlsPath, 'utf8');
+  assert.match(source, /['"]use client['"]/);
+  assert.match(source, /Paid generations/);
+  assert.match(source, /Maximum per generation/);
+  assert.match(source, /Daily maximum/);
+  assert.match(source, /Require a MaxVideoAI web review above/);
+  assert.match(source, /No limit/);
+  assert.match(source, /Codex/);
+  assert.match(source, /Claude/);
+  assert.match(source, /automatic tool approval/i);
+  assert.match(source, /always enforced by MaxVideoAI/i);
+  assert.match(source, /\/api\/account\/mcp-settings/);
+  assert.match(source, /method:\s*['"]PATCH['"]/);
+  assert.match(source, /paidGenerationEnabled/);
+  assert.match(source, /perGenerationCents/);
+  assert.match(source, /dailyCents/);
+  assert.match(source, /webApprovalAboveCents/);
+  assert.match(source, /response\.json/);
+  assert.match(source, /aria-live/);
+  assert.match(source, /disabled=\{saving/);
+  assert.match(source, /prepare_generation|Prepare generation/);
+  assert.match(source, /confirm_generation|Confirm generation/);
+  assert.doesNotMatch(source, /prompt|videoUrl|imageUrl|providerJob|oauthClientId|access_token|client_secret/);
 });

@@ -56,6 +56,7 @@ test('migration 30 defines private versioned quotes, NULL-safe limits, transitio
   assert.match(source, /prepared[\s\S]*claimed[\s\S]*accepted[\s\S]*failed[\s\S]*expired/i);
 
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_spending_limits/i);
+  assert.match(source, /paid_generation_enabled\s+BOOLEAN\s+NOT NULL\s+DEFAULT\s+TRUE/i);
   for (const column of ['per_generation_cents', 'daily_cents', 'web_approval_above_cents']) {
     assert.match(source, new RegExp(`${column}\\s+INTEGER`, 'i'));
     assert.match(source, new RegExp(`${column}\\s+IS NULL[\\s\\S]*${column}\\s*>=\\s*0`, 'i'));
@@ -129,10 +130,16 @@ test('migration 30 constraints, state machine, immutability, indexes, row locks,
       expires_at, created_at, updated_at
     ) VALUES (${baseValues});
     INSERT INTO mcp_spending_limits (
-      user_id, per_generation_cents, daily_cents, web_approval_above_cents
-    ) VALUES ('user-a', NULL, 500, 100);
+      user_id, paid_generation_enabled, per_generation_cents, daily_cents, web_approval_above_cents
+    ) VALUES ('user-a', FALSE, NULL, 500, 100);
   `);
   assert.equal(insertValid.status, 0, commandFailure(insertValid));
+  const switchDefault = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    INSERT INTO mcp_spending_limits (user_id) VALUES ('switch-default');
+    SELECT paid_generation_enabled FROM mcp_spending_limits WHERE user_id = 'switch-default';
+  `);
+  assert.equal(switchDefault.status, 0, commandFailure(switchDefault));
+  assert.equal(switchDefault.stdout.trim(), 't');
 
   const invalidInserts = new Map<string, string>([
     ['request object', `INSERT INTO mcp_generation_quotes (

@@ -16,9 +16,10 @@ export function buildConsentLoginPath(authorizationId: string): string {
   return `/login?next=${encodeURIComponent(nextPath)}`;
 }
 
-function firstForwardedValue(value: string | null): string | null {
-  const first = value?.split(',')[0]?.trim();
-  return first || null;
+function singleForwardedValue(value: string | null): string | null {
+  if (!value || value.includes(',')) return null;
+  const normalized = value.trim();
+  return normalized || null;
 }
 
 export function isSameOriginConsentRequest(request: Pick<Request, 'headers' | 'url'>): boolean {
@@ -27,20 +28,39 @@ export function isSameOriginConsentRequest(request: Pick<Request, 'headers' | 'u
   try {
     const parsedOrigin = new URL(origin);
     const requestUrl = new URL(request.url);
+    if (
+      (parsedOrigin.protocol !== 'http:' && parsedOrigin.protocol !== 'https:')
+      || parsedOrigin.username
+      || parsedOrigin.password
+      || parsedOrigin.pathname !== '/'
+      || parsedOrigin.search
+      || parsedOrigin.hash
+      || origin !== parsedOrigin.origin
+      || requestUrl.username
+      || requestUrl.password
+    ) return false;
     if (parsedOrigin.origin === requestUrl.origin) return true;
 
-    const externalHost =
-      firstForwardedValue(request.headers.get('x-forwarded-host')) ??
-      firstForwardedValue(request.headers.get('host'));
-    if (!externalHost) return false;
+    const forwardedHostHeader = request.headers.get('x-forwarded-host');
+    const forwardedHost = singleForwardedValue(forwardedHostHeader);
+    if (forwardedHostHeader && !forwardedHost) return false;
+    const externalHost = forwardedHost ?? singleForwardedValue(request.headers.get('host'));
+    if (!externalHost || /[@/\\\s]/u.test(externalHost)) return false;
 
-    const forwardedProtocol = firstForwardedValue(request.headers.get('x-forwarded-proto'));
-    const protocol =
-      forwardedProtocol === 'http' || forwardedProtocol === 'https'
-        ? `${forwardedProtocol}:`
-        : requestUrl.protocol;
+    const forwardedProtocolHeader = request.headers.get('x-forwarded-proto');
+    const forwardedProtocol = singleForwardedValue(forwardedProtocolHeader);
+    if (forwardedProtocolHeader && forwardedProtocol !== 'http' && forwardedProtocol !== 'https') {
+      return false;
+    }
+    const protocol = forwardedProtocol ? `${forwardedProtocol}:` : requestUrl.protocol;
     const externalUrl = new URL(`${protocol}//${externalHost}`);
-    if (externalUrl.username || externalUrl.password) return false;
+    if (
+      externalUrl.username
+      || externalUrl.password
+      || externalUrl.pathname !== '/'
+      || externalUrl.search
+      || externalUrl.hash
+    ) return false;
     return parsedOrigin.origin === externalUrl.origin;
   } catch {
     return false;

@@ -89,6 +89,7 @@ COMMENT ON COLUMN mcp_generation_quotes.pricing_snapshot IS
 
 CREATE TABLE IF NOT EXISTS mcp_spending_limits (
   user_id TEXT PRIMARY KEY,
+  paid_generation_enabled BOOLEAN NOT NULL DEFAULT TRUE,
   per_generation_cents INTEGER,
   daily_cents INTEGER,
   web_approval_above_cents INTEGER,

@@ -565,6 +565,35 @@ test('spending denial and insufficient balance roll back without claim or provid
   }
 });
 
+test('account paid-generation kill switch stops confirmation before wallet, job, claim, or provider work', async () => {
+  const { dependencies, captures } = baseDependencies(videoRequest, {
+    checkSpendingLimits: async () => ({
+      allowed: false,
+      code: 'SPENDING_LIMIT_EXCEEDED',
+      reason: 'paid_generation_disabled',
+      message: 'Paid generation is disabled in MaxVideoAI.',
+      approvalUrl: '/account/connections?focus=mcp-spending',
+      acceptedTodayCents: 0,
+      projectedTodayCents: 125,
+      limits: {
+        perGenerationCents: null,
+        dailyCents: null,
+        webApprovalAboveCents: null,
+      },
+    }),
+  });
+
+  await expectAgentError(
+    confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies),
+    'SPENDING_LIMIT_EXCEEDED',
+  );
+  assert.equal(captures.events.includes('reserve_video'), false);
+  assert.equal(captures.events.includes('claim_quote'), false);
+  assert.equal(captures.providerCalls, 0);
+  assert.equal(captures.acceptedMarks, 0);
+  assert.equal(captures.failedMarks, 0);
+});
+
 test('known rejection is refunded then failed, while ambiguous timeout remains charged and claimed', async () => {
   {
     const { dependencies, captures } = baseDependencies(videoRequest, {
