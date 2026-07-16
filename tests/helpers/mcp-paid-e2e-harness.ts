@@ -7,7 +7,6 @@ import type { Pool } from 'pg';
 
 import { getFalEngineById } from '../../frontend/src/config/falEngines';
 import { applyEngineVariantPricing, buildEngineAddonInput } from '../../frontend/src/lib/pricing-addons';
-import { getActiveAccountRestriction } from '../../frontend/src/server/fraud-cleanup';
 import { getAgentAccountStatus } from '../../frontend/src/server/agent-api/account-status';
 import { createConfirmGenerationService } from '../../frontend/src/server/agent-api/confirm-generation';
 import { getAgentGenerationStatus, listAgentRecentGenerations } from '../../frontend/src/server/agent-api/generation-status';
@@ -24,19 +23,13 @@ import { createPrepareGenerationService } from '../../frontend/src/server/agent-
 import type { AgentPrincipal } from '../../frontend/src/server/agent-api/principal';
 import { createMcpTopupHandoffService } from '../../frontend/src/server/agent-api/topup-handoff';
 import { paidProviderSubmissionDependencies } from '../../frontend/src/server/generations/paid-provider-execution';
+import { getUserMembershipStatus } from '../../frontend/src/server/membership/user-membership-status';
 import { createMaxVideoAiMcpServer, type MaxVideoAiMcpServices } from '../../frontend/src/server/mcp/server';
 import { getWalletSummary } from '../../frontend/src/server/wallet-summary';
 import { estimateImageGeneration } from '../../frontend/src/server/images/estimate-image-generation';
 import { computeCanonicalPublicSnapshot } from '../../frontend/server/pricing/quote-public';
 
 export const TOPUP_SECRET = 'p11-local-topup-secret-0123456789abcdef';
-const membership = {
-  tier: 'member' as const,
-  source: 'app_receipts_rolling_30d' as const,
-  spent30Cents: 0,
-  thresholdCents: 0,
-  discountPercent: 0,
-};
 
 function candidate(engineId: 'gpt-image-2' | 'seedance-2-0-mini'): AgentPublicGenerationEngine {
   const entry = getFalEngineById(engineId);
@@ -102,17 +95,12 @@ export function createServices(options: {
     recommendModels: (input) => recommendAgentModels(input, catalogDeps),
     prepareGeneration: createPrepareGenerationService('https://maxvideoai.com/account/connections', {
       paidGenerationEnabled: () => true,
-      getAccountRestriction: getActiveAccountRestriction,
       listPublicEngines: async () => catalog,
-      resolveMembershipPricing: async () => membership,
-      priceGeneration: sharedWebPrice,
       ...(options.prepareNow ? { now: options.prepareNow } : {}),
     }),
     confirmGeneration: createConfirmGenerationService('https://maxvideoai.com/account/connections', {
       paidGenerationEnabled: () => true,
       listPublicEngines: async () => catalog,
-      resolveMembershipPricing: async () => membership,
-      priceGeneration: sharedWebPrice,
       submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
     }),
     getGenerationStatus: (input, identity) => getAgentGenerationStatus(input, identity),
@@ -276,44 +264,181 @@ export async function addTopup(pool: Pool, userId: string, amountCents: number):
   );
 }
 
-export async function ledger(pool: Pool, userId: string) {
-  const rows = await pool.query<{ topups: string; charges: string; refunds: string; balance: string }>(`
-    SELECT
-      COALESCE(SUM(amount_cents) FILTER (WHERE type = 'topup'), 0)::text AS topups,
-      COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0)::text AS charges,
-      COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0)::text AS refunds,
-      COALESCE(SUM(CASE
-        WHEN type IN ('topup', 'refund') THEN amount_cents
-        WHEN type = 'charge' THEN -amount_cents
-        ELSE 0 END), 0)::text AS balance
-      FROM app_receipts
-     WHERE user_id = $1`, [userId]);
-  const value = rows.rows[0];
-  assert.ok(value);
-  assert.equal(Number(value.balance), Number(value.topups) + Number(value.refunds) - Number(value.charges));
-  return value;
+function cloneRecord(value: Record<string, unknown>): Record<string, unknown> {
+  return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
 }
 
-export async function assertPriceParity(params: {
+export type PreparedPriceParity = {
+  amountCents: number;
+  currency: string;
+  membershipTier: 'member' | 'plus' | 'pro';
+  canonicalPricing: Record<string, unknown>;
+  quotePricingSnapshot: Record<string, unknown>;
+  settingsSnapshot: Record<string, unknown>;
+};
+
+export async function capturePreparedPriceParity(params: {
   pool: Pool;
+  userId: string;
   quoteId: string;
   input: Record<string, unknown>;
   prepared: Record<string, unknown>;
-}): Promise<number> {
-  const web = await sharedWebPrice(normalizeGenerationRequest(params.input), 'member');
+}): Promise<PreparedPriceParity> {
+  const canonical = normalizeGenerationRequest(params.input);
+  const membership = (await getUserMembershipStatus(params.userId)).pricing;
+  const web = await sharedWebPrice(canonical, membership.tier);
   const rows = await params.pool.query<{
     price_cents: number;
     currency: string;
     pricing_snapshot: Record<string, unknown>;
-  }>('SELECT price_cents, currency, pricing_snapshot FROM mcp_generation_quotes WHERE quote_id = $1', [params.quoteId]);
+    request_json: Record<string, unknown>;
+  }>(`SELECT price_cents, currency, pricing_snapshot, request_json
+        FROM mcp_generation_quotes WHERE quote_id = $1`, [params.quoteId]);
   const quote = rows.rows[0];
   assert.ok(quote);
   assert.equal(record(params.prepared.price).amountCents, web.priceCents);
+  assert.equal(record(params.prepared.price).currency, web.currency);
   assert.equal(quote.price_cents, web.priceCents);
   assert.equal(quote.currency, web.currency);
-  assert.deepEqual(
-    record(quote.pricing_snapshot).canonicalPricing,
-    JSON.parse(JSON.stringify(web.pricingSnapshot)),
+  const quotePricingSnapshot = record(quote.pricing_snapshot);
+  const canonicalPricing = record(quotePricingSnapshot.canonicalPricing);
+  assert.deepEqual(quotePricingSnapshot.membership, membership);
+  assert.deepEqual(canonicalPricing, JSON.parse(JSON.stringify(web.pricingSnapshot)));
+  assert.equal(canonicalPricing.membershipTier, membership.tier);
+  assert.deepEqual(quote.request_json, canonical);
+  return {
+    amountCents: web.priceCents,
+    currency: web.currency,
+    membershipTier: membership.tier,
+    canonicalPricing: cloneRecord(canonicalPricing),
+    quotePricingSnapshot: cloneRecord(quotePricingSnapshot),
+    settingsSnapshot: cloneRecord(canonical),
+  };
+}
+
+export async function assertPersistedPriceParity(
+  pool: Pool,
+  quoteId: string,
+  proof: PreparedPriceParity,
+): Promise<void> {
+  const rows = await pool.query<{
+    price_cents: number; quote_currency: string; quote_pricing: Record<string, unknown>;
+    request_json: Record<string, unknown>; amount_cents: number; receipt_currency: string;
+    receipt_pricing: Record<string, unknown>; final_price_cents: number; job_currency: string;
+    job_pricing: Record<string, unknown>; settings_snapshot: Record<string, unknown>;
+  }>(`
+    SELECT q.price_cents, q.currency AS quote_currency,
+           q.pricing_snapshot AS quote_pricing, q.request_json,
+           r.amount_cents, r.currency AS receipt_currency,
+           r.pricing_snapshot AS receipt_pricing,
+           j.final_price_cents, j.currency AS job_currency,
+           j.pricing_snapshot AS job_pricing, j.settings_snapshot
+      FROM mcp_generation_quotes q
+      JOIN app_receipts r ON r.job_id = q.job_id AND r.type = 'charge'
+      JOIN app_jobs j ON j.job_id = q.job_id
+     WHERE q.quote_id = $1`, [quoteId]);
+  const persisted = rows.rows[0];
+  assert.ok(persisted);
+  assert.equal(persisted.price_cents, proof.amountCents);
+  assert.equal(persisted.amount_cents, proof.amountCents);
+  assert.equal(persisted.final_price_cents, proof.amountCents);
+  assert.equal(persisted.quote_currency, proof.currency);
+  assert.equal(persisted.receipt_currency, proof.currency);
+  assert.equal(persisted.job_currency, proof.currency);
+  assert.deepEqual(persisted.quote_pricing, proof.quotePricingSnapshot);
+  assert.deepEqual(persisted.request_json, proof.settingsSnapshot);
+  assert.deepEqual(persisted.receipt_pricing, proof.canonicalPricing);
+  assert.deepEqual(persisted.job_pricing, proof.canonicalPricing);
+  assert.deepEqual(persisted.settings_snapshot, proof.settingsSnapshot);
+  assert.equal(record(persisted.receipt_pricing).membershipTier, proof.membershipTier);
+  assert.equal(record(persisted.job_pricing).membershipTier, proof.membershipTier);
+}
+
+type ExpectedLedgerComponent = { amountCents: number; count: number };
+
+export async function assertWalletParity(params: {
+  client: Client;
+  pool: Pool;
+  userId: string;
+  expected: {
+    topups: ExpectedLedgerComponent;
+    charges: ExpectedLedgerComponent;
+    refunds: ExpectedLedgerComponent;
+  };
+}): Promise<void> {
+  const status = await params.client.callTool({ name: 'get_account_status', arguments: {} });
+  assert.notEqual(status.isError, true, JSON.stringify(status.structuredContent));
+  const wallet = record(structured(status as CallToolResult).wallet);
+  const [topups, charges, refunds] = await Promise.all([
+    params.pool.query<{ amount_cents: string; count: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0)::text AS amount_cents, COUNT(*)::text AS count
+         FROM app_receipts WHERE user_id = $1 AND type = 'topup'`, [params.userId],
+    ),
+    params.pool.query<{ amount_cents: string; count: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0)::text AS amount_cents, COUNT(*)::text AS count
+         FROM app_receipts WHERE user_id = $1 AND type = 'charge'`, [params.userId],
+    ),
+    params.pool.query<{ amount_cents: string; count: string }>(
+      `SELECT COALESCE(SUM(amount_cents), 0)::text AS amount_cents, COUNT(*)::text AS count
+         FROM app_receipts WHERE user_id = $1 AND type = 'refund'`, [params.userId],
+    ),
+  ]);
+  const actual = {
+    topups: { amountCents: Number(topups.rows[0]?.amount_cents), count: Number(topups.rows[0]?.count) },
+    charges: { amountCents: Number(charges.rows[0]?.amount_cents), count: Number(charges.rows[0]?.count) },
+    refunds: { amountCents: Number(refunds.rows[0]?.amount_cents), count: Number(refunds.rows[0]?.count) },
+  };
+  assert.deepEqual(actual, params.expected);
+  assert.equal(
+    wallet.amountCents,
+    actual.topups.amountCents + actual.refunds.amountCents - actual.charges.amountCents,
   );
-  return web.priceCents;
+  assert.equal(wallet.currency, 'USD');
+  assert.equal(wallet.pendingCents, 0);
+}
+
+export async function assertOAuthQuoteMutationScope(params: {
+  sameUserOtherClient: Client;
+  wrongUser: Client;
+  quoteId: string;
+  forbidden: ReadonlyArray<string | null | undefined>;
+}): Promise<void> {
+  for (const quoteNonOwner of [params.sameUserOtherClient, params.wrongUser]) {
+    const confirmation = await callConfirmed(quoteNonOwner, params.quoteId);
+    assert.equal(errorCode(confirmation), 'QUOTE_EXPIRED');
+    const topup = await quoteNonOwner.callTool({
+      name: 'create_topup_link', arguments: { quoteId: params.quoteId },
+    }) as CallToolResult;
+    assert.equal(errorCode(topup), 'QUOTE_EXPIRED');
+    assertRecoverySafe(confirmation, params.forbidden);
+    assertRecoverySafe(topup, params.forbidden);
+  }
+}
+
+export async function assertOAuthRecoveryScope(params: {
+  sameUserOtherClient: Client;
+  wrongUser: Client;
+  jobId: string;
+  forbidden: ReadonlyArray<string | null | undefined>;
+}): Promise<void> {
+  const crossClientStatus = await params.sameUserOtherClient.callTool({
+    name: 'get_generation_status', arguments: { jobId: params.jobId },
+  }) as CallToolResult;
+  assert.equal(structured(crossClientStatus).status, 'completed');
+  const crossClientRecent = await params.sameUserOtherClient.callTool({
+    name: 'list_recent_generations', arguments: { limit: 20 },
+  }) as CallToolResult;
+  assert.ok((structured(crossClientRecent).items as unknown[])
+    .some((item) => record(item).jobId === params.jobId));
+  const wrongStatus = await params.wrongUser.callTool({
+    name: 'get_generation_status', arguments: { jobId: params.jobId },
+  }) as CallToolResult;
+  assert.equal(errorCode(wrongStatus), 'JOB_FAILED');
+  const wrongRecent = await params.wrongUser.callTool({
+    name: 'list_recent_generations', arguments: { limit: 20 },
+  }) as CallToolResult;
+  assert.deepEqual(structured(wrongRecent).items, []);
+  for (const result of [crossClientStatus, crossClientRecent, wrongStatus, wrongRecent]) {
+    assertRecoverySafe(result, params.forbidden);
+  }
 }

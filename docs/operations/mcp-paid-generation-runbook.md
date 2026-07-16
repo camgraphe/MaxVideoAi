@@ -105,39 +105,73 @@ hosted Codex or Claude evidence.
 
 ## Accounting reconciliation
 
-Run read-only queries with bound user/quote parameters. Export counts and cents
-only; do not select `request_json`, `prompt`, `settings_snapshot`, provider IDs,
-reference URLs, Stripe IDs, or OAuth client IDs.
+Run read-only queries with bound user/quote parameters. Export only operational
+IDs, states, counts, cents, and currency codes; do not select `request_json`,
+`prompt`, `pricing_snapshot`, `settings_snapshot`, provider IDs, reference URLs,
+Stripe IDs, vendor IDs, or OAuth client IDs.
 
 ```sql
 SELECT
-  COALESCE(SUM(amount_cents) FILTER (WHERE type = 'topup'), 0) AS topups_cents,
-  COALESCE(SUM(amount_cents) FILTER (WHERE type = 'charge'), 0) AS charges_cents,
-  COALESCE(SUM(amount_cents) FILTER (WHERE type = 'refund'), 0) AS refunds_cents
+  COALESCE(SUM(amount_cents), 0) AS topups_cents,
+  COUNT(*) AS topup_count,
+  STRING_AGG(DISTINCT UPPER(currency), ',') AS topup_currencies
 FROM app_receipts
-WHERE user_id = $1;
+WHERE user_id = $1 AND type = 'topup';
+
+SELECT
+  COALESCE(SUM(amount_cents), 0) AS charges_cents,
+  COUNT(*) AS charge_count,
+  STRING_AGG(DISTINCT UPPER(currency), ',') AS charge_currencies
+FROM app_receipts
+WHERE user_id = $1 AND type = 'charge';
+
+SELECT
+  COALESCE(SUM(amount_cents), 0) AS refunds_cents,
+  COUNT(*) AS refund_count,
+  STRING_AGG(DISTINCT UPPER(currency), ',') AS refund_currencies
+FROM app_receipts
+WHERE user_id = $1 AND type = 'refund';
 ```
 
-Verify `balance = topups + refunds - charges` against the account tool. For one
-quote, verify immutable cents/currency and state without projecting private JSON:
+Run the top-up, charge, and refund totals independently when validating the
+account tool; do not derive both sides of the comparison from one aggregate.
+Verify `get_account_status.wallet.amountCents = topups + refunds - charges`, its
+currency is `USD`, and each component's amount and row count is the expected
+one for the scenario.
+
+For one quote, select immutable cents, currency codes, states, and component
+counts without projecting private JSON:
 
 ```sql
-SELECT q.quote_id, q.state, q.job_id, q.price_cents, q.currency,
-       j.status, j.final_price_cents, j.payment_status,
+SELECT q.quote_id, q.state, q.job_id,
+       q.price_cents AS quote_cents, q.currency AS quote_currency,
+       j.status, j.final_price_cents AS job_cents,
+       j.currency AS job_currency, j.payment_status,
+       COALESCE(SUM(r.amount_cents) FILTER (WHERE r.type = 'charge'), 0)
+         AS charges_cents,
+       STRING_AGG(DISTINCT UPPER(r.currency), ',')
+         FILTER (WHERE r.type = 'charge') AS charge_currencies,
        COUNT(r.id) FILTER (WHERE r.type = 'charge') AS charge_count,
+       COALESCE(SUM(r.amount_cents) FILTER (WHERE r.type = 'refund'), 0)
+         AS refunds_cents,
+       STRING_AGG(DISTINCT UPPER(r.currency), ',')
+         FILTER (WHERE r.type = 'refund') AS refund_currencies,
        COUNT(r.id) FILTER (WHERE r.type = 'refund') AS refund_count
 FROM mcp_generation_quotes q
 LEFT JOIN app_jobs j ON j.job_id = q.job_id AND j.user_id = q.user_id
 LEFT JOIN app_receipts r ON r.job_id = q.job_id AND r.user_id = q.user_id
 WHERE q.user_id = $1 AND q.quote_id = $2
 GROUP BY q.quote_id, q.state, q.job_id, q.price_cents, q.currency,
-         j.status, j.final_price_cents, j.payment_status;
+         j.status, j.final_price_cents, j.currency, j.payment_status;
 ```
 
-Expected invariants: one charge and one initial job per confirmed quote; charge,
-quote, and job cents/currency match; refunds never exceed charges; claimed or
-accepted ambiguous jobs remain recoverable; a failed known rejection has one
-idempotent refund.
+Compare the selected values explicitly. Every confirmed quote has one initial
+job and one charge; `quote_cents = job_cents = charges_cents`; `quote_currency =
+job_currency = charge_currencies` with exactly one currency code. Successful
+and ambiguous jobs have `refunds_cents = 0`, no refund currency, and zero refund
+rows. A failed known rejection has one idempotent refund with `refunds_cents =
+charges_cents` and `refund_currencies = quote_currency`. Any extra currency,
+missing value, count drift, or cent mismatch blocks release.
 
 ## Rollback and incident sequence
 

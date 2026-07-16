@@ -89,12 +89,21 @@ fresh disposable PostgreSQL cluster with migration 30. Provider and payment
 network boundaries remained deterministic local adapters.
 
 The local suite verified the eight-tool registry behind an explicit in-memory
-paid gate, text-to-image, image-to-image, text-to-video, image-to-video, exact
-shared web/MCP price parity, database-time expiry, insufficient funds, signed
-top-up handoff plus fresh quote, completed recovery links, known-rejection
-refund, ambiguous recovery without premature refund, same-quote concurrency,
-distinct-quote daily caps, account restrictions, kill switch and spending
-controls, ownership failures, sanitized activity, and ledger reconciliation.
+paid gate, text-to-image, image-to-image, text-to-video, image-to-video, and
+cent/currency/tier/snapshot parity against a separately computed shared web
+estimate. Prepare and confirmation used the production PostgreSQL membership
+and pricing owners rather than fixed test prices. It also verified database-time
+expiry, insufficient funds, signed top-up handoff plus fresh quote, completed
+recovery links, known-rejection refund, ambiguous recovery without premature
+refund, same-quote concurrency, distinct-quote daily caps, account restrictions,
+kill switch and spending controls, sanitized activity, and account-tool balance
+against independent top-up/charge/refund queries.
+
+Quote confirmation and top-up were verified as preparing-client scoped. Status
+and recent recovery were verified as user scoped: another currently authorized
+OAuth client for the same account can recover the completed job, while another
+user cannot confirm, top up, read, or list it. This is local SDK evidence only;
+it does not establish hosted cross-device compatibility.
 
 This does not add or change any Codex or Claude hosted status. All eight
 checked-in publication flags remain `false`. Private `kind: 'asset'` reference

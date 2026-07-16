@@ -13,14 +13,17 @@ import {
   ProviderHarness,
   TOPUP_SECRET,
   addTopup,
-  assertPriceParity,
+  assertPersistedPriceParity,
+  assertOAuthQuoteMutationScope,
+  assertOAuthRecoveryScope,
   assertRecoverySafe,
+  assertWalletParity,
   callConfirmed,
   callPrepared,
+  capturePreparedPriceParity,
   connect,
   createServices,
   errorCode,
-  ledger,
   principal,
   record,
   structured,
@@ -58,7 +61,6 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   t.after(async () => {
     await Promise.allSettled(sessions.map((session) => session.close()));
   });
-
   const registryIdentity = principal('p11-registry');
   const defaults = await sessionFor(registryIdentity, false);
   const enabled = await sessionFor(registryIdentity, true);
@@ -85,11 +87,14 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const publication = JSON.parse(readFileSync('frontend/config/mcp-publication.json', 'utf8')) as Record<string, unknown>;
   assert.equal(Object.keys(publication).length, 8);
   assert.ok(Object.values(publication).every((value) => value === false));
-
   const mediaIdentity = principal('p11-media');
-  await addTopup(postgres.pool, mediaIdentity.userId, 100_000);
+  await addTopup(postgres.pool, mediaIdentity.userId, 1_100_000);
+  await postgres.pool.query(
+    `INSERT INTO app_receipts (user_id, type, amount_cents, currency, description)
+     VALUES ($1, 'charge', 600000, 'USD', 'P11 production-like prior membership spend')`,
+    [mediaIdentity.userId],
+  );
   const media = await sessionFor(mediaIdentity);
-
   const t2iInput = {
     surface: 'image', engineId: 'gpt-image-2', mode: 't2i',
     prompt: 'P11 private text to image prompt',
@@ -99,12 +104,15 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const t2iPrepared = await callPrepared(media.client, t2iInput);
   assert.deepEqual(t2iPrepared.summary, normalizeGenerationRequest(t2iInput));
   const t2iQuoteId = String(t2iPrepared.quoteId);
-  const t2iPrice = await assertPriceParity({
-    pool: postgres.pool, quoteId: t2iQuoteId, input: t2iInput, prepared: t2iPrepared,
+  const t2iPricing = await capturePreparedPriceParity({
+    pool: postgres.pool, userId: mediaIdentity.userId,
+    quoteId: t2iQuoteId, input: t2iInput, prepared: t2iPrepared,
   });
+  assert.equal(t2iPricing.membershipTier, 'plus');
   const t2iConfirmed = await callConfirmed(media.client, t2iQuoteId);
   assert.notEqual(t2iConfirmed.isError, true, JSON.stringify(t2iConfirmed.structuredContent));
   assert.equal(structured(t2iConfirmed).status, 'completed');
+  await assertPersistedPriceParity(postgres.pool, t2iQuoteId, t2iPricing);
   assertRecoverySafe(t2iConfirmed, [t2iInput.prompt, mediaIdentity.clientId]);
   const t2iStatus = await media.client.callTool({
     name: 'get_generation_status', arguments: { jobId: t2iQuoteId },
@@ -120,7 +128,6 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   }) as CallToolResult;
   assert.ok((structured(recentImages).items as unknown[]).some((item) => record(item).jobId === t2iQuoteId));
   assertRecoverySafe(recentImages, [t2iInput.prompt, mediaIdentity.clientId]);
-
   const imageReference = 'https://fixtures.maxvideoai.com/p11/source.png';
   const i2iInput = {
     surface: 'image', engineId: 'gpt-image-2', mode: 'i2i',
@@ -131,18 +138,19 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const i2iPrepared = await callPrepared(media.client, i2iInput);
   assert.deepEqual(i2iPrepared.summary, normalizeGenerationRequest(i2iInput));
   const i2iQuoteId = String(i2iPrepared.quoteId);
-  const i2iPrice = await assertPriceParity({
-    pool: postgres.pool, quoteId: i2iQuoteId, input: i2iInput, prepared: i2iPrepared,
+  const i2iPricing = await capturePreparedPriceParity({
+    pool: postgres.pool, userId: mediaIdentity.userId,
+    quoteId: i2iQuoteId, input: i2iInput, prepared: i2iPrepared,
   });
   const i2iConfirmed = await callConfirmed(media.client, i2iQuoteId);
   assert.equal(structured(i2iConfirmed).status, 'completed');
+  await assertPersistedPriceParity(postgres.pool, i2iQuoteId, i2iPricing);
   const i2iCapture = provider.captures.find((capture) => capture.quoteId === i2iQuoteId);
   assert.deepEqual(i2iCapture?.body.imageUrls, [imageReference]);
   assert.equal(i2iCapture?.body.jobId, i2iQuoteId);
   assert.equal(i2iCapture?.options.walletReservation, 'already_reserved');
   assert.equal(record(i2iCapture?.options.preReservedInitialState).jobId, i2iQuoteId);
   assertRecoverySafe(i2iConfirmed, [i2iInput.prompt, imageReference, mediaIdentity.clientId]);
-
   const t2vInput = {
     surface: 'video', engineId: 'seedance-2-0-mini', mode: 't2v',
     prompt: 'P11 private text to video prompt',
@@ -151,11 +159,13 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   };
   const t2vPrepared = await callPrepared(media.client, t2vInput);
   const t2vQuoteId = String(t2vPrepared.quoteId);
-  const t2vPrice = await assertPriceParity({
-    pool: postgres.pool, quoteId: t2vQuoteId, input: t2vInput, prepared: t2vPrepared,
+  const t2vPricing = await capturePreparedPriceParity({
+    pool: postgres.pool, userId: mediaIdentity.userId,
+    quoteId: t2vQuoteId, input: t2vInput, prepared: t2vPrepared,
   });
   const t2vConfirmed = await callConfirmed(media.client, t2vQuoteId);
   assert.equal(structured(t2vConfirmed).status, 'accepted');
+  await assertPersistedPriceParity(postgres.pool, t2vQuoteId, t2vPricing);
   const t2vCapture = provider.captures.find((capture) => capture.quoteId === t2vQuoteId);
   assert.equal(t2vCapture?.body.jobId, t2vQuoteId);
   assert.equal(t2vCapture?.body.durationSec, 5);
@@ -186,7 +196,6 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.equal(structured(completedVideo).status, 'completed');
   assert.ok(completedVideo.content.some((entry) => entry.type === 'resource_link' && entry.uri === videoUrl));
   assertRecoverySafe(completedVideo, [t2vInput.prompt, `private-provider-${t2vQuoteId}`, mediaIdentity.clientId]);
-
   const firstFrame = 'https://fixtures.maxvideoai.com/p11/first-frame.png';
   const i2vInput = {
     surface: 'video', engineId: 'seedance-2-0-mini', mode: 'i2v',
@@ -196,34 +205,28 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   };
   const i2vPrepared = await callPrepared(media.client, i2vInput);
   const i2vQuoteId = String(i2vPrepared.quoteId);
-  const i2vPrice = await assertPriceParity({
-    pool: postgres.pool, quoteId: i2vQuoteId, input: i2vInput, prepared: i2vPrepared,
+  const i2vPricing = await capturePreparedPriceParity({
+    pool: postgres.pool, userId: mediaIdentity.userId,
+    quoteId: i2vQuoteId, input: i2vInput, prepared: i2vPrepared,
   });
   const i2vConfirmed = await callConfirmed(media.client, i2vQuoteId);
   assert.equal(structured(i2vConfirmed).status, 'accepted');
+  await assertPersistedPriceParity(postgres.pool, i2vQuoteId, i2vPricing);
   const i2vCapture = provider.captures.find((capture) => capture.quoteId === i2vQuoteId);
   assert.equal(i2vCapture?.body.imageUrl, firstFrame);
   assert.equal(i2vCapture?.body.jobId, i2vQuoteId);
   assertRecoverySafe(i2vConfirmed, [i2vInput.prompt, firstFrame, mediaIdentity.clientId]);
 
-  const parityRows = await postgres.pool.query<{
-    job_id: string; charge_cents: number; final_price_cents: number; price_cents: number;
-  }>(`
-    SELECT q.job_id, r.amount_cents AS charge_cents, j.final_price_cents, q.price_cents
-      FROM mcp_generation_quotes q
-      JOIN app_receipts r ON r.job_id = q.job_id AND r.type = 'charge'
-      JOIN app_jobs j ON j.job_id = q.job_id
-     WHERE q.quote_id = ANY($1::uuid[])
-     ORDER BY q.quote_id`, [[t2iQuoteId, i2iQuoteId, t2vQuoteId, i2vQuoteId]]);
-  assert.equal(parityRows.rows.length, 4);
-  assert.ok(parityRows.rows.every((row) => row.charge_cents === row.final_price_cents
-    && row.final_price_cents === row.price_cents));
-  assert.deepEqual(
-    parityRows.rows.map((row) => row.price_cents).sort((a, b) => a - b),
-    [t2iPrice, i2iPrice, t2vPrice, i2vPrice].sort((a, b) => a - b),
-  );
-  await ledger(postgres.pool, mediaIdentity.userId);
-
+  const mediaGenerationCents = [t2iPricing, i2iPricing, t2vPricing, i2vPricing]
+    .reduce((total, pricing) => total + pricing.amountCents, 0);
+  await assertWalletParity({
+    client: media.client, pool: postgres.pool, userId: mediaIdentity.userId,
+    expected: {
+      topups: { amountCents: 1_100_000, count: 1 },
+      charges: { amountCents: 600_000 + mediaGenerationCents, count: 5 },
+      refunds: { amountCents: 0, count: 0 },
+    },
+  });
   const expiredIdentity = principal('p11-expired');
   await addTopup(postgres.pool, expiredIdentity.userId, 10_000);
   const expiryProvider = new ProviderHarness(postgres.pool);
@@ -242,7 +245,6 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
       (SELECT count(*) FROM app_receipts WHERE user_id = $1 AND type = 'charge')::text AS charges,
       (SELECT count(*) FROM app_jobs WHERE user_id = $1)::text AS jobs`, [expiredIdentity.userId]);
   assert.deepEqual(expiredCounts.rows[0], { charges: '0', jobs: '0' });
-
   const topupIdentity = principal('p11-topup');
   const topup = await sessionFor(topupIdentity);
   const poorPrepared = await callPrepared(topup.client, t2iInput);
@@ -271,8 +273,12 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
     },
   );
   assertRecoverySafe(handoff, [t2iInput.prompt, topupIdentity.clientId]);
-  assert.deepEqual(await ledger(postgres.pool, topupIdentity.userId), {
-    topups: '0', charges: '0', refunds: '0', balance: '0',
+  await assertWalletParity({
+    client: topup.client, pool: postgres.pool, userId: topupIdentity.userId,
+    expected: {
+      topups: { amountCents: 0, count: 0 }, charges: { amountCents: 0, count: 0 },
+      refunds: { amountCents: 0, count: 0 },
+    },
   });
   await addTopup(postgres.pool, topupIdentity.userId, 10_000);
   const staleAfterTopup = await callConfirmed(topup.client, poorQuoteId);
@@ -284,7 +290,14 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.equal(structured(fundedConfirmed).status, 'completed');
   assertRecoverySafe(fundedConfirmed, [t2iInput.prompt, topupIdentity.clientId]);
   assert.equal(provider.calls(fundedQuoteId), 1);
-  await ledger(postgres.pool, topupIdentity.userId);
+  await assertWalletParity({
+    client: topup.client, pool: postgres.pool, userId: topupIdentity.userId,
+    expected: {
+      topups: { amountCents: 10_000, count: 1 },
+      charges: { amountCents: Number(record(fundedPrepared.price).amountCents), count: 1 },
+      refunds: { amountCents: 0, count: 0 },
+    },
+  });
 
   const rejectionIdentity = principal('p11-rejection');
   await addTopup(postgres.pool, rejectionIdentity.userId, 10_000);
@@ -296,9 +309,15 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   assert.equal(structured(rejected).status, 'failed');
   assert.equal(structured(rejected).paymentStatus, 'refunded_wallet');
   assertRecoverySafe(rejected, [t2vInput.prompt, rejectionIdentity.clientId]);
-  const rejectedLedger = await ledger(postgres.pool, rejectionIdentity.userId);
-  assert.equal(rejectedLedger.charges, String(record(rejectedPrepared.price).amountCents));
-  assert.equal(rejectedLedger.refunds, rejectedLedger.charges);
+  const rejectedCents = Number(record(rejectedPrepared.price).amountCents);
+  await assertWalletParity({
+    client: rejection.client, pool: postgres.pool, userId: rejectionIdentity.userId,
+    expected: {
+      topups: { amountCents: 10_000, count: 1 },
+      charges: { amountCents: rejectedCents, count: 1 },
+      refunds: { amountCents: rejectedCents, count: 1 },
+    },
+  });
   const rejectedCounts = await postgres.pool.query<{ charges: string; refunds: string }>(`
     SELECT
       count(*) FILTER (WHERE type = 'charge')::text AS charges,
@@ -315,8 +334,14 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const ambiguousResult = await callConfirmed(ambiguous.client, ambiguousQuoteId);
   assert.equal(structured(ambiguousResult).status, 'accepted');
   assertRecoverySafe(ambiguousResult, [t2vInput.prompt, ambiguousIdentity.clientId]);
-  const ambiguousLedger = await ledger(postgres.pool, ambiguousIdentity.userId);
-  assert.equal(ambiguousLedger.refunds, '0');
+  await assertWalletParity({
+    client: ambiguous.client, pool: postgres.pool, userId: ambiguousIdentity.userId,
+    expected: {
+      topups: { amountCents: 10_000, count: 1 },
+      charges: { amountCents: Number(record(ambiguousPrepared.price).amountCents), count: 1 },
+      refunds: { amountCents: 0, count: 0 },
+    },
+  });
   const ambiguousState = await postgres.pool.query<{ state: string }>(
     'SELECT state FROM mcp_generation_quotes WHERE quote_id = $1', [ambiguousQuoteId],
   );
@@ -343,6 +368,14 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
       (SELECT count(*) FROM app_receipts WHERE job_id = $1 AND type = 'charge')::text AS charges,
       (SELECT count(*) FROM app_jobs WHERE job_id = $1)::text AS jobs`, [raceQuoteId]);
   assert.deepEqual(raceCounts.rows[0], { charges: '1', jobs: '1' });
+  await assertWalletParity({
+    client: race.client, pool: postgres.pool, userId: raceIdentity.userId,
+    expected: {
+      topups: { amountCents: 10_000, count: 1 },
+      charges: { amountCents: Number(record(racePrepared.price).amountCents), count: 1 },
+      refunds: { amountCents: 0, count: 0 },
+    },
+  });
 
   const capIdentity = principal('p11-daily-cap-race');
   await addTopup(postgres.pool, capIdentity.userId, 100_000);
@@ -386,6 +419,16 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   );
   assert.equal(capLedger.rows[0]?.charges, '1');
   assert.equal(provider.calls(capA) + provider.calls(capB), 1);
+  const capSuccessIndex = capResults.findIndex((result) => result.isError !== true);
+  const capChargedCents = Number(record([capPreparedA, capPreparedB][capSuccessIndex].price).amountCents);
+  await assertWalletParity({
+    client: cap.client, pool: postgres.pool, userId: capIdentity.userId,
+    expected: {
+      topups: { amountCents: 100_000, count: 1 },
+      charges: { amountCents: capChargedCents, count: 1 },
+      refunds: { amountCents: 0, count: 0 },
+    },
+  });
   for (const result of capResults) {
     assertRecoverySafe(result, [t2iInput.prompt, t2vInput.prompt, capIdentity.clientId]);
   }
@@ -441,27 +484,16 @@ test('paid facade completes deterministic SDK, PostgreSQL, pricing, recovery, co
   const wrongUserIdentity = principal('p11-intruder', 'p11-intruder-client');
   const wrongUser = await sessionFor(wrongUserIdentity);
   const wrongClient = await sessionFor(principal(ownerIdentity.userId, 'p11-other-client'));
-  for (const attacker of [wrongUser.client, wrongClient.client]) {
-    const wrongConfirm = await callConfirmed(attacker, ownedQuoteId);
-    assert.equal(errorCode(wrongConfirm), 'QUOTE_EXPIRED');
-    const wrongTopup = await attacker.callTool({
-      name: 'create_topup_link', arguments: { quoteId: ownedQuoteId },
-    }) as CallToolResult;
-    assert.equal(errorCode(wrongTopup), 'QUOTE_EXPIRED');
-    assertRecoverySafe(wrongConfirm, [i2iInput.prompt, imageReference, ownerIdentity.clientId]);
-    assertRecoverySafe(wrongTopup, [i2iInput.prompt, imageReference, ownerIdentity.clientId]);
-  }
+  const ownershipSecrets = [i2iInput.prompt, imageReference, ownerIdentity.clientId];
+  await assertOAuthQuoteMutationScope({
+    sameUserOtherClient: wrongClient.client, wrongUser: wrongUser.client,
+    quoteId: ownedQuoteId, forbidden: ownershipSecrets,
+  });
   const ownedConfirmed = await callConfirmed(owner.client, ownedQuoteId);
   assert.equal(structured(ownedConfirmed).status, 'completed');
-  assertRecoverySafe(ownedConfirmed, [i2iInput.prompt, imageReference, ownerIdentity.clientId]);
-  const wrongStatus = await wrongUser.client.callTool({
-    name: 'get_generation_status', arguments: { jobId: ownedQuoteId },
-  }) as CallToolResult;
-  assert.equal(errorCode(wrongStatus), 'JOB_FAILED');
-  const wrongRecent = await wrongUser.client.callTool({
-    name: 'list_recent_generations', arguments: { limit: 20 },
-  }) as CallToolResult;
-  assert.deepEqual(structured(wrongRecent).items, []);
-  assertRecoverySafe(wrongStatus, [i2iInput.prompt, imageReference, ownerIdentity.clientId]);
-  assertRecoverySafe(wrongRecent, [i2iInput.prompt, imageReference, ownerIdentity.clientId]);
+  assertRecoverySafe(ownedConfirmed, ownershipSecrets);
+  await assertOAuthRecoveryScope({
+    sameUserOtherClient: wrongClient.client, wrongUser: wrongUser.client,
+    jobId: ownedQuoteId, forbidden: ownershipSecrets,
+  });
 });
