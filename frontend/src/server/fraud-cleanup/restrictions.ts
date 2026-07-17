@@ -1,6 +1,27 @@
 import { query, type QueryExecutor } from '@/lib/db';
 import { RESTRICTED_ACCOUNT_MESSAGE } from './constants';
 
+type AccountRestriction = {
+  userId: string;
+  reason: string;
+  message: string;
+  restrictedAt: string;
+};
+
+type RestrictionRow = {
+  user_id: unknown;
+  reason: unknown;
+  message: unknown;
+  restricted_at: unknown;
+};
+
+export type StrictAccountRestrictionDependencies = {
+  databaseUrl: string | undefined;
+  executor: QueryExecutor;
+};
+
+const defaultStrictExecutor: QueryExecutor = { query };
+
 function normalizedRestrictionTimestamp(value: unknown): string | null {
   const parsed = value instanceof Date
     ? value
@@ -10,12 +31,7 @@ function normalizedRestrictionTimestamp(value: unknown): string | null {
   return parsed && Number.isFinite(parsed.getTime()) ? parsed.toISOString() : null;
 }
 
-export async function getActiveAccountRestriction(userId: string): Promise<{
-  userId: string;
-  reason: string;
-  message: string;
-  restrictedAt: string;
-} | null> {
+export async function getActiveAccountRestriction(userId: string): Promise<AccountRestriction | null> {
   if (!process.env.DATABASE_URL || !userId) return null;
 
   try {
@@ -51,6 +67,48 @@ export async function getActiveAccountRestriction(userId: string): Promise<{
     }
     return null;
   }
+}
+
+export async function getActiveAccountRestrictionStrict(
+  userId: string,
+  dependencies: Partial<StrictAccountRestrictionDependencies> = {},
+): Promise<AccountRestriction | null> {
+  const databaseUrl = Object.hasOwn(dependencies, 'databaseUrl')
+    ? dependencies.databaseUrl
+    : process.env.DATABASE_URL;
+  if (!databaseUrl) throw new Error('Database unavailable.');
+  if (!userId || userId !== userId.trim()) {
+    throw new Error('Invalid restricted account lookup.');
+  }
+
+  const rows = await (dependencies.executor ?? defaultStrictExecutor).query<RestrictionRow>(
+    `SELECT user_id, reason, message, restricted_at
+       FROM user_account_restrictions
+      WHERE user_id = $1
+        AND active IS TRUE
+      LIMIT 1`,
+    [userId],
+  );
+  if (!Array.isArray(rows) || rows.length > 1) {
+    throw new Error('Invalid restricted account result.');
+  }
+  const row = rows[0];
+  if (!row) return null;
+  const restrictedAt = normalizedRestrictionTimestamp(row.restricted_at);
+  if (
+    row.user_id !== userId
+    || typeof row.reason !== 'string'
+    || (row.message !== null && typeof row.message !== 'string')
+    || !restrictedAt
+  ) {
+    throw new Error('Invalid restricted account result.');
+  }
+  return {
+    userId: row.user_id,
+    reason: row.reason,
+    message: row.message ?? RESTRICTED_ACCOUNT_MESSAGE,
+    restrictedAt,
+  };
 }
 
 export async function getActiveAccountRestrictionInExecutor(

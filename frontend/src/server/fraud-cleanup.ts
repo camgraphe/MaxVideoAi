@@ -5,9 +5,8 @@ import { planFraudTopupActions } from './fraud-cleanup/plan';
 import type { FraudCleanupPlan, RunFraudCleanupParams } from './fraud-cleanup/types';
 
 export { RESTRICTED_ACCOUNT_MESSAGE } from './fraud-cleanup/constants';
+export { buildRestrictedAccountPayload, getActiveAccountRestriction } from './fraud-cleanup/restrictions';
 export {
-  buildRestrictedAccountPayload,
-  getActiveAccountRestriction,
   getActiveAccountRestrictionInExecutor,
 } from './fraud-cleanup/restrictions';
 export { ensureFraudCleanupSchema } from './fraud-cleanup/schema';

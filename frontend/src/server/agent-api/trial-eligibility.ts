@@ -1,6 +1,5 @@
 import { FEATURES } from '@/content/feature-flags';
-import { ENV } from '@/lib/env';
-import { getActiveAccountRestriction } from '@/server/fraud-cleanup';
+import { getActiveAccountRestrictionStrict } from '@/server/fraud-cleanup/restrictions';
 
 import {
   listPublicAgentGenerationEngines,
@@ -18,7 +17,7 @@ import {
 } from './trial-preset';
 import type { TrialPresetSummary, TrialStatus } from './types';
 
-type AccountRestriction = Awaited<ReturnType<typeof getActiveAccountRestriction>>;
+type AccountRestriction = Awaited<ReturnType<typeof getActiveAccountRestrictionStrict>>;
 
 export type TrialEligibilityDependencies = {
   featureEnabled: boolean;
@@ -45,15 +44,21 @@ const SERVICE_UNAVAILABLE = Object.freeze({
   reason: 'service_unavailable',
 } as const);
 
-const defaultDependencies: TrialEligibilityDependencies = {
+const defaultDependencies: Omit<TrialEligibilityDependencies, 'environmentEnabled'> = {
   featureEnabled: FEATURES.mcp.trial as boolean,
-  environmentEnabled: ENV.MCP_TRIAL_ENABLED,
   verificationUrl: DEFAULT_VERIFICATION_URL,
-  getAccountRestriction: getActiveAccountRestriction,
+  getAccountRestriction: getActiveAccountRestrictionStrict,
   getEntitlement: getTrialStatus,
   listPublicEngines: () => listPublicAgentGenerationEngines(),
   assertPresetSupported: assertTrialPresetSupported,
 };
+
+export function isTrialEligibilityEnabled(
+  featureEnabled: boolean,
+  rawEnvironmentValue: string | undefined,
+): boolean {
+  return featureEnabled === true && rawEnvironmentValue === 'true';
+}
 
 function availableStatus(candidate: AgentPublicGenerationEngine): TrialStatus {
   const preset: TrialPresetSummary = Object.freeze({
@@ -81,11 +86,15 @@ export async function getTrialEligibility(
   principal: AgentPrincipal,
   overrides: Partial<TrialEligibilityDependencies> = {},
 ): Promise<TrialStatus> {
-  const dependencies = { ...defaultDependencies, ...overrides };
-  if (
-    dependencies.featureEnabled !== true
-    || dependencies.environmentEnabled !== 'true'
-  ) {
+  const dependencies: TrialEligibilityDependencies = {
+    ...defaultDependencies,
+    environmentEnabled: process.env.MCP_TRIAL_ENABLED,
+    ...overrides,
+  };
+  if (!isTrialEligibilityEnabled(
+    dependencies.featureEnabled,
+    dependencies.environmentEnabled,
+  )) {
     return DISABLED;
   }
 

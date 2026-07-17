@@ -11,6 +11,7 @@ import type {
 } from '../frontend/src/server/agent-api/trial-entitlement-repository';
 import {
   getTrialEligibility,
+  isTrialEligibilityEnabled,
   type TrialEligibilityDependencies,
 } from '../frontend/src/server/agent-api/trial-eligibility';
 import {
@@ -107,6 +108,75 @@ test('the direct eligibility gate fails closed without touching protected depend
     );
     assert.deepEqual(status, { status: 'disabled' });
     assert.deepEqual(calls, []);
+  }
+});
+
+test('the server trial predicate accepts only the exact raw true value', () => {
+  assert.equal(isTrialEligibilityEnabled(true, 'true'), true);
+  for (const raw of [undefined, '', ' true ', 'TRUE', 'True', '1', 'false']) {
+    assert.equal(isTrialEligibilityEnabled(true, raw), false);
+  }
+  assert.equal(isTrialEligibilityEnabled(false, 'true'), false);
+});
+
+test('eligibility reads the raw production environment value without trimming', async () => {
+  const previous = process.env.MCP_TRIAL_ENABLED;
+  try {
+    for (const raw of [undefined, '', ' true ', 'TRUE', 'true'] as const) {
+      if (raw === undefined) delete process.env.MCP_TRIAL_ENABLED;
+      else process.env.MCP_TRIAL_ENABLED = raw;
+      const calls: string[] = [];
+      const dependencies = await enabledDependencies({
+        featureEnabled: true,
+        async getAccountRestriction() {
+          calls.push('restriction');
+          return null;
+        },
+      });
+      delete (dependencies as Partial<TrialEligibilityDependencies>).environmentEnabled;
+
+      const status = await getTrialEligibility(principal('raw-env-user', true), dependencies);
+      assert.equal(status.status, raw === 'true' ? 'available' : 'disabled');
+      assert.deepEqual(calls, raw === 'true' ? ['restriction'] : []);
+    }
+  } finally {
+    if (previous === undefined) delete process.env.MCP_TRIAL_ENABLED;
+    else process.env.MCP_TRIAL_ENABLED = previous;
+  }
+});
+
+test('the real default restriction boundary fails closed when DATABASE_URL is absent', async () => {
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  const previousTrialEnabled = process.env.MCP_TRIAL_ENABLED;
+  const calls: string[] = [];
+  try {
+    delete process.env.DATABASE_URL;
+    process.env.MCP_TRIAL_ENABLED = 'true';
+    const dependencies = await enabledDependencies({
+      featureEnabled: true,
+      async getEntitlement() {
+        calls.push('entitlement');
+        return null;
+      },
+      async listPublicEngines() {
+        calls.push('catalog');
+        return [];
+      },
+    });
+    delete (dependencies as Partial<TrialEligibilityDependencies>).environmentEnabled;
+    delete (dependencies as Partial<TrialEligibilityDependencies>).getAccountRestriction;
+
+    const status = await getTrialEligibility(principal('no-database-user', true), dependencies);
+    assert.deepEqual(status, {
+      status: 'temporarily_unavailable',
+      reason: 'service_unavailable',
+    });
+    assert.deepEqual(calls, []);
+  } finally {
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    if (previousTrialEnabled === undefined) delete process.env.MCP_TRIAL_ENABLED;
+    else process.env.MCP_TRIAL_ENABLED = previousTrialEnabled;
   }
 });
 
