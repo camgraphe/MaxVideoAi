@@ -56,6 +56,9 @@ test('entitlement repository validates exact plain inputs and parses only valid 
     'frontend/src/server/agent-api/trial-entitlement-repository.ts', 'utf8',
   ));
   assert.match(source, /TransitionDependencies[\s\S]*TransactionQueryExecutor/);
+  assert.match(source, /WeakMap/);
+  assert.match(source, /txid_current\(\)/i);
+  assert.match(source, /Object\.freeze/);
   assert.doesNotMatch(source, /withDbTransaction|new Date\(\).*reserved_at|NOW\(\)/i);
 });
 
@@ -64,13 +67,12 @@ test('lock and reservation transitions require branded transaction executors and
     '../frontend/src/server/agent-api/trial-entitlement-repository'
   );
   const calls: Call[] = [];
-  let phase = 0;
   const executor: QueryExecutor = {
     async query<T>(sql, params) {
       calls.push({ sql, params });
-      phase += 1;
-      if (phase === 1) return [] as T[];
-      if (phase === 2) return [row()] as T[];
+      if (/^\s*INSERT INTO/i.test(sql)) return [] as T[];
+      if (/FOR UPDATE/i.test(sql)) return [row()] as T[];
+      if (/txid_current\(\)/i.test(sql)) return [{ xid: '42' }] as T[];
       return [row({
         status: 'reserved', reserved_quote_id: quoteA, job_id: 'job-a',
         reserved_at: '2026-07-17T10:01:00.123456Z',
@@ -80,18 +82,21 @@ test('lock and reservation transitions require branded transaction executors and
   };
   const tx = executor as TransactionQueryExecutor;
   const locked = await lockReservableEntitlement({ userId: 'user-1' }, { executor: tx });
-  assert.equal(locked?.status, 'available');
   assert.ok(locked);
+  assert.equal(Object.isFrozen(locked), true);
+  assert.deepEqual(Object.keys(locked), []);
   const reserved = await reserveEntitlement(
     { lockedEntitlement: locked, quoteId: quoteA, jobId: 'job-a', reasonCode: 'trial_reserved' },
     { executor: tx },
   );
   assert.equal(reserved?.status, 'reserved');
   assert.match(calls[1]!.sql, /FOR UPDATE/i);
-  assert.match(calls[2]!.sql, /clock_timestamp\(\)/i);
-  assert.match(calls[2]!.sql, /status = \$5/i);
-  assert.match(calls[2]!.sql, /reserved_quote_id IS NOT DISTINCT FROM \$6/i);
-  assert.deepEqual(calls[2]!.params?.slice(0, 6), [
+  assert.match(calls[2]!.sql, /txid_current\(\)/i);
+  assert.match(calls[3]!.sql, /txid_current\(\)/i);
+  assert.match(calls[4]!.sql, /clock_timestamp\(\)/i);
+  assert.match(calls[4]!.sql, /status = \$5/i);
+  assert.match(calls[4]!.sql, /reserved_quote_id IS NOT DISTINCT FROM \$6/i);
+  assert.deepEqual(calls[4]!.params?.slice(0, 6), [
     'user-1', quoteA, 'job-a', 'trial_reserved', 'available', null,
   ]);
 
@@ -102,6 +107,55 @@ test('lock and reservation transitions require branded transaction executors and
     { lockedEntitlement: locked, quoteId: quoteA, jobId: 'job-a', reasonCode: 'ok', reservedAt: created },
     { userId: 'user-1', quoteId: quoteA, jobId: 'job-a', reasonCode: 'ok' },
   ]) await assert.rejects(reserveEntitlement(bad as never, { executor: tx }), /invalid entitlement transition input/i);
+});
+
+test('reservation lock capabilities reject forgery, copies, executor swaps, and reuse before update', async () => {
+  const { lockReservableEntitlement, reserveEntitlement } = await import(
+    '../frontend/src/server/agent-api/trial-entitlement-repository'
+  );
+  const calls: Call[] = [];
+  const executor: QueryExecutor = {
+    async query<T>(sql, params) {
+      calls.push({ sql, params });
+      if (/^\s*INSERT INTO/i.test(sql)) return [] as T[];
+      if (/FOR UPDATE/i.test(sql)) return [row()] as T[];
+      if (/txid_current\(\)/i.test(sql)) return [{ xid: '77' }] as T[];
+      return [row({
+        status: 'reserved', reserved_quote_id: quoteA, job_id: 'job-a',
+        reserved_at: '2026-07-17T10:01:00Z', updated_at: '2026-07-17T10:01:00Z',
+        last_reason_code: 'trial_reserved',
+      })] as T[];
+    },
+  };
+  const tx = executor as TransactionQueryExecutor;
+  const locked = await lockReservableEntitlement({ userId: 'user-1' }, { executor: tx });
+  assert.ok(locked);
+  const input = {
+    lockedEntitlement: locked, quoteId: quoteA, jobId: 'job-a', reasonCode: 'trial_reserved',
+  };
+  const queriesBeforeForgery = calls.length;
+  for (const invalidHandle of [Object.freeze({}), { ...locked }]) {
+    await assert.rejects(
+      reserveEntitlement({ ...input, lockedEntitlement: invalidHandle } as never, { executor: tx }),
+      /invalid locked entitlement capability/i,
+    );
+  }
+  assert.equal(calls.length, queriesBeforeForgery);
+
+  let otherExecutorCalls = 0;
+  const otherExecutor = {
+    async query<T>() { otherExecutorCalls += 1; return [] as T[]; },
+  } as TransactionQueryExecutor;
+  await assert.rejects(
+    reserveEntitlement(input, { executor: otherExecutor }),
+    /different transaction executor/i,
+  );
+  assert.equal(otherExecutorCalls, 0);
+
+  assert.equal((await reserveEntitlement(input, { executor: tx }))?.status, 'reserved');
+  const queriesAfterReservation = calls.length;
+  await assert.rejects(reserveEntitlement(input, { executor: tx }), /already used/i);
+  assert.equal(calls.length, queriesAfterReservation);
 });
 
 test('consume and release compare the expected reservation and return exact terminal callbacks idempotently', async () => {
@@ -145,13 +199,12 @@ test('released entitlements are reservable with a replacement quote/job pair', a
     reserved_at: '2026-07-17T10:01:00Z', released_at: '2026-07-17T10:02:00Z',
     updated_at: '2026-07-17T10:02:00Z', last_reason_code: 'provider_failed',
   });
-  let phase = 0;
   const executor: QueryExecutor = {
     async query<T>(sql, params) {
       calls.push({ sql, params });
-      phase += 1;
-      if (phase === 1) return [] as T[];
-      if (phase === 2) return [released] as T[];
+      if (/^\s*INSERT INTO/i.test(sql)) return [] as T[];
+      if (/FOR UPDATE/i.test(sql)) return [released] as T[];
+      if (/txid_current\(\)/i.test(sql)) return [{ xid: '88' }] as T[];
       return [row({
         status: 'reserved', reserved_quote_id: quoteB, job_id: 'job-b',
         reserved_at: '2026-07-17T10:03:00Z', updated_at: '2026-07-17T10:03:00Z',
@@ -161,11 +214,10 @@ test('released entitlements are reservable with a replacement quote/job pair', a
   };
   const tx = executor as TransactionQueryExecutor;
   const locked = await lockReservableEntitlement({ userId: 'user-1' }, { executor: tx });
-  assert.equal(locked?.status, 'released');
   assert.ok(locked);
   assert.equal((await reserveEntitlement({
     lockedEntitlement: locked, quoteId: quoteB, jobId: 'job-b', reasonCode: 'trial_retried',
   }, { executor: tx }))?.jobId, 'job-b');
-  assert.match(calls[2]!.sql, /consumed_at = NULL/i);
-  assert.match(calls[2]!.sql, /released_at = NULL/i);
+  assert.match(calls[4]!.sql, /consumed_at = NULL/i);
+  assert.match(calls[4]!.sql, /released_at = NULL/i);
 });

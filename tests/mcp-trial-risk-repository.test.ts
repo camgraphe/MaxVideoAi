@@ -29,7 +29,9 @@ test('risk event persistence accepts only the exact safe DTO and parameterizes f
   assert.deepEqual(calls[0]!.params, ['user-1', 'client-1', fingerprint, 'allowed', 'eligible']);
   assert.doesNotMatch(JSON.stringify(saved), /user-1|client-1|eligible|a{64}/i);
 
-  for (const extra of ['ip', 'userAgent', 'prompt', 'email', 'token', 'referenceUrl', 'metadata']) {
+  for (const extra of [
+    'id', 'createdAt', 'ip', 'userAgent', 'prompt', 'email', 'token', 'referenceUrl', 'metadata',
+  ]) {
     await assert.rejects(recordTrialRiskEvent({
       userId: 'user-1', oauthClientId: null, riskFingerprintHash: fingerprint,
       outcome: 'allowed', reasonCode: 'eligible', [extra]: 'private',

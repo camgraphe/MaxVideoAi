@@ -179,7 +179,7 @@ CREATE TRIGGER mcp_trial_entitlements_enforce_update
   EXECUTE FUNCTION enforce_mcp_trial_entitlement_update();
 
 CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
-  id BIGSERIAL PRIMARY KEY,
+  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id TEXT NOT NULL,
   oauth_client_id TEXT,
   risk_fingerprint_hash TEXT NOT NULL,
@@ -210,6 +210,23 @@ CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
   )
 );
 
+CREATE OR REPLACE FUNCTION enforce_mcp_trial_risk_event_insert()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  NEW.created_at := clock_timestamp();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_trial_risk_events_enforce_insert ON mcp_trial_risk_events;
+CREATE TRIGGER mcp_trial_risk_events_enforce_insert
+  BEFORE INSERT ON mcp_trial_risk_events
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_mcp_trial_risk_event_insert();
+
 CREATE INDEX IF NOT EXISTS mcp_trial_risk_events_user_window_idx
   ON mcp_trial_risk_events (user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS mcp_trial_risk_events_client_window_idx
@@ -222,14 +239,25 @@ CREATE INDEX IF NOT EXISTS mcp_trial_risk_events_cleanup_idx
 CREATE OR REPLACE FUNCTION enforce_mcp_trial_risk_event_immutability()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SET search_path = pg_catalog, public
 AS $$
+DECLARE
+  cleanup_owner NAME;
 BEGIN
-  IF TG_OP = 'DELETE'
-    AND current_setting('maxvideoai.mcp_trial_risk_cleanup', TRUE) = 'active'
-  THEN
-    RETURN OLD;
+  IF TG_OP = 'UPDATE' THEN
+    RAISE EXCEPTION 'MCP trial risk events are immutable';
   END IF;
-  RAISE EXCEPTION 'MCP trial risk events are immutable';
+
+  SELECT pg_catalog.pg_get_userbyid(cleanup_function.proowner)
+    INTO cleanup_owner
+    FROM pg_catalog.pg_proc AS cleanup_function
+   WHERE cleanup_function.oid =
+     'public.cleanup_mcp_trial_risk_events(timestamp with time zone,integer)'::pg_catalog.regprocedure;
+
+  IF cleanup_owner IS NULL OR current_user <> cleanup_owner THEN
+    RAISE EXCEPTION 'MCP trial risk events may only be deleted by the cleanup function owner';
+  END IF;
+  RETURN OLD;
 END;
 $$;
 
@@ -255,7 +283,6 @@ BEGIN
     RAISE EXCEPTION 'Invalid MCP trial risk cleanup boundary';
   END IF;
 
-  PERFORM set_config('maxvideoai.mcp_trial_risk_cleanup', 'active', TRUE);
   WITH cleanup_batch AS (
     SELECT id
       FROM public.mcp_trial_risk_events
@@ -267,10 +294,11 @@ BEGIN
    USING cleanup_batch
    WHERE event.id = cleanup_batch.id;
   GET DIAGNOSTICS deleted_count = ROW_COUNT;
-  PERFORM set_config('maxvideoai.mcp_trial_risk_cleanup', '', TRUE);
   RETURN deleted_count;
-EXCEPTION WHEN OTHERS THEN
-  PERFORM set_config('maxvideoai.mcp_trial_risk_cleanup', '', TRUE);
-  RAISE;
 END;
 $$;
+
+REVOKE ALL PRIVILEGES ON FUNCTION cleanup_mcp_trial_risk_events(TIMESTAMPTZ, INTEGER)
+  FROM PUBLIC;
+
+-- Deployment must GRANT EXECUTE explicitly to the approved maintenance/runtime role.

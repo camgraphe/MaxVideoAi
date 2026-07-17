@@ -26,7 +26,16 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /requires migration 30[\s\S]*mcp_generation_quotes/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_entitlements/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_risk_events/i);
+  assert.match(source, /id\s+BIGINT\s+GENERATED ALWAYS AS IDENTITY\s+PRIMARY KEY/i);
+  assert.match(source, /BEFORE INSERT ON mcp_trial_risk_events[\s\S]*enforce_mcp_trial_risk_event_insert/i);
+  assert.match(source, /NEW\.created_at\s*:=\s*clock_timestamp\(\)/i);
   assert.match(source, /cleanup_mcp_trial_risk_events[\s\S]*ORDER BY created_at, id[\s\S]*LIMIT p_limit/i);
+  assert.match(source, /SECURITY DEFINER[\s\S]*SET search_path = pg_catalog, public/i);
+  assert.match(source, /REVOKE ALL(?: PRIVILEGES)? ON FUNCTION cleanup_mcp_trial_risk_events[\s\S]*FROM PUBLIC/i);
+  assert.match(source, /pg_catalog\.pg_proc/i);
+  assert.match(source, /\.proowner/i);
+  assert.match(source, /::pg_catalog\.regprocedure/i);
+  assert.doesNotMatch(source, /current_setting|set_config/i);
   assert.match(runtime, /paid\/trial\/reference durable tables are migration-owned/i);
   assert.doesNotMatch(runtime, /mcp_trial_entitlements|mcp_trial_risk_events/i);
 
@@ -153,12 +162,57 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   `);
   assert.equal(risk.status, 0, output(risk));
   assert.equal(risk.stdout.trim(), 'allowed');
-  for (const sql of [
-    `UPDATE mcp_trial_risk_events SET outcome = 'blocked'`,
-    `DELETE FROM mcp_trial_risk_events`,
-  ]) {
-    assert.notEqual(psql('-v', 'ON_ERROR_STOP=1', '-c', sql).status, 0);
-  }
+
+  const explicitRiskId = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    INSERT INTO mcp_trial_risk_events (
+      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
+    ) VALUES (999, 'trial-a', NULL, repeat('d',64), 'error', 'explicit_id');
+  `);
+  assert.notEqual(explicitRiskId.status, 0, 'risk event identity must be database-owned');
+  const forcedRiskTime = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    INSERT INTO mcp_trial_risk_events (
+      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, created_at
+    ) VALUES (
+      'trial-a', NULL, repeat('e',64), 'error', 'backdated_input', '2000-01-01T00:00:00Z'
+    )
+    RETURNING created_at > clock_timestamp() - INTERVAL '5 seconds';
+  `);
+  assert.equal(forcedRiskTime.status, 0, output(forcedRiskTime));
+  assert.equal(forcedRiskTime.stdout.trim().split('\n')[0], 't');
+  assert.notEqual(
+    psql('-v', 'ON_ERROR_STOP=1', '-c', `UPDATE mcp_trial_risk_events SET outcome = 'blocked'`).status,
+    0,
+  );
+
+  const runtimeRole = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    CREATE ROLE mcp_trial_runtime NOLOGIN;
+    GRANT USAGE ON SCHEMA public TO mcp_trial_runtime;
+    GRANT SELECT, DELETE ON mcp_trial_risk_events TO mcp_trial_runtime;
+  `);
+  assert.equal(runtimeRole.status, 0, output(runtimeRole));
+  const publicExecute = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT has_function_privilege(
+      'mcp_trial_runtime',
+      'public.cleanup_mcp_trial_risk_events(timestamp with time zone,integer)',
+      'EXECUTE'
+    )
+  `);
+  assert.equal(publicExecute.status, 0, output(publicExecute));
+  assert.equal(publicExecute.stdout.trim(), 'f');
+
+  const forgedCleanup = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    BEGIN;
+    SET ROLE mcp_trial_runtime;
+    SELECT set_config('maxvideoai.mcp_trial_risk_cleanup', 'active', TRUE);
+    DELETE FROM mcp_trial_risk_events;
+    ROLLBACK;
+  `);
+  assert.notEqual(forgedCleanup.status, 0, 'a runtime role must not forge cleanup authority');
+  const unauthorizedCleanup = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    SET ROLE mcp_trial_runtime;
+    SELECT cleanup_mcp_trial_risk_events(clock_timestamp(), 10);
+  `);
+  assert.notEqual(unauthorizedCleanup.status, 0, 'PUBLIC must not execute risk cleanup');
 
   const indexes = psql('-At', '-F', ',', '-c', `
     SELECT indexname FROM pg_indexes
@@ -210,6 +264,33 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
     `SELECT count(*)::text AS count FROM mcp_trial_entitlements WHERE user_id = 'repository-race-user'`,
   );
   assert.equal(repositoryCount.rows[0]?.count, '1');
+
+  const staleQuote = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    ${quote('00000000-0000-4000-8000-000000000107', 'repository-stale-user')};
+  `);
+  assert.equal(staleQuote.status, 0, output(staleQuote));
+  await ensureEntitlement({ userId: 'repository-stale-user' }, { executor: executorA });
+  const staleExecutor = executorA as import('../frontend/src/lib/db').TransactionQueryExecutor;
+  await clientA.query('BEGIN');
+  const staleHandle = await lockReservableEntitlement(
+    { userId: 'repository-stale-user' }, { executor: staleExecutor },
+  );
+  assert.ok(staleHandle);
+  await clientA.query('COMMIT');
+  await clientA.query('BEGIN');
+  try {
+    await assert.rejects(reserveEntitlement({
+      lockedEntitlement: staleHandle,
+      quoteId: '00000000-0000-4000-8000-000000000107',
+      jobId: 'repository-stale-job', reasonCode: 'trial_reserved',
+    }, { executor: staleExecutor }), /transaction.*changed|stale.*transaction/i);
+  } finally {
+    await clientA.query('ROLLBACK');
+  }
+  const staleState = await clientA.query(
+    `SELECT status FROM mcp_trial_entitlements WHERE user_id = 'repository-stale-user'`,
+  );
+  assert.equal(staleState.rows[0]?.status, 'available');
 
   const raceQuotes = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     ${quote('00000000-0000-4000-8000-000000000103', 'repository-race-user')};
@@ -306,7 +387,6 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
     const locked = await lockReservableEntitlement(
       { userId: 'repository-retry-user' }, { executor: terminalExecutor },
     );
-    assert.equal(locked?.status, 'released');
     assert.ok(locked);
     const retried = await reserveEntitlement({
       lockedEntitlement: locked,
@@ -331,5 +411,5 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   }, { executor: executorA }), 1);
   assert.equal(await cleanupTrialRiskEvents({
     cutoff: new Date('2030-01-01T00:00:00Z'), limit: 100,
-  }, { executor: executorA }), 2);
+  }, { executor: executorA }), 3);
 });

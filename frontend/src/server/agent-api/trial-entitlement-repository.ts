@@ -17,9 +17,9 @@ export type TrialEntitlement = {
 
 declare const lockedReservableEntitlementBrand: unique symbol;
 
-export type LockedReservableEntitlement = TrialEntitlement & {
+export type LockedReservableEntitlement = Readonly<{
   readonly [lockedReservableEntitlementBrand]: 'locked-reservable-entitlement';
-};
+}>;
 
 export type TrialEntitlementUserInput = { userId: string };
 export type TrialEntitlementTransitionInput = TrialEntitlementUserInput & {
@@ -49,21 +49,26 @@ type EntitlementRow = {
   updated_at: unknown;
   last_reason_code: unknown;
 };
+type TransactionIdRow = { xid: unknown };
+type LockCapability = {
+  executor: TransactionQueryExecutor;
+  xid: string;
+  used: boolean;
+};
 
 const defaultDependencies: RepositoryDependencies = { executor: { query } };
 const USER_KEYS = new Set(['userId']);
 const TRANSITION_KEYS = new Set(['userId', 'quoteId', 'jobId', 'reasonCode']);
 const RESERVE_KEYS = new Set(['lockedEntitlement', 'quoteId', 'jobId', 'reasonCode']);
-const ENTITLEMENT_DTO_KEYS = new Set([
-  'userId', 'status', 'reservedQuoteId', 'jobId', 'reservedAt', 'consumedAt',
-  'releasedAt', 'createdAt', 'updatedAt', 'lastReasonCode',
-]);
 const STATUSES = new Set<TrialEntitlementStatus>([
   'available', 'reserved', 'consumed', 'released',
 ]);
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
 const REASON_PATTERN = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/u;
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@|+-]*$/u;
+const TRANSACTION_ID_PATTERN = /^\d+$/u;
+const lockCapabilities = new WeakMap<LockedReservableEntitlement, LockCapability>();
+const lockedEntitlementRows = new WeakMap<LockedReservableEntitlement, TrialEntitlement>();
 
 const ENTITLEMENT_COLUMNS = `
   user_id, status, reserved_quote_id, job_id, reserved_at, consumed_at,
@@ -131,38 +136,16 @@ function assertTransitionInput(value: unknown): asserts value is TrialEntitlemen
   }
 }
 
-function parseEntitlementValue(value: unknown): TrialEntitlement | null {
-  const input = exactPlainRecord(value, ENTITLEMENT_DTO_KEYS);
-  if (!input) return null;
-  try {
-    return parseEntitlementRow({
-      user_id: input.userId,
-      status: input.status,
-      reserved_quote_id: input.reservedQuoteId,
-      job_id: input.jobId,
-      reserved_at: input.reservedAt,
-      consumed_at: input.consumedAt,
-      released_at: input.releasedAt,
-      created_at: input.createdAt,
-      updated_at: input.updatedAt,
-      last_reason_code: input.lastReasonCode,
-    });
-  } catch {
-    return null;
-  }
-}
-
 function parseReserveInput(value: unknown): {
-  lockedEntitlement: TrialEntitlement;
+  lockedEntitlement: LockedReservableEntitlement;
   quoteId: string;
   jobId: string;
   reasonCode: string;
 } {
   const input = exactPlainRecord(value, RESERVE_KEYS);
-  const lockedEntitlement = input ? parseEntitlementValue(input.lockedEntitlement) : null;
   if (!input
-    || !lockedEntitlement
-    || (lockedEntitlement.status !== 'available' && lockedEntitlement.status !== 'released')
+    || input.lockedEntitlement === null
+    || typeof input.lockedEntitlement !== 'object'
     || typeof input.quoteId !== 'string'
     || !UUID_V4_PATTERN.test(input.quoteId)
     || !boundedIdentifier(input.jobId, 256)
@@ -172,11 +155,23 @@ function parseReserveInput(value: unknown): {
     throw new Error('Invalid entitlement transition input.');
   }
   return {
-    lockedEntitlement,
+    lockedEntitlement: input.lockedEntitlement as LockedReservableEntitlement,
     quoteId: input.quoteId,
     jobId: input.jobId,
     reasonCode: input.reasonCode,
   };
+}
+
+async function readTransactionId(executor: TransactionQueryExecutor): Promise<string> {
+  const rows = await executor.query<TransactionIdRow>(
+    'SELECT txid_current()::text AS xid',
+  );
+  if (rows.length !== 1
+    || typeof rows[0]?.xid !== 'string'
+    || !TRANSACTION_ID_PATTERN.test(rows[0].xid)) {
+    throw new Error('Invalid entitlement transaction identity.');
+  }
+  return rows[0].xid;
 }
 
 function parseEntitlementRow(row: EntitlementRow): TrialEntitlement {
@@ -292,7 +287,13 @@ export async function lockReservableEntitlement(
       FOR UPDATE`,
     [input.userId],
   );
-  return parseOptionalEntitlement(rows) as LockedReservableEntitlement | null;
+  const entitlement = parseOptionalEntitlement(rows);
+  if (!entitlement) return null;
+  const xid = await readTransactionId(dependencies.executor);
+  const handle = Object.freeze({}) as LockedReservableEntitlement;
+  lockCapabilities.set(handle, { executor: dependencies.executor, xid, used: false });
+  lockedEntitlementRows.set(handle, entitlement);
+  return handle;
 }
 
 export async function reserveEntitlement(
@@ -300,7 +301,22 @@ export async function reserveEntitlement(
   dependencies: TransitionDependencies,
 ): Promise<TrialEntitlement | null> {
   const normalized = parseReserveInput(input);
-  const locked = normalized.lockedEntitlement;
+  const capability = lockCapabilities.get(normalized.lockedEntitlement);
+  const locked = lockedEntitlementRows.get(normalized.lockedEntitlement);
+  if (!capability || !locked) {
+    throw new Error('Invalid locked entitlement capability.');
+  }
+  if (capability.executor !== dependencies.executor) {
+    throw new Error('Locked entitlement belongs to a different transaction executor.');
+  }
+  if (capability.used) {
+    throw new Error('Locked entitlement capability was already used.');
+  }
+  capability.used = true;
+  const currentXid = await readTransactionId(dependencies.executor);
+  if (currentXid !== capability.xid) {
+    throw new Error('Locked entitlement transaction changed; the capability is stale.');
+  }
   const rows = await dependencies.executor.query<EntitlementRow>(
     `WITH transition_time AS (
        SELECT clock_timestamp() AS at
