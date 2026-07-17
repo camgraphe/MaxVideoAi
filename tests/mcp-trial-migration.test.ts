@@ -29,6 +29,8 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /id\s+BIGINT\s+GENERATED ALWAYS AS IDENTITY\s+PRIMARY KEY/i);
   assert.match(source, /BEFORE INSERT ON mcp_trial_risk_events[\s\S]*enforce_mcp_trial_risk_event_insert/i);
   assert.match(source, /NEW\.created_at\s*:=\s*clock_timestamp\(\)/i);
+  assert.match(source, /enforce_mcp_trial_risk_event_insert[\s\S]*SECURITY DEFINER/i);
+  assert.match(source, /NEW\.id\s*:=\s*pg_catalog\.nextval[\s\S]*pg_get_serial_sequence/i);
   assert.match(source, /cleanup_mcp_trial_risk_events[\s\S]*ORDER BY created_at, id[\s\S]*LIMIT p_limit/i);
   assert.match(source, /SECURITY DEFINER[\s\S]*SET search_path = pg_catalog, public/i);
   assert.match(source, /REVOKE ALL(?: PRIVILEGES)? ON FUNCTION cleanup_mcp_trial_risk_events[\s\S]*FROM PUBLIC/i);
@@ -36,6 +38,7 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /\.proowner/i);
   assert.match(source, /::pg_catalog\.regprocedure/i);
   assert.doesNotMatch(source, /current_setting|set_config/i);
+  assert.match(source, /runtime role must not own the table or (?:cleanup )?function/i);
   assert.match(runtime, /paid\/trial\/reference durable tables are migration-owned/i);
   assert.doesNotMatch(runtime, /mcp_trial_entitlements|mcp_trial_risk_events/i);
 
@@ -187,9 +190,39 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   const runtimeRole = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE ROLE mcp_trial_runtime NOLOGIN;
     GRANT USAGE ON SCHEMA public TO mcp_trial_runtime;
-    GRANT SELECT, DELETE ON mcp_trial_risk_events TO mcp_trial_runtime;
+    GRANT SELECT, INSERT, DELETE ON mcp_trial_risk_events TO mcp_trial_runtime;
   `);
   assert.equal(runtimeRole.status, 0, output(runtimeRole));
+
+  const overridingIdentity = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SET ROLE mcp_trial_runtime;
+    INSERT INTO mcp_trial_risk_events (
+      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
+    ) OVERRIDING SYSTEM VALUE
+    VALUES (9001, 'override-attacker', NULL, repeat('f',64), 'blocked', 'identity_override')
+    RETURNING id::text;
+  `);
+  assert.equal(overridingIdentity.status, 0, output(overridingIdentity));
+  const overridingIds = overridingIdentity.stdout.trim().split('\n').filter((line) => /^\d+$/u.test(line));
+  assert.equal(overridingIds.length, 1, output(overridingIdentity));
+  assert.notEqual(overridingIds[0], '9001', 'OVERRIDING SYSTEM VALUE must not retain the supplied ID');
+
+  const normalAfterOverride = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    INSERT INTO mcp_trial_risk_events (
+      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
+    ) VALUES ('normal-after-override', NULL, repeat('1',64), 'allowed', 'normal_insert')
+    RETURNING id::text;
+  `);
+  assert.equal(normalAfterOverride.status, 0, output(normalAfterOverride));
+  const normalIds = normalAfterOverride.stdout.trim().split('\n').filter((line) => /^\d+$/u.test(line));
+  assert.equal(normalIds.length, 1, output(normalAfterOverride));
+  assert.notEqual(normalIds[0], '9001');
+  const retainedOverride = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT count(*)::text FROM mcp_trial_risk_events WHERE id = 9001
+  `);
+  assert.equal(retainedOverride.status, 0, output(retainedOverride));
+  assert.equal(retainedOverride.stdout.trim(), '0');
+
   const publicExecute = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     SELECT has_function_privilege(
       'mcp_trial_runtime',
@@ -411,5 +444,5 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   }, { executor: executorA }), 1);
   assert.equal(await cleanupTrialRiskEvents({
     cutoff: new Date('2030-01-01T00:00:00Z'), limit: 100,
-  }, { executor: executorA }), 3);
+  }, { executor: executorA }), 5);
 });

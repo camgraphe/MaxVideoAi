@@ -213,9 +213,16 @@ CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
 CREATE OR REPLACE FUNCTION enforce_mcp_trial_risk_event_insert()
 RETURNS TRIGGER
 LANGUAGE plpgsql
+SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
 BEGIN
+  NEW.id := pg_catalog.nextval(
+    pg_catalog.pg_get_serial_sequence(
+      'public.mcp_trial_risk_events',
+      'id'
+    )::pg_catalog.regclass
+  );
   NEW.created_at := clock_timestamp();
   RETURN NEW;
 END;
@@ -301,4 +308,5 @@ $$;
 REVOKE ALL PRIVILEGES ON FUNCTION cleanup_mcp_trial_risk_events(TIMESTAMPTZ, INTEGER)
   FROM PUBLIC;
 
--- Deployment must GRANT EXECUTE explicitly to the approved maintenance/runtime role.
+-- The runtime role must not own the table or function security boundaries.
+-- Deployment must GRANT EXECUTE on cleanup explicitly to the approved maintenance role.
