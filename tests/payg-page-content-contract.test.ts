@@ -143,6 +143,25 @@ test('showcase formatting uses exact-locale content while retaining runtime numb
     getPayAsYouGoContent('en').showcase.runtime,
   );
   assert.equal(priced.priceLabel, '$1.23');
+
+  for (const locale of ['fr', 'es'] as const) {
+    const copy = getPayAsYouGoContent(locale).showcase.runtime;
+    const fallback = buildPayAsYouGoShowcaseVideo(
+      fixtureGalleryVideo({
+        engineId: '',
+        engineLabel: '',
+        prompt: 'Clouds move over a quiet valley',
+        promptExcerpt: 'Clouds move over a quiet valley',
+      }),
+      locale,
+      copy,
+    );
+    assert.equal(fallback.engineLabel, 'AI video model');
+    assert.equal(
+      fallback.title,
+      locale === 'fr' ? 'Rendu d’exemple avec AI video' : 'Render de ejemplo con AI video',
+    );
+  }
 });
 
 test('each locale module exports one complete literal and imports only the content type', () => {

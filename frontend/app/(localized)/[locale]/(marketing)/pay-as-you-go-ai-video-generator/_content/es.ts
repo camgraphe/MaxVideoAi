@@ -222,7 +222,7 @@ export const esPayAsYouGoContent = {
     runtime: {
       priceUnavailable: 'Precio visible antes de generar',
       defaultEngineLabel: 'AI video model',
-      defaultTitleEngineLabel: 'video IA',
+      defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Render de ejemplo con {engine}',
       titles: {
         rooftop: 'Persecución cinematográfica en una azotea',

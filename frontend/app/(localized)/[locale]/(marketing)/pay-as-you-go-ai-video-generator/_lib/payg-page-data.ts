@@ -7,6 +7,7 @@ import type {
 } from '../_content/types';
 import {
   buildPricingHubData,
+  type PresetQuote,
   type PricingHubData,
   type VideoPricePresetId,
   type VideoPricingRow,
@@ -79,6 +80,7 @@ export type PayAsYouGoPriceCell = {
   label: string;
   value: string;
   displayValue: string;
+  renderReady: boolean;
   note?: string;
 };
 
@@ -198,13 +200,23 @@ function pickPaygCompareHref(links: VideoPricingRow['links']) {
   return link ? canonicalCompareHref(link.href) : undefined;
 }
 
-function isVisiblePrice(value: string | undefined, liveQuote: string) {
-  const normalized = value?.trim();
-  return Boolean(normalized && normalized !== '-' && normalized !== '—' && normalized !== liveQuote);
+function isRenderReadyQuote(quote: PresetQuote | undefined) {
+  const display = quote?.display?.trim();
+  return Boolean(
+    quote
+    && (quote.status === 'exact' || quote.status === 'closest')
+    && display
+    && display !== '-'
+    && display !== '—',
+  );
 }
 
-function formatExamplePrice(value: string, common: PayAsYouGoContent['common']) {
-  return isVisiblePrice(value, common.liveQuote) ? `${common.examplePrefix} : ${value}` : value;
+function formatExamplePrice(
+  value: string,
+  renderReady: boolean,
+  common: PayAsYouGoContent['common'],
+) {
+  return renderReady ? `${common.examplePrefix} : ${value}` : value;
 }
 
 function buildModelRows(
@@ -224,11 +236,13 @@ function buildModelRows(
     priceCells: presets.map((preset) => {
       const quote = row.quotes[preset.id];
       const value = quote?.display ?? common.liveQuote;
+      const renderReady = isRenderReadyQuote(quote);
       return {
         presetId: preset.id,
         label: preset.label,
         value,
-        displayValue: formatExamplePrice(value, common),
+        displayValue: formatExamplePrice(value, renderReady, common),
+        renderReady,
         note: quote?.note?.replace(/\baudio incl\.?\b/gi, common.audioIncluded),
       };
     }),
@@ -331,7 +345,7 @@ export function buildPayAsYouGoPageData({
         ...content.hero.quote,
         previewRows: rows.slice(0, 4).map((row) => ({
           ...row,
-          quoteLabel: row.priceCells.find((cell) => isVisiblePrice(cell.value, content.common.liveQuote))?.value
+          quoteLabel: row.priceCells.find((cell) => cell.renderReady)?.value
             ?? content.common.liveQuote,
         })),
         sampleModelName: sampleModel?.engineName ?? content.hero.quote.chooseModel,

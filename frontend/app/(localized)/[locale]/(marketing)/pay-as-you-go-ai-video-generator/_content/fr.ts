@@ -222,7 +222,7 @@ export const frPayAsYouGoContent = {
     runtime: {
       priceUnavailable: 'Prix affiché avant la génération',
       defaultEngineLabel: 'AI video model',
-      defaultTitleEngineLabel: 'vidéo IA',
+      defaultTitleEngineLabel: 'AI video',
       defaultTitleTemplate: 'Rendu d’exemple avec {engine}',
       titles: {
         rooftop: 'Poursuite cinématographique sur un toit',
