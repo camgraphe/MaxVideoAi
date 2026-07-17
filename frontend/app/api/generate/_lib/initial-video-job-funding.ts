@@ -3,10 +3,17 @@ import type {
   GenerationFunding,
 } from './initial-video-job';
 
+type WalletFunding = Extract<GenerationFunding, { kind: 'wallet' }>;
 type McpTrialFunding = Extract<GenerationFunding, { kind: 'mcp_trial' }>;
 
 const FUNDING_WALLET_KEYS = new Set(['kind', 'reservation']);
 const FUNDING_TRIAL_KEYS = new Set(['kind', 'entitlementUserId', 'quoteId']);
+const INCLUDED_TRIAL_KEYS = new Set([
+  'kind',
+  'customerChargeCents',
+  'normalPriceCents',
+  'providerCostCents',
+]);
 
 function exactRecord(value: unknown, keys: ReadonlySet<string>): Record<string, unknown> | null {
   if (!value || typeof value !== 'object' || Array.isArray(value)
@@ -22,10 +29,41 @@ function exactRecord(value: unknown, keys: ReadonlySet<string>): Record<string, 
   return Object.fromEntries(names.map((key) => [key, descriptors[key]!.value]));
 }
 
-function trialFunding(params: CreateVideoInitialJobParams): McpTrialFunding | null {
-  const funding = params.funding;
-  if (!funding || funding.kind !== 'mcp_trial') return null;
-  const exact = exactRecord(funding, FUNDING_TRIAL_KEYS);
+function dataProperty(
+  value: object,
+  key: string,
+): { present: false } | { present: true; value: unknown } | null {
+  const descriptor = Object.getOwnPropertyDescriptor(value, key);
+  if (!descriptor) return { present: false };
+  if (!descriptor.enumerable || !('value' in descriptor)) return null;
+  return { present: true, value: descriptor.value };
+}
+
+export function readExactMcpTrialFunding(value: unknown): McpTrialFunding | null {
+  const exact = exactRecord(value, FUNDING_TRIAL_KEYS);
+  if (!exact
+    || exact.kind !== 'mcp_trial'
+    || typeof exact.entitlementUserId !== 'string'
+    || typeof exact.quoteId !== 'string') return null;
+  return {
+    kind: 'mcp_trial',
+    entitlementUserId: exact.entitlementUserId,
+    quoteId: exact.quoteId,
+  };
+}
+
+function readExactWalletFunding(value: unknown): WalletFunding | null {
+  const exact = exactRecord(value, FUNDING_WALLET_KEYS);
+  if (!exact
+    || exact.kind !== 'wallet'
+    || (exact.reservation !== 'reserve' && exact.reservation !== 'already_reserved')) return null;
+  return { kind: 'wallet', reservation: exact.reservation };
+}
+
+function assertTrialAccounting(
+  params: CreateVideoInitialJobParams,
+  funding: McpTrialFunding,
+): void {
   let pricingSnapshot: Record<string, unknown> | null = null;
   try {
     const parsed: unknown = JSON.parse(params.jobInsert.pricingSnapshotJson);
@@ -35,14 +73,26 @@ function trialFunding(params: CreateVideoInitialJobParams): McpTrialFunding | nu
   } catch {
     pricingSnapshot = null;
   }
-  const included = pricingSnapshot?.funding;
-  if (!exact
-    || typeof exact.entitlementUserId !== 'string'
-    || exact.entitlementUserId !== params.userId
-    || typeof exact.quoteId !== 'string'
-    || exact.quoteId !== params.jobId
-    || Object.hasOwn(params, 'paymentMode')
-    || Object.hasOwn(params, 'walletReservation')
+  const included = exactRecord(pricingSnapshot?.funding, INCLUDED_TRIAL_KEYS);
+  const canonicalPricing = pricingSnapshot?.canonicalPricing;
+  const canonical = canonicalPricing
+    && typeof canonicalPricing === 'object'
+    && !Array.isArray(canonicalPricing)
+    && Object.getPrototypeOf(canonicalPricing) === Object.prototype
+    ? canonicalPricing as Record<string, unknown>
+    : null;
+  const base = canonical?.base;
+  const canonicalBase = base
+    && typeof base === 'object'
+    && !Array.isArray(base)
+    && Object.getPrototypeOf(base) === Object.prototype
+    ? base as Record<string, unknown>
+    : null;
+  const normalPriceCents = included?.normalPriceCents;
+  const providerCostCents = included?.providerCostCents;
+  const canonicalCurrency = canonical?.currency;
+  if (funding.entitlementUserId !== params.userId
+    || funding.quoteId !== params.jobId
     || params.pendingReceipt !== null
     || params.preferredCurrency !== null
     || params.jobInsert.jobId !== params.jobId
@@ -54,33 +104,66 @@ function trialFunding(params: CreateVideoInitialJobParams): McpTrialFunding | nu
     || params.jobInsert.visibility !== 'private'
     || params.jobInsert.indexable !== false
     || !included
-    || typeof included !== 'object'
-    || Array.isArray(included)
-    || (included as Record<string, unknown>).kind !== 'included_trial'
-    || (included as Record<string, unknown>).customerChargeCents !== 0) {
+    || included.kind !== 'included_trial'
+    || included.customerChargeCents !== 0
+    || !Number.isSafeInteger(normalPriceCents)
+    || (normalPriceCents as number) <= 0
+    || !Number.isSafeInteger(providerCostCents)
+    || (providerCostCents as number) <= 0
+    || canonical?.totalCents !== normalPriceCents
+    || canonicalBase?.amountCents !== providerCostCents
+    || typeof canonicalCurrency !== 'string'
+    || canonicalCurrency !== params.jobInsert.currency
+    || params.resolvedCurrencyLower !== canonicalCurrency.toLowerCase()) {
     throw new Error('Invalid MCP trial funding state.');
-  }
-  return {
-    kind: 'mcp_trial',
-    entitlementUserId: exact.entitlementUserId,
-    quoteId: exact.quoteId,
-  };
-}
-
-function assertWalletFunding(params: CreateVideoInitialJobParams): void {
-  if (!params.funding || params.funding.kind !== 'wallet') return;
-  const exact = exactRecord(params.funding, FUNDING_WALLET_KEYS);
-  if (!exact
-    || exact.reservation !== params.walletReservation
-    || params.paymentMode !== 'wallet') {
-    throw new Error('Invalid wallet funding state.');
   }
 }
 
 export function validateInitialVideoFunding(
   params: CreateVideoInitialJobParams,
 ): McpTrialFunding | null {
-  const includedTrialFunding = trialFunding(params);
-  assertWalletFunding(params);
-  return includedTrialFunding;
+  if (!params || typeof params !== 'object' || Array.isArray(params)) {
+    throw new Error('Invalid initial video funding state.');
+  }
+  const paymentMode = dataProperty(params, 'paymentMode');
+  const walletReservation = dataProperty(params, 'walletReservation');
+  const fundingProperty = dataProperty(params, 'funding');
+  if (!paymentMode || !walletReservation || !fundingProperty) {
+    throw new Error('Invalid initial video funding state.');
+  }
+
+  if (!paymentMode.present) {
+    const trialFunding = fundingProperty.present
+      ? readExactMcpTrialFunding(fundingProperty.value)
+      : null;
+    if (walletReservation.present || !trialFunding) {
+      throw new Error('Invalid initial video funding state.');
+    }
+    assertTrialAccounting(params, trialFunding);
+    return trialFunding;
+  }
+
+  if (paymentMode.value === 'wallet') {
+    const walletFunding = fundingProperty.present
+      ? readExactWalletFunding(fundingProperty.value)
+      : null;
+    if (!walletReservation.present
+      || (walletReservation.value !== 'reserve' && walletReservation.value !== 'already_reserved')
+      || !walletFunding
+      || walletFunding.reservation !== walletReservation.value) {
+      throw new Error('Invalid initial video funding state.');
+    }
+    return null;
+  }
+
+  if (paymentMode.value === 'direct' || paymentMode.value === 'platform') {
+    if (!walletReservation.present
+      || (walletReservation.value !== 'reserve' && walletReservation.value !== 'already_reserved')
+      || fundingProperty.present) {
+      throw new Error('Invalid initial video funding state.');
+    }
+    return null;
+  }
+
+  throw new Error('Invalid initial video funding state.');
 }

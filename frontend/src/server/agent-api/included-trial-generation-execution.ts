@@ -3,6 +3,7 @@ import {
   type CreateVideoInitialJobParams,
   type GenerationFunding,
 } from '@/app/api/generate/_lib/initial-video-job';
+import { readExactMcpTrialFunding } from '@/app/api/generate/_lib/initial-video-job-funding';
 import { normalizeCurrencyCode, type Currency } from '@/lib/currency';
 import type { TransactionQueryExecutor } from '@/lib/db';
 import type { TrustedIncludedTrialBilling } from '@/server/generations/initial-job-reservation';
@@ -55,6 +56,32 @@ export type IncludedTrialVideoContinuationOptions = {
   preReservedInitialState: IncludedTrialGenerationExecution['trustedInitialState'];
   trustedIncludedTrialBilling: TrustedIncludedTrialBilling;
 };
+
+const TRUSTED_TRIAL_STATE_KEYS = new Set(['kind', 'jobId', 'funding']);
+
+function readExactTrustedTrialState(
+  value: unknown,
+): IncludedTrialGenerationExecution['trustedInitialState'] | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)
+    || Object.getPrototypeOf(value) !== Object.prototype
+    || Object.getOwnPropertySymbols(value).length !== 0) return null;
+  const descriptors = Object.getOwnPropertyDescriptors(value);
+  const keys = Object.keys(descriptors);
+  if (keys.length !== TRUSTED_TRIAL_STATE_KEYS.size
+    || !keys.every((key) => TRUSTED_TRIAL_STATE_KEYS.has(key))
+    || keys.some((key) => !descriptors[key]?.enumerable || !('value' in descriptors[key]!))) {
+    return null;
+  }
+  const funding = readExactMcpTrialFunding(descriptors.funding!.value);
+  if (descriptors.kind!.value !== 'created'
+    || typeof descriptors.jobId!.value !== 'string'
+    || !funding) return null;
+  return {
+    kind: 'created',
+    jobId: descriptors.jobId!.value,
+    funding,
+  };
+}
 
 function requiredSetting(quote: McpGenerationQuote, key: string): string {
   const value = quote.request.settings[key];
@@ -212,14 +239,17 @@ export async function submitReservedIncludedTrialGeneration(
   execution: IncludedTrialGenerationExecution,
   dependencies: PaidGenerationSubmissionDependencies = defaultSubmissionDependencies,
 ): Promise<IncludedTrialGenerationProviderOutcome> {
+  const funding = readExactMcpTrialFunding(execution.funding);
+  const trustedInitialState = readExactTrustedTrialState(execution.trustedInitialState);
   if (execution.surface !== 'video'
     || execution.request.surface !== 'video'
     || execution.request.mode !== 't2v'
-    || execution.funding.kind !== 'mcp_trial'
-    || execution.funding.entitlementUserId !== execution.userId
-    || execution.funding.quoteId !== execution.quoteId
-    || execution.trustedInitialState.jobId !== execution.quoteId
-    || stableJson(execution.trustedInitialState.funding) !== stableJson(execution.funding)) {
+    || !funding
+    || funding.entitlementUserId !== execution.userId
+    || funding.quoteId !== execution.quoteId
+    || !trustedInitialState
+    || trustedInitialState.jobId !== execution.quoteId
+    || stableJson(trustedInitialState.funding) !== stableJson(funding)) {
     throw new Error('Invalid included trial continuation state.');
   }
   const body = includedTrialRequestBody(execution);
@@ -228,8 +258,8 @@ export async function submitReservedIncludedTrialGeneration(
       userId: execution.userId,
       body,
       engine: execution.engine,
-      funding: execution.funding,
-      preReservedInitialState: execution.trustedInitialState,
+      funding,
+      preReservedInitialState: trustedInitialState,
       trustedIncludedTrialBilling: {
         customerChargeCents: 0,
         paymentStatus: 'included_mcp_trial',

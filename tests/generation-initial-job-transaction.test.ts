@@ -34,6 +34,7 @@ function videoParams(jobId = 'job-video-1') {
     userId: 'user-1',
     paymentMode: 'wallet' as const,
     walletReservation: 'reserve' as const,
+    funding: { kind: 'wallet' as const, reservation: 'reserve' as const },
     pendingReceipt: {
       userId: 'user-1',
       amountCents: 100,
@@ -244,6 +245,7 @@ test('already_reserved video requires the existing receipt, skips reservation, a
     const result = await createInitialVideoJobInExecutor(executor, {
       ...videoParams('job-video-reserved'),
       walletReservation: 'already_reserved',
+      funding: { kind: 'wallet', reservation: 'already_reserved' },
     });
     assert.deepEqual(result, { kind: 'created', walletChargeReserved: true });
     assert.equal(

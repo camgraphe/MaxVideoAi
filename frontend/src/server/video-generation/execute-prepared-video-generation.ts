@@ -149,14 +149,9 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
       if (!walletReservation || paymentMode === 'mcp_trial') {
         throw new Error('Included trial jobs must be pre-reserved.');
       }
-      const initialJobState = await createAtomicInitialVideoJob({
+      const initialJobParams = {
         jobId,
         userId,
-        paymentMode,
-        walletReservation,
-        ...(paymentMode === 'wallet'
-          ? { funding: { kind: 'wallet' as const, reservation: walletReservation } }
-          : {}),
         pendingReceipt,
         preferredCurrency,
         resolvedCurrencyLower,
@@ -195,7 +190,15 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           visibility,
           indexable,
         },
-      });
+      };
+      const initialJobState = await createAtomicInitialVideoJob(paymentMode === 'wallet'
+        ? {
+            ...initialJobParams,
+            paymentMode,
+            walletReservation,
+            funding: { kind: 'wallet', reservation: walletReservation },
+          }
+        : { ...initialJobParams, paymentMode, walletReservation });
       if (initialJobState.kind === 'created' && 'walletChargeReserved' in initialJobState) {
         walletChargeReserved = initialJobState.walletChargeReserved;
         if (paymentMode === 'wallet' && !preferredCurrency && walletReservation === 'reserve') {

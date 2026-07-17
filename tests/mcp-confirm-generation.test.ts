@@ -778,7 +778,10 @@ test('default registry remains three tools and the explicit paid gate exposes th
     idempotentHint: true,
     openWorldHint: true,
   });
-  assert.match(confirm?.description ?? '', /spends wallet funds/i);
+  assert.match(confirm?.description ?? '', /funding locked into the quote/i);
+  assert.match(confirm?.description ?? '', /wallet quotes may spend/i);
+  assert.match(confirm?.description ?? '', /included trial does not/i);
+  assert.doesNotMatch(confirm?.description ?? '', /this spends wallet funds/i);
   assert.match(confirm?.description ?? '', /external generation provider/i);
   assert.deepEqual(Object.keys(confirm?.inputSchema.properties ?? {}).sort(), ['confirmed', 'quoteId']);
 });

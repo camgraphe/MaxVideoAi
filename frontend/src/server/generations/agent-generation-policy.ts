@@ -27,6 +27,7 @@ const FAILED_STATUSES = new Set([
 ]);
 const SAFE_PAYMENT_STATUSES = new Set([
   'included',
+  'included_mcp_trial',
   'paid_direct',
   'paid_stripe',
   'paid_wallet',

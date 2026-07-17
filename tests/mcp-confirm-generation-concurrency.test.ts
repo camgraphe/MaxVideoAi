@@ -218,6 +218,7 @@ function confirmationDependencies(params: {
           userId: quote.userId,
           paymentMode: 'wallet',
           walletReservation: 'reserve',
+          funding: { kind: 'wallet', reservation: 'reserve' },
           pendingReceipt: {
             userId: quote.userId,
             amountCents: quote.priceCents,

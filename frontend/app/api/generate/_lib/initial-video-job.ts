@@ -125,9 +125,14 @@ type CreateVideoInitialJobBaseParams = {
 
 export type CreateVideoInitialJobParams = CreateVideoInitialJobBaseParams & (
   | {
-      paymentMode: PaymentMode;
+      paymentMode: 'wallet';
       walletReservation: WalletReservation;
-      funding?: Extract<GenerationFunding, { kind: 'wallet' }>;
+      funding: Extract<GenerationFunding, { kind: 'wallet' }>;
+    }
+  | {
+      paymentMode: 'direct' | 'platform';
+      walletReservation: WalletReservation;
+      funding?: never;
     }
   | {
       paymentMode?: never;

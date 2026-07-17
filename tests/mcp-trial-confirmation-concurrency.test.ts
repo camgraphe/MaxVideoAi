@@ -247,6 +247,19 @@ test('same trial quote and two trial quotes for one user race safely in disposab
   const winner = await first;
   assert.equal(winner.jobId, sameQuote);
   assert.equal(repeat.jobId, sameQuote);
+  const storedTrialStatus = await getGenerationStatus({
+    userId: sameUser,
+    jobId: sameQuote,
+    queryFn: async <TRecord>(sql: string, values?: ReadonlyArray<unknown>) => (
+      await postgres.pool.query<TRecord>(sql, values as unknown[] | undefined)
+    ).rows,
+  });
+  assert.ok(storedTrialStatus);
+  assert.equal(storedTrialStatus.priceCents, 0);
+  assert.equal(storedTrialStatus.paymentStatus, 'included_mcp_trial');
+  assert.equal('pricingSnapshot' in storedTrialStatus, false);
+  assert.equal('providerCostCents' in storedTrialStatus, false);
+  assert.doesNotMatch(JSON.stringify(storedTrialStatus), /providerCostCents|normalPriceCents|pricingSnapshot/iu);
   assert.equal(providerCalls, 1);
   assert.deepEqual(await counts(postgres.pool, sameUser), {
     jobs: '1', receipts: '0', reserved: '1', claimed: '1', risk_events: '1',

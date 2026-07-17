@@ -464,6 +464,181 @@ test('trial initial-job runtime validation rejects cross-identity and accounting
   assert.equal(sqlCalls, 0);
 });
 
+test('initial video funding requires exact wallet, trial, or external discriminants before SQL', async () => {
+  const { createInitialVideoJobInExecutor } = await import('../frontend/app/api/generate/_lib/initial-video-job');
+  let sqlCalls = 0;
+  let getterCalls = 0;
+  const executor = { async query() { sqlCalls += 1; return []; } } as TransactionQueryExecutor;
+  const trialBase = {
+    jobId: QUOTE_ID,
+    userId: USER_ID,
+    funding: { kind: 'mcp_trial', entitlementUserId: USER_ID, quoteId: QUOTE_ID } as const,
+    pendingReceipt: null,
+    preferredCurrency: null,
+    resolvedCurrencyLower: 'usd',
+    jobInsert: {
+      jobId: QUOTE_ID, userId: USER_ID, engineId: request.engineId, engineLabel: 'Seedance 2.0 Mini',
+      durationSec: 5, prompt: request.prompt, thumbUrl: '/thumb.svg', aspectRatio: '16:9',
+      hasAudio: true, canUpscale: false, previewFrame: '/thumb.svg', batchId: null, groupId: null,
+      iterationIndex: null, iterationCount: null, renderIdsJson: null, heroRenderId: null,
+      localKey: null, message: null, etaSeconds: null, etaLabel: null, provider: 'fal',
+      finalPriceCents: 0, pricingSnapshotJson: JSON.stringify(includedSnapshot()), costBreakdownJson: null,
+      settingsSnapshotJson: JSON.stringify(request), currency: 'USD', vendorAccountId: null,
+      paymentStatus: 'included_mcp_trial', stripePaymentIntentId: null, stripeChargeId: null,
+      visibility: 'private' as const, indexable: false,
+    },
+  };
+  const { funding: _trialFunding, ...withoutFunding } = trialBase;
+  const walletBase = {
+    ...withoutFunding,
+    paymentMode: 'wallet',
+    walletReservation: 'reserve',
+    funding: { kind: 'wallet', reservation: 'reserve' },
+    preferredCurrency: 'usd',
+    pendingReceipt: {
+      userId: USER_ID, amountCents: 125, currency: 'USD', description: 'wallet job',
+      jobId: QUOTE_ID, snapshot: canonicalPricing(), applicationFeeCents: 0, vendorAccountId: null,
+    },
+    jobInsert: {
+      ...trialBase.jobInsert,
+      finalPriceCents: 125,
+      pricingSnapshotJson: JSON.stringify(normalSnapshot()),
+      paymentStatus: 'paid_wallet',
+    },
+  };
+  const accessorFunding = { ...walletBase } as Record<string, unknown>;
+  Object.defineProperty(accessorFunding, 'funding', {
+    enumerable: true,
+    get() {
+      getterCalls += 1;
+      return { kind: 'wallet', reservation: 'reserve' };
+    },
+  });
+  for (const [label, invalid] of [
+    ['mcp payment without funding', { ...withoutFunding, paymentMode: 'mcp_trial', walletReservation: 'reserve' }],
+    ['mcp payment already reserved without funding', { ...withoutFunding, paymentMode: 'mcp_trial', walletReservation: 'already_reserved' }],
+    ['wallet without funding', { ...withoutFunding, paymentMode: 'wallet', walletReservation: 'reserve', pendingReceipt: walletBase.pendingReceipt, preferredCurrency: 'usd', jobInsert: walletBase.jobInsert }],
+    ['unknown wallet funding', { ...walletBase, funding: { kind: 'unknown' } }],
+    ['trial with wallet funding', { ...trialBase, funding: { kind: 'wallet', reservation: 'reserve' } }],
+    ['wallet with trial funding', { ...walletBase, funding: trialBase.funding }],
+    ['wallet reservation mismatch', { ...walletBase, funding: { kind: 'wallet', reservation: 'already_reserved' } }],
+    ['direct with wallet funding', { ...walletBase, paymentMode: 'direct' }],
+    ['platform with unknown funding', { ...walletBase, paymentMode: 'platform', funding: { kind: 'unknown' } }],
+    ['accessor funding', accessorFunding],
+  ] as const) {
+    await assert.rejects(
+      createInitialVideoJobInExecutor(executor, invalid as never),
+      /funding state/i,
+      label,
+    );
+  }
+  assert.equal(sqlCalls, 0);
+  assert.equal(getterCalls, 0);
+});
+
+test('trial initial funding validates the complete private cost envelope before SQL', async () => {
+  const { createInitialVideoJobInExecutor } = await import('../frontend/app/api/generate/_lib/initial-video-job');
+  let sqlCalls = 0;
+  const executor = { async query() { sqlCalls += 1; return []; } } as TransactionQueryExecutor;
+  const baseSnapshot = includedSnapshot();
+  const base = {
+    jobId: QUOTE_ID,
+    userId: USER_ID,
+    funding: { kind: 'mcp_trial', entitlementUserId: USER_ID, quoteId: QUOTE_ID } as const,
+    pendingReceipt: null,
+    preferredCurrency: null,
+    resolvedCurrencyLower: 'usd',
+    jobInsert: {
+      jobId: QUOTE_ID, userId: USER_ID, engineId: request.engineId, engineLabel: 'Seedance 2.0 Mini',
+      durationSec: 5, prompt: request.prompt, thumbUrl: '/thumb.svg', aspectRatio: '16:9',
+      hasAudio: true, canUpscale: false, previewFrame: '/thumb.svg', batchId: null, groupId: null,
+      iterationIndex: null, iterationCount: null, renderIdsJson: null, heroRenderId: null,
+      localKey: null, message: null, etaSeconds: null, etaLabel: null, provider: 'fal',
+      finalPriceCents: 0, pricingSnapshotJson: JSON.stringify(baseSnapshot), costBreakdownJson: null,
+      settingsSnapshotJson: JSON.stringify(request), currency: 'USD', vendorAccountId: null,
+      paymentStatus: 'included_mcp_trial', stripePaymentIntentId: null, stripeChargeId: null,
+      visibility: 'private' as const, indexable: false,
+    },
+  };
+  const { normalPriceCents: _normal, ...withoutNormal } = baseSnapshot.funding;
+  const { providerCostCents: _provider, ...withoutProvider } = baseSnapshot.funding;
+  for (const [label, snapshot] of [
+    ['missing normal price', { ...baseSnapshot, funding: withoutNormal }],
+    ['missing provider cost', { ...baseSnapshot, funding: withoutProvider }],
+    ['normal price mismatch', { ...baseSnapshot, funding: { ...baseSnapshot.funding, normalPriceCents: 126 } }],
+    ['provider cost mismatch', { ...baseSnapshot, funding: { ...baseSnapshot.funding, providerCostCents: 56 } }],
+    ['currency mismatch', { ...baseSnapshot, canonicalPricing: { ...baseSnapshot.canonicalPricing, currency: 'EUR' } }],
+    ['nonzero customer charge', { ...baseSnapshot, funding: { ...baseSnapshot.funding, customerChargeCents: 1 } }],
+  ] as const) {
+    await assert.rejects(
+      createInitialVideoJobInExecutor(executor, {
+        ...base,
+        jobInsert: { ...base.jobInsert, pricingSnapshotJson: JSON.stringify(snapshot) },
+      }),
+      /trial funding state/i,
+      label,
+    );
+  }
+  assert.equal(sqlCalls, 0);
+});
+
+test('trusted trial continuation accepts only exact data state before provider continuation', async () => {
+  const exactFunding = { kind: 'mcp_trial', entitlementUserId: USER_ID, quoteId: QUOTE_ID } as const;
+  const exactState = { kind: 'created' as const, jobId: QUOTE_ID, funding: exactFunding };
+  const stateWithSymbol = { ...exactState } as Record<PropertyKey, unknown>;
+  stateWithSymbol[Symbol('wallet')] = true;
+  const stateWithHidden = { ...exactState };
+  Object.defineProperty(stateWithHidden, 'recoveredCharge', { value: true, enumerable: false });
+  let unknownGetterCalls = 0;
+  const stateWithUnknownAccessor = { ...exactState };
+  Object.defineProperty(stateWithUnknownAccessor, 'walletChargeReserved', {
+    enumerable: true,
+    get() { unknownGetterCalls += 1; return true; },
+  });
+  let fundingGetterCalls = 0;
+  const stateWithFundingAccessor = {} as Record<string, unknown>;
+  Object.defineProperties(stateWithFundingAccessor, {
+    kind: { value: 'created', enumerable: true },
+    jobId: { value: QUOTE_ID, enumerable: true },
+    funding: {
+      enumerable: true,
+      get() { fundingGetterCalls += 1; return exactFunding; },
+    },
+  });
+  const invalidStates = [
+    { ...exactState, walletChargeReserved: true },
+    { ...exactState, recoveredCharge: true },
+    { ...exactState, walletReservation: 'already_reserved' },
+    { ...exactState, recovery: true },
+    { ...exactState, unknown: true },
+    stateWithSymbol,
+    stateWithHidden,
+    stateWithUnknownAccessor,
+    stateWithFundingAccessor,
+  ];
+  let providerContinuations = 0;
+  for (const trustedInitialState of invalidStates) {
+    const execution: IncludedTrialGenerationExecution = {
+      surface: 'video', quoteId: QUOTE_ID, userId: USER_ID, request, engine: candidate().engine,
+      canonicalPricing: canonicalPricing(), pricingSnapshot: includedSnapshot(), funding: exactFunding,
+      trustedInitialState: trustedInitialState as never,
+    };
+    await assert.rejects(
+      submitReservedIncludedTrialGeneration(execution, {
+        executeVideo: async () => {
+          providerContinuations += 1;
+          return { body: { ok: true } };
+        },
+        executeImage: async () => assert.fail('trial is video-only'),
+      }),
+      /continuation state/i,
+    );
+  }
+  assert.equal(providerContinuations, 0);
+  assert.equal(unknownGetterCalls, 0);
+  assert.equal(fundingGetterCalls, 0);
+});
+
 test('external billing rejects mcp_trial and included_mcp_trial payment attempts as unsupported public modes', async () => {
   const { resolveGenerateBillingPreflight } = await import('../frontend/app/api/generate/_lib/billing-preflight');
   const base = {
