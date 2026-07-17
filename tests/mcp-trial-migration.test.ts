@@ -30,7 +30,20 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /BEFORE INSERT ON mcp_trial_risk_events[\s\S]*enforce_mcp_trial_risk_event_insert/i);
   assert.match(source, /NEW\.created_at\s*:=\s*clock_timestamp\(\)/i);
   assert.match(source, /enforce_mcp_trial_risk_event_insert[\s\S]*SECURITY DEFINER/i);
+  assert.match(
+    source,
+    /BEGIN\s+IF TG_RELID IS DISTINCT FROM 'public\.mcp_trial_risk_events'::pg_catalog\.regclass THEN/i,
+  );
   assert.match(source, /NEW\.id\s*:=\s*pg_catalog\.nextval[\s\S]*pg_get_serial_sequence/i);
+  assert.match(
+    source,
+    /REVOKE ALL(?: PRIVILEGES)? ON FUNCTION enforce_mcp_trial_risk_event_insert\(\)\s+FROM PUBLIC/i,
+  );
+  assert.ok(
+    source.indexOf('REVOKE ALL PRIVILEGES ON FUNCTION enforce_mcp_trial_risk_event_insert()')
+      < source.indexOf('CREATE TRIGGER mcp_trial_risk_events_enforce_insert'),
+    'PUBLIC execute must be revoked before the migration owner attaches the protected trigger',
+  );
   assert.match(source, /cleanup_mcp_trial_risk_events[\s\S]*ORDER BY created_at, id[\s\S]*LIMIT p_limit/i);
   assert.match(source, /SECURITY DEFINER[\s\S]*SET search_path = pg_catalog, public/i);
   assert.match(source, /REVOKE ALL(?: PRIVILEGES)? ON FUNCTION cleanup_mcp_trial_risk_events[\s\S]*FROM PUBLIC/i);
@@ -187,10 +200,79 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
     0,
   );
 
+  const attackerSetup = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    CREATE ROLE mcp_trial_trigger_attacker NOLOGIN;
+    CREATE SCHEMA mcp_trial_trigger_attacker AUTHORIZATION mcp_trial_trigger_attacker;
+    GRANT USAGE ON SCHEMA public TO mcp_trial_trigger_attacker;
+    SET ROLE mcp_trial_trigger_attacker;
+    CREATE TABLE mcp_trial_trigger_attacker.risk_sequence_probe (
+      id BIGINT,
+      created_at TIMESTAMPTZ
+    );
+  `);
+  assert.equal(attackerSetup.status, 0, output(attackerSetup));
+  const protectedSequenceBefore = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT last_value::text || ':' || is_called::text
+      FROM mcp_trial_risk_events_id_seq
+  `);
+  assert.equal(protectedSequenceBefore.status, 0, output(protectedSequenceBefore));
+
+  const attackerTrigger = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    SET ROLE mcp_trial_trigger_attacker;
+    CREATE TRIGGER steal_protected_sequence
+      BEFORE INSERT ON mcp_trial_trigger_attacker.risk_sequence_probe
+      FOR EACH ROW
+      EXECUTE FUNCTION public.enforce_mcp_trial_risk_event_insert();
+  `);
+  const attackerUse = attackerTrigger.status === 0
+    ? psql('-v', 'ON_ERROR_STOP=1', '-c', `
+      SET ROLE mcp_trial_trigger_attacker;
+      INSERT INTO mcp_trial_trigger_attacker.risk_sequence_probe
+        (id, created_at) VALUES (9001, '2000-01-01T00:00:00Z');
+    `)
+    : null;
+  const resetAttackerTrigger = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    DROP TRIGGER IF EXISTS steal_protected_sequence
+      ON mcp_trial_trigger_attacker.risk_sequence_probe;
+    CREATE TRIGGER guard_protected_sequence
+      BEFORE INSERT ON mcp_trial_trigger_attacker.risk_sequence_probe
+      FOR EACH ROW
+      EXECUTE FUNCTION public.enforce_mcp_trial_risk_event_insert();
+  `);
+  assert.equal(resetAttackerTrigger.status, 0, output(resetAttackerTrigger));
+  const guardedAttackerUse = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    SET ROLE mcp_trial_trigger_attacker;
+    INSERT INTO mcp_trial_trigger_attacker.risk_sequence_probe
+      (id, created_at) VALUES (9002, '2000-01-01T00:00:00Z');
+  `);
+  const protectedSequenceAfter = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT last_value::text || ':' || is_called::text
+      FROM mcp_trial_risk_events_id_seq
+  `);
+  assert.equal(protectedSequenceAfter.status, 0, output(protectedSequenceAfter));
+  assert.equal(
+    protectedSequenceAfter.stdout.trim(),
+    protectedSequenceBefore.stdout.trim(),
+    'an attacker-controlled trigger table must not advance the protected identity sequence',
+  );
+  assert.notEqual(attackerTrigger.status, 0, 'PUBLIC must not attach the protected trigger function');
+  assert.equal(attackerUse, null, 'the rejected attacker trigger must never become usable');
+  assert.notEqual(guardedAttackerUse.status, 0, 'the trigger function must reject every non-protected table');
+  const attackerExecute = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT has_function_privilege(
+      'mcp_trial_trigger_attacker',
+      'public.enforce_mcp_trial_risk_event_insert()',
+      'EXECUTE'
+    )
+  `);
+  assert.equal(attackerExecute.status, 0, output(attackerExecute));
+  assert.equal(attackerExecute.stdout.trim(), 'f');
+
   const runtimeRole = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     CREATE ROLE mcp_trial_runtime NOLOGIN;
     GRANT USAGE ON SCHEMA public TO mcp_trial_runtime;
     GRANT SELECT, INSERT, DELETE ON mcp_trial_risk_events TO mcp_trial_runtime;
+    GRANT USAGE ON SEQUENCE mcp_trial_risk_events_id_seq TO mcp_trial_runtime;
   `);
   assert.equal(runtimeRole.status, 0, output(runtimeRole));
 
@@ -208,6 +290,7 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   assert.notEqual(overridingIds[0], '9001', 'OVERRIDING SYSTEM VALUE must not retain the supplied ID');
 
   const normalAfterOverride = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SET ROLE mcp_trial_runtime;
     INSERT INTO mcp_trial_risk_events (
       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
     ) VALUES ('normal-after-override', NULL, repeat('1',64), 'allowed', 'normal_insert')
@@ -222,6 +305,16 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   `);
   assert.equal(retainedOverride.status, 0, output(retainedOverride));
   assert.equal(retainedOverride.stdout.trim(), '0');
+
+  const runtimeTriggerExecute = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
+    SELECT has_function_privilege(
+      'mcp_trial_runtime',
+      'public.enforce_mcp_trial_risk_event_insert()',
+      'EXECUTE'
+    )
+  `);
+  assert.equal(runtimeTriggerExecute.status, 0, output(runtimeTriggerExecute));
+  assert.equal(runtimeTriggerExecute.stdout.trim(), 'f');
 
   const publicExecute = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     SELECT has_function_privilege(

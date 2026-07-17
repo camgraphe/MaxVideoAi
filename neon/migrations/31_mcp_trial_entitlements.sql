@@ -217,6 +217,10 @@ SECURITY DEFINER
 SET search_path = pg_catalog, public
 AS $$
 BEGIN
+  IF TG_RELID IS DISTINCT FROM 'public.mcp_trial_risk_events'::pg_catalog.regclass THEN
+    RAISE EXCEPTION 'MCP trial risk event insert trigger rejected an unrelated table';
+  END IF;
+
   NEW.id := pg_catalog.nextval(
     pg_catalog.pg_get_serial_sequence(
       'public.mcp_trial_risk_events',
@@ -227,6 +231,9 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+REVOKE ALL PRIVILEGES ON FUNCTION enforce_mcp_trial_risk_event_insert()
+  FROM PUBLIC;
 
 DROP TRIGGER IF EXISTS mcp_trial_risk_events_enforce_insert ON mcp_trial_risk_events;
 CREATE TRIGGER mcp_trial_risk_events_enforce_insert
@@ -309,4 +316,5 @@ REVOKE ALL PRIVILEGES ON FUNCTION cleanup_mcp_trial_risk_events(TIMESTAMPTZ, INT
   FROM PUBLIC;
 
 -- The runtime role must not own the table or function security boundaries.
+-- Runtime INSERT may use the identity sequence but must not receive direct EXECUTE on the insert trigger.
 -- Deployment must GRANT EXECUTE on cleanup explicitly to the approved maintenance role.
