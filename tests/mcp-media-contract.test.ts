@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 const mediaTypesPath = 'frontend/src/server/agent-api/media-types.ts';
 const referenceTypesPath = 'frontend/src/server/agent-api/reference-types.ts';
 const errorsPath = 'frontend/src/server/agent-api/errors.ts';
+const agentApiBarrelPath = 'frontend/src/server/agent-api/index.ts';
+const typeContractFixturePath = 'tests/fixtures/mcp-media-type-contract.ts';
+const typeContractConfigPath = 'tests/fixtures/mcp-media-type-contract.tsconfig.json';
 
 function source(path: string): string {
   assert.equal(existsSync(path), true, `${path} must exist`);
@@ -80,6 +84,28 @@ test('ResolvedReference is an internal storage DTO using the canonical role owne
   assert.match(body, /height:\s*number\s*\|\s*null;/u);
   assert.match(body, /mimeType:\s*string;/u);
   assert.doesNotMatch(body, /previewUrl|resourceUrl|originUrl|providerUrl/iu);
+});
+
+test('compiled TypeScript locks exact media keys, value unions, and private fields', () => {
+  assert.equal(
+    existsSync(typeContractFixturePath),
+    true,
+    `${typeContractFixturePath} must compile the exact R1 type contract`,
+  );
+
+  const result = spawnSync(
+    'frontend/node_modules/.bin/tsc',
+    ['--project', typeContractConfigPath, '--pretty', 'false'],
+    { encoding: 'utf8' },
+  );
+
+  assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+});
+
+test('media and resolved-reference contracts stay out of the public agent API barrel', () => {
+  const barrelSource = source(agentApiBarrelPath);
+  assert.doesNotMatch(barrelSource, /AgentMediaItem|media-types/u);
+  assert.doesNotMatch(barrelSource, /ResolvedReference|reference-types/u);
 });
 
 test('reference and upload failures have one stable AgentApiError code owner', async () => {
