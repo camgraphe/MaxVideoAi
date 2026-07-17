@@ -44,6 +44,20 @@ export class ImageUploadError extends Error {
   }
 }
 
+export type ImageUploadLogCode =
+  | 'IMAGE_UPLOAD_NORMALIZATION_FAILED'
+  | 'IMAGE_UPLOAD_STORE_PREPARE_FAILED'
+  | 'IMAGE_UPLOAD_STORAGE_FAILED'
+  | 'IMAGE_UPLOAD_MIRROR_FAILED'
+  | 'IMAGE_UPLOAD_RECORD_FAILED'
+  | 'IMAGE_UPLOAD_PROJECTION_FAILED'
+  | 'IMAGE_UPLOAD_UNEXPECTED_FAILURE';
+
+export function logImageUploadEvent(level: 'error' | 'warn', code: ImageUploadLogCode): void {
+  const log = level === 'error' ? console.error : console.warn;
+  log(`[image-upload] code=${code}`);
+}
+
 export type StoreImageUploadParams = {
   userId: string;
   fileName: string;
@@ -101,6 +115,7 @@ type ImageUploadServiceDependencies = {
   createUploadImageThumbnail: typeof createUploadImageThumbnail;
   recordUserAsset: typeof recordUserAsset;
   ensureReusableAsset: typeof ensureReusableAsset;
+  logImageUploadEvent: typeof logImageUploadEvent;
 };
 
 function normalizedFileName(fileName: string, mimeType: string): string {
@@ -343,6 +358,7 @@ const defaultDependencies: ImageUploadServiceDependencies = {
   createUploadImageThumbnail,
   recordUserAsset,
   ensureReusableAsset,
+  logImageUploadEvent,
 };
 
 function numericSize(value: string | number | null, fallback: number): number {
@@ -363,11 +379,17 @@ export function createStoreImageUploadService(
       throw new ImageUploadError('FILE_TOO_LARGE', 'The image upload exceeds the byte limit.');
     }
 
-    const normalized = await dependencies.decodeImageUpload({
-      fileName: params.fileName,
-      declaredMime: params.declaredMime,
-      bytes: params.bytes,
-    });
+    let normalized: NormalizedImageUpload;
+    try {
+      normalized = await dependencies.decodeImageUpload({
+        fileName: params.fileName,
+        declaredMime: params.declaredMime,
+        bytes: params.bytes,
+      });
+    } catch (error) {
+      dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_NORMALIZATION_FAILED');
+      throw error;
+    }
     assertPixelLimit(normalized.width, normalized.height);
     const contentSha256 = createImageUploadContentHash(normalized.bytes);
 
@@ -395,7 +417,7 @@ export function createStoreImageUploadService(
         [params.userId, contentSha256]
       );
     } catch (error) {
-      console.error('[upload] failed to prepare image asset store', error);
+      dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_STORE_PREPARE_FAILED');
       throw new ImageUploadError('STORE_FAILED', 'Failed to prepare the image asset store.', error);
     }
 
@@ -421,7 +443,7 @@ export function createStoreImageUploadService(
         prefix: 'user-assets',
       });
     } catch (error) {
-      console.error('[upload] failed to store image', error);
+      dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_STORAGE_FAILED');
       throw new ImageUploadError('UPLOAD_FAILED', 'Failed to upload the image.', error);
     }
 
@@ -464,8 +486,8 @@ export function createStoreImageUploadService(
           sizeBytes,
           thumbUrl: imageThumbUrl,
         })
-        .catch((error) => {
-          console.warn('[upload] failed to mirror image into media_assets', error);
+        .catch(() => {
+          dependencies.logImageUploadEvent('warn', 'IMAGE_UPLOAD_MIRROR_FAILED');
         });
 
       return {
@@ -478,7 +500,7 @@ export function createStoreImageUploadService(
       };
     } catch (error) {
       if (error instanceof ImageUploadError) throw error;
-      console.error('[upload] failed to record asset', error);
+      dependencies.logImageUploadEvent('error', 'IMAGE_UPLOAD_RECORD_FAILED');
       throw new ImageUploadError('STORE_FAILED', 'Failed to record the image asset.', error);
     }
   };
@@ -540,7 +562,7 @@ export async function loadStoredImageUploadRouteAsset(params: {
       thumbUrl: asset.thumb_url,
     };
   } catch (error) {
-    console.error('[upload] failed to load stored image asset', error);
+    logImageUploadEvent('error', 'IMAGE_UPLOAD_PROJECTION_FAILED');
     throw new ImageUploadError('STORE_FAILED', 'Failed to load the stored image asset.', error);
   }
 }

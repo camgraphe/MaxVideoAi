@@ -4,6 +4,7 @@ import { getRouteAuthContext } from '@/lib/supabase-ssr';
 import {
   ImageUploadError,
   loadStoredImageUploadRouteAsset,
+  logImageUploadEvent,
   MAX_IMAGE_UPLOAD_BYTES,
   MAX_IMAGE_UPLOAD_MB,
   storeImageUpload,
@@ -33,7 +34,7 @@ const defaultLimits: ImageUploadRouteLimits = {
 
 function errorResponse(error: unknown, maxMB: number): NextResponse {
   if (!(error instanceof ImageUploadError)) {
-    console.error('[upload] unexpected image upload failure', error);
+    logImageUploadEvent('error', 'IMAGE_UPLOAD_UNEXPECTED_FAILURE');
     return NextResponse.json({ ok: false, error: 'STORE_FAILED' }, { status: 500 });
   }
   if (error.code === 'EMPTY_FILE') {

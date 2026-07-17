@@ -357,3 +357,73 @@ test('media_assets mirror failure stays non-fatal while upload and record failur
     (error: any) => error?.code === 'STORE_FAILED'
   );
 });
+
+test('upload failures emit only coarse event codes and never forward raw secret errors', async () => {
+  const service = await loadService();
+  const secret = 'private-key=user-secret https://signed.example.com/image?token=secret';
+  const events: unknown[][] = [];
+  const logImageUploadEvent = (...args: unknown[]) => {
+    events.push(args);
+  };
+  const params = {
+    userId: 'user_secret',
+    fileName: 'private-reference.png',
+    declaredMime: 'image/png',
+    bytes: Buffer.from('source'),
+  };
+
+  const normalizationFailure = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      logImageUploadEvent,
+      decodeImageUpload: async () => {
+        throw new Error(secret);
+      },
+    })
+  );
+  await assert.rejects(normalizationFailure(params));
+
+  const uploadFailure = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      logImageUploadEvent,
+      uploadImageToStorage: async () => {
+        throw new Error(secret);
+      },
+    })
+  );
+  await assert.rejects(uploadFailure(params));
+
+  const mirrorFailure = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      logImageUploadEvent,
+      ensureReusableAsset: async () => {
+        throw new Error(secret);
+      },
+    })
+  );
+  await mirrorFailure(params);
+
+  const recordFailure = service.createStoreImageUploadService(
+    makeServiceDependencies({
+      logImageUploadEvent,
+      recordUserAsset: async () => {
+        throw new Error(secret);
+      },
+    })
+  );
+  await assert.rejects(recordFailure(params));
+
+  assert.deepEqual(events, [
+    ['warn', 'IMAGE_UPLOAD_NORMALIZATION_FAILED'],
+    ['error', 'IMAGE_UPLOAD_STORAGE_FAILED'],
+    ['warn', 'IMAGE_UPLOAD_MIRROR_FAILED'],
+    ['error', 'IMAGE_UPLOAD_RECORD_FAILED'],
+  ]);
+  assert.doesNotMatch(JSON.stringify(events), /user-secret|signed\.example\.com|private-reference|user_secret/);
+
+  const serviceSource = fs.readFileSync(servicePath, 'utf8');
+  const handlerSource = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/create-image-upload-post-handler.ts'),
+    'utf8'
+  );
+  assert.doesNotMatch(serviceSource + handlerSource, /console\.(?:error|warn)\([^\n]*,\s*error\b/);
+});

@@ -509,7 +509,7 @@ test('image upload and library routes return stable JSON errors for storage fail
     'utf8'
   );
 
-  assert.match(imageUploadService, /failed to prepare image asset store/);
+  assert.match(imageUploadService, /IMAGE_UPLOAD_STORE_PREPARE_FAILED/);
   assert.match(imageUploadHandler, /error:\s*'STORE_FAILED'/);
   assert.match(assetsRoute, /failed to list assets/);
   assert.match(assetsRoute, /error:\s*'LOAD_FAILED'/);
