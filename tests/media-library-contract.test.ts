@@ -463,15 +463,23 @@ test('upload routes persist reusable thumbnails for new image and video assets',
     path.join(process.cwd(), 'frontend/app/api/uploads/image/route.ts'),
     'utf8'
   );
+  const imageUploadService = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/store-image-upload.ts'),
+    'utf8'
+  );
+  const imageUploadHandler = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/create-image-upload-post-handler.ts'),
+    'utf8'
+  );
   const videoRoute = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/uploads/video/route.ts'),
     'utf8'
   );
 
-  assert.match(imageRoute, /createUploadImageThumbnail/);
-  assert.match(imageRoute, /thumbUrl:\s*imageThumbUrl/);
-  assert.match(imageRoute, /ensureReusableAsset\([\s\S]*thumbUrl:\s*imageThumbUrl/);
-  assert.match(imageRoute, /asset:\s*\{[\s\S]*thumbUrl:\s*imageThumbUrl/);
+  assert.match(imageUploadService, /createUploadImageThumbnail/);
+  assert.match(imageUploadService, /thumbUrl:\s*imageThumbUrl/);
+  assert.match(imageUploadService, /ensureReusableAsset\([\s\S]*thumbUrl:\s*imageThumbUrl/);
+  assert.match(imageUploadHandler, /asset:\s*\{[\s\S]*thumbUrl:\s*routeAsset\.thumbUrl/);
 
   assert.match(videoRoute, /createUploadVideoThumbnail/);
   assert.match(videoRoute, /thumbUrl:\s*videoThumbUrl/);
@@ -484,6 +492,14 @@ test('image upload and library routes return stable JSON errors for storage fail
     path.join(process.cwd(), 'frontend/app/api/uploads/image/route.ts'),
     'utf8'
   );
+  const imageUploadService = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/store-image-upload.ts'),
+    'utf8'
+  );
+  const imageUploadHandler = fs.readFileSync(
+    path.join(process.cwd(), 'frontend/src/server/uploads/create-image-upload-post-handler.ts'),
+    'utf8'
+  );
   const assetsRoute = fs.readFileSync(
     path.join(process.cwd(), 'frontend/app/api/media-library/assets/route.ts'),
     'utf8'
@@ -493,8 +509,8 @@ test('image upload and library routes return stable JSON errors for storage fail
     'utf8'
   );
 
-  assert.match(imageRoute, /failed to prepare image asset store/);
-  assert.match(imageRoute, /error:\s*'STORE_FAILED'/);
+  assert.match(imageUploadService, /failed to prepare image asset store/);
+  assert.match(imageUploadHandler, /error:\s*'STORE_FAILED'/);
   assert.match(assetsRoute, /failed to list assets/);
   assert.match(assetsRoute, /error:\s*'LOAD_FAILED'/);
   assert.match(recentRoute, /failed to list recent outputs/);
