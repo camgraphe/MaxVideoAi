@@ -124,6 +124,8 @@ export type TrialRiskRequestContext = Readonly<{
   userAgent: string | null;
 }>;
 
+const TRIAL_RISK_CONTEXT_KEYS = new Set(['clientIp', 'userAgent']);
+
 const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext'> = {
   paidGenerationEnabled: () => mcpPublication.paidGeneration,
   getAccountRestriction: getActiveAccountRestriction,
@@ -152,24 +154,37 @@ function requireTrialRiskRequestContext(value: unknown): TrialRiskRequestContext
   if (!value
     || typeof value !== 'object'
     || Array.isArray(value)
-    || Object.getPrototypeOf(value) !== Object.prototype
-    || Object.keys(value).length !== 2
-    || !Object.hasOwn(value, 'clientIp')
-    || !Object.hasOwn(value, 'userAgent')) {
+    || Object.getPrototypeOf(value) !== Object.prototype) {
     throw new Error('Invalid trial risk request context.');
   }
-  const context = value as Record<string, unknown>;
-  if (!(context.clientIp === null
-      || (typeof context.clientIp === 'string' && context.clientIp.length <= 64))
-    || !(context.userAgent === null
-      || (typeof context.userAgent === 'string'
-        && context.userAgent.length <= 2_048
-        && !/[\u0000\r\n]/u.test(context.userAgent)))) {
+  const context = Object.create(null) as Record<string, unknown>;
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== TRIAL_RISK_CONTEXT_KEYS.size) {
+    throw new Error('Invalid trial risk request context.');
+  }
+  for (const key of ownKeys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (typeof key !== 'string'
+      || !TRIAL_RISK_CONTEXT_KEYS.has(key)
+      || !descriptor?.enumerable
+      || !Object.hasOwn(descriptor, 'value')) {
+      throw new Error('Invalid trial risk request context.');
+    }
+    context[key] = descriptor.value;
+  }
+  const clientIp = context.clientIp;
+  const userAgent = context.userAgent;
+  if (!(clientIp === null
+      || (typeof clientIp === 'string' && clientIp.length <= 64))
+    || !(userAgent === null
+      || (typeof userAgent === 'string'
+        && userAgent.length <= 2_048
+        && !/[\u0000\r\n]/u.test(userAgent)))) {
     throw new Error('Invalid trial risk request context.');
   }
   return Object.freeze({
-    clientIp: context.clientIp,
-    userAgent: context.userAgent,
+    clientIp,
+    userAgent,
   }) as TrialRiskRequestContext;
 }
 

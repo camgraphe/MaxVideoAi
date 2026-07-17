@@ -25,20 +25,35 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function assertInput(value: unknown): asserts value is TrialQuotePreparedAuditInput {
-  if (!isRecord(value)
-    || Object.keys(value).length !== INPUT_KEYS.size
-    || !Object.keys(value).every((key) => INPUT_KEYS.has(key))
-    || typeof value.quoteId !== 'string'
-    || !UUID_V4_PATTERN.test(value.quoteId)
-    || value.engineId !== 'seedance-2-0-mini'
-    || typeof value.aspectRatio !== 'string'
-    || !ASPECT_RATIOS.has(value.aspectRatio)
-    || typeof value.audio !== 'boolean'
-    || typeof value.oauthClientId !== 'string'
-    || value.oauthClientId.length < 1
-    || value.oauthClientId.length > 256
-    || value.oauthClientId !== value.oauthClientId.trim()
-    || value.outcome !== 'success') {
+  if (!isRecord(value)) {
+    throw new Error('Invalid trial quote prepared audit input.');
+  }
+  const input = Object.create(null) as Record<string, unknown>;
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== INPUT_KEYS.size) {
+    throw new Error('Invalid trial quote prepared audit input.');
+  }
+  for (const key of ownKeys) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (typeof key !== 'string'
+      || !INPUT_KEYS.has(key)
+      || !descriptor?.enumerable
+      || !Object.hasOwn(descriptor, 'value')) {
+      throw new Error('Invalid trial quote prepared audit input.');
+    }
+    input[key] = descriptor.value;
+  }
+  if (typeof input.quoteId !== 'string'
+    || !UUID_V4_PATTERN.test(input.quoteId)
+    || input.engineId !== 'seedance-2-0-mini'
+    || typeof input.aspectRatio !== 'string'
+    || !ASPECT_RATIOS.has(input.aspectRatio)
+    || typeof input.audio !== 'boolean'
+    || typeof input.oauthClientId !== 'string'
+    || input.oauthClientId.length < 1
+    || input.oauthClientId.length > 256
+    || input.oauthClientId !== input.oauthClientId.trim()
+    || input.outcome !== 'success') {
     throw new Error('Invalid trial quote prepared audit input.');
   }
 }

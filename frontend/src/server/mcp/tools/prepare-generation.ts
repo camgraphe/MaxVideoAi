@@ -11,6 +11,16 @@ const reference = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('asset'), assetId: z.string(), role: referenceRole }).strict(),
   z.object({ kind: z.literal('https'), url: z.string(), role: referenceRole }).strict(),
 ]);
+const inputSchema = z.object({
+  schemaVersion: z.literal(1).optional(),
+  surface: z.enum(['video', 'image']),
+  engineId: z.string(),
+  mode: z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']),
+  prompt: z.string(),
+  settings: z.record(z.string(), settingValue).optional(),
+  references: z.array(reference).optional(),
+  outputCount: z.literal(1).optional(),
+}).strict();
 
 export function registerPrepareGenerationTool(
   server: McpServer,
@@ -26,16 +36,7 @@ export function registerPrepareGenerationTool(
       title: 'Prepare a MaxVideoAI generation',
       description:
         'Use this when the user has selected an image or video model and needs an exact short-lived quote. It validates and saves the quote, but it does not spend or generate. Do not use it as confirmation.',
-      inputSchema: {
-        schemaVersion: z.literal(1).optional(),
-        surface: z.enum(['video', 'image']),
-        engineId: z.string(),
-        mode: z.enum(['t2v', 'i2v', 'ref2v', 't2i', 'i2i']),
-        prompt: z.string(),
-        settings: z.record(z.string(), settingValue).optional(),
-        references: z.array(reference).optional(),
-        outputCount: z.literal(1).optional(),
-      },
+      inputSchema,
       annotations: {
         readOnlyHint: true,
         destructiveHint: false,

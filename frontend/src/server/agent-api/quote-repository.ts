@@ -125,6 +125,13 @@ const FUNDING_MODES = new Set<GenerationFundingMode>(['wallet', 'trial']);
 const TRIAL_FUNDING_KEYS = new Set([
   'kind', 'customerChargeCents', 'normalPriceCents', 'providerCostCents',
 ]);
+const TRIAL_PRICING_SNAPSHOT_KEYS = new Set([
+  'schemaVersion', 'catalogRevision', 'surface', 'engineId', 'membership',
+  'canonicalPricing', 'funding',
+]);
+const FORBIDDEN_TRIAL_FUNDING_SEMANTICS = new Set([
+  'walletcredit', 'refund', 'reservation',
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -133,6 +140,29 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function hasExactKeys(record: Record<string, unknown>, keys: ReadonlySet<string>): boolean {
   const actual = Object.keys(record);
   return actual.length === keys.size && actual.every((key) => keys.has(key));
+}
+
+function hasForbiddenTrialFundingSemantics(
+  value: unknown,
+  ancestors: Set<object> = new Set(),
+  skipFunding = false,
+): boolean {
+  if (!value || typeof value !== 'object') return false;
+  if (ancestors.has(value)) return true;
+  ancestors.add(value);
+  const entries = Array.isArray(value)
+    ? value.map((nested) => [null, nested] as const)
+    : Object.entries(value as Record<string, unknown>);
+  for (const [key, nested] of entries) {
+    if (skipFunding && key === 'funding') continue;
+    if (key !== null) {
+      const normalized = key.toLowerCase().replace(/[^a-z0-9]/gu, '');
+      if (FORBIDDEN_TRIAL_FUNDING_SEMANTICS.has(normalized)) return true;
+    }
+    if (hasForbiddenTrialFundingSemantics(nested, ancestors)) return true;
+  }
+  ancestors.delete(value);
+  return false;
 }
 
 function isBoundedText(value: unknown, maxLength: number): value is string {
@@ -183,6 +213,8 @@ function parseTrialFunding(
     ? canonicalPricing.base
     : null;
   if (priceCents !== 0
+    || !hasExactKeys(pricingSnapshot, TRIAL_PRICING_SNAPSHOT_KEYS)
+    || hasForbiddenTrialFundingSemantics(pricingSnapshot, new Set(), true)
     || !funding
     || !hasExactKeys(funding, TRIAL_FUNDING_KEYS)
     || funding.kind !== 'included_trial'

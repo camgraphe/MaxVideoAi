@@ -6,6 +6,39 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION mcp_trial_snapshot_has_forbidden_funding_semantics(snapshot JSONB)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+IMMUTABLE
+STRICT
+PARALLEL SAFE
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  item RECORD;
+BEGIN
+  IF jsonb_typeof(snapshot) = 'object' THEN
+    FOR item IN SELECT key, value FROM jsonb_each(snapshot)
+    LOOP
+      IF lower(regexp_replace(item.key, '[^A-Za-z0-9]', '', 'g'))
+          IN ('walletcredit', 'refund', 'reservation')
+        OR mcp_trial_snapshot_has_forbidden_funding_semantics(item.value)
+      THEN
+        RETURN TRUE;
+      END IF;
+    END LOOP;
+  ELSIF jsonb_typeof(snapshot) = 'array' THEN
+    FOR item IN SELECT value FROM jsonb_array_elements(snapshot)
+    LOOP
+      IF mcp_trial_snapshot_has_forbidden_funding_semantics(item.value) THEN
+        RETURN TRUE;
+      END IF;
+    END LOOP;
+  END IF;
+  RETURN FALSE;
+END;
+$$;
+
 ALTER TABLE mcp_generation_quotes
   DROP CONSTRAINT IF EXISTS mcp_generation_quotes_funding_wallet;
 ALTER TABLE mcp_generation_quotes
@@ -27,6 +60,17 @@ ALTER TABLE mcp_generation_quotes
       OR (
         funding_mode = 'trial'
         AND price_cents = 0
+        AND pricing_snapshot ?& ARRAY[
+          'schemaVersion', 'catalogRevision', 'surface', 'engineId', 'membership',
+          'canonicalPricing', 'funding'
+        ]::text[]
+        AND pricing_snapshot - ARRAY[
+          'schemaVersion', 'catalogRevision', 'surface', 'engineId', 'membership',
+          'canonicalPricing', 'funding'
+        ]::text[] = '{}'::jsonb
+        AND NOT mcp_trial_snapshot_has_forbidden_funding_semantics(
+          pricing_snapshot - 'funding'
+        )
         AND jsonb_typeof(pricing_snapshot -> 'funding') = 'object'
         AND (pricing_snapshot -> 'funding') ?& ARRAY[
           'kind', 'customerChargeCents', 'normalPriceCents', 'providerCostCents'

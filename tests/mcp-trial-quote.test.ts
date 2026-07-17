@@ -5,6 +5,9 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
 
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+
 import type { QueryExecutor, TransactionQueryExecutor } from '../frontend/src/lib/db';
 import { AgentApiError } from '../frontend/src/server/agent-api/errors';
 import { hashCanonicalGenerationRequest } from '../frontend/src/server/agent-api/generation-normalization';
@@ -18,6 +21,10 @@ import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal'
 import { insertPreparedQuote } from '../frontend/src/server/agent-api/quote-repository';
 import type { TrialStatus } from '../frontend/src/server/agent-api/types';
 import * as httpHandler from '../frontend/src/server/mcp/http-handler';
+import {
+  createMaxVideoAiMcpServer,
+  type MaxVideoAiMcpServices,
+} from '../frontend/src/server/mcp/server';
 import type { EngineCaps, EngineInputField, EngineModeUiCaps } from '../frontend/types/engines';
 
 const paidMigrationPath = 'neon/migrations/30_mcp_paid_generation.sql';
@@ -257,6 +264,78 @@ test('a qualifying original request prepares a zero-charge trial without reducin
   }]);
 });
 
+test('prepare_generation SDK validation rejects unknown top-level routing and funding fields', async (t) => {
+  const received: unknown[] = [];
+  const prepared = {
+    quoteId,
+    expiresAt: expiresAt.toISOString(),
+    requestHash: 'a'.repeat(64),
+    summary: {
+      schemaVersion: 1 as const,
+      ...trialInput,
+      references: [],
+      outputCount: 1 as const,
+    },
+    price: { amountCents: 0, currency: 'USD' },
+    balance: { beforeCents: 500, afterCents: 500 },
+    fundingMode: 'trial' as const,
+    confirmationRequired: true as const,
+    topupRequired: false,
+  };
+  const services: MaxVideoAiMcpServices = {
+    async getAccountStatus() { throw new Error('unused'); },
+    async listModels() { return []; },
+    async recommendModels() {
+      return { recommendations: [], nextAction: 'clarify_requirements' };
+    },
+    async prepareGeneration(input) {
+      received.push(input);
+      return prepared;
+    },
+    async confirmGeneration() { throw new Error('unused'); },
+    async getGenerationStatus() { throw new Error('unused'); },
+    async listRecentGenerations() { throw new Error('unused'); },
+    async createTopupLink() { throw new Error('unused'); },
+  };
+  const server = createMaxVideoAiMcpServer(principal, services, { paidGeneration: true });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: 'trial-strict-input-contract', version: '1.0.0' });
+  await server.connect(serverTransport);
+  await client.connect(clientTransport);
+  t.after(async () => {
+    await client.close();
+    await server.close();
+  });
+
+  const unknownExtras = [
+    { providerRoute: 'private-provider-route' },
+    { funding: { kind: 'included_trial' } },
+    { provider: { id: 'private-provider' } },
+    { referenceUrl: 'https://private.example/reference.png' },
+    { walletCredit: 500 },
+    { reservation: { id: 'private-reservation' } },
+  ];
+  for (const extra of unknownExtras) {
+    const invalid = await client.callTool({
+      name: 'prepare_generation',
+      arguments: { ...trialInput, ...extra },
+    });
+    assert.equal(invalid.isError, true, JSON.stringify(extra));
+  }
+  assert.equal(received.length, 0);
+
+  const prepareTool = (await client.listTools()).tools
+    .find((tool) => tool.name === 'prepare_generation');
+  assert.equal(prepareTool?.inputSchema.additionalProperties, false);
+
+  const valid = await client.callTool({
+    name: 'prepare_generation',
+    arguments: trialInput,
+  });
+  assert.notEqual(valid.isError, true);
+  assert.deepEqual(received, [trialInput]);
+});
+
 test('explicit extra settings never call trial services and preserve the paid wallet quote', async () => {
   const { captures, deps } = prepareDependencies();
   const prepared = await prepareGeneration({
@@ -391,9 +470,8 @@ function storedTrialRow(request: CanonicalGenerationRequest, pricing: Record<str
   };
 }
 
-test('quote repository requires explicit funding mode and parses a private typed trial snapshot', async () => {
-  const request = canonicalTrialRequest();
-  const normalSnapshot = {
+function validTrialPricingSnapshot(): Record<string, unknown> {
+  return {
     schemaVersion: 1,
     catalogRevision: 'catalog-1',
     surface: 'video',
@@ -403,12 +481,17 @@ test('quote repository requires explicit funding mode and parses a private typed
       thresholdCents: 0, discountPercent: 0,
     },
     canonicalPricing: pricingSnapshot(),
+    funding: {
+      kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125,
+      providerCostCents: 85,
+    },
   };
-  const trialFunding = {
-    kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125,
-    providerCostCents: 85,
-  } as const;
-  const persisted = { ...normalSnapshot, funding: trialFunding };
+}
+
+test('quote repository requires explicit funding mode and parses a private typed trial snapshot', async () => {
+  const request = canonicalTrialRequest();
+  const persisted = validTrialPricingSnapshot();
+  const trialFunding = persisted.funding;
   const calls: Array<{ sql: string; params?: ReadonlyArray<unknown> }> = [];
   const executor: QueryExecutor = {
     async query<TRecord>(sql, params) {
@@ -441,6 +524,97 @@ test('quote repository requires explicit funding mode and parses a private typed
     }),
     /invalid prepared quote input/i,
   );
+});
+
+test('trial quote insert rejects noncanonical top-level and nested funding semantics before SQL', async () => {
+  const request = canonicalTrialRequest();
+  const valid = validTrialPricingSnapshot();
+  const input = {
+    userId: principal.userId,
+    oauthClientId: principal.clientId,
+    request,
+    requestHash: hashCanonicalGenerationRequest(request),
+    catalogRevision: 'catalog-1',
+    pricingSnapshot: valid,
+    priceCents: 0,
+    currency: 'USD',
+    fundingMode: 'trial' as const,
+  };
+  const attacks = [
+    { ...structuredClone(valid), private: true },
+    { ...structuredClone(valid), walletCredit: 500 },
+    { ...structuredClone(valid), refund: { amountCents: 125 } },
+    { ...structuredClone(valid), reservation: 'private-reservation' },
+    {
+      ...structuredClone(valid),
+      membership: { ...(valid.membership as object), Wallet_Credit: 500 },
+    },
+    {
+      ...structuredClone(valid),
+      canonicalPricing: { ...(valid.canonicalPricing as object), REFUND: true },
+    },
+    {
+      ...structuredClone(valid),
+      canonicalPricing: {
+        ...(valid.canonicalPricing as object),
+        provenance: { source: 'canonical-test', re_ser_va_tion: 'private' },
+      },
+    },
+  ];
+  for (const pricingSnapshotAttack of attacks) {
+    let queries = 0;
+    const executor: QueryExecutor = {
+      async query<TRecord>() {
+        queries += 1;
+        return [storedTrialRow(request, valid)] as TRecord[];
+      },
+    };
+    await assert.rejects(
+      insertPreparedQuote({ ...input, pricingSnapshot: pricingSnapshotAttack }, {
+        executor, now: () => now, randomUUID: () => quoteId,
+      }),
+      /invalid prepared quote input/i,
+    );
+    assert.equal(queries, 0);
+  }
+});
+
+test('trial quote row parsing rejects noncanonical top-level and nested funding semantics', async () => {
+  const request = canonicalTrialRequest();
+  const valid = validTrialPricingSnapshot();
+  const input = {
+    userId: principal.userId,
+    oauthClientId: principal.clientId,
+    request,
+    requestHash: hashCanonicalGenerationRequest(request),
+    catalogRevision: 'catalog-1',
+    pricingSnapshot: valid,
+    priceCents: 0,
+    currency: 'USD',
+    fundingMode: 'trial' as const,
+  };
+  const attacks = [
+    { ...structuredClone(valid), wallet_credit: 500 },
+    {
+      ...structuredClone(valid),
+      canonicalPricing: { ...(valid.canonicalPricing as object), Reservation: true },
+    },
+    {
+      ...structuredClone(valid),
+      membership: { ...(valid.membership as object), reFund: { amountCents: 125 } },
+    },
+  ];
+  for (const pricingSnapshotAttack of attacks) {
+    const executor: QueryExecutor = {
+      async query<TRecord>() {
+        return [storedTrialRow(request, pricingSnapshotAttack)] as TRecord[];
+      },
+    };
+    await assert.rejects(
+      insertPreparedQuote(input, { executor, now: () => now, randomUUID: () => quoteId }),
+      /invalid quote row/i,
+    );
+  }
 });
 
 test('trial quote preparation audit has a narrow exact parameterized repository contract', async () => {
@@ -484,6 +658,53 @@ test('trial quote preparation audit has a narrow exact parameterized repository 
   }
 });
 
+test('trial quote audit rejects exotic DTO properties without invoking accessors or SQL', async () => {
+  const modulePath = '../frontend/src/server/agent-api/trial-quote-audit-repository';
+  const auditModule = await import(modulePath) as Record<string, unknown>;
+  const recordAudit = auditModule.recordTrialQuotePreparedAudit as (
+    input: Record<string, unknown>,
+    dependencies: { executor: QueryExecutor },
+  ) => Promise<boolean>;
+  const validAudit = {
+    quoteId,
+    engineId: 'seedance-2-0-mini',
+    aspectRatio: '9:16',
+    audio: false,
+    oauthClientId: 'codex-client',
+    outcome: 'success',
+  };
+  let getterCalls = 0;
+  let queries = 0;
+  const accessorAudit = { ...validAudit } as Record<string, unknown>;
+  Object.defineProperty(accessorAudit, 'quoteId', {
+    enumerable: true,
+    get() {
+      getterCalls += 1;
+      return quoteId;
+    },
+  });
+  const symbolAudit = { ...validAudit } as Record<PropertyKey, unknown>;
+  symbolAudit[Symbol('private')] = true;
+  const hiddenAudit = { ...validAudit };
+  Object.defineProperty(hiddenAudit, 'private', { enumerable: false, value: true });
+  const inheritedAudit = Object.assign(Object.create({ private: true }), validAudit);
+  const executor: QueryExecutor = {
+    async query<TRecord>() {
+      queries += 1;
+      return [{ quote_id: quoteId }] as TRecord[];
+    },
+  };
+
+  for (const attack of [accessorAudit, symbolAudit, hiddenAudit, inheritedAudit]) {
+    await assert.rejects(
+      recordAudit(attack as Record<string, unknown>, { executor }),
+      /invalid trial quote prepared audit input/i,
+    );
+  }
+  assert.equal(getterCalls, 0);
+  assert.equal(queries, 0);
+});
+
 test('HTTP request context honors trusted IP precedence and passes no tool-controlled fields', () => {
   const resolver = (httpHandler as unknown as Record<string, unknown>)
     .resolveTrialRiskRequestContext as ((headers: Headers) => Record<string, unknown>) | undefined;
@@ -524,6 +745,52 @@ test('direct prepare service construction requires an explicit exact request con
     ),
     /invalid trial risk request context/i,
   );
+});
+
+test('trial risk context rejects exotic DTO properties without invoking accessors or dependencies', () => {
+  let getterCalls = 0;
+  let riskCalls = 0;
+  let transactionCalls = 0;
+  const accessorContext = { userAgent: null } as Record<string, unknown>;
+  Object.defineProperty(accessorContext, 'clientIp', {
+    enumerable: true,
+    get() {
+      getterCalls += 1;
+      return null;
+    },
+  });
+  const symbolContext = { clientIp: null, userAgent: null } as Record<PropertyKey, unknown>;
+  symbolContext[Symbol('private')] = true;
+  const hiddenContext = { clientIp: null, userAgent: null };
+  Object.defineProperty(hiddenContext, 'private', { enumerable: false, value: true });
+  const inheritedContext = Object.assign(
+    Object.create({ private: true }),
+    { clientIp: null, userAgent: null },
+  );
+  const overrides = {
+    checkTrialRisk: async () => {
+      riskCalls += 1;
+      return { allowed: true as const };
+    },
+    withTransaction: async () => {
+      transactionCalls += 1;
+      throw new Error('must not start a transaction');
+    },
+  };
+
+  for (const attack of [accessorContext, symbolContext, hiddenContext, inheritedContext]) {
+    assert.throws(
+      () => createPrepareGenerationService(
+        'https://maxvideoai.com/account/connections',
+        attack as never,
+        overrides as never,
+      ),
+      /invalid trial risk request context/i,
+    );
+  }
+  assert.equal(getterCalls, 0);
+  assert.equal(riskCalls, 0);
+  assert.equal(transactionCalls, 0);
 });
 
 function commandExists(command: string): boolean {
@@ -639,14 +906,74 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
   `);
   assert.equal(valid.status, 0, commandOutput(valid));
 
-  const attacks = [
-    `UPDATE mcp_generation_quotes SET funding_mode = 'trial' WHERE user_id = 'wallet-user'`,
-    `UPDATE mcp_generation_quotes SET price_cents = 1 WHERE user_id = 'trial-user'`,
-    `UPDATE mcp_generation_quotes SET pricing_snapshot = pricing_snapshot - 'funding' WHERE user_id = 'trial-user'`,
-    `UPDATE mcp_generation_quotes SET pricing_snapshot = jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '0') WHERE user_id = 'trial-user'`,
-    `UPDATE mcp_generation_quotes SET pricing_snapshot = jsonb_set(pricing_snapshot, '{funding,normalPriceCents}', '124') WHERE user_id = 'trial-user'`,
-    `UPDATE mcp_generation_quotes SET pricing_snapshot = jsonb_set(pricing_snapshot, '{funding,private}', 'true') WHERE user_id = 'trial-user'`,
-    `UPDATE mcp_generation_quotes SET pricing_snapshot = jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '9007199254740992') WHERE user_id = 'trial-user'`,
+  const cloneQuoteAttack = (
+    sequence: number,
+    sourceUserId: 'trial-user' | 'wallet-user',
+    changes: { pricingSnapshot?: string; priceCents?: string; fundingMode?: string },
+  ) => `
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+      pricing_snapshot, price_cents, currency, funding_mode, state, job_id,
+      expires_at, claimed_at, created_at, updated_at
+    )
+    SELECT
+      '223e4567-e89b-42d3-a456-${String(426_614_174_000 + sequence)}',
+      'trial-attack-${sequence}', oauth_client_id, request_json, request_hash, catalog_revision,
+      ${changes.pricingSnapshot ?? 'pricing_snapshot'},
+      ${changes.priceCents ?? 'price_cents'}, currency,
+      ${changes.fundingMode ?? 'funding_mode'}, state, job_id,
+      expires_at, claimed_at, created_at, updated_at
+    FROM mcp_generation_quotes
+    WHERE user_id = '${sourceUserId}'
+  `;
+  const quoteAttacks = [
+    cloneQuoteAttack(1, 'wallet-user', { fundingMode: "'trial'" }),
+    cloneQuoteAttack(2, 'trial-user', { priceCents: '1' }),
+    cloneQuoteAttack(3, 'trial-user', { pricingSnapshot: "pricing_snapshot - 'funding'" }),
+    cloneQuoteAttack(4, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '0')",
+    }),
+    cloneQuoteAttack(5, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,normalPriceCents}', '124')",
+    }),
+    cloneQuoteAttack(6, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,private}', 'true')",
+    }),
+    cloneQuoteAttack(7, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '9007199254740992')",
+    }),
+    cloneQuoteAttack(8, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{private}', 'true')",
+    }),
+    cloneQuoteAttack(9, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{walletCredit}', '500')",
+    }),
+    cloneQuoteAttack(10, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{wallet_credit}', '500')",
+    }),
+    cloneQuoteAttack(11, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{REFUND}', 'true')",
+    }),
+    cloneQuoteAttack(12, 'trial-user', {
+      pricingSnapshot: `jsonb_set(pricing_snapshot, '{reservation}', '"private"')`,
+    }),
+    cloneQuoteAttack(13, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{membership,Wallet_Credit}', '500')",
+    }),
+    cloneQuoteAttack(14, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{canonicalPricing,reFund}', 'true')",
+    }),
+    cloneQuoteAttack(15, 'trial-user', {
+      pricingSnapshot: `jsonb_set(pricing_snapshot, '{canonicalPricing,provenance,re_ser_va_tion}', '"private"')`,
+    }),
+  ];
+  for (const sql of quoteAttacks) {
+    const attacked = psql('-v', 'ON_ERROR_STOP=1', '-c', sql);
+    assert.notEqual(attacked.status, 0, `${sql}\nunexpectedly succeeded`);
+    assert.match(commandOutput(attacked), /mcp_generation_quotes_funding_shape/i, sql);
+  }
+
+  const auditAttacks = [
     `UPDATE mcp_trial_quote_prepared_audit SET outcome = 'failure' WHERE quote_id = '${quoteId}'`,
     `DELETE FROM mcp_trial_quote_prepared_audit WHERE quote_id = '${quoteId}'`,
     `INSERT INTO mcp_trial_quote_prepared_audit (quote_id, engine_id, aspect_ratio, audio, oauth_client_id, outcome)
@@ -654,7 +981,7 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     `INSERT INTO mcp_trial_quote_prepared_audit (quote_id, engine_id, aspect_ratio, audio, oauth_client_id, outcome)
        VALUES ('123e4567-e89b-42d3-a456-426614174002', 'seedance-2-0-mini', '9:16', FALSE, 'codex-client', 'failure')`,
   ];
-  for (const sql of attacks) {
+  for (const sql of auditAttacks) {
     const attacked = psql('-v', 'ON_ERROR_STOP=1', '-c', sql);
     assert.notEqual(attacked.status, 0, `${sql}\nunexpectedly succeeded`);
   }
