@@ -3,18 +3,10 @@ import { isAllowedAssetHost } from '@/server/storage';
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
+import { normalizeSupportedReferenceRasterMime } from './reference-media-policy';
 import type { ResolvedReference } from './reference-types';
 
 const MAX_ASSET_ID_LENGTH = 512;
-const SUPPORTED_RASTER_MIME_TYPES = new Map([
-  ['image/avif', 'image/avif'],
-  ['image/gif', 'image/gif'],
-  ['image/jpeg', 'image/jpeg'],
-  ['image/jpg', 'image/jpeg'],
-  ['image/pjpeg', 'image/jpeg'],
-  ['image/png', 'image/png'],
-  ['image/webp', 'image/webp'],
-]);
 
 type ReferenceAssetRow = {
   id: string;
@@ -60,12 +52,6 @@ function normalizeAssetId(value: unknown): string {
     throw new AgentApiError('REFERENCE_INVALID', 'Reference image is not usable.');
   }
   return value;
-}
-
-function normalizeRasterMime(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const mime = value.split(';')[0]?.trim().toLowerCase() ?? '';
-  return SUPPORTED_RASTER_MIME_TYPES.get(mime) ?? null;
 }
 
 function validDimension(value: unknown): value is number | null {
@@ -117,7 +103,7 @@ export async function resolveOwnedReferenceAsset(
     throw new AgentApiError('REFERENCE_FORBIDDEN', 'Reference image is not available.');
   }
 
-  const mimeType = normalizeRasterMime(row.mime_type);
+  const mimeType = normalizeSupportedReferenceRasterMime(row.mime_type);
   if (
     row.id !== normalizedAssetId
     || row.kind !== 'image'

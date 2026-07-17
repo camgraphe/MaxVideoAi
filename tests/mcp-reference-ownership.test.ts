@@ -92,6 +92,25 @@ test('resolveOwnedReferenceAsset performs one exact-user media_assets read and r
   assert.deepEqual(Object.keys(resolved), ['assetId', 'storageUrl', 'width', 'height', 'mimeType']);
 });
 
+test('resolveOwnedReferenceAsset accepts the exact shared raster MIME set and canonicalizes JPEG aliases', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const supported = [
+    ['image/jpeg', 'image/jpeg'],
+    ['image/jpg', 'image/jpeg'],
+    ['image/pjpeg; charset=binary', 'image/jpeg'],
+    ['image/png', 'image/png'],
+    ['image/webp', 'image/webp'],
+    ['image/gif', 'image/gif'],
+    ['image/avif', 'image/avif'],
+  ] as const;
+  for (const [mimeType, expected] of supported) {
+    const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+      executor: executorWithRows([row({ mime_type: mimeType })], []),
+    });
+    assert.equal(resolved.mimeType, expected);
+  }
+});
+
 test('missing and another-user asset IDs are publicly indistinguishable', async () => {
   const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
   const failures: Array<{ code: string; message: string }> = [];

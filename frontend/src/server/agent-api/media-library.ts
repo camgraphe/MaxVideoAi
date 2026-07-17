@@ -17,6 +17,7 @@ import type { MediaAssetRecord } from '@/server/media-library';
 import { AgentApiError } from './errors';
 import type { AgentMediaItem } from './media-types';
 import type { AgentPrincipal } from './principal';
+import { normalizeSupportedReferenceRasterMime } from './reference-media-policy';
 
 const DEFAULT_PAGE_LIMIT = 20;
 const MAX_PAGE_LIMIT = 50;
@@ -79,13 +80,6 @@ function normalizeDimension(value: unknown): number | null {
   return typeof value === 'number' && Number.isInteger(value) && value > 0 ? value : null;
 }
 
-function normalizeMimeType(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  const mimeType = value.trim().toLowerCase();
-  if (!mimeType || mimeType.length > 128 || /[\u0000-\u001f\u007f]/u.test(mimeType)) return null;
-  return mimeType;
-}
-
 function normalizeSource(source: MediaAssetRecord['source']): AgentMediaItem['source'] {
   if (source === 'upload') return 'upload';
   if (source === 'saved_job_output') return 'generated';
@@ -124,11 +118,9 @@ async function createStoragePreviewUrl(asset: MediaAssetRecord): Promise<string 
 }
 
 function isListableImage(asset: MediaAssetRecord, userId: string): boolean {
-  const mimeType = asset.mimeType?.trim().toLowerCase() ?? null;
   return asset.userId === userId
     && asset.kind === 'image'
-    && !mimeType?.startsWith('video/')
-    && !mimeType?.startsWith('audio/')
+    && normalizeSupportedReferenceRasterMime(asset.mimeType) !== null
     && asset.status.trim().toLowerCase() === 'ready'
     && typeof asset.id === 'string'
     && asset.id.length > 0
@@ -164,7 +156,7 @@ export async function listAgentMedia(
         label: normalizeLabel(asset.metadata.label),
         width: normalizeDimension(asset.width),
         height: normalizeDimension(asset.height),
-        mimeType: normalizeMimeType(asset.mimeType),
+        mimeType: normalizeSupportedReferenceRasterMime(asset.mimeType),
         previewUrl: controlledPrivatePreview(await createPrivatePreviewUrl(asset)),
         source: normalizeSource(asset.source),
         createdAt: asset.createdAt!,

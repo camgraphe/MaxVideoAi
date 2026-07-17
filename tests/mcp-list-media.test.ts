@@ -212,6 +212,52 @@ test('listAgentMedia delegates image-only pagination and returns safe normalized
   );
 });
 
+test('listAgentMedia allowlists exact raster MIME types before invoking the private signer', async () => {
+  const { listAgentMedia } = await loadMediaLibrary();
+  const supported = [
+    ['jpeg', 'image/jpeg', 'image/jpeg'],
+    ['jpg-alias', 'image/jpg', 'image/jpeg'],
+    ['pjpeg-alias', 'image/pjpeg; charset=binary', 'image/jpeg'],
+    ['png', 'image/png', 'image/png'],
+    ['webp', 'image/webp', 'image/webp'],
+    ['gif', 'image/gif', 'image/gif'],
+    ['avif', 'image/avif', 'image/avif'],
+  ] as const;
+  const rejected = [
+    ['pdf', 'application/pdf'],
+    ['binary', 'application/octet-stream'],
+    ['html', 'text/html'],
+    ['svg', 'image/svg+xml'],
+    ['missing', null],
+    ['empty', ''],
+    ['unsupported-raster', 'image/tiff'],
+  ] as const;
+  const signerCalls: string[] = [];
+  const page = await listAgentMedia({}, principal, {
+    async listAssetPage() {
+      return {
+        items: [
+          ...supported.map(([id, mimeType]) => asset({ id, mimeType })),
+          ...rejected.map(([id, mimeType]) => asset({ id, mimeType })),
+        ],
+        nextCursor: null,
+        hasMore: false,
+      };
+    },
+    async createPrivatePreviewUrl(candidate) {
+      signerCalls.push(candidate.id);
+      return `https://cdn.maxvideoai.com/private/${candidate.id}?X-Amz-Signature=test`;
+    },
+  });
+
+  assert.deepEqual(
+    page.items.map((item) => [item.assetId, item.mimeType]),
+    supported.map(([id, , canonicalMime]) => [id, canonicalMime]),
+  );
+  assert.deepEqual(signerCalls, supported.map(([id]) => id));
+  assert.doesNotMatch(JSON.stringify(page), /pdf|binary|html|svg|missing|empty|unsupported-raster/u);
+});
+
 test('listAgentMedia accepts only existing cursor envelopes and bounded page sizes', async () => {
   const { listAgentMedia } = await loadMediaLibrary();
   let reads = 0;
