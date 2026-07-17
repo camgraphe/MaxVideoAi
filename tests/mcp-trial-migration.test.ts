@@ -593,6 +593,103 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
         && row.reason_code === 'global_daily_cost_cap'
         && row.provider_cost_cents === '0',
     ).length, 1);
+
+    type RuntimeTransactionExecutor = import(
+      '../frontend/src/lib/db'
+    ).TransactionQueryExecutor;
+    type ClientQuery = (this: Client, ...args: unknown[]) => Promise<unknown>;
+    const clientPrototype = Client.prototype as unknown as { query: ClientQuery };
+    const originalClientQuery = clientPrototype.query;
+    const queryTrace: string[] = [];
+    clientPrototype.query = function tracedQuery(this: Client, ...args: unknown[]) {
+      const statement = typeof args[0] === 'string'
+        ? args[0]
+        : String((args[0] as { text?: unknown } | undefined)?.text ?? '');
+      queryTrace.push(statement.trim());
+      return originalClientQuery.apply(this, args);
+    };
+    const closedDecision = {
+      allowed: false,
+      code: 'TRIAL_NOT_ELIGIBLE',
+      nextAction: { type: 'use_paid_generation' },
+    } as const;
+    const assertInactiveExecutor = async (executor: RuntimeTransactionExecutor) => {
+      let returned: Promise<unknown[]> | undefined;
+      let synchronousError: unknown;
+      try {
+        returned = executor.query('SELECT 1 AS escaped_executor_query');
+      } catch (error) {
+        synchronousError = error;
+      }
+      if (returned) await returned;
+      assert.equal(returned, undefined, 'inactive transaction queries must throw synchronously');
+      assert.match(
+        synchronousError instanceof Error ? synchronousError.message : '',
+        /transaction query executor.*no longer active/i,
+      );
+    };
+
+    try {
+      let escapedCommitExecutor: RuntimeTransactionExecutor | undefined;
+      let escapedCommitAcceptance: ReturnType<typeof acceptTrialRisk> | undefined;
+      await withDbTransaction(async (executor) => {
+        escapedCommitExecutor = executor;
+        escapedCommitAcceptance = acceptTrialRisk({
+          userId: 'escaped-after-commit',
+          oauthClientId: 'escaped-client-commit',
+          clientIp: '192.0.2.10',
+          userAgent: 'Codex/1.0',
+          providerCostCents: 100,
+        }, { executor, secret: acceptanceSecret });
+      });
+      assert.ok(escapedCommitExecutor);
+      assert.ok(escapedCommitAcceptance);
+      assert.deepEqual(await escapedCommitAcceptance, closedDecision);
+      assert.equal(queryTrace.length, 3, queryTrace.join('\n'));
+      assert.match(queryTrace[0]!, /^BEGIN$/iu);
+      assert.match(queryTrace[1]!, /pg_advisory_xact_lock/iu);
+      assert.match(queryTrace[2]!, /^COMMIT$/iu);
+      const commitTraceLength = queryTrace.length;
+      await assertInactiveExecutor(escapedCommitExecutor);
+      assert.equal(queryTrace.length, commitTraceLength);
+
+      queryTrace.length = 0;
+      let escapedRollbackExecutor: RuntimeTransactionExecutor | undefined;
+      let escapedRollbackAcceptance: ReturnType<typeof acceptTrialRisk> | undefined;
+      await assert.rejects(
+        withDbTransaction(async (executor) => {
+          escapedRollbackExecutor = executor;
+          escapedRollbackAcceptance = acceptTrialRisk({
+            userId: 'escaped-after-rollback',
+            oauthClientId: 'escaped-client-rollback',
+            clientIp: '192.0.2.20',
+            userAgent: 'Codex/1.0',
+            providerCostCents: 20,
+          }, { executor, secret: acceptanceSecret });
+          throw new Error('force transaction rollback');
+        }),
+        /force transaction rollback/,
+      );
+      assert.ok(escapedRollbackExecutor);
+      assert.ok(escapedRollbackAcceptance);
+      assert.deepEqual(await escapedRollbackAcceptance, closedDecision);
+      assert.equal(queryTrace.length, 3, queryTrace.join('\n'));
+      assert.match(queryTrace[0]!, /^BEGIN$/iu);
+      assert.match(queryTrace[1]!, /pg_advisory_xact_lock/iu);
+      assert.match(queryTrace[2]!, /^ROLLBACK$/iu);
+      const rollbackTraceLength = queryTrace.length;
+      await assertInactiveExecutor(escapedRollbackExecutor);
+      assert.equal(queryTrace.length, rollbackTraceLength);
+    } finally {
+      clientPrototype.query = originalClientQuery;
+    }
+
+    const escapedRows = await clientA.query(`
+      SELECT count(*)::text AS count
+        FROM mcp_trial_risk_events
+       WHERE user_id IN ('escaped-after-commit', 'escaped-after-rollback')
+    `);
+    assert.equal(escapedRows.rows[0]?.count, '0');
   } finally {
     await getDb().end();
     if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;

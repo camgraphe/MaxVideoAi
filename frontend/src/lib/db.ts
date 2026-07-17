@@ -63,6 +63,20 @@ export function createQueryExecutor(client: Pick<PoolClient, 'query'>): QueryExe
   };
 }
 
+function createTransactionQueryExecutor(
+  client: Pick<PoolClient, 'query'>,
+): TransactionQueryExecutor {
+  const executor: QueryExecutor = {
+    query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
+      if (!activeTransactionExecutors.has(executor)) {
+        throw new Error('Transaction query executor is no longer active.');
+      }
+      return client.query<TRecord>(text, params).then((result) => result.rows);
+    },
+  };
+  return executor as TransactionQueryExecutor;
+}
+
 export async function query<TRecord = unknown>(text: string, params?: ReadonlyArray<unknown>) {
   const client = await getDb().connect();
   try {
@@ -76,7 +90,7 @@ export async function withDbTransaction<TResult>(
   callback: (executor: TransactionQueryExecutor, client: PoolClient) => Promise<TResult>
 ): Promise<TResult> {
   const client = await getDb().connect();
-  const executor = createQueryExecutor(client) as TransactionQueryExecutor;
+  const executor = createTransactionQueryExecutor(client);
 
   try {
     await client.query('BEGIN');
@@ -86,6 +100,7 @@ export async function withDbTransaction<TResult>(
     await client.query('COMMIT');
     return result;
   } catch (error) {
+    activeTransactionExecutors.delete(executor);
     await client.query('ROLLBACK').catch(() => undefined);
     throw error;
   } finally {
