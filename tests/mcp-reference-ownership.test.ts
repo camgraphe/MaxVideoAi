@@ -1,0 +1,182 @@
+import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
+import test from 'node:test';
+
+import type { QueryExecutor } from '../frontend/src/lib/db';
+import { AgentApiError } from '../frontend/src/server/agent-api/errors';
+import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
+
+const referenceAssetsPath = 'frontend/src/server/agent-api/reference-assets.ts';
+const referenceAssetsModule = '../frontend/src/server/agent-api/reference-assets';
+
+const principal: AgentPrincipal = {
+  userId: 'owner-user',
+  clientId: 'claude-client',
+  emailVerified: true,
+  authMethod: 'oauth',
+};
+
+type ReferenceAssetsModule = {
+  resolveOwnedReferenceAsset(
+    currentPrincipal: AgentPrincipal,
+    assetId: string,
+    dependencies: { executor: QueryExecutor },
+  ): Promise<{
+    assetId: string;
+    storageUrl: string;
+    width: number | null;
+    height: number | null;
+    mimeType: string;
+  }>;
+};
+
+type ReferenceRow = {
+  id: string;
+  user_id: string | null;
+  kind: string;
+  url: string;
+  mime_type: string | null;
+  width: number | null;
+  height: number | null;
+  status: string | null;
+  deleted_at: string | null;
+};
+
+async function loadReferenceAssets(): Promise<ReferenceAssetsModule> {
+  assert.equal(existsSync(referenceAssetsPath), true, `${referenceAssetsPath} must exist`);
+  return import(referenceAssetsModule) as Promise<ReferenceAssetsModule>;
+}
+
+function row(overrides: Partial<ReferenceRow> = {}): ReferenceRow {
+  return {
+    id: 'asset-owned',
+    user_id: principal.userId,
+    kind: 'image',
+    url: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
+    mime_type: 'image/png',
+    width: 1024,
+    height: 768,
+    status: 'ready',
+    deleted_at: null,
+    ...overrides,
+  };
+}
+
+function executorWithRows(rows: ReferenceRow[], calls: Array<{ sql: string; params: ReadonlyArray<unknown> }>): QueryExecutor {
+  return {
+    async query<TRecord>(sql: string, params: ReadonlyArray<unknown> = []) {
+      calls.push({ sql, params });
+      return rows as TRecord[];
+    },
+  };
+}
+
+test('resolveOwnedReferenceAsset performs one exact-user media_assets read and returns only internal fields', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const calls: Array<{ sql: string; params: ReadonlyArray<unknown> }> = [];
+  const resolved = await resolveOwnedReferenceAsset(principal, 'asset-owned', {
+    executor: executorWithRows([row({ mime_type: 'IMAGE/JPEG; charset=binary' })], calls),
+  });
+
+  assert.deepEqual(resolved, {
+    assetId: 'asset-owned',
+    storageUrl: 'https://cdn.maxvideoai.com/users/owner-user/reference.png',
+    width: 1024,
+    height: 768,
+    mimeType: 'image/jpeg',
+  });
+  assert.equal(calls.length, 1);
+  assert.match(calls[0]?.sql ?? '', /FROM\s+media_assets/iu);
+  assert.match(calls[0]?.sql ?? '', /id\s*=\s*\$1[\s\S]*user_id\s*=\s*\$2/iu);
+  assert.deepEqual(calls[0]?.params, ['asset-owned', principal.userId]);
+  assert.deepEqual(Object.keys(resolved), ['assetId', 'storageUrl', 'width', 'height', 'mimeType']);
+});
+
+test('missing and another-user asset IDs are publicly indistinguishable', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const failures: Array<{ code: string; message: string }> = [];
+  for (const assetId of ['missing-asset', 'belongs-to-another-user']) {
+    const calls: Array<{ sql: string; params: ReadonlyArray<unknown> }> = [];
+    await assert.rejects(
+      resolveOwnedReferenceAsset(principal, assetId, {
+        executor: executorWithRows([], calls),
+      }),
+      (error: unknown) => {
+        assert.ok(error instanceof AgentApiError);
+        failures.push({ code: error.code, message: error.message });
+        return true;
+      },
+    );
+    assert.equal(calls.length, 1);
+    assert.deepEqual(calls[0]?.params, [assetId, principal.userId]);
+  }
+  assert.deepEqual(failures, [
+    { code: 'REFERENCE_NOT_FOUND', message: 'Reference image not found.' },
+    { code: 'REFERENCE_NOT_FOUND', message: 'Reference image not found.' },
+  ]);
+});
+
+test('an impossible cross-user row fails closed as forbidden without returning asset details', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  await assert.rejects(
+    resolveOwnedReferenceAsset(principal, 'asset-owned', {
+      executor: executorWithRows([row({ user_id: 'other-user' })], []),
+    }),
+    (error: unknown) => {
+      assert.ok(error instanceof AgentApiError);
+      assert.equal(error.code, 'REFERENCE_FORBIDDEN');
+      assert.equal(error.message, 'Reference image is not available.');
+      assert.doesNotMatch(error.message, /asset-owned|other-user|cdn\.maxvideoai/u);
+      return true;
+    },
+  );
+});
+
+test('owned rows must be ready, non-deleted raster images on a controlled HTTPS storage host', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  const invalidRows = [
+    row({ status: 'processing' }),
+    row({ status: 'deleted' }),
+    row({ deleted_at: '2026-07-17T09:00:00.000Z' }),
+    row({ kind: 'video', mime_type: 'video/mp4' }),
+    row({ kind: 'audio', mime_type: 'audio/mpeg' }),
+    row({ mime_type: 'image/svg+xml' }),
+    row({ mime_type: 'application/octet-stream' }),
+    row({ url: 'http://cdn.maxvideoai.com/reference.png' }),
+    row({ url: 'https://user:secret@cdn.maxvideoai.com/reference.png' }),
+    row({ url: 'https://private-provider.example/reference.png' }),
+    row({ url: 'https://cdn.maxvideoai.com/' }),
+  ];
+  for (const invalidRow of invalidRows) {
+    await assert.rejects(
+      resolveOwnedReferenceAsset(principal, 'asset-owned', {
+        executor: executorWithRows([invalidRow], []),
+      }),
+      (error: unknown) => error instanceof AgentApiError
+        && error.code === 'REFERENCE_INVALID'
+        && !error.message.includes(invalidRow.url),
+    );
+  }
+});
+
+test('invalid identity input is rejected before any ownership query', async () => {
+  const { resolveOwnedReferenceAsset } = await loadReferenceAssets();
+  let reads = 0;
+  const executor: QueryExecutor = {
+    async query<TRecord>() {
+      reads += 1;
+      return [] as TRecord[];
+    },
+  };
+  for (const assetId of ['', ' asset-owned ', 'x'.repeat(513)]) {
+    await assert.rejects(
+      resolveOwnedReferenceAsset(principal, assetId, { executor }),
+      (error: unknown) => error instanceof AgentApiError && error.code === 'REFERENCE_INVALID',
+    );
+  }
+  await assert.rejects(
+    resolveOwnedReferenceAsset({ ...principal, userId: '' }, 'asset-owned', { executor }),
+    (error: unknown) => error instanceof AgentApiError && error.code === 'AUTH_REQUIRED',
+  );
+  assert.equal(reads, 0);
+});

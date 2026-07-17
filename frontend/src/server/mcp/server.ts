@@ -1,11 +1,17 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 
 import mcpPublication from '@/config/mcp-publication.json';
+import { FEATURES } from '@/content/feature-flags';
 import {
   createAgentAccountStatusService,
   type AgentAccountStatusWalletDeps,
 } from '@/server/agent-api/account-status';
 import { listAgentModels } from '@/server/agent-api/model-catalog';
+import {
+  listAgentMedia,
+  type AgentMediaPage,
+  type ListAgentMediaInput,
+} from '@/server/agent-api/media-library';
 import { recommendAgentModels } from '@/server/agent-api/model-recommendations';
 import {
   createConfirmGenerationService,
@@ -45,6 +51,7 @@ import { registerConfirmGenerationTool } from '@/server/mcp/tools/confirm-genera
 import { registerCreateTopupLinkTool } from '@/server/mcp/tools/create-topup-link';
 import { registerGetGenerationStatusTool } from '@/server/mcp/tools/get-generation-status';
 import { registerListModelsTool } from '@/server/mcp/tools/list-models';
+import { registerListMediaTool } from '@/server/mcp/tools/list-media';
 import { registerListRecentGenerationsTool } from '@/server/mcp/tools/list-recent-generations';
 import { registerPrepareGenerationTool } from '@/server/mcp/tools/prepare-generation';
 import { registerRecommendModelsTool } from '@/server/mcp/tools/recommend-models';
@@ -76,10 +83,15 @@ export type MaxVideoAiMcpServices = {
     input: { quoteId: string },
     principal: AgentPrincipal,
   ): Promise<McpTopupHandoffResult>;
+  listMedia?(
+    input: ListAgentMediaInput,
+    principal: AgentPrincipal,
+  ): Promise<AgentMediaPage>;
 };
 
 export type MaxVideoAiMcpServerOptions = {
   paidGeneration?: boolean;
+  referenceUploads?: boolean;
 };
 
 export function createDefaultMaxVideoAiMcpServices(
@@ -100,6 +112,7 @@ export function createDefaultMaxVideoAiMcpServices(
       billingBaseUrl: new URL(config.accountUrl).origin,
       ...topupHandoffDeps,
     }),
+    listMedia: (input, principal) => listAgentMedia(input, principal),
   };
 }
 
@@ -123,6 +136,9 @@ export function createMaxVideoAiMcpServer(
   registerGetAccountStatusTool(server, principal, services);
   registerListModelsTool(server, principal, services);
   registerRecommendModelsTool(server, principal, services);
+  if (options.referenceUploads ?? FEATURES.mcp.referenceUploads) {
+    registerListMediaTool(server, principal, services);
+  }
   if (options.paidGeneration ?? mcpPublication.paidGeneration) {
     registerPrepareGenerationTool(server, principal, services);
     registerConfirmGenerationTool(server, principal, services);
