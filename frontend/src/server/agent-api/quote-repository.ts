@@ -10,6 +10,7 @@ import type {
   GenerationFundingMode,
   IncludedTrialFundingSnapshot,
 } from '@/server/agent-api/generation-types';
+import { getAuthoritativeTrialProviderCostCents } from '@/server/agent-api/trial-provider-cost';
 
 export const MCP_QUOTE_LIFETIME_SECONDS = 10 * 60;
 export const MCP_QUOTE_EXPIRATION_BATCH_SIZE = 100;
@@ -199,6 +200,7 @@ function parseTrialFunding(
   priceCents: number,
   currency: string,
   fundingMode: GenerationFundingMode,
+  request: CanonicalGenerationRequest,
 ): IncludedTrialFundingSnapshot | null {
   const hasFunding = Object.prototype.hasOwnProperty.call(pricingSnapshot, 'funding');
   if (fundingMode === 'wallet') {
@@ -209,6 +211,7 @@ function parseTrialFunding(
   const canonicalPricing = isRecord(pricingSnapshot.canonicalPricing)
     ? pricingSnapshot.canonicalPricing
     : null;
+  const authoritativeProviderCostCents = getAuthoritativeTrialProviderCostCents(request);
   if (priceCents !== 0
     || !hasExactKeys(pricingSnapshot, TRIAL_PRICING_SNAPSHOT_KEYS)
     || hasForbiddenTrialFundingSemantics(pricingSnapshot, new Set(), true)
@@ -220,6 +223,7 @@ function parseTrialFunding(
     || (funding.normalPriceCents as number) <= 0
     || !Number.isSafeInteger(funding.providerCostCents)
     || (funding.providerCostCents as number) <= 0
+    || funding.providerCostCents !== authoritativeProviderCostCents
     || !canonicalPricing
     || canonicalPricing.totalCents !== funding.normalPriceCents
     || canonicalPricing.currency !== currency
@@ -274,6 +278,7 @@ function assertInsertInput(value: unknown): asserts value is InsertPreparedQuote
       value.priceCents as number,
       value.currency,
       value.fundingMode as GenerationFundingMode,
+      canonical,
     );
   } catch {
     throw new Error('Invalid prepared quote input.');
@@ -357,6 +362,7 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
       row.price_cents as number,
       row.currency,
       fundingMode,
+      request,
     );
   } catch {
     throw new Error('Invalid quote row.');

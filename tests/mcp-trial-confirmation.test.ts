@@ -608,6 +608,14 @@ test('trial initial funding validates the complete private cost envelope before 
       ...baseSnapshot,
       funding: { ...baseSnapshot.funding, providerCostCents: 126 },
     }],
+    ['provider cost below authoritative estimate', {
+      ...baseSnapshot,
+      funding: { ...baseSnapshot.funding, providerCostCents: 1 },
+    }],
+    ['marked-up base substituted for provider cost', {
+      ...baseSnapshot,
+      funding: { ...baseSnapshot.funding, providerCostCents: 85 },
+    }],
     ['currency mismatch', { ...baseSnapshot, canonicalPricing: { ...baseSnapshot.canonicalPricing, currency: 'EUR' } }],
     ['nonzero customer charge', { ...baseSnapshot, funding: { ...baseSnapshot.funding, customerChargeCents: 1 } }],
   ] as const) {
@@ -620,6 +628,50 @@ test('trial initial funding validates the complete private cost envelope before 
       label,
     );
   }
+  const squareRequest = {
+    ...request,
+    settings: { ...request.settings, aspectRatio: '1:1' },
+  };
+  const squareSnapshot = {
+    ...baseSnapshot,
+    funding: { ...baseSnapshot.funding, providerCostCents: 10 },
+  };
+  await assert.rejects(
+    createInitialVideoJobInExecutor(executor, {
+      ...base,
+      jobInsert: {
+        ...base.jobInsert,
+        pricingSnapshotJson: JSON.stringify(squareSnapshot),
+        settingsSnapshotJson: JSON.stringify(squareRequest),
+      },
+    }),
+    /trial funding state/i,
+    'request ratio and authoritative cost cannot disagree with the inserted job',
+  );
+  await assert.rejects(
+    createInitialVideoJobInExecutor(executor, {
+      ...base,
+      jobInsert: { ...base.jobInsert, durationSec: 10 },
+    }),
+    /trial funding state/i,
+    'the inserted job duration cannot widen the priced trial request',
+  );
+  await assert.rejects(
+    createInitialVideoJobInExecutor(executor, {
+      ...base,
+      jobInsert: { ...base.jobInsert, engineId: 'seedance-2-0' },
+    }),
+    /trial funding state/i,
+    'the inserted job engine must match the priced trial request',
+  );
+  await assert.rejects(
+    createInitialVideoJobInExecutor(executor, {
+      ...base,
+      jobInsert: { ...base.jobInsert, hasAudio: false },
+    }),
+    /trial funding state/i,
+    'the inserted job audio choice must match the priced trial request',
+  );
   assert.equal(sqlCalls, 0);
 });
 

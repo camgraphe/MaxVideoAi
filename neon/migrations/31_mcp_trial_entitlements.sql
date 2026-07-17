@@ -81,6 +81,32 @@ ALTER TABLE mcp_generation_quotes
       OR (
         funding_mode = 'trial'
         AND price_cents = 0
+        AND request_json ?& ARRAY[
+          'schemaVersion', 'surface', 'engineId', 'mode', 'prompt', 'settings',
+          'references', 'outputCount'
+        ]::text[]
+        AND request_json - ARRAY[
+          'schemaVersion', 'surface', 'engineId', 'mode', 'prompt', 'settings',
+          'references', 'outputCount'
+        ]::text[] = '{}'::jsonb
+        AND request_json -> 'schemaVersion' = '1'::jsonb
+        AND request_json ->> 'surface' = 'video'
+        AND request_json ->> 'engineId' = 'seedance-2-0-mini'
+        AND request_json ->> 'mode' = 't2v'
+        AND jsonb_typeof(request_json -> 'prompt') = 'string'
+        AND jsonb_typeof(request_json -> 'settings') = 'object'
+        AND (request_json -> 'settings') ?& ARRAY[
+          'durationSec', 'resolution', 'aspectRatio', 'audio'
+        ]::text[]
+        AND (request_json -> 'settings') - ARRAY[
+          'durationSec', 'resolution', 'aspectRatio', 'audio'
+        ]::text[] = '{}'::jsonb
+        AND request_json #> '{settings,durationSec}' = '5'::jsonb
+        AND request_json #>> '{settings,resolution}' = '480p'
+        AND request_json #>> '{settings,aspectRatio}' IN ('16:9', '9:16', '1:1')
+        AND jsonb_typeof(request_json #> '{settings,audio}') = 'boolean'
+        AND request_json -> 'references' = '[]'::jsonb
+        AND request_json -> 'outputCount' = '1'::jsonb
         AND pricing_snapshot ?& ARRAY[
           'schemaVersion', 'catalogRevision', 'surface', 'engineId', 'membership',
           'canonicalPricing', 'funding'
@@ -89,6 +115,10 @@ ALTER TABLE mcp_generation_quotes
           'schemaVersion', 'catalogRevision', 'surface', 'engineId', 'membership',
           'canonicalPricing', 'funding'
         ]::text[] = '{}'::jsonb
+        AND pricing_snapshot -> 'schemaVersion' = '1'::jsonb
+        AND pricing_snapshot ->> 'catalogRevision' = catalog_revision
+        AND pricing_snapshot ->> 'surface' = 'video'
+        AND pricing_snapshot ->> 'engineId' = 'seedance-2-0-mini'
         AND NOT mcp_trial_snapshot_has_forbidden_funding_semantics(
           pricing_snapshot - 'funding'
         )
@@ -107,7 +137,14 @@ ALTER TABLE mcp_generation_quotes
         AND (pricing_snapshot #>> '{funding,normalPriceCents}')::numeric <= 9007199254740991
         AND jsonb_typeof(pricing_snapshot #> '{funding,providerCostCents}') = 'number'
         AND (pricing_snapshot #>> '{funding,providerCostCents}') ~ '^[1-9][0-9]*$'
-        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric <= 9007199254740991
+        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric <= 100
+        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric = CASE
+          request_json #>> '{settings,aspectRatio}'
+          WHEN '1:1' THEN 10
+          WHEN '16:9' THEN 17
+          WHEN '9:16' THEN 17
+          ELSE NULL
+        END
         AND pricing_snapshot #> '{canonicalPricing,totalCents}'
           = pricing_snapshot #> '{funding,normalPriceCents}'
         AND pricing_snapshot #>> '{canonicalPricing,currency}' = currency

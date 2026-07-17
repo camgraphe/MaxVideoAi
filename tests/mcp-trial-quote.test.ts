@@ -481,7 +481,7 @@ function validTrialPricingSnapshot(): Record<string, unknown> {
     canonicalPricing: pricingSnapshot(),
     funding: {
       kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125,
-      providerCostCents: 85,
+      providerCostCents: 17,
     },
   };
 }
@@ -522,6 +522,96 @@ test('quote repository requires explicit funding mode and parses a private typed
     }),
     /invalid prepared quote input/i,
   );
+});
+
+test('trial quote repository accepts only the authoritative request-derived provider cost', async () => {
+  for (const [aspectRatio, providerCostCents] of [
+    ['9:16', 17],
+    ['1:1', 10],
+  ] as const) {
+    const request = {
+      ...canonicalTrialRequest(),
+      settings: { ...canonicalTrialRequest().settings, aspectRatio },
+    };
+    const basePricing = validTrialPricingSnapshot();
+    const persisted = {
+      ...basePricing,
+      funding: {
+        ...(basePricing.funding as Record<string, unknown>),
+        providerCostCents,
+      },
+    };
+    const executor: QueryExecutor = {
+      async query<TRecord>() {
+        return [storedTrialRow(request, persisted)] as TRecord[];
+      },
+    };
+    const quote = await insertPreparedQuote({
+      userId: principal.userId,
+      oauthClientId: principal.clientId,
+      request,
+      requestHash: hashCanonicalGenerationRequest(request),
+      catalogRevision: 'catalog-1',
+      pricingSnapshot: persisted,
+      priceCents: 0,
+      currency: 'USD',
+      fundingMode: 'trial',
+    }, { executor, now: () => now, randomUUID: () => quoteId });
+    assert.equal(quote.trialFunding?.providerCostCents, providerCostCents);
+  }
+
+  const request = canonicalTrialRequest();
+  const valid = validTrialPricingSnapshot();
+  const validInput = {
+    userId: principal.userId,
+    oauthClientId: principal.clientId,
+    request,
+    requestHash: hashCanonicalGenerationRequest(request),
+    catalogRevision: 'catalog-1',
+    pricingSnapshot: valid,
+    priceCents: 0,
+    currency: 'USD',
+    fundingMode: 'trial' as const,
+  };
+  for (const providerCostCents of [1, 85]) {
+    const tampered = {
+      ...valid,
+      funding: {
+        ...(valid.funding as Record<string, unknown>),
+        providerCostCents,
+      },
+    };
+    let insertQueries = 0;
+    const insertExecutor: QueryExecutor = {
+      async query<TRecord>() {
+        insertQueries += 1;
+        return [storedTrialRow(request, valid)] as TRecord[];
+      },
+    };
+    await assert.rejects(
+      insertPreparedQuote({ ...validInput, pricingSnapshot: tampered }, {
+        executor: insertExecutor,
+        now: () => now,
+        randomUUID: () => quoteId,
+      }),
+      /invalid prepared quote input/i,
+    );
+    assert.equal(insertQueries, 0);
+
+    const rowExecutor: QueryExecutor = {
+      async query<TRecord>() {
+        return [storedTrialRow(request, tampered)] as TRecord[];
+      },
+    };
+    await assert.rejects(
+      insertPreparedQuote(validInput, {
+        executor: rowExecutor,
+        now: () => now,
+        randomUUID: () => quoteId,
+      }),
+      /invalid quote row/i,
+    );
+  }
 });
 
 test('trial quote insert rejects noncanonical top-level and nested funding semantics before SQL', async () => {
@@ -806,6 +896,10 @@ test('migration 31 replaces wallet-only funding with exact trial shape and priva
   assert.match(source, /included_trial/i);
   assert.match(source, /normalPriceCents/);
   assert.match(source, /providerCostCents/);
+  assert.match(source, /providerCostCents[\s\S]*?::numeric\s*<=\s*100/i);
+  assert.match(source, /aspectRatio[\s\S]*?WHEN\s+'1:1'\s+THEN\s+10/i);
+  assert.match(source, /WHEN\s+'16:9'\s+THEN\s+17/i);
+  assert.match(source, /WHEN\s+'9:16'\s+THEN\s+17/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_quote_prepared_audit/i);
   const table = source.match(
     /CREATE TABLE IF NOT EXISTS mcp_trial_quote_prepared_audit\s*\(([\s\S]*?)\n\);/i,
@@ -857,8 +951,9 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     assert.equal(applied.status, 0, commandOutput(applied));
   }
 
-  const request = JSON.stringify(canonicalTrialRequest()).replaceAll("'", "''");
-  const trialPricing = JSON.stringify({
+  const requestValue = canonicalTrialRequest();
+  const request = JSON.stringify(requestValue).replaceAll("'", "''");
+  const trialPricingValue = {
     schemaVersion: 1,
     catalogRevision: 'catalog-1',
     surface: 'video',
@@ -870,8 +965,18 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     canonicalPricing: pricingSnapshot(),
     funding: {
       kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125,
-      providerCostCents: 85,
+      providerCostCents: 17,
     },
+  };
+  const trialPricing = JSON.stringify(trialPricingValue).replaceAll("'", "''");
+  const squareRequestValue = {
+    ...requestValue,
+    settings: { ...requestValue.settings, aspectRatio: '1:1' },
+  };
+  const squareRequest = JSON.stringify(squareRequestValue).replaceAll("'", "''");
+  const squareTrialPricing = JSON.stringify({
+    ...trialPricingValue,
+    funding: { ...trialPricingValue.funding, providerCostCents: 10 },
   }).replaceAll("'", "''");
   const valid = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     INSERT INTO mcp_generation_quotes (
@@ -902,6 +1007,16 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
       'catalog-1', '${trialPricing}'::jsonb, 0, 'USD', 'trial', 'prepared',
       '2026-07-17T10:10:00Z', '2026-07-17T10:00:00Z', '2026-07-17T10:00:00Z'
     );
+    INSERT INTO mcp_generation_quotes (
+      quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
+      pricing_snapshot, price_cents, currency, funding_mode, state,
+      expires_at, created_at, updated_at
+    ) VALUES (
+      '123e4567-e89b-42d3-a456-426614174003', 'trial-square', 'codex-client',
+      '${squareRequest}'::jsonb, '${hashCanonicalGenerationRequest(squareRequestValue)}',
+      'catalog-1', '${squareTrialPricing}'::jsonb, 0, 'USD', 'trial', 'prepared',
+      '2026-07-17T10:10:00Z', '2026-07-17T10:00:00Z', '2026-07-17T10:00:00Z'
+    );
     INSERT INTO mcp_trial_quote_prepared_audit (
       quote_id, engine_id, aspect_ratio, audio, oauth_client_id, outcome
     ) VALUES (
@@ -913,7 +1028,12 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
   const cloneQuoteAttack = (
     sequence: number,
     sourceUserId: 'trial-user' | 'wallet-user',
-    changes: { pricingSnapshot?: string; priceCents?: string; fundingMode?: string },
+    changes: {
+      requestJson?: string;
+      pricingSnapshot?: string;
+      priceCents?: string;
+      fundingMode?: string;
+    },
   ) => `
     INSERT INTO mcp_generation_quotes (
       quote_id, user_id, oauth_client_id, request_json, request_hash, catalog_revision,
@@ -922,7 +1042,8 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     )
     SELECT
       '223e4567-e89b-42d3-a456-${String(426_614_174_000 + sequence)}',
-      'trial-attack-${sequence}', oauth_client_id, request_json, request_hash, catalog_revision,
+      'trial-attack-${sequence}', oauth_client_id,
+      ${changes.requestJson ?? 'request_json'}, request_hash, catalog_revision,
       ${changes.pricingSnapshot ?? 'pricing_snapshot'},
       ${changes.priceCents ?? 'price_cents'}, currency,
       ${changes.fundingMode ?? 'funding_mode'}, state, job_id,
@@ -969,6 +1090,24 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
     }),
     cloneQuoteAttack(15, 'trial-user', {
       pricingSnapshot: `jsonb_set(pricing_snapshot, '{canonicalPricing,provenance,re_ser_va_tion}', '"private"')`,
+    }),
+    cloneQuoteAttack(16, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '1')",
+    }),
+    cloneQuoteAttack(17, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '85')",
+    }),
+    cloneQuoteAttack(18, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '101')",
+    }),
+    cloneQuoteAttack(19, 'trial-user', {
+      requestJson: `jsonb_set(request_json, '{settings,aspectRatio}', '"1:1"')`,
+    }),
+    cloneQuoteAttack(20, 'trial-user', {
+      pricingSnapshot: "jsonb_set(pricing_snapshot, '{funding,providerCostCents}', '10')",
+    }),
+    cloneQuoteAttack(21, 'trial-user', {
+      requestJson: "jsonb_set(request_json, '{settings,durationSec}', '10')",
     }),
   ];
   for (const sql of quoteAttacks) {

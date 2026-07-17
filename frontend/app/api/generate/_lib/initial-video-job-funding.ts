@@ -1,3 +1,6 @@
+import { normalizeGenerationRequest } from '@/server/agent-api/generation-normalization';
+import { getAuthoritativeTrialProviderCostCents } from '@/server/agent-api/trial-provider-cost';
+
 import type {
   CreateVideoInitialJobParams,
   GenerationFunding,
@@ -65,6 +68,8 @@ function assertTrialAccounting(
   funding: McpTrialFunding,
 ): void {
   let pricingSnapshot: Record<string, unknown> | null = null;
+  let trialRequest: ReturnType<typeof normalizeGenerationRequest> | null = null;
+  let authoritativeProviderCostCents: number | null = null;
   try {
     const parsed: unknown = JSON.parse(params.jobInsert.pricingSnapshotJson);
     pricingSnapshot = parsed && typeof parsed === 'object' && !Array.isArray(parsed)
@@ -72,6 +77,13 @@ function assertTrialAccounting(
       : null;
   } catch {
     pricingSnapshot = null;
+  }
+  try {
+    trialRequest = normalizeGenerationRequest(JSON.parse(params.jobInsert.settingsSnapshotJson));
+    authoritativeProviderCostCents = getAuthoritativeTrialProviderCostCents(trialRequest);
+  } catch {
+    trialRequest = null;
+    authoritativeProviderCostCents = null;
   }
   const included = exactRecord(pricingSnapshot?.funding, INCLUDED_TRIAL_KEYS);
   const canonicalPricing = pricingSnapshot?.canonicalPricing;
@@ -103,7 +115,13 @@ function assertTrialAccounting(
     || (normalPriceCents as number) <= 0
     || !Number.isSafeInteger(providerCostCents)
     || (providerCostCents as number) <= 0
+    || !trialRequest
+    || providerCostCents !== authoritativeProviderCostCents
     || (providerCostCents as number) > (normalPriceCents as number)
+    || trialRequest.engineId !== params.jobInsert.engineId
+    || trialRequest.settings.durationSec !== params.jobInsert.durationSec
+    || trialRequest.settings.aspectRatio !== params.jobInsert.aspectRatio
+    || trialRequest.settings.audio !== params.jobInsert.hasAudio
     || canonical?.totalCents !== normalPriceCents
     || typeof canonicalCurrency !== 'string'
     || canonicalCurrency !== params.jobInsert.currency

@@ -31,6 +31,15 @@ export function requireTrialProviderCostCents(
   request: CanonicalGenerationRequest,
   rawCeiling?: string | undefined,
 ): number {
+  const costCents = getAuthoritativeTrialProviderCostCents(request);
+  const ceiling = resolveTrialProviderCostCeilingCents(rawCeiling);
+  if (costCents > ceiling) throw new TrialProviderCostError();
+  return costCents;
+}
+
+export function getAuthoritativeTrialProviderCostCents(
+  request: CanonicalGenerationRequest,
+): number {
   const settings = request.settings;
   if (request.surface !== MCP_TRIAL_PRESET.surface
     || request.engineId !== MCP_TRIAL_PRESET.engineId
@@ -58,7 +67,5 @@ export function requireTrialProviderCostCents(
   } catch {
     throw new TrialProviderCostError();
   }
-  const ceiling = resolveTrialProviderCostCeilingCents(rawCeiling);
-  if (costCents > ceiling) throw new TrialProviderCostError();
   return costCents;
 }
