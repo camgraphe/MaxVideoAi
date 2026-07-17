@@ -170,9 +170,22 @@ function text(value: string): string {
   return value.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-function extractApprovedTopLevelHeadings(html: string, showcasePresent: boolean): string[] {
+type HeadingLevel = 1 | 2;
+type HeadingStructure = Readonly<{ level: HeadingLevel; text: string }>;
+
+function extractHeadingStructure(html: string): HeadingStructure[] {
+  return [...html.matchAll(/<h([12])[^>]*>([\s\S]*?)<\/h\1>/g)].map((match) => ({
+    level: Number(match[1]) as HeadingLevel,
+    text: text(match[2] ?? ''),
+  }));
+}
+
+function extractApprovedTopLevelHeadings(
+  html: string,
+  showcasePresent: boolean,
+): HeadingStructure[] {
   const headingGroups = [...html.matchAll(/<(header|section)\b[^>]*>([\s\S]*?)<\/\1>/g)]
-    .map((match) => values(/<h[12][^>]*>([\s\S]*?)<\/h[12]>/g, match[2] ?? '').map(text));
+    .map((match) => extractHeadingStructure(match[2] ?? ''));
   const expectedCounts = showcasePresent
     ? [emptySectionHeadingCounts[0], 1, ...emptySectionHeadingCounts.slice(1)]
     : [...emptySectionHeadingCounts];
@@ -180,6 +193,16 @@ function extractApprovedTopLevelHeadings(html: string, showcasePresent: boolean)
     headingGroups.map((group) => group.length),
     expectedCounts,
     'each outer PAYG section must retain its exact h1/h2 structure',
+  );
+  const totalHeadingCount = expectedCounts.reduce((total, count) => total + count, 0);
+  const expectedLevels: HeadingLevel[] = [
+    1,
+    ...Array.from({ length: totalHeadingCount - 1 }, () => 2 as const),
+  ];
+  assert.deepEqual(
+    headingGroups.flat().map((heading) => heading.level),
+    expectedLevels,
+    'the hero must be the only h1 and every following PAYG heading must be h2',
   );
   const projection = showcasePresent
     ? [approvedHeadingsPerSection[0], 1, ...approvedHeadingsPerSection.slice(1)]
@@ -220,18 +243,43 @@ function render(locale: AppLocale, videos: PayAsYouGoShowcaseVideo[]) {
   return { semantic: extractPaygSemanticHtml(markup) };
 }
 
-function assertExactHeadingSequence(headings: readonly string[], expected: readonly string[]) {
-  assert.deepEqual(headings, expected, 'top-level headings must match the approved sequence exactly');
+function expectedHeadingStructure(texts: readonly string[]): HeadingStructure[] {
+  return texts.map((headingText, index) => ({
+    level: index === 0 ? 1 : 2,
+    text: headingText,
+  }));
+}
+
+function assertExactHeadingStructure(
+  headings: readonly HeadingStructure[],
+  expectedTexts: readonly string[],
+) {
+  assert.deepEqual(
+    headings,
+    expectedHeadingStructure(expectedTexts),
+    'top-level heading levels and text must match the approved structure exactly',
+  );
 }
 
 test('top-level heading contract rejects inserted and changed headings', () => {
-  assert.throws(() => assertExactHeadingSequence(
-    ['First approved heading', 'Inserted heading', 'Second approved heading'],
+  assert.throws(() => assertExactHeadingStructure(
+    expectedHeadingStructure([
+      'First approved heading',
+      'Inserted heading',
+      'Second approved heading',
+    ]),
     ['First approved heading', 'Second approved heading'],
   ));
-  assert.throws(() => assertExactHeadingSequence(
-    ['First approved heading', 'Changed heading'],
+  assert.throws(() => assertExactHeadingStructure(
+    expectedHeadingStructure(['First approved heading', 'Changed heading']),
     ['First approved heading', 'Second approved heading'],
+  ));
+});
+
+test('top-level heading contract rejects a changed semantic level', () => {
+  assert.throws(() => assertExactHeadingStructure(
+    extractHeadingStructure('<h2>Hero heading</h2><h2>Section heading</h2>'),
+    ['Hero heading', 'Section heading'],
   ));
 });
 
@@ -239,7 +287,7 @@ for (const locale of locales) {
   test(`${locale} renders exact localized section order, strings, and hrefs`, () => {
     const { semantic } = render(locale, []);
     const expected = representative[locale];
-    assertExactHeadingSequence(semantic.topLevelHeadings, expected.headings);
+    assertExactHeadingStructure(semantic.topLevelHeadings, expected.headings);
     assert.equal(semantic.topLevelHeadings.length, 14);
     assert.deepEqual(semantic.sectionOpenings, emptySectionOpenings);
     assert.ok(semantic.textNodes.includes(expected.heroIntro));
@@ -259,12 +307,12 @@ for (const locale of locales) {
   test(`${locale} deterministically renders the showcase in its approved position`, () => {
     const { semantic } = render(locale, [showcaseVideo]);
     const expected = representative[locale];
-    assertExactHeadingSequence(semantic.topLevelHeadings, [
+    assertExactHeadingStructure(semantic.topLevelHeadings, [
       expected.headings[0],
       expected.showcase.title,
       ...expected.headings.slice(1),
     ]);
-    assertExactHeadingSequence(
+    assertExactHeadingStructure(
       [semantic.topLevelHeadings[0], ...semantic.topLevelHeadings.slice(2)],
       expected.headings,
     );
