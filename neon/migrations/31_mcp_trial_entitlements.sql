@@ -111,8 +111,8 @@ ALTER TABLE mcp_generation_quotes
         AND pricing_snapshot #> '{canonicalPricing,totalCents}'
           = pricing_snapshot #> '{funding,normalPriceCents}'
         AND pricing_snapshot #>> '{canonicalPricing,currency}' = currency
-        AND pricing_snapshot #> '{canonicalPricing,base,amountCents}'
-          = pricing_snapshot #> '{funding,providerCostCents}'
+        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric
+          <= (pricing_snapshot #>> '{funding,normalPriceCents}')::numeric
       )
     ) IS TRUE
   );

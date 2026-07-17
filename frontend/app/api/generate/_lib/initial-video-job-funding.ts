@@ -81,13 +81,6 @@ function assertTrialAccounting(
     && Object.getPrototypeOf(canonicalPricing) === Object.prototype
     ? canonicalPricing as Record<string, unknown>
     : null;
-  const base = canonical?.base;
-  const canonicalBase = base
-    && typeof base === 'object'
-    && !Array.isArray(base)
-    && Object.getPrototypeOf(base) === Object.prototype
-    ? base as Record<string, unknown>
-    : null;
   const normalPriceCents = included?.normalPriceCents;
   const providerCostCents = included?.providerCostCents;
   const canonicalCurrency = canonical?.currency;
@@ -110,8 +103,8 @@ function assertTrialAccounting(
     || (normalPriceCents as number) <= 0
     || !Number.isSafeInteger(providerCostCents)
     || (providerCostCents as number) <= 0
+    || (providerCostCents as number) > (normalPriceCents as number)
     || canonical?.totalCents !== normalPriceCents
-    || canonicalBase?.amountCents !== providerCostCents
     || typeof canonicalCurrency !== 'string'
     || canonicalCurrency !== params.jobInsert.currency
     || params.resolvedCurrencyLower !== canonicalCurrency.toLowerCase()) {

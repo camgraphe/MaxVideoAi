@@ -55,6 +55,7 @@ import {
   recordTrialQuotePreparedAudit,
   type TrialQuotePreparedAuditInput,
 } from './trial-quote-audit-repository';
+import { requireTrialProviderCostCents } from './trial-provider-cost';
 import type { TrialStatus } from './types';
 
 export type PrepareGenerationInput = Omit<
@@ -305,22 +306,6 @@ function trialCandidateFromOriginal(input: PrepareGenerationInput): CanonicalGen
   }
 }
 
-function requireTrialProviderCost(pricingSnapshot: Record<string, unknown>): number {
-  const canonicalPricing = pricingSnapshot.canonicalPricing;
-  const base = canonicalPricing
-    && typeof canonicalPricing === 'object'
-    && !Array.isArray(canonicalPricing)
-    ? (canonicalPricing as Record<string, unknown>).base
-    : null;
-  const amountCents = base && typeof base === 'object' && !Array.isArray(base)
-    ? (base as Record<string, unknown>).amountCents
-    : null;
-  if (!Number.isSafeInteger(amountCents) || (amountCents as number) <= 0) {
-    throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
-  }
-  return amountCents as number;
-}
-
 function requirePaidGeneration(dependencies: PrepareGenerationDependencies): void {
   if (!dependencies.paidGenerationEnabled()) {
     throw new AgentApiError('ENGINE_UNAVAILABLE', 'Paid generation is not available.');
@@ -443,7 +428,12 @@ export async function prepareGeneration(
     if (pricing.priceCents <= 0) {
       throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
     }
-    const providerCostCents = requireTrialProviderCost(pricingSnapshot);
+    let providerCostCents: number;
+    try {
+      providerCostCents = requireTrialProviderCostCents(request);
+    } catch {
+      throw new AgentApiError('INTERNAL_ERROR', 'The included trial cost is unavailable.');
+    }
     let risk: TrialRiskDecision;
     try {
       risk = await dependencies.checkTrialRisk({

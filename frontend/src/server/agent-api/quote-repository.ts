@@ -209,9 +209,6 @@ function parseTrialFunding(
   const canonicalPricing = isRecord(pricingSnapshot.canonicalPricing)
     ? pricingSnapshot.canonicalPricing
     : null;
-  const base = canonicalPricing && isRecord(canonicalPricing.base)
-    ? canonicalPricing.base
-    : null;
   if (priceCents !== 0
     || !hasExactKeys(pricingSnapshot, TRIAL_PRICING_SNAPSHOT_KEYS)
     || hasForbiddenTrialFundingSemantics(pricingSnapshot, new Set(), true)
@@ -226,8 +223,7 @@ function parseTrialFunding(
     || !canonicalPricing
     || canonicalPricing.totalCents !== funding.normalPriceCents
     || canonicalPricing.currency !== currency
-    || !base
-    || base.amountCents !== funding.providerCostCents) {
+    || (funding.providerCostCents as number) > (funding.normalPriceCents as number)) {
     throw new Error('Invalid quote funding snapshot.');
   }
   return {

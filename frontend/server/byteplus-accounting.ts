@@ -124,3 +124,32 @@ export function getBytePlusUnitPriceUsdPer1kTokens(
   }
   return BYTEPLUS_FAST_UNIT_PRICE_USD_PER_1K_TOKENS;
 }
+
+export function estimateBytePlusProviderCostCents(input: {
+  engineId: string;
+  durationSec: number;
+  resolution: string;
+  aspectRatio: string;
+  billingInputType: 'video_input' | 'no_video_input';
+}): number {
+  if (!Number.isSafeInteger(input.durationSec) || input.durationSec < 1) {
+    throw new Error('Invalid BytePlus provider-cost duration.');
+  }
+  const dimensions = BYTEPLUS_TOKEN_DIMENSIONS[input.resolution]?.[input.aspectRatio];
+  if (!dimensions) throw new Error('Invalid BytePlus provider-cost dimensions.');
+  const totalTokens = (
+    dimensions.width * dimensions.height * input.durationSec * 24
+  ) / 1024;
+  const unitPriceUsdPer1kTokens = getBytePlusUnitPriceUsdPer1kTokens(
+    input.engineId,
+    input.billingInputType,
+    input.resolution,
+  );
+  const costCents = Math.ceil(
+    ((totalTokens * unitPriceUsdPer1kTokens) / 1000) * 100 - Number.EPSILON,
+  );
+  if (!Number.isSafeInteger(costCents) || costCents < 1) {
+    throw new Error('Invalid BytePlus provider-cost estimate.');
+  }
+  return costCents;
+}

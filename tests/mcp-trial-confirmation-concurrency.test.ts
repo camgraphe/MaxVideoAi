@@ -111,7 +111,7 @@ function pricingSnapshot() {
       kind: 'included_trial',
       customerChargeCents: 0,
       normalPriceCents: 125,
-      providerCostCents: 55,
+      providerCostCents: 17,
     },
   };
 }

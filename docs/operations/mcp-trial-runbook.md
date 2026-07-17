@@ -14,6 +14,42 @@ Do not describe the trial as publicly available until the separate launch
 process explicitly changes the checked-in gate and completes its release
 checks.
 
+## Provider-cost safety gate
+
+Trial quotes use the shared BytePlus accounting owner in
+`frontend/server/byteplus-accounting.ts`; they do not infer provider cost from
+the public MaxVideoAI price. The exact Seedance Mini trial request is repriced
+server-side before risk checks, quote persistence, reservation, or provider
+submission. Invalid pricing data, an unsupported trial shape, or a cost above
+the ceiling fails closed and makes the trial unavailable.
+
+`MCP_TRIAL_PROVIDER_COST_CEILING_CENTS` is a server-owned emergency ceiling. It
+defaults to 25 cents and, when configured, must be a base-10 integer from 1
+through 100. Empty, signed, padded, decimal, zero, negative, oversized, or
+otherwise invalid values fail closed. Request input cannot override it.
+
+The cost fixture was verified on 2026-07-17 against the official BytePlus
+[ModelArk product page](https://www.byteplus.com/en/product/modelark) and
+[pricing documentation](https://docs.byteplus.com/ja/docs/ModelArk/1544106) for
+`dreamina-seedance-2-0-mini-260615`. For text-to-video without video input, the
+documented rate is USD 3.50 per million tokens. At 5 seconds, 480p, and 24 fps,
+the accounting formula is:
+
+```text
+tokens = width × height × duration seconds × fps ÷ 1024
+cost cents = ceil(tokens × USD per million tokens ÷ 1,000,000 × 100)
+```
+
+This produces 17 cents for 16:9 (854×480), 17 cents for 9:16 (480×854), and
+10 cents for 1:1 (480×480). Audio on or off does not change the documented
+no-video rate.
+
+If BytePlus changes the rate or formula, keep the public trial flag off, update
+the shared accounting owner and dated fixture, then rerun the complete trial,
+confirmation, wallet, and production-build gates. Do not raise the ceiling only
+to silence a drift failure; first verify the official source and expected unit
+economics.
+
 ## Reconciliation schedule and authentication
 
 Vercel is configured to call `/api/cron/mcp-trial-reconcile` every 10 minutes.

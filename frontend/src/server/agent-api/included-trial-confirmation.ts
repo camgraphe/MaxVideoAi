@@ -16,6 +16,7 @@ import {
   TrialPresetUnsupportedError,
 } from './trial-preset';
 import type { TrialRiskDecision } from './trial-risk';
+import { requireTrialProviderCostCents } from './trial-provider-cost';
 
 export function requireTrialPrincipal(principal: AgentPrincipal): void {
   if (principal.emailVerified !== true || principal.clientId === null) {
@@ -89,20 +90,6 @@ function trialRiskError(decision: Exclude<TrialRiskDecision, { allowed: true }>)
   trialNotEligible();
 }
 
-function requireTrialProviderCost(pricingSnapshot: Record<string, unknown>): number {
-  const canonicalPricing = pricingSnapshot.canonicalPricing;
-  const base = canonicalPricing
-    && typeof canonicalPricing === 'object'
-    && !Array.isArray(canonicalPricing)
-    ? (canonicalPricing as Record<string, unknown>).base
-    : null;
-  const amountCents = base && typeof base === 'object' && !Array.isArray(base)
-    ? (base as Record<string, unknown>).amountCents
-    : null;
-  if (!Number.isSafeInteger(amountCents) || (amountCents as number) <= 0) trialNotEligible();
-  return amountCents as number;
-}
-
 function includedTrialPricingSnapshot(
   pricingSnapshot: Record<string, unknown>,
   normalPriceCents: number,
@@ -160,7 +147,12 @@ export async function reserveIncludedTrialConfirmation(params: {
   dependencies: ConfirmGenerationDependencies;
 }): Promise<IncludedTrialGenerationReservation> {
   const { quote, candidate, pricingSnapshot, pricing, principal, executor, dependencies } = params;
-  const providerCostCents = requireTrialProviderCost(pricingSnapshot);
+  let providerCostCents: number;
+  try {
+    providerCostCents = requireTrialProviderCostCents(quote.request);
+  } catch {
+    trialNotEligible();
+  }
   const authoritativeTrialSnapshot = includedTrialPricingSnapshot(
     pricingSnapshot,
     pricing.priceCents,

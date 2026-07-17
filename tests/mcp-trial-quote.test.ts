@@ -238,7 +238,7 @@ test('a qualifying original request prepares a zero-charge trial without reducin
     oauthClientId: 'codex-client',
     clientIp: '203.0.113.17',
     userAgent: 'Codex/1.0',
-    providerCostCents: 85,
+    providerCostCents: 17,
   }]);
   assert.equal(captures.inserted.length, 1);
   const inserted = captures.inserted[0]!;
@@ -251,7 +251,7 @@ test('a qualifying original request prepares a zero-charge trial without reducin
     kind: 'included_trial',
     customerChargeCents: 0,
     normalPriceCents: 125,
-    providerCostCents: 85,
+    providerCostCents: 17,
   });
   assert.deepEqual(captures.audits, [{
     quoteId,
@@ -414,15 +414,13 @@ test('trial risk denial falls back to paid while rate limiting creates no quote'
   assert.equal(limited.captures.audits.length, 0);
 });
 
-test('trial provider cost must be the positive safe base amount from canonical pricing', async () => {
+test('trial provider cost is independent from the marked-up public canonical base', async () => {
   for (const baseAmountCents of [0, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
     const { captures, deps } = prepareDependencies({ paidEnabled: false, baseAmountCents });
-    await assert.rejects(
-      prepareGeneration(trialInput, principal, deps as never),
-      (error: unknown) => error instanceof AgentApiError && error.code === 'INTERNAL_ERROR',
-    );
-    assert.equal(captures.risk.length, 0);
-    assert.equal(captures.inserted.length, 0);
+    const prepared = await prepareGeneration(trialInput, principal, deps as never);
+    assert.equal(prepared.fundingMode, 'trial');
+    assert.equal(captures.risk[0]?.providerCostCents, 17);
+    assert.equal(captures.inserted.length, 1);
   }
 
   const zeroNormalPrice = prepareDependencies({ paidEnabled: false, normalPriceCents: 0 });

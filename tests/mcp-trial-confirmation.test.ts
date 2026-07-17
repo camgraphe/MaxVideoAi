@@ -106,7 +106,7 @@ function includedSnapshot() {
       kind: 'included_trial',
       customerChargeCents: 0,
       normalPriceCents: 125,
-      providerCostCents: 55,
+      providerCostCents: 17,
     },
   };
 }
@@ -124,7 +124,7 @@ function trialQuote(options: Partial<McpGenerationQuote> = {}): McpGenerationQuo
     currency: 'USD',
     fundingMode: 'trial',
     trialFunding: {
-      kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125, providerCostCents: 55,
+      kind: 'included_trial', customerChargeCents: 0, normalPriceCents: 125, providerCostCents: 17,
     },
     state: 'prepared',
     jobId: null,
@@ -197,7 +197,7 @@ function dependencies(
         oauthClientId: CLIENT_ID,
         clientIp: riskContext.clientIp,
         userAgent: riskContext.userAgent,
-        providerCostCents: 55,
+        providerCostCents: 17,
       });
       return { allowed: true };
     },
@@ -604,7 +604,10 @@ test('trial initial funding validates the complete private cost envelope before 
     ['missing normal price', { ...baseSnapshot, funding: withoutNormal }],
     ['missing provider cost', { ...baseSnapshot, funding: withoutProvider }],
     ['normal price mismatch', { ...baseSnapshot, funding: { ...baseSnapshot.funding, normalPriceCents: 126 } }],
-    ['provider cost mismatch', { ...baseSnapshot, funding: { ...baseSnapshot.funding, providerCostCents: 56 } }],
+    ['provider cost above normal price', {
+      ...baseSnapshot,
+      funding: { ...baseSnapshot.funding, providerCostCents: 126 },
+    }],
     ['currency mismatch', { ...baseSnapshot, canonicalPricing: { ...baseSnapshot.canonicalPricing, currency: 'EUR' } }],
     ['nonzero customer charge', { ...baseSnapshot, funding: { ...baseSnapshot.funding, customerChargeCents: 1 } }],
   ] as const) {

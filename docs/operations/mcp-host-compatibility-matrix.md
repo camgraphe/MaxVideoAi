@@ -71,7 +71,7 @@ configuration was touched.
 | Claude Desktop token-expiry refresh | Blocked | Revocation and reconnect evidence exists, but automatic refresh still lacks a recorded exact-version hosted result. |
 | Real-host end-to-end trial/paid/reference decision | Not run | Task 11 intentionally performed no authentication, grant, purchase, spend, upload, provider, or production action. |
 | Paid generation | Blocked | Local paid facade verified through the MCP SDK, disposable PostgreSQL, and deterministic provider adapters; hosted real-provider, real-wallet, OAuth refresh, and exact-host confirmation rendering remain pending. |
-| Trial | Blocked | Allocation, abuse, failure restoration, and exact-host evidence are unavailable. |
+| Trial | Blocked | Deterministic local allocation, abuse controls, failure restoration, and wallet isolation pass; hosted OAuth, real provider, and exact-host evidence remain unavailable. |
 | Reference workflow | Blocked | Upload handoff, retention, model support, and exact-host transfer evidence are unavailable. |
 | Funnel/admin reconciliation | Blocked | Migrations 30–32 are absent and migration 33 remains unapplied; deterministic repository tests cannot replace the live ledger. |
 | Public proof and directory promotion | Blocked | No owned publishable MCP generation proof or complete host decision bundle exists. |
@@ -112,6 +112,44 @@ hosted OAuth refresh, real provider acceptance/rejection, real wallet/refund,
 and exact-host confirmation/resource rendering have not been verified. No
 public, directory, SEO, or GEO compatibility claim should cite this local row as
 hosted evidence.
+
+## Seedance Mini included-trial local E2E — 2026-07-17
+
+This entry adds deterministic local evidence only. It does not claim a real
+signup, hosted OAuth flow, real provider submission, Codex or Claude rendering,
+or production compatibility. A linked MCP TypeScript SDK client/server pair ran
+through an in-memory transport with verified email and Google OAuth fixtures.
+The production trial repositories, locks, risk owner, quote owner, confirmation
+owner, outcome owner, wallet reads, jobs, and recent-generation reads ran against
+a fresh disposable PostgreSQL cluster with migrations 30 and 31. The provider
+boundary was a deterministic adapter and returned only managed-storage output
+URLs.
+
+The local suite verified the exact universal preset: Seedance 2.0 Mini,
+text-to-video, 5 seconds, 480p, one output, no references, all three supported
+aspect ratios, and audio both enabled and disabled. It verified a zero-price
+quote, explicit confirmation, accepted/running/completed status, durable
+consumption after a managed output, and unchanged wallet balance with no charge
+or refund. Same-account concurrent confirmations produced one reservation, one
+provider attempt, and one job. A definitive provider rejection released the
+reservation for a fresh attempt; an ambiguous timeout retained it. The trial
+kill switch and consumed entitlement both fell back to an ordinary paid quote
+without automatic spend. Private provider cost, risk data, raw provider context,
+and provider identifiers were absent from MCP responses.
+
+The cost fixture was checked on 2026-07-17 against the official BytePlus
+[ModelArk product page](https://www.byteplus.com/en/product/modelark) and
+[pricing documentation](https://docs.byteplus.com/ja/docs/ModelArk/1544106) for
+`dreamina-seedance-2-0-mini-260615`. The no-video rate is USD 3.50 per million
+tokens. The shared server accounting owner computes 17 cents for 16:9 and 9:16,
+and 10 cents for 1:1, at 5 seconds and 480p; audio does not change this rate. A
+server-owned fail-closed ceiling defaults to 25 cents and accepts only an integer
+from 1 through 100 via `MCP_TRIAL_PROVIDER_COST_CEILING_CENTS`.
+
+All eight checked-in publication flags remain `false`. Controlled hosted OAuth,
+real provider acceptance and rejection, exact-host confirmation UI, automatic
+token refresh, and publishable proof remain mandatory before this row can move
+the launch verdict from blocked.
 
 ## Commands for preview verification
 
