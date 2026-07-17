@@ -3,6 +3,7 @@ import { deriveJobSurface } from '@/lib/job-surface';
 import { extractRenderIds, extractRenderThumbUrls, parseStoredImageRenders } from '@/lib/image-renders';
 import { normalizeMediaUrl } from '@/lib/media';
 import type { PricingSnapshot } from '@/types/engines';
+import { readTrialJobStatus } from '@/server/agent-api/trial-outcomes';
 
 import { mapGenerationStatusRecordToAgent } from './agent-generation-policy';
 
@@ -31,6 +32,8 @@ export type AgentGenerationStatus = {
   priceCents: number | null;
   currency: string | null;
   paymentStatus: string | null;
+  funding?: 'included_trial';
+  entitlementState?: 'reserved' | 'consumed' | 'released';
   result: AgentGenerationResult | null;
   retryAfterSeconds: number | null;
 };
@@ -111,7 +114,12 @@ export async function getGenerationStatus(params: {
   queryFn?: GenerationStatusQuery;
 }): Promise<AgentGenerationStatus | null> {
   const record = await readOwnedGenerationRecord(params);
-  return record ? mapGenerationStatusRecordToAgent(record) : null;
+  if (!record) return null;
+  const status = mapGenerationStatusRecordToAgent(record);
+  if (!status || status.paymentStatus !== 'included_mcp_trial') return status;
+  const trial = await readTrialJobStatus({ userId: params.userId, jobId: params.jobId });
+  if (!trial) throw new Error('Included trial lifecycle state is unavailable.');
+  return { ...status, ...trial };
 }
 
 function buildFallbackSettingsSnapshot(record: GenerationStatusRecord): unknown {

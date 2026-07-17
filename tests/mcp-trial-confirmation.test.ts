@@ -245,6 +245,9 @@ function dependencies(
       captures.provider += 1;
       return { kind: 'accepted' };
     },
+    applyTrialJobOutcome: async () => ({
+      funding: 'included_trial', entitlementState: 'reserved',
+    }),
     markQuoteAccepted: async () => {
       throw new Error('T7 owns trial outcome transitions');
     },

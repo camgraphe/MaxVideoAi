@@ -129,6 +129,32 @@ test('status facade trims bounded legacy job IDs and rejects invalid input befor
   }
 });
 
+test('status and recent recovery expose only the included trial lifecycle state', async () => {
+  const trialStatus = status({
+    jobId: 'trial-job-7',
+    priceCents: 0,
+    paymentStatus: 'included_mcp_trial',
+  });
+  const readTrialStatus = async () => ({
+    funding: 'included_trial' as const,
+    entitlementState: 'reserved' as const,
+  });
+  const single = await getAgentGenerationStatus({ jobId: 'trial-job-7' }, principal, {
+    readStatus: async () => trialStatus,
+    readTrialStatus,
+  });
+  assert.equal(single.funding, 'included_trial');
+  assert.equal(single.entitlementState, 'reserved');
+  assert.doesNotMatch(JSON.stringify(single), /reason|providerCost|fingerprint|ipPrefix/i);
+
+  const recent = await listAgentRecentGenerations({}, principal, {
+    listRecent: async () => ({ items: [trialStatus], nextCursor: null }),
+    readTrialStatus,
+  });
+  assert.equal(recent.items[0]?.funding, 'included_trial');
+  assert.equal(recent.items[0]?.entitlementState, 'reserved');
+});
+
 test('recovery facade rejects malformed principals and exotic exact-input shapes before reading', async () => {
   const accessor = {} as Record<string, unknown>;
   Object.defineProperty(accessor, 'jobId', { enumerable: true, get: () => 'legacy-job_42' });

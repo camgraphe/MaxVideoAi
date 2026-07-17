@@ -11,6 +11,7 @@ import {
 
 import { AgentApiError } from './errors';
 import type { AgentPrincipal } from './principal';
+import { readTrialJobStatus } from './trial-outcomes';
 
 const MAX_JOB_ID_CHARS = 256;
 const MAX_CURSOR_CHARS = 256;
@@ -56,13 +57,16 @@ export type ListAgentRecentGenerationsInput = {
 
 type StatusReader = typeof getGenerationStatus;
 type RecentReader = typeof listRecentGenerations;
+type TrialStatusReader = typeof readTrialJobStatus;
 
 export type AgentGenerationStatusDependencies = {
   readStatus?: StatusReader;
+  readTrialStatus?: TrialStatusReader;
 };
 
 export type AgentRecentGenerationsDependencies = {
   listRecent?: RecentReader;
+  readTrialStatus?: TrialStatusReader;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -177,6 +181,18 @@ function retryDelay(value: number | null): number {
   return Math.max(MIN_RETRY_SECONDS, Math.min(MAX_RETRY_SECONDS, Math.round(value ?? MIN_RETRY_SECONDS)));
 }
 
+async function enrichIncludedTrialStatus(
+  status: AgentGenerationStatus,
+  userId: string,
+  reader: TrialStatusReader,
+): Promise<AgentGenerationStatus> {
+  if (status.paymentStatus !== 'included_mcp_trial') return status;
+  if (status.funding === 'included_trial' && status.entitlementState) return status;
+  const trial = await reader({ userId, jobId: status.jobId });
+  if (!trial) throw new Error('Included trial lifecycle state is unavailable.');
+  return { ...status, ...trial };
+}
+
 export function buildAgentGenerationRecovery(status: AgentGenerationStatus): AgentGenerationRecovery {
   const { retryAfterSeconds, ...safeStatus } = status;
   const retry = status.status === 'accepted' || status.status === 'running'
@@ -262,7 +278,11 @@ export async function getAgentGenerationStatus(
     jobId,
   });
   if (!status) throw new AgentApiError('JOB_FAILED', 'Generation not found.');
-  return buildAgentGenerationRecovery(status);
+  return buildAgentGenerationRecovery(await enrichIncludedTrialStatus(
+    status,
+    principal.userId,
+    dependencies.readTrialStatus ?? readTrialJobStatus,
+  ));
 }
 
 function normalizeRecentInput(input: ListAgentRecentGenerationsInput): Required<
@@ -317,8 +337,13 @@ export async function listAgentRecentGenerations(
     }
     throw error;
   }
+  const enrichedItems = await Promise.all(page.items.map((status) => enrichIncludedTrialStatus(
+    status,
+    principal.userId,
+    dependencies.readTrialStatus ?? readTrialJobStatus,
+  )));
   return {
-    items: page.items.map(buildAgentGenerationRecovery),
+    items: enrichedItems.map(buildAgentGenerationRecovery),
     nextCursor: page.nextCursor,
   };
 }

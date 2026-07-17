@@ -31,6 +31,7 @@ import {
 } from '../frontend/src/server/agent-api/quote-repository';
 import { lockReservableEntitlement, reserveEntitlement } from '../frontend/src/server/agent-api/trial-entitlement-repository';
 import { acceptTrialRisk } from '../frontend/src/server/agent-api/trial-risk';
+import { applyTrialJobOutcome } from '../frontend/src/server/agent-api/trial-outcomes';
 import { getGenerationStatus } from '../frontend/src/server/generations/generation-status';
 import {
   createPaidGenerationTestSchema,
@@ -179,6 +180,7 @@ function dependencies(params: {
     claimPreparedQuote,
     submitPaidGeneration: async () => assert.fail('trial race must not submit a paid generation'),
     submitTrialGeneration: params.provider,
+    applyTrialJobOutcome,
     markQuoteAccepted: (input) => markQuoteAccepted(input, { executor: { query: queryRows } }),
     markQuoteFailed: (input) => markQuoteFailed(input, { executor: { query: queryRows } }),
     readGenerationStatus: ({ userId, jobId }) => getGenerationStatus({ userId, jobId, queryFn: queryRows }),
@@ -188,13 +190,13 @@ function dependencies(params: {
 
 async function counts(pool: Pool, userId: string) {
   const result = await pool.query<{
-    jobs: string; receipts: string; reserved: string; claimed: string; risk_events: string;
+    jobs: string; receipts: string; reserved: string; accepted: string; risk_events: string;
   }>(`
     SELECT
       (SELECT count(*) FROM app_jobs WHERE user_id = $1)::text AS jobs,
       (SELECT count(*) FROM app_receipts WHERE user_id = $1)::text AS receipts,
       (SELECT count(*) FROM mcp_trial_entitlements WHERE user_id = $1 AND status = 'reserved')::text AS reserved,
-      (SELECT count(*) FROM mcp_generation_quotes WHERE user_id = $1 AND state = 'claimed')::text AS claimed,
+      (SELECT count(*) FROM mcp_generation_quotes WHERE user_id = $1 AND state = 'accepted')::text AS accepted,
       (SELECT count(*) FROM mcp_trial_risk_events WHERE user_id = $1 AND outcome = 'allowed')::text AS risk_events
   `, [userId]);
   return result.rows[0];
@@ -257,12 +259,14 @@ test('same trial quote and two trial quotes for one user race safely in disposab
   assert.ok(storedTrialStatus);
   assert.equal(storedTrialStatus.priceCents, 0);
   assert.equal(storedTrialStatus.paymentStatus, 'included_mcp_trial');
+  assert.equal(storedTrialStatus.funding, 'included_trial');
+  assert.equal(storedTrialStatus.entitlementState, 'reserved');
   assert.equal('pricingSnapshot' in storedTrialStatus, false);
   assert.equal('providerCostCents' in storedTrialStatus, false);
   assert.doesNotMatch(JSON.stringify(storedTrialStatus), /providerCostCents|normalPriceCents|pricingSnapshot/iu);
   assert.equal(providerCalls, 1);
   assert.deepEqual(await counts(postgres.pool, sameUser), {
-    jobs: '1', receipts: '0', reserved: '1', claimed: '1', risk_events: '1',
+    jobs: '1', receipts: '0', reserved: '1', accepted: '1', risk_events: '1',
   });
 
   const twoUser = 'two-trial-user';
@@ -289,7 +293,7 @@ test('same trial quote and two trial quotes for one user race safely in disposab
   assert.equal(loser.reason.code, 'TRIAL_NOT_ELIGIBLE');
   assert.equal(twoProviderCalls, 1);
   assert.deepEqual(await counts(postgres.pool, twoUser), {
-    jobs: '1', receipts: '0', reserved: '1', claimed: '1', risk_events: '1',
+    jobs: '1', receipts: '0', reserved: '1', accepted: '1', risk_events: '1',
   });
   const loserState = await postgres.pool.query<{ state: string }>(
     `SELECT state FROM mcp_generation_quotes

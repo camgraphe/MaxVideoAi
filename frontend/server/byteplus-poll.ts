@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { applyTrialJobOutcome } from '@/server/agent-api/trial-outcomes';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
@@ -127,7 +128,12 @@ async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
   return true;
 }
 
-async function markJobFailed(job: BytePlusPendingJob, message: string, providerStatus?: string | null) {
+async function markJobFailed(
+  job: BytePlusPendingJob,
+  message: string,
+  providerStatus?: string | null,
+  trialOutcome: 'failed' | 'timeout' = 'failed',
+) {
   const userMessage = toUserFacingFailureMessage(message);
   const claimed = await query<{ job_id: string }>(
     `UPDATE app_jobs
@@ -157,6 +163,12 @@ async function markJobFailed(job: BytePlusPendingJob, message: string, providerS
       WHERE job_id = $1`,
     [job.job_id, refunded]
   );
+  if (job.payment_status === 'included_mcp_trial') {
+    await applyTrialJobOutcome(
+      job.job_id,
+      trialOutcome === 'timeout' ? { kind: 'timeout' } : { kind: 'failed' },
+    );
+  }
   await recordPollEvent(job, 'poll:failed', { providerStatus: providerStatus ?? null, refunded });
 }
 
@@ -219,7 +231,7 @@ export async function runBytePlusPoll() {
     }
     const createdAtMs = Date.parse(job.created_at);
     if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
-      await markJobFailed(job, 'Render exceeded the expected processing window.', 'timeout');
+      await markJobFailed(job, 'Render exceeded the expected processing window.', 'timeout', 'timeout');
       updates += 1;
       continue;
     }
@@ -365,6 +377,9 @@ export async function runBytePlusPoll() {
       if (!completedRows.length) {
         await recordPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
+      }
+      if (job.payment_status === 'included_mcp_trial') {
+        await applyTrialJobOutcome(job.job_id, { kind: 'completed' });
       }
       await upsertLegacyJobOutputs({
         job_id: job.job_id,

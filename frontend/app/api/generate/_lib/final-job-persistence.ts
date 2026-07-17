@@ -1,4 +1,5 @@
 import { query } from '@/lib/db';
+import { applyTrialJobOutcome } from '@/server/agent-api/trial-outcomes';
 import type { FalInputSummary } from './fal-request';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
@@ -27,6 +28,7 @@ export async function persistFinalVideoJobUpdate(params: {
   message: string | null;
   settingsSnapshotJson: string;
   queryFn?: QueryFn;
+  applyTrialOutcomeFn?: typeof applyTrialJobOutcome;
 }): Promise<void> {
   const queryFn = params.queryFn ?? query;
   await queryFn(
@@ -80,6 +82,14 @@ export async function persistFinalVideoJobUpdate(params: {
       params.settingsSnapshotJson,
     ]
   );
+  if (params.paymentStatus === 'included_mcp_trial') {
+    const kind = params.status === 'completed' && Boolean(params.video)
+      ? 'completed'
+      : params.status === 'failed'
+        ? 'unknown'
+        : 'accepted';
+    await (params.applyTrialOutcomeFn ?? applyTrialJobOutcome)(params.jobId, { kind });
+  }
 }
 
 export async function recordFinalGenerateQueueLog(params: {

@@ -65,6 +65,7 @@ import {
   type TrialEntitlement,
 } from './trial-entitlement-repository';
 import { acceptTrialRisk, type TrialRiskDecision, type TrialRiskInput } from './trial-risk';
+import { applyTrialJobOutcome } from './trial-outcomes';
 
 export type ConfirmGenerationInput = {
   quoteId: string;
@@ -143,6 +144,7 @@ export type ConfirmGenerationDependencies = {
   submitTrialGeneration(
     execution: IncludedTrialGenerationReservation['execution'],
   ): Promise<IncludedTrialGenerationProviderOutcome>;
+  applyTrialJobOutcome: typeof applyTrialJobOutcome;
   markQuoteAccepted(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   markQuoteFailed(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   readGenerationStatus(input: { userId: string; jobId: string }): Promise<AgentGenerationStatus | null>;
@@ -178,6 +180,7 @@ const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext
   claimPreparedQuote,
   submitPaidGeneration: submitReservedPaidGeneration,
   submitTrialGeneration: submitReservedIncludedTrialGeneration,
+  applyTrialJobOutcome,
   markQuoteAccepted,
   markQuoteFailed,
   readGenerationStatus: ({ userId, jobId }) => getGenerationStatus({ userId, jobId }),
@@ -438,10 +441,22 @@ export async function confirmGeneration(
   }
 
   if (transaction.kind === 'created_trial') {
+    let outcome: IncludedTrialGenerationProviderOutcome;
     try {
-      await dependencies.submitTrialGeneration(transaction.reservation.execution);
+      outcome = await dependencies.submitTrialGeneration(transaction.reservation.execution);
     } catch {
-      // Trial outcome transitions are deliberately owned by T7.
+      outcome = { kind: 'ambiguous', retryable: true };
+    }
+    try {
+      await dependencies.applyTrialJobOutcome(
+        transaction.reservation.jobId,
+        { kind: outcome.kind === 'ambiguous' ? 'unknown' : outcome.kind },
+      );
+    } catch (error) {
+      console.warn('[mcp-trial] outcome persistence deferred to reconciliation', {
+        jobId: transaction.reservation.jobId,
+        error: error instanceof Error ? error.message : 'unknown',
+      });
     }
     return readSafeStatus(principal.userId, transaction.reservation.jobId, dependencies);
   }
