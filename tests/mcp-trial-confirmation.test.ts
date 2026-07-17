@@ -278,6 +278,22 @@ test('trial confirmation locks first, then atomically revalidates risk, entitlem
   assert.equal(captures.provider, 1);
 });
 
+test('trial confirmation maps a thrown provider submission to durable unknown outcome handling', async () => {
+  const applied: string[] = [];
+  const { value } = dependencies({
+    submitTrialGeneration: async () => {
+      throw new Error('provider result unknown');
+    },
+    applyTrialJobOutcome: async (_jobId, outcome) => {
+      applied.push(outcome.kind);
+      return { funding: 'included_trial', entitlementState: 'reserved' };
+    },
+  });
+
+  await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, value);
+  assert.deepEqual(applied, ['unknown']);
+});
+
 test('trial confirmation rejects stale gates, principals, risk, and entitlement without paid fallback', async () => {
   for (const [label, identity, overrides, code] of [
     ['feature', principal, { trialGenerationEnabled: () => false }, 'TRIAL_NOT_ELIGIBLE'],

@@ -32,6 +32,15 @@ type InternalTrialJobOutcome = NormalizedTrialJobOutcome | {
   reason: TrialSupportOverride['reason'];
 };
 
+type TrialDisposition =
+  | 'accepted'
+  | 'completed'
+  | 'definitive_failure'
+  | 'canceled'
+  | 'timeout'
+  | 'unknown'
+  | 'stalled';
+
 export type TrialJobOutcomeResult =
   | { funding: 'wallet' }
   | {
@@ -106,13 +115,11 @@ const TRIAL_DISPOSITIONS = new Set([
   'unknown',
   'stalled',
 ]);
-const FINAL_FAILURE_STATUSES = new Set([
-  'aborted',
-  'cancelled',
-  'canceled',
-  'error',
-  'failed',
+const TERMINAL_TRIAL_DISPOSITIONS = new Set<TrialDisposition>([
+  'completed', 'definitive_failure', 'canceled',
 ]);
+const DEFINITIVE_FAILURE_STATUSES = new Set(['error', 'failed', 'rejected']);
+const CANCELED_FAILURE_STATUSES = new Set(['aborted', 'cancelled', 'canceled']);
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@|+-]*$/u;
 
 function exactPlainRecord(
@@ -183,7 +190,7 @@ function readJob(row: JobRow, jobId: string): {
   paymentStatus: string;
   status: string;
   videoUrl: string | null;
-  trialDisposition: string | null;
+  trialDisposition: TrialDisposition | null;
 } {
   if (row.job_id !== jobId
     || !boundedIdentifier(row.user_id, 128)
@@ -207,7 +214,7 @@ function readJob(row: JobRow, jobId: string): {
     paymentStatus: row.payment_status,
     status: row.status,
     videoUrl: row.video_url,
-    trialDisposition: row.mcp_trial_outcome_disposition,
+    trialDisposition: row.mcp_trial_outcome_disposition as TrialDisposition | null,
   };
 }
 
@@ -304,6 +311,50 @@ function publicResult(
   return { funding: 'included_trial', entitlementState };
 }
 
+function nextTrialDisposition(
+  current: TrialDisposition | null,
+  outcome: InternalTrialJobOutcome,
+): TrialDisposition | null {
+  if (current && TERMINAL_TRIAL_DISPOSITIONS.has(current)) return current;
+  if (outcome.kind === 'rejected') return 'definitive_failure';
+  if (outcome.kind === 'canceled') return 'canceled';
+  if (outcome.kind === 'accepted') return current ?? 'accepted';
+  if (outcome.kind === 'unknown') {
+    return current === null || current === 'accepted' ? 'unknown' : current;
+  }
+  if (outcome.kind === 'timeout' || outcome.kind === 'stalled') {
+    return current === null || current === 'accepted' || current === 'unknown'
+      ? outcome.kind
+      : current;
+  }
+  return current;
+}
+
+async function persistNonTerminalTrialDisposition(
+  executor: TransactionQueryExecutor,
+  job: ReturnType<typeof readJob>,
+  entitlementState: 'reserved' | 'consumed' | 'released',
+  outcome: InternalTrialJobOutcome,
+): Promise<TrialDisposition | null> {
+  if (entitlementState !== 'reserved') return job.trialDisposition;
+  const next = nextTrialDisposition(job.trialDisposition, outcome);
+  if (next === job.trialDisposition) return next;
+  const rows = await executor.query<{ trial_disposition: unknown }>(
+    `UPDATE app_jobs
+        SET mcp_trial_outcome_disposition = $2,
+            updated_at = clock_timestamp()
+      WHERE job_id = $1
+        AND payment_status = 'included_mcp_trial'
+        AND mcp_trial_outcome_disposition IS NOT DISTINCT FROM $3
+    RETURNING mcp_trial_outcome_disposition AS trial_disposition`,
+    [job.jobId, next, job.trialDisposition],
+  );
+  if (rows.length !== 1 || rows[0]?.trial_disposition !== next) {
+    throw new Error('Trial outcome disposition was not persisted.');
+  }
+  return next;
+}
+
 export async function readTrialJobStatus(
   input: { userId: string; jobId: string },
   dependencies: { executor: QueryExecutor } = { executor: { query } },
@@ -389,6 +440,12 @@ async function applyTrialJobOutcomeWithDependencies(
         ? quoteState === 'accepted'
         : quoteState === 'failed';
     if (!lifecycleConsistent) throw new Error('Inconsistent trial lifecycle state.');
+    const trialDisposition = await persistNonTerminalTrialDisposition(
+      executor,
+      job,
+      entitlementState,
+      outcome,
+    );
 
     if (outcome.kind === 'accepted') {
       if (entitlementState === 'reserved' && quoteState === 'claimed') {
@@ -401,7 +458,7 @@ async function applyTrialJobOutcomeWithDependencies(
     }
     if (outcome.kind === 'completed') {
       if (job.status !== 'completed'
-        || job.trialDisposition !== 'completed'
+        || trialDisposition !== 'completed'
         || !isUsableTrialOutputUrl(job.videoUrl)) {
         throw new Error('Trial consumption requires a durable completed output.');
       }
@@ -422,9 +479,18 @@ async function applyTrialJobOutcomeWithDependencies(
 
     if (entitlementState !== 'reserved') return publicResult(entitlementState);
     if (job.videoUrl) throw new Error('A trial cannot release after an output exists.');
-    if (outcome.kind !== 'support_release'
-      && !FINAL_FAILURE_STATUSES.has(job.status.trim().toLowerCase())) {
-      throw new Error('Trial release requires a durable definitive failure.');
+    if (outcome.kind !== 'support_release') {
+      const expectedDisposition = outcome.kind === 'canceled'
+        ? 'canceled'
+        : 'definitive_failure';
+      const status = job.status.trim().toLowerCase();
+      const hasExpectedStatus = outcome.kind === 'canceled'
+        ? CANCELED_FAILURE_STATUSES.has(status)
+        : DEFINITIVE_FAILURE_STATUSES.has(status);
+      if (!hasExpectedStatus
+        || trialDisposition !== expectedDisposition) {
+        throw new Error('Trial release requires a durable definitive failure.');
+      }
     }
     const reasonCode = outcome.kind === 'support_release'
       ? outcome.reason

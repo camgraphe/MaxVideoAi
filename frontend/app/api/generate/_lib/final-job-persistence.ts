@@ -68,7 +68,14 @@ export async function persistFinalVideoJobUpdate(params: {
          message = $21,
          settings_snapshot = $22::jsonb,
          mcp_trial_outcome_disposition = CASE
-           WHEN $16 = 'included_mcp_trial' THEN $23
+           WHEN $16 <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
+           WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
+             THEN mcp_trial_outcome_disposition
+           WHEN $23 IN ('completed', 'canceled') THEN $23
+           WHEN $23 = 'unknown'
+             AND (mcp_trial_outcome_disposition IS NULL OR mcp_trial_outcome_disposition = 'accepted')
+             THEN 'unknown'
+           WHEN $23 = 'accepted' AND mcp_trial_outcome_disposition IS NULL THEN 'accepted'
            ELSE mcp_trial_outcome_disposition
          END,
          provisional = FALSE,

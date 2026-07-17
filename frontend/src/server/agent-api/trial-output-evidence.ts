@@ -1,6 +1,13 @@
+import { isManagedStorageUrl } from '@/server/provider-output-policy';
+
 const MAX_TRIAL_OUTPUT_URL_LENGTH = 2_048;
 
-export function isUsableTrialOutputUrl(value: unknown): value is string {
+type ManagedStorageUrlPredicate = (value: string) => boolean;
+
+export function isUsableTrialOutputUrl(
+  value: unknown,
+  isManagedUrl: ManagedStorageUrlPredicate = isManagedStorageUrl,
+): value is string {
   if (typeof value !== 'string'
     || value.length < 1
     || value.length > MAX_TRIAL_OUTPUT_URL_LENGTH
@@ -14,7 +21,10 @@ export function isUsableTrialOutputUrl(value: unknown): value is string {
       && parsed.username === ''
       && parsed.password === ''
       && parsed.hostname.length > 0
-      && parsed.origin !== 'null';
+      && parsed.origin !== 'null'
+      && parsed.search === ''
+      && parsed.hash === ''
+      && isManagedUrl(value);
   } catch {
     return false;
   }

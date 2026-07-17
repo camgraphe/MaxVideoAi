@@ -9,6 +9,8 @@ import {
   resolveTrialReconciliationConfig,
 } from '../frontend/src/server/agent-api/reconcile-trial-entitlements';
 import { persistFinalVideoJobUpdate } from '../frontend/app/api/generate/_lib/final-job-persistence';
+import { submitBytePlusGenerateTask } from '../frontend/app/api/generate/_lib/byteplus-submission';
+import { BytePlusModelArkError } from '../frontend/src/server/video-providers/byteplus-modelark';
 import {
   createPaidGenerationTestSchema,
   missingDisposablePostgresCommand,
@@ -22,6 +24,12 @@ const CRON_OWNER = 'frontend/server/mcp-trial-reconcile-cron.ts';
 const ADMIN_TRIAL_OWNER = 'frontend/server/admin-mcp-trial-operations.ts';
 const ADMIN_TRIAL_CONTROLS =
   'frontend/app/(core)/admin/mcp/_components/McpTrialControls.tsx';
+const previousStorageBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+process.env.S3_PUBLIC_BASE_URL = 'https://media.maxvideoai.com';
+test.after(() => {
+  if (previousStorageBaseUrl === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+  else process.env.S3_PUBLIC_BASE_URL = previousStorageBaseUrl;
+});
 
 test('trial reconciliation has a dedicated bounded server owner', () => {
   const source = existsSync(RECONCILIATION_OWNER)
@@ -208,17 +216,27 @@ test('failed app status never releases without durable definitive-failure eviden
   }), 'definitive_failure');
 });
 
-test('usable trial output requires credential-free whitespace-free HTTPS', async () => {
+test('usable trial output requires stable credential-free managed HTTPS', async () => {
   const module = await import(
     '../frontend/src/server/agent-api/trial-output-evidence'
   ).catch(() => ({}));
   const isUsable = (module as {
-    isUsableTrialOutputUrl?: (value: unknown) => boolean;
+    isUsableTrialOutputUrl?: (value: unknown, isManaged?: (url: string) => boolean) => boolean;
   }).isUsableTrialOutputUrl;
   assert.equal(typeof isUsable, 'function');
   if (!isUsable) return;
 
-  assert.equal(isUsable('https://media.maxvideoai.com/renders/trial.mp4'), true);
+  const managed = (url: string) => new URL(url).host === 'media.maxvideoai.com';
+  assert.equal(isUsable('https://media.maxvideoai.com/renders/trial.mp4', managed), true);
+  assert.equal(
+    isUsable('https://media.maxvideoai.com/renders/trial.mp4', () => false),
+    false,
+    'missing managed-storage configuration must fail closed',
+  );
+  assert.equal(isUsable(
+    'https://provider.example/render.mp4?X-Amz-Signature=temporary&X-Amz-Expires=900',
+    () => true,
+  ), false, 'signed provider media is not durable trial evidence');
   for (const value of [
     'http://media.maxvideoai.com/renders/trial.mp4',
     'https://user:secret@media.maxvideoai.com/renders/trial.mp4',
@@ -227,7 +245,7 @@ test('usable trial output requires credential-free whitespace-free HTTPS', async
     '',
     null,
   ]) {
-    assert.equal(isUsable(value), false);
+    assert.equal(isUsable(value, managed), false);
   }
 });
 
@@ -268,12 +286,16 @@ test('real PostgreSQL classification quarantines unknown failed jobs and malform
   const timeoutJob = '90000000-0000-4000-8000-000000000003';
   const failedJob = '90000000-0000-4000-8000-000000000004';
   const completedJob = '90000000-0000-4000-8000-000000000005';
+  const signedJob = '90000000-0000-4000-8000-000000000006';
+  const unmanagedJob = '90000000-0000-4000-8000-000000000007';
   for (const [jobId, userId, status, videoUrl, disposition] of [
     [unknownJob, 'sql-unknown-user', 'failed', null, 'unknown'],
     [malformedJob, 'sql-malformed-user', 'completed', 'not-a-url', 'completed'],
     [timeoutJob, 'sql-timeout-user', 'failed', null, 'timeout'],
     [failedJob, 'sql-failed-user', 'failed', null, 'definitive_failure'],
     [completedJob, 'sql-completed-user', 'completed', 'https://media.maxvideoai.com/sql.mp4', 'completed'],
+    [signedJob, 'sql-signed-user', 'completed', 'https://media.maxvideoai.com/sql.mp4?X-Amz-Signature=temp', 'completed'],
+    [unmanagedJob, 'sql-unmanaged-user', 'completed', 'https://provider.example/sql.mp4', 'completed'],
   ] as const) {
     await postgres.pool.query(
       `INSERT INTO app_jobs (
@@ -318,7 +340,7 @@ test('real PostgreSQL classification quarantines unknown failed jobs and malform
   ]);
   assert.equal(result.counts?.released, 1);
   assert.equal(result.counts?.consumed, 1);
-  assert.equal(result.counts?.quarantinedAmbiguous, 3);
+  assert.equal(result.counts?.quarantinedAmbiguous, 5);
 });
 
 test('migrated PostgreSQL persists trial dispositions and deletes only a bounded pre-cutoff risk batch', async (t) => {
@@ -400,6 +422,68 @@ test('migrated PostgreSQL persists trial dispositions and deletes only a bounded
     ),
     /app_jobs_mcp_trial_outcome_disposition_allowlist/i,
   );
+
+  const bytePlusJobId = '91000000-0000-4000-8000-000000000002';
+  await postgres.pool.query(
+    `INSERT INTO app_jobs (job_id, user_id, payment_status, status, progress)
+     VALUES ($1, 'byteplus-rejection-user', 'included_mcp_trial', 'pending', 0)`,
+    [bytePlusJobId],
+  );
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  try {
+    const bytePlusResult = await submitBytePlusGenerateTask({
+      jobId: bytePlusJobId,
+      userId: 'byteplus-rejection-user',
+      engineId: 'seedance-2-0-mini',
+      engineLabel: 'Seedance 2.0 Mini',
+      prompt: 'Authoritative rejected render',
+      durationSec: 5,
+      mode: 't2v',
+      initialImageUrl: null,
+      endImageUrl: null,
+      normalizedReferenceImages: [],
+      videoUrls: [],
+      resolvedAudioUrl: null,
+      audioUrls: [],
+      effectiveResolution: '480p',
+      aspectRatio: '16:9',
+      audioEnabled: true,
+      placeholderThumb: '/assets/frames/thumb-16x9.svg',
+      pricing: { totalCents: 0, currency: 'USD' } as never,
+      paymentStatus: 'included_mcp_trial',
+      pendingReceipt: null,
+      paymentMode: 'mcp_trial',
+      walletChargeReserved: false,
+      batchId: null,
+      groupId: null,
+      iterationIndex: null,
+      iterationCount: null,
+      renderIds: null,
+      heroRenderId: null,
+      localKey: null,
+      deps: {
+        getBytePlusArkConfigFn: () => ({ seedanceMiniModelId: 'model-mini' }) as never,
+        buildBytePlusSeedancePayloadFn: (payload) => payload as never,
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            throw new BytePlusModelArkError('rejected', { status: 422, code: 'invalid_request' });
+          },
+        }) as never,
+        getBytePlusSeedanceAllowedResolutionsFn: () => ['480p', '720p'] as never,
+        queryFn: async (sql, params) => { await postgres.pool.query(sql, params); },
+      },
+    });
+    assert.equal(bytePlusResult.ok, false);
+    assert.equal(bytePlusResult.status, 502);
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT status, mcp_trial_outcome_disposition AS disposition
+       FROM app_jobs WHERE job_id = $1`,
+    [bytePlusJobId],
+  )).rows, [{ status: 'failed', disposition: 'definitive_failure' }]);
 
   const cutoff = new Date('2026-06-17T12:00:00.000Z');
   await postgres.pool.query(`SET session_replication_role = 'replica'`);

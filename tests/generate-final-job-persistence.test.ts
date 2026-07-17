@@ -15,6 +15,12 @@ const helperPath = join(root, 'frontend/app/api/generate/_lib/final-job-persiste
 const routeSource = readFileSync(routePath, 'utf8');
 const preparedSource = readFileSync(join(root, 'frontend/src/server/video-generation/execute-prepared-video-generation.ts'), 'utf8');
 const helperSource = readFileSync(helperPath, 'utf8');
+const previousStorageBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+process.env.S3_PUBLIC_BASE_URL = 'https://cdn.maxvideoai.com';
+test.after(() => {
+  if (previousStorageBaseUrl === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+  else process.env.S3_PUBLIC_BASE_URL = previousStorageBaseUrl;
+});
 
 test('generate route delegates final job persistence and final queue logging', () => {
   assert.ok(existsSync(helperPath), 'final job persistence should live in the generate route _lib folder');

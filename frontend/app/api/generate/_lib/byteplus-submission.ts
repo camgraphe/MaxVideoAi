@@ -135,6 +135,11 @@ export async function submitBytePlusGenerateTask(params: {
            message = $4,
            provider = $5,
            provider_job_id = $6,
+           mcp_trial_outcome_disposition = CASE
+             WHEN payment_status = 'included_mcp_trial'
+               AND mcp_trial_outcome_disposition IS NULL THEN 'accepted'
+             ELSE mcp_trial_outcome_disposition
+           END,
            provisional = FALSE,
            updated_at = NOW()
        WHERE job_id = $1`,
@@ -193,6 +198,9 @@ export async function submitBytePlusGenerateTask(params: {
     const responseErrorCode = providerStatus && providerStatus >= 400 && providerStatus < 500
       ? 'PROVIDER_REQUEST_REJECTED'
       : 'BYTEPLUS_PROVIDER_ERROR';
+    const trialDisposition = responseErrorCode === 'PROVIDER_REQUEST_REJECTED'
+      ? 'definitive_failure'
+      : 'unknown';
     const failureMessage = toUserFacingFailureMessage(getBytePlusUserSafeErrorMessageFn(providerMessage));
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
@@ -210,6 +218,15 @@ export async function submitBytePlusGenerateTask(params: {
              provider = $3,
              provisional = FALSE,
              payment_status = CASE WHEN $4::text IS NOT NULL THEN $4 ELSE payment_status END,
+             mcp_trial_outcome_disposition = CASE
+               WHEN payment_status <> 'included_mcp_trial' THEN mcp_trial_outcome_disposition
+               WHEN mcp_trial_outcome_disposition IN ('completed', 'definitive_failure', 'canceled')
+                 THEN mcp_trial_outcome_disposition
+               WHEN $5 = 'definitive_failure' THEN 'definitive_failure'
+               WHEN mcp_trial_outcome_disposition IS NULL
+                 OR mcp_trial_outcome_disposition = 'accepted' THEN 'unknown'
+               ELSE mcp_trial_outcome_disposition
+             END,
              updated_at = NOW()
          WHERE job_id = $1`,
         [
@@ -217,6 +234,7 @@ export async function submitBytePlusGenerateTask(params: {
           failureMessage,
           BYTEPLUS_MODELARK_PROVIDER,
           params.pendingReceipt ? (params.paymentMode === 'wallet' ? 'refunded_wallet' : 'refunded') : null,
+          trialDisposition,
         ]
       );
     } catch (updateError) {

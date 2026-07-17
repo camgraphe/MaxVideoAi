@@ -125,6 +125,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
   });
   assert.deepEqual(persistedProviderIds, ['provider_123']);
   assert.match(queries[0]?.sql ?? '', /UPDATE app_jobs/);
+  assert.match(queries[0]?.sql ?? '', /mcp_trial_outcome_disposition/i);
   assert.deepEqual(queries[0]?.params, [
     'job_123',
     'queued',
@@ -236,6 +237,7 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
       'The render queue is temporarily busy. Please retry in a few moments.',
       'byteplus_modelark',
       'refunded_wallet',
+      'unknown',
     ]);
     assert.deepEqual(rollbacks, [{ refundDescription: 'Refund Seedance 2.0 - 8s - Render queue was temporarily busy.' }]);
     assert.equal(logs[0]?.kind, 'failed');
@@ -253,6 +255,7 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
 test('BytePlus submission preserves a safe definitive marker for provider 4xx behind outward 502', async () => {
   const originalWarn = console.warn;
   console.warn = () => undefined;
+  const queries: Array<{ sql: string; params?: unknown[] }> = [];
   try {
     const result = await submitBytePlusGenerateTask({
       ...baseParams,
@@ -268,13 +271,15 @@ test('BytePlus submission preserves a safe definitive marker for provider 4xx be
           },
         }),
         getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
-        queryFn: async () => undefined,
+        queryFn: async (sql, params) => { queries.push({ sql, params }); },
       },
     });
     assert.equal(result.ok, false);
     assert.equal(result.status, 502);
     assert.equal(result.body.error, 'PROVIDER_REQUEST_REJECTED');
     assert.doesNotMatch(JSON.stringify(result.body), /invalid_request|request rejected/i);
+    assert.match(queries[0]?.sql ?? '', /mcp_trial_outcome_disposition/i);
+    assert.equal(queries[0]?.params?.at(-1), 'definitive_failure');
   } finally {
     console.warn = originalWarn;
   }

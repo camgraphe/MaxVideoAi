@@ -11,6 +11,12 @@ import {
 
 const JOB_ID = '00000000-0000-4000-8000-000000000701';
 const USER_ID = 'trial-user-7';
+const previousStorageBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+process.env.S3_PUBLIC_BASE_URL = 'https://media.maxvideoai.com';
+test.after(() => {
+  if (previousStorageBaseUrl === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+  else process.env.S3_PUBLIC_BASE_URL = previousStorageBaseUrl;
+});
 
 type TrialState = 'reserved' | 'consumed' | 'released';
 type Call = { sql: string; params?: ReadonlyArray<unknown> };
@@ -33,19 +39,32 @@ function entitlement(state: TrialState) {
 function harness(options: {
   paymentStatus?: string;
   jobStatus?: string;
-    videoUrl?: string | null;
-    trialDisposition?: string | null;
+  videoUrl?: string | null;
+  trialDisposition?: string | null;
   entitlementState?: TrialState;
   quoteState?: 'claimed' | 'accepted' | 'failed';
 } = {}) {
   const calls: Call[] = [];
   let state = options.entitlementState ?? 'reserved';
   let quoteState = options.quoteState ?? (state === 'released' ? 'failed' : 'accepted');
+  let trialDisposition = Object.prototype.hasOwnProperty.call(options, 'trialDisposition')
+    ? options.trialDisposition ?? null
+    : options.jobStatus === 'completed'
+      ? 'completed'
+      : ['failed', 'error', 'rejected'].includes(options.jobStatus ?? '')
+        ? 'definitive_failure'
+        : options.jobStatus === 'canceled'
+          ? 'canceled'
+          : null;
   let consumeCalls = 0;
   let releaseCalls = 0;
   const executor = {
     async query<T>(sql: string, params?: ReadonlyArray<unknown>): Promise<T[]> {
       calls.push({ sql, params });
+      if (/UPDATE app_jobs/i.test(sql)) {
+        trialDisposition = typeof params?.[1] === 'string' ? params[1] : trialDisposition;
+        return [{ trial_disposition: trialDisposition }] as T[];
+      }
       if (/FROM app_jobs/i.test(sql)) {
         return [{
           job_id: JOB_ID,
@@ -53,15 +72,7 @@ function harness(options: {
           payment_status: options.paymentStatus ?? 'included_mcp_trial',
           status: options.jobStatus ?? 'running',
           video_url: options.videoUrl ?? null,
-          mcp_trial_outcome_disposition: Object.prototype.hasOwnProperty.call(options, 'trialDisposition')
-            ? options.trialDisposition
-            : options.jobStatus === 'completed'
-              ? 'completed'
-              : ['failed', 'error', 'rejected'].includes(options.jobStatus ?? '')
-                ? 'definitive_failure'
-                : options.jobStatus === 'canceled'
-                  ? 'canceled'
-                  : null,
+          mcp_trial_outcome_disposition: trialDisposition,
         }] as T[];
       }
       if (/FROM mcp_generation_quotes/i.test(sql)) {
@@ -92,6 +103,7 @@ function harness(options: {
   return {
     calls,
     get state() { return state; },
+    get trialDisposition() { return trialDisposition; },
     get consumeCalls() { return consumeCalls; },
     get releaseCalls() { return releaseCalls; },
     dependencies: {
@@ -133,6 +145,7 @@ test('accepted, timeout, and unknown outcomes keep an included trial reserved', 
     assert.deepEqual(result, { funding: 'included_trial', entitlementState: 'reserved' });
     assert.equal(fixture.consumeCalls, 0);
     assert.equal(fixture.releaseCalls, 0);
+    assert.equal(fixture.trialDisposition, kind);
   }
 });
 
@@ -152,12 +165,63 @@ test('a durably completed output consumes exactly once and duplicate completion 
 
 test('pre-acceptance rejection, terminal failure, and cancellation release before output', async () => {
   for (const kind of ['rejected', 'failed', 'canceled'] as const) {
-    const fixture = harness({ jobStatus: kind === 'canceled' ? 'canceled' : 'failed' });
+    const fixture = harness({
+      jobStatus: kind === 'canceled' ? 'canceled' : 'failed',
+      ...(kind === 'failed' ? {} : { trialDisposition: 'unknown' }),
+    });
     const result = await applyOutcome(fixture, { kind });
     assert.deepEqual(result, { funding: 'included_trial', entitlementState: 'released' });
     assert.equal(fixture.consumeCalls, 0);
     assert.equal(fixture.releaseCalls, 1);
+    assert.equal(
+      fixture.trialDisposition,
+      kind === 'canceled' ? 'canceled' : 'definitive_failure',
+    );
   }
+});
+
+test('ordinary failed status cannot promote ambiguous evidence or release', async () => {
+  for (const trialDisposition of [null, 'accepted', 'unknown', 'timeout', 'stalled']) {
+    const fixture = harness({ jobStatus: 'failed', trialDisposition });
+    await assert.rejects(
+      applyOutcome(fixture, { kind: 'failed' }),
+      /durable definitive failure/i,
+    );
+    assert.equal(fixture.releaseCalls, 0);
+    assert.equal(fixture.trialDisposition, trialDisposition);
+  }
+});
+
+test('terminal outcomes require matching durable status and disposition families', async () => {
+  const failedAsCanceled = harness({
+    jobStatus: 'canceled', trialDisposition: 'definitive_failure',
+  });
+  await assert.rejects(
+    applyOutcome(failedAsCanceled, { kind: 'failed' }),
+    /durable definitive failure/i,
+  );
+  const canceledAsFailed = harness({
+    jobStatus: 'failed', trialDisposition: 'canceled',
+  });
+  await assert.rejects(
+    applyOutcome(canceledAsFailed, { kind: 'canceled' }),
+    /durable definitive failure/i,
+  );
+  assert.equal(failedAsCanceled.releaseCalls, 0);
+  assert.equal(canceledAsFailed.releaseCalls, 0);
+});
+
+test('unknown outcome is persisted under the trial job lock', async () => {
+  const fixture = harness({ jobStatus: 'pending', trialDisposition: null });
+  assert.deepEqual(
+    await applyOutcome(fixture, { kind: 'unknown' }),
+    { funding: 'included_trial', entitlementState: 'reserved' },
+  );
+  const dispositionWrite = fixture.calls.find(({ sql }) => (
+    /UPDATE app_jobs/i.test(sql) && /mcp_trial_outcome_disposition/i.test(sql)
+  ));
+  assert.ok(dispositionWrite, 'unknown must be durable before returning');
+  assert.ok(dispositionWrite.params?.includes('unknown'));
 });
 
 test('late success after release and late failure after consume preserve the first terminal state', async () => {
@@ -166,6 +230,7 @@ test('late success after release and late failure after consume preserve the fir
     await applyOutcome(released, { kind: 'completed' }),
     { funding: 'included_trial', entitlementState: 'released' },
   );
+  assert.equal(released.calls.some(({ sql }) => /UPDATE app_jobs/i.test(sql)), false);
   const consumed = harness({
     entitlementState: 'consumed',
     jobStatus: 'failed',
@@ -175,6 +240,18 @@ test('late success after release and late failure after consume preserve the fir
     await applyOutcome(consumed, { kind: 'failed' }),
     { funding: 'included_trial', entitlementState: 'consumed' },
   );
+  assert.equal(consumed.calls.some(({ sql }) => /UPDATE app_jobs/i.test(sql)), false);
+});
+
+test('ambiguous callbacks never overwrite a terminal durable disposition', async () => {
+  for (const terminal of ['completed', 'definitive_failure', 'canceled'] as const) {
+    for (const kind of ['accepted', 'unknown', 'timeout', 'stalled'] as const) {
+      const fixture = harness({ jobStatus: 'running', trialDisposition: terminal });
+      await applyOutcome(fixture, { kind });
+      assert.equal(fixture.trialDisposition, terminal);
+      assert.equal(fixture.calls.some(({ sql }) => /UPDATE app_jobs/i.test(sql)), false);
+    }
+  }
 });
 
 test('wallet jobs are a no-op before quote or entitlement access', async () => {
@@ -212,12 +289,41 @@ test('completed requires durable evidence and a usable HTTPS output', async () =
     harness({ jobStatus: 'completed', videoUrl: 'http://media.maxvideoai.com/output.mp4' }),
     harness({ jobStatus: 'completed', videoUrl: 'https://user:secret@media.maxvideoai.com/output.mp4' }),
     harness({ jobStatus: 'completed', videoUrl: 'https://media.maxvideoai.com/output video.mp4' }),
+    harness({
+      jobStatus: 'completed',
+      videoUrl: 'https://media.maxvideoai.com/output.mp4?X-Amz-Signature=temporary',
+    }),
+    harness({ jobStatus: 'completed', videoUrl: 'https://provider.example/output.mp4' }),
   ]) {
     await assert.rejects(
       applyOutcome(fixture, { kind: 'completed' }),
       /durable completed output/i,
     );
     assert.equal(fixture.consumeCalls, 0);
+  }
+});
+
+test('completed output fails closed when managed storage configuration is absent', async () => {
+  const configured = process.env.S3_PUBLIC_BASE_URL;
+  delete process.env.S3_PUBLIC_BASE_URL;
+  const bucket = process.env.S3_BUCKET;
+  delete process.env.S3_BUCKET;
+  try {
+    const fixture = harness({
+      jobStatus: 'completed',
+      videoUrl: 'https://media.maxvideoai.com/unconfigured.mp4',
+      trialDisposition: 'completed',
+    });
+    await assert.rejects(
+      applyOutcome(fixture, { kind: 'completed' }),
+      /durable completed output/i,
+    );
+    assert.equal(fixture.consumeCalls, 0);
+  } finally {
+    if (configured === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+    else process.env.S3_PUBLIC_BASE_URL = configured;
+    if (bucket === undefined) delete process.env.S3_BUCKET;
+    else process.env.S3_BUCKET = bucket;
   }
 });
 

@@ -21,6 +21,7 @@ import {
   type IncludedTrialGenerationProviderOutcome,
 } from '../frontend/src/server/agent-api/paid-generation-execution';
 import type { AgentPrincipal } from '../frontend/src/server/agent-api/principal';
+import { classifyTrialJobEvidence } from '../frontend/src/server/agent-api/reconcile-trial-entitlements';
 import {
   claimPreparedQuote,
   insertPreparedQuote,
@@ -44,6 +45,12 @@ import {
 } from './helpers/disposable-postgres';
 
 const RISK_SECRET = 'trial-confirm-risk-secret-0123456789abcdef';
+const previousStorageBaseUrl = process.env.S3_PUBLIC_BASE_URL;
+process.env.S3_PUBLIC_BASE_URL = 'https://media.maxvideoai.com';
+test.after(() => {
+  if (previousStorageBaseUrl === undefined) delete process.env.S3_PUBLIC_BASE_URL;
+  else process.env.S3_PUBLIC_BASE_URL = previousStorageBaseUrl;
+});
 
 function trialCandidate(): AgentPublicGenerationEngine {
   const entry = getFalEngineById('seedance-2-0-mini');
@@ -330,6 +337,130 @@ test('same trial quote and two trial quotes for one user race safely in disposab
     [twoUser],
   );
   assert.deepEqual(loserState.rows, [{ state: 'prepared' }]);
+});
+
+test('durable trial outcomes close unknown release races in disposable PostgreSQL', async (t) => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) {
+    t.skip(`${missing} is unavailable`);
+    return;
+  }
+  const postgres = await startDisposablePostgres('mcp-trial-outcome-proof');
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = postgres.databaseUrl;
+  t.after(async () => {
+    await getDb().end().catch(() => undefined);
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    await postgres.cleanup();
+  });
+  await createPaidGenerationTestSchema(postgres.pool);
+  await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+
+  const unknownUser = 'outcome-unknown-user';
+  const unknownQuote = '30000000-0000-4000-8000-000000000001';
+  await insertTrialQuote({
+    pool: postgres.pool,
+    quoteId: unknownQuote,
+    userId: unknownUser,
+    clientId: 'outcome-unknown-client',
+    prompt: 'unknown provider outcome',
+  });
+  await confirmGeneration(
+    { quoteId: unknownQuote, confirmed: true },
+    principal(unknownUser, 'outcome-unknown-client'),
+    dependencies({
+      pool: postgres.pool,
+      provider: async () => { throw new Error('provider outcome unknown'); },
+    }),
+  );
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT status, mcp_trial_outcome_disposition AS disposition
+       FROM app_jobs WHERE job_id = $1`,
+    [unknownQuote],
+  )).rows, [{ status: 'pending', disposition: 'unknown' }]);
+
+  await postgres.pool.query(`UPDATE app_jobs SET status = 'failed' WHERE job_id = $1`, [unknownQuote]);
+  for (const disposition of ['unknown', 'timeout', 'stalled']) {
+    await postgres.pool.query(
+      `UPDATE app_jobs SET mcp_trial_outcome_disposition = $2 WHERE job_id = $1`,
+      [unknownQuote, disposition],
+    );
+    await assert.rejects(
+      applyTrialJobOutcome(unknownQuote, { kind: 'failed' }),
+      /durable definitive failure/i,
+    );
+    assert.equal((await postgres.pool.query<{ status: string }>(
+      `SELECT status FROM mcp_trial_entitlements WHERE user_id = $1`,
+      [unknownUser],
+    )).rows[0]?.status, 'reserved');
+  }
+
+  await postgres.pool.query(
+    `UPDATE app_jobs SET mcp_trial_outcome_disposition = 'definitive_failure' WHERE job_id = $1`,
+    [unknownQuote],
+  );
+  assert.equal(classifyTrialJobEvidence({
+    jobStatus: 'failed', videoUrl: null, trialDisposition: 'definitive_failure',
+  }), 'definitive_failure');
+  await postgres.pool.query(
+    `UPDATE app_jobs SET mcp_trial_outcome_disposition = 'unknown' WHERE job_id = $1`,
+    [unknownQuote],
+  );
+  await assert.rejects(
+    applyTrialJobOutcome(unknownQuote, { kind: 'failed' }),
+    /durable definitive failure/i,
+    'T7 must re-read the disposition after T8 classification',
+  );
+  await postgres.pool.query(
+    `UPDATE app_jobs SET mcp_trial_outcome_disposition = 'definitive_failure' WHERE job_id = $1`,
+    [unknownQuote],
+  );
+  assert.deepEqual(await applyTrialJobOutcome(unknownQuote, { kind: 'failed' }), {
+    funding: 'included_trial', entitlementState: 'released',
+  });
+
+  const rejectedUser = 'outcome-rejected-user';
+  const rejectedQuote = '30000000-0000-4000-8000-000000000002';
+  await insertTrialQuote({
+    pool: postgres.pool,
+    quoteId: rejectedQuote,
+    userId: rejectedUser,
+    clientId: 'outcome-rejected-client',
+    prompt: 'authoritative provider rejection',
+  });
+  await confirmGeneration(
+    { quoteId: rejectedQuote, confirmed: true },
+    principal(rejectedUser, 'outcome-rejected-client'),
+    dependencies({
+      pool: postgres.pool,
+      provider: async () => {
+        await postgres.pool.query(
+          `UPDATE app_jobs
+              SET status = 'failed', mcp_trial_outcome_disposition = 'unknown'
+            WHERE job_id = $1`,
+          [rejectedQuote],
+        );
+        return { kind: 'rejected' };
+      },
+    }),
+  );
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT job.mcp_trial_outcome_disposition AS disposition,
+            entitlement.status AS entitlement_state,
+            quote.state AS quote_state
+       FROM app_jobs AS job
+       JOIN mcp_trial_entitlements AS entitlement ON entitlement.job_id = job.job_id
+       JOIN mcp_generation_quotes AS quote ON quote.job_id = job.job_id
+      WHERE job.job_id = $1`,
+    [rejectedQuote],
+  )).rows, [{
+    disposition: 'definitive_failure', entitlement_state: 'released', quote_state: 'failed',
+  }]);
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT count(*)::text AS receipts FROM app_receipts WHERE user_id IN ($1, $2)`,
+    [unknownUser, rejectedUser],
+  )).rows, [{ receipts: '0' }]);
 });
 
 test('manual trial release and both audits commit or roll back atomically in disposable PostgreSQL', async (t) => {

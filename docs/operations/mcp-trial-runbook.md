@@ -54,11 +54,25 @@ configured threshold enter the bounded batch.
 persistence path records that state as `unknown`; provider timeouts also record
 `timeout`. Only a persistence boundary that has definitive provider evidence
 may record `definitive_failure`. A usable output requires the durable
-`completed` disposition and a whitespace-free credential-free HTTPS media URL.
+`completed` disposition and a whitespace-free credential-free HTTPS media URL
+recognized by the configured MaxVideoAI storage boundary. Signed, query-bearing,
+fragment-bearing, or provider-hosted URLs are not durable evidence. If neither
+`S3_PUBLIC_BASE_URL` nor the configured S3 bucket identifies the URL, retain the
+reservation as ambiguous.
+
+Task 7 persists `accepted`, `unknown`, `timeout`, and `stalled` under the same
+job lock used for terminal decisions. These coarse signals can become more
+specific but never overwrite `completed`, `definitive_failure`, or `canceled`,
+and no callback rewrites a consumed or released entitlement. An authoritative
+provider rejection may promote ambiguous evidence to `definitive_failure`;
+an ordinary `failed` callback cannot. BytePlus 4xx submission rejection writes
+that definitive evidence atomically with failed job status, while an ambiguous
+submission failure writes `unknown`.
 
 The Task 7 transaction is always the final authority after classification.
 Concurrent or duplicate runs are idempotent. A classification race is counted
-as deferred; it never causes a guessed release. Quarantine is an aggregate
+as deferred because Task 7 re-reads the disposition under its row lock before
+release; it never causes a guessed release. Quarantine is an aggregate
 operational result, not a new entitlement state.
 
 If the entitlement, quote, job, risk, or provider-attempt tables, or the trial
