@@ -13,6 +13,14 @@ export type TransactionQueryExecutor = QueryExecutor & {
   readonly [transactionQueryExecutorBrand]: 'transaction-query-executor';
 };
 
+const activeTransactionExecutors = new WeakSet<object>();
+
+export function isTransactionQueryExecutor(value: unknown): value is TransactionQueryExecutor {
+  return value !== null
+    && typeof value === 'object'
+    && activeTransactionExecutors.has(value);
+}
+
 function getDatabaseUrl(): string {
   return (process.env.DATABASE_URL ?? '').trim();
 }
@@ -72,13 +80,16 @@ export async function withDbTransaction<TResult>(
 
   try {
     await client.query('BEGIN');
+    activeTransactionExecutors.add(executor);
     const result = await callback(executor, client);
+    activeTransactionExecutors.delete(executor);
     await client.query('COMMIT');
     return result;
   } catch (error) {
     await client.query('ROLLBACK').catch(() => undefined);
     throw error;
   } finally {
+    activeTransactionExecutors.delete(executor);
     client.release();
   }
 }

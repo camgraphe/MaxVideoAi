@@ -26,6 +26,9 @@ test('migration 31 owns durable trial tables while runtime bootstrap remains aud
   assert.match(source, /requires migration 30[\s\S]*mcp_generation_quotes/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_entitlements/i);
   assert.match(source, /CREATE TABLE IF NOT EXISTS mcp_trial_risk_events/i);
+  assert.match(source, /provider_cost_cents\s+BIGINT\s+NOT NULL/i);
+  assert.match(source, /provider_cost_cents\s+BETWEEN\s+0\s+AND\s+9007199254740991/i);
+  assert.match(source, /reason_code\s+IN\s*\(\s*'accepted'[\s\S]*'global_daily_cost_cap'/i);
   assert.match(source, /id\s+BIGINT\s+GENERATED ALWAYS AS IDENTITY\s+PRIMARY KEY/i);
   assert.match(source, /BEFORE INSERT ON mcp_trial_risk_events[\s\S]*enforce_mcp_trial_risk_event_insert/i);
   assert.match(source, /NEW\.created_at\s*:=\s*clock_timestamp\(\)/i);
@@ -127,8 +130,18 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
     `UPDATE mcp_trial_entitlements SET user_id = 'changed' WHERE user_id = 'trial-a'`,
     `UPDATE mcp_trial_entitlements SET status = 'consumed' WHERE user_id = 'trial-a'`,
     `UPDATE mcp_trial_entitlements SET reserved_quote_id = '00000000-0000-4000-8000-000000000999' WHERE user_id = 'trial-a'`,
-    `INSERT INTO mcp_trial_risk_events (user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code)
-      VALUES ('trial-a', 'client', repeat('A', 64), 'allowed', 'eligible')`,
+    `INSERT INTO mcp_trial_risk_events (
+       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+     ) VALUES ('trial-a', 'client', repeat('A', 64), 'allowed', 'accepted', 1)`,
+    `INSERT INTO mcp_trial_risk_events (
+       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+     ) VALUES ('trial-a', 'client', repeat('a', 64), 'allowed', 'accepted', 0)`,
+    `INSERT INTO mcp_trial_risk_events (
+       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+     ) VALUES ('trial-a', 'client', repeat('a', 64), 'blocked', 'user_daily_limit', 1)`,
+    `INSERT INTO mcp_trial_risk_events (
+       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+     ) VALUES ('trial-a', 'client', repeat('a', 64), 'rate_limited', 'private_reason', 0)`,
   ];
   for (const sql of invalid) {
     const result = psql('-v', 'ON_ERROR_STOP=1', '-c', sql);
@@ -172,24 +185,25 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
 
   const risk = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     INSERT INTO mcp_trial_risk_events (
-      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
-    ) VALUES ('trial-a', 'client-a', repeat('b',64), 'allowed', 'eligible');
-    SELECT outcome FROM mcp_trial_risk_events;
+      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+    ) VALUES ('trial-a', 'client-a', repeat('b',64), 'allowed', 'accepted', 250);
+    SELECT outcome || ':' || provider_cost_cents::text FROM mcp_trial_risk_events;
   `);
   assert.equal(risk.status, 0, output(risk));
-  assert.equal(risk.stdout.trim(), 'allowed');
+  assert.equal(risk.stdout.trim(), 'allowed:250');
 
   const explicitRiskId = psql('-v', 'ON_ERROR_STOP=1', '-c', `
     INSERT INTO mcp_trial_risk_events (
-      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
-    ) VALUES (999, 'trial-a', NULL, repeat('d',64), 'error', 'explicit_id');
+      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+    ) VALUES (999, 'trial-a', NULL, repeat('d',64), 'error', 'accepted', 0);
   `);
   assert.notEqual(explicitRiskId.status, 0, 'risk event identity must be database-owned');
   const forcedRiskTime = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     INSERT INTO mcp_trial_risk_events (
-      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, created_at
+      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code,
+      provider_cost_cents, created_at
     ) VALUES (
-      'trial-a', NULL, repeat('e',64), 'error', 'backdated_input', '2000-01-01T00:00:00Z'
+      'trial-a', NULL, repeat('e',64), 'error', 'accepted', 0, '2000-01-01T00:00:00Z'
     )
     RETURNING created_at > clock_timestamp() - INTERVAL '5 seconds';
   `);
@@ -279,9 +293,9 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   const overridingIdentity = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     SET ROLE mcp_trial_runtime;
     INSERT INTO mcp_trial_risk_events (
-      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
+      id, user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
     ) OVERRIDING SYSTEM VALUE
-    VALUES (9001, 'override-attacker', NULL, repeat('f',64), 'blocked', 'identity_override')
+    VALUES (9001, 'override-attacker', NULL, repeat('f',64), 'blocked', 'user_daily_limit', 0)
     RETURNING id::text;
   `);
   assert.equal(overridingIdentity.status, 0, output(overridingIdentity));
@@ -292,8 +306,8 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   const normalAfterOverride = psql('-At', '-v', 'ON_ERROR_STOP=1', '-c', `
     SET ROLE mcp_trial_runtime;
     INSERT INTO mcp_trial_risk_events (
-      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
-    ) VALUES ('normal-after-override', NULL, repeat('1',64), 'allowed', 'normal_insert')
+      user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code, provider_cost_cents
+    ) VALUES ('normal-after-override', NULL, repeat('1',64), 'allowed', 'accepted', 1)
     RETURNING id::text;
   `);
   assert.equal(normalAfterOverride.status, 0, output(normalAfterOverride));
@@ -377,6 +391,7 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   } = await import('../frontend/src/server/agent-api/trial-entitlement-repository');
   const {
     recordTrialRiskEvent, countTrialRiskEvents, cleanupTrialRiskEvents,
+    sumAcceptedTrialRiskProviderCost,
   } = await import('../frontend/src/server/agent-api/trial-risk-repository');
   const executorA = createQueryExecutor(clientA);
   const executorB = createQueryExecutor(clientB);
@@ -528,14 +543,63 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
 
   const persistedRisk = await recordTrialRiskEvent({
     userId: 'repository-race-user', oauthClientId: 'repository-client',
-    riskFingerprintHash: 'c'.repeat(64), outcome: 'blocked', reasonCode: 'velocity_limit',
+    riskFingerprintHash: 'c'.repeat(64), outcome: 'blocked', reasonCode: 'user_daily_limit',
+    providerCostCents: 0,
   }, { executor: executorA });
   assert.match(persistedRisk.id, /^\d+$/u);
   assert.equal(await countTrialRiskEvents({
     scope: 'user', scopeValue: 'repository-race-user',
     since: new Date('2020-01-01T00:00:00Z'), outcomes: ['blocked'],
   }, { executor: executorA }), 1);
+  assert.equal(await sumAcceptedTrialRiskProviderCost({
+    since: new Date('2020-01-01T00:00:00Z'),
+  }, { executor: executorA }), 251);
+
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = `postgresql://postgres@localhost/postgres?host=${encodeURIComponent(socketDirectory)}`;
+  const { getDb, withDbTransaction } = await import('../frontend/src/lib/db');
+  const { acceptTrialRisk } = await import('../frontend/src/server/agent-api/trial-risk');
+  try {
+    const acceptanceSecret = '0123456789abcdef0123456789abcdef';
+    const accept = (userId: string, oauthClientId: string, clientIp: string) =>
+      withDbTransaction((executor) => acceptTrialRisk({
+        userId,
+        oauthClientId,
+        clientIp,
+        userAgent: 'Codex/1.0',
+        providerCostCents: 600,
+      }, { executor, secret: acceptanceSecret }));
+    const accepted = await Promise.all([
+      accept('accept-race-a', 'accept-client-a', '198.51.100.1'),
+      accept('accept-race-b', 'accept-client-b', '203.0.113.1'),
+    ]);
+    assert.equal(accepted.filter((entry) => entry.allowed).length, 1);
+    assert.equal(accepted.filter(
+      (entry) => !entry.allowed && entry.code === 'RATE_LIMITED'
+        && entry.nextAction.type === 'retry_later',
+    ).length, 1);
+    const raceRows = await clientA.query(`
+      SELECT outcome, reason_code, provider_cost_cents::text AS provider_cost_cents
+        FROM mcp_trial_risk_events
+       WHERE user_id IN ('accept-race-a', 'accept-race-b')
+       ORDER BY id
+    `);
+    assert.equal(raceRows.rows.length, 2);
+    assert.equal(raceRows.rows.filter((row) => row.outcome === 'allowed').length, 1);
+    assert.equal(raceRows.rows.filter((row) => row.reason_code === 'accepted').length, 1);
+    assert.equal(raceRows.rows.filter((row) => row.provider_cost_cents === '600').length, 1);
+    assert.equal(raceRows.rows.filter(
+      (row) => row.outcome === 'rate_limited'
+        && row.reason_code === 'global_daily_cost_cap'
+        && row.provider_cost_cents === '0',
+    ).length, 1);
+  } finally {
+    await getDb().end();
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+  }
+
   assert.equal(await cleanupTrialRiskEvents({
     cutoff: new Date('2030-01-01T00:00:00Z'), limit: 100,
-  }, { executor: executorA }), 5);
+  }, { executor: executorA }), 7);
 });

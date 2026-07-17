@@ -185,6 +185,7 @@ CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
   risk_fingerprint_hash TEXT NOT NULL,
   outcome TEXT NOT NULL,
   reason_code TEXT NOT NULL,
+  provider_cost_cents BIGINT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
 
   CONSTRAINT mcp_trial_risk_events_user_format CHECK (
@@ -205,7 +206,40 @@ CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
   CONSTRAINT mcp_trial_risk_events_reason_format CHECK (
     (
       length(reason_code) BETWEEN 1 AND 64
-      AND reason_code ~ '^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$'
+      AND reason_code IN (
+        'accepted',
+        'user_daily_limit',
+        'oauth_client_daily_limit',
+        'fingerprint_daily_limit',
+        'global_daily_cost_cap'
+      )
+    ) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_risk_events_provider_cost_range CHECK (
+    (provider_cost_cents BETWEEN 0 AND 9007199254740991) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_risk_events_decision_shape CHECK (
+    (
+      (
+        outcome = 'allowed'
+        AND reason_code = 'accepted'
+        AND provider_cost_cents > 0
+      )
+      OR (
+        outcome = 'blocked'
+        AND reason_code = 'user_daily_limit'
+        AND provider_cost_cents = 0
+      )
+      OR (
+        outcome = 'rate_limited'
+        AND reason_code IN (
+          'oauth_client_daily_limit',
+          'fingerprint_daily_limit',
+          'global_daily_cost_cap'
+        )
+        AND provider_cost_cents = 0
+      )
+      OR (outcome = 'error' AND provider_cost_cents = 0)
     ) IS TRUE
   )
 );

@@ -9,6 +9,7 @@ export type RecordTrialRiskEventInput = {
   riskFingerprintHash: string;
   outcome: TrialRiskOutcome;
   reasonCode: string;
+  providerCostCents: number;
 };
 
 export type CountTrialRiskEventsInput = {
@@ -19,21 +20,37 @@ export type CountTrialRiskEventsInput = {
 };
 
 export type CleanupTrialRiskEventsInput = { cutoff: Date; limit: number };
+export type SumAcceptedTrialRiskProviderCostInput = { since: Date };
 
 type RepositoryDependencies = { executor: QueryExecutor };
 type RiskEventRow = { id: unknown; created_at: unknown };
 type CountRow = { count: unknown };
+type CostRow = { accepted_provider_cost_cents: unknown };
 
 const defaultDependencies: RepositoryDependencies = { executor: { query } };
 const EVENT_KEYS = new Set([
   'userId', 'oauthClientId', 'riskFingerprintHash', 'outcome', 'reasonCode',
+  'providerCostCents',
 ]);
 const COUNT_KEYS = new Set(['scope', 'scopeValue', 'since', 'outcomes']);
 const CLEANUP_KEYS = new Set(['cutoff', 'limit']);
+const COST_KEYS = new Set(['since']);
 const OUTCOMES = new Set<TrialRiskOutcome>(['allowed', 'blocked', 'rate_limited', 'error']);
 const SCOPES = new Set<TrialRiskScope>(['user', 'oauth_client', 'fingerprint', 'global']);
 const HASH_PATTERN = /^[a-f0-9]{64}$/u;
 const REASON_PATTERN = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/u;
+const REASONS = new Set([
+  'accepted',
+  'user_daily_limit',
+  'oauth_client_daily_limit',
+  'fingerprint_daily_limit',
+  'global_daily_cost_cap',
+]);
+const RATE_LIMIT_REASONS = new Set([
+  'oauth_client_daily_limit',
+  'fingerprint_daily_limit',
+  'global_daily_cost_cap',
+]);
 const MAX_CLEANUP_LIMIT = 1_000;
 
 function exactPlainRecord(value: unknown, expectedKeys: ReadonlySet<string>): Record<string, unknown> | null {
@@ -72,7 +89,16 @@ function assertEventInput(value: unknown): asserts value is RecordTrialRiskEvent
     || !OUTCOMES.has(input.outcome as TrialRiskOutcome)
     || typeof input.reasonCode !== 'string'
     || input.reasonCode.length > 64
-    || !REASON_PATTERN.test(input.reasonCode)) {
+    || !REASON_PATTERN.test(input.reasonCode)
+    || !REASONS.has(input.reasonCode)
+    || !Number.isSafeInteger(input.providerCostCents)
+    || (input.providerCostCents as number) < 0
+    || (input.outcome === 'allowed'
+      ? input.reasonCode !== 'accepted' || (input.providerCostCents as number) < 1
+      : (input.providerCostCents as number) !== 0)
+    || (input.outcome === 'blocked' && input.reasonCode !== 'user_daily_limit')
+    || (input.outcome === 'rate_limited'
+      && !RATE_LIMIT_REASONS.has(input.reasonCode))) {
     throw new Error('Invalid trial risk event input.');
   }
 }
@@ -110,6 +136,13 @@ function assertCleanupInput(value: unknown): asserts value is CleanupTrialRiskEv
   }
 }
 
+function assertCostInput(value: unknown): asserts value is SumAcceptedTrialRiskProviderCostInput {
+  const input = exactPlainRecord(value, COST_KEYS);
+  if (!input || !finiteDate(input.since)) {
+    throw new Error('Invalid trial risk cost input.');
+  }
+}
+
 function parseCount(rows: CountRow[]): number {
   if (rows.length !== 1
     || typeof rows[0]?.count !== 'string'
@@ -119,6 +152,19 @@ function parseCount(rows: CountRow[]): number {
   const count = Number(rows[0].count);
   if (!Number.isSafeInteger(count) || count < 0) throw new Error('Invalid trial risk count.');
   return count;
+}
+
+function parseProviderCost(rows: CostRow[]): number {
+  if (rows.length !== 1
+    || typeof rows[0]?.accepted_provider_cost_cents !== 'string'
+    || !/^\d+$/u.test(rows[0].accepted_provider_cost_cents)) {
+    throw new Error('Invalid trial risk provider cost.');
+  }
+  const cost = Number(rows[0].accepted_provider_cost_cents);
+  if (!Number.isSafeInteger(cost) || cost < 0) {
+    throw new Error('Invalid trial risk provider cost.');
+  }
+  return cost;
 }
 
 function parseEventRow(rows: RiskEventRow[]): { id: string; createdAt: Date } {
@@ -141,10 +187,14 @@ export async function recordTrialRiskEvent(
   assertEventInput(input);
   const rows = await dependencies.executor.query<RiskEventRow>(
     `INSERT INTO mcp_trial_risk_events (
-       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code
-     ) VALUES ($1, $2, $3, $4, $5)
+       user_id, oauth_client_id, risk_fingerprint_hash, outcome, reason_code,
+       provider_cost_cents
+     ) VALUES ($1, $2, $3, $4, $5, $6)
      RETURNING id::text AS id, created_at`,
-    [input.userId, input.oauthClientId, input.riskFingerprintHash, input.outcome, input.reasonCode],
+    [
+      input.userId, input.oauthClientId, input.riskFingerprintHash, input.outcome,
+      input.reasonCode, input.providerCostCents,
+    ],
   );
   return parseEventRow(rows);
 }
@@ -190,4 +240,19 @@ export async function cleanupTrialRiskEvents(
     [new Date(input.cutoff.getTime()), input.limit],
   );
   return parseCount(rows);
+}
+
+export async function sumAcceptedTrialRiskProviderCost(
+  input: SumAcceptedTrialRiskProviderCostInput,
+  dependencies: RepositoryDependencies = defaultDependencies,
+): Promise<number> {
+  assertCostInput(input);
+  const rows = await dependencies.executor.query<CostRow>(
+    `SELECT COALESCE(SUM(provider_cost_cents), 0)::text AS accepted_provider_cost_cents
+       FROM mcp_trial_risk_events
+      WHERE created_at >= $1
+        AND outcome = 'allowed'`,
+    [new Date(input.since.getTime())],
+  );
+  return parseProviderCost(rows);
 }
