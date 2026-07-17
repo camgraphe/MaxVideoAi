@@ -1,3 +1,14 @@
+export const REFERENCE_ERROR_CODES = [
+  'REFERENCE_REQUIRED',
+  'REFERENCE_INVALID',
+  'REFERENCE_NOT_FOUND',
+  'REFERENCE_FORBIDDEN',
+  'UPLOAD_EXPIRED',
+  'UPLOAD_ALREADY_USED',
+] as const;
+
+export type ReferenceErrorCode = (typeof REFERENCE_ERROR_CODES)[number];
+
 export type AgentApiErrorCode =
   | 'AUTH_REQUIRED'
   | 'EMAIL_VERIFICATION_REQUIRED'
@@ -6,8 +17,7 @@ export type AgentApiErrorCode =
   | 'ENGINE_UNAVAILABLE'
   | 'MODE_UNSUPPORTED'
   | 'PARAMETER_INVALID'
-  | 'REFERENCE_REQUIRED'
-  | 'REFERENCE_INVALID'
+  | ReferenceErrorCode
   | 'QUOTE_EXPIRED'
   | 'QUOTE_ALREADY_CLAIMED'
   | 'CONFIRMATION_REQUIRED'
