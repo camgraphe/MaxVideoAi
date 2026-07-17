@@ -104,7 +104,15 @@ test('migration 31 constraints, transitions, immutability, indexes and races exe
   assert.notEqual(applyTrialAlone.status, 0);
   assert.match(output(applyTrialAlone), /requires migration 30/i);
 
-  for (const path of [paidMigrationPath, trialMigrationPath, trialMigrationPath]) {
+  const paidApplied = psql(
+    '--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, paidMigrationPath),
+  );
+  assert.equal(paidApplied.status, 0, output(paidApplied));
+  const appJobsApplied = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    CREATE TABLE app_jobs (job_id text PRIMARY KEY)
+  `);
+  assert.equal(appJobsApplied.status, 0, output(appJobsApplied));
+  for (const path of [trialMigrationPath, trialMigrationPath]) {
     const applied = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, path));
     assert.equal(applied.status, 0, output(applied));
   }

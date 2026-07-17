@@ -88,6 +88,7 @@ test('final job persistence helper writes the expected app_jobs update params', 
     false,
     'Render complete',
     '{"schemaVersion":1}',
+    'completed',
   ]);
 });
 

@@ -10,6 +10,7 @@ import {
   releaseEntitlement,
   type TrialEntitlement,
 } from './trial-entitlement-repository';
+import { isUsableTrialOutputUrl } from './trial-output-evidence';
 
 export type NormalizedTrialJobOutcome =
   | { kind: 'accepted' }
@@ -46,6 +47,7 @@ type JobRow = {
   payment_status: unknown;
   status: unknown;
   video_url: unknown;
+  mcp_trial_outcome_disposition: unknown;
 };
 
 type QuoteRow = {
@@ -95,6 +97,15 @@ const SUPPORT_REASONS = new Set([
 ]);
 const TRIAL_STATES = new Set(['reserved', 'consumed', 'released']);
 const QUOTE_STATES = new Set(['claimed', 'accepted', 'failed']);
+const TRIAL_DISPOSITIONS = new Set([
+  'accepted',
+  'completed',
+  'definitive_failure',
+  'canceled',
+  'timeout',
+  'unknown',
+  'stalled',
+]);
 const FINAL_FAILURE_STATUSES = new Set([
   'aborted',
   'cancelled',
@@ -172,6 +183,7 @@ function readJob(row: JobRow, jobId: string): {
   paymentStatus: string;
   status: string;
   videoUrl: string | null;
+  trialDisposition: string | null;
 } {
   if (row.job_id !== jobId
     || !boundedIdentifier(row.user_id, 128)
@@ -183,7 +195,10 @@ function readJob(row: JobRow, jobId: string): {
       || (typeof row.video_url === 'string'
         && row.video_url.length >= 1
         && row.video_url.length <= 2_048
-        && row.video_url === row.video_url.trim()))) {
+        && row.video_url === row.video_url.trim()))
+    || !(row.mcp_trial_outcome_disposition === null
+      || (typeof row.mcp_trial_outcome_disposition === 'string'
+        && TRIAL_DISPOSITIONS.has(row.mcp_trial_outcome_disposition)))) {
     throw new Error('Invalid trial job row.');
   }
   return {
@@ -192,6 +207,7 @@ function readJob(row: JobRow, jobId: string): {
     paymentStatus: row.payment_status,
     status: row.status,
     videoUrl: row.video_url,
+    trialDisposition: row.mcp_trial_outcome_disposition,
   };
 }
 
@@ -340,7 +356,8 @@ async function applyTrialJobOutcomeWithDependencies(
   const jobId = requireJobId(rawJobId);
   return dependencies.withTransaction(async (executor) => {
     const job = readJob(exactlyOne(await executor.query<JobRow>(
-      `SELECT job_id, user_id, payment_status, status, video_url
+      `SELECT job_id, user_id, payment_status, status, video_url,
+              mcp_trial_outcome_disposition
          FROM app_jobs
         WHERE job_id = $1
         FOR UPDATE`,
@@ -383,7 +400,9 @@ async function applyTrialJobOutcomeWithDependencies(
       return publicResult(entitlementState);
     }
     if (outcome.kind === 'completed') {
-      if (job.status !== 'completed' || !job.videoUrl) {
+      if (job.status !== 'completed'
+        || job.trialDisposition !== 'completed'
+        || !isUsableTrialOutputUrl(job.videoUrl)) {
         throw new Error('Trial consumption requires a durable completed output.');
       }
       if (entitlementState !== 'reserved') return publicResult(entitlementState);

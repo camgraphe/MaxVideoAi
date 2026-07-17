@@ -34,6 +34,7 @@ import {
   type BytePlusStorageCopyState,
 } from './byteplus-storage-copy';
 import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
+import { persistBytePlusTerminalFailure, type BytePlusTerminalTrialOutcome } from './byteplus-trial-job-persistence';
 
 export {
   getBytePlusAccounting,
@@ -131,22 +132,13 @@ async function markJobFailed(
   job: BytePlusPendingJob,
   message: string,
   providerStatus?: string | null,
-  trialOutcome: 'failed' | 'timeout' = 'failed',
+  trialOutcome: BytePlusTerminalTrialOutcome = 'failed',
 ) {
   const userMessage = toUserFacingFailureMessage(message);
-  const claimed = await query<{ job_id: string }>(
-    `UPDATE app_jobs
-        SET status = 'failed',
-            progress = 0,
-            message = $2,
-            provisional = FALSE,
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND status = ANY($3::text[])
-      RETURNING job_id`,
-    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
-  );
-  if (!claimed.length) {
+  const claimed = await persistBytePlusTerminalFailure({
+    jobId: job.job_id, userMessage, trialOutcome, activeStatuses: ACTIVE_JOB_STATUSES,
+  });
+  if (!claimed) {
     await recordPollEvent(job, 'poll:failed:skipped', {
       providerStatus: providerStatus ?? null,
       reason: 'job_not_active',
@@ -162,7 +154,7 @@ async function markJobFailed(
       WHERE job_id = $1`,
     [job.job_id, refunded]
   );
-  await applyBytePlusTrialOutcomeSafely(job, trialOutcome === 'timeout' ? { kind: 'timeout' } : { kind: 'failed' });
+  await applyBytePlusTrialOutcomeSafely(job, { kind: trialOutcome });
   await recordPollEvent(job, 'poll:failed', { providerStatus: providerStatus ?? null, refunded });
 }
 
@@ -268,7 +260,12 @@ export async function runBytePlusPoll() {
       }
 
       if (!task.videoUrl) {
-        await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus);
+        await markJobFailed(
+          job,
+          'The render completed but returned no video URL.',
+          task.rawStatus,
+          'unknown',
+        );
         updates += 1;
         continue;
       }
@@ -294,7 +291,8 @@ export async function runBytePlusPoll() {
           await markJobFailed(
             job,
             `The output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
-            task.rawStatus
+            task.rawStatus,
+            'unknown',
           );
         }
         updates += 1;
@@ -361,6 +359,8 @@ export async function runBytePlusPoll() {
                 preview_frame = $3,
                 message = NULL,
                 cost_breakdown_usd = $4::jsonb,
+                mcp_trial_outcome_disposition = CASE WHEN payment_status = 'included_mcp_trial'
+                  THEN 'completed' ELSE mcp_trial_outcome_disposition END,
                 provisional = FALSE,
                 updated_at = NOW()
           WHERE job_id = $1

@@ -3,10 +3,17 @@ import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import type { QueryExecutor } from '../frontend/src/lib/db';
+import { cleanupTrialRiskEvents } from '../frontend/src/server/agent-api/trial-risk-repository';
 import {
   createTrialEntitlementReconciler,
   resolveTrialReconciliationConfig,
 } from '../frontend/src/server/agent-api/reconcile-trial-entitlements';
+import { persistFinalVideoJobUpdate } from '../frontend/app/api/generate/_lib/final-job-persistence';
+import {
+  createPaidGenerationTestSchema,
+  missingDisposablePostgresCommand,
+  startDisposablePostgres,
+} from './helpers/disposable-postgres';
 
 const RECONCILIATION_OWNER =
   'frontend/src/server/agent-api/reconcile-trial-entitlements.ts';
@@ -38,8 +45,43 @@ type Candidate = {
     | 'ambiguous';
 };
 
+function persistedCandidate(candidate: Candidate) {
+  const userId = `user-${candidate.job_id}`;
+  const missing = candidate.classification === 'missing_job';
+  const evidence = candidate.classification === 'completed'
+    ? { job_status: 'completed', video_url: 'https://media.maxvideoai.com/trial.mp4', trial_disposition: 'completed' }
+    : candidate.classification === 'definitive_failure'
+      ? { job_status: 'failed', video_url: null, trial_disposition: 'definitive_failure' }
+      : candidate.classification === 'canceled'
+        ? { job_status: 'canceled', video_url: null, trial_disposition: 'canceled' }
+        : candidate.classification === 'active'
+          ? { job_status: 'running', video_url: null, trial_disposition: 'accepted' }
+          : { job_status: 'failed', video_url: null, trial_disposition: 'unknown' };
+  return {
+    job_id: candidate.job_id,
+    entitlement_user_id: userId,
+    reserved_quote_id: candidate.job_id,
+    persisted_job_id: missing ? null : candidate.job_id,
+    job_user_id: missing ? null : userId,
+    payment_status: missing ? null : 'included_mcp_trial',
+    job_status: missing ? null : evidence.job_status,
+    video_url: missing ? null : evidence.video_url,
+    trial_disposition: missing ? null : evidence.trial_disposition,
+    quote_id: candidate.job_id,
+    quote_job_id: candidate.job_id,
+    quote_user_id: userId,
+    funding_mode: 'trial',
+    quote_state: 'accepted',
+  };
+}
+
 function reconciliationHarness(candidates: Candidate[], options: {
-  relations?: { mcp_trial_entitlements: boolean; app_jobs: boolean; mcp_generation_quotes: boolean };
+  relations?: {
+    mcp_trial_entitlements: boolean;
+    app_jobs: boolean;
+    mcp_generation_quotes: boolean;
+    mcp_trial_outcome_disposition: boolean;
+  };
   outcomeErrorJobId?: string;
 } = {}) {
   const calls: Array<{ sql: string; params?: ReadonlyArray<unknown> }> = [];
@@ -52,10 +94,11 @@ function reconciliationHarness(candidates: Candidate[], options: {
           mcp_trial_entitlements: true,
           app_jobs: true,
           mcp_generation_quotes: true,
+          mcp_trial_outcome_disposition: true,
           ...options.relations,
         }] as T[];
       }
-      return candidates as T[];
+      return candidates.map(persistedCandidate) as T[];
     },
   };
   const reconcile = createTrialEntitlementReconciler({
@@ -137,9 +180,274 @@ test('active, missing, ambiguous, and raced candidates stay reserved for coarse 
   });
 });
 
+test('failed app status never releases without durable definitive-failure evidence', async () => {
+  const module = await import(
+    '../frontend/src/server/agent-api/reconcile-trial-entitlements'
+  );
+  const classify = (module as unknown as {
+    classifyTrialJobEvidence?: (input: {
+      jobStatus: string;
+      videoUrl: string | null;
+      trialDisposition: string | null;
+    }) => string;
+  }).classifyTrialJobEvidence;
+
+  assert.equal(typeof classify, 'function');
+  if (!classify) return;
+  for (const trialDisposition of [null, 'unknown', 'timeout', 'stalled']) {
+    assert.equal(classify({
+      jobStatus: 'failed',
+      videoUrl: null,
+      trialDisposition,
+    }), 'ambiguous');
+  }
+  assert.equal(classify({
+    jobStatus: 'failed',
+    videoUrl: null,
+    trialDisposition: 'definitive_failure',
+  }), 'definitive_failure');
+});
+
+test('usable trial output requires credential-free whitespace-free HTTPS', async () => {
+  const module = await import(
+    '../frontend/src/server/agent-api/trial-output-evidence'
+  ).catch(() => ({}));
+  const isUsable = (module as {
+    isUsableTrialOutputUrl?: (value: unknown) => boolean;
+  }).isUsableTrialOutputUrl;
+  assert.equal(typeof isUsable, 'function');
+  if (!isUsable) return;
+
+  assert.equal(isUsable('https://media.maxvideoai.com/renders/trial.mp4'), true);
+  for (const value of [
+    'http://media.maxvideoai.com/renders/trial.mp4',
+    'https://user:secret@media.maxvideoai.com/renders/trial.mp4',
+    'https://media.maxvideoai.com/renders/trial video.mp4',
+    'not-a-url',
+    '',
+    null,
+  ]) {
+    assert.equal(isUsable(value), false);
+  }
+});
+
+test('real PostgreSQL classification quarantines unknown failed jobs and malformed completed media', async (t) => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) {
+    t.skip(`${missing} is unavailable`);
+    return;
+  }
+  const postgres = await startDisposablePostgres('mcp-t8-sql');
+  t.after(() => postgres.cleanup());
+  await postgres.pool.query(`
+    CREATE TABLE app_jobs (
+      job_id text PRIMARY KEY,
+      user_id text NOT NULL,
+      payment_status text NOT NULL,
+      status text NOT NULL,
+      video_url text,
+      mcp_trial_outcome_disposition text
+    );
+    CREATE TABLE mcp_generation_quotes (
+      quote_id uuid PRIMARY KEY,
+      user_id text NOT NULL,
+      job_id text NOT NULL,
+      funding_mode text NOT NULL,
+      state text NOT NULL
+    );
+    CREATE TABLE mcp_trial_entitlements (
+      user_id text PRIMARY KEY,
+      status text NOT NULL,
+      reserved_quote_id uuid NOT NULL,
+      job_id text NOT NULL,
+      reserved_at timestamptz NOT NULL
+    );
+  `);
+  const unknownJob = '90000000-0000-4000-8000-000000000001';
+  const malformedJob = '90000000-0000-4000-8000-000000000002';
+  const timeoutJob = '90000000-0000-4000-8000-000000000003';
+  const failedJob = '90000000-0000-4000-8000-000000000004';
+  const completedJob = '90000000-0000-4000-8000-000000000005';
+  for (const [jobId, userId, status, videoUrl, disposition] of [
+    [unknownJob, 'sql-unknown-user', 'failed', null, 'unknown'],
+    [malformedJob, 'sql-malformed-user', 'completed', 'not-a-url', 'completed'],
+    [timeoutJob, 'sql-timeout-user', 'failed', null, 'timeout'],
+    [failedJob, 'sql-failed-user', 'failed', null, 'definitive_failure'],
+    [completedJob, 'sql-completed-user', 'completed', 'https://media.maxvideoai.com/sql.mp4', 'completed'],
+  ] as const) {
+    await postgres.pool.query(
+      `INSERT INTO app_jobs (
+         job_id, user_id, payment_status, status, video_url, mcp_trial_outcome_disposition
+       ) VALUES ($1, $2, 'included_mcp_trial', $3, $4, $5)`,
+      [jobId, userId, status, videoUrl, disposition],
+    );
+    await postgres.pool.query(
+      `INSERT INTO mcp_generation_quotes (
+         quote_id, user_id, job_id, funding_mode, state
+       ) VALUES ($1::uuid, $2, $1, 'trial', 'accepted')`,
+      [jobId, userId],
+    );
+    await postgres.pool.query(
+      `INSERT INTO mcp_trial_entitlements (
+         user_id, status, reserved_quote_id, job_id, reserved_at
+       ) VALUES ($2, 'reserved', $1::uuid, $1, clock_timestamp() - INTERVAL '2 hours')`,
+      [jobId, userId],
+    );
+  }
+  const outcomes: Array<{ jobId: string; kind: string }> = [];
+  const reconcile = createTrialEntitlementReconciler({
+    executor: {
+      query: async <T>(sql: string, params?: ReadonlyArray<unknown>) => (
+        await postgres.pool.query<T>(sql, params as unknown[] | undefined)
+      ).rows,
+    },
+    now: Date.now,
+    applyOutcome: async (jobId, outcome) => {
+      outcomes.push({ jobId, kind: outcome.kind });
+      return {
+        funding: 'included_trial',
+        entitlementState: outcome.kind === 'completed' ? 'consumed' : 'released',
+      };
+    },
+  });
+
+  const result = await reconcile({ staleMinutes: 30, batchLimit: 10 });
+  assert.deepEqual(outcomes, [
+    { jobId: failedJob, kind: 'failed' },
+    { jobId: completedJob, kind: 'completed' },
+  ]);
+  assert.equal(result.counts?.released, 1);
+  assert.equal(result.counts?.consumed, 1);
+  assert.equal(result.counts?.quarantinedAmbiguous, 3);
+});
+
+test('migrated PostgreSQL persists trial dispositions and deletes only a bounded pre-cutoff risk batch', async (t) => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) {
+    t.skip(`${missing} is unavailable`);
+    return;
+  }
+  const postgres = await startDisposablePostgres('mcp-t8-proof');
+  t.after(() => postgres.cleanup());
+  await createPaidGenerationTestSchema(postgres.pool);
+  await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+
+  const jobId = '91000000-0000-4000-8000-000000000001';
+  await postgres.pool.query(
+    `INSERT INTO app_jobs (job_id, user_id, payment_status, status, progress)
+     VALUES ($1, 'persisted-disposition-user', 'included_mcp_trial', 'running', 10)`,
+    [jobId],
+  );
+  const seenOutcomes: string[] = [];
+  const persistenceBase = {
+    jobId,
+    thumb: null,
+    aspectRatio: '16:9',
+    previewFrame: null,
+    etaSeconds: null,
+    etaLabel: null,
+    providerJobId: 'provider-job',
+    finalPriceCents: 0,
+    pricingSnapshotJson: '{}',
+    costBreakdownJson: null,
+    currency: 'USD',
+    vendorAccountId: null,
+    paymentStatus: 'included_mcp_trial',
+    stripePaymentIntentId: null,
+    stripeChargeId: null,
+    visibility: 'private' as const,
+    indexable: false,
+    message: null,
+    settingsSnapshotJson: '{}',
+    queryFn: async (sql: string, params?: unknown[]) => postgres.pool.query(sql, params),
+    applyTrialOutcomeFn: async (_persistedJobId: string, outcome: { kind: string }) => {
+      seenOutcomes.push(outcome.kind);
+      return { funding: 'included_trial' as const, entitlementState: 'reserved' as const };
+    },
+  };
+  await persistFinalVideoJobUpdate({
+    ...persistenceBase, video: null, status: 'failed', progress: 0,
+  });
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT status, mcp_trial_outcome_disposition AS disposition
+       FROM app_jobs WHERE job_id = $1`, [jobId],
+  )).rows, [{ status: 'failed', disposition: 'unknown' }]);
+  await persistFinalVideoJobUpdate({
+    ...persistenceBase,
+    video: 'https://media.maxvideoai.com/migrated-proof.mp4',
+    status: 'completed',
+    progress: 100,
+  });
+  assert.deepEqual((await postgres.pool.query(
+    `SELECT status, mcp_trial_outcome_disposition AS disposition
+       FROM app_jobs WHERE job_id = $1`, [jobId],
+  )).rows, [{ status: 'completed', disposition: 'completed' }]);
+  assert.deepEqual(seenOutcomes, ['unknown', 'completed']);
+  for (const disposition of ['timeout', 'definitive_failure']) {
+    await postgres.pool.query(
+      `UPDATE app_jobs SET mcp_trial_outcome_disposition = $2 WHERE job_id = $1`,
+      [jobId, disposition],
+    );
+    assert.equal((await postgres.pool.query<{ disposition: string }>(
+      `SELECT mcp_trial_outcome_disposition AS disposition FROM app_jobs WHERE job_id = $1`,
+      [jobId],
+    )).rows[0]?.disposition, disposition);
+  }
+  await assert.rejects(
+    postgres.pool.query(
+      `UPDATE app_jobs SET mcp_trial_outcome_disposition = 'provider_maybe' WHERE job_id = $1`,
+      [jobId],
+    ),
+    /app_jobs_mcp_trial_outcome_disposition_allowlist/i,
+  );
+
+  const cutoff = new Date('2026-06-17T12:00:00.000Z');
+  await postgres.pool.query(`SET session_replication_role = 'replica'`);
+  try {
+    for (const [userId, createdAt] of [
+      ['risk-oldest', '2026-06-14T12:00:00.000Z'],
+      ['risk-older', '2026-06-15T12:00:00.000Z'],
+      ['risk-before-cutoff', '2026-06-17T11:59:59.999Z'],
+      ['risk-at-cutoff', '2026-06-17T12:00:00.000Z'],
+      ['risk-after-cutoff', '2026-06-17T12:00:00.001Z'],
+    ]) {
+      await postgres.pool.query(
+        `INSERT INTO mcp_trial_risk_events (
+           user_id, oauth_client_id, risk_fingerprint_hash, outcome,
+           reason_code, provider_cost_cents, created_at
+         ) OVERRIDING SYSTEM VALUE
+         VALUES ($1, NULL, $2, 'allowed', 'accepted', 10, $3::timestamptz)`,
+        [userId, 'a'.repeat(64), createdAt],
+      );
+    }
+  } finally {
+    await postgres.pool.query(`SET session_replication_role = 'origin'`);
+  }
+  const executor: QueryExecutor = {
+    query: async <T>(sql: string, params?: ReadonlyArray<unknown>) => (
+      await postgres.pool.query<T>(sql, params as unknown[] | undefined)
+    ).rows,
+  };
+  assert.equal(await cleanupTrialRiskEvents({ cutoff, limit: 2 }, { executor }), 2);
+  assert.deepEqual((await postgres.pool.query<{ user_id: string }>(
+    `SELECT user_id FROM mcp_trial_risk_events ORDER BY created_at, id`,
+  )).rows.map(({ user_id }) => user_id), [
+    'risk-before-cutoff', 'risk-at-cutoff', 'risk-after-cutoff',
+  ]);
+  assert.equal(await cleanupTrialRiskEvents({ cutoff, limit: 100 }, { executor }), 1);
+  assert.deepEqual((await postgres.pool.query<{ user_id: string }>(
+    `SELECT user_id FROM mcp_trial_risk_events ORDER BY created_at, id`,
+  )).rows.map(({ user_id }) => user_id), ['risk-at-cutoff', 'risk-after-cutoff']);
+});
+
 test('missing reconciliation tables are explicitly unavailable and never synthesize zero metrics', async () => {
   const fixture = reconciliationHarness([], {
-    relations: { mcp_trial_entitlements: false, app_jobs: true, mcp_generation_quotes: true },
+    relations: {
+      mcp_trial_entitlements: false,
+      app_jobs: true,
+      mcp_generation_quotes: true,
+      mcp_trial_outcome_disposition: true,
+    },
   });
 
   const result = await fixture.reconcile({ staleMinutes: 30, batchLimit: 50 });
@@ -197,6 +505,7 @@ test('cron rejects missing credentials and accepts only the explicit local overr
   if (!factory) return;
 
   let reconciliationCalls = 0;
+  let cleanupCalls = 0;
   const logs: unknown[] = [];
   const result = {
     availability: 'available' as const,
@@ -223,6 +532,13 @@ test('cron rejects missing credentials and accepts only the explicit local overr
       reconciliationCalls += 1;
       return result;
     },
+    now: () => new Date('2026-07-17T12:00:00.000Z'),
+    cleanupRiskEvents: async (input: { cutoff: Date; limit: number }) => {
+      cleanupCalls += 1;
+      assert.equal(input.cutoff.toISOString(), '2026-06-17T12:00:00.000Z');
+      assert.equal(input.limit, 1_000);
+      return 7;
+    },
     log: (value: unknown) => { logs.push(value); },
   });
 
@@ -235,12 +551,51 @@ test('cron rejects missing credentials and accepts only the explicit local overr
     headers: { 'x-mcp-trial-reconcile-token': 'local-secret' },
   }));
   assert.equal(accepted.status, 200);
-  assert.deepEqual(await accepted.json(), { ok: true, ...result });
+  assert.deepEqual(await accepted.json(), {
+    ok: true,
+    ...result,
+    riskRetention: {
+      availability: 'available',
+      reasonCode: 'batch_processed',
+      deleted: 7,
+      batchLimit: 1_000,
+    },
+  });
   assert.equal(reconciliationCalls, 1);
+  assert.equal(cleanupCalls, 1);
   assert.doesNotMatch(
     JSON.stringify(logs),
     /local-secret|localhost|authorization|user-agent|jobId|userId|prompt|videoUrl/i,
   );
+
+  const unavailableHandler = factory({
+    env: {
+      CRON_SECRET: '',
+      MCP_TRIAL_RECONCILE_TOKEN: 'local-secret',
+      VERCEL: '',
+    },
+    reconcile: async () => result,
+    now: () => new Date('2026-07-17T12:00:00.000Z'),
+    cleanupRiskEvents: async () => {
+      throw new Error('risk schema unavailable');
+    },
+    log: () => undefined,
+  });
+  const cleanupUnavailable = await unavailableHandler(new Request(
+    'http://localhost/api/cron/mcp-trial-reconcile',
+    { headers: { 'x-mcp-trial-reconcile-token': 'local-secret' } },
+  ));
+  assert.equal(cleanupUnavailable.status, 200);
+  assert.deepEqual(await cleanupUnavailable.json(), {
+    ok: true,
+    ...result,
+    riskRetention: {
+      availability: 'unavailable',
+      reasonCode: 'query_unavailable',
+      deleted: null,
+      batchLimit: 1_000,
+    },
+  });
 });
 
 test('admin trial operations have a dedicated atomic server owner and server-only controls', () => {
@@ -385,6 +740,29 @@ test('admin reads expose missing schema as unavailable, not synthetic zeroes', a
   });
 });
 
+test('admin inspection rejects malformed query input as an explicit unavailable state', async () => {
+  const factory = await loadAdminOperationsFactory();
+  if (!factory) return;
+  const service = factory({
+    isDatabaseConfigured: () => true,
+    checkedInFlags: { trial: false },
+    env: { MCP_TRIAL_ENABLED: 'false' },
+    executor: {
+      query: async () => assert.fail('invalid inspection input must not reach SQL'),
+    },
+  });
+
+  assert.deepEqual(await service.load({ inspectionUserId: 'not-a-uuid' }), {
+    availability: 'unavailable',
+    reasonCode: 'invalid_input',
+    killSwitch: { checkedIn: false, runtime: false, effective: false },
+    counts: null,
+    providerCostCents: null,
+    suspiciousVelocity: null,
+    inspection: null,
+  });
+});
+
 test('manual release refuses terminal state and rolls release back when admin audit fails', async () => {
   const factory = await loadAdminOperationsFactory();
   if (!factory) return;
@@ -478,6 +856,10 @@ test('admin manual release action accepts exact same-origin form input only', as
   assert.doesNotThrow(() => helpers.assertSameOrigin!(new Headers({
     host: 'maxvideoai.com',
     origin: 'https://maxvideoai.com',
+  })));
+  assert.doesNotThrow(() => helpers.assertSameOrigin!(new Headers({
+    host: 'localhost:3000',
+    origin: 'http://localhost:3000',
   })));
   assert.throws(() => helpers.assertSameOrigin!(new Headers({
     host: 'maxvideoai.com',

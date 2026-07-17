@@ -63,7 +63,12 @@ type ManualReleasePreflightRow = {
 
 export type AdminMcpTrialOperations = {
   availability: 'available' | 'unavailable';
-  reasonCode: 'loaded' | 'database_unavailable' | 'schema_unavailable' | 'query_unavailable';
+  reasonCode:
+    | 'loaded'
+    | 'invalid_input'
+    | 'database_unavailable'
+    | 'schema_unavailable'
+    | 'query_unavailable';
   killSwitch: { checkedIn: boolean; runtime: boolean; effective: boolean };
   counts: { accepted: number; reserved: number; consumed: number; released: number } | null;
   providerCostCents: number | null;
@@ -254,7 +259,12 @@ async function loadOperations(
   rawInput: unknown,
   dependencies: AdminMcpTrialOperationsDependencies,
 ): Promise<AdminMcpTrialOperations> {
-  const input = parseLoadInput(rawInput);
+  let input: { inspectionUserId: string | null };
+  try {
+    input = parseLoadInput(rawInput);
+  } catch {
+    return unavailable(dependencies, 'invalid_input');
+  }
   if (!dependencies.isDatabaseConfigured()) return unavailable(dependencies, 'database_unavailable');
   try {
     const relations = await dependencies.executor.query<AdminMcpTrialRelationsRow>(`

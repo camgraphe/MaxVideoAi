@@ -468,7 +468,11 @@ test('manual trial release and both audits commit or roll back atomically in dis
     dependencies({ pool: postgres.pool, provider: async () => ({ kind: 'accepted' }) }),
   );
   await postgres.pool.query(
-    `UPDATE app_jobs SET status = 'completed', video_url = $2 WHERE job_id = $1`,
+    `UPDATE app_jobs
+        SET status = 'completed',
+            video_url = $2,
+            mcp_trial_outcome_disposition = 'completed'
+      WHERE job_id = $1`,
     [consumedQuote, 'https://media.maxvideoai.com/admin-consumed.mp4'],
   );
   await applyTrialJobOutcome(consumedQuote, { kind: 'completed' });

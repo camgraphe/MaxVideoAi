@@ -4,6 +4,7 @@ import {
   type NormalizedTrialJobOutcome,
   type TrialJobOutcomeResult,
 } from './trial-outcomes';
+import { isUsableTrialOutputUrl } from './trial-output-evidence';
 
 export const MCP_TRIAL_RECONCILIATION_DEFAULT_STALE_MINUTES = 30;
 export const MCP_TRIAL_RECONCILIATION_DEFAULT_BATCH_LIMIT = 50;
@@ -44,13 +45,26 @@ type CandidateClassification =
 
 type CandidateRow = {
   job_id: unknown;
-  classification: unknown;
+  entitlement_user_id: unknown;
+  reserved_quote_id: unknown;
+  persisted_job_id: unknown;
+  job_user_id: unknown;
+  payment_status: unknown;
+  job_status: unknown;
+  video_url: unknown;
+  trial_disposition: unknown;
+  quote_id: unknown;
+  quote_job_id: unknown;
+  quote_user_id: unknown;
+  funding_mode: unknown;
+  quote_state: unknown;
 };
 
 type RelationsRow = {
   mcp_trial_entitlements: unknown;
   app_jobs: unknown;
   mcp_generation_quotes: unknown;
+  mcp_trial_outcome_disposition: unknown;
 };
 
 type TrialReconciliationDependencies = {
@@ -69,13 +83,13 @@ const defaultDependencies: TrialReconciliationDependencies = {
 };
 
 const IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:@|+-]*$/u;
-const CLASSIFICATIONS = new Set<CandidateClassification>([
-  'completed',
-  'definitive_failure',
-  'canceled',
-  'active',
-  'missing_job',
-  'ambiguous',
+const ACTIVE_JOB_STATUSES = new Set([
+  'pending', 'queued', 'running', 'processing', 'in_progress', 'accepted',
+]);
+const FAILURE_JOB_STATUSES = new Set(['error', 'failed', 'rejected']);
+const CANCELED_JOB_STATUSES = new Set(['cancelled', 'canceled', 'aborted']);
+const TRIAL_DISPOSITIONS = new Set([
+  'accepted', 'completed', 'definitive_failure', 'canceled', 'timeout', 'unknown', 'stalled',
 ]);
 
 function configuredInteger(
@@ -147,10 +161,87 @@ function readRelations(rows: RelationsRow[]): boolean {
   if (rows.length !== 1 || !row
     || typeof row.mcp_trial_entitlements !== 'boolean'
     || typeof row.app_jobs !== 'boolean'
-    || typeof row.mcp_generation_quotes !== 'boolean') {
+    || typeof row.mcp_generation_quotes !== 'boolean'
+    || typeof row.mcp_trial_outcome_disposition !== 'boolean') {
     throw new Error('Invalid trial reconciliation prerequisite result.');
   }
-  return row.mcp_trial_entitlements && row.app_jobs && row.mcp_generation_quotes;
+  return row.mcp_trial_entitlements
+    && row.app_jobs
+    && row.mcp_generation_quotes
+    && row.mcp_trial_outcome_disposition;
+}
+
+export function classifyTrialJobEvidence(input: {
+  jobStatus: string;
+  videoUrl: string | null;
+  trialDisposition: string | null;
+}): CandidateClassification {
+  const status = input.jobStatus.trim().toLowerCase();
+  if (input.trialDisposition === 'completed') {
+    return status === 'completed' && isUsableTrialOutputUrl(input.videoUrl)
+      ? 'completed'
+      : 'ambiguous';
+  }
+  if (input.videoUrl !== null || status === 'completed') return 'ambiguous';
+  if (input.trialDisposition === 'canceled' && CANCELED_JOB_STATUSES.has(status)) {
+    return 'canceled';
+  }
+  if (input.trialDisposition === 'definitive_failure' && FAILURE_JOB_STATUSES.has(status)) {
+    return 'definitive_failure';
+  }
+  if ((input.trialDisposition === null || input.trialDisposition === 'accepted')
+    && ACTIVE_JOB_STATUSES.has(status)) {
+    return 'active';
+  }
+  return 'ambiguous';
+}
+
+function boundedIdentifier(value: unknown, maximum: number): value is string {
+  return typeof value === 'string'
+    && value.length >= 1
+    && value.length <= maximum
+    && value === value.trim()
+    && IDENTIFIER_PATTERN.test(value);
+}
+
+function classifyCandidateRow(row: CandidateRow): CandidateClassification {
+  if (row.persisted_job_id === null) return 'missing_job';
+  if (!boundedIdentifier(row.entitlement_user_id, 128)
+    || !boundedIdentifier(row.reserved_quote_id, 256)
+    || !boundedIdentifier(row.persisted_job_id, 256)
+    || !boundedIdentifier(row.job_user_id, 128)
+    || typeof row.payment_status !== 'string'
+    || typeof row.job_status !== 'string'
+    || row.job_status.length < 1
+    || row.job_status.length > 64
+    || !(row.video_url === null
+      || (typeof row.video_url === 'string' && row.video_url.length <= 2_048))
+    || !(row.trial_disposition === null
+      || (typeof row.trial_disposition === 'string'
+        && TRIAL_DISPOSITIONS.has(row.trial_disposition)))
+    || !boundedIdentifier(row.quote_id, 256)
+    || !boundedIdentifier(row.quote_job_id, 256)
+    || !boundedIdentifier(row.quote_user_id, 128)
+    || typeof row.funding_mode !== 'string'
+    || typeof row.quote_state !== 'string') {
+    return 'ambiguous';
+  }
+  if (row.persisted_job_id !== row.job_id
+    || row.job_user_id !== row.entitlement_user_id
+    || row.payment_status !== 'included_mcp_trial'
+    || row.reserved_quote_id !== row.job_id
+    || row.quote_id !== row.job_id
+    || row.quote_job_id !== row.job_id
+    || row.quote_user_id !== row.entitlement_user_id
+    || row.funding_mode !== 'trial'
+    || (row.quote_state !== 'claimed' && row.quote_state !== 'accepted')) {
+    return 'ambiguous';
+  }
+  return classifyTrialJobEvidence({
+    jobStatus: row.job_status,
+    videoUrl: row.video_url,
+    trialDisposition: row.trial_disposition,
+  });
 }
 
 function readCandidates(rows: CandidateRow[], batchLimit: number): Array<{
@@ -163,14 +254,12 @@ function readCandidates(rows: CandidateRow[], batchLimit: number): Array<{
       || row.job_id.length < 1
       || row.job_id.length > 256
       || row.job_id !== row.job_id.trim()
-      || !IDENTIFIER_PATTERN.test(row.job_id)
-      || typeof row.classification !== 'string'
-      || !CLASSIFICATIONS.has(row.classification as CandidateClassification)) {
+      || !IDENTIFIER_PATTERN.test(row.job_id)) {
       throw new Error('Invalid trial reconciliation candidate.');
     }
     return {
       jobId: row.job_id,
-      classification: row.classification as CandidateClassification,
+      classification: classifyCandidateRow(row),
     };
   });
 }
@@ -209,7 +298,14 @@ export function createTrialEntitlementReconciler(
       SELECT
         to_regclass('public.mcp_trial_entitlements') IS NOT NULL AS mcp_trial_entitlements,
         to_regclass('public.app_jobs') IS NOT NULL AS app_jobs,
-        to_regclass('public.mcp_generation_quotes') IS NOT NULL AS mcp_generation_quotes`);
+        to_regclass('public.mcp_generation_quotes') IS NOT NULL AS mcp_generation_quotes,
+        EXISTS (
+          SELECT 1
+            FROM pg_attribute
+           WHERE attrelid = to_regclass('public.app_jobs')
+             AND attname = 'mcp_trial_outcome_disposition'
+             AND NOT attisdropped
+        ) AS mcp_trial_outcome_disposition`);
     if (!readRelations(relations)) {
       return {
         availability: 'unavailable',
@@ -222,28 +318,19 @@ export function createTrialEntitlementReconciler(
 
     const rows = await dependencies.executor.query<CandidateRow>(`
       SELECT entitlement.job_id,
-        CASE
-          WHEN job.job_id IS NULL THEN 'missing_job'
-          WHEN job.user_id IS DISTINCT FROM entitlement.user_id
-            OR job.payment_status IS DISTINCT FROM 'included_mcp_trial'
-            OR quote.quote_id IS NULL
-            OR quote.quote_id::text IS DISTINCT FROM entitlement.job_id
-            OR quote.job_id IS DISTINCT FROM entitlement.job_id
-            OR quote.user_id IS DISTINCT FROM entitlement.user_id
-            OR quote.funding_mode IS DISTINCT FROM 'trial'
-            OR quote.state NOT IN ('claimed', 'accepted')
-            THEN 'ambiguous'
-          WHEN job.status = 'completed'
-            AND NULLIF(btrim(job.video_url), '') IS NOT NULL THEN 'completed'
-          WHEN NULLIF(btrim(job.video_url), '') IS NOT NULL
-            OR job.status = 'completed' THEN 'ambiguous'
-          WHEN lower(btrim(job.status)) IN ('cancelled', 'canceled', 'aborted') THEN 'canceled'
-          WHEN lower(btrim(job.status)) IN ('error', 'failed', 'rejected') THEN 'definitive_failure'
-          WHEN lower(btrim(job.status)) IN (
-            'pending', 'queued', 'running', 'processing', 'in_progress', 'accepted'
-          ) THEN 'active'
-          ELSE 'ambiguous'
-        END AS classification
+             entitlement.user_id AS entitlement_user_id,
+             entitlement.reserved_quote_id::text AS reserved_quote_id,
+             job.job_id AS persisted_job_id,
+             job.user_id AS job_user_id,
+             job.payment_status,
+             job.status AS job_status,
+             job.video_url,
+             job.mcp_trial_outcome_disposition AS trial_disposition,
+             quote.quote_id::text AS quote_id,
+             quote.job_id AS quote_job_id,
+             quote.user_id AS quote_user_id,
+             quote.funding_mode,
+             quote.state AS quote_state
       FROM mcp_trial_entitlements AS entitlement
       LEFT JOIN app_jobs AS job
         ON job.job_id = entitlement.job_id

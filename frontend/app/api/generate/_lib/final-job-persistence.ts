@@ -1,5 +1,9 @@
 import { query } from '@/lib/db';
-import { applyTrialJobOutcome } from '@/server/agent-api/trial-outcomes';
+import { isUsableTrialOutputUrl } from '@/server/agent-api/trial-output-evidence';
+import {
+  applyTrialJobOutcome,
+  type NormalizedTrialJobOutcome,
+} from '@/server/agent-api/trial-outcomes';
 import type { FalInputSummary } from './fal-request';
 
 type QueryFn = (sql: string, params?: unknown[]) => Promise<unknown>;
@@ -31,6 +35,15 @@ export async function persistFinalVideoJobUpdate(params: {
   applyTrialOutcomeFn?: typeof applyTrialJobOutcome;
 }): Promise<void> {
   const queryFn = params.queryFn ?? query;
+  const normalizedStatus = params.status.trim().toLowerCase();
+  const trialDisposition: NormalizedTrialJobOutcome['kind'] = normalizedStatus === 'completed'
+    && isUsableTrialOutputUrl(params.video)
+    ? 'completed'
+    : ['canceled', 'cancelled', 'aborted'].includes(normalizedStatus)
+      ? 'canceled'
+      : normalizedStatus === 'failed'
+        ? 'unknown'
+        : 'accepted';
   await queryFn(
     `UPDATE app_jobs
      SET thumb_url = $2,
@@ -54,6 +67,10 @@ export async function persistFinalVideoJobUpdate(params: {
          indexable = $20,
          message = $21,
          settings_snapshot = $22::jsonb,
+         mcp_trial_outcome_disposition = CASE
+           WHEN $16 = 'included_mcp_trial' THEN $23
+           ELSE mcp_trial_outcome_disposition
+         END,
          provisional = FALSE,
          updated_at = NOW()
      WHERE job_id = $1`,
@@ -80,14 +97,11 @@ export async function persistFinalVideoJobUpdate(params: {
       params.indexable,
       params.message,
       params.settingsSnapshotJson,
+      trialDisposition,
     ]
   );
   if (params.paymentStatus === 'included_mcp_trial') {
-    const kind = params.status === 'completed' && Boolean(params.video)
-      ? 'completed'
-      : params.status === 'failed'
-        ? 'unknown'
-        : 'accepted';
+    const kind = trialDisposition;
     await (params.applyTrialOutcomeFn ?? applyTrialJobOutcome)(params.jobId, { kind });
   }
 }

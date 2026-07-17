@@ -848,6 +848,12 @@ test('migration 30 to 31, reapplication, funding attacks and audit privacy execu
   const psql = (...args: string[]) => spawnSync('psql', [
     '-X', '-h', socketDirectory, '-U', 'postgres', '-d', 'postgres', ...args,
   ], { encoding: 'utf8' });
+  const appJobs = psql('-v', 'ON_ERROR_STOP=1', '-c', `
+    CREATE TABLE app_jobs (
+      job_id TEXT PRIMARY KEY
+    );
+  `);
+  assert.equal(appJobs.status, 0, commandOutput(appJobs));
   for (const migration of [paidMigrationPath, trialMigrationPath]) {
     const applied = psql('--single-transaction', '-v', 'ON_ERROR_STOP=1', '-f', join(root, migration));
     assert.equal(applied.status, 0, commandOutput(applied));

@@ -10,7 +10,7 @@ type BytePlusTrialJob = {
 
 type BytePlusTrialOutcome = Extract<
   NormalizedTrialJobOutcome,
-  { kind: 'completed' | 'failed' | 'timeout' }
+  { kind: 'completed' | 'failed' | 'timeout' | 'unknown' }
 >;
 
 export async function applyBytePlusTrialOutcomeSafely(

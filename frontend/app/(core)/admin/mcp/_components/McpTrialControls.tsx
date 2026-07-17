@@ -20,18 +20,23 @@ export function assertSameOrigin(requestHeaders: HeaderReader): void {
   ).trim().toLowerCase();
   const forwardedProtocol = requestHeaders.get('x-forwarded-proto')?.trim().toLowerCase();
   const local = /^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/u.test(host);
-  const protocol = forwardedProtocol === 'http' && local ? 'http' : 'https';
   let parsed: URL;
   try {
     parsed = new URL(origin);
   } catch {
     throw new Error('Invalid admin action origin.');
   }
+  const protocol = local && !forwardedProtocol
+    ? parsed.protocol
+    : forwardedProtocol === 'http' && local
+      ? 'http:'
+      : 'https:';
   if (!host
+    || (protocol !== 'http:' && protocol !== 'https:')
     || parsed.username
     || parsed.password
     || parsed.host.toLowerCase() !== host
-    || parsed.protocol !== `${protocol}:`
+    || parsed.protocol !== protocol
     || parsed.origin !== origin) {
     throw new Error('Invalid admin action origin.');
   }

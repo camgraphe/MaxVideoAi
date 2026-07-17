@@ -44,20 +44,26 @@ configured threshold enter the bounded batch.
 
 | Durable job evidence | Reconciliation action |
 | --- | --- |
-| `completed` with a usable stored output | Ask the central Task 7 outcome owner to consume the reservation. |
-| Definitive `failed`, `error`, or cancellation state with no output | Ask the central Task 7 outcome owner to release the reservation. |
+| `completed` disposition plus `completed` job state and a usable stored output | Ask the central Task 7 outcome owner to consume the reservation. |
+| `definitive_failure` or `canceled` disposition with its matching terminal state and no output | Ask the central Task 7 outcome owner to release the reservation. |
 | Pending, queued, running, processing, or accepted | Retain the reservation and count it as active. |
 | Timeout, stalled, unknown, completed without output, or output/state mismatch | Retain the reservation and count it as ambiguous. |
 | Missing job or inconsistent quote/job ownership | Retain the reservation and count it for quarantine/manual inspection. |
+
+`app_jobs.status = 'failed'` alone is never release evidence. The generic final
+persistence path records that state as `unknown`; provider timeouts also record
+`timeout`. Only a persistence boundary that has definitive provider evidence
+may record `definitive_failure`. A usable output requires the durable
+`completed` disposition and a whitespace-free credential-free HTTPS media URL.
 
 The Task 7 transaction is always the final authority after classification.
 Concurrent or duplicate runs are idempotent. A classification race is counted
 as deferred; it never causes a guessed release. Quarantine is an aggregate
 operational result, not a new entitlement state.
 
-If the entitlement, quote, job, risk, or provider-attempt tables are missing,
-the cron and admin reads report an explicit unavailable state. Missing schema
-must never be displayed as zero activity.
+If the entitlement, quote, job, risk, or provider-attempt tables, or the trial
+disposition column, are missing, the cron and admin reads report an explicit
+unavailable state. Missing schema must never be displayed as zero activity.
 
 ## Safe output and privacy exclusions
 
@@ -74,9 +80,19 @@ an OAuth client identifier, or a private cost snapshot. Aggregate provider
 cost comes from authoritative provider attempts rather than the private trial
 pricing envelope.
 
-MCP trial risk events have a documented retention period of 30 days. Use the
-existing bounded privileged cleanup path; never export raw fingerprint or
-request context for routine support work.
+Every authenticated reconciliation run also invokes the privileged risk-event
+cleanup with a fixed cutoff of 30 days and a maximum batch of 1,000 rows. Only
+events strictly older than the cutoff are deleted. The response exposes only
+`available`/`unavailable`, a coarse reason code, the deleted count or `null`,
+and the fixed batch limit. Repeated full cleanup batches indicate backlog; they
+do not authorize a larger cap. Never export a fingerprint or request context
+for routine support work.
+
+The runtime database role used by the authenticated cron must have explicit
+`EXECUTE` permission on `cleanup_mcp_trial_risk_events`; public execution stays
+revoked. A missing function, table, or privilege reports risk retention as
+`unavailable` with a `null` deleted count. It does not turn the reconciliation
+aggregate itself into a synthetic failure or authorize a direct delete.
 
 ## Incident checks
 
@@ -89,9 +105,12 @@ request context for routine support work.
 4. Review the latest reconciliation aggregate reason codes and duration. A
    full batch on repeated runs indicates backlog, not permission to increase
    the cap past 100.
-5. For one affected user, use exact user inspection. Never paste a prompt,
+5. Review the aggregate risk-retention result. Treat `unavailable` as an
+   operational fault, not as zero deleted rows; a repeated 1,000-row batch is a
+   retention backlog.
+6. For one affected user, use exact user inspection. Never paste a prompt,
    output URL, risk fingerprint, or provider response into the inspector.
-6. If containment is needed, keep the checked-in gate false and set
+7. If containment is needed, keep the checked-in gate false and set
    `MCP_TRIAL_ENABLED=false`. Continue reconciliation so existing reservations
    can reach evidence-backed terminal states.
 
@@ -143,6 +162,9 @@ for this mutation.
    manual correction.
 6. Confirm wallet receipts and balances were not changed by reconciliation or
    included-trial support correction.
+7. If risk retention is unavailable, restore the risk table/function privilege
+   boundary and retry the authenticated cron. Never replace the bounded cleanup
+   with an unbounded direct delete.
 
 This runbook authorizes inspection and local code verification only. It does
 not authorize deployment, live database changes, provider calls, public flag

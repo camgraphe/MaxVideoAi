@@ -3,8 +3,29 @@ BEGIN
   IF to_regclass('public.mcp_generation_quotes') IS NULL THEN
     RAISE EXCEPTION 'Migration 31 requires migration 30 mcp_generation_quotes prerequisite';
   END IF;
+  IF to_regclass('public.app_jobs') IS NULL THEN
+    RAISE EXCEPTION 'Migration 31 requires app_jobs prerequisite';
+  END IF;
 END;
 $$;
+
+ALTER TABLE app_jobs
+  ADD COLUMN IF NOT EXISTS mcp_trial_outcome_disposition TEXT;
+ALTER TABLE app_jobs
+  DROP CONSTRAINT IF EXISTS app_jobs_mcp_trial_outcome_disposition_allowlist;
+ALTER TABLE app_jobs
+  ADD CONSTRAINT app_jobs_mcp_trial_outcome_disposition_allowlist CHECK (
+    mcp_trial_outcome_disposition IS NULL
+    OR mcp_trial_outcome_disposition IN (
+      'accepted',
+      'completed',
+      'definitive_failure',
+      'canceled',
+      'timeout',
+      'unknown',
+      'stalled'
+    )
+  );
 
 CREATE OR REPLACE FUNCTION mcp_trial_snapshot_has_forbidden_funding_semantics(snapshot JSONB)
 RETURNS BOOLEAN

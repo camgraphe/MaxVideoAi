@@ -1,4 +1,5 @@
 import { reconcileTrialEntitlements } from '@/server/agent-api/reconcile-trial-entitlements';
+import { cleanupTrialRiskEvents } from '@/server/agent-api/trial-risk-repository';
 import { createTrialReconciliationCronHandler } from '@/server/mcp-trial-reconcile-cron';
 
 export const runtime = 'nodejs';
@@ -14,6 +15,8 @@ const handleTrialReconciliation = createTrialReconciliationCronHandler({
     VERCEL: process.env.VERCEL,
   },
   reconcile: reconcileTrialEntitlements,
+  now: () => new Date(),
+  cleanupRiskEvents: cleanupTrialRiskEvents,
   log: (value) => console.info('[mcp-trial-reconcile]', value),
 });
 

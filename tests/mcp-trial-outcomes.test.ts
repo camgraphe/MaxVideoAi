@@ -33,7 +33,8 @@ function entitlement(state: TrialState) {
 function harness(options: {
   paymentStatus?: string;
   jobStatus?: string;
-  videoUrl?: string | null;
+    videoUrl?: string | null;
+    trialDisposition?: string | null;
   entitlementState?: TrialState;
   quoteState?: 'claimed' | 'accepted' | 'failed';
 } = {}) {
@@ -52,6 +53,15 @@ function harness(options: {
           payment_status: options.paymentStatus ?? 'included_mcp_trial',
           status: options.jobStatus ?? 'running',
           video_url: options.videoUrl ?? null,
+          mcp_trial_outcome_disposition: Object.prototype.hasOwnProperty.call(options, 'trialDisposition')
+            ? options.trialDisposition
+            : options.jobStatus === 'completed'
+              ? 'completed'
+              : ['failed', 'error', 'rejected'].includes(options.jobStatus ?? '')
+                ? 'definitive_failure'
+                : options.jobStatus === 'canceled'
+                  ? 'canceled'
+                  : null,
         }] as T[];
       }
       if (/FROM mcp_generation_quotes/i.test(sql)) {
@@ -192,6 +202,25 @@ test('completed cannot consume without a durable output and failures cannot rele
   assert.equal(hasOutput.releaseCalls, 0);
 });
 
+test('completed requires durable evidence and a usable HTTPS output', async () => {
+  for (const fixture of [
+    harness({
+      jobStatus: 'completed',
+      videoUrl: 'https://media.maxvideoai.com/missing-proof.mp4',
+      trialDisposition: null,
+    }),
+    harness({ jobStatus: 'completed', videoUrl: 'http://media.maxvideoai.com/output.mp4' }),
+    harness({ jobStatus: 'completed', videoUrl: 'https://user:secret@media.maxvideoai.com/output.mp4' }),
+    harness({ jobStatus: 'completed', videoUrl: 'https://media.maxvideoai.com/output video.mp4' }),
+  ]) {
+    await assert.rejects(
+      applyOutcome(fixture, { kind: 'completed' }),
+      /durable completed output/i,
+    );
+    assert.equal(fixture.consumeCalls, 0);
+  }
+});
+
 test('outcomes reject extra keys and non-plain or accessor inputs before SQL', async () => {
   const fixture = harness();
   let getterCalls = 0;
@@ -274,10 +303,55 @@ test('confirmation, shared final persistence, and BytePlus polling delegate to t
   assert.doesNotMatch(publicSignature.slice(0, 320), /dependencies:/);
   assert.match(outcomeOwner, /export function createTrialJobOutcomeService/);
   assert.match(outcomeOwner, /export async function applyTrialSupportOverride/);
-  assert.match(bytePlusPoll, /kind:\s*'timeout'/);
   assert.match(bytePlusPoll, /kind:\s*'completed'/);
-  assert.match(bytePlusPoll, /kind:\s*'failed'/);
+  assert.match(bytePlusPoll, /persistBytePlusTerminalFailure/);
+  assert.match(bytePlusPoll, /BytePlusTerminalTrialOutcome/);
+  assert.match(bytePlusPoll, /kind:\s*trialOutcome/);
+  assert.match(bytePlusPoll, /mcp_trial_outcome_disposition/);
+  assert.match(bytePlusPoll, /returned no video URL[\s\S]{0,240}'unknown'/);
+  assert.match(bytePlusPoll, /could not be copied[\s\S]{0,320}'unknown'/);
   assert.doesNotMatch(bytePlusPoll, /payment_status\s*=\s*'refunded_wallet'[\s\S]{0,300}included_mcp_trial/);
+});
+
+test('trial migration adds an allowlisted reconciliation disposition without occupying reserved migration 32', () => {
+  const migration = readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8');
+  assert.match(migration, /mcp_trial_outcome_disposition/i);
+  for (const value of [
+    'accepted', 'completed', 'definitive_failure', 'canceled', 'timeout', 'unknown', 'stalled',
+  ]) {
+    assert.match(migration, new RegExp(value));
+  }
+});
+
+test('BytePlus terminal persistence maps only conclusive provider failures to definitive evidence', async () => {
+  const module = await import('../frontend/server/byteplus-trial-job-persistence').catch(() => ({}));
+  const persist = (module as {
+    persistBytePlusTerminalFailure?: (
+      input: Record<string, unknown>,
+      queryFn: (sql: string, params?: ReadonlyArray<unknown>) => Promise<unknown[]>,
+    ) => Promise<boolean>;
+  }).persistBytePlusTerminalFailure;
+  assert.equal(typeof persist, 'function');
+  if (!persist) return;
+
+  for (const [trialOutcome, disposition] of [
+    ['failed', 'definitive_failure'],
+    ['timeout', 'timeout'],
+    ['unknown', 'unknown'],
+  ] as const) {
+    const calls: Call[] = [];
+    assert.equal(await persist({
+      jobId: JOB_ID,
+      userMessage: 'Safe message',
+      trialOutcome,
+      activeStatuses: ['running'],
+    }, async (sql, params) => {
+      calls.push({ sql, params });
+      return [{ job_id: JOB_ID }];
+    }), true);
+    assert.match(calls[0]?.sql ?? '', /mcp_trial_outcome_disposition/i);
+    assert.equal(calls[0]?.params?.[2], disposition);
+  }
 });
 
 test('support override audit is dedicated, exact, and immutable in the trial migration', () => {
@@ -338,6 +412,7 @@ test('shared final persistence consumes durable output but leaves generic failur
     '../frontend/app/api/generate/_lib/final-job-persistence'
   );
   const seen: string[] = [];
+  const writes: Array<{ sql: string; params?: unknown[] }> = [];
   const base = {
     jobId: JOB_ID,
     thumb: null,
@@ -358,18 +433,29 @@ test('shared final persistence consumes durable output but leaves generic failur
     indexable: false,
     message: null,
     settingsSnapshotJson: '{}',
-    queryFn: async () => undefined,
+    queryFn: async (sql: string, params?: unknown[]) => {
+      writes.push({ sql, params });
+      return undefined;
+    },
     applyTrialOutcomeFn: async (_jobId: string, outcome: { kind: string }) => {
       seen.push(outcome.kind);
       return { funding: 'included_trial' as const, entitlementState: 'reserved' as const };
     },
   };
   await persistFinalVideoJobUpdate({ ...base, video: null, status: 'failed', progress: 0 });
+  await persistFinalVideoJobUpdate({ ...base, video: null, status: 'canceled', progress: 0 });
   await persistFinalVideoJobUpdate({
     ...base,
     video: 'https://media.maxvideoai.com/final.mp4',
     status: 'completed',
     progress: 100,
   });
-  assert.deepEqual(seen, ['unknown', 'completed']);
+  assert.deepEqual(seen, ['unknown', 'canceled', 'completed']);
+  assert.equal(writes.length, 3);
+  assert.match(writes[0]?.sql ?? '', /mcp_trial_outcome_disposition/i);
+  assert.match(writes[1]?.sql ?? '', /mcp_trial_outcome_disposition/i);
+  assert.match(writes[2]?.sql ?? '', /mcp_trial_outcome_disposition/i);
+  assert.equal(writes[0]?.params?.at(-1), 'unknown');
+  assert.equal(writes[1]?.params?.at(-1), 'canceled');
+  assert.equal(writes[2]?.params?.at(-1), 'completed');
 });
