@@ -2,13 +2,17 @@ import { notFound } from 'next/navigation';
 import { requireAdmin } from '@/server/admin';
 import { loadAdminMcpMetrics } from '@/server/admin-mcp-metrics';
 import { AdminMcpView } from './_components/AdminMcpView';
+import { McpTrialControls } from './_components/McpTrialControls';
 import { resolveAdminMcpRange } from './_lib/admin-mcp-helpers';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 type AdminMcpPageProps = {
-  searchParams: Promise<{ range?: string | string[] }>;
+  searchParams: Promise<{
+    range?: string | string[];
+    trialUserId?: string | string[];
+  }>;
 };
 
 export default async function AdminMcpPage({ searchParams }: AdminMcpPageProps) {
@@ -22,6 +26,14 @@ export default async function AdminMcpPage({ searchParams }: AdminMcpPageProps) 
   const params = await searchParams;
   const range = resolveAdminMcpRange(params.range);
   const metrics = await loadAdminMcpMetrics(range.query);
+  const trialUserId = typeof params.trialUserId === 'string'
+    ? params.trialUserId.trim() || null
+    : null;
 
-  return <AdminMcpView metrics={metrics} selectedRange={range.label} />;
+  return (
+    <>
+      <AdminMcpView metrics={metrics} selectedRange={range.label} />
+      <McpTrialControls inspectionUserId={trialUserId} />
+    </>
+  );
 }

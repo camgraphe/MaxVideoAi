@@ -36,6 +36,7 @@ import {
   applyTrialSupportOverride,
 } from '../frontend/src/server/agent-api/trial-outcomes';
 import { getGenerationStatus } from '../frontend/src/server/generations/generation-status';
+import { manualReleaseMcpTrial } from '../frontend/server/admin-mcp-trial-operations';
 import {
   createPaidGenerationTestSchema,
   missingDisposablePostgresCommand,
@@ -329,4 +330,163 @@ test('same trial quote and two trial quotes for one user race safely in disposab
     [twoUser],
   );
   assert.deepEqual(loserState.rows, [{ state: 'prepared' }]);
+});
+
+test('manual trial release and both audits commit or roll back atomically in disposable PostgreSQL', async (t) => {
+  const missing = missingDisposablePostgresCommand();
+  if (missing) {
+    t.skip(`${missing} is unavailable`);
+    return;
+  }
+  const postgres = await startDisposablePostgres('mcp-trial-admin-release');
+  const previousDatabaseUrl = process.env.DATABASE_URL;
+  process.env.DATABASE_URL = postgres.databaseUrl;
+  t.after(async () => {
+    await getDb().end().catch(() => undefined);
+    if (previousDatabaseUrl === undefined) delete process.env.DATABASE_URL;
+    else process.env.DATABASE_URL = previousDatabaseUrl;
+    await postgres.cleanup();
+  });
+  await createPaidGenerationTestSchema(postgres.pool);
+  await postgres.pool.query(readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8'));
+  await postgres.pool.query(`
+    CREATE TABLE admin_audit (
+      id bigserial PRIMARY KEY,
+      admin_id uuid NOT NULL,
+      target_user_id uuid,
+      action text NOT NULL,
+      route text,
+      metadata jsonb,
+      created_at timestamptz NOT NULL DEFAULT clock_timestamp()
+    )`);
+
+  const adminId = '80000000-0000-4000-8000-000000000001';
+  const successfulUser = '80000000-0000-4000-8000-000000000002';
+  const successfulQuote = '80000000-0000-4000-8000-000000000003';
+  await insertTrialQuote({
+    pool: postgres.pool,
+    quoteId: successfulQuote,
+    userId: successfulUser,
+    clientId: 'admin-release-success-client',
+    prompt: 'admin release success',
+  });
+  await confirmGeneration(
+    { quoteId: successfulQuote, confirmed: true },
+    principal(successfulUser, 'admin-release-success-client'),
+    dependencies({ pool: postgres.pool, provider: async () => ({ kind: 'accepted' }) }),
+  );
+  assert.deepEqual(await manualReleaseMcpTrial({
+    adminId,
+    userId: successfulUser,
+    jobId: successfulQuote,
+    reason: 'support_verified_no_output',
+  }), { released: true });
+  const committed = await postgres.pool.query<{
+    entitlement_state: string;
+    quote_state: string;
+    support_audits: string;
+    admin_audits: string;
+  }>(`
+    SELECT
+      (SELECT status FROM mcp_trial_entitlements WHERE user_id = $1) AS entitlement_state,
+      (SELECT state FROM mcp_generation_quotes WHERE quote_id::text = $2) AS quote_state,
+      (SELECT count(*) FROM mcp_trial_support_override_audit WHERE job_id = $2)::text AS support_audits,
+      (SELECT count(*) FROM admin_audit
+        WHERE target_user_id::text = $1 AND action = 'mcp_trial_manual_release')::text AS admin_audits`,
+  [successfulUser, successfulQuote]);
+  assert.deepEqual(committed.rows, [{
+    entitlement_state: 'released',
+    quote_state: 'failed',
+    support_audits: '1',
+    admin_audits: '1',
+  }]);
+
+  await postgres.pool.query(`
+    CREATE OR REPLACE FUNCTION reject_mcp_trial_admin_audit()
+    RETURNS trigger LANGUAGE plpgsql AS $$
+    BEGIN
+      IF NEW.action = 'mcp_trial_manual_release' THEN
+        RAISE EXCEPTION 'forced admin audit failure';
+      END IF;
+      RETURN NEW;
+    END;
+    $$;
+    CREATE TRIGGER reject_mcp_trial_admin_audit_insert
+      BEFORE INSERT ON admin_audit
+      FOR EACH ROW EXECUTE FUNCTION reject_mcp_trial_admin_audit()`);
+  const rollbackUser = '80000000-0000-4000-8000-000000000004';
+  const rollbackQuote = '80000000-0000-4000-8000-000000000005';
+  await insertTrialQuote({
+    pool: postgres.pool,
+    quoteId: rollbackQuote,
+    userId: rollbackUser,
+    clientId: 'admin-release-rollback-client',
+    prompt: 'admin release rollback',
+  });
+  await confirmGeneration(
+    { quoteId: rollbackQuote, confirmed: true },
+    principal(rollbackUser, 'admin-release-rollback-client'),
+    dependencies({ pool: postgres.pool, provider: async () => ({ kind: 'accepted' }) }),
+  );
+  await assert.rejects(manualReleaseMcpTrial({
+    adminId,
+    userId: rollbackUser,
+    jobId: rollbackQuote,
+    reason: 'provider_confirmed_no_output',
+  }), /forced admin audit failure/i);
+  const rolledBack = await postgres.pool.query<{
+    entitlement_state: string;
+    quote_state: string;
+    support_audits: string;
+    admin_audits: string;
+  }>(`
+    SELECT
+      (SELECT status FROM mcp_trial_entitlements WHERE user_id = $1) AS entitlement_state,
+      (SELECT state FROM mcp_generation_quotes WHERE quote_id::text = $2) AS quote_state,
+      (SELECT count(*) FROM mcp_trial_support_override_audit WHERE job_id = $2)::text AS support_audits,
+      (SELECT count(*) FROM admin_audit WHERE target_user_id::text = $1)::text AS admin_audits`,
+  [rollbackUser, rollbackQuote]);
+  assert.deepEqual(rolledBack.rows, [{
+    entitlement_state: 'reserved',
+    quote_state: 'accepted',
+    support_audits: '0',
+    admin_audits: '0',
+  }]);
+
+  const consumedUser = '80000000-0000-4000-8000-000000000006';
+  const consumedQuote = '80000000-0000-4000-8000-000000000007';
+  await insertTrialQuote({
+    pool: postgres.pool,
+    quoteId: consumedQuote,
+    userId: consumedUser,
+    clientId: 'admin-release-consumed-client',
+    prompt: 'admin release consumed',
+  });
+  await confirmGeneration(
+    { quoteId: consumedQuote, confirmed: true },
+    principal(consumedUser, 'admin-release-consumed-client'),
+    dependencies({ pool: postgres.pool, provider: async () => ({ kind: 'accepted' }) }),
+  );
+  await postgres.pool.query(
+    `UPDATE app_jobs SET status = 'completed', video_url = $2 WHERE job_id = $1`,
+    [consumedQuote, 'https://media.maxvideoai.com/admin-consumed.mp4'],
+  );
+  await applyTrialJobOutcome(consumedQuote, { kind: 'completed' });
+  await assert.rejects(manualReleaseMcpTrial({
+    adminId,
+    userId: consumedUser,
+    jobId: consumedQuote,
+    reason: 'support_verified_no_output',
+  }), /must be reserved/i);
+  const consumed = await postgres.pool.query<{ status: string; support_audits: string }>(`
+    SELECT entitlement.status,
+           (SELECT count(*) FROM mcp_trial_support_override_audit WHERE job_id = $2)::text AS support_audits
+      FROM mcp_trial_entitlements AS entitlement
+     WHERE entitlement.user_id = $1`, [consumedUser, consumedQuote]);
+  assert.deepEqual(consumed.rows, [{ status: 'consumed', support_audits: '0' }]);
+  const receipts = await postgres.pool.query<{ count: string }>(
+    `SELECT count(*)::text AS count FROM app_receipts WHERE user_id IN ($1, $2, $3)`,
+    [successfulUser, rollbackUser, consumedUser],
+  );
+  assert.deepEqual(receipts.rows, [{ count: '0' }]);
 });
