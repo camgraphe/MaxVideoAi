@@ -4,6 +4,10 @@ import { join } from 'node:path';
 import test from 'node:test';
 
 import type { TransactionQueryExecutor } from '../frontend/src/lib/db';
+import {
+  createTrialJobOutcomeService,
+  createTrialSupportOverrideService,
+} from '../frontend/src/server/agent-api/trial-outcomes';
 
 const JOB_ID = '00000000-0000-4000-8000-000000000701';
 const USER_ID = 'trial-user-7';
@@ -98,11 +102,24 @@ function harness(options: {
   };
 }
 
+function applyOutcome(
+  fixture: ReturnType<typeof harness>,
+  outcome: Record<string, unknown>,
+) {
+  return createTrialJobOutcomeService(fixture.dependencies as never)(JOB_ID, outcome as never);
+}
+
+function applySupportOverride(
+  fixture: ReturnType<typeof harness>,
+  override: Record<string, unknown>,
+) {
+  return createTrialSupportOverrideService(fixture.dependencies as never)(JOB_ID, override as never);
+}
+
 test('accepted, timeout, and unknown outcomes keep an included trial reserved', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
-  for (const kind of ['accepted', 'timeout', 'unknown'] as const) {
+  for (const kind of ['accepted', 'timeout', 'unknown', 'stalled'] as const) {
     const fixture = harness();
-    const result = await applyTrialJobOutcome(JOB_ID, { kind }, fixture.dependencies as never);
+    const result = await applyOutcome(fixture, { kind });
     assert.deepEqual(result, { funding: 'included_trial', entitlementState: 'reserved' });
     assert.equal(fixture.consumeCalls, 0);
     assert.equal(fixture.releaseCalls, 0);
@@ -110,14 +127,13 @@ test('accepted, timeout, and unknown outcomes keep an included trial reserved', 
 });
 
 test('a durably completed output consumes exactly once and duplicate completion is idempotent', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const fixture = harness({ jobStatus: 'completed', videoUrl: 'https://media.maxvideoai.com/trial.mp4' });
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, { kind: 'completed' }, fixture.dependencies as never),
+    await applyOutcome(fixture, { kind: 'completed' }),
     { funding: 'included_trial', entitlementState: 'consumed' },
   );
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, { kind: 'completed' }, fixture.dependencies as never),
+    await applyOutcome(fixture, { kind: 'completed' }),
     { funding: 'included_trial', entitlementState: 'consumed' },
   );
   assert.equal(fixture.consumeCalls, 1, 'duplicate completion must not repeat the terminal transition');
@@ -125,10 +141,9 @@ test('a durably completed output consumes exactly once and duplicate completion 
 });
 
 test('pre-acceptance rejection, terminal failure, and cancellation release before output', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   for (const kind of ['rejected', 'failed', 'canceled'] as const) {
     const fixture = harness({ jobStatus: kind === 'canceled' ? 'canceled' : 'failed' });
-    const result = await applyTrialJobOutcome(JOB_ID, { kind }, fixture.dependencies as never);
+    const result = await applyOutcome(fixture, { kind });
     assert.deepEqual(result, { funding: 'included_trial', entitlementState: 'released' });
     assert.equal(fixture.consumeCalls, 0);
     assert.equal(fixture.releaseCalls, 1);
@@ -136,24 +151,26 @@ test('pre-acceptance rejection, terminal failure, and cancellation release befor
 });
 
 test('late success after release and late failure after consume preserve the first terminal state', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const released = harness({ entitlementState: 'released', jobStatus: 'completed', videoUrl: 'https://media.maxvideoai.com/late.mp4' });
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, { kind: 'completed' }, released.dependencies as never),
+    await applyOutcome(released, { kind: 'completed' }),
     { funding: 'included_trial', entitlementState: 'released' },
   );
-  const consumed = harness({ entitlementState: 'consumed', jobStatus: 'failed' });
+  const consumed = harness({
+    entitlementState: 'consumed',
+    jobStatus: 'failed',
+    videoUrl: 'https://media.maxvideoai.com/consumed.mp4',
+  });
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, { kind: 'failed' }, consumed.dependencies as never),
+    await applyOutcome(consumed, { kind: 'failed' }),
     { funding: 'included_trial', entitlementState: 'consumed' },
   );
 });
 
 test('wallet jobs are a no-op before quote or entitlement access', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const fixture = harness({ paymentStatus: 'paid_wallet', jobStatus: 'failed' });
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, { kind: 'failed' }, fixture.dependencies as never),
+    await applyOutcome(fixture, { kind: 'failed' }),
     { funding: 'wallet' },
   );
   assert.equal(fixture.calls.filter(({ sql }) => /mcp_generation_quotes|mcp_trial_entitlements/i.test(sql)).length, 0);
@@ -161,23 +178,21 @@ test('wallet jobs are a no-op before quote or entitlement access', async () => {
 });
 
 test('completed cannot consume without a durable output and failures cannot release after output', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const missingOutput = harness({ jobStatus: 'completed', videoUrl: null });
   await assert.rejects(
-    applyTrialJobOutcome(JOB_ID, { kind: 'completed' }, missingOutput.dependencies as never),
+    applyOutcome(missingOutput, { kind: 'completed' }),
     /durable completed output/i,
   );
   assert.equal(missingOutput.consumeCalls, 0);
   const hasOutput = harness({ jobStatus: 'failed', videoUrl: 'https://media.maxvideoai.com/already.mp4' });
   await assert.rejects(
-    applyTrialJobOutcome(JOB_ID, { kind: 'failed' }, hasOutput.dependencies as never),
+    applyOutcome(hasOutput, { kind: 'failed' }),
     /cannot release.*output/i,
   );
   assert.equal(hasOutput.releaseCalls, 0);
 });
 
 test('outcomes reject extra keys and non-plain or accessor inputs before SQL', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const fixture = harness();
   let getterCalls = 0;
   const accessor = Object.defineProperty({}, 'kind', {
@@ -189,9 +204,10 @@ test('outcomes reject extra keys and non-plain or accessor inputs before SQL', a
     Object.assign(Object.create(null), { kind: 'completed' }),
     accessor,
     { kind: 'provider_failed' },
+    { kind: 'support_release', reason: 'provider_confirmed_no_output' },
   ]) {
     await assert.rejects(
-      applyTrialJobOutcome(JOB_ID, input as never, fixture.dependencies as never),
+      applyOutcome(fixture, input),
       /invalid trial job outcome/i,
     );
   }
@@ -200,35 +216,33 @@ test('outcomes reject extra keys and non-plain or accessor inputs before SQL', a
 });
 
 test('a support release accepts only allowlisted reasons and writes the reason in the transaction', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const fixture = harness({ jobStatus: 'provider_polling_stalled' });
   assert.deepEqual(
-    await applyTrialJobOutcome(JOB_ID, {
-      kind: 'support_release',
+    await applySupportOverride(fixture, {
+      kind: 'release',
       reason: 'provider_confirmed_no_output',
-    }, fixture.dependencies as never),
+    }),
     { funding: 'included_trial', entitlementState: 'released' },
   );
-  const audit = fixture.calls.find(({ sql }) => /INSERT INTO mcp_audit_events/i.test(sql));
+  const audit = fixture.calls.find(({ sql }) => /INSERT INTO mcp_trial_support_override_audit/i.test(sql));
   assert.ok(audit);
   assert.ok(audit.params?.includes('provider_confirmed_no_output'));
   assert.ok(audit.params?.includes(JOB_ID));
 
   const rejected = harness();
   await assert.rejects(
-    applyTrialJobOutcome(JOB_ID, {
-      kind: 'support_release',
+    applySupportOverride(rejected, {
+      kind: 'release',
       reason: 'freeform internal note',
-    } as never, rejected.dependencies as never),
-    /invalid trial job outcome/i,
+    }),
+    /invalid trial support override/i,
   );
   assert.equal(rejected.calls.length, 0);
 });
 
 test('trial rows are locked and quote, job, entitlement identities must agree', async () => {
-  const { applyTrialJobOutcome } = await import('../frontend/src/server/agent-api/trial-outcomes');
   const fixture = harness({ quoteState: 'claimed' });
-  await applyTrialJobOutcome(JOB_ID, { kind: 'accepted' }, fixture.dependencies as never);
+  await applyOutcome(fixture, { kind: 'accepted' });
   for (const table of ['app_jobs', 'mcp_generation_quotes', 'mcp_trial_entitlements']) {
     const lock = fixture.calls.find(({ sql }) => new RegExp(`FROM ${table}`, 'i').test(sql));
     assert.match(lock?.sql ?? '', /FOR UPDATE/i);
@@ -237,7 +251,7 @@ test('trial rows are locked and quote, job, entitlement identities must agree', 
 
   const inconsistent = harness({ entitlementState: 'released', quoteState: 'accepted' });
   await assert.rejects(
-    applyTrialJobOutcome(JOB_ID, { kind: 'unknown' }, inconsistent.dependencies as never),
+    applyOutcome(inconsistent, { kind: 'unknown' }),
     /inconsistent trial lifecycle/i,
   );
 });
@@ -247,15 +261,59 @@ test('confirmation, shared final persistence, and BytePlus polling delegate to t
   const confirmation = readFileSync(join(root, 'frontend/src/server/agent-api/confirm-generation.ts'), 'utf8');
   const finalPersistence = readFileSync(join(root, 'frontend/app/api/generate/_lib/final-job-persistence.ts'), 'utf8');
   const bytePlusPoll = readFileSync(join(root, 'frontend/server/byteplus-poll.ts'), 'utf8');
+  const bytePlusTrial = readFileSync(join(root, 'frontend/server/byteplus-trial-outcomes.ts'), 'utf8');
+  const outcomeOwner = readFileSync(join(root, 'frontend/src/server/agent-api/trial-outcomes.ts'), 'utf8');
   assert.match(confirmation, /applyTrialJobOutcome/);
   assert.match(confirmation, /submitTrialGeneration[\s\S]*applyTrialJobOutcome/);
   assert.match(finalPersistence, /applyTrialJobOutcome/);
   assert.match(finalPersistence, /paymentStatus\s*===\s*'included_mcp_trial'/);
-  assert.match(bytePlusPoll, /applyTrialJobOutcome/);
+  assert.match(bytePlusPoll, /applyBytePlusTrialOutcomeSafely/);
+  assert.match(bytePlusTrial, /applyTrialJobOutcome/);
+  assert.match(bytePlusTrial, /try\s*\{[\s\S]*applyOutcome[\s\S]*catch/u);
+  const publicSignature = outcomeOwner.match(/export async function applyTrialJobOutcome\([\s\S]*?\n\}/u)?.[0] ?? '';
+  assert.doesNotMatch(publicSignature.slice(0, 320), /dependencies:/);
+  assert.match(outcomeOwner, /export function createTrialJobOutcomeService/);
+  assert.match(outcomeOwner, /export async function applyTrialSupportOverride/);
   assert.match(bytePlusPoll, /kind:\s*'timeout'/);
   assert.match(bytePlusPoll, /kind:\s*'completed'/);
   assert.match(bytePlusPoll, /kind:\s*'failed'/);
   assert.doesNotMatch(bytePlusPoll, /payment_status\s*=\s*'refunded_wallet'[\s\S]{0,300}included_mcp_trial/);
+});
+
+test('support override audit is dedicated, exact, and immutable in the trial migration', () => {
+  const migration = readFileSync('neon/migrations/31_mcp_trial_entitlements.sql', 'utf8');
+  assert.match(migration, /CREATE TABLE IF NOT EXISTS mcp_trial_support_override_audit/i);
+  assert.match(migration, /reason_code[\s\S]*provider_confirmed_no_output[\s\S]*support_verified_no_output/i);
+  assert.match(migration, /enforce_mcp_trial_support_override_audit_insert/i);
+  assert.match(migration, /BEFORE UPDATE OR DELETE ON mcp_trial_support_override_audit/i);
+  assert.match(migration, /RAISE EXCEPTION 'MCP trial support override audit rows are immutable'/i);
+});
+
+test('BytePlus outcome failures defer accounting without aborting terminal post-processing', async () => {
+  const { applyBytePlusTrialOutcomeSafely } = await import('../frontend/server/byteplus-trial-outcomes');
+  const originalWarn = console.warn;
+  const warnings: unknown[][] = [];
+  console.warn = (...args: unknown[]) => { warnings.push(args); };
+  let calls = 0;
+  try {
+    await applyBytePlusTrialOutcomeSafely({
+      job_id: JOB_ID, payment_status: 'included_mcp_trial',
+    }, { kind: 'completed' }, async () => {
+      calls += 1;
+      throw new Error('transient outcome persistence failure');
+    });
+    await applyBytePlusTrialOutcomeSafely({
+      job_id: 'wallet-job', payment_status: 'paid_wallet',
+    }, { kind: 'failed' }, async () => {
+      calls += 1;
+      throw new Error('wallet path must not call trial outcomes');
+    });
+  } finally {
+    console.warn = originalWarn;
+  }
+  assert.equal(calls, 1);
+  assert.equal(warnings.length, 1);
+  assert.match(String(warnings[0]?.[0]), /deferred to reconciliation/i);
 });
 
 test('safe status lookup exposes only included_trial and lifecycle state', async () => {

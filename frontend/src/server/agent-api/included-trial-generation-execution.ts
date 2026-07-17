@@ -273,6 +273,9 @@ export async function submitReservedIncludedTrialGeneration(
         ? { kind: 'completed' }
         : { kind: 'accepted' };
     }
+    if (result.status === 502 && result.body.error === 'PROVIDER_REQUEST_REJECTED') {
+      return { kind: 'rejected' };
+    }
     if (typeof result.status === 'number' && result.status >= 400 && result.status < 500) {
       return { kind: 'rejected' };
     }

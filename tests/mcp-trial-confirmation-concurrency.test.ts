@@ -31,7 +31,10 @@ import {
 } from '../frontend/src/server/agent-api/quote-repository';
 import { lockReservableEntitlement, reserveEntitlement } from '../frontend/src/server/agent-api/trial-entitlement-repository';
 import { acceptTrialRisk } from '../frontend/src/server/agent-api/trial-risk';
-import { applyTrialJobOutcome } from '../frontend/src/server/agent-api/trial-outcomes';
+import {
+  applyTrialJobOutcome,
+  applyTrialSupportOverride,
+} from '../frontend/src/server/agent-api/trial-outcomes';
 import { getGenerationStatus } from '../frontend/src/server/generations/generation-status';
 import {
   createPaidGenerationTestSchema,
@@ -258,16 +261,41 @@ test('same trial quote and two trial quotes for one user race safely in disposab
   });
   assert.ok(storedTrialStatus);
   assert.equal(storedTrialStatus.priceCents, 0);
-  assert.equal(storedTrialStatus.paymentStatus, 'included_mcp_trial');
+  assert.equal(storedTrialStatus.paymentStatus, 'included_trial');
   assert.equal(storedTrialStatus.funding, 'included_trial');
   assert.equal(storedTrialStatus.entitlementState, 'reserved');
   assert.equal('pricingSnapshot' in storedTrialStatus, false);
   assert.equal('providerCostCents' in storedTrialStatus, false);
-  assert.doesNotMatch(JSON.stringify(storedTrialStatus), /providerCostCents|normalPriceCents|pricingSnapshot/iu);
+  assert.doesNotMatch(
+    JSON.stringify(storedTrialStatus),
+    /included_mcp_trial|providerCostCents|normalPriceCents|pricingSnapshot/iu,
+  );
   assert.equal(providerCalls, 1);
   assert.deepEqual(await counts(postgres.pool, sameUser), {
     jobs: '1', receipts: '0', reserved: '1', accepted: '1', risk_events: '1',
   });
+  assert.deepEqual(await applyTrialSupportOverride(sameQuote, {
+    kind: 'release', reason: 'support_verified_no_output',
+  }), { funding: 'included_trial', entitlementState: 'released' });
+  const supportAudit = await postgres.pool.query<{
+    job_id: string; user_id: string; reason_code: string;
+  }>(`SELECT job_id, user_id, reason_code
+        FROM mcp_trial_support_override_audit
+       WHERE job_id = $1`, [sameQuote]);
+  assert.deepEqual(supportAudit.rows, [{
+    job_id: sameQuote, user_id: sameUser, reason_code: 'support_verified_no_output',
+  }]);
+  await assert.rejects(
+    postgres.pool.query(
+      `UPDATE mcp_trial_support_override_audit SET reason_code = reason_code WHERE job_id = $1`,
+      [sameQuote],
+    ),
+    /immutable/i,
+  );
+  await assert.rejects(
+    postgres.pool.query(`DELETE FROM mcp_trial_support_override_audit WHERE job_id = $1`, [sameQuote]),
+    /immutable/i,
+  );
 
   const twoUser = 'two-trial-user';
   const twoClient = 'two-trial-client';

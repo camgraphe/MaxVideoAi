@@ -18,11 +18,18 @@ export type NormalizedTrialJobOutcome =
   | { kind: 'failed' }
   | { kind: 'timeout' }
   | { kind: 'unknown' }
-  | { kind: 'canceled' }
-  | {
-      kind: 'support_release';
-      reason: 'provider_confirmed_no_output' | 'support_verified_no_output';
-    };
+  | { kind: 'stalled' }
+  | { kind: 'canceled' };
+
+export type TrialSupportOverride = {
+  kind: 'release';
+  reason: 'provider_confirmed_no_output' | 'support_verified_no_output';
+};
+
+type InternalTrialJobOutcome = NormalizedTrialJobOutcome | {
+  kind: 'support_release';
+  reason: TrialSupportOverride['reason'];
+};
 
 export type TrialJobOutcomeResult =
   | { funding: 'wallet' }
@@ -77,6 +84,7 @@ const SIMPLE_OUTCOMES = new Set([
   'failed',
   'timeout',
   'unknown',
+  'stalled',
   'canceled',
 ]);
 const SIMPLE_KEYS = new Set(['kind']);
@@ -120,20 +128,18 @@ function normalizeOutcome(value: unknown): NormalizedTrialJobOutcome {
   if (simple && typeof simple.kind === 'string' && SIMPLE_OUTCOMES.has(simple.kind)) {
     return { kind: simple.kind } as NormalizedTrialJobOutcome;
   }
+  throw new Error('Invalid trial job outcome.');
+}
+
+function normalizeSupportOverride(value: unknown): TrialSupportOverride {
   const support = exactPlainRecord(value, SUPPORT_KEYS);
   if (support
-    && support.kind === 'support_release'
+    && support.kind === 'release'
     && typeof support.reason === 'string'
     && SUPPORT_REASONS.has(support.reason)) {
-    return {
-      kind: 'support_release',
-      reason: support.reason as Extract<
-        NormalizedTrialJobOutcome,
-        { kind: 'support_release' }
-      >['reason'],
-    };
+    return { kind: 'release', reason: support.reason as TrialSupportOverride['reason'] };
   }
-  throw new Error('Invalid trial job outcome.');
+  throw new Error('Invalid trial support override.');
 }
 
 function requireJobId(value: unknown): string {
@@ -266,17 +272,13 @@ async function recordSupportOverride(
   executor: TransactionQueryExecutor,
   jobId: string,
   userId: string,
-  reason: Extract<NormalizedTrialJobOutcome, { kind: 'support_release' }>['reason'],
+  reason: TrialSupportOverride['reason'],
 ): Promise<void> {
   await executor.query(
-    `INSERT INTO mcp_audit_events (
-       event_type, user_id, oauth_client_id, tool_name, outcome,
-       surface, engine_id, error_code
-     ) VALUES (
-       'trial_support_override', $1, NULL, 'trial_support_override:' || $3,
-       'success', 'video', 'seedance-2-0-mini', $2
-     )`,
-    [userId, reason, jobId],
+    `INSERT INTO mcp_trial_support_override_audit (
+       job_id, user_id, reason_code
+     ) VALUES ($1, $2, $3)`,
+    [jobId, userId, reason],
   );
 }
 
@@ -330,13 +332,12 @@ export async function readTrialJobStatus(
   ) as TrialJobStatus;
 }
 
-export async function applyTrialJobOutcome(
+async function applyTrialJobOutcomeWithDependencies(
   rawJobId: string,
-  rawOutcome: NormalizedTrialJobOutcome,
-  dependencies: TrialOutcomeDependencies = defaultDependencies,
+  outcome: InternalTrialJobOutcome,
+  dependencies: TrialOutcomeDependencies,
 ): Promise<TrialJobOutcomeResult> {
   const jobId = requireJobId(rawJobId);
-  const outcome = normalizeOutcome(rawOutcome);
   return dependencies.withTransaction(async (executor) => {
     const job = readJob(exactlyOne(await executor.query<JobRow>(
       `SELECT job_id, user_id, payment_status, status, video_url
@@ -378,7 +379,7 @@ export async function applyTrialJobOutcome(
       }
       return publicResult(entitlementState);
     }
-    if (outcome.kind === 'timeout' || outcome.kind === 'unknown') {
+    if (outcome.kind === 'timeout' || outcome.kind === 'unknown' || outcome.kind === 'stalled') {
       return publicResult(entitlementState);
     }
     if (outcome.kind === 'completed') {
@@ -400,8 +401,8 @@ export async function applyTrialJobOutcome(
       return publicResult('consumed');
     }
 
-    if (job.videoUrl) throw new Error('A trial cannot release after an output exists.');
     if (entitlementState !== 'reserved') return publicResult(entitlementState);
+    if (job.videoUrl) throw new Error('A trial cannot release after an output exists.');
     if (outcome.kind !== 'support_release'
       && !FINAL_FAILURE_STATUSES.has(job.status.trim().toLowerCase())) {
       throw new Error('Trial release requires a durable definitive failure.');
@@ -423,10 +424,45 @@ export async function applyTrialJobOutcome(
     if (released.status !== 'released') {
       throw new Error('Invalid released trial entitlement result.');
     }
+    await markQuoteFailed(executor, jobId, job.userId);
     if (outcome.kind === 'support_release') {
       await recordSupportOverride(executor, jobId, job.userId, outcome.reason);
     }
-    await markQuoteFailed(executor, jobId, job.userId);
     return publicResult('released');
   });
+}
+
+export function createTrialJobOutcomeService(
+  dependencies: TrialOutcomeDependencies,
+): (jobId: string, outcome: NormalizedTrialJobOutcome) => Promise<TrialJobOutcomeResult> {
+  return async (jobId, outcome) => applyTrialJobOutcomeWithDependencies(
+    jobId,
+    normalizeOutcome(outcome),
+    dependencies,
+  );
+}
+
+export async function applyTrialJobOutcome(
+  jobId: string,
+  outcome: NormalizedTrialJobOutcome,
+): Promise<TrialJobOutcomeResult> {
+  return applyTrialJobOutcomeWithDependencies(jobId, normalizeOutcome(outcome), defaultDependencies);
+}
+
+export function createTrialSupportOverrideService(
+  dependencies: TrialOutcomeDependencies,
+): (jobId: string, override: TrialSupportOverride) => Promise<TrialJobOutcomeResult> {
+  return async (jobId, override) => {
+    const normalized = normalizeSupportOverride(override);
+    return applyTrialJobOutcomeWithDependencies(jobId, {
+      kind: 'support_release', reason: normalized.reason,
+    }, dependencies);
+  };
+}
+
+export async function applyTrialSupportOverride(
+  jobId: string,
+  override: TrialSupportOverride,
+): Promise<TrialJobOutcomeResult> {
+  return createTrialSupportOverrideService(defaultDependencies)(jobId, override);
 }

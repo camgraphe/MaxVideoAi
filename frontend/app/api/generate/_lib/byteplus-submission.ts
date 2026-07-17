@@ -190,6 +190,9 @@ export async function submitBytePlusGenerateTask(params: {
     const providerMessage = scrubBytePlusErrorFn(error);
     const providerStatus = error instanceof BytePlusModelArkError ? error.status : null;
     const errorCode = error instanceof BytePlusModelArkError && error.code ? error.code : 'BYTEPLUS_PROVIDER_ERROR';
+    const responseErrorCode = providerStatus && providerStatus >= 400 && providerStatus < 500
+      ? 'PROVIDER_REQUEST_REJECTED'
+      : 'BYTEPLUS_PROVIDER_ERROR';
     const failureMessage = toUserFacingFailureMessage(getBytePlusUserSafeErrorMessageFn(providerMessage));
     console.warn('[byteplus] task submission failed', {
       jobId: params.jobId,
@@ -241,7 +244,7 @@ export async function submitBytePlusGenerateTask(params: {
       status: providerStatus && providerStatus >= 400 && providerStatus < 500 ? 502 : 503,
       body: {
         ok: false,
-        error: errorCode,
+        error: responseErrorCode,
         message: failureMessage,
       },
     };

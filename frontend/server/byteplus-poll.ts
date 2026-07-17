@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/lib/db';
-import { applyTrialJobOutcome } from '@/server/agent-api/trial-outcomes';
 import { upsertLegacyJobOutputs } from '@/server/media-library';
 import { ensureJobThumbnail, isPlaceholderThumbnail } from '@/server/thumbnails';
 import { ensureFastStartVideo } from '@/server/video-faststart';
@@ -34,6 +33,7 @@ import {
   shouldRetryBytePlusStorageCopy,
   type BytePlusStorageCopyState,
 } from './byteplus-storage-copy';
+import { applyBytePlusTrialOutcomeSafely } from './byteplus-trial-outcomes';
 
 export {
   getBytePlusAccounting,
@@ -51,7 +51,6 @@ export {
 const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
-
 async function recordPollEvent(
   job: Pick<BytePlusPendingJob, 'job_id' | 'provider_job_id' | 'engine_id'>,
   status: string,
@@ -163,12 +162,7 @@ async function markJobFailed(
       WHERE job_id = $1`,
     [job.job_id, refunded]
   );
-  if (job.payment_status === 'included_mcp_trial') {
-    await applyTrialJobOutcome(
-      job.job_id,
-      trialOutcome === 'timeout' ? { kind: 'timeout' } : { kind: 'failed' },
-    );
-  }
+  await applyBytePlusTrialOutcomeSafely(job, trialOutcome === 'timeout' ? { kind: 'timeout' } : { kind: 'failed' });
   await recordPollEvent(job, 'poll:failed', { providerStatus: providerStatus ?? null, refunded });
 }
 
@@ -378,9 +372,7 @@ export async function runBytePlusPoll() {
         await recordPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
-      if (job.payment_status === 'included_mcp_trial') {
-        await applyTrialJobOutcome(job.job_id, { kind: 'completed' });
-      }
+      await applyBytePlusTrialOutcomeSafely(job, { kind: 'completed' });
       await upsertLegacyJobOutputs({
         job_id: job.job_id,
         user_id: job.user_id,

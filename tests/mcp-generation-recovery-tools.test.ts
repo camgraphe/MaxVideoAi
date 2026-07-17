@@ -145,6 +145,8 @@ test('status and recent recovery expose only the included trial lifecycle state'
   });
   assert.equal(single.funding, 'included_trial');
   assert.equal(single.entitlementState, 'reserved');
+  assert.equal(single.paymentStatus, 'included_trial');
+  assert.doesNotMatch(JSON.stringify(single), /included_mcp_trial/i);
   assert.doesNotMatch(JSON.stringify(single), /reason|providerCost|fingerprint|ipPrefix/i);
 
   const recent = await listAgentRecentGenerations({}, principal, {
@@ -153,6 +155,7 @@ test('status and recent recovery expose only the included trial lifecycle state'
   });
   assert.equal(recent.items[0]?.funding, 'included_trial');
   assert.equal(recent.items[0]?.entitlementState, 'reserved');
+  assert.equal(recent.items[0]?.paymentStatus, 'included_trial');
 });
 
 test('recovery facade rejects malformed principals and exotic exact-input shapes before reading', async () => {

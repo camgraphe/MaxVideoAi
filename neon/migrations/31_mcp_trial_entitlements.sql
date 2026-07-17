@@ -348,6 +348,81 @@ CREATE TRIGGER mcp_trial_entitlements_enforce_update
   FOR EACH ROW
   EXECUTE FUNCTION enforce_mcp_trial_entitlement_update();
 
+CREATE TABLE IF NOT EXISTS mcp_trial_support_override_audit (
+  job_id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  reason_code TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+
+  CONSTRAINT mcp_trial_support_override_user_format CHECK (
+    (
+      length(user_id) BETWEEN 1 AND 128
+      AND user_id = btrim(user_id)
+      AND user_id ~ '^[A-Za-z0-9][A-Za-z0-9._:@|+-]*$'
+    ) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_support_override_job_format CHECK (
+    (
+      length(job_id) BETWEEN 1 AND 256
+      AND job_id = btrim(job_id)
+      AND job_id ~ '^[A-Za-z0-9][A-Za-z0-9._:@|+-]*$'
+    ) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_support_override_reason_allowlist CHECK (
+    (reason_code IN ('provider_confirmed_no_output', 'support_verified_no_output')) IS TRUE
+  )
+);
+
+CREATE OR REPLACE FUNCTION enforce_mcp_trial_support_override_audit_insert()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+      FROM public.mcp_trial_entitlements AS entitlement
+      JOIN public.mcp_generation_quotes AS quote
+        ON quote.quote_id = entitlement.reserved_quote_id
+       AND quote.job_id = entitlement.job_id
+       AND quote.user_id = entitlement.user_id
+     WHERE entitlement.job_id = NEW.job_id
+       AND entitlement.user_id = NEW.user_id
+       AND entitlement.status = 'released'
+       AND entitlement.last_reason_code = NEW.reason_code
+       AND quote.funding_mode = 'trial'
+       AND quote.state = 'failed'
+  ) THEN
+    RAISE EXCEPTION 'Invalid MCP trial support override audit attribution';
+  END IF;
+  NEW.created_at := clock_timestamp();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_trial_support_override_audit_enforce_insert
+  ON mcp_trial_support_override_audit;
+CREATE TRIGGER mcp_trial_support_override_audit_enforce_insert
+  BEFORE INSERT ON mcp_trial_support_override_audit
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_mcp_trial_support_override_audit_insert();
+
+CREATE OR REPLACE FUNCTION enforce_mcp_trial_support_override_audit_immutability()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'MCP trial support override audit rows are immutable';
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_trial_support_override_audit_immutable
+  ON mcp_trial_support_override_audit;
+CREATE TRIGGER mcp_trial_support_override_audit_immutable
+  BEFORE UPDATE OR DELETE ON mcp_trial_support_override_audit
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_mcp_trial_support_override_audit_immutability();
+
 CREATE TABLE IF NOT EXISTS mcp_trial_risk_events (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   user_id TEXT NOT NULL,

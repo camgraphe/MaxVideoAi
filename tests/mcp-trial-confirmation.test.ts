@@ -413,6 +413,25 @@ test('trial provider continuation is explicit, validated, receipt-free, and neve
   assert.equal(refundCalls, 0);
 });
 
+test('trial continuation recognizes the safe BytePlus 4xx rejection marker behind its outward 502', async () => {
+  const execution: IncludedTrialGenerationExecution = {
+    surface: 'video', quoteId: QUOTE_ID, userId: USER_ID, request,
+    engine: candidate().engine, canonicalPricing: canonicalPricing(),
+    pricingSnapshot: includedSnapshot(),
+    funding: { kind: 'mcp_trial', entitlementUserId: USER_ID, quoteId: QUOTE_ID },
+    trustedInitialState: {
+      kind: 'created', jobId: QUOTE_ID,
+      funding: { kind: 'mcp_trial', entitlementUserId: USER_ID, quoteId: QUOTE_ID },
+    },
+  };
+  const run = (error: string) => submitReservedIncludedTrialGeneration(execution, {
+    executeVideo: async () => ({ status: 502, body: { ok: false, error } }),
+    executeImage: async () => assert.fail('trial is video-only'),
+  });
+  assert.deepEqual(await run('PROVIDER_REQUEST_REJECTED'), { kind: 'rejected' });
+  assert.deepEqual(await run('BYTEPLUS_PROVIDER_ERROR'), { kind: 'ambiguous', retryable: true });
+});
+
 test('trusted shared trial billing keeps private costs while forcing zero charge and no receipt', () => {
   const result = buildTrustedIncludedTrialVideoBilling({
     customerChargeCents: 0,

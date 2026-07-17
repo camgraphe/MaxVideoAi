@@ -5,6 +5,7 @@ import test from 'node:test';
 
 import { submitBytePlusGenerateTask } from '../frontend/app/api/generate/_lib/byteplus-submission';
 import type { PendingReceipt } from '../frontend/app/api/generate/_lib/initial-video-job';
+import { BytePlusModelArkError } from '../frontend/src/server/video-providers/byteplus-modelark';
 
 const root = process.cwd();
 const routePath = join(root, 'frontend/app/api/generate/route.ts');
@@ -244,6 +245,36 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
       message: 'The render queue is temporarily busy. Please retry in a few moments.',
     });
     assert.equal(result.status, 503);
+  } finally {
+    console.warn = originalWarn;
+  }
+});
+
+test('BytePlus submission preserves a safe definitive marker for provider 4xx behind outward 502', async () => {
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      pendingReceipt: null,
+      paymentStatus: 'included_mcp_trial',
+      paymentMode: 'mcp_trial',
+      deps: {
+        getBytePlusArkConfigFn: () => ({ seedanceModelId: 'model-public', seedanceFastModelId: 'model-fast' }),
+        buildBytePlusSeedancePayloadFn: (payload) => payload,
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            throw new BytePlusModelArkError('request rejected', { status: 422, code: 'invalid_request' });
+          },
+        }),
+        getBytePlusSeedanceAllowedResolutionsFn: () => ['720p'] as never,
+        queryFn: async () => undefined,
+      },
+    });
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 502);
+    assert.equal(result.body.error, 'PROVIDER_REQUEST_REJECTED');
+    assert.doesNotMatch(JSON.stringify(result.body), /invalid_request|request rejected/i);
   } finally {
     console.warn = originalWarn;
   }

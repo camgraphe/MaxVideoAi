@@ -187,10 +187,12 @@ async function enrichIncludedTrialStatus(
   reader: TrialStatusReader,
 ): Promise<AgentGenerationStatus> {
   if (status.paymentStatus !== 'included_mcp_trial') return status;
-  if (status.funding === 'included_trial' && status.entitlementState) return status;
+  if (status.funding === 'included_trial' && status.entitlementState) {
+    return { ...status, paymentStatus: 'included_trial' };
+  }
   const trial = await reader({ userId, jobId: status.jobId });
   if (!trial) throw new Error('Included trial lifecycle state is unavailable.');
-  return { ...status, ...trial };
+  return { ...status, paymentStatus: 'included_trial', ...trial };
 }
 
 export function buildAgentGenerationRecovery(status: AgentGenerationStatus): AgentGenerationRecovery {

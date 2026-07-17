@@ -119,7 +119,7 @@ export async function getGenerationStatus(params: {
   if (!status || status.paymentStatus !== 'included_mcp_trial') return status;
   const trial = await readTrialJobStatus({ userId: params.userId, jobId: params.jobId });
   if (!trial) throw new Error('Included trial lifecycle state is unavailable.');
-  return { ...status, ...trial };
+  return { ...status, paymentStatus: 'included_trial', ...trial };
 }
 
 function buildFallbackSettingsSnapshot(record: GenerationStatusRecord): unknown {
