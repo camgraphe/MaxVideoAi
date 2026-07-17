@@ -86,7 +86,7 @@ export async function getActiveAccountRestrictionStrict(
        FROM user_account_restrictions
       WHERE user_id = $1
         AND active IS TRUE
-      LIMIT 1`,
+      LIMIT 2`,
     [userId],
   );
   if (!Array.isArray(rows) || rows.length > 1) {

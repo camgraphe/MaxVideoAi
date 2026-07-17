@@ -59,13 +59,12 @@ test('strict restriction lookup propagates every query failure including missing
   }
 });
 
-test('strict restriction lookup rejects malformed, mismatched, or duplicate rows', async () => {
+test('strict restriction lookup rejects malformed or mismatched rows', async () => {
   const malformedRows = [
     [validRow({ user_id: 'other-user' })],
     [validRow({ reason: 42 })],
     [validRow({ message: 42 })],
     [validRow({ restricted_at: 'not-a-date' })],
-    [validRow(), validRow()],
   ];
   for (const rows of malformedRows) {
     await assert.rejects(
@@ -76,6 +75,28 @@ test('strict restriction lookup rejects malformed, mismatched, or duplicate rows
       /invalid restricted account result/i,
     );
   }
+});
+
+test('strict restriction lookup requests enough rows to detect duplicate active restrictions', async () => {
+  const storedRows = [validRow(), validRow()];
+  let observedSql = '';
+  const executor: QueryExecutor = {
+    async query<T>(sql) {
+      observedSql = sql;
+      const limit = /LIMIT\s+(\d+)/iu.exec(sql)?.[1];
+      assert.ok(limit, 'strict query must have a bounded row limit');
+      return storedRows.slice(0, Number(limit)) as T[];
+    },
+  };
+
+  await assert.rejects(
+    getActiveAccountRestrictionStrict('user-1', {
+      databaseUrl: 'postgresql://configured',
+      executor,
+    }),
+    /invalid restricted account result/i,
+  );
+  assert.match(observedSql, /LIMIT\s+2/iu);
 });
 
 test('strict restriction lookup distinguishes no row from a validated active restriction', async () => {
