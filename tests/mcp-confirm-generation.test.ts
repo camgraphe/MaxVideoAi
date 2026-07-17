@@ -175,6 +175,7 @@ function quoteFor(
     priceCents,
     currency: 'USD',
     fundingMode: 'wallet',
+    trialFunding: null,
     state: 'prepared',
     jobId: null,
     expiresAt: EXPIRES_AT,

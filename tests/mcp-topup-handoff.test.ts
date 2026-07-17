@@ -55,6 +55,7 @@ function quote(overrides: Partial<McpGenerationQuote> = {}): McpGenerationQuote 
     priceCents: 1750,
     currency: 'USD',
     fundingMode: 'wallet',
+    trialFunding: null,
     state: 'prepared',
     jobId: null,
     expiresAt: new Date('2026-07-16T12:10:00.000Z'),

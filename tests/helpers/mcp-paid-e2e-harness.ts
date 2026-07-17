@@ -93,11 +93,15 @@ export function createServices(options: {
     }),
     listModels: (filter) => listAgentModels(filter, catalogDeps),
     recommendModels: (input) => recommendAgentModels(input, catalogDeps),
-    prepareGeneration: createPrepareGenerationService('https://maxvideoai.com/account/connections', {
-      paidGenerationEnabled: () => true,
-      listPublicEngines: async () => catalog,
-      ...(options.prepareNow ? { now: options.prepareNow } : {}),
-    }),
+    prepareGeneration: createPrepareGenerationService(
+      'https://maxvideoai.com/account/connections',
+      { clientIp: null, userAgent: null },
+      {
+        paidGenerationEnabled: () => true,
+        listPublicEngines: async () => catalog,
+        ...(options.prepareNow ? { now: options.prepareNow } : {}),
+      },
+    ),
     confirmGeneration: createConfirmGenerationService('https://maxvideoai.com/account/connections', {
       paidGenerationEnabled: () => true,
       listPublicEngines: async () => catalog,

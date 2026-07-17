@@ -5,7 +5,11 @@ import {
   hashCanonicalGenerationRequest,
   normalizeGenerationRequest,
 } from '@/server/agent-api/generation-normalization';
-import type { CanonicalGenerationRequest } from '@/server/agent-api/generation-types';
+import type {
+  CanonicalGenerationRequest,
+  GenerationFundingMode,
+  IncludedTrialFundingSnapshot,
+} from '@/server/agent-api/generation-types';
 
 export const MCP_QUOTE_LIFETIME_SECONDS = 10 * 60;
 export const MCP_QUOTE_EXPIRATION_BATCH_SIZE = 100;
@@ -27,7 +31,8 @@ export type McpGenerationQuote = {
   pricingSnapshot: Record<string, unknown>;
   priceCents: number;
   currency: string;
-  fundingMode: 'wallet';
+  fundingMode: GenerationFundingMode;
+  trialFunding: IncludedTrialFundingSnapshot | null;
   state: McpGenerationQuoteState;
   jobId: string | null;
   expiresAt: Date;
@@ -45,6 +50,7 @@ export type InsertPreparedQuoteInput = {
   pricingSnapshot: Record<string, unknown>;
   priceCents: number;
   currency: string;
+  fundingMode: GenerationFundingMode;
 };
 
 export type OwnedQuoteInput = {
@@ -104,7 +110,7 @@ const defaultDependencies: QuoteRepositoryDependencies = {
 };
 const INSERT_KEYS = new Set([
   'userId', 'oauthClientId', 'request', 'requestHash', 'catalogRevision',
-  'pricingSnapshot', 'priceCents', 'currency',
+  'pricingSnapshot', 'priceCents', 'currency', 'fundingMode',
 ]);
 const OWNER_KEYS = new Set(['quoteId', 'userId', 'oauthClientId']);
 const JOB_KEYS = new Set(['quoteId', 'userId', 'oauthClientId', 'jobId']);
@@ -115,6 +121,10 @@ const STATES = new Set<McpGenerationQuoteState>([
   'prepared', 'claimed', 'accepted', 'failed', 'expired',
 ]);
 const MAX_INTEGER_CENTS = 2_147_483_647;
+const FUNDING_MODES = new Set<GenerationFundingMode>(['wallet', 'trial']);
+const TRIAL_FUNDING_KEYS = new Set([
+  'kind', 'customerChargeCents', 'normalPriceCents', 'providerCostCents',
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -154,6 +164,48 @@ function jsonRecord(value: unknown): Record<string, unknown> | null {
   }
 }
 
+function parseTrialFunding(
+  pricingSnapshot: Record<string, unknown>,
+  priceCents: number,
+  currency: string,
+  fundingMode: GenerationFundingMode,
+): IncludedTrialFundingSnapshot | null {
+  const hasFunding = Object.prototype.hasOwnProperty.call(pricingSnapshot, 'funding');
+  if (fundingMode === 'wallet') {
+    if (hasFunding) throw new Error('Invalid quote funding snapshot.');
+    return null;
+  }
+  const funding = isRecord(pricingSnapshot.funding) ? pricingSnapshot.funding : null;
+  const canonicalPricing = isRecord(pricingSnapshot.canonicalPricing)
+    ? pricingSnapshot.canonicalPricing
+    : null;
+  const base = canonicalPricing && isRecord(canonicalPricing.base)
+    ? canonicalPricing.base
+    : null;
+  if (priceCents !== 0
+    || !funding
+    || !hasExactKeys(funding, TRIAL_FUNDING_KEYS)
+    || funding.kind !== 'included_trial'
+    || funding.customerChargeCents !== 0
+    || !Number.isSafeInteger(funding.normalPriceCents)
+    || (funding.normalPriceCents as number) <= 0
+    || !Number.isSafeInteger(funding.providerCostCents)
+    || (funding.providerCostCents as number) <= 0
+    || !canonicalPricing
+    || canonicalPricing.totalCents !== funding.normalPriceCents
+    || canonicalPricing.currency !== currency
+    || !base
+    || base.amountCents !== funding.providerCostCents) {
+    throw new Error('Invalid quote funding snapshot.');
+  }
+  return {
+    kind: 'included_trial',
+    customerChargeCents: 0,
+    normalPriceCents: funding.normalPriceCents as number,
+    providerCostCents: funding.providerCostCents as number,
+  };
+}
+
 function requireNow(dependencies: QuoteRepositoryDependencies): Date {
   const value = (dependencies.now ?? defaultDependencies.now)?.();
   if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
@@ -174,7 +226,9 @@ function assertInsertInput(value: unknown): asserts value is InsertPreparedQuote
     || (value.priceCents as number) < 0
     || (value.priceCents as number) > MAX_INTEGER_CENTS
     || typeof value.currency !== 'string'
-    || !CURRENCY_PATTERN.test(value.currency)) {
+    || !CURRENCY_PATTERN.test(value.currency)
+    || typeof value.fundingMode !== 'string'
+    || !FUNDING_MODES.has(value.fundingMode as GenerationFundingMode)) {
     throw new Error('Invalid prepared quote input.');
   }
   let canonical: CanonicalGenerationRequest;
@@ -184,6 +238,16 @@ function assertInsertInput(value: unknown): asserts value is InsertPreparedQuote
     throw new Error('Invalid prepared quote input.');
   }
   if (hashCanonicalGenerationRequest(canonical) !== value.requestHash) {
+    throw new Error('Invalid prepared quote input.');
+  }
+  try {
+    parseTrialFunding(
+      value.pricingSnapshot,
+      value.priceCents as number,
+      value.currency,
+      value.fundingMode as GenerationFundingMode,
+    );
+  } catch {
     throw new Error('Invalid prepared quote input.');
   }
 }
@@ -219,6 +283,10 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
   const createdAt = finiteDate(row.created_at);
   const updatedAt = finiteDate(row.updated_at);
   let request: CanonicalGenerationRequest | null = null;
+  const fundingMode = typeof row.funding_mode === 'string'
+    && FUNDING_MODES.has(row.funding_mode as GenerationFundingMode)
+    ? row.funding_mode as GenerationFundingMode
+    : null;
   try {
     if (requestRecord) request = normalizeGenerationRequest(requestRecord);
   } catch {
@@ -239,7 +307,7 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
     || (row.price_cents as number) > MAX_INTEGER_CENTS
     || typeof row.currency !== 'string'
     || !CURRENCY_PATTERN.test(row.currency)
-    || row.funding_mode !== 'wallet'
+    || !fundingMode
     || typeof row.state !== 'string'
     || !STATES.has(row.state as McpGenerationQuoteState)
     || !isNullableBoundedText(row.job_id, 256)
@@ -254,6 +322,17 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
     throw new Error('Invalid quote row.');
   }
   const state = row.state as McpGenerationQuoteState;
+  let trialFunding: IncludedTrialFundingSnapshot | null;
+  try {
+    trialFunding = parseTrialFunding(
+      pricingSnapshot,
+      row.price_cents as number,
+      row.currency,
+      fundingMode,
+    );
+  } catch {
+    throw new Error('Invalid quote row.');
+  }
   const claimedShape = row.job_id !== null && claimedAt !== null;
   if (((state === 'prepared' || state === 'expired') && (row.job_id !== null || claimedAt !== null))
     || ((state === 'claimed' || state === 'accepted') && !claimedShape)
@@ -270,7 +349,8 @@ function parseQuoteRow(row: QuoteRow): McpGenerationQuote {
     pricingSnapshot,
     priceCents: row.price_cents as number,
     currency: row.currency,
-    fundingMode: 'wallet',
+    fundingMode,
+    trialFunding,
     state,
     jobId: row.job_id,
     expiresAt,
@@ -313,7 +393,7 @@ export async function insertPreparedQuote(
     [
       quoteId, input.userId, input.oauthClientId, JSON.stringify(canonicalRequest),
       input.requestHash, input.catalogRevision, JSON.stringify(input.pricingSnapshot),
-      input.priceCents, input.currency, 'wallet', 'prepared', expiresAt, createdAt,
+      input.priceCents, input.currency, input.fundingMode, 'prepared', expiresAt, createdAt,
     ],
   );
   const quote = parseOptionalQuote(rows);

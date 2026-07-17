@@ -21,7 +21,11 @@ import {
   priceCanonicalGeneration,
   type GenerationPricingResult,
 } from './generation-pricing';
-import type { CanonicalGenerationRequest } from './generation-types';
+import type {
+  CanonicalGenerationRequest,
+  GenerationFundingMode,
+  IncludedTrialFundingSnapshot,
+} from './generation-types';
 import {
   listPublicAgentGenerationEngines,
   type AgentPublicGenerationEngine,
@@ -37,6 +41,21 @@ import {
   MCP_SPENDING_APPROVAL_PATH,
   type McpSpendingDecision,
 } from './spending-limits';
+import { getTrialEligibility } from './trial-eligibility';
+import {
+  normalizeTrialCandidate,
+  TrialCandidateError,
+} from './trial-preset';
+import {
+  checkTrialRisk,
+  type TrialRiskDecision,
+  type TrialRiskInput,
+} from './trial-risk';
+import {
+  recordTrialQuotePreparedAudit,
+  type TrialQuotePreparedAuditInput,
+} from './trial-quote-audit-repository';
+import type { TrialStatus } from './types';
 
 export type PrepareGenerationInput = Omit<
   CanonicalGenerationRequest,
@@ -55,7 +74,7 @@ export type PreparedGeneration = {
   summary: CanonicalGenerationRequest;
   price: { amountCents: number; currency: string };
   balance: { beforeCents: number; afterCents: number };
-  fundingMode: 'wallet';
+  fundingMode: GenerationFundingMode;
   confirmationRequired: true;
   topupRequired: boolean;
 };
@@ -89,11 +108,23 @@ export type PrepareGenerationDependencies = {
     input: InsertPreparedQuoteInput,
     dependencies: QuoteInsertDependencies,
   ): Promise<McpGenerationQuote>;
+  getTrialEligibility(principal: AgentPrincipal): Promise<TrialStatus>;
+  checkTrialRisk(input: TrialRiskInput): Promise<TrialRiskDecision>;
+  recordTrialQuotePreparedAudit(
+    input: TrialQuotePreparedAuditInput,
+    dependencies: { executor: QueryExecutor },
+  ): Promise<boolean>;
+  trialRiskContext: TrialRiskRequestContext;
   accountUrl: string;
   now(): Date;
 };
 
-const defaultDependencies: PrepareGenerationDependencies = {
+export type TrialRiskRequestContext = Readonly<{
+  clientIp: string | null;
+  userAgent: string | null;
+}>;
+
+const defaultDependencies: Omit<PrepareGenerationDependencies, 'trialRiskContext'> = {
   paidGenerationEnabled: () => mcpPublication.paidGeneration,
   getAccountRestriction: getActiveAccountRestriction,
   listPublicEngines: () => listPublicAgentGenerationEngines(),
@@ -103,6 +134,9 @@ const defaultDependencies: PrepareGenerationDependencies = {
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   checkSpendingLimits: checkMcpSpendingLimits,
   insertPreparedQuote,
+  getTrialEligibility: (principal) => getTrialEligibility(principal),
+  checkTrialRisk: (input) => checkTrialRisk(input),
+  recordTrialQuotePreparedAudit,
   accountUrl: 'https://maxvideoai.com/account/connections',
   now: () => new Date(),
 };
@@ -112,6 +146,31 @@ function isSafeIdentifier(value: unknown, maxLength: number): value is string {
     && value.length > 0
     && value.length <= maxLength
     && value === value.trim();
+}
+
+function requireTrialRiskRequestContext(value: unknown): TrialRiskRequestContext {
+  if (!value
+    || typeof value !== 'object'
+    || Array.isArray(value)
+    || Object.getPrototypeOf(value) !== Object.prototype
+    || Object.keys(value).length !== 2
+    || !Object.hasOwn(value, 'clientIp')
+    || !Object.hasOwn(value, 'userAgent')) {
+    throw new Error('Invalid trial risk request context.');
+  }
+  const context = value as Record<string, unknown>;
+  if (!(context.clientIp === null
+      || (typeof context.clientIp === 'string' && context.clientIp.length <= 64))
+    || !(context.userAgent === null
+      || (typeof context.userAgent === 'string'
+        && context.userAgent.length <= 2_048
+        && !/[\u0000\r\n]/u.test(context.userAgent)))) {
+    throw new Error('Invalid trial risk request context.');
+  }
+  return Object.freeze({
+    clientIp: context.clientIp,
+    userAgent: context.userAgent,
+  }) as TrialRiskRequestContext;
 }
 
 function requirePrincipal(principal: AgentPrincipal): void {
@@ -222,6 +281,51 @@ function requireWallet(wallet: WalletSummary, currency: string): number {
   return wallet.balanceCents;
 }
 
+function trialCandidateFromOriginal(input: PrepareGenerationInput): CanonicalGenerationRequest | null {
+  try {
+    return normalizeTrialCandidate(input);
+  } catch (error) {
+    if (error instanceof TrialCandidateError) return null;
+    throw error;
+  }
+}
+
+function requireTrialProviderCost(pricingSnapshot: Record<string, unknown>): number {
+  const canonicalPricing = pricingSnapshot.canonicalPricing;
+  const base = canonicalPricing
+    && typeof canonicalPricing === 'object'
+    && !Array.isArray(canonicalPricing)
+    ? (canonicalPricing as Record<string, unknown>).base
+    : null;
+  const amountCents = base && typeof base === 'object' && !Array.isArray(base)
+    ? (base as Record<string, unknown>).amountCents
+    : null;
+  if (!Number.isSafeInteger(amountCents) || (amountCents as number) <= 0) {
+    throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
+  }
+  return amountCents as number;
+}
+
+function requirePaidGeneration(dependencies: PrepareGenerationDependencies): void {
+  if (!dependencies.paidGenerationEnabled()) {
+    throw new AgentApiError('ENGINE_UNAVAILABLE', 'Paid generation is not available.');
+  }
+}
+
+function includedTrialPricingSnapshot(
+  pricingSnapshot: Record<string, unknown>,
+  normalPriceCents: number,
+  providerCostCents: number,
+): Record<string, unknown> {
+  const funding: IncludedTrialFundingSnapshot = {
+    kind: 'included_trial',
+    customerChargeCents: 0,
+    normalPriceCents,
+    providerCostCents,
+  };
+  return { ...pricingSnapshot, funding };
+}
+
 function spendingLimitError(dependencies: PrepareGenerationDependencies): AgentApiError {
   let approvalUrl: string;
   try {
@@ -240,12 +344,11 @@ function spendingLimitError(dependencies: PrepareGenerationDependencies): AgentA
 export async function prepareGeneration(
   input: PrepareGenerationInput,
   principal: AgentPrincipal,
-  dependencies: PrepareGenerationDependencies = defaultDependencies,
+  dependencies: PrepareGenerationDependencies,
 ): Promise<PreparedGeneration> {
   requirePrincipal(principal);
-  if (!dependencies.paidGenerationEnabled()) {
-    throw new AgentApiError('ENGINE_UNAVAILABLE', 'Paid generation is not available.');
-  }
+  const originalTrialCandidate = trialCandidateFromOriginal(input);
+  if (!originalTrialCandidate) requirePaidGeneration(dependencies);
   if (await dependencies.getAccountRestriction(principal.userId)) {
     throw new AgentApiError(
       'ACCOUNT_RESTRICTED',
@@ -253,12 +356,24 @@ export async function prepareGeneration(
     );
   }
 
-  let request: CanonicalGenerationRequest;
-  try {
-    request = normalizeGenerationRequest(input);
-  } catch {
-    throw new AgentApiError('PARAMETER_INVALID', 'The generation request is invalid.');
+  let request = originalTrialCandidate;
+  if (!request) {
+    try {
+      request = normalizeGenerationRequest(input);
+    } catch {
+      throw new AgentApiError('PARAMETER_INVALID', 'The generation request is invalid.');
+    }
   }
+
+  let prospectiveTrial = false;
+  if (originalTrialCandidate && principal.clientId !== null) {
+    try {
+      prospectiveTrial = (await dependencies.getTrialEligibility(principal)).status === 'available';
+    } catch {
+      prospectiveTrial = false;
+    }
+  }
+  if (originalTrialCandidate && !prospectiveTrial) requirePaidGeneration(dependencies);
 
   const publicEngines = await dependencies.listPublicEngines();
   const candidate = publicEngines.find((entry) => entry.engine.id === request.engineId);
@@ -304,44 +419,111 @@ export async function prepareGeneration(
     );
   }
   const pricingSnapshot = buildGenerationPricingSnapshot(pricing, request, catalogRevision, membership);
-  const wallet = await dependencies.getWalletSummary(principal.userId);
-  const balanceBefore = requireWallet(wallet, pricing.currency);
   const requestHash = hashCanonicalGenerationRequest(request);
   const clock = dependencies.now;
 
+  let fundingMode: GenerationFundingMode = 'wallet';
+  let persistedPricingSnapshot = pricingSnapshot;
+  if (prospectiveTrial) {
+    if (pricing.priceCents <= 0) {
+      throw new AgentApiError('INTERNAL_ERROR', 'The current generation price is unavailable.');
+    }
+    const providerCostCents = requireTrialProviderCost(pricingSnapshot);
+    let risk: TrialRiskDecision;
+    try {
+      risk = await dependencies.checkTrialRisk({
+        userId: principal.userId,
+        oauthClientId: principal.clientId!,
+        clientIp: dependencies.trialRiskContext.clientIp,
+        userAgent: dependencies.trialRiskContext.userAgent,
+        providerCostCents,
+      });
+    } catch {
+      risk = {
+        allowed: false,
+        code: 'TRIAL_NOT_ELIGIBLE',
+        nextAction: { type: 'use_paid_generation' },
+      };
+    }
+    if (!risk.allowed && risk.code === 'RATE_LIMITED') {
+      throw new AgentApiError(
+        'RATE_LIMITED',
+        'Trial quote preparation is temporarily limited. Try again later.',
+        true,
+        { type: 'retry_later' },
+      );
+    }
+    if (risk.allowed) {
+      fundingMode = 'trial';
+      persistedPricingSnapshot = includedTrialPricingSnapshot(
+        pricingSnapshot,
+        pricing.priceCents,
+        providerCostCents,
+      );
+    } else {
+      requirePaidGeneration(dependencies);
+    }
+  }
+
+  const wallet = await dependencies.getWalletSummary(principal.userId);
+  const balanceBefore = requireWallet(wallet, pricing.currency);
+
   const quote = await dependencies.withTransaction(async (executor) => {
-    const spending = await dependencies.checkSpendingLimits(
-      { userId: principal.userId, priceCents: pricing.priceCents, currency: pricing.currency },
-      { executor, now: clock },
-    );
-    if (!spending.allowed) throw spendingLimitError(dependencies);
-    return dependencies.insertPreparedQuote(
+    if (fundingMode === 'wallet') {
+      const spending = await dependencies.checkSpendingLimits(
+        { userId: principal.userId, priceCents: pricing.priceCents, currency: pricing.currency },
+        { executor, now: clock },
+      );
+      if (!spending.allowed) throw spendingLimitError(dependencies);
+    }
+    const inserted = await dependencies.insertPreparedQuote(
       {
         userId: principal.userId,
         oauthClientId: principal.clientId,
         request,
         requestHash,
         catalogRevision,
-        pricingSnapshot,
-        priceCents: pricing.priceCents,
+        pricingSnapshot: persistedPricingSnapshot,
+        priceCents: fundingMode === 'trial' ? 0 : pricing.priceCents,
         currency: pricing.currency,
+        fundingMode,
       },
       { executor, now: clock },
     );
+    if (fundingMode === 'trial') {
+      const aspectRatio = request.settings.aspectRatio;
+      const audio = request.settings.audio;
+      if (typeof aspectRatio !== 'string'
+        || !['16:9', '9:16', '1:1'].includes(aspectRatio)
+        || typeof audio !== 'boolean'
+        || principal.clientId === null
+        || !await dependencies.recordTrialQuotePreparedAudit({
+          quoteId: inserted.quoteId,
+          engineId: 'seedance-2-0-mini',
+          aspectRatio: aspectRatio as TrialQuotePreparedAuditInput['aspectRatio'],
+          audio,
+          oauthClientId: principal.clientId,
+          outcome: 'success',
+        }, { executor })) {
+        throw new AgentApiError('INTERNAL_ERROR', 'The trial quote could not be prepared.');
+      }
+    }
+    return inserted;
   });
 
-  const topupRequired = balanceBefore < pricing.priceCents;
+  const customerChargeCents = fundingMode === 'trial' ? 0 : pricing.priceCents;
+  const topupRequired = fundingMode === 'wallet' && balanceBefore < pricing.priceCents;
   return {
     quoteId: quote.quoteId,
     expiresAt: quote.expiresAt.toISOString(),
     requestHash,
     summary: request,
-    price: { amountCents: pricing.priceCents, currency: pricing.currency },
+    price: { amountCents: customerChargeCents, currency: pricing.currency },
     balance: {
       beforeCents: balanceBefore,
-      afterCents: Math.max(0, balanceBefore - pricing.priceCents),
+      afterCents: Math.max(0, balanceBefore - customerChargeCents),
     },
-    fundingMode: 'wallet',
+    fundingMode,
     confirmationRequired: true,
     topupRequired,
   };
@@ -349,11 +531,14 @@ export async function prepareGeneration(
 
 export function createPrepareGenerationService(
   accountUrl: string,
-  dependencies: Partial<PrepareGenerationDependencies> = {},
+  trialRiskContext: TrialRiskRequestContext,
+  dependencies: Partial<Omit<PrepareGenerationDependencies, 'trialRiskContext'>> = {},
 ): (input: PrepareGenerationInput, principal: AgentPrincipal) => Promise<PreparedGeneration> {
+  const requestContext = requireTrialRiskRequestContext(trialRiskContext);
   const resolved: PrepareGenerationDependencies = {
     ...defaultDependencies,
     ...dependencies,
+    trialRiskContext: requestContext,
     accountUrl,
   };
   return (input, principal) => prepareGeneration(input, principal, resolved);

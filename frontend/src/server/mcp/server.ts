@@ -15,6 +15,7 @@ import {
   createPrepareGenerationService,
   type PreparedGeneration,
   type PrepareGenerationInput,
+  type TrialRiskRequestContext,
 } from '@/server/agent-api/prepare-generation';
 import {
   getAgentGenerationStatus,
@@ -83,6 +84,7 @@ export type MaxVideoAiMcpServerOptions = {
 
 export function createDefaultMaxVideoAiMcpServices(
   config: McpConfig,
+  trialRiskContext: TrialRiskRequestContext,
   accountStatusDeps?: AgentAccountStatusWalletDeps,
   topupHandoffDeps?: Partial<Omit<McpTopupHandoffDependencies, 'billingBaseUrl'>>,
 ): MaxVideoAiMcpServices {
@@ -90,7 +92,7 @@ export function createDefaultMaxVideoAiMcpServices(
     getAccountStatus: createAgentAccountStatusService(config.accountUrl, accountStatusDeps),
     listModels: (filter) => listAgentModels(filter),
     recommendModels: (input) => recommendAgentModels(input),
-    prepareGeneration: createPrepareGenerationService(config.accountUrl),
+    prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext),
     confirmGeneration: createConfirmGenerationService(config.accountUrl),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),

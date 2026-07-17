@@ -6,6 +6,132 @@ BEGIN
 END;
 $$;
 
+ALTER TABLE mcp_generation_quotes
+  DROP CONSTRAINT IF EXISTS mcp_generation_quotes_funding_wallet;
+ALTER TABLE mcp_generation_quotes
+  DROP CONSTRAINT IF EXISTS mcp_generation_quotes_funding_allowlist;
+ALTER TABLE mcp_generation_quotes
+  DROP CONSTRAINT IF EXISTS mcp_generation_quotes_funding_shape;
+
+ALTER TABLE mcp_generation_quotes
+  ADD CONSTRAINT mcp_generation_quotes_funding_allowlist CHECK (
+    (funding_mode IN ('wallet', 'trial')) IS TRUE
+  ),
+  ADD CONSTRAINT mcp_generation_quotes_funding_shape CHECK (
+    (
+      (
+        funding_mode = 'wallet'
+        AND price_cents >= 0
+        AND NOT (pricing_snapshot ? 'funding')
+      )
+      OR (
+        funding_mode = 'trial'
+        AND price_cents = 0
+        AND jsonb_typeof(pricing_snapshot -> 'funding') = 'object'
+        AND (pricing_snapshot -> 'funding') ?& ARRAY[
+          'kind', 'customerChargeCents', 'normalPriceCents', 'providerCostCents'
+        ]::text[]
+        AND (pricing_snapshot -> 'funding') - ARRAY[
+          'kind', 'customerChargeCents', 'normalPriceCents', 'providerCostCents'
+        ]::text[] = '{}'::jsonb
+        AND pricing_snapshot #>> '{funding,kind}' = 'included_trial'
+        AND jsonb_typeof(pricing_snapshot #> '{funding,customerChargeCents}') = 'number'
+        AND pricing_snapshot #> '{funding,customerChargeCents}' = '0'::jsonb
+        AND jsonb_typeof(pricing_snapshot #> '{funding,normalPriceCents}') = 'number'
+        AND (pricing_snapshot #>> '{funding,normalPriceCents}') ~ '^[1-9][0-9]*$'
+        AND (pricing_snapshot #>> '{funding,normalPriceCents}')::numeric <= 9007199254740991
+        AND jsonb_typeof(pricing_snapshot #> '{funding,providerCostCents}') = 'number'
+        AND (pricing_snapshot #>> '{funding,providerCostCents}') ~ '^[1-9][0-9]*$'
+        AND (pricing_snapshot #>> '{funding,providerCostCents}')::numeric <= 9007199254740991
+        AND pricing_snapshot #> '{canonicalPricing,totalCents}'
+          = pricing_snapshot #> '{funding,normalPriceCents}'
+        AND pricing_snapshot #>> '{canonicalPricing,currency}' = currency
+        AND pricing_snapshot #> '{canonicalPricing,base,amountCents}'
+          = pricing_snapshot #> '{funding,providerCostCents}'
+      )
+    ) IS TRUE
+  );
+
+CREATE TABLE IF NOT EXISTS mcp_trial_quote_prepared_audit (
+  quote_id UUID PRIMARY KEY REFERENCES mcp_generation_quotes(quote_id),
+  event_type TEXT NOT NULL DEFAULT 'trial_quote_prepared',
+  engine_id TEXT NOT NULL,
+  aspect_ratio TEXT NOT NULL,
+  audio BOOLEAN NOT NULL,
+  oauth_client_id TEXT NOT NULL,
+  outcome TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp(),
+
+  CONSTRAINT mcp_trial_quote_audit_event CHECK (
+    (event_type = 'trial_quote_prepared') IS TRUE
+  ),
+  CONSTRAINT mcp_trial_quote_audit_engine CHECK (
+    (engine_id = 'seedance-2-0-mini') IS TRUE
+  ),
+  CONSTRAINT mcp_trial_quote_audit_ratio CHECK (
+    (aspect_ratio IN ('16:9', '9:16', '1:1')) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_quote_audit_client CHECK (
+    (
+      length(oauth_client_id) BETWEEN 1 AND 256
+      AND oauth_client_id = btrim(oauth_client_id)
+    ) IS TRUE
+  ),
+  CONSTRAINT mcp_trial_quote_audit_outcome CHECK (
+    (outcome = 'success') IS TRUE
+  )
+);
+
+CREATE OR REPLACE FUNCTION enforce_mcp_trial_quote_prepared_audit_insert()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SET search_path = pg_catalog, public
+AS $$
+DECLARE
+  quoted public.mcp_generation_quotes%ROWTYPE;
+BEGIN
+  SELECT * INTO quoted
+    FROM public.mcp_generation_quotes
+   WHERE quote_id = NEW.quote_id;
+  IF NOT FOUND
+    OR quoted.funding_mode <> 'trial'
+    OR NEW.event_type <> 'trial_quote_prepared'
+    OR NEW.outcome <> 'success'
+    OR quoted.oauth_client_id IS DISTINCT FROM NEW.oauth_client_id
+    OR quoted.request_json ->> 'engineId' IS DISTINCT FROM NEW.engine_id
+    OR quoted.request_json #>> '{settings,aspectRatio}' IS DISTINCT FROM NEW.aspect_ratio
+    OR quoted.request_json #>> '{settings,audio}' IS DISTINCT FROM NEW.audio::text
+  THEN
+    RAISE EXCEPTION 'Invalid MCP trial quote prepared audit attribution';
+  END IF;
+  NEW.created_at := clock_timestamp();
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_trial_quote_prepared_audit_enforce_insert
+  ON mcp_trial_quote_prepared_audit;
+CREATE TRIGGER mcp_trial_quote_prepared_audit_enforce_insert
+  BEFORE INSERT ON mcp_trial_quote_prepared_audit
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_mcp_trial_quote_prepared_audit_insert();
+
+CREATE OR REPLACE FUNCTION enforce_mcp_trial_quote_prepared_audit_immutability()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RAISE EXCEPTION 'MCP trial quote prepared audit rows are immutable';
+END;
+$$;
+
+DROP TRIGGER IF EXISTS mcp_trial_quote_prepared_audit_immutable
+  ON mcp_trial_quote_prepared_audit;
+CREATE TRIGGER mcp_trial_quote_prepared_audit_immutable
+  BEFORE UPDATE OR DELETE ON mcp_trial_quote_prepared_audit
+  FOR EACH ROW
+  EXECUTE FUNCTION enforce_mcp_trial_quote_prepared_audit_immutability();
+
 CREATE TABLE IF NOT EXISTS mcp_trial_entitlements (
   user_id TEXT PRIMARY KEY,
   status TEXT NOT NULL DEFAULT 'available',

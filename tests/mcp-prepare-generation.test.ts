@@ -259,7 +259,8 @@ function baseDependencies(
         pricingSnapshot: input.pricingSnapshot,
         priceCents: input.priceCents,
         currency: input.currency,
-        fundingMode: 'wallet',
+        fundingMode: input.fundingMode,
+        trialFunding: null,
         state: 'prepared',
         jobId: null,
         expiresAt,
@@ -268,6 +269,16 @@ function baseDependencies(
         updatedAt: now,
       };
     },
+    getTrialEligibility: async () => {
+      throw new Error('non-candidate paid tests must not check trial eligibility');
+    },
+    checkTrialRisk: async () => {
+      throw new Error('non-candidate paid tests must not check trial risk');
+    },
+    recordTrialQuotePreparedAudit: async () => {
+      throw new Error('non-candidate paid tests must not write trial audit');
+    },
+    trialRiskContext: { clientIp: null, userAgent: null },
     accountUrl: 'https://maxvideoai.com/account/connections',
     now: () => now,
     ...overrides,

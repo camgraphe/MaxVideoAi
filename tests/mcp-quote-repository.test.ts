@@ -94,6 +94,7 @@ test('insertPreparedQuote creates a random UUID and exact server-owned ten-minut
     pricingSnapshot: { totalCents: 25 },
     priceCents: 25,
     currency: 'USD',
+    fundingMode: 'wallet' as const,
   };
   const created = await insertPreparedQuote(input, {
     executor,
@@ -236,6 +237,7 @@ test('quote repository fails closed on missing schema and malformed database row
     insertPreparedQuote({
       userId: 'user-1', oauthClientId: null, request, requestHash,
       catalogRevision: 'catalog-1', pricingSnapshot: {}, priceCents: 25, currency: 'USD',
+      fundingMode: 'wallet',
     }, { executor: malformed, now: () => now, randomUUID: () => quoteId }),
     /invalid quote row/i,
   );

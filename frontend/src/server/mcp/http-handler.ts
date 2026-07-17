@@ -1,4 +1,5 @@
 import { WebStandardStreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
+import { isIP } from 'node:net';
 
 import { getMcpRequestHost, isMcpApiHost } from '@/lib/mcp-host-routing';
 import type { AgentAccountStatusWalletDeps } from '@/server/agent-api/account-status';
@@ -17,6 +18,7 @@ import {
 } from '@/server/mcp/server';
 import { isMcpFoundationFeatureEnabled } from '@/server/mcp/feature-access';
 import { withMcpNoindexHeaders } from '@/server/mcp/response-headers';
+import type { TrialRiskRequestContext } from '@/server/agent-api/prepare-generation';
 
 const MAX_BODY_BYTES = 128 * 1024;
 const PRIVATE_CACHE_CONTROL = 'private, no-store';
@@ -182,6 +184,29 @@ function unauthorized(config: McpConfig): Response {
   });
 }
 
+export function resolveTrialRiskRequestContext(headers: Headers): TrialRiskRequestContext {
+  const candidates = [
+    headers.get('cf-connecting-ip'),
+    headers.get('x-real-ip'),
+    headers.get('x-vercel-forwarded-for'),
+    headers.get('x-forwarded-for')?.split(',')[0] ?? null,
+  ];
+  let clientIp: string | null = null;
+  for (const candidate of candidates) {
+    if (candidate === null) continue;
+    const normalized = candidate.trim();
+    clientIp = isIP(normalized) === 0 ? null : normalized;
+    break;
+  }
+  const rawUserAgent = headers.get('user-agent');
+  const userAgent = rawUserAgent !== null
+    && rawUserAgent.length <= 2_048
+    && !/[\u0000\r\n]/u.test(rawUserAgent)
+    ? rawUserAgent
+    : null;
+  return Object.freeze({ clientIp, userAgent });
+}
+
 export async function handleMcpHttpRequest(
   request: Request,
   injectedDeps?: McpHttpHandlerDeps
@@ -219,7 +244,11 @@ export async function handleMcpHttpRequest(
 
   const server = createMaxVideoAiMcpServer(
     principal,
-    createDefaultMaxVideoAiMcpServices(config, injectedDeps?.accountStatusDeps)
+    createDefaultMaxVideoAiMcpServices(
+      config,
+      resolveTrialRiskRequestContext(request.headers),
+      injectedDeps?.accountStatusDeps,
+    )
   );
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

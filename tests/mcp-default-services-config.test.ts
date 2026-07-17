@@ -40,9 +40,11 @@ test('default account service uses the resolved MCP account URL for production a
     'https://maxvideoai.com/account/connections',
     'https://maxvideoai-mcp-staging.vercel.app/account/connections',
   ]) {
-    const services = createDefaultMaxVideoAiMcpServices(config(new URL(expectedAccountUrl).origin), {
-      getWalletSummary,
-    });
+    const services = createDefaultMaxVideoAiMcpServices(
+      config(new URL(expectedAccountUrl).origin),
+      { clientIp: null, userAgent: null },
+      { getWalletSummary },
+    );
 
     const status = await services.getAccountStatus(principal);
 
@@ -79,6 +81,7 @@ test('official staging config reaches the real default top-up service while cust
     priceCents: 1500,
     currency: 'USD',
     fundingMode: 'wallet',
+    trialFunding: null,
     state: 'prepared',
     jobId: null,
     expiresAt: new Date('2026-07-16T12:10:00.000Z'),
@@ -88,36 +91,46 @@ test('official staging config reaches the real default top-up service while cust
   };
   const executor = { async query() { throw new Error('unexpected query'); } } as TransactionQueryExecutor;
   const events: string[] = [];
-  const services = createDefaultMaxVideoAiMcpServices(stagingConfig, undefined, {
-    secret: '0123456789abcdef0123456789abcdef',
-    randomUUID: () => '123e4567-e89b-42d3-a456-426614174001',
-    withTransaction: async (callback) => {
-      events.push('transaction');
-      return callback(executor);
+  const services = createDefaultMaxVideoAiMcpServices(
+    stagingConfig,
+    { clientIp: null, userAgent: null },
+    undefined,
+    {
+      secret: '0123456789abcdef0123456789abcdef',
+      randomUUID: () => '123e4567-e89b-42d3-a456-426614174001',
+      withTransaction: async (callback) => {
+        events.push('transaction');
+        return callback(executor);
+      },
+      lockOwnedQuote: async () => {
+        events.push('lock');
+        return { quote, databaseNow: now };
+      },
+      getWalletSummary: async () => {
+        events.push('wallet');
+        return { balanceCents: 0, currency: 'USD', pendingCents: 0, hasCompletedTopUp: false };
+      },
+      invalidatePreparedQuote: async () => {
+        events.push('invalidate');
+        return { ...quote, state: 'expired' };
+      },
     },
-    lockOwnedQuote: async () => {
-      events.push('lock');
-      return { quote, databaseNow: now };
-    },
-    getWalletSummary: async () => {
-      events.push('wallet');
-      return { balanceCents: 0, currency: 'USD', pendingCents: 0, hasCompletedTopUp: false };
-    },
-    invalidatePreparedQuote: async () => {
-      events.push('invalidate');
-      return { ...quote, state: 'expired' };
-    },
-  });
+  );
   const result = await services.createTopupLink?.({ quoteId: quote.quoteId }, principal);
   assert.ok(result && 'url' in result);
   assert.equal(new URL(result.url).origin, 'https://maxvideoai-mcp-staging.vercel.app');
   assert.deepEqual(events, ['transaction', 'lock', 'wallet', 'invalidate']);
 
   const customConfig = config('https://custom-preview.example');
-  const custom = createDefaultMaxVideoAiMcpServices(customConfig, undefined, {
-    secret: '0123456789abcdef0123456789abcdef',
-    withTransaction: async () => { throw new Error('must not start a transaction'); },
-  });
+  const custom = createDefaultMaxVideoAiMcpServices(
+    customConfig,
+    { clientIp: null, userAgent: null },
+    undefined,
+    {
+      secret: '0123456789abcdef0123456789abcdef',
+      withTransaction: async () => { throw new Error('must not start a transaction'); },
+    },
+  );
   await assert.rejects(
     custom.createTopupLink?.({ quoteId: quote.quoteId }, principal) ?? Promise.resolve(),
     /unexpected origin/i,

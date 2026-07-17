@@ -130,6 +130,7 @@ test('top-up handoff invalidation and ledger non-mutation execute atomically in 
       pricingSnapshot: { totalCents: priceCents, currency: 'USD' },
       priceCents,
       currency: 'USD',
+      fundingMode: 'wallet',
     }, {
       executor,
       randomUUID: () => quoteId,

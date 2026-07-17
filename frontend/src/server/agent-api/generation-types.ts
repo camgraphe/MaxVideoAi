@@ -22,6 +22,15 @@ export type CanonicalGenerationReference =
       role: CanonicalGenerationReferenceRole;
     };
 
+export type GenerationFundingMode = 'wallet' | 'trial';
+
+export type IncludedTrialFundingSnapshot = Readonly<{
+  kind: 'included_trial';
+  customerChargeCents: 0;
+  normalPriceCents: number;
+  providerCostCents: number;
+}>;
+
 export type CanonicalGenerationRequest = {
   schemaVersion: 1;
   surface: CanonicalGenerationSurface;

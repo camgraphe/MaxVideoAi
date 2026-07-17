@@ -306,6 +306,7 @@ async function insertQuote(params: {
     pricingSnapshot: pricingSnapshot(params.request, params.priceCents, catalogRevision),
     priceCents: params.priceCents,
     currency: 'USD',
+    fundingMode: 'wallet',
   }, {
     executor,
     randomUUID: () => params.quoteId,
