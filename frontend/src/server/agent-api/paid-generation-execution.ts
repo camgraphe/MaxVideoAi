@@ -14,9 +14,23 @@ import {
 import type { TrustedQuotedBilling } from '@/server/generations/initial-job-reservation';
 import { paidProviderSubmissionDependencies } from '@/server/generations/paid-provider-execution';
 
+import {
+  reserveIncludedTrialGenerationInitialJob as reserveIncludedTrialGenerationWithPricing,
+  submitReservedIncludedTrialGeneration,
+  type IncludedTrialGenerationReservation,
+  type IncludedTrialVideoContinuationOptions,
+} from './included-trial-generation-execution';
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import type { McpGenerationQuote } from './quote-repository';
 import { stableJson } from './generation-normalization';
+
+export { submitReservedIncludedTrialGeneration };
+export type {
+  IncludedTrialGenerationExecution,
+  IncludedTrialGenerationProviderOutcome,
+  IncludedTrialGenerationReservation,
+  IncludedTrialVideoContinuationOptions,
+} from './included-trial-generation-execution';
 
 export type PaidGenerationExecution = {
   surface: 'video' | 'image';
@@ -73,7 +87,7 @@ export type PaidImageExecutionResponse = {
 };
 
 export type PaidGenerationSubmissionDependencies = {
-  executeVideo(options: PaidVideoContinuationOptions): Promise<PaidVideoExecutionResponse>;
+  executeVideo(options: PaidVideoContinuationOptions | IncludedTrialVideoContinuationOptions): Promise<PaidVideoExecutionResponse>;
   executeImage(options: PaidImageContinuationOptions): Promise<PaidImageExecutionResponse>;
   ensureKnownRejectionRefund?(execution: PaidGenerationExecution): Promise<boolean>;
 };
@@ -150,6 +164,7 @@ function videoInitialParams(
     userId: quote.userId,
     paymentMode: 'wallet',
     walletReservation: 'reserve',
+    funding: { kind: 'wallet', reservation: 'reserve' },
     pendingReceipt: {
       userId: quote.userId,
       amountCents: quote.priceCents,
@@ -246,7 +261,9 @@ export async function reservePaidGenerationInitialJob(
       dependencies.executor,
       videoInitialParams(input, pricing),
     );
-    if (created.kind !== 'created' || created.walletChargeReserved !== true) {
+    if (created.kind !== 'created'
+      || !('walletChargeReserved' in created)
+      || created.walletChargeReserved !== true) {
       throw new Error('Reserved video job already existed unexpectedly.');
     }
     return {
@@ -292,6 +309,14 @@ export async function reservePaidGenerationInitialJob(
       },
     },
   };
+}
+
+export async function reserveIncludedTrialGenerationInitialJob(
+  input: ReservePaidGenerationInput,
+  dependencies: ReservePaidGenerationDependencies,
+): Promise<IncludedTrialGenerationReservation> {
+  const pricing = canonicalPricing(input);
+  return reserveIncludedTrialGenerationWithPricing(input, dependencies, pricing);
 }
 
 function membershipTier(pricing: Record<string, unknown>): 'member' | 'plus' | 'pro' {

@@ -1,5 +1,4 @@
 import type { NextRequest } from 'next/server';
-import { getPlatformFeeCents } from '@maxvideoai/pricing';
 import { validateExtraInputValues } from '@/app/api/generate/_lib/extra-input-values';
 import { processGenerationAttachments } from '@/app/api/generate/_lib/attachments';
 import { deriveGenerationAttachmentReferences } from '@/app/api/generate/_lib/attachment-references';
@@ -7,7 +6,6 @@ import { buildFalRequestParts } from '@/app/api/generate/_lib/fal-request';
 import { buildGenerationSettingsSnapshot } from '@/app/api/generate/_lib/settings-snapshot';
 import {
   resolveGenerateBillingPreflight,
-  type GenerateBillingPreflightResult,
 } from '@/app/api/generate/_lib/billing-preflight';
 import { buildGenerateValidationPayload } from '@/app/api/generate/_lib/validation-payload';
 import { validateGenerationImageDimensions } from '@/app/api/generate/_lib/generation-image-dimensions';
@@ -19,13 +17,17 @@ import type {
   GenerateRouteMetricState,
   GenerateRouteMetricStatus,
 } from '@/app/api/generate/_lib/metric-logger';
-import { normalizeCurrencyCode } from '@/lib/currency';
 import type {
+  TrustedIncludedTrialBilling,
   TrustedQuotedBilling,
   WalletReservation,
 } from '@/server/generations/initial-job-reservation';
 import { executePreparedVideoGeneration } from './execute-prepared-video-generation';
 import type { PreReservedVideoInitialState, VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
+import {
+  buildTrustedIncludedTrialVideoBilling,
+  buildTrustedQuotedVideoBilling,
+} from './trusted-video-billing';
 
 export type { VideoGenerationAdapters, VideoGenerationResponse } from './video-generation-contracts';
 export { executeVideoGenerationLifecycle } from './video-generation-lifecycle';
@@ -35,12 +37,27 @@ type VideoGenerationReservationOptions =
       walletReservation: 'reserve';
       preReservedInitialState?: never;
       trustedQuotedBilling?: never;
+      funding?: never;
+      trustedIncludedTrialBilling?: never;
     })
   | ({ walletReservation: WalletReservation } & {
       walletReservation: 'already_reserved';
       preReservedInitialState: PreReservedVideoInitialState;
       trustedQuotedBilling: TrustedQuotedBilling;
-    });
+      funding?: never;
+      trustedIncludedTrialBilling?: never;
+    })
+  | {
+      funding: {
+        kind: 'mcp_trial';
+        entitlementUserId: string;
+        quoteId: string;
+      };
+      walletReservation?: never;
+      preReservedInitialState: Extract<PreReservedVideoInitialState, { funding: unknown }>;
+      trustedQuotedBilling?: never;
+      trustedIncludedTrialBilling: TrustedIncludedTrialBilling;
+    };
 
 export type ExecuteVideoGenerationOptions = {
   req: NextRequest;
@@ -54,64 +71,6 @@ export type ExecuteVideoGenerationOptions = {
   logMetric: (status: GenerateRouteMetricStatus, options?: GenerateRouteMetricOptions) => void;
   adapters: VideoGenerationAdapters;
 } & VideoGenerationReservationOptions;
-
-function buildTrustedQuotedVideoBilling(params: {
-  trustedQuotedBilling: TrustedQuotedBilling;
-  engineLabel: string;
-  userId: string;
-  jobId: string;
-  durationSec: number;
-}): GenerateBillingPreflightResult {
-  const source = params.trustedQuotedBilling.pricing;
-  const pricing = JSON.parse(JSON.stringify(source)) as typeof source;
-  const currency = typeof pricing.currency === 'string' ? pricing.currency.toUpperCase() : '';
-  const resolvedCurrencyLower = normalizeCurrencyCode(currency);
-  if (
-    !Number.isSafeInteger(pricing.totalCents)
-    || pricing.totalCents < 0
-    || !resolvedCurrencyLower
-    || pricing.membershipTier !== params.trustedQuotedBilling.membershipTier
-  ) {
-    throw new Error('Invalid trusted quoted video billing.');
-  }
-  const applicationFeeCents = getPlatformFeeCents(pricing);
-  const vendorAccountId = typeof pricing.vendorAccountId === 'string'
-    ? pricing.vendorAccountId
-    : null;
-  const pricingSnapshotJson = JSON.stringify(pricing);
-  return {
-    ok: true,
-    preflight: {
-      preferredCurrency: resolvedCurrencyLower,
-      resolvedCurrencyLower,
-      resolvedCurrencyUpper: currency,
-      pricing,
-      priceOnlyReceipts: false,
-      costBreakdownUsd: null,
-      receiptSnapshot: pricing,
-      pricingSnapshotJson,
-      costBreakdownJson: null,
-      vendorAccountId,
-      applicationFeeCents,
-      visibility: 'private',
-      indexable: false,
-      paymentMode: 'wallet',
-      pendingReceipt: {
-        userId: params.userId,
-        amountCents: pricing.totalCents,
-        currency,
-        description: `MCP ${params.engineLabel} - ${params.durationSec}s`,
-        jobId: params.jobId,
-        snapshot: pricing,
-        applicationFeeCents,
-        vendorAccountId,
-      },
-      paymentStatus: 'paid_wallet',
-      stripePaymentIntentId: null,
-      stripeChargeId: null,
-    },
-  };
-}
 
 export async function executeVideoGeneration(params: ExecuteVideoGenerationOptions): Promise<VideoGenerationResponse> {
   const {
@@ -127,7 +86,9 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     walletReservation,
     preReservedInitialState,
     trustedQuotedBilling,
+    trustedIncludedTrialBilling,
   } = params;
+  const funding = 'funding' in params ? params.funding : undefined;
   const { engine, isBytePlusV1a, jobId, mode, payment } = routeContext;
 
   const {
@@ -279,7 +240,9 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
       status: dimensionValidation.status,
     };
   }
-  const billingPreflight = trustedQuotedBilling
+  const billingPreflight = trustedIncludedTrialBilling
+    ? buildTrustedIncludedTrialVideoBilling(trustedIncludedTrialBilling)
+    : trustedQuotedBilling
     ? buildTrustedQuotedVideoBilling({
         trustedQuotedBilling,
         engineLabel: engine.label,
@@ -415,6 +378,7 @@ export async function executeVideoGeneration(params: ExecuteVideoGenerationOptio
     requestStartedAt,
     logMetric,
     walletReservation,
+    ...(funding ? { funding } : {}),
     preReservedInitialState,
     adapters: params.adapters,
     billing,

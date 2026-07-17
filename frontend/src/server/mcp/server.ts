@@ -93,7 +93,7 @@ export function createDefaultMaxVideoAiMcpServices(
     listModels: (filter) => listAgentModels(filter),
     recommendModels: (input) => recommendAgentModels(input),
     prepareGeneration: createPrepareGenerationService(config.accountUrl, trialRiskContext),
-    confirmGeneration: createConfirmGenerationService(config.accountUrl),
+    confirmGeneration: createConfirmGenerationService(config.accountUrl, trialRiskContext),
     getGenerationStatus: (input, principal) => getAgentGenerationStatus(input, principal),
     listRecentGenerations: (input, principal) => listAgentRecentGenerations(input, principal),
     createTopupLink: createMcpTopupHandoffService({

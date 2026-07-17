@@ -29,7 +29,12 @@ export type ExecutePreparedVideoGenerationParams = {
   localKey: string | null;
   requestStartedAt: number;
   logMetric: (status: GenerateRouteMetricStatus, options?: GenerateRouteMetricOptions) => void;
-  walletReservation: WalletReservation;
+  walletReservation?: WalletReservation;
+  funding?: {
+    kind: 'mcp_trial';
+    entitlementUserId: string;
+    quoteId: string;
+  };
   preReservedInitialState?: PreReservedVideoInitialState;
   adapters: VideoGenerationAdapters;
   billing: GenerateBillingPreflight;
@@ -112,24 +117,46 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
   let walletChargeReserved = false;
   let settingsSnapshotJson = JSON.stringify(settingsSnapshot);
 
-  if (
-    (walletReservation === 'already_reserved' && !params.preReservedInitialState) ||
-    (params.preReservedInitialState &&
-      (walletReservation !== 'already_reserved' ||
-        params.preReservedInitialState.jobId !== jobId ||
-        params.preReservedInitialState.walletChargeReserved !== true))
-  ) {
+  const trialInitialState = params.preReservedInitialState
+    && 'funding' in params.preReservedInitialState
+    ? params.preReservedInitialState
+    : null;
+  const walletInitialState = params.preReservedInitialState
+    && 'walletChargeReserved' in params.preReservedInitialState
+    ? params.preReservedInitialState
+    : null;
+  if (trialInitialState
+    ? !params.funding
+      || walletReservation !== undefined
+      || billing.paymentMode !== 'mcp_trial'
+      || billing.pendingReceipt !== null
+      || billing.paymentStatus !== 'included_mcp_trial'
+      || trialInitialState.jobId !== jobId
+      || trialInitialState.funding.entitlementUserId !== userId
+      || trialInitialState.funding.quoteId !== jobId
+      || JSON.stringify(trialInitialState.funding) !== JSON.stringify(params.funding)
+    : (walletReservation === 'already_reserved' && !walletInitialState)
+      || (walletInitialState
+        && (walletReservation !== 'already_reserved'
+          || walletInitialState.jobId !== jobId
+          || walletInitialState.walletChargeReserved !== true))) {
     throw new Error('Invalid pre-reserved video initial state.');
   }
 
   return executeVideoGenerationLifecycle({
     trustedInitialState: params.preReservedInitialState,
     reserveInitialState: async (): Promise<VideoInitialJobResult> => {
+      if (!walletReservation || paymentMode === 'mcp_trial') {
+        throw new Error('Included trial jobs must be pre-reserved.');
+      }
       const initialJobState = await createAtomicInitialVideoJob({
         jobId,
         userId,
         paymentMode,
         walletReservation,
+        ...(paymentMode === 'wallet'
+          ? { funding: { kind: 'wallet' as const, reservation: walletReservation } }
+          : {}),
         pendingReceipt,
         preferredCurrency,
         resolvedCurrencyLower,
@@ -169,7 +196,7 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
           indexable,
         },
       });
-      if (initialJobState.kind === 'created') {
+      if (initialJobState.kind === 'created' && 'walletChargeReserved' in initialJobState) {
         walletChargeReserved = initialJobState.walletChargeReserved;
         if (paymentMode === 'wallet' && !preferredCurrency && walletReservation === 'reserve') {
           await ensureUserPreferredCurrency(userId, resolvedCurrencyLower);
@@ -219,7 +246,9 @@ export async function executePreparedVideoGeneration(params: ExecutePreparedVide
       };
     },
     submitProvider: async (created) => {
-      walletChargeReserved = created.walletChargeReserved;
+      walletChargeReserved = 'walletChargeReserved' in created
+        ? created.walletChargeReserved
+        : false;
       if (isBytePlusV1a) {
         const submission = await adapters.submitBytePlusGenerateTask({
           jobId,

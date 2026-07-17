@@ -2,10 +2,15 @@ import { type QueryExecutor, type TransactionQueryExecutor } from '@/lib/db';
 import { reserveWalletChargeInExecutor } from '@/lib/wallet';
 import type { Currency } from '@/lib/currency';
 import { lockInitialJobReservation, runInitialJobTransaction, type WalletReservation } from '@/server/generations/initial-job-reservation';
+import { validateInitialVideoFunding } from './initial-video-job-funding';
 
 const DISPLAY_CURRENCY = 'USD';
 
-export type PaymentMode = 'wallet' | 'direct' | 'platform';
+export type PaymentMode = 'wallet' | 'direct' | 'platform' | 'mcp_trial';
+
+export type GenerationFunding =
+  | { kind: 'wallet'; reservation: 'reserve' | 'already_reserved' }
+  | { kind: 'mcp_trial'; entitlementUserId: string; quoteId: string };
 
 export class VideoInitialJobError extends Error {
   status: number;
@@ -109,16 +114,27 @@ export type ProvisionalVideoJobInsert = {
   indexable: boolean;
 };
 
-export type CreateVideoInitialJobParams = {
+type CreateVideoInitialJobBaseParams = {
   jobId: string;
   userId: string;
-  paymentMode: PaymentMode;
-  walletReservation: WalletReservation;
   pendingReceipt: PendingReceipt | null;
   preferredCurrency: Currency | null;
   resolvedCurrencyLower: string;
   jobInsert: ProvisionalVideoJobInsert;
 };
+
+export type CreateVideoInitialJobParams = CreateVideoInitialJobBaseParams & (
+  | {
+      paymentMode: PaymentMode;
+      walletReservation: WalletReservation;
+      funding?: Extract<GenerationFunding, { kind: 'wallet' }>;
+    }
+  | {
+      paymentMode?: never;
+      walletReservation?: never;
+      funding: Extract<GenerationFunding, { kind: 'mcp_trial' }>;
+    }
+);
 
 export type VideoInitialJobResult =
   | {
@@ -128,6 +144,10 @@ export type VideoInitialJobResult =
   | {
       kind: 'created';
       walletChargeReserved: boolean;
+    }
+  | {
+      kind: 'created';
+      funding: Extract<GenerationFunding, { kind: 'mcp_trial' }>;
     };
 
 export function buildResponseFromExistingVideoJob(
@@ -249,6 +269,7 @@ export async function createInitialVideoJobInExecutor(
   executor: TransactionQueryExecutor,
   params: CreateVideoInitialJobParams
 ): Promise<VideoInitialJobResult> {
+  const includedTrialFunding = validateInitialVideoFunding(params);
   await lockInitialJobReservation(executor, params.jobId);
 
   const existingJobs = await executor.query<ExistingVideoJobRow>(
@@ -288,7 +309,7 @@ export async function createInitialVideoJobInExecutor(
 
   let walletChargeReserved = false;
 
-  if (params.paymentMode === 'wallet') {
+  if (!includedTrialFunding && params.paymentMode === 'wallet') {
     const existingRefunds = await executor.query<{ id: number }>(
       `SELECT id
        FROM app_receipts
@@ -421,6 +442,10 @@ export async function createInitialVideoJobInExecutor(
   }
 
   await insertProvisionalVideoJob(executor, params.jobInsert);
+
+  if (includedTrialFunding) {
+    return { kind: 'created', funding: includedTrialFunding };
+  }
 
   return {
     kind: 'created',

@@ -16,18 +16,30 @@ import {
 } from './generation-capability-validation';
 import { hashCanonicalGenerationRequest, stableJson } from './generation-normalization';
 import {
+  assertCanonicalTrialRequest,
+  isValidConfirmationMembership,
+  requireTrialPrincipal,
+  requireTrialRiskRequestContext,
+  reserveIncludedTrialConfirmation,
+  trialNotEligible,
+} from './included-trial-confirmation';
+import {
   priceCanonicalGenerationInExecutor,
   type GenerationPricingResult,
 } from './generation-pricing';
 import type { AgentPublicGenerationEngine } from './model-catalog';
 import { listPublicAgentGenerationEnginesInExecutor } from './model-catalog';
 import {
+  reserveIncludedTrialGenerationInitialJob,
   reservePaidGenerationInitialJob,
+  submitReservedIncludedTrialGeneration,
   submitReservedPaidGeneration,
+  type IncludedTrialGenerationProviderOutcome,
+  type IncludedTrialGenerationReservation,
   type PaidGenerationProviderOutcome,
   type PaidGenerationReservation,
 } from './paid-generation-execution';
-import { buildGenerationPricingSnapshot } from './prepare-generation';
+import { buildGenerationPricingSnapshot, type TrialRiskRequestContext } from './prepare-generation';
 import type { AgentPrincipal } from './principal';
 import {
   claimPreparedQuote,
@@ -45,6 +57,14 @@ import {
   MCP_SPENDING_APPROVAL_PATH,
   type McpSpendingDecision,
 } from './spending-limits';
+import { isTrialEligibilityEnabled } from './trial-eligibility';
+import {
+  lockReservableEntitlement,
+  reserveEntitlement,
+  type LockedReservableEntitlement,
+  type TrialEntitlement,
+} from './trial-entitlement-repository';
+import { acceptTrialRisk, type TrialRiskDecision, type TrialRiskInput } from './trial-risk';
 
 export type ConfirmGenerationInput = {
   quoteId: string;
@@ -57,6 +77,8 @@ type AccountRestriction = Awaited<ReturnType<typeof getActiveAccountRestrictionI
 
 export type ConfirmGenerationDependencies = {
   paidGenerationEnabled(): boolean;
+  trialGenerationEnabled(): boolean;
+  trialRiskContext: TrialRiskRequestContext;
   withTransaction<TResult>(
     callback: (executor: TransactionQueryExecutor) => Promise<TResult>,
   ): Promise<TResult>;
@@ -80,6 +102,23 @@ export type ConfirmGenerationDependencies = {
     input: { userId: string; priceCents: number; currency: string },
     dependencies: SpendingDependencies,
   ): Promise<McpSpendingDecision>;
+  acceptTrialRisk(
+    input: TrialRiskInput,
+    dependencies: ExecutorDependencies,
+  ): Promise<TrialRiskDecision>;
+  lockReservableEntitlement(
+    input: { userId: string },
+    dependencies: ExecutorDependencies,
+  ): Promise<LockedReservableEntitlement | null>;
+  reserveEntitlement(
+    input: {
+      lockedEntitlement: LockedReservableEntitlement;
+      quoteId: string;
+      jobId: string;
+      reasonCode: string;
+    },
+    dependencies: ExecutorDependencies,
+  ): Promise<TrialEntitlement | null>;
   reserveInitialJob(
     input: {
       quote: McpGenerationQuote;
@@ -88,19 +127,34 @@ export type ConfirmGenerationDependencies = {
     },
     dependencies: ExecutorDependencies,
   ): Promise<PaidGenerationReservation>;
+  reserveTrialInitialJob(
+    input: {
+      quote: McpGenerationQuote;
+      candidate: AgentPublicGenerationEngine;
+      pricingSnapshot: Record<string, unknown>;
+    },
+    dependencies: ExecutorDependencies,
+  ): Promise<IncludedTrialGenerationReservation>;
   claimPreparedQuote(
     input: OwnedQuoteJobInput,
     dependencies: ExecutorDependencies & { claimedAt: Date },
   ): Promise<McpGenerationQuote | null>;
   submitPaidGeneration(execution: PaidGenerationReservation['execution']): Promise<PaidGenerationProviderOutcome>;
+  submitTrialGeneration(
+    execution: IncludedTrialGenerationReservation['execution'],
+  ): Promise<IncludedTrialGenerationProviderOutcome>;
   markQuoteAccepted(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   markQuoteFailed(input: OwnedQuoteJobInput): Promise<McpGenerationQuote | null>;
   readGenerationStatus(input: { userId: string; jobId: string }): Promise<AgentGenerationStatus | null>;
   accountUrl: string;
 };
 
-const defaultDependencies: ConfirmGenerationDependencies = {
+const defaultDependencies: Omit<ConfirmGenerationDependencies, 'trialRiskContext'> = {
   paidGenerationEnabled: () => mcpPublication.paidGeneration,
+  trialGenerationEnabled: () => isTrialEligibilityEnabled(
+    mcpPublication.trial,
+    process.env.MCP_TRIAL_ENABLED,
+  ),
   withTransaction: (callback) => withDbTransaction((executor) => callback(executor)),
   lockOwnedQuote,
   markQuoteExpired,
@@ -116,9 +170,14 @@ const defaultDependencies: ConfirmGenerationDependencies = {
   priceGeneration: (request, membershipTier, dependencies) =>
     priceCanonicalGenerationInExecutor(request, membershipTier, dependencies),
   checkSpendingLimits: checkMcpConfirmationSpendingLimits,
+  acceptTrialRisk: (input, { executor }) => acceptTrialRisk(input, { executor }),
+  lockReservableEntitlement,
+  reserveEntitlement,
   reserveInitialJob: reservePaidGenerationInitialJob,
+  reserveTrialInitialJob: reserveIncludedTrialGenerationInitialJob,
   claimPreparedQuote,
   submitPaidGeneration: submitReservedPaidGeneration,
+  submitTrialGeneration: submitReservedIncludedTrialGeneration,
   markQuoteAccepted,
   markQuoteFailed,
   readGenerationStatus: ({ userId, jobId }) => getGenerationStatus({ userId, jobId }),
@@ -194,27 +253,11 @@ function spendingError(dependencies: ConfirmGenerationDependencies): AgentApiErr
   );
 }
 
-function validateMembership(value: MembershipPricingContext): MembershipPricingContext {
-  if (
-    !value
-    || !['member', 'plus', 'pro'].includes(value.tier)
-    || value.source !== 'app_receipts_rolling_30d'
-    || !Number.isSafeInteger(value.spent30Cents)
-    || value.spent30Cents < 0
-    || !Number.isSafeInteger(value.thresholdCents)
-    || value.thresholdCents < 0
-    || typeof value.discountPercent !== 'number'
-    || !Number.isFinite(value.discountPercent)
-    || value.discountPercent < 0
-    || value.discountPercent > 1
-  ) staleQuote();
-  return value;
-}
-
 type TransactionResult =
   | { kind: 'expired' }
   | { kind: 'repeat'; jobId: string }
-  | { kind: 'created'; reservation: PaidGenerationReservation };
+  | { kind: 'created_paid'; reservation: PaidGenerationReservation }
+  | { kind: 'created_trial'; reservation: IncludedTrialGenerationReservation };
 
 async function confirmationTransaction(
   input: ConfirmGenerationInput,
@@ -242,30 +285,53 @@ async function confirmationTransaction(
       return { kind: 'expired' };
     }
 
+    const includedTrial = quote.fundingMode === 'trial';
+    if (includedTrial) {
+      if (!dependencies.trialGenerationEnabled()) trialNotEligible();
+      requireTrialPrincipal(principal);
+    } else if (!dependencies.paidGenerationEnabled()) {
+      throw new AgentApiError('ENGINE_UNAVAILABLE', 'Paid generation is not available.');
+    }
+
     if (await dependencies.getAccountRestriction(principal.userId, { executor })) {
       throw new AgentApiError(
         'ACCOUNT_RESTRICTED',
         'This account is temporarily restricted. Open MaxVideoAI for help.',
       );
     }
-    if (hashCanonicalGenerationRequest(quote.request) !== quote.requestHash) staleQuote();
+    if (hashCanonicalGenerationRequest(quote.request) !== quote.requestHash) {
+      if (includedTrial) trialNotEligible();
+      staleQuote();
+    }
 
     const publicEngines = await dependencies.listPublicEngines({ executor });
     const candidate = publicEngines.find((entry) =>
       entry.engine.id === quote.request.engineId && entry.surface === quote.request.surface);
-    if (!candidate || !candidate.publicModes.includes(quote.request.mode)) staleQuote();
+    if (!candidate || !candidate.publicModes.includes(quote.request.mode)) {
+      if (includedTrial) trialNotEligible();
+      staleQuote();
+    }
+    if (includedTrial) assertCanonicalTrialRequest(quote, candidate);
     try {
       validateCanonicalGenerationCapabilities(quote.request, candidate);
     } catch (error) {
-      if (error instanceof GenerationCapabilityError) staleQuote();
+      if (error instanceof GenerationCapabilityError) {
+        if (includedTrial) trialNotEligible();
+        staleQuote();
+      }
       throw error;
     }
     const catalogRevision = computeGenerationCatalogRevision(publicEngines);
-    if (catalogRevision !== quote.catalogRevision) staleQuote();
+    if (catalogRevision !== quote.catalogRevision) {
+      if (includedTrial) trialNotEligible();
+      staleQuote();
+    }
 
-    const membership = validateMembership(
-      await dependencies.resolveMembershipPricing(principal.userId, { executor }),
-    );
+    const membership = await dependencies.resolveMembershipPricing(principal.userId, { executor });
+    if (!isValidConfirmationMembership(membership)) {
+      if (includedTrial) trialNotEligible();
+      staleQuote();
+    }
     let pricing: GenerationPricingResult;
     try {
       pricing = await dependencies.priceGeneration(
@@ -275,6 +341,7 @@ async function confirmationTransaction(
       );
     } catch (error) {
       if (error instanceof AgentApiError) throw error;
+      if (includedTrial) trialNotEligible();
       staleQuote();
     }
     let pricingSnapshot: Record<string, unknown>;
@@ -286,38 +353,47 @@ async function confirmationTransaction(
         membership,
       );
     } catch {
+      if (includedTrial) trialNotEligible();
       staleQuote();
     }
-    if (
-      pricing.priceCents !== quote.priceCents
-      || pricing.currency !== quote.currency
-      || stableJson(pricingSnapshot) !== stableJson(quote.pricingSnapshot)
-    ) staleQuote();
-
-    const spending = await dependencies.checkSpendingLimits(
-      { userId: principal.userId, priceCents: quote.priceCents, currency: quote.currency },
-      { executor },
-    );
-    if (!spending.allowed) throw spendingError(dependencies);
-
-    let reservation: PaidGenerationReservation;
-    try {
-      reservation = await dependencies.reserveInitialJob(
-        { quote, candidate, pricingSnapshot },
+    let reservation: PaidGenerationReservation | IncludedTrialGenerationReservation;
+    if (includedTrial) {
+      reservation = await reserveIncludedTrialConfirmation({
+        quote,
+        candidate,
+        pricingSnapshot,
+        pricing,
+        principal,
+        executor,
+        dependencies,
+      });
+    } else {
+      if (pricing.priceCents !== quote.priceCents
+        || pricing.currency !== quote.currency
+        || stableJson(pricingSnapshot) !== stableJson(quote.pricingSnapshot)) staleQuote();
+      const spending = await dependencies.checkSpendingLimits(
+        { userId: principal.userId, priceCents: quote.priceCents, currency: quote.currency },
         { executor },
       );
-    } catch (error) {
-      if (error instanceof AgentApiError) throw error;
-      const code = error && typeof error === 'object' && 'code' in error
-        ? String((error as { code?: unknown }).code)
-        : '';
-      const status = error && typeof error === 'object' && 'status' in error
-        ? Number((error as { status?: unknown }).status)
-        : 0;
-      if (status === 402 || /insufficient/i.test(code)) {
-        throw new AgentApiError('INSUFFICIENT_FUNDS', 'Add funds before confirming this generation.');
+      if (!spending.allowed) throw spendingError(dependencies);
+      try {
+        reservation = await dependencies.reserveInitialJob(
+          { quote, candidate, pricingSnapshot },
+          { executor },
+        );
+      } catch (error) {
+        if (error instanceof AgentApiError) throw error;
+        const code = error && typeof error === 'object' && 'code' in error
+          ? String((error as { code?: unknown }).code)
+          : '';
+        const status = error && typeof error === 'object' && 'status' in error
+          ? Number((error as { status?: unknown }).status)
+          : 0;
+        if (status === 402 || /insufficient/i.test(code)) {
+          throw new AgentApiError('INSUFFICIENT_FUNDS', 'Add funds before confirming this generation.');
+        }
+        throw error;
       }
-      throw error;
     }
     if (reservation.jobId !== quote.quoteId || reservation.surface !== quote.request.surface) {
       throw new AgentApiError('INTERNAL_ERROR', 'The generation reservation is inconsistent.');
@@ -329,7 +405,9 @@ async function confirmationTransaction(
     if (!claimed || claimed.state !== 'claimed' || claimed.jobId !== reservation.jobId) {
       throw new AgentApiError('INTERNAL_ERROR', 'The generation quote could not be claimed.');
     }
-    return { kind: 'created', reservation };
+    return includedTrial
+      ? { kind: 'created_trial', reservation: reservation as IncludedTrialGenerationReservation }
+      : { kind: 'created_paid', reservation: reservation as PaidGenerationReservation };
   });
 }
 
@@ -348,18 +426,24 @@ async function readSafeStatus(
 export async function confirmGeneration(
   input: ConfirmGenerationInput,
   principal: AgentPrincipal,
-  dependencies: ConfirmGenerationDependencies = defaultDependencies,
+  dependencies: ConfirmGenerationDependencies,
 ): Promise<AgentGenerationStatus> {
   assertInput(input);
   requirePrincipal(principal);
-  if (!dependencies.paidGenerationEnabled()) {
-    throw new AgentApiError('ENGINE_UNAVAILABLE', 'Paid generation is not available.');
-  }
 
   const transaction = await confirmationTransaction(input, principal, dependencies);
   if (transaction.kind === 'expired') staleQuote();
   if (transaction.kind === 'repeat') {
     return readSafeStatus(principal.userId, transaction.jobId, dependencies);
+  }
+
+  if (transaction.kind === 'created_trial') {
+    try {
+      await dependencies.submitTrialGeneration(transaction.reservation.execution);
+    } catch {
+      // Trial outcome transitions are deliberately owned by T7.
+    }
+    return readSafeStatus(principal.userId, transaction.reservation.jobId, dependencies);
   }
 
   const mutation = {
@@ -384,8 +468,15 @@ export async function confirmGeneration(
 
 export function createConfirmGenerationService(
   accountUrl: string,
-  dependencies: Partial<ConfirmGenerationDependencies> = {},
+  trialRiskContext: TrialRiskRequestContext,
+  dependencies: Partial<Omit<ConfirmGenerationDependencies, 'trialRiskContext'>> = {},
 ): (input: ConfirmGenerationInput, principal: AgentPrincipal) => Promise<AgentGenerationStatus> {
-  const resolved = { ...defaultDependencies, ...dependencies, accountUrl };
+  const requestContext = requireTrialRiskRequestContext(trialRiskContext);
+  const resolved: ConfirmGenerationDependencies = {
+    ...defaultDependencies,
+    ...dependencies,
+    trialRiskContext: requestContext,
+    accountUrl,
+  };
   return (input, principal) => confirmGeneration(input, principal, resolved);
 }

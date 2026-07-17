@@ -8,6 +8,14 @@ export type TrustedQuotedBilling = {
   membershipTier: 'member' | 'plus' | 'pro';
 };
 
+export type TrustedIncludedTrialBilling = {
+  customerChargeCents: 0;
+  paymentStatus: 'included_mcp_trial';
+  membershipTier: 'member' | 'plus' | 'pro';
+  normalPricing: Record<string, unknown>;
+  pricingSnapshot: Record<string, unknown>;
+};
+
 export async function lockInitialJobReservation(executor: TransactionQueryExecutor, jobId: string): Promise<void> {
   await executor.query(`SELECT pg_advisory_xact_lock(hashtext($1))`, [jobId]);
 }

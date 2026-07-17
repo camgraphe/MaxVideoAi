@@ -102,11 +102,15 @@ export function createServices(options: {
         ...(options.prepareNow ? { now: options.prepareNow } : {}),
       },
     ),
-    confirmGeneration: createConfirmGenerationService('https://maxvideoai.com/account/connections', {
-      paidGenerationEnabled: () => true,
-      listPublicEngines: async () => catalog,
-      submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
-    }),
+    confirmGeneration: createConfirmGenerationService(
+      'https://maxvideoai.com/account/connections',
+      { clientIp: null, userAgent: null },
+      {
+        paidGenerationEnabled: () => true,
+        listPublicEngines: async () => catalog,
+        submitPaidGeneration: options.submitPaidGeneration ?? (async () => ({ kind: 'accepted' })),
+      },
+    ),
     getGenerationStatus: (input, identity) => getAgentGenerationStatus(input, identity),
     listRecentGenerations: (input, identity) => listAgentRecentGenerations(input, identity),
     createTopupLink: createMcpTopupHandoffService({

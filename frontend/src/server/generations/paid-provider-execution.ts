@@ -9,6 +9,7 @@ import { resolveTrustedPaidGenerateRouteContext } from '@/app/api/generate/_lib/
 import { videoGenerationAdapters } from '@/app/api/generate/_lib/video-generation-adapters';
 import { query } from '@/lib/db';
 import type {
+  IncludedTrialVideoContinuationOptions,
   PaidGenerationExecution,
   PaidGenerationSubmissionDependencies,
   PaidVideoContinuationOptions,
@@ -18,7 +19,7 @@ import { executeVideoGeneration } from '@/server/video-generation/execute-video-
 import type { PricingSnapshot } from '@/types/engines';
 
 async function executePaidVideoContinuation(
-  options: PaidVideoContinuationOptions,
+  options: PaidVideoContinuationOptions | IncludedTrialVideoContinuationOptions,
 ) {
   const req = new NextRequest('https://maxvideoai.com/api/generate', {
     method: 'POST',
@@ -52,20 +53,32 @@ async function executePaidVideoContinuation(
   });
   const requestStartedAt = Date.now();
   const metric = createGenerateMetricLogger({ requestStartedAt });
-  return executeVideoGeneration({
+  const common = {
     req,
     body: options.body,
-    routeContext: routeContext.context,
     requestOptions: { ...requestOptions.options, ...normalizedResolution },
     userId: options.userId,
     localKey: null,
     requestStartedAt,
     metricState: metric.state,
     logMetric: metric.log,
+    adapters: videoGenerationAdapters,
+  };
+  if ('funding' in options) {
+    return executeVideoGeneration({
+      ...common,
+      routeContext: { ...routeContext.context, payment: { mode: 'mcp_trial' } },
+      funding: options.funding,
+      preReservedInitialState: options.preReservedInitialState,
+      trustedIncludedTrialBilling: options.trustedIncludedTrialBilling,
+    });
+  }
+  return executeVideoGeneration({
+    ...common,
+    routeContext: routeContext.context,
     walletReservation: 'already_reserved',
     preReservedInitialState: options.preReservedInitialState,
     trustedQuotedBilling: options.trustedQuotedBilling,
-    adapters: videoGenerationAdapters,
   });
 }
 

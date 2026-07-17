@@ -403,7 +403,7 @@ test('confirmation performs the binding transaction order and submits video only
   const result = await confirmGeneration({ quoteId: QUOTE_ID, confirmed: true }, principal, dependencies);
   assert.deepEqual(result, safeStatus(videoRequest));
   assert.deepEqual(captures.events, [
-    'feature', 'transaction', 'lock_quote', 'restriction', 'catalog', 'membership', 'pricing',
+    'transaction', 'lock_quote', 'feature', 'restriction', 'catalog', 'membership', 'pricing',
     'spending', 'reserve_video', 'claim_quote', 'provider', 'accepted_quote', 'status',
   ]);
   assert.equal(captures.providerCalls, 1);

@@ -3,11 +3,21 @@ export type VideoGenerationResponse = {
   status?: number;
 };
 
-export type PreReservedVideoInitialState = {
-  kind: 'created';
-  jobId: string;
-  walletChargeReserved: true;
-};
+export type PreReservedVideoInitialState =
+  | {
+      kind: 'created';
+      jobId: string;
+      walletChargeReserved: true;
+    }
+  | {
+      kind: 'created';
+      jobId: string;
+      funding: {
+        kind: 'mcp_trial';
+        entitlementUserId: string;
+        quoteId: string;
+      };
+    };
 
 export type VideoGenerationAdapters = {
   submitBytePlusGenerateTask: (typeof import('@/app/api/generate/_lib/byteplus-submission'))['submitBytePlusGenerateTask'];
