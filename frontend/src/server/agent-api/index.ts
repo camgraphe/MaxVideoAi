@@ -15,4 +15,6 @@ export type {
   AgentModelRecommendationInput,
   AgentModelRecommendationResult,
   AgentMoney,
+  TrialPresetSummary,
+  TrialStatus,
 } from './types';

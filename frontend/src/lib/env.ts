@@ -57,6 +57,7 @@ export const ENV = {
   MCP_LOCAL_ENABLED: getOptionalEnv('MCP_LOCAL_ENABLED', 'false'),
   MCP_STAGING_ENABLED: getOptionalEnv('MCP_STAGING_ENABLED', 'false'),
   MCP_STAGING_HOST: getOptionalEnv('MCP_STAGING_HOST'),
+  MCP_TRIAL_ENABLED: getOptionalEnv('MCP_TRIAL_ENABLED'),
   GA4_MEASUREMENT_ID:
     getOptionalEnv('GA4_MEASUREMENT_ID') ??
     getOptionalEnv('NEXT_PUBLIC_GOOGLE_ANALYTICS_ID') ??

@@ -7,12 +7,37 @@ export type AgentMoney = {
   currency: string;
 };
 
+export type TrialPresetSummary = Readonly<{
+  engineId: string;
+  surface: 'video';
+  mode: 't2v';
+  durationSec: number;
+  resolution: string;
+  aspectRatios: readonly string[];
+  audioOptional: boolean;
+  outputCount: number;
+}>;
+
+export type TrialStatus =
+  | Readonly<{ status: 'disabled' }>
+  | Readonly<{
+      status: 'verification_required';
+      nextAction: Readonly<{ type: 'verify_email'; url: string }>;
+    }>
+  | Readonly<{ status: 'available'; preset: TrialPresetSummary }>
+  | Readonly<{ status: 'reserved'; jobId: string | null }>
+  | Readonly<{ status: 'consumed'; jobId: string | null }>
+  | Readonly<{
+      status: 'temporarily_unavailable';
+      reason: 'account_restricted' | 'preset_unavailable' | 'service_unavailable';
+    }>;
+
 export type AgentAccountStatus = {
   accountId: string;
   emailVerified: boolean;
   clientId: string | null;
   wallet: AgentMoney & { pendingCents: number };
-  trial: { status: 'disabled' };
+  trial: TrialStatus;
   spendingLimits: {
     perGenerationCents: number | null;
     dailyCents: number | null;

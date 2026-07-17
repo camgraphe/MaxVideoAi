@@ -1,14 +1,30 @@
 import { getWalletSummary, type WalletSummary } from '@/server/wallet-summary';
 
 import type { AgentPrincipal } from './principal';
-import type { AgentAccountStatus } from './types';
+import {
+  getTrialEligibility as resolveTrialEligibility,
+  type TrialEligibilityDependencies,
+} from './trial-eligibility';
+import type { AgentAccountStatus, TrialStatus } from './types';
+
+type TrialEligibilityResolver = (
+  principal: AgentPrincipal,
+  dependencies?: Partial<TrialEligibilityDependencies>,
+) => Promise<TrialStatus>;
 
 export type AgentAccountStatusDeps = {
   getWalletSummary(userId: string): Promise<WalletSummary>;
   accountUrl: string;
+  getTrialEligibility?: TrialEligibilityResolver;
+  trialEligibilityDependencies?: Partial<TrialEligibilityDependencies>;
 };
 
-export type AgentAccountStatusWalletDeps = Pick<AgentAccountStatusDeps, 'getWalletSummary'>;
+export type AgentAccountStatusWalletDeps =
+  & Pick<AgentAccountStatusDeps, 'getWalletSummary'>
+  & Partial<Pick<
+    AgentAccountStatusDeps,
+    'getTrialEligibility' | 'trialEligibilityDependencies'
+  >>;
 
 const defaultDeps: AgentAccountStatusDeps = {
   getWalletSummary,
@@ -27,6 +43,18 @@ export async function getAgentAccountStatus(
   deps: AgentAccountStatusDeps = defaultDeps
 ): Promise<AgentAccountStatus> {
   const wallet = await deps.getWalletSummary(principal.userId);
+  let trial: TrialStatus;
+  try {
+    trial = await (deps.getTrialEligibility ?? resolveTrialEligibility)(principal, {
+      ...deps.trialEligibilityDependencies,
+      verificationUrl: deps.accountUrl,
+    });
+  } catch {
+    trial = {
+      status: 'temporarily_unavailable',
+      reason: 'service_unavailable',
+    };
+  }
   return {
     accountId: principal.userId,
     emailVerified: principal.emailVerified,
@@ -36,7 +64,7 @@ export async function getAgentAccountStatus(
       currency: wallet.currency,
       pendingCents: wallet.pendingCents,
     },
-    trial: { status: 'disabled' },
+    trial,
     spendingLimits: {
       perGenerationCents: null,
       dailyCents: null,
