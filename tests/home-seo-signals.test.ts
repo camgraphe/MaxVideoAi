@@ -4,6 +4,7 @@ import test from 'node:test';
 
 const homeSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/page.tsx', 'utf8');
 const homeJsonLdSource = readFileSync('frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts', 'utf8');
+const localeRuntimeSource = readFileSync('frontend/app/_components/LocaleRuntime.tsx', 'utf8');
 const homeSectionsSource = [
   readFileSync('frontend/components/marketing/home/HomeRedesignSections.tsx', 'utf8'),
   readFileSync('frontend/components/marketing/home/HomeHeroSection.tsx', 'utf8'),
@@ -48,12 +49,11 @@ test('homepage titles keep the pay-as-you-go differentiator without getting too 
   assert.match(englishMessages.home?.meta?.description ?? '', /pay-as-you-go credits/);
 });
 
-test('homepage structured data keeps Organization schema alongside WebApplication schema', () => {
+test('the locale runtime owns one canonical site organization entity', () => {
   assert.match(homeSource, /home-webapp-jsonld/);
-  assert.match(homeSource, /home-organization-jsonld/);
-  assert.match(homeSource, /buildOrganizationSchema\(\)/);
-  assert.match(homeJsonLdSource, /'@type': 'Organization'/);
-  assert.match(homeJsonLdSource, /logo: 'https:\/\/maxvideoai\.com\/favicon-512\.png'/);
+  assert.match(localeRuntimeSource, /buildSiteOrganizationSchema/);
+  assert.doesNotMatch(homeSource, /home-organization-jsonld/);
+  assert.doesNotMatch(homeJsonLdSource, /buildOrganizationSchema/);
 });
 
 test('homepage FAQ targets search-intent questions and shares the same items with FAQPage schema', () => {

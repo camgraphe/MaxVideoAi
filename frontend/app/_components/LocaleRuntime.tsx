@@ -14,6 +14,7 @@ import {
   type ClientMessageNamespace,
 } from '@/lib/i18n/client-message-namespaces';
 import { deserializeMessages } from '@/lib/i18n/server';
+import { buildSiteOrganizationSchema } from '@/lib/seo/site-organization-schema';
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
 
 type LocaleRuntimeProps = {
@@ -29,20 +30,7 @@ export async function LocaleRuntime({ children, locale, clientMessageNamespaces 
   const messages = pickClientMessageNamespaces(fullMessages, clientMessageNamespaces);
   const fallbackMessages = messages;
   const homeUrl = `${SITE_ORIGIN}/`;
-  const logoUrl = `${SITE_ORIGIN}/favicon-512.png`;
-  const orgSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'Organization',
-    name: 'MaxVideoAI',
-    url: homeUrl,
-    logo: logoUrl,
-    sameAs: [
-      'https://x.com/MaxVideoAI',
-      'https://www.linkedin.com/company/maxvideoai/',
-      'https://github.com/camgraphe/maxvideoai',
-      'https://www.producthunt.com/products/maxvideoai',
-    ],
-  };
+  const orgSchema = buildSiteOrganizationSchema();
 
   const enableSearchSchema = process.env.NEXT_PUBLIC_ENABLE_SEARCH_SCHEMA === 'true';
   const websiteSchema = {

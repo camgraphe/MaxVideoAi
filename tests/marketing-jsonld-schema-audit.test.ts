@@ -6,9 +6,9 @@ import test from 'node:test';
 import {
   buildFaqSchema,
   buildItemListSchema,
-  buildOrganizationSchema,
   buildSoftwareSchema,
 } from '../frontend/app/(localized)/[locale]/(marketing)/(home)/_lib/home-jsonld.ts';
+import { buildSiteOrganizationSchema } from '../frontend/lib/seo/site-organization-schema.ts';
 import { buildFAQJsonLd } from '../frontend/components/seo/FAQSchema.tsx';
 import { buildPricingBreadcrumbJsonLd, buildPricingServiceJsonLd } from '../frontend/app/(localized)/[locale]/(marketing)/pricing/_lib/pricing-jsonld.ts';
 import {
@@ -319,7 +319,7 @@ function buildAuditedSchemaCases(): SchemaCase[] {
           pricingTrust: { subtitle: 'Start with pay-as-you-go credits.' },
           providers: { title: 'Supported AI video engines' },
         } as never),
-        buildOrganizationSchema(),
+        buildSiteOrganizationSchema(),
         buildFaqSchema([
           {
             question: 'What is MaxVideoAI?',
@@ -423,6 +423,15 @@ test('marketing JSON-LD builders emit baseline-valid schema payloads', () => {
     assert.ok(schemas.length > 0, `${schemaCase.surface} should expose JSON-LD schemas for audit`);
     schemas.forEach((schema, index) => assertSchemaNode(schema, `${schemaCase.surface}[${index}]`, true));
   }
+});
+
+test('site Organization schema keeps one canonical complete entity', () => {
+  const organization = buildSiteOrganizationSchema();
+
+  assert.equal(organization['@id'], 'https://maxvideoai.com/#organization');
+  assert.equal(organization.name, 'MaxVideoAI');
+  assert.equal(organization.alternateName, 'MaxVideo AI');
+  assert.ok(organization.sameAs.length >= 4);
 });
 
 test('blog Article schema identifies the visible person while retaining MaxVideoAI as publisher', () => {

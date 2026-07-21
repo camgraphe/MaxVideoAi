@@ -354,7 +354,7 @@ git commit -m "fix: distinguish homepage preview controls"
 - Preserves: name variants, URL, logo, social profiles, and homepage description currently spread across the two entities.
 - Changes intentionally: homepage emits one complete Organization root instead of two conflicting roots.
 
-- [ ] **Step 1: Add failing JSON-LD ownership tests**
+- [x] **Step 1: Add failing JSON-LD ownership tests**
 
 Add the runtime source beside the current homepage sources in `tests/home-seo-signals.test.ts`:
 
@@ -389,7 +389,7 @@ assert.equal(organization.alternateName, 'MaxVideo AI');
 assert.ok(organization.sameAs.length >= 4);
 ```
 
-- [ ] **Step 2: Run the SEO tests and verify they fail**
+- [x] **Step 2: Run the SEO tests and verify they fail**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -399,7 +399,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: FAIL because the homepage still emits a second Organization script and the shared builder does not exist.
 
-- [ ] **Step 3: Create the canonical Organization builder**
+- [x] **Step 3: Create the canonical Organization builder**
 
 ```ts
 import { SITE_ORIGIN } from '@/lib/siteOrigin';
@@ -425,7 +425,7 @@ export function buildSiteOrganizationSchema() {
 }
 ```
 
-- [ ] **Step 4: Switch the runtime to the shared builder and remove only the duplicate homepage root**
+- [x] **Step 4: Switch the runtime to the shared builder and remove only the duplicate homepage root**
 
 In `LocaleRuntime.tsx`:
 
@@ -437,7 +437,7 @@ const orgSchema = buildSiteOrganizationSchema();
 
 Remove the inline `orgSchema` object. In the homepage route and helper, remove `buildOrganizationSchema`, `organizationSchema`, and the `home-organization-jsonld` script. Do not touch WebSite, WebApplication, ItemList, FAQ, metadata, or visible homepage content.
 
-- [ ] **Step 5: Run the complete structured-data and homepage SEO suite**
+- [x] **Step 5: Run the complete structured-data and homepage SEO suite**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -451,7 +451,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: PASS. The rendered homepage contains one Organization entity plus the unchanged WebSite, WebApplication, ItemList, and FAQ entities.
 
-- [ ] **Step 6: Commit structured-data consolidation separately**
+- [x] **Step 6: Commit structured-data consolidation separately**
 
 ```bash
 git add \
