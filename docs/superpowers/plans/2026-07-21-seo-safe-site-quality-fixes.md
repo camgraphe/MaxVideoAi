@@ -549,7 +549,7 @@ git commit -m "fix: align sharp native runtime"
 - Consumes: all preceding commits.
 - Produces: buildable, localized pages with unchanged indexable content and metadata.
 
-- [ ] **Step 1: Run focused contracts as one batch**
+- [x] **Step 1: Run focused contracts as one batch**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -565,7 +565,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: PASS with no failures.
 
-- [ ] **Step 2: Run repository quality gates**
+- [x] **Step 2: Run repository quality gates**
 
 ```bash
 npm --prefix frontend run lint
@@ -577,7 +577,7 @@ git diff --check
 
 Expected: every command exits 0.
 
-- [ ] **Step 3: Build the production application**
+- [x] **Step 3: Build the production application**
 
 ```bash
 npm --prefix frontend run build
@@ -585,7 +585,7 @@ npm --prefix frontend run build
 
 Expected: build and sitemap generation complete successfully, with no Sharp/libvips duplication warning.
 
-- [ ] **Step 4: Smoke-test representative localized routes**
+- [x] **Step 4: Smoke-test representative localized routes**
 
 Test desktop and 390px mobile layouts for:
 
@@ -603,7 +603,7 @@ Test desktop and 390px mobile layouts for:
 
 For every route, verify status 200, one `<main>`, one H1 where already expected, no unintended horizontal page overflow, and unchanged visible copy. For the pricing routes, verify that each table region receives keyboard focus and can scroll horizontally. For the homepage, verify hero playback and engine selection still work.
 
-- [ ] **Step 5: Compare SEO output against the baseline**
+- [x] **Step 5: Compare SEO output against the baseline**
 
 Verify for each representative public route:
 
@@ -616,7 +616,7 @@ visible headings and links: unchanged
 JSON-LD: unchanged except homepage Organization roots decrease from two to one complete entity
 ```
 
-- [ ] **Step 6: Final review checkpoint**
+- [x] **Step 6: Final review checkpoint**
 
 Do not proceed to page-length changes or database hot-path changes in this batch. Report production workspace timing separately after deployment; open a dedicated migration plan only if production p95 confirms the local latency signal.
 
