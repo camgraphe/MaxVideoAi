@@ -477,7 +477,7 @@ git commit -m "fix: consolidate site organization schema"
 - Preserves: the `sharp` package API used by upload normalization, reference normalization, and thumbnail generation.
 - Produces: one Sharp/libvips native version in the workspace dependency graph.
 
-- [ ] **Step 1: Add a failing dependency contract**
+- [x] **Step 1: Add a failing dependency contract**
 
 ```ts
 import assert from 'node:assert/strict';
@@ -495,7 +495,7 @@ test('frontend uses the same Sharp release as Next 15.5.18', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and verify it fails**
+- [x] **Step 2: Run the test and verify it fails**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/sharp-runtime-version.test.ts
@@ -503,7 +503,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/sharp-runtime-versi
 
 Expected: FAIL because `frontend/package.json` declares `^0.33.5`.
 
-- [ ] **Step 3: Align the dependency and refresh the lockfile**
+- [x] **Step 3: Align the dependency and refresh the lockfile**
 
 Change only this dependency:
 
@@ -517,7 +517,7 @@ Then run:
 pnpm install
 ```
 
-- [ ] **Step 4: Verify the native dependency graph and image boundaries**
+- [x] **Step 4: Verify the native dependency graph and image boundaries**
 
 ```bash
 pnpm list -r sharp --depth 5
@@ -531,7 +531,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: dependency output and the Node smoke command report Sharp 0.34.5; all tests pass; no duplicate libvips warning appears when starting the app.
 
-- [ ] **Step 5: Commit dependency alignment**
+- [x] **Step 5: Commit dependency alignment**
 
 ```bash
 git add frontend/package.json pnpm-lock.yaml tests/sharp-runtime-version.test.ts
