@@ -1,13 +1,16 @@
 import type { AppLocale } from '@/i18n/locales';
 import type { PopularPriceCheckRow } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
+import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
 export function PricingPopularChecksSection({ checks, locale }: { checks: PopularPriceCheckRow[]; locale: AppLocale }) {
   const copy = getPricingHubCopy(locale);
   return (
     <section className="rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:p-6">
-      <h2 className="text-xl font-semibold tracking-normal text-text-primary">{copy.popularChecks.title}</h2>
-      <div className="mt-4 overflow-x-auto">
+      <h2 id="popular-pricing-checks-title" className="text-xl font-semibold tracking-normal text-text-primary">
+        {copy.popularChecks.title}
+      </h2>
+      <PricingTableScrollRegion labelledBy="popular-pricing-checks-title" className="mt-4">
         <table className="min-w-[760px] text-left text-sm">
           <thead>
             <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
@@ -34,7 +37,7 @@ export function PricingPopularChecksSection({ checks, locale }: { checks: Popula
             ))}
           </tbody>
         </table>
-      </div>
+      </PricingTableScrollRegion>
     </section>
   );
 }

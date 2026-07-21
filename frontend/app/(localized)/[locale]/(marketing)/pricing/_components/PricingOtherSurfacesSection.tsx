@@ -2,6 +2,7 @@ import type { AppLocale } from '@/i18n/locales';
 import { Link } from '@/i18n/navigation';
 import type { ImagePricingRow, OtherSurfacePricingData, PricingHubLink } from '../_lib/pricingHubData';
 import { getPricingHubCopy } from '../_lib/pricingHubCopy';
+import { PricingTableScrollRegion } from './PricingTableScrollRegion';
 
 function InlineLinks({ links }: { links: PricingHubLink[] }) {
   return (
@@ -42,8 +43,10 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
       </div>
 
       <div id="image-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
-        <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.imageTitle}</h3>
-        <div className="mt-4 overflow-x-auto">
+        <h3 id="image-pricing-title" className="text-xl font-semibold tracking-normal text-text-primary">
+          {copy.otherSurfaces.imageTitle}
+        </h3>
+        <PricingTableScrollRegion labelledBy="image-pricing-title" className="mt-4">
           <table className="min-w-[940px] text-left text-sm">
             <thead>
               <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
@@ -72,12 +75,14 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
               ))}
             </tbody>
           </table>
-        </div>
+        </PricingTableScrollRegion>
       </div>
 
       <div id="audio-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
-        <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.audioTitle}</h3>
-        <div className="mt-4 overflow-x-auto">
+        <h3 id="audio-pricing-title" className="text-xl font-semibold tracking-normal text-text-primary">
+          {copy.otherSurfaces.audioTitle}
+        </h3>
+        <PricingTableScrollRegion labelledBy="audio-pricing-title" className="mt-4">
           <table className="min-w-[860px] text-left text-sm">
             <thead>
               <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
@@ -104,12 +109,14 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
               ))}
             </tbody>
           </table>
-        </div>
+        </PricingTableScrollRegion>
       </div>
 
       <div id="tool-pricing" className="scroll-mt-24 rounded-[8px] border border-hairline bg-surface p-5 shadow-card sm:scroll-mt-28 sm:p-6">
-        <h3 className="text-xl font-semibold tracking-normal text-text-primary">{copy.otherSurfaces.toolTitle}</h3>
-        <div className="mt-4 overflow-x-auto">
+        <h3 id="tool-pricing-title" className="text-xl font-semibold tracking-normal text-text-primary">
+          {copy.otherSurfaces.toolTitle}
+        </h3>
+        <PricingTableScrollRegion labelledBy="tool-pricing-title" className="mt-4">
           <table className="min-w-[820px] text-left text-sm">
             <thead>
               <tr className="border-b border-hairline text-xs font-semibold uppercase tracking-normal text-text-muted">
@@ -134,7 +141,7 @@ export function PricingOtherSurfacesSection({ data, locale }: { data: OtherSurfa
               ))}
             </tbody>
           </table>
-        </div>
+        </PricingTableScrollRegion>
       </div>
     </section>
   );

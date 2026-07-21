@@ -151,7 +151,7 @@ git commit -m "fix: keep one main landmark on marketing pages"
 - Produces: `PricingTableScrollRegion({ children, className?, id?, labelledBy })`.
 - Preserves: all tables, rows, anchors, prices, labels, links, and indexable text.
 
-- [ ] **Step 1: Add a failing pricing accessibility contract**
+- [x] **Step 1: Add a failing pricing accessibility contract**
 
 Append to `tests/pricing-page-architecture.test.ts`:
 
@@ -177,7 +177,7 @@ test('pricing tables use labelled keyboard-focusable scroll regions', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and verify it fails**
+- [x] **Step 2: Run the test and verify it fails**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-page-architecture.test.ts
@@ -185,7 +185,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/pricing-page-archit
 
 Expected: FAIL because `PricingTableScrollRegion.tsx` does not exist.
 
-- [ ] **Step 3: Create the shared route-local wrapper**
+- [x] **Step 3: Create the shared route-local wrapper**
 
 ```tsx
 import type { ReactNode } from 'react';
@@ -217,7 +217,7 @@ export function PricingTableScrollRegion({
 }
 ```
 
-- [ ] **Step 4: Wire all five pricing tables without changing their content**
+- [x] **Step 4: Wire all five pricing tables without changing their content**
 
 Add stable IDs to the existing headings:
 
@@ -247,7 +247,7 @@ Keep the current `<table className="min-w-[1460px] border-separate border-spacin
 
 Use the corresponding heading ID for the popular, image, audio, and tool tables. Do not add visible instructional copy.
 
-- [ ] **Step 5: Run pricing and public SEO tests**
+- [x] **Step 5: Run pricing and public SEO tests**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -260,7 +260,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: PASS; pricing rows, links, values, and localized URLs remain unchanged.
 
-- [ ] **Step 6: Commit the accessible scrollers**
+- [x] **Step 6: Commit the accessible scrollers**
 
 ```bash
 git add \
