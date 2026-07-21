@@ -162,7 +162,7 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
   const faqJsonLd = buildModelsCatalogFaqJsonLd(faqItems);
 
   return (
-    <main className="bg-bg text-text-primary">
+    <div className="bg-bg text-text-primary">
       <ModelsCatalogHero
         badges={decisionData.badges}
         eyebrow={decisionCopy.eyebrow ?? scopeDefaults.breadcrumbCurrent ?? 'AI model directory'}
@@ -246,6 +246,6 @@ export default async function ModelsCatalogPage({ scope = 'all' }: { scope?: Mod
         faqJsonLd={faqJsonLd}
         itemListJsonLd={itemListJsonLd}
       />
-    </main>
+    </div>
   );
 }

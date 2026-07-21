@@ -178,12 +178,12 @@ export default async function BlogIndexPage(props: { params: Promise<{ locale: A
 
   if (posts.length === 0) {
     return (
-      <main className="container-page max-w-3xl section text-center">
+      <div className="container-page max-w-3xl section text-center">
         <div className="stack-gap-sm">
           <h1 className="text-3xl font-semibold text-text-primary sm:text-5xl">{content.hero.title}</h1>
           <p className="text-base leading-relaxed text-text-secondary">{content.empty}</p>
         </div>
-      </main>
+      </div>
     );
   }
 
@@ -191,7 +191,7 @@ export default async function BlogIndexPage(props: { params: Promise<{ locale: A
   const featuredLinkProps = getBlogLinkProps(locale, featured);
 
   return (
-    <main className="bg-bg">
+    <div className="bg-bg">
       <div className="stack-gap-lg">
         <header className="relative min-h-[440px] overflow-hidden border-b border-hairline bg-bg">
           <MarketingHeroImage
@@ -386,6 +386,6 @@ export default async function BlogIndexPage(props: { params: Promise<{ locale: A
       <Script id="blog-list-jsonld" type="application/ld+json">
         {JSON.stringify(articleListSchema)}
       </Script>
-    </main>
+    </div>
   );
 }

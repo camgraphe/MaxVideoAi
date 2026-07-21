@@ -21,7 +21,7 @@ export function AboutView({
   ];
 
   return (
-    <main className="container-page max-w-6xl space-y-12 py-14 sm:space-y-16 sm:py-20">
+    <div className="container-page max-w-6xl space-y-12 py-14 sm:space-y-16 sm:py-20">
       <header className="max-w-4xl">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand">{copy.hero.eyebrow}</p>
         <h1 className="mt-5 font-display text-4xl font-semibold tracking-[-0.04em] text-text-primary sm:text-6xl">
@@ -71,6 +71,6 @@ export function AboutView({
           </Link>
         ))}
       </nav>
-    </main>
+    </div>
   );
 }

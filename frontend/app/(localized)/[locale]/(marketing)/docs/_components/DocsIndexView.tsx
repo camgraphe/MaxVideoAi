@@ -20,7 +20,7 @@ export function DocsIndexView({ content, docs, metadataUrls, site }: DocsIndexVi
   const viewModel = buildDocsIndexViewModel(content, docs);
 
   return (
-    <main id="top" className="scroll-smooth">
+    <div id="top" className="scroll-smooth">
       <div className="container-page max-w-5xl section">
         <div className="stack-gap-lg">
           <header className="stack-gap-sm">
@@ -54,6 +54,6 @@ export function DocsIndexView({ content, docs, metadataUrls, site }: DocsIndexVi
         </div>
         <DocsJsonLdScripts content={content} metadataUrls={metadataUrls} site={site} toc={viewModel.toc} />
       </div>
-    </main>
+    </div>
   );
 }

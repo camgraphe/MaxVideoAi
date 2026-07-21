@@ -29,7 +29,7 @@ export type PayAsYouGoPageViewProps = {
 
 export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAsYouGoPageViewProps) {
   return (
-    <main className="bg-bg">
+    <div className="bg-bg">
       <PayAsYouGoHeroSection data={data} />
       <PayAsYouGoVideoShowcase videos={showcaseVideos} copy={showcaseCopy} />
       <PayAsYouGoNaturalQuestionsSection data={data} />
@@ -44,6 +44,6 @@ export function PayAsYouGoPageView({ data, showcaseCopy, showcaseVideos }: PayAs
       <PayAsYouGoExampleCostsSection data={data} />
       <PayAsYouGoRefundPolicySection data={data} />
       <PayAsYouGoFaqSection data={data} />
-    </main>
+    </div>
   );
 }

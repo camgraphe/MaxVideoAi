@@ -46,7 +46,7 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
   const serviceSchema = buildPricingServiceJsonLd({ canonical, locale });
 
   return (
-    <main className="bg-bg">
+    <div className="bg-bg">
       <PricingHeroSection
         badges={content.hero.badges}
         calculatorHref="/app"
@@ -81,6 +81,6 @@ export default async function PricingPage(props: { params: Promise<{ locale: App
 
       <PricingJsonLdScripts breadcrumbJsonLd={breadcrumbJsonLd} serviceSchema={serviceSchema} />
       <FAQSchema questions={faqEntries.slice(0, 6)} />
-    </main>
+    </div>
   );
 }

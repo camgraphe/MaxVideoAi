@@ -424,7 +424,7 @@ export function MarketingModelPageLayout({
           dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
         />
       ))}
-      <main className={['container-page model-page overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
+      <div className={['container-page model-page overflow-x-clip pb-0 pt-5 sm:pt-7', templateData ? 'max-w-[1400px]' : 'max-w-6xl'].join(' ')}>
         <div className={templateData ? 'space-y-5' : 'stack-gap-lg gap-0'}>
           {templateData ? (
             <>
@@ -487,7 +487,7 @@ export function MarketingModelPageLayout({
             safetyFaqProps={{ copy, modelName: heroTitle, safetyRules, safetyInterpretation, faqList, faqTitle, locale, isSoraPrompting, faqJsonLdEntries }}
           />
         </div>
-      </main>
+      </div>
     </>
   );
 }
