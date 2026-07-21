@@ -10,6 +10,7 @@ const visualsPath = join(root, 'frontend/components/marketing/home/home-redesign
 const workflowSummaryPath = join(root, 'frontend/components/marketing/home/HomeWorkflowSeoSummary.tsx');
 const conversionSectionsPath = join(root, 'frontend/components/marketing/home/HomeConversionSections.tsx');
 const heroSectionPath = join(root, 'frontend/components/marketing/home/HomeHeroSection.tsx');
+const heroVideoShowcasePath = join(root, 'frontend/components/marketing/home/HeroVideoShowcase.tsx');
 const shotTypeSectionPath = join(root, 'frontend/components/marketing/home/HomeShotTypeEngineSelector.tsx');
 
 const sectionsSource = readFileSync(sectionsPath, 'utf8');
@@ -18,7 +19,13 @@ const visualsSource = readFileSync(visualsPath, 'utf8');
 const workflowSummarySource = readFileSync(workflowSummaryPath, 'utf8');
 const conversionSectionsSource = readFileSync(conversionSectionsPath, 'utf8');
 const heroSectionSource = readFileSync(heroSectionPath, 'utf8');
+const heroVideoShowcaseSource = readFileSync(heroVideoShowcasePath, 'utf8');
 const shotTypeSectionSource = readFileSync(shotTypeSectionPath, 'utf8');
+
+test('homepage hero overlay and toolbar expose distinct playback names', () => {
+  assert.match(heroVideoShowcaseSource, /aria-label=\{`\$\{selected\.name\} — \$\{playLabel\}`\}/);
+  assert.match(heroVideoShowcaseSource, /aria-label=\{isPlaying \? pauseLabel : playLabel\}/);
+});
 
 test('home redesign sections delegate shared content contracts', () => {
   assert.ok(existsSync(typesPath), 'home redesign contracts should live beside the home section components');

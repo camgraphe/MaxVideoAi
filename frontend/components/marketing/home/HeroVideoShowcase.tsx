@@ -324,7 +324,7 @@ export function HeroVideoShowcase({
           {hasUserPaused || (selected.videoSrc && !shouldLoadVideo) ? (
             <button
               type="button"
-              aria-label={playLabel}
+              aria-label={`${selected.name} — ${playLabel}`}
               aria-pressed={false}
               onClick={handlePlayToggle}
               className="absolute left-1/2 top-1/2 inline-flex h-[72px] w-[72px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-white/75 bg-white/94 text-[#161a2d] shadow-[0_18px_46px_-18px_rgba(0,0,0,0.88)] backdrop-blur-md transition hover:scale-105 hover:bg-white focus:outline-none focus:ring-2 focus:ring-white/90 focus:ring-offset-2 focus:ring-offset-[#070b14] dark:border-white/45 dark:focus:ring-[rgba(143,183,255,0.34)]"

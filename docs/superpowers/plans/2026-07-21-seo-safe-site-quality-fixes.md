@@ -284,7 +284,7 @@ git commit -m "fix: label keyboard-scrollable pricing tables"
 - Preserves: playback state, pointer behavior, keyboard behavior, localization, layout, and all control dimensions.
 - Produces: a selected-engine-aware label for the large overlay control.
 
-- [ ] **Step 1: Add the failing source contract**
+- [x] **Step 1: Add the failing source contract**
 
 Add these declarations beside the existing homepage component paths and sources in `tests/home-redesign-architecture.test.ts`:
 
@@ -302,7 +302,7 @@ test('homepage hero overlay and toolbar expose distinct playback names', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test and verify it fails**
+- [x] **Step 2: Run the test and verify it fails**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/home-redesign-architecture.test.ts
@@ -310,7 +310,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test tests/home-redesign-archi
 
 Expected: FAIL because both paused controls currently use `playLabel`.
 
-- [ ] **Step 3: Change only the overlay accessible name**
+- [x] **Step 3: Change only the overlay accessible name**
 
 ```tsx
 aria-label={`${selected.name} — ${playLabel}`}
@@ -318,7 +318,7 @@ aria-label={`${selected.name} — ${playLabel}`}
 
 Replace only the current overlay line `aria-label={playLabel}` with the line above. Keep the toolbar `aria-label={isPlaying ? pauseLabel : playLabel}` and every `h-9 w-9`/`h-[72px] w-[72px]` class unchanged.
 
-- [ ] **Step 4: Run homepage contracts**
+- [x] **Step 4: Run homepage contracts**
 
 ```bash
 pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
@@ -330,7 +330,7 @@ pnpm exec tsx --tsconfig frontend/tsconfig.json --test \
 
 Expected: PASS with no visible-copy or SEO changes.
 
-- [ ] **Step 5: Commit the label correction**
+- [x] **Step 5: Commit the label correction**
 
 ```bash
 git add frontend/components/marketing/home/HeroVideoShowcase.tsx tests/home-redesign-architecture.test.ts
