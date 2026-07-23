@@ -62,6 +62,9 @@ importers:
       '@types/pg':
         specifier: ^8.10.2
         version: 8.15.5
+      esbuild:
+        specifier: 0.25.11
+        version: 0.25.11
       tsx:
         specifier: ^4.20.6
         version: 4.20.6

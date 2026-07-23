@@ -86,6 +86,7 @@
   "devDependencies": {
     "@playwright/test": "^1.59.1",
     "@types/pg": "^8.10.2",
+    "esbuild": "0.25.11",
     "tsx": "^4.20.6"
   }
 }
