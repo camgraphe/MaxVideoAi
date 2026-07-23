@@ -26,6 +26,7 @@ type ExampleGalleryCardProps = {
   isFirst: boolean;
   locale: string;
   noPreviewLabel: string;
+  prioritizePoster: boolean;
   video: ExampleGalleryVideo;
 };
 
@@ -39,6 +40,7 @@ export function ExampleGalleryCard({
   isFirst,
   locale,
   noPreviewLabel,
+  prioritizePoster,
   video,
 }: ExampleGalleryCardProps) {
   const [isHovered, setIsHovered] = useState(false);
@@ -145,6 +147,8 @@ export function ExampleGalleryCard({
                   decoding="async"
                   sizes={posterSizes}
                   quality={52}
+                  priority={prioritizePoster}
+                  fetchPriority={prioritizePoster ? 'high' : undefined}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-placeholder text-[11px] font-semibold uppercase tracking-micro text-text-muted">

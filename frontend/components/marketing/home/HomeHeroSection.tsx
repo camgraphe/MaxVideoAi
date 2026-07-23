@@ -13,6 +13,7 @@ import {
   KLING_3_PRO_HERO_RENDER,
   PROOF_ICONS,
 } from '@/components/marketing/home/home-redesign-visuals';
+import { HOME_LCP_POSTER_SRC } from '@/components/marketing/home/home-lcp-image';
 import type { HomeExampleCard, HomeHeroContent, ProofStat } from '@/components/marketing/home/home-redesign-types';
 
 function normalizeHeroText(value: string) {
@@ -111,6 +112,14 @@ function applyHeroMediaOverride(item: HeroVideoShowcaseItem): HeroVideoShowcaseI
   };
 }
 
+function applyHomeLcpPoster(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
+  const engineId = item.engineId ?? item.id;
+  if (engineId === HERO_VIDEO_ORDER[0]) {
+    return { ...item, posterSrc: HOME_LCP_POSTER_SRC };
+  }
+  return item;
+}
+
 export function HomeHero({
   copy,
   proofStats,
@@ -133,7 +142,7 @@ export function HomeHero({
   const fallbackByEngine = new Map(fallbackItems.map((item) => [item.engineId ?? item.id, item]));
   const videoItems = HERO_VIDEO_ORDER.flatMap((engineId) => {
     const item = programmedByEngine.get(engineId) ?? fallbackByEngine.get(engineId);
-    return item ? [applyHeroMediaOverride(item)] : [];
+    return item ? [applyHomeLcpPoster(applyHeroMediaOverride(item))] : [];
   });
   const proofGridColumnsClass = proofStats.length >= 8 ? 'xl:grid-cols-8' : 'xl:grid-cols-7';
 

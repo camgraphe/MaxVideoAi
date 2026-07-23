@@ -161,6 +161,8 @@ export function ExamplesPageView({
   totalPages,
   usesCurrentAndSupportedBlocks,
 }: ExamplesPageViewProps) {
+  const hasRouteHero = Boolean(mainVideo && mainVideoFeature.contentUrl);
+
   return (
     <>
       <ExamplesEngineFilterNav
@@ -230,6 +232,7 @@ export function ExamplesPageView({
             locale={locale}
             noPreviewLabel={galleryUiCopy.noPreview}
             pageOffsetEnd={pageOffsetEnd}
+            prioritizeFirstPoster={!hasRouteHero}
             show={showGallerySection}
             sort={sort}
           />

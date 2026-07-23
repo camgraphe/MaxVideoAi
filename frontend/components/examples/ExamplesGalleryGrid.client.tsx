@@ -23,6 +23,7 @@ export default function ExamplesGalleryGridClient({
   loadMoreLabel = 'Load more examples',
   loadingLabel = 'Loading…',
   noPreviewLabel = 'No preview',
+  prioritizeFirstPoster = false,
   audioAvailableLabel = 'Audio available on playback',
   initialDesktopBatch = DEFAULT_INITIAL_DESKTOP_BATCH,
   initialMobileBatch = DEFAULT_INITIAL_MOBILE_BATCH,
@@ -37,6 +38,7 @@ export default function ExamplesGalleryGridClient({
   loadMoreLabel?: string;
   loadingLabel?: string;
   noPreviewLabel?: string;
+  prioritizeFirstPoster?: boolean;
   audioAvailableLabel?: string;
   initialDesktopBatch?: number;
   initialMobileBatch?: number;
@@ -146,6 +148,7 @@ export default function ExamplesGalleryGridClient({
               enableInlineVideo={false}
               detailsCtaLabel={detailsCtaLabel}
               noPreviewLabel={noPreviewLabel}
+              prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
               audioAvailableLabel={audioAvailableLabel}
               locale={locale}
               altText={resolveAltText(video, altById, locale)}
@@ -166,6 +169,7 @@ export default function ExamplesGalleryGridClient({
                   enableInlineVideo
                   detailsCtaLabel={detailsCtaLabel}
                   noPreviewLabel={noPreviewLabel}
+                  prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
                   audioAvailableLabel={audioAvailableLabel}
                   locale={locale}
                   altText={resolveAltText(video, altById, locale)}
