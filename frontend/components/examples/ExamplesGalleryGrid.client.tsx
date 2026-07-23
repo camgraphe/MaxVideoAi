@@ -9,9 +9,7 @@ import {
   dedupeExamples,
   DEFAULT_INITIAL_DESKTOP_BATCH,
   DEFAULT_INITIAL_MOBILE_BATCH,
-  splitIntoColumns,
 } from '@/components/examples/examples-gallery-helpers';
-import { useExamplesGalleryColumns } from '@/components/examples/useExamplesGalleryColumns';
 import type { ExampleGalleryVideo, ExampleSort } from '@/components/examples/examples-gallery-types';
 import masonryStyles from './examples-masonry.module.css';
 
@@ -48,25 +46,24 @@ export default function ExamplesGalleryGridClient({
   pageOffsetEnd: number;
   locale: string;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
   const baseAll = useMemo(() => dedupeExamples(initialExamples), [initialExamples]);
-  const columnCount = useExamplesGalleryColumns();
+  const initialBatchSize = Math.max(initialMobileBatch, initialDesktopBatch);
   const [nextOffset, setNextOffset] = useState(() => initialOffset);
   const [isLoading, setIsLoading] = useState(false);
+  const [allowInlineVideo, setAllowInlineVideo] = useState(false);
   const [visibleVideos, setVisibleVideos] = useState<ExampleGalleryVideo[]>(() =>
-    baseAll.slice(0, initialDesktopBatch)
+    baseAll.slice(0, initialBatchSize)
   );
 
   useEffect(() => {
-    const nextInitialBatch = isMobile ? initialMobileBatch : initialDesktopBatch;
-    setVisibleVideos(baseAll.slice(0, nextInitialBatch));
+    setVisibleVideos(baseAll.slice(0, initialBatchSize));
     setNextOffset(initialOffset);
-  }, [baseAll, initialDesktopBatch, initialMobileBatch, initialOffset, isMobile]);
+  }, [baseAll, initialBatchSize, initialOffset]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    const mediaQuery = window.matchMedia('(max-width: 639px)');
-    const syncViewport = () => setIsMobile(mediaQuery.matches);
+    const mediaQuery = window.matchMedia('(min-width: 640px)');
+    const syncViewport = () => setAllowInlineVideo(mediaQuery.matches);
     syncViewport();
     mediaQuery.addEventListener?.('change', syncViewport);
     return () => {
@@ -109,7 +106,6 @@ export default function ExamplesGalleryGridClient({
     }
   };
 
-  const columns = useMemo(() => splitIntoColumns(visibleVideos, columnCount), [visibleVideos, columnCount]);
   const altById = useMemo(() => {
     const alts = visibleVideos.map((video, index) => {
       const promptSeed = locale === 'en' ? video.promptFull ?? video.prompt : video.engineLabel;
@@ -130,22 +126,19 @@ export default function ExamplesGalleryGridClient({
     });
     return dedupeAltsInList(alts);
   }, [locale, visibleVideos]);
-  const shouldUseTallCardLayout = !isMobile;
   const firstVisibleId = visibleVideos[0]?.id;
   const hasMore = nextOffset < pageOffsetEnd;
 
   return (
     <div className="space-y-3 p-3 sm:space-y-4 sm:p-6">
-      {isMobile ? (
-        <div className="flex flex-col gap-3">
-          {visibleVideos.map((video) => (
+      <div className={masonryStyles.masonry}>
+        {visibleVideos.map((video) => (
+          <div key={video.id} className={masonryStyles.item}>
             <ExampleGalleryCard
-              key={video.id}
               video={video}
               isFirst={video.id === firstVisibleId}
               forceExclusivePlay={false}
-              enableTallCardLayout={false}
-              enableInlineVideo={false}
+              enableInlineVideo={allowInlineVideo}
               detailsCtaLabel={detailsCtaLabel}
               noPreviewLabel={noPreviewLabel}
               prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
@@ -153,32 +146,9 @@ export default function ExamplesGalleryGridClient({
               locale={locale}
               altText={resolveAltText(video, altById, locale)}
             />
-          ))}
-        </div>
-      ) : (
-        <div className={masonryStyles.masonry}>
-          {columns.map((column, columnIndex) => (
-            <div key={columnIndex} className={masonryStyles.column}>
-              {column.map((video) => (
-                <ExampleGalleryCard
-                  key={video.id}
-                  video={video}
-                  isFirst={video.id === firstVisibleId}
-                  forceExclusivePlay={false}
-                  enableTallCardLayout={shouldUseTallCardLayout}
-                  enableInlineVideo
-                  detailsCtaLabel={detailsCtaLabel}
-                  noPreviewLabel={noPreviewLabel}
-                  prioritizePoster={prioritizeFirstPoster && video.id === firstVisibleId}
-                  audioAvailableLabel={audioAvailableLabel}
-                  locale={locale}
-                  altText={resolveAltText(video, altById, locale)}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ))}
+      </div>
       {hasMore ? (
         <div className="flex justify-center">
           <Button

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import clsx from 'clsx';
@@ -21,7 +21,6 @@ type ExampleGalleryCardProps = {
   audioAvailableLabel: string;
   detailsCtaLabel: string;
   enableInlineVideo: boolean;
-  enableTallCardLayout: boolean;
   forceExclusivePlay: boolean;
   isFirst: boolean;
   locale: string;
@@ -35,7 +34,6 @@ export function ExampleGalleryCard({
   audioAvailableLabel,
   detailsCtaLabel,
   enableInlineVideo,
-  enableTallCardLayout,
   forceExclusivePlay,
   isFirst,
   locale,
@@ -56,10 +54,13 @@ export function ExampleGalleryCard({
   const shouldLoadVideo = enableInlineVideo && inView && Boolean(inlineVideoUrl);
   const shouldPlay = shouldLoadVideo && (isHovered || isFirst || forceExclusivePlay);
   const mediaPaddingPercent = Number((100 / rawAspect).toFixed(3));
-  const tallCardEnabled = enableTallCardLayout && isPortrait;
-  const mediaPadding = tallCardEnabled
+  const desktopMediaPadding = isPortrait
     ? `calc(${TALL_CARD_MEDIA_PERCENT}% + var(--examples-grid-row-gap, 10px))`
     : `${mediaPaddingPercent}%`;
+  const mediaFrameStyle = {
+    '--examples-mobile-media-padding': `${mediaPaddingPercent}%`,
+    '--examples-desktop-media-padding': desktopMediaPadding,
+  } as CSSProperties;
 
   useEffect(() => {
     const node = cardRef.current;
@@ -123,7 +124,7 @@ export function ExampleGalleryCard({
       </Link>
       <div className="pointer-events-none relative z-10">
         <div className={clsx(mediaStyles.mediaOuter, 'relative w-full overflow-hidden bg-surface-on-media-dark-5')}>
-          <div className="relative w-full" style={{ paddingBottom: mediaPadding }}>
+          <div className={clsx(mediaStyles.mediaFrame, 'relative w-full')} style={mediaFrameStyle}>
             <div className="absolute inset-0">
               {shouldLoadVideo && inlineVideoUrl ? (
                 <video

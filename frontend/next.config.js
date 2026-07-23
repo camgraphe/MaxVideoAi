@@ -3,6 +3,9 @@ const modelRegistry = require('./config/model-registry.json');
 const { buildModelRegistryRedirects } = require('./config/model-registry-redirects.cjs');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
+const HOME_LCP_POSTER_SRC = '/hero/showcase-seedance-2-0.webp';
+const HOME_LCP_PRELOAD_PATHS = ['/', '/fr', '/es'];
+const HOME_LCP_LINK_HEADER = `<${HOME_LCP_POSTER_SRC}>; rel=preload; as=image; fetchpriority=high`;
 const MARKETING_CDN_CACHE_HEADERS = [
   {
     key: 'Cache-Control',
@@ -367,6 +370,17 @@ const nextConfig = {
 
     MARKETING_CDN_CACHE_PATHS.forEach((source) => {
       rules.push({ source, headers: MARKETING_CDN_CACHE_HEADERS });
+    });
+    HOME_LCP_PRELOAD_PATHS.forEach((source) => {
+      rules.push({
+        source,
+        headers: [
+          {
+            key: 'Link',
+            value: HOME_LCP_LINK_HEADER,
+          },
+        ],
+      });
     });
 
     // Always ensure robots.txt is not cached so changes propagate immediately

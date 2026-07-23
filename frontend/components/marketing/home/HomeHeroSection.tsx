@@ -115,7 +115,7 @@ function applyHeroMediaOverride(item: HeroVideoShowcaseItem): HeroVideoShowcaseI
 function applyHomeLcpPoster(item: HeroVideoShowcaseItem): HeroVideoShowcaseItem {
   const engineId = item.engineId ?? item.id;
   if (engineId === HERO_VIDEO_ORDER[0]) {
-    return { ...item, posterSrc: HOME_LCP_POSTER_SRC };
+    return { ...item, posterSrc: HOME_LCP_POSTER_SRC, unoptimizedPoster: true };
   }
   return item;
 }

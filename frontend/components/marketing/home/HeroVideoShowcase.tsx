@@ -24,6 +24,7 @@ export type HeroVideoShowcaseItem = {
   examplesLabel?: string;
   modelLabel?: string;
   posterSrc: string;
+  unoptimizedPoster?: boolean;
   videoSrc?: string | null;
   duration: string;
   resolution: string;
@@ -266,6 +267,7 @@ export function HeroVideoShowcase({
               fill
               priority
               fetchPriority="high"
+              unoptimized={selected.unoptimizedPoster}
               sizes="(max-width: 767px) 100vw, (max-width: 1399px) 52vw, 710px"
               className="object-cover"
             />

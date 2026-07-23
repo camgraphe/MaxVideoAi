@@ -7,6 +7,7 @@ const root = process.cwd();
 const galleryCardPath = join(root, 'frontend/components/examples/ExampleGalleryCard.tsx');
 const galleryClientPath = join(root, 'frontend/components/examples/ExamplesGalleryGrid.client.tsx');
 const galleryGridPath = join(root, 'frontend/components/examples/ExamplesGalleryGrid.tsx');
+const galleryStylesPath = join(root, 'frontend/components/examples/examples-masonry.module.css');
 const examplesHeadPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/examples/head.tsx');
 const examplesPageViewPath = join(
   root,
@@ -34,6 +35,17 @@ test('examples gallery prioritizes its first poster only when no route hero is r
   assert.match(cardSource, /priority=\{prioritizePoster\}/);
   assert.match(cardSource, /fetchPriority=\{prioritizePoster \? 'high' : undefined\}/);
   assert.doesNotMatch(cardSource, /priority=\{isFirst\}/);
+});
+
+test('examples gallery keeps one responsive DOM tree through mobile hydration', () => {
+  const clientSource = readSource(galleryClientPath);
+  const stylesSource = readSource(galleryStylesPath);
+
+  assert.doesNotMatch(clientSource, /const \[isMobile,\s*setIsMobile\]/);
+  assert.doesNotMatch(clientSource, /isMobile\s*\?/);
+  assert.match(clientSource, /visibleVideos\.map/);
+  assert.match(stylesSource, /column-count:\s*1/);
+  assert.match(stylesSource, /break-inside:\s*avoid/);
 });
 
 test('examples head leaves image selection to the route hero', () => {
