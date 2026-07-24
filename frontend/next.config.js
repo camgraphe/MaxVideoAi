@@ -17,6 +17,7 @@ const MARKETING_CDN_CACHE_HEADERS = [
   },
 ];
 const MARKETING_CDN_CACHE_PATHS = [
+  '/',
   '/fr',
   '/es',
   '/fr/tarifs',
