@@ -272,6 +272,7 @@ test('BytePlus payload respects explicit empty capabilities while omitted capabi
 test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware official rates', () => {
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
@@ -284,6 +285,7 @@ test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware officia
   );
   assert.equal(
     expectedBytePlusTokens({
+      engine_id: 'seedance-2-0',
       duration_sec: 1,
       settings_snapshot: {
         core: {
