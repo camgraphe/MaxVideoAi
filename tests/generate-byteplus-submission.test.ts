@@ -92,6 +92,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
         createSeedanceFastTask: async () => ({ providerJobId: 'provider_123', status: 'queued' }),
       }),
       getBytePlusSeedanceAllowedResolutionsFn: () => ['720p', '1080p'] as never,
+      getBytePlusSeedanceDurationOptionsFn: () => [8] as never,
       queryFn: async (sql, params) => {
         queries.push({ sql, params });
       },
@@ -121,7 +122,7 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
     allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
     allowedResolutions: ['720p', '1080p'],
-    allowedDurationOptions: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+    allowedDurationOptions: [8],
   });
   assert.deepEqual(persistedProviderIds, ['provider_123']);
   assert.match(queries[0]?.sql ?? '', /UPDATE app_jobs/);

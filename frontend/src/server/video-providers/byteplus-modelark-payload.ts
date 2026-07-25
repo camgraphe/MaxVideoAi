@@ -75,10 +75,9 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceImageUrls = uniqueNonEmptyUrls(params.referenceImageUrls);
   const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
   const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
-  const allowedModes = params.allowedModes?.length ? params.allowedModes : BYTEPLUS_SEEDANCE_MODES;
-  const allowedAspectRatios = params.allowedAspectRatios?.length
-    ? params.allowedAspectRatios
-    : BYTEPLUS_SEEDANCE_ASPECT_RATIOS;
+  const allowedModes = params.allowedModes ?? BYTEPLUS_SEEDANCE_MODES;
+  const allowedAspectRatios =
+    params.allowedAspectRatios ?? BYTEPLUS_SEEDANCE_ASPECT_RATIOS;
   const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
   const allowedDurationOptions = params.allowedDurationOptions?.length
     ? params.allowedDurationOptions

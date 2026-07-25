@@ -241,6 +241,34 @@ test('BytePlus Standard exposes 4k while Fast and Mini stay capped below 4k', ()
   );
 });
 
+test('BytePlus payload respects explicit empty capabilities while omitted capabilities keep defaults', () => {
+  const basePayload = {
+    modelId: 'dreamina-seedance-2-0-fast-260128',
+    prompt: 'A profile capability test.',
+    durationSec: 5,
+    mode: 't2v' as const,
+    resolution: '720p',
+    ratio: '16:9',
+  };
+
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedModes: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_MODE_UNSUPPORTED'
+  );
+  assert.throws(
+    () => buildBytePlusSeedancePayload({ ...basePayload, allowedAspectRatios: [] }),
+    (error: unknown) =>
+      error instanceof Error &&
+      (error as Error & { code?: string }).code === 'BYTEPLUS_RATIO_UNSUPPORTED'
+  );
+
+  const payload = buildBytePlusSeedancePayload(basePayload);
+  assert.equal(payload.resolution, '720p');
+  assert.equal(payload.ratio, '16:9');
+});
+
 test('BytePlus Standard 4k accounting uses 4k dimensions and input-aware official rates', () => {
   assert.equal(
     expectedBytePlusTokens({
