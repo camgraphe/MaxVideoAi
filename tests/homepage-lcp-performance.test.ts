@@ -28,7 +28,7 @@ test('homepage emits a deterministic responsive LCP preload without waiting for 
   assert.equal(existsSync(homeLcpImagePath), true, 'homepage LCP image config should be shared by head and hero');
 
   const imageConfigSource = readSource(homeLcpImagePath);
-  assert.match(imageConfigSource, /showcase-seedance-2-0\.webp/);
+  assert.match(imageConfigSource, /showcase-seedance-2-0-business-workflow\.webp/);
   assert.match(heroSource, /HOME_LCP_POSTER_SRC/);
   assert.match(heroSource, /engineId === HERO_VIDEO_ORDER\[0\]/);
   assert.ok(
@@ -42,7 +42,10 @@ test('homepage starts its exact unoptimized LCP poster from the HTTP response he
   const homeHeroSource = readSource(homeHeroPath);
   const heroShowcaseSource = readSource(heroShowcasePath);
 
-  assert.match(nextConfigSource, /HOME_LCP_POSTER_SRC\s*=\s*['"]\/hero\/showcase-seedance-2-0\.webp['"]/);
+  assert.match(
+    nextConfigSource,
+    /HOME_LCP_POSTER_SRC\s*=\s*['"]\/hero\/showcase-seedance-2-0-business-workflow\.webp['"]/
+  );
   assert.match(nextConfigSource, /rel=preload;\s*as=image;\s*fetchpriority=high/);
   assert.match(
     nextConfigSource,

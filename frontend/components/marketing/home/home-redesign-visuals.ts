@@ -118,7 +118,7 @@ export const HERO_ENGINE_MEDIA: Record<
     ...KLING_3_PRO_HERO_RENDER,
   },
   'seedance-2-0': {
-    posterSrc: '/hero/showcase-seedance-2-0.webp',
+    posterSrc: '/hero/showcase-seedance-2-0-business-workflow.webp',
     videoSrc:
       'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9d6811c9-226c-44bd-8b56-b3aa74039d59.mp4',
     resolution: '16:9',
@@ -177,7 +177,7 @@ export const COMPARISON_CARD_MEDIA: Record<string, { imageSrc: string; imageAlt:
     imageAlt: 'Fast draft AI video comparison preview for LTX models.',
   },
   'ltx-seedance': {
-    imageSrc: '/hero/showcase-seedance-2-0.webp',
+    imageSrc: '/hero/showcase-seedance-2-0-business-workflow.webp',
     imageAlt: 'AI video comparison preview between LTX and Seedance.',
   },
   'ltx-veo': {

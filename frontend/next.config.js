@@ -3,7 +3,7 @@ const modelRegistry = require('./config/model-registry.json');
 const { buildModelRegistryRedirects } = require('./config/model-registry-redirects.cjs');
 const isPreviewDeployment = process.env.VERCEL_ENV === 'preview';
 const repoRoot = path.join(__dirname, '..');
-const HOME_LCP_POSTER_SRC = '/hero/showcase-seedance-2-0.webp';
+const HOME_LCP_POSTER_SRC = '/hero/showcase-seedance-2-0-business-workflow.webp';
 const HOME_LCP_PRELOAD_PATHS = ['/', '/fr', '/es'];
 const HOME_LCP_LINK_HEADER = `<${HOME_LCP_POSTER_SRC}>; rel=preload; as=image; fetchpriority=high`;
 const MARKETING_CDN_CACHE_HEADERS = [

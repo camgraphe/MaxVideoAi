@@ -26,6 +26,7 @@ const legacyPublicVideos = [
   'frontend/public/hero/sora2.mp4',
   'frontend/public/hero/veo3.mp4',
 ] as const;
+const legacyConstructionPoster = 'frontend/public/hero/showcase-seedance-2-0.webp';
 
 function collectSourceFiles(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
@@ -53,6 +54,25 @@ test('construction fallback videos are absent from the public bundle and source 
       const matches = readFileSync(path, 'utf8').match(legacyReferencePattern) ?? [];
       return matches.map((match) => `${relative(root, path)}: ${match}`);
     })
+  );
+
+  assert.deepEqual(references, []);
+});
+
+test('the obsolete snow-car construction poster is absent from the public bundle and source data', () => {
+  assert.equal(
+    existsSync(join(root, legacyConstructionPoster)),
+    false,
+    `${legacyConstructionPoster} must not ship in the public bundle`
+  );
+
+  const legacyPosterReference = '/hero/showcase-seedance-2-0.webp';
+  const references = sourceRoots.flatMap((directory) =>
+    collectSourceFiles(directory).flatMap((path) =>
+      readFileSync(path, 'utf8').includes(legacyPosterReference)
+        ? [`${relative(root, path)}: ${legacyPosterReference}`]
+        : []
+    )
   );
 
   assert.deepEqual(references, []);
