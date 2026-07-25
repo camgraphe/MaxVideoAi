@@ -252,3 +252,60 @@ test('BytePlus submission helper marks failed tasks, rolls back payments, and re
     console.warn = originalWarn;
   }
 });
+
+test('unknown BytePlus Seedance engine fails before provider submission and rolls back', async () => {
+  const originalWarn = console.warn;
+  console.warn = () => undefined;
+  let configReads = 0;
+  let payloadBuilds = 0;
+  let clientRequests = 0;
+  let rollbacks = 0;
+
+  try {
+    const result = await submitBytePlusGenerateTask({
+      ...baseParams,
+      engineId: 'seedance-2-5',
+      engineLabel: 'Seedance 2.5',
+      pendingReceipt,
+      deps: {
+        getBytePlusArkConfigFn: () => {
+          configReads += 1;
+          return ({
+            seedanceModelId: 'standard-id',
+            seedanceFastModelId: 'fast-id',
+            seedanceMiniModelId: 'mini-id',
+          }) as never;
+        },
+        buildBytePlusSeedancePayloadFn: (payload) => {
+          payloadBuilds += 1;
+          return payload;
+        },
+        getBytePlusModelArkClientFn: () => ({
+          createSeedanceFastTask: async () => {
+            clientRequests += 1;
+            return { providerJobId: 'must_not_exist', status: 'queued' };
+          },
+        }),
+        scrubBytePlusErrorFn: () => 'unsupported profile',
+        queryFn: async () => undefined,
+        rollbackPendingPaymentFn: async () => {
+          rollbacks += 1;
+        },
+      },
+    });
+
+    assert.equal(result.ok, false);
+    assert.equal(result.status, 400);
+    assert.equal(result.body.error, 'BYTEPLUS_ENGINE_PROFILE_MISSING');
+    assert.equal(
+      result.body.message,
+      'This engine is not configured for BytePlus.'
+    );
+    assert.equal(configReads, 0);
+    assert.equal(payloadBuilds, 0);
+    assert.equal(clientRequests, 0);
+    assert.equal(rollbacks, 1);
+  } finally {
+    console.warn = originalWarn;
+  }
+});
