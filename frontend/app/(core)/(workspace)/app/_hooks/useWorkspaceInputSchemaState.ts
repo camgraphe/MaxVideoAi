@@ -1,11 +1,13 @@
 import { useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import { resolveEngineReferenceBudget } from '@/lib/reference-budget';
 import { SEEDANCE_REFERENCE_AUDIO_FIELD_IDS } from '@/lib/seedance-workflow';
 import type { EngineCaps, Mode } from '@/types/engines';
 import {
   buildAssetFieldIdSet,
   buildReferenceAudioFieldIds,
   getPrimaryAssetFieldLabel,
+  reconcileReferenceAssets,
   revokeAssetPreview,
   type ReferenceAsset,
 } from '../_lib/workspace-assets';
@@ -15,6 +17,7 @@ import { summarizeWorkspaceInputSchema } from '../_lib/workspace-input-schema';
 type UseWorkspaceInputSchemaStateOptions = {
   selectedEngine: EngineCaps | null;
   activeMode: Mode;
+  submissionMode: Mode;
   allowsUnifiedVeoFirstLast: boolean;
   isUnifiedHappyHorse: boolean;
   isUnifiedSeedance: boolean;
@@ -31,6 +34,7 @@ type UseWorkspaceInputSchemaStateOptions = {
 export function useWorkspaceInputSchemaState({
   selectedEngine,
   activeMode,
+  submissionMode,
   allowsUnifiedVeoFirstLast,
   isUnifiedHappyHorse,
   isUnifiedSeedance,
@@ -91,28 +95,25 @@ export function useWorkspaceInputSchemaState({
   }, [extraInputFields, setForm]);
 
   useEffect(() => {
-    setInputAssets((previous) => {
-      if (!inputSchemaSummary.assetFields.length) {
-        if (Object.keys(previous).length === 0) return previous;
-        Object.values(previous).forEach((entries) => {
-          entries.forEach((asset) => revokeAssetPreview(asset));
-        });
-        return {};
-      }
-      const allowed = new Set(inputSchemaSummary.assetFields.map((entry) => entry.field.id));
-      let changed = false;
-      const next: Record<string, (ReferenceAsset | null)[]> = {};
-      Object.entries(previous).forEach(([fieldId, items]) => {
-        if (allowed.has(fieldId)) {
-          next[fieldId] = items;
-        } else {
-          changed = true;
-          items.forEach((asset) => revokeAssetPreview(asset));
-        }
-      });
-      return changed ? next : previous;
-    });
-  }, [inputSchemaSummary.assetFields, setInputAssets]);
+    const activeFields = inputSchemaSummary.assetFields.map((entry) => entry.field);
+    const referenceBudget = resolveEngineReferenceBudget(
+      selectedEngine?.inputSchema,
+      submissionMode
+    );
+    setInputAssets((previous) =>
+      reconcileReferenceAssets(
+        previous,
+        activeFields,
+        referenceBudget,
+        revokeAssetPreview
+      )
+    );
+  }, [
+    inputSchemaSummary.assetFields,
+    selectedEngine?.inputSchema,
+    setInputAssets,
+    submissionMode,
+  ]);
 
   const primaryAssetFieldIds = useMemo(
     () => buildAssetFieldIdSet(inputSchemaSummary.assetFields, (entry) => entry.role === 'primary'),

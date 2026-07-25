@@ -8,17 +8,17 @@ import {
   getSeedanceFieldBlockKey,
   isUnifiedSeedanceEngineId,
 } from '@/lib/seedance-workflow';
-import type { EngineInputField } from '@/types/engines';
+import type { EngineInputField, EngineInputSchema, Mode } from '@/types/engines';
 import {
   buildReferenceAssetFromLibraryAsset,
   getAssetLibrarySourceForField,
   getLibraryAssetFieldMismatchMessage,
-  insertReferenceAsset,
   mergeMirroredLibraryAsset,
   removeReferenceAsset,
   revokeAssetPreview,
   shouldMirrorCharacterImageAsset,
   shouldMirrorVideoLibraryAsset,
+  tryInsertReferenceAsset,
   type AssetLibrarySource,
   type AssetPickerTarget,
   type ReferenceAsset,
@@ -30,9 +30,12 @@ import {
   type UploadableAssetKind,
   type UploadFailure,
 } from '../_lib/workspace-upload-errors';
+import type { CommitInputAssetMutation } from './useWorkspaceAssetState';
 
 type UseWorkspaceReferenceAssetsOptions = {
   engineId?: string | null;
+  inputSchema?: EngineInputSchema | null;
+  preferredMode: Mode;
   workflowCopy: {
     clearReferencesToUseStartEnd: string;
     clearStartEndToUseReferences: string;
@@ -40,6 +43,7 @@ type UseWorkspaceReferenceAssetsOptions = {
   showNotice: (message: string) => void;
   inputAssets: Record<string, (ReferenceAsset | null)[]>;
   setInputAssets: Dispatch<SetStateAction<Record<string, (ReferenceAsset | null)[]>>>;
+  commitInputAssetMutation: CommitInputAssetMutation;
   assetLibrarySource: AssetLibrarySource;
   resetAssetLibraryForSource: (nextSource: AssetLibrarySource) => void;
   setAssetPickerTarget: Dispatch<SetStateAction<AssetPickerTarget | null>>;
@@ -55,10 +59,13 @@ function createReferenceAssetId(): string {
 
 export function useWorkspaceReferenceAssets({
   engineId,
+  inputSchema,
+  preferredMode,
   workflowCopy,
   showNotice,
   inputAssets,
   setInputAssets,
+  commitInputAssetMutation,
   assetLibrarySource,
   resetAssetLibraryForSource,
   setAssetPickerTarget,
@@ -183,16 +190,32 @@ export function useWorkspaceReferenceAssets({
 
       const newAsset = buildReferenceAssetFromLibraryAsset(field, resolvedAsset);
 
-      setInputAssets((previous) => {
-        return insertReferenceAsset(previous, field, newAsset, slotIndex, {
-          release: revokeAssetPreview,
-          onMaxReached: () => showNotice(`Maximum ${field.label ?? 'reference image'} count reached for this engine.`),
-        });
-      });
-
+      const insertion = commitInputAssetMutation((previous) =>
+        tryInsertReferenceAsset(previous, field, newAsset, slotIndex, {
+          inputSchema,
+          preferredMode,
+        })
+      );
+      if (!insertion.accepted) {
+        showNotice(
+          insertion.reason === 'reference_budget'
+            ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
+            : `Maximum ${field.label ?? 'reference image'} count reached for this engine.`
+        );
+        return;
+      }
+      if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
       setAssetPickerTarget(null);
     },
-    [getSeedanceFieldBlockedMessage, setAssetLibrary, setAssetPickerTarget, setInputAssets, showNotice]
+    [
+      commitInputAssetMutation,
+      getSeedanceFieldBlockedMessage,
+      inputSchema,
+      preferredMode,
+      setAssetLibrary,
+      setAssetPickerTarget,
+      showNotice,
+    ]
   );
 
   const handleAssetAdd = useCallback(
@@ -223,12 +246,22 @@ export function useWorkspaceReferenceAssets({
         status: 'uploading' as const,
       };
 
-      setInputAssets((previous) => {
-        return insertReferenceAsset(previous, field, baseAsset, slotIndex, {
-          release: revokeAssetPreview,
-          onMaxReached: () => revokeAssetPreview(baseAsset),
-        });
-      });
+      const insertion = commitInputAssetMutation((previous) =>
+        tryInsertReferenceAsset(previous, field, baseAsset, slotIndex, {
+          inputSchema,
+          preferredMode,
+        })
+      );
+      if (!insertion.accepted) {
+        revokeAssetPreview(baseAsset);
+        showNotice(
+          insertion.reason === 'reference_budget'
+            ? `Maximum ${insertion.maxTotal} total references reached for this engine mode.`
+            : `Maximum ${field.label ?? 'reference file'} count reached for this engine.`
+        );
+        return;
+      }
+      if (insertion.replacedAsset) revokeAssetPreview(insertion.replacedAsset);
 
       const upload = async () => {
         try {
@@ -316,7 +349,14 @@ export function useWorkspaceReferenceAssets({
 
       void upload();
     },
-    [getSeedanceFieldBlockedMessage, setInputAssets, showNotice]
+    [
+      commitInputAssetMutation,
+      getSeedanceFieldBlockedMessage,
+      inputSchema,
+      preferredMode,
+      setInputAssets,
+      showNotice,
+    ]
   );
 
   const handleAssetRemove = useCallback((field: EngineInputField, index: number) => {
