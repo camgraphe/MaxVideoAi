@@ -15,16 +15,16 @@ const readSource = (path: string) => readFileSync(path, 'utf8');
 
 test('homepage emits a deterministic responsive LCP preload without waiting for database content', () => {
   const headSource = readSource(homeHeadPath);
-  const rootHeadSource = readSource(rootHomeHeadPath);
   const heroSource = readSource(homeHeroPath);
 
   assert.doesNotMatch(headSource, /getHomepageSlotsCached|async function Head/);
-  assert.doesNotMatch(rootHeadSource, /getHomepageSlotsCached|async function Head/);
   assert.match(headSource, /getImageProps/);
-  assert.match(rootHeadSource, /getImageProps/);
-  assert.match(rootHeadSource, /HOME_LCP_POSTER_SRC/);
   assert.match(headSource, /unoptimized:\s*true/);
-  assert.match(rootHeadSource, /unoptimized:\s*true/);
+  assert.equal(
+    existsSync(rootHomeHeadPath),
+    false,
+    'the root route-group head must not leak the homepage preload onto non-home routes',
+  );
   assert.equal(existsSync(homeLcpImagePath), true, 'homepage LCP image config should be shared by head and hero');
 
   const imageConfigSource = readSource(homeLcpImagePath);
@@ -40,7 +40,10 @@ test('homepage starts its exact unoptimized LCP poster from the HTTP response he
 
   assert.match(nextConfigSource, /HOME_LCP_POSTER_SRC\s*=\s*['"]\/hero\/showcase-seedance-2-0\.webp['"]/);
   assert.match(nextConfigSource, /rel=preload;\s*as=image;\s*fetchpriority=high/);
-  assert.match(nextConfigSource, /HOME_LCP_PRELOAD_PATHS/);
+  assert.match(
+    nextConfigSource,
+    /HOME_LCP_PRELOAD_PATHS\s*=\s*\[['"]\/['"],\s*['"]\/fr['"],\s*['"]\/es['"]\]/,
+  );
   assert.match(homeHeroSource, /unoptimizedPoster:\s*true/);
   assert.match(heroShowcaseSource, /unoptimized=\{selected\.unoptimizedPoster\}/);
 });
