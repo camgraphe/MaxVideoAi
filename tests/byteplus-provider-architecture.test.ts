@@ -313,3 +313,32 @@ test('BytePlus runtime exposes Seedance 2.0 Standard and Fast video source workf
     assert.deepEqual(referenceVideoField?.modes, ['ref2v']);
   }
 });
+
+test('hidden direct Fast keeps its narrow raw runtime caps by default', () => {
+  const hiddenEntry = listFalEngines().find(
+    (entry) => entry.id === 'seedance-2-0-fast-byteplus'
+  );
+  assert.ok(hiddenEntry);
+  const runtimeEngine = applyBytePlusSeedanceRuntimeOptions(hiddenEntry.engine);
+  assert.deepEqual(runtimeEngine.modes, ['t2v']);
+  assert.deepEqual(runtimeEngine.resolutions, ['720p']);
+  assert.deepEqual(runtimeEngine.aspectRatios, ['16:9']);
+  assert.deepEqual(hiddenEntry.modes[0]?.ui.resolution, ['720p']);
+  assert.equal(hiddenEntry.modes[0]?.ui.audioToggle, false);
+});
+
+test('profile policy is separated from the thin provider facade', () => {
+  const facade = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark.ts',
+    'utf8'
+  );
+  const policy = readFileSync(
+    'frontend/src/server/video-providers/byteplus-modelark-profile-policy.ts',
+    'utf8'
+  );
+  assert.ok(facade.split('\n').length < 430);
+  assert.match(facade, /from '\.\/byteplus-modelark-profile-policy'/);
+  assert.match(policy, /export function applyBytePlusSeedanceRuntimeOptions/);
+  assert.match(policy, /export function resolveBytePlusSeedanceRouteProfile/);
+  assert.doesNotMatch(facade, /function filterInputFieldsForModes/);
+});

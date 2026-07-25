@@ -62,6 +62,8 @@ export function buildBytePlusSeedancePayload(params: {
   resolution?: string | null;
   ratio?: string | null;
   generateAudio?: boolean;
+  allowedModes?: readonly Mode[];
+  allowedAspectRatios?: readonly AspectRatio[];
   allowedResolutions?: Resolution[];
   allowedDurationOptions?: readonly number[];
 }): BytePlusSeedancePayload {
@@ -73,6 +75,10 @@ export function buildBytePlusSeedancePayload(params: {
   const referenceImageUrls = uniqueNonEmptyUrls(params.referenceImageUrls);
   const referenceVideoUrls = uniqueNonEmptyUrls(params.referenceVideoUrls);
   const referenceAudioUrls = uniqueNonEmptyUrls(params.referenceAudioUrls);
+  const allowedModes = params.allowedModes?.length ? params.allowedModes : BYTEPLUS_SEEDANCE_MODES;
+  const allowedAspectRatios = params.allowedAspectRatios?.length
+    ? params.allowedAspectRatios
+    : BYTEPLUS_SEEDANCE_ASPECT_RATIOS;
   const allowedResolutions = params.allowedResolutions?.length ? params.allowedResolutions : BYTEPLUS_SEEDANCE_FAST_RESOLUTIONS;
   const allowedDurationOptions = params.allowedDurationOptions?.length
     ? params.allowedDurationOptions
@@ -86,7 +92,7 @@ export function buildBytePlusSeedancePayload(params: {
   if (!prompt) {
     throw new BytePlusModelArkError('Prompt is required for BytePlus Seedance.', { code: 'PROMPT_REQUIRED' });
   }
-  if (!BYTEPLUS_SEEDANCE_MODES.includes(mode)) {
+  if (!allowedModes.includes(mode)) {
     throw new BytePlusModelArkError('BytePlus Seedance supports only configured T2V, I2V, reference, video edit, and extension modes.', {
       code: 'BYTEPLUS_MODE_UNSUPPORTED',
     });
@@ -128,7 +134,7 @@ export function buildBytePlusSeedancePayload(params: {
       code: 'BYTEPLUS_RESOLUTION_UNSUPPORTED',
     });
   }
-  if (!BYTEPLUS_SEEDANCE_ASPECT_RATIOS.includes(requestedRatio)) {
+  if (!allowedAspectRatios.includes(requestedRatio)) {
     throw new BytePlusModelArkError('BytePlus Seedance aspect ratio is not supported.', {
       code: 'BYTEPLUS_RATIO_UNSUPPORTED',
     });

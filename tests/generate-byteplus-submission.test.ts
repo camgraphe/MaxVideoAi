@@ -118,6 +118,8 @@ test('BytePlus submission helper creates task, updates job, logs, and returns qu
     resolution: '720p',
     ratio: '16:9',
     generateAudio: true,
+    allowedModes: ['t2v', 'i2v', 'ref2v', 'v2v', 'extend'],
+    allowedAspectRatios: ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16'],
     allowedResolutions: ['720p', '1080p'],
     allowedDurationOptions: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
   });
@@ -190,6 +192,8 @@ test('BytePlus submission helper chooses the Mini model id for Seedance 2.0 Mini
   assert.equal(builtPayloads[0]?.durationSec, 4);
   assert.equal(builtPayloads[0]?.mode, 'v2v');
   assert.equal(builtPayloads[0]?.generateAudio, true);
+  assert.deepEqual(builtPayloads[0]?.allowedModes, ['t2v', 'i2v', 'ref2v', 'v2v', 'extend']);
+  assert.deepEqual(builtPayloads[0]?.allowedAspectRatios, ['21:9', '16:9', '4:3', '1:1', '3:4', '9:16']);
   assert.deepEqual(builtPayloads[0]?.allowedResolutions, ['480p', '720p']);
 });
 

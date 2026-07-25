@@ -9,6 +9,7 @@ import {
   getBytePlusSeedanceDurationOptions,
   getBytePlusSeedanceAllowedResolutions,
   getBytePlusUserSafeErrorMessage,
+  requireBytePlusSeedanceProfile,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
 } from '@/server/video-providers/byteplus-modelark';
@@ -100,8 +101,10 @@ export async function submitBytePlusGenerateTask(params: {
   const logMetricFn = deps.logMetricFn;
 
   try {
+    const profile = requireBytePlusSeedanceProfile(params.engineId);
     const config = getBytePlusArkConfigFn();
-    const generateAudio = params.audioEnabled !== false;
+    const generateAudio =
+      profile.generatedAudio && params.audioEnabled !== false;
     const payload = buildBytePlusSeedancePayloadFn({
       modelId: resolveBytePlusSeedanceModelIdFn(params.engineId, config),
       prompt: params.prompt,
@@ -119,6 +122,8 @@ export async function submitBytePlusGenerateTask(params: {
       resolution: params.effectiveResolution,
       ratio: params.aspectRatio,
       generateAudio,
+      allowedModes: profile.supportedModes,
+      allowedAspectRatios: profile.aspectRatios,
       allowedResolutions: getBytePlusSeedanceAllowedResolutionsFn(params.engineId),
       allowedDurationOptions: getBytePlusSeedanceDurationOptionsFn(params.engineId),
     });
