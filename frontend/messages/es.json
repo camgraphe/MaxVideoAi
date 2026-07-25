@@ -1291,7 +1291,7 @@
             }
           },
           "media": {
-            "videoSrc": "/assets/gallery/robot-look.mp4",
+            "videoSrc": "https://media.maxvideoai.com/renders/marketing/f9711b1e-53d5-4a1d-9adf-8186784538e3.mp4",
             "posterSrc": "/hero/veo-3-1-hero.jpg",
             "hasAudio": true
           }
@@ -1311,7 +1311,7 @@
             }
           },
           "media": {
-            "videoSrc": "/assets/gallery/robot-eyes.mp4",
+            "videoSrc": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f35b56ab-e529-4bf2-a066-bb2a3197f54d.mp4",
             "posterSrc": "/hero/veo-3-1-hero.jpg",
             "hasAudio": true
           }
@@ -1331,7 +1331,7 @@
             }
           },
           "media": {
-            "videoSrc": "/hero/minimax-video01.mp4",
+            "videoSrc": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b318922e-0042-4812-8c83-604fc8eeeed3.mp4",
             "posterSrc": "/hero/minimax-video01.jpg",
             "hasAudio": true
           }
@@ -2393,7 +2393,7 @@
           }
         },
         "media": {
-          "videoSrc": "/hero/sora2.mp4",
+          "videoSrc": "https://media.maxvideoai.com/renders/marketing/15d61929-c1ef-4173-bb8c-75cb74b3ee19.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -2412,7 +2412,7 @@
           }
         },
         "media": {
-          "videoSrc": "/hero/veo3.mp4",
+          "videoSrc": "https://media.maxvideoai.com/renders/marketing/f9711b1e-53d5-4a1d-9adf-8186784538e3.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -2431,7 +2431,7 @@
           }
         },
         "media": {
-          "videoSrc": "/hero/veo3.mp4",
+          "videoSrc": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/f35b56ab-e529-4bf2-a066-bb2a3197f54d.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -2450,7 +2450,7 @@
           }
         },
         "media": {
-          "videoSrc": "/hero/pika-22.mp4",
+          "videoSrc": "https://media.maxvideoai.com/renders/marketing/5e0ea541-cd07-48e9-841d-42b5679e1f3f.mp4",
           "aspectRatio": "16:9"
         }
       },
@@ -2469,7 +2469,7 @@
           }
         },
         "media": {
-          "videoSrc": "/hero/minimax-video01.mp4",
+          "videoSrc": "https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b318922e-0042-4812-8c83-604fc8eeeed3.mp4",
           "aspectRatio": "16:9"
         }
       }
@@ -3114,7 +3114,9 @@
         "empty": "Inicia un render para llenar la galería. Las variantes de cada ejecución aparecerán aquí."
       },
       "messages": {
-        "generatingInProgress": "Generación en curso ({count})…"
+        "generatingInProgress": "Generación en curso ({count})…",
+        "seedanceCopyrightBlocked": "Seedance detuvo este renderizado después de iniciarlo porque sus controles de salida detectaron posible contenido sujeto a restricciones de derechos de autor. Cambia los personajes reconocibles, marcas, logotipos, referencias a franquicias o el contenido fuente antes de volver a intentarlo.",
+        "seedanceCopyrightBlockedRefunded": "Seedance detuvo este renderizado después de iniciarlo porque sus controles de salida detectaron posible contenido sujeto a restricciones de derechos de autor. Los créditos cobrados se devolvieron a tu billetera. Cambia los personajes reconocibles, marcas, logotipos, referencias a franquicias o el contenido fuente antes de volver a intentarlo."
       },
       "wallet": {
         "insufficient": "Saldo insuficiente. Añade fondos para seguir creando.",

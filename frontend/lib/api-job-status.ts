@@ -1,6 +1,7 @@
 import type { PricingSnapshot } from '@maxvideoai/pricing';
 import { authFetch } from '@/lib/authFetch';
 import { normalizeJobMessage, normalizeJobProgress, normalizeJobStatus } from '@/lib/job-status';
+import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
 import type { Job } from '@/types/jobs';
 
 export type JobStatusResult = {
@@ -26,6 +27,8 @@ export type JobStatusResult = {
   heroRenderId?: string | null;
   localKey?: string | null;
   message?: string | null;
+  settingsSnapshot?: unknown;
+  failureCode?: string | null;
   etaSeconds?: number | null;
   etaLabel?: string | null;
 };
@@ -160,6 +163,8 @@ export async function getJobStatus(jobId: string): Promise<JobStatusResult> {
     heroRenderId: payload.heroRenderId ?? null,
     localKey: payload.localKey ?? null,
     message: normalizedMessage ?? null,
+    settingsSnapshot: payload.settingsSnapshot,
+    failureCode: getVideoFailureCodeFromSettingsSnapshot(payload.settingsSnapshot),
     etaSeconds: payload.etaSeconds ?? null,
     etaLabel: payload.etaLabel ?? null,
   };

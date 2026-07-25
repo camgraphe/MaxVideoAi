@@ -175,10 +175,7 @@ export function HeroVideoShowcase({
       };
     }
 
-    video.pause();
-    video.currentTime = 0;
     video.muted = true;
-    video.load();
     video
       .play()
       .then(() => {
@@ -407,6 +404,7 @@ export function HeroVideoShowcase({
                   src={item.posterSrc}
                   alt={item.imageAlt}
                   fill
+                  unoptimized={item.unoptimizedPoster}
                   sizes="118px"
                   className="hidden object-cover md:block"
                   loading="lazy"
@@ -416,6 +414,7 @@ export function HeroVideoShowcase({
                     src={item.posterSrc}
                     alt={item.imageAlt}
                     fill
+                    unoptimized={item.unoptimizedPoster}
                     sizes="(max-width: 639px) 33vw, 118px"
                     className="object-cover md:hidden"
                     loading="lazy"

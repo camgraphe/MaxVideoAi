@@ -146,7 +146,7 @@ export const NANO_BANANA_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     seoText:
       'Bring your existing MaxVideoAI workflow to still imagery. Nano Banana covers both text-to-image runs and prompt-driven edits from the same prompt lab, wallet, and logging stack.',
     media: {
-      videoUrl: '/hero/pika-22.mp4',
+      videoUrl: '',
       imagePath: 'https://media.maxvideoai.com/marketing/marketing/2e71a814-3eed-4965-8beb-bd22d1c243e4.png',
       altText: 'Nano Banana image preview',
     },

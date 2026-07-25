@@ -28,10 +28,19 @@ pnpm-debug.log*
 
 # Vercel local state
 .vercel
+.worktrees/
 
 # Generated test assets
 frontend/public/test-videos/
 video-gallery-dist/
+frontend/lighthouse-reports/
+frontend/.lighthouseci/
+frontend/.tmp/
+.reports/
+.playwright-cli/
+.playwright-mcp/
+output/
+test-results/
 
 # Private modules extracted from public repo
 private/

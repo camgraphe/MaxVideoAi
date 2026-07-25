@@ -6,14 +6,11 @@ import { ensureFastStartVideo } from '@/server/video-faststart';
 import { generateAndPersistJobKeyframes } from '@/server/video-keyframes';
 import { generateAndPersistJobPreviewVideo } from '@/server/video-preview';
 import {
-  buildUserFacingRefundDescription,
-  toUserFacingFailureMessage,
-} from '@/server/user-facing-failure-messages';
-import {
   BYTEPLUS_MODELARK_PROVIDER,
   getBytePlusArkConfig,
   getBytePlusModelArkClient,
   isBytePlusModelArkEnabled,
+  getBytePlusTaskFailureCode,
   getBytePlusUserSafeTaskFailureMessage,
   resolveBytePlusSeedanceModelId,
   scrubBytePlusError,
@@ -23,6 +20,10 @@ import {
   getBytePlusAccounting,
   getBytePlusUnitPriceUsdPer1kTokens,
 } from './byteplus-accounting';
+import {
+  markBytePlusJobFailed,
+  recordBytePlusPollEvent,
+} from './byteplus-poll-failure';
 import type { BytePlusPendingJob } from './byteplus-poll-types';
 import { isRecord } from './byteplus-record-utils';
 import {
@@ -51,115 +52,6 @@ const POLL_INITIAL_DELAY_MS = 5_000;
 const POLL_MAX_DURATION_MS = 35 * 60_000;
 const ACTIVE_JOB_STATUSES = ['pending', 'queued', 'running', 'processing', 'in_progress'];
 
-async function recordPollEvent(
-  job: Pick<BytePlusPendingJob, 'job_id' | 'provider_job_id' | 'engine_id'>,
-  status: string,
-  payload: Record<string, unknown>
-) {
-  try {
-    await query(
-      `INSERT INTO fal_queue_log (job_id, provider, provider_job_id, engine_id, status, payload)
-       VALUES ($1,$2,$3,$4,$5,$6::jsonb)`,
-      [
-        job.job_id,
-        BYTEPLUS_MODELARK_PROVIDER,
-        job.provider_job_id,
-        job.engine_id,
-        status,
-        JSON.stringify({
-          at: new Date().toISOString(),
-          ...payload,
-        }),
-      ]
-    );
-  } catch (error) {
-    console.warn('[byteplus-poll] failed to record poll event', { jobId: job.job_id, status }, error);
-  }
-}
-
-async function recordWalletRefundOnce(job: BytePlusPendingJob, reason: string) {
-  if (job.payment_status !== 'paid_wallet' || !job.user_id || !job.final_price_cents) return false;
-
-  const inserted = await query<{ id: string }>(
-    `INSERT INTO app_receipts (
-       user_id,
-       type,
-       amount_cents,
-       currency,
-       description,
-       job_id,
-       surface,
-       billing_product_key,
-       pricing_snapshot,
-       application_fee_cents,
-       vendor_account_id,
-       stripe_payment_intent_id,
-       stripe_charge_id,
-       platform_revenue_cents,
-       destination_acct
-     )
-     VALUES ($1,'refund',$2,$3,$4,$5,'video',NULL,$6::jsonb,NULL,NULL,NULL,NULL,NULL,NULL)
-     ON CONFLICT DO NOTHING
-     RETURNING id`,
-    [
-      job.user_id,
-      job.final_price_cents,
-      (job.currency ?? 'USD').toUpperCase(),
-      buildUserFacingRefundDescription({
-        engineLabel: job.engine_label,
-        durationSec: job.duration_sec,
-        reason,
-      }),
-      job.job_id,
-      JSON.stringify(job.pricing_snapshot ?? {}),
-    ]
-  );
-  if (!inserted.length) return false;
-
-  await query(
-    `UPDATE app_jobs
-        SET payment_status = 'refunded_wallet',
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND payment_status = 'paid_wallet'`,
-    [job.job_id]
-  );
-  return true;
-}
-
-async function markJobFailed(job: BytePlusPendingJob, message: string, providerStatus?: string | null) {
-  const userMessage = toUserFacingFailureMessage(message);
-  const claimed = await query<{ job_id: string }>(
-    `UPDATE app_jobs
-        SET status = 'failed',
-            progress = 0,
-            message = $2,
-            provisional = FALSE,
-            updated_at = NOW()
-      WHERE job_id = $1
-        AND status = ANY($3::text[])
-      RETURNING job_id`,
-    [job.job_id, userMessage, ACTIVE_JOB_STATUSES]
-  );
-  if (!claimed.length) {
-    await recordPollEvent(job, 'poll:failed:skipped', {
-      providerStatus: providerStatus ?? null,
-      reason: 'job_not_active',
-    });
-    return;
-  }
-
-  const refunded = await recordWalletRefundOnce(job, userMessage);
-  await query(
-    `UPDATE app_jobs
-        SET payment_status = CASE WHEN $2 THEN 'refunded_wallet' ELSE payment_status END,
-            updated_at = NOW()
-      WHERE job_id = $1`,
-    [job.job_id, refunded]
-  );
-  await recordPollEvent(job, 'poll:failed', { providerStatus: providerStatus ?? null, refunded });
-}
-
 async function deferStorageCopyRetry(job: BytePlusPendingJob, state: BytePlusStorageCopyState, providerStatus?: string | null) {
   await query(
     `UPDATE app_jobs
@@ -177,7 +69,7 @@ async function deferStorageCopyRetry(job: BytePlusPendingJob, state: BytePlusSto
       ACTIVE_JOB_STATUSES,
     ]
   );
-  await recordPollEvent(job, 'poll:storage-copy-retry', {
+  await recordBytePlusPollEvent(job, 'poll:storage-copy-retry', {
     providerStatus: providerStatus ?? null,
     attempts: state.attempts,
     maxAttempts: resolveBytePlusStorageCopyMaxAttempts(),
@@ -219,15 +111,16 @@ export async function runBytePlusPoll() {
     }
     const createdAtMs = Date.parse(job.created_at);
     if (Number.isFinite(createdAtMs) && now - createdAtMs > POLL_MAX_DURATION_MS) {
-      await markJobFailed(job, 'Render exceeded the expected processing window.', 'timeout');
+      await markBytePlusJobFailed(job, 'Render exceeded the expected processing window.', 'timeout');
       updates += 1;
       continue;
     }
 
     try {
       const task = await client.retrieveTask(job.provider_job_id);
-      await recordPollEvent(job, 'poll:status', {
+      await recordBytePlusPollEvent(job, 'poll:status', {
         providerStatus: task.rawStatus,
+        providerErrorCode: task.errorCode ?? null,
         normalizedStatus: task.status,
         totalTokens: task.usage?.totalTokens ?? null,
         completionTokens: task.usage?.completionTokens ?? null,
@@ -256,13 +149,21 @@ export async function runBytePlusPoll() {
       }
 
       if (task.status === 'failed') {
-        await markJobFailed(job, getBytePlusUserSafeTaskFailureMessage(task.message), task.rawStatus);
+        await markBytePlusJobFailed(
+          job,
+          getBytePlusUserSafeTaskFailureMessage(task.message, task.errorCode),
+          task.rawStatus,
+          {
+            providerErrorCode: task.errorCode ?? null,
+            failureCode: getBytePlusTaskFailureCode(task.message, task.errorCode),
+          }
+        );
         updates += 1;
         continue;
       }
 
       if (!task.videoUrl) {
-        await markJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus);
+        await markBytePlusJobFailed(job, 'The render completed but returned no video URL.', task.rawStatus);
         updates += 1;
         continue;
       }
@@ -285,7 +186,7 @@ export async function runBytePlusPoll() {
         if (shouldRetryBytePlusStorageCopy({ state: nextCopyState, createdAt: job.created_at })) {
           await deferStorageCopyRetry(job, nextCopyState, task.rawStatus);
         } else {
-          await markJobFailed(
+          await markBytePlusJobFailed(
             job,
             `The output video could not be copied to MaxVideoAI storage after ${nextCopyState.attempts} attempts.`,
             task.rawStatus
@@ -363,7 +264,7 @@ export async function runBytePlusPoll() {
         [job.job_id, copiedVideoUrl, thumb, JSON.stringify(costBreakdown), ACTIVE_JOB_STATUSES]
       );
       if (!completedRows.length) {
-        await recordPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
+        await recordBytePlusPollEvent(job, 'poll:completed:skipped', { reason: 'job_not_active', copiedVideo: true });
         continue;
       }
       await upsertLegacyJobOutputs({
@@ -399,7 +300,7 @@ export async function runBytePlusPoll() {
           existingKeyframeUrls: job.keyframe_urls,
         }),
       ]);
-      await recordPollEvent(job, 'poll:completed', {
+      await recordBytePlusPollEvent(job, 'poll:completed', {
         totalTokens,
         completionTokens: task.usage?.completionTokens ?? null,
         providerCostUsd,
@@ -413,7 +314,7 @@ export async function runBytePlusPoll() {
         providerJobId: job.provider_job_id,
         message,
       });
-      await recordPollEvent(job, 'poll:error', { message });
+      await recordBytePlusPollEvent(job, 'poll:error', { message });
     }
   }
 

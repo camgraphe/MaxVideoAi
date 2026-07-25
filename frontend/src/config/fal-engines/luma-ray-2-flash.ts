@@ -267,9 +267,11 @@ export const LUMA_RAY_2_FLASH_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text, image, modify, reframe',
     seoText:
       'Luma Ray 2 Flash remains available on MaxVideoAI as a legacy fast Luma route for older draft prompts, source-video modification, vertical reframes, and reference animation. Ray 3.2 is the current Luma entry point for new Modify, guide/keyframe, and Reframe work.',
-    demoUrl: '/hero/luma-ray2-flash.mp4',
+    demoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/49c466de-5e90-4859-8f97-9ec70dab5944.mp4',
     media: {
-      videoUrl: '/hero/luma-ray2-flash.mp4',
+      videoUrl:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/49c466de-5e90-4859-8f97-9ec70dab5944.mp4',
       imagePath: '/hero/luma-ray2-flash.jpg',
       altText: 'Fast draft render from Luma Ray 2 Flash',
     },

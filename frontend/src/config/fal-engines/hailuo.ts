@@ -159,9 +159,11 @@ export const HAILUO_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text + Image · Stylized',
     seoText:
       'Generate stylized short clips from text or breathe life into stills using MiniMax Hailuo 02. Fast, silent, and ideal for loops, visual tests, or motion studies.',
-    demoUrl: '/hero/minimax-video01.mp4',
+    demoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b318922e-0042-4812-8c83-604fc8eeeed3.mp4',
     media: {
-      videoUrl: '/hero/minimax-video01.mp4',
+      videoUrl:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/b318922e-0042-4812-8c83-604fc8eeeed3.mp4',
       imagePath: '/hero/minimax-video01.jpg',
       altText: 'Fast stylized motion demo from MiniMax Hailuo 02',
     },

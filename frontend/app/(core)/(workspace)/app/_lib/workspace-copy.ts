@@ -8,6 +8,10 @@ export const DEFAULT_WORKSPACE_COPY = {
   },
   messages: {
     generatingInProgress: 'Generating in progress ({count})…',
+    seedanceCopyrightBlocked:
+      'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.',
+    seedanceCopyrightBlockedRefunded:
+      'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Your credits were returned to your wallet. Change recognizable characters, brands, logos, franchise references, or source media before trying again.',
   },
   wallet: {
     insufficient: 'Insufficient wallet balance. Please add funds to continue generating.',

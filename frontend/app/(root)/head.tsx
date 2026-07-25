@@ -1,17 +1,27 @@
-import { getHomepageSlotsCached } from '@/server/homepage';
+import { getImageProps } from 'next/image';
+import {
+  HOME_LCP_POSTER_HEIGHT,
+  HOME_LCP_POSTER_SRC,
+  HOME_LCP_POSTER_WIDTH,
+} from '@/components/marketing/home/home-lcp-image';
 
-const DEFAULT_LCP_POSTER = '/hero/sora2.jpg';
+const {
+  props: { src: lcpPosterSrc },
+} = getImageProps({
+  src: HOME_LCP_POSTER_SRC,
+  alt: '',
+  width: HOME_LCP_POSTER_WIDTH,
+  height: HOME_LCP_POSTER_HEIGHT,
+  unoptimized: true,
+});
 
-export default async function Head() {
-  const homepageSlots = await getHomepageSlotsCached();
-  const lcpPosterSrc = homepageSlots.hero[0]?.video?.thumbUrl ?? DEFAULT_LCP_POSTER;
-
+export default function Head() {
   return (
-    <>
-      <link rel="preconnect" href="https://media.maxvideoai.com" crossOrigin="anonymous" />
-      {lcpPosterSrc ? (
-        <link rel="preload" as="image" href={lcpPosterSrc} fetchPriority="high" crossOrigin="anonymous" />
-      ) : null}
-    </>
+    <link
+      rel="preload"
+      as="image"
+      href={lcpPosterSrc}
+      fetchPriority="high"
+    />
   );
 }

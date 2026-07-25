@@ -7,6 +7,7 @@ import { useRequireAuth } from '@/hooks/useRequireAuth';
 import { ENV as CLIENT_ENV } from '@/lib/env';
 import { useEngines, useInfiniteJobs } from '@/lib/api';
 import { useI18n } from '@/lib/i18n/I18nProvider';
+import { getVideoFailureCodeFromSettingsSnapshot } from '@/lib/video-failure-codes';
 import {
   getLocalizedWorkflowCopy,
   normalizeUiLocale,
@@ -16,6 +17,7 @@ import {
   DEFAULT_WORKSPACE_COPY,
   mergeCopy,
 } from '../_lib/workspace-copy';
+import { getWorkspaceGenerationFailureMessage } from '../_lib/workspace-failure-messages';
 
 export function useWorkspaceAppBootstrap() {
   const { data, error: enginesError, isLoading } = useEngines();
@@ -64,8 +66,18 @@ export function useWorkspaceAppBootstrap() {
           job.surface !== 'character' &&
           job.surface !== 'angle' &&
           job.surface !== 'upscale'
-      ),
-    [latestJobsPages]
+      ).map((job) => ({
+        ...job,
+        message: getWorkspaceGenerationFailureMessage(
+          {
+            failureCode: getVideoFailureCodeFromSettingsSnapshot(job.settingsSnapshot),
+            message: job.message,
+            paymentStatus: job.paymentStatus,
+          },
+          workspaceCopy
+        ),
+      })),
+    [latestJobsPages, workspaceCopy]
   );
   const formatTakeLabel = useCallback(
     (current: number, total: number) => {

@@ -22,6 +22,7 @@ export type PolledJobStatus = {
   pricing?: LocalRender['pricingSnapshot'] | null;
   paymentStatus?: string | null;
   message?: string | null;
+  failureCode?: string | null;
 };
 
 export type LocalRenderFromJobOptions = {

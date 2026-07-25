@@ -267,9 +267,11 @@ export const LUMA_RAY_2_FAL_ENGINE_REGISTRY: RawFalEngineEntry[] = [
     type: 'Text, image, modify, reframe',
     seoText:
       'Luma Ray 2 remains available on MaxVideoAI as a legacy-compatible Luma route for older text generation, still-to-video, source-video modification, and reframe workflows. Ray 3.2 is the current Luma entry point for new Modify, guide/keyframe, and Reframe work.',
-    demoUrl: '/hero/luma-dream.mp4',
+    demoUrl:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1ab2f29e-076d-42f8-a91c-c49d1d2a00dd.mp4',
     media: {
-      videoUrl: '/hero/luma-dream.mp4',
+      videoUrl:
+        'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/1ab2f29e-076d-42f8-a91c-c49d1d2a00dd.mp4',
       imagePath: '/hero/luma-dream.jpg',
       altText: 'Cinematic demo render from Luma Ray 2',
     },

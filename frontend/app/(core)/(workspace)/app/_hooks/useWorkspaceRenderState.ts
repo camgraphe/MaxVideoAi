@@ -15,6 +15,10 @@ import {
 } from '../_lib/render-persistence';
 import { buildPendingRenderHydrationState } from '../_lib/workspace-hydration';
 import {
+  getWorkspaceGenerationFailureMessage,
+  type WorkspaceFailureCopy,
+} from '../_lib/workspace-failure-messages';
+import {
   buildPendingGroupSummaries,
   buildPendingSummaryMap,
   buildRenderGroups,
@@ -46,6 +50,7 @@ type UseWorkspaceRenderStateOptions = {
   compositeOverride: VideoGroup | null;
   compositeOverrideSummary: GroupSummary | null;
   writeScopedStorage: (base: string, value: string | null) => void;
+  workspaceCopy: WorkspaceFailureCopy;
 };
 
 type UseWorkspaceRenderStateResult = {
@@ -84,6 +89,7 @@ export function useWorkspaceRenderState({
   compositeOverride,
   compositeOverrideSummary,
   writeScopedStorage,
+  workspaceCopy,
 }: UseWorkspaceRenderStateOptions): UseWorkspaceRenderStateResult {
   const [renders, setRenders] = useState<LocalRender[]>([]);
   const [selectedPreview, setSelectedPreview] = useState<SelectedVideoPreview | null>(null);
@@ -157,9 +163,13 @@ export function useWorkspaceRenderState({
         jobsNeedingRefresh.map(async (render) => {
           if (!render.jobId) return;
           try {
-            const status = await getJobStatus(render.jobId);
+            const providerStatus = await getJobStatus(render.jobId);
             statusErrorCountsRef.current.delete(render.jobId);
             if (cancelled) return;
+            const status = {
+              ...providerStatus,
+              message: getWorkspaceGenerationFailureMessage(providerStatus, workspaceCopy),
+            };
             setRenders((prev) =>
               prev.map((item) =>
                 item.jobId === render.jobId ? applyPolledJobStatusToRender(item, status) : item
@@ -210,7 +220,7 @@ export function useWorkspaceRenderState({
         pendingPollRef.current = null;
       }
     };
-  }, [renders]);
+  }, [renders, workspaceCopy]);
 
   useEffect(() => {
     if (!recentJobs.length) return;

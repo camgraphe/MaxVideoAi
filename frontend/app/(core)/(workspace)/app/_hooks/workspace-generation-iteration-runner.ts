@@ -18,6 +18,10 @@ import {
 import type { FormState } from '../_lib/workspace-form-state';
 import type { GenerationInputPreparationResult } from '../_lib/workspace-generation-inputs';
 import {
+  getWorkspaceGenerationFailureMessage,
+  type WorkspaceFailureCopy,
+} from '../_lib/workspace-failure-messages';
+import {
   applyGenerationPollToRender,
   applyGenerationPollToSelectedPreview,
   projectGenerationPollStatus,
@@ -97,6 +101,7 @@ type RunWorkspaceGenerationIterationOptions = {
   voiceControlEnabled: boolean;
   voiceIds: string[];
   workflowCopy: WorkflowCopy;
+  workspaceCopy: WorkspaceFailureCopy;
   writeScopedStorage: (base: string, value: string | null) => void;
 };
 
@@ -146,6 +151,7 @@ export async function runWorkspaceGenerationIteration({
   voiceControlEnabled,
   voiceIds,
   workflowCopy,
+  workspaceCopy,
   writeScopedStorage,
 }: RunWorkspaceGenerationIterationOptions) {
   const {
@@ -392,12 +398,16 @@ export async function runWorkspaceGenerationIteration({
     const poll = async () => {
       try {
         const status = await getJobStatus(jobId);
-        if (status.message) {
-          progressMessage = status.message;
+        const localizedStatus = {
+          ...status,
+          message: getWorkspaceGenerationFailureMessage(status, workspaceCopy),
+        };
+        if (localizedStatus.message) {
+          progressMessage = localizedStatus.message;
         }
         const target = rendersRef.current.find((render) => render.id === jobId);
         const pollProjection = projectGenerationPollStatus({
-          status,
+          status: localizedStatus,
           target,
           jobId,
           localKey,
@@ -411,8 +421,8 @@ export async function runWorkspaceGenerationIteration({
           prev.map((render) => (render.id === jobId ? applyGenerationPollToRender(render, pollProjection) : render))
         );
         setSelectedPreview((current) => applyGenerationPollToSelectedPreview(current, pollProjection));
-        if (status.status === 'failed' && status.message) {
-          showComposerError(status.message);
+        if (localizedStatus.status === 'failed' && localizedStatus.message) {
+          showComposerError(localizedStatus.message);
         }
         if (pollProjection.shouldKeepPolling && pollProjection.nextPollDelayMs !== null) {
           window.setTimeout(poll, pollProjection.nextPollDelayMs);

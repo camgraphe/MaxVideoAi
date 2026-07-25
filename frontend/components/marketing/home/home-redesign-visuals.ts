@@ -119,6 +119,8 @@ export const HERO_ENGINE_MEDIA: Record<
   },
   'seedance-2-0': {
     posterSrc: '/hero/showcase-seedance-2-0.webp',
+    videoSrc:
+      'https://media.maxvideoai.com/renders/301cc489-d689-477f-94c4-0b051deda0bc/9d6811c9-226c-44bd-8b56-b3aa74039d59.mp4',
     resolution: '16:9',
     duration: '0:05',
   },

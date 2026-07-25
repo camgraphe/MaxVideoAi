@@ -45,6 +45,7 @@ export default function AppClientPage({ initialPreviewGroup = null }: { initialP
     compositeOverride: routeForm.compositeOverride,
     compositeOverrideSummary: routeForm.compositeOverrideSummary,
     writeScopedStorage: draft.writeScopedStorage,
+    workspaceCopy: app.workspaceCopy,
   });
 
   useWorkspaceDraftHydration({

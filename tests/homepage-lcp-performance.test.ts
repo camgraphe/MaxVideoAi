@@ -5,6 +5,7 @@ import test from 'node:test';
 
 const root = process.cwd();
 const homeHeadPath = join(root, 'frontend/app/(localized)/[locale]/(marketing)/(home)/head.tsx');
+const rootHomeHeadPath = join(root, 'frontend/app/(root)/head.tsx');
 const homeHeroPath = join(root, 'frontend/components/marketing/home/HomeHeroSection.tsx');
 const heroShowcasePath = join(root, 'frontend/components/marketing/home/HeroVideoShowcase.tsx');
 const homeLcpImagePath = join(root, 'frontend/components/marketing/home/home-lcp-image.ts');
@@ -14,11 +15,16 @@ const readSource = (path: string) => readFileSync(path, 'utf8');
 
 test('homepage emits a deterministic responsive LCP preload without waiting for database content', () => {
   const headSource = readSource(homeHeadPath);
+  const rootHeadSource = readSource(rootHomeHeadPath);
   const heroSource = readSource(homeHeroPath);
 
   assert.doesNotMatch(headSource, /getHomepageSlotsCached|async function Head/);
+  assert.doesNotMatch(rootHeadSource, /getHomepageSlotsCached|async function Head/);
   assert.match(headSource, /getImageProps/);
+  assert.match(rootHeadSource, /getImageProps/);
+  assert.match(rootHeadSource, /HOME_LCP_POSTER_SRC/);
   assert.match(headSource, /unoptimized:\s*true/);
+  assert.match(rootHeadSource, /unoptimized:\s*true/);
   assert.equal(existsSync(homeLcpImagePath), true, 'homepage LCP image config should be shared by head and hero');
 
   const imageConfigSource = readSource(homeLcpImagePath);

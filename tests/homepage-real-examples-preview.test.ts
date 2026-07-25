@@ -142,7 +142,7 @@ test('homepage real examples component uses compact two-column rows instead of t
   assert.doesNotMatch(previewSource, /Open model/);
 });
 
-test('homepage hero uses the current Kling 3 Pro render even when programmed slots exist', () => {
+test('homepage hero uses only curated media even when programmed slots exist', () => {
   const source = readHomeSectionsSource();
   const visualsSource = readFileSync('frontend/components/marketing/home/home-redesign-visuals.ts', 'utf8');
   const heroSource = visualsSource.slice(
@@ -154,7 +154,10 @@ test('homepage hero uses the current Kling 3 Pro render even when programmed slo
   assert.match(heroSource, /KLING_3_PRO_HERO_RENDER/);
   assert.match(heroSource, /01245e62-6bb2-4d5d-89c6-c60923a004ad\.jpg/);
   assert.match(heroSource, /7b1f1c7b-f7f0-473e-9610-82723604b690\.mp4/);
-  assert.match(homeHeroSource, /applyHeroMediaOverride\(item\)/);
+  assert.match(heroSource, /9d6811c9-226c-44bd-8b56-b3aa74039d59\.mp4/);
+  assert.match(homeHeroSource, /applyCuratedHeroMedia\(item\)/);
+  assert.match(source, /HERO_ENGINE_MEDIA\[engineId\]/);
+  assert.match(source, /videoSrc:\s*media\.videoSrc \?\? null/);
 });
 
 test('homepage hero avoids initial mobile video downloads', () => {
@@ -166,6 +169,7 @@ test('homepage hero avoids initial mobile video downloads', () => {
   assert.match(showcaseSource, /window\.requestIdleCallback\(loadPreview, \{ timeout: 1800 \}\)/);
   assert.match(showcaseSource, /selected\.videoSrc && shouldLoadVideo/);
   assert.match(showcaseSource, /autoPlay=\{shouldAutoplayPreview\}/);
+  assert.doesNotMatch(showcaseSource, /video\.load\(\)/);
   assert.doesNotMatch(showcaseSource, /loading="eager"/);
 });
 
@@ -178,6 +182,7 @@ test('homepage hero defers mobile thumbnail images without changing desktop thum
   assert.match(showcaseSource, /observer\.observe\(mobileThumbnails\)/);
   assert.match(showcaseSource, /rootMargin: '64px 0px'/);
   assert.match(showcaseSource, /ref=\{mobileThumbnailsRef\}/);
+  assert.match(showcaseSource, /unoptimized=\{item\.unoptimizedPoster\}/);
   assert.match(showcaseSource, /className="hidden object-cover md:block"/);
   assert.match(showcaseSource, /shouldLoadMobileThumbnails \? \(/);
   assert.match(showcaseSource, /className="object-cover md:hidden"/);

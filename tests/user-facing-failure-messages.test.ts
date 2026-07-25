@@ -83,3 +83,21 @@ test('Seedance task failures explain the delivered refund without claiming the r
   );
   assert.doesNotMatch(description, forbidden);
 });
+
+test('Seedance copyright output failures keep their precise refund reason', () => {
+  const reason =
+    'Seedance stopped this render after it started because its output checks detected possible copyright-restricted content. Change recognizable characters, brands, logos, franchise references, or source media before trying again.';
+  const message = toUserFacingFailureMessage(reason);
+  const description = buildUserFacingRefundDescription({
+    engineLabel: 'Seedance 2.0',
+    durationSec: 10,
+    reason,
+  });
+
+  assert.equal(message, reason);
+  assert.equal(
+    description,
+    'Refund Seedance 2.0 - 10s - Output was blocked for possible copyright-restricted content.'
+  );
+  assert.doesNotMatch(description, forbidden);
+});

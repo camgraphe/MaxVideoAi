@@ -55,11 +55,9 @@ export {
   buildBytePlusSeedanceFastPayload,
   buildBytePlusSeedancePayload,
 } from './byteplus-modelark-payload';
-export type {
-  BytePlusSeedanceFastPayload,
-  BytePlusSeedancePayload,
-} from './byteplus-modelark-payload';
+export type { BytePlusSeedanceFastPayload, BytePlusSeedancePayload } from './byteplus-modelark-payload';
 export {
+  getBytePlusTaskFailureCode,
   getBytePlusUserSafeErrorMessage,
   getBytePlusUserSafeTaskFailureMessage,
   normalizeBytePlusTask,
