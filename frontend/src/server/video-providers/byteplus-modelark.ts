@@ -1,7 +1,6 @@
 import { ENV } from '@/lib/env';
 import type { NormalizedVideoProviderTask } from '@/server/video-providers/types';
 import {
-  BYTEPLUS_MODELARK_PROVIDER,
   BYTEPLUS_SEEDANCE_DEFAULT_MODEL_ID,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_BASE_URL,
   BYTEPLUS_SEEDANCE_FAST_DEFAULT_MODEL_ID,
